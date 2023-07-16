@@ -30,7 +30,6 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('warrior_4', 'assets/sprites/1_4.png', frameConfig);
         this.load.spritesheet('mage_1', 'assets/sprites/1_5.png', frameConfig);
         this.load.spritesheet('mage_2', 'assets/sprites/1_6.png', frameConfig);
-
         // this.load.audio('click', 'assets/click_2.wav');
     }
 

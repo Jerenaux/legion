@@ -1,3 +1,5 @@
+import { HealthBar } from "./HealthBar";
+
 export class Player extends Phaser.GameObjects.Container {
     sprite: Phaser.GameObjects.Sprite;
     numKey: Phaser.GameObjects.Text;
@@ -21,6 +23,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.sprite = scene.add.sprite(0, 0, texture);
         this.add(this.sprite);
 
+
         // Create a text object to display the player's name and score, and add it to the container
         if (isPlayer) {
             this.numKey = scene.add.text(30, 70, num.toString(), { fontSize: '16px', color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(1,1);
@@ -39,6 +42,8 @@ export class Player extends Phaser.GameObjects.Container {
         } else {
             this.sprite.flipX = true;
         }
+
+        this.add(new HealthBar(scene, 0, -40));
 
         // Add the container to the scene
         scene.add.existing(this);

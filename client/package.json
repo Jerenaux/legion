@@ -14,7 +14,8 @@
     },
     "dependencies": {
         "@types/node": "^20.2.3",
-        "phaser": "3.54.0",
+        "phaser": "3.60.0",
+        "phaser3-rex-plugins": "^1.60.3",
         "socket.io-client": "^4.6.1"
     }
 }
