@@ -19,12 +19,23 @@ class ServerPlayer {
             'distance': includePersonal ? this.distance : 0,
         }
     }
+
+    canMoveTo(x: number, y: number) {
+        // Check if (x, y) is within a circle of radius `this.distance` from (this.gridX, this.gridY)
+        return Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2) <= Math.pow(this.distance, 2);
+    }
+
+    updatePos(x, y) {
+        this.x = x;
+        this.y = y;
+    }
 }
 
 export class Server
 {
     players: ServerPlayer[] = [];
     opponents: ServerPlayer[] = [];
+    gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
 
     constructor() {
         this.players.push(new ServerPlayer('warrior_1', 4, 4));
@@ -33,6 +44,13 @@ export class Server
         this.opponents.push(new ServerPlayer('warrior_3', 3, 4));
         this.opponents.push(new ServerPlayer('mage_2', 1, 2));
         this.opponents.push(new ServerPlayer('warrior_4', 1, 6));
+
+        this.players.forEach(player => {
+            this.gridMap.set(`${player.x},${player.y}`, player);
+        });
+        this.opponents.forEach(player => {
+            this.gridMap.set(`${player.x},${player.y}`, player);
+        });
     }
 
     getPlacementData() {
@@ -47,7 +65,20 @@ export class Server
         return data;
     }
 
+    isFree(gridX, gridY) {
+        const isFree = !this.gridMap[`${gridX},${gridY}`];
+        return isFree;
+    }
+
     processMove({tile, num}) {
-        
+        if (!this.isFree(tile.x, tile.y)) return;
+        const player = this.players[num - 1];
+        if (!player.canMoveTo(tile.x, tile.y)) return;
+        player.updatePos(tile.x, tile.y);
+        return {
+            isPlayer: true,
+            tile,
+            num
+        };
     }
 }

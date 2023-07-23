@@ -65,11 +65,7 @@ export class Arena extends Phaser.Scene
             num: this.selectedPlayer.num,
         };
         // this.send('move', data);
-        const serverData = {
-            isPlayer: true,
-            tile: { x, y},
-            num: this.selectedPlayer.num,
-        };
+        const serverData = this.server.processMove(data);
         this.processMove(serverData);
     }
 

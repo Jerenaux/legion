@@ -96,7 +96,6 @@ export class Player extends Phaser.GameObjects.Container {
     canMoveTo(x: number, y: number) {
         // Check if (x, y) is within a circle of radius `this.distance` from (this.gridX, this.gridY)
         return Math.pow(x - this.gridX, 2) + Math.pow(y - this.gridY, 2) <= Math.pow(this.distance, 2);
-
     }
 
     updatePos(x, y) {
