@@ -25,7 +25,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.isPlayer = isPlayer;
         this.gridX = gridX;
         this.gridY = gridY;
-        this.distance = 4;
+        this.distance = 2;
         this.num = num;
 
         this.baseSquare = scene.add.graphics().setAlpha(0.6);
@@ -72,11 +72,19 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
+        this.sprite.on('pointerup', this.onPointerUp, this);
     }
 
-    playAnim(key: string) {
+    setDistance(distance: number) {
+        this.distance = distance;
+    }
+
+    playAnim(key: string, revertToIdel = false) {
         // if (key) key = `_${key}`;
         this.sprite.play(`${this.texture}_anim_${key}`);
+        if (revertToIdel) {
+            this.sprite.once('animationcomplete', () => this.playAnim('idle'), this);
+        }
     }
 
     toggleSelect() {
@@ -98,7 +106,7 @@ export class Player extends Phaser.GameObjects.Container {
 
     onPointerOver() {
         // @ts-ignore
-        if(!this.isPlayer && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)) {
+        if(this.isTarget()) {
             // @ts-ignore
             this.hud.toggleSwordCursor(true);
         }
@@ -109,6 +117,18 @@ export class Player extends Phaser.GameObjects.Container {
             // @ts-ignore
             this.hud.toggleSwordCursor(false);
         }
+    }
+
+    onPointerUp() {
+        if(this.isTarget()) {
+            // @ts-ignore
+            this.arena.sendAttack(this);
+        }
+    }
+
+    isTarget() {
+        // @ts-ignore
+        return !this.isPlayer && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)
     }
 
     isNextTo(x: number, y: number) {
@@ -139,5 +159,27 @@ export class Player extends Phaser.GameObjects.Container {
             if(gridX < oldGridX && !this.sprite.flipX) this.sprite.flipX = true;
             if(gridX > oldGridX && this.sprite.flipX) this.sprite.flipX = false;
         }
+    }
+
+    attack(player: Player) {
+        // @ts-ignore
+        this.arena.deselectPlayer();
+        this.playAnim('attack', true);
+        player.hurt();
+    }
+
+    hurt() {
+        this.playAnim('hurt', true);
+        // Blink
+        this.scene.tweens.add({
+            targets: this,
+            alpha: 0,
+            duration: 100,
+            repeat: 2,
+            yoyo: true,
+            onComplete: () => {
+                this.alpha = 1;
+            }
+        });
     }
 }

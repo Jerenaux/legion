@@ -34,7 +34,7 @@ export class HealthBar extends Phaser.GameObjects.Container {
 
     this.hpValue = 0;
     this.hpBar.setOrigin(0);
-    this.setHpValue(0.5);
+    this.setHpValue(1);
 
     this.add(this.barBackground);
     this.add(this.hpBar);

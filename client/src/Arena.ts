@@ -1,6 +1,7 @@
 
 import { io } from 'socket.io-client';
 import { Player } from './Player';
+import { Server } from './Server';
 export class Arena extends Phaser.Scene
 {
     socket;
@@ -15,6 +16,7 @@ export class Arena extends Phaser.Scene
     tileSize = 60;
     gridWidth = 20;
     gridHeight = 9;
+    server;
 
     constructor() {
         super({ key: 'Arena' });
@@ -47,47 +49,9 @@ export class Arena extends Phaser.Scene
         // }); 
 
         // this.socket.on('init', this.initializeGame.bind(this));
-        const data = {
-            'player': {
-                'team': [
-                    {
-                        'frame': 'warrior_1',
-                        'x': 16,
-                        'y': 4,
-                    },
-                    {
-                        'frame': 'mage_1',
-                        'x': 18,
-                        'y': 2,
-                    },
-                    {
-                        'frame': 'warrior_2',
-                        'x': 18,
-                        'y': 6,
-                    }
-                ]
-            },
-            'opponent': {
-                'team': [
-                    {
-                        'frame': 'warrior_3',
-                        'x': 3,
-                        'y': 4,
-                    },
-                    {
-                        'frame': 'mage_2',
-                        'x': 1,
-                        'y': 2,
-                    },
-                    {
-                        'frame': 'warrior_4',
-                        'x': 1,
-                        'y': 6,
-                    }
-                ]
-            }
-        }
-        this.initializeGame(data);
+        this.server = new Server();
+        
+        this.initializeGame(this.server.getPlacementData());
 
         // this.socket.on('addCity', (data) => {
         //     // console.log('addCity data received from the server');
@@ -107,6 +71,20 @@ export class Arena extends Phaser.Scene
             num: this.selectedPlayer.num,
         };
         this.processMove(serverData);
+    }
+
+    sendAttack(player: Player) {
+        const data = {
+            num: this.selectedPlayer.num,
+            target: player.num,
+        };
+        // this.send('attack', data);
+        const serverData = {
+            isPlayer: true,
+            target: player.num,
+            num: this.selectedPlayer.num,
+        };
+        this.processAttack(serverData);
     }
 
     send(channel, data) {
@@ -262,19 +240,33 @@ export class Arena extends Phaser.Scene
 
     handlePlayerSelect(player: Player) {
         if (!player || !player.isPlayer) return;
+        if (this.selectedPlayer === player) {
+            this.deselectPlayer();
+            return;
+        }
         if (this.selectedPlayer) this.selectedPlayer.toggleSelect();
         this.selectedPlayer = player;
         this.selectedPlayer.toggleSelect();
     }
 
+    getPlayer(isPlayer, num) {
+        return isPlayer ? this.playersMap[num] : this.opponentsMap[num];
+    }
+
     processMove({isPlayer, tile, num}) {
-        const player = isPlayer ? this.playersMap[num] : this.opponentsMap[num];
+        const player = this.getPlayer(isPlayer, num);
         const {x, y} = this.gridToPixelCoords(tile.x, tile.y);
 
         this.gridMap[this.serializeCoords(player.gridX, player.gridY)] = null;
         this.gridMap[this.serializeCoords(tile.x, tile.y)] = player;
 
         player.walkTo(tile.x, tile.y, x, y);
+    }
+
+    processAttack({isPlayer, target, num}) {
+        const player = this.getPlayer(isPlayer, num);
+        const targetPlayer = this.getPlayer(!isPlayer, target);
+        player.attack(targetPlayer);
     }
 
     createAnims() {
@@ -294,6 +286,24 @@ export class Arena extends Phaser.Scene
                 frameRate: 5, // Number of frames per second
                 repeat: -1 // Loop indefinitely
             });
+
+            this.anims.create({
+                key: `${asset}_anim_attack`, // The name of the animation
+                frames: this.anims.generateFrameNumbers(asset, { frames: [12, 13, 14] }), 
+                frameRate: 10, // Number of frames per second
+            });
+
+            this.anims.create({
+                key: `${asset}_anim_dodge`, // The name of the animation
+                frames: this.anims.generateFrameNumbers(asset, { frames: [45, 46, 47] }), 
+                frameRate: 10, // Number of frames per second
+            });
+
+            this.anims.create({
+                key: `${asset}_anim_hurt`, // The name of the animation
+                frames: this.anims.generateFrameNumbers(asset, { frames: [36, 37, 38] }), 
+                frameRate: 10, // Number of frames per second
+            });
         }, this);
     }
 
@@ -309,6 +319,7 @@ export class Arena extends Phaser.Scene
             const {x, y} = this.gridToPixelCoords(character.x, character.y);
 
             const player = new Player(this, character.x, character.y, x, y, i + 1, character.frame, isPlayer);
+            player.setDistance(character.distance);
             this.gridMap[this.serializeCoords(character.x, character.y)] = player;
 
             if (isPlayer) {
