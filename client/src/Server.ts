@@ -5,6 +5,8 @@ class ServerPlayer {
     hp;
     maxHP;
     distance;
+    atk;
+    def;
 
     constructor(frame, x, y) {
         this.frame = frame;
@@ -13,6 +15,16 @@ class ServerPlayer {
         this.maxHP = 100;
         this.hp = this.maxHP;
         this.distance = 4;
+        this.atk = 10;
+        this.def = 10;
+//         Every level up, a character gains:
+//         Attack: +2 and +10% of current attack
+//         Defense: +3 and +8% of current defense
+
+// Written as formulas, these might be:
+
+//     New Attack = Current Attack + 2 + Current Attack * 0.10
+//     New Defense = Current Defense + 3 + Current Defense * 0.08
     }
 
     getPlacementData(includePersonal = false) {
@@ -34,6 +46,10 @@ class ServerPlayer {
         return (Math.abs(x - this.x) <= 1 && Math.abs(y - this.y) <= 1);
     }
 
+    isAlive() {
+        return this.hp > 0;
+    }
+
     updatePos(x, y) {
         this.x = x;
         this.y = y;
@@ -48,7 +64,7 @@ class ServerPlayer {
 
     getHP() {
         return this.hp;
-    }
+    }    
 }
 
 export class Server
@@ -90,10 +106,32 @@ export class Server
         return isFree;
     }
 
+    calculateDamage(attacker: ServerPlayer, defender: ServerPlayer) {
+        // Calculate the base damage
+        // let baseDamage = attacker.atk - defender.def;
+        let baseDamage = attacker.atk / (1 + defender.def);
+        baseDamage *= 10;
+    
+        // Ensure baseDamage doesn't fall below some minimum (e.g., 1)
+        baseDamage = Math.max(baseDamage, 1);
+    
+        // Add randomness factor - in this case, damage can be from 0.9 to 1.1 times the baseDamage
+        let randomFactor = 0.9 + Math.random() * 0.2;
+        let totalDamage = baseDamage * randomFactor;
+    
+        // Round the result to get rid of fractions
+        totalDamage = Math.round(totalDamage);
+    
+        // Ensure totalDamage is at least 1
+        totalDamage = Math.max(totalDamage, 1);
+    
+        return totalDamage;
+    }
+
     processMove({tile, num}) {
         if (!this.isFree(tile.x, tile.y)) return;
         const player = this.players[num - 1];
-        if (!player.canMoveTo(tile.x, tile.y)) return;
+        if (!player.isAlive() || !player.canMoveTo(tile.x, tile.y)) return;
         player.updatePos(tile.x, tile.y);
         return {
             isPlayer: true,
@@ -105,8 +143,8 @@ export class Server
     processAttack({num, target}) {
         const player = this.players[num - 1];
         const opponent = this.opponents[target - 1];
-        if (!player.isNextTo(opponent.x, opponent.y)) return;
-        const damage = 10;
+        if (!player.isNextTo(opponent.x, opponent.y) || !player.isAlive() || !opponent.isAlive()) return;
+        const damage = this.calculateDamage(player, opponent);
         opponent.dealDamage(damage);
         return {
             isPlayer: true,

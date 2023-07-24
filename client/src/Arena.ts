@@ -275,6 +275,13 @@ export class Arena extends Phaser.Scene
             });
 
             this.anims.create({
+                key: `${asset}_anim_idle_hurt`, // The name of the animation
+                frames: this.anims.generateFrameNumbers(asset, { frames: [33, 34, 35] }), 
+                frameRate: 5, // Number of frames per second
+                repeat: -1 // Loop indefinitely
+            });
+
+            this.anims.create({
                 key: `${asset}_anim_walk`, // The name of the animation
                 frames: this.anims.generateFrameNumbers(asset, { frames: [6, 7, 8] }), 
                 frameRate: 5, // Number of frames per second
@@ -295,7 +302,13 @@ export class Arena extends Phaser.Scene
 
             this.anims.create({
                 key: `${asset}_anim_hurt`, // The name of the animation
-                frames: this.anims.generateFrameNumbers(asset, { frames: [36, 37, 38] }), 
+                frames: this.anims.generateFrameNumbers(asset, { frames: [42, 43, 44] }), 
+                frameRate: 10, // Number of frames per second
+            });
+
+            this.anims.create({
+                key: `${asset}_anim_die`, // The name of the animation
+                frames: this.anims.generateFrameNumbers(asset, { frames: [51, 52, 53] }), 
                 frameRate: 10, // Number of frames per second
             });
         }, this);

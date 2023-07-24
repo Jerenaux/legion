@@ -81,15 +81,19 @@ export class Player extends Phaser.GameObjects.Container {
         this.sprite.on('pointerup', this.onPointerUp, this);
     }
 
+    isAlive() {
+        return this.hp > 0;
+    }
+
     setDistance(distance: number) {
         this.distance = distance;
     }
 
-    playAnim(key: string, revertToIdel = false) {
-        // if (key) key = `_${key}`;
+    playAnim(key: string, revertToIdle = false) {
         this.sprite.play(`${this.texture}_anim_${key}`);
-        if (revertToIdel) {
-            this.sprite.once('animationcomplete', () => this.playAnim('idle'), this);
+        if (revertToIdle) {
+            const idleAnim = this.hp / this.maxHP < 0.5 ? 'idle_hurt' : 'idle';
+            this.sprite.once('animationcomplete', () => this.playAnim(idleAnim), this);
         }
     }
 
@@ -128,12 +132,14 @@ export class Player extends Phaser.GameObjects.Container {
         if(this.isTarget()) {
             // @ts-ignore
             this.arena.sendAttack(this);
+            // @ts-ignore
+            this.hud.toggleSwordCursor(false);
         }
     }
 
     isTarget() {
         // @ts-ignore
-        return !this.isPlayer && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)
+        return !this.isPlayer && this.isAlive() && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)
     }
 
     isNextTo(x: number, y: number) {
@@ -167,19 +173,30 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     setHP(hp) {
+        const _hp = this.hp
         this.hp = hp;
         this.healthBar.setHpValue(hp / this.maxHP);
+        if (this.hp < _hp) {
+            this.hurt();   
+        }
+
+        if (this.hp <= 0) {
+            this.healthBar.setVisible(false);
+            this.playAnim('die');
+        } else {
+            this.playAnim('hurt', true);
+        }
+
     }
 
     attack(player: Player) {
         // @ts-ignore
         this.arena.deselectPlayer();
         this.playAnim('attack', true);
-        player.hurt();
     }
 
     hurt() {
-        this.playAnim('hurt', true);
+        
         // Blink
         this.scene.tweens.add({
             targets: this,
