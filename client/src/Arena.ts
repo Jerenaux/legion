@@ -34,6 +34,7 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('mage_1', 'assets/sprites/1_5.png', frameConfig);
         this.load.spritesheet('mage_2', 'assets/sprites/1_6.png', frameConfig);
         // this.load.audio('click', 'assets/click_2.wav');
+        this.load.text('grayScaleShader', 'assets/grayscale.glsl');
     }
 
 
@@ -70,6 +71,7 @@ export class Arena extends Phaser.Scene
     }
 
     sendAttack(player: Player) {
+        if (!this.selectedPlayer.canAct) return;
         const data = {
             num: this.selectedPlayer.num,
             target: player.num,
@@ -244,7 +246,7 @@ export class Arena extends Phaser.Scene
         return isPlayer ? this.playersMap[num] : this.opponentsMap[num];
     }
 
-    processMove({isPlayer, tile, num}) {
+    processMove({isPlayer, tile, num, cooldown}) {
         const player = this.getPlayer(isPlayer, num);
         const {x, y} = this.gridToPixelCoords(tile.x, tile.y);
 
@@ -252,16 +254,18 @@ export class Arena extends Phaser.Scene
         this.gridMap[this.serializeCoords(tile.x, tile.y)] = player;
 
         player.walkTo(tile.x, tile.y, x, y);
+        player.setCooldown(cooldown);
     }
 
-    processAttack({isPlayer, target, num, damage, hp}) {
+    processAttack({isPlayer, target, num, damage, hp, cooldown}) {
         const player = this.getPlayer(isPlayer, num);
         const targetPlayer = this.getPlayer(!isPlayer, target);
         player.attack(targetPlayer);
         targetPlayer.setHP(hp);
         targetPlayer.displayDamage(damage);
+        player.setCooldown(cooldown);
     }
-    
+
     createAnims() {
         const assets = ['warrior_1', 'warrior_2', 'warrior_3', 'warrior_4', 'mage_1', 'mage_2']
         // Loop over assets
@@ -326,6 +330,7 @@ export class Arena extends Phaser.Scene
 
             const player = new Player(this, character.x, character.y, x, y, i + 1, character.frame, isPlayer, character.hp);
             player.setDistance(character.distance);
+            if (isPlayer) player.setCooldown(character.cooldown);
             this.gridMap[this.serializeCoords(character.x, character.y)] = player;
 
             if (isPlayer) {
@@ -356,20 +361,18 @@ export class Arena extends Phaser.Scene
         // Calculate the number of steps to check, based on the distance
         let steps = Math.ceil(distance);
     
-        console.log(`Line of sight from (${startX}, ${startY}) to (${endX}, ${endY})`);
+        // console.log(`Line of sight from (${startX}, ${startY}) to (${endX}, ${endY})`);
         for (let i = 1; i < steps; i++) {
             // Calculate the current position along the line
             const xInc = this.specialRound(i / steps * (endX - startX));
             const yInc = this.specialRound(i / steps * (endY - startY));
-            console.log(`Adding ${xInc}, ${yInc}`);
             let currentX = Math.round(startX + xInc);
             let currentY = Math.round(startY + yInc);
             if (currentX == startX && currentY == startY) continue;
-            console.log(`Checking position (${currentX}, ${currentY})`);
 
             // Check if this position is occupied
             if (!this.isFree(currentX, currentY)) {
-                console.log(`Line of sight blocked at (${currentX}, ${currentY})`);
+                // console.log(`Line of sight blocked at (${currentX}, ${currentY})`);
                 // If the position is occupied, return false
                 return false;
             }
@@ -410,14 +413,20 @@ export class Arena extends Phaser.Scene
         if (this.highlight) this.highlight.clear();
     }
     
-    create ()
+    create()
     {
         this.drawGrid();
         this.createAnims();
         this.connectToServer();
 
-        console.log(this.lineOfSight(3, 3, 2, 4))
-        console.log(this.lineOfSight(3, 3, 4, 4))
+        let grayScaleShader = this.cache.text.get('grayScaleShader');
+
+        // @ts-ignore
+        const renderer: Phaser.Renderer.WebGL.WebGLRenderer = this.sys.game.renderer;
+        renderer.pipelines.add('GrayScale', new Phaser.Renderer.WebGL.WebGLPipeline({
+            game: this.game,
+            fragShader: grayScaleShader
+        }));
     }
 
     createHUD() {

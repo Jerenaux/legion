@@ -7,6 +7,10 @@ class ServerPlayer {
     distance;
     atk;
     def;
+    cooldowns;
+    cooldown;
+    cooldownTimer;
+    canAct = false;
 
     constructor(frame, x, y) {
         this.frame = frame;
@@ -17,6 +21,12 @@ class ServerPlayer {
         this.distance = 3;
         this.atk = 10;
         this.def = 10;
+        this.cooldowns = {
+            'move': 5000,
+            'attack': 5000
+        };
+        this.cooldown = 5000;
+        this.setCooldown(this.cooldown);
 //         Every level up, a character gains:
 //         Attack: +2 and +10% of current attack
 //         Defense: +3 and +8% of current defense
@@ -34,6 +44,7 @@ class ServerPlayer {
             'y': this.y,
             'distance': includePersonal ? this.distance : 0,
             'hp': this.maxHP,
+            'cooldown': includePersonal ? this.cooldown : 0
         }
     }
 
@@ -64,7 +75,17 @@ class ServerPlayer {
 
     getHP() {
         return this.hp;
-    }    
+    } 
+    
+    setCooldown(duration) {
+        this.canAct = false;
+        if (this.cooldownTimer) {
+            clearTimeout(this.cooldownTimer);
+        }
+        this.cooldownTimer = setTimeout(() => {
+            this.canAct = true;
+        });
+    }
 }
 
 export class Server
@@ -131,27 +152,33 @@ export class Server
     processMove({tile, num}) {
         if (!this.isFree(tile.x, tile.y)) return;
         const player = this.players[num - 1];
-        if (!player.isAlive() || !player.canMoveTo(tile.x, tile.y)) return;
+        if (!player.canAct || !player.isAlive() || !player.canMoveTo(tile.x, tile.y)) return;
         player.updatePos(tile.x, tile.y);
+        const cooldown = player.cooldowns.move;
+        player.setCooldown(cooldown);
         return {
             isPlayer: true,
             tile,
-            num
+            num,
+            cooldown, // TODO: send separately
         };
     }
 
     processAttack({num, target}) {
         const player = this.players[num - 1];
         const opponent = this.opponents[target - 1];
-        if (!player.isNextTo(opponent.x, opponent.y) || !player.isAlive() || !opponent.isAlive()) return;
+        if (!player.canAct || !player.isNextTo(opponent.x, opponent.y) || !player.isAlive() || !opponent.isAlive()) return;
         const damage = this.calculateDamage(player, opponent);
         opponent.dealDamage(damage);
+        const cooldown = player.cooldowns.attack;
+        player.setCooldown(cooldown);
         return {
             isPlayer: true,
             target,
             num,
             damage,
-            hp: opponent.getHP()
+            hp: opponent.getHP(),
+            cooldown, // TODO: send separately
         };
     }
 }

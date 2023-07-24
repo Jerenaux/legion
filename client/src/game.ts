@@ -4,7 +4,7 @@ import { Arena } from './Arena';
 import RoundRectanglePlugin from 'phaser3-rex-plugins/plugins/roundrectangle-plugin.js';
 
 const config = {
-    type: Phaser.AUTO,
+    type: Phaser.WEBGL,
     scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,

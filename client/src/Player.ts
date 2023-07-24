@@ -1,5 +1,5 @@
 import { HealthBar } from "./HealthBar";
-
+import { CircularProgress } from "./CircularProgress";
 export class Player extends Phaser.GameObjects.Container {
     scene: Phaser.Scene;
     sprite: Phaser.GameObjects.Sprite;
@@ -17,6 +17,9 @@ export class Player extends Phaser.GameObjects.Container {
     maxHP: number;
     hp: number;
     healthBar: HealthBar;
+    cooldown: CircularProgress;
+    cooldownTween: Phaser.Tweens.Tween;
+    canAct: boolean = false;
 
     constructor(scene: Phaser.Scene, gridX: number, gridY: number, x: number, y: number, num: number, texture: string, isPlayer: boolean, hp: number) {
         super(scene, x, y);
@@ -54,6 +57,9 @@ export class Player extends Phaser.GameObjects.Container {
 
             this.baseSquare.lineStyle(4, 0x0000ff); // blue color
 
+            this.cooldown = new CircularProgress(scene, -8, 28, 10, 0x87CEFA).setVisible(false);
+            this.add(this.cooldown);
+
             this.moveTo(this.numKey, 3);
             this.moveTo(this.sprite, 2);
 
@@ -64,6 +70,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.healthBar = new HealthBar(scene, 0, -40);
         this.add(this.healthBar);
+
         this.baseSquare.strokeRect(-30, 10, 60, 60); // adjust position and size as needed
 
         // Add the container to the scene
@@ -72,7 +79,6 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.playAnim('idle');
         this.sprite.setInteractive(new Phaser.Geom.Rectangle(35, 40, 70, 100), Phaser.Geom.Rectangle.Contains);
-
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
@@ -97,12 +103,22 @@ export class Player extends Phaser.GameObjects.Container {
     toggleSelect() {
         this.selectionOval.setVisible(!this.selectionOval.visible);
         // @ts-ignore
+        this.displayMovementRange();
+    }
+
+    isSelected() {
+        return this.selectionOval.visible;
+    }
+
+    displayMovementRange() {
+        if (!this.canAct) return;
+        // @ts-ignore
         this.arena.highlightCells(this.gridX, this.gridY, this.distance);
     }
 
     canMoveTo(x: number, y: number) {
         // Check if (x, y) is within a circle of radius `this.distance` from (this.gridX, this.gridY)
-        return Math.pow(x - this.gridX, 2) + Math.pow(y - this.gridY, 2) <= Math.pow(this.distance, 2);
+        return this.canAct && Math.pow(x - this.gridX, 2) + Math.pow(y - this.gridY, 2) <= Math.pow(this.distance, 2);
     }
 
     updatePos(x, y) {
@@ -226,6 +242,38 @@ export class Player extends Phaser.GameObjects.Container {
             onComplete: () => {
                 // remove the text when the tween is complete
                 damageText.destroy();
+            }
+        });
+    }
+
+    // Function to toggle grayscale shader for a given sprite
+    toggleGrayscale() {
+        if (this.canAct) { // If grayscale already applied
+            this.sprite.resetPipeline(); // Reset to default pipeline
+        } else { // If grayscale not applied
+            this.sprite.setPipeline('GrayScale'); // Apply the grayscale pipeline
+        }
+    }
+
+    setCooldown(duration) {
+        // this.sprite.anims.stop();
+        this.canAct = false;
+        // this.toggleGrayscale();
+        this.cooldown.setVisible(true);
+        if (this.cooldownTween) this.cooldownTween.stop();
+        this.cooldownTween = this.scene.tweens.add({
+            targets: this.cooldown,
+            progress: { from: 0, to: 1 }, // Start at 0 progress and tween to 1
+            duration: duration, // Duration of the tween in milliseconds
+            ease: 'Linear', // Use a linear easing function
+            onUpdate: () => {
+                this.cooldown.draw(); // Redraw the circle on each update of the tween
+            },
+            onComplete: () => {
+                this.canAct = true;
+                this.cooldown.setVisible(false);
+                // this.playAnim('idle');
+                if (this.isSelected()) this.displayMovementRange();
             }
         });
     }
