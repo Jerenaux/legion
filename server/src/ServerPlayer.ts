@@ -1,7 +1,10 @@
+import { Team } from './Team';
+
 export class ServerPlayer {
     frame;
     x;
     y;
+    team: Team | null = null;
     hp;
     maxHP;
     distance;
@@ -85,5 +88,9 @@ export class ServerPlayer {
         this.cooldownTimer = setTimeout(() => {
             this.canAct = true;
         });
+    }
+
+    setTeam(team: Team) {
+        this.team = team;
     }
 }

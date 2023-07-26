@@ -2,38 +2,46 @@ import { Socket, Server } from 'socket.io';
 import { uuid } from 'uuidv4';
 
 import { ServerPlayer } from './ServerPlayer';
+import { AIServerPlayer } from './AIServerPlayer';
+import { Team } from './Team';
 
 export class Game
 {
     id: string = uuid();
-    players: ServerPlayer[] = [];
-    opponents: ServerPlayer[] = [];
+    teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
     io: Server;
     sockets: Socket[] = [];
+    tickTimer: NodeJS.Timeout | null = null;
 
     constructor(io: Server, sockets: Socket[]) {
         this.io = io;
         this.sockets = sockets;
-        this.players.push(new ServerPlayer('warrior_1', 5, 4));
-        this.players.push(new ServerPlayer('mage_1', 18, 2));
-        this.players.push(new ServerPlayer('warrior_2', 18, 6));
-        this.opponents.push(new ServerPlayer('warrior_3', 3, 4));
-        this.opponents.push(new ServerPlayer('mage_2', 1, 2));
-        this.opponents.push(new ServerPlayer('warrior_4', 1, 6));
 
-        this.players.forEach(player => {
-            this.gridMap.set(`${player.x},${player.y}`, player);
-        });
-        this.opponents.forEach(player => {
-            this.gridMap.set(`${player.x},${player.y}`, player);
-        });
+        this.teams.set(1, new Team(1, this));
+        this.teams.set(2, new Team(2, this));
+        this.teams.get(1)?.addMember(new ServerPlayer('warrior_1', 5, 4));
+        this.teams.get(1)?.addMember(new ServerPlayer('mage_1', 18, 2));
+        this.teams.get(1)?.addMember(new ServerPlayer('warrior_2', 18, 6));
+        this.teams.get(2)?.addMember(new AIServerPlayer('warrior_3', 3, 4));
+        this.teams.get(2)?.addMember(new AIServerPlayer('mage_2', 1, 2));
+        this.teams.get(2)?.addMember(new AIServerPlayer('warrior_4', 1, 6));
+
+        // Iterate over teams
+        this.teams.forEach(team => {
+            team.getMembers().forEach(player => {
+                this.gridMap.set(`${player.x},${player.y}`, player);
+            }, this);
+        }, this);
 
         this.sockets.forEach(socket => {
             socket.join(this.id);
         }, this);
 
         this.broadcast('gameStart', this.getPlacementData());
+
+        this.tickTimer = setInterval(this.AItick.bind(this), 500);
+
     }
 
     broadcast(event: string, data: any) {
@@ -43,10 +51,10 @@ export class Game
     getPlacementData() {
         const data = {
             'player': {
-                'team': this.players.map(player => player.getPlacementData(true))
+                'team': this.teams.get(1)?.getMembers().map(player => player.getPlacementData(true))
             },
             'opponent': {
-                'team': this.opponents.map(player => player.getPlacementData())
+                'team': this.teams.get(2)?.getMembers().map(player => player.getPlacementData())
             }
         }
         return data;
@@ -79,9 +87,13 @@ export class Game
         return totalDamage;
     }
 
+    getTeam(team: number): ServerPlayer[] {
+        return this.teams.get(team)?.getMembers()!;
+    }
+
     processMove({tile, num}: {tile: Tile, num: number}) {
         if (!this.isFree(tile.x, tile.y)) return;
-        const player = this.players[num - 1];
+        const player = this.getTeam(1)[num - 1];
         if (!player.canAct || !player.isAlive() || !player.canMoveTo(tile.x, tile.y)) return;
         player.updatePos(tile.x, tile.y);
         const cooldown = player.cooldowns.move;
@@ -95,8 +107,8 @@ export class Game
     }
 
     processAttack({num, target}: {num: number, target: number}) {
-        const player = this.players[num - 1];
-        const opponent = this.opponents[target - 1];
+        const player = this.getTeam(1)[num - 1];
+        const opponent = this.getTeam(2)[num - 1];
         if (!player.canAct || !player.isNextTo(opponent.x, opponent.y) || !player.isAlive() || !opponent.isAlive()) return;
         const damage = this.calculateDamage(player, opponent);
         opponent.dealDamage(damage);
@@ -110,6 +122,24 @@ export class Game
             hp: opponent.getHP(),
             cooldown, // TODO: send separately
         });
+    }
+
+    AItick() {
+        // (this.teams.get(2)?.getMembers() as AIServerPlayer[]).forEach(opponent => {
+        //     opponent.takeAction();
+        // });
+    }
+
+    listAdjacentEnemies(player: ServerPlayer): ServerPlayer[] {
+        const adjacentEnemies: ServerPlayer[] = [];
+        const oppositeTeamId = player.team!.id === 1 ? 2 : 1;
+        const oppositeTeam = this.teams.get(oppositeTeamId)!;
+        oppositeTeam.getMembers().forEach(enemy => {
+            if (player.isNextTo(enemy.x, enemy.y)) {
+                adjacentEnemies.push(enemy);
+            }
+        });
+        return adjacentEnemies;
     }
 }
 
