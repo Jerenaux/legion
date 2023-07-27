@@ -35,8 +35,7 @@ export abstract class Game
     abstract populateTeams(): void;
 
     isFree(gridX: number, gridY: number) {
-        const isFree = !this.gridMap.get(`${gridX},${gridY}`);
-        return isFree;
+        return !this.gridMap.get(`${gridX},${gridY}`);
     }
 
     freeCell(gridX: number, gridY: number) {
@@ -132,11 +131,8 @@ export abstract class Game
     }
 
     processMove({tile, num}: {tile: Tile, num: number}, team: Team) {
-        if (!this.isFree(tile.x, tile.y)) {
-            // console.log('Tile is not free');
-            return;
-        }
         const player = team.getMembers()[num - 1];
+        if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) return;
         if (!player.canAct || !player.isAlive() || !player.canMoveTo(tile.x, tile.y)) return;
         
         this.freeCell(player.x, player.y);
@@ -201,6 +197,81 @@ export abstract class Game
             }
         });
         return adjacentEnemies;
+    }
+
+    listAllEnemies(player: ServerPlayer): ServerPlayer[] {
+        const oppositeTeamId = player.team!.id === 1 ? 2 : 1;
+        const oppositeTeam = this.teams.get(oppositeTeamId)!;
+        return  oppositeTeam.getMembers();
+    }
+
+    specialRound(num: number) {
+        if (num >= 0) {
+            return Math.round(num);
+        } else {
+            return -Math.round(-num);
+        }
+    }
+
+    lineOfSight(startX: number, startY: number, endX: number, endY: number) {
+        // Get the distance between the start and end points
+        let distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+    
+        // Calculate the number of steps to check, based on the distance
+        let steps = Math.ceil(distance);
+    
+        // console.log(`Line of sight from (${startX}, ${startY}) to (${endX}, ${endY})`);
+        for (let i = 1; i < steps; i++) {
+            // Calculate the current position along the line
+            const xInc = this.specialRound(i / steps * (endX - startX));
+            const yInc = this.specialRound(i / steps * (endY - startY));
+            let currentX = Math.round(startX + xInc);
+            let currentY = Math.round(startY + yInc);
+            if (currentX == startX && currentY == startY) continue;
+
+            // Check if this position is occupied
+            if (!this.isFree(currentX, currentY)) {
+                // console.log(`Line of sight blocked at (${currentX}, ${currentY})`);
+                // If the position is occupied, return false
+                return false;
+            }
+        }
+    
+        // If no occupied positions were found, return true
+        return true;
+    }
+
+    isSkip(x: number, y: number) {
+        const gridWidth = 20;
+        const gridHeight = 9;
+        if (x < 0 || y < 0 || x >= gridWidth || y >= gridHeight) return true;
+        const v = 3;
+        const skip = y < gridHeight/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (gridHeight - v));
+        // Skip drawing the corners to create an oval shape
+        return (x < skip || x >= gridWidth - skip);
+    }
+
+    isValidCell(fromX: number, fromY: number, toX: number, toY: number) {
+        return !this.isSkip(toX, toY)
+        && this.isFree(toX, toY)
+        && this.lineOfSight(fromX, fromY, toX, toY)
+    }
+
+    listCellsInRange(gridX: number, gridY: number, radius: number): Tile[] {
+        const tiles: Tile[] = [];
+        for (let y = -radius; y <= radius; y++) {
+            for (let x = -radius; x <= radius; x++) {
+                // Check if the cell is within the circle
+                if (x * x + y * y <= radius * radius) {
+                    if(!this.isValidCell(gridX, gridY, gridX + x, gridY + y)) continue;
+                    tiles.push({
+                        x: gridX + x,
+                        y: gridY + y,
+                    });
+                }
+            }
+        }
+        return tiles;
     }
 }
 

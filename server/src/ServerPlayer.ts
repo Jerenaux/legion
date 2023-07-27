@@ -1,6 +1,7 @@
 import { Team } from './Team';
 
 export class ServerPlayer {
+    num;
     frame;
     x;
     y;
@@ -15,7 +16,8 @@ export class ServerPlayer {
     cooldownTimer: NodeJS.Timeout | null = null;
     canAct = false;
 
-    constructor(frame: string, x: number, y: number) {
+    constructor(num: number, frame: string, x: number, y: number) {
+        this.num = num;
         this.frame = frame;
         this.x = x;
         this.y = y;
