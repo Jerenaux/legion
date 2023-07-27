@@ -8,6 +8,7 @@ export class MultiplayerGame extends Game {
         super(io, sockets);
 
         this.socketMap.set(sockets[1], this.teams.get(2)!);
+        this.teams.get(2)?.setSocket(sockets[1]);
     }
 
     populateTeams() {

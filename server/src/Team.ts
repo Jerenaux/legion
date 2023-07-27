@@ -1,3 +1,5 @@
+import { Socket } from "socket.io";
+
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
 
@@ -5,6 +7,7 @@ export class Team {
     id: number;
     members: ServerPlayer[] = [];
     game: Game;
+    socket: Socket | null = null;
 
     constructor(number: number, game: Game) {
         this.id = number;
@@ -18,5 +21,9 @@ export class Team {
 
     getMembers(): ServerPlayer[] {
         return this.members;
+    }
+
+    setSocket(socket: Socket) {
+        this.socket = socket;
     }
 }

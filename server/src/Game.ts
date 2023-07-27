@@ -25,6 +25,7 @@ export abstract class Game
         this.teams.set(1, new Team(1, this));
         this.teams.set(2, new Team(2, this));
         this.socketMap.set(sockets[0], this.teams.get(1)!);
+        this.teams.get(1)?.setSocket(sockets[0]);
         
         this.populateTeams();
         this.populateGrid();
@@ -56,20 +57,27 @@ export abstract class Game
     }
 
     sendGameStart() {
-        this.broadcast('gameStart', this.getPlacementData());
+        // this.broadcast('gameStart', this.getPlacementData());
+        this.sockets.forEach(socket => {
+            const teamId = this.socketMap.get(socket)?.id!;
+            socket.emit('gameStart', this.getPlacementData(teamId));
+        });
     }
 
     broadcast(event: string, data: any) {
         this.io.in(this.id).emit(event, data);
     }
 
-    getPlacementData() {
+    getPlacementData(playerTeamId: number) {
+        const otherTeamId = this.getOtherTeam(playerTeamId).id;
         const data = {
             'player': {
-                'team': this.teams.get(1)?.getMembers().map(player => player.getPlacementData(true))
+                'teamId': playerTeamId,
+                'team': this.teams.get(playerTeamId)?.getMembers().map(player => player.getPlacementData(true))
             },
             'opponent': {
-                'team': this.teams.get(2)?.getMembers().map(player => player.getPlacementData())
+                'teamId': otherTeamId,
+                'team': this.teams.get(otherTeamId)?.getMembers().map(player => player.getPlacementData())
             }
         }
         return data;
@@ -124,9 +132,8 @@ export abstract class Game
     }
 
     processMove({tile, num}: {tile: Tile, num: number}, team: Team) {
-        console.log(`Team ${team.id} player ${num} moving to ${tile.x},${tile.y}`);
         if (!this.isFree(tile.x, tile.y)) {
-            console.log('Tile is not free');
+            // console.log('Tile is not free');
             return;
         }
         const player = team.getMembers()[num - 1];
@@ -140,10 +147,14 @@ export abstract class Game
         player.setCooldown(cooldown);
         
         this.broadcast('move', {
-            isPlayer: true,
+            team: team.id,
             tile,
             num,
-            cooldown, // TODO: send separately
+        });
+
+        team.socket?.emit('cooldown', {
+            num,
+            cooldown,
         });
     }
 
@@ -151,18 +162,26 @@ export abstract class Game
         const player = team.getMembers()[num - 1];
         const opponentTeam = this.getOtherTeam(team.id);
         const opponent = opponentTeam.getMembers()[num - 1];
+        
         if (!player.canAct || !player.isNextTo(opponent.x, opponent.y) || !player.isAlive() || !opponent.isAlive()) return;
+        
         const damage = this.calculateDamage(player, opponent);
         opponent.dealDamage(damage);
+        
         const cooldown = player.cooldowns.attack;
         player.setCooldown(cooldown);
+
         this.broadcast('attack', {
-            isPlayer: true,
+            team: team.id,
             target,
             num,
             damage,
             hp: opponent.getHP(),
-            cooldown, // TODO: send separately
+        });
+
+        team.socket?.emit('cooldown', {
+            num,
+            cooldown,
         });
     }
 

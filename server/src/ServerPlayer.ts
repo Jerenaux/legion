@@ -40,15 +40,18 @@ export class ServerPlayer {
 //     New Defense = Current Defense + 3 + Current Defense * 0.08
     }
 
-    getPlacementData(includePersonal = false) {
-        return {
+    getPlacementData(includePersonal = false): playerNetworkData {
+        const data: playerNetworkData = {
             'frame': this.frame,
             'x': this.x,
             'y': this.y,
-            'distance': includePersonal ? this.distance : 0,
             'hp': this.maxHP,
-            'cooldown': includePersonal ? this.cooldown : 0
         }
+        if (includePersonal) {
+            data['distance'] = this.distance;
+            data['cooldown'] = this.cooldown;
+        }
+        return data;
     }
 
     canMoveTo(x: number, y: number) {
@@ -93,4 +96,13 @@ export class ServerPlayer {
     setTeam(team: Team) {
         this.team = team;
     }
+}
+
+interface playerNetworkData {
+    frame: string;
+    x: number;
+    y: number;
+    hp: number;
+    distance?: number;
+    cooldown?: number;
 }
