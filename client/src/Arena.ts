@@ -1,7 +1,7 @@
 
 import { io } from 'socket.io-client';
 import { Player } from './Player';
-
+import App from './UI/App';
 class Team {
     id: number;
     members: Player[] = [];
@@ -24,6 +24,7 @@ class Team {
 }
 export class Arena extends Phaser.Scene
 {
+    app;
     socket;
     HUD;
     playerTeamId;
@@ -43,6 +44,8 @@ export class Arena extends Phaser.Scene
 
     preload ()
     {
+        this.app = new App();
+
         this.load.image('bg',  '/assets/aarena_bg.png');
         // this.load.svg('pop', 'assets/pop.svg',  { width: 24, height: 24 } );
         const frameConfig = { frameWidth: 144, frameHeight: 144};
@@ -286,6 +289,10 @@ export class Arena extends Phaser.Scene
         player.attack(targetPlayer);
         targetPlayer.setHP(hp);
         targetPlayer.displayDamage(damage);
+
+        // Count how many team members are alive
+        const aliveMembers = this.playersMap.get(this.playerTeamId).getMembers().filter(member => member.isAlive());
+        this.app.setAliveCount(aliveMembers);
     }
 
     processCooldown({num, cooldown}) {
