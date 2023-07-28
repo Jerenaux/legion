@@ -90,12 +90,12 @@ export class AIServerPlayer extends ServerPlayer {
             case AIType.Hunter:
                 this.hunterTarget();
                 break;
-            // case AIType.Equalizer:
-            //     this.equalizer();
-            //     break;
-            // case AIType.Defender:
-            //     this.defender();
-            //     break;
+            case AIType.Equalizer:
+                this.equalizerTarget();
+                break;
+            case AIType.Defender:
+                this.defenderTarget();
+                break;
             default:
                 this.opportunistTarget();
                 break;
@@ -112,37 +112,45 @@ export class AIServerPlayer extends ServerPlayer {
         return optimalTarget;
     }
 
+    getClosestTarget(targets: ServerPlayer[], from: ServerPlayer = this) {
+        let closestTarget: ServerPlayer | null = null;
+        targets.forEach(target => {
+            if (!closestTarget || this.distanceTo(target.x, target.y) < this.distanceTo(closestTarget.x, closestTarget.y)) {
+                closestTarget = target;
+            }
+        });
+        return closestTarget;
+    }
+
     opportunistTarget() {
         let targets = this.team?.game.listAdjacentEnemies(this);
         if (targets?.length === 0) {
             targets = this.team?.game.listAllEnemies(this);
         }
-        this.target = this.getOptimalTarget(targets!, lowestHpComparator);
+        this.target = this.getClosestTarget(targets!);
         // console.log(`opportunist target: ${this.target!.num} at (${this.target!.x}, ${this.target!.y})`);
     }
 
     hunterTarget() {
         const targets = this.team?.game.listAllEnemies(this);
-        const target = this.getOptimalTarget(targets!, lowestHpComparator);
-        if (target) {
-            this.attack(target);
-        }
+        this.target = this.getOptimalTarget(targets!, lowestHpComparator);
     }
 
-    // equalizer() {
-    //     const targets = this.team?.game.listAllEnemies(this);
-    //     const target = this.getOptimalTarget(targets!, highestHpComparator);
-    //     if (target) {
-    //         this.attack(target);
-    //     }
-    // }
+    equalizerTarget() {
+        const targets = this.team?.game.listAllEnemies(this);
+        this.target = this.getOptimalTarget(targets!, highestHpComparator);
+    }
 
-    // defender() {
-    //     const target = this.getClosestEnemyToLowestHPAlly();
-    //     if (target) {
-    //         this.attack(target);
-    //     }
-    // }
+    defenderTarget() {
+        const allies = this.team?.game.listAllAllies(this);
+        if (!allies || allies.length === 0) {
+            this.hunterTarget();
+            return;
+        }
+        const ally = this.getOptimalTarget(allies!, lowestHpComparator);
+        const targets = this.team?.game.listAllEnemies(this);
+        this.target = this.getClosestTarget(targets!, ally!);
+    }
 
     attack(target: ServerPlayer) {
         const data = {

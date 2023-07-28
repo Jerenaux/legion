@@ -206,6 +206,11 @@ export abstract class Game
         return oppositeTeam.getMembers().filter(enemy => enemy.isAlive());
     }
 
+    listAllAllies(player: ServerPlayer): ServerPlayer[] {
+        // Filter for alive allies
+        return player.team!.getMembers().filter(ally => ally.isAlive());
+    }
+
     specialRound(num: number) {
         if (num >= 0) {
             return Math.round(num);

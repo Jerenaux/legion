@@ -75,6 +75,10 @@ export class ServerPlayer {
         this.y = y;
     }
 
+    distanceTo(x: number, y: number) {
+        return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
+    }
+
     dealDamage(damage: number) {
         this.hp -= damage;
         if (this.hp < 0) {
