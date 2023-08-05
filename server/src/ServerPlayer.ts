@@ -22,7 +22,7 @@ export class ServerPlayer {
         this.frame = frame;
         this.x = x;
         this.y = y;
-        this.maxHP = 10;
+        this.maxHP = 100;
         this.hp = this.maxHP;
         this.distance = 3;
         this.atk = 10;

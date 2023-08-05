@@ -19,6 +19,7 @@ export class Player extends Phaser.GameObjects.Container {
     healthBar: HealthBar;
     cooldown: CircularProgress;
     cooldownTween: Phaser.Tweens.Tween;
+    cooldownDuration: number;
     hurtTween: Phaser.Tweens.Tween;
     canAct: boolean = false;
 
@@ -83,6 +84,33 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
+    }
+
+    getProps() {
+        // @ts-ignore
+        const textureFile = this.arena.assetsMap[this.texture];
+        // Extract the filename from the path
+        const textureFilename = textureFile.split('/').pop();
+        return {
+            name: 'Player 1',
+            number: this.num,
+            portrait: textureFilename,
+            hp: this.hp,
+            maxHp: this.maxHP,
+            mp: 100,
+            maxMp: 100,
+            cooldown: this.cooldownDuration / 1000,
+            skills: [
+              { name: 'Ice ball', frame: '01.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat'},
+              { name: 'Fire ball', frame: '10.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
+              { name: 'Maelstrom', frame: '21.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
+              { name: 'Zombie', frame: '47.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
+            ],
+            items: [
+              { name: 'Potion', quantity: 2, frame: 'potion.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
+              { name: 'Ether', quantity: 1, frame: 'ether.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
+            ]
+          }
     }
 
     isAlive() {
@@ -199,11 +227,13 @@ export class Player extends Phaser.GameObjects.Container {
             this.playAnim('hurt', true);
         }
 
+        if(this.hp != _hp) {
+            // @ts-ignore
+            this.arena.emitEvent('hpChange', {num: this.num})
+        }
     }
 
     attack(target: Player) {
-        // @ts-ignore
-        this.arena.deselectPlayer();
         this.playAnim('attack', true);
         this.sprite.flipX = target.gridX > this.gridX;
     }
@@ -255,6 +285,7 @@ export class Player extends Phaser.GameObjects.Container {
         // this.sprite.anims.stop();
         this.canAct = false;
         // this.toggleGrayscale();
+        this.cooldownDuration = duration;
         this.cooldown.setVisible(true);
         if (this.cooldownTween) this.cooldownTween.stop();
         this.cooldownTween = this.scene.tweens.add({
@@ -268,6 +299,7 @@ export class Player extends Phaser.GameObjects.Container {
             onComplete: () => {
                 this.canAct = true;
                 this.cooldown.setVisible(false);
+                this.cooldownDuration = 0;
                 // this.playAnim('idle');
                 if (this.isSelected()) this.displayMovementRange();
             }

@@ -38,6 +38,15 @@ export class Arena extends Phaser.Scene
     gridHeight = 9;
     server;
 
+    assetsMap = {
+        'warrior_1': 'assets/sprites/1_1.png',
+        'warrior_2': 'assets/sprites/1_2.png',
+        'warrior_3': 'assets/sprites/1_3.png',
+        'warrior_4': 'assets/sprites/1_4.png',
+        'mage_1': 'assets/sprites/1_5.png',
+        'mage_2': 'assets/sprites/1_6.png',
+    };
+
     constructor() {
         super({ key: 'Arena' });
     }
@@ -49,12 +58,10 @@ export class Arena extends Phaser.Scene
         this.load.image('bg',  '/assets/aarena_bg.png');
         // this.load.svg('pop', 'assets/pop.svg',  { width: 24, height: 24 } );
         const frameConfig = { frameWidth: 144, frameHeight: 144};
-        this.load.spritesheet('warrior_1', 'assets/sprites/1_1.png', frameConfig);
-        this.load.spritesheet('warrior_2', 'assets/sprites/1_2.png', frameConfig);
-        this.load.spritesheet('warrior_3', 'assets/sprites/1_3.png', frameConfig);
-        this.load.spritesheet('warrior_4', 'assets/sprites/1_4.png', frameConfig);
-        this.load.spritesheet('mage_1', 'assets/sprites/1_5.png', frameConfig);
-        this.load.spritesheet('mage_2', 'assets/sprites/1_6.png', frameConfig);
+        // Iterate over assetsMap and load spritesheets
+        for (let key in this.assetsMap) {
+            this.load.spritesheet(key, this.assetsMap[key], frameConfig);
+        }
         // this.load.audio('click', 'assets/click_2.wav');
         this.load.text('grayScaleShader', 'assets/grayscale.glsl');
     }
@@ -246,22 +253,43 @@ export class Arena extends Phaser.Scene
         this.deselectPlayer();
     }
 
-    deselectPlayer() {
-        if (this.selectedPlayer) {
-            this.selectedPlayer.toggleSelect();
-            this.selectedPlayer = null;
-            this.clearHighlight();
+    emitEvent(event, data?) {
+        switch (event) {
+            case 'hpChange':
+                if (this.selectedPlayer && data.num === this.selectedPlayer.num) {
+                    events.emit('showPlayerBox', this.selectedPlayer.getProps());
+                }
+                break;
+            case 'selectPlayer':
+                if (this.selectedPlayer) events.emit('showPlayerBox', this.selectedPlayer.getProps());
+                break;
+            case 'deselectPlayer':
+                events.emit('hidePlayerBox');
+                break;
+            default:
+                break;
         }
     }
 
     selectPlayer(player: Player) {
         if (this.selectedPlayer === player) {
+            console.log('Already selected');
             this.deselectPlayer();
             return;
         }
         if (this.selectedPlayer) this.selectedPlayer.toggleSelect();
         this.selectedPlayer = player;
         this.selectedPlayer.toggleSelect();
+        this.emitEvent('selectPlayer', {num: this.selectedPlayer.num})
+    }
+
+    deselectPlayer() {
+        if (this.selectedPlayer) {
+            this.selectedPlayer.toggleSelect();
+            this.selectedPlayer = null;
+            this.clearHighlight();
+            this.emitEvent('deselectPlayer')
+        }
     }
 
     getPlayer(team: number, num: number): Player {
@@ -289,8 +317,6 @@ export class Arena extends Phaser.Scene
         player.attack(targetPlayer);
         targetPlayer.setHP(hp);
         targetPlayer.displayDamage(damage);
-
-        // events.emit('updateAliveCount', aliveMembers.length);
     }
 
     processCooldown({num, cooldown}) {
