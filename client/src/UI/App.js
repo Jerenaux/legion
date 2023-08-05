@@ -22,10 +22,11 @@ class App extends Component {
   render() {
     return <PlayerTab player={{
       name: 'Player 1',
+      number: 1,
       portrait: 'assets/sprites/1_1.png',
-      hp: 1000,
+      hp: 600,
       maxHp: 1000,
-      mp: 100,
+      mp: 12,
       maxMp: 100,
       cooldown: 2,
       skills: [

@@ -53,26 +53,38 @@ canvas {
 
 .player-main {
     display: flex;
+    flex-direction: column; /* This will stack the items vertically */
     align-items: start;
     gap: 10px; /* adjust as needed */
 }
 
-.player-info {
+.player-content {
     display: flex;
-    align-items: center;
-    flex: 0 0 auto; 
+    gap: 10px; /* adjust as needed */
 }
 
-.player-name {
+.player-info {
     margin-bottom: 10px;
     margin-left: 3px;
+    font-weight: bold;
+    /* font-family: 'Vinque'; */
+}
+
+.player-info span {
+    border-right: 1px solid white;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.player-class {
+    border-right: 2px solid white;
 }
 
 .player-portrait {
     position: relative;
     border: 3px solid #D4AF37;
     width: 50px;
-    height: 77px;
+    height: 84px;
     margin-top: 2px;
 }
 
@@ -119,3 +131,14 @@ canvas {
     /* padding-right: 10px; */
     margin-right: 10px;
 }
+
+@keyframes blink {
+    0% {opacity: 1;}
+    50% {opacity: 0;}
+    100% {opacity: 1;}
+  }
+  
+.cooldown-complete {
+    animation: blink 1s linear infinite;
+  }
+  
