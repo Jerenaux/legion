@@ -20,6 +20,33 @@ interface ItemEffect {
     value: number;
 }
 
+export interface NetworkSpell {
+    id: number;
+    name: string;
+    description: string;
+    frame: string;
+    cost: number;
+    target: string;
+    effects: NetworkSpellEffect[];
+}
+
+export interface NetworkSpellEffect {
+    stat: string;
+    value: number;
+    modifiers: NetworkEffectModifiers | null;
+}
+
+export interface NetworkEffectModifiers {
+    casterModifier: NetworkEffectModifier;
+    targetModifier: NetworkEffectModifier;
+}
+
+export interface NetworkEffectModifier {
+    stat: string;
+    value: number;
+    direction: string;
+}
+
 export class Player extends Phaser.GameObjects.Container {
     scene: Phaser.Scene;
     sprite: Phaser.GameObjects.Sprite;
@@ -35,6 +62,7 @@ export class Player extends Phaser.GameObjects.Container {
     distance: number;
     baseSquare: Phaser.GameObjects.Graphics;
     maxHP: number;
+    maxMP: number;
     hp: number;
     mp: number;
     healthBar: HealthBar;
@@ -45,7 +73,9 @@ export class Player extends Phaser.GameObjects.Container {
     hurtTween: Phaser.Tweens.Tween;
     canAct: boolean = false;
     inventory: Map<Item, number> = new Map<Item, number>();
+    spells: NetworkSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
+    pendingSkill: number | null = null;
 
     constructor(
         scene: Phaser.Scene, gridX: number, gridY: number, x: number, y: number,
@@ -90,6 +120,7 @@ export class Player extends Phaser.GameObjects.Container {
 
             this.MPBar = new HealthBar(scene, 0, -40, 0x0099ff);
             this.add(this.MPBar);
+            this.maxMP = mp;
             this.mp = mp;
 
             this.moveTo(this.numKey, 3);
@@ -139,15 +170,10 @@ export class Player extends Phaser.GameObjects.Container {
             portrait: textureFilename,
             hp: this.hp,
             maxHp: this.maxHP,
-            mp: 100,
-            maxMp: 100,
+            mp: this.mp,
+            maxMp: this.maxMP,
             cooldown: this.cooldownDuration / 1000,
-            skills: [
-              { name: 'Ice ball', frame: '01.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat'},
-              { name: 'Fire ball', frame: '10.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
-              { name: 'Maelstrom', frame: '21.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
-              { name: 'Zombie', frame: '47.png', description: 'Lorem ipsum dolor sit amet conecuetur dolores sit erat' },
-            ],
+            spells: this.spells,
             items
           }
     }
@@ -180,8 +206,14 @@ export class Player extends Phaser.GameObjects.Container {
 
     displayMovementRange() {
         if (!this.canAct || !this.isAlive()) return;
+        if (this.pendingSkill != null) return;
         // @ts-ignore
         this.arena.highlightCells(this.gridX, this.gridY, this.distance);
+    }
+
+    hideMovementRange() {
+        // @ts-ignore
+        this.arena.clearHighlight();
     }
 
     canMoveTo(x: number, y: number) {
@@ -197,16 +229,16 @@ export class Player extends Phaser.GameObjects.Container {
 
     onPointerOver() {
         // @ts-ignore
-        if(this.isTarget()) {
+        if(this.isTarget() && this.arena.selectedPlayer.pendingSkill == null) {
             // @ts-ignore
-            this.hud.toggleSwordCursor(true);
+            this.hud.toggleCursor(true, 'swords');
         }
     }
 
     onPointerOut() {
         if(!this.isPlayer) {
             // @ts-ignore
-            this.hud.toggleSwordCursor(false);
+            this.hud.toggleCursor(false);
         }
     }
 
@@ -218,7 +250,7 @@ export class Player extends Phaser.GameObjects.Container {
             // @ts-ignore
             this.arena.sendAttack(this);
             // @ts-ignore
-            this.hud.toggleSwordCursor(false);
+            this.hud.toggleCursor(false);
         }
     }
 
@@ -227,10 +259,9 @@ export class Player extends Phaser.GameObjects.Container {
         const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
         const itemsIndex = keyboardLayout.indexOf('Z');
         const index = keyboardLayout.indexOf(keyCode);
-        if (index <= itemsIndex) {
+        if (index >= itemsIndex) {
             this.useItem(index - itemsIndex);
-        }
-        else {
+        } else {
             this.useSkill(index);
         }
     }
@@ -261,8 +292,31 @@ export class Player extends Phaser.GameObjects.Container {
         this.animationSprite.setVisible(true).play(animation);
     }
 
+    castAnimation() {
+        this.playAnim('cast', true);
+    }
+
     useSkill(index) {
-    
+        if (!this.canAct || !this.isAlive()) return;
+        const spell = this.spells[index];
+        if (!spell) {
+            console.error(`No skill at slot ${index}`);
+            return;
+        }
+        if (this.pendingSkill == index) {
+            this.pendingSkill = null;
+            // @ts-ignore
+            this.arena.toggleTargetMode(false);
+            return;
+        }
+
+        if (spell.cost > this.mp) return;
+
+        if (spell.target == 'AOE') {
+            this.pendingSkill = index;
+            // @ts-ignore
+            this.arena.toggleTargetMode(true, spell.size);
+        }
     }
 
     isTarget() {
@@ -303,8 +357,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
 
         if (this.hp <= 0) {
-            this.healthBar.setVisible(false);
-            this.playAnim('die');
+            this.die();
         } else {
             this.playAnim('hurt', true);
         }
@@ -313,6 +366,25 @@ export class Player extends Phaser.GameObjects.Container {
             // @ts-ignore
             this.arena.emitEvent('hpChange', {num: this.num})
         }
+    }
+
+    setMP(mp) {
+        const _mp = this.mp
+        this.mp = mp;
+        this.MPBar.setHpValue(mp / this.maxMP);
+
+        if(this.mp != _mp) {
+            // @ts-ignore
+            this.arena.emitEvent('mpChange', {num: this.num})
+        }
+    }
+
+    die() {
+        this.healthBar.setVisible(false);
+        this.MPBar?.setVisible(false);
+        this.playAnim('die');
+        // @ts-ignore
+        if (this.arena.selectedPlayer == this) this.arena.deselectPlayer();
     }
 
     attack(target: Player) {
@@ -369,6 +441,7 @@ export class Player extends Phaser.GameObjects.Container {
         // this.toggleGrayscale();
         this.cooldownDuration = duration;
         this.cooldown.setVisible(true);
+        if (this.isSelected()) this.hideMovementRange();
         if (this.cooldownTween) this.cooldownTween.stop();
         this.cooldownTween = this.scene.tweens.add({
             targets: this.cooldown,
@@ -405,5 +478,9 @@ export class Player extends Phaser.GameObjects.Container {
     updateItemNb(index: number, quantity: number) {
         const item = this.getItemAtSlot(index);
         this.inventory.set(item, quantity);
+    }
+
+    setSpells(spells: NetworkSpell[]) {
+        this.spells = spells;
     }
 }

@@ -102,11 +102,11 @@ class PlayerTab extends Component {
           </div>
         </div>
         <div className="player-skills">
-            <h4>🔥 Skills </h4>
-            {player.skills.map((skill, i) => {
+            <h4>🔥 Spells </h4>
+            {player.spells.map((skill, i) => {
                 const startPosition = keyboardLayout.indexOf('Q');
                 const keyBinding = keyboardLayout.charAt(startPosition + i);
-                return (<div className="skill">
+                return (<div className="skill" onClick={() => this.itemClick(keyBinding)}>
                   <div 
                       className={isCooldownActive || isDead ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
                       style={{backgroundImage: `url(assets/skills/${skill.frame})`, }} />
@@ -116,7 +116,15 @@ class PlayerTab extends Component {
                     <div className="info-box-desc">{skill.description}</div>
                     <div className="mp mini">  
                       <span className="mp-label">MP</span>
-                      <span className="mp-amount">5</span>
+                      <span className="mp-amount">{skill.cost}</span>
+                    </div>
+                    <div className='badge'>
+                          <span className="badge-label">⏳ </span> 
+                          <span>{skill.cooldown}s</span>
+                        </div>
+                    <div className='badge'>
+                      <span className="badge-label">🎯 </span> 
+                      <span>{skill.target}</span>
                     </div>
                   </div>
                 </div>)
@@ -124,7 +132,7 @@ class PlayerTab extends Component {
             )}
         </div>
         <div className="player-items">
-            <h4>🧪 Items</h4>
+            <h4>🧪 Items </h4>
             {player.items.map((item, i) => {
                 const startPosition = keyboardLayout.indexOf('Z');
                 const keyBinding = keyboardLayout.charAt(startPosition + i);

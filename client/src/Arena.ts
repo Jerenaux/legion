@@ -22,6 +22,58 @@ class Team {
         return this.members;
     }
 }
+
+class CellsHighlight extends Phaser.GameObjects.Graphics {
+    size: number;
+    color: number;
+    gridWidth: number;
+    gridHeight: number;
+    tileSize: number;
+    gridCorners: any;
+
+    constructor(scene: Phaser.Scene, gridWidth: number, gridHeight: number, tileSize: number, gridCorners: any) {
+        super(scene);
+        this.scene = scene;
+        this.gridWidth = gridWidth;
+        this.gridHeight = gridHeight;
+        this.gridCorners = gridCorners;
+        this.tileSize = tileSize;
+        this.setNormalMode();
+        scene.add.existing(this);
+    }
+
+    setNormalMode() {
+        this.size = 0;
+        this.color = 0xffffff;
+    }
+
+    setTargetMode(size: number) {
+        this.size = Math.floor(size/2);
+        this.color = 0xff0000;
+    }
+
+    move(gridX, gridY) {
+        // Clear the previous highlight
+        this.clear();
+        // console.log(`gridX: ${gridX}, gridY: ${gridY}`);
+        for(let x = gridX - this.size; x <= gridX + this.size; x++) {
+            for(let y = gridY - this.size; y <= gridY + this.size; y++) {
+                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+                    // @ts-ignore
+                    if (this.scene.isSkip(x, y)) continue;
+
+                    // Draw a new highlight over the hovered tile
+                    this.fillStyle(this.color, 0.3); 
+                    this.fillRect(
+                        this.gridCorners.startX + x * this.tileSize, 
+                        this.gridCorners.startY + y * this.tileSize, 
+                        this.tileSize, this.tileSize
+                    );
+                }
+            }
+        }
+    }
+}
 export class Arena extends Phaser.Scene
 {
     app;
@@ -33,6 +85,8 @@ export class Arena extends Phaser.Scene
     playersMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
     highlight: Phaser.GameObjects.Graphics;
+    cellsHighlight: CellsHighlight;
+    localAnimationSprite: Phaser.GameObjects.Sprite;
     tileSize = 60;
     gridWidth = 20;
     gridHeight = 9;
@@ -63,10 +117,10 @@ export class Arena extends Phaser.Scene
             this.load.spritesheet(key, this.assetsMap[key], frameConfig);
         }
         this.load.spritesheet('potion_heal', 'assets/animations/potion_heal.png', { frameWidth: 48, frameHeight: 64});
+        this.load.spritesheet('explosion', 'assets/animations/explosion.png', { frameWidth: 96, frameHeight: 96});
         // this.load.audio('click', 'assets/click_2.wav');
         this.load.text('grayScaleShader', 'assets/grayscale.glsl');
     }
-
 
     connectToServer() {
         this.socket = io('http://localhost:3123');
@@ -101,8 +155,20 @@ export class Arena extends Phaser.Scene
             this.processHPChange(data);
         });
 
+        this.socket.on('mpchange', (data) => {
+            this.processMPChange(data);
+        });
+
         this.socket.on('useitem', (data) => {
             this.processUseItem(data);
+        });
+
+        this.socket.on('cast', (data) => {
+            this.processCast(data);
+        });
+
+        this.socket.on('localanimation', (data) => {
+            this.processLocalAnimation(data);
         });
     }
 
@@ -121,6 +187,19 @@ export class Arena extends Phaser.Scene
             target: player.num,
         };
         this.send('attack', data);
+    }
+
+    sendSkill(x: number, y: number) {
+        if (!this.selectedPlayer.canAct) return;
+        const data = {
+            num: this.selectedPlayer.num,
+            x,
+            y,
+            index: this.selectedPlayer.pendingSkill,
+        };
+        this.send('skill', data);
+        this.toggleTargetMode(false);
+        this.selectedPlayer.pendingSkill = null;
     }
 
     sendUseItem(player: Player, index: number) {
@@ -182,8 +261,7 @@ export class Arena extends Phaser.Scene
             startY: startY,
         };
 
-         // Create a separate graphics object for the highlight
-         let highlightGraphics = this.add.graphics().setDepth(1);
+        this.cellsHighlight = new CellsHighlight(this, this.gridWidth, this.gridHeight, this.tileSize, this.gridCorners).setDepth(1);
 
          // Add a pointer move handler to highlight the hovered tile
          this.input.on('pointermove', function (pointer) {
@@ -193,22 +271,8 @@ export class Arena extends Phaser.Scene
              // Calculate the grid coordinates of the pointer
              let gridX = Math.floor(pointerX / this.tileSize);
              let gridY = Math.floor(pointerY / this.tileSize);
-            //  console.log(gridX, gridY);
  
-             // Ensure the pointer is within the grid
-             if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
-                 // Clear the previous highlight
-                 highlightGraphics.clear();
-
-                 if (this.isSkip(gridX, gridY)) return;
- 
-                 // Draw a new highlight over the hovered tile
-                 highlightGraphics.fillStyle(0xffffff, 0.3); // Semi-transparent white
-                 highlightGraphics.fillRect(startX + gridX * this.tileSize, startY + gridY * this.tileSize, this.tileSize, this.tileSize);
-             } else {
-                 // Clear the highlight if the pointer is outside the grid
-                 highlightGraphics.clear();
-             }
+             this.cellsHighlight.move(gridX, gridY);
          }, this);
 
          // Add a pointer down handler to print the clicked tile coordinates
@@ -236,6 +300,16 @@ export class Arena extends Phaser.Scene
         bg.setScale(scale).setAlpha(0.7);
 
         this.input.keyboard.on('keydown', this.handleKeyDown, this);
+    }
+
+    toggleTargetMode(flag: boolean, size?: number) {
+        this.HUD.toggleCursor(flag, 'scroll');
+        if (flag) {
+            this.cellsHighlight.setTargetMode(size);
+            this.clearHighlight();
+        } else {
+            this.cellsHighlight.setNormalMode();
+        }
     }
 
     handleKeyDown(event) {
@@ -269,7 +343,9 @@ export class Arena extends Phaser.Scene
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
         const player = this.gridMap[this.serializeCoords(gridX, gridY)];
-        if (this.selectedPlayer && !player) {
+        if (this.selectedPlayer?.pendingSkill !== null) {
+            this.sendSkill(gridX, gridY);
+        } else if (this.selectedPlayer && !player) {
             this.handleMove(gridX, gridY);
         } else if (player){ 
             player.onClick();
@@ -296,6 +372,9 @@ export class Arena extends Phaser.Scene
                 if (this.selectedPlayer && data.num === this.selectedPlayer.num) {
                     this.refreshBox();
                 }
+                break;
+            case 'mpChange':
+                this.refreshBox();
                 break;
             case 'selectPlayer':
                 this.refreshBox();
@@ -377,9 +456,25 @@ export class Arena extends Phaser.Scene
         player.setHP(hp);
     }
 
+    processMPChange({num, mp}) {
+        const player = this.getPlayer(this.playerTeamId, num);
+        player.setMP(mp);
+    }
+
     processUseItem({team, num, animation}) {
         const player = this.getPlayer(team, num);
         player.useItemAnimation(animation);
+    }
+
+    processCast({team, num}) {
+        const player = this.getPlayer(team, num);
+        player.castAnimation();
+    }
+
+    processLocalAnimation({x, y, animation}) {
+        // Convert x and y in grid coords to pixels
+        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        this.localAnimationSprite.setPosition(pixelX, pixelY).setVisible(true).play(animation);
     }
 
     createAnims() {
@@ -432,6 +527,12 @@ export class Arena extends Phaser.Scene
             });
 
             this.anims.create({
+                key: `${asset}_anim_cast`, // The name of the animation
+                frames: this.anims.generateFrameNumbers(asset, { frames: [40, 41, 42] }), 
+                frameRate: 10, // Number of frames per second
+            });
+
+            this.anims.create({
                 key: `${asset}_anim_die`, // The name of the animation
                 frames: this.anims.generateFrameNumbers(asset, { frames: [51, 52, 53] }), 
                 frameRate: 10, // Number of frames per second
@@ -442,6 +543,12 @@ export class Arena extends Phaser.Scene
             key: `potion_heal`, // The name of the animation
             frames: this.anims.generateFrameNumbers('potion_heal'), 
             frameRate: 10, // Number of frames per second
+        });
+
+        this.anims.create({
+            key: `explosion`, // The name of the animation
+            frames: this.anims.generateFrameNumbers('explosion', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }), 
+            frameRate: 15, // Number of frames per second
         });
     }
 
@@ -454,7 +561,7 @@ export class Arena extends Phaser.Scene
 
     placeCharacters(data, isPlayer, teamId) {
         data.forEach((character, i) => {
-            // if (isPlayer) console.log(character);
+            if (isPlayer) console.log(character);
 
             const {x, y} = this.gridToPixelCoords(character.x, character.y);
 
@@ -468,6 +575,7 @@ export class Arena extends Phaser.Scene
                 player.setDistance(character.distance);
                 player.setCooldown(character.cooldown);
                 player.setInventory(character.inventory);
+                player.setSpells(character.spells);
             }
 
             this.gridMap[this.serializeCoords(character.x, character.y)] = player;
@@ -563,6 +671,9 @@ export class Arena extends Phaser.Scene
             game: this.game,
             fragShader: grayScaleShader
         }));
+
+        this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(3).setDepth(10).setOrigin(0.5, 0.7).setVisible(false);
+        this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);
     }
 
     createHUD() {

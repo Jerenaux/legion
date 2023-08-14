@@ -1,5 +1,6 @@
 import { Team } from './Team';
 import { Item, NetworkItem } from './Item';
+import { Spell, NetworkSpell } from './Spell';
 
 export type ActionType = 'move' | 'attack';
 export class ServerPlayer {
@@ -22,6 +23,7 @@ export class ServerPlayer {
     cooldownTimer: NodeJS.Timeout | null = null;
     canAct = false;
     inventory: Map<Item, number> = new Map<Item, number>();
+    spells: Spell[] = [];
 
     constructor(num: number, frame: string, x: number, y: number) {
         this.num = num;
@@ -66,6 +68,7 @@ export class ServerPlayer {
             data['distance'] = this.distance;
             data['cooldown'] = this.cooldown;
             data['inventory'] = this.getNetworkInventory();
+            data['spells'] = this.getNetworkSpells();
         }
         return data;
     }
@@ -78,6 +81,10 @@ export class ServerPlayer {
                 'quantity': quantity
             }
         });
+    }
+
+    getNetworkSpells() {
+        return this.spells.map(spell => spell.getNetworkData());
     }
 
     canMoveTo(x: number, y: number) {
@@ -116,9 +123,21 @@ export class ServerPlayer {
         }
     }
 
+    consumeMP(amount: number) {
+        this.mp -= amount;
+        if (this.mp < 0) {
+            this.mp = 0;
+        }
+        return this.mp;
+    }
+
     getHP() {
         return this.hp;
     } 
+
+    getMP() {
+        return this.mp;
+    }
 
     getCooldown(action: ActionType): number {
         return this.cooldowns[action];
@@ -164,6 +183,10 @@ export class ServerPlayer {
         }
         return items[index];
     }
+
+    addSpell(spell: Spell) {
+        this.spells.push(spell);
+    }
 }
 
 interface playerNetworkData {
@@ -175,6 +198,7 @@ interface playerNetworkData {
     distance?: number;
     cooldown?: number;
     inventory?: NetworkInventory[];
+    spells?: NetworkSpell[];
 }
 
 interface NetworkInventory {

@@ -8,8 +8,9 @@ export class HUD extends Phaser.Scene
     }
 
     preload() {
-        this.load.image('cursor',  '/assets/pointer001.png');
-        this.load.image('swords',  '/assets/swords001.png');
+        this.load.image('cursor',  '/assets/pointers/pointer001.png');
+        this.load.image('swords',  '/assets/pointers/swords001.png');
+        this.load.image('scroll',  '/assets/pointers/scroll002.png');
     }
 
     create() {
@@ -30,10 +31,10 @@ export class HUD extends Phaser.Scene
         // this.cameras.main.setZoom(1);
     }
 
-    toggleSwordCursor(flag: boolean) {
+    toggleCursor(flag: boolean, cursor?: string, ) {
         if (flag) {
-            this.customCursor.setTexture('swords');
-        } else if(!flag && this.customCursor.texture.key == 'swords'){
+            this.customCursor.setTexture(cursor);
+        } else if(!flag && this.customCursor.texture.key == cursor){
             this.customCursor.setTexture('cursor');
         }
     }

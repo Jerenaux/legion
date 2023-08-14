@@ -59,6 +59,11 @@ io.on('connection', (socket: any) => {
       const game = socketMap.get(socket);
       game?.processAction('useitem', data, socket);
     });
+
+    socket.on('skill', (data: any) => {
+      const game = socketMap.get(socket);
+      game?.processAction('skill', data, socket);
+    });
 });
 
 server.listen(PORT, () => {

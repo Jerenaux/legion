@@ -130,6 +130,9 @@ export abstract class Game
             case 'useitem':
                 this.processUseItem(data, team!);
                 break;
+            case 'skill':
+                this.processSkill(data, team!);
+                break;
         }
     }
 
@@ -229,6 +232,44 @@ export abstract class Game
             num,
             index,
             newQuantity,
+        });
+    }
+
+    processSkill({num, x, y, index}: {num: number, x: number, y: number, index: number}, team: Team ) {
+        const player = team.getMembers()[num - 1];
+        if (!player.canAct || !player.isAlive()) return;
+
+        if (index >= player.spells.length) return;
+        const spell = player.spells[index];
+
+        if (spell.cost > player.getMP()) return;
+        const mp = player.consumeMP(spell.cost);
+
+        const cooldown = spell?.cooldown * 1000;
+        player.setCooldown(cooldown);
+
+        this.broadcast('cast', {
+            team: team.id,
+            num
+        });
+
+        // Add delay
+        this.broadcast('localanimation', {
+            x,
+            y,
+            animation: spell.animation,
+        });
+
+        // Add damage
+
+        team.socket?.emit('cooldown', {
+            num,
+            cooldown,
+        });
+
+        team.socket?.emit('mpchange', {
+            num,
+            mp,
         });
     }
 

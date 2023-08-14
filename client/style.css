@@ -243,11 +243,15 @@ canvas {
     font-size: 12px;
 }
 
-.info-box-extra {
+/* .info-box-extra {
     display: flex;
-}
+} */
 
 .mini {
     margin-top: 5px;
     display: inline-block;
+}
+
+.player-items h4 {
+    margin-right: 15px;
 }
