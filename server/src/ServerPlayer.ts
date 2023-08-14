@@ -1,5 +1,5 @@
 import { Team } from './Team';
-import { Item, NetworkItem } from './Item';
+import { Item, NetworkItem, Stat } from './Item';
 import { Spell, NetworkSpell } from './Spell';
 
 export type ActionType = 'move' | 'attack';
@@ -9,6 +9,7 @@ export class ServerPlayer {
     x;
     y;
     team: Team | null = null;
+    _hp: number = 0;
     hp;
     maxHP;
     mp;
@@ -96,6 +97,10 @@ export class ServerPlayer {
         return (Math.abs(x - this.x) <= 1 && Math.abs(y - this.y) <= 1);
     }
 
+    isInArea(x: number, y: number, radius: number) {
+        return this.x >= x - radius && this.x <= x + radius && this.y >= y - radius && this.y <= y + radius;
+    }
+
     isAlive() {
         return this.hp > 0;
     }
@@ -109,7 +114,8 @@ export class ServerPlayer {
         return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
     }
 
-    dealDamage(damage: number) {
+    takeDamage(damage: number) {
+        this._hp = this.hp;
         this.hp -= damage;
         if (this.hp < 0) {
             this.hp = 0;
@@ -117,10 +123,19 @@ export class ServerPlayer {
     }
 
     heal(amount: number) {
+        this._hp = this.hp;
         this.hp += amount;
         if (this.hp > this.maxHP) {
             this.hp = this.maxHP;
         }
+    }
+
+    HPHasChanged() {
+        return this._hp !== this.hp;
+    }
+
+    getHPDelta() {
+        return this.hp - this._hp;
     }
 
     consumeMP(amount: number) {
@@ -137,6 +152,21 @@ export class ServerPlayer {
 
     getMP() {
         return this.mp;
+    }
+
+    getStat(stat: Stat) {
+        switch (stat) {
+            case Stat.SPATK:
+                return this.spatk;
+            case Stat.SPDEF:
+                return this.spdef;
+            case Stat.ATK:
+                return this.atk;
+            case Stat.DEF:
+                return this.def;
+            default:
+                throw new Error(`Invalid stat ${stat}`);
+        }
     }
 
     getCooldown(action: ActionType): number {

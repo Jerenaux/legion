@@ -112,6 +112,18 @@ export abstract class Game
         return this.teams.get(id === 1 ? 2 : 1)!;
     }
 
+    getPlayersInArea(x: number, y: number, radius: number) {
+        const players: ServerPlayer[] = [];
+        this.teams.forEach(team => {
+            team.getMembers().forEach(player => {
+                if (player.isAlive() && player.isInArea(x, y, radius)) {
+                    players.push(player);
+                }
+            });
+        });
+        return players;
+    }
+
     processAction(action: string, data: any, socket: Socket | null = null) {
         let team;
         if (socket) {
@@ -173,7 +185,7 @@ export abstract class Game
         ) return;
         
         const damage = this.calculateDamage(player, opponent);
-        opponent.dealDamage(damage);
+        opponent.takeDamage(damage);
         
         const cooldown = player.getCooldown('attack');
         player.setCooldown(cooldown);
@@ -204,18 +216,16 @@ export abstract class Game
         player.setCooldown(cooldown);
 
         const newQuantity = player.removeItem(item, 1);
-        const _hp = player.getHP();
         item.applyEffect(player);
         const hp = player.getHP();
 
-        // Add delay
         this.broadcast('useitem', {
             team: team.id,
             num,
             animation: item.animation,
         });
 
-        if (hp != _hp) {
+        if (player.HPHasChanged()) {
             this.broadcast('hpchange', {
                 team: team.id,
                 num,
@@ -253,30 +263,46 @@ export abstract class Game
             num
         });
 
-        // Add delay
-        this.broadcast('localanimation', {
-            x,
-            y,
-            animation: spell.animation,
-        });
-
-        // Add damage
-
-        team.socket?.emit('cooldown', {
-            num,
-            cooldown,
-        });
-
         team.socket?.emit('mpchange', {
             num,
             mp,
         });
-    }
 
-    AItick() {
-        // (this.teams.get(2)?.getMembers() as AIServerPlayer[]).forEach(opponent => {
-        //     opponent.takeAction();
-        // });
+        // Display danger zone
+        // End cast animation
+
+        setTimeout(() => {
+            const targets = this.getPlayersInArea(x, y, Math.floor(spell.size/2));
+            spell.applyEffect(player, targets);
+
+            targets.forEach(target => {
+                if (target.HPHasChanged()) {
+                    this.broadcast('hpchange', {
+                        team: target.team!.id,
+                        num: target.num,
+                        hp: target.getHP(),
+                        damage: player.getHPDelta(),
+                    });
+                }
+            });            
+            
+            // Add delay
+            this.broadcast('localanimation', {
+                x,
+                y,
+                animation: spell.animation,
+            });
+
+            team.socket?.emit('cooldown', {
+                num,
+                cooldown,
+            });
+
+            this.broadcast('endcast', {
+                team: team.id,
+                num
+            });
+        }, spell.castTime * 1000);
     }
 
     listAdjacentEnemies(player: ServerPlayer): ServerPlayer[] {

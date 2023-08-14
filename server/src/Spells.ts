@@ -9,8 +9,6 @@ const SPBasedDamage = new EffectModifiers(
     new EffectModifier(Stat.SPDEF, 0.02, EffectDirection.MINUS),
 );
 
-// damage = baseDamage * (1 + (spatk * multiplier))
-
 // TODO: specify width and shape of AOE in target
-spells[0] = new Spell(0, "Fireball", "Throws a fireball", "fireball.png", "explosion", 6, 5, Target.AOE, 3, [{stat: Stat.HP, value: -30, modifiers: SPBasedDamage}]);
+spells[0] = new Spell(0, "Fireball", "Throws a fireball", "fireball.png", "explosion", 6, 1, 5, Target.AOE, 3, [{stat: Stat.HP, value: -30, modifiers: SPBasedDamage}]);
 

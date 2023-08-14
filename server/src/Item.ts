@@ -3,6 +3,8 @@ import { EffectModifiers } from "./Spell";
 
 export enum Stat {
     HP,
+    ATK,
+    DEF,
     SPATK,
     SPDEF
 }

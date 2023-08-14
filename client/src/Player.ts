@@ -76,6 +76,7 @@ export class Player extends Phaser.GameObjects.Container {
     spells: NetworkSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
     pendingSkill: number | null = null;
+    casting: boolean = false;
 
     constructor(
         scene: Phaser.Scene, gridX: number, gridY: number, x: number, y: number,
@@ -137,7 +138,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.baseSquare.strokeRect(-30, 10, 60, 60); // adjust position and size as needed
         this.baseSquare.setDepth(this.depth - 2);  
 
-        this.animationSprite = scene.add.sprite(0, 0, '').setScale(2).setVisible(false);
+        this.animationSprite = scene.add.sprite(0, 20, '').setScale(2).setVisible(false);
         this.add(this.animationSprite);
 
         // Add the container to the scene
@@ -292,8 +293,15 @@ export class Player extends Phaser.GameObjects.Container {
         this.animationSprite.setVisible(true).play(animation);
     }
 
-    castAnimation() {
-        this.playAnim('cast', true);
+    castAnimation(flag: boolean) {
+        if (flag) {
+            this.playAnim('cast', false);
+            this.animationSprite.setVisible(true).play('cast');
+        } else {
+            this.playAnim('idle');
+            this.animationSprite.setVisible(false);
+        }
+        this.casting = flag;
     }
 
     useSkill(index) {
@@ -359,7 +367,7 @@ export class Player extends Phaser.GameObjects.Container {
         if (this.hp <= 0) {
             this.die();
         } else {
-            this.playAnim('hurt', true);
+            if (!this.casting) this.playAnim('hurt', true);
         }
 
         if(this.hp != _hp) {

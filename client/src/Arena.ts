@@ -118,6 +118,7 @@ export class Arena extends Phaser.Scene
         }
         this.load.spritesheet('potion_heal', 'assets/animations/potion_heal.png', { frameWidth: 48, frameHeight: 64});
         this.load.spritesheet('explosion', 'assets/animations/explosion.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('cast', 'assets/animations/cast.png', { frameWidth: 48, frameHeight: 64});
         // this.load.audio('click', 'assets/click_2.wav');
         this.load.text('grayScaleShader', 'assets/grayscale.glsl');
     }
@@ -164,7 +165,11 @@ export class Arena extends Phaser.Scene
         });
 
         this.socket.on('cast', (data) => {
-            this.processCast(data);
+            this.processCast(true, data);
+        });
+
+        this.socket.on('endcast', (data) => {
+            this.processCast(false, data);
         });
 
         this.socket.on('localanimation', (data) => {
@@ -451,9 +456,10 @@ export class Arena extends Phaser.Scene
         this.emitEvent('inventoryChange', {num});
     }
 
-    processHPChange({team, num, hp}) {
+    processHPChange({team, num, hp, damage}) {
         const player = this.getPlayer(team, num);
         player.setHP(hp);
+        if (damage) player.displayDamage(damage);
     }
 
     processMPChange({num, mp}) {
@@ -466,9 +472,9 @@ export class Arena extends Phaser.Scene
         player.useItemAnimation(animation);
     }
 
-    processCast({team, num}) {
+    processCast(flag, {team, num}) {
         const player = this.getPlayer(team, num);
-        player.castAnimation();
+        player.castAnimation(flag);
     }
 
     processLocalAnimation({x, y, animation}) {
@@ -528,8 +534,8 @@ export class Arena extends Phaser.Scene
 
             this.anims.create({
                 key: `${asset}_anim_cast`, // The name of the animation
-                frames: this.anims.generateFrameNumbers(asset, { frames: [40, 41, 42] }), 
-                frameRate: 10, // Number of frames per second
+                frames: this.anims.generateFrameNumbers(asset, { frames: [39, 40, 41] }), 
+                frameRate: 5, // Number of frames per second
             });
 
             this.anims.create({
@@ -549,6 +555,13 @@ export class Arena extends Phaser.Scene
             key: `explosion`, // The name of the animation
             frames: this.anims.generateFrameNumbers('explosion', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }), 
             frameRate: 15, // Number of frames per second
+        });
+
+        this.anims.create({
+            key: `cast`, // The name of the animation
+            frames: this.anims.generateFrameNumbers('cast', { frames: [10, 11, 12] }), 
+            frameRate: 15, // Number of frames per second
+            repeat: -1
         });
     }
 

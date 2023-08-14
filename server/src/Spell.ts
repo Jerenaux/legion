@@ -1,3 +1,4 @@
+import { ServerPlayer } from "./ServerPlayer";
 import { Stat, Effect, Target } from "./Item";
 export class EffectModifier {
     stat;
@@ -9,6 +10,12 @@ export class EffectModifier {
         this.value = value;
         this.direction = direction;
     }
+
+    modulateEffect(player: ServerPlayer, value: number) {
+        const statValue = player.getStat(this.stat);
+        const sign = this.direction === EffectDirection.PLUS ? 1 : -1;
+        return value * (1 + (statValue * this.value * sign));
+    }
 }
 
 export class EffectModifiers {
@@ -18,6 +25,13 @@ export class EffectModifiers {
     constructor(casterModifier: EffectModifier, targetModifier: EffectModifier) {
         this.casterModifier = casterModifier;
         this.targetModifier = targetModifier;
+    }
+
+    modulateEffect(caster: ServerPlayer, target: ServerPlayer, value: number) {
+        return this.casterModifier.modulateEffect(
+                caster,
+                this.targetModifier.modulateEffect(target, value)
+            );
     }
 }
 
@@ -66,15 +80,17 @@ export class Spell {
     animation;
     size;
     cooldown;
+    castTime;
 
     constructor(id: number, name: string, description: string, frame: string, animation: string,
-        cooldown: number, cost: number, target: Target, size: number, effects: Effect[]) {
+        cooldown: number, castTime: number, cost: number, target: Target, size: number, effects: Effect[]) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.frame = frame;
         this.animation = animation;
         this.cost = cost;
+        this.castTime = castTime;
         this.target = target;
         this.effects = effects;
         this.size = size;
@@ -110,5 +126,23 @@ export class Spell {
                 }
             })
         }
+    }
+
+    applyEffect(caster: ServerPlayer, targets: ServerPlayer[]) {
+        this.effects.forEach(effect => {
+            switch (effect.stat) {
+                case Stat.HP:
+                    if (effect.value < 0) this.dealDamage(caster, targets, effect);
+                    break;
+            }
+        });
+    }
+
+    dealDamage(caster: ServerPlayer, targets: ServerPlayer[], effect: Effect) {
+        targets.forEach(target => {
+            let damage = effect.value * -1;
+            if (effect.modifiers) damage = effect.modifiers.modulateEffect(caster, target, damage);
+            target.takeDamage(damage);
+        });
     }
 }
