@@ -118,6 +118,7 @@ export class Arena extends Phaser.Scene
         this.app = new App();
         
         this.load.image('bg',  '/assets/aarena_bg.png');
+        this.load.image('killzone',  '/assets/killzone.png');
         // this.load.svg('pop', 'assets/pop.svg',  { width: 24, height: 24 } );
         const frameConfig = { frameWidth: 144, frameHeight: 144};
         // Iterate over assetsMap and load spritesheets
@@ -403,6 +404,9 @@ export class Arena extends Phaser.Scene
             case 'inventoryChange':
                 this.refreshBox();
                 break;
+            case 'cooldownStarted':
+                this.refreshBox();
+                break;
             case 'cooldownEnded':
                 this.refreshBox();
                 break;
@@ -483,9 +487,10 @@ export class Arena extends Phaser.Scene
         player.useItemAnimation(animation, name);
     }
 
-    processCast(flag, {team, num, name}) {
+    processCast(flag, {team, num, name, location, delay}) {
         const player = this.getPlayer(team, num);
         player.castAnimation(flag, name);
+        if (flag) this.displaySpellArea(location, delay);
     }
 
     processLocalAnimation({x, y, animation}) {
@@ -706,6 +711,27 @@ export class Arena extends Phaser.Scene
     createHUD() {
         this.scene.launch('HUD'); 
         this.HUD = this.scene.get('HUD');
+    }
+
+    displaySpellArea(location, delay) {
+        const {x, y} = this.gridToPixelCoords(location.x, location.y);
+        const spellAreaImage = this.add.image(x + 2, y + 42, 'killzone')
+            .setDepth(1)
+            .setDisplaySize(location.size * this.tileSize, location.size * this.tileSize)
+            .setOrigin(0.5); // This will tint the sprite red
+
+        const duration = 100;
+        const repeat = Math.floor((delay * 1000) / (duration * 2)) - 1;
+        this.tweens.add({
+            targets: spellAreaImage,
+            alpha: { from: 1, to: 0.5 }, // From fully visible to invisible
+            duration,             // Duration for each blink
+            yoyo: true,                // Go back and forth between visible and invisible
+            repeat,                 // Number of blinks (or -1 for infinite)
+            onComplete: () => {
+                spellAreaImage.destroy(); // Destroy the image at the end
+            }
+        });
     }
 
     initializeGame(data) {

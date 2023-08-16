@@ -64,6 +64,7 @@ class PlayerTab extends Component {
     const cooldownClass = isCooldownActive ? "cooldown-state" : "cooldown-state cooldown-complete";
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const isDead = player.hp <= 0;
+    const canAct = !isCooldownActive && !isDead && !player.casting;
 
     return <div className="player-tab box">
         <div className="player-info">
@@ -108,7 +109,7 @@ class PlayerTab extends Component {
                 const keyBinding = keyboardLayout.charAt(startPosition + i);
                 return (<div className="skill" onClick={() => this.itemClick(keyBinding)}>
                   <div 
-                      className={isCooldownActive || isDead ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
+                      className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
                       style={{backgroundImage: `url(assets/skills/${skill.frame})`, }} />
                   <span className="key-binding">{keyBinding}</span>
                   <div className="info-box box">
@@ -139,7 +140,7 @@ class PlayerTab extends Component {
                 return (
                   <div className="item" onClick={() => this.itemClick(keyBinding)}>
                     <div 
-                      className={isCooldownActive || isDead ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
+                      className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
                       style={{backgroundImage: item.quantity !== 0 ? `url(assets/items/${item.frame})` : 'none'}}
                       />
                     {item.quantity !== 0 && <span className="item-qty">x{item.quantity}</span>}

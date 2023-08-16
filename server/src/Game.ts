@@ -265,6 +265,8 @@ export abstract class Game
             team: team.id,
             num,
             name: spell.name,
+            location: {x, y, size: spell.size},
+            delay: spell.castTime,
         });
 
         team.socket?.emit('mpchange', {

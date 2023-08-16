@@ -174,7 +174,8 @@ export class Player extends Phaser.GameObjects.Container {
             maxMp: this.maxMP,
             cooldown: this.cooldownDuration / 1000,
             spells: this.spells,
-            items
+            items,
+            casting: this.casting,
           }
     }
 
@@ -462,6 +463,8 @@ export class Player extends Phaser.GameObjects.Container {
         // this.sprite.anims.stop();
         // this.toggleGrayscale();
         this.cooldownDuration = duration;
+        // @ts-ignore
+        this.arena.emitEvent('cooldownStarted', {num: this.num})
         this.cooldown.setVisible(true);
         if (this.isSelected()) this.hideMovementRange();
         if (this.cooldownTween) this.cooldownTween.stop();
