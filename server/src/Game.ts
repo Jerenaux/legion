@@ -151,7 +151,7 @@ export abstract class Game
     processMove({tile, num}: {tile: Tile, num: number}, team: Team) {
         const player = team.getMembers()[num - 1];
         if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) return;
-        if (!player.canAct || !player.isAlive() || !player.canMoveTo(tile.x, tile.y)) return;
+        if (!player.canAct() || !player.canMoveTo(tile.x, tile.y)) return;
         
         this.freeCell(player.x, player.y);
         player.updatePos(tile.x, tile.y);
@@ -178,9 +178,8 @@ export abstract class Game
         const opponent = opponentTeam.getMembers()[target - 1];
         
         if (
-            !player.canAct || 
+            !player.canAct() || 
             !player.isNextTo(opponent.x, opponent.y) || 
-            !player.isAlive() || 
             !opponent.isAlive()
         ) return;
         
@@ -194,7 +193,7 @@ export abstract class Game
             team: team.id,
             target,
             num,
-            damage,
+            damage: -damage,
             hp: opponent.getHP(),
         });
 
@@ -206,7 +205,7 @@ export abstract class Game
 
     processUseItem({num, index}: {num: number, index: number}, team: Team) {
         const player = team.getMembers()[num - 1];
-        if (!player.canAct || !player.isAlive()) return;
+        if (!player.canAct()) return;
 
         const item = player.getItemAtIndex(index);
         if (!item) return;
@@ -223,6 +222,7 @@ export abstract class Game
             team: team.id,
             num,
             animation: item.animation,
+            name: item.name,
         });
 
         if (player.HPHasChanged()) {
@@ -247,7 +247,10 @@ export abstract class Game
 
     processSkill({num, x, y, index}: {num: number, x: number, y: number, index: number}, team: Team ) {
         const player = team.getMembers()[num - 1];
-        if (!player.canAct || !player.isAlive()) return;
+        if (!player.canAct()) {
+            console.log('cannot act');
+            return;
+        }
 
         if (index >= player.spells.length) return;
         const spell = player.spells[index];
@@ -260,7 +263,8 @@ export abstract class Game
 
         this.broadcast('cast', {
             team: team.id,
-            num
+            num,
+            name: spell.name,
         });
 
         team.socket?.emit('mpchange', {
@@ -269,11 +273,12 @@ export abstract class Game
         });
 
         // Display danger zone
-        // End cast animation
 
+        player.setCasting(true);
         setTimeout(() => {
             const targets = this.getPlayersInArea(x, y, Math.floor(spell.size/2));
             spell.applyEffect(player, targets);
+            player.setCasting(false);
 
             targets.forEach(target => {
                 if (target.HPHasChanged()) {
@@ -281,12 +286,11 @@ export abstract class Game
                         team: target.team!.id,
                         num: target.num,
                         hp: target.getHP(),
-                        damage: player.getHPDelta(),
+                        damage: target.getHPDelta(),
                     });
                 }
             });            
             
-            // Add delay
             this.broadcast('localanimation', {
                 x,
                 y,

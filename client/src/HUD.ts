@@ -34,7 +34,7 @@ export class HUD extends Phaser.Scene
     toggleCursor(flag: boolean, cursor?: string, ) {
         if (flag) {
             this.customCursor.setTexture(cursor);
-        } else if(!flag && this.customCursor.texture.key == cursor){
+        } else if(!flag){
             this.customCursor.setTexture('cursor');
         }
     }

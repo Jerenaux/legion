@@ -12,9 +12,11 @@ export class EffectModifier {
     }
 
     modulateEffect(player: ServerPlayer, value: number) {
+        
         const statValue = player.getStat(this.stat);
         const sign = this.direction === EffectDirection.PLUS ? 1 : -1;
-        return value * (1 + (statValue * this.value * sign));
+        const random = (Math.random() - 0.5)/10;
+        return value * (1 + (statValue * this.value * sign)) * (1 + random);
     }
 }
 
@@ -141,6 +143,7 @@ export class Spell {
     dealDamage(caster: ServerPlayer, targets: ServerPlayer[], effect: Effect) {
         targets.forEach(target => {
             let damage = effect.value * -1;
+            // console.log(`Dealing ${damage} damage`);
             if (effect.modifiers) damage = effect.modifiers.modulateEffect(caster, target, damage);
             target.takeDamage(damage);
         });

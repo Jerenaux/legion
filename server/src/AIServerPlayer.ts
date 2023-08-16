@@ -57,7 +57,7 @@ export class AIServerPlayer extends ServerPlayer {
 
     takeAction() {
         return;
-        if (!this.canAct) return;
+        if (!this.canAct()) return;
 
         // Opportunist: attacks if adjacent, otherwise moves towards closest enemy
         // Hunter: targets the enemy with the lowest HP

@@ -71,7 +71,6 @@ export class Player extends Phaser.GameObjects.Container {
     cooldownTween: Phaser.Tweens.Tween;
     cooldownDuration: number;
     hurtTween: Phaser.Tweens.Tween;
-    canAct: boolean = false;
     inventory: Map<Item, number> = new Map<Item, number>();
     spells: NetworkSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
@@ -183,6 +182,10 @@ export class Player extends Phaser.GameObjects.Container {
         return this.hp > 0;
     }
 
+    canAct() {
+        return this.cooldownDuration == 0 && this.isAlive() && !this.casting;
+    }
+
     setDistance(distance: number) {
         this.distance = distance;
     }
@@ -206,7 +209,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     displayMovementRange() {
-        if (!this.canAct || !this.isAlive()) return;
+        if (!this.canAct()) return;
         if (this.pendingSkill != null) return;
         // @ts-ignore
         this.arena.highlightCells(this.gridX, this.gridY, this.distance);
@@ -219,7 +222,7 @@ export class Player extends Phaser.GameObjects.Container {
 
     canMoveTo(x: number, y: number) {
         // Check if (x, y) is within a circle of radius `this.distance` from (this.gridX, this.gridY)
-        return this.canAct && Math.pow(x - this.gridX, 2) + Math.pow(y - this.gridY, 2) <= Math.pow(this.distance, 2);
+        return this.canAct() && Math.pow(x - this.gridX, 2) + Math.pow(y - this.gridY, 2) <= Math.pow(this.distance, 2);
     }
 
     updatePos(x, y) {
@@ -244,7 +247,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onClick() {
-        if (this.isPlayer) {
+        if (this.isPlayer) { // If clicking on a player of your team
             // @ts-ignore
             this.arena.selectPlayer(this);
         } else if(this.isTarget()) {
@@ -288,15 +291,17 @@ export class Player extends Phaser.GameObjects.Container {
         }
     }
 
-    useItemAnimation(animation) {
+    useItemAnimation(animation: string, name: string) {
         this.playAnim('item', true);
         this.animationSprite.setVisible(true).play(animation);
+        this.displayOverheadText(name, 4000, '#fff');
     }
 
-    castAnimation(flag: boolean) {
+    castAnimation(flag: boolean, name: string) {
         if (flag) {
             this.playAnim('cast', false);
             this.animationSprite.setVisible(true).play('cast');
+            this.displayOverheadText(name, 4000, '#fff');
         } else {
             this.playAnim('idle');
             this.animationSprite.setVisible(false);
@@ -304,17 +309,21 @@ export class Player extends Phaser.GameObjects.Container {
         this.casting = flag;
     }
 
+    cancelSkill() {
+        this.pendingSkill = null;
+        // @ts-ignore
+        this.arena.toggleTargetMode(false);
+    }
+
     useSkill(index) {
-        if (!this.canAct || !this.isAlive()) return;
+        if (!this.canAct()) return;
         const spell = this.spells[index];
         if (!spell) {
             console.error(`No skill at slot ${index}`);
             return;
         }
         if (this.pendingSkill == index) {
-            this.pendingSkill = null;
-            // @ts-ignore
-            this.arena.toggleTargetMode(false);
+            this.cancelSkill();
             return;
         }
 
@@ -415,37 +424,42 @@ export class Player extends Phaser.GameObjects.Container {
         });
     }
 
-    displayDamage(damage) {
-        // Create the damage text
-        let damageText = this.scene.add.text(0,( -this.sprite.height / 2) + 15, `-${String(damage)}`, { fontSize: '24px', color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(0.5);
-        this.add(damageText);
+    displayOverheadText(text, duration, color) {
+        let textObject = this.scene.add.text(
+            0,( -this.sprite.height / 2) + 15, `${String(text)}`, 
+            { fontSize: '24px', color, stroke: '#000', strokeThickness: 3 }
+            ).setOrigin(0.5).setDepth(10)   ;
+        this.add(textObject);
     
         // Create a tween to animate the damage text
         this.scene.tweens.add({
-            targets: damageText,
+            targets: textObject,
             y: '-=30',  // move up
             alpha: 0,   // fade out
-            duration: 2000,  // 1 second
+            duration,  // 1 second
             ease: 'Power2',  // smooth easing
             onComplete: () => {
                 // remove the text when the tween is complete
-                damageText.destroy();
+                textObject.destroy();
             }
         });
     }
 
-    // Function to toggle grayscale shader for a given sprite
-    toggleGrayscale() {
-        if (this.canAct) { // If grayscale already applied
-            this.sprite.resetPipeline(); // Reset to default pipeline
-        } else { // If grayscale not applied
-            this.sprite.setPipeline('GrayScale'); // Apply the grayscale pipeline
-        }
+    displayDamage(damage) {
+        this.displayOverheadText(damage, 2000, '#fff');
     }
+
+    // Function to toggle grayscale shader for a given sprite
+    // toggleGrayscale() {
+    //     if (this.canAct()) { // If grayscale already applied
+    //         this.sprite.resetPipeline(); // Reset to default pipeline
+    //     } else { // If grayscale not applied
+    //         this.sprite.setPipeline('GrayScale'); // Apply the grayscale pipeline
+    //     }
+    // }
 
     setCooldown(duration) {
         // this.sprite.anims.stop();
-        this.canAct = false;
         // this.toggleGrayscale();
         this.cooldownDuration = duration;
         this.cooldown.setVisible(true);
@@ -460,7 +474,6 @@ export class Player extends Phaser.GameObjects.Container {
                 this.cooldown.draw(); // Redraw the circle on each update of the tween
             },
             onComplete: () => {
-                this.canAct = true;
                 this.cooldown.setVisible(false);
                 this.cooldownDuration = 0;
                 // this.playAnim('idle');

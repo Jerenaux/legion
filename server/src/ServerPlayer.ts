@@ -22,9 +22,9 @@ export class ServerPlayer {
     cooldowns;
     cooldown: number = 0;
     cooldownTimer: NodeJS.Timeout | null = null;
-    canAct = false;
     inventory: Map<Item, number> = new Map<Item, number>();
     spells: Spell[] = [];
+    isCasting: boolean = false;
 
     constructor(num: number, frame: string, x: number, y: number) {
         this.num = num;
@@ -88,6 +88,14 @@ export class ServerPlayer {
         return this.spells.map(spell => spell.getNetworkData());
     }
 
+    setCasting(casting: boolean) {
+        this.isCasting = casting;
+    }
+
+    canAct() {
+        return this.cooldown == 0 && this.isAlive() && !this.isCasting;
+    }
+
     canMoveTo(x: number, y: number) {
         // Check if (x, y) is within a circle of radius `this.distance` from (this.gridX, this.gridY)
         return Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2) <= Math.pow(this.distance, 2);
@@ -116,10 +124,14 @@ export class ServerPlayer {
 
     takeDamage(damage: number) {
         this._hp = this.hp;
-        this.hp -= damage;
+        this.hp -= Math.round(damage);
         if (this.hp < 0) {
             this.hp = 0;
         }
+    }
+
+    getHPDelta() {
+        return this.hp - this._hp;
     }
 
     heal(amount: number) {
@@ -132,10 +144,6 @@ export class ServerPlayer {
 
     HPHasChanged() {
         return this._hp !== this.hp;
-    }
-
-    getHPDelta() {
-        return this.hp - this._hp;
     }
 
     consumeMP(amount: number) {
@@ -174,13 +182,12 @@ export class ServerPlayer {
     }
     
     setCooldown(duration: number) {
-        this.canAct = false;
         this.cooldown = duration;
         if (this.cooldownTimer) {
             clearTimeout(this.cooldownTimer);
         }
         this.cooldownTimer = setTimeout(() => {
-            this.canAct = true;
+            this.cooldown = 0;
         }, duration);
     }
 

@@ -30,6 +30,8 @@ class CellsHighlight extends Phaser.GameObjects.Graphics {
     gridHeight: number;
     tileSize: number;
     gridCorners: any;
+    lastX: number;
+    lastY: number;
 
     constructor(scene: Phaser.Scene, gridWidth: number, gridHeight: number, tileSize: number, gridCorners: any) {
         super(scene);
@@ -38,18 +40,22 @@ class CellsHighlight extends Phaser.GameObjects.Graphics {
         this.gridHeight = gridHeight;
         this.gridCorners = gridCorners;
         this.tileSize = tileSize;
+        this.lastX = -1;
+        this.lastY = -1;
         this.setNormalMode();
         scene.add.existing(this);
     }
 
-    setNormalMode() {
+    setNormalMode(refresh?: boolean) {
         this.size = 0;
         this.color = 0xffffff;
+        if (refresh) this.move(this.lastX, this.lastY);
     }
 
-    setTargetMode(size: number) {
+    setTargetMode(size: number, refresh?: boolean) {
         this.size = Math.floor(size/2);
         this.color = 0xff0000;
+        if (refresh) this.move(this.lastX, this.lastY);
     }
 
     move(gridX, gridY) {
@@ -72,6 +78,8 @@ class CellsHighlight extends Phaser.GameObjects.Graphics {
                 }
             }
         }
+        this.lastX = gridX;
+        this.lastY = gridY;
     }
 }
 export class Arena extends Phaser.Scene
@@ -186,7 +194,7 @@ export class Arena extends Phaser.Scene
     }
 
     sendAttack(player: Player) {
-        if (!this.selectedPlayer.canAct) return;
+        if (!this.selectedPlayer.canAct()) return;
         const data = {
             num: this.selectedPlayer.num,
             target: player.num,
@@ -195,7 +203,7 @@ export class Arena extends Phaser.Scene
     }
 
     sendSkill(x: number, y: number) {
-        if (!this.selectedPlayer.canAct) return;
+        if (!this.selectedPlayer || !this.selectedPlayer.canAct()) return;
         const data = {
             num: this.selectedPlayer.num,
             x,
@@ -205,10 +213,11 @@ export class Arena extends Phaser.Scene
         this.send('skill', data);
         this.toggleTargetMode(false);
         this.selectedPlayer.pendingSkill = null;
+        console
     }
 
     sendUseItem(player: Player, index: number) {
-        if (!this.selectedPlayer.canAct) return;
+        if (!this.selectedPlayer.canAct()) return;
         const data = {
             num: this.selectedPlayer.num,
             index
@@ -282,6 +291,11 @@ export class Arena extends Phaser.Scene
 
          // Add a pointer down handler to print the clicked tile coordinates
         this.input.on('pointerdown', function (pointer) {
+            if (pointer.rightButtonDown()) {
+                this.selectedPlayer?.cancelSkill();
+                return;
+            }
+
             let pointerX = pointer.x - startX;
             let pointerY = pointer.y - startY;
 
@@ -310,10 +324,10 @@ export class Arena extends Phaser.Scene
     toggleTargetMode(flag: boolean, size?: number) {
         this.HUD.toggleCursor(flag, 'scroll');
         if (flag) {
-            this.cellsHighlight.setTargetMode(size);
+            this.cellsHighlight.setTargetMode(size, true);
             this.clearHighlight();
         } else {
-            this.cellsHighlight.setNormalMode();
+            this.cellsHighlight.setNormalMode(true);
         }
     }
 
@@ -362,7 +376,6 @@ export class Arena extends Phaser.Scene
         if (!this.isFree(gridX, gridY)) return;
         this.sendMove(gridX, gridY);
         this.clearHighlight();
-        // this.deselectPlayer();
     }
 
     refreshBox() {
@@ -399,19 +412,17 @@ export class Arena extends Phaser.Scene
     }
 
     selectPlayer(player: Player) {
-        if (this.selectedPlayer === player) {
-            this.deselectPlayer();
-            return;
-        }
-        if (this.selectedPlayer) this.selectedPlayer.toggleSelect();
+        if (this.selectedPlayer) this.deselectPlayer();
         this.selectedPlayer = player;
         this.selectedPlayer.toggleSelect();
         this.emitEvent('selectPlayer', {num: this.selectedPlayer.num})
     }
 
     deselectPlayer() {
+        console.log('deselecting player');
         if (this.selectedPlayer) {
             this.selectedPlayer.toggleSelect();
+            this.selectedPlayer.cancelSkill();
             this.selectedPlayer = null;
             this.clearHighlight();
             this.emitEvent('deselectPlayer')
@@ -467,20 +478,20 @@ export class Arena extends Phaser.Scene
         player.setMP(mp);
     }
 
-    processUseItem({team, num, animation}) {
+    processUseItem({team, num, animation, name}) {
         const player = this.getPlayer(team, num);
-        player.useItemAnimation(animation);
+        player.useItemAnimation(animation, name);
     }
 
-    processCast(flag, {team, num}) {
+    processCast(flag, {team, num, name}) {
         const player = this.getPlayer(team, num);
-        player.castAnimation(flag);
+        player.castAnimation(flag, name);
     }
 
     processLocalAnimation({x, y, animation}) {
         // Convert x and y in grid coords to pixels
         const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
-        this.localAnimationSprite.setPosition(pixelX, pixelY).setVisible(true).play(animation);
+        this.localAnimationSprite.setPosition(pixelX, pixelY).setVisible(true).setDepth(3 + y/10).play(animation);
     }
 
     createAnims() {
@@ -670,6 +681,7 @@ export class Arena extends Phaser.Scene
         if (this.highlight) this.highlight.clear();
     }
     
+    // PhaserCreate
     create()
     {
         this.drawGrid();
@@ -685,8 +697,10 @@ export class Arena extends Phaser.Scene
             fragShader: grayScaleShader
         }));
 
-        this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(3).setDepth(10).setOrigin(0.5, 0.7).setVisible(false);
+        this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(3).setOrigin(0.5, 0.7).setVisible(false);
         this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);
+
+        this.input.mouse.disableContextMenu();
     }
 
     createHUD() {
