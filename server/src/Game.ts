@@ -61,7 +61,6 @@ export abstract class Game
     }
 
     sendGameStart() {
-        // this.broadcast('gameStart', this.getPlacementData());
         this.sockets.forEach(socket => {
             const teamId = this.socketMap.get(socket)?.id!;
             socket.emit('gameStart', this.getPlacementData(teamId));

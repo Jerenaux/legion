@@ -6,10 +6,13 @@
       "target": "es5",
       "moduleResolution": "node",
       "jsx": "react",
+      "jsxFactory": "h",
+      "jsxFragmentFactory": "Fragment",
       "allowJs": true
     },
     "include": [
-      "./src/**/*"
+      "./src/**/*.tsx",
+      "./src/**/*.ts"
     ]
   }
   

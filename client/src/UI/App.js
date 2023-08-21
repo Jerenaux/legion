@@ -1,6 +1,7 @@
 // App.js
 import { h, Component, render } from 'preact';
 import PlayerTab from './PlayerTab';
+import Overview from './Overview';
 import { EventEmitter } from 'eventemitter3';
 
 const events = new EventEmitter();
@@ -36,7 +37,12 @@ class App extends Component {
 
   render() {
     const { playerVisible, player } = this.state;
-    return playerVisible && player ? <PlayerTab player={player} eventEmitter={events}/> : null;
+    return (
+      <div className="app-container">
+          {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
+          <Overview />
+      </div>
+  );
   }
 }
 

@@ -27,6 +27,7 @@ export class ServerPlayer {
     spells: Spell[] = [];
     isCasting: boolean = false;
     damageDealt: number = 0;
+    entranceTime: number = 2.5;
 
     constructor(num: number, frame: string, x: number, y: number) {
         this.num = num;
@@ -47,7 +48,7 @@ export class ServerPlayer {
             'move': 2000,
             'attack': 4000
         };
-        this.setCooldown(this.cooldowns.move);
+        this.setCooldown(this.cooldowns.move + this.entranceTime * 1000);
 
 //         Every level up, a character gains:
 //         Attack: +2 and +10% of current attack
@@ -190,6 +191,8 @@ export class ServerPlayer {
                 return this.atk;
             case Stat.DEF:
                 return this.def;
+            case Stat.NONE:
+                return 0;
             default:
                 throw new Error(`Invalid stat ${stat}`);
         }

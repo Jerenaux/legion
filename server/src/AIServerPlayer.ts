@@ -30,7 +30,7 @@ export class AIServerPlayer extends ServerPlayer {
         this.retargetRate = Math.floor(Math.random() * 10) + 1;
         this.retargetCount = this.retargetRate;
 
-        const cooldown = this.getCooldown('move');
+        const cooldown = this.getCooldown('move') + this.entranceTime * 1000;
         this.setCooldown(cooldown);
     }
 

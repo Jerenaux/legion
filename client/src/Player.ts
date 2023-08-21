@@ -156,6 +156,8 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
+
+        this.makeEntrance();
     }
 
     getProps() {
@@ -184,6 +186,11 @@ export class Player extends Phaser.GameObjects.Container {
             items,
             casting: this.casting,
           }
+    }
+
+    makeEntrance() {
+        const callback = () => { this.playAnim('boast', true);};
+        this.walkTo(this.gridX, this.gridY, 2000, callback);
     }
 
     isAlive() {
@@ -408,20 +415,26 @@ export class Player extends Phaser.GameObjects.Container {
         return (Math.abs(x - this.gridX) <= 1 && Math.abs(y - this.gridY) <= 1);
     }
 
-    walkTo(gridX: number, gridY: number, x: number, y: number) {
+    walkTo(gridX: number, gridY: number, duration: number = 300, callback?: Function) {
         const oldGridX = this.gridX;
         this.updatePos(gridX, gridY);
-
         this.playAnim('walk');
+
+        // @ts-ignore
+        const {x, y} = this.arena.gridToPixelCoords(gridX, gridY);
         this.scene.tweens.add({
             targets: this,
             props: {
                 x: x,
                 y: y,
             },
-            duration: 300,
+            duration,
             onComplete: () => {
-                this.playAnim('idle');
+                if (callback) {
+                    callback();
+                } else {
+                    this.playAnim('idle');
+                }
             },
         });
 

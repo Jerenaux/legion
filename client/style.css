@@ -268,3 +268,8 @@ canvas {
 .flash-effect {
     animation: flash 0.2s ease infinite;
 }
+
+.app-container {
+    display: flex;
+    justify-content: space-between;  
+}

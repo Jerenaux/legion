@@ -461,12 +461,11 @@ export class Arena extends Phaser.Scene
 
     processMove({team, tile, num}) {
         const player = this.getPlayer(team, num);
-        const {x, y} = this.gridToPixelCoords(tile.x, tile.y);
 
         this.gridMap[this.serializeCoords(player.gridX, player.gridY)] = null;
         this.gridMap[this.serializeCoords(tile.x, tile.y)] = player;
 
-        player.walkTo(tile.x, tile.y, x, y);
+        player.walkTo(tile.x, tile.y);
         this.playSoundMultipleTimes('steps', 2);
     }
 
@@ -637,6 +636,14 @@ export class Arena extends Phaser.Scene
                 repeat: -1,
                 yoyo: true 
             });
+
+            this.anims.create({
+                key: `${asset}_anim_boast`, // The name of the animation
+                frames: this.anims.generateFrameNumbers(asset, { frames: [15, 16, 17] }), 
+                frameRate: 10, // Number of frames per second
+                repeat: 2,
+                yoyo: true 
+            });
         }, this);
 
         this.anims.create({
@@ -680,7 +687,10 @@ export class Arena extends Phaser.Scene
         data.forEach((character, i) => {
             // if (isPlayer) console.log(character);
 
-            const {x, y} = this.gridToPixelCoords(character.x, character.y);
+            let offset;
+            if (character.x < this.gridWidth/2) offset = -Math.floor(this.gridWidth/2);
+            if (character.x > this.gridWidth/2) offset = Math.floor(this.gridWidth/2);
+            const {x, y} = this.gridToPixelCoords(character.x + offset, character.y);
 
             const player = new Player(
                 this, team, character.x, character.y, x, y,

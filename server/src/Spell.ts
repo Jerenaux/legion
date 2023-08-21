@@ -12,7 +12,7 @@ export class EffectModifier {
     }
 
     modulateEffect(player: ServerPlayer, value: number) {
-        
+        if (this.stat === Stat.NONE) return value;
         const statValue = player.getStat(this.stat);
         const sign = this.direction === EffectDirection.PLUS ? 1 : -1;
         const random = (Math.random() - 0.5)/10;

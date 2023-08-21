@@ -7,7 +7,8 @@ export enum Stat {
     ATK,
     DEF,
     SPATK,
-    SPDEF
+    SPDEF,
+    NONE
 }
 
 export interface Effect {
@@ -18,7 +19,8 @@ export interface Effect {
 
 export enum Target {
     SELF,
-    AOE
+    AOE,
+    SINGLE
 }
 
 export interface NetworkItem {
