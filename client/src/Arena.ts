@@ -856,6 +856,12 @@ export class Arena extends Phaser.Scene
         });
     }
 
+    getOverview() {
+        return {
+            teams: Array.from(this.playersMap.values()).map(team => team.getOverview()),
+        }
+    }
+
     update (time, delta)
     {
     }

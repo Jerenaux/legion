@@ -398,12 +398,10 @@ export class Player extends Phaser.GameObjects.Container {
             this.arena.playSound('nope', 0.2);
             return;
         }
-
-        if (spell.target == 'AOE') {
-            this.pendingSkill = index;
-            // @ts-ignore
-            this.arena.toggleTargetMode(true, spell.size);
-        }
+        
+        this.pendingSkill = index;
+        // @ts-ignore
+        this.arena.toggleTargetMode(true, spell.size);
     }
 
     isTarget() {

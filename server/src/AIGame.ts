@@ -28,6 +28,7 @@ export class AIGame extends Game {
         this.teams.get(2)?.addMember(new AIServerPlayer(5, 'warrior_8', 3, 5));
 
         const fireball = spells[0];
+        const heal = spells[1];
 
         // Iterate over teams
         this.teams.forEach(team => {
@@ -42,7 +43,9 @@ export class AIGame extends Game {
         }, this);
 
         this.teams.get(1)?.getMember(1).addSpell(fireball);
-        this.teams.get(2)?.getMember(1).addSpell(fireball);
+        this.teams.get(1)?.getMember(1).addSpell(heal);
+        // this.teams.get(2)?.getMember(1).addSpell(fireball);
+        this.teams.get(2)?.getMember(1).addSpell(heal);
     }
 
     AItick() {

@@ -116,6 +116,10 @@ export abstract class Game
         return this.teams.get(id === 1 ? 2 : 1)!;
     }
 
+    getPlayerAt(x: number, y: number): ServerPlayer | null {
+        return this.gridMap.get(`${x},${y}`) || null;
+    }
+
     getPlayersInArea(x: number, y: number, radius: number) {
         const players: ServerPlayer[] = [];
         this.teams.forEach(team => {
@@ -304,7 +308,8 @@ export abstract class Game
 
         player.setCasting(true);
         setTimeout(() => {
-            const targets = this.getPlayersInArea(x, y, Math.floor(spell.size/2));
+            const targets = spell.getTargets(this, x, y);
+            // console.log(`Spell ${spell.name} found ${targets.length} targets`);
             spell.applyEffect(player, targets);
             player.setCasting(false);
 

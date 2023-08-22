@@ -38,4 +38,22 @@ export class Team {
             this.scene.updateMusicIntensity(this.totalHP / this.totalHPMax);
         }
     }
+
+    getOverview() {
+        const overview = [];
+        this.members.forEach(member => {
+            overview.push({
+                texture: member.texture,
+                name: member.name,
+                hp: member.hp,
+                maxHP: member.maxHP,
+                mp: member.mp,
+                maxMP: member.maxMP,
+                isAlive: member.isAlive(),
+                isPlayer: member.isPlayer
+            });
+        });
+
+        return overview;
+    }
 }

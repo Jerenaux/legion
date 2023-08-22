@@ -74,6 +74,7 @@ export class AIServerPlayer extends ServerPlayer {
         if (!this.canAct()) return;
 
         if (this.checkForItemUse()) return;
+        if (this.checkForHealUse()) return;
         if (this.checkForAoE()) return;
 
         if (!this.target || !this.target.isAlive()) this.determineTarget();
@@ -112,6 +113,33 @@ export class AIServerPlayer extends ServerPlayer {
         return false;
     }
 
+    checkForHealUse() {
+        for (let i = 0; i < this.spells.length; i++) {
+            const spell = this.spells[i];
+            if (spell.cost > this.mp) continue;
+            if (spell.target != Target.SINGLE) continue;
+            if (!spell.isHealingSpell()) continue;
+
+            const allies = this.team?.game.listAllAllies(this);
+            if (!allies || allies.length === 0) return;
+            const ally = this.getOptimalTarget(allies!, lowestHpComparator);
+            if (!ally) return;
+
+            const healAmount = spell.getHealAmount();
+            if (ally.hp <= (ally.maxHP - healAmount)) {
+                const data = {
+                    num: this.num,
+                    x: ally.x,
+                    y: ally.y,
+                    index: i,
+                };
+                this.team?.game.processSkill(data, this.team);
+                return true;
+            }
+        }
+        return false;
+    }
+
     checkForAoE() {
         for (let i = 0; i < this.spells.length; i++) {
             const spell = this.spells[i];
@@ -120,10 +148,7 @@ export class AIServerPlayer extends ServerPlayer {
                 // console.log(`AI ${this.num} spell ${spell.name} cost ${spell.cost} is too high`);
                 continue;
             }
-            if (!(spell.target == Target.AOE)) {
-                // console.log(`AI ${this.num} spell ${spell.name} is not AOE`);
-                continue;
-            }
+            if (spell.target != Target.AOE) continue;
             const tile = this.team?.game.scanGridForAoE(this, Math.floor(spell.size/2), 2);
             if (tile) {
                 const data = {
@@ -163,7 +188,7 @@ export class AIServerPlayer extends ServerPlayer {
         }
     }
 
-    getOptimalTarget(targets: ServerPlayer[], comparator: Comparator<ServerPlayer>) {
+    getOptimalTarget(targets: ServerPlayer[], comparator: Comparator<ServerPlayer>): ServerPlayer | null {
         let optimalTarget: ServerPlayer | null = null;
         targets.forEach(target => {
             if (!optimalTarget || comparator(target, optimalTarget) > 0) {

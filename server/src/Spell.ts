@@ -1,5 +1,7 @@
 import { ServerPlayer } from "./ServerPlayer";
 import { Stat, Effect, Target } from "./Item";
+import { Game } from "./Game";
+
 export class EffectModifier {
     stat;
     value;
@@ -135,11 +137,23 @@ export class Spell {
         }
     }
 
+    getTargets(game: Game, x: number, y: number): ServerPlayer[] {
+        // console.log(`Looking for targets at ${x}, ${y} for spell ${this.name}, target type ${Target[this.target]}`);
+        if (this.target === Target.SINGLE) {
+            const target = game.getPlayerAt(x, y);
+            if (target) return [target];
+        } else if (this.target === Target.AOE) {
+            return game.getPlayersInArea(x, y, Math.floor(this.size/2));
+        }
+        return [];
+    }
+
     applyEffect(caster: ServerPlayer, targets: ServerPlayer[]) {
         this.effects.forEach(effect => {
             switch (effect.stat) {
                 case Stat.HP:
                     if (effect.value < 0) this.dealDamage(caster, targets, effect);
+                    if (effect.value > 0) this.heal(caster, targets, effect);
                     break;
             }
         });
@@ -147,10 +161,29 @@ export class Spell {
 
     dealDamage(caster: ServerPlayer, targets: ServerPlayer[], effect: Effect) {
         targets.forEach(target => {
+            if (!target.isAlive()) return;
             let damage = effect.value * -1;
             // console.log(`Dealing ${damage} damage`);
             if (effect.modifiers) damage = effect.modifiers.modulateEffect(caster, target, damage);
             target.takeDamage(damage);
         });
+    }
+
+    heal(caster: ServerPlayer, targets: ServerPlayer[], effect: Effect) {
+        targets.forEach(target => {
+            if (!target.isAlive()) return;
+            let heal = effect.value;
+            // console.log(`Healing ${heal} damage`);
+            if (effect.modifiers) heal = effect.modifiers.modulateEffect(caster, target, heal);
+            target.heal(heal);
+        });
+    }
+
+    isHealingSpell() {
+        return this.effects.some(effect => effect.stat === Stat.HP && effect.value > 0);
+    }
+
+    getHealAmount() {
+        return this.effects.find(effect => effect.stat === Stat.HP && effect.value > 0)?.value ?? 0;
     }
 }

@@ -11,6 +11,7 @@ class App extends Component {
     player: null,
     clickedItem: -1,
     clickedSpell: -1,
+    overview: null,
   }
 
   componentDidMount() {
@@ -31,16 +32,20 @@ class App extends Component {
     this.setState({ playerVisible: false, player: null });
   }
 
+  updateOverview = (overview) => {
+    this.setState({ overview });
+  }
+
   keyPress = (key) => {
     this.setState({ clickedSpell: 0 });
   }
 
   render() {
-    const { playerVisible, player } = this.state;
+    const { playerVisible, player, overview } = this.state;
     return (
       <div className="app-container">
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
-          <Overview />
+          <Overview overview={overview} />
       </div>
   );
   }
