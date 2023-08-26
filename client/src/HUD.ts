@@ -11,6 +11,7 @@ export class HUD extends Phaser.Scene
         this.load.image('cursor',  '/assets/pointers/pointer001.png');
         this.load.image('swords',  '/assets/pointers/swords001.png');
         this.load.image('scroll',  '/assets/pointers/scroll002.png');
+        this.load.image('item',  '/assets/pointers/bag001.png');
     }
 
     create() {

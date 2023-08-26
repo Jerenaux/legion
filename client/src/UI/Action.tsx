@@ -24,7 +24,7 @@ class Action extends Component<ActionItemProps> {
           className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
           style={{backgroundImage: action.quantity !== 0 ? `url(assets/${actionType}s/${action.frame})` : 'none'}}
           />
-        {action.quantity !== 0 && <span className="item-qty">x{action.quantity}</span>}
+        {action.quantity && <span className="item-qty">x{action.quantity}</span>}
         <span className="key-binding">{keyBinding}</span>
         <div className="info-box box">
           <div className="info-box-title">{action.name}</div>

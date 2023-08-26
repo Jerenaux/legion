@@ -15,6 +15,7 @@ export interface Effect {
     stat: Stat;
     value: number;
     modifiers?: EffectModifiers;
+    ignoreKO?: boolean;
 }
 
 export enum Target {

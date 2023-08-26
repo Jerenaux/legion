@@ -10,4 +10,5 @@ items[4] = new Item(4, "X-Potion", "Restores 1000 HP", "X-potion.png", "healing"
 items[5] = new Item(5, "X-Ether", "Restores 200 MP", "X-ether.png", "healing", "potion_heal", 12, Target.SELF, [{stat: Stat.MP, value: 200}]);
 items[6] = new Item(6, "Elixir", "Restores 250 HP and 50 MP", "elixir.png", "healing", "potion_heal", 12, Target.SELF, [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 50}]);
 items[7] = new Item(7, "X-Elixir", "Restores 1000 HP and 200 MP", "megalixir.png", "healing", "potion_heal", 22, Target.SELF, [{stat: Stat.HP, value: 1000}, {stat: Stat.MP, value: 200}]);
+items[8] = new Item(8, "Clover", "Revives a KO ally", "clover.png", "healing", "potion_heal", 20, Target.SINGLE, [{stat: Stat.HP, value: 10, ignoreKO: true}]);
 

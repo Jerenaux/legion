@@ -4,65 +4,7 @@ import { Player } from './Player';
 import { App, events } from './UI/App';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
-class CellsHighlight extends Phaser.GameObjects.Graphics {
-    size: number;
-    color: number;
-    gridWidth: number;
-    gridHeight: number;
-    tileSize: number;
-    gridCorners: any;
-    lastX: number;
-    lastY: number;
-
-    constructor(scene: Phaser.Scene, gridWidth: number, gridHeight: number, tileSize: number, gridCorners: any) {
-        super(scene);
-        this.scene = scene;
-        this.gridWidth = gridWidth;
-        this.gridHeight = gridHeight;
-        this.gridCorners = gridCorners;
-        this.tileSize = tileSize;
-        this.lastX = -1;
-        this.lastY = -1;
-        this.setNormalMode();
-        scene.add.existing(this);
-    }
-
-    setNormalMode(refresh?: boolean) {
-        this.size = 0;
-        this.color = 0xffffff;
-        if (refresh) this.move(this.lastX, this.lastY);
-    }
-
-    setTargetMode(size: number, refresh?: boolean) {
-        this.size = Math.floor(size/2);
-        this.color = 0xff0000;
-        if (refresh) this.move(this.lastX, this.lastY);
-    }
-
-    move(gridX, gridY) {
-        // Clear the previous highlight
-        this.clear();
-        // console.log(`gridX: ${gridX}, gridY: ${gridY}`);
-        for(let x = gridX - this.size; x <= gridX + this.size; x++) {
-            for(let y = gridY - this.size; y <= gridY + this.size; y++) {
-                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
-                    // @ts-ignore
-                    if (this.scene.isSkip(x, y)) continue;
-
-                    // Draw a new highlight over the hovered tile
-                    this.fillStyle(this.color, 0.3); 
-                    this.fillRect(
-                        this.gridCorners.startX + x * this.tileSize, 
-                        this.gridCorners.startY + y * this.tileSize, 
-                        this.tileSize, this.tileSize
-                    );
-                }
-            }
-        }
-        this.lastX = gridX;
-        this.lastY = gridY;
-    }
-}
+import { CellsHighlight } from './CellsHighlight';
 
 export class Arena extends Phaser.Scene
 {
@@ -83,6 +25,7 @@ export class Arena extends Phaser.Scene
     server;
     animationScales;
     SFX;
+    overviewReady = false;
     musicManager: MusicManager;
 
     assetsMap = {
@@ -343,6 +286,16 @@ export class Arena extends Phaser.Scene
         }
     }
 
+    toggleItemMode(flag: boolean) {
+        this.HUD.toggleCursor(flag, 'item');
+        if (flag) {
+            this.cellsHighlight.setItemMode(true);
+            this.clearHighlight();
+        } else {
+            this.cellsHighlight.setNormalMode(true);
+        }
+    }
+
     handleKeyDown(event) {
         // Check if the pressed key is a number
         const isNumberKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NINE) || (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NUMPAD_NINE);
@@ -399,6 +352,10 @@ export class Arena extends Phaser.Scene
             events.emit('showPlayerBox', this.selectedPlayer.getProps());
         }
     }
+    
+    refreshOverview() {
+        if (this.overviewReady) events.emit('updateOverview', this.getOverview());
+    }
 
     emitEvent(event, data?) {
         switch (event) {
@@ -406,9 +363,11 @@ export class Arena extends Phaser.Scene
                 if (this.selectedPlayer && data.num === this.selectedPlayer.num) {
                     this.refreshBox();
                 }
+                this.refreshOverview();
                 break;
             case 'mpChange':
                 this.refreshBox();
+                this.refreshOverview();
                 break;
             case 'selectPlayer':
                 this.refreshBox();
@@ -421,12 +380,14 @@ export class Arena extends Phaser.Scene
                 break;
             case 'cooldownStarted':
                 this.refreshBox();
+                this.refreshOverview();
                 break;
             case 'cooldownEnded':
                 this.refreshBox();
+                this.refreshOverview();
                 break;
             case 'overviewChange':
-                events.emit('updateOverview', this.getOverview());
+                this.refreshOverview();
                 break;
             case 'letterKey':
                 if (this.selectedPlayer) {
@@ -862,6 +823,7 @@ export class Arena extends Phaser.Scene
     }
 
     updateOverview() {
+        this.overviewReady = true;
         this.emitEvent('overviewChange');
     }
 
@@ -869,7 +831,6 @@ export class Arena extends Phaser.Scene
         const overview = {
             teams: Array.from(this.playersMap.values()).map(team => team.getOverview()),
         }
-        console.log(overview);
         return overview;
     }
 

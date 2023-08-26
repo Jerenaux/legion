@@ -71,6 +71,7 @@ export class Player extends Phaser.GameObjects.Container {
     cooldown: CircularProgress;
     cooldownTween: Phaser.Tweens.Tween;
     cooldownDuration: number;
+    totalCooldownDuration: number;
     hurtTween: Phaser.Tweens.Tween;
     inventory: Map<Item, number> = new Map<Item, number>();
     spells: NetworkSpell[] = [];
@@ -121,7 +122,8 @@ export class Player extends Phaser.GameObjects.Container {
 
             this.baseSquare.lineStyle(4, 0x0000ff); // blue color
 
-            this.cooldown = new CircularProgress(scene, -8, 28, 10, 0x87CEFA).setVisible(false);
+            // 0x87CEFA
+            this.cooldown = new CircularProgress(scene, -8, 28, 10, 0xffc400).setVisible(false);
             this.add(this.cooldown);
 
             this.MPBar = new HealthBar(scene, 0, -40, 0x0099ff);
@@ -393,7 +395,6 @@ export class Player extends Phaser.GameObjects.Container {
         }
 
         if (!this.canAct() || spell.cost > this.mp) {
-            console.log('nope');
             // @ts-ignore
             this.arena.playSound('nope', 0.2);
             return;
@@ -559,6 +560,7 @@ export class Player extends Phaser.GameObjects.Container {
         // this.sprite.anims.stop();
         // this.toggleGrayscale();
         this.cooldownDuration = duration;
+        this.totalCooldownDuration = duration;
         // @ts-ignore
         this.arena.emitEvent('cooldownStarted', {num: this.num})
         this.cooldown.setVisible(true);
@@ -570,6 +572,7 @@ export class Player extends Phaser.GameObjects.Container {
             duration: duration, // Duration of the tween in milliseconds
             ease: 'Linear', // Use a linear easing function
             onUpdate: () => {
+                this.cooldownDuration = Math.floor(this.totalCooldownDuration * (1 - this.cooldown.progress));
                 this.cooldown.draw(); // Redraw the circle on each update of the tween
             },
             onComplete: () => {

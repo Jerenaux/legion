@@ -53,7 +53,9 @@ export class Team {
                 mp: member.mp,
                 maxMP: member.maxMP,
                 isAlive: member.isAlive(),
-                isPlayer: member.isPlayer
+                isPlayer: member.isPlayer,
+                cooldown: member.cooldownDuration,
+                totalCooldown: member.totalCooldownDuration,
             });
         });
 

@@ -44,7 +44,7 @@ export class AIGame extends Game {
 
         this.teams.get(1)?.getMember(1).addSpell(fireball);
         this.teams.get(1)?.getMember(1).addSpell(heal);
-        // this.teams.get(2)?.getMember(1).addSpell(fireball);
+        this.teams.get(2)?.getMember(1).addSpell(fireball);
         this.teams.get(2)?.getMember(1).addSpell(heal);
     }
 

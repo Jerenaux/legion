@@ -124,6 +124,7 @@ canvas {
 
 .cooldown {
     background-color: #AD8606;
+    /* background-color: #ffc400; */
 }
 
 .hp {
@@ -290,6 +291,7 @@ canvas {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+    margin-bottom: 10px;
   }
   
   .member {
@@ -322,7 +324,7 @@ canvas {
   .hp-bar {
     width: 100%;
     height: 10px; /* adjust as needed */
-    background-color: #ddd; /* color for the unfilled part */
+    background-color: #a31720; /* color for the unfilled part */
     border-radius: 5px; /* makes the bar rounded */
     border: 1px solid black;
   }
@@ -336,7 +338,7 @@ canvas {
   .mp-bar {
   width: 100%;
   height: 10px; /* adjust as needed */
-  background-color: #ddd; /* color for the unfilled part */
+  background-color: #a31720; /* color for the unfilled part */
   border-radius: 5px; /* makes the bar rounded */
   border: 1px solid black;
 }
@@ -345,4 +347,23 @@ canvas {
   height: 100%;
   background-color: #0099ff;
   border-radius: 5px; /* makes the bar rounded */
+}
+
+.cooldown-bar {
+    width: 100%;
+    height: 10px; /* adjust as needed */
+    background-color: #a31720; /* color for the unfilled part */
+    border-radius: 5px; /* makes the bar rounded */
+    border: 1px solid black;
+  }
+  
+  .cooldown-fill {
+    height: 100%;
+    background-color: #ffc400;
+    border-radius: 5px; /* makes the bar rounded */
+  }
+
+.blink {
+    animation: blink 0.25s linear;
+    animation-iteration-count: 3;
 }
