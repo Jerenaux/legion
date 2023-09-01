@@ -1,5 +1,7 @@
 import { h, Component } from 'preact';
 import ActionItem from './Action';
+import { ActionType } from './ActionTypes';
+
 
 interface Player {
   hp: number;
@@ -173,7 +175,7 @@ class PlayerTab extends Component<Props, State> {
                 clickedIndex={this.state.clickedSpell} 
                 canAct={canAct} 
                 keyboardLayout={keyboardLayout} 
-                actionType="skill" 
+                actionType={ActionType.Skill} 
                 onActionClick={this.actionClick.bind(this)} 
               />
             ))}
@@ -188,7 +190,7 @@ class PlayerTab extends Component<Props, State> {
                 clickedIndex={this.state.clickedItem} 
                 canAct={canAct} 
                 keyboardLayout={keyboardLayout} 
-                actionType="item" 
+                actionType={ActionType.Item}
                 onActionClick={this.actionClick.bind(this)} 
               />
             ))}

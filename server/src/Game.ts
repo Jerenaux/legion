@@ -142,6 +142,8 @@ export abstract class Game
             team = this.teams.get(2);
         }
 
+        team!.snapshotScore();
+
         switch (action) {
             case 'move':
                 this.processMove(data, team!);
@@ -156,6 +158,8 @@ export abstract class Game
                 this.processSkill(data, team!);
                 break;
         }
+
+        team!.sendScore();
     }
 
     checkEndGame() {
@@ -235,7 +239,7 @@ export abstract class Game
         });
     }
 
-    processUseItem({num, index}: {num: number, index: number}, team: Team) {
+    processUseItem({num, x, y, index}: {num: number, x: number, y: number, index: number}, team: Team) {
         const player = team.getMembers()[num - 1];
         if (!player.canAct()) return;
 
@@ -247,6 +251,7 @@ export abstract class Game
         this.setCooldown(player, cooldown);
 
         const newQuantity = player.removeItem(item, 1);
+        const targets = item.getTargets(this, player, x, y);
         item.applyEffect(player);
         const hp = player.getHP();
 
@@ -315,10 +320,15 @@ export abstract class Game
 
             targets.forEach(target => {
                 if (target.HPHasChanged()) {
-                    player.increaseDamageDealt(target.getHPDelta());
+                    const delta = target.getHPDelta();
+                    player.increaseDamageDealt(delta);
+                    if (!target.isAlive()) player.team!.increaseScoreFromKill(player);
+                    if (delta < 0) player.team!.increaseScoreFromDamage(delta);
                     this.broadcastHPchange(target.team!, target.num, target.getHP(), target.getHPDelta());
                 }
             });            
+            player.team!.increaseScoreFromMultiHits(targets.length);
+            player.team!.increaseScoreFromSpell(spell.score);
             
             this.broadcast('localanimation', {
                 x,
@@ -337,7 +347,16 @@ export abstract class Game
                 team: team.id,
                 num
             });
+            
+            team.sendScore();
         }, spell.castTime * 1000);
+    }
+
+    broadcastScoreChange(team: Team) {
+        this.broadcast('score', {
+            teamId: team.id,
+            score: team.score,
+        });
     }
 
     broadcastHPchange(team: Team, num: number, hp: number, damage?: number) {

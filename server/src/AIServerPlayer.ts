@@ -70,7 +70,6 @@ export class AIServerPlayer extends ServerPlayer {
     }
 
     takeAction() {
-        // return;
         if (!this.canAct()) return;
 
         if (this.checkForItemUse()) return;
@@ -104,6 +103,8 @@ export class AIServerPlayer extends ServerPlayer {
             if (item.effectsAreApplicable(this)) {
                 const data = {
                     num: this.num,
+                    x: this.x,
+                    y: this.y,
                     index: i,
                 };
                 this.team?.game.processUseItem(data, this.team);

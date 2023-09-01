@@ -47,8 +47,9 @@ export class MusicManager {
 
     playLoop(intensity) {
         // If trying to switch to the same intensity, do nothing.
-        if (this.intensity == intensity) return;
+        if (this.intensity == intensity || this.scheduledIntensity) return;
 
+        console.log(`Scheduling intensity ${intensity}`)
         // If there's a sound already playing, schedule the next one
         if (this.currentSound && this.currentSound.isPlaying) {
             this.scheduledIntensity = intensity; // mark the desired intensity
@@ -69,6 +70,7 @@ export class MusicManager {
     }
 
     switchToIntensity(intensity) {
+        console.log(`Switching to intensity ${intensity}`)
         this.intensity = intensity;
         if (this.currentSound && this.currentSound.isPlaying) {
             this.currentSound.stop();

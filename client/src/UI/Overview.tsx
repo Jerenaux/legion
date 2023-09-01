@@ -16,6 +16,7 @@ interface Member {
 
 interface Team {
   members: Member[];
+  score: number;
 }
 
 interface Props {
@@ -101,36 +102,40 @@ class Overview extends Component<Props, State> {
       <div className="overview box">
         {overview.teams.map((team, teamIndex) => (
           <div key={teamIndex} className="team">
-            {team.members.map((member, memberIndex) => {
-              const portraitStyle = {
-                backgroundImage: `url(assets/sprites/${member.texture})`,
-                backgroundPosition: '-45px -45px',
-                backgroundRepeat: 'no-repeat',
-                filter: member.isAlive ? 'none' : 'grayscale(100%)'
-              };
-              const cooldown = cooldowns[cooldownIndex++];
-              return (
-                <div key={memberIndex} className="member">
-                  <div style={portraitStyle} className={`member-portrait ${blinking[teamIndex][memberIndex] ? 'blink' : ''}`} >
-                   {member.isPlayer && <span className="member-index">{memberIndex + 1}</span>}
-                  </div>
-                  <div className="member-name">Player #{memberIndex + 1}</div>
-                  <div className="hp-bar">
-                    <div className="hp-fill" style={{width: `${(member.hp / member.maxHP) * 100}%`}}></div>
-                  </div>
-                  {member.isPlayer && (
-                    <div className="mp-bar">
-                      <div className="mp-fill" style={{width: `${(member.mp / member.maxMP) * 100}%`}}></div>
+            {teamIndex === 0 && <div className="team-label">Your team - Score: {team.score}</div>}
+            <div className="team-members">
+              {team.members.map((member, memberIndex) => {
+                const portraitStyle = {
+                  backgroundImage: `url(assets/sprites/${member.texture})`,
+                  backgroundPosition: '-45px -45px',
+                  backgroundRepeat: 'no-repeat',
+                  filter: member.isAlive ? 'none' : 'grayscale(100%)'
+                };
+                const cooldown = cooldowns[cooldownIndex++];
+                return (
+                  <div key={memberIndex} className="member">
+                    <div style={portraitStyle} className={`member-portrait ${blinking[teamIndex][memberIndex] ? 'blink' : ''}`} >
+                    {member.isPlayer && <span className="member-index">{memberIndex + 1}</span>}
                     </div>
-                  )}
-                  {member.isPlayer && (
-                  <div className="cooldown-bar">
-                    <div className="cooldown-fill" style={{width: `${(1 - (cooldown / member.totalCooldown)) * 100}%`}}></div>
+                    <div className="member-name">Player #{memberIndex + 1}</div>
+                    <div className="hp-bar">
+                      <div className="hp-fill" style={{width: `${(member.hp / member.maxHP) * 100}%`}}></div>
+                    </div>
+                    {member.isPlayer && (
+                      <div className="mp-bar">
+                        <div className="mp-fill" style={{width: `${(member.mp / member.maxMP) * 100}%`}}></div>
+                      </div>
+                    )}
+                    {member.isPlayer && (
+                    <div className="cooldown-bar">
+                      <div className="cooldown-fill" style={{width: `${(1 - (cooldown / member.totalCooldown)) * 100}%`}}></div>
+                    </div>
+                    )}
                   </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            {teamIndex === 1 && <div className="team-label opponent">Opponent's team - Score: {team.score}</div>}
           </div>
         ))}
       </div>

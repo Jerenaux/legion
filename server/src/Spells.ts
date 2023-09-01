@@ -15,5 +15,5 @@ const SPBasedBoost = new EffectModifiers(
 );
 
 // TODO: specify width and shape of AOE in target
-spells[0] = new Spell(0, "Fireball", "Throws a fireball", "fireball.png", "fireball", "explosion", 6, 1, 5, Target.AOE, 3, [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}], true);
-spells[1] = new Spell(1, "Heal", "Heals a target", "heal.png", "healing", "potion_heal", 4, 2, 5, Target.SINGLE, 1, [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}], false);
+spells[0] = new Spell(0, "Fireball", "Throws a fireball", "fireball.png", "fireball", "explosion", 6, 1, 5, Target.AOE, 3, [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}], true, 100);
+spells[1] = new Spell(1, "Heal", "Heals a target", "heal.png", "healing", "potion_heal", 4, 2, 5, Target.SINGLE, 1, [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}], false, 10);

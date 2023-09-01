@@ -139,6 +139,14 @@ export class ServerPlayer {
         return this.hp - this._hp;
     }
 
+    getHPratio() {
+        return this.hp / this.maxHP;
+    }
+
+    getPreviousHPRatio() {
+        return this._hp / this.maxHP;
+    }
+
     heal(amount: number) {
         this._hp = this.hp;
         this.hp += amount;
@@ -247,7 +255,9 @@ export class ServerPlayer {
     }
 
     increaseDamageDealt(amount: number) {
+        if (amount < 0) return; // = healing
         this.damageDealt += amount;
+        this.team?.increaseScoreFromDamage(amount);
     }
 }
 

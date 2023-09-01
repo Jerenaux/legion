@@ -77,6 +77,7 @@ export class Player extends Phaser.GameObjects.Container {
     spells: NetworkSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
     pendingSkill: number | null = null;
+    pendingItem: number | null = null;
     casting: boolean = false;
     selected: boolean = false;
     HURT_THRESHOLD: number = 0.5;
@@ -343,6 +344,7 @@ export class Player extends Phaser.GameObjects.Container {
             return;
         }
         if (!this.canAct()) {
+            console.error(`Can't act`);
             // @ts-ignore
             this.arena.playSound('nope', 0.2);
             return;
@@ -350,7 +352,11 @@ export class Player extends Phaser.GameObjects.Container {
         if (item) {
             if (item.target == 'SELF') {
                 // @ts-ignore
-                this.arena.sendUseItem(this, index);
+                this.arena.sendUseItem(index, this.x, this.y);
+            } else if (item.target == 'SINGLE') {
+                this.pendingItem = index;
+                // @ts-ignore
+                this.arena.toggleItemMode(true);
             }
         }
     }
@@ -528,7 +534,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     displayDamage(damage) {
-        this.displayOverheadText(damage, 2000, '#fff');
+        this.displayOverheadText(Math.round(damage), 2000, '#fff');
     }
 
     displaySlash(attacker) {
@@ -610,6 +616,6 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     victoryDance() {
-        this.playAnim('victory');
+        if (this.isAlive()) this.playAnim('victory');
     }
 }

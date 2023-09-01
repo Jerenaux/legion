@@ -288,10 +288,24 @@ canvas {
 }
 
 .team {
+    margin-bottom: 10px;
+}
+
+.team-members {
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: right;
+  }
+
+.team-label {
+    font-weight: bold;
     margin-bottom: 10px;
+    font-size: 14px;
+}
+  
+  .team-label.opponent {
+    text-align: right;
+    margin-top: 10px;
   }
   
   .member {

@@ -1,5 +1,6 @@
 import { ServerPlayer } from "./ServerPlayer";
 import { EffectModifiers } from "./Spell";
+import { Game } from "./Game";
 
 export enum Stat {
     HP,
@@ -50,6 +51,7 @@ export class Item {
     cooldown: number;
     animation: string;
     sfx: string;
+    size: number = 1;
 
     constructor(
         id: number, name: string, description: string, frame: string, sfx: string, animation: string,
@@ -83,6 +85,19 @@ export class Item {
             'cooldown': this.cooldown,
             // 'animation': this.animation
         }
+    }
+
+    getTargets(game: Game, user: ServerPlayer, x: number, y: number): ServerPlayer[] {
+        // console.log(`Looking for targets at ${x}, ${y} for spell ${this.name}, target type ${Target[this.target]}`);
+        if (this.target === Target.SELF) {
+            return [user];
+        } else if (this.target === Target.SINGLE) {
+            const target = game.getPlayerAt(x, y);
+            if (target) return [target];
+        } else if (this.target === Target.AOE) {
+            return game.getPlayersInArea(x, y, Math.floor(this.size/2));
+        }
+        return [];
     }
 
     applyEffect(target: ServerPlayer) {

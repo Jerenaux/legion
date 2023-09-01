@@ -14,7 +14,7 @@ export class Arena extends Phaser.Scene
     playerTeamId;
     gridCorners;
     gridMap: Map<string, Player> = new Map<string, Player>();
-    playersMap: Map<number, Team> = new Map<number, Team>();
+    teamsMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
     highlight: Phaser.GameObjects.Graphics;
     cellsHighlight: CellsHighlight;
@@ -138,6 +138,10 @@ export class Arena extends Phaser.Scene
         this.socket.on('gameEnd', (data) => {
             this.processGameEnd(data);
         });
+
+        this.socket.on('score', (data) => {
+            this.processScoreUpdate(data);
+        });
     }
 
     sendMove(x, y) {
@@ -168,16 +172,20 @@ export class Arena extends Phaser.Scene
         this.send('skill', data);
         this.toggleTargetMode(false);
         this.selectedPlayer.pendingSkill = null;
-        console
     }
 
-    sendUseItem(player: Player, index: number) {
+    sendUseItem(index: number, x: number, y: number) {
         if (!this.selectedPlayer.canAct()) return;
         const data = {
             num: this.selectedPlayer.num,
+            x,
+            y,
             index
         };
+        console.log(`Sending useitem: ${JSON.stringify(data)}`);
         this.send('useitem', data);
+        this.toggleItemMode(false);
+        this.selectedPlayer.pendingItem = null;
     }
 
     send(channel, data) {
@@ -308,7 +316,7 @@ export class Arena extends Phaser.Scene
                 // Convert the key code to a number (for numpad keys)
                 number = event.keyCode - Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO;
             } 
-            this.playersMap.get(this.playerTeamId).getMember(number)?.onClick();
+            this.teamsMap.get(this.playerTeamId).getMember(number)?.onClick();
         } else {
             const isLetterKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.A && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.Z);
             if (isLetterKey) {
@@ -332,6 +340,8 @@ export class Arena extends Phaser.Scene
         const player = this.gridMap[this.serializeCoords(gridX, gridY)];
         if (this.selectedPlayer?.pendingSkill != null) {
             this.sendSkill(gridX, gridY);
+        } else if (this.selectedPlayer?.pendingItem != null) {
+            this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY);
         } else if (this.selectedPlayer && !player) {
             this.handleMove(gridX, gridY);
         } else if (player){ 
@@ -416,7 +426,7 @@ export class Arena extends Phaser.Scene
     }
 
     getPlayer(team: number, num: number): Player {
-        return this.playersMap.get(team).getMember(num);
+        return this.teamsMap.get(team).getMember(num);
     }
 
     getOtherTeam(id: number): number {
@@ -489,12 +499,18 @@ export class Arena extends Phaser.Scene
     processGameEnd({winner}) {
         this.musicManager.playEnd();
         console.log(`Team ${winner} won!`);
-        const winningTeam = this.playersMap.get(winner);
+        const winningTeam = this.teamsMap.get(winner);
         setTimeout(() => {
             winningTeam.members.forEach((player) => {
                 player.victoryDance();
             });
         }, 200);
+    }
+
+    processScoreUpdate({teamId, score}) {
+        const team = this.teamsMap.get(teamId);
+        team.setScore(score);
+        this.emitEvent('overviewChange');
     }
 
     updateMusicIntensity(ratio){
@@ -809,11 +825,11 @@ export class Arena extends Phaser.Scene
             console.error('Player team id is undefined');
         }
 
-        this.playersMap.set(data.player.teamId, new Team(this, data.player.teamId, true));
-        this.playersMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false));
+        this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true));
+        this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false));
 
-        this.placeCharacters(data.player.team, true, this.playersMap.get(data.player.teamId));
-        this.placeCharacters(data.opponent.team, false, this.playersMap.get(data.opponent.teamId));
+        this.placeCharacters(data.player.team, true, this.teamsMap.get(data.player.teamId));
+        this.placeCharacters(data.opponent.team, false, this.teamsMap.get(data.opponent.teamId));
 
         setTimeout(this.updateOverview.bind(this), 2000);
 
@@ -829,8 +845,9 @@ export class Arena extends Phaser.Scene
 
     getOverview() {
         const overview = {
-            teams: Array.from(this.playersMap.values()).map(team => team.getOverview()),
+            teams: Array.from(this.teamsMap.values()).map(team => team.getOverview()),
         }
+        // console.log(overview);
         return overview;
     }
 

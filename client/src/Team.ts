@@ -7,6 +7,7 @@ export class Team {
     totalHPMax: number = 0;
     totalHP: number = 0;
     isPlayerTeam: boolean = false;
+    score = 0;
 
     constructor(scene, number: number, isPlayerTeam: boolean) {
         this.scene = scene;
@@ -39,6 +40,10 @@ export class Team {
         }
     }
 
+    setScore(score: number) {
+        this.score = score;
+    }
+
     getOverview() {
         const members = [];
         this.members.forEach(member => {
@@ -59,6 +64,9 @@ export class Team {
             });
         });
 
-        return {members};
+        return {
+            members,
+            score: this.score
+        };
     }
 }
