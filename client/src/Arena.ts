@@ -1,14 +1,14 @@
 
 import { io } from 'socket.io-client';
 import { Player } from './Player';
-import { App, events } from './UI/App';
+import { GameHUD, events } from './UI/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { CellsHighlight } from './CellsHighlight';
 
 export class Arena extends Phaser.Scene
 {
-    app;
+    gamehud;
     socket;
     HUD;
     playerTeamId;
@@ -47,7 +47,7 @@ export class Arena extends Phaser.Scene
 
     preload ()
     {
-        this.app = new App();
+        this.gamehud = new GameHUD();
         
         this.load.image('bg',  '/assets/aarena_bg.png');
         this.load.image('killzone',  '/assets/killzone.png');

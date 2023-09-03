@@ -5,7 +5,7 @@ import Overview from './Overview';
 import { EventEmitter } from 'eventemitter3';
 
 const events = new EventEmitter();
-class App extends Component {
+class GameHUD extends Component {
   state = { 
     visible: false,
     player: null,
@@ -44,15 +44,15 @@ class App extends Component {
   render() {
     const { playerVisible, player, overview } = this.state;
     return (
-      <div className="app-container">
+      <div className="hud-container">
         {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : <div style={{flexGrow: 1}} />}
         <Overview overview={overview} />
       </div>
-  );
+    );
   }
 }
 
 const root = document.getElementById('root');
-render(<App />, root);
+render(<GameHUD />, root);
 
-export { App, events }
+export { GameHUD, events }

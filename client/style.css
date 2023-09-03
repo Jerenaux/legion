@@ -276,7 +276,7 @@ canvas {
     animation: flash 0.2s ease infinite;
 }
 
-.app-container {
+.hud-container {
     display: flex;
     justify-content: space-between;  
 }
@@ -381,3 +381,18 @@ canvas {
     animation: blink 0.25s linear;
     animation-iteration-count: 3;
 }
+
+.app {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .menu {
+    width: 10%;
+    background-color: #f0f0f0;
+  }
+  
+  .content {
+    width: 90%;
+    /* background-color: #fff; */
+  }
