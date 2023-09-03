@@ -1,5 +1,5 @@
 {
-    "main": "src/game.ts",
+    "main": "src/game/game.ts",
     "scripts": {
         "start": "lite-server",
         "build": "webpack",

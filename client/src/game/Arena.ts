@@ -1,7 +1,7 @@
 
 import { io } from 'socket.io-client';
 import { Player } from './Player';
-import { GameHUD, events } from './UI/GameHUD';
+import { GameHUD, events } from './HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { CellsHighlight } from './CellsHighlight';
