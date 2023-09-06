@@ -53,15 +53,15 @@ class GameHUD extends Component<{}, State> {
   render() {
     const { playerVisible, player, overview } = this.state;
     return (
-      <div className="hud-container">
-        {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : <div className="flex-grow" />}
-        <Overview overview={overview} />
+      <div>
+        <div className="hud-container">
+          {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : <div className="flex-grow" />}
+          <Overview overview={overview} />
+        </div>
+        <div id="scene"></div>
       </div>
     );
   }
 }
-
-const root = document.getElementById('root');
-render(<GameHUD />, root);
 
 export { GameHUD, events }

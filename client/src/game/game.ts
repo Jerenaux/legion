@@ -24,4 +24,10 @@ const config = {
     scene: [Arena, HUD],
 };
 
-const game = new Phaser.Game(config);
+// const game = new Phaser.Game(config);
+
+export function startGame() {
+    const game = new Phaser.Game(config);
+  }
+
+
