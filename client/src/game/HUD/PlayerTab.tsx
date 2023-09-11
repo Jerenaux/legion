@@ -117,10 +117,8 @@ class PlayerTab extends Component<Props, State> {
   render(props: Props, state: State) {
     const { player } = props;
 
-    const portraitStyle = {
+      const portraitStyle = {
         backgroundImage: `url(assets/sprites/${player.portrait})`,
-        backgroundPosition: '-45px -45px', 
-        backgroundRepeat: 'no-repeat',
       };
       const HPBackground = this.getHPBackground(player);
       const MPBackground = this.getMPBackground(player);
