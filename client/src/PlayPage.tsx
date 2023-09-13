@@ -16,22 +16,7 @@ class PlayPage extends Component {
             <h1 className="page-title">Play</h1>
           </div>
           <div className="play-content">
-            <div className="team-container">
-              <h2 className="team-title">Your team</h2>
-              <div className="team-members">
-                {team.map((character) => (
-                  <div className="team-member">
-                    <div className="player-portrait" style={{ backgroundImage: `url(${character.image})` }}>
-                      <span className="character-level">{character.level}</span>
-                    </div>
-                    <div className="character-info">
-                      <span className="character-name">{character.name}</span>
-                      <span className="character-class">{character.class}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            
           </div>
         </div>
       );

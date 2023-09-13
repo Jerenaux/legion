@@ -306,6 +306,7 @@ canvas {
     margin-bottom: 10px;
 }
 
+
 .team-members {
     display: flex;
     flex-direction: row;
@@ -471,47 +472,6 @@ canvas {
     text-shadow: -5px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
-.team-container {
-    border: 1px solid black;
-    border-radius: 10px;
-    position: relative;
-    padding-top: 20px;
-  }
-  
-  .team-title {
-    position: absolute;
-    top: -10px;
-    left: 10px;
-    background: white;
-    padding: 0 10px;
-  }
-  
-  .team-member {
-    border: 1px solid #333; /* Adjust as needed */
-    background-color: #fff; /* Adjust as needed */
-    width: 150px; /* Adjust as needed */
-    margin: 10px; /* Adjust as needed */
-  }
-  
-  .character-portrait {
-    height: 100px; /* Adjust as needed */
-    background-size: cover;
-    position: relative;
-  }
-  
-  .character-level {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: white;
-    border-radius: 50%;
-    padding: 5px;
-  }
-  
-  .character-info {
-    background-color: #f5f5f5; /* Adjust as needed */
-    padding: 10px; /* Adjust as needed */
-  }
   .gold-container {
     position: relative;
     display: inline-flex;
@@ -578,17 +538,18 @@ canvas {
     position: relative;
     display: inline-flex;
     align-items: center;
-    border: 1px solid #B3B3B3;
-    color: #B3B3B3;
+    color:lightgrey; 
     padding: 5px;
     cursor: pointer;
-    font-size: 16px;
-    background-color: transparent;
+    font-size: 14px;
+    background-color: #080c15;
     padding-right: 0;
+    border-radius: 3px;
+    margin-right: 5px;
+    /* box-shadow: 0 0 0 3px #070507, 0 0 0 4px #CD853F; */
 }
 
 .notificationBarButton:hover {
-    /* color: gray; */
     filter: brightness(1.2);
     cursor: pointer;
 }
@@ -629,3 +590,100 @@ canvas {
 .notificationItem:last-child {
     border-bottom: none;
 }
+
+@keyframes animate-sprite {
+    0% { background-position: -40px -40px; }
+    33% { background-position: -184px -40px; }
+    66% { background-position: -328px -40px; }
+  }
+  
+
+.character-portrait {
+    height: 100px; /* Adjust as needed */
+    width: 65px;
+    position: relative;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+  }
+  
+  .character-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin-bottom: 10px;
+    margin-right: 20px;
+    border: 2px solid #CD853F;
+    align-items: flex-start;
+  }
+  
+  .character-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-top: 20px solid white; /* adjust as needed */
+    border-left: 20px solid transparent; /* adjust as needed */
+    width: 0;
+  }
+  
+  .character-card::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    border-bottom: 20px solid white; /* adjust as needed */
+    border-right: 20px solid transparent; /* adjust as needed */
+    width: 0;
+  }
+
+  .character-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .character-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    font-family: Kim;
+  }
+  
+  .character-class {
+    font-size: 0.9em;
+    color: #666;
+  }
+  
+  .level-badge {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    background-color: gold;
+    color: #fff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    font-weight: bold;
+    font-family: Kim;
+    flex-direction: column;
+    box-shadow: 0 0 0 5px #070507, 0 0 0 7px #CD853F; /* Creates a 10px transparent gap and a 2px border */
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+
+  }
+
+  .level-badge .level-number {
+    font-size: 1.2em; /* adjust as needed */
+  }
+
+  .roster {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; 
+  }

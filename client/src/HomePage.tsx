@@ -54,7 +54,8 @@ class HomePage extends Component<{}, State> {
         const bgcolors = {
             play: '#080c15',
             team: '#06090a',
-            shop: '#070507'
+            shop: '#070507',
+            rank: '#060607',
         }
         const bgImage = {
             backgroundImage: `url(assets/${currentPage}bg.png)`,
