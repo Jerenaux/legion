@@ -64,7 +64,11 @@ class HomePage extends Component<{}, State> {
         return (
         <div className="homePage">
             <div className="menu">
-            <img src="assets/legionlogo.png" className="gameLogo" />
+            <Link href="/">
+                <div className="menuItemContainer">
+                    <img src="assets/legionlogo.png" className="gameLogo" />
+                </div>
+            </Link>
             <div className="menuItems">
                 <Link href="/play">
                     <div className="menuItemContainer">

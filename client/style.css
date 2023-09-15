@@ -620,26 +620,6 @@ canvas {
     border: 2px solid #CD853F;
     align-items: flex-start;
   }
-  
-  .character-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-top: 20px solid white; /* adjust as needed */
-    border-left: 20px solid transparent; /* adjust as needed */
-    width: 0;
-  }
-  
-  .character-card::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    border-bottom: 20px solid white; /* adjust as needed */
-    border-right: 20px solid transparent; /* adjust as needed */
-    width: 0;
-  }
 
   .character-info {
     display: flex;
@@ -687,3 +667,85 @@ canvas {
     flex-wrap: wrap;
     justify-content: center; 
   }
+
+  /* LandingPage.css */
+.landing-page {
+  background: url('assets/aarena_bg.png') no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.logo {
+  width: 50%; /* Adjust as needed */
+  height: auto;
+}
+
+.section-title {
+  font-family: 'Kim', sans-serif;
+  border-top: 2px solid white;
+  border-bottom: 2px solid white;
+  background: linear-gradient(to right, darkblue, lightblue, transparent);
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.leaderboard-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid white;
+  border-radius: 10px;
+  overflow: hidden;
+  width: calc(100% - 30px);
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  margin: 0 15px;
+}
+
+.leaderboard-table thead tr {
+  background: linear-gradient(to right, darkblue, lightblue);
+}
+
+.leaderboard-table th {
+  font-family: 'Kim', sans-serif;
+  color: white;
+  cursor: pointer;
+}
+
+.leaderboard-table tr:nth-child(even) {
+  background-color: #e0e0e0;
+  /* f2f2f2 */
+}
+
+.leaderboard-table tr:nth-child(odd) {
+  background-color: #d7d7d7;
+  /* e9e9e9 */
+}
+
+.leaderboard-table td {
+  text-align: center;
+  font-family: 'Kim';
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.leaderboard-table tr:hover {
+  background-color: #c0c0c0;
+  /* ddd */
+}
+
+
+.leaderboard-table th div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.leaderboard-table th div span:last-child {
+  margin-left: 5px;
+}
