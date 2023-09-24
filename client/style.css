@@ -973,7 +973,6 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
   border: 1px solid #ccc;
   background-color: #F9F6EE;
   border-radius: 15px;
-  font-family: Kim;
   cursor: pointer;
 }
 
@@ -996,13 +995,13 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
 .shop-item-card-header {
   position: relative;
   background: linear-gradient(to right, rgb(79, 79, 227), lightblue, transparent);
-  /* background: blue; */
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
   height: 20px;
   padding: 5px;
   padding-left: 15px;
   overflow: hidden;
+  font-family: Kim;
 }
 
 .shop-item-card-name {
@@ -1026,6 +1025,9 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
 
 .shop-item-card-content {
   padding: 10px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: row;
 }
 
 .shop-item-card-price {
@@ -1041,4 +1043,10 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
   border-radius: 25px; 
   padding: 5px 10px; 
   padding-left: 40px;
+  font-family: Kim;
+
+}
+
+.shop-item-details {
+  padding-left: 10px;
 }

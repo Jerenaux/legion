@@ -106,12 +106,15 @@ export class Item {
             this.effects.forEach(effect => {
                 if (effect.onKO && target.isAlive()) return;
                 if (!effect.onKO && !target.isAlive()) return;
+                let value;
                 switch (effect.stat) {
                     case Stat.HP:
-                        target.heal(effect.value);
+                        value = effect.value == -1 ? target.maxHP : effect.value;
+                        target.heal(value);
                         break;
                     case Stat.MP:
-                        target.restoreMP(effect.value);
+                        value = effect.value == -1 ? target.maxMP : effect.value;
+                        target.restoreMP(value);
                         break;
                 }
             });

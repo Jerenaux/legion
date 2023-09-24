@@ -154,7 +154,6 @@ export class ServerPlayer {
     }
 
     heal(amount: number) {
-        console.log(`Healing ${amount} HP`);
         this._hp = this.hp;
         this.hp += amount;
         if (this.hp > this.maxHP) {

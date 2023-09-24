@@ -1,5 +1,6 @@
 import { h, Component } from 'preact';
 import { ActionType } from './ActionTypes';
+import InfoBox from '../../InfoBox';
 
 interface ActionItemProps {
   action: any;
@@ -28,28 +29,7 @@ class Action extends Component<ActionItemProps> {
         {action.quantity > 0 && <span className="item-qty">x{action.quantity}</span>}
         <span className="key-binding">{keyBinding}</span>
         <div className="info-box box">
-          <div className="info-box-title">{action.name}</div>
-          <div className="info-box-desc">{action.description}</div>
-          {
-            action.effects && action.effects.map((effect) => {
-              return (
-                <div className="hp mini">  
-                <span className="mp-label">{effect.stat}</span>
-                <span className="mp-amount">+{effect.value}</span>
-              </div>
-              );
-            })
-          }
-          <div className="info-box-extra">
-            <div className='badge'>
-              <span className="badge-label">⏳ </span> 
-              <span>{action.cooldown}s</span>
-            </div>
-            <div className='badge'>
-              <span className="badge-label">🎯 </span> 
-              <span>{action.target}</span>
-            </div>
-          </div>
+          <InfoBox action={action} />
         </div>
       </div>
     );

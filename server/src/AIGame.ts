@@ -42,7 +42,7 @@ export class AIGame extends Game {
                     let qty = Math.floor(Math.random() * 2);
                     if (qty) player.addItem(items[i], qty);
                 }
-                player.addItem(items[8], 1);
+                player.addItem(items[9], 1);
             }, this);
         }, this);
 
