@@ -12,10 +12,11 @@ class Description extends Component<DescProps> {
       <div>  
         {
           action.effects && action.effects.map((effect) => {
+            const value = effect.value == -1 ? 'FULL' : `+${effect.value}`;
             return (
             <div className="hp mini">  
               <span className="mp-label">{effect.stat}</span>
-              <span className="mp-amount">+{effect.value}</span>
+              <span className="mp-amount">{value}</span>
             </div>
             );
           })

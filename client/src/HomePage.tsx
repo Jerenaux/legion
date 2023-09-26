@@ -5,20 +5,15 @@ import PlayPage from './PlayPage';
 import TeamPage from './TeamPage';
 import ShopPage from './ShopPage';
 import RankPage from './RankPage';
+import NotificationBar from './NotificationBar';
 
 interface State {
     currentPage: string;
-    showNotifications: boolean;
-    unreadNotifications: number;
-    notifications: string[];
 }
 
 class HomePage extends Component<{}, State> {
     state: State = {
         currentPage: 'play',
-        showNotifications: false,
-        unreadNotifications: 3,
-        notifications: ['Notification 1', 'Notification 2', 'Notification 3']
     };
     componentDidMount() {
         const link = document.createElement('link');
@@ -41,15 +36,7 @@ class HomePage extends Component<{}, State> {
        
         this.setState({ 
             currentPage,
-            showNotifications: false
         });
-    };
-
-    handleNotificationClick = () => {
-        this.setState(prevState => ({
-            showNotifications: !prevState.showNotifications,
-            unreadNotifications: 0
-        }));
     };
 
     render() {
@@ -100,27 +87,9 @@ class HomePage extends Component<{}, State> {
             </div> 
             </div>
             <div className="content" style={bgImage}>
-            <div className="notificationBar">
-                <div className="notificationBarButton" onClick={this.handleNotificationClick}>
-                    <i className="fa-solid fa-bell">
-                        {this.state.unreadNotifications > 0 && (
-                            <span className="notificationBadge">{this.state.unreadNotifications}</span>
-                        )}
-                    </i>
-                    {this.state.showNotifications && (
-                        <div className="notificationList">
-                            {this.state.notifications.map((notification, index) => (
-                                <div key={index} className="notificationItem">
-                                    {notification}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                <div className="notificationBarButton">
-                    <i className="fas fa-sign-out-alt"></i>
-                </div>
-            </div>
+            
+            <NotificationBar />
+
             <div className="mainContent">
                 <Router onChange={this.handleRouteChange}>
                 <Route default path="/play" component={PlayPage} />
