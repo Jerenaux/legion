@@ -118,21 +118,21 @@ canvas {
 }
 
 .badge {
-    display: inline-block;
-    align-items: center;
     border: 2px solid black;
     border-radius: 5px;
     padding: 2px;
     padding-left: 5px;
     padding-right: 6px;
-    background-color: #3E3E3E;
+    background-color: #4a4947;
     font-weight: bold;
+    max-width: 100px;
 }
 
 .badge-label {
     border-right: 1px solid black;
     padding-right: 10px;
     margin-right: 10px;
+    text-align: center;
 }
 
 .cooldown {
@@ -141,12 +141,29 @@ canvas {
 }
 
 .hp {
-    background-color: #028406;
+    background-color: #32CD32;
 }
 
 .mp {
-    background-color: #0645AD;
+    background-color: #0099ff;
 }
+
+.atk {
+  background-color: #CD5C5C;
+}
+
+.def {
+  background-color: #FFA07A;
+}
+
+.spAtk {
+  background-color: #9370DB;  
+}
+
+.spDef {
+  background-color: #20B2AA;
+}
+
   
 .hp-label, .mp-label, .cooldown-label {
     border-right: 1px solid black;
@@ -1055,6 +1072,11 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
   margin-top: 20px;
 }
 
+.socials img {
+  width: 64px;
+  /* height: 64px; */
+}
+
 .twitterIconContainer {
   background-color: black;
   border-radius: 5px; /* Adjust as needed */
@@ -1069,4 +1091,37 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
 
 .socials-bar {
   padding-left: 5px;
+}
+
+.stats-area {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 30px;
+  width: 50%;
+}
+
+.stats-badge {
+  background-color: black;
+  color: white;
+  border-radius: 50%;
+  padding: 10px;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+}
+
+.stats-value {
+  color: black;
+  margin: 5px;
+}
+
+.character-full-stats {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }

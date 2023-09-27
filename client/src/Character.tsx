@@ -61,6 +61,7 @@ class Character extends Component<CharacterProps, CharacterState> {
     };
 
     const cssClass = classToCssClass[characterClass];
+    const stats = ['hp', 'atk', 'spAtk', 'mp', 'def', 'spDef'];
 
     return (
       <div className="character-full">
@@ -70,17 +71,27 @@ class Character extends Component<CharacterProps, CharacterState> {
             <div className={`character-header-class ${cssClass}`}>{characterClass}</div>
         </div>
         <div className="character-full-content">
-            <div className="level-area">
-                <div className="level-badge">
-                    <span>lvl</span>
-                    <span className="level-number">{level}</span>
-                </div>
-                <div className="xp-area">
-                    <div className="next-level">Next: {xpToLevel - xp} XP</div>
-                    <div className="xp-bar-bg">
-                        <div className="xp-bar" style={{width: `${xpRatio}%`}}></div>
-                    </div>
-                </div>
+            <div className="character-full-stats">
+              <div className="level-area">
+                  <div className="level-badge">
+                      <span>lvl</span>
+                      <span className="level-number">{level}</span>
+                  </div>
+                  <div className="xp-area">
+                      <div className="next-level">Next: {xpToLevel - xp} XP</div>
+                      <div className="xp-bar-bg">
+                          <div className="xp-bar" style={{width: `${xpRatio}%`}}></div>
+                      </div>
+                  </div>
+              </div>
+              <div className="stats-area">
+                {stats.map((stat) => (
+                  <div className={`badge ${stat}`}>
+                    <span className="badge-label">{stat.toUpperCase()}</span> 
+                    <span>{this.state[stat]}</span>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="character-portrait" style={portraitStyle}></div>
         </div>
