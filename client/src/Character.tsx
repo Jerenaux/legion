@@ -1,6 +1,7 @@
 // Character.tsx
 import { h, Component } from 'preact';
-import { route } from 'preact-router';
+import ActionItem from './game/HUD/Action';
+import { ActionType } from './game/HUD/ActionTypes';
 
 interface CharacterProps {
     matches: {
@@ -21,6 +22,7 @@ interface CharacterState {
   def: number;
   spAtk: number;
   spDef: number;
+  items: any;
 }
 
 class Character extends Component<CharacterProps, CharacterState> {
@@ -29,7 +31,7 @@ class Character extends Component<CharacterProps, CharacterState> {
     // For now, we'll just use some dummy data
     this.setState({
       portrait: '/assets/sprites/1_1.png',
-      name: 'Character Name',
+      name: 'Character Name!',
       class: 'Black Mage',
       level: 1,
       xp: 67,
@@ -40,14 +42,18 @@ class Character extends Component<CharacterProps, CharacterState> {
       def: 10,
       spAtk: 10,
       spDef: 10,
+      items: [
+        { id: 1, name: 'Potion', description: 'Restores 50 HP', frame: 'potion.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
+        { id: 1, name: 'Potion', description: 'Restores 50 HP', frame: 'ether.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
+      ],
     });
   }
   
 
   render() {
     const { id } = this.props.matches;
-    console.log(`id: `, id);
-    const { portrait, name, class: characterClass, level, xp, xpToLevel, hp, mp, atk, def, spAtk, spDef } = this.state;
+    const { portrait, name, class: characterClass, level, xp, xpToLevel, items } = this.state;
+
     const portraitStyle = {
         backgroundImage: `url(${portrait})`,
     };
@@ -91,6 +97,19 @@ class Character extends Component<CharacterProps, CharacterState> {
                     <span>{this.state[stat]}</span>
                   </div>
                 ))}
+              </div>
+              <div className="character-full-actions">
+                <div className="player-items">
+                {items && items.map((item, i) => (
+                  <ActionItem 
+                    action={item} 
+                    index={i} 
+                    clickedIndex={-1}
+                    canAct={true} 
+                    actionType={ActionType.Item}
+                  />
+                ))}
+                </div>
               </div>
             </div>
             <div className="character-portrait" style={portraitStyle}></div>

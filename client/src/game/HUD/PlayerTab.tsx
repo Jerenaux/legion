@@ -124,7 +124,6 @@ class PlayerTab extends Component<Props, State> {
       const MPBackground = this.getMPBackground(player);
       const isCooldownActive = player.cooldown > 0;
       const cooldownClass = isCooldownActive ? "cooldown-state" : "cooldown-state cooldown-complete";
-      const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
       const isDead = player.hp <= 0;
       const canAct = !isCooldownActive && !isDead && !player.casting;
   
@@ -173,7 +172,6 @@ class PlayerTab extends Component<Props, State> {
                   index={i} 
                   clickedIndex={this.state.clickedSpell} 
                   canAct={canAct} 
-                  keyboardLayout={keyboardLayout} 
                   actionType={ActionType.Skill} 
                   onActionClick={this.actionClick.bind(this)} 
                 />
@@ -190,7 +188,6 @@ class PlayerTab extends Component<Props, State> {
                   index={i} 
                   clickedIndex={this.state.clickedItem} 
                   canAct={canAct} 
-                  keyboardLayout={keyboardLayout} 
                   actionType={ActionType.Item}
                   onActionClick={this.actionClick.bind(this)} 
                 />
