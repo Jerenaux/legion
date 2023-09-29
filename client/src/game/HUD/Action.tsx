@@ -28,9 +28,9 @@ class Action extends Component<ActionItemProps> {
           />
         {/* {action.quantity > 0 && <span className="item-qty">x{action.quantity}</span>} */}
         <span className="key-binding">{keyBinding}</span>
-        <div className="info-box box">
+        {action.id > -1 && <div className="info-box box">
           <InfoBox action={action} />
-        </div>
+        </div>}
       </div>
     );
   }

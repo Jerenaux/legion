@@ -259,7 +259,8 @@ export class AIServerPlayer extends ServerPlayer {
         
         // Find the tile with the lowest distance to (x, y)
         let closestTile = tiles![0];
-        let closestDistance = Math.pow(tiles![0].x - x, 2) + Math.pow(tiles![0].y - y, 2);
+        if (!closestTile) return;
+        let closestDistance = Math.pow(closestTile.x - x, 2) + Math.pow(closestTile.y - y, 2);
         for(let i = 1; i < tiles!.length; i++) {
             const nextTo = (Math.abs(x - tiles![i].x) <= 1 && Math.abs(y - tiles![i].y) <= 1);
             if (nextTo) {

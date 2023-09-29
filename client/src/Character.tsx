@@ -22,7 +22,8 @@ interface CharacterState {
   def: number;
   spAtk: number;
   spDef: number;
-  items: any;
+  items: any[];
+  spells: any[];
 }
 
 class Character extends Component<CharacterProps, CharacterState> {
@@ -46,13 +47,23 @@ class Character extends Component<CharacterProps, CharacterState> {
         { id: 1, name: 'Potion', description: 'Restores 50 HP', frame: 'potion.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
         { id: 1, name: 'Potion', description: 'Restores 50 HP', frame: 'ether.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
       ],
+      spells: [
+        { id: 1, name: 'Fireball', description: 'Restores 50 HP', frame: 'fireball.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
+        { id: 1, name: 'Heal', description: 'Restores 50 HP', frame: 'heal.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
+      ]
     });
   }
   
 
   render() {
     const { id } = this.props.matches;
-    const { portrait, name, class: characterClass, level, xp, xpToLevel, items } = this.state;
+    const { portrait, name, class: characterClass, level, xp, xpToLevel, items, spells } = this.state;
+
+    if (items) {
+      while (items.length < 3) {
+        items.push({id: -1});
+      }
+    }
 
     const portraitStyle = {
         backgroundImage: `url(${portrait})`,
@@ -100,16 +111,33 @@ class Character extends Component<CharacterProps, CharacterState> {
               </div>
               <div className="character-full-actions">
                 <div className="player-items">
-                {items && items.map((item, i) => (
-                  <ActionItem 
-                    action={item} 
-                    index={i} 
-                    clickedIndex={-1}
-                    canAct={true} 
-                    actionType={ActionType.Item}
-                  />
-                ))}
+                  <div className='slots-header'>Items</div>
+                  <div className="slots"> 
+                  {items && items.map((item, i) => (
+                    <ActionItem 
+                      action={item} 
+                      index={i} 
+                      clickedIndex={-1}
+                      canAct={true} 
+                      actionType={ActionType.Item}
+                    />
+                  ))}
+                  </div>
                 </div>
+                {spells && spells.length > 0 && <div className="player-skills">
+                  <div className='slots-header'>Skills</div>
+                  <div className="slots">
+                  {spells && spells.map((spell, i) => (
+                    <ActionItem 
+                      action={spell} 
+                      index={i} 
+                      clickedIndex={-1}
+                      canAct={true} 
+                      actionType={ActionType.Skill}
+                    />
+                  ))}
+                  </div>
+                </div>}
               </div>
             </div>
             <div className="character-portrait" style={portraitStyle}></div>
