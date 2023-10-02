@@ -7,7 +7,7 @@ import { items } from './Items';
 import { spells } from './Spells';
 
 const TICK = 100;
-const AI_VS_AI = true;
+const AI_VS_AI = false;
 
 export class AIGame extends Game {
     constructor(io: Server, sockets: Socket[]) {
@@ -47,6 +47,7 @@ export class AIGame extends Game {
 
         this.teams.get(1)?.getMember(1).addSpell(fireball);
         this.teams.get(1)?.getMember(1).addSpell(heal);
+        this.teams.get(1)?.getMember(1).addSpell(spells[2]);
         this.teams.get(2)?.getMember(1).addSpell(fireball);
         this.teams.get(2)?.getMember(1).addSpell(heal);
     }
@@ -62,7 +63,7 @@ export class AIGame extends Game {
 
         AIteams.forEach(teamNum => {
             (this.teams.get(teamNum)?.getMembers() as AIServerPlayer[]).forEach(player => {
-                player.takeAction();
+                // player.takeAction();
             }, this);
         });
     }

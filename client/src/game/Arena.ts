@@ -62,7 +62,7 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('explosion', 'assets/animations/explosion.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('cast', 'assets/animations/cast.png', { frameWidth: 48, frameHeight: 64});
         this.load.spritesheet('slash', 'assets/animations/slash.png', { frameWidth: 96, frameHeight: 96});
-        // this.load.text('grayScaleShader', 'assets/grayscale.glsl');
+        this.load.spritesheet('thunder', 'assets/animations/bolts.png', { frameWidth: 96, frameHeight: 96});
 
         this.load.audio('click', 'assets/sfx/click_2.wav');
         this.load.audio('slash', 'assets/sfx/swish_2.wav');
@@ -70,9 +70,11 @@ export class Arena extends Phaser.Scene
         this.load.audio('nope', 'assets/sfx/nope.wav');
         this.load.audio('heart', 'assets/sfx/heart.wav');
         this.load.audio('cooldown', 'assets/sfx/cooldown.wav');
-        this.load.audio('fireball', 'assets/sfx/fireball.wav');
         this.load.audio('healing', 'assets/sfx/healing.wav');
         this.load.audio('cast', 'assets/sfx/curse.ogg');
+
+        this.load.audio('fireball', 'assets/sfx/fireball.wav');
+        this.load.audio('thunder', 'assets/sfx/thunder.wav');
 
         this.load.audio(`bgm_start`, `assets/music/bgm_start.wav`);
         for (let i = 2; i <= 13; i++) {
@@ -524,7 +526,7 @@ export class Arena extends Phaser.Scene
 
     createSounds() {
         this.SFX = {};
-        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing', 'cast']
+        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing', 'cast', 'thunder']
         sounds.forEach((sound) => {
             this.SFX[sound] = this.sound.add(sound);
         })
@@ -640,6 +642,12 @@ export class Arena extends Phaser.Scene
         this.anims.create({
             key: `explosion`, // The name of the animation
             frames: this.anims.generateFrameNumbers('explosion', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }), 
+            frameRate: 15, // Number of frames per second
+        });
+
+        this.anims.create({
+            key: `thunder`, // The name of the animation
+            frames: this.anims.generateFrameNumbers('thunder', { frames: [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47] }), 
             frameRate: 15, // Number of frames per second
         });
 

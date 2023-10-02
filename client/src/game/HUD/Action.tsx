@@ -17,7 +17,6 @@ class Action extends Component<ActionItemProps> {
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const startPosition = keyboardLayout.indexOf(actionType === 'item' ? 'Z' : 'Q');
     const keyBinding = keyboardLayout.charAt(startPosition + index);
-    console.log(`url(assets/${actionType}s/${action.frame})`);
     return (
       <div 
         className={`${actionType} ${index === clickedIndex ? 'flash-effect' : ''}`} 

@@ -782,13 +782,19 @@ canvas {
   font-size: 25px;
 }
 
+.rank-content {
+  display: flex;
+  justify-content: center;
+}
+
 .leaderboard-table {
   border-collapse: separate;
   border-spacing: 0;
   border: 2px solid white;
   border-radius: 10px;
   overflow: hidden;
-  width: calc(100% - 30px);
+  width: calc(100% - 430px);
+  margin: auto;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   margin: 0 15px;
 }
@@ -1080,12 +1086,28 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   /* background-color: rgba(105, 105, 105, 0.7);  */
-  background-color: rgba(3.7, 0, 33, 0.7); 
+  background-color: gold;
   border-radius: 25px; 
   padding: 5px 10px; 
   padding-left: 40px;
   font-family: Kim;
+  border: 1px solid black;
+}
 
+.shop-item-card-owned {
+  position: absolute;
+  bottom: 10px;
+  right: 100px;
+  background: url('assets/backpacks.png') no-repeat left center;
+  background-size: contain;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  background-color: #A0522D; 
+  border-radius: 25px; 
+  padding: 5px 10px; 
+  padding-left: 40px;
+  font-family: Kim;
+  border: 1px solid black;
 }
 
 .shop-item-details {
@@ -1168,13 +1190,58 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
   border: 2px solid #ccc;
   background-color: #F9F6EE;
   border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: Kim;
+  color: #4a4947;
 }
 
-.dialog h2 {
+
+.closebtn {
+  cursor: pointer;
+  color: rgb(222, 24, 24);
+  position: absolute;
+  top: -10px; 
+  right: -8px;
+  font-size: 30px;
+}
+
+.closebtn:hover {
+  filter: brightness(1.2);
+}
+
+.quantity-container {
+  display: flex;
+}
+
+.shop-qty {
+  width: 20px;
+  text-align: center;
+  margin: 0 -5px;
+}
+
+.qty-button {
+  margin: 0;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+
+.qty-button, .shop-qty {
   display: flex;
   align-items: center;
+  justify-content: center;
+  height: 20px; /* Adjust as needed */
+  width: 20px; /* Adjust as needed */
+  border: none;
+  background: none;
+  border: 1px solid black;
 }
 
-.dialog h2 button, h2 input {
-  margin: 0 5px;
+.small-button {
+  width: 60px;
+  height: 30px;
+  padding: 5px;
+  font-size: 25px;
+  box-shadow: 0 0 0 5px #070507, 0 0 0 6px #CD853F; /* Creates a 10px transparent gap and a 2px border */
+
 }

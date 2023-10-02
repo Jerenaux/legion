@@ -66,6 +66,7 @@ class ShopPage extends Component<{}, State> {
                       {item.description}
                       <Description action={item} />
                     </div>
+                    <div className="shop-item-card-owned" title='Amount Owned'>23</div>
                     <div className="shop-item-card-price" title='Price'>{item.price}</div>
                   </div>
                 </div>
@@ -75,16 +76,23 @@ class ShopPage extends Component<{}, State> {
 
         {isDialogOpen && (
           <div className="dialog">
-            <button className="close-button" onClick={this.closeDialog}>X</button>
-            <h2>
-              Purchasing 
-              <button onClick={() => this.changeQuantity(-1)}>-</button>
-              <input type="text" value={quantity} readOnly />
-              <button onClick={() => this.changeQuantity(1)}>+</button>
-              {selectedItem.name}
-            </h2>
-            <div>Total: {quantity * selectedItem.price}</div>
-            <button onClick={this.purchaseItem}>Purchase</button>
+            <div className="shop-item-card-header">
+              <div className="shop-item-card-name">Buy</div>
+              <div className="shop-item-card-name-shadow">Buy</div>
+            </div>
+            <div className="shop-item-card-content">
+            <i className="fa-solid fa-circle-xmark closebtn" onClick={this.closeDialog}></i>
+            <div className="quantity-container">
+                  <div className="qty-button" onClick={() => this.changeQuantity(-1)}>-</div>
+                  <input className="shop-qty" type="text" value={quantity} />
+                  <div className="qty-button" onClick={() => this.changeQuantity(1)}>+</div>
+                </div>
+                {selectedItem.name}
+                <div>Total: {quantity * selectedItem.price}</div>
+              <div className="button-container button small-button" onClick={this.purchaseItem}>
+                Buy
+              </div>
+            </div>
           </div>
         )}
       </div>

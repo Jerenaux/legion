@@ -1,17 +1,14 @@
 // PlayPage.tsx
 import { h, Component } from 'preact';
+import axios from 'axios';
 
 class RankPage extends Component {
   state = {
-   leaderboardData: [
-      { rank: 1, player: 'Player1', elo: 1500, wins: 10, losses: 2,  winsRatio: Math.round((10/(10+2))*100) + '%', crowdScore: 5 },
-      { rank: 2, player: 'Player2', elo: 1400, wins: 8, losses: 3, winsRatio: Math.round((8/(8+3))*100) + '%',  crowdScore: 3 },
-      { rank: 3, player: 'Me', elo: 1300, wins: 7, losses: 3, winsRatio: Math.round((7/(7+3))*100) + '%',  crowdScore: 3 },
-      // Add more dummy data here
-    ],
+   leaderboardData: [],
     sortColumn: 'elo',
     sortAscending: false
   };
+  // http://127.0.0.1:5001/legion-32c6d/us-central1/leaderboardData
 
   handleSort = (column) => {
     const isAscending = this.state.sortColumn === column ? !this.state.sortAscending : false;
@@ -33,8 +30,13 @@ class RankPage extends Component {
     return result.charAt(0).toUpperCase() + result.slice(1);
   };
 
+  async componentDidMount() {
+    const response = await axios.get('http://127.0.0.1:5001/legion-32c6d/us-central1/leaderboardData');
+    if (response.data) this.setState({ leaderboardData: response.data });
+  }
+
   render() {
-    const columns = Object.keys(this.state.leaderboardData[0]);
+    const columns = ['rank', 'player', 'elo', 'wins', 'losses', 'winsRatio', 'crowdScore']; 
 
     return (
       <div>
@@ -43,36 +45,36 @@ class RankPage extends Component {
           <h1 className="page-title">Rank</h1>
         </div>
         <div className="rank-content">
-        <table className="leaderboard-table">
-            <thead>
-              <tr>
-              {columns.map(column => (
-                <th onClick={() => this.handleSort(column)}>
-                  <div>
-                    <span>{this.camelCaseToNormal(column)}</span>
-                    <span>
-                      {this.state.sortColumn === column ? (this.state.sortAscending ? <i class="fa-solid fa-sort-up"></i> : <i class="fa-solid fa-sort-down"></i>) : <i class="fa-solid fa-sort" style={{visibility: 'hidden'}}></i>}
-                    </span>
-                  </div>
-                </th>
-              ))}
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.leaderboardData.map((data, index) => (
-                <tr key={index} className={data.player === 'Me' ? 'highlighted-row' : ''}>
-                  <td>#{data.rank}</td>
-                  <td>{data.player}</td>
-                  <td>{data.elo}</td>
-                  <td>{data.wins}</td>
-                  <td>{data.losses}</td>
-                  <td>{data.winsRatio}</td>
-                  <td>{Array.from({length: data.crowdScore}, (_, i) => <i class="fa-solid fa-star golden-star"></i>)}</td>
+          <table className="leaderboard-table">
+              <thead>
+                <tr>
+                {columns.map(column => (
+                  <th onClick={() => this.handleSort(column)}>
+                    <div>
+                      <span>{this.camelCaseToNormal(column)}</span>
+                      <span>
+                        {this.state.sortColumn === column ? (this.state.sortAscending ? <i class="fa-solid fa-sort-up"></i> : <i class="fa-solid fa-sort-down"></i>) : <i class="fa-solid fa-sort" style={{visibility: 'hidden'}}></i>}
+                      </span>
+                    </div>
+                  </th>
+                ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {this.state.leaderboardData.map((data, index) => (
+                  <tr key={index} className={data.player === 'Me' ? 'highlighted-row' : ''}>
+                    <td>#{data.rank}</td>
+                    <td>{data.player}</td>
+                    <td>{data.elo}</td>
+                    <td>{data.wins}</td>
+                    <td>{data.losses}</td>
+                    <td>{data.winsRatio}</td>
+                    <td>{Array.from({length: data.crowdScore}, (_, i) => <i class="fa-solid fa-star golden-star"></i>)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
       </div>
     );
   }
