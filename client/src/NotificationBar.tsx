@@ -1,5 +1,6 @@
 // NotificationBar.tsx
 import { h, Component } from 'preact';
+import firebase from './firebaseConfig';
 
 interface State {
     showNotifications: boolean;
@@ -7,7 +8,14 @@ interface State {
     notifications: string[];
 }
 
-class NotificationBar extends Component<{}, State> {
+interface Props {
+    initFirebaseUI: () => void;
+    logout: () => void;
+    user: firebase.User | null;
+}
+
+class NotificationBar extends Component<Props, State> {
+
     state: State = {
         showNotifications: false,
         unreadNotifications: 3,
@@ -33,6 +41,9 @@ class NotificationBar extends Component<{}, State> {
                     </a>
                 </div>
                 <div>
+                    {this.props.user === null && <button onClick={this.props.initFirebaseUI}>Log in</button>}
+                    {this.props.user !== null && <button onClick={this.props.logout}>Log out</button>}
+      
                     {/* <div className="notificationBarButton" onClick={this.handleNotificationClick}>
                         <i className="fa-solid fa-bell">
                             {unreadNotifications > 0 && (

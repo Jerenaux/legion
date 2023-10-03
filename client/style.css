@@ -1245,3 +1245,18 @@ background: linear-gradient(to right, #FFFFFF, #A9A9A9);
   box-shadow: 0 0 0 5px #070507, 0 0 0 6px #CD853F; /* Creates a 10px transparent gap and a 2px border */
 
 }
+
+#firebaseui-auth-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+
+  border: 2px solid #ccc;
+  background-color: #F9F6EE;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: Kim;
+  color: #4a4947;
+}

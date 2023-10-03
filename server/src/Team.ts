@@ -37,7 +37,7 @@ export class Team {
     }
 
     increaseScoreFromDamage(amount: number) {
-        this.score -= amount;
+        this.score += amount;
         console.log(`Team ${this.id} score: ${this.score}`);
     }
 

@@ -21,10 +21,10 @@ class Action extends Component<ActionItemProps> {
       <div 
         className={`${actionType} ${index === clickedIndex ? 'flash-effect' : ''}`} 
         onClick={() => onActionClick(actionType, keyBinding, index)}>
-        <div 
+        {action.id > -1 && <div 
           className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
           style={{backgroundImage: `url(/assets/${actionType}s/${action.frame})`}}
-          />
+          />}
         {/* {action.quantity > 0 && <span className="item-qty">x{action.quantity}</span>} */}
         <span className="key-binding">{keyBinding}</span>
         {action.id > -1 && <div className="info-box box">
