@@ -2,36 +2,10 @@ import { HealthBar } from "./HealthBar";
 import { CircularProgress } from "./CircularProgress";
 import { Team } from './Team';
 import { BaseItem } from "@legion/shared/BaseItem";
+import { BaseSpell } from "@legion/shared/BaseSpell";
 import { items } from '@legion/shared/Items';
+import { spells } from '@legion/shared/Spells';
 import { Target } from "@legion/shared";
-
-
-export interface NetworkSpell {
-    id: number;
-    name: string;
-    description: string;
-    frame: string;
-    cost: number;
-    target: string;
-    effects: NetworkSpellEffect[];
-}
-
-export interface NetworkSpellEffect {
-    stat: string;
-    value: number;
-    modifiers: NetworkEffectModifiers | null;
-}
-
-export interface NetworkEffectModifiers {
-    casterModifier: NetworkEffectModifier;
-    targetModifier: NetworkEffectModifier;
-}
-
-export interface NetworkEffectModifier {
-    stat: string;
-    value: number;
-    direction: string;
-}
 
 export class Player extends Phaser.GameObjects.Container {
     scene: Phaser.Scene;
@@ -59,7 +33,7 @@ export class Player extends Phaser.GameObjects.Container {
     totalCooldownDuration: number;
     hurtTween: Phaser.Tweens.Tween;
     inventory: BaseItem[] = [];
-    spells: NetworkSpell[] = [];
+    spells: BaseSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
     pendingSkill: number | null = null;
     pendingItem: number | null = null;
@@ -585,8 +559,11 @@ export class Player extends Phaser.GameObjects.Container {
         this.inventory.push(items[item]);
     }
 
-    setSpells(spells: NetworkSpell[]) {
-        this.spells = spells;
+    setSpells(spellsIds: number[]) {
+        // Map the spell IDs to the actual spell objects
+        this.spells = spellsIds.map(spellId => {
+            return spells[spellId];
+        });   
     }
 
     victoryDance() {

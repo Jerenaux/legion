@@ -4,8 +4,9 @@ import { Game } from './Game';
 import { ServerPlayer } from './ServerPlayer';
 import { AIServerPlayer } from './AIServerPlayer';
 import { items } from '@legion/shared/Items';
-import { spells } from './Spells';
+import { spells } from '@legion/shared/Spells';
 import { Item } from './Item';
+import { Spell, convertBaseToSpell } from './Spell';
 
 const TICK = 100;
 const AI_VS_AI = false;
@@ -31,8 +32,10 @@ export class AIGame extends Game {
         this.teams.get(2)?.addMember(new AIServerPlayer(4, 'warrior_7', 3, 3));
         this.teams.get(2)?.addMember(new AIServerPlayer(5, 'warrior_8', 3, 5));
 
-        const fireball = spells[0];
-        const heal = spells[1];
+        const fireball = convertBaseToSpell(spells[0]);
+        const heal = convertBaseToSpell(spells[1]);
+        const thunder = convertBaseToSpell(spells[2]);
+        const ice = convertBaseToSpell(spells[3]);
 
         // Iterate over teams
         this.teams.forEach(team => {
@@ -60,8 +63,8 @@ export class AIGame extends Game {
 
         this.teams.get(1)?.getMember(1).addSpell(fireball);
         this.teams.get(1)?.getMember(1).addSpell(heal);
-        this.teams.get(1)?.getMember(1).addSpell(spells[2]);
-        this.teams.get(1)?.getMember(1).addSpell(spells[3]);
+        this.teams.get(1)?.getMember(1).addSpell(thunder);
+        this.teams.get(1)?.getMember(1).addSpell(ice);
         this.teams.get(2)?.getMember(1).addSpell(fireball);
         this.teams.get(2)?.getMember(1).addSpell(heal);
     }

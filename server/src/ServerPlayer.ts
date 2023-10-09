@@ -1,7 +1,7 @@
 import { Team } from './Team';
 import { Item } from './Item';
+import { Spell } from './Spell';
 import { Stat } from "@legion/shared";
-import { Spell, NetworkSpell } from './Spell';
 
 export type ActionType = 'move' | 'attack';
 export class ServerPlayer {
@@ -86,8 +86,8 @@ export class ServerPlayer {
         return this.inventory.map(item => item.id);
     }
 
-    getNetworkSpells() {
-        return this.spells.map(spell => spell.getNetworkData());
+    getNetworkSpells(): number[] {
+        return this.spells.map(spell => spell.id);
     }
 
     setCasting(casting: boolean) {
@@ -253,6 +253,11 @@ export class ServerPlayer {
         this.spells.push(spell);
     }
 
+    getSpellAtIndex(index: number): Spell | null {
+        if (index < 0 || index >= this.spells.length) return null;
+        return this.spells[index];
+    }
+
     increaseDamageDealt(amount: number) {
         if (amount < 0) return; // = healing
         this.damageDealt += amount;
@@ -269,5 +274,5 @@ interface playerNetworkData {
     distance?: number;
     cooldown?: number;
     inventory?: number[];
-    spells?: NetworkSpell[];
+    spells?: number[];
 }

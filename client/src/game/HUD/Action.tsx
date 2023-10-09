@@ -1,9 +1,11 @@
 import { h, Component } from 'preact';
 import { ActionType } from './ActionTypes';
 import InfoBox from '../../InfoBox';
+import { BaseItem } from "@legion/shared/BaseItem";
+import { BaseSpell } from "@legion/shared/BaseSpell";
 
 interface ActionItemProps {
-  action: any;
+  action: BaseItem | BaseSpell;
   index: number;
   clickedIndex: number;
   canAct: boolean;

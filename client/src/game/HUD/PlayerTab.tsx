@@ -1,7 +1,8 @@
 import { h, Component } from 'preact';
 import ActionItem from './Action';
 import { ActionType } from './ActionTypes';
-
+import { BaseItem } from "@legion/shared/BaseItem";
+import { BaseSpell } from "@legion/shared/BaseSpell";
 
 interface Player {
   hp: number;
@@ -13,32 +14,8 @@ interface Player {
   portrait: string;
   number: number;
   name: string;
-  spells: Spell[];
-  items: Item[];
-}
-
-interface Spell {
-  frame: string;
-  name: string;
-  description: string;
-  cost: number;
-  cooldown: number;
-  target: string;
-}
-
-interface Item {
-  frame: string;
-  name: string;
-  description: string;
-  quantity: number;
-  effects: Effect[];
-  cooldown: number;
-  target: string;
-}
-
-interface Effect {
-  stat: string;
-  value: number;
+  spells: BaseSpell[];
+  items: BaseItem[];
 }
 
 interface Props {

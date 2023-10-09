@@ -1,102 +1,29 @@
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
 import { Stat, Target, Effect, EffectModifiers, EffectModifier, EffectDirection } from "@legion/shared";
+import { BaseSpell } from "@legion/shared/BaseSpell";
 
-export interface NetworkSpell {
-    id: number;
-    name: string;
-    description: string;
-    frame: string;
-    cost: number;
-    target: string;
-    size: number;
-    cooldown: number;
-    effects: NetworkSpellEffect[];
+export function convertBaseToSpell(base: BaseSpell): Spell {
+    return new Spell(
+        base.id,
+        base.name,
+        base.description,
+        base.frame,
+        base.sfx,
+        base.animation,
+        base.cooldown,
+        base.castTime,
+        base.cost,
+        base.target,
+        base.size,
+        base.effects,
+        base.shake,
+        base.score,
+    );
 }
 
-export interface NetworkSpellEffect {
-    stat: string;
-    value: number;
-    modifiers: NetworkEffectModifiers | null;
-}
-
-export interface NetworkEffectModifiers {
-    casterModifier: NetworkEffectModifier;
-    targetModifier: NetworkEffectModifier;
-}
-
-export interface NetworkEffectModifier {
-    stat: string;
-    value: number;
-    direction: string;
-}
-
-export class Spell {
-    id;
-    name;
-    description;
-    cost;
-    target;
-    effects;
-    frame;
-    animation;
-    size;
-    cooldown;
-    castTime;
-    shake;
-    sfx;
-    score;
+export class Spell extends BaseSpell {
     
-    constructor(id: number, name: string, description: string, frame: string, sfx: string, animation: string,
-        cooldown: number, castTime: number, cost: number, target: Target, size: number, effects: Effect[],
-        shake: boolean = false, score: number = 0) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.frame = frame;
-        this.animation = animation;
-        this.cost = cost;
-        this.castTime = castTime;
-        this.target = target;
-        this.effects = effects;
-        this.size = size;
-        this.cooldown = cooldown;
-        this.shake = shake;
-        this.sfx = sfx;
-        this.score = score;
-    }
-
-    getNetworkData(): NetworkSpell {
-        return {
-            id: this.id,
-            name: this.name,
-            description: this.description,
-            frame: this.frame,
-            cost: this.cost,
-            target: Target[this.target],
-            size: this.size,
-            cooldown: this.cooldown,
-            effects: this.effects.map(effect => {
-                return {
-                    stat: Stat[effect.stat],
-                    value: effect.value,
-                    modifiers: effect.modifiers ? {
-                        casterModifier: {
-                            stat: Stat[effect.modifiers.casterModifier.stat],
-                            value: effect.modifiers.casterModifier.value,
-                            direction: EffectDirection[effect.modifiers.casterModifier.direction]
-                        },
-                        targetModifier: {
-                            stat: Stat[effect.modifiers.targetModifier.stat],
-                            value: effect.modifiers.targetModifier.value,
-                            direction: EffectDirection[effect.modifiers.targetModifier.direction]
-                        }
-                    } : null
-                }
-            })
-        }
-    }
-
     getTargets(game: Game, x: number, y: number): ServerPlayer[] {
         // console.log(`Looking for targets at ${x}, ${y} for spell ${this.name}, target type ${Target[this.target]}`);
         if (this.target === Target.SINGLE) {

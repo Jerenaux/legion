@@ -1,6 +1,7 @@
 // ShopPage.tsx
 import { h, Component } from 'preact';
 import Description from './Description';
+import { items } from '@legion/shared/Items';
 
 interface State {
   items: Array<any>;
@@ -11,11 +12,7 @@ interface State {
 
 class ShopPage extends Component<{}, State> {
   state: State = {
-    items: [
-      { id: 1, name: 'Potion', description: 'Restores 50 HP', image: 'assets/items/potion.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
-      { id: 2, name: 'Clover', description: 'Resurrects a character', image: 'assets/items/clover.png', price: 200, target: "self", cooldown: 2, effects: [{ stat: "mp", value: 50 }] },
-      // Add more items as needed
-    ],
+    items,
     isDialogOpen: false,
     selectedItem: null,
     quantity: 1,

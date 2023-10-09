@@ -3,6 +3,7 @@ import { uuid } from 'uuidv4';
 
 import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
+import { Spell } from './Spell';
 
 export abstract class Game
 {
@@ -289,8 +290,11 @@ export abstract class Game
             return;
         }
 
-        if (index >= player.spells.length) return;
-        const spell = player.spells[index];
+        const spell: Spell | null = player.getSpellAtIndex(index);
+        if (!spell) {
+            console.log('no spell');
+            return;
+        }
 
         if (spell.cost > player.getMP()) return;
         const mp = player.consumeMP(spell.cost);

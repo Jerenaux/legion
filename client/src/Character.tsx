@@ -2,6 +2,8 @@
 import { h, Component } from 'preact';
 import ActionItem from './game/HUD/Action';
 import { ActionType } from './game/HUD/ActionTypes';
+import { items } from '@legion/shared/Items';
+import { spells } from '@legion/shared/Spells';
 
 interface CharacterProps {
     matches: {
@@ -44,13 +46,9 @@ class Character extends Component<CharacterProps, CharacterState> {
       spAtk: 10,
       spDef: 10,
       items: [
-        { id: 1, name: 'Potion', description: 'Restores 50 HP', frame: 'potion.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
-        { id: 1, name: 'Potion', description: 'Restores 50 HP', frame: 'ether.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
+        items[0], items[2]
       ],
-      spells: [
-        { id: 1, name: 'Fireball', description: 'Restores 50 HP', frame: 'fireball.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
-        { id: 1, name: 'Heal', description: 'Restores 50 HP', frame: 'heal.png', price: 100, target: "self", cooldown: 2, effects: [{ stat: "hp", value: 50 }] },
-      ]
+      spells
     });
   }
   
