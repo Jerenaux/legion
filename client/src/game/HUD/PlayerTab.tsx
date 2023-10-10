@@ -10,6 +10,7 @@ interface Player {
   mp: number;
   maxMp: number;
   cooldown: number;
+  maxCooldown: number;
   casting: boolean;
   portrait: string;
   number: number;
@@ -43,43 +44,6 @@ class PlayerTab extends Component<Props, State> {
     this.events = this.props.eventEmitter;
   }
 
-  componentDidMount() {
-    this.timerID = setInterval(() => this.tick(), 1000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timerID);
-  }
-
-  formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.round(seconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
-
-  getBackground(fullColor: string, emptyColor: string, ratio: number): string {
-    let percent = 27 + Math.round(((ratio) * 73));
-    return `linear-gradient(to right, ${fullColor} 0%, ${fullColor} ${percent}%, ${emptyColor} ${percent}%, ${emptyColor} 100%)`;
-  }  
-
-  getHPBackground(player: Player): string {
-    return this.getBackground('#028406', '#AD0606', player.hp / player.maxHp);
-  }
-
-  getMPBackground(player: Player): string {
-    return this.getBackground('#0645AD', '#AD0606', player.mp / player.maxMp);
-  }
-
-  tick() {
-    this.setState(prevState => {
-      if (prevState.player.cooldown > 0) {
-        prevState.player.cooldown--;
-        prevState.player.cooldown = Math.max(0, prevState.player.cooldown);
-      }
-      return prevState;
-    });
-  }
-
   actionClick(type: string, letter: string, index: number) {
     this.events.emit('itemClick', letter);
 
@@ -91,77 +55,86 @@ class PlayerTab extends Component<Props, State> {
     }, 1000);
   }
 
+  getCooldownRatio(player: Player): number {
+    return (player.maxCooldown - player.cooldown) / player.maxCooldown;
+  }
+
   render(props: Props, state: State) {
     const { player } = props;
 
       const portraitStyle = {
         backgroundImage: `url(assets/sprites/${player.portrait})`,
       };
-      const HPBackground = this.getHPBackground(player);
-      const MPBackground = this.getMPBackground(player);
       const isCooldownActive = player.cooldown > 0;
-      const cooldownClass = isCooldownActive ? "cooldown-state" : "cooldown-state cooldown-complete";
       const isDead = player.hp <= 0;
       const canAct = !isCooldownActive && !isDead && !player.casting;
+      const headerText = `#${player.number} ${player.name}`;
+      const cooldownRatio = this.getCooldownRatio(player);
+      const cooldownBarStyle = {
+        width: `${cooldownRatio * 100}%`,
+      };
   
-      return <div className="player-tab box">
-          <div className="player-info">
-            #{player.number} {player.name}
+      return <div className="player-tab">
+          <div className="character-header-arena">
+            <div className="character-header-name">{headerText}</div>
+            <div className="character-header-name-shadow">{headerText}</div>
           </div>
-          <div className="player-main">
+          <div className="character-full-content">
             <div className="player-content">
-              <div style={portraitStyle} className="player-portrait" />
-              <div className="player-stats">
-                  <div className="cooldown">
-                    <span className="cooldown-label">⏱ Cooldown</span>
-                    <span className="cooldown-amount" >{this.formatTime(player.cooldown)} </span>
-                    <span className={cooldownClass} >{isCooldownActive ? `⏳` : `✅`}</span>
+              <div className="character-portrait" style={portraitStyle}></div>
+              <div className="player-bars">
+                <div className="">
+                    <div className="">HP {player.hp}/{player.maxHp}</div>
+                    <div className="hud-bar-bg">
+                        <div className="hud-bar hp-bar" style={{width: `80%`}}></div>
                     </div>
-                  <div className="hp" style={{background: HPBackground}}>  
-                    <span className="hp-label">❤️ HP</span>
-                    <span className="hp-amount">{player.hp} / {player.maxHp}</span>
-                  </div>
-  
-                  <div className="mp" style={{background: MPBackground}}>  
-                    <span className="mp-label">⚡️ MP</span>
-                    <span className="mp-amount">{player.mp} / {player.maxMp}</span>
-                  </div>
+                    <div className="">MP {player.mp}/{player.maxMp}</div>
+                    <div className="hud-bar-bg">
+                        <div className="hud-bar mp-bar" style={{width: `60%`}}></div>
+                    </div>
+                    <div className="">Cooldown</div>
+                    <div className="xp-bar-bg">
+                        <div className="hud-bar cooldown-bar" style={cooldownBarStyle}></div>
+                    </div>
+                </div>
               </div>
+            </div>
+            <div className="hud-actions">
+              {player.spells && player.spells.length > 0 && (
+                <div className="player-skills">
+                  <div className="slots">
+                    {player.spells.map((skill, i) => (
+                      <ActionItem 
+                        action={skill} 
+                        index={i} 
+                        clickedIndex={this.state.clickedSpell} 
+                        canAct={canAct} 
+                        actionType={ActionType.Skill} 
+                        onActionClick={this.actionClick.bind(this)} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {player.items && player.items.length > 0 && (
+                <div className="player-items">
+                  <div className="slots">
+                    {player.items.map((item, i) => (
+                      <ActionItem 
+                        action={item} 
+                        index={i} 
+                        clickedIndex={this.state.clickedItem} 
+                        canAct={canAct} 
+                        actionType={ActionType.Item}
+                        onActionClick={this.actionClick.bind(this)} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          {player.spells && player.spells.length > 0 && (
-            <div className="player-skills">
-              <div className="slots">
-                {player.spells.map((skill, i) => (
-                  <ActionItem 
-                    action={skill} 
-                    index={i} 
-                    clickedIndex={this.state.clickedSpell} 
-                    canAct={canAct} 
-                    actionType={ActionType.Skill} 
-                    onActionClick={this.actionClick.bind(this)} 
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {player.items && player.items.length > 0 && (
-            <div className="player-items">
-              <div className="slots">
-                {player.items.map((item, i) => (
-                  <ActionItem 
-                    action={item} 
-                    index={i} 
-                    clickedIndex={this.state.clickedItem} 
-                    canAct={canAct} 
-                    actionType={ActionType.Item}
-                    onActionClick={this.actionClick.bind(this)} 
-                  />
-                ))}
-              </div>
-            </div>
-          )}
       </div>;
   }
 }

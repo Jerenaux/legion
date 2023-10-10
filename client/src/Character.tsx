@@ -68,14 +68,6 @@ class Character extends Component<CharacterProps, CharacterState> {
     };
     const xpRatio = xp / (xp + xpToLevel) * 100;
 
-    const classToCssClass = {
-        'Warrior': 'warrior',
-        'Thief': 'thief',
-        'White Mage': 'white-mage',
-        'Black Mage': 'black-mage',
-    };
-
-    const cssClass = classToCssClass[characterClass];
     const stats = ['hp', 'atk', 'spAtk', 'mp', 'def', 'spDef'];
 
     return (
@@ -83,7 +75,7 @@ class Character extends Component<CharacterProps, CharacterState> {
         <div className="character-header">
             <div className="character-header-name">{name}</div>
             <div className="character-header-name-shadow">{name}</div>
-            <div className={`character-header-class ${cssClass}`}>{characterClass}</div>
+            <div className={`character-header-class`}>{characterClass}</div>
         </div>
         <div className="character-full-content">
             <div className="character-full-stats">

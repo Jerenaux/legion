@@ -6,6 +6,7 @@ import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { CellsHighlight } from './CellsHighlight';
 import { spells } from '@legion/shared/Spells';
+import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 
 export class Arena extends Phaser.Scene
 {
@@ -366,13 +367,13 @@ export class Arena extends Phaser.Scene
     }
 
     isFree(gridX, gridY) {
-        const isFree = !this.gridMap[this.serializeCoords(gridX, gridY)];
+        const isFree = !this.gridMap[serializeCoords(gridX, gridY)];
         return isFree;
     }
 
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
-        const player = this.gridMap[this.serializeCoords(gridX, gridY)];
+        const player = this.gridMap[serializeCoords(gridX, gridY)];
         if (this.selectedPlayer?.pendingSkill != null) {
             this.sendSkill(gridX, gridY);
         } else if (this.selectedPlayer?.pendingItem != null) {
@@ -432,6 +433,10 @@ export class Arena extends Phaser.Scene
                 this.refreshBox();
                 this.refreshOverview();
                 break;
+            case 'cooldownChange':
+                this.refreshBox();
+                this.refreshOverview();
+                break;
             case 'overviewChange':
                 this.refreshOverview();
                 break;
@@ -476,8 +481,8 @@ export class Arena extends Phaser.Scene
     processMove({team, tile, num}) {
         const player = this.getPlayer(team, num);
 
-        this.gridMap[this.serializeCoords(player.gridX, player.gridY)] = null;
-        this.gridMap[this.serializeCoords(tile.x, tile.y)] = player;
+        this.gridMap[serializeCoords(player.gridX, player.gridY)] = null;
+        this.gridMap[serializeCoords(tile.x, tile.y)] = player;
 
         player.walkTo(tile.x, tile.y);
         this.playSoundMultipleTimes('steps', 2);
@@ -742,56 +747,16 @@ export class Arena extends Phaser.Scene
                 player.setSpells(character.spells);
             }
 
-            this.gridMap[this.serializeCoords(character.x, character.y)] = player;
+            this.gridMap[serializeCoords(character.x, character.y)] = player;
 
             team.addMember(player);
         }, this);
     }
-
-    serializeCoords(x, y) {
-        return `${x},${y}`;
-    }
-
-    specialRound(num) {
-        if (num >= 0) {
-            return Math.round(num);
-        } else {
-            return -Math.round(-num);
-        }
-    }
-    
-    lineOfSight(startX, startY, endX, endY) {
-        // Get the distance between the start and end points
-        let distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-    
-        // Calculate the number of steps to check, based on the distance
-        let steps = Math.ceil(distance);
-    
-        // console.log(`Line of sight from (${startX}, ${startY}) to (${endX}, ${endY})`);
-        for (let i = 1; i < steps; i++) {
-            // Calculate the current position along the line
-            const xInc = this.specialRound(i / steps * (endX - startX));
-            const yInc = this.specialRound(i / steps * (endY - startY));
-            let currentX = Math.round(startX + xInc);
-            let currentY = Math.round(startY + yInc);
-            if (currentX == startX && currentY == startY) continue;
-
-            // Check if this position is occupied
-            if (!this.isFree(currentX, currentY)) {
-                // console.log(`Line of sight blocked at (${currentX}, ${currentY})`);
-                // If the position is occupied, return false
-                return false;
-            }
-        }
-    
-        // If no occupied positions were found, return true
-        return true;
-    }
-
+  
     isValidCell(fromX, fromY, toX, toY) {
         return !this.isSkip(toX, toY)
         && this.isFree(toX, toY)
-        && this.lineOfSight(fromX, fromY, toX, toY)
+        && lineOfSight(fromX, fromY, toX, toY, this.isFree.bind(this));
     }
 
     highlightCells(gridX, gridY, radius) {

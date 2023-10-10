@@ -38,16 +38,6 @@ canvas {
     color: white;
 }
 
-.player-tab {
-    position: relative; /* Needed to position the pseudo-element */
-    margin-top: 10px;
-    margin-left: 10px;
-    z-index: 2;
-    max-width: 350px;
-    align-self: start;
-    /* max-height: 270px; */
-}
-
 .box::before {
     content: ""; /* Pseudo-elements require a content property, even if it's an empty string */
     position: absolute; /* To position it at the top */
@@ -401,13 +391,13 @@ canvas {
     border-radius: 10px; 
   }
 
-  .hp-bar {
+  /* .hp-bar {
     width: 100%;
-    height: 10px; /* adjust as needed */
-    background-color: #a31720; /* color for the unfilled part */
-    border-radius: 5px; /* makes the bar rounded */
+    height: 10px; 
+    background-color: #a31720; 
+    border-radius: 5px; 
     border: 1px solid black;
-  }
+  } */
   
   .hp-fill {
     height: 100%;
@@ -415,13 +405,13 @@ canvas {
     border-radius: 5px; /* makes the bar rounded */
   }
 
-  .mp-bar {
+  /* .mp-bar {
   width: 100%;
-  height: 10px; /* adjust as needed */
-  background-color: #a31720; /* color for the unfilled part */
-  border-radius: 5px; /* makes the bar rounded */
+  height: 10px;
+  background-color: #a31720; 
+  border-radius: 5px;
   border: 1px solid black;
-}
+} */
 
 .mp-fill {
   height: 100%;
@@ -429,13 +419,13 @@ canvas {
   border-radius: 5px; /* makes the bar rounded */
 }
 
-.cooldown-bar {
+/* .cooldown-bar {
     width: 100%;
-    height: 10px; /* adjust as needed */
-    background-color: #a31720; /* color for the unfilled part */
-    border-radius: 5px; /* makes the bar rounded */
+    height: 10px; 
+    background-color: #a31720; 
+    border-radius: 5px; 
     border: 1px solid black;
-  }
+  } */
   
   .cooldown-fill {
     height: 100%;
@@ -891,6 +881,23 @@ canvas {
   transform: scale(0.95);
 }
 
+.player-tab {
+  position: relative; 
+  margin-top: 10px;
+  margin-left: 10px;
+  z-index: 2;
+  /* max-width: 350px; */
+  align-self: start;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background-color: #F9F6EE;
+  border-radius: 15px;
+}
+
+.player-bars {
+  margin-right: 10px;
+  width: 200px;
+}
+
 .character-full {
   margin-top: 20px;
   margin-left: 10px;
@@ -907,6 +914,18 @@ canvas {
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
   height: 50px;
+  padding: 5px;
+  padding-left: 15px;
+  overflow: hidden;
+}
+
+.character-header-arena {
+  position: relative;
+  /* background: linear-gradient(to right, #874255, #edcfb7, transparent); */
+  background: linear-gradient(to right, rgb(79, 79, 227), lightblue, transparent);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  height: 30px;
   padding: 5px;
   padding-left: 15px;
   overflow: hidden;
@@ -966,6 +985,10 @@ canvas {
   top: 70px;
 }
 
+.hud-actions {
+  margin-top: -10px;
+}
+
 .xp-area {
   margin-left: 60px;
   flex-grow: 1;
@@ -981,6 +1004,29 @@ canvas {
   height: 5px; 
   background: linear-gradient(to right, darkblue, lightblue);
   border-radius: 50px;
+}
+
+.hud-bar-bg {
+  background-color: darkred;
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.hud-bar {
+  height: 10px; 
+  border-radius: 50px;
+}
+
+.hp-bar {
+  background: linear-gradient(to right, darkgreen, lightgreen);
+}
+
+.mp-bar {
+  background: linear-gradient(to right, darkblue, lightblue);
+}
+
+.cooldown-bar {
+  background: gold;
 }
 
 .shop-grid {

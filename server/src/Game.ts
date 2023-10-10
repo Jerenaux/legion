@@ -4,6 +4,8 @@ import { uuid } from 'uuidv4';
 import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
 import { Spell } from './Spell';
+import { lineOfSight, serializeCoords } from '@legion/shared/utils';
+
 
 export abstract class Game
 {
@@ -409,34 +411,6 @@ export abstract class Game
         }
     }
 
-    lineOfSight(startX: number, startY: number, endX: number, endY: number) {
-        // Get the distance between the start and end points
-        let distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-    
-        // Calculate the number of steps to check, based on the distance
-        let steps = Math.ceil(distance);
-    
-        // console.log(`Line of sight from (${startX}, ${startY}) to (${endX}, ${endY})`);
-        for (let i = 1; i < steps; i++) {
-            // Calculate the current position along the line
-            const xInc = this.specialRound(i / steps * (endX - startX));
-            const yInc = this.specialRound(i / steps * (endY - startY));
-            let currentX = Math.round(startX + xInc);
-            let currentY = Math.round(startY + yInc);
-            if (currentX == startX && currentY == startY) continue;
-
-            // Check if this position is occupied
-            if (!this.isFree(currentX, currentY)) {
-                // console.log(`Line of sight blocked at (${currentX}, ${currentY})`);
-                // If the position is occupied, return false
-                return false;
-            }
-        }
-    
-        // If no occupied positions were found, return true
-        return true;
-    }
-
     isSkip(x: number, y: number) {
         if (x < 0 || y < 0 || x >= this.gridWidth || y >= this.gridHeight) return true;
         const v = 3;
@@ -448,7 +422,7 @@ export abstract class Game
     isValidCell(fromX: number, fromY: number, toX: number, toY: number) {
         return !this.isSkip(toX, toY)
         && this.isFree(toX, toY)
-        && this.lineOfSight(fromX, fromY, toX, toY)
+        && lineOfSight(fromX, fromY, toX, toY, this.isFree.bind(this));
     }
 
     listCellsInRange(gridX: number, gridY: number, radius: number): Tile[] {

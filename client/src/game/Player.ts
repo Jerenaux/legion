@@ -137,6 +137,7 @@ export class Player extends Phaser.GameObjects.Container {
             mp: this.mp,
             maxMp: this.maxMP,
             cooldown: this.cooldownDuration / 1000,
+            maxCooldown: this.totalCooldownDuration / 1000,
             spells: this.spells,
             items: this.inventory,
             casting: this.casting,
@@ -534,6 +535,8 @@ export class Player extends Phaser.GameObjects.Container {
             onUpdate: () => {
                 this.cooldownDuration = Math.floor(this.totalCooldownDuration * (1 - this.cooldown.progress));
                 this.cooldown.draw(); // Redraw the circle on each update of the tween
+                // @ts-ignore
+                this.arena.emitEvent('cooldownChange', {num: this.num})
             },
             onComplete: () => {
                 this.cooldown.setVisible(false);
