@@ -535,15 +535,17 @@ export class Arena extends Phaser.Scene
         if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
     }
 
-    processLocalAnimation({x, y, animation, shake, sfx}) {
+    processLocalAnimation({x, y, id}) {
         // Convert x and y in grid coords to pixels
-        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        let {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        const spell = spells[id];
+        if (spell.yoffset) pixelY += spell.yoffset;
         this.localAnimationSprite.setPosition(pixelX, pixelY)
             .setVisible(true)
-            .setDepth(3 + y/10)
-            .play(animation);
-        this.playSound(sfx);
-        if (shake) this.cameras.main.shake(250, 0.01); // More intense shake
+            .setDepth(3.5 + y/10)
+            .play(spell.animation);
+        this.playSound(spell.sfx);
+        if (spell.shake) this.cameras.main.shake(250, 0.01); // More intense shake
     }
 
     processGameEnd({winner}) {

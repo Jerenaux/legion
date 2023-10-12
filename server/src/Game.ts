@@ -337,9 +337,7 @@ export abstract class Game
             this.broadcast('localanimation', {
                 x,
                 y,
-                animation: spell.animation,
-                shake: spell.shake,
-                sfx: spell.sfx,
+                id: spell.id,
             });
 
             team.socket?.emit('cooldown', {

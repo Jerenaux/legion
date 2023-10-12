@@ -1,6 +1,7 @@
 import { h, Component } from 'preact';
 import ActionItem from './Action';
 import { ActionType } from './ActionTypes';
+import TabBar from './TabBar';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 
@@ -84,18 +85,12 @@ class PlayerTab extends Component<Props, State> {
               <div className="character-portrait" style={portraitStyle}></div>
               <div className="player-bars">
                 <div className="">
-                    <div className="">HP {player.hp}/{player.maxHp}</div>
-                    <div className="hud-bar-bg">
-                        <div className="hud-bar hp-bar" style={{width: `80%`}}></div>
-                    </div>
-                    <div className="">MP {player.mp}/{player.maxMp}</div>
-                    <div className="hud-bar-bg">
-                        <div className="hud-bar mp-bar" style={{width: `60%`}}></div>
-                    </div>
-                    <div className="">Cooldown</div>
-                    <div className="xp-bar-bg">
-                        <div className="hud-bar cooldown-bar" style={cooldownBarStyle}></div>
-                    </div>
+                  <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="hp-bar" />
+                  <TabBar title="MP" value={player.mp} maxValue={player.maxMp} barClass="mp-bar" />
+                  <div className="bar-title">Cooldown</div>
+                  <div className="xp-bar-bg">
+                      <div className="hud-bar cooldown-bar" style={cooldownBarStyle}></div>
+                  </div>
                 </div>
               </div>
             </div>

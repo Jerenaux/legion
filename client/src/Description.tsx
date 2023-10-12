@@ -14,7 +14,7 @@ class Description extends Component<DescProps> {
         {
           action.effects && action.effects.map((effect) => {
             const value = effect.value == -1 ? 'FULL' : effect.value > 0 ? `+${effect.value}` : effect.value;
-            const className = effect.stat == Stat.HP && effect.value < 0 ? 'dmg' : `${Stat[effect.stat].toLowerCase()}`;
+            const className = effect.stat == Stat.HP && effect.target == Target.SELF ? 'dmg' : `${Stat[effect.stat].toLowerCase()}`;
             return (
             <div className={`badge ${className}`}>  
               <div className="badge-label">{Stat[effect.stat]}</div>

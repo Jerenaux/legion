@@ -929,6 +929,8 @@ canvas {
   padding: 5px;
   padding-left: 15px;
   overflow: hidden;
+  text-shadow: 2px 2px 4px black;
+
 }
 
 .character-header-name {
@@ -936,8 +938,10 @@ canvas {
   font-family: Kim;
   color: white;
   font-size: 30px;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  /* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */
   top: 0;
+  text-shadow: 2px 2px 4px black;
+
 }
 
 .character-header-name-shadow {
@@ -1019,14 +1023,31 @@ canvas {
 
 .hp-bar {
   background: linear-gradient(to right, darkgreen, lightgreen);
+  transition: width 0.3s ease-out;
 }
 
 .mp-bar {
   background: linear-gradient(to right, darkblue, lightblue);
+  transition: width 0.3s ease-out;
 }
 
 .cooldown-bar {
   background: gold;
+}
+
+.bar-title {
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.bigger-number {
+  font-size: 25px;
+  margin-left: 5px;
+}
+
+.smaller-number {
+  font-size: 12px;
+  margin-left: 5px;
 }
 
 .shop-grid {
