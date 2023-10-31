@@ -1,6 +1,19 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
+import * as admin from 'firebase-admin';
+import cors from 'cors';
 
+admin.initializeApp();
+const corsOptions = { origin: true };
+
+async function getUID(request: any) {
+  const authToken = request.headers.authorization?.split('Bearer ')[1];
+  if (!authToken) {
+    return -1;
+  }
+  const decodedToken = await admin.auth().verifyIdToken(authToken);
+  return decodedToken.uid;
+}
 
 export const helloWorld = onRequest((request, response) => {
   logger.info("Hello logs!", {structuredData: true});
@@ -15,17 +28,27 @@ export const leaderboardData = onRequest((request, response) => {
     ]);
 });
 
-export const inventoryData = onRequest((request, response) => {
-  const inventories: { [key: string]: number[] } = {
-    '0': [0,0,0,2,5],
-    '1': [1,1,1,3,6],
-  }
 
-  if (typeof request.query.playerId === 'string') {
-    const playerId: string = request.query.playerId;
-    response.send(inventories[playerId]);
-  } else {
-    response.status(400).send('Bad Request: Invalid playerId');
-  }
+export const inventoryData = onRequest((request, response) => {
+  cors(corsOptions)(request, response, async () => {
+    const inventories: { [key: string]: number[] } = {
+      '0': [0,0,0,2,5],
+      '1': [1,1,1,3,6],
+    }
+
+    try {
+      const uid = await getUID(request);
+  
+      if (inventories.hasOwnProperty(uid)) {
+        response.send(inventories[uid]);
+      } else {
+        response.status(404).send('Not Found: Invalid player ID');
+      }
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      response.status(401).send('Unauthorized');
+    }
+  });
 });
+
 
