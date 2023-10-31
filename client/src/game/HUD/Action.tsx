@@ -10,12 +10,13 @@ interface ActionItemProps {
   clickedIndex: number;
   canAct: boolean;
   actionType: ActionType;
+  hideHotKey?: boolean;
   onActionClick?: (type: string, letter: string, index: number) => void;
 }
 
 class Action extends Component<ActionItemProps> {
   render() {
-    const { action, index, clickedIndex, canAct, actionType, onActionClick } = this.props;
+    const { action, index, clickedIndex, canAct, actionType, hideHotKey, onActionClick } = this.props;
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const startPosition = keyboardLayout.indexOf(actionType === 'item' ? 'Z' : 'Q');
     const keyBinding = keyboardLayout.charAt(startPosition + index);
@@ -27,7 +28,7 @@ class Action extends Component<ActionItemProps> {
           className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
           style={{backgroundImage: `url(/assets/${actionType}s/${action.frame})`}}
           />}
-        <span className="key-binding">{keyBinding}</span>
+        {!hideHotKey && <span className="key-binding">{keyBinding}</span>}
         {action.id > -1 && <div className="info-box box">
           <InfoBox action={action} />
         </div>}

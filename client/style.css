@@ -1119,7 +1119,6 @@ canvas {
   padding: 10px;
   height: 150px;
   display: flex;
-  flex-direction: row;
 }
 
 .shop-item-card-content-info {
@@ -1331,6 +1330,9 @@ canvas {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   top: 0;
   padding-left: 100px;
+  display: flex;
+  justify-content: space-between;
+  width: calc(100% - 120px);
 }
 
 .inventory-header-name-shadow {
@@ -1343,6 +1345,11 @@ canvas {
   opacity: 0.15;
 }
 
+/* .inventory-capacity {
+  font-size: 30px;
+  vertical-align: middle;
+} */
+
 .inventory-header-image {
   position: relative;
   left: -10px; /* Adjust this value to control how much the image spills over to the left */
@@ -1354,8 +1361,8 @@ canvas {
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* Adjust the 100px value as needed */
-  grid-gap: 10px; /* Adjust as needed */
+  grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); 
+  grid-gap: 5px;
 
 }
 
