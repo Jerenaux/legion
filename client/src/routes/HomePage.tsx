@@ -1,9 +1,10 @@
 // HomePage.tsx
 import { h, Component } from 'preact';
 import { Router, Route, Link } from 'preact-router';
-import firebase from '../components/firebaseConfig';
+import firebase from '@legion/shared/firebaseConfig';
 import * as firebaseui from 'firebaseui'
 import 'firebaseui/dist/firebaseui.css'
+import { connectAuthEmulator } from 'firebase/auth';
 
 import PlayPage from '../components/PlayPage';
 import TeamPage from '../components/TeamPage';
@@ -30,6 +31,10 @@ class HomePage extends Component<object, State> {
         link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css';
         link.id = 'font-awesome-css';
         document.head.appendChild(link);
+
+        if (process.env.PREACT_APP_USE_FIREBASE_EMULATOR === 'true') {
+            connectAuthEmulator(firebase.auth(), 'http://localhost:9099');
+        }
 
         this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
             (user) => this.setState({ user })

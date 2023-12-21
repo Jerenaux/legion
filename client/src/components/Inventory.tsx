@@ -1,7 +1,7 @@
 
 // Inventory.tsx
 import { h, Component } from 'preact';
-import firebase from './firebaseConfig';
+import firebase from '@legion/shared/firebaseConfig';
 
 import { items } from '@legion/shared/Items';
 import ActionItem from './game/HUD/Action';
@@ -43,7 +43,6 @@ class Inventory extends Component<object, InventoryState> {
   
   async fetchInventoryData() {
     this.state.user.getIdToken(true).then((idToken) => {
-      console.log(idToken);
       // Make the API request, including the token in the Authorization header
       fetch(`${process.env.PREACT_APP_API_URL}/inventoryData?playerId=0`, {
         headers: {

@@ -448,6 +448,7 @@ export class Arena extends Phaser.Scene
                 if (this.selectedPlayer) {
                     events.emit('keyPress', data);
                 }
+                break;
             default:
                 break;
         }
@@ -799,15 +800,6 @@ export class Arena extends Phaser.Scene
         this.createAnims();
         this.createSounds();
         this.connectToServer();
-
-        const grayScaleShader = this.cache.text.get('grayScaleShader');
-
-        // @ts-ignore
-        const renderer: Phaser.Renderer.WebGL.WebGLRenderer = this.sys.game.renderer;
-        renderer.pipelines.add('GrayScale', new Phaser.Renderer.WebGL.WebGLPipeline({
-            game: this.game,
-            fragShader: grayScaleShader
-        }));
 
         this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(3).setOrigin(0.5, 0.7).setVisible(false);
         this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);

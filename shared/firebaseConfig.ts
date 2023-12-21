@@ -4,7 +4,7 @@ import 'firebase/compat/auth';
 
 const config = {
     apiKey: "AIzaSyCRlDX1DYaQpHcs0fZm05pmabuGVWeL8Es",
-    authDomain: "legion-32c6d.firebaseapp.com",
+    authDomain: "127.0.0.1:9099", // "legion-32c6d.firebaseapp.com",
     projectId: "legion-32c6d",
     storageBucket: "legion-32c6d.appspot.com",
     messagingSenderId: "470800826393",

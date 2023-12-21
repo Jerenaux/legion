@@ -3,11 +3,15 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    // "baseUrl": "./",
+    // "paths": {
+    //   "@legion/shared": ["../shared"],
+    // }
   },
   "compileOnSave": true,
   "include": [

@@ -1,6 +1,6 @@
 // NotificationBar.tsx
 import { h, Component } from 'preact';
-import firebase from './firebaseConfig';
+import firebase from '@legion/shared/firebaseConfig';
 
 interface State {
     showNotifications: boolean;
@@ -36,7 +36,7 @@ class NotificationBar extends Component<Props, State> {
                 <div className="socials-bar">
                     <a href="https://twitter.com/iolegion" title="X/Twitter" target="_blank" rel="noopener noreferrer">
                         <div className="twitterIconContainer">
-                            <i className="fa-brands fa-x-twitter"></i>
+                            <i className="fa-brands fa-x-twitter" />
                         </div>
                     </a>
                 </div>

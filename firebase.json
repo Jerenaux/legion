@@ -1,7 +1,7 @@
 {
   "functions": [
     {
-      "source": "functions",
+      "source": "api/functions",
       "codebase": "default",
       "ignore": [
         "node_modules",
@@ -16,8 +16,14 @@
     }
   ],
   "emulators": {
+    "auth": {
+      "port": 9099
+    },
     "functions": {
-      "port": 5010
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8085
     },
     "ui": {
       "enabled": true
