@@ -30,7 +30,7 @@ class Inventory extends Component<object, InventoryState> {
       this.setState({ user }, () => {
         if (user) {
           console.log('User is logged in');
-          this.fetchInventoryData(); // Assuming this is where you put your fetch logic
+          this.fetchInventoryData(this.state.user); 
         }
       });
     });
@@ -41,16 +41,17 @@ class Inventory extends Component<object, InventoryState> {
     this.authSubscription();
   }
   
-  async fetchInventoryData() {
-    this.state.user.getIdToken(true).then((idToken) => {
+  async fetchInventoryData(user) {
+    user.getIdToken(true).then((idToken) => {
       // Make the API request, including the token in the Authorization header
-      fetch(`${process.env.PREACT_APP_API_URL}/inventoryData?playerId=0`, {
+      fetch(`${process.env.PREACT_APP_API_URL}/inventoryData`, {
         headers: {
           Authorization: `Bearer ${idToken}`,
         },
       })
       .then(response => response.json())
       .then(data => {
+        console.log(data);
         this.setState({ inventory: data });
       })
       .catch(error => console.error('Error:', error));

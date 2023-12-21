@@ -2,8 +2,11 @@
 import { h, Component } from 'preact';
 import Description from './Description';
 import { items } from '@legion/shared/Items';
+import firebase from '@legion/shared/firebaseConfig';
 
 interface State {
+  user: firebase.User | null;
+  gold: number;
   items: Array<any>;
   isDialogOpen: boolean;
   selectedItem: any;
@@ -11,12 +14,51 @@ interface State {
 }
 
 class ShopPage extends Component<object, State> {
+  authSubscription: firebase.Unsubscribe | null = null;
+
   state: State = {
+    user: null,
+    gold: 0,
     items,
     isDialogOpen: false,
     selectedItem: null,
     quantity: 1,
   };
+
+  componentDidMount() {
+    this.authSubscription = firebase.auth().onAuthStateChanged((user) => {
+      this.setState({ user }, () => {
+        if (user) {
+          console.log('User is logged in');
+          this.fetchInventoryData(this.state.user); 
+        }
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    // Don't forget to unsubscribe when the component unmounts
+    this.authSubscription();
+  }
+  
+  async fetchInventoryData(user) {
+    user.getIdToken(true).then((idToken) => {
+      // Make the API request, including the token in the Authorization header
+      fetch(`${process.env.PREACT_APP_API_URL}/inventoryData`, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        this.setState({ gold: data.gold });
+      })
+      .catch(error => console.error('Error:', error));
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
 
   openDialog = (item) => {
     this.setState({ isDialogOpen: true, selectedItem: item, quantity: 1 });
@@ -53,7 +95,7 @@ class ShopPage extends Component<object, State> {
         <div className="shop-content">
             <div className="gold-container" title='Your gold'>
                 <img src="assets/gold2.png" className="gold-icon" /> {/* Replace with your gold icon */}
-                <span>2001</span>
+                <span>{this.state.gold}</span>
             </div>
 
             <div className="shop-grid">
