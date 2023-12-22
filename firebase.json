@@ -23,9 +23,7 @@
       "port": 5001
     },
     "firestore": {
-      "port": 8085,
-      "export-on-exit": "./firestore-emulator-data",
-      "import": "./firestore-emulator-data"
+      "port": 8085
     },
     "ui": {
       "enabled": true

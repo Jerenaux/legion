@@ -1,20 +1,10 @@
 {
   "name": "legion-api",
-  "z": {
-    "lint": "eslint --ext .js,.ts .",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "serve": "npm run build && firebase emulators:start",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
-  },
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "build": "webpack",
     "build:watch": "webpack --watch",
-    "serve": "npm run build && firebase emulators:start",
+    "serve": "npm run build && firebase emulators:start --import ./firestore-emulator-data --export-on-exit ./firestore-emulator-data",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
@@ -39,5 +29,15 @@
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
   },
-  "private": true
+  "private": true,
+  "old_scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --import ./firestore-emulator-data --export-on-exit ./firestore-emulator-data",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  }
 }
