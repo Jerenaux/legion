@@ -103,7 +103,6 @@ export const purchaseItem = onRequest((request, response) => {
         const inventory = docSnap.data()?.inventory;
         inventory.push(request.body.itemId);
         gold -= totalPrice;
-        console.log(`gold: ${gold}`);
         await db.collection("players").doc(uid).update({
           gold,
           inventory,

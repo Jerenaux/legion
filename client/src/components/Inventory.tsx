@@ -56,7 +56,7 @@ class Inventory extends Component<object, InventoryState> {
       .then(data => {
         console.log(data);
         this.setState({ 
-          inventory: data.inventory 
+          inventory: data.inventory.sort()
         });
       })
       .catch(error => console.error('Error:', error));
