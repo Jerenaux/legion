@@ -58,7 +58,6 @@ export const leaderboardData = onRequest((request, response) => {
 
 export const inventoryData = onRequest((request, response) => {
   logger.info("Fetching inventoryData");
-  logger.info(items);
   const db = admin.firestore();
 
   cors(corsOptions)(request, response, async () => {
@@ -90,9 +89,29 @@ export const purchaseItem = onRequest((request, response) => {
       const docSnap = await db.collection("players").doc(uid).get();
 
       if (docSnap.exists) {
+        let gold = docSnap.data()?.gold;
+        console.log(`gold: ${gold}`);
+        const itemId = request.body.itemId;
+        const nb = request.body.quantity;
+        const itemPrice = items[itemId].price;
+        const totalPrice = itemPrice * nb;
+        console.log(`Total price for ${nb} items: ${totalPrice}`);
+        if (gold < totalPrice) {
+          response.status(500).send("Insufficient gold");
+        }
+
         const inventory = docSnap.data()?.inventory;
         inventory.push(request.body.itemId);
-        response.send();
+        gold -= totalPrice;
+        console.log(`gold: ${gold}`);
+        await db.collection("players").doc(uid).update({
+          gold,
+          inventory,
+        });
+        response.send({
+          gold,
+          inventory,
+        });
       } else {
         response.status(404).send("Not Found: Invalid player ID");
       }

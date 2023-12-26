@@ -92,13 +92,13 @@ class ShopPage extends Component<object, State> {
     });
   }
 
-  hasEnoughGold = (itemId) => {
+  hasEnoughGold = (itemId, quantity) => {
     const item = this.state.items.find((item) => item.id === itemId);
     if (!item) {
       return false;
     }
 
-    return this.state.gold >= item.price;
+    return this.state.gold >= item.price * quantity;
   }
 
   purchaseItem = () => {
@@ -106,10 +106,34 @@ class ShopPage extends Component<object, State> {
     if (!selectedItem) {
       return;
     }
-    if (!this.hasEnoughGold(selectedItem.id)) {
+    if (!this.hasEnoughGold(selectedItem.id, quantity)) {
       toast.error('Not enough gold!', {closeBtn: false, position: 'top', duration: 3000});
       return;
     }
+    this.state.user.getIdToken(true).then((idToken) => {
+      // Make the API request, including the token in the Authorization header
+      fetch(`${process.env.PREACT_APP_API_URL}/purchaseItem`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemId: selectedItem.id,
+          quantity,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        this.setState({ 
+          gold: data.gold,
+          inventory: data.inventory
+        });
+        toast.info('Purchase successful!', {closeBtn: false, position: 'top', duration: 3000});
+      })
+      .catch(error => console.error('Error:', error));
+    });
     this.closeDialog();
   }
 
