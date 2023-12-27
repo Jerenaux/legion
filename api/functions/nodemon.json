@@ -1,5 +1,5 @@
 {
     "watch": ["src/**/*.ts"],
     "ext": "ts,js",
-    "exec": "npm run serve"
+    "exec": "npm run build"
   }
