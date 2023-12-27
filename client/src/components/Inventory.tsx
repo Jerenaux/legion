@@ -64,6 +64,34 @@ class Inventory extends Component<object, InventoryState> {
       console.error(error);
     });
   }
+
+  onActionClick = (type: string, letter: string, index: number) => {
+    console.log('clicked', index);
+    this.state.user.getIdToken(true).then((idToken) => {
+      // Make the API request, including the token in the Authorization header
+      fetch(`${process.env.PREACT_APP_API_URL}/equipItem`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemId: selectedItem.id,
+          quantity,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        this.setState({ 
+          gold: data.gold,
+          inventory: data.inventory
+        });
+        toast.info('Purchase successful!', {closeBtn: false, position: 'top', duration: 3000});
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  }
   
   render() {
     const slots = Array.from({ length: this.state.capacity }, (_, i) => (
@@ -76,6 +104,7 @@ class Inventory extends Component<object, InventoryState> {
               canAct={true} 
               hideHotKey={true}
               actionType={ActionType.Item}
+              onActionClick={this.onActionClick}
             />
           }
         </div>

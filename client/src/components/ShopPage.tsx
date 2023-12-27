@@ -3,14 +3,10 @@ import { h, Component } from 'preact';
 import Description from './Description';
 import { items } from '@legion/shared/Items';
 import toast from '@brenoroosevelt/toast'
-
-import firebase from 'firebase/compat/app'
-import firebaseConfig from '@legion/shared/firebaseConfig';
-firebase.initializeApp(firebaseConfig);
+import { apiFetch } from '../services/apiService';
 
 
 interface State {
-  user: firebase.User | null;
   gold: number;
   inventory: Array<any>;
   items: Array<any>;
@@ -20,10 +16,8 @@ interface State {
 }
 
 class ShopPage extends Component<object, State> {
-  authSubscription: firebase.Unsubscribe | null = null;
 
   state: State = {
-    user: null,
     gold: 0,
     inventory: [],
     items,
@@ -33,41 +27,20 @@ class ShopPage extends Component<object, State> {
   };
 
   componentDidMount() {
-    this.authSubscription = firebase.auth().onAuthStateChanged((user) => {
-      this.setState({ user }, () => {
-        if (user) {
-          console.log('User is logged in');
-          this.fetchInventoryData(this.state.user); 
-        }
-      });
-    });
+    this.fetchInventoryData(); 
   }
 
-  componentWillUnmount() {
-    // Don't forget to unsubscribe when the component unmounts
-    this.authSubscription();
-  }
-  
-  async fetchInventoryData(user) {
-    user.getIdToken(true).then((idToken) => {
-      // Make the API request, including the token in the Authorization header
-      fetch(`${process.env.PREACT_APP_API_URL}/inventoryData`, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      })
-      .then(response => response.json())
-      .then(data => {
+  async fetchInventoryData() {
+    try {
+        const data = await apiFetch('inventoryData');
         console.log(data);
         this.setState({ 
-          gold: data.gold,
-          inventory: data.inventory
+            gold: data.gold,
+            inventory: data.inventory
         });
-      })
-      .catch(error => console.error('Error:', error));
-    }).catch((error) => {
-      console.error(error);
-    });
+    } catch (error) {
+        toast.error(`Error: ${error}`, {closeBtn: true, position: 'top'});
+    }
   }
 
   getAmountOwned = (itemId) => {
@@ -110,30 +83,26 @@ class ShopPage extends Component<object, State> {
       toast.error('Not enough gold!', {closeBtn: false, position: 'top', duration: 3000});
       return;
     }
-    this.state.user.getIdToken(true).then((idToken) => {
-      // Make the API request, including the token in the Authorization header
-      fetch(`${process.env.PREACT_APP_API_URL}/purchaseItem`, {
+
+    const payload = {
+        itemId: selectedItem.id,
+        quantity,
+    };
+    
+    apiFetch('purchaseItem', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          itemId: selectedItem.id,
-          quantity,
-        }),
-      })
-      .then(response => response.json())
-      .then(data => {
+        body: payload
+    })
+    .then(data => {
         console.log(data);
         this.setState({ 
-          gold: data.gold,
-          inventory: data.inventory
+            gold: data.gold,
+            inventory: data.inventory
         });
-        toast.info('Purchase successful!', {closeBtn: false, position: 'top', duration: 3000});
-      })
-      .catch(error => console.error('Error:', error));
-    });
+        toast.success('Purchase successful!', {closeBtn: false, position: 'top', duration: 3000});
+    })
+    .catch(error => toast.error(`Error: ${error}`, {closeBtn: true, position: 'top'}));
+    
     this.closeDialog();
   }
 

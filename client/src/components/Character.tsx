@@ -2,9 +2,8 @@
 import { h, Component } from 'preact';
 import ActionItem from './game/HUD/Action';
 import { ActionType } from './game/HUD/ActionTypes';
-import { items } from '@legion/shared/Items';
-import { spells } from '@legion/shared/Spells';
 import { classEnumToString } from './utils';
+import { CharacterContext } from './CharacterContext';
 
 import firebase from 'firebase/compat/app'
 import firebaseConfig from '@legion/shared/firebaseConfig';
@@ -35,6 +34,7 @@ interface CharacterState {
 }
 
 class Character extends Component<CharacterProps, CharacterState> {
+  static contextType = CharacterContext;
   authSubscription: firebase.Unsubscribe | null = null;
   
   componentDidMount() {
@@ -81,7 +81,12 @@ class Character extends Component<CharacterProps, CharacterState> {
     });
   }
 
+  onActionClick = (type: string, letter: string, index: number) => {
+    console.log('clicked', index);
+  }
+
   render() {
+    const { characterId } = this.context;
     const { portrait, name, class: characterClass, level, xp, inventory, carrying_capacity, skills, skill_slots } = this.state;
     const xpToLevel = 100;
 
@@ -150,6 +155,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                       clickedIndex={-1}
                       canAct={true} 
                       actionType={ActionType.Skill}
+                      onActionClick={this.onActionClick}
                     />
                   ))}
                   </div>

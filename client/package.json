@@ -26,6 +26,7 @@
     "phaser": "^3.60.0",
     "phaser3-rex-plugins": "^1.60.7",
     "preact": "^10.10.0",
+    "preact-iso": "^2.3.2",
     "preact-render-to-string": "^5.2.1",
     "preact-router": "^3.2.1",
     "socket.io-client": "^4.7.2"

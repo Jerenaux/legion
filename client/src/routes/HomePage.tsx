@@ -1,11 +1,9 @@
 // HomePage.tsx
 import { h, Component } from 'preact';
 import { Router, Route, Link } from 'preact-router';
+import AuthContext from '../contexts/AuthContext'; 
 
 import firebase from 'firebase/compat/app'
-import firebaseConfig from '@legion/shared/firebaseConfig';
-firebase.initializeApp(firebaseConfig);
-
 import * as firebaseui from 'firebaseui'
 import 'firebaseui/dist/firebaseui.css'
 import 'firebase/compat/auth';
@@ -18,14 +16,14 @@ import NotificationBar from '../components/NotificationBar';
 
 interface State {
     currentPage: string;
-    user: firebase.User | null;
     showFirebaseUI: boolean;
 }
 
 class HomePage extends Component<object, State> {
+    static contextType = AuthContext; 
+
     state: State = {
         currentPage: 'play',
-        user: null,
         showFirebaseUI: false,
     };
 
@@ -35,16 +33,6 @@ class HomePage extends Component<object, State> {
         link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css';
         link.id = 'font-awesome-css';
         document.head.appendChild(link);
-
-        if (process.env.PREACT_APP_USE_FIREBASE_EMULATOR === 'true') {
-            // connectAuthEmulator(firebase.auth(), 'http://localhost:9099');
-            firebase.auth().useEmulator('http://localhost:9099');
-        }
-
-        this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
-            (user) => this.setState({ user })
-        );
-   
     }
 
     componentWillUnmount() {
@@ -52,9 +40,6 @@ class HomePage extends Component<object, State> {
         if (link) {
             document.head.removeChild(link);
         }
-
-        this.unregisterAuthObserver();
-
     }
 
     handleRouteChange = (e) => {
@@ -71,9 +56,10 @@ class HomePage extends Component<object, State> {
     unregisterAuthObserver: () => void;
 
     logout = () => {
-        console.log('Logging out');
-        firebase.auth().signOut().then(() => {
-            this.setState({ user: null }); 
+        // Use context to handle logout
+        const { firebaseAuth } = this.context;
+        firebaseAuth.signOut().then(() => {
+            // No need to update state here since AuthProvider will handle it
         }).catch((error) => {
             console.error('Error signing out: ', error);
         });
@@ -104,6 +90,8 @@ class HomePage extends Component<object, State> {
 
     render() {
         const { currentPage, showFirebaseUI } = this.state;
+        const { user } = this.context; 
+
         const bgcolors = {
             play: '#080c15',
             team: '#06090a',
@@ -151,7 +139,7 @@ class HomePage extends Component<object, State> {
                 </div>
                 <div className="content" style={bgImage}>
                 
-                <NotificationBar initFirebaseUI={this.initFirebaseUI} logout={this.logout} user={this.state.user} />
+                <NotificationBar initFirebaseUI={this.initFirebaseUI} logout={this.logout} user={user} />
 
                 <div className="mainContent">
                     <Router onChange={this.handleRouteChange}>

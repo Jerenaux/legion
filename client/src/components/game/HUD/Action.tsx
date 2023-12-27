@@ -26,7 +26,7 @@ class Action extends Component<ActionItemProps> {
         onClick={() => onActionClick(actionType, keyBinding, index)}>
         {action.id > -1 && <div 
           className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
-          style={{backgroundImage: `url(/assets/${actionType}s/${action.frame})`}}
+          style={{backgroundImage: `url(/assets/${actionType}s/${action.frame})`, cursor: 'pointer'}}
           />}
         {!hideHotKey && <span className="key-binding">{keyBinding}</span>}
         {action.id > -1 && <div className="info-box box">
