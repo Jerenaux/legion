@@ -3,6 +3,7 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import cors from "cors";
+import {Request} from "express";
 import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 
@@ -13,8 +14,11 @@ admin.initializeApp();
 const corsOptions = {origin: true};
 
 
-async function getUID(request: any) {
+async function getUID(request: Request): Promise<string> {
   const authToken = request.headers.authorization?.split("Bearer ")[1];
+  if (!authToken) {
+    throw new Error("Auth token not provided or invalid format");
+  }
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(authToken);
@@ -302,7 +306,17 @@ export const characterData = onRequest((request, response) => {
   cors(corsOptions)(request, response, async () => {
     try {
       const uid = await getUID(request);
-      if (!request.query.id || typeof request.query.id !== "string") {
+
+      // Check that character is owned by player
+      const playerDoc = await db.collection("players").doc(uid).get();
+      const characters =
+        playerDoc.data()?.characters as admin.firestore.DocumentReference[];
+      const characterIds = characters.map((character) => character.id);
+      if (!characterIds.includes(request.query.id as string)) {
+        response.status(404).send("Not Found: character not owned by player");
+      }
+
+      if (!request.query.id) {
         response.status(404).send("Not Found: Invalid character ID");
       }
       const docSnap =

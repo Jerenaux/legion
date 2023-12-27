@@ -83,7 +83,7 @@ class Overview extends Component<Props, State> {
 
   render({ members, score, position }: Props, { cooldowns, blinking }: State) {
     if (!members || !blinking.length) {
-      return <div></div>; 
+      return <div />; 
     }
     let cooldownIndex = 0;
     return (

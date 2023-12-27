@@ -26,7 +26,7 @@ class CharacterCard extends Component<CharacterProps> {
   }
 
   render() {
-    const { portrait, name, class: characterClass, level, xp, hp, mp, atk, def, spAtk, spDef } = this.props;
+    const { portrait, name, class: characterClass, level } = this.props;
     const portraitStyle = {
         backgroundImage: `url(/assets/sprites/${portrait}.png)`,
     };
