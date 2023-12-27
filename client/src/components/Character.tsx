@@ -96,13 +96,13 @@ class Character extends Component<CharacterProps, CharacterState> {
                   <div className="xp-area">
                       <div className="next-level">Next: {xpToLevel - xp} XP</div>
                       <div className="xp-bar-bg">
-                          <div className="xp-bar" style={{width: `${xpRatio}%`}}></div>
+                          <div className="xp-bar" style={{width: `${xpRatio}%`}} />
                       </div>
                   </div>
               </div>
               <div className="stats-area">
                 {stats.map((stat) => (
-                  <div className={`badge ${stat}`}>
+                  <div key={stat} className={`badge ${stat}`}>
                     <span className="badge-label">{stat.toUpperCase()}</span> 
                     <span>{this.state[stat]}</span>
                   </div>
@@ -119,6 +119,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                       clickedIndex={-1}
                       canAct={true} 
                       actionType={ActionType.Item}
+                      key={i}
                     />
                   ))}
                   </div>
@@ -134,13 +135,14 @@ class Character extends Component<CharacterProps, CharacterState> {
                       canAct={true} 
                       actionType={ActionType.Skill}
                       onActionClick={this.onActionClick}
+                      key={i}
                     />
                   ))}
                   </div>
                 </div>}
               </div>
             </div>
-            <div className="character-portrait" style={portraitStyle}></div>
+            <div className="character-portrait" style={portraitStyle} />
         </div>
       </div>
     );

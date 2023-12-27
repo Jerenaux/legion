@@ -16,7 +16,7 @@ class Description extends Component<DescProps> {
             const value = effect.value == -1 ? 'FULL' : effect.value > 0 ? `+${effect.value}` : effect.value;
             const className = effect.stat == Stat.HP && effect.target == Target.SELF ? 'dmg' : `${Stat[effect.stat].toLowerCase()}`;
             return (
-            <div className={`badge ${className}`}>  
+            <div key={effect} className={`badge ${className}`}>  
               <div className="badge-label">{Stat[effect.stat]}</div>
               <div>{value}</div>
             </div>

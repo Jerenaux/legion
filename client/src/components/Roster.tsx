@@ -8,7 +8,7 @@ interface RosterState {
   characters: any[];
 }
 
-class Roster extends Component<Object, RosterState> {
+class Roster extends Component<object, RosterState> {
 
   componentDidMount() {
     this.fetchRosterData();
@@ -31,7 +31,7 @@ class Roster extends Component<Object, RosterState> {
       <div>
         <div className="section-title">Your Team</div>
         <div className="roster">
-            {this.state.characters && this.state.characters.map(character => <CharacterCard {...character} />)}
+            {this.state.characters && this.state.characters.map(character => <CharacterCard {...character} key={character} />)}
         </div>
       </div>
     );

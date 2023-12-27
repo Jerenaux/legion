@@ -351,7 +351,7 @@ export class Player extends Phaser.GameObjects.Container {
         return (Math.abs(x - this.gridX) <= 1 && Math.abs(y - this.gridY) <= 1);
     }
 
-    walkTo(gridX: number, gridY: number, duration = 300, callback?: Function) {
+    walkTo(gridX: number, gridY: number, duration = 300, callback?: () => void) {
         const oldGridX = this.gridX;
         this.updatePos(gridX, gridY);
         this.playAnim('walk');

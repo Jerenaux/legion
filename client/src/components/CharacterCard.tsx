@@ -40,7 +40,7 @@ class CharacterCard extends Component<CharacterProps> {
     
     return (
       <div className={`character-card ${cssClass}`} onClick={this.handleCardClick}>
-        <div className="character-portrait" style={portraitStyle}></div>
+        <div className="character-portrait" style={portraitStyle} />
         <div className="character-info">
           <span className="character-name">{name}</span>
           <span className="character-class">{classEnumToString(characterClass)}</span>

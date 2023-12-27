@@ -27,7 +27,7 @@ class TeamPage extends Component<TeamPageProps> {
             <h1 className="page-title">Team</h1>
           </div>
           <div className="team-content">
-            <Roster/>
+            <Roster />
             <div className="character-inventory-container">
               <Router>
                 <Route path="/team/:id" component={Character} />

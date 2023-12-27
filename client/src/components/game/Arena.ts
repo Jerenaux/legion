@@ -542,8 +542,9 @@ export class Arena extends Phaser.Scene
 
     processLocalAnimation({x, y, id}) {
         // Convert x and y in grid coords to pixels
-        let {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        const {x: pixelX, y: pixelYInitial} = this.gridToPixelCoords(x, y);
         const spell = spells[id];
+        let pixelY = pixelYInitial;
         if (spell.yoffset) pixelY += spell.yoffset;
         this.localAnimationSprite.setPosition(pixelX, pixelY)
             .setVisible(true)
@@ -871,7 +872,7 @@ export class Arena extends Phaser.Scene
         return overview;
     }
 
-    update (time, delta)
-    {
-    }
+    // update (time, delta)
+    // {
+    // }
 }
