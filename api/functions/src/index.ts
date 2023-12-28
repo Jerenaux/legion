@@ -120,6 +120,7 @@ export const createUserCharacter = functions.auth.user().onCreate((user) => {
   const playerData = {
     name: uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]}),
     gold: 100,
+    carrying_capacity: 50,
     inventory: [0, 0, 0, 1, 1, 2, 3, 3],
     characters: [] as admin.firestore.DocumentReference[],
     elo: 100,
@@ -175,6 +176,7 @@ export const inventoryData = onRequest((request, response) => {
         response.send({
           gold: docSnap.data()?.gold,
           inventory: docSnap.data()?.inventory,
+          carrying_capacity: docSnap.data()?.carrying_capacity,
         });
       } else {
         response.status(404).send("Not Found: Invalid player ID");
@@ -375,8 +377,9 @@ export const equipItem = onRequest((request, response) => {
 
         const playerInventory = playerData.inventory.sort();
 
-        if (playerInventory.length >= playerData.carrying_capacity) {
-          throw new Error("Inventory full");
+        if (characterData.inventory.length >= characterData.carrying_capacity) {
+          response.send({status: 1});
+          return;
         }
 
         const inventory = characterData.inventory as number[];
@@ -391,7 +394,69 @@ export const equipItem = onRequest((request, response) => {
       });
       console.log("Transaction successfully committed!");
 
-      response.send();
+      response.send({status: 0});
+    } catch (error) {
+      console.error("Error verifying token:", error);
+      response.status(401).send("Unauthorized");
+    }
+  });
+});
+
+export const unequipItem = onRequest((request, response) => {
+  logger.info("Unequipping item");
+  const db = admin.firestore();
+
+  cors(corsOptions)(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const characterId = request.body.characterId as string;
+      const index = request.body.index;
+
+      await db.runTransaction(async (transaction) => {
+        const playerRef = db.collection("players").doc(uid);
+        const characterRef = db.collection("characters").doc(characterId);
+
+        const playerDoc = await transaction.get(playerRef);
+        const characterDoc = await transaction.get(characterRef);
+
+        if (!playerDoc.exists || !characterDoc.exists) {
+          throw new Error("Documents do not exist");
+        }
+
+        const playerData = playerDoc.data();
+        const characterData = characterDoc.data();
+
+        if (!playerData || !characterData) {
+          throw new Error("Data does not exist");
+        }
+
+        // Check that character is owned by player
+        const characters =
+          playerData.characters as admin.firestore.DocumentReference[];
+        const characterIds = characters.map((character) => character.id);
+        if (!characterIds.includes(characterId)) {
+          throw new Error("Character not owned by player");
+        }
+
+        const inventory = playerData.inventory.sort();
+        const characterInventory = characterData.inventory as number[];
+        const item = characterInventory[index];
+
+        if (playerData.inventory.length >= playerData.carrying_capacity) {
+          response.send({status: 1});
+          return;
+        }
+
+        characterInventory.splice(index, 1);
+        inventory.push(item);
+
+        // Update player and character documents within the transaction
+        transaction.update(playerRef, {inventory});
+        transaction.update(characterRef, {inventory: characterInventory});
+      });
+      console.log("Transaction successfully committed!");
+
+      response.send({status: 0});
     } catch (error) {
       console.error("Error verifying token:", error);
       response.status(401).send("Unauthorized");

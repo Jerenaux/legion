@@ -8,44 +8,17 @@ import { ActionType } from './game/HUD/ActionTypes';
 
 import toast from '@brenoroosevelt/toast'
 import { apiFetch } from '../services/apiService';
-
-interface InventoryState {
-    capacity: number;
-    inventory: number[];
-}
-
 interface InventoryProps {
   id: string;
+  inventory: number[];
+  carrying_capacity: number;
+  refreshInventory: () => void;
 }
 
-class Inventory extends Component<InventoryProps, InventoryState> {
+class Inventory extends Component<InventoryProps> {
   capacity = 50;
-  constructor() {
-      super();
-      this.state = {
-          capacity: this.capacity,
-          inventory: []
-      };
-  }
-
-  componentDidMount() {
-    this.fetchInventoryData();
-  }
-
-  async fetchInventoryData() {
-    try {
-        const data = await apiFetch('inventoryData');
-        console.log(data);
-        this.setState({ 
-          inventory: data.inventory.sort()
-        });
-    } catch (error) {
-        toast.error(`Error: ${error}`, {closeBtn: true, position: 'top'});
-    }
-  }
 
   onActionClick = (type: string, letter: string, index: number) => {
-    console.log('clicked', index);
     const payload = {
         index,
         characterId: this.props.id,
@@ -55,18 +28,23 @@ class Inventory extends Component<InventoryProps, InventoryState> {
         method: 'POST',
         body: payload
     })
-    .then(() => {
-        toast.success('Item equipped!', {closeBtn: false, position: 'top', duration: 3000});
+    .then((data) => {
+      if(data.status == 0) {
+        toast.success('Item equipped!', {closeBtn: false, position: 'top', duration: 5000});
+        this.props.refreshInventory();
+      } else {
+        toast.error('Character inventory is full!', {closeBtn: false, position: 'top', duration: 5000});
+      }
     })
     .catch(error => toast.error(`Error: ${error}`, {closeBtn: true, position: 'top'}));
   }
   
   render() {
-    const slots = Array.from({ length: this.state.capacity }, (_, i) => (
+    const slots = Array.from({ length: this.props.carrying_capacity }, (_, i) => (
         <div key={i} className="item">
-          { i < this.state.inventory.length &&
+          { i < this.props.inventory.length &&
             <ActionItem 
-              action={items[this.state.inventory[i]]} 
+              action={items[this.props.inventory[i]]} 
               index={i} 
               clickedIndex={-1}
               canAct={true} 
@@ -83,7 +61,7 @@ class Inventory extends Component<InventoryProps, InventoryState> {
             <img src="/assets/backpacks.png" className="inventory-header-image" />
             <div className="inventory-header-name">
               Inventory
-              <span className="inventory-capacity">{this.state.inventory.length}/{this.state.capacity}</span>
+              <span className="inventory-capacity">{this.props.inventory.length}/{this.props.carrying_capacity}</span>
             </div>
             <div className="inventory-header-name-shadow">Inventory</div>
         </div>

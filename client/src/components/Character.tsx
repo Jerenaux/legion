@@ -13,6 +13,7 @@ import firebaseConfig from '@legion/shared/firebaseConfig';
 firebase.initializeApp(firebaseConfig);
 interface CharacterProps {
     id: string;
+    refreshInventory: () => void;
 }
 
 interface CharacterState {
@@ -59,7 +60,24 @@ class Character extends Component<CharacterProps, CharacterState> {
   }
 
   onActionClick = (type: string, letter: string, index: number) => {
-    console.log('clicked', index);
+    const payload = {
+        index,
+        characterId: this.props.id,
+    };
+    
+    apiFetch('unequipItem', {
+        method: 'POST',
+        body: payload
+    })
+    .then((data) => {
+      if(data.status == 0) {
+        toast.success('Item unequipped!', {closeBtn: false, position: 'top', duration: 5000});
+        this.props.refreshInventory();
+      } else {
+        toast.error('Inventory is full!', {closeBtn: false, position: 'top', duration: 5000});
+      }
+    })
+    .catch(error => toast.error(`Error: ${error}`, {closeBtn: true, position: 'top'}));
   }
 
   render() {
@@ -117,6 +135,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                       clickedIndex={-1}
                       canAct={true} 
                       actionType={ActionType.Item}
+                      onActionClick={this.onActionClick}
                       key={i}
                     />
                   ))}
