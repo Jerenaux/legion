@@ -5,6 +5,8 @@ import { ServerPlayer } from './ServerPlayer';
 import { AIServerPlayer } from './AIServerPlayer';
 import {apiFetch} from './API';
 import { Stat } from "@legion/shared/types";
+import {NewCharacter} from "@legion/shared/NewCharacter";
+import {Team} from "./Team";
 
 const TICK = 100;
 const AI_VS_AI = false;
@@ -17,21 +19,35 @@ export class AIGame extends Game {
         this.tickTimer = setInterval(this.AItick.bind(this), TICK);
     }
 
+    createAITeam(team: Team) {
+        for (let i = 0; i < 3; i++) {
+            const character = new NewCharacter().generateCharacterData();
+            const position = this.getPosition(i, true);
+            const newPlayer = new AIServerPlayer(i + 1, character.name, character.portrait, position.x, position.y)
+            newPlayer.setTeam(team!);
+            newPlayer.setHP(character.hp);
+            newPlayer.setMP(character.mp);
+            newPlayer.setStat(Stat.ATK, character.atk);
+            newPlayer.setStat(Stat.DEF, character.def);
+            newPlayer.setStat(Stat.SPATK, character.spatk);
+            newPlayer.setStat(Stat.SPDEF, character.spdef);
+            newPlayer.setInventory(character.carrying_capacity, character.inventory);
+            newPlayer.setSpells(character.skill_slots, character.skills);
+            team?.addMember(newPlayer);
+        }
+    }
+
     async populateTeams() {
         const playerTeam = this.teams.get(1);
         const aiTeam = this.teams.get(2);
 
         if (AI_VS_AI) {
-            playerTeam?.addMember(new AIServerPlayer(1, '1_1', 18, 4));
-            playerTeam?.addMember(new AIServerPlayer(2, '1_5', 18, 2));
-            playerTeam?.addMember(new AIServerPlayer(3, '1_2', 18, 6));
-            playerTeam?.addMember(new AIServerPlayer(4, '1_3', 16, 5));
-            playerTeam?.addMember(new AIServerPlayer(5, '1_4', 16, 3));
+            this.createAITeam(playerTeam!);
         } else {
             const teamData = await apiFetch('rosterData', playerTeam.getFirebaseToken());
             teamData.characters.forEach((character: any, index) => {
                 const position = this.getPosition(index, false);
-                const newPlayer = new ServerPlayer(index, character.portrait, position.x, position.y);
+                const newPlayer = new ServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
                 newPlayer.setTeam(playerTeam!);
                 newPlayer.setHP(character.hp);
                 newPlayer.setMP(character.mp);
@@ -45,11 +61,7 @@ export class AIGame extends Game {
             });
         }
 
-        aiTeam?.addMember(new AIServerPlayer(1, '2_1', 1, 4));
-        aiTeam?.addMember(new AIServerPlayer(2, '1_6', 1, 2));
-        aiTeam?.addMember(new AIServerPlayer(3, '2_2', 1, 6));
-        aiTeam?.addMember(new AIServerPlayer(4, '2_6', 3, 3));
-        aiTeam?.addMember(new AIServerPlayer(5, '2_7', 3, 5));
+        this.createAITeam(aiTeam!);
     }
 
     getPosition(index, flip) {

@@ -2,6 +2,7 @@
 import { h, Component, render } from 'preact';
 import PlayerTab from './PlayerTab';
 import Overview from './Overview';
+import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
 
 interface Team {
@@ -60,11 +61,15 @@ class GameHUD extends Component<object, State> {
 
   render() {
     const { playerVisible, player, team1, team2 } = this.state;
+    const gameEnded = true;
     return (
-      <div className="hud-container">
-          <Overview position="left" {...team2} />
-          {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
-          <Overview position="right" {...team1} />
+      <div>
+        <div className="hud-container">
+            <Overview position="left" {...team2} />
+            {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
+            <Overview position="right" {...team1} />
+        </div>
+        {gameEnded && <Endgame />}
       </div>
     );
   }

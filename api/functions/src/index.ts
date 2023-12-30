@@ -7,7 +7,8 @@ import {Request} from "express";
 import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 import {items} from "@legion/shared/Items";
-import {NewCharacter} from "./NewCharacter";
+import {NewCharacter} from "@legion/shared/NewCharacter";
+import {Class} from "@legion/shared/types";
 
 admin.initializeApp();
 const corsOptions = {origin: true};
@@ -51,12 +52,16 @@ export const createUserCharacter = functions.auth.user().onCreate((user) => {
   // Add player document to batch
   batch.set(playerRef, playerData);
 
-  // Create character documents and add references to the player document
-  const characterDataArray = [
-    new NewCharacter().generateCharacterData(),
-    new NewCharacter().generateCharacterData(),
-    new NewCharacter().generateCharacterData(),
-  ];
+  const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
+  const characterDataArray = [];
+  // Repeat 3 times
+  for (let i = 0; i < 3; i++) {
+    characterDataArray.push(
+      new NewCharacter(
+        classes[i]
+      ).generateCharacterData()
+    );
+  }
 
   characterDataArray.forEach((characterData) => {
     const characterRef = db.collection("characters").doc();

@@ -1449,3 +1449,55 @@ canvas {
   border: 1px solid #CD853F;
   font-size: 30px;
 }
+
+.endgame {
+  background: linear-gradient(rgba(10, 10, 10, 0.7), rgba(20, 20, 20, 0.7)); /* Dark grey, almost black background with slight transparency */
+  border-radius: 10px;
+  position: fixed;
+  z-index: 2;
+  width: 1000px;
+  height: 500px;
+  top: 100px;
+  left: 50%;
+  margin-left: -500px;
+  padding: 10px;
+}
+
+.endgame-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.endgame-rewards {
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: 30px;
+  font-family: 'Kim';
+}
+
+.endgame-title {
+  font-family: 'Kim';
+  font-size: 50px;
+  color: white;
+  font-style: italic;
+}
+
+.endgame-title, .endgame-spacer {
+  flex-basis: content; 
+  flex-grow: 1;
+}
+
+.endgame-gold-logo {
+  font-size: 35px;
+  color: gold;
+  font-style: italic;
+  /* text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; */
+  text-shadow: 2px 2px 10px red; 
+  margin-right: 10px;
+}
+
+.endgame-xp {
+  margin-left: 10px;
+}

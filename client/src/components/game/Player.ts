@@ -46,7 +46,7 @@ export class Player extends Phaser.GameObjects.Container {
     animationLock = false;
 
     constructor(
-        scene: Phaser.Scene, arenaScene: Arena, hudScene: HUD, team: Team, gridX: number, gridY: number, x: number, y: number,
+        scene: Phaser.Scene, arenaScene: Arena, hudScene: HUD, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
         num: number, texture: string, isPlayer: boolean,
         hp: number, mp: number
         ) {
@@ -57,6 +57,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.team = team;
         this.texture = texture;
+        this.name = name;
         this.isPlayer = isPlayer;
         this.distance = 2;
         this.maxHP = hp;
@@ -460,7 +461,6 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     displayDamage(damage) {
-        console.log(`Damage: ${damage}, > 0 = ${damage > 0}`);
         const txt = damage > 0 ? `+${Math.round(damage)}` : `${Math.round(damage)}`;
         this.displayOverheadText(txt, 4000, '#fff');
     }

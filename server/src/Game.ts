@@ -178,14 +178,22 @@ export abstract class Game
     }
 
     checkEndGame() {
-        const team1 = this.teams.get(1)!;
-        const team2 = this.teams.get(2)!;
-        if (team1.isDefeated() || team2.isDefeated()) {
-            this.broadcast('gameEnd', {
-                winner: team1.isDefeated() ? 2 : 1,
-            });
-            this.gameOver = true;
+        if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
+            this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
         }
+    }
+
+    handleDisconnect(socket: Socket) {
+        const disconnectingTeam = this.socketMap.get(socket);
+        this.endGame(this.getOtherTeam(disconnectingTeam.id).id);
+    }
+
+    endGame(winner: number) {
+        console.log(`Team ${winner} wins!`);
+        this.broadcast('gameEnd', {
+            winner
+        });
+        this.gameOver = true;
     }
 
     setCooldown(player: ServerPlayer, cooldown: number) {

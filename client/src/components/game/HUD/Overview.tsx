@@ -102,7 +102,7 @@ class Overview extends Component<Props, State> {
                 <div style={portraitStyle} className={`member-portrait ${blinking[memberIndex] ? 'blink' : ''}`} >
                 {member.isPlayer && <span className="member-index">{memberIndex + 1}</span>}
                 </div>
-                <div className="member-name">Player #{memberIndex + 1}</div>
+                <div className="member-name">{member.name}</div>
                 <div className="hp-bar">
                   <div className="hp-fill" style={{width: `${(member.hp / member.maxHP) * 100}%`}} />
                 </div>

@@ -49,6 +49,8 @@ io.on('connection', (socket: any) => {
 
     socket.on('disconnect', () => {
         console.log('A user disconnected');
+        socketMap.get(socket)?.handleDisconnect(socket);
+        socketMap.delete(socket);
     });
 
     socket.on('move', (data: any) => {

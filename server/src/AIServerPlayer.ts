@@ -21,8 +21,8 @@ export class AIServerPlayer extends ServerPlayer {
     retargetRate: number = 0;
     retargetCount: number = 0;
 
-    constructor(num: number, frame: string, x: number, y: number) {
-        super(num, frame, x, y);
+    constructor(num: number, name: string, frame: string, x: number, y: number) {
+        super(num, name, frame, x, y);
 
         this.setArchetype();
 

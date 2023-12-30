@@ -772,7 +772,7 @@ export class Arena extends Phaser.Scene
             const {x, y} = this.gridToPixelCoords(character.x + offset, character.y);
 
             const player = new Player(
-                this, this, this.HUD, team, character.x, character.y, x, y,
+                this, this, this.HUD, team, character.name, character.x, character.y, x, y,
                 i + 1, character.frame, isPlayer,
                 character.hp, character.mp
                 );

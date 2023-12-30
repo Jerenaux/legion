@@ -8,6 +8,7 @@ import { spells } from '@legion/shared/Spells';
 export type ActionType = 'move' | 'attack';
 export class ServerPlayer {
     num;
+    name;
     frame;
     x;
     y;
@@ -33,8 +34,9 @@ export class ServerPlayer {
     damageDealt: number = 0;
     entranceTime: number = 2.5;
 
-    constructor(num: number, frame: string, x: number, y: number) {
+    constructor(num: number, name: string, frame: string, x: number, y: number) {
         this.num = num;
+        this.name = name;
         this.frame = frame;
         this.x = x;
         this.y = y;
@@ -59,6 +61,7 @@ export class ServerPlayer {
 
     getPlacementData(includePersonal = false): playerNetworkData {
         const data: playerNetworkData = {
+            'name': this.name,
             'frame': this.frame,
             'x': this.x,
             'y': this.y,
@@ -299,6 +302,7 @@ export class ServerPlayer {
 
 interface playerNetworkData {
     frame: string;
+    name: string;
     x: number;
     y: number;
     hp: number;
