@@ -336,6 +336,7 @@ export abstract class Game
             this.broadcast('terrain', {
                 x,
                 y,
+                size: spell.size,
                 type: spell.terrain,
             });
         }
@@ -562,14 +563,18 @@ export abstract class Game
     }
 
     async writeRewardsToDb(team: Team, rewards: RewardsData) {
-        await apiFetch(
-            'rewardsUpdate',
-            team.getFirebaseToken(),
-            {
-                method: 'POST',
-                body: rewards,
-            }
-        );
+        try {
+            await apiFetch(
+                'rewardsUpdate',
+                team.getFirebaseToken(),
+                {
+                    method: 'POST',
+                    body: rewards,
+                }
+            );
+        } catch (error) {
+            console.error(error);
+        }
     }
 }
 

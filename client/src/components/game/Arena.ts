@@ -573,14 +573,16 @@ export class Arena extends Phaser.Scene
         if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
     }
 
-    processTerrain({x, y, type}) {
-        // Add a sprite at the coordinates and play the `ground_flame` animation
-        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
-        const sprite = this.add.sprite(pixelX, pixelY, 'groundTiles', `element_${type}`)
-            // .setDisplaySize(this.tileSize, this.tileSize)
-            .setDepth(2)
-            // .setOrigin(0);
-        sprite.anims.play('ground_flame');
+    processTerrain({x, y, size, type}) {
+        // Iterate over x - floor(size/2) to x + floor(size/2) and y - floor(size/2) to y + floor(size/2)
+        for (let i = x - Math.floor(size/2); i <= x + Math.floor(size/2); i++) {
+            for (let j = y - Math.floor(size/2); j <= y + Math.floor(size/2); j++) {
+                const {x: pixelX, y: pixelY} = this.gridToPixelCoords(i, j);
+                const sprite = this.add.sprite(pixelX, pixelY, 'groundTiles', `element_${type}`)
+                    .setDepth(5).setScale(2);
+                sprite.anims.play('ground_flame');
+            }
+        }
     
     }
 
