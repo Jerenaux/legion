@@ -57,7 +57,7 @@ export class Team {
         if (amount > 1) {
             // Apply an exponential multiplier to the score
             this.score += Math.pow(MULTIHIT_SCORE_BASE, amount);
-            console.log(`Multi hit: ${this.id} score: ${this.score}`);
+            // console.log(`Multi hit: ${this.id} score: ${this.score}`);
         }
     }
 

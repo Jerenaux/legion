@@ -47,7 +47,6 @@ export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {},
         ]) as Response;
 
         if (!response.ok) {
-            console.log(idToken);
             const errorBody = await response.text();
             throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
         }

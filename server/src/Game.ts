@@ -6,7 +6,7 @@ import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight } from '@legion/shared/utils';
 import {apiFetch} from './API';
-import { RewardsData } from '@legion/shared/types';
+import { RewardsData, Terrain } from '@legion/shared/types';
 
 
 export abstract class Game
@@ -14,6 +14,7 @@ export abstract class Game
     id: string = uuid();
     teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
+    terrainMap = new Map<string, Terrain>();
     io: Server;
     sockets: Socket[] = [];
     tickTimer: NodeJS.Timeout | null = null;
@@ -193,7 +194,7 @@ export abstract class Game
     }
 
     endGame(winner: number) {
-        console.log(`Team ${winner} wins!`);
+        // console.log(`Team ${winner} wins!`);
         this.duration = Date.now() - this.startTime;
         this.gameOver = true;
 
@@ -333,6 +334,11 @@ export abstract class Game
         player.team!.increaseScoreFromSpell(spell.score);
 
         if (spell.terrain) {
+            for (let i = x - Math.floor(spell.size/2); i <= x + Math.floor(spell.size/2); i++) {
+                for (let j = y - Math.floor(spell.size/2); j <= y + Math.floor(spell.size/2); j++) {
+                    this.terrainMap.set(`${i},${j}`, spell.terrain);
+                }
+            }
             this.broadcast('terrain', {
                 x,
                 y,
