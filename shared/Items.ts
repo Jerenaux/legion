@@ -118,7 +118,7 @@ items[7] = new BaseItem({
 items[8] = new BaseItem({
     id: 8,
     name: "Clover",
-    description: "Revives a KO ally",
+    description: "Revives a KO character with 10 HP",
     frame: "clover.png",
     animation: "potion_heal",
     size: 20,

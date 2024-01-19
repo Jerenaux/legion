@@ -190,7 +190,9 @@ export abstract class Game
 
     handleDisconnect(socket: Socket) {
         const disconnectingTeam = this.socketMap.get(socket);
-        this.endGame(this.getOtherTeam(disconnectingTeam.id).id);
+        if (!this.gameOver) {
+            this.endGame(this.getOtherTeam(disconnectingTeam.id).id);
+        }
     }
 
     endGame(winner: number) {

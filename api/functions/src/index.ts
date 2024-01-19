@@ -430,12 +430,17 @@ export const rewardsUpdate = onRequest((request, response) => {
         // Iterate over the player's characters and increase their XP
         // Update XP for each character directly using their references
         if (playerData.characters) {
-          playerData.characters.forEach((characterId: string) => {
-            const characterRef = db.collection("characters").doc(characterId);
-            transaction.update(characterRef, {
-              xp: admin.firestore.FieldValue.increment(xp),
+          console.log("Iterating over characters...");
+          playerData.characters.forEach(
+            (characterRef: admin.firestore.DocumentReference) => {
+              if (characterRef instanceof admin.firestore.DocumentReference) {
+                transaction.update(characterRef, {
+                  xp: admin.firestore.FieldValue.increment(xp),
+                });
+              } else {
+                console.error(`Invalid character reference ${characterRef}`);
+              }
             });
-          });
         }
       });
       console.log("Transaction successfully committed!");
