@@ -77,7 +77,6 @@ export class NewCharacter {
 
   lvlUp(): void {
     const NB_INCREASES = 2;
-    this.level++;
     for (let i = 0; i < NB_INCREASES; i++) {
       const stat = selectStatToLevelUp(this.characterClass);
       switch (stat) {

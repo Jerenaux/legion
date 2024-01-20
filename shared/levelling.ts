@@ -1,6 +1,7 @@
 import { Class, Stat } from "./types";
 
 interface StatWeights {
+    [Stat.NONE]? : number;
     [Stat.HP]?: number;
     [Stat.MP]?: number;
     [Stat.ATK]?: number;
@@ -22,7 +23,7 @@ export function selectStatToLevelUp(characterClass: Class) {
     const weightedStats: Stat[] = [];
 
     for (const stat in weights) {
-        const weight = weights[stat as unknown as Stat];
+        const weight = weights[stat as unknown as Stat]!;
         for (let i = 0; i < weight; i++) {
             weightedStats.push(stat as unknown as Stat);
         }
