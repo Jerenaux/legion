@@ -21,6 +21,8 @@ interface CharacterData {
     skill_slots: number;
     inventory: number[];
     skills: number[];
+    onSale?: boolean;
+    price?: number;
 }
 
 export class NewCharacter {

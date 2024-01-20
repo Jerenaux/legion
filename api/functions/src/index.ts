@@ -107,7 +107,7 @@ export const inventoryData = onRequest((request, response) => {
         response.status(404).send("Not Found: Invalid player ID");
       }
     } catch (error) {
-      console.error("Error verifying token:", error);
+      console.error("inventoryData error:", error);
       response.status(401).send("Unauthorized");
     }
   });
@@ -148,7 +148,7 @@ export const purchaseItem = onRequest((request, response) => {
         response.status(404).send("Not Found: Invalid player ID");
       }
     } catch (error) {
-      console.error("Error verifying token:", error);
+      console.error("purchaseItem error:", error);
       response.status(401).send("Unauthorized");
     }
   });
@@ -183,7 +183,7 @@ export const fetchLeaderboard = onRequest((request, response) => {
       });
       response.send(leaderboard);
     } catch (error) {
-      console.error("Error verifying token:", error);
+      console.error("fetchLeaderboard error:", error);
       response.status(401).send("Unauthorized");
     }
   });
@@ -220,7 +220,7 @@ export const rosterData = onRequest((request, response) => {
         response.status(404).send("Not Found: Invalid player ID");
       }
     } catch (error) {
-      console.error("Error verifying token:", error);
+      console.error("rosterData error:", error);
       response.status(401).send("Unauthorized");
     }
   });
@@ -258,7 +258,7 @@ export const characterData = onRequest((request, response) => {
         response.status(404).send("Not Found: Invalid character ID");
       }
     } catch (error) {
-      console.error("Error verifying token:", error);
+      console.error("characterData error:", error);
       response.status(401).send("Unauthorized");
     }
   });
@@ -321,7 +321,7 @@ export const equipItem = onRequest((request, response) => {
 
       response.send({status: 0});
     } catch (error) {
-      console.error("Error verifying token:", error);
+      console.error("equipItem error:", error);
       response.status(401).send("Unauthorized");
     }
   });
@@ -383,7 +383,7 @@ export const unequipItem = onRequest((request, response) => {
 
       response.send({status: 0});
     } catch (error) {
-      console.error("Error verifying token:", error);
+      console.error("unequipItem error:", error);
       response.status(401).send("Unauthorized");
     }
   });
@@ -448,6 +448,42 @@ export const rewardsUpdate = onRequest((request, response) => {
       response.send({status: 0});
     } catch (error) {
       console.error("Error processing reward:", error);
+      response.status(401).send("Unauthorized");
+    }
+  });
+});
+
+export const generateOnSaleCharacters = onRequest((request, response) => {
+  logger.info("Generating on sale characters");
+  const db = admin.firestore();
+  const TARGET_COUNT = 10;
+
+  cors(corsOptions)(request, response, async () => {
+    try {
+      // Count how many characters have the `onSale` flag set to true
+      // in the collection
+      const querySnapshot = await db.collection("characters")
+        .where("onSale", "==", true)
+        .get();
+      let onSaleCount = querySnapshot.size;
+      let delta = 0;
+      console.log(`Number of on sale characters: ${onSaleCount}`);
+      while (onSaleCount < TARGET_COUNT) {
+        const level = Math.floor(Math.random() * 100);
+        const price = level * 1000;
+        const character =
+          new NewCharacter(Class.RANDOM, level).getCharacterData();
+        character.onSale = true;
+        character.price = price;
+        // Add the character to the collection
+        await db.collection("characters").add(character);
+        // Increment the on sale count
+        onSaleCount++;
+        delta++;
+      }
+      response.send({delta});
+    } catch (error) {
+      console.error("Error generating on sale characters:", error);
       response.status(401).send("Unauthorized");
     }
   });
