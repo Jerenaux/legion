@@ -4,7 +4,7 @@ import { uuid } from 'uuidv4';
 import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
 import { Spell } from './Spell';
-import { lineOfSight } from '@legion/shared/utils';
+import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
 import { RewardsData, Terrain } from '@legion/shared/types';
 
@@ -223,6 +223,8 @@ export abstract class Game
             return;
         }
         
+        console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
+
         this.freeCell(player.x, player.y);
         player.updatePos(tile.x, tile.y);
         this.occupyCell(player.x, player.y, player);
