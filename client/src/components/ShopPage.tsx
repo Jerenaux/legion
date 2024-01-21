@@ -4,12 +4,16 @@ import Description from './Description';
 import { items } from '@legion/shared/Items';
 import toast from '@brenoroosevelt/toast'
 import { apiFetch } from '../services/apiService';
-
+import { classEnumToString, statStrings } from './utils';
+import ActionItem from './game/HUD/Action';
+import { spells } from '@legion/shared/Spells';
+import { ActionType } from './game/HUD/ActionTypes';
 
 interface State {
   gold: number;
   inventory: Array<any>;
   items: Array<any>;
+  characters: Array<any>;
   isDialogOpen: boolean;
   selectedItem: any;
   quantity: number;
@@ -21,6 +25,7 @@ class ShopPage extends Component<object, State> {
     gold: 0,
     inventory: [],
     items,
+    characters: [],
     isDialogOpen: false,
     selectedItem: null,
     quantity: 1,
@@ -28,6 +33,7 @@ class ShopPage extends Component<object, State> {
 
   componentDidMount() {
     this.fetchInventoryData(); 
+    this.fetchCharactersOnSale();
   }
 
   async fetchInventoryData() {
@@ -37,6 +43,18 @@ class ShopPage extends Component<object, State> {
         this.setState({ 
             gold: data.gold,
             inventory: data.inventory
+        });
+    } catch (error) {
+        toast.error(`Error: ${error}`, {closeBtn: true, position: 'top'});
+    }
+  }
+
+  async fetchCharactersOnSale() {
+    try {
+        const data = await apiFetch('listOnSaleCharacters');
+        console.log(data);
+        this.setState({ 
+            characters: data
         });
     } catch (error) {
         toast.error(`Error: ${error}`, {closeBtn: true, position: 'top'});
@@ -130,6 +148,54 @@ class ShopPage extends Component<object, State> {
                         <div className="shop-item-card-price" title='Price'>{item.price}</div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="shop-grid">
+              {this.state.characters && this.state.characters.map((character) => (
+                <div key={character.id} className="character-full">
+                  <div className="character-header">
+                      <div className="character-header-name">{character.name}</div>
+                      <div className="character-header-name-shadow">{character.name}</div>
+                      <div className={`character-header-class`}>{classEnumToString(character.class)}</div>
+                  </div>
+                  <div className="character-full-content">
+                      <div className="character-full-stats">
+                        <div className="level-area">
+                            <div className="level-badge">
+                                <span>lvl</span>
+                                <span className="level-number">{character.level}</span>
+                            </div>
+                        </div>
+                        <div className="stats-area">
+                          {statStrings.map((stat) => (
+                            <div key={stat} className={`badge ${stat}`}>
+                              <span className="badge-label">{stat.toUpperCase()}</span> 
+                              <span>{this.state[stat]}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="character-full-actions">
+                          {character.skills.length > 0 && <div className="player-skills">
+                            <div className='slots-header'>Skills</div>
+                            <div className="slots">
+                            {character.skills.map((spell, i) => (
+                              <ActionItem 
+                                action={spell > -1 ? spells[spell] : null} 
+                                index={i} 
+                                clickedIndex={-1}
+                                canAct={true} 
+                                actionType={ActionType.Skill}
+                                key={i}
+                              />
+                            ))}
+                            </div>
+                          </div>}
+                        </div>
+                      </div>
+                      <div className="character-portrait" style={{backgroundImage: `url(/assets/sprites/${character.portrait}.png)`}} />
                   </div>
                 </div>
               ))}

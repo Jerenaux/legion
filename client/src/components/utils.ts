@@ -1,4 +1,4 @@
-import {Class} from "@legion/shared/types";
+import {Class, Stat} from "@legion/shared/types";
 
 
 export function classEnumToString(characterClass: Class) {
@@ -9,3 +9,8 @@ export function classEnumToString(characterClass: Class) {
     classToName[Class.THIEF] = "Thief";
     return classToName[characterClass];
 }
+
+export const statStrings: string[] = Object.keys(Stat)
+  .filter(key => isNaN(Number(key)))
+  .filter(key => key !== 'NONE')
+  .map(key => key.toLowerCase());

@@ -2,7 +2,7 @@
 import { h, Component } from 'preact';
 import ActionItem from './game/HUD/Action';
 import { ActionType } from './game/HUD/ActionTypes';
-import { classEnumToString } from './utils';
+import { classEnumToString, statStrings } from './utils';
 import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 
@@ -90,11 +90,8 @@ class Character extends Component<CharacterProps, CharacterState> {
     };
     const xpRatio = xp / (xp + xpToLevel) * 100;
 
-    const stats = ['hp', 'atk', 'spatk', 'mp', 'def', 'spdef'];
-
     const filledItems = Array.from({ length: carrying_capacity }, (_, i) => inventory[i] ?? -1);
     const filledSpells = Array.from({ length: skill_slots }, (_, i) => skills[i] ?? -1);
-    console.log(filledSpells);
 
     return (
       <div className="character-full">
@@ -118,7 +115,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                   </div>
               </div>
               <div className="stats-area">
-                {stats.map((stat) => (
+                {statStrings.map((stat) => (
                   <div key={stat} className={`badge ${stat}`}>
                     <span className="badge-label">{stat.toUpperCase()}</span> 
                     <span>{this.state[stat]}</span>

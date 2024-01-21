@@ -16,7 +16,7 @@ const TabBar = ({ title = 'HP', value, maxValue, barClass = '' }) => {
                 }
             </div>
             <div className="hud-bar-bg">
-                <div className={`hud-bar ${barClass}`} style={{width: `${percentage}%`}}></div>
+                <div className={`hud-bar ${barClass}`} style={{width: `${percentage}%`}} />
             </div>
         </div>
     );
