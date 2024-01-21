@@ -1,7 +1,7 @@
 import { Team } from './Team';
 import { Item } from './Item';
 import { Spell } from './Spell';
-import { Stat } from "@legion/shared/types";
+import { Stat, Terrain } from "@legion/shared/types";
 import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 
@@ -293,6 +293,17 @@ export class ServerPlayer {
         if (amount < 0) return; // = healing
         this.damageDealt += amount;
         this.team?.increaseScoreFromDamage(amount);
+    }
+
+    applyTerrainEffect(terrain: Terrain) {
+        switch (terrain) {
+            case Terrain.FIRE:
+                console.log(`Player ${this.num} is standing on fire!`);
+                this.takeDamage(10);
+                break;
+            default:
+                break;
+        }
     }
 }
 

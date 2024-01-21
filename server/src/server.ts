@@ -48,7 +48,7 @@ io.on('connection', (socket: any) => {
     game.start();
 
     socket.on('disconnect', () => {
-        console.log('A user disconnected');
+        // console.log('A user disconnected');
         socketMap.get(socket)?.handleDisconnect(socket);
         socketMap.delete(socket);
     });

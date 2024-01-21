@@ -46,6 +46,7 @@ export function listCellsOnTheWay(startX: number, startY: number, endX: number, 
     let steps = Math.ceil(distance);
 
     const cells = new Set<string>();
+    cells.add(serializeCoords(startX, startY));
     for (let i = 1; i < steps; i++) {
         // Calculate the current position along the line
         const xInc = specialRound(i / steps * (endX - startX));
@@ -57,6 +58,7 @@ export function listCellsOnTheWay(startX: number, startY: number, endX: number, 
         // Add this position to the list
         cells.add(serializeCoords(currentX, currentY));
     }
+    cells.add(serializeCoords(endX, endY));
 
     return cells;
 }

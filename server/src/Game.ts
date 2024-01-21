@@ -223,7 +223,8 @@ export abstract class Game
             return;
         }
         
-        console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
+        // console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
+        this.checkForTerrainEffects(player, listCellsOnTheWay(player.x, player.y, tile.x, tile.y));
 
         this.freeCell(player.x, player.y);
         player.updatePos(tile.x, tile.y);
@@ -241,6 +242,15 @@ export abstract class Game
         team.socket?.emit('cooldown', {
             num,
             cooldown,
+        });
+    }
+
+    checkForTerrainEffects(player: ServerPlayer, cells: Set<string>) {
+        cells.forEach(cell => {
+            const terrain = this.terrainMap.get(cell);
+            if (terrain) {
+                player.applyTerrainEffect(terrain);
+            }
         });
     }
 
