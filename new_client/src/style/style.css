@@ -1,0 +1,1524 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+
+}
+canvas {
+    display: block;
+    margin: 0 auto;
+}
+
+#root, #scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+
+#root {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* height: auto; */
+    z-index: 1;
+  }
+
+.box {
+    border-bottom-left-radius: 15px;  /* Bottom left corner rounded */
+    border-bottom-right-radius: 15px; /* Bottom right corner rounded */
+    background: linear-gradient(rgba(10, 10, 10, 0.7), rgba(20, 20, 20, 0.7)); /* Dark grey, almost black background with slight transparency */
+    border: none; /* Remove default borders */
+    padding: 10px;
+    color: white;
+}
+
+.box::before {
+    content: ""; /* Pseudo-elements require a content property, even if it's an empty string */
+    position: absolute; /* To position it at the top */
+    left: 0;
+    top: 0;
+    height: 3px; /* The thickness of your border */
+    width: 100%; /* To cover the full width of the box */
+    background: linear-gradient(to right, rgb(255, 191, 0), orange 90%); /* Adjusted gradient colors and positions */
+}
+
+@font-face {
+    font-family: 'Kim';
+    src: url('../assets/kim.otf') format('opentype');
+}
+
+.player-main {
+    display: flex;
+    flex-direction: column; /* This will stack the items vertically */
+    align-items: flex-start;
+    gap: 10px; /* adjust as needed */
+    margin-bottom: 10px;
+}
+
+.player-content {
+    display: flex;
+    gap: 10px; /* adjust as needed */
+}
+
+.player-info {
+    margin-bottom: 5px;
+    margin-left: 1px;
+    font-weight: bold;
+    font-family: 'Kim';
+    font-size: 20px;
+}
+
+.player-class {
+    border-right: 2px solid white;
+}
+
+.player-portrait {
+    position: relative;
+    border: 3px solid gold;
+    width: 50px;
+    height: 84px;
+    margin-top: 2px;
+    background-position: -45px -45px;
+    background-repeat: no-repeat;
+}
+
+
+.badge {
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 6px;
+    background-color: #4a4947;
+    font-weight: bold;
+    width: 100px;
+    font-family: 'Kim';
+    color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.badge-label {
+    border-right: 1px solid black;
+    padding-right: 10px;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.cooldown {
+  /* background-color: #AD8606; */
+  background-color: #ffc400;
+}
+
+.hp {
+    background-color: #32CD32;
+}
+
+.dmg {
+    background-color: #FF0000;
+}
+
+.mp {
+    background-color: #0099ff;
+}
+
+.atk {
+  background-color: #CD5C5C;
+}
+
+.def {
+  background-color: #FFA07A;
+}
+
+.spatk {
+  background-color: #9370DB;  
+}
+
+.spdef {
+  background-color: #20B2AA;
+}
+
+.target {
+  background-color: #FAD7A0;
+}
+
+.hp, .mp, .cooldown, .dmg, .target {
+  display: flex;
+  align-items: center;
+  border: 2px solid black;
+  border-radius: 5px;
+  padding: 2px;
+  padding-left: 5px;
+  font-weight: bold;
+}
+  
+.hp-label, .mp-label, .cooldown-label {
+    border-right: 1px solid black;
+    padding-right: 10px;
+    margin-right: 10px;
+}
+  
+.hp-amount, .mp-amount, .cooldown-amount {
+    padding-right: 10px;
+    margin-right: 10px;
+    font-style: italic;
+}
+
+.cooldown-amount {
+    border-right: 1px solid black;
+}
+
+.cooldown-state {
+    /* padding-right: 10px; */
+    margin-right: 10px;
+}
+
+@keyframes blink {
+    0% {opacity: 1;}
+    50% {opacity: 0;}
+    100% {opacity: 1;}
+  }
+  
+.cooldown-complete {
+    animation: blink 1s linear infinite;
+}
+
+.player-skills, .player-items {
+  margin-top: 10px;
+}
+
+.slots {
+  display: flex;
+  align-items: center;
+}
+
+.slots-header {
+  font-family: 'Kim', sans-serif;
+  border-top: 2px solid white;
+  border-bottom: 2px solid white;
+  background: linear-gradient(to right, rgba(0, 0, 139, 0.553), rgba(173, 216, 230, 0.498), transparent);
+  color: white;
+  padding: 1px 0;
+  padding-left: 3px;
+  margin-bottom: 5px;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.skill, .item {
+    position: relative;
+    width: 43px;
+    height: 43px;
+    margin-right: 3px;
+    background: linear-gradient(to bottom, #654321, #A0522D);
+    border: 1px solid black;
+}
+
+.skill {
+  background: linear-gradient(to bottom, #0000CD, #ADD8E6);
+}
+
+.item {
+  background: linear-gradient(to bottom, #654321, #A0522D);
+}
+
+.skill-item-image {
+    width: 36px;
+    height: 36px; 
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin: 5px;
+}
+
+.skill-item-image-off {
+    filter: grayscale(1);
+}
+
+.key-binding {
+    position: absolute;
+    bottom: -1px;
+    right: 0px;
+    color: white;   /* Or any color that matches your design */
+    font-size: 10px; /* Adjust as needed */
+    /* background-color: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
+    /* border-radius: 10px;   */
+}
+
+.item-qty {
+    position: absolute;
+    bottom: -1px;
+    left: 2px;
+    font-size: 14px; /* Adjust as needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
+    border-radius: 10px; 
+    color: white; 
+}
+
+.info-box {
+    position: absolute;
+    top: 110%; /* Positioned above the parent element */
+    left: 10px;
+    visibility: hidden; 
+    opacity: 0;
+    transition: visibility 0s, opacity 0.2s linear; /* Fade in/out */
+    z-index: 1;
+}
+  
+.skill:hover .info-box, .item:hover .info-box {
+    visibility: visible; /* Visible when parent is hovered over */
+    opacity: 1;
+}
+
+.info-box-title {
+    margin-top: 0;
+}
+
+.info-box-desc {
+    margin-top: 3px;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+.mini {
+    margin-top: 5px;
+    display: inline-block;
+}
+
+@keyframes flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.flash-effect {
+    animation: flash 0.2s ease infinite;
+}
+
+.hud-container {
+  display: flex; 
+  justify-content: space-between;  
+} 
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.overview {
+    position: relative;
+    margin-top: 10px;
+    margin-right: 10px;
+    z-index: 2;
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;  
+    align-items: center;
+}
+
+/* .member::before {
+  content: "";
+  position: absolute;
+  background-color: inherit;
+  z-index: -1;
+}
+
+.member-left::before {
+  top: -30px;
+  right: -60%;
+  bottom: 0;
+  left: -50%;
+  transform: rotate(45deg);
+  width: 170px;
+}
+
+.member-right::before {
+  top: -30px;
+  right: -50%;
+  bottom: 0;
+  left: -60%;
+  transform: rotate(-45deg);
+  width: 170px;
+} */
+
+  .member {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px 0;
+    font-family: 'Kim', sans-serif;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    color: white;
+/* 
+    border-top: 2px solid white;
+    border-bottom: 2px solid white; */
+  }
+
+  /* .member-left {
+    background: linear-gradient(to right, lightblue, transparent);
+  }
+
+  .member-right {
+    background: linear-gradient(to left, lightblue, transparent);
+  }
+   */
+  .member-portrait {
+    position: relative;
+    width: 50px;
+    height: 50px;
+  }
+
+  .member-name {
+    font-size: 12px;
+  }
+  
+  .member-index {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    color: white;   /* Or any color that matches your design */
+    font-size: 10px; /* Adjust as needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
+    border-radius: 10px; 
+  }
+
+  /* .hp-bar {
+    width: 100%;
+    height: 10px; 
+    background-color: #a31720; 
+    border-radius: 5px; 
+    border: 1px solid black;
+  } */
+  
+  .hp-fill {
+    height: 100%;
+    background-color: #32CD32; /* green color for the filled part */
+    border-radius: 5px; /* makes the bar rounded */
+  }
+
+  /* .mp-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #a31720; 
+  border-radius: 5px;
+  border: 1px solid black;
+} */
+
+.mp-fill {
+  height: 100%;
+  background-color: #0099ff;
+  border-radius: 5px; /* makes the bar rounded */
+}
+
+/* .cooldown-bar {
+    width: 100%;
+    height: 10px; 
+    background-color: #a31720; 
+    border-radius: 5px; 
+    border: 1px solid black;
+  } */
+  
+  .cooldown-fill {
+    height: 100%;
+    background-color: #ffc400;
+    border-radius: 5px; /* makes the bar rounded */
+  }
+
+.blink {
+    animation: blink 0.25s linear;
+    animation-iteration-count: 3;
+}
+
+  .homePage {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .menu {
+    width: 100px;
+    background-color: #2D2D2D;
+    padding: 10px;
+    border-right: 2px solid black;
+  }
+  
+  .content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #080c15;
+    background-repeat: no-repeat;
+    background-position: 150% -100%;
+  }
+  
+  .notificationBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 25px;
+    background-color: #373636;
+    border-bottom: 2px solid black;
+  }
+  
+  .mainContent {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+
+  .gameLogo {
+    width: 95%;
+    height: auto;
+    padding: 5px;
+    background-color: black;
+    border-radius: 10px; /* Adjust this value to get the desired roundness */
+  }
+
+  .menuItems {
+    padding-top: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+  }
+  .menuItem {
+    cursor: pointer;
+    width: 100%;
+    height: auto;
+    padding-bottom: 10px;
+  }
+
+.page-header {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    justify-content: space-between;
+}
+
+.left-group {
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
+  flex: 1;
+  justify-content: flex-start; /* Align items to the start (left) */
+}
+
+.left-group, .right-group {
+  flex: 1;
+}
+
+.header-capsules {
+  /* Centered content, adjust flex-basis to control width */
+  flex: 0 1 auto; 
+}
+  
+.page-icon {
+    scale: 0.7;
+}
+  
+.page-title {
+    margin-left: 10px;
+    font-size: 4em; /* Adjust as needed */
+    font-family: Kim;
+    color: white;
+    text-shadow: -5px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+  .gold-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 50px; 
+    padding: 10px 20px; 
+    font-weight: bold;
+    border: 1px solid #CD853F;
+    font-size: 30px;
+    color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    font-family: Kim;
+}
+
+.gold-container::before, .gold-container::after {
+    content: "";
+    position: absolute;
+    height: 10px;
+    width: 10px; /* Adjust to create the desired gap size */
+    background-color: #070507; /* Match the background color */
+}
+.gold-container::before {
+    left: -12px; /* Position the pseudo-element to cover the left border */
+}
+.gold-container::after {
+    right: -12px; /* Position the pseudo-element to cover the right border */
+}
+
+.gold-icon {
+    margin-right: 10px; /* Space between the icon and the text */
+    /* scale: 0.25; */
+    height: 32px;
+}
+
+.shop-content {
+    margin-left: 30px;
+}
+
+.menuItemContainer {
+    position: relative;
+}
+
+.menuItemText {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Kim', sans-serif;
+    color: white;
+    font-size: 30px;
+    text-shadow: -5px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.menuItemContainer:hover {
+    filter: brightness(1.2);
+  }
+  .menuItemContainer:active {
+    transform: scale(0.95);
+  }
+
+  .notificationBarButton {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    color:lightgrey; 
+    padding: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #080c15;
+    border-radius: 3px;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+.notificationBarButton:hover {
+    filter: brightness(1.2);
+    cursor: pointer;
+}
+
+.notificationBarButton i {
+    position: relative;
+    margin-right: 5px;
+}
+
+.notificationBadge {
+    position: absolute;
+    bottom: -5px;
+    left: -8px;
+    padding: 2px 5px;
+    border-radius: 50%;
+    background-color: red;
+    color: white;
+    font-size: 8px;
+}
+
+.notificationList {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 200px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #B3B3B3;
+    background-color: white;
+    color: black;
+}
+
+.notificationItem {
+    padding: 10px;
+    border-bottom: 1px solid #B3B3B3;
+}
+
+.notificationItem:last-child {
+    border-bottom: none;
+}
+
+@keyframes animate-sprite {
+    0% { background-position: -40px -40px; }
+    33% { background-position: -184px -40px; }
+    66% { background-position: -328px -40px; }
+  }
+  
+
+.character-portrait {
+    height: 100px; /* Adjust as needed */
+    width: 65px;
+    position: relative;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+  }
+  
+  .character-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    margin-right: 20px;
+    border: 2px solid #CD853F;
+    align-items: flex-start;
+    color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  }
+
+  .character-card.warrior {
+    /* background: linear-gradient(to right, #FFC600, #FF8000); */
+    background: linear-gradient(to right, #B22222, #FF6347);
+
+}
+
+.character-card.thief {
+  /* background: linear-gradient(to right, #4B0082, #8A2BE2); */
+  background: linear-gradient(to right, #006400, #32CD32);
+
+}
+
+.character-card.white-mage {
+  background: linear-gradient(to right, #FFFFFF, #A9A9A9);
+}
+
+.character-card.black-mage {
+  background: linear-gradient(to right, #000000, #696969);
+}
+
+  .character-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .character-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    font-family: Kim;
+  }
+  
+  .character-class {
+    font-size: 0.9em;
+    font-family: Kim;
+    /* color: #666; */
+  }
+  
+  .level-badge {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    background-color: gold;
+    color: #fff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    font-weight: bold;
+    font-family: Kim;
+    flex-direction: column;
+    box-shadow: 0 0 0 5px #070507, 0 0 0 7px #CD853F; /* Creates a 10px transparent gap and a 2px border */
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  }
+
+
+  .level-badge .level-number {
+    font-size: 1.2em; 
+  }
+
+  .roster {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; 
+  }
+
+.logo {
+  width: 50%; /* Adjust as needed */
+  height: auto;
+}
+
+.section-title {
+  font-family: 'Kim', sans-serif;
+  border-top: 2px solid white;
+  border-bottom: 2px solid white;
+  background: linear-gradient(to right, darkblue, lightblue, transparent);
+  color: white;
+  padding: 5px 0;
+  padding-left: 15px;
+  margin-bottom: 15px;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-size: 25px;
+}
+
+.rank-content {
+  display: flex;
+  justify-content: center;
+}
+
+.leaderboard-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid white;
+  border-radius: 10px;
+  overflow: hidden;
+  width: calc(100% - 430px);
+  margin: auto;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  margin: 0 15px;
+}
+
+.leaderboard-table thead tr {
+  background: linear-gradient(to right, darkblue, lightblue);
+}
+
+.leaderboard-table th {
+  font-family: 'Kim', sans-serif;
+  color: white;
+  cursor: pointer;
+}
+
+.leaderboard-table tr:nth-child(even) {
+  background-color: #e0e0e0;
+}
+
+.leaderboard-table tr:nth-child(odd) {
+  background-color: #d7d7d7;
+}
+
+.leaderboard-table td {
+  text-align: center;
+  font-family: 'Kim';
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  padding-right: 15px;
+}
+
+.leaderboard-table tr:hover {
+  background-color: #c0c0c0;
+  /* ddd */
+}
+
+.leaderboard-table th div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.leaderboard-table th div span:last-child {
+  margin-left: 5px;
+}
+
+.golden-star {
+  color: gold;
+}
+
+.hidden {
+  display: none;
+}
+
+.leaderboard-table tr.highlighted-row {
+  background-color: gold;
+  border: 2px solid black;
+  margin-left: -5px;
+  margin-right: -5px;
+}
+
+.button-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: gold; /* Warmer pastel color */
+  border-radius: 50px; /* Adjust to create an elliptical shape */
+  padding: 10px 20px; /* Adjust for size */
+  font-weight: bold;
+  box-shadow: 0 0 0 10px #070507, 0 0 0 12px #CD853F; /* Creates a 10px transparent gap and a 2px border */
+  font-size: 30px;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: Kim;
+}
+
+.button-container::before, .button-container::after {
+  content: "";
+  position: absolute;
+  height: 10px;
+  width: 10px; /* Adjust to create the desired gap size */
+  background-color: #070507; /* Match the background color */
+}
+.button-container::before {
+  left: -12px; /* Position the pseudo-element to cover the left border */
+}
+.button-container::after {
+  right: -12px; /* Position the pseudo-element to cover the right border */
+}
+
+.button {
+  cursor: pointer;
+  margin: 10px;
+}
+
+.button:hover {
+  filter: brightness(1.1);
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.player-tab {
+  position: relative; 
+  margin-top: 10px;
+  margin-left: 10px;
+  z-index: 2;
+  /* max-width: 350px; */
+  align-self: start;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background-color: #F9F6EE;
+  border-radius: 15px;
+}
+
+.player-bars {
+  margin-right: 10px;
+  width: 200px;
+}
+
+.character-full {
+  margin-top: 20px;
+  margin-left: 10px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background-color: #F9F6EE;
+  border-radius: 15px;
+  width: 500px;
+}
+
+.character-header {
+  position: relative;
+  background: linear-gradient(to right, #874255, #edcfb7, transparent);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  height: 50px;
+  padding: 5px;
+  padding-left: 15px;
+  overflow: hidden;
+}
+
+.character-header-arena {
+  position: relative;
+  /* background: linear-gradient(to right, #874255, #edcfb7, transparent); */
+  background: linear-gradient(to right, rgb(79, 79, 227), lightblue, transparent);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  height: 30px;
+  padding: 5px;
+  padding-left: 15px;
+  overflow: hidden;
+  text-shadow: 2px 2px 4px black;
+
+}
+
+.character-header-name {
+  position: absolute;
+  font-family: Kim;
+  color: white;
+  font-size: 30px;
+  /* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */
+  top: 0;
+  text-shadow: 2px 2px 4px black;
+
+}
+
+.character-header-name-shadow {
+  position: absolute;
+  top: -30px;
+  left: 15px;
+  font-family: Kim;
+  color: white;
+  font-size: 80px;
+  opacity: 0.15;
+}
+
+.character-header-class {
+  position: absolute;
+  top: 35px;
+  left: 15px;
+  font-family: Kim;
+  color: white;
+  font-size: 15px;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-style: italic;
+}
+
+
+.character-full-content {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  font-family: Kim;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.character-full-level {
+  font-size: 20px;
+}
+
+.level-area {
+  display: flex;
+  width: 50%;
+}
+
+.character-full .level-badge {
+  left: 10px;
+  top: 70px;
+}
+
+.hud-actions {
+  margin-top: -10px;
+}
+
+.xp-area {
+  margin-left: 60px;
+  flex-grow: 1;
+}
+
+.xp-bar-bg {
+  background-color: black;
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.xp-bar {
+  height: 5px; 
+  background: linear-gradient(to right, darkblue, lightblue);
+  border-radius: 50px;
+}
+
+.hud-bar-bg {
+  background-color: darkred;
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.hud-bar {
+  height: 10px; 
+  border-radius: 50px;
+}
+
+.hp-bar {
+  background: linear-gradient(to right, darkgreen, lightgreen);
+  transition: width 0.3s ease-out;
+}
+
+.mp-bar {
+  background: linear-gradient(to right, darkblue, lightblue);
+  transition: width 0.3s ease-out;
+}
+
+.cooldown-bar {
+  background: gold;
+}
+
+.bar-title {
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.bigger-number {
+  font-size: 25px;
+  margin-left: 5px;
+}
+
+.smaller-number {
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+  width: calc(100% - 30px);
+}
+
+.shop-item-card {
+  position: relative;
+  border: 1px solid #ccc;
+  background-color: #F9F6EE;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.shop-item-card:hover {
+  background-color: #ffffff;
+}
+
+.shop-item-image {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.shop-item-name {
+  margin-top: 10px;
+}
+
+.shop-item-card-header {
+  position: relative;
+  background: linear-gradient(to right, rgb(79, 79, 227), lightblue, transparent);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  height: 20px;
+  padding: 5px;
+  padding-left: 15px;
+  overflow: hidden;
+  font-family: Kim;
+}
+
+.shop-item-card-name {
+  position: absolute;
+  top: 0;
+  font-size: 20px;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+
+}
+
+.shop-item-card-name-shadow {
+  position: absolute;
+  top: -30px;
+  left: 15px;
+  font-family: Kim;
+  color: white;
+  font-size: 80px;
+  opacity: 0.15;
+}
+
+.shop-item-card-content {
+  padding: 10px;
+  height: 150px;
+  display: flex;
+}
+
+.shop-item-card-content-info {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.shop-item-card-price {
+  background: url('../assets/gold2.png') no-repeat left center;
+  background-size: contain;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  background-color: gold;
+  border-radius: 25px; 
+  padding: 5px 10px; 
+  padding-left: 40px;
+  font-family: Kim;
+  margin-left: 10px;
+  border: 1px solid black;
+}
+
+.shop-item-card-owned {
+  background: url('../assets/backpacks.png') no-repeat left center;
+  background-size: contain;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  background-color: #A0522D; 
+  border-radius: 25px; 
+  padding: 5px 10px; 
+  padding-left: 40px;
+  font-family: Kim;
+  border: 1px solid black;
+}
+
+.shop-item-details {
+  padding-left: 10px;
+}
+
+.shop-item-card-capsules {
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+.socials {
+  margin-top: 20px;
+}
+
+.socials img {
+  width: 64px;
+  /* height: 64px; */
+}
+
+.twitterIconContainer {
+  background-color: black;
+  border-radius: 5px; /* Adjust as needed */
+  padding-left: 3px;
+  padding-right: 3px;
+  margin-top: 2px;
+}
+
+.twitterIconContainer i {
+  color: white;
+}
+
+.socials-bar {
+  padding-left: 5px;
+}
+
+.stats-area {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 30px;
+  width: 50%;
+}
+
+.stats-badge {
+  background-color: black;
+  color: white;
+  border-radius: 50%;
+  padding: 10px;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+}
+
+.stats-value {
+  color: black;
+  margin: 5px;
+}
+
+.character-full-stats {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.description-area {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: repeat(2, auto);
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  border: 2px solid #ccc;
+  background-color: #F9F6EE;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  font-family: Kim;
+  color: #4a4947;
+}
+
+.login-dialog {
+  width: 300px;
+}
+
+
+.closebtn {
+  cursor: pointer;
+  color: rgb(222, 24, 24);
+  position: absolute;
+  top: -10px; 
+  right: -8px;
+  font-size: 30px;
+}
+
+.closebtn:hover {
+  filter: brightness(1.2);
+}
+
+.quantity-container {
+  display: flex;
+}
+
+.shop-qty {
+  width: 20px;
+  text-align: center;
+  margin: 0 -5px;
+}
+
+.qty-button {
+  margin: 0;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+
+.qty-button, .shop-qty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px; /* Adjust as needed */
+  width: 20px; /* Adjust as needed */
+  border: none;
+  background: none;
+  border: 1px solid black;
+}
+
+.small-button {
+  width: 60px;
+  height: 30px;
+  padding: 5px;
+  font-size: 25px;
+  box-shadow: 0 0 0 5px #070507, 0 0 0 6px #CD853F; /* Creates a 10px transparent gap and a 2px border */
+
+}
+
+.inventory-full {
+  margin-top: 20px;
+  margin-left: 10px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background-color: #F9F6EE;
+  border-radius: 15px;
+  width: 60%;
+}
+
+.inventory-header {
+  position: relative;
+  background: linear-gradient(to right, #2f150e, #d8b085, transparent);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  height: 50px;
+  padding: 5px;
+  padding-left: 15px;
+  overflow: hidden;
+}
+
+.inventory-header-name {
+  position: absolute;
+  font-family: Kim;
+  color: white;
+  font-size: 45px;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  top: 0;
+  padding-left: 100px;
+  display: flex;
+  justify-content: space-between;
+  width: calc(100% - 120px);
+}
+
+.inventory-header-name-shadow {
+  position: absolute;
+  top: -30px;
+  left: 15px;
+  font-family: Kim;
+  color: white;
+  font-size: 80px;
+  opacity: 0.15;
+}
+
+/* .inventory-capacity {
+  font-size: 30px;
+  vertical-align: middle;
+} */
+
+.inventory-header-image {
+  position: relative;
+  left: -10px; /* Adjust this value to control how much the image spills over to the left */
+}
+
+.inventory-full-content {
+  padding: 10px;
+  font-family: Kim;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); 
+  grid-gap: 5px;
+
+}
+
+.character-inventory-container {
+  display: flex;
+}
+
+.character-inventory-container > :first-child {
+  margin-right: 30px;
+}
+
+.purchase-dialog {
+  width: auto;
+}
+
+.purchase-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.purchase-item-name {
+  font-weight: bold;
+}
+
+.purchase-quantity {
+  width: 30px;
+  text-align: center;
+}
+
+.purchase-quantity-selector {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+}
+
+
+.purchase-quantity-selector input.quantity {
+  text-align: center;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+
+.purchase-total {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.purchase-total-amount {
+  font-weight: bold;
+}
+
+.purchase-buy-button {
+  padding: 10px;
+  border: none;
+  background-color: gold;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Kim';
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-size: 20px;
+  border-radius: 5px;
+}
+
+.purchase-buy-button:hover {
+  filter: brightness(1.1);
+}
+
+.purchase-adjust  {
+  border-radius: 5px;
+  cursor: pointer;
+  /* background-color: green; */
+}
+
+.header-gold {
+  background: url('../assets/gold2.png') no-repeat left center;
+  background-size: contain;
+  color: white;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  border-radius: 25px; 
+  padding: 5px 10px; 
+  padding-left: 60px;
+  font-family: Kim;
+  margin-left: 10px;
+  border: 1px solid #CD853F;
+  font-size: 30px;
+}
+
+.endgame {
+  background: linear-gradient(rgba(10, 10, 10, 0.7), rgba(20, 20, 20, 0.7)); /* Dark grey, almost black background with slight transparency */
+  border-radius: 10px;
+  position: fixed;
+  z-index: 2;
+  width: 1000px;
+  height: 500px;
+  top: 100px;
+  left: 50%;
+  margin-left: -500px;
+  padding: 10px;
+}
+
+.endgame-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.endgame-rewards {
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: 30px;
+  font-family: 'Kim';
+}
+
+.endgame-title {
+  font-family: 'Kim';
+  font-size: 50px;
+  color: white;
+  font-style: italic;
+}
+
+.endgame-title, .endgame-spacer {
+  flex-basis: content; 
+  flex-grow: 1;
+}
+
+.endgame-gold-logo {
+  font-size: 35px;
+  color: gold;
+  font-style: italic;
+  /* text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; */
+  /* text-shadow: 2px 2px 10px red;  */
+  margin-right: 10px;
+}
+
+.endgame-xp  {
+  margin-left: 10px;
+}
+
+.endgame-xp, .endgame-gold {
+  display: flex;
+  align-items: center;
+}
+
+.endgame-gold-value, .endgame-xp-value {
+  padding-left: 10px;
+  display: inline-block;
+  min-width: 60px; /* Adjust this width as needed */
+  text-align: right;
+}
+
+.endgame-xp-logo {
+  font-size: 35px;
+  color: gold;
+  font-style: italic;
+  /* text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; */
+  /* text-shadow: 2px 2px 10px rgb(3, 141, 40);  */
+  margin-right: 10px;
+}

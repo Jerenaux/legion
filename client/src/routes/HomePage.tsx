@@ -14,6 +14,8 @@ import ShopPage from '../components/ShopPage';
 import RankPage from '../components/RankPage';
 import NotificationBar from '../components/NotificationBar';
 
+import legionLogo from '../assets/legionlogo.png';
+
 interface State {
     currentPage: string;
     showFirebaseUI: boolean;

@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"esModuleInterop": true,
+		"jsx": "react",
+		"jsxFactory": "h",
+		"jsxFragmentFactory": "Fragment",
+		"noEmit": false,
+		"allowJs": true,
+		"checkJs": true,
+		"skipLibCheck": true,
+		"baseUrl": "./",
+		"paths": {
+			"react": ["./node_modules/preact/compat"],
+			"react-dom": ["./node_modules/preact/compat"],
+			"@legion/shared/*": ["../shared/*"],
+			// "toast": ["node_modules/@brenoroosevelt/toast/lib/cjs/index.js"]
+		},
+		"sourceMap": true,
+	},
+	"include": [
+		"src/**/*",
+		"types/**/*"
+	]
+}
