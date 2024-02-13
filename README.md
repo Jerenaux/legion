@@ -2,6 +2,7 @@
 - `cd client && npm run dev` to start client
 - `cd server && npm run start` to start server
 - `cd api/functions && npm run serve` to start emulators
+
 - `cd api/functions && npm run watch:functions` to watch api
 
 

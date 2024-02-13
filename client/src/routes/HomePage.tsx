@@ -12,13 +12,7 @@ import PlayPage from '../components/PlayPage';
 import TeamPage from '../components/TeamPage';
 import ShopPage from '../components/ShopPage';
 import RankPage from '../components/RankPage';
-import NotificationBar from '../components/NotificationBar';
-
-import legionLogo from '@assets/legionlogo.png';
-import playIcon from '@assets/play.png';
-import teamIcon from '@assets/team.png';
-import shopIcon from '@assets/shop.png';
-import rankIcon from '@assets/rank.png';
+import TopMenuBar from '../components/TopMenuBar';
 
 interface State {
     currentPage: string;
@@ -85,55 +79,9 @@ class HomePage extends Component<object, State> {
         const { currentPage, showFirebaseUI } = this.state;
         const { user } = this.context; 
 
-        const bgcolors = {
-            play: '#080c15',
-            team: '#06090a',
-            shop: '#070507',
-            rank: '#060607',
-        }
-        const bgImage = {
-            backgroundImage: `url(/assets/${currentPage}bg.png)`,
-            backgroundColor: bgcolors[currentPage]
-        };
         return (
             <div className="homePage">
-                <div className="menu">
-                <Link href="/play">
-                    <div className="menuItemContainer">
-                        <img src={legionLogo} className="gameLogo" />
-                    </div>
-                </Link>
-                <div className="menuItems">
-                    <Link href="/play">
-                        <div className="menuItemContainer">
-                            <img className="menuItem" src={playIcon} />
-                            <span className="menuItemText">PLAY</span>
-                        </div>
-                    </Link>
-                    <Link href="/team">
-                        <div className="menuItemContainer">
-                            <img className="menuItem" src={teamIcon} />
-                            <span className="menuItemText">TEAM</span>
-                        </div>
-                    </Link>
-                    <Link href="/shop">
-                        <div className="menuItemContainer">
-                            <img className="menuItem" src={shopIcon} />
-                            <span className="menuItemText">SHOP</span>
-                        </div>
-                    </Link>
-                    <Link href="/rank">
-                        <div className="menuItemContainer">
-                            <img className="menuItem" src={rankIcon} />
-                            <span className="menuItemText">RANK</span>
-                        </div>
-                    </Link>
-                </div> 
-                </div>
-                <div className="content" style={bgImage}>
-                
-                <NotificationBar initFirebaseUI={this.initFirebaseUI} logout={this.logout} user={user} />
-
+                <TopMenuBar />
                 <div className="mainContent">
                     <div className="page-header">
                         <div className="left-group">
@@ -152,7 +100,6 @@ class HomePage extends Component<object, State> {
                         <Route path="/shop" component={ShopPage} />
                         <Route path="/rank" component={RankPage} />
                     </Router>
-                </div>
                 </div>
 
                 <div className={`dialog login-dialog ${!showFirebaseUI ? 'hidden' : ''}`}>
