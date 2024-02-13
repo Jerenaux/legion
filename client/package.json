@@ -11,14 +11,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@brenoroosevelt/toast": "^2.0.3",
     "axios": "^1.6.6",
     "firebaseui": "^6.1.0",
     "phaser": "^3.70.0",
     "phaser3-rex-plugins": "^1.60.9",
     "preact": "^10.19.3",
     "preact-router": "^4.1.2",
-    "socket.io-client": "^4.7.4"
+    "socket.io-client": "^4.7.4",
+    "toastify-js": "^1.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",

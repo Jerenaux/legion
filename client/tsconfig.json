@@ -17,7 +17,6 @@
 			"react-dom": ["./node_modules/preact/compat"],
 			"@legion/shared/*": ["../shared/*"],
 			"@assets/*": ["public/*"],
-			// "toast": ["node_modules/@brenoroosevelt/toast/lib/cjs/index.js"]
 		},
 		"sourceMap": true,
 	},

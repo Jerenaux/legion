@@ -8,6 +8,9 @@ import ActionItem from './game/HUD/Action';
 import { spells } from '@legion/shared/Spells';
 import { ActionType } from './game/HUD/ActionTypes';
 
+import Toastify from 'toastify-js'
+import "toastify-js/src/toastify.css"
+
 const imageContext = require.context('@assets/items', false, /\.png$/);
 
 const images = imageContext.keys().map(key => ({

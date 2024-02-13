@@ -2,11 +2,13 @@
 // Inventory.tsx
 import { h, Component } from 'preact';
 
+import Toastify from 'toastify-js'
+import "toastify-js/src/toastify.css"
+
 import { items } from '@legion/shared/Items';
 import ActionItem from './game/HUD/Action';
 import { ActionType } from './game/HUD/ActionTypes';
 
-// import toast from '@brenoroosevelt/toast'
 import { apiFetch } from '../services/apiService';
 interface InventoryProps {
   id: string;
@@ -31,6 +33,20 @@ class Inventory extends Component<InventoryProps> {
     .then((data) => {
       if(data.status == 0) {
         // toast.success('Item equipped!', {closeBtn: false, position: 'top', duration: 5000});
+        Toastify({
+          text: "This is a toast",
+          duration: 3000,
+          destination: "https://github.com/apvarun/toastify-js",
+          newWindow: true,
+          close: true,
+          gravity: "top", // `top` or `bottom`
+          position: "left", // `left`, `center` or `right`
+          stopOnFocus: true, // Prevents dismissing of toast on hover
+          style: {
+            background: "linear-gradient(to right, #00b09b, #96c93d)",
+          },
+          onClick: function(){} // Callback after click
+        }).showToast();
         this.props.refreshInventory();
       } else {
         // toast.error('Character inventory is full!', {closeBtn: false, position: 'top', duration: 5000});

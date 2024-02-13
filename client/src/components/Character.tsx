@@ -7,7 +7,6 @@ import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 import { CharacterStats } from '@legion/shared/interfaces';
 
-// import toast from '@brenoroosevelt/toast'
 import { apiFetch } from '../services/apiService';
 
 interface CharacterProps {
