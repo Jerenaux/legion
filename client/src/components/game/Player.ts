@@ -440,8 +440,11 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     displayOverheadText(text, duration, color) {
+        const randomXOffset = (Math.random() - 0.5) * 30; 
+        const randomYOffset = (Math.random() - 0.5) * 10; 
+
         const textObject = this.scene.add.text(
-            0,( -this.sprite.height / 2) + 15, `${String(text)}`, 
+            randomXOffset,( -this.sprite.height / 2) + 15 + randomYOffset, `${String(text)}`, 
             { fontSize: '24px', color, stroke: '#000', strokeThickness: 3 }
             ).setOrigin(0.5).setDepth(10)   ;
         this.add(textObject);
@@ -449,7 +452,7 @@ export class Player extends Phaser.GameObjects.Container {
         // Create a tween to animate the damage text
         this.scene.tweens.add({
             targets: textObject,
-            y: '-=30',  // move up
+            y: `-=${30 - randomYOffset}`,  // move up
             alpha: 0,   // fade out
             duration, 
             ease: 'Power2',  // smooth easing
