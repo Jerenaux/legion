@@ -28,6 +28,7 @@ export class ServerPlayer {
     cooldowns;
     cooldown: number = 0;
     cooldownTimer: NodeJS.Timeout | null = null;
+    DoTTimer: NodeJS.Timeout | null = null;
     inventoryCapacity: number = 3;
     inventory: Item[] = [];
     spells: Spell[] = [];
@@ -314,6 +315,7 @@ export class ServerPlayer {
         this.team?.increaseScoreFromDamage(amount);
     }
 
+
     applyTerrainEffect(terrain: Terrain) {
         switch (terrain) {
             case Terrain.FIRE:
@@ -322,6 +324,21 @@ export class ServerPlayer {
                 break;
             default:
                 break;
+        }
+    }
+
+    setUpDoT(terrain: Terrain) {
+        if (this.DoTTimer) {
+            clearTimeout(this.DoTTimer);
+        }
+        this.DoTTimer = setInterval(() => {
+            this.applyTerrainEffect(terrain);
+        }, 3000);
+    }
+
+    stopDoT() {
+        if (this.DoTTimer) {
+            clearTimeout(this.DoTTimer);
         }
     }
 }

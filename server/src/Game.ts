@@ -224,6 +224,8 @@ export abstract class Game
             console.log(`Player ${num} cannot move to ${tile.x},${tile.y}!`);
             return;
         }
+
+        player.stopDoT();
         
         // console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
         this.checkForTerrainEffects(player, listCellsOnTheWay(player.x, player.y, tile.x, tile.y));
@@ -231,6 +233,8 @@ export abstract class Game
         this.freeCell(player.x, player.y);
         player.updatePos(tile.x, tile.y);
         this.occupyCell(player.x, player.y, player);
+        
+        this.checkForStandingOnTerrain(player);
 
         const cooldown = player.getCooldown('move');
         this.setCooldown(player, cooldown);
@@ -254,6 +258,13 @@ export abstract class Game
                 player.applyTerrainEffect(terrain);
             }
         });
+    }
+
+    checkForStandingOnTerrain(player: ServerPlayer) {
+        const terrain = this.terrainMap.get(`${player.x},${player.y}`);
+        if (terrain) {
+            player.setUpDoT(terrain);
+        }
     }
 
     processAttack({num, target}: {num: number, target: number}, team: Team) {
@@ -349,11 +360,7 @@ export abstract class Game
         player.team!.increaseScoreFromSpell(spell.score);
 
         if (spell.terrain) {
-            for (let i = x - Math.floor(spell.size/2); i <= x + Math.floor(spell.size/2); i++) {
-                for (let j = y - Math.floor(spell.size/2); j <= y + Math.floor(spell.size/2); j++) {
-                    this.terrainMap.set(`${i},${j}`, spell.terrain);
-                }
-            }
+            this.setUpTerrainEffect(spell, x, y);
             this.broadcast('terrain', {
                 x,
                 y,
@@ -434,6 +441,17 @@ export abstract class Game
             num,
             mp,
         });
+    }
+
+    setUpTerrainEffect(spell, x, y) {
+        for (let i = x - Math.floor(spell.size/2); i <= x + Math.floor(spell.size/2); i++) {
+            for (let j = y - Math.floor(spell.size/2); j <= y + Math.floor(spell.size/2); j++) {
+                this.terrainMap.set(`${i},${j}`, spell.terrain);
+                // Get player at position
+                const player = this.getPlayerAt(i, j);
+                if (player) player.setUpDoT(spell.terrain);
+            }
+        }
     }
 
     listAdjacentEnemies(player: ServerPlayer): ServerPlayer[] {
