@@ -39,7 +39,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {
         '@legion/shared': path.resolve(__dirname, '../shared/'),
-        '@assets': path.resolve(__dirname, '/public/'),
+        '@assets': path.resolve(__dirname, './public/'),
         'phaser': path.resolve(__dirname, 'node_modules/phaser/dist/phaser.js'),
     }
   },

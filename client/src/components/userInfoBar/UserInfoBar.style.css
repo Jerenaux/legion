@@ -1,0 +1,45 @@
+.barContainer {
+    display: flex;
+    align-items: center;
+}
+
+.barLogo {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #CD853F;
+    border-radius: 4px;
+    background-color: #2D3334;
+    z-index: 1;
+}
+
+.labelContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 124px;
+    height: 28px;
+    border: 1px solid #71deff;
+    border-radius: 6px;
+    margin-left: -8px;
+    margin-right: 8px;
+    padding-left: 16px;
+    padding-right: 3px;
+    background-color: #253644;
+}
+
+.labelContainer span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.eloSpan {
+    background-color: #364f63;
+    padding: 3px;
+    border-radius: 4px;
+    font-weight: 400 !important;
+}
+
+.eloBorder {
+    border: 1px solid #8d8774;
+}

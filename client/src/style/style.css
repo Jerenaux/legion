@@ -435,14 +435,8 @@ canvas {
 
   .homePage {
     display: flex;
+    flex-direction: column;
     height: 100vh;
-  }
-  
-  .menu {
-    width: 100px;
-    background-color: #2D2D2D;
-    padding: 10px;
-    border-right: 2px solid black;
   }
   
   .content {
@@ -468,30 +462,6 @@ canvas {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-  }
-
-
-  .gameLogo {
-    width: 95%;
-    height: auto;
-    padding: 5px;
-    background-color: black;
-    border-radius: 10px; /* Adjust this value to get the desired roundness */
-  }
-
-  .menuItems {
-    padding-top: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-  }
-  .menuItem {
-    cursor: pointer;
-    width: 100%;
-    height: auto;
-    padding-bottom: 10px;
   }
 
 .page-header {
@@ -567,28 +537,6 @@ canvas {
 .shop-content {
     margin-left: 30px;
 }
-
-.menuItemContainer {
-    position: relative;
-}
-
-.menuItemText {
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: 'Kim', sans-serif;
-    color: white;
-    font-size: 30px;
-    text-shadow: -5px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-}
-
-.menuItemContainer:hover {
-    filter: brightness(1.2);
-  }
-  .menuItemContainer:active {
-    transform: scale(0.95);
-  }
 
   .notificationBarButton {
     position: relative;
