@@ -73,3 +73,25 @@
     height: 36px;
     margin: 0 8px;
 }
+
+.menuItems {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    gap: 4px;
+}
+
+.menuItemContainer {
+    width: 72px;
+    height: 84px;
+}
+
+.menuItemContainer img {
+    width: 100%;
+    height: 100%;
+}
+
+.menuItemContainer:hover {
+    padding-top: 18px;
+}

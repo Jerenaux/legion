@@ -7,13 +7,27 @@ import './navbar.style.css';
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 
 import legionLogo from '@assets/legionlogo.png';
-import playIcon from '@assets/play.png';
-import teamIcon from '@assets/team.png';
-import shopIcon from '@assets/shop.png';
-import rankIcon from '@assets/rank.png';
+import playIcon from '@assets/play_btn_idle.png';
+import teamIcon from '@assets/team_btn_idle.png';
+import shopIcon from '@assets/shop_btn_idle.png';
+import rankIcon from '@assets/rank_btn_idle.png';
+import playActiveIcon from '@assets/play_btn_active.png';
+import teamActiveIcon from '@assets/team_btn_active.png';
+import shopActiveIcon from '@assets/shop_btn_active.png';
+import rankActiveIcon from '@assets/rank_btn_active.png';
 import navbarBg from '@assets/navbar_bg.png';
 
+enum MenuItems {
+    PLAY = 'PLAY',
+    TEAM = 'TEAM',
+    SHOP = 'SHOP',
+    RANK = 'RANK'
+}
+
 class Navbar extends Component {
+    state = {
+        hovered: ''
+    }
 
     render() {
         return (
@@ -33,32 +47,29 @@ class Navbar extends Component {
                     </div>
                 </div>
 
-                {/* <div className="menuItems">
-                    <Link href="/play">
+                <div className="menuItems">
+                    <Link href="/play" onMouseOver={() => this.setState({hovered: MenuItems.PLAY})} onMouseLeave={() => this.setState({hovered: ''})}>
                         <div className="menuItemContainer">
-                            <img className="menuItem" src={playIcon} />
-                            <span className="menuItemText">PLAY</span>
+                            <img className="menuItem" src={this.state.hovered === MenuItems.PLAY ? playActiveIcon : playIcon} />
                         </div>
                     </Link>
-                    <Link href="/team">
+                    <Link href="/team" onMouseOver={() => this.setState({hovered: MenuItems.TEAM})} onMouseLeave={() => this.setState({hovered: ''})}>
                         <div className="menuItemContainer">
-                            <img className="menuItem" src={teamIcon} />
-                            <span className="menuItemText">TEAM</span>
+                            <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon :teamIcon} />
                         </div>
                     </Link>
-                    <Link href="/shop">
+                    <Link href="/shop" onMouseOver={() => this.setState({hovered: MenuItems.SHOP})} onMouseLeave={() => this.setState({hovered: ''})}>
                         <div className="menuItemContainer">
-                            <img className="menuItem" src={shopIcon} />
-                            <span className="menuItemText">SHOP</span>
+                            <img className="menuItem" src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon :shopIcon} />
                         </div>
                     </Link>
-                    <Link href="/rank">
+                    <Link href="/rank" onMouseOver={() => this.setState({hovered: MenuItems.RANK})} onMouseLeave={() => this.setState({hovered: ''})}>
                         <div className="menuItemContainer">
-                            <img className="menuItem" src={rankIcon} />
-                            <span className="menuItemText">RANK</span>
+                            <img className="menuItem" src={this.state.hovered === MenuItems.RANK ? rankActiveIcon :rankIcon} />
                         </div>
                     </Link>
-                </div> */}
+                </div>
+
                 <div className="flexContainer">
                     <UserInfoBar label="3.000.000" />
                     <UserInfoBar label="1.235" elo={5.302} />

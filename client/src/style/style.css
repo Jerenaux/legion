@@ -462,6 +462,7 @@ canvas {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    padding-top: 36px;
   }
 
 .page-header {
