@@ -1,0 +1,101 @@
+.arenaCard {
+    width: 320px;
+    height: 82px;
+    background-size: 100% 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.spectate {
+    position: absolute;
+    left: 78px;
+    bottom: -20px;
+    width: 160px;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    background-color: #1c1f25;
+    border: 1px solid #244154;
+    border-radius: 4px;
+}
+
+.spectate span {
+    font-size: 10px;
+    font-weight: 600;
+    color: #ffa600;
+}
+
+.team_a_members {
+    position: absolute;
+    left: 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: 1px;
+}
+
+.team_a_members span span {
+    color: #ffa600;
+}
+
+.team_b_members {
+    position: absolute;
+    right: 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: 1px;
+}
+
+.team_b_members span span {
+    color: #ffa600;
+}
+
+.vsSpan {
+    position: absolute;
+    left: 150px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffa600;
+    padding-top: 4px;
+}
+
+.team_a_info {
+    position: absolute;
+    left: 68px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+.team_a_info .teamScore {
+    font-size: 12px;
+    font-weight: 300;
+    color: #49d7d8;
+}
+
+.team_b_info {
+    position: absolute;
+    right: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+.team_b_info .spactators {
+    font-size: 10px;
+    font-weight: 300;
+    color: #FFFFFF;
+}
+
+.team_b_info .spactators span {
+    color: #ffa600;
+}

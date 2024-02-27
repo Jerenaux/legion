@@ -1,4 +1,4 @@
-// Button.tsx
+// Middle Bar.tsx
 import './MiddleBar.style.css'
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
