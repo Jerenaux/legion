@@ -1,0 +1,74 @@
+.questCardContainer {
+    background-image: url('@assets/quest_bg_idle.png');
+    background-size: 100% 100%;
+    width: 280px;
+    height: 74px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.questInfoContainer {
+    position: absolute;
+    left: 94px;
+    display: flex;
+    flex-direction: column;
+}
+
+.questInfoContainer span, p {
+    font-size: 10px;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.questInfoContainer .fireSpells {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.questInfoContainer .questGold {
+    color: #ffa600;
+}
+
+.questInfoContainer .questExp {
+    color: #49d7d8;
+}
+
+.completion {
+    background-image: url('@assets/completion_marker.png');
+    background-size: 100% 100%;
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    right: 8px;
+}
+
+.chartContainer {
+    position: absolute;
+    right: 8px;
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
+    background-color: #49d7d8; /* For browsers that do not support gradients */
+    background-image: conic-gradient(#49d7d8 0% 45%, #1c1f25 45%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chartVal {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #49d7d8;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #252b36;
+}
+
+.chartVal span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #FFFFFF;
+}

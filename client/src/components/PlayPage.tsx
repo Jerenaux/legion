@@ -4,6 +4,7 @@ import Roster from './roster/Roster';
 import Button from './Button';
 import MiddleBar from './middleBar/MiddleBar';
 import OnGoingArena from './onGoingArena/OnGoingArena';
+import DailyQuest from './dailyQuest/DailyQuest';
 
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
@@ -77,6 +78,7 @@ class PlayPage extends Component {
         <div className="play-content">
           <Roster />
           <MiddleBar />
+          <DailyQuest />
           <OnGoingArena />
         </div>
       );
