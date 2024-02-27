@@ -1,0 +1,33 @@
+.buttonContainer {
+    background-size: 100% 100%;
+    width: 240px;
+    height: 78px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.buttonContainer img {
+    width: 48px;
+    position: absolute;
+    left: 12px;
+}
+
+.labelContainer {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    left: 72px;
+}
+
+.labelContainer .label {
+    font-size: 18px;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-transform: uppercase;
+}
+
+.labelContainer .player {
+    font-size: 8px;
+    color: #FFFFFF;
+}

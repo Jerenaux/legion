@@ -1,7 +1,10 @@
 // PlayPage.tsx
 import { h, Component } from 'preact';
-import Roster from './Roster';
+import Roster from './roster/Roster';
 import Button from './Button';
+import MiddleBar from './middleBar/MiddleBar';
+import OnGoingArena from './onGoingArena/OnGoingArena';
+import DailyQuest from './dailyQuest/DailyQuest';
 
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
@@ -74,8 +77,9 @@ class PlayPage extends Component {
     return (
         <div className="play-content">
           <Roster />
-          <div className="section-title">Game Modes</div>
-          <Button label="VS AI" to="/game" />
+          <MiddleBar />
+          <DailyQuest />
+          <OnGoingArena />
         </div>
       );
   }

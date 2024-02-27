@@ -135,7 +135,7 @@ class HomePage extends Component<object, State> {
                 <NotificationBar initFirebaseUI={this.initFirebaseUI} logout={this.logout} user={user} />
 
                 <div className="mainContent">
-                    <div className="page-header">
+                    {/* <div className="page-header">
                         <div className="left-group">
                             <img src={`assets/${currentPage}.png`} className="page-icon" />
                             <span className="page-title">{currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}</span>
@@ -144,7 +144,7 @@ class HomePage extends Component<object, State> {
                             <div className="header-gold" title='Gold'>{this.state.gold}</div>
                         </div>
                         <div className="right-group" />
-                    </div>
+                    </div> */}
 
                     <Router onChange={this.handleRouteChange}>
                         <Route default path="/play" component={PlayPage} />

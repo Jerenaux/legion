@@ -1,0 +1,36 @@
+.rosterContainer {
+    max-width: 1024px;
+    margin: auto;
+}
+
+.rosters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+.addCardContainer {
+    width: 304px;
+    height: 86px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.addCard {
+    width: 258px;
+    height: 76px;
+    background-color: #1c1f25;
+    border: 1px solid #000000;
+    border-radius: 6px;
+    margin-right: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.addCard img {
+    width: 24px;
+    height: 24px;
+}

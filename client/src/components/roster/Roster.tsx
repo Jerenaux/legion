@@ -1,8 +1,11 @@
 // Roster.tsx
+import './Roster.style.css';
 import { h, Component } from 'preact';
-import CharacterCard from './CharacterCard';
-import { apiFetch } from '../services/apiService';
-import { successToast, errorToast } from './utils';
+import CharacterCard from '../characterCard/CharacterCard';
+import { apiFetch } from '../../services/apiService';
+import { successToast, errorToast } from '../utils';
+import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
+import PlusIcon from '@assets/plus.svg';
 
 interface RosterState {
   characters: any[];
@@ -99,10 +102,15 @@ class Roster extends Component<object, RosterState> {
 
   render() {
     return (
-      <div>
-        <div className="section-title">Your Team</div>
-        <div className="roster">
+      <div className="rosterContainer">
+        <BottomBorderDivider label="TEAM COMPOSITION" />
+        <div className="rosters">
             {this.state.characters && this.state.characters.map(character => <CharacterCard {...character} key={character} />)}
+            <div className="addCardContainer">
+              <div className="addCard">
+                <img src={PlusIcon} alt="Plus" />
+              </div>
+            </div>
         </div>
       </div>
     );

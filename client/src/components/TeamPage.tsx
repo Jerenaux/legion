@@ -2,7 +2,7 @@
 import { h, Component } from 'preact';
 import { Router, Route } from 'preact-router';
 
-import Roster from './Roster';
+import Roster from './roster/Roster';
 import Character from './Character';
 import Inventory from './Inventory';
 

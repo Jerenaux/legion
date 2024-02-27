@@ -1,0 +1,10 @@
+.dailyQuestContainer {
+    max-width: 1024px;
+    margin: auto;
+}
+
+.dailyQuests {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}

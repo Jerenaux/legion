@@ -1,0 +1,11 @@
+.dividerContainer {
+    padding: 6px 0;
+    margin: 12px 0;
+    border-bottom: 1px solid #ffa600;
+}
+
+.dividerContainer span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+}

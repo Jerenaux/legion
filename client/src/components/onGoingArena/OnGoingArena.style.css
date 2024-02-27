@@ -1,0 +1,11 @@
+.arenaContainer {
+    max-width: 1024px;
+    margin: auto;
+}
+
+.arenas {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}

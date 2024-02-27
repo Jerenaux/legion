@@ -1,0 +1,19 @@
+.barContainer {
+    background-image: url('@assets/middle_bar_BG.png');
+    background-size: 100% 100%;
+    width: 100%;
+    height: 108px;
+    margin: 24px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 36px;
+}
+
+.barContainer div:nth-child(2) .labelContainer .player span {
+    color: #ffb653;
+}
+
+.barContainer div:nth-child(3) .labelContainer .player span {
+    color: #4ff4f6;
+}

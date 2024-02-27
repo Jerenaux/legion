@@ -1,0 +1,76 @@
+.cardContainer {
+  background-image: url("@assets/team_Bg.png");
+  background-size: 100% 100%;
+  width: 304px;
+  height: 86px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.characterLevel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  left: 36px;
+}
+
+.characterLevel .level {
+  font-size: 10px;
+  color: #ffa600;
+}
+
+.characterLevel .levelVal {
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.characterName {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  position: absolute;
+  left: 84px;
+}
+
+.characterName .name {
+    max-width: 132px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+    font-weight: 500;
+    color: #ffffff;
+    text-transform: capitalize;
+}
+
+.characterName .class {
+    max-width: 114px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+    font-weight: 500;
+    color: #ffa600;
+    text-transform: uppercase;
+}
+
+.portraitContainer {
+    position: absolute;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    padding-bottom: 6px;
+}
+
+.portrait {
+    width: 100%;
+    height: 100%;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+}
