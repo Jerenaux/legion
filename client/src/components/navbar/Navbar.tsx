@@ -1,8 +1,8 @@
 // Navbar.tsx
 
+import './navbar.style.css';
 import { h, Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
-import './navbar.style.css';
 
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 
@@ -33,11 +33,15 @@ enum Routes {
 
 class Navbar extends Component {
     state = {
-        hovered: ''
+        hovered: '',
+        openDropdown: false,
     }
 
     render() {
         const route = useRouter();
+        const dropdownContentStyle = {
+            display: `${this.state.openDropdown ? 'block' : 'none'}`
+        }
 
         return (
             <div className="menu">
@@ -57,24 +61,24 @@ class Navbar extends Component {
                 </div>
 
                 <div className="menuItems">
-                    <Link href="/play" onMouseOver={() => this.setState({hovered: MenuItems.PLAY})} onMouseLeave={() => this.setState({hovered: ''})}>
+                    <Link href="/play" onMouseOver={() => this.setState({ hovered: MenuItems.PLAY })} onMouseLeave={() => this.setState({ hovered: '' })}>
                         <div className={`menuItemContainer ${route[0].url === Routes.PLAY || route[0].url === Routes.HOME ? 'activeFlag' : ''}`}>
                             <img className="menuItem" src={this.state.hovered === MenuItems.PLAY ? playActiveIcon : playIcon} />
                         </div>
                     </Link>
-                    <Link href="/team" onMouseOver={() => this.setState({hovered: MenuItems.TEAM})} onMouseLeave={() => this.setState({hovered: ''})}>
+                    <Link href="/team" onMouseOver={() => this.setState({ hovered: MenuItems.TEAM })} onMouseLeave={() => this.setState({ hovered: '' })}>
                         <div className={`menuItemContainer ${route[0].url === Routes.TEAM ? 'activeFlag' : ''}`}>
-                            <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon :teamIcon} />
+                            <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} />
                         </div>
                     </Link>
-                    <Link href="/shop" onMouseOver={() => this.setState({hovered: MenuItems.SHOP})} onMouseLeave={() => this.setState({hovered: ''})}>
+                    <Link href="/shop" onMouseOver={() => this.setState({ hovered: MenuItems.SHOP })} onMouseLeave={() => this.setState({ hovered: '' })}>
                         <div className={`menuItemContainer ${route[0].url === Routes.SHOP ? 'activeFlag' : ''}`}>
-                            <img className="menuItem" src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon :shopIcon} />
+                            <img className="menuItem" src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon} />
                         </div>
                     </Link>
-                    <Link href="/rank" onMouseOver={() => this.setState({hovered: MenuItems.RANK})} onMouseLeave={() => this.setState({hovered: ''})}>
+                    <Link href="/rank" onMouseOver={() => this.setState({ hovered: MenuItems.RANK })} onMouseLeave={() => this.setState({ hovered: '' })}>
                         <div className={`menuItemContainer ${route[0].url === Routes.RANK ? 'activeFlag' : ''}`}>
-                            <img className="menuItem" src={this.state.hovered === MenuItems.RANK ? rankActiveIcon :rankIcon} />
+                            <img className="menuItem" src={this.state.hovered === MenuItems.RANK ? rankActiveIcon : rankIcon} />
                         </div>
                     </Link>
                 </div>
@@ -82,7 +86,14 @@ class Navbar extends Component {
                 <div className="flexContainer">
                     <UserInfoBar label="3.000.000" />
                     <UserInfoBar label="1.235" elo={5.302} />
-                    <div className="expand_btn"></div>
+                    <div class="expand_btn" onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
+                        <div class="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
+                            <Link href="/"><span>Link 1</span></Link>
+                            <Link href="/"><span>Link 2</span></Link>
+                            <Link href="/"><span>Link 3</span></Link>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         );

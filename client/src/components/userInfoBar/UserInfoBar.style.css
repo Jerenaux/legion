@@ -10,6 +10,14 @@
     border-radius: 4px;
     background-color: #2D3334;
     z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.barLogo img {
+    width: 24px;
+    height: 24px;
 }
 
 .userInfoLabel {
