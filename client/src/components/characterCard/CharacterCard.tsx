@@ -17,6 +17,10 @@ interface CharacterProps {
 }
 
 class CharacterCard extends Component<CharacterProps> {
+  state = {
+    active: false
+  }
+
   handleCardClick = () => {
     const { id } = this.props;
     route(`/team/${id}`);
@@ -27,9 +31,14 @@ class CharacterCard extends Component<CharacterProps> {
     const portraitStyle = {
         backgroundImage: `url(/sprites/${portrait}.png)`,
     };
+
+    const bgStyle = {
+      backgroundImage: `url(/team_Bg_${this.state.active ? 'active' : 'idle'}.png)`,
+      cursor: 'pointer'
+    }
     
     return (
-      <div className="cardContainer" onClick={this.handleCardClick}>
+      <div className="cardContainer" style={bgStyle} onClick={this.handleCardClick} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})}>
         <div className="characterLevel">
           <span className="level">Lv</span>
           <span className="levelVal">{level}</span>

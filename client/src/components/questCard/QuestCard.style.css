@@ -50,7 +50,6 @@
     width: 48px;
     border-radius: 50%;
     background-color: #49d7d8; /* For browsers that do not support gradients */
-    background-image: conic-gradient(#49d7d8 0% 45%, #1c1f25 45%);
     display: flex;
     justify-content: center;
     align-items: center;

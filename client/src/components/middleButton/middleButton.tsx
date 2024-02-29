@@ -12,10 +12,23 @@ interface ButtonProps {
 }
 
 class MiddleButton extends Component<ButtonProps> {
+    state = {
+        active: false
+    }
+
+    handleCardClick = () => {
+        route(`/play`);
+    }
+    
     render() {
         const btnBg = {
-            backgroundImage: `url(./${this.props.label}_bg.png)`,
+            backgroundImage: `url(./middle_play_${this.state.active ? 'active' : 'idle'}.png)`,
+            cursor: 'pointer'
         };
+
+        const playerSpanStyle = {
+            color: `${this.state.active ? '#ffb653' : '#4ff4f6'}`
+        }
 
         const btnIcons = {
             practice: PracticeIcon,
@@ -24,11 +37,11 @@ class MiddleButton extends Component<ButtonProps> {
         }
 
         return (
-            <div className="buttonContainer" style={btnBg}>
+            <div className="buttonContainer" style={btnBg} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})} onClick={this.handleCardClick}>
                 <img src={btnIcons[this.props.label]} alt="" />
                 <div className="labelContainer">
                     <span className="label">{this.props.label}</span>
-                    {this.props.players && <span className="player"><span>{this.props.players}</span> Players Queuing...</span>}
+                    {this.props.players && <span className="player"><span style={playerSpanStyle}>{this.props.players}</span> Players Queuing...</span>}
                 </div>
             </div>
         );

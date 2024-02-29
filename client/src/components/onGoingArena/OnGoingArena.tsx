@@ -5,16 +5,31 @@ import { route } from 'preact-router';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import ArenaCard from '../arenaCard/ArenaCard';
 
-class OnGoingArena extends Component {
+type Team = {
+  name: string;
+  teamSize: number;
+  aliveCharacters: number;
+}
+
+type Game = {
+  teamA: Team,
+  teamB: Team,
+  spectators: number,
+  duration: number,
+}
+
+interface ArenaProps {
+  ongoingGameData: Game[]
+}
+
+class OnGoingArena extends Component<ArenaProps> {
 
   render() {
     return (
       <div className="arenaContainer">
         <BottomBorderDivider label="ON GOING ARENA" />
         <div className="arenas">
-            <ArenaCard active={true} />
-            <ArenaCard active={false} />
-            <ArenaCard active={false} />
+          {this.props.ongoingGameData.map((game) => <ArenaCard gameData={game} />)}
         </div>
       </div>
     );

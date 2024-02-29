@@ -9,11 +9,3 @@
     align-items: center;
     gap: 36px;
 }
-
-.barContainer div:nth-child(2) .labelContainer .player span {
-    color: #ffb653;
-}
-
-.barContainer div:nth-child(3) .labelContainer .player span {
-    color: #4ff4f6;
-}

@@ -5,16 +5,29 @@ import { route } from 'preact-router';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import QuestCard from '../questCard/QuestCard';
 
-class DailyQuest extends Component {
+type Reward = {
+  gold: number,
+  xp: number
+}
+
+type Quest = {
+  name: string,
+  rewards: Reward,
+  completion: number
+}
+
+interface QuestProps {
+  questData: Quest[]
+}
+
+class DailyQuest extends Component<QuestProps> {
 
   render() {
     return (
       <div className="dailyQuestContainer">
         <BottomBorderDivider label='DAILY QUESTS' />
         <div className="dailyQuests">
-            <QuestCard percent={100} />
-            <QuestCard percent={45} />
-            <QuestCard percent={45} />
+          {this.props.questData.map((quest) => <QuestCard quest={quest} />)}
         </div>
       </div>
     );

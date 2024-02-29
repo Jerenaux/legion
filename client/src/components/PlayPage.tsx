@@ -78,8 +78,8 @@ class PlayPage extends Component {
         <div className="play-content">
           <Roster />
           <MiddleBar />
-          <DailyQuest />
-          <OnGoingArena />
+          <DailyQuest questData={data.dailyQuests} />
+          <OnGoingArena ongoingGameData={data.ongoingGames} />
         </div>
       );
   }
