@@ -12,7 +12,6 @@ import PlayPage from '../components/PlayPage';
 import TeamPage from '../components/TeamPage';
 import ShopPage from '../components/ShopPage';
 import RankPage from '../components/RankPage';
-import NotificationBar from '../components/NotificationBar';
 import Navbar from '../components/navbar/Navbar';
 
 interface State {
@@ -93,21 +92,11 @@ class HomePage extends Component<object, State> {
         return (
             <div className="homePage">
 
-                <Navbar />
+                <Navbar user={user} initFirebaseUI={this.initFirebaseUI} logout={this.logout}/>
 
                 <div className="content" style={bgImage}>
 
                 <div className="mainContent">
-                    {/* <div className="page-header">
-                        <div className="left-group">
-                            <img src={`assets/${currentPage}.png`} className="page-icon" />
-                            <span className="page-title">{currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}</span>
-                        </div>
-                        <div className="header-capsules">
-                            <div className="header-gold" title='Gold'>{this.state.gold}</div>
-                        </div>
-                        <div className="right-group" />
-                    </div> */}
 
                     <Router onChange={this.handleRouteChange}>
                         <Route default path="/play" component={PlayPage} />

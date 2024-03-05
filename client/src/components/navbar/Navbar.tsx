@@ -3,6 +3,7 @@
 import './navbar.style.css';
 import { h, Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
+import firebase from 'firebase/compat/app'
 
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 
@@ -31,7 +32,13 @@ enum Routes {
     RANK = '/rank'
 }
 
-class Navbar extends Component {
+interface Props {
+    initFirebaseUI: () => void;
+    logout: () => void;
+    user: firebase.User | null;
+}
+
+class Navbar extends Component<Props, {}> {
     state = {
         hovered: '',
         openDropdown: false,
@@ -84,6 +91,8 @@ class Navbar extends Component {
                 </div>
 
                 <div className="flexContainer">
+                    {this.props.user === null && <div className="notificationBarButton" onClick={this.props.initFirebaseUI}>Log in</div>}
+                    {this.props.user !== null && <div className="notificationBarButton" onClick={this.props.logout}>Log out</div>}
                     <UserInfoBar label="3.000.000" />
                     <UserInfoBar label="1.235" elo={5.302} />
                     <div class="expand_btn" onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
