@@ -43,6 +43,13 @@ class Navbar extends Component {
             display: `${this.state.openDropdown ? 'block' : 'none'}`
         }
 
+        const currentPage = (pageRoute: string) => {
+            if (pageRoute === Routes.PLAY) {
+                return route[0].url.includes(pageRoute) || route[0].url === Routes.HOME;
+            }
+            return route[0].url.includes(pageRoute);
+        }
+
         return (
             <div className="menu">
                 <div className="flexContainer">
@@ -62,22 +69,22 @@ class Navbar extends Component {
 
                 <div className="menuItems">
                     <Link href="/play" onMouseOver={() => this.setState({ hovered: MenuItems.PLAY })} onMouseLeave={() => this.setState({ hovered: '' })}>
-                        <div className={`menuItemContainer ${route[0].url === Routes.PLAY || route[0].url === Routes.HOME ? 'activeFlag' : ''}`}>
+                        <div className={`menuItemContainer ${currentPage(Routes.PLAY) ? 'activeFlag' : ''}`}>
                             <img className="menuItem" src={this.state.hovered === MenuItems.PLAY ? playActiveIcon : playIcon} />
                         </div>
                     </Link>
                     <Link href="/team" onMouseOver={() => this.setState({ hovered: MenuItems.TEAM })} onMouseLeave={() => this.setState({ hovered: '' })}>
-                        <div className={`menuItemContainer ${route[0].url === Routes.TEAM ? 'activeFlag' : ''}`}>
+                        <div className={`menuItemContainer ${currentPage(Routes.TEAM) ? 'activeFlag' : ''}`}>
                             <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} />
                         </div>
                     </Link>
                     <Link href="/shop" onMouseOver={() => this.setState({ hovered: MenuItems.SHOP })} onMouseLeave={() => this.setState({ hovered: '' })}>
-                        <div className={`menuItemContainer ${route[0].url === Routes.SHOP ? 'activeFlag' : ''}`}>
+                        <div className={`menuItemContainer ${currentPage(Routes.SHOP) ? 'activeFlag' : ''}`}>
                             <img className="menuItem" src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon} />
                         </div>
                     </Link>
                     <Link href="/rank" onMouseOver={() => this.setState({ hovered: MenuItems.RANK })} onMouseLeave={() => this.setState({ hovered: '' })}>
-                        <div className={`menuItemContainer ${route[0].url === Routes.RANK ? 'activeFlag' : ''}`}>
+                        <div className={`menuItemContainer ${currentPage(Routes.RANK) ? 'activeFlag' : ''}`}>
                             <img className="menuItem" src={this.state.hovered === MenuItems.RANK ? rankActiveIcon : rankIcon} />
                         </div>
                     </Link>
