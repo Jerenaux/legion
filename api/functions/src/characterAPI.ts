@@ -1,70 +1,10 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import * as functions from "firebase-functions";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 
-
-import {uniqueNamesGenerator, adjectives, colors, animals}
-  from "unique-names-generator";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class} from "@legion/shared/enums";
 import {RewardsData} from "@legion/shared/interfaces";
-
-
-export const createUserCharacter = functions.auth.user().onCreate((user) => {
-  logger.info("Creating character for user:", user.uid);
-  const db = admin.firestore();
-  const playerRef = db.collection("players").doc(user.uid);
-
-  // Define the character data structure
-  const playerData = {
-    name: uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]}),
-    gold: 100,
-    carrying_capacity: 50,
-    inventory: [0, 0, 0, 1, 1, 2, 3, 3],
-    characters: [] as admin.firestore.DocumentReference[],
-    elo: 100,
-    league: "Bronze",
-    wins: 0,
-    losses: 0,
-    crowd: 3,
-    xp: 0,
-    lvl: 1,
-  };
-
-  // Start a batch to ensure atomicity
-  const batch = db.batch();
-
-  // Add player document to batch
-  batch.set(playerRef, playerData);
-
-  const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
-  const characterDataArray = [];
-  // Repeat 3 times
-  for (let i = 0; i < 3; i++) {
-    characterDataArray.push(
-      new NewCharacter(
-        classes[i]
-      ).getCharacterData()
-    );
-  }
-
-  characterDataArray.forEach((characterData) => {
-    const characterRef = db.collection("characters").doc();
-    batch.set(characterRef, characterData);
-    playerData.characters.push(characterRef);
-  });
-
-  // Commit the batch
-  return batch.commit()
-    .then(() => {
-      logger.info("New player and characters created for user:", user.uid);
-    })
-    .catch((error) => {
-      logger.info("Error creating player and characters:", error);
-    });
-});
-
 
 export const rosterData = onRequest((request, response) => {
   logger.info("Fetching rosterData");

@@ -5,6 +5,8 @@
   position: relative;
   display: flex;
   align-items: center;
+  font-family: 'Kim';
+
 }
 
 .characterLevel {
@@ -12,7 +14,7 @@
   flex-direction: column;
   align-items: center;
   position: absolute;
-  left: 36px;
+  left: 34px;
 }
 
 .characterLevel .level {
@@ -72,5 +74,5 @@
     background-position: -40px -40px;
     background-repeat: no-repeat;
     animation: animate-sprite 0.7s steps(1) infinite;
-    transform: scale(.4);
+    transform: scale(.6);
 }

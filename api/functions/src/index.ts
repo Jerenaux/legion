@@ -4,14 +4,14 @@ import * as logger from "firebase-functions/logger";
 import {fetchLeaderboard, leaguesUpdate} from "./leaderboardsAPI";
 import {inventoryData, purchaseItem, equipItem, unequipItem}
   from "./inventoryAPI";
-import {createUserCharacter, rosterData, characterData, rewardsUpdate,
+import {rosterData, characterData, rewardsUpdate,
   generateOnSaleCharacters, listOnSaleCharacters,
   deleteOnSaleCharacters, purchaseCharacter} from "./characterAPI";
-import {playerData} from "./playerAPI";
+import {createPlayer, playerData} from "./playerAPI";
 
 export {
   fetchLeaderboard, inventoryData, purchaseItem, equipItem, unequipItem,
-  createUserCharacter, rosterData, characterData, rewardsUpdate,
+  createPlayer, rosterData, characterData, rewardsUpdate,
   generateOnSaleCharacters, listOnSaleCharacters, deleteOnSaleCharacters,
   purchaseCharacter, leaguesUpdate, playerData,
 };

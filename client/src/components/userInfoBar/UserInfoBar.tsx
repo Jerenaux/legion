@@ -17,8 +17,8 @@ class UserInfoBar extends Component<BarProps> {
           {!this.props.elo && <img src={GoldIcon} alt="gold_icon" />}
         </div>
         <div className="userInfoLabel">
-          <span>{this.props.label}</span>
-          {this.props.elo && <span className="eloSpan">{this.props.elo} <strong>elo</strong></span>}
+          <span className="labelSpan">{this.props.label}</span>
+          {this.props.elo && <span className="eloSpan"><strong>Elo</strong> {this.props.elo}</span>}
         </div>
       </div>
     );

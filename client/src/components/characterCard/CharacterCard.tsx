@@ -39,7 +39,7 @@ class CharacterCard extends Component<CharacterProps> {
     return (
       <div className="cardContainer" style={bgStyle} onClick={this.handleCardClick} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})}>
         <div className="characterLevel">
-          <span className="level">Lv</span>
+          <span className="level">Lvl</span>
           <span className="levelVal">{level}</span>
         </div>
         <div className="characterName">
