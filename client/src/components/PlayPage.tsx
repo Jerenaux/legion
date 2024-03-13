@@ -1,8 +1,7 @@
 // PlayPage.tsx
 import { h, Component } from 'preact';
 import Roster from './roster/Roster';
-import Button from './Button';
-import MiddleBar from './middleBar/MiddleBar';
+import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
 import DailyQuest from './dailyQuest/DailyQuest';
 
@@ -77,7 +76,7 @@ class PlayPage extends Component {
     return (
         <div className="play-content">
           <Roster />
-          <MiddleBar />
+          <PlayModes />
           <DailyQuest questData={data.dailyQuests} />
           <OnGoingArena ongoingGameData={data.ongoingGames} />
         </div>

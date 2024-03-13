@@ -25,9 +25,10 @@
     font-weight: 700;
     color: #FFFFFF;
     text-transform: uppercase;
+    font-family: "Kim";
 }
 
 .labelContainer .player {
-    font-size: 8px;
+    font-size: 11px;
     color: #FFFFFF;
 }

@@ -13,6 +13,7 @@ import TeamPage from '../components/TeamPage';
 import ShopPage from '../components/ShopPage';
 import RankPage from '../components/RankPage';
 import Navbar from '../components/navbar/Navbar';
+import QueuePage from '../components/QueuePage';
 
 interface State {
     currentPage: string;
@@ -100,6 +101,7 @@ class HomePage extends Component<object, State> {
 
                     <Router onChange={this.handleRouteChange}>
                         <Route default path="/play" component={PlayPage} />
+                        <Route path="/queue" component={QueuePage} />
                         <Route path="/team/:id?" component={TeamPage} />
                         <Route path="/shop" component={ShopPage} />
                         <Route path="/rank" component={RankPage} />

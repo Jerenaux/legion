@@ -1,5 +1,5 @@
 // Middle Button.tsx
-import './middleButton.style.css'
+import './playModeButton.style.css'
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import PracticeIcon from '@assets/practice_icon.png';
@@ -11,13 +11,13 @@ interface ButtonProps {
     label: string;
 }
 
-class MiddleButton extends Component<ButtonProps> {
+class PlayModeButton extends Component<ButtonProps> {
     state = {
         active: false
     }
 
     handleCardClick = () => {
-        route(`/game`);
+        route(`/queue`);
     }
     
     render() {
@@ -41,11 +41,11 @@ class MiddleButton extends Component<ButtonProps> {
                 <img src={btnIcons[this.props.label]} alt="" />
                 <div className="labelContainer">
                     <span className="label">{this.props.label}</span>
-                    {this.props.players && <span className="player"><span style={playerSpanStyle}>{this.props.players}</span> Players Queuing...</span>}
+                    {this.props.players && <span className="player"><span style={playerSpanStyle}>{this.props.players}</span> Players Queuing</span>}
                 </div>
             </div>
         );
     }
 }
 
-export default MiddleButton;
+export default PlayModeButton;

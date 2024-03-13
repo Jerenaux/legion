@@ -27,7 +27,7 @@ class OnGoingArena extends Component<ArenaProps> {
   render() {
     return (
       <div className="arenaContainer">
-        <BottomBorderDivider label="ON GOING ARENA" />
+        <BottomBorderDivider label="ONGOING GAMES" />
         <div className="arenas">
           {this.props.ongoingGameData.map((game) => <ArenaCard gameData={game} />)}
         </div>
