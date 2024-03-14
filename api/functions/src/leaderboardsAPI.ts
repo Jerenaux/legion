@@ -57,15 +57,15 @@ export const leaguesUpdate = functions.pubsub.schedule("every 5 seconds")
       // Iterate over all players and update their league based on their elo
       players.forEach((player) => {
         if (player.elo < 1000) {
-          player.league = "Bronze";
+          player.league = 0;
         } else if (player.elo < 1200) {
-          player.league = "Silver";
+          player.league = 1;
         } else if (player.elo < 1400) {
-          player.league = "Gold";
+          player.league = 2;
         } else if (player.elo < 1600) {
-          player.league = "Zenith";
+          player.league = 3;
         } else {
-          player.league = "Apex";
+          player.league = 4;
         }
         db.collection("players").doc(player.uid)
           .update({league: player.league});

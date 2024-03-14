@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "baseUrl": ".", // This should be set to the root of your backend project
+    "paths": {
+      "@legion/shared/*": ["../shared/*"] // Adjust this path to correctly point to your shared directory
+    }
+  },
+}

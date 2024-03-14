@@ -29,7 +29,7 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
     inventory: [0, 0, 0, 1, 1, 2, 3, 3],
     characters: [] as admin.firestore.DocumentReference[],
     elo: 100,
-    league: "Bronze",
+    league: 0,
     wins: 0,
     losses: 0,
     crowd: 3,
@@ -100,3 +100,33 @@ export const playerData = onRequest((request, response) => {
     }
   });
 });
+
+export const queuingData = onRequest((request, response) => {
+  logger.info("Fetching queuingData");
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const docSnap = await db.collection("players").doc(uid).get();
+
+      if (docSnap.exists) {
+        const playerData = docSnap.data();
+        if (!playerData) {
+          throw new Error("playerData is null");
+        }
+
+        response.send({
+          elo: playerData.elo,
+          league: playerData.league,
+        });
+      } else {
+        response.status(404).send("Not Found: Invalid player ID");
+      }
+    } catch (error) {
+      console.error("queuingData error:", error);
+      response.status(401).send("Unauthorized");
+    }
+  });
+});
+

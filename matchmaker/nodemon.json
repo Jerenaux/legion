@@ -1,0 +1,7 @@
+{
+    "watch": ["src"],
+    "ext": "ts",
+    "exec": "npx ts-node -r tsconfig-paths/register ./src/matchmaker.ts",
+    "ignore": ["src/**/*.spec.ts"]
+  }
+  
