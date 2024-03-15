@@ -1,5 +1,6 @@
 import { h, Component } from 'preact';
 import { io } from 'socket.io-client';
+import { route } from 'preact-router';
 
 import { getFirebaseIdToken } from '../services/apiService';
 
@@ -26,6 +27,7 @@ class QueuePage extends Component<QPageProps, {}> {
 
         this.socket.on('matchFound', ({gameId}) => {
             console.log(`Found game ${gameId}!`);
+            route(`/game/${gameId}`);
         });
 
         this.socket.emit('joinQueue', {mode: this.props.matches.mode || 0});

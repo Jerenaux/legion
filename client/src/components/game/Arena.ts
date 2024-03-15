@@ -80,7 +80,17 @@ export class Arena extends Phaser.Scene
 
     }
 
+    extractGameIdFromUrl() {
+        const pathArray = window.location.pathname.split('/');
+        // Assuming the URL pattern is "/game/{gameId}", and "game" is always at a fixed position
+        const gameIdIndex = pathArray.findIndex(element => element === 'game') + 1;
+        return pathArray[gameIdIndex];
+    }
+
     async connectToServer() {
+        const gameId = this.extractGameIdFromUrl();
+        console.log('Game ID:', gameId);
+        
         this.socket = io(
             process.env.GAME_SERVER_URL,
             {

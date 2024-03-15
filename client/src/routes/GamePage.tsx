@@ -3,8 +3,15 @@ import { h, Component } from 'preact';
 import { GameHUD } from '../components/game/HUD/GameHUD';
 import { startGame } from '../components/game/game';
 
-class GamePage extends Component {
+interface GamePageProps {
+  matches: {
+    id?: string;
+  };
+}
+
+class GamePage extends Component<GamePageProps, {}> {
   componentDidMount() {
+    // this.props.matches.id)
     startGame();
   }
 
