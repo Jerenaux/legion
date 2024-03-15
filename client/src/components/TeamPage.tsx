@@ -35,7 +35,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         const data = await apiFetch('inventoryData');
         console.log(data);
         this.setState({ 
-          inventory: data.inventory.sort()
+          inventory: [0,0,0, 1,1, 2, 3,3,3]//data.inventory.sort()
         });
     } catch (error) {
         errorToast(`Error: ${error}`);

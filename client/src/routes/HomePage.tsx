@@ -18,7 +18,6 @@ import QueuePage from '../components/QueuePage';
 interface State {
     currentPage: string;
     showFirebaseUI: boolean;
-    gold: number;
 }
 
 class HomePage extends Component<object, State> {
@@ -27,7 +26,6 @@ class HomePage extends Component<object, State> {
     state: State = {
         currentPage: 'play',
         showFirebaseUI: false,
-        gold: 100,
     };
 
     handleRouteChange = (e) => {

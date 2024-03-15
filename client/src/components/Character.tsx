@@ -43,7 +43,32 @@ class Character extends Component<CharacterProps, CharacterState> {
 
   async fetchCharacterData() {
     try {
-        const data = await apiFetch(`characterData?id=${this.props.id}`);
+        // const data = await apiFetch(`characterData?id=${this.props.id}`);
+        const data = {
+          "skills": [
+            0,
+            2,
+            3
+          ],
+          "skill_slots": 3,
+          "stats": {
+            "spdef": 9,
+            "mp": 40,
+            "spatk": 10,
+            "def": 8,
+            "hp": 80,
+            "atk": 6
+          },
+          "carrying_capacity": 3,
+          "name": "dual_silver",
+          "inventory": [],
+          "portrait": "3_2",
+          "class": 2,
+          "level": 3,
+          "allTimeSP": 6,
+          "sp": 6,
+          "xp": 100
+        };
         console.log(data);
         this.setState({ 
           ...data
