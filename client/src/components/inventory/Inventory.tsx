@@ -1,13 +1,13 @@
 
 // Inventory.tsx
 import { h, Component } from 'preact';
-
+import './Inventory.style.css';
 import { items } from '@legion/shared/Items';
-import ActionItem from './game/HUD/Action';
-import { ActionType } from './game/HUD/ActionTypes';
+import ActionItem from '../game/HUD/Action';
+import { ActionType } from '../game/HUD/ActionTypes';
 
-import { apiFetch } from '../services/apiService';
-import { successToast, errorToast } from './utils';
+import { apiFetch } from '../../services/apiService';
+import { successToast, errorToast } from '../utils';
 interface InventoryProps {
   id: string;
   inventory: number[];
@@ -58,17 +58,21 @@ class Inventory extends Component<InventoryProps> {
         </div>
       ));
     return (
-        <div className="inventory-full">
-        <div className="inventory-header">
-            <img src="/backpacks.png" className="inventory-header-image" />
-            <div className="inventory-header-name">
-              Inventory
-              <span className="inventory-capacity">{this.props.inventory.length}/{this.props.carrying_capacity}</span>
+      <div className="inventoryFullContainer">
+        <div className="inventoryContainer">
+          <div className="inventoryCategoryContainer">
+            <p className="inventoryLabel">INVENTORY</p>
+            <div className="inventoryCategories">
+              <div className="inventoryCategory">Home</div>
+              <div className="inventoryCategory">CONSUMABLES</div>
+              <div className="inventoryCategory">EQUIPMENTS</div>
+              <div className="inventoryCategory">SKILLS</div>
+              <div className="inventoryCategory">UTILITIES</div>
+              <div className="categoryCount"><span>15 </span>&nbsp;/&nbsp;50</div>
+              <div className="inventoryCategory">?</div>
             </div>
-            <div className="inventory-header-name-shadow">Inventory</div>
-        </div>
-        <div className="inventory-full-content">
-            {slots}
+          </div>
+          <div className="inventoryWrapper">{slots}</div>
         </div>
       </div>
     );

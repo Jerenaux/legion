@@ -4,8 +4,8 @@ html, body {
     width: 100%;
     height: 100%;
     font-family: Arial, sans-serif;
-
 }
+
 canvas {
     display: block;
     margin: 0 auto;
@@ -209,11 +209,10 @@ canvas {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
-.skill, .item {
+/* .skill, .item {
     position: relative;
     width: 43px;
     height: 43px;
-    margin-right: 3px;
     background: linear-gradient(to bottom, #654321, #A0522D);
     border: 1px solid black;
 }
@@ -224,7 +223,7 @@ canvas {
 
 .item {
   background: linear-gradient(to bottom, #654321, #A0522D);
-}
+} */
 
 .skill-item-image {
     width: 36px;
@@ -1316,10 +1315,9 @@ canvas {
 
 .character-inventory-container {
   display: flex;
-}
-
-.character-inventory-container > :first-child {
-  margin-right: 30px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
 }
 
 .purchase-dialog {

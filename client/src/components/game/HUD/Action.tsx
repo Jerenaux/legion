@@ -1,3 +1,4 @@
+import './HUD.style.css';
 import { h, Component } from 'preact';
 import { ActionType } from './ActionTypes';
 import InfoBox from '../../InfoBox';

@@ -1,0 +1,8 @@
+.item {
+    width: 43px;
+    height: 43px;
+    border: 1px solid #3e5367;
+    border-radius: 6px;
+    background-color: #1c1f25;
+    cursor: pointer;
+}

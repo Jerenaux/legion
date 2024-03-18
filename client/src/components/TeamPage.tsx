@@ -4,7 +4,7 @@ import { Router, Route } from 'preact-router';
 
 import Roster from './roster/Roster';
 import Character from './Character';
-import Inventory from './Inventory';
+import Inventory from './inventory/Inventory';
 
 import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
@@ -49,10 +49,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         <div className="team-content">
           <Roster />
           <div className="character-inventory-container">
-            <Router>
-              <Route path="/team/:id" component={() => <Character id={characterId} refreshInventory={this.fetchInventoryData} />} />
-            </Router>
-            <Inventory id={characterId} inventory={this.state.inventory} carrying_capacity={this.state.carrying_capacity} refreshInventory={this.fetchInventoryData} />
+              <div>Team Detail card</div>
+              <Inventory id={characterId} inventory={this.state.inventory} carrying_capacity={this.state.carrying_capacity} refreshInventory={this.fetchInventoryData} />
           </div>
         </div>
       );
