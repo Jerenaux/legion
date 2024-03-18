@@ -90,13 +90,14 @@ export class Arena extends Phaser.Scene
     async connectToServer() {
         const gameId = this.extractGameIdFromUrl();
         console.log('Game ID:', gameId);
-        
+
         this.socket = io(
             process.env.GAME_SERVER_URL,
             {
                 auth: {
-                    token: await getFirebaseIdToken()
-                }
+                    token: await getFirebaseIdToken(),
+                    gameId,
+                },
             }
         );
 

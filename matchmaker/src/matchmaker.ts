@@ -2,10 +2,18 @@ import { Socket, Server } from "socket.io";
 import { createServer } from "http";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from 'dotenv';
-dotenv.config();
+import * as admin from "firebase-admin";
 
 import { apiFetch } from "./API";
 import { PlayMode } from '@legion/shared/enums';
+import firebaseConfig from '@legion/shared/firebaseConfig';
+
+dotenv.config();
+
+admin.initializeApp(firebaseConfig);
+if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+    process.env["FIREBASE_AUTH_EMULATOR_HOST"] = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+}
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
@@ -59,8 +67,7 @@ function tryMatchPlayers() {
             if (player1.mode === player2.mode && canBeMatched(player1, player2)) {
                 console.log(`Match found between ${player1.socket.id} and ${player2.socket.id}`);
                 // Start a game for these two players
-                const gameId = uuidv4();
-                const success = notifyPlayers(player1, player2, gameId);
+                const success = createGame(player1.socket, player2.socket, player1.mode);
                 if (success) {
                     playersQueue.splice(j, 1); // Remove player2 first since it's later in the array
                     playersQueue.splice(i, 1); // Remove player1
@@ -82,8 +89,9 @@ function canBeMatched(player1: Player, player2: Player): boolean {
     return isEloCompatible && isLeagueCompatible;
 }
 
-async function notifyPlayers(player1: Player, player2: Player, gameId: string) {
+async function createGame(player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.RANKED) {
     try {
+        const gameId = uuidv4();
         await apiFetch(
             'createGame',
             '', // TODO: add API key
@@ -91,12 +99,15 @@ async function notifyPlayers(player1: Player, player2: Player, gameId: string) {
                 method: 'POST',
                 body: {
                     gameId,
-                    players: [player1.socket.firebaseToken, player2.socket.firebaseToken]
+                    // @ts-ignore
+                    players: [player1.uid, player2?.uid],
+                    mode,
                 }
             }
         );
-        io.to(player1.socket.id).emit("matchFound", { gameId });
-        io.to(player2.socket.id).emit("matchFound", { gameId });
+        io.to(player1.id).emit("matchFound", { gameId });
+        if (player2)
+            io.to(player2.id).emit("matchFound", { gameId });
         return true;
     } catch (error) {
         console.error(`Error creating game: ${error}`);
@@ -108,26 +119,40 @@ httpServer.listen(3000, () => {
     console.log("Matchmaking server listening on port 3000");
 });
 
+
+async function addToQueue(socket: any, mode: PlayMode) {
+    const queuingData = await apiFetch(
+        'queuingData',
+        socket.firebaseToken,
+    );
+
+    const player: Player = {
+        socket,
+        elo: queuingData.elo,
+        range: eloRangeStart,
+        mode,
+        league: queuingData.league,
+        waitingTime: 0,
+    };
+    playersQueue.push(player);
+    console.log(`Player ${socket.id} joined queue  in mode ${mode} with elo ${player.elo} and league ${player.league}`);
+}
+
 io.on("connection", (socket: any) => {
     console.log(`Player connected`);
-    socket.firebaseToken = socket.handshake.auth.token;
+    const firebaseToken = socket.handshake.auth.token;
 
     socket.on("joinQueue", async (data: { mode: PlayMode }) => {
-        const queuingData = await apiFetch(
-            'queuingData',
-            socket.firebaseToken,
-        );
 
-        const player: Player = {
-            socket,
-            elo: queuingData.elo,
-            range: eloRangeStart,
-            mode: data.mode,
-            league: queuingData.league,
-            waitingTime: 0,
-        };
-        playersQueue.push(player);
-        console.log(`Player ${socket.id} joined queue  in mode ${data.mode} with elo ${player.elo} and league ${player.league}`);
+        const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
+        socket.uid = decodedToken.uid;
+
+        if (data.mode == PlayMode.PRACTICE) {
+            createGame(socket, null, PlayMode.PRACTICE);
+            return;
+        }
+
+        addToQueue(socket, data.mode);
     });
 
     socket.on("disconnect", () => {
