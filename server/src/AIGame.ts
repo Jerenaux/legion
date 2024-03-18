@@ -13,8 +13,8 @@ const AI_VS_AI = false;
 const FREEZE = true;
 
 export class AIGame extends Game {
-    constructor(io: Server, sockets: Socket[]) {
-        super(io, sockets);
+    constructor(io: Server) {
+        super(io);
     }
 
     createAITeam(team: Team, nb: number, levels?: number[]) {

@@ -23,27 +23,26 @@ export abstract class Game
     socketMap = new Map<Socket, Team>();
     startTime: number = Date.now();
     duration: number = 0;
+    gameStarted: boolean = false;
     gameOver: boolean = false;
     cooldownCoef: number = 1;
 
     gridWidth: number = 20;
     gridHeight: number = 10;
 
-    constructor(io: Server, sockets: Socket[]) {
+    constructor(io: Server) {
         this.io = io;
-        this.sockets = sockets;
-
-        this.sockets.forEach(socket => {
-            socket.join(this.id);
-        }, this);
 
         this.teams.set(1, new Team(1, this));
         this.teams.set(2, new Team(2, this));
+    }
 
-        sockets.forEach((socket, index) => {
-            this.socketMap.set(socket, this.teams.get(index + 1)!);
-            this.teams.get(index + 1)?.setSocket(socket);
-        });
+    addPlayer(socket: Socket) {
+        this.sockets.push(socket);
+        socket.join(this.id);
+        const index = this.sockets.indexOf(socket);
+        this.socketMap.set(socket, this.teams.get(index + 1)!);
+        this.teams.get(index + 1)?.setSocket(socket);
     }
 
     abstract populateTeams(): void;
@@ -154,7 +153,7 @@ export abstract class Game
     }
 
     processAction(action: string, data: any, socket: Socket | null = null) {
-        if (this.gameOver) return;
+        if (this.gameOver || !this.gameStarted) return;
 
         let team;
         if (socket) {

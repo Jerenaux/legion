@@ -7,7 +7,10 @@ import * as admin from "firebase-admin";
 import {apiFetch} from './API';
 import { Game } from './Game';
 import { AIGame } from './AIGame';
+import { PvPGame } from './PvPGame';
 import firebaseConfig from '@legion/shared/firebaseConfig';
+import { PlayMode } from '@legion/shared/enums';
+
 
 dotenv.config();
 
@@ -33,17 +36,6 @@ const io = new Server(server, {
     }
   });
 
-// const games = [];
-// function getOrCreateGame() {
-//   if (games.length === 0) {
-//     const game = new Game();
-//     games.push(game);
-//     return game;
-//   } else {
-//     return games[0];
-//   }
-// }
-
 function shortToken(token: string) {
   // Return the first 3 and last 3 characters of the token
   if (!token) return '';
@@ -59,28 +51,38 @@ io.on('connection', async (socket: any) => {
       socket.firebaseToken = socket.handshake.auth.token.toString();
       const decodedToken = await admin.auth().verifyIdToken(socket.firebaseToken);
       socket.uid = decodedToken.uid;
+      
       const gameId = socket.handshake.auth.gameId;
-      console.log(`Gameid: ${gameId}`);
-  
+      if (!gameId) {
+        console.log('No game ID provided!');
+        socket.disconnect();
+        return;
+      }
+
       const gameData = await apiFetch(
         `gameData?id=${gameId}`,
         '', // TODO: add API key
       );
   
-      // Check if firebase token is in gameData.players
+      // Check if firebase UID is in gameData.players
       if (!gameData.players.includes(socket.uid)) {
         console.log(`Player with UID ${shortToken(socket.uid)} is not in game ${gameId}!`);
         socket.disconnect();
         return;
       } 
-  
-      const game = new AIGame(io, [socket]);
+
+      let game: Game;
+      if (!gamesMap.has(gameId)) {
+        const gameType = gameData.mode === PlayMode.PRACTICE ? AIGame : PvPGame;
+        game = new gameType(io);
+        gamesMap.set(gameId, game);
+      }
+
+      game.addPlayer(socket);
       socketMap.set(socket, game);
-  
-      game.start();
+      // TODO: game start logic
   
       socket.on('disconnect', () => {
-          // console.log('A user disconnected');
           socketMap.get(socket)?.handleDisconnect(socket);
           socketMap.delete(socket);
       });
