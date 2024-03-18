@@ -20,6 +20,10 @@
     border-radius: 4px;
 }
 
+.spectate:hover {
+    background-color: #2e333d;
+}
+
 .spectate span {
     font-size: 10px;
     font-weight: 600;

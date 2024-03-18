@@ -37,7 +37,7 @@ class QuestCard extends Component<CardProps> {
                     <span>Rewards</span>
                     <p><span className="questGold">{data.rewards.gold}</span> GOLD | <span className="questExp">{data.rewards.xp}</span> EXP</p>
                 </div>
-                {data.completion === 1 ? <div className="completion"></div> : <div className="chartContainer">
+                {data.completion === 1 ? <div className="completion" style={{backgroundImage: 'url("/completion_marker.png")'}}></div> : <div className="chartContainer">
                     <svg viewBox="0 0 63.6619772368 63.6619772368">
                         <style>
                             {`

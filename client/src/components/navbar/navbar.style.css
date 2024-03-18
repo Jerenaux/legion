@@ -55,7 +55,11 @@
 
 .userInfo span {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 300;
+  max-width: 112px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: #fff;
 }
 
@@ -73,7 +77,6 @@
 }
 
 .expand_btn {
-  background-image: url("@assets/expand_btn.png");
   background-size: 100% 100%;
   width: 36px;
   height: 36px;

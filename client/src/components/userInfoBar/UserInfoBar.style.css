@@ -42,7 +42,7 @@
 
 .eloSpan {
     background-color: #364f63;
-    padding: 2px;
+    padding: 2px 4px;
     border-radius: 4px;
     font-weight: 400 !important;
 }
