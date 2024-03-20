@@ -36,7 +36,7 @@ export class NewCharacter {
   skills: number[];
 
   constructor(characterClass = Class.RANDOM, level = 1) {
-    console.log(`Creating new character of class ${Class[characterClass]} and level ${level}`);
+    // console.log(`Creating new character of class ${Class[characterClass]} and level ${level}`);
     const nameOpts = {dictionaries: [adjectives, colors, animals], length: 2};
 
     this.name = uniqueNamesGenerator(nameOpts);

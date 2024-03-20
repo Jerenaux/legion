@@ -80,7 +80,6 @@ io.on('connection', async (socket: any) => {
 
       game.addPlayer(socket);
       socketMap.set(socket, game);
-      // TODO: game start logic
   
       socket.on('disconnect', () => {
           socketMap.get(socket)?.handleDisconnect(socket);
@@ -89,6 +88,7 @@ io.on('connection', async (socket: any) => {
   
       socket.on('move', (data: any) => {
         const game = socketMap.get(socket);
+        console.log(`Moving in game ${game?.id}`);
         game?.processAction('move', data, socket);
       });
   

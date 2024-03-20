@@ -4,7 +4,7 @@ import { Game } from './Game';
 import { ServerPlayer } from './ServerPlayer';
 import { AIServerPlayer } from './AIServerPlayer';
 import {apiFetch} from './API';
-import { Stat, Class } from "@legion/shared/enums";
+import { Class } from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
 
@@ -64,19 +64,11 @@ export class AIGame extends Game {
         this.createAITeam(aiTeam!, nb, levels);
     }
 
-    getPosition(index, flip) {
-        const positions = [
-            {x: 16, y: 3},
-            {x: 16, y: 5},
-            {x: 18, y: 4},
-            {x: 18, y: 2},
-            {x: 18, y: 6},
-        ]
-        const position = positions[index];
-        if (flip) {
-            position.x = 19 - position.x;
+    async addPlayer(socket: Socket) {
+        super.addPlayer(socket);
+        if (this.sockets.length === 1) {
+            this.start();
         }
-        return position;
     }
 
     async start() {

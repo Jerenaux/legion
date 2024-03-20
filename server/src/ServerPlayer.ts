@@ -360,10 +360,7 @@ export class ServerPlayer {
     }
 
     levelUp() {
-        console.log(`Player ${this.num} leveled up!`)
-        console.log(`Before: ${this.xp}`);
         this.xp -= getXPThreshold(this.level);
-        console.log(`After: ${this.xp}`);
         this.level++;
         this.earnStatsPoints();
     }

@@ -35,6 +35,7 @@ export abstract class Game
 
         this.teams.set(1, new Team(1, this));
         this.teams.set(2, new Team(2, this));
+        console.log(`Created game ${this.id}`);
     }
 
     addPlayer(socket: Socket) {
@@ -56,6 +57,21 @@ export abstract class Game
             this.endGame(-1);
             console.error(error);
         }
+    }
+
+    getPosition(index, flip) {
+        const positions = [
+            {x: 16, y: 3},
+            {x: 16, y: 5},
+            {x: 18, y: 4},
+            {x: 18, y: 2},
+            {x: 18, y: 6},
+        ]
+        const position = positions[index];
+        if (flip) {
+            position.x = 19 - position.x;
+        }
+        return position;
     }
 
     isFree(gridX: number, gridY: number) {
@@ -81,6 +97,7 @@ export abstract class Game
 
     sendGameStart() {
         this.startTime = Date.now();
+        this.gameStarted = true;
         this.sockets.forEach(socket => {
             const teamId = this.socketMap.get(socket)?.id!;
             socket.emit('gameStart', this.getPlacementData(teamId));
