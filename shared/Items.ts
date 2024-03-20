@@ -1,5 +1,5 @@
 import { BaseItem } from "./BaseItem";
-import { Stat, Target } from ".";
+import { Rarity, Stat, Target } from ".";
 
 export const items:BaseItem[] = [];
 
@@ -15,6 +15,7 @@ items[0] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 50}],
     price: 10,
+    rarity: Rarity.COMMON,
 });
 
 items[1] = new BaseItem({
@@ -29,6 +30,7 @@ items[1] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 10}],
     price: 15,
+    rarity: Rarity.COMMON,
 });
 
 items[2] = new BaseItem({
@@ -43,6 +45,7 @@ items[2] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}],
     price: 25,
+    rarity: Rarity.RARE,
 });
 
 items[3] = new BaseItem({
@@ -57,6 +60,7 @@ items[3] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 50}],
     price: 75,
+    rarity: Rarity.RARE,
 });
 
 items[4] = new BaseItem({
@@ -71,6 +75,7 @@ items[4] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 1000}],
     price: 200,
+    rarity: Rarity.EPIC,
 });
 
 items[5] = new BaseItem({
@@ -85,6 +90,8 @@ items[5] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 200}],
     price: 300,
+    rarity: Rarity.EPIC,
+
 });
 
 items[6] = new BaseItem({
@@ -99,6 +106,8 @@ items[6] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 50}],
     price: 150,
+    rarity: Rarity.EPIC,
+
 });
 
 items[7] = new BaseItem({
@@ -113,6 +122,7 @@ items[7] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 1000}, {stat: Stat.MP, value: 200}],
     price: 600,
+    rarity: Rarity.EPIC,
 });
 
 items[8] = new BaseItem({
@@ -127,6 +137,7 @@ items[8] = new BaseItem({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 10, onKO: true}],
     price: 200,
+    rarity: Rarity.RARE,
 });
 
 items[9] = new BaseItem({
@@ -141,6 +152,7 @@ items[9] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: -1}, {stat: Stat.MP, value: -1}],
     price: 1000,
+    rarity: Rarity.LEGENDARY,
 });
 
 

@@ -12,6 +12,8 @@ import TeamContentCard from './teamContentCard/TeamContentCard';
 
 interface TeamPageState {
   inventory: number[];
+  equipments: number[];
+  spells: number[];
   carrying_capacity: number;
 }
 interface TeamPageProps {
@@ -24,6 +26,8 @@ interface TeamPageProps {
 class TeamPage extends Component<TeamPageProps, TeamPageState> { 
   state = {
     inventory: [],
+    equipments: [],
+    spells: [],
     carrying_capacity: 50,
   }
 
@@ -36,7 +40,9 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         const data = await apiFetch('inventoryData');
         console.log(data);
         this.setState({ 
-          inventory: [0,0,0, 1,1, 2, 3,3,3]//data.inventory.sort()
+          inventory: [0,0,0, 1,1, 2, 3,3,3], //data.inventory.sort()
+          equipments: [0,1,2],
+          spells: [0,2,3],
         });
     } catch (error) {
         errorToast(`Error: ${error}`);

@@ -19,8 +19,6 @@ export enum EffectDirection {
     MINUS,
 }
 
-
-
 export enum Class {
     WARRIOR,
     WHITE_MAGE,
@@ -34,3 +32,20 @@ export enum Terrain {
     FIRE
 }
 
+export enum EquipmentSlot {
+    WEAPON,
+    HELMET,
+    ARMOR,
+    BELT,
+    GLOVES,
+    BOOTS,
+    RING,
+    NECKLACE
+}
+
+export enum Rarity {
+    COMMON,
+    RARE,
+    EPIC,
+    LEGENDARY
+}

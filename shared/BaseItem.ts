@@ -1,4 +1,4 @@
-import { Target } from "./enums";
+import { Target, Rarity } from "./enums";
 import { Effect, ItemData } from "./interfaces";
 
 
@@ -14,6 +14,7 @@ export class BaseItem {
     sfx: string = '';
     size: number = 1;
     price: number = 0;
+    rarity: Rarity = Rarity.COMMON;
 
     constructor(props: ItemData) {
         Object.assign(this, props);

@@ -1,6 +1,6 @@
 
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, Terrain } from "./enums";
+import { Stat, Target, EffectDirection, Terrain, Rarity } from "./enums";
 import { EffectModifier, EffectModifiers } from "./interfaces";
 
 export const spells:BaseSpell[] = [];
@@ -30,7 +30,8 @@ spells[0] = new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
     score: 100,
-    terrain: Terrain.FIRE
+    terrain: Terrain.FIRE,
+    rarity: Rarity.RARE,
 });
 
 spells[1] = new BaseSpell({
@@ -48,6 +49,7 @@ spells[1] = new BaseSpell({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}],
     score: 10,
+    rarity: Rarity.RARE,
 });
 
 spells[2] = new BaseSpell({
@@ -65,6 +67,7 @@ spells[2] = new BaseSpell({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
     score: 80,
+    rarity: Rarity.COMMON,
 });
 
 spells[3] = new BaseSpell({
@@ -83,4 +86,5 @@ spells[3] = new BaseSpell({
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
     score: 60,
     yoffset: 30,
+    rarity: Rarity.RARE,
 });

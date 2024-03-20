@@ -1,4 +1,4 @@
-import { Target, Terrain } from "./enums";
+import { Target, Terrain, Rarity } from "./enums";
 import { Effect, SpellData } from "./interfaces";
 
 export class BaseSpell {
@@ -18,6 +18,7 @@ export class BaseSpell {
     score: number= 0;
     yoffset: number = 0;
     terrain: Terrain = Terrain.NONE;
+    rarity: Rarity = Rarity.COMMON;
     
     constructor(props: SpellData) {
         Object.assign(this, props);
