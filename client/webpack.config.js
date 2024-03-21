@@ -38,12 +38,11 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {
-        '@legion/shared': path.resolve(__dirname, '../shared/'),
-        '@assets': path.resolve(__dirname, './public/'),
-        'phaser': path.resolve(__dirname, 'node_modules/phaser/dist/phaser.js'),
-
-        'react': 'preact/compat',
-        'react-dom': 'preact/compat'
+      'react': 'preact/compat',
+      'react-dom': 'preact/compat',
+      '@legion/shared': path.resolve(__dirname, '../shared/'),
+      '@assets': path.resolve(__dirname, './public/'),
+      'phaser': path.resolve(__dirname, 'node_modules/phaser/dist/phaser.js'),
     }
   },
   output: {

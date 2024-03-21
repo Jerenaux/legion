@@ -90,3 +90,45 @@
     opacity: 0.6;
     cursor: pointer;
 }
+
+.shop-modal-container {
+    box-sizing: border-box;
+    background-color: #1c1f25;
+    border: 1px solid #71deff;
+    border-radius: 8px;
+    width: 264px;
+    height: 180px;
+    padding: 12px;
+    position: relative;
+}
+
+.shop-modal-heading {
+    font-size: 24px;
+    text-align: center;
+    color: #71deff;
+}
+
+.shop-modal-button-container {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.shop-modal-button-container button {
+    padding: 10px;
+    font-size: 14px;
+    color: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #46899e;
+    background-color: transparent;
+}
+
+.shop-modal-button-container button:hover {
+    opacity: 0.7;
+    cursor: pointer;
+    border: 1px solid #8be0f9;
+}

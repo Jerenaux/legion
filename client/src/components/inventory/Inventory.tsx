@@ -10,8 +10,10 @@ import { ActionType } from '../game/HUD/ActionTypes';
 
 import { apiFetch } from '../../services/apiService';
 import { successToast, errorToast } from '../utils';
-import { Link } from 'preact-router';
+import { Link, route } from 'preact-router';
+import Modal from 'react-modal';
 
+Modal.setAppElement('#root');
 interface InventoryProps {
   id: string;
   inventory: {
@@ -33,6 +35,18 @@ class Inventory extends Component<InventoryProps> {
 
   handleActionType = (actionType: string) => {
     this.setState({ actionType: actionType });
+
+    if (!this.props.inventory[actionType] || !this.props.inventory[actionType]?.length) {
+      this.setState({openModal: true});
+    }
+  }
+
+  handleOpenModal = () => {
+    this.setState({openModal: true});
+  }
+
+  handleCloseModal = () => {
+    this.setState({openModal: false});
   }
 
   onActionClick = (type: string, letter: string, index: number) => {
@@ -63,17 +77,9 @@ class Inventory extends Component<InventoryProps> {
     .map(arr => arr.length)
     .reduce((acc, curr) => acc + curr, 0);
 
-  // componentDidMount(): void {
-  //   if (!this.inventoryLength || !this.props.inventory[this.state.actionType]?.length) {
-  //     this.setState({ openModdal: true });
-  //   }
-  // }
-
-  // componentWillUnmount(): void {
-  //   this.setState({openModal: false});
-  // }
-
   render() {
+    const isCategoryEmpty = !this.props.inventory[this.state.actionType] || !this.props.inventory[this.state.actionType]?.length;
+
     const getAction = (actionIndex: number) => {
       switch (this.state.actionType) {
         case ActionType.CONSUMABLES:
@@ -115,7 +121,14 @@ class Inventory extends Component<InventoryProps> {
         bottom: 'auto',
         marginRight: '-50%',
         transform: 'translate(-50%, -50%)',
+        padding: 0,
+        border: 'none',
+        background: 'transparent'
       },
+      overlay: {
+        zIndex: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+      }
     };
 
     return (
@@ -124,7 +137,7 @@ class Inventory extends Component<InventoryProps> {
           <div className="inventoryCategoryContainer">
             <p className="inventoryLabel">INVENTORY</p>
             <div className="inventoryCategories">
-              <Link onClick={() => this.setState({ openModal: true })} className="categoryBtn" style={{ backgroundImage: 'url(./inventory/shop_btn.png)' }}></Link>
+              <Link onClick={this.handleOpenModal} className="categoryBtn" style={{ backgroundImage: 'url(./inventory/shop_btn.png)' }}></Link>
               <div className="inventoryCategory" style={this.state.actionType === ActionType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(ActionType.CONSUMABLES)}>CONSUMABLES</div>
               <div className="inventoryCategory" style={this.state.actionType === ActionType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(ActionType.EQUIPMENTS)}>EQUIPMENTS</div>
               <div className="inventoryCategory" style={this.state.actionType === ActionType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(ActionType.SKILLS)}>SKILLS</div>
@@ -135,17 +148,15 @@ class Inventory extends Component<InventoryProps> {
           </div>
           <div className="inventoryWrapper">{slots}</div>
         </div>
-        {/* <Modal
-          isOpen={this.state.openModal}
-          onAfterOpen={() => { }}
-          onRequestClose={() => this.setState({ openModal: false })}
-          style={customStyles}
-          contentLabel="Example Modal"
-        >
-          <h2>Hello</h2>
-          <button onClick={() => this.setState({ openModal: false })}>close</button>
-          <div>I am a modal</div>
-        </Modal> */}
+        <Modal isOpen={this.state.openModal} style={customStyles} onRequestClose={this.handleCloseModal}>
+          <div className="shop-modal-container">
+            <p className="shop-modal-heading">{isCategoryEmpty ? 'No items in this category, take a look at the shop!' : 'Go to the shop!'}</p>
+            <div className="shop-modal-button-container">
+              <button className="shop-modal-accept" onClick={() => route('/shop', true)}>Go to Shop</button>
+              <button className="shop-modal-decline" onClick={this.handleCloseModal}>Close</button>
+            </div>
+          </div>
+        </Modal>
       </div>
     );
   }
