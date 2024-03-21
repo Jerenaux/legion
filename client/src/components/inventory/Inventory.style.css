@@ -22,6 +22,7 @@
     grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(5, 1fr);
     gap: 4px 6px;
+    position: relative;
 }
 
 .inventoryCategoryContainer {
@@ -91,7 +92,7 @@
     cursor: pointer;
 }
 
-.shop-modal-container {
+.hint-modal-container {
     box-sizing: border-box;
     background-color: #1c1f25;
     border: 1px solid #71deff;
@@ -102,13 +103,13 @@
     position: relative;
 }
 
-.shop-modal-heading {
+.hint-modal-heading {
     font-size: 24px;
     text-align: center;
     color: #71deff;
 }
 
-.shop-modal-button-container {
+.hint-modal-button-container {
     position: absolute;
     bottom: 12px;
     right: 12px;
@@ -118,7 +119,7 @@
     gap: 12px;
 }
 
-.shop-modal-button-container button {
+.hint-modal-button-container button {
     padding: 10px;
     font-size: 14px;
     color: #ffffff;
@@ -127,8 +128,46 @@
     background-color: transparent;
 }
 
-.shop-modal-button-container button:hover {
+.hint-modal-button-container button:hover {
     opacity: 0.7;
     cursor: pointer;
     border: 1px solid #8be0f9;
+}
+
+.empty-slots-container {
+    background-color: rgba(28, 31, 37, 0.85);
+    border-radius: 8px;
+    padding: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.empty-slots-container p {
+    font-size: 16px;
+    text-align: center;
+}
+
+.empty-slots-container a {
+    padding: 8px;
+    font-size: 14px;
+    color: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #46899e;
+    background-color: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.empty-slots-container a img {
+    width: 20px;
+    height: 20px;
 }

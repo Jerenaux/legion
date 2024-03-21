@@ -35,10 +35,6 @@ class Inventory extends Component<InventoryProps> {
 
   handleActionType = (actionType: string) => {
     this.setState({ actionType: actionType });
-
-    if (!this.props.inventory[actionType] || !this.props.inventory[actionType]?.length) {
-      this.setState({openModal: true});
-    }
   }
 
   handleOpenModal = () => {
@@ -137,23 +133,27 @@ class Inventory extends Component<InventoryProps> {
           <div className="inventoryCategoryContainer">
             <p className="inventoryLabel">INVENTORY</p>
             <div className="inventoryCategories">
-              <Link onClick={this.handleOpenModal} className="categoryBtn" style={{ backgroundImage: 'url(./inventory/shop_btn.png)' }}></Link>
+              <Link href='/shop' className="categoryBtn" style={{ backgroundImage: 'url(./inventory/shop_btn.png)' }}></Link>
               <div className="inventoryCategory" style={this.state.actionType === ActionType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(ActionType.CONSUMABLES)}>CONSUMABLES</div>
               <div className="inventoryCategory" style={this.state.actionType === ActionType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(ActionType.EQUIPMENTS)}>EQUIPMENTS</div>
               <div className="inventoryCategory" style={this.state.actionType === ActionType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(ActionType.SKILLS)}>SKILLS</div>
               <div className="inventoryCategory" style={this.state.actionType === ActionType.UTILITIES && currCategoryStyle} onClick={() => this.handleActionType(ActionType.UTILITIES)}>UTILITIES</div>
               <div className="categoryCount"><span>{this.inventoryLength()} </span>&nbsp;/&nbsp;50</div>
-              <div className="categoryBtn" style={{ backgroundImage: 'url(./inventory/info_btn.png)' }}></div>
+              <div className="categoryBtn" style={{ backgroundImage: 'url(./inventory/info_btn.png)' }} onClick={this.handleOpenModal}></div>
             </div>
           </div>
-          <div className="inventoryWrapper">{slots}</div>
+          <div className="inventoryWrapper">{slots}
+            {isCategoryEmpty && (<div className='empty-slots-container'>
+              <p>No items in this category, take a look at the shop!</p>
+              <Link href='/shop'>Next <img src="./inventory/shop_btn.png" alt="shop" /></Link>
+            </div>)}
+          </div>
         </div>
         <Modal isOpen={this.state.openModal} style={customStyles} onRequestClose={this.handleCloseModal}>
-          <div className="shop-modal-container">
-            <p className="shop-modal-heading">{isCategoryEmpty ? 'No items in this category, take a look at the shop!' : 'Go to the shop!'}</p>
-            <div className="shop-modal-button-container">
-              <button className="shop-modal-accept" onClick={() => route('/shop', true)}>Go to Shop</button>
-              <button className="shop-modal-decline" onClick={this.handleCloseModal}>Close</button>
+          <div className="hint-modal-container">
+            <p className="hint-modal-heading">Hint Modal</p>
+            <div className="hint-modal-button-container">
+              <button className="hint-modal-decline" onClick={this.handleCloseModal}>Close</button>
             </div>
           </div>
         </Modal>
