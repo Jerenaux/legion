@@ -1,20 +1,23 @@
 // TeamContentCard.tsx
 import ItemDialog from '../itemDialog/ItemDialog';
-import { ItemDialogType } from '../itemDialog/ItemDialogType';
+import { CHARACTER_INFO, CONSUMABLE, EQUIPMENT, INFO_BG_COLOR, ItemDialogType, SPELL } from '../itemDialog/ItemDialogType';
 import './TeamContentCard.style.css';
 import { h, Component } from 'preact';
+import { CHARACTERINFO, CONSUMABLEITEMS, EQUIPITEMS, EQUIPITEMS_DEFAULT, SPELLITEMS } from './TeamContentCardData';
 
 class TeamContentCard extends Component {
     state = {
         openModal: false,
         modalType: ItemDialogType.EQUIPMENTS,
+        modalData: null,
         modalPosition: {
             top: 0,
             left: 0
         }
     }
 
-    handleOpenModal = (e: any, modalType: string) => {
+    handleOpenModal = (e: any, modalData: EQUIPMENT | CONSUMABLE | CHARACTER_INFO | SPELL, modalType: string) => {
+        if (!modalData.name) return;
         const elementRect = e.currentTarget.getBoundingClientRect();
 
         const modalPosition = {
@@ -22,7 +25,7 @@ class TeamContentCard extends Component {
             left: elementRect.left + elementRect.width / 2,
         };
 
-        this.setState({openModal: true, modalType, modalPosition});
+        this.setState({openModal: true, modalType, modalPosition, modalData});
     }
 
     handleCloseModal = () => {
@@ -30,92 +33,30 @@ class TeamContentCard extends Component {
     }
 
     render() {
-        const EQUIPITEMS = [
-            {
-                name: 'weapon',
-                url: './inventory/weapon_icon.png'
-            },
-            {
-                name: 'helm',
-                url: './inventory/helm_icon.png'
-            },
-            {
-                name: 'armor',
-                url: './inventory/armor_icon.png'
-            },
-            {
-                name: 'belt',
-                url: './inventory/belt_icon.png'
-            },
-            {
-                name: 'gloves',
-                url: './inventory/gloves_icon.png'
-            },
-            {
-                name: 'boots',
-                url: './inventory/boots_icon.png'
-            }
-        ];
-
-        const CHARACTERINFO = [
-            {
-                name: 'HP',
-                currVal: 100,
-                additionVal: '+2',
-                bgStyle: { backgroundColor: '#628c27' }
-            },
-            {
-                name: 'MP',
-                currVal: 20,
-                additionVal: '-3',
-                bgStyle: { backgroundColor: '#1f659a' }
-            },
-            {
-                name: 'ATK',
-                currVal: 11,
-                additionVal: '+5',
-                bgStyle: { backgroundColor: '#9a1f3c' }
-            },
-            {
-                name: 'DEF',
-                currVal: 10,
-                additionVal: '',
-                bgStyle: { backgroundColor: '#cc872d' }
-            },
-            {
-                name: 'SP.ATK',
-                currVal: 11,
-                additionVal: '',
-                bgStyle: { backgroundColor: '#26846b' }
-            },
-            {
-                name: 'SP.DEF',
-                currVal: 10,
-                additionVal: '',
-                bgStyle: { backgroundColor: '#703fba' }
-            },
-        ]
-
         const renderInfoBars = () => CHARACTERINFO.map((item, index) => (
-            <div className="character-info-bar" key={index} onClick={(e) => this.handleOpenModal(e, ItemDialogType.CHARACTER_INFO)}>
-                <div className="info-class" style={item.bgStyle}><span>{item.name}</span></div>
+            <div className="character-info-bar" key={index} onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO)}>
+                <div className="info-class" style={{backgroundColor: INFO_BG_COLOR[item.name]}}><span>{item.name}</span></div>
                 <p className="curr-info">{item.currVal} <span style={item.additionVal && Number(item.additionVal) > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{item.additionVal}</span></p>
                 <button className="info-bar-plus"></button>
             </div>
         ));
 
         const renderEquipItems = () => EQUIPITEMS.map((item, index) => (
-            <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, ItemDialogType.EQUIPMENTS)}>
-                <img src={item.url} alt={item.name} />
+            <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.EQUIPMENTS)}>
+                <img src={item.url ? item.url : EQUIPITEMS_DEFAULT[index].url} alt={item.name} />
             </div>
         ))
 
-        const renderSpellsItem = () => Array.from({length: 6}, (_, i) => (
-            <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, ItemDialogType.SKILLS)}></div>
+        const renderSpellsItem = () => SPELLITEMS.map((item, index) => (
+            <div className="team-item" key={index} onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.SKILLS)}>
+                {item.url && <img src={item.url} alt={item.name} />}
+            </div>
         ));
 
-        const renderConsumableItems = () => Array.from({length: 6}, (_, i) => (
-            <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, ItemDialogType.CONSUMABLES)}></div>
+        const renderConsumableItems = () => CONSUMABLEITEMS.map((item, index) => (
+            <div className="team-item" key={index} onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CONSUMABLES)}>
+                {item.url && <img src={item.url} alt={item.name} />}
+            </div>
         ));
 
         return (
@@ -178,7 +119,7 @@ class TeamContentCard extends Component {
                 <div className="team-equip-container">
                     {renderEquipItems()}
                 </div>
-                <ItemDialog dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} handleClose={this.handleCloseModal} />
+                <ItemDialog dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
             </div>
         );
     }

@@ -40,3 +40,71 @@
     width: 14px;
     height: 14px;
 }
+
+.character-info-dialog-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    background-color: #1c1f25;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.character-info-dialog-card {
+    border-radius: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.character-info-dialog-card span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    padding: 2px;
+}
+
+.character-info-dialog-container p {
+    display: flex;
+    justify-content: space-between;
+    min-width: 28px;
+    margin-right: 4px;
+    font-size: 12px;
+}
+
+.equip-dialog-container {
+    background-color: #1c1f25;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    padding: 8px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.equip-dialog-container > img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #244752;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.equip-dialog-container .equip-dialog-name {
+    font-size: 12px;
+    margin-bottom: -6px;
+    text-transform: capitalize;
+}
+
+.equip-dialog-container .equip-dialog-desc {
+    font-size: 10px;
+    text-align: center;
+    color: #71deff;
+}
+
+.equip-dialog-container .dialog-button-container {
+    justify-content: center;
+}
