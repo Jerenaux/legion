@@ -1318,6 +1318,7 @@ canvas {
   justify-content: center;
   align-items: center;
   gap: 8px;
+  padding: 24px 0;
 }
 
 .purchase-dialog {
