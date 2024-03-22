@@ -108,3 +108,147 @@
 .equip-dialog-container .dialog-button-container {
     justify-content: center;
 }
+
+.dialog-spell-container {
+    background-color: #1c1f25;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 124px;
+    position: relative;
+}
+
+.dialog-spell-container > img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #244752;
+    padding: 4px;
+    border-radius: 4px;
+    position: absolute;
+    top: -16px;
+    background-color: #1c1f25;    
+}
+
+.dialog-spell-container p {
+    font-size: 10px;
+    text-align: center;
+}
+
+.dialog-spell-container .dialog-spell-name {
+    margin-top: 24px;
+    text-transform: capitalize;
+}
+
+.dialog-spell-container .dialog-spell-desc {
+    color: #71deff;
+}
+
+.dialog-spell-info-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.dialog-spell-info {
+    flex: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background-color: #303540;
+    border-radius: 4px;
+}
+
+.dialog-spell-info img {
+    width: 12px;
+    height: 16px;
+}
+
+.dialog-spell-info span {
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.dialog-spell-container .dialog-button-container {
+    justify-content: center;
+}
+
+.dialog-item-container {
+    background-image: url("@assets/inventory/itemequip_bg.png");
+    background-size: 100% 100%;
+    width: 124px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+}
+
+.dialog-item-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    position: absolute;
+    top: -16px;
+}
+
+.dialog-item-heading img {
+    width: 32px;
+    height: 32px;
+    background-color: #303540;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.dialog-item-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.dialog-item-title span {
+    font-size: 11px;
+    color: #ffffff;
+    text-transform: capitalize;
+}
+
+.dialog-item-desc {
+    margin-top: 28px;
+    color: #71deff;
+}
+
+.dialog-item-title .dialog-item-title-info {
+    font-size: 8px;
+    color: #71deff;
+}
+
+.dialog-item-container .dialog-button-container {
+    justify-content: center;
+}
+
+.dialog-item-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.dialog-item-info span {
+    font-size: 10px;
+}
+
+.dialog-item-info .character-info-dialog-card {
+    min-width: 28px;
+}
+
+.dialog-item-info .character-info-dialog-card span {
+    font-size: 10px;
+}

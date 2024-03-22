@@ -15,13 +15,13 @@ export enum  EQUIPMENT_TYPE {
     BOOTS = 'BOOTS',
 }
 
-export type INFO_TYPE = {
-    hp: 'HP';
-    mp: 'MP';
-    atk: 'ATK';
-    def: 'DEF';
-    sp_atk: 'SP.ATK';
-    sp_def: 'SP.DEF';
+export enum INFO_TYPE {
+    hp = 'HP',
+    mp = 'MP',
+    atk = 'ATK',
+    def = 'DEF',
+    sp_atk = 'SP.ATK',
+    sp_def = 'SP.DEF',
 }
 
 export enum INFO_BG_COLOR {

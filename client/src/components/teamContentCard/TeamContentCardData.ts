@@ -192,6 +192,7 @@ export const CONSUMABLEITEMS = [
         url: './consumables/hi-ether.png',
         desc: 'Lorem Ipsum has been the industrys standard dummy text ever since the 1500s',
         info: {
+            mp: -3,
             def: 30,
             sp_atk: 25,
         }
