@@ -3,9 +3,12 @@ import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {items} from "@legion/shared/Items";
 import {equipments} from "@legion/shared/Equipments";
-import {InventoryType, InventoryActionType, EquipmentSlot}
+import {InventoryType, InventoryActionType}
   from "@legion/shared/enums";
 import {Equipment} from "@legion/shared/interfaces";
+
+const equipmentFields = ["weapon", "helmet", "armor", "belt", "gloves",
+  "boots", "left_ring", "right_ring", "necklace"];
 
 export const inventoryData = onRequest((request, response) => {
   logger.info("Fetching inventoryData");
@@ -159,8 +162,6 @@ function equipEquipment(playerData: any, characterData: any, index: number) {
 
   const data = equipments[item];
   const slotNumber: number = data.slot;
-  const equipmentFields = ["weapon", "helmet", "armor", "belt", "gloves",
-    "boots", "rings", "necklace"];
 
   const field = equipmentFields[slotNumber];
   if (equipped[field as keyof Equipment] !== -1) {
@@ -175,13 +176,38 @@ function equipEquipment(playerData: any, characterData: any, index: number) {
   };
 }
 
+function unequipEquipment(playerData: any, characterData: any, index: number) {
+  // In this case `index` points to the slot
+  const playerInventory = playerData.inventory;
+  const equipment = playerInventory.equipment.sort();
+  const equipped = characterData.equipment as Equipment;
+
+  // Check if index is valid
+  if (index < 0 || index >= equipmentFields.length) {
+    return -1;
+  }
+
+  const slotNumber: number = index;
+  const field = equipmentFields[slotNumber];
+
+  const item = equipped[field as keyof Equipment];
+  equipped[field as keyof Equipment] = -1;
+  equipment.push(item);
+
+  playerInventory.equipment = equipment;
+  return {
+    playerUpdate: {inventory: playerInventory},
+    characterUpdate: {equipment: equipped},
+  };
+}
+
 export const inventoryTransaction = onRequest((request, response) => {
   logger.info("Processing inventory transaction");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
-      const uid = request.body.uid; // await getUID(request);
+      const uid = await getUID(request); // request.body.uid;
       const characterId = request.body.characterId as string;
       const inventoryType = request.body.inventoryType as InventoryType;
       const action = request.body.action as InventoryActionType;
@@ -223,6 +249,9 @@ export const inventoryTransaction = onRequest((request, response) => {
           case InventoryType.SKILLS:
             canDo = canLearnSpell(characterData);
             break;
+          case InventoryType.EQUIPMENTS:
+            canDo = true;
+            break;
           }
           if (!canDo) {
             response.send({status: 1});
@@ -249,11 +278,17 @@ export const inventoryTransaction = onRequest((request, response) => {
           case InventoryType.SKILLS:
             update = learnSpell(playerData, characterData, index);
             break;
+          case InventoryType.EQUIPMENTS:
+            update = equipEquipment(playerData, characterData, index);
+            break;
           }
         } else { // unequipping
           switch (inventoryType) {
           case InventoryType.CONSUMABLES:
             update = unequipConsumable(playerData, characterData, index);
+            break;
+          case InventoryType.EQUIPMENTS:
+            update = unequipEquipment(playerData, characterData, index);
             break;
           }
         }

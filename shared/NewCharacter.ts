@@ -66,7 +66,8 @@ export class NewCharacter {
       belt: -1,
       gloves: -1,
       boots: -1,
-      rings: [],
+      left_ring: -1,
+      right_ring: -1,
       necklace: -1,
     };
     this.skills = this.getSkills();

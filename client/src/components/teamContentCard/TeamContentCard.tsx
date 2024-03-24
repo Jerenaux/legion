@@ -4,6 +4,16 @@ import { CHARACTER_INFO, CONSUMABLE, EQUIPMENT, INFO_BG_COLOR, ItemDialogType, S
 import './TeamContentCard.style.css';
 import { h, Component } from 'preact';
 import { CHARACTERINFO, CONSUMABLEITEMS, EQUIPITEMS, EQUIPITEMS_DEFAULT, SPELLITEMS } from './TeamContentCardData';
+import { apiFetch } from '../../services/apiService';
+import {InventoryType, InventoryActionType} from "@legion/shared/enums";
+import { successToast, errorToast } from './utils';
+
+interface InventoryRequestPayload {
+    characterId: string;
+    inventoryType: InventoryType;
+    action: InventoryActionType;
+    index: number;
+}
 
 class TeamContentCard extends Component {
     state = {
@@ -14,6 +24,26 @@ class TeamContentCard extends Component {
             top: 0,
             left: 0
         }
+    }
+
+    onClick = (index: number) => {
+        const payload: InventoryRequestPayload = {
+            // specify fields here
+        };
+        
+        apiFetch('inventoryTransaction', {
+            method: 'POST',
+            body: payload
+        })
+        .then((data) => {
+          if(data.status == 0) {
+            successToast('...');
+            // refresh inventory
+          } else {
+            errorToast('Inventory is full!');
+          }
+        })
+        .catch(error => errorToast(`Error: ${error}`));
     }
 
     handleOpenModal = (e: any, modalData: EQUIPMENT | CONSUMABLE | CHARACTER_INFO | SPELL, modalType: string) => {

@@ -104,6 +104,7 @@ export interface Equipment {
     belt: number;
     gloves: number;
     boots: number;
-    rings: number[];
+    left_ring: number;
+    right_ring: number;
     necklace: number;
   }

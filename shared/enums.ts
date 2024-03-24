@@ -39,7 +39,8 @@ export enum EquipmentSlot {
     BELT,
     GLOVES,
     BOOTS,
-    RING,
+    LEFT_RING,
+    RIGHT_RING,
     NECKLACE
 }
 
