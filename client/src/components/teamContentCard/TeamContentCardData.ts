@@ -45,8 +45,8 @@ export const EQUIPITEMS = [
     },
     {
         type: EQUIPMENT_TYPE.BELT,
-        name: 'ring_001',
-        url: './equipments/ring_001.png'
+        name: '',
+        url: ''
     },
     {
         type: EQUIPMENT_TYPE.GLOVES,

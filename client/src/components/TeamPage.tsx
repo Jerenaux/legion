@@ -37,13 +37,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
   componentDidMount() {
     this.fetchInventoryData();
-    // this.setState({ 
-    //   inventory: {
-    //     consumables: [0,0,0, 1, 2, 3,3,3],
-    //     equipments: [0,1,2],
-    //     spells: [0,2,3],
-    //   } //data.inventory.sort()
-    // });
   }
 
   fetchInventoryData = async () => {

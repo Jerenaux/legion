@@ -131,15 +131,15 @@ class Navbar extends Component<Props, State> {
                 </div>
 
                 <div className="flexContainer">
-                    {this.props.user === null && <div className="notificationBarButton" onClick={this.props.initFirebaseUI}>Log in</div>}
-                    {this.props.user !== null && <div className="notificationBarButton" onClick={this.props.logout}>Log out</div>}
+                    {/* {this.props.user === null && <div className="notificationBarButton" onClick={this.props.initFirebaseUI}>Log in</div>}
+                    {this.props.user !== null && <div className="notificationBarButton" onClick={this.props.logout}>Log out</div>} */}
                     <UserInfoBar label={`${this.state.gold}`}  />
                     <UserInfoBar label="1.235" elo={this.state.elo} />
                     <div class="expand_btn" style={{backgroundImage: 'url("/expand_btn.png")'}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
                         <div class="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
-                            <Link href="/"><span>Link 1</span></Link>
-                            <Link href="/"><span>Link 2</span></Link>
-                            <Link href="/"><span>Link 3</span></Link>
+                            <div className="" onClick={this.props.user ? this.props.logout : this.props.initFirebaseUI}>{this.props.user ? 'Log out' : 'Log in'}</div>
+                            <div><span>Link 2</span></div>
+                            <div><span>Link 3</span></div>
                         </div>
                     </div>
                 </div>
