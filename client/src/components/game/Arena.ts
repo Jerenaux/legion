@@ -280,7 +280,7 @@ export class Arena extends Phaser.Scene
             ease: 'Power2', // easing function to make the movement smooth
             delay: Math.random() * 500, // random delay to make the tiles fall at different times
             yoyo, // Enable yoyo to make the tween reverse after completing
-            hold: yoyo ? 1300 : 0, // Holds the end position before reversing (optional, adjust as needed)
+            hold: yoyo ? 1500 : 0, // Holds the end position before reversing (optional, adjust as needed)
             repeat: 0, // No repeats, just go there and back again
             onComplete: () => {
                 // Add a random delay before starting the wobble effect to desynchronize tiles
