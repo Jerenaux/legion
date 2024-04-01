@@ -1,6 +1,6 @@
 import './HUD.style.css';
 import { h, Component } from 'preact';
-import { ActionType } from './ActionTypes';
+import { InventoryType } from '@legion/shared/enums';
 import InfoBox from '../../InfoBox';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
@@ -14,7 +14,7 @@ interface ActionItemProps {
   index: number;
   clickedIndex: number;
   canAct: boolean;
-  actionType: ActionType;
+  actionType: InventoryType;
   hideHotKey?: boolean;
   onActionClick?: (type: string, letter: string, index: number) => void;
 }
@@ -50,7 +50,7 @@ handleCloseModal = () => {
   render() {
     const { action, index, clickedIndex, canAct, actionType, hideHotKey, onActionClick } = this.props;
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const startPosition = keyboardLayout.indexOf(actionType === ActionType.CONSUMABLES ? 'Z' : 'Q');
+    const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
     const keyBinding = keyboardLayout.charAt(startPosition + index);
 
     const getActionItemData = (actionType: string, actionIndex: number) => {

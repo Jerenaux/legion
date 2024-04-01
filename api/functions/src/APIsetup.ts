@@ -15,7 +15,7 @@ export async function getUID(request: Request): Promise<string> {
   }
 
   try {
-    console.log(`Auth token: ${authToken}`);
+    // console.log(`Auth token: ${authToken}`);
     const decodedToken = await admin.auth().verifyIdToken(authToken);
     console.log(`Decoded UID ${decodedToken.uid}`);
     return decodedToken.uid;

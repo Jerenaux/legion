@@ -13,7 +13,7 @@ import TeamContentCard from './teamContentCard/TeamContentCard';
 interface TeamPageState {
   inventory: {
     consumables: number[];
-    equipments: number[];
+    equipment: number[];
     spells: number[];
   };
   carrying_capacity: number;
@@ -29,7 +29,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   state = {
     inventory: {
       consumables: [],
-      equipments: [],
+      equipment: [],
       spells: [],
     },
     carrying_capacity: 0,
@@ -45,11 +45,10 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         console.log(data);
         this.setState({ 
           inventory: {
-            consumables: data.inventory,
-            equipments: [],
-            spells: [],
-          },
-          carrying_capacity: data.carrying_capacity
+            consumables: data.inventory.consumables.sort(),
+            equipment: data.inventory.equipment.sort(), 
+            spells: data.inventory.spells.sort(),
+          }
         });
     } catch (error) {
         errorToast(`Error: ${error}`);

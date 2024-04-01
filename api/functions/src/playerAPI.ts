@@ -24,9 +24,13 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
   // Define the character data structure
   const playerData = {
     name: generateName(),
-    gold: 100,
+    gold: 120,
     carrying_capacity: 50,
-    inventory: [0, 0, 0, 1, 1, 2, 3, 3],
+    inventory: {
+      consumables: [0, 0, 0, 1, 1, 2, 3, 3],
+      equipment: [0, 1, 2],
+      spells: [0, 1, 2],
+    },
     characters: [] as admin.firestore.DocumentReference[],
     elo: 100,
     league: "Bronze",

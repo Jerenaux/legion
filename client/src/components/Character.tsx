@@ -1,7 +1,7 @@
 // Character.tsx
 import { h, Component } from 'preact';
 import ActionItem from './game/HUD/Action';
-import { ActionType } from './game/HUD/ActionTypes';
+import { InventoryType } from '@legion/shared/enums';
 import { classEnumToString, statStrings } from './utils';
 import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
@@ -43,32 +43,7 @@ class Character extends Component<CharacterProps, CharacterState> {
 
   async fetchCharacterData() {
     try {
-        // const data = await apiFetch(`characterData?id=${this.props.id}`);
-        const data = {
-          "skills": [
-            0,
-            2,
-            3
-          ],
-          "skill_slots": 3,
-          "stats": {
-            "spdef": 9,
-            "mp": 40,
-            "spatk": 10,
-            "def": 8,
-            "hp": 80,
-            "atk": 6
-          },
-          "carrying_capacity": 3,
-          "name": "dual_silver",
-          "inventory": [],
-          "portrait": "3_2",
-          "class": 2,
-          "level": 3,
-          "allTimeSP": 6,
-          "sp": 6,
-          "xp": 100
-        };
+        const data = await apiFetch(`characterData?id=${this.props.id}`);
         console.log(data);
         this.setState({ 
           ...data
@@ -84,7 +59,7 @@ class Character extends Component<CharacterProps, CharacterState> {
         characterId: this.props.id,
     };
     
-    apiFetch('unequipItem', {
+    apiFetch('unequipConsumable', {
         method: 'POST',
         body: payload
     })
@@ -150,7 +125,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                       index={i} 
                       clickedIndex={-1}
                       canAct={true} 
-                      actionType={ActionType.CONSUMABLES}
+                      actionType={InventoryType.CONSUMABLES}
                       onActionClick={this.onActionClick}
                       key={i}
                     />
@@ -166,7 +141,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                       index={i} 
                       clickedIndex={-1}
                       canAct={true} 
-                      actionType={ActionType.SKILLS}
+                      actionType={InventoryType.SKILLS}
                       key={i}
                     />
                   ))}

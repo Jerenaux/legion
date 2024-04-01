@@ -97,3 +97,14 @@ export interface CharacterStats {
     spatk: number;
     spdef: number;
 }
+export interface Equipment {
+    weapon: number;
+    armor: number;
+    helmet: number;
+    belt: number;
+    gloves: number;
+    boots: number;
+    left_ring: number;
+    right_ring: number;
+    necklace: number;
+  }

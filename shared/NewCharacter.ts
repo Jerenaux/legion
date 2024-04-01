@@ -1,10 +1,11 @@
 import {Class, Stat} from "./enums";
-import { CharacterStats } from "./interfaces";
+import { CharacterStats, Equipment } from "./interfaces";
 import {warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites}
   from "./sprites";
 import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 import {selectStatToLevelUp, increaseStat} from "./levelling";
+
 
 interface CharacterData {
     name: string;
@@ -18,6 +19,7 @@ interface CharacterData {
     carrying_capacity: number;
     skill_slots: number;
     inventory: number[];
+    equipment: Equipment;
     skills: number[];
     onSale?: boolean;
     price?: number;
@@ -33,6 +35,7 @@ export class NewCharacter {
   carrying_capacity: number;
   skill_slots: number;
   inventory: number[];
+  equipment: Equipment;
   skills: number[];
 
   constructor(characterClass = Class.RANDOM, level = 1) {
@@ -56,6 +59,17 @@ export class NewCharacter {
     this.carrying_capacity = 3;
     this.skill_slots = this.getSkillSlots();
     this.inventory = [];
+    this.equipment = {
+      weapon: -1,
+      armor: -1,
+      helmet: -1,
+      belt: -1,
+      gloves: -1,
+      boots: -1,
+      left_ring: -1,
+      right_ring: -1,
+      necklace: -1,
+    };
     this.skills = this.getSkills();
     this.stats = {
       hp: this.getHP(),
@@ -245,6 +259,7 @@ export class NewCharacter {
       carrying_capacity: this.carrying_capacity,
       skill_slots: this.skill_slots,
       inventory: this.inventory,
+      equipment: this.equipment,
       skills: this.skills,
     };
   }

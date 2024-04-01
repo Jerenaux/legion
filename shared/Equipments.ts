@@ -33,7 +33,7 @@ equipments[2] = new BaseEquipment({
     description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     frame: "ring_001.png",
     effects: [{stat: Stat.DEF, value: 3}],
-    slot: EquipmentSlot.RING,
+    slot: EquipmentSlot.LEFT_RING,
     price: 30,
     rarity: Rarity.RARE,
 });

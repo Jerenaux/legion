@@ -39,7 +39,8 @@ export enum EquipmentSlot {
     BELT,
     GLOVES,
     BOOTS,
-    RING,
+    LEFT_RING,
+    RIGHT_RING,
     NECKLACE
 }
 
@@ -48,4 +49,16 @@ export enum Rarity {
     RARE,
     EPIC,
     LEGENDARY
+}
+
+export enum InventoryType {
+    SKILLS = 'spells',
+    EQUIPMENTS = 'equipment',
+    CONSUMABLES = 'consumables',
+    UTILITIES = 'utilities'
+}
+
+export enum InventoryActionType {
+    EQUIP,
+    UNEQUIP
 }

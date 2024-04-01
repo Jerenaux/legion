@@ -1,6 +1,6 @@
 import { h, Component } from 'preact';
 import ActionItem from './Action';
-import { ActionType } from './ActionTypes';
+import { InventoryType } from '@legion/shared/enums';
 import TabBar from './TabBar';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
@@ -104,7 +104,7 @@ class PlayerTab extends Component<Props, State> {
                         index={i} 
                         clickedIndex={this.state.clickedSpell} 
                         canAct={canAct} 
-                        actionType={ActionType.SKILLS} 
+                        actionType={InventoryType.SKILLS} 
                         onActionClick={this.actionClick.bind(this)} 
                         key={i}
                       />
@@ -122,7 +122,7 @@ class PlayerTab extends Component<Props, State> {
                         index={i} 
                         clickedIndex={this.state.clickedItem} 
                         canAct={canAct} 
-                        actionType={ActionType.CONSUMABLES}
+                        actionType={InventoryType.CONSUMABLES}
                         onActionClick={this.actionClick.bind(this)} 
                         key={i}
                       />

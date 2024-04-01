@@ -6,7 +6,7 @@ import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 import { equipments } from '@legion/shared/Equipments';
 import ActionItem from '../game/HUD/Action';
-import { ActionType } from '../game/HUD/ActionTypes';
+import { InventoryType } from '@legion/shared/enums';
 
 import { apiFetch } from '../../services/apiService';
 import { successToast, errorToast } from '../utils';
@@ -18,7 +18,7 @@ interface InventoryProps {
   id: string;
   inventory: {
     consumables: number[];
-    equipments: number[];
+    equipment: number[];
     spells: number[];
   };
   carrying_capacity: number;
@@ -27,7 +27,7 @@ interface InventoryProps {
 
 class Inventory extends Component<InventoryProps> {
   state = {
-    actionType: ActionType.CONSUMABLES,
+    actionType: InventoryType.CONSUMABLES,
     openModal: false
   }
 
@@ -53,7 +53,7 @@ class Inventory extends Component<InventoryProps> {
       characterId: this.props.id,
     };
 
-    apiFetch('equipItem', {
+    apiFetch('equipConsumable', {
       method: 'POST',
       body: payload
     })
@@ -78,12 +78,12 @@ class Inventory extends Component<InventoryProps> {
 
     const getAction = (actionIndex: number) => {
       switch (this.state.actionType) {
-        case ActionType.CONSUMABLES:
-          return items[this.props.inventory[ActionType.CONSUMABLES][actionIndex]];
-        case ActionType.SKILLS:
-          return spells[this.props.inventory[ActionType.SKILLS][actionIndex]];
-        case ActionType.EQUIPMENTS:
-          return equipments[this.props.inventory[ActionType.EQUIPMENTS][actionIndex]];
+        case InventoryType.CONSUMABLES:
+          return items[this.props.inventory[InventoryType.CONSUMABLES][actionIndex]];
+        case InventoryType.SKILLS:
+          return spells[this.props.inventory[InventoryType.SKILLS][actionIndex]];
+        case InventoryType.EQUIPMENTS:
+          return equipments[this.props.inventory[InventoryType.EQUIPMENTS][actionIndex]];
         default: return null;
       }
     }
@@ -136,10 +136,10 @@ class Inventory extends Component<InventoryProps> {
             <p className="inventoryLabel">INVENTORY</p>
             <div className="inventoryCategories">
               <Link href='/shop' className="categoryBtn" style={{ backgroundImage: 'url(./inventory/shop_btn.png)' }}></Link>
-              <div className="inventoryCategory" style={this.state.actionType === ActionType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(ActionType.CONSUMABLES)}>CONSUMABLES</div>
-              <div className="inventoryCategory" style={this.state.actionType === ActionType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(ActionType.EQUIPMENTS)}>EQUIPMENTS</div>
-              <div className="inventoryCategory" style={this.state.actionType === ActionType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(ActionType.SKILLS)}>SKILLS</div>
-              <div className="inventoryCategory" style={this.state.actionType === ActionType.UTILITIES && currCategoryStyle} onClick={() => this.handleActionType(ActionType.UTILITIES)}>UTILITIES</div>
+              <div className="inventoryCategory" style={this.state.actionType === InventoryType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.CONSUMABLES)}>CONSUMABLES</div>
+              <div className="inventoryCategory" style={this.state.actionType === InventoryType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.EQUIPMENTS)}>EQUIPMENT</div>
+              <div className="inventoryCategory" style={this.state.actionType === InventoryType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.SKILLS)}>SKILLS</div>
+              <div className="inventoryCategory" style={this.state.actionType === InventoryType.UTILITIES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.UTILITIES)}>UTILITIES</div>
               <div className="categoryCount"><span>{this.inventoryLength()} </span>&nbsp;/&nbsp;50</div>
               <div className="categoryBtn" style={{ backgroundImage: 'url(./inventory/info_btn.png)' }} onClick={this.handleOpenModal}></div>
             </div>

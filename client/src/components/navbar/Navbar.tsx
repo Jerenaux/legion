@@ -131,8 +131,8 @@ class Navbar extends Component<Props, State> {
                 </div>
 
                 <div className="flexContainer">
-                    {/* {this.props.user === null && <div className="notificationBarButton" onClick={this.props.initFirebaseUI}>Log in</div>}
-                    {this.props.user !== null && <div className="notificationBarButton" onClick={this.props.logout}>Log out</div>} */}
+                    {this.props.user === null && <div className="notificationBarButton" onClick={this.props.initFirebaseUI}>Log in</div>}
+                    {this.props.user !== null && <div className="notificationBarButton" onClick={this.props.logout}>Log out</div>}
                     <UserInfoBar label={`${this.state.gold}`}  />
                     <UserInfoBar label="1.235" elo={this.state.elo} />
                     <div class="expand_btn" style={{backgroundImage: 'url("/expand_btn.png")'}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
