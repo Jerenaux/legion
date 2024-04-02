@@ -37,7 +37,7 @@ export class Player extends Phaser.GameObjects.Container {
     inventory: BaseItem[] = [];
     spells: BaseSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
-    pendingSkill: number | null = null;
+    pendingSpell: number | null = null;
     pendingItem: number | null = null;
     casting = false;
     selected = false;
@@ -215,7 +215,7 @@ export class Player extends Phaser.GameObjects.Container {
 
     displayMovementRange() {
         if (!this.canAct()) return;
-        if (this.pendingSkill != null) return;
+        if (this.pendingSpell != null) return;
         this.arena.highlightCells(this.gridX, this.gridY, this.distance);
     }
 
@@ -235,13 +235,13 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onPointerOver() {
-        if(this.isTarget() && this.arena.selectedPlayer.pendingSkill == null) {
+        if(this.isTarget() && this.arena.selectedPlayer.pendingSpell == null) {
             this.hud.toggleCursor(true, 'swords');
         }
     }
 
     onPointerOut() {
-        if(!this.isPlayer && this.arena.selectedPlayer?.pendingSkill == null) {
+        if(!this.isPlayer && this.arena.selectedPlayer?.pendingSpell == null) {
             this.hud.toggleCursor(false, 'scroll');
         }
     }
@@ -317,7 +317,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     cancelSkill() {
-        this.pendingSkill = null;
+        this.pendingSpell = null;
         this.arena.toggleTargetMode(false);
     }
 
@@ -327,7 +327,7 @@ export class Player extends Phaser.GameObjects.Container {
             console.error(`No skill at slot ${index}`);
             return;
         }
-        if (this.pendingSkill == index) {
+        if (this.pendingSpell == index) {
             this.cancelSkill();
             return;
         }
@@ -337,7 +337,7 @@ export class Player extends Phaser.GameObjects.Container {
             return;
         }
         
-        this.pendingSkill = index;
+        this.pendingSpell = index;
         this.arena.toggleTargetMode(true, spell.size);
     }
 

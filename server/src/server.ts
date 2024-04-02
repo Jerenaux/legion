@@ -113,9 +113,9 @@ io.on('connection', async (socket: any) => {
         game?.processAction('useitem', data, socket);
       });
   
-      socket.on('skill', (data: any) => {
+      socket.on('spell', (data: any) => {
         const game = socketMap.get(socket);
-        game?.processAction('skill', data, socket);
+        game?.processAction('spell', data, socket);
       });
     } catch (error) {
         console.error(`Error joining game server: ${error}`);

@@ -62,7 +62,7 @@ spells[2] = new BaseSpell({
     cost: 4,
     cooldown: 4,
     castTime: 1,
-    target: Target.SINGLE,
+    target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
     score: 80,
 });
@@ -79,7 +79,7 @@ spells[3] = new BaseSpell({
     cost: 4,
     cooldown: 4,
     castTime: 1,
-    target: Target.SINGLE,
+    target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
     score: 60,
     yoffset: 30,

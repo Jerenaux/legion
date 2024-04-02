@@ -5,7 +5,7 @@ import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
-import { Terrain, PlayMode } from '@legion/shared/enums';
+import { Terrain, PlayMode, Target } from '@legion/shared/enums';
 import { RewardsData } from '@legion/shared/interfaces';
 
 
@@ -177,6 +177,7 @@ export abstract class Game
     }
 
     processAction(action: string, data: any, socket: Socket | null = null) {
+        console.log(`Processing action ${action} with data ${JSON.stringify(data)}`);
         if (this.gameOver || !this.gameStarted) return;
 
         let team;
@@ -199,7 +200,7 @@ export abstract class Game
             case 'useitem':
                 this.processUseItem(data, team!);
                 break;
-            case 'skill':
+            case 'spell':
                 this.processMagic(data, team!);
                 break;
         }
@@ -371,8 +372,8 @@ export abstract class Game
         });
     }
 
-    applyMagic(spell: Spell, player: ServerPlayer, x: number, y: number, team: Team) {
-        const targets = spell.getTargets(this, x, y);
+    applyMagic(spell: Spell, player: ServerPlayer, x: number, y: number, team: Team, targetPlayer: ServerPlayer | null) {
+        const targets = targetPlayer ? [targetPlayer] : spell.getTargets(this, x, y);
         // console.log(`Spell ${spell.name} found ${targets.length} targets`);
         spell.applyEffect(player, targets);
         player.setCasting(false);
@@ -417,7 +418,8 @@ export abstract class Game
         team.sendScore();
     }
 
-    processMagic({num, x, y, index}: {num: number, x: number, y: number, index: number}, team: Team ) {
+    processMagic({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number, targetTeam: number, target: number}, team: Team ) {
+        console.log(`Processing magic for team ${team.id}, player ${num}, spell ${index}, target team ${targetTeam}, target ${target}`);
         const player = team.getMembers()[num - 1];
         if (!player.canAct()) {
             console.log('cannot act');
@@ -436,6 +438,14 @@ export abstract class Game
         const cooldown = spell?.cooldown * 1000;
         this.setCooldown(player, cooldown);
 
+        let targetPlayer: ServerPlayer | null = null;
+        if (spell.target === Target.SINGLE) {
+            targetPlayer = this.teams.get(targetTeam)?.getMembers()[target - 1];
+            if (!targetPlayer || !targetPlayer.isAlive()) return;
+            x = targetPlayer.x;
+            y = targetPlayer.y;
+        }
+
         this.broadcast('cast', {
             team: team.id,
             num,
@@ -446,7 +456,7 @@ export abstract class Game
         this.emitMPchange(team, num, mp);
         player.setCasting(true);
 
-        setTimeout(this.applyMagic.bind(this, spell, player, x, y, team), spell.castTime * 1000);
+        setTimeout(this.applyMagic.bind(this, spell, player, x, y, team, targetPlayer), spell.castTime * 1000);
     }
 
     broadcastScoreChange(team: Team) {

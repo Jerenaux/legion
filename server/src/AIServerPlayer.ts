@@ -133,6 +133,8 @@ export class AIServerPlayer extends ServerPlayer {
                     x: ally.x,
                     y: ally.y,
                     index: i,
+                    targetTeam: ally.team.id,
+                    target: ally.num,
                 };
                 this.team?.game.processMagic(data, this.team);
                 return true;
@@ -159,6 +161,8 @@ export class AIServerPlayer extends ServerPlayer {
                     x: tile!.x,
                     y: tile!.y,
                     index: i,
+                    targetTeam: null,
+                    target: null,
                 };
                 this.team?.game.processMagic(data, this.team);
                 return true;

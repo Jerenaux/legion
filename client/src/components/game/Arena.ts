@@ -9,6 +9,7 @@ import { spells } from '@legion/shared/Spells';
 import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
+import { Target } from "@legion/shared/enums";
 
 export class Arena extends Phaser.Scene
 {
@@ -181,17 +182,20 @@ export class Arena extends Phaser.Scene
         this.send('attack', data);
     }
 
-    sendSkill(x: number, y: number) {
+    sendSpell(x: number, y: number, player: Player | null) {
         if (!this.selectedPlayer || !this.selectedPlayer.canAct()) return;
         const data = {
             num: this.selectedPlayer.num,
             x,
             y,
-            index: this.selectedPlayer.pendingSkill,
+            index: this.selectedPlayer.pendingSpell,
+            targetTeam: player?.team.id,
+            target: player?.num,
         };
-        this.send('skill', data);
+        console.log(`Sending spell: ${data.num} ${data.x} ${data.y} ${data.index} ${data.targetTeam} ${data.target}`);
+        this.send('spell', data);
         this.toggleTargetMode(false);
-        this.selectedPlayer.pendingSkill = null;
+        this.selectedPlayer.pendingSpell = null;
     }
 
     sendUseItem(index: number, x: number, y: number) {
@@ -436,14 +440,19 @@ export class Arena extends Phaser.Scene
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
         const player = this.gridMap[serializeCoords(gridX, gridY)];
-        if (this.selectedPlayer?.pendingSkill != null) {
-            this.sendSkill(gridX, gridY);
+        const pendingSpell = this.selectedPlayer.spells[this.selectedPlayer?.pendingSpell];
+        if (pendingSpell != null) {
+            this.sendSpell(gridX, gridY, player);
         } else if (this.selectedPlayer?.pendingItem != null) {
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY);
         } else if (this.selectedPlayer && !player) {
             this.handleMove(gridX, gridY);
         } else if (player){ 
-            player.onClick();
+            if (pendingSpell?.target === Target.SINGLE) {
+                this.sendSpell(gridX, gridY, player);
+            } else {
+                player.onClick();
+            }
         }
     }
 
@@ -907,7 +916,9 @@ export class Arena extends Phaser.Scene
         const spellAreaImage = this.add.image(x + 2, y + 42, 'killzone')
             .setDepth(1)
             .setDisplaySize(size * this.tileSize, size * this.tileSize)
-            .setOrigin(0.5); // This will tint the sprite red
+            .setOrigin(0.5)
+            .setAlpha(0.5);
+            // .setTint(0xff0000);
 
         const duration = 100;
         const repeat = Math.floor((delay * 1000) / (duration * 2)) - 1;
