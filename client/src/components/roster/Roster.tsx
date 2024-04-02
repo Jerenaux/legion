@@ -21,7 +21,6 @@ class Roster extends Component<object, RosterState> {
   async fetchRosterData() {
     try {
         const data = await apiFetch('rosterData');
-        console.log(data);
         this.setState({ 
           characters: data.characters
         });

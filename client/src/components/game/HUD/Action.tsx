@@ -30,7 +30,6 @@ class Action extends Component<ActionItemProps> {
 }
 
   handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO, modalType: string) => {
-      if (!modalData.name) return;
       const elementRect = e.currentTarget.getBoundingClientRect();
 
       const modalPosition = {

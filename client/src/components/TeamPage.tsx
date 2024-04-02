@@ -63,7 +63,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         <div className="team-content">
           <Roster />
           <div className="character-inventory-container">
-            <TeamContentCard />
+            <TeamContentCard characterId={characterId} />
             <Inventory id={characterId} inventory={this.state.inventory} carrying_capacity={this.state.carrying_capacity} refreshInventory={this.fetchInventoryData} />
           </div>
         </div>

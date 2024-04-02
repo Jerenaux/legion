@@ -20,8 +20,8 @@ export enum INFO_TYPE {
     mp = 'MP',
     atk = 'ATK',
     def = 'DEF',
-    sp_atk = 'SP.ATK',
-    sp_def = 'SP.DEF',
+    spatk = 'SP.ATK',
+    spdef = 'SP.DEF',
 }
 
 export enum INFO_BG_COLOR {
@@ -56,9 +56,9 @@ export type CONSUMABLE = {
 }
 
 export type CHARACTER_INFO = {
-    name: string;
-    currVal: number;
-    additionVal: string;
+    key: string;
+    value: number;
+    effect?: string;
 }
 
 export type SPELL = {

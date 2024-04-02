@@ -2,7 +2,7 @@
 import './ItemDialog.style.css';
 import { h, Component } from 'preact';
 import Modal from 'react-modal';
-import { CHARACTER_INFO, INFO_BG_COLOR, ItemDialogType } from './ItemDialogType';
+import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from './ItemDialogType';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -49,6 +49,7 @@ class ItemDialog extends Component<DialogProps> {
     };
 
     const getInfoVal = (val: string) => {
+      if (val === undefined) return '+1';
       return Number(val) < 0 ? Number(val) + 1 : `+${Number(val) + 1}`;
     };
 
@@ -56,12 +57,12 @@ class ItemDialog extends Component<DialogProps> {
       if (!dialogData.frame) return null;
       return (
         <div className="equip-dialog-container">
-          <img src={`./${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
+          <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
           <p className='equip-dialog-name'>{dialogData.name}</p>
           <p className='equip-dialog-desc'>Remove Item</p>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={handleClose}><img src="./inventory/confirm_icon.png" alt="confirm" /></button>
-            <button className="dialog-decline" onClick={handleClose}><img src="./inventory/cancel_icon.png" alt="decline" /></button>
+            <button className="dialog-accept" onClick={handleClose}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
           </div>
         </div>
       )
@@ -73,7 +74,7 @@ class ItemDialog extends Component<DialogProps> {
       return (
         <div className="dialog-item-container">
           <div className="dialog-item-heading">
-            <img src={`./${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
+            <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
             <div className="dialog-item-title">
               <span>{dialogData.name}</span>
               <span className="dialog-item-title-info">Self</span>
@@ -91,8 +92,8 @@ class ItemDialog extends Component<DialogProps> {
             }
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={handleClose}><img src="./inventory/confirm_icon.png" alt="confirm" /></button>
-            <button className="dialog-decline" onClick={handleClose}><img src="./inventory/cancel_icon.png" alt="decline" /></button>
+            <button className="dialog-accept" onClick={handleClose}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
           </div>
         </div>
       );
@@ -102,7 +103,7 @@ class ItemDialog extends Component<DialogProps> {
       if (!dialogData.frame) return;
       return (
         <div className="dialog-spell-container">
-          <img src={`./${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
+          <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
           <p className="dialog-spell-name">{dialogData.name}</p>
           <p className="dialog-spell-desc">{dialogData.description}</p>
           {/* <div className="dialog-spell-info-container">
@@ -120,8 +121,8 @@ class ItemDialog extends Component<DialogProps> {
             </div>
           </div> */}
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={handleClose}><img src="./inventory/confirm_icon.png" alt="confirm" /></button>
-            <button className="dialog-decline" onClick={handleClose}><img src="./inventory/cancel_icon.png" alt="decline" /></button>
+            <button className="dialog-accept" onClick={handleClose}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
           </div>
         </div>
       )
@@ -129,11 +130,14 @@ class ItemDialog extends Component<DialogProps> {
 
     const characterInfoDialog = (dialogData: CHARACTER_INFO) => (
       <div className="character-info-dialog-container">
-        <div className="character-info-dialog-card" style={{ backgroundColor: INFO_BG_COLOR[dialogData.name] }}><span>{dialogData.name}</span></div>
-        <p>{dialogData.currVal} <span className='character-info-addition' style={dialogData.additionVal && Number(dialogData.additionVal) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.additionVal)}</span></p>
+        <div className="character-info-dialog-card" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[dialogData.key]] }}><span>{INFO_TYPE[dialogData.key]}</span></div>
+        <p>
+          {dialogData.value} 
+          <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>
+        </p>
         <div className="dialog-button-container">
-          <button className="dialog-accept" onClick={() => console.log('___SP spent___')}><img src="./inventory/confirm_icon.png" alt="confirm" /></button>
-          <button className="dialog-decline" onClick={handleClose}><img src="./inventory/cancel_icon.png" alt="decline" /></button>
+          <button className="dialog-accept" onClick={() => console.log('___SP spent___')}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+          <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
         </div>
       </div>
     );
