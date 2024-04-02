@@ -15,12 +15,15 @@ import ItemDialog from '../itemDialog/ItemDialog';
 
 interface InventoryRequestPayload {
     characterId: string;
+    handleCharacterId: (id: string) => void;
+    refreshInventory: () => void;
 }
 
 class TeamContentCard extends Component<InventoryRequestPayload> {
     state = {
         character: null,
         characterItems: [],
+        itemIndex: 0,
         openModal: false,
         modalType: ItemDialogType.EQUIPMENTS,
         modalData: null,
@@ -41,12 +44,14 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             this.setState({
                 character: this.props.characterId ? data.characters.filter((item: any) => item.id === this.props.characterId)[0] : data.characters[0],
             });
+
+            this.props.handleCharacterId(data.characters[0].id);
         } catch (error) {
             errorToast(`Error: ${error}`);
         }
     }
 
-    handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO, modalType: string) => {
+    handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO, modalType: string, index: number) => {
         const elementRect = e.currentTarget.getBoundingClientRect();
 
         const modalPosition = {
@@ -54,7 +59,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             left: elementRect.left + elementRect.width / 2,
         };
 
-        this.setState({ openModal: true, modalType, modalPosition, modalData });
+        this.setState({ openModal: true, modalType, modalPosition, modalData, itemIndex: index });
     }
 
     handleCloseModal = () => {
@@ -77,7 +82,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                     <p className="curr-info">{item.value}
                         {/* <span style={item.additionVal && Number(item.additionVal) > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{item.additionVal}</span> */}
                     </p>
-                    {this.state.character?.sp > 0 && <button className="info-bar-plus" onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO)}></button>}
+                    {this.state.character?.sp > 0 && <button className="info-bar-plus" onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO, index)}></button>}
                 </div>
             ));
         };
@@ -87,7 +92,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             const items = Object.entries(this.state.character.equipment).map(([key, value]) => ({ key, value: value as number })); // for equipments of right hand
 
             return items.slice(0, 6).map((item, index) => (
-                <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[index], ItemDialogType.EQUIPMENTS)}>
+                <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[index], ItemDialogType.EQUIPMENTS, index)}>
                     <img src={item.value > 0 ? `/equipment/${equipments[index].frame}` : `/inventory/${item.key}_icon.png`} alt={item.key} />
                 </div>
             ))
@@ -99,7 +104,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             const items = Object.entries(this.state.character.equipment).map(([key, value]) => ({ key, value: value as number })).slice(6, 9);
 
             return items.map((item, index) => (
-                <div className="equip-item sheet-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[index + 6], ItemDialogType.EQUIPMENTS)}>
+                <div className="equip-item sheet-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[index + 6], ItemDialogType.EQUIPMENTS, index + 6)}>
                     <img style={item.value < 0 && { transform: 'scaleY(0.6)' }} src={item.value > 0 ? `/equipment/${equipments[index + 6].frame}` : `/inventory/${item.key}_icon.png`} alt={item.key} />
                 </div>
             ))
@@ -111,11 +116,11 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
             return Array.from({ length: 6 }, (_, i) => (
                 i < this.state.character.skills.length ? (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[this.state.character.skills[i]], ItemDialogType.SKILLS)}>
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[this.state.character.skills[i]], ItemDialogType.SKILLS, i)}>
                         <img src={`/spells/${spells[this.state.character.skills[i]].frame}`} alt={spells[this.state.character.skills[i]].name} />
                     </div>
                 ) : (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[this.state.character.skills[i]], ItemDialogType.SKILLS)}>
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[this.state.character.skills[i]], ItemDialogType.SKILLS, i)}>
                     </div>
                 )
             ))
@@ -126,11 +131,11 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
             return Array.from({ length: 6 }, (_, i) => (
                 i < this.state.character.inventory.length ? (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[this.state.character.inventory[i]], ItemDialogType.CONSUMABLES)}>
-                        <img src={`/spells/${spells[this.state.character.inventory[i]].frame}`} alt={items[this.state.character.inventory[i]].name} />
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[this.state.character.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
+                        <img src={`/consumables/${items[this.state.character.inventory[i]].frame}`} alt={items[this.state.character.inventory[i]].name} />
                     </div>
                 ) : (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[this.state.character.inventory[i]], ItemDialogType.CONSUMABLES)}>
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[this.state.character.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
                     </div>
                 )
             ))
@@ -192,7 +197,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                 <div className="team-equip-container">
                     {renderEquipItems()}
                 </div>
-                <ItemDialog dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
+                <ItemDialog  refreshInventory={this.props.refreshInventory} characterId={this.props.characterId} index={this.state.itemIndex} dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
             </div>
         );
     }

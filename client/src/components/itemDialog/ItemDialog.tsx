@@ -6,10 +6,14 @@ import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from './Item
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { Stat } from '@legion/shared/enums';
+import { InventoryActionType, Stat } from '@legion/shared/enums';
+import { apiFetch } from '../../services/apiService';
+import { errorToast, successToast } from '../utils';
 
 Modal.setAppElement('#root');
 interface DialogProps {
+  characterId?: string;
+  index?: number;
   dialogType: string;
   dialogOpen: boolean;
   dialogData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO | null;
@@ -18,9 +22,35 @@ interface DialogProps {
     left: number
   };
   handleClose: () => void;
+  refreshInventory?: () => void;
 }
 
 class ItemDialog extends Component<DialogProps> {
+
+  RemoveItem = (type: string, index: number) => {
+    if (!this.props.characterId) return;
+
+    const payload = {
+      index,
+      characterId: this.props.characterId,
+      inventoryType: type,
+      action: InventoryActionType.UNEQUIP
+    };
+
+    apiFetch('inventoryTransaction', {
+      method: 'POST',
+      body: payload
+    })
+      .then((data) => {
+        if (data.status == 0) {
+          successToast('Item un-equipped!');
+          this.props.refreshInventory();
+        } else {
+          errorToast('Character inventory is full!');
+        }
+      })
+      .catch(error => errorToast(`Error: ${error}`));
+  }
 
   render() {
     const { dialogType, dialogData, position, dialogOpen, handleClose } = this.props;
@@ -92,7 +122,7 @@ class ItemDialog extends Component<DialogProps> {
             }
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={handleClose}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+            <button className="dialog-accept" onClick={() => this.RemoveItem(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
             <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
           </div>
         </div>

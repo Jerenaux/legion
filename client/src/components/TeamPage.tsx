@@ -17,6 +17,7 @@ interface TeamPageState {
     spells: number[];
   };
   carrying_capacity: number;
+  curr_characterId?: string;
 }
 interface TeamPageProps {
   matches: {
@@ -33,10 +34,15 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
       spells: [],
     },
     carrying_capacity: 0,
+    curr_characterId: ''
   }
 
   componentDidMount() {
     this.fetchInventoryData();
+  }
+
+  handleCurrentCharacterId = (currId: string) => {
+    this.setState({curr_characterId: currId})
   }
 
   fetchInventoryData = async () => {
@@ -57,13 +63,13 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   }
 
   render() {
-    const characterId = this.props.matches.id || ''; // Fallback to empty string if ID is not present
+    const characterId = this.props.matches.id || this.state.curr_characterId; // Fallback to empty string if ID is not present
 
     return (
         <div className="team-content">
           <Roster />
           <div className="character-inventory-container">
-            <TeamContentCard characterId={characterId} />
+            <TeamContentCard handleCharacterId={this.handleCurrentCharacterId} characterId={characterId} refreshInventory={this.fetchInventoryData} />
             <Inventory id={characterId} inventory={this.state.inventory} carrying_capacity={this.state.carrying_capacity} refreshInventory={this.fetchInventoryData} />
           </div>
         </div>

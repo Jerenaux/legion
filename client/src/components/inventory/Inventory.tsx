@@ -6,7 +6,7 @@ import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 import { equipments } from '@legion/shared/Equipments';
 import ActionItem from '../game/HUD/Action';
-import { InventoryType } from '@legion/shared/enums';
+import { InventoryActionType, InventoryType } from '@legion/shared/enums';
 
 import { apiFetch } from '../../services/apiService';
 import { successToast, errorToast } from '../utils';
@@ -51,9 +51,11 @@ class Inventory extends Component<InventoryProps> {
     const payload = {
       index,
       characterId: this.props.id,
+      inventoryType: type,
+      action: InventoryActionType.EQUIP
     };
 
-    apiFetch('equipConsumable', {
+    apiFetch('inventoryTransaction', {
       method: 'POST',
       body: payload
     })
