@@ -14,10 +14,12 @@ import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../ite
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { InventoryActionType } from '@legion/shared/enums';
+import { Effect } from '@legion/shared/interfaces';
 
 interface InventoryRequestPayload {
     characterId: string;
     characterData: any;
+    itemEffects: Effect[];
     refreshCharacter: () => void;
 }
 
@@ -60,11 +62,23 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             const items = Object.entries(characterData.stats).map(([key, value]) => ({ key, value: value as number }));
             const rearrangedItems = order.map(key => items.find(item => item.key === key));
 
+            const effectVal = (key: string) => {
+                return this.props.itemEffects.filter(effect => order[effect.stat] === key)[0]?.value;
+            }
+
+            const effectString = (val: number) => {
+                return val > 0 ? `+${val}` : val;
+            }
+
+            const infoStyle = {
+                paddingRight: characterData?.sp > 0 ? '' : '12px'
+            }
+
             return rearrangedItems.map((item, index) => (
                 <div className="character-info-bar" key={index}>
                     <div className="info-class" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[item.key]] }}><span>{INFO_TYPE[item.key]}</span></div>
-                    <p className="curr-info">{item.value}
-                        {/* <span style={item.additionVal && Number(item.additionVal) > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{item.additionVal}</span> */}
+                    <p className="curr-info" style={infoStyle}>{item.value}
+                        <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{effectString(effectVal(item.key))}</span>
                     </p>
                     {characterData?.sp > 0 && <button className="info-bar-plus" onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO, index)}></button>}
                 </div>

@@ -12,6 +12,7 @@ import { apiFetch } from '../../services/apiService';
 import { successToast, errorToast } from '../utils';
 import { Link, route } from 'preact-router';
 import Modal from 'react-modal';
+import { Effect } from '@legion/shared/interfaces';
 
 Modal.setAppElement('#root');
 interface InventoryProps {
@@ -23,6 +24,7 @@ interface InventoryProps {
   };
   carrying_capacity: number;
   refreshCharacter: () => void;
+  handleItemEffect: (effects: Effect[]) => void;
 }
 
 class Inventory extends Component<InventoryProps> {
@@ -83,6 +85,7 @@ class Inventory extends Component<InventoryProps> {
             hideHotKey={true}
             actionType={this.state.actionType}
             refreshCharacter={this.props.refreshCharacter}
+            handleItemEffect={this.props.handleItemEffect}
           />
         </div>
       }

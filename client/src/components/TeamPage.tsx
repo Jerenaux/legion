@@ -9,6 +9,7 @@ import Inventory from './inventory/Inventory';
 import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
 import TeamContentCard from './teamContentCard/TeamContentCard';
+import { Effect } from '@legion/shared/interfaces';
 
 interface TeamPageState {
   inventory: {
@@ -19,6 +20,7 @@ interface TeamPageState {
   carrying_capacity: number;
   character_id: string;
   character_sheet_data: any;
+  item_effect: Effect[];
 }
 interface TeamPageProps {
   matches: {
@@ -36,7 +38,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     },
     carrying_capacity: 0,
     character_id: this.props.matches.id || '',
-    character_sheet_data: null
+    character_sheet_data: null,
+    item_effect: [],
   }
 
   componentDidMount() {
@@ -80,7 +83,14 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.fetchInventoryData();
   }
 
+  handleItemEffect = (effects: Effect[]) => {
+    this.setState({item_effect: effects});
+  }
+
   render() {
+
+    console.log('___ 1121212 ___', this.state.item_effect);
+
     return (
         <div className="team-content">
           <Roster />
@@ -88,13 +98,15 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             <TeamContentCard 
               characterId={this.state.character_id} 
               characterData={this.state.character_sheet_data} 
+              itemEffects={this.state.item_effect}
               refreshCharacter={this.refreshCharacter} 
             />
             <Inventory 
               id={this.state.character_id} 
               inventory={this.state.inventory} 
-              carrying_capacity={this.state.carrying_capacity} 
+              carrying_capacity={this.state.carrying_capacity}
               refreshCharacter={this.refreshCharacter} 
+              handleItemEffect={this.handleItemEffect}
             />
           </div>
         </div>

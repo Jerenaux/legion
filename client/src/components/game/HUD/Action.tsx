@@ -6,6 +6,7 @@ import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import ItemDialog from '../../itemDialog/ItemDialog';
 import { CHARACTER_INFO, ItemDialogType } from '../../itemDialog/ItemDialogType';
+import { Effect } from '@legion/shared/interfaces';
 
 interface ActionItemProps {
   characterId?: string,
@@ -16,6 +17,7 @@ interface ActionItemProps {
   actionType: InventoryType;
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
+  handleItemEffect?: (effects: Effect[]) => void;
   onActionClick?: (type: string, letter: string, index: number) => void;
 }
 /* eslint-disable react/prefer-stateless-function */
@@ -44,6 +46,7 @@ class Action extends Component<ActionItemProps> {
 
   handleCloseModal = () => {
       this.setState({openModal: false});
+      this.props.handleItemEffect([]);
   }
 
   render() {
@@ -54,6 +57,7 @@ class Action extends Component<ActionItemProps> {
     const keyBinding = keyboardLayout.charAt(startPosition + index);
 
     const handleOnClickAction = (e: any) => {
+      this.props.handleItemEffect(action.effects);
       this.handleOpenModal(e, action, actionType);
     }
 
