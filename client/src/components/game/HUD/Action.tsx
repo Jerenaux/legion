@@ -16,7 +16,7 @@ interface ActionItemProps {
   canAct: boolean;
   actionType: InventoryType;
   hideHotKey?: boolean;
-  refreshInventory?: () => void;
+  refreshCharacter?: () => void;
   onActionClick?: (type: string, letter: string, index: number) => void;
 }
 /* eslint-disable react/prefer-stateless-function */
@@ -85,7 +85,7 @@ class Action extends Component<ActionItemProps> {
           position={this.state.modalPosition} 
           dialogData={this.state.modalData} 
           handleClose={this.handleCloseModal}
-          refreshInventory={this.props.refreshInventory} 
+          refreshCharacter={this.props.refreshCharacter} 
         />
       </div>
     );

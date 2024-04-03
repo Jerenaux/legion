@@ -17,7 +17,8 @@ interface TeamPageState {
     spells: number[];
   };
   carrying_capacity: number;
-  curr_characterId?: string;
+  character_id: string;
+  character_sheet_data: any;
 }
 interface TeamPageProps {
   matches: {
@@ -34,15 +35,13 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
       spells: [],
     },
     carrying_capacity: 0,
-    curr_characterId: ''
+    character_id: this.props.matches.id || '',
+    character_sheet_data: null
   }
 
   componentDidMount() {
+    this.fetchCharacterData();
     this.fetchInventoryData();
-  }
-
-  handleCurrentCharacterId = (currId: string) => {
-    this.setState({curr_characterId: currId})
   }
 
   fetchInventoryData = async () => {
@@ -62,15 +61,41 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     }
   }
 
-  render() {
-    const characterId = this.props.matches.id || this.state.curr_characterId; // Fallback to empty string if ID is not present
+  fetchCharacterData = async () => {
+    try {
+        const data = await apiFetch('rosterData');
+        const sheetData = this.state.character_id ? data.characters.filter((item: any) => item.id === this.state.character_id)[0] : data.characters[0];
 
+        this.setState({
+          character_sheet_data: sheetData,
+          character_id: sheetData.id,
+        });
+      } catch (error) {
+          errorToast(`Error: ${error}`);
+      }
+  }
+
+  refreshCharacter = () => {
+    this.fetchCharacterData();
+    this.fetchInventoryData();
+  }
+
+  render() {
     return (
         <div className="team-content">
           <Roster />
           <div className="character-inventory-container">
-            <TeamContentCard handleCharacterId={this.handleCurrentCharacterId} characterId={characterId} refreshInventory={this.fetchInventoryData} />
-            <Inventory id={characterId} inventory={this.state.inventory} carrying_capacity={this.state.carrying_capacity} refreshInventory={this.fetchInventoryData} />
+            <TeamContentCard 
+              characterId={this.state.character_id} 
+              characterData={this.state.character_sheet_data} 
+              refreshCharacter={this.refreshCharacter} 
+            />
+            <Inventory 
+              id={this.state.character_id} 
+              inventory={this.state.inventory} 
+              carrying_capacity={this.state.carrying_capacity} 
+              refreshCharacter={this.refreshCharacter} 
+            />
           </div>
         </div>
       );

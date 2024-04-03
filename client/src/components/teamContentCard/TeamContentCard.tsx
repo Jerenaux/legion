@@ -17,13 +17,12 @@ import { InventoryActionType } from '@legion/shared/enums';
 
 interface InventoryRequestPayload {
     characterId: string;
-    handleCharacterId: (id: string) => void;
-    refreshInventory: () => void;
+    characterData: any;
+    refreshCharacter: () => void;
 }
 
 class TeamContentCard extends Component<InventoryRequestPayload> {
     state = {
-        character: null,
         characterItems: [],
         itemIndex: 0,
         openModal: false,
@@ -33,24 +32,6 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             top: 0,
             left: 0
         },
-    }
-
-    componentDidMount() {
-        this.fetchCharacterData();
-    }
-
-    async fetchCharacterData() {
-        try {
-            const data = await apiFetch('rosterData');
-
-            this.setState({
-                character: this.props.characterId ? data.characters.filter((item: any) => item.id === this.props.characterId)[0] : data.characters[0],
-            });
-
-            this.props.handleCharacterId(data.characters[0].id);
-        } catch (error) {
-            errorToast(`Error: ${error}`);
-        }
     }
 
     handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO, modalType: string, index: number) => {
@@ -69,13 +50,14 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
     }
 
     render() {
-        console.log('_____ character data _______', this.state.character);
+        const { characterId, characterData, refreshCharacter } = this.props;
+        if(!this.props.characterData) return;
 
         const renderInfoBars = () => {
-            if (!this.state.character) return;
+            if (!characterData) return;
 
             const order = ['hp', 'mp', 'atk', 'def', 'spatk', 'spdef'];
-            const items = Object.entries(this.state.character.stats).map(([key, value]) => ({ key, value: value as number }));
+            const items = Object.entries(characterData.stats).map(([key, value]) => ({ key, value: value as number }));
             const rearrangedItems = order.map(key => items.find(item => item.key === key));
 
             return rearrangedItems.map((item, index) => (
@@ -84,92 +66,92 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                     <p className="curr-info">{item.value}
                         {/* <span style={item.additionVal && Number(item.additionVal) > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{item.additionVal}</span> */}
                     </p>
-                    {this.state.character?.sp > 0 && <button className="info-bar-plus" onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO, index)}></button>}
+                    {characterData?.sp > 0 && <button className="info-bar-plus" onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO, index)}></button>}
                 </div>
             ));
         };
 
         const renderEquipItems = () => {
-            if (!this.state.character) return;
-            const items = Object.entries(this.state.character.equipment).map(([key, value]) => ({ key, value: value as number })); // for equipments of right hand
+            if (!characterData) return;
+            const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })); // for equipments of right hand
 
             return items.slice(0, 6).map((item, index) => (
                 <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[item.value], ItemDialogType.EQUIPMENTS, index)}>
-                    <img src={item.value < 0 ? `/inventory/${item.key}_icon.png` : `/equipment/${equipments[item.value].frame}`} alt={item.key} />
+                    <img src={item.value < 0 ? `/inventory/${item.key}_icon.png` : `/equipment/${equipments[item.value]?.frame}`} alt={item.key} />
                 </div>
             ))
         }
 
         const renderCharacterItems = useMemo(() => {
-            if (!this.state.character) return;
+            if (!characterData) return;
 
-            const items = Object.entries(this.state.character.equipment).map(([key, value]) => ({ key, value: value as number })).slice(6, 9);
+            const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })).slice(6, 9);
 
             return items.map((item, index) => (
                 <div className="equip-item sheet-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[index + 6], ItemDialogType.EQUIPMENTS, index + 6)}>
-                    <img style={item.value < 0 && { transform: 'scaleY(0.6)' }} src={item.value > 0 ? `/equipment/${equipments[index + 6].frame}` : `/inventory/${item.key}_icon.png`} alt={item.key} />
+                    <img style={item.value < 0 && { transform: 'scaleY(0.6)' }} src={item.value > 0 ? `/equipment/${equipments[index + 6]?.frame}` : `/inventory/${item.key}_icon.png`} alt={item.key} />
                 </div>
             ))
-        }, [this.state.character]);
+        }, [characterData]);
 
 
         const renderSpellsItem = () => {
-            if (!this.state.character) return;
+            if (!characterData) return;
 
-            return Array.from({ length: this.state.character.skill_slots }, (_, i) => (
-                i < this.state.character.skills.length ? (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[this.state.character.skills[i]], ItemDialogType.SKILLS, i)}>
-                        <img src={`/spells/${spells[this.state.character.skills[i]].frame}`} alt={spells[this.state.character.skills[i]].name} />
+            return Array.from({ length: characterData.skill_slots }, (_, i) => (
+                i < characterData.skills.length ? (
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[characterData.skills[i]], ItemDialogType.SKILLS, i)}>
+                        <img src={`/spells/${spells[characterData.skills[i]]?.frame}`} alt={spells[characterData.skills[i]].name} />
                     </div>
                 ) : (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[this.state.character.skills[i]], ItemDialogType.SKILLS, i)}>
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[characterData.skills[i]], ItemDialogType.SKILLS, i)}>
                     </div>
                 )
             ))
         };
 
         const renderConsumableItems = () => {
-            if (!this.state.character) return;
+            if (!characterData) return;
 
             return Array.from({ length: 6 }, (_, i) => (
-                i < this.state.character.inventory.length ? (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[this.state.character.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
-                        <img src={`/consumables/${items[this.state.character.inventory[i]].frame}`} alt={items[this.state.character.inventory[i]].name} />
+                i < characterData.inventory.length ? (
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[characterData.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
+                        <img src={`/consumables/${items[characterData.inventory[i]]?.frame}`} alt={items[characterData.inventory[i]].name} />
                     </div>
                 ) : (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[this.state.character.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
+                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[characterData.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
                     </div>
                 )
             ))
         };
 
         const portraitStyle = {
-            backgroundImage: `url(/sprites/${this.state.character?.portrait ?? '1_1'}.png)`,
+            backgroundImage: `url(/sprites/${characterData?.portrait ?? '1_1'}.png)`,
         };
 
-        const xpToLevel = getXPThreshold(this.state.character?.level);
+        const xpToLevel = getXPThreshold(characterData?.level);
 
         return (
             <div className="team-content-card-container">
                 <div className="team-content-container">
                     <div className="team-level">
                         <span>Lv</span>
-                        <span className="level-span">{this.state.character?.level}</span>
+                        <span className="level-span">{characterData?.level}</span>
                     </div>
                     <div className="team-info-container">
                         <div className="team-info">
-                            <p className="team-character-name">{this.state.character?.name}</p>
-                            <p className="team-character-class">{classEnumToString(this.state.character?.class)}</p>
+                            <p className="team-character-name">{characterData?.name}</p>
+                            <p className="team-character-class">{classEnumToString(characterData?.class)}</p>
                             <div className="team-exp-slider-container">
                                 <div className="team-curr-exp-slider"></div>
                             </div>
                             <div className="team-exp-info">
-                                <span>EXP <span className="team-curr-exp">{this.state.character?.xp.toFixed(4)}</span> / <span className="team-total-exp">{xpToLevel.toFixed(4)}</span></span>
+                                <span>EXP <span className="team-curr-exp">{characterData?.xp.toFixed(4)}</span> / <span className="team-total-exp">{xpToLevel.toFixed(4)}</span></span>
                             </div>
                         </div>
                         <div className="team-sp-container">
                             <span>SP</span>
-                            <span className="sp-span">{this.state.character?.sp}</span>
+                            <span className="sp-span">{characterData?.sp}</span>
                         </div>
                     </div>
                     <div className="team-character-info-container">
@@ -201,7 +183,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                 <div className="team-equip-container">
                     {renderEquipItems()}
                 </div>
-                <ItemDialog actionType={InventoryActionType.UNEQUIP}  refreshInventory={this.props.refreshInventory} characterId={this.props.characterId} index={this.state.itemIndex} dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
+                <ItemDialog actionType={InventoryActionType.UNEQUIP}  refreshCharacter={refreshCharacter} characterId={characterId} index={this.state.itemIndex} dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
             </div>
         );
     }

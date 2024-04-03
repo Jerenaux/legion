@@ -22,7 +22,7 @@ interface InventoryProps {
     spells: number[];
   };
   carrying_capacity: number;
-  refreshInventory: () => void;
+  refreshCharacter: () => void;
 }
 
 class Inventory extends Component<InventoryProps> {
@@ -83,7 +83,7 @@ class Inventory extends Component<InventoryProps> {
             canAct={true}
             hideHotKey={true}
             actionType={this.state.actionType}
-            refreshInventory={this.props.refreshInventory}
+            refreshCharacter={this.props.refreshCharacter}
           />
         </div>
       }

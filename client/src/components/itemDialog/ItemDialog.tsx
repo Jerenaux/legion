@@ -23,7 +23,7 @@ interface DialogProps {
     left: number
   };
   handleClose: () => void;
-  refreshInventory?: () => void;
+  refreshCharacter?: () => void;
 }
 
 class ItemDialog extends Component<DialogProps> {
@@ -47,7 +47,9 @@ class ItemDialog extends Component<DialogProps> {
       .then((data) => {
         if (data.status == 0) {
           successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!');
-          this.props.refreshInventory();
+          
+          this.props.handleClose();
+          this.props.refreshCharacter();
         } else {
           errorToast('Character inventory is full!');
         }
