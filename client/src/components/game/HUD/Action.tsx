@@ -1,6 +1,6 @@
 import './HUD.style.css';
 import { h, Component } from 'preact';
-import { InventoryType } from '@legion/shared/enums';
+import { InventoryActionType, InventoryType } from '@legion/shared/enums';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -8,12 +8,15 @@ import ItemDialog from '../../itemDialog/ItemDialog';
 import { CHARACTER_INFO, ItemDialogType } from '../../itemDialog/ItemDialogType';
 
 interface ActionItemProps {
+  itemIndex?: number;
+  characterId?: string,
   action: BaseItem | BaseSpell | BaseEquipment | null;
   index: number;
   clickedIndex: number;
   canAct: boolean;
   actionType: InventoryType;
   hideHotKey?: boolean;
+  refreshInventory?: () => void;
   onActionClick?: (type: string, letter: string, index: number) => void;
 }
 /* eslint-disable react/prefer-stateless-function */
@@ -45,15 +48,15 @@ class Action extends Component<ActionItemProps> {
   }
 
   render() {
-    const { action, index, clickedIndex, canAct, actionType, hideHotKey, onActionClick } = this.props;
+    const { action, index, clickedIndex, itemIndex, canAct, actionType, hideHotKey, onActionClick } = this.props;
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
     const keyBinding = keyboardLayout.charAt(startPosition + index);
 
     const handleOnClickAction = (e: any) => {
-      onActionClick(actionType, keyBinding, index);
       this.handleOpenModal(e, action, actionType);
+      console.log('1111111111');
     }
 
     if (!action) {
@@ -72,7 +75,18 @@ class Action extends Component<ActionItemProps> {
         {/* {action.id > -1 && <div className="info-box box">
           <InfoBox action={action} />
         </div>} */}
-        <ItemDialog dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
+        
+        <ItemDialog 
+          index={itemIndex}
+          characterId={this.props.characterId} 
+          actionType={InventoryActionType.EQUIP} 
+          dialogOpen={this.state.openModal} 
+          dialogType={this.state.modalType} 
+          position={this.state.modalPosition} 
+          dialogData={this.state.modalData} 
+          handleClose={this.handleCloseModal}
+          refreshInventory={this.props.refreshInventory} 
+        />
       </div>
     );
   }

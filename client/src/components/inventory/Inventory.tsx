@@ -45,31 +45,6 @@ class Inventory extends Component<InventoryProps> {
     this.setState({ openModal: false });
   }
 
-  onActionClick = (type: string, letter: string, index: number) => {
-    if (!this.props.id) return;
-
-    const payload = {
-      index,
-      characterId: this.props.id,
-      inventoryType: type,
-      action: InventoryActionType.EQUIP
-    };
-
-    apiFetch('inventoryTransaction', {
-      method: 'POST',
-      body: payload
-    })
-      .then((data) => {
-        if (data.status == 0) {
-          successToast('Item equipped!');
-          this.props.refreshInventory();
-        } else {
-          errorToast('Character inventory is full!');
-        }
-      })
-      .catch(error => errorToast(`Error: ${error}`));
-  }
-
   inventoryLength = () => Object.values(this.props.inventory)
     .filter(Array.isArray)
     .map(arr => arr.length)
@@ -95,13 +70,15 @@ class Inventory extends Component<InventoryProps> {
       (
         <div key={i} className="item">
           <ActionItem
+            characterId={this.props.id}
             action={getAction(i)}
             index={i}
             clickedIndex={-1}
+            itemIndex={this.props.inventory[this.state.actionType][i]}
             canAct={true}
             hideHotKey={true}
             actionType={this.state.actionType}
-            onActionClick={this.onActionClick}
+            refreshInventory={this.props.refreshInventory}
           />
         </div>
       )

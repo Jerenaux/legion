@@ -1,7 +1,7 @@
 // ItemDialog.tsx
 import './ItemDialog.style.css';
-import { h, Component } from 'preact';
 import Modal from 'react-modal';
+import { h, Component } from 'preact';
 import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from './ItemDialogType';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
@@ -14,6 +14,7 @@ Modal.setAppElement('#root');
 interface DialogProps {
   characterId?: string;
   index?: number;
+  actionType: InventoryActionType;
   dialogType: string;
   dialogOpen: boolean;
   dialogData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO | null;
@@ -27,15 +28,17 @@ interface DialogProps {
 
 class ItemDialog extends Component<DialogProps> {
 
-  RemoveItem = (type: string, index: number) => {
+  AcceptAction = (type: string, index: number) => {
     if (!this.props.characterId) return;
 
     const payload = {
       index,
       characterId: this.props.characterId,
       inventoryType: type,
-      action: InventoryActionType.UNEQUIP
+      action: this.props.actionType
     };
+
+    console.log('333333333333', payload);
 
     apiFetch('inventoryTransaction', {
       method: 'POST',
@@ -43,7 +46,7 @@ class ItemDialog extends Component<DialogProps> {
     })
       .then((data) => {
         if (data.status == 0) {
-          successToast('Item un-equipped!');
+          successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!');
           this.props.refreshInventory();
         } else {
           errorToast('Character inventory is full!');
@@ -54,8 +57,6 @@ class ItemDialog extends Component<DialogProps> {
 
   render() {
     const { dialogType, dialogData, position, dialogOpen, handleClose } = this.props;
-
-    // console.log('___ dialog body ___', dialogData, dialogType);
 
     if (!dialogData) {
       return null;
@@ -91,7 +92,7 @@ class ItemDialog extends Component<DialogProps> {
           <p className='equip-dialog-name'>{dialogData.name}</p>
           <p className='equip-dialog-desc'>Remove Item</p>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={handleClose}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
             <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
           </div>
         </div>
@@ -122,7 +123,7 @@ class ItemDialog extends Component<DialogProps> {
             }
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => this.RemoveItem(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
             <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
           </div>
         </div>
@@ -151,7 +152,7 @@ class ItemDialog extends Component<DialogProps> {
             </div>
           </div> */}
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={handleClose}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
+            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
             <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
           </div>
         </div>

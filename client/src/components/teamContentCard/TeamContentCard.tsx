@@ -12,6 +12,8 @@ import { items } from '@legion/shared/Items';
 import { apiFetch } from '../../services/apiService';
 import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../itemDialog/ItemDialogType';
 import ItemDialog from '../itemDialog/ItemDialog';
+import { getXPThreshold } from '@legion/shared/levelling';
+import { InventoryActionType } from '@legion/shared/enums';
 
 interface InventoryRequestPayload {
     characterId: string;
@@ -92,8 +94,8 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             const items = Object.entries(this.state.character.equipment).map(([key, value]) => ({ key, value: value as number })); // for equipments of right hand
 
             return items.slice(0, 6).map((item, index) => (
-                <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[index], ItemDialogType.EQUIPMENTS, index)}>
-                    <img src={item.value > 0 ? `/equipment/${equipments[index].frame}` : `/inventory/${item.key}_icon.png`} alt={item.key} />
+                <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[item.value], ItemDialogType.EQUIPMENTS, index)}>
+                    <img src={item.value < 0 ? `/inventory/${item.key}_icon.png` : `/equipment/${equipments[item.value].frame}`} alt={item.key} />
                 </div>
             ))
         }
@@ -145,6 +147,8 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             backgroundImage: `url(/sprites/${this.state.character?.portrait ?? '1_1'}.png)`,
         };
 
+        const xpToLevel = getXPThreshold(this.state.character?.level);
+
         return (
             <div className="team-content-card-container">
                 <div className="team-content-container">
@@ -160,7 +164,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                                 <div className="team-curr-exp-slider"></div>
                             </div>
                             <div className="team-exp-info">
-                                <span>EXP <span className="team-curr-exp">980.200</span> / <span className="team-total-exp">1.600.0000</span></span>
+                                <span>EXP <span className="team-curr-exp">{this.state.character?.xp.toFixed(4)}</span> / <span className="team-total-exp">{xpToLevel.toFixed(4)}</span></span>
                             </div>
                         </div>
                         <div className="team-sp-container">
@@ -197,7 +201,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                 <div className="team-equip-container">
                     {renderEquipItems()}
                 </div>
-                <ItemDialog  refreshInventory={this.props.refreshInventory} characterId={this.props.characterId} index={this.state.itemIndex} dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
+                <ItemDialog actionType={InventoryActionType.UNEQUIP}  refreshInventory={this.props.refreshInventory} characterId={this.props.characterId} index={this.state.itemIndex} dialogOpen={this.state.openModal} dialogType={this.state.modalType} position={this.state.modalPosition} dialogData={this.state.modalData} handleClose={this.handleCloseModal} />
             </div>
         );
     }
