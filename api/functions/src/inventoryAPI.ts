@@ -193,3 +193,49 @@ export const unequipItem = onRequest((request, response) => {
     }
   });
 });
+
+export const inventorySave = onRequest((request, response) => {
+  logger.info("Saving inventory");
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const characterId = request.body.characterId as string;
+      const inventory = request.body.inventory as number[];
+
+      const playerRef = db.collection("players").doc(uid);
+      const characterRef = db.collection("characters").doc(characterId);
+
+      const playerDoc = await playerRef.get();
+      const characterDoc = await characterRef.get();
+
+      if (!playerDoc.exists || !characterDoc.exists) {
+        throw new Error("Documents do not exist");
+      }
+
+      const playerData = playerDoc.data();
+      const characterData = characterDoc.data();
+
+      if (!playerData || !characterData) {
+        throw new Error("Data does not exist");
+      }
+
+      // Check that character is owned by player
+      const characters =
+            playerData.characters as admin.firestore.DocumentReference[];
+      const characterIds = characters.map((character) => character.id);
+      if (!characterIds.includes(characterId)) {
+        throw new Error("Character not owned by player");
+      }
+
+      // Update character document
+      await characterRef.update({inventory});
+
+      response.send({status: 0});
+    } catch (error) {
+      console.error("inventorySave error:", error);
+      response.status(500).send("Error");
+    }
+  });
+});

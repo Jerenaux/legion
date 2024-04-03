@@ -676,6 +676,25 @@ export abstract class Game
             console.error(error);
         }
     }
+
+    async saveInventoryToDb(token: string, characterId: string, inventory: number[]) {
+        console.log('Saving inventory to DB');
+        try {
+            await apiFetch(
+                'inventorySave',
+                token,
+                {
+                    method: 'POST',
+                    body: {
+                        characterId,
+                        inventory,
+                    },
+                }
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
 }
 
 interface Tile {

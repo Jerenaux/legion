@@ -296,6 +296,7 @@ export class ServerPlayer {
             return;
         }
         this.inventory.splice(index, 1);
+        this.team!.game.saveInventoryToDb(this.team!.getFirebaseToken(), this.dbId, this.inventory.map(item => item.id));
     }
 
     getItemAtIndex(index: number): Item | null {
