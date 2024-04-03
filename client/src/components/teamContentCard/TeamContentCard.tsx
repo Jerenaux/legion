@@ -116,7 +116,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
         const renderSpellsItem = () => {
             if (!this.state.character) return;
 
-            return Array.from({ length: 6 }, (_, i) => (
+            return Array.from({ length: this.state.character.skill_slots }, (_, i) => (
                 i < this.state.character.skills.length ? (
                     <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[this.state.character.skills[i]], ItemDialogType.SKILLS, i)}>
                         <img src={`/spells/${spells[this.state.character.skills[i]].frame}`} alt={spells[this.state.character.skills[i]].name} />
