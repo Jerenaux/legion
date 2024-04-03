@@ -288,8 +288,8 @@ export class Player extends Phaser.GameObjects.Container {
         }
         if (item) {
             if (item.target == Target.SELF) {
-                this.arena.sendUseItem(index, this.x, this.y);
-            } else if (item.target == Target.SINGLE) {
+                this.arena.sendUseItem(index, this.x, this.y, this);
+            } else {
                 this.pendingItem = index;
                 this.arena.toggleItemMode(true);
             }
@@ -523,8 +523,8 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     setInventory(inventory: number[]) {
+        this.inventory = [];
         inventory.forEach(itemId => {
-            // console.log(data.item);
             this.addItem(itemId);
         });
     }

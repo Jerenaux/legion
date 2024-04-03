@@ -123,7 +123,7 @@ items[8] = new BaseItem({
     animation: "potion_heal",
     size: 20,
     sfx: "healing",
-    cooldown: 20,
+    cooldown: 10,
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 10, onKO: true}],
     price: 200,

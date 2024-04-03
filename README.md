@@ -17,4 +17,5 @@ The code is located in `client/src` and the entry point is `index.tsx`. The main
 - `cd server && npm run start` to start server in dev mode
 - `cd api/functions && npm run serve` to start Firebase emulators
 - `cd api/functions && npm run watch:functions` to watch API
+- `cd matchmaker && npm run start` to start matchmaker
 

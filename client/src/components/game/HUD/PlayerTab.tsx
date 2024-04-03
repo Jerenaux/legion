@@ -63,76 +63,76 @@ class PlayerTab extends Component<Props, State> {
   render(props: Props, state: State) {
     const { player } = props;
 
-      const portraitStyle = {
-        backgroundImage: `url(assets/sprites/${player.portrait}.png)`,
-      };
-      const isCooldownActive = player.cooldown > 0;
-      const isDead = player.hp <= 0;
-      const canAct = !isCooldownActive && !isDead && !player.casting;
-      const headerText = `#${player.number} ${player.name}`;
-      const cooldownRatio = this.getCooldownRatio(player);
-      const cooldownBarStyle = {
-        width: `${cooldownRatio * 100}%`,
-      };
-  
-      return <div className="player-tab">
-          <div className="character-header-arena">
-            <div className="character-header-name">{headerText}</div>
-            <div className="character-header-name-shadow">{headerText}</div>
-          </div>
-          <div className="character-full-content">
-            <div className="player-content">
-              <div className="character-portrait" style={portraitStyle} />
-              <div className="player-bars">
-                <div className="">
-                  <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="hp-bar" />
-                  <TabBar title="MP" value={player.mp} maxValue={player.maxMp} barClass="mp-bar" />
-                  <div className="bar-title">Cooldown</div>
-                  <div className="xp-bar-bg">
-                      <div className="hud-bar cooldown-bar" style={cooldownBarStyle} />
-                  </div>
+    const portraitStyle = {
+      backgroundImage: `url(assets/sprites/${player.portrait}.png)`,
+    };
+    const isCooldownActive = player.cooldown > 0;
+    const isDead = player.hp <= 0;
+    const canAct = !isCooldownActive && !isDead && !player.casting;
+    const headerText = `#${player.number} ${player.name}`;
+    const cooldownRatio = this.getCooldownRatio(player);
+    const cooldownBarStyle = {
+      width: `${cooldownRatio * 100}%`,
+    };
+
+    return <div className="player-tab">
+        <div className="character-header-arena">
+          <div className="character-header-name">{headerText}</div>
+          <div className="character-header-name-shadow">{headerText}</div>
+        </div>
+        <div className="character-full-content">
+          <div className="player-content">
+            <div className="character-portrait" style={portraitStyle} />
+            <div className="player-bars">
+              <div className="">
+                <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="hp-bar" />
+                <TabBar title="MP" value={player.mp} maxValue={player.maxMp} barClass="mp-bar" />
+                <div className="bar-title">Cooldown</div>
+                <div className="xp-bar-bg">
+                    <div className="hud-bar cooldown-bar" style={cooldownBarStyle} />
                 </div>
               </div>
             </div>
-            <div className="hud-actions">
-              {player.spells && player.spells.length > 0 && (
-                <div className="player-skills">
-                  <div className="slots">
-                    {player.spells.map((skill, i) => (
-                      <ActionItem 
-                        action={skill} 
-                        index={i} 
-                        clickedIndex={this.state.clickedSpell} 
-                        canAct={canAct} 
-                        actionType={ActionType.Skill} 
-                        onActionClick={this.actionClick.bind(this)} 
-                        key={i}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {player.items && player.items.length > 0 && (
-                <div className="player-items">
-                  <div className="slots">
-                    {player.items.map((item, i) => (
-                      <ActionItem 
-                        action={item} 
-                        index={i} 
-                        clickedIndex={this.state.clickedItem} 
-                        canAct={canAct} 
-                        actionType={ActionType.Item}
-                        onActionClick={this.actionClick.bind(this)} 
-                        key={i}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
-      </div>;
+          <div className="hud-actions">
+            {player.spells && player.spells.length > 0 && (
+              <div className="player-skills">
+                <div className="slots">
+                  {player.spells.map((skill, i) => (
+                    <ActionItem 
+                      action={skill} 
+                      index={i} 
+                      clickedIndex={this.state.clickedSpell} 
+                      canAct={canAct} 
+                      actionType={ActionType.Skill} 
+                      onActionClick={this.actionClick.bind(this)} 
+                      key={i}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {player.items && player.items.length > 0 && (
+              <div className="player-items">
+                <div className="slots">
+                  {player.items.map((item, i) => (
+                    <ActionItem 
+                      action={item} 
+                      index={i} 
+                      clickedIndex={this.state.clickedItem} 
+                      canAct={canAct} 
+                      actionType={ActionType.Item}
+                      onActionClick={this.actionClick.bind(this)} 
+                      key={i}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+    </div>;
   }
 }
 

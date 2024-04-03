@@ -106,6 +106,8 @@ export class AIServerPlayer extends ServerPlayer {
                     x: this.x,
                     y: this.y,
                     index: i,
+                    targetTeam: null,
+                    target: null,
                 };
                 this.team?.game.processUseItem(data, this.team);
                 return true;

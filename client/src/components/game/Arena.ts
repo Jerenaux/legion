@@ -192,19 +192,20 @@ export class Arena extends Phaser.Scene
             targetTeam: player?.team.id,
             target: player?.num,
         };
-        console.log(`Sending spell: ${data.num} ${data.x} ${data.y} ${data.index} ${data.targetTeam} ${data.target}`);
         this.send('spell', data);
         this.toggleTargetMode(false);
         this.selectedPlayer.pendingSpell = null;
     }
 
-    sendUseItem(index: number, x: number, y: number) {
+    sendUseItem(index: number, x: number, y: number, player: Player | null) {
         if (!this.selectedPlayer.canAct()) return;
         const data = {
             num: this.selectedPlayer.num,
             x,
             y,
-            index
+            index,
+            targetTeam: player?.team.id,
+            target: player?.num,
         };
         this.send('useitem', data);
         this.toggleItemMode(false);
@@ -441,15 +442,18 @@ export class Arena extends Phaser.Scene
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
         const player = this.gridMap[serializeCoords(gridX, gridY)];
         const pendingSpell = this.selectedPlayer.spells[this.selectedPlayer?.pendingSpell];
+        const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
         if (pendingSpell != null) {
             this.sendSpell(gridX, gridY, player);
         } else if (this.selectedPlayer?.pendingItem != null) {
-            this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY);
+            this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
         } else if (this.selectedPlayer && !player) {
             this.handleMove(gridX, gridY);
         } else if (player){ 
             if (pendingSpell?.target === Target.SINGLE) {
                 this.sendSpell(gridX, gridY, player);
+            } if (pendingItem?.target === Target.SINGLE) {
+                this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
             } else {
                 player.onClick();
             }

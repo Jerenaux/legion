@@ -60,7 +60,7 @@ spells[2] = new BaseSpell({
     sfx: "thunder",
     shake: false,
     cost: 4,
-    cooldown: 4,
+    cooldown: 0.5,
     castTime: 1,
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],

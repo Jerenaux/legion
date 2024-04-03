@@ -9,9 +9,9 @@ export class Item extends BaseItem {
         // console.log(`Looking for targets at ${x}, ${y} for spell ${this.name}, target type ${Target[this.target]}`);
         if (this.target === Target.SELF) {
             return [user];
-        } else if (this.target === Target.SINGLE) {
-            const target = game.getPlayerAt(x, y);
-            if (target) return [target];
+        // } else if (this.target === Target.SINGLE) {
+        //     const target = game.getPlayerAt(x, y);
+        //     if (target) return [target];
         } else if (this.target === Target.AOE) {
             return game.getPlayersInArea(x, y, Math.floor(this.size/2));
         }
@@ -41,11 +41,12 @@ export class Item extends BaseItem {
 
     effectsAreApplicable(target: ServerPlayer) {
         return this.effects.every(effect => {
+            if (effect.onKO && target.isAlive()) return false;
             switch (effect.stat) {
                 case Stat.HP:
-                    return target.hp + effect.value <= target.maxHP;
+                    return target.hp < target.maxHP;
                 case Stat.MP:
-                    return target.mp + effect.value <= target.maxMP;
+                    return target.mp < target.maxMP;
             }
         });
     }

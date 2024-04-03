@@ -329,20 +329,36 @@ export abstract class Game
         });
     }
 
-    processUseItem({num, x, y, index}: {num: number, x: number, y: number, index: number}, team: Team) {
+    processUseItem({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number,  targetTeam: number, target: number | null}, team: Team) {
+        console.log(`Processing item for team ${team.id}, player ${num}, item ${index}, target team ${targetTeam}, target ${target}`)
         const player = team.getMembers()[num - 1];
         if (!player.canAct()) return;
 
         const item = player.getItemAtIndex(index);
         if (!item) return;
-        
+
+        let targetPlayer: ServerPlayer | null = null;
+        if (item.target === Target.SINGLE) {
+            targetPlayer = this.teams.get(targetTeam)?.getMembers()[target - 1];
+            if (!targetPlayer) {
+                console.log('Invalid target!');
+                return;
+            }
+        }
+        const targets = targetPlayer ? [targetPlayer] : item.getTargets(this, player, x, y);
+
+        // Only check if the item is applicable if there is a single target
+        if (targets.length == 1 && !item.effectsAreApplicable(targets[0])) {
+            console.log(`Item ${item.name} is not applicable!`);
+            return
+        };
+
+        item.applyEffect(targets);
+
         const cooldown = item?.cooldown * 1000;
         this.setCooldown(player, cooldown);
 
         player.removeItem(item);
-        const targets = item.getTargets(this, player, x, y);
-        // console.log(`Item ${item.name} found ${targets.length} targets`);
-        item.applyEffect(targets);
 
         this.broadcast('useitem', {
             team: team.id,
