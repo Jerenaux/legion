@@ -6,7 +6,7 @@ import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from './Item
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat } from '@legion/shared/enums';
+import { InventoryActionType, Stat, Target } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast } from '../utils';
 
@@ -132,25 +132,26 @@ class ItemDialog extends Component<DialogProps> {
 
     const skillDialog = (dialogData: BaseSpell) => {
       if (!dialogData.frame) return;
+
       return (
         <div className="dialog-spell-container">
           <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
           <p className="dialog-spell-name">{dialogData.name}</p>
           <p className="dialog-spell-desc">{dialogData.description}</p>
-          {/* <div className="dialog-spell-info-container">
+          <div className="dialog-spell-info-container">
             <div className="dialog-spell-info">
               <img src={'./inventory/mp_icon.png'} alt="mp" />
-              <span>{dialogData.info.mp}</span>
+              <span>{dialogData.cost}</span>
             </div>
             <div className="dialog-spell-info">
               <img src={'./inventory/cd_icon.png'} alt="cd" />
-              <span>{dialogData.info.cd}s</span>
+              <span>{dialogData.cooldown}s</span>
             </div>
             <div className="dialog-spell-info">
               <img src={'./inventory/target_icon.png'} alt="target" />
-              <span>ADE</span>
+              <span>{Target[dialogData.target]}</span>
             </div>
-          </div> */}
+          </div>
           <div className="dialog-button-container">
             <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
             <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
