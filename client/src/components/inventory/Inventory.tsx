@@ -6,7 +6,7 @@ import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 import { equipments } from '@legion/shared/Equipments';
 import ActionItem from '../game/HUD/Action';
-import { InventoryActionType, InventoryType } from '@legion/shared/enums';
+import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
 
 import { apiFetch } from '../../services/apiService';
 import { successToast, errorToast } from '../utils';
@@ -65,13 +65,18 @@ class Inventory extends Component<InventoryProps> {
       }
     }
 
-    const slots = Array.from({ length: this.props.carrying_capacity }, (_, i) => (
-      i < this.props.inventory[this.state.actionType]?.length &&
-      (
-        <div key={i} className="item">
+    const slots = Array.from({ length: this.props.carrying_capacity }, (_, i) => {
+      if (i < this.props.inventory[this.state.actionType]?.length) {
+        const actionItem = getAction(i);
+
+        const slotStyle = {
+          backgroundImage: `linear-gradient(to bottom right, ${RarityColor[actionItem?.rarity]}, #1c1f25)`
+        }
+
+        return <div key={i} className="item" style={slotStyle}>
           <ActionItem
             characterId={this.props.id}
-            action={getAction(i)}
+            action={actionItem}
             index={i}
             clickedIndex={-1}
             itemIndex={this.props.inventory[this.state.actionType][i]}
@@ -81,9 +86,8 @@ class Inventory extends Component<InventoryProps> {
             refreshInventory={this.props.refreshInventory}
           />
         </div>
-      )
-    )
-    );
+      }
+    });
 
     const currCategoryStyle = {
       backgroundColor: 'transparent',

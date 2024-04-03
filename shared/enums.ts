@@ -62,3 +62,10 @@ export enum InventoryActionType {
     EQUIP,
     UNEQUIP
 }
+
+export const RarityColor = [
+    '#FFFFFF',
+    '#2962A9',
+    '#8F2841',
+    '#C1770D'
+]
