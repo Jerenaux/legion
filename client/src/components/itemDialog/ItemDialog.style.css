@@ -30,6 +30,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 8px;
+    color: #ffffff;
 }
 
 .dialog-button-container button:hover {
@@ -37,8 +39,9 @@
 }
 
 .dialog-button-container button img {
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
+    margin-right: 4px;
 }
 
 .character-info-dialog-container {
@@ -79,6 +82,7 @@
 }
 
 .equip-dialog-container {
+    max-width: 96px;
     background-color: #1c1f25;
     border: 1px solid #3c616c;
     border-radius: 4px;

@@ -61,6 +61,8 @@ class ItemDialog extends Component<DialogProps> {
   render() {
     const { dialogType, dialogData, position, dialogOpen, isEquipped, handleClose } = this.props;
 
+    const acceptBtn = this.props.actionType > 0 ? 'Remove' : 'Equip';
+
     if (!dialogData) {
       return null;
     }
@@ -89,14 +91,15 @@ class ItemDialog extends Component<DialogProps> {
 
     const equipmentDialog = (dialogData: BaseEquipment) => {
       if (!dialogData.frame) return null;
+
       return (
         <div className="equip-dialog-container">
           <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
           <p className='equip-dialog-name'>{dialogData.name}</p>
-          <p className='equip-dialog-desc'>Remove Item</p>
+          <p className="equip-dialog-desc">{dialogData.description}</p>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
-            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
+            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" />{acceptBtn}</button>
+            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
           </div>
         </div>
       )
@@ -126,8 +129,8 @@ class ItemDialog extends Component<DialogProps> {
             }
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
-            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
+            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" />{acceptBtn}</button>
+            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
           </div>
         </div>
       );
@@ -156,8 +159,8 @@ class ItemDialog extends Component<DialogProps> {
             </div>
           </div>
           <div className="dialog-button-container">
-            {!isEquipped && <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>}
-            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
+            {!isEquipped && <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" />{acceptBtn}</button>}
+            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
           </div>
         </div>
       )
@@ -171,8 +174,8 @@ class ItemDialog extends Component<DialogProps> {
           <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>
         </p>
         <div className="dialog-button-container">
-          <button className="dialog-accept" onClick={() => console.log('___SP spent___')}><img src="/inventory/confirm_icon.png" alt="confirm" /></button>
-          <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" /></button>
+          <button className="dialog-accept" onClick={() => console.log('___SP spent___')}><img src="/inventory/confirm_icon.png" alt="confirm" />Accept</button>
+          <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
         </div>
       </div>
     );

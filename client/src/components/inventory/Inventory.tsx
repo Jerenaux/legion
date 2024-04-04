@@ -124,7 +124,7 @@ class Inventory extends Component<InventoryProps> {
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.CONSUMABLES)}>CONSUMABLES</div>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.EQUIPMENTS)}>EQUIPMENT</div>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.SKILLS)}>SKILLS</div>
-              <div className="inventoryCategory" style={this.state.actionType === InventoryType.UTILITIES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.UTILITIES)}>UTILITIES</div>
+              {/* <div className="inventoryCategory" style={this.state.actionType === InventoryType.UTILITIES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.UTILITIES)}>UTILITIES</div> */}
               <div className="categoryCount"><span>{this.inventoryLength()} </span>&nbsp;/&nbsp;50</div>
               <div className="categoryBtn" style={{ backgroundImage: 'url(./inventory/info_btn.png)' }} onClick={this.handleOpenModal}></div>
             </div>

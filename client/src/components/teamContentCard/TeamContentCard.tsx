@@ -139,11 +139,15 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             ))
         };
 
+        const xpToLevel = getXPThreshold(characterData?.level);
+
         const portraitStyle = {
             backgroundImage: `url(/sprites/${characterData?.portrait ?? '1_1'}.png)`,
         };
 
-        const xpToLevel = getXPThreshold(characterData?.level);
+        const sliderStyle = {
+            width: `${characterData?.xp * 100 / xpToLevel}%`,
+        }
 
         return (
             <div className="team-content-card-container">
@@ -157,10 +161,10 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                             <p className="team-character-name">{characterData?.name}</p>
                             <p className="team-character-class">{classEnumToString(characterData?.class)}</p>
                             <div className="team-exp-slider-container">
-                                <div className="team-curr-exp-slider"></div>
+                                <div className="team-curr-exp-slider" style={sliderStyle}></div>
                             </div>
                             <div className="team-exp-info">
-                                <span>EXP <span className="team-curr-exp">{characterData?.xp.toFixed(4)}</span> / <span className="team-total-exp">{xpToLevel.toFixed(4)}</span></span>
+                                <span>EXP <span className="team-curr-exp">{characterData?.xp}</span> / <span className="team-total-exp">{xpToLevel}</span></span>
                             </div>
                         </div>
                         <div className="team-sp-container">
