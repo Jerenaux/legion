@@ -24,7 +24,7 @@ interface InventoryProps {
   };
   carrying_capacity: number;
   refreshCharacter: () => void;
-  handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
+  handleItemEffect: (effects: Effect[], actionType: InventoryActionType,  index?: number) => void;
 }
 
 class Inventory extends Component<InventoryProps> {

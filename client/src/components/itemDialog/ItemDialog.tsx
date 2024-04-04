@@ -39,8 +39,6 @@ class ItemDialog extends Component<DialogProps> {
       action: this.props.actionType
     };
 
-    console.log('333333333333', payload);
-
     apiFetch('inventoryTransaction', {
       method: 'POST',
       body: payload

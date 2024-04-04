@@ -10,7 +10,8 @@ import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
 import TeamContentCard from './teamContentCard/TeamContentCard';
 import { Effect } from '@legion/shared/interfaces';
-import { InventoryActionType } from '@legion/shared/enums';
+import { EquipmentSlot, InventoryActionType } from '@legion/shared/enums';
+import { equipments } from '@legion/shared/Equipments';
 
 interface TeamPageState {
   inventory: {
@@ -51,7 +52,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   fetchInventoryData = async () => {
     try {
         const data = await apiFetch('inventoryData');
-        console.log(data);
         this.setState({ 
           inventory: {
             consumables: data.inventory.consumables?.sort(),
@@ -84,15 +84,39 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.fetchInventoryData();
   }
 
-  handleItemEffect = (effects: Effect[], actionType: InventoryActionType) => {
-    const real_effects = effects.map(item => ({stat: item.stat, value: actionType > 0 ? -item.value : item.value }));
+  handleItemEffect = (effects: Effect[], actionType: InventoryActionType,  index?: number) => {
+    // get slot name from action.slot field e.g. `weapon`
+    const slot = EquipmentSlot[index]?.toLowerCase();
 
-    this.setState({item_effect: real_effects});
+    // if actionType is unequip, the effect value should be minus
+    let real_effects = effects.map(item => ({stat: item.stat, value: actionType > 0 ? -item.value : item.value }));
+
+    // if there's already equipped item, then get its effect
+    let curr_effects = equipments[this.state.character_sheet_data.equipment[slot]]?.effects;
+
+    let result_effects = real_effects;
+    
+
+    if(curr_effects) {
+      // we need to remove current equipped item, so its effect value display minus
+      curr_effects = curr_effects.map(item => ({stat: item.stat, value: -item.value}));
+
+      // the total effect of un-equipping current item and equipping new one
+      result_effects = [...curr_effects, ...real_effects].reduce((acc, obj) => {
+        const existingObj = acc.find(item => item.stat === obj.stat);
+        if (existingObj) {
+          existingObj.value += obj.value;
+        } else {
+          acc.push({ stat: obj.stat, value: obj.value });
+        }
+        return acc;
+      }, []);
+    }
+
+    this.setState({item_effect: result_effects});
   }
 
   render() {
-
-    console.log('___ 1121212 ___', this.state.item_effect);
 
     return (
         <div className="team-content">

@@ -32,8 +32,6 @@ class HomePage extends Component<object, State> {
     handleRouteChange = (e) => {
         const pathParts = e.url.split('/');
 
-        console.log('___ path parts ___', pathParts);
-
         const currentPage = pathParts[1]; // This will be 'team' if the URL is '/team/2'
         const showFirebaseUI = false;
 

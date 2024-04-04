@@ -17,7 +17,7 @@ interface ActionItemProps {
   actionType: InventoryType;
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
-  handleItemEffect?: (effects: Effect[], actionType: InventoryActionType) => void;
+  handleItemEffect?: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
   onActionClick?: (type: string, letter: string, index: number) => void;
 }
 /* eslint-disable react/prefer-stateless-function */
@@ -58,7 +58,7 @@ class Action extends Component<ActionItemProps> {
 
     const handleOnClickAction = (e: any) => {
       if (actionType === InventoryType.EQUIPMENTS) {
-        this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP);
+        this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP, (action as BaseEquipment).slot);
       }
 
       this.handleOpenModal(e, action, actionType);
