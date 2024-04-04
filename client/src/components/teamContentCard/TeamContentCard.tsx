@@ -21,6 +21,8 @@ interface InventoryRequestPayload {
     characterData: any;
     itemEffects: Effect[];
     refreshCharacter: () => void;
+    handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
+
 }
 
 class TeamContentCard extends Component<InventoryRequestPayload> {
@@ -49,6 +51,11 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
     handleCloseModal = () => {
         this.setState({ openModal: false });
+    }
+
+    handleUnEquipItem = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: string, index: number) => {
+        this.handleOpenModal(e, modalData, modalType, index);
+        this.props.handleItemEffect(modalData.effects, InventoryActionType.UNEQUIP);
     }
 
     render() {
@@ -90,7 +97,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })); // for equipments of right hand
 
             return items.slice(0, 6).map((item, index) => (
-                <div className="equip-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[item.value], ItemDialogType.EQUIPMENTS, index)}>
+                <div className="equip-item" key={index} onClick={(e) => this.handleUnEquipItem(e, equipments[item.value], ItemDialogType.EQUIPMENTS, index)}>
                     <img src={item.value < 0 ? `/inventory/${item.key}_icon.png` : `/equipment/${equipments[item.value]?.frame}`} alt={item.key} />
                 </div>
             ))

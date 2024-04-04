@@ -10,6 +10,7 @@ import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
 import TeamContentCard from './teamContentCard/TeamContentCard';
 import { Effect } from '@legion/shared/interfaces';
+import { InventoryActionType } from '@legion/shared/enums';
 
 interface TeamPageState {
   inventory: {
@@ -83,8 +84,10 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.fetchInventoryData();
   }
 
-  handleItemEffect = (effects: Effect[]) => {
-    this.setState({item_effect: effects});
+  handleItemEffect = (effects: Effect[], actionType: InventoryActionType) => {
+    const real_effects = effects.map(item => ({stat: item.stat, value: actionType > 0 ? -item.value : item.value }));
+
+    this.setState({item_effect: real_effects});
   }
 
   render() {
@@ -100,6 +103,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               characterData={this.state.character_sheet_data} 
               itemEffects={this.state.item_effect}
               refreshCharacter={this.refreshCharacter} 
+              handleItemEffect={this.handleItemEffect}
             />
             <Inventory 
               id={this.state.character_id} 

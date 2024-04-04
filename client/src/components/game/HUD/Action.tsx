@@ -17,7 +17,7 @@ interface ActionItemProps {
   actionType: InventoryType;
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
-  handleItemEffect?: (effects: Effect[]) => void;
+  handleItemEffect?: (effects: Effect[], actionType: InventoryActionType) => void;
   onActionClick?: (type: string, letter: string, index: number) => void;
 }
 /* eslint-disable react/prefer-stateless-function */
@@ -46,7 +46,7 @@ class Action extends Component<ActionItemProps> {
 
   handleCloseModal = () => {
       this.setState({openModal: false});
-      this.props.handleItemEffect([]);
+      this.props.handleItemEffect([], InventoryActionType.EQUIP);
   }
 
   render() {
@@ -57,7 +57,10 @@ class Action extends Component<ActionItemProps> {
     const keyBinding = keyboardLayout.charAt(startPosition + index);
 
     const handleOnClickAction = (e: any) => {
-      this.props.handleItemEffect(action.effects);
+      if (actionType === InventoryType.EQUIPMENTS) {
+        this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP);
+      }
+
       this.handleOpenModal(e, action, actionType);
     }
 
