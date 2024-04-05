@@ -445,7 +445,7 @@ export class Arena extends Phaser.Scene
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
         const player = this.gridMap[serializeCoords(gridX, gridY)];
-        const pendingSpell = this.selectedPlayer.spells[this.selectedPlayer?.pendingSpell];
+        const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
         if (pendingSpell != null) {
             this.sendSpell(gridX, gridY, player);
