@@ -241,14 +241,14 @@ export class Arena extends Phaser.Scene
             }
         }
 
-        for (let x = -5; x < 0; x++) {
-            for (let y = 2; y < 7; y++) {
+        for (let x = -5; x < 1; x++) {
+            for (let y = 1; y < 8; y++) {
                 this.floatOneTile(x, y, startX, startY, true);
             }
         }
 
-        for (let x = 20; x < 26; x++) {
-            for (let y = 2; y < 7; y++) {
+        for (let x = 19; x < 26; x++) {
+            for (let y = 1; y < 8; y++) {
                 this.floatOneTile(x, y, startX, startY, true);
             }
         }

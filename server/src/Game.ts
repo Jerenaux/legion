@@ -68,11 +68,16 @@ export abstract class Game
 
     getPosition(index, flip) {
         const positions = [
-            {x: 16, y: 3},
-            {x: 16, y: 5},
-            {x: 18, y: 4},
-            {x: 18, y: 2},
-            {x: 18, y: 6},
+            {x: 15, y: 3},
+            {x: 15, y: 5},
+            {x: 17, y: 4},
+            {x: 17, y: 2},
+            {x: 17, y: 6},
+            {x: 15, y: 1},
+            {x: 15, y: 7},
+            {x: 19, y: 2},
+            {x: 19, y: 4},
+            {x: 19, y: 6},
         ]
         const position = positions[index];
         if (flip) {

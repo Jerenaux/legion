@@ -49,8 +49,8 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
 
   const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
   const characterDataArray = [];
-  // Repeat 3 times
-  for (let i = 0; i < 3; i++) {
+
+  for (let i = 0; i < 10; i++) {
     characterDataArray.push(
       new NewCharacter(
         classes[i]
