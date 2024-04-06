@@ -400,11 +400,15 @@ export abstract class Game
         spell.applyEffect(player, targets);
         player.setCasting(false);
 
+        let isKill = false;
         targets.forEach(target => {
             if (target.HPHasChanged()) {
                 const delta = target.getHPDelta();
                 player.increaseDamageDealt(delta);
-                if (!target.isAlive()) player.team!.increaseScoreFromKill(player);
+                if (!target.isAlive()){
+                    player.team!.increaseScoreFromKill(player);
+                    isKill = true;
+                }
                 if (delta < 0) player.team!.increaseScoreFromDamage(-delta);
             }
         });            
@@ -425,6 +429,7 @@ export abstract class Game
             x,
             y,
             id: spell.id,
+            isKill,
         });
 
         team.socket?.emit('cooldown', {

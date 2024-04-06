@@ -70,6 +70,8 @@ export class Player extends Phaser.GameObjects.Container {
         // Create the sprite using the given key and add it to the container
         this.sprite = scene.add.sprite(0, 0, texture);
         this.add(this.sprite);
+        // @ts-ignore
+        this.scene.sprites.push(this.sprite);
 
         // TODO: refactor as subclass
         if (isPlayer) {

@@ -34,6 +34,7 @@ export class Arena extends Phaser.Scene
     SFX;
     overviewReady = false;
     musicManager: MusicManager;
+    sprites: Phaser.GameObjects.Sprite[] = [];
 
     constructor() {
         super({ key: 'Arena' });
@@ -633,6 +634,7 @@ export class Arena extends Phaser.Scene
                         const sprite = this.add.sprite(pixelX, pixelY, '')
                             .setDepth(5).setScale(2).setAlpha(0.9);
                         sprite.anims.play('ground_flame');
+                        this.sprites.push(sprite);
                         break;
                     case Terrain.ICE:
                         this.add.sprite(pixelX, pixelY, 'iceblock')
@@ -651,18 +653,21 @@ export class Arena extends Phaser.Scene
     
     }
 
-    processLocalAnimation({x, y, id}) {
+    processLocalAnimation({x, y, id, isKill}) {
         // Convert x and y in grid coords to pixels
         const {x: pixelX, y: pixelYInitial} = this.gridToPixelCoords(x, y);
         const spell = spells[id];
         let pixelY = pixelYInitial;
         if (spell.yoffset) pixelY += spell.yoffset;
+
+        if (isKill) this.castSpellEffect(pixelX, pixelY);
+
         this.localAnimationSprite.setPosition(pixelX, pixelY)
             .setVisible(true)
             .setDepth(3.5 + y/10)
             .play(spell.animation);
         this.playSound(spell.sfx);
-        if (spell.shake) this.cameras.main.shake(250, 0.01); // More intense shake
+        if (spell.shake) this.cameras.main.shake(2000, 0.002); // 250 0,01
     }
 
     processGameEnd({isWinner, xp, gold}) {
@@ -1050,6 +1055,54 @@ export class Arena extends Phaser.Scene
         };
         return overview;
     }
+
+    castSpellEffect(x, y) {
+        // Save the original zoom and time scale
+        const originalZoom = this.cameras.main.zoom;
+        const originalTimeScale = this.localAnimationSprite.anims.timeScale;
+        const originalSoundRate = this.sound.rate;
+        const originalTweenRate = this.tweens.timeScale;
+
+        const screenWidth = this.cameras.main.width;
+        const screenHeight = this.cameras.main.height;
+    
+        // Define target zoom and slow-motion scale
+        const targetZoom = 2; 
+        const slowMotionScale = 0.2; 
+
+        this.sound.setRate(slowMotionScale);
+        this.localAnimationSprite.anims.timeScale = slowMotionScale;
+        this.tweens.timeScale = slowMotionScale;
+        
+        // For every sprites in this.sprites, set anims.timeScale to slowMotionScale
+        this.sprites.forEach((sprite) => {
+            sprite.anims.timeScale = slowMotionScale;
+        });
+
+        const firstDelay = 0;
+        const secondDelay = firstDelay + 3000;
+        const cameraSpeed = 200;
+
+        this.time.delayedCall(firstDelay, () => {
+            // Move camera to the spell's location and zoom in
+            this.cameras.main.pan(x, y, cameraSpeed, 'Power2');
+            this.cameras.main.zoomTo(targetZoom, cameraSpeed, 'Power2');
+        });
+          
+        this.time.delayedCall(secondDelay, () => {
+            // Return the camera to the original position and zoom level
+            this.cameras.main.pan(screenWidth / 2, screenHeight / 2, cameraSpeed, 'Power2');
+            this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2');
+            this.localAnimationSprite.anims.timeScale = originalTimeScale;
+            this.sound.setRate(originalSoundRate);
+            this.tweens.timeScale = originalTweenRate;
+
+            this.sprites.forEach((sprite) => {
+                sprite.anims.timeScale = originalTimeScale;
+            });
+        });
+    }
+    
 
     // update (time, delta)
     // {
