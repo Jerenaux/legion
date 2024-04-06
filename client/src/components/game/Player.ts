@@ -442,8 +442,8 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     displayOverheadText(text, duration, color) {
-        const randomXOffset = (Math.random() - 0.5) * 30; 
-        const randomYOffset = (Math.random() - 0.5) * 10; 
+        const randomXOffset = 0; //(Math.random() - 0.5) * 30; 
+        const randomYOffset = 0; // (Math.random() - 0.5) * 10; 
 
         const textObject = this.scene.add.text(
             randomXOffset,( -this.sprite.height / 2) + 15 + randomYOffset, `${String(text)}`, 

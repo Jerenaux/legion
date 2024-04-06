@@ -583,7 +583,6 @@ export class Arena extends Phaser.Scene
         this.playSound('slash');
         player.attack(targetPlayer);
         targetPlayer.setHP(hp);
-        targetPlayer.displayDamage(damage);
         targetPlayer.displaySlash(player);
     }
 
@@ -632,13 +631,13 @@ export class Arena extends Phaser.Scene
                 switch (type) {
                     case Terrain.FIRE:
                         const sprite = this.add.sprite(pixelX, pixelY, '')
-                            .setDepth(5).setScale(2).setAlpha(0.9);
+                            .setDepth(3 + y/10).setScale(2).setAlpha(0.9);
                         sprite.anims.play('ground_flame');
                         this.sprites.push(sprite);
                         break;
                     case Terrain.ICE:
                         this.add.sprite(pixelX, pixelY, 'iceblock')
-                            .setDepth(5).setAlpha(0.9).setOrigin(0.5, 0.35);
+                            .setDepth(3 + y/10).setAlpha(0.9).setOrigin(0.5, 0.35);
                         const tile = this.tilesMap.get(serializeCoords(i, j));
                         // @ts-ignore
                         if (tile.tween) tile.tween.stop();
