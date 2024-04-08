@@ -534,8 +534,12 @@ canvas {
     height: 32px;
 }
 
-.shop-content {
-    margin-left: 30px;
+.shop-container {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    max-width: 1024px;
+    margin: 0 auto;
 }
 
   .notificationBarButton {

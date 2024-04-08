@@ -8,6 +8,7 @@ import { spells } from '@legion/shared/Spells';
 import { InventoryType } from '@legion/shared/enums';
 import { successToast, errorToast } from './utils';
 import { PlayerInventory } from '@legion/shared/interfaces';
+import ShopContent from './shopContent/ShopContent';
 
 const imageContext = require.context('@assets/consumables', false, /\.png$/);
 
@@ -58,7 +59,7 @@ class ShopPage extends Component<object, State> {
   async fetchInventoryData() {
     try {
         const data = await apiFetch('inventoryData');
-        console.log(data);
+        console.log('____111111111____', data);
         this.setState({ 
             gold: data.gold,
             inventory: {
@@ -75,7 +76,8 @@ class ShopPage extends Component<object, State> {
   async fetchCharactersOnSale() {
     try {
         const data = await apiFetch('listOnSaleCharacters');
-        console.log(data);
+        console.log('____2222222____', data);
+
         this.setState({ 
             characters: data
         });
@@ -166,125 +168,8 @@ class ShopPage extends Component<object, State> {
     const { openDialog, selectedArticle, quantity } = this.state;
     const totalPrice = selectedArticle ? selectedArticle.price * quantity : 0;
     return (
-        <div className="shop-content">
-            <div className="shop-grid">
-              {this.state.items.map((item) => (
-                <div key={item.id} className="shop-item-card" onClick={() => this.openDialog(DialogType.ITEM_PURCHASE, item)}>
-                  <div className="shop-item-card-header">
-                    <div className="shop-item-card-name">{item.name}</div>
-                    <div className="shop-item-card-name-shadow">{item.name}</div>
-                  </div>
-                  <div className="shop-item-card-content">
-                    <div style={{ backgroundImage: `url(/items/${item.frame})` }} className="shop-item-image" />
-                    <div className="shop-item-card-content-info">
-                      <div className="shop-item-details">
-                        {item.description}
-                        <Description action={item} />
-                      </div>
-                      <div className="shop-item-card-capsules">
-                        <div className="shop-item-card-owned" title='Amount Owned'>{this.getAmountOwned(item.id)}</div>
-                        <div className="shop-item-card-price" title='Price'>{item.price}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="shop-grid">
-              {this.state.characters && this.state.characters.map((character) => (
-                <div key={character.id} className="character-full" onClick={() => this.openDialog(DialogType.CHARACTER_PURCHASE, character)}>
-                  <div className="character-header">
-                      <div className="character-header-name">{character.name}</div>
-                      <div className="character-header-name-shadow">{character.name}</div>
-                      <div className={`character-header-class`}>{classEnumToString(character.class)}</div>
-                  </div>
-                  <div className="character-full-content">
-                      <div className="character-full-stats">
-                        <div className="level-area">
-                            <div className="level-badge">
-                                <span>lvl</span>
-                                <span className="level-number">{character.level}</span>
-                            </div>
-                        </div>
-                        <div className="stats-area">
-                          {statStrings.map((stat) => (
-                            <div key={stat} className={`badge ${stat}`}>
-                              <span className="badge-label">{stat.toUpperCase()}</span> 
-                              <span>{character.stats[stat]}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="character-full-actions">
-                          {character.skills.length > 0 && <div className="player-skills">
-                            <div className='slots-header'>Skills</div>
-                            <div className="slots">
-                            {character.skills.map((spell, i) => (
-                              <ActionItem 
-                                action={spell > -1 ? spells[spell] : null} 
-                                index={i} 
-                                clickedIndex={-1}
-                                canAct={true} 
-                                actionType={InventoryType.SKILLS}
-                                key={i}
-                              />
-                            ))}
-                            </div>
-                          </div>}
-                        </div>
-                      </div>
-                      <div className="character-portrait" style={{backgroundImage: `url(/sprites/${character.portrait}.png)`}} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-        {openDialog === DialogType.ITEM_PURCHASE && (
-          <div className="dialog">
-            <div className="shop-item-card-header">
-              <div className="shop-item-card-name">Buy</div>
-              <div className="shop-item-card-name-shadow">Buy</div>
-            </div>
-            <div className="shop-item-card-content">
-            <i className="fa-solid fa-circle-xmark closebtn" onClick={this.closeDialog} >X</i>
-              <div className="purchase-dialog">
-                <div className="purchase-item">
-                  <span className="purchase-item-name">{selectedArticle.name} x</span>
-                  <div className="purchase-quantity-selector">
-                    <button className="purchase-adjust purchase-minus" onClick={() => this.changeQuantity(-1)}>-</button>
-                    <input type="text" className="purchase-quantity" value={quantity} />
-                    <button className="purchase-adjust  purchase-plus" onClick={() => this.changeQuantity(1)}>+</button>
-                  </div>
-                </div>
-                <div className="purchase-total">
-                  <span>Total: {totalPrice}G</span>
-                </div>
-                <button className="purchase-buy-button" onClick={this.purchase}>BUY</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {openDialog === DialogType.CHARACTER_PURCHASE && (
-          <div className="dialog">
-            <div className="shop-item-card-header">
-              <div className="shop-item-card-name">Buy</div>
-              <div className="shop-item-card-name-shadow">Buy</div>
-            </div>
-            <div className="shop-item-card-content">
-            <i className="fa-solid fa-circle-xmark closebtn" onClick={this.closeDialog} >X</i>
-              <div className="purchase-dialog">
-                <div className="purchase-item">
-                  <span className="purchase-item-name">{selectedArticle.name} x</span>
-                </div>
-                <div className="purchase-total">
-                  <span>Total: {totalPrice}G</span>
-                </div>
-                <button className="purchase-buy-button" onClick={this.purchase}>BUY</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="shop-container">
+          <ShopContent inventoryData={this.state.inventory} characters={this.state.characters} />
       </div>
     );
   }

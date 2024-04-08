@@ -1,0 +1,27 @@
+.shop-content {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.shop-tabs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.shop-tab-item {
+    box-sizing: border-box;
+    width: 52px;
+    height: 52px;
+    padding: 8px;
+    background-size: 100% 100%;
+    cursor: pointer;
+}
+
+.shop-tab-item img {
+    width: 100%;
+    height: 100%;
+}
