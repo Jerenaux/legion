@@ -1,5 +1,5 @@
 import { Effect, EquipmentData } from "./interfaces";
-import { EquipmentSlot, Rarity } from "./enums";
+import { EquipmentSlot, Rarity, Class } from "./enums";
 
 
 export class BaseEquipment {
