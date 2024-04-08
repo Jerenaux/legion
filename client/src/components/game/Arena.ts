@@ -440,12 +440,12 @@ export class Arena extends Phaser.Scene
     }
 
     isFree(gridX, gridY) {
-        return !this.gridMap[serializeCoords(gridX, gridY)] && !this.obstaclesMap.get(serializeCoords(gridX, gridY));
+        return !this.gridMap.get(serializeCoords(gridX, gridY)) && !this.obstaclesMap.get(serializeCoords(gridX, gridY));
     }
 
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
-        const player = this.gridMap[serializeCoords(gridX, gridY)];
+        const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
         if (pendingSpell != null) {
@@ -569,8 +569,8 @@ export class Arena extends Phaser.Scene
     processMove({team, tile, num}) {
         const player = this.getPlayer(team, num);
 
-        this.gridMap[serializeCoords(player.gridX, player.gridY)] = null;
-        this.gridMap[serializeCoords(tile.x, tile.y)] = player;
+        this.gridMap.set(serializeCoords(player.gridX, player.gridY), null);
+        this.gridMap.set(serializeCoords(tile.x, tile.y), player);
 
         player.walkTo(tile.x, tile.y);
         this.playSoundMultipleTimes('steps', 2);
@@ -642,6 +642,12 @@ export class Arena extends Phaser.Scene
                         // @ts-ignore
                         if (tile.tween) tile.tween.stop();
                         this.obstaclesMap.set(serializeCoords(i, j), true);
+                        console.log(`Looking for player at ${i}, ${j}`);
+                        const player = this.gridMap.get(serializeCoords(i, j));
+                        if (player){
+                            console.log(`Found player at ${i}, ${j}`);
+                            player.setFrozen();
+                        }
                         break;
                     default:
                         break;
@@ -877,7 +883,7 @@ export class Arena extends Phaser.Scene
                 player.setSpells(character.spells);
             }
 
-            this.gridMap[serializeCoords(character.x, character.y)] = player;
+            this.gridMap.set(serializeCoords(character.x, character.y), player);
 
             team.addMember(player);
         }, this);

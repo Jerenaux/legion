@@ -41,6 +41,7 @@ export class Player extends Phaser.GameObjects.Container {
     pendingItem: number | null = null;
     casting = false;
     selected = false;
+    frozen = false;
     HURT_THRESHOLD = 0.5;
     team: Team;
     animationLock = false;
@@ -155,7 +156,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     canAct() {
-        return this.cooldownDuration == 0 && this.isAlive() && !this.casting;
+        return this.cooldownDuration == 0 && this.isAlive() && !this.casting && !this.frozen;
     }
 
     setDistance(distance: number) {
@@ -163,6 +164,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     handleAnimationComplete() {
+        if (this.frozen) return;
         let idleAnim = this.hp / this.maxHP < this.HURT_THRESHOLD ? 'idle_hurt' : 'idle';
         if (this.hp <= 0) idleAnim = 'die';
         this.playAnim(idleAnim)
@@ -174,6 +176,9 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.removeListener('animationcomplete', this.handleAnimationComplete);
         this.sprite.anims.stop();
+
+        if (this.frozen) return;
+
         this.sprite.play(`${this.texture}_anim_${key}`);
         if (revertToIdle) {
             this.sprite.once('animationcomplete', this.handleAnimationComplete, this);
@@ -510,13 +515,11 @@ export class Player extends Phaser.GameObjects.Container {
             onUpdate: () => {
                 this.cooldownDuration = Math.floor(this.totalCooldownDuration * (1 - this.cooldown.progress));
                 this.cooldown.draw(); // Redraw the circle on each update of the tween
-                // @ts-
                 this.arena.emitEvent('cooldownChange', {num: this.num})
             },
             onComplete: () => {
                 this.cooldown.setVisible(false);
                 this.cooldownDuration = 0;
-                // this.playAnim('idle');
                 if (this.isSelected()) this.displayMovementRange();
                 this.arena.emitEvent('cooldownEnded', {num: this.num})
                 if (this.selected) this.arena.playSound('cooldown');
@@ -544,5 +547,16 @@ export class Player extends Phaser.GameObjects.Container {
 
     victoryDance() {
         if (this.isAlive()) this.playAnim('victory');
+    }
+
+    setFrozen() {
+        this.frozen = true;   
+        this.sprite.anims.stop();   
+        this.cooldownTween?.stop();
+    }
+
+    unsetFrozen() {
+        this.frozen = false;
+        this.playAnim('idle');
     }
 }

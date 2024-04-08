@@ -39,6 +39,7 @@ export class ServerPlayer {
     isCasting: boolean = false;
     damageDealt: number = 0;
     entranceTime: number = 2.5;
+    frozen: boolean = false;
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
         this.num = num;
@@ -88,7 +89,7 @@ export class ServerPlayer {
     }
 
     canAct() {
-        return this.cooldown == 0 && this.isAlive() && !this.isCasting;
+        return this.cooldown == 0 && this.isAlive() && !this.isCasting && !this.frozen;
     }
 
     canMoveTo(x: number, y: number) {
@@ -323,7 +324,7 @@ export class ServerPlayer {
         this.team?.increaseScoreFromDamage(amount);
     }
 
-
+    // Called when traversing cells with terrain effects
     applyTerrainEffect(terrain: Terrain) {
         switch (terrain) {
             case Terrain.FIRE:
@@ -334,6 +335,7 @@ export class ServerPlayer {
         }
     }
 
+    // Called when the terrain effect is applied for the first time
     setUpTerrainEffect(terrain: Terrain) {
         switch (terrain) {
             case Terrain.FIRE:
@@ -345,11 +347,20 @@ export class ServerPlayer {
                 }, 3000);
                 break;
             case Terrain.ICE:
+                this.setFrozen();
                 break;
             default:
                 break;
         }
         
+    }
+
+    setFrozen() {
+        this.frozen = true;
+    }
+
+    unFreeze() {
+        this.frozen = false;
     }
 
     stopDoT() {
