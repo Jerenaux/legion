@@ -82,11 +82,12 @@ export interface CharacterUpdate {
     xp: number;
     level: number;
 }
-export interface RewardsData {
+export interface OutcomeData {
     isWinner: boolean;
     xp: number;
     gold: number;
     characters?: CharacterUpdate[];
+    elo: number;
 }
 
 export interface CharacterStats {

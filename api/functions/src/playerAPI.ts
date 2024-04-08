@@ -9,6 +9,8 @@ import {uniqueNamesGenerator, adjectives, colors, animals}
 import {Class} from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 
+const NB_START_CHARACTERS = 3;
+
 function generateName() {
   // limit names to length of 16 characters
   const dicts = {dictionaries: [adjectives, colors, animals]};
@@ -50,7 +52,7 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
   const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
   const characterDataArray = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < NB_START_CHARACTERS; i++) {
     characterDataArray.push(
       new NewCharacter(
         classes[i]

@@ -4,7 +4,7 @@ import admin, {corsMiddleware, getUID} from "./APIsetup";
 
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class} from "@legion/shared/enums";
-import {RewardsData} from "@legion/shared/interfaces";
+import {OutcomeData} from "@legion/shared/interfaces";
 
 export const rosterData = onRequest((request, response) => {
   logger.info("Fetching rosterData");
@@ -89,7 +89,9 @@ export const rewardsUpdate = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const {isWinner, xp, gold, characters} = request.body as RewardsData;
+      const {isWinner, xp, gold, characters, elo} = request.body as OutcomeData;
+      console.log(`Updating rewards for ${uid} with ${xp} XP and ${gold} gold 
+      and elo ${elo}`);
 
       await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
@@ -105,10 +107,10 @@ export const rewardsUpdate = onRequest((request, response) => {
           throw new Error("Data does not exist");
         }
 
-        // Increase player xp and number of wins or losses
         transaction.update(playerRef, {
           xp: admin.firestore.FieldValue.increment(xp),
           gold: admin.firestore.FieldValue.increment(gold),
+          elo: admin.firestore.FieldValue.increment(elo),
         });
         if (isWinner) {
           transaction.update(playerRef, {
@@ -123,13 +125,12 @@ export const rewardsUpdate = onRequest((request, response) => {
         // Iterate over the player's characters and increase their XP
         // Update XP for each character directly using their references
         if (playerData.characters) {
-          console.log("Iterating over characters...");
           playerData.characters.forEach(
             (characterRef: admin.firestore.DocumentReference) => {
               if (characterRef instanceof admin.firestore.DocumentReference) {
                 // Find the corresponding CharacterRewards object
                 const characterRewards =
-                  characters!.find((c) => c.id === characterRef.id);
+                  characters!.find((c: any) => c.id === characterRef.id);
 
                 if (characterRewards) {
                   const sp = characterRewards.points;

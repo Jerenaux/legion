@@ -6,7 +6,7 @@ import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
 import { Terrain, PlayMode, Target } from '@legion/shared/enums';
-import { RewardsData } from '@legion/shared/interfaces';
+import { OutcomeData } from '@legion/shared/interfaces';
 
 
 
@@ -242,7 +242,9 @@ export abstract class Game
 
         this.sockets.forEach(socket => {
             const team = this.socketMap.get(socket);
-            const outcomes = this.computeGameOutcomes(team, winner, this.duration, this.mode);
+            const otherTeam = this.getOtherTeam(team!.id);
+            const outcomes = this.computeGameOutcomes(team, otherTeam, winner, this.duration, this.mode);
+            console.log(`Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
             team.distributeXp(outcomes.xp);
             this.writeOutcomesToDb(team, outcomes);
             socket.emit('gameEnd', outcomes);
@@ -623,21 +625,37 @@ export abstract class Game
         }
     }
 
-    computeGameOutcomes(team: Team, winnerTeamId: number, duration: number, mode: PlayMode): RewardsData {
-        if (team.id === winnerTeamId) {
-            return {
-                isWinner: true,
-                gold: this.computeTeamGold(team),
-                xp: this.computeTeamXP(team, this.getOtherTeam(team.id), duration, true),
-            }
-        } else {
-            return {
-                isWinner: false,
-                gold: 0,
-                xp: this.computeTeamXP(team, this.getOtherTeam(team.id), duration, false)
-            }
+    computeGameOutcomes(team: Team, otherTeam: Team, winnerTeamId: number, duration: number, mode: PlayMode): OutcomeData {
+        const isWinner = team.id === winnerTeamId;
+        const eloUpdate = mode == PlayMode.RANKED ? this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : {winnerUpdate: 0, loserUpdate: 0};
+        return {
+            isWinner,
+            gold: isWinner ? this.computeTeamGold(team) : 0,
+            xp: this.computeTeamXP(team, otherTeam, duration, false),
+            elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
         }
     }
+
+    updateElo(winningTeam: Team, losingTeam: Team): { winnerUpdate: number, loserUpdate: number } {
+        const K_FACTOR = 30;
+
+        const expectedScoreWinner = 1 / (1 + Math.pow(10, (losingTeam.elo - winningTeam.elo) / 400));
+        const expectedScoreLoser = 1 / (1 + Math.pow(10, (winningTeam.elo - losingTeam.elo) / 400));
+    
+        // Since it's a match, winner's actual score is 1 and loser's actual score is 0
+        const actualScoreWinner = 1;
+        const actualScoreLoser = 0;
+    
+        // Calculate rating updates
+        const winnerUpdate = K_FACTOR * (actualScoreWinner - expectedScoreWinner);
+        const loserUpdate = K_FACTOR * (actualScoreLoser - expectedScoreLoser);
+    
+        // Return the elo update for each team
+        return {
+          winnerUpdate: winnerUpdate,
+          loserUpdate: loserUpdate
+        };
+      }
 
     computeTeamGold(team: Team) {
         return Math.max(Math.ceil(team.score/20), 10);
@@ -673,7 +691,7 @@ export abstract class Game
         return Math.round(xp); // Round to nearest whole number
     }
 
-    async writeOutcomesToDb(team: Team, rewards: RewardsData) {
+    async writeOutcomesToDb(team: Team, rewards: OutcomeData) {
         console.log('Writing rewards to DB');
         try {
             await apiFetch(
@@ -685,6 +703,7 @@ export abstract class Game
                         isWinner: rewards.isWinner,
                         gold: rewards.gold,
                         xp: rewards.xp,
+                        elo: rewards.elo,
                         characters: team.getCharactersDBUpdates(),
                     },
                 }
