@@ -3,12 +3,20 @@ import { createServer } from "http";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from 'dotenv';
 import * as admin from "firebase-admin";
+import {
+    Client,
+    Events,
+    GatewayIntentBits,
+    TextChannel,
+  } from 'discord.js';
 
 import { apiFetch } from "./API";
 import { PlayMode } from '@legion/shared/enums';
 import firebaseConfig from '@legion/shared/firebaseConfig';
 
 dotenv.config();
+const discordClient = new Client({intents: [GatewayIntentBits.Guilds]});
+discordClient.login(process.env.DISCORD_TOKEN);
 
 admin.initializeApp(firebaseConfig);
 if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
@@ -43,6 +51,14 @@ const goldReward = 1;
 const casualModeThresholdTime = 60; // seconds after which redirection probability starts increasing
 const maxWaitTimeForPractice = 300; // maximum wait time after which a player is guaranteed to be redirected
 
+async function notifyAdmin(mode: PlayMode) {
+    try {
+        const adminUser = await discordClient.users.fetch('272906141728505867');
+        adminUser.send(`A player has joined the queue in ${PlayMode[mode]} mode!`);
+    } catch (error) {
+        console.error('Failed to send DM:', error);
+    }
+}
 
 // Initialize matchmaking functionality
 function setupMatchmaking() {
@@ -217,6 +233,7 @@ io.on("connection", (socket: any) => {
             return;
         }
 
+        notifyAdmin(data.mode);
         addToQueue(socket, data.mode);
     });
 
