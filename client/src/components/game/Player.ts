@@ -41,10 +41,13 @@ export class Player extends Phaser.GameObjects.Container {
     pendingItem: number | null = null;
     casting = false;
     selected = false;
-    frozen = false;
     HURT_THRESHOLD = 0.5;
     team: Team;
     animationLock = false;
+    statuses: {
+        frozen: boolean;
+        paralyzed: boolean;
+    };
 
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, hudScene: HUD, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
@@ -64,6 +67,11 @@ export class Player extends Phaser.GameObjects.Container {
         this.maxHP = hp;
         this.hp = hp;
         this.num = num;
+
+        this.statuses = {
+            frozen: false,
+            paralyzed: false,
+        };
 
         this.baseSquare = scene.add.graphics().setAlpha(0.6);
         this.add(this.baseSquare);
@@ -155,8 +163,12 @@ export class Player extends Phaser.GameObjects.Container {
         return this.hp > 0;
     }
 
+    isParalyzed() {
+        return this.statuses.paralyzed || this.statuses.frozen;
+    }
+
     canAct() {
-        return this.cooldownDuration == 0 && this.isAlive() && !this.casting && !this.frozen;
+        return this.cooldownDuration == 0 && this.isAlive() && !this.casting && !this.isParalyzed();
     }
 
     setDistance(distance: number) {
@@ -164,7 +176,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     handleAnimationComplete() {
-        if (this.frozen) return;
+        if (this.statuses.frozen) return;
         let idleAnim = this.hp / this.maxHP < this.HURT_THRESHOLD ? 'idle_hurt' : 'idle';
         if (this.hp <= 0) idleAnim = 'die';
         this.playAnim(idleAnim)
@@ -177,7 +189,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.sprite.removeListener('animationcomplete', this.handleAnimationComplete);
         this.sprite.anims.stop();
 
-        if (this.frozen) return;
+        if (this.statuses.frozen) return;
 
         this.sprite.play(`${this.texture}_anim_${key}`);
         if (revertToIdle) {
@@ -549,14 +561,19 @@ export class Player extends Phaser.GameObjects.Container {
         if (this.isAlive()) this.playAnim('victory');
     }
 
-    setFrozen() {
-        this.frozen = true;   
-        this.sprite.anims.stop();   
-        this.cooldownTween?.stop();
+    setStatuses(statuses) {
+        this.setFrozen(statuses.frozen);
     }
 
-    unsetFrozen() {
-        this.frozen = false;
-        this.playAnim('idle');
+    setFrozen(flag) {
+        if (flag) 
+        {
+            this.statuses.frozen = true;   
+            this.sprite.anims.stop();   
+            this.cooldownTween?.stop();
+        } else {
+            this.statuses.frozen = false;
+            this.playAnim('idle');
+        }   
     }
 }

@@ -98,6 +98,8 @@ export interface CharacterStats {
     spatk: number;
     spdef: number;
 }
+
+
 export interface Equipment {
     weapon: number;
     armor: number;

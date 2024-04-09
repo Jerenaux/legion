@@ -76,3 +76,11 @@ export const RarityColor = [
     '#8F2841',
     '#C1770D'
 ]
+
+export enum StatusEffect {
+    FREEZE,
+    BURN,
+    POISON,
+    SLEEP,
+    STUN
+}

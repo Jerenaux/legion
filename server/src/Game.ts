@@ -502,6 +502,14 @@ export abstract class Game
         });
     }
 
+    broadcastStatusEffectChange(team: Team, num: number, statuses) {
+        this.broadcast('statuseffectchange', {
+            team: team.id,
+            num,
+            statuses,
+        });
+    }
+
     emitMPchange(team: Team, num: number, mp: number) {
         team.socket?.emit('mpchange', {
             num,
@@ -529,7 +537,7 @@ export abstract class Game
                 });
 
                 const player = this.getPlayerAt(i, j);
-                if (player) player.setUpTerrainEffect(this.terrainMap.get(`${player.x},${player.y}`));
+                if (player) player.setUpTerrainEffect(this.terrainMap.get(`${player.x},${player.y}`) || Terrain.NONE);
             }
         }
         return terrainUpdates;

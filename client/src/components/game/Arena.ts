@@ -136,6 +136,10 @@ export class Arena extends Phaser.Scene
             this.processHPChange(data);
         });
 
+        this.socket.on('statuseffectchange', (data) => {
+            this.processStatusChange(data);
+        });
+
         this.socket.on('mpchange', (data) => {
             this.processMPChange(data);
         });
@@ -603,6 +607,11 @@ export class Arena extends Phaser.Scene
         if (damage) player.displayDamage(damage);
     }
 
+    processStatusChange({team, num, statuses}) {
+        const player = this.getPlayer(team, num);
+        player.setStatuses(statuses);
+    }
+
     processMPChange({num, mp}) {
         const player = this.getPlayer(this.playerTeamId, num);
         player.setMP(mp);
@@ -642,11 +651,7 @@ export class Arena extends Phaser.Scene
                     // @ts-ignore
                     if (tile.tween) tile.tween.stop();
                     this.obstaclesMap.set(serializeCoords(x, y), true);
-                    
-                    const player = this.gridMap.get(serializeCoords(x, y));
-                    if (player){
-                        player.setFrozen();
-                    }
+                  
                     break;
                 case Terrain.NONE:
                     this.obstaclesMap.delete(serializeCoords(x, y));

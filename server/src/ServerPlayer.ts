@@ -1,10 +1,12 @@
 import { Team } from './Team';
 import { Item } from './Item';
 import { Spell } from './Spell';
-import { Stat, Terrain } from "@legion/shared/enums";
+import { Stat, Terrain, StatusEffect } from "@legion/shared/enums";
 import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 import { getXPThreshold } from '@legion/shared/levelling';
+import { CharacterStats } from "@legion/shared/interfaces";
+
 
 export type ActionType = 'move' | 'attack';
 export class ServerPlayer {
@@ -39,7 +41,10 @@ export class ServerPlayer {
     isCasting: boolean = false;
     damageDealt: number = 0;
     entranceTime: number = 2.5;
-    frozen: boolean = false;
+    statuses: {
+        frozen: boolean;
+        paralyzed: boolean;
+    }
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
         this.num = num;
@@ -48,6 +53,11 @@ export class ServerPlayer {
         this.x = x;
         this.y = y;
         this.distance = 3;
+
+        this.statuses = {
+            frozen: false,
+            paralyzed: false,
+        };
         
         this.cooldowns = {
             'move': 2000,
@@ -88,8 +98,12 @@ export class ServerPlayer {
         this.isCasting = casting;
     }
 
+    isParalyzed() {
+        return this.statuses.paralyzed || this.statuses.frozen;
+    }
+
     canAct() {
-        return this.cooldown == 0 && this.isAlive() && !this.isCasting && !this.frozen;
+        return this.cooldown == 0 && this.isAlive() && !this.isCasting && !this.isParalyzed();
     }
 
     canMoveTo(x: number, y: number) {
@@ -142,6 +156,10 @@ export class ServerPlayer {
 
     broadcastHPChange() {
         this.team!.game.broadcastHPchange(this.team, this.num, this.hp, this.getHPDelta());
+    }
+
+    broadcastStatusEffectChange() {
+        this.team!.game.broadcastStatusEffectChange(this.team, this.num, this.statuses);
     }
 
     getHPDelta() {
@@ -337,7 +355,6 @@ export class ServerPlayer {
 
     // Called when the terrain effect is applied for the first time
     setUpTerrainEffect(terrain: Terrain) {
-        if (!terrain) return;
         switch (terrain) {
             case Terrain.FIRE:
                 if (this.DoTTimer) {
@@ -350,18 +367,29 @@ export class ServerPlayer {
             case Terrain.ICE:
                 this.setFrozen();
                 break;
+            case Terrain.NONE:
+                if (this.isFrozen()) {
+                    this.unFreeze();
+                }
+                break;
             default:
                 break;
         }
         
     }
 
+    isFrozen() {
+        return this.statuses.frozen;
+    }
+
     setFrozen() {
-        this.frozen = true;
+        this.statuses.frozen = true;
+        this.broadcastStatusEffectChange();
     }
 
     unFreeze() {
-        this.frozen = false;
+        this.statuses.frozen = false;
+        this.broadcastStatusEffectChange();
     }
 
     stopDoT() {
