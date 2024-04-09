@@ -1,0 +1,136 @@
+.spell-card-container {
+    background-image: url('@assets/shop/daily_bg_idle.png');
+    background-size: 100% 100%;
+    padding: 14px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.spell-card-title {
+    padding: 6px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-image: url('@assets/shop/item_title_bg_blue.png');
+    background-size: 100% 100%;
+    width: 94%;
+    margin: 0 8px;
+}
+
+.spell-card-info-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.spell-card-info-box {
+    background-image: url('@assets/shop/black_info_bg.png');
+    background-size: 100% 100%;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.spell-card-title span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.spell-card-info-box span {
+    font-size: 12px;
+    color: #71deff;
+}
+
+.spell-card-info-box .spell-card-info-lv {
+    color: #FFFFFF;
+}
+
+.spell-card-info-box img {
+    width: 12px;
+    height: 12px;
+}
+
+.spell-card-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.spell-card-content img {
+    width: 128px;
+    height: 128px;
+    border-radius: 12px;
+}
+
+.spell-card-class {
+    width: 20px;
+    height: 20px;
+    padding: 4px;
+    background-size: 100% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spell-card-class img {
+    width: 12px;
+    height: 16px;
+}
+
+.spell-card-description {
+    text-align: center;
+    font-size: 14px;
+}
+
+.spell-card-effect-container {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+}
+
+.spell-card-effect {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background-color: #303540;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.spell-card-effect img {
+    width: 14px;
+    height: 16px;
+}
+
+.spell-card-effect span {
+    color: #FFFFFF;
+    font-size: 10px;
+}
+
+.spell-card-price {
+    background-image: url('@assets/shop/daily_button.png');
+    background-size: 100% 100%;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    color: #FFFFFF;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.spell-card-price img {
+    width: 14px;
+    height: 14px;
+}

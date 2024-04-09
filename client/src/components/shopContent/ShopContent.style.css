@@ -25,3 +25,9 @@
     width: 100%;
     height: 100%;
 }
+
+.shop-items-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
