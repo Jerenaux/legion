@@ -59,7 +59,6 @@ class ShopPage extends Component<object, State> {
   async fetchInventoryData() {
     try {
         const data = await apiFetch('inventoryData');
-        console.log('____111111111____', data);
         this.setState({ 
             gold: data.gold,
             inventory: {
@@ -76,7 +75,6 @@ class ShopPage extends Component<object, State> {
   async fetchCharactersOnSale() {
     try {
         const data = await apiFetch('listOnSaleCharacters');
-        console.log('____2222222____', data);
 
         this.setState({ 
             characters: data

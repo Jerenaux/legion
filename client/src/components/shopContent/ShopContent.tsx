@@ -6,6 +6,7 @@ import { ShopTabIcons, ShopTabs } from './ShopContent.data';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
 import ShopEquipmentCard from '../shopEquipmentCard/ShopEquipmentCard';
+import ShopCharacterCard from '../shopCharacterCard/shopCharacterCard';
 
 interface ShopContentProps {
     inventoryData: PlayerInventory;
@@ -14,10 +15,11 @@ interface ShopContentProps {
 
 class ShopContent extends Component<ShopContentProps> {
     state = {
-        curr_tab: ShopTabs.CONSUMABLES
+        curr_tab: ShopTabs.CHARACTERS
     }
     render() {
         const {inventoryData, characters} = this.props;
+
         const tabItemStyle = (index: number) => {
             return {
                 backgroundImage: `url(/shop/tabs_${index === this.state.curr_tab ? 'active' : 'idle'}.png)`,
@@ -32,6 +34,8 @@ class ShopContent extends Component<ShopContentProps> {
                     return inventoryData.consumables.map((item, index) => <ShopConsumableCard key={index} index={item} />)
                 case ShopTabs.EQUIPMENTS:
                     return inventoryData.equipment.map((item, index) => <ShopEquipmentCard key={index} index={item} />)
+                case ShopTabs.CHARACTERS:
+                    return characters.map((item, index) => <ShopCharacterCard key={index} data={item} />)
                 default:
                     return null;
             }

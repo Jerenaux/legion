@@ -1,0 +1,239 @@
+.shop-character-card-container {
+    background-image: url('@assets/shop/daily_bg_idle.png');
+    background-size: 100% 100%;
+    padding: 14px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.shop-character-card-container:hover {
+    background-image: url('@assets/shop/daily_bg_active.png');
+}
+
+.shop-character-card-title {
+    padding: 2px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-image: url('@assets/shop/daily_title_bar.png');
+    background-size: 100% 100%;
+    width: 94%;
+}
+
+.shop-character-card-title-name {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.shop-character-card-title-name span {
+    max-width: 82px;
+    font-size: 14px;
+    text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shop-character-card-title-name .character-class {
+    font-size: 10px;
+    color: #ffa600;
+    letter-spacing: 0.32px;
+}
+
+.shop-character-card-title span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.shop-character-card-info-box {
+    background-image: url('@assets/shop/black_info_bg.png');
+    background-size: 100% 100%;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+}
+
+.shop-character-card-info-box .shop-character-card-info-lv {
+    font-weight: 400;
+    color: #ffa600;
+    font-size: 10px;
+}
+
+.shop-character-card-info-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.shop-character-card-info-box span {
+    font-size: 12px;
+    color: #FFFFFF;
+}
+
+.shop-character-card-info-box img {
+    width: 12px;
+    height: 12px;
+}
+
+.shop-character-card-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    padding: 0 4px;
+    width: 100%;
+    position: relative;
+}
+
+.shop-character-card-content img {
+    width: 128px;
+    height: 128px;
+    border-radius: 12px;
+    transform: scale(0.75);
+}
+
+.shop-character-card-class-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    background-image: url('@assets/inventory/box_btn_idle.png');
+    background-size: 100% 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+}
+
+.shop-character-card-class-badge img {
+    width: 80%;
+    height: 80%;
+}
+
+.shop-character-card-description {
+    text-align: center;
+    font-size: 14px;
+    max-width: 174px;
+}
+
+.shop-character-card-effect-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    max-width: 196px;
+    padding: 4px 0;
+}
+
+.shop-character-card-effect {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    background-color: #16181c;
+    border-radius: 4px;
+    overflow: hidden;
+    width: 96px;
+    height: 26px;
+    position: relative;
+}
+
+.shop-character-card-effect span {
+    font-size: 14px;
+}
+
+.shop-character-card-effect-stat {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.shop-character-card-effect-value {
+    padding: 4px 12px;
+    line-height: 12px;
+    color: #FFFFFF;
+}
+
+.shop-card-price {
+    background-image: url('@assets/shop/daily_button.png');
+    background-size: 100% 100%;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    color: #FFFFFF;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.shop-card-price img {
+    width: 14px;
+    height: 14px;
+}
+
+.shop-character-card-class-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px 6px;
+}
+
+.shop-card-class {
+    width: 20px;
+    height: 20px;
+    padding: 4px;
+    background-size: 100% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shop-card-class img {
+    width: 12px;
+    height: 16px;
+}
+
+.character-card-portrait {
+    width: 68px;
+    min-height: 128px;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+    transform: scale(.6);
+}
+
+.shop-character-card-slot {
+    box-sizing: border-box;
+    width: 43px;
+    height: 43px;
+    background-color: #1c1f25;
+    border-radius: 6px;
+    border: 1px solid #274c57;
+    padding: 4px;
+}
+
+.shop-character-card-slot:hover {
+    cursor: pointer;
+    border: 1px solid #71deff;
+}
