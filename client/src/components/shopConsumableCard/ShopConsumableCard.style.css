@@ -65,6 +65,7 @@
 .consumable-card-description {
     text-align: center;
     font-size: 14px;
+    max-width: 174px;
 }
 
 .consumable-card-effect-container {

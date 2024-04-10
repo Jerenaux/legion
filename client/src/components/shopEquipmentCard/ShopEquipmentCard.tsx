@@ -1,0 +1,75 @@
+// ShopEquipmentCard.tsx
+import './ShopEquipmentCard.style.css';
+import { h, Component } from 'preact';
+import { Class, Stat } from "@legion/shared/enums";
+import { equipments } from '@legion/shared/Equipments';
+import { INFO_BG_COLOR } from '../itemDialog/ItemDialogType';
+
+interface ShopCardProps {
+  key: number;
+  index: number;
+}
+
+class ShopEquipmentCard extends Component<ShopCardProps> {
+  render() {
+    const data = equipments[this.props.index];
+
+    const classStyle = (classes: Class) => {
+      return {
+        backgroundImage: `url(/shop/${classes === Class.BLACK_MAGE ? 'purple' : 'white'}_box_bg.png)`
+      }
+    }
+
+    const statColor = (statIndex: number) => {
+      return {
+        backgroundColor: INFO_BG_COLOR[Stat[statIndex]]
+      }
+    }
+
+    const statValue = (value: number) => {
+      return value > 0 ? `+${value}` : value;
+    }
+
+    return (
+      <div className="shop-card-container" key={this.props.key}>
+        <div className="shop-card-title">
+          <span className="shop-card-title-name">{data.name}</span>
+          <div className="equipment-card-info-container">
+            <div className="equipment-card-info-box">
+              <span className="equipment-card-info-lv">LV</span>
+              <span>{data.minLevel}</span>
+            </div>
+            <div className="equipment-card-info-box">
+              <img src="/shop/item_count_icon.png" alt="count icon" />
+              <span>3</span>
+            </div>
+          </div>
+        </div>
+        <div className="equipment-card-content">
+          <img src={`/equipment/${data.frame}`} alt="equipment-image" />
+          <div className="shop-card-class-container">
+            {data.classes.map((classes, index) => <div key={index} className="shop-card-class" style={classStyle(classes)}>
+              <img src="/shop/mage_icon.png" alt="mp" />
+            </div>)}
+          </div>
+          <div className="equipment-card-class-badge">
+            <img src="/shop/char_icon.png" alt="" />
+          </div>
+        </div>
+        <p className="equipment-card-description">{data.description}</p>
+        <div className="shop-card-effect-container">
+          {data.effects.map((effect, index) => <div key={index} className="shop-card-effect">
+            <div className="shop-card-effect-stat" style={statColor(effect.stat)}><span>{Stat[effect.stat]}</span></div>
+            <div className="shop-card-effect-value" style={effect.value > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}><span>{statValue(effect.value)}</span></div>
+          </div>)}
+        </div>
+        <div className="shop-card-price">
+          <img src="/gold_icon.png" alt="gold" />
+          {data.price}
+        </div>
+      </div>
+    );
+  }
+}
+
+export default ShopEquipmentCard;

@@ -31,6 +31,8 @@ export enum INFO_BG_COLOR {
     DEF = '#cc872d',
     'SP.ATK' = '#26846b',
     'SP.DEF' = '#703fba',
+    'SPATK' = '#26846b',
+    'SPDEF' = '#703fba',
 }
 
 export type DETAIL_INFO = {

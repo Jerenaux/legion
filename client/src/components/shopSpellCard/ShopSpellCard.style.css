@@ -57,10 +57,13 @@
 }
 
 .spell-card-content {
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 8px;
+    width: 100%;
+    padding: 0 4px;
 }
 
 .spell-card-content img {
@@ -87,6 +90,7 @@
 .spell-card-description {
     text-align: center;
     font-size: 14px;
+    max-width: 174px;
 }
 
 .spell-card-effect-container {

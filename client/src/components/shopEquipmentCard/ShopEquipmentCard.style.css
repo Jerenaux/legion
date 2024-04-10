@@ -1,0 +1,194 @@
+.shop-card-container {
+    background-image: url('@assets/shop/daily_bg_idle.png');
+    background-size: 100% 100%;
+    padding: 14px;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.shop-card-container:hover {
+    background-image: url('@assets/shop/daily_bg_active.png');
+}
+
+.shop-card-title {
+    padding: 6px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-image: url('@assets/shop/daily_title_bar.png');
+    background-size: 100% 100%;
+    width: 90%;
+}
+
+.shop-card-title-name {
+    max-width: 82px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.equipment-card-info-box {
+    background-image: url('@assets/shop/black_info_bg.png');
+    background-size: 100% 100%;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.equipment-card-info-box .equipment-card-info-lv {
+    color: #FFFFFF;
+}
+
+.shop-card-title span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.equipment-card-info-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.equipment-card-info-box span {
+    font-size: 12px;
+    color: #71deff;
+}
+
+.equipment-card-info-box img {
+    width: 12px;
+    height: 12px;
+}
+
+.equipment-card-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    padding: 0 4px;
+    width: 100%;
+    position: relative;
+}
+
+.equipment-card-content img {
+    width: 128px;
+    height: 128px;
+    border-radius: 12px;
+    transform: scale(0.75);
+}
+
+.equipment-card-class-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    background-image: url('@assets/inventory/box_btn_idle.png');
+    background-size: 100% 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+}
+
+.equipment-card-class-badge img {
+    width: 80%;
+    height: 80%;
+}
+
+.equipment-card-description {
+    text-align: center;
+    font-size: 14px;
+    max-width: 174px;
+}
+
+.shop-card-effect-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 4px 0;
+}
+
+.shop-card-effect {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    background-color: #16181c;
+    border-radius: 4px;
+    overflow: hidden;
+    width: 96px;
+    height: 26px;
+    position: relative;
+}
+
+.shop-card-effect span {
+    font-size: 14px;
+}
+
+.shop-card-effect-stat {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.shop-card-effect-value {
+    padding: 4px 12px;
+    line-height: 12px;
+}
+
+.shop-card-price {
+    background-image: url('@assets/shop/daily_button.png');
+    background-size: 100% 100%;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    color: #FFFFFF;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.shop-card-price img {
+    width: 14px;
+    height: 14px;
+}
+
+.shop-card-class-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.shop-card-class {
+    width: 20px;
+    height: 20px;
+    padding: 4px;
+    background-size: 100% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shop-card-class img {
+    width: 12px;
+    height: 16px;
+}
