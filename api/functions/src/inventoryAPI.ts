@@ -169,7 +169,10 @@ function equipEquipment(playerData: any, characterData: any, index: number) {
   playerInventory.equipment = equipment;
   return {
     playerUpdate: {inventory: playerInventory},
-    characterUpdate: {equipment: equipped},
+    characterUpdate: {
+      equipment: equipped,
+      equipment_bonuses: applyEquipmentBonuses(equipped),
+    },
   };
 }
 
@@ -194,8 +197,51 @@ function unequipEquipment(playerData: any, characterData: any, index: number) {
   playerInventory.equipment = equipment;
   return {
     playerUpdate: {inventory: playerInventory},
-    characterUpdate: {equipment: equipped},
+    characterUpdate: {
+      equipment: equipped,
+      equipment_bonuses: applyEquipmentBonuses(equipped),
+    },
   };
+}
+
+function applyEquipmentBonuses(equipped: Equipment) {
+  const bonuses = {
+    hp: 0,
+    mp: 0,
+    atk: 0,
+    def: 0,
+    spatk: 0,
+    spdef: 0,
+  };
+  for (const field of equipmentFields) {
+    const item = equipped[field as keyof Equipment];
+    if (item !== -1) {
+      const data = equipments[item];
+      data.effects.forEach((effect) => {
+        switch (effect.stat) {
+        case 0:
+          bonuses.hp += effect.value;
+          break;
+        case 1:
+          bonuses.mp += effect.value;
+          break;
+        case 2:
+          bonuses.atk += effect.value;
+          break;
+        case 3:
+          bonuses.def += effect.value;
+          break;
+        case 4:
+          bonuses.spatk += effect.value;
+          break;
+        case 5:
+          bonuses.spdef += effect.value;
+          break;
+        }
+      });
+    }
+  }
+  return bonuses;
 }
 
 export const inventoryTransaction = onRequest((request, response) => {
