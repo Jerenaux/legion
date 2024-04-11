@@ -6,6 +6,13 @@ import { equipments } from '@legion/shared/Equipments';
 import { INFO_BG_COLOR } from '../itemDialog/ItemDialogType';
 import { ShopCardProps } from '../shopSpellCard/ShopSpellCard';
 
+interface modalData {
+  id: string | number;
+  name: string;
+  url: string;
+  price: number;
+}
+
 class ShopEquipmentCard extends Component<ShopCardProps> {
   render() {
     const data = equipments[this.props.index];
@@ -26,8 +33,15 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
       return value > 0 ? `+${value}` : value;
     }
 
+    const modalData: modalData = {
+      id: data.id,
+      name: data.name,
+      url: `/equipment/${data.frame}`,
+      price: data.price
+    }
+
     return (
-      <div className="shop-card-container" key={this.props.key}>
+      <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
         <div className="shop-card-title">
           <span className="shop-card-title-name">{data.name}</span>
           <div className="equipment-card-info-container">

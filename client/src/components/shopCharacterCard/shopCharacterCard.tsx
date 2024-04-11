@@ -6,9 +6,17 @@ import { equipments } from '@legion/shared/Equipments';
 import { INFO_BG_COLOR, INFO_TYPE } from '../itemDialog/ItemDialogType';
 import { classEnumToString } from '../utils';
 
+interface modalData {
+  id: string | number;
+  name: string;
+  url: string;
+  price: number;
+}
+
 interface ShopCharacteCardProps {
   key: number;
   data: any;
+  handleOpenModal: (e: any, modalData: modalData) => void;
 }
 
 class ShopCharacterCard extends Component<ShopCharacteCardProps> {
@@ -26,8 +34,15 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps> {
       }
     }
 
+    const modalData: modalData = {
+      id: data.id,
+      name: data.name,
+      url: `/sprites/${data.portrait}.png`,
+      price: data.price
+    }
+
     return (
-      <div className="shop-character-card-container" key={this.props.key}>
+      <div className="shop-character-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
         <div className="shop-character-card-title">
           <div className="shop-character-card-title-name">
             <span>{data.name}</span>

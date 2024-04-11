@@ -41,7 +41,7 @@
 
 .consumable-card-info-box span {
     font-size: 12px;
-    color: #71deff;
+    color: #71deff !important;
 }
 
 .consumable-card-info-box img {

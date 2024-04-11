@@ -4,10 +4,18 @@ import { h, Component } from 'preact';
 import { Class, InventoryType, Target } from "@legion/shared/enums";
 import { spells } from '@legion/shared/Spells';
 
+interface modalData {
+  id: string | number;
+  name: string;
+  url: string;
+  price: number;
+}
+
 export interface ShopCardProps {
   key: number;
   index: number;
   getItemAmount: (index: number, type: InventoryType) => number;
+  handleOpenModal: (e: any, modalData: modalData) => void;
 }
 
 class ShopSpellCard extends Component<ShopCardProps> {
@@ -20,8 +28,15 @@ class ShopSpellCard extends Component<ShopCardProps> {
       }
     } 
 
+    const modalData: modalData = {
+      id: data.id,
+      name: data.name,
+      url: `/spells/${data.frame}`,
+      price: data.price
+    }
+
     return (
-      <div className="spell-card-container" key={this.props.key}>
+      <div className="spell-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
         <div className="spell-card-title">
           <span>{data.name}</span>
           <div className="spell-card-info-container">

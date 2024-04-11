@@ -15,12 +15,26 @@ enum StatIcons {
   '/4.png',
 }
 
+interface modalData {
+  id: string | number;
+  name: string;
+  url: string;
+  price: number;
+}
+
 class ShopConsumableCard extends Component<ShopCardProps> {
   render() {
     const data = items[this.props.index];
 
+    const modalData: modalData = {
+      id: data.id,
+      name: data.name,
+      url: `/consumables/${data.frame}`,
+      price: data.price
+    }
+
     return (
-      <div className="shop-card-container" key={this.props.key}>
+      <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
         <div className="shop-card-title">
           <span>{data.name}</span>
           <div className="consumable-card-info-box">

@@ -1,0 +1,111 @@
+.purchase-dialog-container {
+    background-image: url('@assets/shop/daily_bg_idle.png');
+    background-size: 100% 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.purchase-dialog-title {
+    background-image: url('@assets/shop/item_title_bg_blue.png');
+    background-size: 100% 100%;
+    width: 100%;
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.purchase-dialog-title span {
+    font-size: 16px;
+    font-weight: 400;
+    color: #ffffff;
+}
+
+.purchase-dialog-frame {
+    width: 84px;
+    height: 84px;
+    border-radius: 8px;
+}
+
+.purchase-dialog-button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    width: 100%;
+    padding-bottom: 4px;
+}
+
+.purchase-dialog-button-container button {
+    background: transparent;
+    border: 1px solid #244752;
+    border-radius: 4px;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    color: #ffffff;
+    min-width: 92px;
+}
+
+.purchase-dialog-button-container button:hover {
+    border: 1px solid #71deff;
+}
+
+.purchase-dialog-button-container button img {
+    width: 10px;
+    height: 10px;
+    margin-right: 4px;
+}
+
+.purchase-dialog-price {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.purchase-dialog-price img {
+    width: 18px;
+    height: 18px;
+}
+
+.purchase-dialog-price span {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.purchase-count-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.purchase-count-button {
+    background-image: url('@assets/shop/blue_box_bg.png');
+    background-size: 100% 100%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.purchase-count {
+    background-image: url('@assets/shop/count_box_bg.png');
+    background-size: 100% 100%;
+    padding: 8px 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-size: 12px;
+}
