@@ -7,6 +7,7 @@ Modal.setAppElement('#root');
 interface PurchaseDialogProps {
   dialogOpen: boolean;
   dialogData: {
+    id: string | number;
     name: string;
     url: string;
     price: number;
@@ -16,6 +17,7 @@ interface PurchaseDialogProps {
     left: number
   };
   handleClose: () => void;
+  purchase: (id: string | number, quantity: number) => void;
 }
 
 interface PurchaseDialogState {
@@ -92,7 +94,7 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
           </div>
 
           <div className="purchase-dialog-button-container">
-            <button className="purchase-dialog-accept" onClick={() => { }}><img src="/inventory/confirm_icon.png" alt="confirm" />Buy</button>
+            <button className="purchase-dialog-accept" onClick={() => this.props.purchase(dialogData.id, this.state.count)}><img src="/inventory/confirm_icon.png" alt="confirm" />Buy</button>
             <button className="purchase-dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
           </div>
         </div>

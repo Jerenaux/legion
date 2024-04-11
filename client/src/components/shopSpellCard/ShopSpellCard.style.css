@@ -18,7 +18,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-image: url('@assets/shop/item_title_bg_blue.png');
     background-size: 100% 100%;
     width: 94%;
     margin: 0 8px;

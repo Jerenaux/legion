@@ -4,6 +4,12 @@ import { h, Component } from 'preact';
 import { Class, InventoryType, Target } from "@legion/shared/enums";
 import { spells } from '@legion/shared/Spells';
 
+enum SpellTitleBG {
+  'url(/shop/item_title_bg_blue.png)',
+  'url(/shop/item_title_bg_green.png)',
+  'url(/shop/item_title_bg_purple.png)'
+}
+
 interface modalData {
   id: string | number;
   name: string;
@@ -28,6 +34,10 @@ class ShopSpellCard extends Component<ShopCardProps> {
       }
     } 
 
+    const titleStyle = {
+      backgroundImage: SpellTitleBG[this.props.index % 3]
+    }
+
     const modalData: modalData = {
       id: data.id,
       name: data.name,
@@ -37,7 +47,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
 
     return (
       <div className="spell-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
-        <div className="spell-card-title">
+        <div className="spell-card-title" style={titleStyle}>
           <span>{data.name}</span>
           <div className="spell-card-info-container">
             <div className="spell-card-info-box">

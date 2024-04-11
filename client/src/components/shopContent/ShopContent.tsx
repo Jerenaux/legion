@@ -1,7 +1,7 @@
 // ShopContent.tsx
 import './ShopContent.style.css';
 import { h, Component } from 'preact';
-import { apiFetch } from 'src/services/apiService';
+import { apiFetch } from '../../services/apiService';
 import { InventoryType } from '@legion/shared/enums';
 import { PlayerInventory } from '@legion/shared/interfaces';
 import { ShopTabIcons, ShopTabs } from './ShopContent.data';
@@ -48,46 +48,40 @@ class ShopContent extends Component<ShopContentProps> {
         this.setState({ openModal: false });
     }
 
-    // hasEnoughGold = (articleId: string, quantity: number) => {
-    //     const array = this.props.characters;
-    //     const article = array.find((article) => article?.id === articleId);
-    //     if (!article) {
-    //       return false;
-    //     }
+    hasEnoughGold = (quantity: number) => {
+        return this.props.gold >= this.state.modalData.price * quantity;
+    }
     
-    //     return this.state.gold >= article.price * quantity;
-    //   }
-    
-    // purchase = () => {
-    //     if (!selectedArticle) {
-    //         errorToast('No article selected!');
-    //         return;
-    //     }
+    purchase = (id: string | number, quantity: number) => {
+        if (!id && id != 0) {
+            errorToast('No article selected!');
+            return;
+        }
 
-    //     if (!this.hasEnoughGold(selectedArticle.id, quantity, false)) {
-    //         errorToast('Not enough gold!');
-    //         return;
-    //     }
+        if (!this.hasEnoughGold(quantity)) {
+            errorToast('Not enough gold!');
+            return;
+        }
 
-    //     const payload = {
-    //         articleId: selectedArticle.id,
-    //         quantity,
-    //     };
-    //     console.log(payload);
+        const payload = {
+            articleId: id,
+            quantity,
+        };
+        console.log(payload);
 
-    //     apiFetch('purchaseItem', {
-    //         method: 'POST',
-    //         body: payload
-    //     })
-    //     .then(data => {
-    //         console.log(data);
-    //         this.props.fetchInventoryData(); 
-    //         successToast('Purchase successful!');
-    //     })
-    //     .catch(error => errorToast(`Error: ${error}`));
+        apiFetch('purchaseItem', {
+            method: 'POST',
+            body: payload
+        })
+        .then(data => {
+            console.log(data);
+            this.props.fetchInventoryData(); 
+            successToast('Purchase successful!');
+        })
+        .catch(error => errorToast(`Error: ${error}`));
         
-    //     this.handleCloseModal();
-    // }
+        this.handleCloseModal();
+    }
 
     render() {
         const {inventoryData, characters} = this.props;
@@ -136,6 +130,7 @@ class ShopContent extends Component<ShopContentProps> {
                     dialogOpen={this.state.openModal}
                     dialogData={this.state.modalData}
                     handleClose={this.handleCloseModal}
+                    purchase={this.purchase}
                 />
             </div>
         );

@@ -1474,3 +1474,18 @@ canvas {
   /* text-shadow: 2px 2px 10px rgb(3, 141, 40);  */
   margin-right: 10px;
 }
+
+::-webkit-scrollbar {
+  width: 8px; /* Adjust the width of the scrollbar */
+  background: url('@assets/shop/slider_bar.png'); /* Add your image */
+  }
+
+/* Scrollbar Thumb */
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 8px;
+  background-image: url('@assets/shop/slider_handle.png'); /* Replace with your image path */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
