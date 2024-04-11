@@ -46,8 +46,8 @@ export class Player extends Phaser.GameObjects.Container {
     team: Team;
     animationLock = false;
     statuses: {
-        frozen: boolean;
-        paralyzed: boolean;
+        frozen: number;
+        paralyzed: number;
     };
 
     constructor(
@@ -70,8 +70,8 @@ export class Player extends Phaser.GameObjects.Container {
         this.num = num;
 
         this.statuses = {
-            frozen: false,
-            paralyzed: false,
+            frozen: 0,
+            paralyzed: 0,
         };
 
         this.baseSquare = scene.add.graphics().setAlpha(0.6);
@@ -124,7 +124,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.animationSprite.on('animationcomplete', () => this.animationSprite.setVisible(false), this);
         this.add(this.animationSprite);
 
-        this.statusSprite = scene.add.sprite(0, -20, 'statuses').setVisible(false);
+        this.statusSprite = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
         this.add(this.statusSprite);
 
         // Add the container to the scene
@@ -449,6 +449,7 @@ export class Player extends Phaser.GameObjects.Container {
     die() {
         this.healthBar.setVisible(false);
         this.MPBar?.setVisible(false);
+        this.statusSprite.setVisible(false);
         this.playAnim('die');
         if (this.arena.selectedPlayer == this) this.arena.deselectPlayer();
     }
@@ -577,31 +578,32 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     setStatuses(statuses) {
+        if (!this.isAlive()) return;
         this.setFrozen(statuses.frozen);
         this.setParalyzed(statuses.paralyzed);
     }
 
-    setFrozen(flag) {
-        if (flag) 
+    setFrozen(duration) {
+        if (duration != 0) 
         {
-            this.statuses.frozen = true;   
+            this.statuses.frozen = duration;   
             this.sprite.anims.stop();   
             this.cooldownTween?.stop();
         } else {
-            this.statuses.frozen = false;
+            this.statuses.frozen = 0;
             this.playAnim(this.getIdleAnim());
         }   
     }
 
-    setParalyzed(flag) {
-        if (flag) {
-            this.statuses.paralyzed = true;
+    setParalyzed(duration) {
+        if (duration != 0) {
+            this.statuses.paralyzed = duration;
             this.sprite.anims.stop();
             this.cooldownTween?.stop();
             this.statusSprite.setVisible(true);
             this.statusSprite.anims.play('paralyzed');
         } else {
-            this.statuses.paralyzed = false;
+            this.statuses.paralyzed = 0;
             this.statusSprite.anims.stop();
             this.statusSprite.setVisible(false);
             this.playAnim(this.getIdleAnim());

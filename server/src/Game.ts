@@ -427,7 +427,7 @@ export abstract class Game
 
         if (spell.status) {
             targets.forEach(target => {
-                target.addStatusEffect(spell.status);
+                target.addStatusEffect(spell.status.effect, spell.status.duration, spell.status.chance);
             });
         }
         

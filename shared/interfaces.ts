@@ -48,7 +48,7 @@ export interface SpellData {
     yoffset?: number;
     terrain?: Terrain;
     rarity: Rarity;
-    status?: StatusEffect;
+    status?: StatusEffectData;
 }
 
 export interface ConsumableData {
@@ -117,4 +117,10 @@ export interface TerrainUpdate {
     x: number;
     y: number;
     terrain: Terrain;
+}
+
+export interface StatusEffectData {
+    effect: StatusEffect;
+    duration: number;
+    chance: number;
 }
