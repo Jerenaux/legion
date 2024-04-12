@@ -4,6 +4,7 @@
     width: 100%;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 }
 
 .shop-tabs-container {

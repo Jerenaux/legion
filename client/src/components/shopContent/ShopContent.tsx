@@ -11,6 +11,7 @@ import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
 import ShopEquipmentCard from '../shopEquipmentCard/ShopEquipmentCard';
 import ShopCharacterCard from '../shopCharacterCard/shopCharacterCard';
 import PurchaseDialog from '../purchaseDialog/PurchaseDialog';
+import ShopItemFilter from '../shopItemFilter/ShopItemFilter';
 interface ShopContentProps {
     gold: number;
     inventoryData: PlayerInventory;
@@ -31,6 +32,17 @@ class ShopContent extends Component<ShopContentProps> {
         openModal: false,
         position: null,
         modalData: null,
+        inventoryData: null,
+    }
+
+    componentDidUpdate(prevProps: any) {
+        if (prevProps.inventoryData !== this.props.inventoryData) {
+            this.setState({ inventoryData: {
+                consumables: this.props.inventoryData.consumables?.sort(),
+                equipment: this.props.inventoryData.equipment?.sort(), 
+                spells: this.props.inventoryData.spells?.sort(),
+            } });
+        }
     }
 
     handleOpenModal = (e: any, modalData: modalData) => {
@@ -48,10 +60,14 @@ class ShopContent extends Component<ShopContentProps> {
         this.setState({ openModal: false });
     }
 
+    handleInventory = (inventory: PlayerInventory) => {
+        this.setState({inventoryData: inventory});
+    }
+
     hasEnoughGold = (quantity: number) => {
         return this.props.gold >= this.state.modalData.price * quantity;
     }
-    
+
     purchase = (id: string | number, quantity: number) => {
         if (!id && id != 0) {
             errorToast('No article selected!');
@@ -73,18 +89,20 @@ class ShopContent extends Component<ShopContentProps> {
             method: 'POST',
             body: payload
         })
-        .then(data => {
-            console.log(data);
-            this.props.fetchInventoryData(); 
-            successToast('Purchase successful!');
-        })
-        .catch(error => errorToast(`Error: ${error}`));
-        
+            .then(data => {
+                console.log(data);
+                this.props.fetchInventoryData();
+                successToast('Purchase successful!');
+            })
+            .catch(error => errorToast(`Error: ${error}`));
+
         this.handleCloseModal();
     }
 
     render() {
-        const {inventoryData, characters} = this.props;
+        if(!this.state.inventoryData) return;
+
+        const { characters } = this.props;
 
         const tabItemStyle = (index: number) => {
             return {
@@ -93,17 +111,17 @@ class ShopContent extends Component<ShopContentProps> {
         }
 
         const getItemAmount = (index: number, type: InventoryType) => {
-            return inventoryData[type].filter((item: number) => item == index).length;
+            return this.state.inventoryData[type].filter((item: number) => item == index).length;
         }
 
         const renderItems = () => {
-            switch(this.state.curr_tab) {
+            switch (this.state.curr_tab) {
                 case ShopTabs.SPELLS:
-                    return inventoryData.spells.map((item, index) => <ShopSpellCard key={index} index={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
+                    return this.state.inventoryData.spells.map((item, index) => <ShopSpellCard key={index} index={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
                 case ShopTabs.CONSUMABLES:
-                    return inventoryData.consumables.map((item, index) => <ShopConsumableCard key={index} index={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
+                    return this.state.inventoryData.consumables.map((item, index) => <ShopConsumableCard key={index} index={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
                 case ShopTabs.EQUIPMENTS:
-                    return inventoryData.equipment.map((item, index) => <ShopEquipmentCard key={index} index={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
+                    return this.state.inventoryData.equipment.map((item, index) => <ShopEquipmentCard key={index} index={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
                 case ShopTabs.CHARACTERS:
                     return characters.map((item, index) => <ShopCharacterCard key={index} data={item} handleOpenModal={this.handleOpenModal} />)
                 default:
@@ -113,6 +131,11 @@ class ShopContent extends Component<ShopContentProps> {
 
         return (
             <div className='shop-content'>
+                <ShopItemFilter
+                 curr_tab={this.state.curr_tab}
+                 inventoryData={this.props.inventoryData}
+                 handleInventory={this.handleInventory} />
+                 
                 <div className='shop-tabs-container'>
                     {Object.keys(ShopTabIcons).map(key => ShopTabIcons[key]).map((icon, index) =>
                         <div

@@ -1,7 +1,7 @@
 .shop-character-card-container {
     background-image: url('@assets/shop/daily_bg_idle.png');
     background-size: 100% 100%;
-    padding: 14px;
+    padding: 12px;
     min-width: 200px;
     display: flex;
     flex-direction: column;

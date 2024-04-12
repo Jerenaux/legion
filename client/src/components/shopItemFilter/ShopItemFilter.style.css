@@ -1,0 +1,97 @@
+.shop-item-filter-container {
+    position: absolute;
+    top: 2px;
+    right: 16px;
+    z-index: 10;
+}
+
+.shop-item-filter-title {
+    background-color: #1c2b38;
+    border: 1px solid #227d7d;
+    padding: 6px 18px;
+    border-radius: 4px;
+    color: #FFFFFF;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.shop-filter-list {
+    background-image: url('@assets/shop/daily_bg_idle.png');
+    background-size: 100% 100%;
+    position: absolute;
+    top: 36px;
+    right: 10px;
+    padding: 8px 6px;
+    padding-bottom: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.shop-filter-list ul {
+    margin: 0;
+    padding-left: 0;
+    min-width: 132px;
+    color: #FFFFFF;
+}
+
+.shop-filter-list ul li {
+    list-style-type: none;
+    padding: 4px 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.shop-filter-list ul li:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.shop-filter-list ul li img {
+    width: 14px;
+    height: 10px;
+}
+
+.shop-filter-list ul li span {
+    flex: 1;
+    text-align: center;
+}
+
+.shop-filter-slots-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.shop-filter-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px 6px;
+    padding: 4px 6px;
+}
+
+.shop-filter-slot {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.shop-filter-slot img {
+    width: 14px;
+    height: 14px;
+}
+
+.shop-filter-divider {
+    width: 90%;
+    height: 1px;
+    background-color: #415567;
+}
