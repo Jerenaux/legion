@@ -17,6 +17,7 @@ interface CharacterData {
     allTimeSP: number;
     stats: CharacterStats;
     carrying_capacity: number;
+    carrying_capacity_bonus: number;
     skill_slots: number;
     inventory: number[];
     equipment: Equipment;
@@ -35,6 +36,7 @@ export class NewCharacter {
   stats: CharacterStats;
   equipment_bonuses: CharacterStats;
   carrying_capacity: number;
+  carrying_capacity_bonus: number;
   skill_slots: number;
   inventory: number[];
   equipment: Equipment;
@@ -59,6 +61,7 @@ export class NewCharacter {
     this.xp = 0;
     this.level = level;
     this.carrying_capacity = 3;
+    this.carrying_capacity_bonus = 0;
     this.skill_slots = this.getSkillSlots();
     this.inventory = [];
     this.equipment = {
@@ -267,6 +270,7 @@ export class NewCharacter {
       allTimeSP: 0,
       stats: this.stats,
       carrying_capacity: this.carrying_capacity,
+      carrying_capacity_bonus: this.carrying_capacity_bonus,
       skill_slots: this.skill_slots,
       inventory: this.inventory,
       equipment: this.equipment,

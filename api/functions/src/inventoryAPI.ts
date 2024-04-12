@@ -3,7 +3,7 @@ import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {items} from "@legion/shared/Items";
 import {equipments} from "@legion/shared/Equipments";
-import {InventoryType, InventoryActionType, equipmentFields}
+import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot}
   from "@legion/shared/enums";
 import {Equipment} from "@legion/shared/interfaces";
 
@@ -74,7 +74,8 @@ export const purchaseItem = onRequest((request, response) => {
 });
 
 function canEquipConsumable(characterData: any) {
-  return characterData.inventory.length < characterData.carrying_capacity;
+  return characterData.inventory.length <
+    characterData.carrying_capacity + characterData.carrying_capacity_bonus;
 }
 
 function canLearnSpell(characterData: any) {
@@ -147,7 +148,10 @@ function learnSpell(playerData: any, characterData: any, index: number) {
 function equipEquipment(playerData: any, characterData: any, index: number) {
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort();
+  const consumables = playerInventory.consumables.sort();
   const equipped = characterData.equipment as Equipment;
+  const inventory = characterData.inventory as number[];
+  let carrying_capacity_bonus = characterData.carrying_capacity_bonus;
 
   // Check if index is valid
   if (index < 0 || index >= equipment.length) {
@@ -158,20 +162,41 @@ function equipEquipment(playerData: any, characterData: any, index: number) {
   equipment.splice(index, 1);
 
   const data = equipments[item];
-  const slotNumber: number = data.slot;
+
+  let slotNumber: number = data.slot;
+  if (slotNumber == EquipmentSlot.LEFT_RING) {
+    if (equipped.left_ring !== -1) {
+      slotNumber = EquipmentSlot.RIGHT_RING;
+    }
+  }
 
   const field = equipmentFields[slotNumber];
-  if (equipped[field as keyof Equipment] !== -1) {
-    equipment.push(equipped[field as keyof Equipment]);
+  const currentlyEquipped = equipped[field as keyof Equipment];
+  if (currentlyEquipped != -1) {
+    equipment.push(currentlyEquipped);
   }
   equipped[field as keyof Equipment] = item;
 
+  if (slotNumber == EquipmentSlot.BELT) {
+    carrying_capacity_bonus = data.beltSize;
+
+    while (inventory.length >
+      characterData.carrying_capacity + carrying_capacity_bonus) {
+      const excess = inventory.pop();
+      consumables.push(excess);
+    }
+    playerInventory.consumables = consumables;
+  }
+
   playerInventory.equipment = equipment;
+  playerInventory.consumables = consumables;
   return {
     playerUpdate: {inventory: playerInventory},
     characterUpdate: {
       equipment: equipped,
       equipment_bonuses: applyEquipmentBonuses(equipped),
+      carrying_capacity_bonus,
+      inventory,
     },
   };
 }
@@ -180,26 +205,43 @@ function unequipEquipment(playerData: any, characterData: any, index: number) {
   // In this case `index` points to the slot
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort();
+  const consumables = playerInventory.consumables.sort();
   const equipped = characterData.equipment as Equipment;
+  const inventory = characterData.inventory as number[];
+  let carrying_capacity_bonus = characterData.carrying_capacity_bonus;
 
-  // Check if index is valid
   if (index < 0 || index >= equipmentFields.length) {
     return -1;
   }
 
   const slotNumber: number = index;
   const field = equipmentFields[slotNumber];
-
   const item = equipped[field as keyof Equipment];
-  equipped[field as keyof Equipment] = -1;
-  equipment.push(item);
 
-  playerInventory.equipment = equipment;
+  if (item != -1) {
+    if (slotNumber == EquipmentSlot.BELT) {
+      carrying_capacity_bonus = 0;
+      // if characterData.inventory has more elements than carrying_capacity,
+      // remove the excess elements and push them to consumables
+      while (inventory.length > characterData.carrying_capacity) {
+        const excess = inventory.pop();
+        consumables.push(excess);
+      }
+      playerInventory.consumables = consumables;
+    }
+
+    equipped[field as keyof Equipment] = -1;
+    equipment.push(item);
+    playerInventory.equipment = equipment;
+  }
+
   return {
     playerUpdate: {inventory: playerInventory},
     characterUpdate: {
       equipment: equipped,
       equipment_bonuses: applyEquipmentBonuses(equipped),
+      carrying_capacity_bonus,
+      inventory,
     },
   };
 }

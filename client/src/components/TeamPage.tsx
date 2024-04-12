@@ -126,7 +126,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
       case 'consumables':
         const consumables = this.state.inventory.consumables;
         if (action === InventoryActionType.EQUIP) {
-          if (this.state.character_sheet_data.inventory.length >= this.state.character_sheet_data.carrying_capacity) {
+          if (this.state.character_sheet_data.inventory.length >= this.state.character_sheet_data.carrying_capacity + this.state.character_sheet_data.carrying_capacity_bonus) {
             errorToast('Character inventory is full!');
             return;
           }

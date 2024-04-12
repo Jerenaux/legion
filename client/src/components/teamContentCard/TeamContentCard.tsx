@@ -67,7 +67,9 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             if (!characterData) return;
 
             const order = ['hp', 'mp', 'atk', 'def', 'spatk', 'spdef'];
-            const items = Object.entries(characterData.stats).map(([key, value]) => ({ key, value: value as number }));
+            const items = Object.entries(characterData.stats).map(
+                    ([key, value]) => ({ key, value: value + characterData.equipment_bonuses[key] })
+                );
             const rearrangedItems = order.map(key => items.find(item => item.key === key));
 
             const effectVal = (key: string) => {
@@ -98,7 +100,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })); // for equipments of right hand
 
             return items.slice(0, 6).map((item, index) => (
-                <div className="equip-item" key={index} onClick={(e) => this.handleUnEquipItem(e, equipments[item.value], ItemDialogType.EQUIPMENTS, item.value)}>
+                <div className="equip-item" key={index} onClick={(e) => this.handleUnEquipItem(e, equipments[item.value], ItemDialogType.EQUIPMENTS, index)}>
                     <img src={item.value < 0 ? `/inventory/${item.key}_icon.png` : `/equipment/${equipments[item.value]?.frame}`} alt={item.key} />
                 </div>
             ))
@@ -106,11 +108,15 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
         const renderCharacterItems = useMemo(() => {
             if (!characterData || !characterData.equipment) return;
-
-            const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })).slice(6, 9);
+            const specialSlotsStart = 6;
+            const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })).slice(specialSlotsStart, 9);
+            const desiredOrder = ['left_ring', 'right_ring', 'necklace'];
+            items.sort((a, b) => {
+                return desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key);
+            });
 
             return items.map((item, index) => (
-                <div className="equip-item sheet-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[item.value], ItemDialogType.EQUIPMENTS, item.value)}>
+                <div className="equip-item sheet-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[item.value], ItemDialogType.EQUIPMENTS, specialSlotsStart + index)}>
                     <img style={item.value < 0 && { transform: 'scaleY(0.6)' }} src={item.value > 0 ? `/equipment/${equipments[item.value]?.frame}` : `/inventory/${item.key}_icon.png`} alt={item.key} />
                 </div>
             ))
@@ -135,7 +141,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
         const renderConsumableItems = () => {
             if (!characterData) return;
 
-            return Array.from({ length: characterData.carrying_capacity }, (_, i) => (
+            return Array.from({ length: characterData.carrying_capacity + characterData.carrying_capacity_bonus}, (_, i) => (
                 i < characterData.inventory.length ? (
                     <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[characterData.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
                         <img src={`/consumables/${items[characterData.inventory[i]]?.frame}`} alt={items[characterData.inventory[i]].name} />

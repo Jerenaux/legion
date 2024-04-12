@@ -233,12 +233,12 @@ export class ServerPlayer {
     }
 
     setUpCharacter(data) {
-        this.setHP(data.stats.hp);
-        this.setMP(data.stats.mp);
-        this.setStat(Stat.ATK, data.stats.atk);
-        this.setStat(Stat.DEF, data.stats.def);
-        this.setStat(Stat.SPATK, data.stats.spatk);
-        this.setStat(Stat.SPDEF, data.stats.spdef);
+        this.setHP(data.stats.hp + data.equipment_bonuses.hp);
+        this.setMP(data.stats.mp + + data.equipment_bonuses.mp);
+        this.setStat(Stat.ATK, data.stats.atk + data.equipment_bonuses.atk);
+        this.setStat(Stat.DEF, data.stats.def + data.equipment_bonuses.def);
+        this.setStat(Stat.SPATK, data.stats.spatk + data.equipment_bonuses.spatk);
+        this.setStat(Stat.SPDEF, data.stats.spdef + data.equipment_bonuses.spdef);
         this.setInventory(data.carrying_capacity, data.inventory);
         this.setSpells(data.skill_slots, data.skills);
         this.level = data.level;

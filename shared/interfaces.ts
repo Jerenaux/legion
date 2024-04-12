@@ -75,6 +75,7 @@ export interface EquipmentData {
     slot: EquipmentSlot,
     price: number;
     rarity: Rarity;
+    beltSize?: number;
 }
 
 export interface CharacterUpdate {

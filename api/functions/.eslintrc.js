@@ -31,5 +31,6 @@ module.exports = {
     "require-jsdoc": "off",
     "@typescript-eslint/ban-types": "off",
     "react/prefer-stateless-function": "off",
+    "camelcase": "off",
   },
 };

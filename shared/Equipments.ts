@@ -37,3 +37,27 @@ equipments[2] = new BaseEquipment({
     price: 30,
     rarity: Rarity.RARE,
 });
+
+equipments[3] = new BaseEquipment({
+    id: 3,
+    name: "Larger belt",
+    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    frame: "belt.png",
+    effects: [],
+    slot: EquipmentSlot.BELT,
+    price: 50,
+    rarity: Rarity.RARE,
+    beltSize: 1,
+});
+
+equipments[4] = new BaseEquipment({
+    id: 4,
+    name: "Big belt",
+    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    frame: "belt2.png",
+    effects: [],
+    slot: EquipmentSlot.BELT,
+    price: 100,
+    rarity: Rarity.EPIC,
+    beltSize: 2,
+});
