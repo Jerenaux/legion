@@ -71,6 +71,8 @@ export class Arena extends Phaser.Scene
         this.load.audio('cooldown', 'sfx/cooldown.wav');
         this.load.audio('healing', 'sfx/healing.wav');
         this.load.audio('cast', 'sfx/curse.ogg');
+        this.load.audio('shatter', 'sfx/shatter.wav');
+        this.load.audio('flames', 'sfx/flame.wav');
 
         this.load.audio('fireball', 'sfx/fireball.wav');
         this.load.audio('thunder', 'sfx/thunder.wav');
@@ -475,7 +477,7 @@ export class Arena extends Phaser.Scene
             this.sendSpell(gridX, gridY, player);
         } else if (this.selectedPlayer?.pendingItem != null) {
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
-        } else if (this.hasObstacle(gridX, gridY)) {
+        } else if (!player && this.hasObstacle(gridX, gridY)) {
             this.sendObstacleAttack(gridX, gridY);
         } else if (this.selectedPlayer && !player) {
             this.handleMove(gridX, gridY);
@@ -684,7 +686,7 @@ export class Arena extends Phaser.Scene
                     this.obstaclesMap.delete(serializeCoords(x, y));
                     const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
                     if (terrainsprite) {
-                        terrainsprite.destroy();
+                        this.flickerAndDestroy(terrainsprite, 5, 1000);
                         this.terrainSpritesMap.delete(serializeCoords(x, y));
                     }
                     break;
@@ -694,6 +696,22 @@ export class Arena extends Phaser.Scene
         });
     }
 
+    flickerAndDestroy(sprite, times, duration) {
+        if (!sprite) return;
+    
+        // Create a tween to flicker the sprite
+        this.tweens.add({
+            targets: sprite,
+            alpha: { from: 1, to: 0 },
+            duration: duration / (times * 2),
+            yoyo: true,
+            repeat: times - 1, // Repeat for the number of times - 1 since it starts from 1
+            onComplete: () => {
+                sprite.destroy();
+            }
+        });
+    }    
+
     processLocalAnimation({x, y, id, isKill}) {
         // Convert x and y in grid coords to pixels
         const {x: pixelX, y: pixelYInitial} = this.gridToPixelCoords(x, y);
@@ -701,7 +719,7 @@ export class Arena extends Phaser.Scene
         let pixelY = pixelYInitial;
         if (spell.yoffset) pixelY += spell.yoffset;
 
-        if (isKill) this.castSpellEffect(pixelX, pixelY);
+        if (isKill) this.killCam(pixelX, pixelY);
 
         this.localAnimationSprite.setPosition(pixelX, pixelY)
             .setVisible(true)
@@ -991,7 +1009,6 @@ export class Arena extends Phaser.Scene
 
         this.musicManager = new MusicManager(this, 2, 13, [5, 6, 11]);
         this.musicManager.playBeginning();
-
     }
 
     createHUD() {
@@ -1115,7 +1132,7 @@ export class Arena extends Phaser.Scene
         return overview;
     }
 
-    castSpellEffect(x, y) {
+    killCam(x, y) {
         // Save the original zoom and time scale
         const originalZoom = this.cameras.main.zoom;
         const originalTimeScale = this.localAnimationSprite.anims.timeScale;

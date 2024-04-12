@@ -5,7 +5,7 @@ import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
-import { Terrain, PlayMode, Target } from '@legion/shared/enums';
+import { Terrain, PlayMode, Target, StatusEffect } from '@legion/shared/enums';
 import { OutcomeData, TerrainUpdate } from '@legion/shared/interfaces';
 
 export abstract class Game
@@ -329,6 +329,7 @@ export abstract class Game
         if (this.hasObstacle(opponent.x, opponent.y)) {
             const terrainUpdate = this.removeTerrain(opponent.x, opponent.y);
             this.broadcastTerrain([terrainUpdate]);
+            opponent.removeStatusEffect(StatusEffect.FREEZE);
         }
         
         const cooldown = player.getCooldown('attack');

@@ -13,6 +13,7 @@ export class Player extends Phaser.GameObjects.Container {
     sprite: Phaser.GameObjects.Sprite;
     numKey: Phaser.GameObjects.Text;
     selectionOval: Phaser.GameObjects.Graphics;
+    glowFx: Phaser.FX.Glow;
     name = 'Player 1';
     isPlayer = false;
     texture: string;
@@ -231,6 +232,10 @@ export class Player extends Phaser.GameObjects.Container {
 
     select() {
         this.selectionOval.setVisible(true);
+        if (!this.glowFx) {
+            this.glowFx = this.sprite.preFX.addGlow(0xffffff, 6);
+        }
+        this.glowFx.setActive(true);
         this.displayMovementRange();
         this.selected = true;
 
@@ -241,6 +246,9 @@ export class Player extends Phaser.GameObjects.Container {
         this.selectionOval.setVisible(false);
         this.hideMovementRange();
         this.selected = false;
+        if (this.glowFx) {
+            this.glowFx.setActive(false);
+        }
     }
 
     isSelected() {
@@ -269,16 +277,41 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onPointerOver() {
-        if(this.isTarget() && this.arena.selectedPlayer.pendingSpell == null) {
+        if (this.isTarget() && this.arena.selectedPlayer.pendingSpell == null) {
             this.hud.toggleCursor(true, 'swords');
         }
+        if (!this.glowFx) { // Initialize the glow effect if it does not exist
+            if (this.isSelected() || this.isPlayer) {
+                // White glow for selected, blue for player hover
+                const glowColor = this.isSelected() ? 0xffffff : (this.isPlayer ? 0x0000ff : 0xff0000);
+                this.glowFx = this.sprite.preFX.addGlow(glowColor, 6);
+            } else {
+                this.glowFx = this.sprite.preFX.addGlow(0xff0000, 4);
+            }
+        }
+        if (this.isPlayer && !this.isSelected()) {
+            this.glowFx.color = 0x00ff00; // Blue glow
+        }
+        this.glowFx.setActive(true);
     }
+    
 
     onPointerOut() {
-        if(!this.isPlayer && this.arena.selectedPlayer?.pendingSpell == null) {
+        if (!this.isPlayer && this.arena.selectedPlayer?.pendingSpell == null) {
             this.hud.toggleCursor(false, 'scroll');
         }
+        if (!this.isSelected()) { // Only deactivate if not selected
+            if (this.glowFx && !this.isPlayer) {
+                this.glowFx.setActive(false);
+            } else if (this.isPlayer) {
+                this.glowFx.color = 0xffffff; // Reset to white if selected, deactivate otherwise
+                if (!this.isSelected()) {
+                    this.glowFx.setActive(false);
+                }
+            }
+        }
     }
+    
 
     onClick() {
         this.arena.playSound('click');

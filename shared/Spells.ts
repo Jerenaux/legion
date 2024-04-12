@@ -28,7 +28,7 @@ spells[0] = new BaseSpell({
     cooldown: 1,
     castTime: 1,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -3, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -300, modifiers: SPBasedBoostDeboost}],
     score: 100,
     terrain: Terrain.FIRE,
     rarity: Rarity.RARE,
