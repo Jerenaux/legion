@@ -674,6 +674,7 @@ export class Arena extends Phaser.Scene
                 case Terrain.ICE:
                     const icesprite = this.add.sprite(pixelX, pixelY, 'iceblock')
                         .setDepth(3 + y/10).setAlpha(0.9).setOrigin(0.5, 0.35);
+                    icesprite.postFX.addShine(0.5, .2, 5, true);
                     this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
                     
                     const tile = this.tilesMap.get(serializeCoords(x, y));
