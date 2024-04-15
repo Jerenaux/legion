@@ -1,9 +1,9 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
-
+import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class} from "@legion/shared/enums";
+import {Class, statFields, Stat} from "@legion/shared/enums";
 import {OutcomeData} from "@legion/shared/interfaces";
 
 export const rosterData = onRequest((request, response) => {
@@ -311,6 +311,68 @@ export const purchaseCharacter = onRequest((request, response) => {
       response.send({status: 0});
     } catch (error) {
       console.error("Error purchasing character:", error);
+      response.status(401).send("Unauthorized");
+    }
+  });
+});
+
+export const spendSP = onRequest((request, response) => {
+  logger.info("Spending skill points");
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const characterId = request.body.characterId as string;
+      // const amount = request.body.amount;
+      const amount = 1;
+      const index = request.body.index as number;
+
+      await db.runTransaction(async (transaction) => {
+        const playerRef = db.collection("players").doc(uid);
+        const characterRef = db.collection("characters").doc(characterId);
+
+        const playerDoc = await transaction.get(playerRef);
+        const characterDoc = await transaction.get(characterRef);
+
+        if (!playerDoc.exists || !characterDoc.exists) {
+          throw new Error("Documents do not exist");
+        }
+
+        const playerData = playerDoc.data();
+        const characterData = characterDoc.data();
+
+        if (!playerData || !characterData) {
+          throw new Error("Data does not exist");
+        }
+
+        // Check that character is owned by player
+        const characters =
+            playerData.characters as admin.firestore.DocumentReference[];
+        const characterIds = characters.map((character) => character.id);
+        if (!characterIds.includes(characterId)) {
+          throw new Error("Character not owned by player");
+        }
+
+        // Check that character has enough skill points
+        if (characterData.sp < amount) {
+          throw new Error("Character does not have enough skill points");
+        }
+
+        const stat = statFields[index];
+        const spBonuses = characterData.sp_bonuses;
+        spBonuses[stat] += getSPIncrement(index) * amount;
+
+        transaction.update(characterRef, {
+          sp: admin.firestore.FieldValue.increment(-amount),
+          sp_bonuses: spBonuses,
+        });
+      });
+      console.log("Transaction successfully committed!");
+
+      response.send({status: 0});
+    } catch (error) {
+      console.error("Error spending skill points:", error);
       response.status(401).send("Unauthorized");
     }
   });

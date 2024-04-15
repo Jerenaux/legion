@@ -42,3 +42,18 @@ export function increaseStat(stat: Stat, currentValue: number, level: number, ch
 export function getXPThreshold(level: number) {
     return 100 + (level - 1) * 20;
 }
+
+export function getSPIncrement(stat: number) {
+    switch (stat) {
+        case Stat.ATK:
+        case Stat.DEF:
+        case Stat.SPATK:
+        case Stat.SPDEF:
+            return 1;
+        case Stat.HP:
+        case Stat.MP:
+            return 10;
+        default:
+            return 1;
+    }
+}

@@ -69,7 +69,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
             const order = ['hp', 'mp', 'atk', 'def', 'spatk', 'spdef'];
             const items = Object.entries(characterData.stats).map(
-                    ([key, value]) => ({ key, value: value + characterData.equipment_bonuses[key] })
+                    ([key, value]) => ({ key, value: value + characterData.equipment_bonuses[key] + characterData.sp_bonuses[key] })
                 );
             const rearrangedItems = order.map(key => items.find(item => item.key === key));
 

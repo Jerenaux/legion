@@ -22,6 +22,7 @@ interface CharacterData {
     inventory: number[];
     equipment: Equipment;
     equipment_bonuses: CharacterStats;
+    sp_bonuses: CharacterStats;
     skills: number[];
     onSale?: boolean;
     price?: number;
@@ -35,6 +36,7 @@ export class NewCharacter {
   portrait: string;
   stats: CharacterStats;
   equipment_bonuses: CharacterStats;
+  sp_bonuses: CharacterStats;
   carrying_capacity: number;
   carrying_capacity_bonus: number;
   skill_slots: number;
@@ -85,6 +87,14 @@ export class NewCharacter {
       spdef: this.getSpdef(),
     };
     this.equipment_bonuses = {
+      hp: 0,
+      mp: 0,
+      atk: 0,
+      def: 0,
+      spatk: 0,
+      spdef: 0,
+    };
+    this.sp_bonuses = {
       hp: 0,
       mp: 0,
       atk: 0,
@@ -275,6 +285,7 @@ export class NewCharacter {
       inventory: this.inventory,
       equipment: this.equipment,
       equipment_bonuses: this.equipment_bonuses,
+      sp_bonuses: this.sp_bonuses,
       skills: this.skills,
     };
   }

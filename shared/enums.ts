@@ -8,6 +8,8 @@ export enum Stat {
     NONE
 }
 
+export const statFields = ["hp", "mp", "atk", "def", "spatk", "spdef"];
+
 export enum Target {
     SELF,
     AOE,

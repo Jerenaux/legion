@@ -59,6 +59,32 @@ class ItemDialog extends Component<DialogProps> {
       .catch(error => errorToast(`Error: ${error}`));
   }
 
+  spendSP = (index: number) => {
+    if (!this.props.characterId) return;
+
+    const payload = {
+      index,
+      characterId: this.props.characterId,
+    };
+
+    this.props.handleClose();
+
+    apiFetch('spendSP', {
+      method: 'POST',
+      body: payload
+    })
+      .then((data) => {
+        if (data.status == 0) {
+          successToast('SP spent!');
+          
+          this.props.refreshCharacter();
+        } else {
+          errorToast('Not enough SP!');
+        }
+      })
+      .catch(error => errorToast(`Error: ${error}`));
+  }
+
   render() {
     const { dialogType, dialogData, position, dialogOpen, isEquipped, handleClose } = this.props;
 
@@ -175,7 +201,7 @@ class ItemDialog extends Component<DialogProps> {
           <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>
         </p>
         <div className="dialog-button-container">
-          <button className="dialog-accept" onClick={() => console.log('___SP spent___')}><img src="/inventory/confirm_icon.png" alt="confirm" />Accept</button>
+          <button className="dialog-accept" onClick={() => this.spendSP(0)}><img src="/inventory/confirm_icon.png" alt="confirm" />Accept</button>
           <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
         </div>
       </div>
