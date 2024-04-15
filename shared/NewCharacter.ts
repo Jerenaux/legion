@@ -44,7 +44,7 @@ export class NewCharacter {
   equipment: Equipment;
   skills: number[];
 
-  constructor(characterClass = Class.RANDOM, unicornBonus = false) {
+  constructor(characterClass = Class.RANDOM, level = 1, unicornBonus = false) {
     // console.log(`Creating new character of class ${Class[characterClass]} and level ${level}`);
     const nameOpts = {dictionaries: [adjectives, colors, animals], length: 2};
 
@@ -61,7 +61,7 @@ export class NewCharacter {
 
     this.portrait = this.getFrame();
     this.xp = 0;
-    this.level = 1;
+    this.level = level;
     this.carrying_capacity = 3;
     this.carrying_capacity_bonus = 0;
     this.skill_slots = this.getSkillSlots();

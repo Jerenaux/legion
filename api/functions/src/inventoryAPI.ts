@@ -6,6 +6,7 @@ import {equipments} from "@legion/shared/Equipments";
 import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot}
   from "@legion/shared/enums";
 import {Equipment} from "@legion/shared/interfaces";
+import {inventorySize} from "@legion/shared/utils";
 
 export const inventoryData = onRequest((request, response) => {
   logger.info("Fetching inventoryData");
@@ -41,24 +42,49 @@ export const purchaseItem = onRequest((request, response) => {
       const docSnap = await db.collection("players").doc(uid).get();
 
       if (docSnap.exists) {
-        let gold = docSnap.data()?.gold;
-        console.log(`gold: ${gold}`);
         const itemId = request.body.articleId;
         const nb = request.body.quantity;
+        const inventoryType = request.body.inventoryType as InventoryType;
+
         const itemPrice = items[itemId].price;
         const totalPrice = itemPrice * nb;
-        console.log(`Total price for ${nb} items: ${totalPrice}`);
+
+        let gold = docSnap.data()?.gold;
         if (gold < totalPrice) {
           response.status(500).send("Insufficient gold");
         }
 
+        // Check that the player has enough space in their inventory
         const inventory = docSnap.data()?.inventory;
-        inventory.push(request.body.itemId);
+        if (inventorySize(inventory) + nb > docSnap.data()?.carrying_capacity) {
+          response.status(500).send("Inventory full");
+        }
+
         gold -= totalPrice;
+
+        switch (inventoryType) {
+        case InventoryType.CONSUMABLES:
+          for (let i = 0; i < nb; i++) {
+            inventory.consumables.push(itemId);
+          }
+          break;
+        case InventoryType.SKILLS:
+          for (let i = 0; i < nb; i++) {
+            inventory.spells.push(itemId);
+          }
+          break;
+        case InventoryType.EQUIPMENTS:
+          for (let i = 0; i < nb; i++) {
+            inventory.equipment.push(itemId);
+          }
+          break;
+        }
+
         await db.collection("players").doc(uid).update({
           gold,
           inventory,
         });
+
         response.send({
           gold,
           inventory,
@@ -68,7 +94,7 @@ export const purchaseItem = onRequest((request, response) => {
       }
     } catch (error) {
       console.error("purchaseItem error:", error);
-      response.status(401).send("Unauthorized");
+      response.status(500).send("Error");
     }
   });
 });

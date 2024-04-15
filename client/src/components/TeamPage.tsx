@@ -12,6 +12,7 @@ import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/sha
 import { equipments } from '@legion/shared/Equipments';
 import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
+import { inventorySize } from '@legion/shared/utils';
 
 interface TeamPageState {
   inventory: {
@@ -116,10 +117,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.setState({item_effect: result_effects});
   }
 
-  inventoryLength = (inventory) => Object.values(inventory)
-    .filter(Array.isArray)
-    .map(arr => arr.length)
-    .reduce((acc, curr) => acc + curr, 0);
+  
 
   updateInventory(type: string, action: InventoryActionType, index: number) {
     switch(type) {
@@ -134,7 +132,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
           consumables.splice(index, 1);
           this.state.character_sheet_data.inventory.push(id);
         } else {
-          if (this.inventoryLength(this.state.inventory) >= this.state.carrying_capacity) {
+          if (inventorySize(this.state.inventory) >= this.state.carrying_capacity) {
             errorToast('Character inventory is full!');
             return;
           }
@@ -162,7 +160,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
           this.state.character_sheet_data.equipment[field] = id;
         } else {
-          if (this.inventoryLength(this.state.inventory) >= this.state.carrying_capacity) {
+          if (inventorySize(this.state.inventory) >= this.state.carrying_capacity) {
             errorToast('Character inventory is full!');
             return;
           }

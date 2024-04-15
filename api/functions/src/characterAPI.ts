@@ -165,7 +165,7 @@ async function createCharacterForSale(
   classType: Class = Class.RANDOM
 ) {
   // const level = 1; // Math.floor(Math.random() * 100);
-  const character = new NewCharacter(classType, true).getCharacterData(true);
+  const character = new NewCharacter(classType, 1, true).getCharacterData(true);
   character.onSale = true;
   // Add the character to the collection
   await db.collection("characters").add(character);
