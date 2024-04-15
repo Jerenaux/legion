@@ -36,6 +36,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             top: 0,
             left: 0
         },
+        powerUpActive: false, //this.props.powerUpActive
     }
 
     handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO, modalType: string, index: number) => {
@@ -157,6 +158,13 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
         const portraitStyle = {
             backgroundImage: `url(/sprites/${characterData?.portrait ?? '1_1'}.png)`,
+            animation: 'animate-sprite 0.7s steps(1) infinite',
+        };
+
+        const overlayStyle = { // Used for "power up" animation
+            backgroundImage: this.state.powerUpActive ? `url(/animations/potion_heal.png)` : 'none',
+            animation: this.state.powerUpActive ? 'power-up-animation 3s steps(16) infinite' : 'none', // Assuming 10 frames in the animation
+            display: this.state.powerUpActive ? 'block' : 'none'
         };
 
         const sliderStyle = {
@@ -189,6 +197,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                     <div className="team-character-info-container">
                         <div className="team-character-container">
                             <div className="team-character" style={portraitStyle}></div>
+                            <div className="team-character-overlay" style={overlayStyle}></div>
                         </div>
                         <div className="team-character-info">
                             {renderInfoBars()}

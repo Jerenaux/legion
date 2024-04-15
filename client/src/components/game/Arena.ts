@@ -60,6 +60,7 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('slash', 'animations/slash.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('thunder', 'animations/bolts.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('ice', 'animations/ice.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('impact', 'animations/sword_impact.png', { frameWidth: 291, frameHeight: 291});
 
         this.load.spritesheet('statuses', 'States.png', { frameWidth: 96, frameHeight: 96});
 
@@ -611,6 +612,12 @@ export class Arena extends Phaser.Scene
         player.attack(targetPlayer.x);
         targetPlayer.setHP(hp);
         targetPlayer.displaySlash(player);
+        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
+        this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
+            .setVisible(true)
+            .setDepth(3.5 + targetPlayer.gridY/10)
+            .setScale(0.5)
+            .play('impact');
     }
 
     processObstacleAttack({team, num, x, y}) {
@@ -914,6 +921,12 @@ export class Arena extends Phaser.Scene
             key: `slash`, 
             frames: this.anims.generateFrameNumbers('slash', { frames: [99, 100, 101, 102] }), 
             frameRate: 15, // Number of frames per second
+        });
+
+        this.anims.create({
+            key: `impact`, 
+            frames: this.anims.generateFrameNumbers('impact', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }), 
+            frameRate: 25, 
         });
 
         this.anims.create({

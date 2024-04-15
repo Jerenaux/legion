@@ -178,6 +178,7 @@
 .team-character-container {
     width: 64px;
     height: 102px;
+    position: relative;
 }
 
 .team-character {
@@ -188,6 +189,22 @@
     animation: animate-sprite 0.7s steps(1) infinite;
     transform: scale(.6);
 }
+
+.team-character-overlay {
+    width: 48px; 
+    height: 64px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+/* Additional animation keyframes for power-up */
+@keyframes power-up-animation {
+    from { background-position: 0px 0; }
+    to { background-position: -816px 0; } 
+  }  
 
 .team-character-info {
     display: grid;
@@ -327,3 +344,4 @@
     cursor: pointer;
     border: 1px solid #71deff;
 }
+

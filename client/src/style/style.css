@@ -598,8 +598,13 @@ canvas {
     0% { background-position: -40px -40px; }
     33% { background-position: -184px -40px; }
     66% { background-position: -328px -40px; }
-  }
+}
   
+@keyframes animate-sprite-celebrate {
+  0% { background-position: -900px -184px; }
+  33% { background-position: -1044px -184px; }
+  66% { background-position: -1188px -184px; }
+}
 
 .character-portrait {
     height: 100px; /* Adjust as needed */
