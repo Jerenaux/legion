@@ -44,7 +44,7 @@ export class NewCharacter {
   equipment: Equipment;
   skills: number[];
 
-  constructor(characterClass = Class.RANDOM, level = 1) {
+  constructor(characterClass = Class.RANDOM, unicornBonus = false) {
     // console.log(`Creating new character of class ${Class[characterClass]} and level ${level}`);
     const nameOpts = {dictionaries: [adjectives, colors, animals], length: 2};
 
@@ -61,7 +61,7 @@ export class NewCharacter {
 
     this.portrait = this.getFrame();
     this.xp = 0;
-    this.level = level;
+    this.level = 1;
     this.carrying_capacity = 3;
     this.carrying_capacity_bonus = 0;
     this.skill_slots = this.getSkillSlots();
@@ -79,12 +79,12 @@ export class NewCharacter {
     };
     this.skills = this.getSkills();
     this.stats = {
-      hp: this.getHP(),
-      mp: this.getMP(),
-      atk: this.getAtk(),
-      def: this.getDef(),
-      spatk: this.getSpatk(),
-      spdef: this.getSpdef(),
+      hp: this.getHP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
+      mp: this.getMP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
+      atk: this.getAtk() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
+      def: this.getDef() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
+      spatk: this.getSpatk() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
+      spdef: this.getSpdef() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
     };
     this.equipment_bonuses = {
       hp: 0,
@@ -103,7 +103,7 @@ export class NewCharacter {
       spdef: 0,
     };
 
-    for (let i = 1; i < level; i++) {
+    for (let i = 1; i < this.level; i++) {
       this.lvlUp();
     }
   }
@@ -269,8 +269,15 @@ export class NewCharacter {
       return [];
   }
 
-  getCharacterData(): CharacterData {
-    return {
+  getPrice(): number {
+    // Returns the sum of all stats
+    const sum = Object.values(this.stats).reduce((a, b) => a + b, 0) * 10;
+    // Add +- 10% random variation
+    return sum + Math.floor(Math.random() * sum * 0.2);
+  }
+
+  getCharacterData(includePrice = false): CharacterData {
+    const data: CharacterData = {
       name: this.name,
       portrait: this.portrait,
       class: this.characterClass,
@@ -286,8 +293,12 @@ export class NewCharacter {
       equipment: this.equipment,
       equipment_bonuses: this.equipment_bonuses,
       sp_bonuses: this.sp_bonuses,
-      skills: this.skills,
+      skills: this.skills
     };
+    if (includePrice) {
+      data.price = this.getPrice();
+    }
+    return data;
   }
 }
 

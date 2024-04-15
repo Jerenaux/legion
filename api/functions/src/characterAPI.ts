@@ -160,42 +160,59 @@ export const rewardsUpdate = onRequest((request, response) => {
   });
 });
 
-async function createCharacterForSale(db: FirebaseFirestore.Firestore) {
-  const level = Math.floor(Math.random() * 100);
-  const price = level * 1000;
-  const character =
-        new NewCharacter(Class.RANDOM, level).getCharacterData();
+async function createCharacterForSale(
+  db: FirebaseFirestore.Firestore,
+  classType: Class = Class.RANDOM
+) {
+  // const level = 1; // Math.floor(Math.random() * 100);
+  const character = new NewCharacter(classType, true).getCharacterData(true);
   character.onSale = true;
-  character.price = price;
   // Add the character to the collection
   await db.collection("characters").add(character);
+}
+
+async function monitorCharactersOnSale(db: any) {
+  const querySnapshot = await db.collection("characters")
+    .where("onSale", "==", true)
+    .get();
+  let onSaleCount = querySnapshot.size;
+  const TARGET_COUNT = 10 + Math.floor(Math.random() * 4) - 2;
+  // Check that the list of on sale characters contains at least one
+  // character of each class
+  const classCounts = new Array(3).fill(0);
+  querySnapshot.docs.forEach((doc: any) => {
+    const characterData = doc.data();
+    classCounts[characterData.class]++;
+  });
+
+  // Create characters for sale if necessary
+  for (let i = 0; i < classCounts.length; i++) {
+    if (classCounts[i] === 0) {
+      await createCharacterForSale(db, i);
+      onSaleCount++;
+    }
+  }
+
+  while (onSaleCount < TARGET_COUNT) {
+    await createCharacterForSale(db);
+    onSaleCount++;
+  }
 }
 
 export const generateOnSaleCharacters = onRequest((request, response) => {
   logger.info("Generating on sale characters");
   const db = admin.firestore();
-  const TARGET_COUNT = 10;
 
   corsMiddleware(request, response, async () => {
     try {
       // Count how many characters have the `onSale` flag set to true
       // in the collection
-      const querySnapshot = await db.collection("characters")
-        .where("onSale", "==", true)
-        .get();
-      let onSaleCount = querySnapshot.size;
-      let delta = 0;
-      console.log(`Number of on sale characters: ${onSaleCount}`);
-      while (onSaleCount < TARGET_COUNT) {
-        await createCharacterForSale(db);
-        // Increment the on sale count
-        onSaleCount++;
-        delta++;
-      }
+      const delta = 0;
+      monitorCharactersOnSale(db);
       response.send({delta});
     } catch (error) {
       console.error("Error generating on sale characters:", error);
-      response.status(401).send("Unauthorized");
+      response.status(500).send("Errir");
     }
   });
 });
@@ -288,6 +305,11 @@ export const purchaseCharacter = onRequest((request, response) => {
           throw new Error("Player does not have enough gold");
         }
 
+        // Check if player has less than 10 characters
+        if (playerData.characters.length >= 10) {
+          throw new Error("Player has too many characters");
+        }
+
         // Subtract gold from player
         transaction.update(playerRef, {
           gold: admin.firestore.FieldValue.increment(-price),
@@ -306,7 +328,7 @@ export const purchaseCharacter = onRequest((request, response) => {
         });
       });
       console.log("Transaction successfully committed!");
-      createCharacterForSale(db);
+      monitorCharactersOnSale(db);
 
       response.send({status: 0});
     } catch (error) {

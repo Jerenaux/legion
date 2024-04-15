@@ -76,7 +76,8 @@ class ShopPage extends Component<object, State> {
   }
 
   getAmountOwned = (itemId) => {
-    return this.state.inventory.filter((item) => item === itemId).length;
+    // return this.state.inventory.filter((item) => item === itemId).length;
+    return 0;
   }
 
   openDialog = (dialogType: DialogType, article: any = null) => {
