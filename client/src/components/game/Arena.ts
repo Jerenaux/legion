@@ -70,7 +70,7 @@ export class Arena extends Phaser.Scene
         this.load.audio('heart', 'sfx/heart.wav');
         this.load.audio('cooldown', 'sfx/cooldown.wav');
         this.load.audio('healing', 'sfx/healing.wav');
-        this.load.audio('cast', 'sfx/curse.ogg');
+        this.load.audio('cast', 'sfx/curse.wav');
         this.load.audio('shatter', 'sfx/shatter.wav');
         this.load.audio('flames', 'sfx/flame.wav');
 
@@ -469,7 +469,7 @@ export class Arena extends Phaser.Scene
 
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
-        if (!this.selectedPlayer.canAct()) return;
+        if (!this.selectedPlayer?.canAct()) return;
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
@@ -674,7 +674,7 @@ export class Arena extends Phaser.Scene
                 case Terrain.ICE:
                     const icesprite = this.add.sprite(pixelX, pixelY, 'iceblock')
                         .setDepth(3 + y/10).setAlpha(0.9).setOrigin(0.5, 0.35);
-                    icesprite.postFX.addShine(0.5, .2, 5, true);
+                    icesprite.postFX.addShine(0.5, .2, 5);
                     this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
                     
                     const tile = this.tilesMap.get(serializeCoords(x, y));
@@ -728,8 +728,8 @@ export class Arena extends Phaser.Scene
             .play(spell.animation);
         this.playSound(spell.sfx);
 
-        if (spell.shake && !isKill) {
-            const duration = 250;
+        if (spell.shake) {
+            const duration = isKill ? 2000 : 250;
             const intensity = 0.002;
             this.cameras.main.shake(duration, intensity);
          } 
