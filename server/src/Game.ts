@@ -6,7 +6,7 @@ import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
 import { Terrain, PlayMode, Target, StatusEffect } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate } from '@legion/shared/interfaces';
+import { OutcomeData, TerrainUpdate, ChestsData, ChestsKeysData } from '@legion/shared/interfaces';
 
 export abstract class Game
 {
@@ -38,7 +38,7 @@ export abstract class Game
         console.log(`Created game ${this.id}`);
     }
 
-    addPlayer(socket: Socket, elo: number) {
+    addPlayer(socket: Socket, elo: number, chests: ChestsData) {
         if (this.sockets.length === 2) return;
         this.sockets.push(socket);
         socket.join(this.id);
@@ -48,6 +48,7 @@ export abstract class Game
         this.socketMap.set(socket, team);
         team.setSocket(socket);
         team.setElo(elo);
+        if (this.mode != PlayMode.PRACTICE) team.registerChestsData(chests);
     }
 
     abstract populateTeams(): void;
@@ -704,6 +705,7 @@ export abstract class Game
             gold: isWinner ? this.computeTeamGold(team) : 0,
             xp: this.computeTeamXP(team, otherTeam, duration, false),
             elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
+            chestsRewards: mode == PlayMode.CASUAL ? null : team.getChestsRewards() as ChestsKeysData,
         }
     }
 
@@ -776,6 +778,7 @@ export abstract class Game
                         xp: rewards.xp,
                         elo: rewards.elo,
                         characters: team.getCharactersDBUpdates(),
+                        chests: rewards.chestsRewards,
                     },
                 }
             );

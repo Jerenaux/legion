@@ -243,7 +243,6 @@ export class ServerPlayer {
         this.setStat(Stat.DEF, this.getStatValue(data, "def"));
         this.setStat(Stat.SPATK, this.getStatValue(data, "spatk"));
         this.setStat(Stat.SPDEF, this.getStatValue(data, "spdef"));
-        console.log(`Character HP: ${this.maxHP}, MP: ${this.maxMP}, ATK: ${this.atk}, DEF: ${this.def}, SPATK: ${this.spatk}, SPDEF: ${this.spdef}`);
         this.setInventory(data.carrying_capacity, data.inventory);
         this.setSpells(data.skill_slots, data.skills);
         this.level = data.level;

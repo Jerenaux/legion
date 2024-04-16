@@ -4,6 +4,8 @@ import { Game } from './Game';
 import {apiFetch} from './API';
 import { ServerPlayer } from './ServerPlayer';
 import { PlayMode } from "@legion/shared/enums";
+import { ChestsData } from '@legion/shared/interfaces';
+
 
 export class PvPGame extends Game {
     constructor(id: string, mode: PlayMode, io: Server) {
@@ -24,8 +26,8 @@ export class PvPGame extends Game {
     }
         
 
-    async addPlayer(socket: Socket, elo: number) {
-        super.addPlayer(socket, elo);
+    async addPlayer(socket: Socket, elo: number, chests: ChestsData) {
+        super.addPlayer(socket, elo, chests);
         if (this.sockets.length === 2) {
             this.start();
         }

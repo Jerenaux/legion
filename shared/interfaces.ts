@@ -90,6 +90,7 @@ export interface OutcomeData {
     gold: number;
     characters?: CharacterUpdate[];
     elo: number;
+    chestsRewards: any;
 }
 
 export interface CharacterStats {
@@ -124,4 +125,21 @@ export interface StatusEffectData {
     effect: StatusEffect;
     duration: number;
     chance: number;
+}
+
+export interface ChestsData {
+    bronze: ChestData;
+    silver: ChestData;
+    gold: ChestData;
+}
+
+export interface ChestData {
+    hasKey: boolean;
+    time: number;
+}
+
+export interface ChestsKeysData {
+    bronze: boolean;
+    silver: boolean;
+    gold: boolean;
 }

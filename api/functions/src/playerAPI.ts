@@ -7,6 +7,7 @@ import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 
 import {Class} from "@legion/shared/enums";
+import {ChestsData} from "@legion/shared/interfaces";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 
 const NB_START_CHARACTERS = 3;
@@ -22,12 +23,13 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
   logger.info("Creating character for user:", user.uid);
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
+  const now = Date.now() / 1000;
 
   // Define the character data structure
   const playerData = {
     name: generateName(),
     gold: 120,
-    carrying_capacity: 50,
+    carrying_capacity: 40,
     inventory: {
       consumables: [0, 0, 0, 1, 1, 2, 3, 3],
       equipment: [0, 1, 2],
@@ -38,9 +40,22 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
     league: 0,
     wins: 0,
     losses: 0,
-    crowd: 3,
     xp: 0,
     lvl: 1,
+    chests: {
+      bronze: {
+        time: now + (6*60*60),
+        hasKey: false,
+      },
+      silver: {
+        time: now + (12*60*60),
+        hasKey: false,
+      },
+      gold: {
+        time: now + (24*60*60),
+        hasKey: false,
+      },
+    } as ChestsData,
   };
 
   // Start a batch to ensure atomicity
@@ -91,11 +106,24 @@ export const playerData = onRequest((request, response) => {
           throw new Error("playerData is null");
         }
 
+        // Transform the chest field so that the `time` field becomes
+        // a `countdown` field
+        const now = Date.now() / 1000;
+        const chestKeys = Object.keys(playerData.chests);
+        chestKeys.forEach((key) => {
+          const chest = playerData.chests[key];
+          const timeLeft = chest.time - now;
+          chest.countdown = timeLeft > 0 ? timeLeft : 0;
+          delete chest.time;
+        });
+
         response.send({
           gold: playerData.gold,
           elo: playerData.elo,
           lvl: playerData.lvl,
           name: playerData.name,
+          league: playerData.league,
+          chests: playerData.chests,
         });
       } else {
         response.status(404).send("Not Found: Invalid player ID");

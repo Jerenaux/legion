@@ -63,7 +63,7 @@ export function listCellsOnTheWay(startX: number, startY: number, endX: number, 
     return cells;
 }
 
-export function inventorySize(inventory) {
+export function inventorySize(inventory: any) {
     return Object.values(inventory)
     .filter(Array.isArray)
     .map(arr => arr.length)

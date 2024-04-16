@@ -2,7 +2,8 @@ import { Socket } from "socket.io";
 
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
-import { CharacterUpdate } from '@legion/shared/interfaces';
+import { CharacterUpdate, ChestData, ChestsData, ChestsKeysData } from '@legion/shared/interfaces';
+import { chestTypes } from '@legion/shared/enums';
 
 
 const MULTIHIT_SCORE_BASE = 6;
@@ -18,10 +19,16 @@ export class Team {
     game: Game;
     socket: Socket | null = null;
     elo: number = 0;
+    chestKeys: ChestsKeysData;
 
     constructor(number: number, game: Game) {
         this.id = number;
         this.game = game;
+        this.chestKeys = {
+            bronze: false,
+            silver: false,
+            gold: false,
+        }
     }   
 
     addMember(player: ServerPlayer) {
@@ -88,6 +95,22 @@ export class Team {
 
     setElo(elo: number) {
         this.elo = elo;
+    }
+
+    registerChestsData(chestsData: ChestsData) {
+        for(const key in chestTypes) {
+            const chest = chestsData[key] as ChestData;
+            if (chest.hasKey) continue;
+            const timeLeft = chest.time - (Date.now() / 1000);
+            if (timeLeft <= 0) {
+                this.chestKeys[key] = true;
+                return; // Only one key unlocked per game
+            }
+        }
+    }
+
+    getChestsRewards() {
+        return this.chestKeys;
     }
 
     getSocket() {

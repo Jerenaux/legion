@@ -80,16 +80,12 @@ io.on('connection', async (socket: any) => {
       }
       game = gamesMap.get(gameId)!;
 
-      let elo = 0;
-      if (gameData.mode === PlayMode.RANKED) {
-        const playerData = await apiFetch(
-          `playerData?id=${gameId}`,
-          socket.firebaseToken,
-        );
-        elo = playerData.elo;
-      }
+      const playerData = await apiFetch(
+        `playerData?id=${gameId}`,
+        socket.firebaseToken,
+      );
 
-      game.addPlayer(socket, elo);
+      game.addPlayer(socket, playerData.elo, playerData.chests);
       socketMap.set(socket, game);
   
       socket.on('disconnect', () => {

@@ -89,7 +89,8 @@ export const rewardsUpdate = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const {isWinner, xp, gold, characters, elo} = request.body as OutcomeData;
+      const {isWinner, xp, gold, characters, elo, chestsRewards} =
+        request.body as OutcomeData;
       console.log(`Updating rewards for ${uid} with ${xp} XP and ${gold} gold 
       and elo ${elo}`);
 
@@ -107,11 +108,24 @@ export const rewardsUpdate = onRequest((request, response) => {
           throw new Error("Data does not exist");
         }
 
+        const chests = playerData.chests;
+        for (const [chestColor, hasObtainedKey]
+          of Object.entries(chestsRewards)) {
+          if (hasObtainedKey && chests[chestColor] === false) {
+            chests[chestColor] = true;
+          }
+        }
+
         transaction.update(playerRef, {
           xp: admin.firestore.FieldValue.increment(xp),
           gold: admin.firestore.FieldValue.increment(gold),
           elo: admin.firestore.FieldValue.increment(elo),
         });
+        if (chests) {
+          transaction.update(playerRef, {
+            chests,
+          });
+        }
         if (isWinner) {
           transaction.update(playerRef, {
             wins: admin.firestore.FieldValue.increment(1),
@@ -155,7 +169,7 @@ export const rewardsUpdate = onRequest((request, response) => {
       response.send({status: 0});
     } catch (error) {
       console.error("Error processing reward:", error);
-      response.status(401).send("Unauthorized");
+      response.status(500).send("Error");
     }
   });
 });
