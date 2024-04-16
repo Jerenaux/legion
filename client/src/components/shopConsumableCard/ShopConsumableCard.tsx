@@ -2,17 +2,16 @@
 import './ShopConsumableCard.style.css';
 import { h, Component } from 'preact';
 import { InventoryType, Target } from "@legion/shared/enums";
-import { items } from '@legion/shared/Items';
 import { BaseItem } from '@legion/shared/BaseItem';
 
 enum StatIcons {
-  '/inventory/cd_icon.png',
+  '/shop/hp_icon.png',
   '/inventory/mp_icon.png',
-  '/inventory/target_icon.png',
+  '/shop/attack_icon.png',
+  '/shop/def_icon.png',
   '/1.png',
   '/2.png',
   '/3.png',
-  '/4.png',
 }
 
 interface modalData {
@@ -56,7 +55,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
         <div className="consumable-card-effect-container">
           {data.effects.map((effect, index) => <div key={index} className="consumable-card-effect">
             <img src={StatIcons[effect.stat]} alt="" />
-            <span>{effect.value}</span>
+            <span>{effect.value > 0 ? `+${effect.value}` : effect.value}</span>
           </div>)}
           <div className="consumable-card-effect">
             <img src="/inventory/cd_icon.png" alt="cost" />

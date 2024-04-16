@@ -75,7 +75,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
             </div>)}
           </div>
           <div className="equipment-card-class-badge">
-            <img src="/shop/char_icon.png" alt="" />
+            <img src="/shop/helmet_icon.png" alt="" />
           </div>
         </div>
         <p className="equipment-card-description">{data.description}</p>
