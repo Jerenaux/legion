@@ -152,6 +152,7 @@ class ShopContent extends Component<ShopContentProps> {
                 </div>
                 <div className='shop-items-container'>{renderItems()}</div>
                 <PurchaseDialog
+                    gold={this.props.gold}
                     position={this.state.position}
                     dialogOpen={this.state.openModal}
                     dialogData={this.state.modalData}
