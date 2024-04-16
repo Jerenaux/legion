@@ -48,16 +48,16 @@
     font-weight: 400;
     font-size: 12px;
     text-transform: uppercase;
-    background-image: url('@assets/shop/daily_title_bar.png');
+    background-image: url('@assets/shop/daily_button.png');
     background-size: 100% 100%;
-    width: 92%;
-    margin-bottom: 6px;
+    width: 96%;
+    margin-bottom: 2px;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
-    height: 28px;
+    height: 36px;
 }
 
 .loot-box-footer span {
