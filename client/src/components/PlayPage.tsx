@@ -4,6 +4,7 @@ import Roster from './roster/Roster';
 import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
 import DailyQuest from './dailyQuest/DailyQuest';
+import DailyLootBox from './dailyLootBox/DailyLootBox';
 
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
@@ -70,13 +71,28 @@ class PlayPage extends Component {
           spectators: 5,
           duration: 621, // seconds
         }
-      ]
+      ],
+      chests: {
+        bronze: {
+          countdown: 86400,
+          hasKey: false,
+        },
+        silver: {
+          countdown: 0,
+          hasKey: false,
+        },
+        gold: {
+          countdown: 0,
+          hasKey: true,
+        },
+      }
     }
 
     return (
         <div className="play-content">
           <Roster />
           <PlayModes />
+          <DailyLootBox data={data.chests} />
           <DailyQuest questData={data.dailyQuests} />
           <OnGoingArena ongoingGameData={data.ongoingGames} />
         </div>

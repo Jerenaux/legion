@@ -458,10 +458,10 @@ canvas {
   
   .mainContent {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
-    padding-top: 36px;
+    padding: 36px 0;
   }
 
 .page-header {
