@@ -15,13 +15,13 @@
 }
 
 .shop-card-title {
-    padding: 6px 8px;
+    padding: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-image: url('@assets/shop/daily_title_bar.png');
     background-size: 100% 100%;
-    width: 90%;
+    width: 94%;
 }
 
 .shop-card-title-name {

@@ -6,6 +6,7 @@ import { equipments } from '@legion/shared/Equipments';
 import { INFO_BG_COLOR } from '../itemDialog/ItemDialogType';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { StatIcons } from '../shopConsumableCard/ShopConsumableCard';
+import { SpellTitleBG } from '../shopSpellCard/ShopSpellCard';
 
 enum ClassIcon {
   '/shop/warrior_icon.png',
@@ -53,11 +54,13 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
       price: data.price
     }
 
-    console.log('_______', data);
+    const titleStyle = {
+      backgroundImage: SpellTitleBG[data.rarity]
+    }
 
     return (
       <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
-        <div className="shop-card-title">
+        <div className="shop-card-title" style={titleStyle}>
           <span className="shop-card-title-name">{data.name}</span>
           <div className="equipment-card-info-container">
             <div className="equipment-card-info-box">

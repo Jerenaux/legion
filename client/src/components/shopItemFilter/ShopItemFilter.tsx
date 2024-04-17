@@ -62,10 +62,12 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
             const equipmentTemp = shopItems.equipment;
             const updatedEquipment = equipmentTemp.filter(item => updatedCheckboxes[item.slot]);
 
+            const noChecked = updatedEquipment.length == 0 && updatedCheckboxes.filter(item => item).length == 0;
+
             this.props.handleInventory({
                 consumables: shopItems.consumables,
                 spells: shopItems.spells,
-                equipment: updatedEquipment
+                equipment: noChecked ? shopItems.equipment : updatedEquipment
             });
         }
 

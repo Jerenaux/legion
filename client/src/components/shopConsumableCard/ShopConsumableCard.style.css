@@ -15,13 +15,13 @@
 }
 
 .shop-card-title {
-    padding: 6px 8px;
+    padding: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-image: url('@assets/shop/daily_title_bar.png');
     background-size: 100% 100%;
-    width: 90%;
+    width: 94%;
 }
 
 .consumable-card-info-box {
@@ -73,7 +73,7 @@
 .consumable-card-effect-container {
     display: flex;
     gap: 4px;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     min-height: 40px;
     width: 94%;

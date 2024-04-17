@@ -7,7 +7,7 @@ import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { BaseItem } from '@legion/shared/BaseItem';
 
-enum SpellTitleBG {
+export enum SpellTitleBG {
   'url(/shop/item_title_bg_blue.png)',
   'url(/shop/item_title_bg_green.png)',
   'url(/shop/item_title_bg_purple.png)'
@@ -43,7 +43,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
     }
 
     const titleStyle = {
-      backgroundImage: SpellTitleBG[data.id % 3]
+      backgroundImage: SpellTitleBG[data.rarity]
     }
 
     const modalData: modalData = {

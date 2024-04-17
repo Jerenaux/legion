@@ -3,6 +3,7 @@ import './ShopConsumableCard.style.css';
 import { h, Component } from 'preact';
 import { InventoryType, Target } from "@legion/shared/enums";
 import { BaseItem } from '@legion/shared/BaseItem';
+import { SpellTitleBG } from '../shopSpellCard/ShopSpellCard';
 
 export enum StatIcons {
   '/shop/hp_icon.png',
@@ -39,9 +40,13 @@ class ShopConsumableCard extends Component<ShopCardProps> {
       price: data.price
     }
 
+    const titleStyle = {
+      backgroundImage: SpellTitleBG[data.rarity]
+    }
+
     return (
       <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
-        <div className="shop-card-title">
+        <div className="shop-card-title" style={titleStyle}>
           <span>{data.name}</span>
           <div className="consumable-card-info-box">
             <img src="/shop/item_count_icon.png" alt="count icon" />
@@ -54,11 +59,11 @@ class ShopConsumableCard extends Component<ShopCardProps> {
         <p className="consumable-card-description">{data.description}</p>
         <div className="consumable-card-effect-container">
           {data.effects.map((effect, index) => <div key={index} className="consumable-card-effect">
-            <img src={StatIcons[effect.stat]} alt="" />
+            <img src={StatIcons[effect.stat]} style={effect.stat === 1 ? 'transform: scaleX(0.8)' : ''} alt="" />
             <span>{effect.value > 0 ? `+${effect.value}` : effect.value}</span>
           </div>)}
           <div className="consumable-card-effect">
-            <img src="/inventory/cd_icon.png" alt="cost" />
+            <img src="/inventory/cd_icon.png" style={{transform: 'scaleX(0.8)'}} alt="cost" />
             <span>{data.cooldown}</span>
           </div>
           <div className="consumable-card-effect">
