@@ -12,6 +12,12 @@ import {NewCharacter} from "@legion/shared/NewCharacter";
 
 const NB_START_CHARACTERS = 3;
 
+const chestsDelays = {
+  bronze: 6*60*60,
+  silver: 12*60*60,
+  gold: 24*60*60,
+};
+
 function generateName() {
   // limit names to length of 16 characters
   const dicts = {dictionaries: [adjectives, colors, animals]};
@@ -44,15 +50,15 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
     lvl: 1,
     chests: {
       bronze: {
-        time: now + (6*60*60),
+        time: now + chestsDelays.bronze,
         hasKey: false,
       },
       silver: {
-        time: now + (12*60*60),
+        time: now + chestsDelays.silver,
         hasKey: false,
       },
       gold: {
-        time: now + (24*60*60),
+        time: now + chestsDelays.gold,
         hasKey: false,
       },
     },
@@ -196,6 +202,56 @@ export const saveGoldReward = onRequest((request, response) => {
       });
     } catch (error) {
       console.error("saveGoldReward error:", error);
+      response.status(500).send("Error");
+    }
+  });
+});
+
+export const claimChest = onRequest((request, response) => {
+  logger.info("Claiming chest");
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = request.body.uid;
+      const chestType = request.body.chestType;
+
+      const playerRef = db.collection("players").doc(uid);
+      const playerDoc = await playerRef.get();
+
+      if (!playerDoc.exists) {
+        throw new Error("Invalid player ID");
+      }
+
+      const playerData = playerDoc.data();
+      if (!playerData) {
+        throw new Error("playerData is null");
+      }
+
+      const chest = playerData.chests[chestType as keyof ChestsData];
+      if (!chest) {
+        throw new Error("Invalid chest type");
+      }
+
+      if (chest.hasKey && chest.time <= Date.now()) {
+        playerData.chests[chestType as keyof ChestsData] = {
+          time: Date.now() + chestsDelays[chestType as keyof ChestsData],
+          hasKey: false,
+        };
+
+        await playerRef.update({
+          chests: playerData.chests,
+        });
+
+        response.send({
+          chestType,
+          hasKey: chest.hasKey,
+        });
+      } else {
+        response.status(400).send("Chest not ready");
+      }
+    } catch (error) {
+      console.error("claimChest error:", error);
       response.status(500).send("Error");
     }
   });
