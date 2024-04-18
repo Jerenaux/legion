@@ -299,6 +299,11 @@ export class Arena extends Phaser.Scene
         const tileSprite = this.add.image(startX + x * this.tileSize, startY + y * this.tileSize + this.scale.gameSize.height, 'groundTiles', `tile_${tile}`)
             .setDepth(1)
             .setOrigin(0); 
+
+        // 50% chance of horizontal flip
+        if (Math.random() > 0.5) {
+            tileSprite.setFlipX(true);
+        }
     
         // Tween the tile to its intended position
         this.tweens.add({
