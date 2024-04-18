@@ -4,6 +4,7 @@ import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
 import { PlayerInventory } from '@legion/shared/interfaces';
 import ShopContent from './shopContent/ShopContent';
+import { ShopTabs } from './shopContent/ShopContent.data';
 
 enum DialogType {
   ITEM_PURCHASE,
@@ -83,7 +84,7 @@ class ShopPage extends Component<ShopPageProps, State> {
         <div className="shop-container">
           <ShopContent
             gold={this.state.gold}
-            requireTab={Number(this.props.matches.id)}
+            requireTab={ShopTabs[this.props.matches.id?.toUpperCase()]}
             inventory={this.state.inventory}
             characters={this.state.characters} 
             fetchInventoryData={this.fetchInventoryData}

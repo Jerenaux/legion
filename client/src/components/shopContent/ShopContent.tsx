@@ -149,7 +149,7 @@ class ShopContent extends Component<ShopContentProps> {
                 <div className='shop-tabs-container'>
                     {Object.keys(ShopTabIcons).map(key => ShopTabIcons[key]).map((icon, index) =>
                         <Link
-                            href={`/shop/${index}`}
+                            href={`/shop/${ShopTabs[index].toLowerCase()}`}
                             onClick={() => this.setState({curr_tab: index})}
                             key={index}
                             className='shop-tab-item'

@@ -7,6 +7,7 @@ import { successToast, errorToast } from '../utils';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import { route } from 'preact-router';
 import PlusIcon from '@assets/plus.svg';
+import { ShopTabs } from '../shopContent/ShopContent.data';
 
 interface RosterState {
   characters: any[];
@@ -30,7 +31,7 @@ class Roster extends Component<object, RosterState> {
   }
 
   handleCardClick = () => {
-    route(`/shop/3`);
+    route(`/shop/${ShopTabs[3].toLowerCase()}`);
   }
 
   render() {
