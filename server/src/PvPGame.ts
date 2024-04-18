@@ -4,8 +4,12 @@ import { Game } from './Game';
 import {apiFetch} from './API';
 import { ServerPlayer } from './ServerPlayer';
 import { PlayMode } from "@legion/shared/enums";
+import { ChestsData } from '@legion/shared/interfaces';
+
 
 export class PvPGame extends Game {
+    nbExpectedPlayers = 2;
+
     constructor(id: string, mode: PlayMode, io: Server) {
         super(id, mode, io);
     }
@@ -24,10 +28,15 @@ export class PvPGame extends Game {
     }
         
 
-    async addPlayer(socket: Socket, elo: number) {
-        super.addPlayer(socket, elo);
-        if (this.sockets.length === 2) {
+    async addPlayer(socket: Socket, elo: number, chests: ChestsData) {
+        super.addPlayer(socket, elo, chests);
+        if (this.sockets.length === this.nbExpectedPlayers) {
             this.start();
         }
+    }
+
+    async start() {
+        if (this.teams.size !== this.nbExpectedPlayers) return;
+        super.start();
     }
 }

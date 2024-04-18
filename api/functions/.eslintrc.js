@@ -27,10 +27,11 @@ module.exports = {
   rules: {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
-    "indent": ["error", 2],
+    "indent": "off",
     "require-jsdoc": "off",
     "@typescript-eslint/ban-types": "off",
     "react/prefer-stateless-function": "off",
     "camelcase": "off",
+    "max-len": "off",
   },
 };

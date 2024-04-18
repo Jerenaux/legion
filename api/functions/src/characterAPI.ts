@@ -4,7 +4,7 @@ import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFields, Stat} from "@legion/shared/enums";
-import {OutcomeData} from "@legion/shared/interfaces";
+import {OutcomeData, ChestsTimeData} from "@legion/shared/interfaces";
 
 export const rosterData = onRequest((request, response) => {
   logger.info("Fetching rosterData");
@@ -89,9 +89,8 @@ export const rewardsUpdate = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const {isWinner, xp, gold, characters, elo} = request.body as OutcomeData;
-      console.log(`Updating rewards for ${uid} with ${xp} XP and ${gold} gold 
-      and elo ${elo}`);
+      const {isWinner, xp, gold, characters, elo, chestsRewards} =
+        request.body as OutcomeData;
 
       await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
@@ -107,10 +106,27 @@ export const rewardsUpdate = onRequest((request, response) => {
           throw new Error("Data does not exist");
         }
 
+        // Type guard to check if a key is a valid key of ChestsTimeData
+        function isKeyOfChestTimeData(key: any): key is keyof ChestsTimeData {
+          return ["bronze", "silver", "gold"].includes(key);
+        }
+
+        const chests = playerData.chests as ChestsTimeData;
+        if (chestsRewards) {
+          for (const [chestColor, hasObtainedKey]
+            of Object.entries(chestsRewards)) {
+            if (hasObtainedKey && isKeyOfChestTimeData(chestColor) &&
+              chests[chestColor].hasKey === false) {
+              chests[chestColor].hasKey = true;
+            }
+          }
+        }
+
         transaction.update(playerRef, {
           xp: admin.firestore.FieldValue.increment(xp),
           gold: admin.firestore.FieldValue.increment(gold),
           elo: admin.firestore.FieldValue.increment(elo),
+          chests,
         });
         if (isWinner) {
           transaction.update(playerRef, {
@@ -155,7 +171,7 @@ export const rewardsUpdate = onRequest((request, response) => {
       response.send({status: 0});
     } catch (error) {
       console.error("Error processing reward:", error);
-      response.status(401).send("Unauthorized");
+      response.status(500).send("Error");
     }
   });
 });

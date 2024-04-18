@@ -12,6 +12,7 @@ import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain } from "@legion/shared/enums";
 import { TerrainUpdate } from '@legion/shared/interfaces';
 
+const LOCAL_ANIMATION_SCALE = 3;
 export class Arena extends Phaser.Scene
 {
     gamehud;
@@ -37,6 +38,7 @@ export class Arena extends Phaser.Scene
     overviewReady = false;
     musicManager: MusicManager;
     sprites: Phaser.GameObjects.Sprite[] = [];
+    environmentalAudioSources;
 
     constructor() {
         super({ key: 'Arena' });
@@ -299,6 +301,11 @@ export class Arena extends Phaser.Scene
         const tileSprite = this.add.image(startX + x * this.tileSize, startY + y * this.tileSize + this.scale.gameSize.height, 'groundTiles', `tile_${tile}`)
             .setDepth(1)
             .setOrigin(0); 
+
+        // 50% chance of horizontal flip
+        if (Math.random() > 0.5) {
+            tileSprite.setFlipX(true);
+        }
     
         // Tween the tile to its intended position
         this.tweens.add({
@@ -609,21 +616,18 @@ export class Arena extends Phaser.Scene
         const otherTeam = this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
         this.playSound('slash');
-        player.attack(targetPlayer.x);
+        player.attack(targetPlayer.gridX);
         targetPlayer.setHP(hp);
-        targetPlayer.displaySlash(player);
-        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
-        this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
-            .setVisible(true)
-            .setDepth(3.5 + targetPlayer.gridY/10)
-            .setScale(0.5)
-            .play('impact');
+        targetPlayer.displaySlash(player);   
+        this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);    
     }
 
     processObstacleAttack({team, num, x, y}) {
         const player = this.getPlayer(team, num);
         this.playSound('slash');
+        this.playSound('shatter');
         player.attack(x);
+        this.displayAttackImpact(x, y);
     }
 
     processCooldown({num, cooldown}) {
@@ -674,6 +678,10 @@ export class Arena extends Phaser.Scene
                 case Terrain.FIRE:
                     const sprite = this.add.sprite(pixelX, pixelY, '')
                         .setDepth(3 + y/10).setScale(2).setAlpha(0.9);
+                    this.addFlames();
+                    sprite.on('destroy', () => {
+                        this.removeFlames();
+                    });
                     sprite.anims.play('ground_flame');
                     this.sprites.push(sprite);
                     this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
@@ -720,6 +728,15 @@ export class Arena extends Phaser.Scene
         });
     }    
 
+    displayAttackImpact(gridX, gridY) {
+        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(gridX, gridY);
+        this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
+            .setVisible(true)
+            .setDepth(3.5 + gridY/10)
+            .setScale(0.5)
+            .play('impact');
+    }
+
     processLocalAnimation({x, y, id, isKill}) {
         // Convert x and y in grid coords to pixels
         const {x: pixelX, y: pixelYInitial} = this.gridToPixelCoords(x, y);
@@ -732,7 +749,9 @@ export class Arena extends Phaser.Scene
         this.localAnimationSprite.setPosition(pixelX, pixelY)
             .setVisible(true)
             .setDepth(3.5 + y/10)
+            .setScale(LOCAL_ANIMATION_SCALE)
             .play(spell.animation);
+        console.log(this.localAnimationSprite.scaleX, this.localAnimationSprite.scaleY);
         this.playSound(spell.sfx);
 
         if (spell.shake) {
@@ -766,7 +785,7 @@ export class Arena extends Phaser.Scene
 
     createSounds() {
         this.SFX = {};
-        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing', 'cast', 'thunder', 'ice']
+        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing', 'cast', 'thunder', 'ice', 'shatter', 'flames']
         sounds.forEach((sound) => {
             this.SFX[sound] = this.sound.add(sound);
         })
@@ -780,7 +799,7 @@ export class Arena extends Phaser.Scene
         // // Calculate panning (left/right balance) based on positions
         // const pan = 100; // Phaser.Math.Clamp((audioSourcePosition.x - playerPosition.x) / 400, -1, 1);
 
-        this.SFX[name].play({delay: 0});
+        this.SFX[name].play({delay: 0, loop});
     }
 
     stopSound(name) {
@@ -1016,13 +1035,17 @@ export class Arena extends Phaser.Scene
         this.createSounds();
         this.connectToServer();
 
-        this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(3).setOrigin(0.5, 0.7).setVisible(false);
+        this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(LOCAL_ANIMATION_SCALE).setOrigin(0.5, 0.7).setVisible(false);
         this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);
 
         this.input.mouse.disableContextMenu();
 
         this.musicManager = new MusicManager(this, 2, 13, [5, 6, 11]);
         this.musicManager.playBeginning();
+
+        this.environmentalAudioSources = {
+            flames: 0,
+        }
     }
 
     createHUD() {
@@ -1191,6 +1214,26 @@ export class Arena extends Phaser.Scene
                 sprite.anims.timeScale = originalTimeScale;
             });
         });
+    }
+
+    addFlames() {
+        this.environmentalAudioSources.flames++;
+        this.updateEnvironmentAudio();
+    }
+
+    removeFlames() {
+        this.environmentalAudioSources.flames--;
+        this.updateEnvironmentAudio();
+    }
+
+    updateEnvironmentAudio() {
+        const flames = this.environmentalAudioSources.flames;
+        console.log(`Flames: ${flames}`);
+        if (flames > 0) {
+            this.playSound('flames', 0.5, true);
+        } else {
+            this.stopSound('flames');
+        }
     }
     
 

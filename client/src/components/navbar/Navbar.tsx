@@ -66,6 +66,7 @@ class Navbar extends Component<Props, State> {
       async fetchPlayerData() {
         try {
             const data = await apiFetch('playerData');
+            console.log(data);
             this.setState({ 
                 name: data.name,
                 lvl: data.lvl,

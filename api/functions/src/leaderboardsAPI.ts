@@ -27,7 +27,6 @@ export const fetchLeaderboard = onRequest((request, response) => {
           wins: player.wins,
           losses: player.losses,
           winsRatio: winsRatio + "%",
-          crowdScore: player.crowd,
         };
       });
       response.send(leaderboard);

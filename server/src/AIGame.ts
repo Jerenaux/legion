@@ -7,12 +7,15 @@ import {apiFetch} from './API';
 import { Class, PlayMode } from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
+import { ChestsData } from '@legion/shared/interfaces';
 
 const TICK = 100;
 const AI_VS_AI = false;
 const FREEZE = true;
 
 export class AIGame extends Game {
+    nbExpectedPlayers = 1;
+
     constructor(id: string, mode: PlayMode, io: Server) {
         super(id, mode, io);
     }
@@ -64,14 +67,17 @@ export class AIGame extends Game {
         this.createAITeam(aiTeam!, nb, levels);
     }
 
-    async addPlayer(socket: Socket, elo: number) {
-        super.addPlayer(socket, elo);
-        if (this.sockets.length === 1) {
+    async addPlayer(socket: Socket, elo: number, chests: ChestsData) {
+        super.addPlayer(socket, elo, chests);
+        if (this.sockets.length === this.nbExpectedPlayers) {
             this.start();
+        } else {
+            console.log(`Waiting for ${this.nbExpectedPlayers - this.sockets.length} more player(s) to join...`);
         }
     }
 
     async start() {
+        if (this.teams.size < this.nbExpectedPlayers) return;
         super.start();
         this.tickTimer = setInterval(this.AItick.bind(this), TICK);
     }
