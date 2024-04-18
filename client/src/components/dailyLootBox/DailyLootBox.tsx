@@ -1,7 +1,6 @@
 // DailyLootBox.tsx
 import './DailyLootBox.style.css';
 import { h, Component } from 'preact';
-import { route } from 'preact-router';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 
 interface DailyLootBoxProps {
@@ -18,17 +17,18 @@ class DailyLootBox extends Component<DailyLootBoxProps> {
   componentDidMount(): void {
     // Get the target end time from localStorage or set it if not present
     const endTime = localStorage.getItem('countdownEndTime');
-    const targetEndTime = endTime || new Date().getTime() - this.props.data.bronze.countdown * 1000;
+    const targetEndTime = endTime || new Date().getTime() + this.props.data.bronze.countdown * 1000;
 
     if (!endTime) {
       localStorage.setItem('countdownEndTime', targetEndTime.toString());
     }
 
-    this.setState({time: targetEndTime});
+    // this.setState({time: targetEndTime});
 
     this.timer = setInterval(() => {
       const currentTime  = new Date().getTime();
       const remainingTime = Math.max((targetEndTime as number - currentTime) / 1000, 0);
+
       this.setState({ time: remainingTime });
 
       if (remainingTime <= 0) {
