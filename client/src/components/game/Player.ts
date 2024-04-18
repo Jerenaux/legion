@@ -489,7 +489,9 @@ export class Player extends Phaser.GameObjects.Container {
 
     attack(targetX: number) {
         this.playAnim('attack', true);
-        this.sprite.flipX = targetX < this.gridX;
+        console.log(`Attacking ${targetX} ${this.gridX}`);
+        this.sprite.flipX = targetX > this.gridX;
+        
     }
 
     hurt() {
