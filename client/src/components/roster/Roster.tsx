@@ -30,7 +30,7 @@ class Roster extends Component<object, RosterState> {
   }
 
   handleCardClick = () => {
-    route(`/shop`);
+    route(`/shop/3`);
   }
 
   render() {

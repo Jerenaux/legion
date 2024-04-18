@@ -22,7 +22,13 @@ interface State {
   quantity: number;
 }
 
-class ShopPage extends Component<object, State> {
+interface ShopPageProps {
+  matches: {
+    id?: string;
+  };
+}
+
+class ShopPage extends Component<ShopPageProps, State> {
 
   state: State = {
     gold: 0,
@@ -72,10 +78,12 @@ class ShopPage extends Component<object, State> {
   }
 
   render() {
+
     return (
         <div className="shop-container">
           <ShopContent
             gold={this.state.gold}
+            requireTab={Number(this.props.matches.id)}
             inventory={this.state.inventory}
             characters={this.state.characters} 
             fetchInventoryData={this.fetchInventoryData}

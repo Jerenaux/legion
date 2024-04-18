@@ -10,9 +10,8 @@ export enum StatIcons {
   '/inventory/mp_icon.png',
   '/shop/attack_icon.png',
   '/shop/def_icon.png',
-  '/1.png',
-  '/2.png',
-  '/3.png',
+  '/shop/satk_icon.png',
+  '/shop/sdef_icon.png',
 }
 
 interface modalData {

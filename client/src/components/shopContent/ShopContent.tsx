@@ -15,8 +15,10 @@ import ShopItemFilter from '../shopItemFilter/ShopItemFilter';
 import { spells } from '@legion/shared/Spells';
 import { items } from '@legion/shared/Items';
 import { equipments } from '@legion/shared/Equipments';
+import { Link } from 'preact-router';
 interface ShopContentProps {
     gold: number;
+    requireTab: number;
     characters: CharacterData[];
     inventory: PlayerInventory;
     fetchInventoryData: () => void;
@@ -40,6 +42,10 @@ class ShopContent extends Component<ShopContentProps> {
             equipment: equipments,
             spells: spells
         },
+    }
+
+    componentDidMount(): void {
+        this.setState({curr_tab: this.props.requireTab ?? ShopTabs.CONSUMABLES});
     }
 
     handleOpenModal = (e: any, modalData: modalData) => {
@@ -142,13 +148,14 @@ class ShopContent extends Component<ShopContentProps> {
                  
                 <div className='shop-tabs-container'>
                     {Object.keys(ShopTabIcons).map(key => ShopTabIcons[key]).map((icon, index) =>
-                        <div
+                        <Link
+                            href={`/shop/${index}`}
+                            onClick={() => this.setState({curr_tab: index})}
                             key={index}
                             className='shop-tab-item'
-                            style={tabItemStyle(index)}
-                            onClick={() => this.setState({ curr_tab: index })}>
+                            style={tabItemStyle(index)}>
                             <img src={`/shop/${icon}`} alt="icon" />
-                        </div>
+                        </Link>
                     )}
                 </div>
                 <div className='shop-items-container'>{renderItems()}</div>

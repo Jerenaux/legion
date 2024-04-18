@@ -92,7 +92,7 @@ class HomePage extends Component<object, State> {
                         <Route default path="/play" component={PlayPage} />
                         <Route path="/queue/:mode" component={QueuePage} />
                         <Route path="/team/:id?" component={withAuth(TeamPage)} />
-                        <Route path="/shop" component={ShopPage} />
+                        <Route path="/shop/:id?" component={ShopPage} />
                         <Route path="/rank" component={RankPage} />
                     </Router>
                 </div>
