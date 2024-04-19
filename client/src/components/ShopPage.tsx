@@ -4,7 +4,7 @@ import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
 import { PlayerInventory } from '@legion/shared/interfaces';
 import ShopContent from './shopContent/ShopContent';
-import { ShopTabs } from './shopContent/ShopContent.data';
+import {ShopTabs} from '@legion/shared/enums';
 
 enum DialogType {
   ITEM_PURCHASE,
@@ -66,6 +66,32 @@ class ShopPage extends Component<ShopPageProps, State> {
     }
   }
 
+  updateInventory(articleId: string, quantity: number, shoptab: ShopTabs) {
+    const { inventory } = this.state;
+    let inventoryField = '';
+    switch (shoptab) {
+        case ShopTabs.CONSUMABLES:
+            inventoryField = 'consumables';
+            break;
+        case ShopTabs.EQUIPMENTS:
+            inventoryField = 'equipment';
+            break;
+        case ShopTabs.SPELLS:
+            inventoryField = 'spells';
+            break;
+    }
+    for(let i = 0; i < quantity; i++) {
+        inventory[inventoryField].push(articleId);
+    }
+
+    this.setState({
+        inventory: {
+            ...inventory,
+            [inventoryField]: inventory[inventoryField].sort()
+        }
+    });
+  }
+
   async fetchCharactersOnSale() {
     try {
         const data = await apiFetch('listOnSaleCharacters');
@@ -87,7 +113,9 @@ class ShopPage extends Component<ShopPageProps, State> {
             requireTab={ShopTabs[this.props.matches.id?.toUpperCase()]}
             inventory={this.state.inventory}
             characters={this.state.characters} 
-            fetchInventoryData={this.fetchInventoryData}
+            fetchInventoryData={this.fetchInventoryData.bind(this)}
+            updateInventory={this.updateInventory.bind(this)}
+            fetchCharactersOnSale={this.fetchCharactersOnSale.bind(this)}
           />
       </div>
     );

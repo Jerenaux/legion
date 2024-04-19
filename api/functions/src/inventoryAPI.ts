@@ -2,8 +2,9 @@ import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {items} from "@legion/shared/Items";
+import {spells} from "@legion/shared/Spells";
 import {equipments} from "@legion/shared/Equipments";
-import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot}
+import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, ShopTabs}
   from "@legion/shared/enums";
 import {Equipment} from "@legion/shared/interfaces";
 import {inventorySize} from "@legion/shared/utils";
@@ -44,40 +45,60 @@ export const purchaseItem = onRequest((request, response) => {
       if (docSnap.exists) {
         const itemId = request.body.articleId;
         const nb = request.body.quantity;
-        const inventoryType = request.body.inventoryType as InventoryType;
+        const inventoryType = request.body.inventoryType as ShopTabs;
+        console.log(`itemId: ${itemId}, nb: ${nb}, inventoryType: ${inventoryType}`);
 
-        const itemPrice = items[itemId].price;
+        let itemPrice = 0;
+        switch (inventoryType) {
+          case ShopTabs.CONSUMABLES:
+            itemPrice = items[itemId].price;
+            break;
+          case ShopTabs.SPELLS:
+            itemPrice = spells[itemId].price;
+            break;
+          case ShopTabs.EQUIPMENTS:
+            itemPrice = equipments[itemId].price;
+            break;
+          default:
+            response.status(500).send("Invalid inventory type");
+            return;
+        }
         const totalPrice = itemPrice * nb;
 
         let gold = docSnap.data()?.gold;
         if (gold < totalPrice) {
           response.status(500).send("Insufficient gold");
+          return;
         }
 
         // Check that the player has enough space in their inventory
         const inventory = docSnap.data()?.inventory;
         if (inventorySize(inventory) + nb > docSnap.data()?.carrying_capacity) {
           response.status(500).send("Inventory full");
+          return;
         }
 
         gold -= totalPrice;
 
         switch (inventoryType) {
-        case InventoryType.CONSUMABLES:
-          for (let i = 0; i < nb; i++) {
-            inventory.consumables.push(itemId);
-          }
-          break;
-        case InventoryType.SKILLS:
-          for (let i = 0; i < nb; i++) {
-            inventory.spells.push(itemId);
-          }
-          break;
-        case InventoryType.EQUIPMENTS:
-          for (let i = 0; i < nb; i++) {
-            inventory.equipment.push(itemId);
-          }
-          break;
+          case ShopTabs.CONSUMABLES:
+            for (let i = 0; i < nb; i++) {
+              inventory.consumables.push(itemId);
+            }
+            break;
+          case ShopTabs.SPELLS:
+            for (let i = 0; i < nb; i++) {
+              inventory.spells.push(itemId);
+            }
+            break;
+          case ShopTabs.EQUIPMENTS:
+            for (let i = 0; i < nb; i++) {
+              inventory.equipment.push(itemId);
+            }
+            break;
+          default:
+            response.status(500).send("Invalid inventory type");
+            return;
         }
 
         await db.collection("players").doc(uid).update({

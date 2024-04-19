@@ -1,9 +1,8 @@
 // ShopItemFilter.tsx
-import { Class, EquipmentSlot } from '@legion/shared/enums';
+import { Class, EquipmentSlot, ShopTabs } from '@legion/shared/enums';
 import './ShopItemFilter.style.css'
 import { h, Component } from 'preact';
 import { ShopItems } from '@legion/shared/interfaces';
-import { ShopTabs } from '../shopContent/ShopContent.data';
 
 interface ShopItemFilterProps {
     curr_tab: ShopTabs;

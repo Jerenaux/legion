@@ -2,9 +2,9 @@
 import './ShopContent.style.css';
 import { h, Component } from 'preact';
 import { apiFetch } from '../../services/apiService';
-import { InventoryType } from '@legion/shared/enums';
+import { InventoryType, ShopTabs } from '@legion/shared/enums';
 import { PlayerInventory, ShopItems } from '@legion/shared/interfaces';
-import { ShopTabIcons, ShopTabs } from './ShopContent.data';
+import { ShopTabIcons } from './ShopContent.data';
 import { errorToast, successToast } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
@@ -22,6 +22,8 @@ interface ShopContentProps {
     characters: CharacterData[];
     inventory: PlayerInventory;
     fetchInventoryData: () => void;
+    updateInventory: (articleId: string, quantity: number, shoptab: ShopTabs) => void;
+    fetchCharactersOnSale: () => void;
 }
 
 interface modalData {
@@ -85,16 +87,22 @@ class ShopContent extends Component<ShopContentProps> {
         const payload = {
             articleId: id,
             quantity,
+            inventoryType: this.state.curr_tab
         };
         console.log(payload);
 
-        apiFetch('purchaseItem', {
+        apiFetch(this.state.curr_tab == ShopTabs.CHARACTERS ? 'purchaseCharacter' : 'purchaseItem', {
             method: 'POST',
             body: payload
         })
             .then(data => {
                 console.log(data);
-                this.props.fetchInventoryData();
+                if (this.state.curr_tab == ShopTabs.CHARACTERS) {
+                    this.props.fetchCharactersOnSale();
+                } else {
+                    this.props.updateInventory(id.toString(), quantity, this.state.curr_tab);
+                    this.props.fetchInventoryData();
+                }
                 successToast('Purchase successful!');
             })
             .catch(error => errorToast(`Error: ${error}`));

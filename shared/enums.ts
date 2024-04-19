@@ -61,10 +61,17 @@ export enum Rarity {
 }
 
 export enum InventoryType {
-    SKILLS = 'spells',
-    EQUIPMENTS = 'equipment',
     CONSUMABLES = 'consumables',
+    EQUIPMENTS = 'equipment',
+    SKILLS = 'spells',
     UTILITIES = 'utilities'
+}
+
+export enum ShopTabs {
+    CONSUMABLES,
+    EQUIPMENTS,
+    SPELLS,
+    CHARACTERS
 }
 
 export enum InventoryActionType {

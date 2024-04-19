@@ -1,9 +1,4 @@
-export enum ShopTabs {
-    CONSUMABLES,
-    EQUIPMENTS,
-    SPELLS,
-    CHARACTERS
-}
+
 
 export enum ShopTabIcons {
     CONSUMABLES = '/consumables_icon.png',
