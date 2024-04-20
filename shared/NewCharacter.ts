@@ -5,6 +5,7 @@ import {warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites}
 import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 import {selectStatToLevelUp, increaseStat} from "./levelling";
+import { getPrice } from "./economy";
 
 
 interface CharacterData {
@@ -270,10 +271,13 @@ export class NewCharacter {
   }
 
   getPrice(): number {
+    const reference = 135;
     // Returns the sum of all stats
-    const sum = Object.values(this.stats).reduce((a, b) => a + b, 0) * 10;
+    const sum = Object.values(this.stats).reduce((a, b) => a + b, 0);
+    const coefficient = sum / reference;
+    const price = Math.floor(getPrice(100) * coefficient);
     // Add +- 10% random variation
-    return sum + Math.floor(Math.random() * sum * 0.2);
+    return price + Math.floor(Math.random() * price * 0.2);
   }
 
   getCharacterData(includePrice = false): CharacterData {

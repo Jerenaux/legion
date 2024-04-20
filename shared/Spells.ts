@@ -2,6 +2,7 @@
 import { BaseSpell } from "./BaseSpell";
 import { Stat, Target, EffectDirection, Terrain, Rarity, StatusEffect, Class } from "./enums";
 import { EffectModifier, EffectModifiers } from "./interfaces";
+import { getPrice } from "./economy";
 
 export const spells:BaseSpell[] = [];
 
@@ -17,8 +18,8 @@ const SPBasedBoost = new EffectModifiers(
 
 spells[0] = new BaseSpell({
     id: 0,
-    name: "Fire",
-    description: "Throw a fireball",
+    name: "Fire X",
+    description: "3x3 fireball explosion that sets the ground on fire",
     frame: "fireball.png",
     animation: "explosion",
     size: 3,
@@ -31,8 +32,8 @@ spells[0] = new BaseSpell({
     effects: [{stat: Stat.HP, value: -300, modifiers: SPBasedBoostDeboost}],
     score: 100,
     terrain: Terrain.FIRE,
-    rarity: Rarity.RARE,
-    price: 500,
+    rarity: Rarity.EPIC,
+    price: getPrice(50),
     minLevel: 2,
     classes: [Class.BLACK_MAGE],
 });
@@ -40,7 +41,7 @@ spells[0] = new BaseSpell({
 spells[1] = new BaseSpell({
     id: 1,
     name: "Heal",
-    description: "Heals a target",
+    description: "Heals a single target",
     frame: "heal.png",
     animation: "potion_heal",
     size: 1,
@@ -52,8 +53,8 @@ spells[1] = new BaseSpell({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}],
     score: 10,
-    rarity: Rarity.RARE,
-    price: 600,
+    rarity: Rarity.COMMON,
+    price: getPrice(30),
     minLevel: 3,
     classes: [Class.WHITE_MAGE],
 });
@@ -61,7 +62,7 @@ spells[1] = new BaseSpell({
 spells[2] = new BaseSpell({
     id: 2,
     name: "Thunder",
-    description: "Unleash a thunder bolt",
+    description: "Unleash a thunder bolt and paralyzes the target for 60seconds",
     frame: "thunder.png",
     animation: "thunder",
     size: 1,
@@ -75,7 +76,7 @@ spells[2] = new BaseSpell({
     status: {effect: StatusEffect.PARALYZE, chance: 1, duration: 60},
     score: 80,
     rarity: Rarity.COMMON,
-    price: 400,
+    price: getPrice(20),
     minLevel: 1,
     classes: [Class.BLACK_MAGE],
 });
@@ -83,7 +84,7 @@ spells[2] = new BaseSpell({
 spells[3] = new BaseSpell({
     id: 3,
     name: "Ice",
-    description: "Generate a pillar of ice",
+    description: "Generate a pillar of ice and traps the target in ice",
     frame: "iceball.png",
     animation: "ice",
     size: 1,
@@ -97,8 +98,8 @@ spells[3] = new BaseSpell({
     score: 60,
     yoffset: 30,
     terrain: Terrain.ICE,
-    rarity: Rarity.RARE,
-    price: 400,
+    rarity: Rarity.COMMON,
+    price: getPrice(30),
     minLevel: 1,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
