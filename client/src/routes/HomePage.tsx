@@ -16,27 +16,26 @@ import Navbar from '../components/navbar/Navbar';
 import QueuePage from '../components/QueuePage';
 import withAuth from '../components/withAuth';
 
+import { apiFetch } from '../services/apiService';
+import { successToast, errorToast, PlayerData } from '../components/utils';
+
 interface State {
-    currentPage: string;
     showFirebaseUI: boolean;
+    playerData?: PlayerData;
 }
 
 class HomePage extends Component<object, State> {
     static contextType = AuthContext;
 
     state: State = {
-        currentPage: 'play',
         showFirebaseUI: false,
     };
 
     handleRouteChange = (e) => {
-        const pathParts = e.url.split('/');
 
-        const currentPage = pathParts[1]; // This will be 'team' if the URL is '/team/2'
         const showFirebaseUI = false;
 
         this.setState({
-            currentPage,
             showFirebaseUI,
         });
     };
@@ -76,14 +75,35 @@ class HomePage extends Component<object, State> {
         this.setState({ showFirebaseUI: false });
     }
 
+    componentDidMount() {
+        this.fetchPlayerData();
+    }
+    
+    async fetchPlayerData() {
+        try {
+            const data = await apiFetch('playerData');
+            console.log(data);
+            this.setState({ 
+                playerData: {
+                    name: data.name,
+                    lvl: data.lvl,
+                    gold: data.gold,
+                    elo: data.elo
+                }
+            });
+        } catch (error) {
+            errorToast(`Error: ${error}`);
+        }
+    }
+
     render() {
-        const { currentPage, showFirebaseUI } = this.state;
+        const { showFirebaseUI } = this.state;
         const { user } = this.context;
 
         return (
             <div className="homePage">
 
-                <Navbar user={user} initFirebaseUI={this.initFirebaseUI} logout={this.logout}/>
+                <Navbar user={user} playerData={this.state.playerData} initFirebaseUI={this.initFirebaseUI} logout={this.logout}/>
 
                 <div className="content">
 

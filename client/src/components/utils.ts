@@ -41,3 +41,9 @@ export function errorToast(text: string, duration: number = 3000) {
   showToast(text, duration, {background: "#ff4d4d"});
 }
  
+export interface PlayerData {
+    name: string;
+    lvl: number;
+    gold: number;
+    elo: number;
+}
