@@ -1,0 +1,95 @@
+.season-card-container {
+    background: url('@assets/rank/recap_bg.png');
+    background-size: 100% 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    padding-bottom: 14px;
+}
+
+.recap-single-container {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    justify-content: center;
+}
+
+.season-recap {
+    background: url('@assets/rank/season_recap_singleBG.png');
+    background-size: 100% 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 12px;
+    min-width: 92px;
+    min-height: 106px;
+    height: 82%;
+    position: relative;
+}
+
+.season-recap-title {
+    font-size: 14px;
+    color: #ffa600;
+}
+
+.season-recap-label {
+    font-size: 14px;
+    color: #FFFFFF;
+}
+
+.season-recap-img {
+    background: url('@assets/rank/active_rankno.png');
+    background-size: 100% 100%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.season-recap-img span {
+    font-size: 14px;
+    color: #FFFFFF;
+}
+
+.recap-season-bg {
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    margin-left: -1px;
+}
+
+.recap-season-bg img {
+    width: 56px;
+    height: 30px;
+}
+
+.season-share-button {
+    background: url('@assets/rank/share_btn_bg.png');
+    background-size: 100% 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    height: 36px;
+    padding: 2px 6px;
+    margin-right: 6px;
+}
+
+.season-share-button img {
+    width: 24px;
+    height: 22px;
+}
+
+.season-share-button span {
+    font-size: 8px;
+    color: #ffa600;
+}
