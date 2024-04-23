@@ -41,3 +41,10 @@ export function errorToast(text: string, duration: number = 3000) {
   showToast(text, duration, {background: "#ff4d4d"});
 }
  
+export function mapFrameToCoordinates(frame: number) {
+  const width = 10;
+  return {
+    x: (frame % width) * 32,
+    y: Math.floor(frame / width) * 32
+  }
+}

@@ -121,7 +121,7 @@ class ItemDialog extends Component<DialogProps> {
 
       return (
         <div className="equip-dialog-container">
-          <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
+          <img src={`/${dialogType}/${dialogData.frame}`}/>
           <p className='equip-dialog-name'>{dialogData.name}</p>
           <p className="equip-dialog-desc">{dialogData.description}</p>
           <div className="dialog-button-container">

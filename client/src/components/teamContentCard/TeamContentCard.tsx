@@ -2,7 +2,7 @@
 import { h, Component } from 'preact';
 import { useMemo } from 'react';
 import './TeamContentCard.style.css';
-import { errorToast, classEnumToString } from '../utils';
+import { classEnumToString, mapFrameToCoordinates } from '../utils';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -56,6 +56,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
     }
 
     handleUnEquipItem = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: string, index: number) => {
+        if (!modalData) return;
         this.handleOpenModal(e, modalData, modalType, index);
         this.props.handleItemEffect(modalData.effects, InventoryActionType.UNEQUIP);
     }
@@ -103,9 +104,17 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
             return items.slice(0, 6).map((item, index) => (
                 <div className="equip-item" key={index} onClick={(e) => this.handleUnEquipItem(e, equipments[item.value], ItemDialogType.EQUIPMENTS, index)}>
-                    <img src={item.value < 0 ? `/inventory/${item.key}_icon.png` : `/equipment/${equipments[item.value]?.frame}`} alt={item.key} />
+                    {item.value < 0 ? (
+                        <img src={`/inventory/${item.key}_icon.png`} alt={item.key} />
+                    ) : (
+                        <div className="special-equip" style={{
+                            backgroundImage: `url(equipment.png)`,
+                            backgroundPosition: `-${mapFrameToCoordinates(equipments[item.value].frame).x}px -${mapFrameToCoordinates(equipments[item.value].frame).y}px`,
+                        }}></div>
+                    )}
                 </div>
-            ))
+            ));
+            
         }
 
         const renderCharacterItems = useMemo(() => {
@@ -117,11 +126,21 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                 return desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key);
             });
 
+            // ${equipments[item.value]?.frame}
             return items.map((item, index) => (
                 <div className="equip-item sheet-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[item.value], ItemDialogType.EQUIPMENTS, specialSlotsStart + index)}>
-                    <img style={item.value < 0 && { transform: 'scaleY(0.6)' }} src={item.value > 0 ? `/equipment/${equipments[item.value]?.frame}` : `/inventory/${item.key}_icon.png`} alt={item.key} />
+                    {item.value < 0 ? (
+                        <img style={{ transform: 'scaleY(0.6)' }} src={`/inventory/${item.key}_icon.png`} alt={item.key} />
+                    ) : (
+                        <div className="special-equip" style={{ 
+                            backgroundImage: `url(equipment.png)`,
+                            backgroundPosition: `-${mapFrameToCoordinates(equipments[item.value].frame).x}px -${mapFrameToCoordinates(equipments[item.value].frame).y}px`,
+                        }}></div>
+                    )}
                 </div>
-            ))
+            ));
+            
+                  
         }, [characterData]);
 
 

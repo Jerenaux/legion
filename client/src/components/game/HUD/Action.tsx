@@ -7,6 +7,7 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import ItemDialog from '../../itemDialog/ItemDialog';
 import { CHARACTER_INFO, ItemDialogType } from '../../itemDialog/ItemDialogType';
 import { Effect } from '@legion/shared/interfaces';
+import { mapFrameToCoordinates } from '../../utils';
 
 interface ActionItemProps {
   characterId?: string,
@@ -75,14 +76,6 @@ class Action extends Component<ActionItemProps> {
       [InventoryType.EQUIPMENTS]: 'equipment'
     }
     const spritesheet = spriteSheetsMap[actionType];
-
-    function mapFrameToCoordinates(frame: number) {
-      const width = 10;
-      return {
-        x: (frame % width) * 32,
-        y: Math.floor(frame / width) * 32
-      }
-    }
 
     return (
       <div 
