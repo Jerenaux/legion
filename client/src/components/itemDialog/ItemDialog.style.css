@@ -101,6 +101,14 @@
     border-radius: 4px;
 }
 
+.equip-dialog-image {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #244752;
+    padding: 4px;
+    border-radius: 4px;
+}
+
 .equip-dialog-container .equip-dialog-name {
     font-size: 12px;
     margin-bottom: -6px;
@@ -139,6 +147,18 @@
     position: absolute;
     top: -16px;
     background-color: #1c1f25;    
+}
+
+.dialog-spell-container-image {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #244752;
+    padding: 4px;
+    border-radius: 4px;
+    position: absolute;
+    top: -16px;
+    background-color: #1c1f25;    
+    background-repeat: no-repeat;
 }
 
 .dialog-spell-container p {
@@ -214,6 +234,16 @@
     border: 1px solid #3c616c;
     border-radius: 4px;
     padding: 4px;
+}
+
+.dialog-item-heading-image {
+    width: 32px;
+    height: 32px;
+    background-color: #303540;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    padding: 4px;
+    background-repeat: no-repeat;
 }
 
 .dialog-item-title {

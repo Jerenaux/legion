@@ -8,7 +8,7 @@ import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { InventoryActionType, Stat, Target } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
-import { errorToast, successToast } from '../utils';
+import { errorToast, successToast, mapFrameToCoordinates } from '../utils';
 
 Modal.setAppElement('#root');
 interface DialogProps {
@@ -117,28 +117,49 @@ class ItemDialog extends Component<DialogProps> {
     };
 
     const equipmentDialog = (dialogData: BaseEquipment) => {
-      if (!dialogData.frame) return null;
+      if (!dialogData) return null;
 
+      const coordinates = mapFrameToCoordinates(dialogData.frame);
+      coordinates.x = -coordinates.x + 5;
+      coordinates.y = -coordinates.y + 5;
+      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
       return (
         <div className="equip-dialog-container">
-          <img src={`/${dialogType}/${dialogData.frame}`}/>
+          <div className="equip-dialog-image" style={{ 
+              backgroundImage: `url(equipment.png)`,
+              backgroundPosition,
+            }} />
           <p className='equip-dialog-name'>{dialogData.name}</p>
           <p className="equip-dialog-desc">{dialogData.description}</p>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" />{acceptBtn}</button>
-            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}>
+              <img src="/inventory/confirm_icon.png" alt="confirm" />
+              {acceptBtn}
+            </button>
+            <button className="dialog-decline" onClick={handleClose}>
+              <img src="/inventory/cancel_icon.png" alt="decline" />
+              Cancel
+            </button>
           </div>
         </div>
-      )
+    );
+    
     };
 
     const consumableDialog = (dialogData: BaseItem) => {
-      if (!dialogData.frame) return;
+      if (!dialogData) return;
 
+      const coordinates = mapFrameToCoordinates(dialogData.frame);
+      coordinates.x = -coordinates.x + 5;
+      coordinates.y = -coordinates.y + 5;
+      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
       return (
         <div className="dialog-item-container">
           <div className="dialog-item-heading">
-            <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
+            <div className="dialog-item-heading-image" style={{ 
+              backgroundImage: `url(consumables.png)`,
+              backgroundPosition,
+            }} />
             <div className="dialog-item-title">
               <span>{dialogData.name}</span>
               <span className="dialog-item-title-info">Self</span>
@@ -164,11 +185,18 @@ class ItemDialog extends Component<DialogProps> {
     };
 
     const skillDialog = (dialogData: BaseSpell) => {
-      if (!dialogData.frame) return;
+      if (!dialogData) return;
 
+      const coordinates = mapFrameToCoordinates(dialogData.frame);
+      coordinates.x = -coordinates.x + 2;
+      coordinates.y = -coordinates.y + 5;
+      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
       return (
         <div className="dialog-spell-container">
-          <img src={`/${dialogType}/${dialogData.frame}`} alt={dialogData.name} />
+            <div className="dialog-spell-container-image" style={{ 
+              backgroundImage: `url(spells.png)`,
+              backgroundPosition,
+            }} />
           <p className="dialog-spell-name">{dialogData.name}</p>
           <p className="dialog-spell-desc">{dialogData.description}</p>
           <div className="dialog-spell-info-container">

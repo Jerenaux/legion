@@ -7,7 +7,7 @@ export const equipments:BaseEquipment[] = [];
 equipments[0] = new BaseEquipment({
     id: 0,
     name: "Jagged Sword",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    description: "Increases ATK by 5",
     frame: 0,
     effects: [{stat: Stat.ATK, value: 5}],
     slot: EquipmentSlot.WEAPON,
@@ -21,7 +21,7 @@ equipments[0] = new BaseEquipment({
 equipments[1] = new BaseEquipment({
     id: 1,
     name: "Basic staff",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    description: "Increases SPATK by 5",
     frame: 20,
     effects: [{stat: Stat.SPATK, value: 5}],
     slot: EquipmentSlot.WEAPON,
@@ -35,7 +35,7 @@ equipments[1] = new BaseEquipment({
 equipments[2] = new BaseEquipment({
     id: 2,
     name: "Ring of defense",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    description: "Increases DEF by 3",
     frame: 40,
     effects: [{stat: Stat.DEF, value: 3}],
     slot: EquipmentSlot.LEFT_RING,
