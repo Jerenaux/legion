@@ -146,11 +146,15 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
         const renderSpellsItem = () => {
             if (!characterData) return;
+            console.log(characterData.skills);
 
             return Array.from({ length: characterData.skill_slots }, (_, i) => (
                 i < characterData.skills.length ? (
                     <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[characterData.skills[i]], ItemDialogType.SKILLS, i)}>
-                        <img src={`/spells/${spells[characterData.skills[i]]?.frame}`} alt={spells[characterData.skills[i]]?.name} />
+                        <div className="special-equip" style={{ 
+                            backgroundImage: `url(spells.png)`,
+                            backgroundPosition: `-${mapFrameToCoordinates(spells[characterData.skills[i]]?.frame).x}px -${mapFrameToCoordinates(spells[characterData.skills[i]]?.frame).y}px`,
+                        }} />
                     </div>
                 ) : (
                     <div className="team-item" key={i} >
@@ -165,7 +169,10 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             return Array.from({ length: characterData.carrying_capacity + characterData.carrying_capacity_bonus}, (_, i) => (
                 i < characterData.inventory.length ? (
                     <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[characterData.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
-                        <img src={`/consumables/${items[characterData.inventory[i]]?.frame}`} alt={items[characterData.inventory[i]].name} />
+                        <div className="special-equip" style={{ 
+                            backgroundImage: `url(consumables.png)`,
+                            backgroundPosition: `-${mapFrameToCoordinates(items[characterData.inventory[i]]?.frame).x}px -${mapFrameToCoordinates(items[characterData.inventory[i]]?.frame).y}px`,
+                        }} />
                     </div>
                 ) : (
                     <div className="team-item" key={i} >

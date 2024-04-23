@@ -209,28 +209,11 @@ canvas {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
-/* .skill, .item {
-    position: relative;
-    width: 43px;
-    height: 43px;
-    background: linear-gradient(to bottom, #654321, #A0522D);
-    border: 1px solid black;
-}
-
-.skill {
-  background: linear-gradient(to bottom, #0000CD, #ADD8E6);
-}
-
-.item {
-  background: linear-gradient(to bottom, #654321, #A0522D);
-} */
-
 .skill-item-image {
     width: 32px;
     height: 32px; 
     background-repeat: no-repeat;
     border-radius: 6px;
-    /* background-position: -40px -40px; */
 }
 
 .skill-item-image-off {
@@ -241,17 +224,15 @@ canvas {
     position: absolute;
     bottom: -1px;
     right: 0px;
-    color: white;   /* Or any color that matches your design */
-    font-size: 10px; /* Adjust as needed */
-    /* background-color: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
-    /* border-radius: 10px;   */
+    color: white;   
+    font-size: 10px; 
 }
 
 .item-qty {
     position: absolute;
     bottom: -1px;
     left: 2px;
-    font-size: 14px; /* Adjust as needed */
+    font-size: 14px; 
     background-color: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
     border-radius: 10px; 
     color: white; 

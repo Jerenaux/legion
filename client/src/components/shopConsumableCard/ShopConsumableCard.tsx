@@ -4,6 +4,7 @@ import { h, Component } from 'preact';
 import { InventoryType, Target } from "@legion/shared/enums";
 import { BaseItem } from '@legion/shared/BaseItem';
 import { SpellTitleBG } from '../shopSpellCard/ShopSpellCard';
+import { mapFrameToCoordinates } from '../utils';
 
 export enum StatIcons {
   '/shop/hp_icon.png',
@@ -42,6 +43,8 @@ class ShopConsumableCard extends Component<ShopCardProps> {
     const titleStyle = {
       backgroundImage: SpellTitleBG[data.rarity]
     }
+    const coordinates = mapFrameToCoordinates(data.frame);
+    console.log(coordinates);
 
     return (
       <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
@@ -53,7 +56,10 @@ class ShopConsumableCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="consumable-card-content">
-          <img src={`/consumables/${data.frame}`} alt="spell-image" />
+          <div className="shop-portrait" style={{ 
+              backgroundImage: `url(consumables.png)`,
+              backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
+          }} />
         </div>
         <p className="consumable-card-description">{data.description}</p>
         <div className="consumable-card-effect-container">

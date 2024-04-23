@@ -79,7 +79,7 @@ class Action extends Component<ActionItemProps> {
 
     return (
       <div 
-        className={`${actionType} ${index === clickedIndex ? 'flash-effect' : ''}`} 
+        className={`${index === clickedIndex ? 'flash-effect' : ''}`} 
         onClick={handleOnClickAction}>
         {action.id > -1 && <div 
           className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}

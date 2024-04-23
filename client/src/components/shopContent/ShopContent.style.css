@@ -37,3 +37,8 @@
     overflow-y: auto;
 }
 
+.shop-portrait {
+    width: 32px;
+    height: 32px;
+    margin: 10px;
+}

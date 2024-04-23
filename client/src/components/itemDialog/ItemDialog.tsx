@@ -188,15 +188,17 @@ class ItemDialog extends Component<DialogProps> {
       if (!dialogData) return;
 
       const coordinates = mapFrameToCoordinates(dialogData.frame);
-      coordinates.x = -coordinates.x + 2;
-      coordinates.y = -coordinates.y + 5;
+      coordinates.x = -coordinates.x + 0;
+      coordinates.y = -coordinates.y + 0;
       const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
       return (
         <div className="dialog-spell-container">
+          <div className="spell-wrapper">
             <div className="dialog-spell-container-image" style={{ 
               backgroundImage: `url(spells.png)`,
               backgroundPosition,
             }} />
+          </div>
           <p className="dialog-spell-name">{dialogData.name}</p>
           <p className="dialog-spell-desc">{dialogData.description}</p>
           <div className="dialog-spell-info-container">

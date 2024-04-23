@@ -2,10 +2,8 @@
 import './ShopSpellCard.style.css'
 import { h, Component } from 'preact';
 import { Class, InventoryType, Target } from "@legion/shared/enums";
-import { spells } from '@legion/shared/Spells';
 import { BaseSpell } from '@legion/shared/BaseSpell';
-import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { BaseItem } from '@legion/shared/BaseItem';
+import { mapFrameToCoordinates } from '../utils';
 
 export enum SpellTitleBG {
   'url(/shop/item_title_bg_blue.png)',
@@ -53,6 +51,8 @@ class ShopSpellCard extends Component<ShopCardProps> {
       price: data.price
     }
 
+    const coordinates = mapFrameToCoordinates(data.frame);
+
     return (
       <div className="spell-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
         <div className="spell-card-title" style={titleStyle}>
@@ -69,7 +69,10 @@ class ShopSpellCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="spell-card-content">
-          <img src={`/spells/${data.frame}`} alt="spell-image" />
+          <div className="shop-portrait" style={{ 
+                backgroundImage: `url(spells.png)`,
+                backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
+            }} />
           <div className="shop-card-class-container">
             {data.classes.map((classes, index) => <div key={index} className="spell-card-class" style={classStyle(classes)}>
               <img src={classes === Class.WARRIOR ? ClassIcon[0] : ClassIcon[1]} alt="mp" />

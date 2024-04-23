@@ -149,14 +149,25 @@
     background-color: #1c1f25;    
 }
 
+.spell-wrapper {
+    width: 43px;
+    height: 43px;
+    border: 1px solid #3e5367;
+    border-radius: 6px;
+    background-color: #1c1f25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -20px;
+    margin-bottom: -20px;
+}
+
 .dialog-spell-container-image {
     width: 32px;
     height: 32px;
-    border: 1px solid #244752;
-    padding: 4px;
+    /* padding: 4px; */
     border-radius: 4px;
     position: absolute;
-    top: -16px;
     background-color: #1c1f25;    
     background-repeat: no-repeat;
 }

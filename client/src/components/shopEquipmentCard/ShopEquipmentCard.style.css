@@ -78,10 +78,8 @@
     position: relative;
 }
 
-.equipment-card-content img {
-    width: 128px;
-    height: 128px;
-    transform: scale(0.75);
+.equipment-card-content .shop-portrait {
+    margin-left: 75px;
 }
 
 .equipment-card-class-badge {

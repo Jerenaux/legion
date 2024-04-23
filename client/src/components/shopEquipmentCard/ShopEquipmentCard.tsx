@@ -1,9 +1,8 @@
 // ShopEquipmentCard.tsx
 import './ShopEquipmentCard.style.css';
 import { h, Component } from 'preact';
-import { Class, InventoryType, Stat, equipmentFields } from "@legion/shared/enums";
-import { equipments } from '@legion/shared/Equipments';
-import { INFO_BG_COLOR } from '../itemDialog/ItemDialogType';
+import { Class, InventoryType, equipmentFields } from "@legion/shared/enums";
+import { mapFrameToCoordinates } from '../utils';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { StatIcons } from '../shopConsumableCard/ShopConsumableCard';
 import { SpellTitleBG } from '../shopSpellCard/ShopSpellCard';
@@ -37,16 +36,6 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
       }
     }
 
-    const statColor = (statIndex: number) => {
-      return {
-        backgroundColor: INFO_BG_COLOR[Stat[statIndex]]
-      }
-    }
-
-    const statValue = (value: number) => {
-      return value > 0 ? `+${value}` : value;
-    }
-
     const modalData: modalData = {
       id: data.id,
       name: data.name,
@@ -57,6 +46,8 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
     const titleStyle = {
       backgroundImage: SpellTitleBG[data.rarity]
     }
+
+    const coordinates = mapFrameToCoordinates(data.frame);
 
     return (
       <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
@@ -74,7 +65,10 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="equipment-card-content">
-          <img src={`/equipment/${data.frame}`} alt="equipment-image" />
+          <div className="shop-portrait" style={{ 
+                backgroundImage: `url(equipment.png)`,
+                backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
+            }} />
           <div className="shop-card-class-container">
             {data.classes.map((classes, index) => <div key={index} className="shop-card-class" style={classStyle(classes)}>
               <img src={classes === Class.WARRIOR ? ClassIcon[0] : ClassIcon[1]} style={classes === Class.WARRIOR ? 'transform: scaleX(1.5)' : ''} alt="mp" />

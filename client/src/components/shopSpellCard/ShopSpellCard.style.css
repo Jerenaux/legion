@@ -70,10 +70,8 @@
     padding: 0 4px;
 }
 
-.spell-card-content img {
-    width: 128px;
-    height: 128px;
-    border-radius: 12px;
+.spell-card-content .shop-portrait {
+    margin-left: 75px;
 }
 
 .spell-card-class {
