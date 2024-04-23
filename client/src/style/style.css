@@ -726,6 +726,7 @@ canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 32px;
   width: 1024px;
   margin: 0 auto;
 }
@@ -740,6 +741,7 @@ canvas {
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  padding-top: 36px;
 }
 
 .leaderboard-table {

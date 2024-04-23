@@ -82,6 +82,7 @@
     height: 36px;
     padding: 2px 6px;
     margin-right: 6px;
+    cursor: pointer;
 }
 
 .season-share-button img {

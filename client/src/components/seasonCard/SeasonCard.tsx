@@ -49,7 +49,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                 </div>
             </div>
         </div>
-        <div className="season-share-button">
+        <div className="season-share-button" onClick={() => {}}>
             <img src="/rank/share_icon.png" alt="" />
             <span>SHARE</span>
         </div>

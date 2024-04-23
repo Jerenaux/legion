@@ -65,8 +65,8 @@ class RankPage extends Component {
           description: "Lorem ipsum blabla"
         }
       ],
-      promotionRows: 5, // means, show green promotion arrows for the first 5 rows
-      demotionRows: 4, // red demotion arros for last 4
+      promotionRows: 2, // means, show green promotion arrows for the first 5 rows
+      demotionRows: 1, // red demotion arros for last 4
       ranking: [ // Data for the rows in leaderboard
         {
           "rank": 1,
@@ -115,16 +115,17 @@ class RankPage extends Component {
 
   render() {
     if (!this.state.leaderboardData) return;
-    const columns = ['rank', 'player', 'elo', 'wins', 'losses', 'winsRatio'];
+    const columns = ['No', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'Rewards'];
     const tabs = ['apex', 'zenith', 'gold', 'silver', 'bronze', 'alltime'];
 
     const getRankTabStyle = (index: number) => {
       return {
         backgroundImage: `url(/shop/tabs_${index === this.state.curr_tab ? 'active' : 'idle'}.png)`,
         backgroundSize: '100% 100%',
-        width: '64px',
-        height: '64px',
-        padding: '6px'
+        width: '48px',
+        height: '48px',
+        padding: '6px',
+        cursor: 'pointer'
       }
     }
 
@@ -135,13 +136,13 @@ class RankPage extends Component {
           <AwardedPlayer players={this.state.leaderboardData.highlights}/>
         </div>
 
-        <div className="flexContainer">
+        <div className="flexContainer" style={{gap: '24px'}}>
           <div className="rank-tab-container">
             {tabs.map((tab, i) => <div key={i} style={getRankTabStyle(i)} onClick={() => this.setState({curr_tab: i})}>
               <img src={`/icons/${tab}_rank.png`} alt="" style={{width: '100%', height: '100%', objectFit: 'contain'}} />
             </div>)}
           </div>
-          <LeaderboardTable data={this.state.leaderboardData.ranking} columns={columns} handleSort={this.handleSort} camelCaseToNormal={this.camelCaseToNormal} />
+          <LeaderboardTable data={this.state.leaderboardData.ranking} columns={columns} promotionRows={this.state.leaderboardData.promotionRows} demotionRows={this.state.leaderboardData.demotionRows} handleSort={this.handleSort} camelCaseToNormal={this.camelCaseToNormal} />
         </div>
       </div>
     );

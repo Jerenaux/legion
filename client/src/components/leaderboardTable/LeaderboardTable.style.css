@@ -1,3 +1,91 @@
 .rank-table-container {
     flex: 1;
+    height: 100%;
+}
+
+.rank-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+
+    color: #FFFFFF;
+}
+
+.rank-table thead tr th {
+    padding: 4px 0;
+    font-size: 14px;
+    text-transform: capitalize;
+    border-bottom: 1px solid #ffa600;
+    cursor: pointer;
+}
+
+.rank-table .thead-sort-icon {
+    width: 8px;
+    height: 8px;
+    margin-left: 4px;
+}
+
+.rank-table tbody tr {
+    cursor: pointer;
+    background-image: url('@assets/leaderboard/leaderboard_bg.png');
+    background-size: 100% 100%;
+}
+
+.rank-table tbody tr:hover {
+    background-image: url('@assets/leaderboard/leaderboard_bg_active.png');
+}
+
+.rank-table tbody tr:hover .rank-row-avatar {
+    background-image: url('@assets/leaderboard/leaderboard_avatar_frame_active.png');
+}
+
+.rank-table tbody tr td {
+    text-align: center;
+}
+
+.rank-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    gap: 10px;
+    position: relative;
+    max-width: 132px;
+}
+
+.rank-row .rank-row-number {
+    background-size: 100% 100%;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.rank-row-avatar {
+    position: absolute;
+    left: 64px;
+    background-image: url('@assets/leaderboard/leaderboard_avatar_frame.png');
+    background-size: 100% 100%;
+    width: 48px;
+    height: 48px;
+}
+
+.rank-row-upgrade {
+    background-size: 100% 100%;
+    width: 24px;
+    height: 24px;
+}
+
+.rank-row-win {
+    color: #ffa600;
+}
+
+.rank-row-winRatio {
+    color: #35b0c5;
+}
+
+.rank-row-reward img {
+    width: 48px;
+    height: 40px;
 }
