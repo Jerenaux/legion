@@ -1,4 +1,4 @@
-// PlayPage.tsx
+// RankPage.tsx
 import { h, Component } from 'preact';
 import axios from 'axios';
 import LeaderboardTable from './leaderboardTable/LeaderboardTable';
@@ -13,21 +13,6 @@ class RankPage extends Component {
     curr_tab: 0
   };
 
-  handleSort = (column) => {
-    const isAscending = this.state.sortColumn === column ? !this.state.sortAscending : false;
-    // const sortedData = [...this.state.leaderboardData].sort((a, b) => {
-    //   if (a[column] < b[column]) return isAscending ? -1 : 1;
-    //   if (a[column] > b[column]) return isAscending ? 1 : -1;
-    //   return 0;
-    // });
-
-    this.setState({
-      leaderboardData: null,
-      sortColumn: column,
-      sortAscending: isAscending
-    });
-  };
-
   camelCaseToNormal = (text) => {
     const result = text.replace(/([A-Z])/g, ' $1').toLowerCase();
     return result.charAt(0).toUpperCase() + result.slice(1);
@@ -38,6 +23,7 @@ class RankPage extends Component {
     // if (response.data) {
     //   this.setState({ leaderboardData: response.data });
     // }
+
     const data = {
       seasonEnd: 604000, // Number of seconds until end of season for countdown
       playerRanking: { // To display in the box at the top left
@@ -71,7 +57,7 @@ class RankPage extends Component {
         {
           "rank": 1,
           "player": "legal_pink_iguan",
-          "elo": 100,
+          "elo": 90,
           "wins": 4,
           "losses": 10,
           "winsRatio": "29%"
@@ -79,34 +65,34 @@ class RankPage extends Component {
         {
           "rank": 2,
           "player": "representative_s",
-          "elo": 100,
+          "elo": 91,
           "wins": 5,
-          "losses": 30,
+          "losses": 12,
           "winsRatio": "14%"
         },
         {
           "rank": 3,
           "player": "Me", // Row of the player viewing the leaderboard
-          "elo": 100,
-          "wins": 5,
-          "losses": 30,
-          "winsRatio": "14%"
+          "elo": 92,
+          "wins": 6,
+          "losses": 13,
+          "winsRatio": "15%"
         },
         {
           "rank": 4,
           "player": "representative_s",
-          "elo": 100,
-          "wins": 5,
-          "losses": 30,
-          "winsRatio": "14%"
+          "elo": 93,
+          "wins": 7,
+          "losses": 14,
+          "winsRatio": "16%"
         },
         {
           "rank": 5,
           "player": "representative_s",
-          "elo": 100,
-          "wins": 5,
-          "losses": 30,
-          "winsRatio": "14%",
+          "elo": 94,
+          "wins": 8,
+          "losses": 15,
+          "winsRatio": "17%",
           "isFriend": true // When true, use the green highlight for the row
         }],
     };
@@ -115,7 +101,7 @@ class RankPage extends Component {
 
   render() {
     if (!this.state.leaderboardData) return;
-    const columns = ['No', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'Rewards'];
+    const columns = ['no', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
     const tabs = ['apex', 'zenith', 'gold', 'silver', 'bronze', 'alltime'];
 
     const getRankTabStyle = (index: number) => {
@@ -142,7 +128,7 @@ class RankPage extends Component {
               <img src={`/icons/${tab}_rank.png`} alt="" style={{width: '100%', height: '100%', objectFit: 'contain'}} />
             </div>)}
           </div>
-          <LeaderboardTable data={this.state.leaderboardData.ranking} columns={columns} promotionRows={this.state.leaderboardData.promotionRows} demotionRows={this.state.leaderboardData.demotionRows} handleSort={this.handleSort} camelCaseToNormal={this.camelCaseToNormal} />
+          <LeaderboardTable data={this.state.leaderboardData.ranking} columns={columns} promotionRows={this.state.leaderboardData.promotionRows} demotionRows={this.state.leaderboardData.demotionRows} camelCaseToNormal={this.camelCaseToNormal} />
         </div>
       </div>
     );

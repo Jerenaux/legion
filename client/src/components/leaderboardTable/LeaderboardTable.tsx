@@ -15,7 +15,6 @@ interface LeaderboardTableProps {
     columns: any;
     promotionRows: number;
     demotionRows: number;
-    handleSort: (column: any) => void;
     camelCaseToNormal: (text: string) => string;
 }
 
@@ -31,10 +30,53 @@ enum rewardImage {
     'bronze_chest'
 }
 
+['no', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards']
+
+enum columnType {
+    "elo" = "elo",
+    "losses" = "losses",
+    "player name" = "player",
+    "no" = "rank",
+    "wins" = "wins",
+    "wins ratio" = "winsRatio",
+    "rewards" = "rewards"
+}
+
 class LeaderboardTable extends Component<LeaderboardTableProps> {
+    state = {
+        tableData: [],
+        isAscending: Array(4).fill(false)
+    }
+
+    componentDidMount(): void {
+        this.setState({tableData: this.props.data});
+    }
+
+    handleSort (column: string, index: number) {
+        if (index < 2 || index > 5) return;
+
+        const sortedData = this.state.tableData.sort((a, b) => {
+            if (isNaN(a[column])) {
+                const aTemp = parseFloat(a[column].match(/\d+(\.\d+)?/)[0]);
+                const bTemp = parseFloat(b[column].match(/\d+(\.\d+)?/)[0]);
+
+                return this.state.isAscending[index - 2] ? aTemp - bTemp : bTemp - aTemp;               
+            } else {
+                return this.state.isAscending[index - 2] ? a[column] - b[column] : b[column] - a[column];
+            }
+        })
+
+        let ascendingTemp = this.state.isAscending;
+        ascendingTemp[index - 2] = !this.state.isAscending[index - 2];
+
+        this.setState({
+            tableData: sortedData,
+            isAscending: [...ascendingTemp]
+        });
+    }
 
     render() {
-        const { data, demotionRows, promotionRows, columns, handleSort, camelCaseToNormal } = this.props;
+        const { demotionRows, promotionRows, columns, camelCaseToNormal } = this.props;
 
         const rankRowNumberStyle = (index: number) => {
             return index < 3 ? {
@@ -45,11 +87,11 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
         }
 
         const getUpgradeImage = (index: number) => {
-            if (index < promotionRows) return {
+            if (index <= promotionRows) return {
                 backgroundImage: `url(/leaderboard/promote_icon.png)`,
             }
 
-            if (index >= data.length - demotionRows) return {
+            if (index > this.state.tableData.length - demotionRows) return {
                 backgroundImage: `url(/leaderboard/demote_icon.png)`,
             }
 
@@ -59,11 +101,11 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
         }
 
         const getRowBG = (index: number) => {
-            if (data[index].player.includes('Me')) return {
+            if (this.state.tableData[index].player.includes('Me')) return {
                 backgroundImage: `url(/leaderboard/leaderboard_bg_own.png)`,
             }
 
-            if (data[index].isFriend) return {
+            if (this.state.tableData[index].isFriend) return {
                 backgroundImage: `url(/leaderboard/leaderboard_bg_friend.png)`,
             }
 
@@ -71,15 +113,21 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
         }
 
         const rankRowAvatar = (index: number) => {
-            if (data[index].player.includes('Me')) return {
+            if (this.state.tableData[index].player.includes('Me')) return {
                 backgroundImage: `url(/leaderboard/leaderboard_avatar_frame.png)`,
             }
 
-            if (data[index].isFriend) return {
+            if (this.state.tableData[index].isFriend) return {
                 backgroundImage: `url(/leaderboard/leaderboard_avatar_frame_friend.png)`,
             }
 
             return;
+        }
+
+        const sortIconStyle = (index: number) => {
+            return {
+                transform: `rotate(${this.state.isAscending[index - 2] ? '180' : '0'}deg)`
+            }
         }
 
         return (
@@ -88,27 +136,27 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                     <thead>
                         <tr>
                             {columns.map((column, i) => (
-                                <th key={i} onClick={() => { }}>
+                                <th key={i} onClick={() => this.handleSort(columnType[column], i)}>
                                     <span>{camelCaseToNormal(column)}</span>
-                                    {(i > 1 && i < 6) && <img className="thead-sort-icon" src="/leaderboard/arrow.png" alt="" />}
+                                    {(i > 1 && i < 6) && <img className="thead-sort-icon" src="/leaderboard/arrow.png" alt="" style={sortIconStyle(i)} />}
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((item, index) => (
+                        {this.state.tableData.map((item, index) => (
                             <tr key={index} className={item.player === 'Me' ? 'highlighted-row' : ''} style={getRowBG(index)}>
                                 <td className="rank-row">
                                     <div className="rank-row-number" style={rankRowNumberStyle(index)}>{item.rank}</div>
                                     <div className="rank-row-avatar" style={rankRowAvatar(index)}></div>
-                                    <div className="rank-row-upgrade" style={getUpgradeImage(index)}></div>
+                                    <div className="rank-row-upgrade" style={getUpgradeImage(this.state.tableData[index].rank)}></div>
                                 </td>
                                 <td>{item.player}</td>
                                 <td>{item.elo}</td>
                                 <td className="rank-row-win">{item.wins}</td>
                                 <td>{item.losses}</td>
                                 <td className="rank-row-winRatio">{item.winsRatio}</td>
-                                <td className="rank-row-reward">{index < 3 && <img src={`/shop/${rewardImage[index]}.png`} alt="" />}</td>
+                                <td className="rank-row-reward">{this.state.tableData[index].rank <= 3 && <img src={`/shop/${rewardImage[this.state.tableData[index].rank - 1]}.png`} alt="" />}</td>
                             </tr>
                         ))}
                     </tbody>
