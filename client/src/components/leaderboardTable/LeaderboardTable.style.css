@@ -5,10 +5,19 @@
 
 .rank-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
+    border-collapse: collapse;
 
     color: #FFFFFF;
+}
+
+.rank-table thead tr {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.rank-table thead tr th:first-child {
+    width: 172px;
 }
 
 .rank-table thead tr th {
@@ -25,10 +34,25 @@
     margin-left: 4px;
 }
 
+.rank-table tbody {
+    display: block;
+    max-height: 540px;
+    overflow-y: auto;
+    border-collapse: collapse;
+}
+
 .rank-table tbody tr {
     cursor: pointer;
     background-image: url('@assets/leaderboard/leaderboard_bg.png');
     background-size: 100% 100%;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    margin-top: 8px;
+}
+
+.rank-table tbody tr td:first-child {
+    width: 172px;
 }
 
 .rank-table tbody tr:hover {
@@ -40,6 +64,7 @@
 }
 
 .rank-table tbody tr td {
+    width: 126px;
     text-align: center;
 }
 

@@ -94,7 +94,88 @@ class RankPage extends Component {
           "losses": 15,
           "winsRatio": "17%",
           "isFriend": true // When true, use the green highlight for the row
-        }],
+        },
+        {
+          "rank": 6,
+          "player": "legal_pink_iguan",
+          "elo": 95,
+          "wins": 9,
+          "losses": 16,
+          "winsRatio": "18%"
+        },
+        {
+          "rank": 7,
+          "player": "representative_s",
+          "elo": 96,
+          "wins": 10,
+          "losses": 17,
+          "winsRatio": "19%"
+        },
+        {
+          "rank": 8,
+          "player": "representative_s", // Row of the player viewing the leaderboard
+          "elo": 92,
+          "wins": 12,
+          "losses": 13,
+          "winsRatio": "15%"
+        },
+        {
+          "rank": 9,
+          "player": "representative_s",
+          "elo": 99,
+          "wins": 11,
+          "losses": 14,
+          "winsRatio": "16%"
+        },
+        {
+          "rank": 10,
+          "player": "representative_s",
+          "elo": 83,
+          "wins": 17,
+          "losses": 9,
+          "winsRatio": "21%",
+        },  
+        {
+          "rank": 11,
+          "player": "legal_pink_iguan",
+          "elo": 65,
+          "wins": 9,
+          "losses": 2,
+          "winsRatio": "33%"
+        },
+        {
+          "rank": 12,
+          "player": "representative_s",
+          "elo": 106,
+          "wins": 10,
+          "losses": 57,
+          "winsRatio": "9%"
+        },
+        {
+          "rank": 13,
+          "player": "representative_s", // Row of the player viewing the leaderboard
+          "elo": 110,
+          "wins": 18,
+          "losses": 41,
+          "winsRatio": "7%"
+        },
+        {
+          "rank": 14,
+          "player": "representative_s",
+          "elo": 102,
+          "wins": 24,
+          "losses": 54,
+          "winsRatio": "31%"
+        },
+        {
+          "rank": 15,
+          "player": "representative_s",
+          "elo": 86,
+          "wins": 28,
+          "losses": 12,
+          "winsRatio": "19%",
+        },
+      ],
     };
     this.setState({ leaderboardData: data });
   }

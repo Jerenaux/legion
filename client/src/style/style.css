@@ -734,6 +734,7 @@ canvas {
 .rank-content .flexContainer {
   width: 100%;
   justify-content: space-around;
+  align-items: flex-start;
 }
 
 .rank-tab-container {

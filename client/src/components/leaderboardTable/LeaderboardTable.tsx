@@ -79,8 +79,8 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
         const { demotionRows, promotionRows, columns, camelCaseToNormal } = this.props;
 
         const rankRowNumberStyle = (index: number) => {
-            return index < 3 ? {
-                backgroundImage: `url(/leaderboard/${rankNoImage[index]}.png)`,
+            return index <= 3 ? {
+                backgroundImage: `url(/leaderboard/${rankNoImage[index - 1]}.png)`,
             } : {
                 backgroundImage: `url(/leaderboard/idle_rankno.png)`,
             }
@@ -147,7 +147,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                         {this.state.tableData.map((item, index) => (
                             <tr key={index} className={item.player === 'Me' ? 'highlighted-row' : ''} style={getRowBG(index)}>
                                 <td className="rank-row">
-                                    <div className="rank-row-number" style={rankRowNumberStyle(index)}>{item.rank}</div>
+                                    <div className="rank-row-number" style={rankRowNumberStyle(this.state.tableData[index].rank)}>{item.rank}</div>
                                     <div className="rank-row-avatar" style={rankRowAvatar(index)}></div>
                                     <div className="rank-row-upgrade" style={getUpgradeImage(this.state.tableData[index].rank)}></div>
                                 </td>
