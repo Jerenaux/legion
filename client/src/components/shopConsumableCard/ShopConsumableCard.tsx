@@ -44,7 +44,6 @@ class ShopConsumableCard extends Component<ShopCardProps> {
       backgroundImage: SpellTitleBG[data.rarity]
     }
     const coordinates = mapFrameToCoordinates(data.frame);
-    console.log(coordinates);
 
     return (
       <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>

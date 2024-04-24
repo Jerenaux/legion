@@ -67,10 +67,15 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
         const renderInfoBars = () => {
             if (!characterData) return;
-
-            const items = Object.entries(characterData.stats).map(
-                    ([key, value]) => ({ key, value: value as number })
-                );
+            const items = Object.entries(characterData.stats).map(([key, value]) => {
+                const equipmentBonus = characterData.equipment_bonuses[key] || 0; // Fallback to 0 if key is not present
+                const spBonus = characterData.sp_bonuses[key] || 0; // Fallback to 0 if key is not present
+                return {
+                    key,
+                    value: value + equipmentBonus + spBonus // Sum the values from the three sources
+                };
+            });
+            
 
             const order = ['hp', 'mp', 'atk', 'def', 'spatk', 'spdef'];
             const rearrangedItems = order.map(key => items.find(item => item.key === key));
@@ -146,7 +151,6 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
 
         const renderSpellsItem = () => {
             if (!characterData) return;
-            console.log(characterData.skills);
 
             return Array.from({ length: characterData.skill_slots }, (_, i) => (
                 i < characterData.skills.length ? (
