@@ -60,9 +60,10 @@
     position: absolute;
     bottom: 20px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 10px 0;
+    padding: 4px 8px;
     margin-left: -1px;
 }
 
@@ -93,4 +94,35 @@
 .season-share-button span {
     font-size: 8px;
     color: #ffa600;
+}
+
+.recap-season-timer-label {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+
+.recap-season-timer-label span {
+    font-size: 12px;
+    color: #ffa600;
+}
+
+.recap-season-timer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    color: #FFFFFF;
+}
+
+.recap-season-timer span {
+    font-size: 12px;
+}
+
+.season-timer-icon {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    bottom: 12px;
 }
