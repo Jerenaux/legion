@@ -354,7 +354,7 @@ export class ServerPlayer {
     increaseDamageDealt(amount: number) {
         if (amount < 0) return; // = healing
         this.damageDealt += amount;
-        this.team?.increaseScoreFromDamage(amount);
+        // this.team?.increaseScoreFromDamage(amount);
     }
 
     // Called when traversing cells with terrain effects

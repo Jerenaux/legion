@@ -23,7 +23,7 @@ export function convertBaseToSpell(base: BaseSpell): Spell {
         score: base.score,
         yoffset: base.yoffset,
         terrain: base.terrain,
-        rarity: base.rarity
+        effort: 0,
     });
 }
 

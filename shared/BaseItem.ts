@@ -15,6 +15,7 @@ export class BaseItem {
     size: number = 1;
     price: number = 0;
     rarity: Rarity = Rarity.COMMON;
+    effort: number = 0;
 
     constructor(props: ConsumableData) {
         Object.assign(this, props);

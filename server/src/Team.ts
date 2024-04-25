@@ -20,6 +20,9 @@ export class Team {
     socket: Socket | null = null;
     elo: number = 0;
     chestKeys: ChestsKeysData;
+    hpTotal: number = 0;
+    healedAmount: number = 0;
+    offensiveActions: number = 0;
 
     constructor(number: number, game: Game) {
         this.id = number;
@@ -34,6 +37,7 @@ export class Team {
     addMember(player: ServerPlayer) {
         this.members.push(player);
         player.setTeam(this);
+        this.hpTotal += player.getHP();
     }
 
     getMembers(): ServerPlayer[] {
@@ -77,6 +81,10 @@ export class Team {
 
     increaseScoreFromHeal(player: ServerPlayer) {
         this.score += HEAL_SCORE_BONUS * (1 + (1 - player.getPreviousHPRatio()));
+    }
+
+    incrementHealing(amount: number) {
+        this.healedAmount += amount;
     }
 
     snapshotScore() {
@@ -142,5 +150,29 @@ export class Team {
         for (let i = 0; i < this.members.length; i++) {
             this.members[i].clearAllTimers();
         }
+    }
+
+    incrementOffensiveActions() {
+        this.offensiveActions++;
+    }
+
+    getTotalHP() {
+        return this.hpTotal;
+    }
+
+    getHPLeft() {
+        let hpLeft = 0;
+        for (let i = 0; i < this.members.length; i++) {
+            hpLeft += this.members[i].getHP();
+        }
+        return hpLeft;
+    }
+
+    getHealedAmount() {
+        return this.healedAmount;
+    }
+
+    getOffensiveActions() {
+        return this.offensiveActions;
     }
 }

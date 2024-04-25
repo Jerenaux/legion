@@ -24,6 +24,7 @@ export class BaseSpell {
     minLevel: number = 0;
     classes: Class[] = [];
     status?: StatusEffectData;
+    effort: number = 0;
     
     constructor(props: SpellData) {
         Object.assign(this, props);

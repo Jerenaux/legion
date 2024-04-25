@@ -330,6 +330,7 @@ export abstract class Game
         const damage = this.calculateDamage(player, opponent);
         opponent.takeDamage(damage);
         player.increaseDamageDealt(damage);
+        player.team.incrementOffensiveActions();
 
         if (this.hasObstacle(opponent.x, opponent.y)) {
             const terrainUpdate = this.removeTerrain(opponent.x, opponent.y);
@@ -402,7 +403,7 @@ export abstract class Game
         // Only check if the item is applicable if there is a single target
         if (targets.length == 1 && !item.effectsAreApplicable(targets[0])) {
             console.log(`Item ${item.name} is not applicable!`);
-            return
+            return;
         };
 
         item.applyEffect(targets);
@@ -423,6 +424,7 @@ export abstract class Game
         targets.forEach(target => {
             if (target.HPHasChanged()) {
                 this.broadcastHPchange(target.team!, target.num, target.getHP(), target.getHPDelta());
+                target.team.incrementHealing(target.getHPDelta());
             }
             if (target.MPHasChanged()) {
                 this.emitMPchange(target.team!, target.num, target.getMP());
@@ -452,10 +454,11 @@ export abstract class Game
                 const delta = target.getHPDelta();
                 player.increaseDamageDealt(delta);
                 if (!target.isAlive()){
-                    player.team!.increaseScoreFromKill(player);
+                    // player.team!.increaseScoreFromKill(player);
                     isKill = true;
                 }
-                if (delta < 0) player.team!.increaseScoreFromDamage(-delta);
+                // if (delta < 0) player.team!.increaseScoreFromDamage(-delta);
+                if (delta > 0) player.team!.incrementHealing(delta);
             }
         });            
         player.team!.increaseScoreFromMultiHits(targets.length);
@@ -501,10 +504,7 @@ export abstract class Game
         }
 
         const spell: Spell | null = player.getSpellAtIndex(index);
-        if (!spell) {
-            console.log('no spell');
-            return;
-        }
+        if (!spell) return;
 
         if (spell.cost > player.getMP()) return;
         const mp = player.consumeMP(spell.cost);
@@ -519,6 +519,8 @@ export abstract class Game
             x = targetPlayer.x;
             y = targetPlayer.y;
         }
+
+        if (!spell.isHealingSpell()) player.team.incrementOffensiveActions();
 
         this.broadcast('cast', {
             team: team.id,
@@ -704,6 +706,8 @@ export abstract class Game
     computeGameOutcomes(team: Team, otherTeam: Team, winnerTeamId: number, duration: number, mode: PlayMode): OutcomeData {
         const isWinner = team.id === winnerTeamId;
         const eloUpdate = mode == PlayMode.RANKED ? this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : {winnerUpdate: 0, loserUpdate: 0};
+        const grade = this.computeGrade(team, otherTeam);
+        console.log(`Game grade for team ${team.id}: ${grade}`);
         return {
             isWinner,
             gold: isWinner ? this.computeTeamGold(team) : 0,
@@ -711,6 +715,13 @@ export abstract class Game
             elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
             chestsRewards: mode == PlayMode.PRACTICE ? null : team.getChestsRewards() as ChestsKeysData,
         }
+    }
+
+    computeGrade(team: Team, otherTeam: Team) {
+        const score = 0;
+        const hpFactor = team.getHPLeft() / team.getTotalHP();
+        const healingFactor = -(team.getHealedAmount() / (team.getHealedAmount() + otherTeam.getHealedAmount()));
+        const offenseFactor = -(team.getOffensiveActions() / (team.getOffensiveActions() + otherTeam.getOffensiveActions()));
     }
 
     updateElo(winningTeam: Team, losingTeam: Team): { winnerUpdate: number, loserUpdate: number } {
