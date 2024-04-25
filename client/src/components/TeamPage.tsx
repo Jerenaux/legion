@@ -1,8 +1,11 @@
 // PlayPage.tsx
+import 'react-loading-skeleton/dist/skeleton.css'
+
 import { h, Component } from 'preact';
 
 import Roster from './roster/Roster';
 import Inventory from './inventory/Inventory';
+import Skeleton from 'react-loading-skeleton';
 
 import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
@@ -13,7 +16,6 @@ import { equipments } from '@legion/shared/Equipments';
 import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 import { inventorySize } from '@legion/shared/utils';
-
 interface TeamPageState {
   inventory: {
     consumables: number[];
@@ -202,7 +204,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     return (
         <div className="team-content">
           <Roster />
-          <div className="character-inventory-container">
+          {this.state.character_sheet_data ? <div className="character-inventory-container">
             <TeamContentCard 
               characterId={this.state.character_id} 
               characterData={this.state.character_sheet_data} 
@@ -219,7 +221,14 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)}
             />
-          </div>
+          </div> : (
+            <Skeleton 
+              height={28} 
+              count={10} 
+              highlightColor='#0000004d' 
+              baseColor='#0f1421' 
+              style={{margin: '2px 0', width: '1024px'}}/>
+          )}
         </div>
       );
   }

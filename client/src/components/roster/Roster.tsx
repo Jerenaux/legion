@@ -1,5 +1,7 @@
 // Roster.tsx
 import './Roster.style.css';
+import 'react-loading-skeleton/dist/skeleton.css'
+
 import { h, Component } from 'preact';
 import CharacterCard from '../characterCard/CharacterCard';
 import { apiFetch } from '../../services/apiService';
@@ -8,6 +10,7 @@ import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import { route } from 'preact-router';
 import PlusIcon from '@assets/plus.svg';
 import { ShopTabs } from '../shopContent/ShopContent.data';
+import Skeleton from 'react-loading-skeleton';
 
 interface RosterState {
   characters: any[];
@@ -38,14 +41,14 @@ class Roster extends Component<object, RosterState> {
     return (
       <div className="rosterContainer">
         <BottomBorderDivider label="TEAM COMPOSITION" />
-        <div className="rosters">
+        {this.state.characters ? <div className="rosters">
             {this.state.characters && this.state.characters.map(character => <CharacterCard {...character} key={character} />)}
             <div className="addCardContainer">
               <div className="addCard" onClick={this.handleCardClick}>
                 <img src={PlusIcon} alt="Plus" />
               </div>
             </div>
-        </div>
+        </div> : <Skeleton height={24} count={4} highlightColor='#0000004d' baseColor='#0f1421' style={{margin: '2px 0', width: '1024px'}}/>}
       </div>
     );
   }

@@ -19,6 +19,7 @@
     "preact": "^10.19.3",
     "preact-router": "^4.1.2",
     "react-countup": "^6.5.0",
+    "react-loading-skeleton": "^3.4.0",
     "react-modal": "^3.16.1",
     "socket.io-client": "^4.7.4",
     "toastify-js": "^1.12.0"

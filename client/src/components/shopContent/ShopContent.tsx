@@ -1,5 +1,8 @@
 // ShopContent.tsx
 import './ShopContent.style.css';
+import 'react-loading-skeleton/dist/skeleton.css'
+
+import Skeleton from 'react-loading-skeleton';
 import { h, Component } from 'preact';
 import { apiFetch } from '../../services/apiService';
 import { InventoryType } from '@legion/shared/enums';
@@ -158,7 +161,14 @@ class ShopContent extends Component<ShopContentProps> {
                         </Link>
                     )}
                 </div>
-                <div className='shop-items-container'>{renderItems()}</div>
+                {this.state.inventoryData ? <div className='shop-items-container'>{renderItems()}</div> : (
+                    <Skeleton 
+                    height={28} 
+                    count={18} 
+                    highlightColor='#0000004d' 
+                    baseColor='#0f1421' 
+                    style={{margin: '2px 0', width: '1024px', height: '628px'}}/>
+                )}
                 <PurchaseDialog
                     gold={this.props.gold}
                     position={this.state.position}
