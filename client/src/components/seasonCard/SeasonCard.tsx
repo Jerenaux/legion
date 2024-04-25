@@ -85,7 +85,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                     </div>
                     <div className="season-recap">
                         <p className="season-recap-title">SEASON</p>
-                        <p className="season-recap-label">ENDED</p>
+                        <p className="season-recap-label">ENDS IN</p>
                         <div className="recap-season-bg" style={seasonBGStyle}>
                             {this.state.time > 0 ? (
                                 <div style={{width: '100%'}}>
