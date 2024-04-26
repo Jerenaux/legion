@@ -4,6 +4,7 @@ import axios from 'axios';
 import LeaderboardTable from './leaderboardTable/LeaderboardTable';
 import SeasonCard from './seasonCard/SeasonCard';
 import AwardedPlayer from './awardedPlayer/AwardedPlayer';
+import { rankNoImage } from '@legion/shared/enums';
 
 const data = {
   seasonEnd: 604000, // Number of seconds until end of season for countdown
@@ -324,7 +325,7 @@ const data2 = {
 };
 
 const data3 = {
-  seasonEnd: 604000, // Number of seconds until end of season for countdown
+  seasonEnd: 600, // Number of seconds until end of season for countdown
   playerRanking: { // To display in the box at the top left
     rank: 1,
     player: "legal_pink_iguan",
@@ -430,7 +431,7 @@ const data3 = {
 };
 
 const data4 = {
-  seasonEnd: 604000, // Number of seconds until end of season for countdown
+  seasonEnd: 3000, // Number of seconds until end of season for countdown
   playerRanking: { // To display in the box at the top left
     rank: 1,
     player: "legal_pink_iguan",
@@ -552,7 +553,7 @@ const data4 = {
 };
 
 const data5 = {
-  seasonEnd: 604000, // Number of seconds until end of season for countdown
+  seasonEnd: -1, // Number of seconds until end of season for countdown
   playerRanking: { // To display in the box at the top left
     rank: 1,
     player: "legal_pink_iguan",
@@ -641,7 +642,7 @@ class RankPage extends Component {
     if (!this.state.leaderboardData) return;
 
     const columns = ['no', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
-    const tabs = ['apex', 'zenith', 'gold', 'silver', 'bronze', 'alltime'];
+    const tabs = ['bronze', 'silver', 'gold', 'zenith', 'apex', 'alltime'];
 
     const getRankTabStyle = (index: number) => {
       return {
@@ -654,10 +655,22 @@ class RankPage extends Component {
       }
     }
 
+    const rankRowNumberStyle = (index: number) => {
+      return index <= 3 ? {
+          backgroundImage: `url(/leaderboard/${rankNoImage[index - 1]}.png)`,
+      } : {
+          backgroundImage: `url(/leaderboard/active_rankno.png)`,
+      }
+    }
+
     return (
       <div className="rank-content">
         <div className="flexContainer" style={{alignItems: 'flex-end'}}>
-          <SeasonCard playerRanking={this.state.leaderboardData?.playerRanking} seasonEnd={this.state.leaderboardData?.seasonEnd} />
+          <SeasonCard
+            currTab={tabs[this.state.curr_tab]}
+            rankRowNumberStyle={rankRowNumberStyle}
+            playerRanking={this.state.leaderboardData?.playerRanking} 
+            seasonEnd={this.state.leaderboardData?.seasonEnd} />
           <AwardedPlayer players={this.state.leaderboardData.highlights}/>
         </div>
 
@@ -667,7 +680,14 @@ class RankPage extends Component {
               <img src={`/icons/${tab}_rank.png`} alt="" style={{width: '100%', height: '100%', objectFit: 'contain'}} />
             </div>)}
           </div>
-          <LeaderboardTable data={this.state.leaderboardData.ranking} columns={columns} promotionRows={this.state.leaderboardData.promotionRows} demotionRows={this.state.leaderboardData.demotionRows} camelCaseToNormal={this.camelCaseToNormal} />
+          <LeaderboardTable 
+            data={this.state.leaderboardData.ranking} 
+            columns={columns}
+            promotionRows={this.state.leaderboardData.promotionRows} 
+            demotionRows={this.state.leaderboardData.demotionRows} 
+            camelCaseToNormal={this.camelCaseToNormal} 
+            rankRowNumberStyle={rankRowNumberStyle}
+          />
         </div>
       </div>
     );

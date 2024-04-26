@@ -1,4 +1,5 @@
 // LeaderboardTable.tsx
+import { rankNoImage } from '@legion/shared/enums';
 import './LeaderboardTable.style.css';
 import { h, Component } from 'preact';
 
@@ -16,12 +17,7 @@ interface LeaderboardTableProps {
     promotionRows: number;
     demotionRows: number;
     camelCaseToNormal: (text: string) => string;
-}
-
-enum rankNoImage {
-    'gold_rankno',
-    'silver_rankno',
-    'bronze_rankno'
+    rankRowNumberStyle: (index: number) => {};
 }
 
 enum rewardImage {
@@ -82,15 +78,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
     }
 
     render() {
-        const { demotionRows, promotionRows, columns, camelCaseToNormal } = this.props;
-
-        const rankRowNumberStyle = (index: number) => {
-            return index <= 3 ? {
-                backgroundImage: `url(/leaderboard/${rankNoImage[index - 1]}.png)`,
-            } : {
-                backgroundImage: `url(/leaderboard/idle_rankno.png)`,
-            }
-        }
+        const { demotionRows, promotionRows, columns, rankRowNumberStyle, camelCaseToNormal } = this.props;
 
         const getUpgradeImage = (index: number) => {
             if (index <= promotionRows) return {
