@@ -1102,7 +1102,7 @@ canvas {
 }
 
 .shop-item-card-price {
-  background: url('@assets/gold2.png') no-repeat left center;
+  background: url('@assets/gold_icon.png') no-repeat left center;
   background-size: contain;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
