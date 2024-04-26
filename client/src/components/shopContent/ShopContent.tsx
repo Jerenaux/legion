@@ -150,7 +150,7 @@ class ShopContent extends Component<ShopContentProps> {
                  handleInventory={this.handleInventory} />
                  
                 <div className='shop-tabs-container'>
-                    {Object.keys(ShopTabIcons).map(key => ShopTabIcons[key]).map((icon, index) =>
+                    {this.state.inventoryData && Object.keys(ShopTabIcons).map(key => ShopTabIcons[key]).map((icon, index) =>
                         <Link
                             href={`/shop/${ShopTabs[index].toLowerCase()}`}
                             onClick={() => this.setState({curr_tab: index})}
@@ -163,11 +163,11 @@ class ShopContent extends Component<ShopContentProps> {
                 </div>
                 {this.state.inventoryData ? <div className='shop-items-container'>{renderItems()}</div> : (
                     <Skeleton 
-                    height={28} 
-                    count={18} 
-                    highlightColor='#0000004d' 
-                    baseColor='#0f1421' 
-                    style={{margin: '2px 0', width: '1024px', height: '628px'}}/>
+                        height={332} 
+                        count={2} 
+                        highlightColor='#0000004d' 
+                        baseColor='#0f1421' 
+                        style={{margin: '2px 0', width: '1024px', height: '628px'}}/>
                 )}
                 <PurchaseDialog
                     gold={this.props.gold}

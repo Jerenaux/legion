@@ -204,31 +204,35 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     return (
         <div className="team-content">
           <Roster />
-          {this.state.character_sheet_data ? <div className="character-inventory-container">
-            <TeamContentCard 
+          <div className="character-inventory-container">
+            {this.state.character_sheet_data ? <TeamContentCard 
               characterId={this.state.character_id} 
               characterData={this.state.character_sheet_data} 
               itemEffects={this.state.item_effect}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)}
-            />
-            <Inventory 
+            /> : <Skeleton 
+            height={400} 
+            count={1} 
+            highlightColor='#0000004d' 
+            baseColor='#0f1421' 
+            style={{margin: '2px 0', width: '434px'}}/>}
+
+            {this.state.character_sheet_data ? <Inventory 
               id={this.state.character_id} 
               inventory={this.state.inventory} 
               carrying_capacity={this.state.carrying_capacity}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)}
-            />
-          </div> : (
-            <Skeleton 
-              height={28} 
-              count={10} 
-              highlightColor='#0000004d' 
-              baseColor='#0f1421' 
-              style={{margin: '2px 0', width: '1024px'}}/>
-          )}
+            /> : <Skeleton 
+            height={297} 
+            count={1} 
+            highlightColor='#0000004d' 
+            baseColor='#0f1421' 
+            style={{margin: '2px 0', width: '560px'}}/>}
+          </div>
         </div>
       );
   }

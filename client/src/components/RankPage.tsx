@@ -5,6 +5,9 @@ import LeaderboardTable from './leaderboardTable/LeaderboardTable';
 import SeasonCard from './seasonCard/SeasonCard';
 import AwardedPlayer from './awardedPlayer/AwardedPlayer';
 import { rankNoImage } from '@legion/shared/enums';
+import 'react-loading-skeleton/dist/skeleton.css'
+
+import Skeleton from 'react-loading-skeleton';
 
 const data = {
   seasonEnd: 604000, // Number of seconds until end of season for countdown
@@ -116,7 +119,7 @@ const data = {
       "wins": 17,
       "losses": 9,
       "winsRatio": "21%",
-    },  
+    },
     {
       "rank": 11,
       "player": "legal_pink_iguan",
@@ -540,7 +543,7 @@ const data4 = {
       "wins": 17,
       "losses": 9,
       "winsRatio": "21%",
-    },  
+    },
     {
       "rank": 11,
       "player": "legal_pink_iguan",
@@ -634,7 +637,7 @@ class RankPage extends Component {
   }
 
   handleCurrTab = (index: number) => {
-    this.setState({curr_tab: index});
+    this.setState({ curr_tab: index });
     this.setState({ leaderboardData: dataTemp[index] });
   }
 
@@ -657,37 +660,58 @@ class RankPage extends Component {
 
     const rankRowNumberStyle = (index: number) => {
       return index <= 3 ? {
-          backgroundImage: `url(/leaderboard/${rankNoImage[index - 1]}.png)`,
+        backgroundImage: `url(/leaderboard/${rankNoImage[index - 1]}.png)`,
       } : {
-          backgroundImage: `url(/leaderboard/active_rankno.png)`,
+        backgroundImage: `url(/leaderboard/active_rankno.png)`,
       }
     }
 
     return (
       <div className="rank-content">
-        <div className="flexContainer" style={{alignItems: 'flex-end'}}>
-          <SeasonCard
+        <div className="flexContainer" style={{ alignItems: 'flex-end' }}>
+          {this.state.leaderboardData ? <SeasonCard
             currTab={tabs[this.state.curr_tab]}
             rankRowNumberStyle={rankRowNumberStyle}
-            playerRanking={this.state.leaderboardData?.playerRanking} 
-            seasonEnd={this.state.leaderboardData?.seasonEnd} />
-          <AwardedPlayer players={this.state.leaderboardData.highlights}/>
+            playerRanking={this.state.leaderboardData?.playerRanking}
+            seasonEnd={this.state.leaderboardData?.seasonEnd} /> :
+            <Skeleton
+              height={152}
+              count={1}
+              highlightColor='#0000004d'
+              baseColor='#0f1421'
+              style={{ margin: '2px 0', width: '472px' }} />}
+
+          {this.state.leaderboardData ? <AwardedPlayer players={this.state.leaderboardData.highlights} /> :
+            <Skeleton
+              height={74}
+              count={2}
+              highlightColor='#0000004d'
+              baseColor='#0f1421'
+              style={{ margin: '2px 0', width: '500px' }} />
+          }
         </div>
 
-        <div className="flexContainer" style={{gap: '24px'}}>
+        <div className="flexContainer" style={{ gap: '24px' }}>
           <div className="rank-tab-container">
-            {tabs.map((tab, i) => <div key={i} style={getRankTabStyle(i)} onClick={() => this.handleCurrTab(i)}>
-              <img src={`/icons/${tab}_rank.png`} alt="" style={{width: '100%', height: '100%', objectFit: 'contain'}} />
+            {this.state.leaderboardData && tabs.map((tab, i) => <div key={i} style={getRankTabStyle(i)} onClick={() => this.handleCurrTab(i)}>
+              <img src={`/icons/${tab}_rank.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>)}
           </div>
-          <LeaderboardTable 
-            data={this.state.leaderboardData.ranking} 
+          {this.state.leaderboardData ? <LeaderboardTable
+            data={this.state.leaderboardData.ranking}
             columns={columns}
-            promotionRows={this.state.leaderboardData.promotionRows} 
-            demotionRows={this.state.leaderboardData.demotionRows} 
-            camelCaseToNormal={this.camelCaseToNormal} 
+            promotionRows={this.state.leaderboardData.promotionRows}
+            demotionRows={this.state.leaderboardData.demotionRows}
+            camelCaseToNormal={this.camelCaseToNormal}
             rankRowNumberStyle={rankRowNumberStyle}
-          />
+          /> :
+            <Skeleton
+              height={46}
+              count={12}
+              highlightColor='#0000004d'
+              baseColor='#0f1421'
+              style={{ margin: '2px 0', width: '940px' }} />
+          }
         </div>
       </div>
     );
