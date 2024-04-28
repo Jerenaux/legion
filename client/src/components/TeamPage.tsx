@@ -1,8 +1,11 @@
 // PlayPage.tsx
+import 'react-loading-skeleton/dist/skeleton.css'
+
 import { h, Component } from 'preact';
 
 import Roster from './roster/Roster';
 import Inventory from './inventory/Inventory';
+import Skeleton from 'react-loading-skeleton';
 
 import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
@@ -13,7 +16,6 @@ import { equipments } from '@legion/shared/Equipments';
 import { items } from '@legion/shared/Items';
 import { spells } from '@legion/shared/Spells';
 import { inventorySize } from '@legion/shared/utils';
-
 interface TeamPageState {
   inventory: {
     consumables: number[];
@@ -203,22 +205,33 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         <div className="team-content">
           <Roster />
           <div className="character-inventory-container">
-            <TeamContentCard 
+            {this.state.character_sheet_data ? <TeamContentCard 
               characterId={this.state.character_id} 
               characterData={this.state.character_sheet_data} 
               itemEffects={this.state.item_effect}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)}
-            />
-            <Inventory 
+            /> : <Skeleton 
+            height={400} 
+            count={1} 
+            highlightColor='#0000004d' 
+            baseColor='#0f1421' 
+            style={{margin: '2px 0', width: '434px'}}/>}
+
+            {this.state.character_sheet_data ? <Inventory 
               id={this.state.character_id} 
               inventory={this.state.inventory} 
               carrying_capacity={this.state.carrying_capacity}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)}
-            />
+            /> : <Skeleton 
+            height={297} 
+            count={1} 
+            highlightColor='#0000004d' 
+            baseColor='#0f1421' 
+            style={{margin: '2px 0', width: '560px'}}/>}
           </div>
         </div>
       );

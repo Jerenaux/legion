@@ -2,6 +2,8 @@
 import './DailyLootBox.style.css';
 import { h, Component } from 'preact';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css'
 
 interface DailyLootBoxProps {
     data: any
@@ -64,7 +66,7 @@ class DailyLootBox extends Component<DailyLootBoxProps> {
     return (
       <div className="dailyLootContainer">
         <BottomBorderDivider label='DAILY LOOTS' />
-        <div className="dailyLoots">
+        {data ? <div className="dailyLoots">
           <div className="lootBoxContainer">
             <div className="loot-box-title"><span>Bronze Chest</span></div>
             <img className="loot-box-image" src="/shop/bronze_chest.png" alt="bronze" />
@@ -91,7 +93,12 @@ class DailyLootBox extends Component<DailyLootBoxProps> {
               <span className="loot-box-open">Open</span>
             </div>
           </div>
-        </div>
+        </div> : <Skeleton
+          height={100}
+          count={1}
+          highlightColor='#0000004d'
+          baseColor='#0f1421'
+          style={{ margin: '2px 0', width: '100%'}} />}
       </div>
     );
   }

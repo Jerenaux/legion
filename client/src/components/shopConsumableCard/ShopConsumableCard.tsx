@@ -5,6 +5,7 @@ import { InventoryType, Target } from "@legion/shared/enums";
 import { BaseItem } from '@legion/shared/BaseItem';
 import { SpellTitleBG } from '../shopSpellCard/ShopSpellCard';
 import { mapFrameToCoordinates } from '../utils';
+import { Tooltip as ReactTooltip } from "react-tooltip";
 
 export enum StatIcons {
   '/shop/hp_icon.png',
@@ -60,7 +61,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
               backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
           }} />
         </div>
-        <p className="consumable-card-description">{data.description}</p>
+        <p data-tooltip-id={`consumable-desc-tooltip-${data.id}`} className="consumable-card-description">{data.description}</p>
         <div className="consumable-card-effect-container">
           {data.effects.map((effect, index) => <div key={index} className="consumable-card-effect">
             <img src={StatIcons[effect.stat]} style={effect.stat === 1 ? 'transform: scaleX(0.8)' : ''} alt="" />
@@ -79,6 +80,14 @@ class ShopConsumableCard extends Component<ShopCardProps> {
           <img src="/gold_icon.png" alt="gold" />
           {data.price}
         </div>
+
+        <ReactTooltip
+          id={`consumable-desc-tooltip-${data.id}`}
+          place="top-start"
+          variant="light"
+          content={data.description}
+          style={{maxWidth: '120px'}}
+        />
       </div>
     );
   }

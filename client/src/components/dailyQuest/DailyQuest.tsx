@@ -4,6 +4,8 @@ import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import QuestCard from '../questCard/QuestCard';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css'
 
 type Reward = {
   gold: number,
@@ -26,9 +28,14 @@ class DailyQuest extends Component<QuestProps> {
     return (
       <div className="dailyQuestContainer">
         <BottomBorderDivider label='DAILY QUESTS' />
-        <div className="dailyQuests">
+        {this.props.questData ? <div className="dailyQuests">
           {this.props.questData.map((quest) => <QuestCard quest={quest} />)}
-        </div>
+        </div> : <Skeleton
+          height={100}
+          count={1}
+          highlightColor='#0000004d'
+          baseColor='#0f1421'
+          style={{ margin: '2px 0', width: '1024px' }} />}
       </div>
     );
   }

@@ -1,0 +1,61 @@
+.highlights-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-right: 28px;
+}
+
+.award-player-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    background-image: url('@assets/rank/players_bg.png');
+    background-size: 100% 100%;
+    min-height: 118px;
+    min-width: 148px;
+    margin-bottom: 4px;
+}
+
+.award-player-container img {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    top: -32px;
+}
+
+.award-player-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #FFFFFF;
+    position: absolute;
+    top: 42px;
+    text-transform: uppercase;
+    max-width: 86px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.award-player-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffa600;
+    position: absolute;
+    top: 56px;
+    text-transform: uppercase;
+    max-width: 78px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.award-player-desc {
+    font-size: 10px;
+    color: #FFFFFF;
+    position: absolute;
+    bottom: 16px; 
+}

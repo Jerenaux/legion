@@ -704,7 +704,26 @@ canvas {
 
 .rank-content {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 32px;
+  width: 1024px;
+  margin: 0 auto;
+}
+
+.rank-content .flexContainer {
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.rank-tab-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-top: 36px;
 }
 
 .leaderboard-table {
@@ -713,10 +732,9 @@ canvas {
   border: 2px solid white;
   border-radius: 10px;
   overflow: hidden;
-  width: calc(100% - 430px);
+  width: 100%;
   margin: auto;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  margin: 0 15px;
 }
 
 .leaderboard-table thead tr {
@@ -1063,33 +1081,6 @@ canvas {
   flex-direction: column;
   width: 100%;
 }
-/* 
-.shop-item-card-price {
-  background: url('../../public/gold2.png') no-repeat left center;
-  background-size: contain;
-  color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  background-color: gold;
-  border-radius: 25px; 
-  padding: 5px 10px; 
-  padding-left: 40px;
-  font-family: Kim;
-  margin-left: 10px;
-  border: 1px solid black;
-} */
-
-/* .shop-item-card-owned {
-  background: url('../../public/backpacks.png') no-repeat left center;
-  background-size: contain;
-  color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  background-color: #A0522D; 
-  border-radius: 25px; 
-  padding: 5px 10px; 
-  padding-left: 40px;
-  font-family: Kim;
-  border: 1px solid black;
-} */
 
 .shop-item-details {
   padding-left: 10px;

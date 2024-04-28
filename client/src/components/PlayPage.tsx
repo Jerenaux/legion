@@ -5,6 +5,8 @@ import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
 import DailyQuest from './dailyQuest/DailyQuest';
 import DailyLootBox from './dailyLootBox/DailyLootBox';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css'
 
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
@@ -14,17 +16,17 @@ class PlayPage extends Component {
       dailyQuests: [
         {
           name: "Use 5 fire spells",
-          rewards: {gold: 500, xp: 2000},
+          rewards: { gold: 500, xp: 2000 },
           completion: 0.8
         },
         {
           name: "Win 3 games",
-          rewards: {gold: 700, xp: 1000},
+          rewards: { gold: 700, xp: 1000 },
           completion: 1 // = completed
         },
         {
           name: "Use 5 fire spells",
-          rewards: {gold: 500, xp: 2000},
+          rewards: { gold: 500, xp: 2000 },
           completion: 0.8
         },
       ],
@@ -89,14 +91,19 @@ class PlayPage extends Component {
     }
 
     return (
-        <div className="play-content">
-          <Roster />
-          <PlayModes />
-          <DailyLootBox data={data.chests} />
-          <DailyQuest questData={data.dailyQuests} />
-          <OnGoingArena ongoingGameData={data.ongoingGames} />
-        </div>
-      );
+      <div className="play-content">
+        <Roster />
+        {data ? <PlayModes /> : <Skeleton
+          height={50}
+          count={2}
+          highlightColor='#0000004d'
+          baseColor='#0f1421'
+          style={{ margin: '2px 146px', width: '1024px'}} />}
+        <DailyLootBox data={data.chests} />
+        <DailyQuest questData={data.dailyQuests} />
+        <OnGoingArena ongoingGameData={data.ongoingGames} />
+      </div>
+    );
   }
 }
 
