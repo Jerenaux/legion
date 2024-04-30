@@ -45,6 +45,7 @@ export class ServerPlayer {
         frozen: number;
         paralyzed: number;
     }
+    interactedTargets: Set<ServerPlayer> = new Set();
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
         this.num = num;
@@ -60,8 +61,8 @@ export class ServerPlayer {
         };
         
         this.cooldowns = {
-            'move': 4000,
-            'attack': 8000
+            'move': 400,
+            'attack': 800
         };
         // this.setCooldown(0 + this.entranceTime * 1000);
         this.setCooldown(this.cooldowns.move + this.entranceTime * 1000);
@@ -152,10 +153,6 @@ export class ServerPlayer {
 
         if (this.HPHasChanged()){
             this.broadcastHPChange();
-        }
-
-        if (this.hp <= 0) {
-            this.team!.game.checkEndGame();
         }
     }
 
@@ -474,6 +471,14 @@ export class ServerPlayer {
         if (this.statusesTimer) {
             clearInterval(this.statusesTimer);
         }
+    }
+
+    addInteractedTarget(target: ServerPlayer) {
+        this.interactedTargets.add(target);
+    }
+
+    countInteractedTargets() {
+        return this.interactedTargets.size;
     }
 }
 

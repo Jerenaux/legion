@@ -203,29 +203,35 @@ export abstract class Game
         team!.incrementActions();
         team!.snapshotScore();
 
+        let delay;
         switch (action) {
             case 'move':
-                this.processMove(data, team!);
+                delay = this.processMove(data, team!);
                 break;
             case 'attack':
-                this.processAttack(data, team!);
+                delay = this.processAttack(data, team!);
                 break;
             case 'obstacleattack':
-                this.processObstacleAttack(data, team!);
+                delay = this.processObstacleAttack(data, team!);
                 break;
             case 'useitem':
-                this.processUseItem(data, team!);
+                delay = this.processUseItem(data, team!);
                 break;
             case 'spell':
-                this.processMagic(data, team!);
+                delay = this.processMagic(data, team!);
                 break;
         }
 
-        team!.sendScore();
+        setTimeout(() => {
+            team!.sendScore();
+            this.checkEndGame();
+        }, delay);
     }
 
     checkEndGame() {
+        console.log(`Checking end game`);
         if (this.gameOver) return;
+        console.log(`Team 1 defeated: ${this.teams.get(1)!.isDefeated()}, Team 2 defeated: ${this.teams.get(2)!.isDefeated()}`);
         if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
             this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
         }
@@ -297,6 +303,8 @@ export abstract class Game
             num,
             cooldown,
         });
+
+        return 0;
     }
 
     // Called when traversing cells with terrain effects
@@ -332,6 +340,7 @@ export abstract class Game
         opponent.takeDamage(damage);
         player.increaseDamageDealt(damage);
         player.team.incrementOffensiveActions();
+        player.addInteractedTarget(opponent);
 
         if (this.hasObstacle(opponent.x, opponent.y)) {
             const terrainUpdate = this.removeTerrain(opponent.x, opponent.y);
@@ -354,6 +363,8 @@ export abstract class Game
             num,
             cooldown,
         });
+
+        return 0;
     }
 
     processObstacleAttack({num, x, y}: {num: number, x: number, y: number}, team: Team) {
@@ -381,6 +392,8 @@ export abstract class Game
             num,
             cooldown,
         });
+
+        return 0;
     }
 
     processUseItem({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number,  targetTeam: number, target: number | null}, team: Team) {
@@ -400,6 +413,8 @@ export abstract class Game
             }
         }
         const targets = targetPlayer ? [targetPlayer] : item.getTargets(this, player, x, y);
+        // Add all targets to the list of interacted targets
+        targets.forEach(target => player.addInteractedTarget(target));
 
         // Only check if the item is applicable if there is a single target
         if (targets.length == 1 && !item.effectsAreApplicable(targets[0])) {
@@ -441,11 +456,12 @@ export abstract class Game
             num,
             inventory: player.getNetworkInventory(),
         });
+
+        return 0;
     }
 
     applyMagic(spell: Spell, player: ServerPlayer, x: number, y: number, team: Team, targetPlayer: ServerPlayer | null) {
         const targets = targetPlayer ? [targetPlayer] : spell.getTargets(this, x, y);
-        // console.log(`Spell ${spell.name} found ${targets.length} targets`);
         spell.applyEffect(player, targets);
         player.setCasting(false);
 
@@ -461,7 +477,9 @@ export abstract class Game
                 // if (delta < 0) player.team!.increaseScoreFromDamage(-delta);
                 if (delta > 0) player.team!.incrementHealing(delta);
             }
+            player.addInteractedTarget(target);
         });            
+        // Add all targets to the list of interacted targets
         player.team!.increaseScoreFromMultiHits(targets.length);
         player.team!.increaseScoreFromSpell(spell.score);
 
@@ -533,7 +551,9 @@ export abstract class Game
         this.emitMPchange(team, num, mp);
         player.setCasting(true);
 
-        setTimeout(this.applyMagic.bind(this, spell, player, x, y, team, targetPlayer), spell.castTime * 1000);
+        const delay = spell.castTime * 1000;
+        setTimeout(this.applyMagic.bind(this, spell, player, x, y, team, targetPlayer), delay);
+        return delay;
     }
 
     broadcastScoreChange(team: Team) {
