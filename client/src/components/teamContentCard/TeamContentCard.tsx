@@ -217,7 +217,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                                 <div className="team-curr-exp-slider" style={sliderStyle}></div>
                             </div>
                             <div className="team-exp-info">
-                                <span>EXP <span className="team-curr-exp">{characterData?.xp}</span> / <span className="team-total-exp">{xpToLevel}</span></span>
+                                <span>EXP <span className="team-curr-exp">{Math.round(characterData?.xp)}</span> / <span className="team-total-exp">{xpToLevel}</span></span>
                             </div>
                         </div>
                         <div className="team-sp-container">

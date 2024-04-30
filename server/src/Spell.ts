@@ -6,25 +6,7 @@ import { EffectModifiers, EffectModifier, Effect } from "@legion/shared/interfac
 import { BaseSpell } from "@legion/shared/BaseSpell";
 
 export function convertBaseToSpell(base: BaseSpell): Spell {
-    return new Spell({
-        id: base.id,
-        name: base.name,
-        description: base.description,
-        frame: base.frame,
-        sfx: base.sfx,
-        animation: base.animation,
-        cooldown: base.cooldown,
-        castTime: base.castTime,
-        cost: base.cost,
-        target: base.target,
-        size: base.size,
-        effects: base.effects,
-        shake: base.shake,
-        score: base.score,
-        yoffset: base.yoffset,
-        terrain: base.terrain,
-        effort: 0,
-    });
+    return new Spell(base);
 }
 
 export class Spell extends BaseSpell {

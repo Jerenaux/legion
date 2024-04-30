@@ -40,9 +40,9 @@ export interface SpellData {
     frame: number;
     sfx: string;
     animation: string;
-    cooldown: number;
-    castTime: number;
-    cost: number;
+    cooldown?: number;
+    castTime?: number;
+    cost?: number;
     target: Target;
     size: number;
     effects: Effect[];

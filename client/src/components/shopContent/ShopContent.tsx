@@ -37,6 +37,13 @@ interface modalData {
     price: number;
 }
 
+function sortByRarityAndPrice(a: any, b: any) {
+    if (a.rarity === b.rarity) {
+        return a.price - b.price;
+    }
+    return a.rarity - b.rarity;
+}
+
 class ShopContent extends Component<ShopContentProps> {
     static contextType = PlayerContext; 
     
@@ -46,9 +53,9 @@ class ShopContent extends Component<ShopContentProps> {
         position: null,
         modalData: null,
         inventoryData: {
-            consumables: items,
-            equipment: equipments,
-            spells: spells
+            consumables: items.sort(sortByRarityAndPrice),
+            equipment: equipments.sort(sortByRarityAndPrice),
+            spells: spells.sort(sortByRarityAndPrice)
         },
     }
 
