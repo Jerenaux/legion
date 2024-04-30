@@ -58,5 +58,8 @@ export class BaseSpell {
         this.cooldown = Math.round(this.cooldown);
         this.castTime = Math.round(this.castTime);
         this.minLevel = Math.round(this.minLevel);
+
+        // Overrides
+        if (props.minLevel) this.minLevel = props.minLevel;
     }
 }

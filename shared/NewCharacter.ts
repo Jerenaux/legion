@@ -6,7 +6,7 @@ import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 import {selectStatToLevelUp, increaseStat} from "./levelling";
 import { getPrice } from "./economy";
-
+import { getStarterSpells } from "./Spells";
 
 interface CharacterData {
     name: string;
@@ -78,7 +78,7 @@ export class NewCharacter {
       right_ring: -1,
       necklace: -1,
     };
-    this.skills = this.getSkills();
+    this.skills = this.getSpells();
     this.stats = {
       hp: this.getHP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
       mp: this.getMP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
@@ -256,14 +256,15 @@ export class NewCharacter {
     return 5;
   }
 
-  getSkills(): number[] {
+  getSpells(): number[] {
     switch (this.characterClass) {
       case Class.WARRIOR:
         return [];
       case Class.WHITE_MAGE:
-        return [1];
-      case Class.BLACK_MAGE:
-        return [0, 2, 3];
+      case Class.BLACK_MAGE: {
+          const spells = getStarterSpells(this.characterClass);
+          return [spells[Math.floor(Math.random() * spells.length)]];
+      }
       case Class.THIEF:
         return [];
       }

@@ -28,10 +28,11 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -50, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.FIRE,
-    effort: 15,
+    effort: 7,
 
     score: 10,
     classes: [Class.BLACK_MAGE],
+    minLevel: 1,
 }));
 
 spells.push(new BaseSpell({
@@ -85,10 +86,11 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
     status: {effect: StatusEffect.PARALYZE, chance: 0.5, duration: 60},
-    effort: 20,
+    effort: 8,
 
     score: 5,
     classes: [Class.BLACK_MAGE],
+    minLevel: 1,
 }));
 
 spells.push(new BaseSpell({
@@ -145,8 +147,9 @@ spells.push(new BaseSpell({
     terrain: Terrain.ICE,
 
     score: 5,
-    effort: 30,
+    effort: 9,
     classes: [Class.BLACK_MAGE],
+    minLevel: 1,
 }));
 
 spells.push(new BaseSpell({
@@ -202,8 +205,15 @@ spells.push(new BaseSpell({
     size: 1,
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}],
-    effort: 30,
+    effort: 9,
 
     score: 5,
     classes: [Class.WHITE_MAGE],
+    minLevel: 1,
 }));
+
+export function getStarterSpells(characterClass: Class):number[] {
+    // Return the id's of lvl1 spells for the provided class
+    return spells.filter(spell => spell.minLevel === 1 && spell.classes.includes(characterClass)).map(spell => spell.id);
+}
+
