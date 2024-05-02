@@ -63,7 +63,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
           },
           carrying_capacity: data.carrying_capacity
         });
-        console.log(`Inventory: ${JSON.stringify(this.state.inventory)}`);
     } catch (error) {
         errorToast(`Error: ${error}`);
     }
@@ -120,7 +119,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.setState({item_effect: result_effects});
   }
 
-  
 
   updateInventory(type: string, action: InventoryActionType, index: number) {
     switch(type) {

@@ -6,14 +6,13 @@ import { classEnumToString, mapFrameToCoordinates } from '../utils';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { equipments } from '@legion/shared/Equipments';
-import { spells } from '@legion/shared/Spells';
-import { items } from '@legion/shared/Items';
-import { apiFetch } from '../../services/apiService';
+import { equipments, getEquipmentById } from '@legion/shared/Equipments';
+import { getSpellById } from '@legion/shared/Spells';
+import { getConsumableById } from '@legion/shared/Items';
 import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../itemDialog/ItemDialogType';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { InventoryActionType } from '@legion/shared/enums';
+import { InventoryActionType, InventoryType } from '@legion/shared/enums';
 import { Effect } from '@legion/shared/interfaces';
 
 interface InventoryRequestPayload {
@@ -122,7 +121,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             
         }
 
-        const renderCharacterItems = useMemo(() => {
+        const renderCharacterItems = () => {
             if (!characterData || !characterData.equipment) return;
             const specialSlotsStart = 6;
             const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })).slice(specialSlotsStart, 9);
@@ -143,46 +142,51 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                         }}></div>
                     )}
                 </div>
-            ));
-            
-                  
-        }, [characterData]);
+            ));    
+        }
 
-
-        const renderSpellsItem = () => {
+        const renderInventoryItems = (inventoryType) => {
             if (!characterData) return;
-
-            return Array.from({ length: characterData.skill_slots }, (_, i) => (
-                i < characterData.skills.length ? (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, spells[characterData.skills[i]], ItemDialogType.SKILLS, i)}>
-                        <div className="special-equip" style={{ 
-                            backgroundImage: `url(spells.png)`,
-                            backgroundPosition: `-${mapFrameToCoordinates(spells[characterData.skills[i]]?.frame).x}px -${mapFrameToCoordinates(spells[characterData.skills[i]]?.frame).y}px`,
-                        }} />
-                    </div>
-                ) : (
-                    <div className="team-item" key={i} >
-                    </div>
-                )
-            ))
-        };
-
-        const renderConsumableItems = () => {
-            if (!characterData) return;
-
-            return Array.from({ length: characterData.carrying_capacity + characterData.carrying_capacity_bonus}, (_, i) => (
-                i < characterData.inventory.length ? (
-                    <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, items[characterData.inventory[i]], ItemDialogType.CONSUMABLES, i)}>
-                        <div className="special-equip" style={{ 
-                            backgroundImage: `url(consumables.png)`,
-                            backgroundPosition: `-${mapFrameToCoordinates(items[characterData.inventory[i]]?.frame).x}px -${mapFrameToCoordinates(items[characterData.inventory[i]]?.frame).y}px`,
-                        }} />
-                    </div>
-                ) : (
-                    <div className="team-item" key={i} >
-                    </div>
-                )
-            ))
+          
+            // Define the capacity and array of items based on type
+            let capacity, items, dialogType, backgroundImageUrl, dataCallback;
+            switch (inventoryType) {
+              case InventoryType.CONSUMABLES:
+                capacity = characterData.carrying_capacity + characterData.carrying_capacity_bonus;
+                items = characterData.inventory;
+                dialogType = ItemDialogType.CONSUMABLES;
+                backgroundImageUrl = 'consumables.png';
+                dataCallback = getConsumableById;
+                break;
+              case InventoryType.SKILLS:
+                capacity = characterData.skill_slots;
+                items = characterData.skills;
+                dialogType = ItemDialogType.SKILLS;
+                backgroundImageUrl = 'spells.png';
+                dataCallback = getSpellById;
+                break;
+              // Add other cases for different types
+              default:
+                return null; // Or render an empty component/error message
+            }
+          
+            return Array.from({ length: capacity }, (_, i) => {
+              if (i < items.length) {
+                const item = dataCallback(items[i]);
+                const coordinates = mapFrameToCoordinates(item?.frame);
+          
+                return (
+                  <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
+                    <div className="special-equip" style={{
+                      backgroundImage: `url(${backgroundImageUrl})`,
+                      backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
+                    }} />
+                  </div>
+                );
+              } else {
+                return <div className="team-item" key={i} />;
+              }
+            });
         };
 
         const xpToLevel = getXPThreshold(characterData?.level);
@@ -241,13 +245,13 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                         <div className="team-item-container">
                             <p className="team-item-heading">SPELLS</p>
                             <div className="team-items">
-                                {renderSpellsItem()}
+                                {renderInventoryItems(InventoryType.SKILLS)}
                             </div>
                         </div>
                         <div className="team-item-container">
                             <p className="team-item-heading">ITEMS</p>
                             <div className="team-items">
-                                {renderConsumableItems()}
+                                {renderInventoryItems(InventoryType.CONSUMABLES)}
                             </div>
                         </div>
                     </div>

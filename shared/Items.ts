@@ -144,3 +144,7 @@ items[9] = new BaseItem({
     effects: [{stat: Stat.HP, value: -1}, {stat: Stat.MP, value: -1}],
     effort: 20,
 });
+
+export function getConsumableById(id: number): BaseItem {
+    return items.find(item => item.id === id);
+}

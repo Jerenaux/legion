@@ -75,3 +75,7 @@ equipments[5] = new BaseEquipment({
     minLevel: 1,
     classes: [Class.WARRIOR],
 });
+
+export function getEquipmentById(id:number):BaseEquipment {
+    return equipments.find(e => e.id === id);
+}

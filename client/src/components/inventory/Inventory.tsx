@@ -2,9 +2,9 @@
 // Inventory.tsx
 import { h, Component } from 'preact';
 import './Inventory.style.css';
-import { items } from '@legion/shared/Items';
-import { spells } from '@legion/shared/Spells';
-import { equipments } from '@legion/shared/Equipments';
+import { getConsumableById } from '@legion/shared/Items';
+import { getSpellById } from '@legion/shared/Spells';
+import { getEquipmentById } from '@legion/shared/Equipments';
 import ActionItem from '../game/HUD/Action';
 import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
 
@@ -48,43 +48,44 @@ class Inventory extends Component<InventoryProps> {
     .reduce((acc, curr) => acc + curr, 0);
 
   render() {
-    const isCategoryEmpty = !this.props.inventory[this.state.actionType] || !this.props.inventory[this.state.actionType]?.length;
 
-    const getAction = (actionIndex: number) => {
+    const activeInventory = this.props.inventory[this.state.actionType];
+    const isCategoryEmpty = !activeInventory || !activeInventory?.length;
+
+    const getItem = (itemID: number) => {
       switch (this.state.actionType) {
         case InventoryType.CONSUMABLES:
-          return items[this.props.inventory[InventoryType.CONSUMABLES][actionIndex]];
+          return getConsumableById(itemID);
         case InventoryType.SKILLS:
-          return spells[this.props.inventory[InventoryType.SKILLS][actionIndex]];
+          return getSpellById(itemID);
         case InventoryType.EQUIPMENTS:
-          return equipments[this.props.inventory[InventoryType.EQUIPMENTS][actionIndex]];
-        default: return null;
+          return getEquipmentById(itemID);
+        default:
+          return null;
       }
     }
 
-    const slots = Array.from({ length: this.props.carrying_capacity }, (_, i) => {
-      if (i < this.props.inventory[this.state.actionType]?.length) {
-        const actionItem = getAction(i);
+    const slots = activeInventory?.map((itemId: number, i: number) => {
+      const item = getItem(itemId);
 
-        const slotStyle = {
-          backgroundImage: `linear-gradient(to bottom right, ${RarityColor[actionItem?.rarity]}, #1c1f25)`
-        }
-
-        return <div key={i} className="item" style={slotStyle}>
-          <ActionItem
-            characterId={this.props.id}
-            action={actionItem}
-            index={i}
-            clickedIndex={-1}
-            canAct={true}
-            hideHotKey={true}
-            actionType={this.state.actionType}
-            refreshCharacter={this.props.refreshCharacter}
-            handleItemEffect={this.props.handleItemEffect}
-            updateInventory={this.props.updateInventory}
-          />
-        </div>
+      const slotStyle = {
+        backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
       }
+
+      return <div key={i} className="item" style={slotStyle}>
+        <ActionItem
+          characterId={this.props.id}
+          action={item}
+          index={i}
+          clickedIndex={-1}
+          canAct={true}
+          hideHotKey={true}
+          actionType={this.state.actionType}
+          refreshCharacter={this.props.refreshCharacter}
+          handleItemEffect={this.props.handleItemEffect}
+          updateInventory={this.props.updateInventory}
+        />
+      </div>
     });
 
     const currCategoryStyle = {

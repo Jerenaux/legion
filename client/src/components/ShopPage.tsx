@@ -1,5 +1,4 @@
 import { h, Component } from 'preact';
-import { items } from '@legion/shared/Items';
 import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from './utils';
 import { PlayerInventory } from '@legion/shared/interfaces';
@@ -16,7 +15,6 @@ enum DialogType {
 interface State {
   gold: number;
   inventory: PlayerInventory;
-  items: Array<any>;
   characters: Array<any>;
   openDialog: DialogType;
   selectedArticle: any;
@@ -38,7 +36,6 @@ class ShopPage extends Component<ShopPageProps, State> {
       equipment: [],
       spells: [],
     },
-    items,
     characters: [],
     openDialog: DialogType.NONE,
     selectedArticle: null,
