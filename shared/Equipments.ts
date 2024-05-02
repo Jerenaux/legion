@@ -32,14 +32,14 @@ equipments[1] = new BaseEquipment({
 
 equipments[2] = new BaseEquipment({
     id: 2,
-    name: "Ring of defense",
+    name: "Ring of the Soul",
     description: "",
     frame: 40,
-    effects: [{stat: Stat.DEF, value: 3}],
+    effects: [{stat: Stat.MP, value: 200}],
     slot: EquipmentSlot.LEFT_RING,
-    effort: 11,
+    effort: 40,
     minLevel: 1,
-    classes: [Class.WARRIOR, Class.BLACK_MAGE, Class.WHITE_MAGE],
+    classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
 equipments[3] = new BaseEquipment({

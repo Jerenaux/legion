@@ -56,13 +56,13 @@ export class Arena extends Phaser.Scene
         allSprites.forEach((sprite) => {
             this.load.spritesheet(sprite, `sprites/${sprite}.png`, frameConfig);
         });
-        this.load.spritesheet('potion_heal', 'animations/potion_heal.png', { frameWidth: 48, frameHeight: 64});
-        this.load.spritesheet('explosion', 'animations/explosion.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('cast', 'animations/cast.png', { frameWidth: 48, frameHeight: 64});
-        this.load.spritesheet('slash', 'animations/slash.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('thunder', 'animations/bolts.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('ice', 'animations/ice.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('impact', 'animations/sword_impact.png', { frameWidth: 291, frameHeight: 291});
+        this.load.spritesheet('potion_heal', 'vfx/potion_heal.png', { frameWidth: 48, frameHeight: 64});
+        this.load.spritesheet('explosions', 'vfx/explosions.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('cast', 'vfx/cast.png', { frameWidth: 48, frameHeight: 64});
+        this.load.spritesheet('slash', 'vfx/slash.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('thunder', 'vfx/bolts.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('ice', 'vfx/ice.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('impact', 'vfx/sword_impact.png', { frameWidth: 291, frameHeight: 291});
 
         this.load.spritesheet('statuses', 'States.png', { frameWidth: 96, frameHeight: 96});
 
@@ -72,14 +72,15 @@ export class Arena extends Phaser.Scene
         this.load.audio('nope', 'sfx/nope.wav');
         this.load.audio('heart', 'sfx/heart.wav');
         this.load.audio('cooldown', 'sfx/cooldown.wav');
-        this.load.audio('healing', 'sfx/healing.wav');
-        this.load.audio('cast', 'sfx/curse.wav');
         this.load.audio('shatter', 'sfx/shatter.wav');
         this.load.audio('flames', 'sfx/flame.wav');
 
-        this.load.audio('fireball', 'sfx/fireball.wav');
-        this.load.audio('thunder', 'sfx/thunder.wav');
-        this.load.audio('ice', 'sfx/ice.wav');
+        this.load.audio('cast', 'sfx/spells/cast.wav');
+        this.load.audio('fireball', 'sfx/spells/fire_3.wav');
+        this.load.audio('thunder', 'sfx/spells/thunder.wav');
+        this.load.audio('ice', 'sfx/spells/ice.wav');
+        this.load.audio('healing', 'sfx/spells/healing.wav');
+
 
         this.load.audio(`bgm_start`, `music/bgm_start.wav`);
         for (let i = 2; i <= 13; i++) {
@@ -818,13 +819,13 @@ export class Arena extends Phaser.Scene
     
         sound.play();
     }
-    
+
 
     createAnims() {
         allSprites.forEach((asset) => {
             this.anims.create({
                 key: `${asset}_anim_idle`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [9, 10, 11] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 9, end: 11 }), 
                 frameRate: 5, // Number of frames per second
                 repeat: -1,
                 yoyo: true 
@@ -832,7 +833,7 @@ export class Arena extends Phaser.Scene
 
             this.anims.create({
                 key: `${asset}_anim_idle_hurt`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [33, 34, 35] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 33, end: 35 }), 
                 frameRate: 5, // Number of frames per second
                 repeat: -1, // Loop indefinitely,
                 yoyo: true
@@ -840,38 +841,38 @@ export class Arena extends Phaser.Scene
 
             this.anims.create({
                 key: `${asset}_anim_walk`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [6, 7, 8] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 6, end: 8 }), 
                 frameRate: 5, // Number of frames per second
                 repeat: -1 // Loop indefinitely
             });
 
             this.anims.create({
                 key: `${asset}_anim_attack`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [12, 13, 14] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 12, end: 14 }), 
                 frameRate: 10, // Number of frames per second
             });
 
             this.anims.create({
                 key: `${asset}_anim_dodge`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [45, 46, 47] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 45, end: 47 }), 
                 frameRate: 10, // Number of frames per second
             });
 
             this.anims.create({
                 key: `${asset}_anim_item`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [48, 49, 50] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 48, end: 50 }), 
                 frameRate: 5, // Number of frames per second
             });
 
             this.anims.create({
                 key: `${asset}_anim_hurt`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [42, 43, 44] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 42, end: 44 }), 
                 frameRate: 5, // Number of frames per second
             });
 
             this.anims.create({
                 key: `${asset}_anim_cast`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [39, 40, 41] }), 
+                frames: this.anims.generateFrameNumbers(asset, { start: 39, end: 41 }), 
                 frameRate: 5, // Number of frames per second
             });
 
@@ -905,27 +906,39 @@ export class Arena extends Phaser.Scene
         });
 
         this.anims.create({
-            key: `explosion`, 
-            frames: this.anims.generateFrameNumbers('explosion', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }), 
+            key: `explosion_1`, 
+            frames: this.anims.generateFrameNumbers('explosions', { start: 48, end: 60 }), 
+            frameRate: 15, // Number of frames per second
+        });
+
+        this.anims.create({
+            key: `explosion_2`, 
+            frames: this.anims.generateFrameNumbers('explosions', { start: 12, end: 23 }), 
+            frameRate: 15, // Number of frames per second
+        });
+
+        this.anims.create({
+            key: `explosion_3`, 
+            frames: this.anims.generateFrameNumbers('explosions', { start: 0, end: 11 }), 
             frameRate: 15, // Number of frames per second
         });
 
         this.anims.create({
             key: `thunder`, 
-            frames: this.anims.generateFrameNumbers('thunder', { frames: [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47] }), 
+            frames: this.anims.generateFrameNumbers('thunder', { start: 36, end: 47 }), 
             frameRate: 15, // Number of frames per second
         });
 
         this.anims.create({
             key: `ground_flame`, 
-            frames: this.anims.generateFrameNumbers('thunder', { frames: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59] }), 
+            frames: this.anims.generateFrameNumbers('thunder', { start: 48, end: 59 }), 
             frameRate: 15, // Number of frames per second
             repeat: -1
         });
 
         this.anims.create({
             key: `ice`, 
-            frames: this.anims.generateFrameNumbers('ice', { frames: [54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 64, 66, 67] }), 
+            frames: this.anims.generateFrameNumbers('ice', { start: 54, end: 67 }), 
             frameRate: 15,
         });
 
@@ -944,13 +957,13 @@ export class Arena extends Phaser.Scene
 
         this.anims.create({
             key: `impact`, 
-            frames: this.anims.generateFrameNumbers('impact', { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }), 
+            frames: this.anims.generateFrameNumbers('impact', { start: 0, end: 12 }), 
             frameRate: 25, 
         });
 
         this.anims.create({
             key: `paralyzed`, 
-            frames: this.anims.generateFrameNumbers('statuses', { frames: [56, 57, 58, 59, 60, 61, 62, 63] }), 
+            frames: this.anims.generateFrameNumbers('statuses', { start: 56, end: 63 }), 
             frameRate: 15,
             repeat: -1,
         });

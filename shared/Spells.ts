@@ -20,7 +20,7 @@ spells.push(new BaseSpell({
     name: "Fire",
     description: "1x1 fire attack that sets the ground on fire",
     frame: 0,
-    animation: "explosion",
+    animation: "explosion_1",
     sfx: "fireball",
     shake: false,
 
@@ -40,9 +40,10 @@ spells.push(new BaseSpell({
     name: "Fire+",
     description: "2x2 fire attack that sets the ground on fire",
     frame: 1,
-    animation: "explosion",
+    animation: "explosion_2",
     sfx: "fireball",
     shake: false,
+    yoffset: 20,
 
     size: 2,
     target: Target.AOE,
@@ -59,7 +60,7 @@ spells.push(new BaseSpell({
     name: "Fire X",
     description: "3x3 fireball attack that sets the ground on fire",
     frame: 2,
-    animation: "explosion",
+    animation: "explosion_3",
     sfx: "fireball",
     shake: true,
 

@@ -239,9 +239,20 @@ export const listOnSaleCharacters = onRequest((request, response) => {
 
   corsMiddleware(request, response, async () => {
     try {
-      const querySnapshot = await db.collection("characters")
+      let querySnapshot = await db.collection("characters")
         .where("onSale", "==", true)
         .get();
+
+      // If there are no on sale characters, populate the database with on sale characters
+      if (querySnapshot.empty) {
+        await monitorCharactersOnSale(db);
+
+        // Fetch the updated list of on sale characters
+        querySnapshot = await db.collection("characters")
+          .where("onSale", "==", true)
+          .get();
+      }
+
       const characters = querySnapshot.docs.map((doc) => {
         const characterData = doc.data();
         return {
@@ -249,6 +260,7 @@ export const listOnSaleCharacters = onRequest((request, response) => {
           ...characterData,
         };
       });
+
       response.send(characters);
     } catch (error) {
       console.error("Error listing on sale characters:", error);

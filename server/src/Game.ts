@@ -834,7 +834,7 @@ export abstract class Game
         if (mode == PlayMode.RANKED) gold *= 1.5;
         // Add +- 5% random factor
         gold *= 0.95 + Math.random() * 0.1;
-        return gold;
+        return Math.round(gold);
     }
 
     computeLevelDifference(team: Team, otherTeam: Team) {
