@@ -6,7 +6,7 @@ import { classEnumToString, mapFrameToCoordinates } from '../utils';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { equipments, getEquipmentById } from '@legion/shared/Equipments';
+import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpellById } from '@legion/shared/Spells';
 import { getConsumableById } from '@legion/shared/Items';
 import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../itemDialog/ItemDialogType';
@@ -102,48 +102,64 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
             ));
         };
 
-        const renderEquipItems = () => {
+        const renderEquipmentItems = (itemCategory) => {
             if (!characterData || !characterData.equipment) return;
-            const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })); // for equipments of right hand
-
-            return items.slice(0, 6).map((item, index) => (
-                <div className="equip-item" key={index} onClick={(e) => this.handleUnEquipItem(e, equipments[item.value], ItemDialogType.EQUIPMENTS, index)}>
-                    {item.value < 0 ? (
-                        <img src={`/inventory/${item.key}_icon.png`} alt={item.key} />
-                    ) : (
-                        <div className="special-equip" style={{
-                            backgroundImage: `url(equipment.png)`,
-                            backgroundPosition: `-${mapFrameToCoordinates(equipments[item.value].frame).x}px -${mapFrameToCoordinates(equipments[item.value].frame).y}px`,
-                        }}></div>
-                    )}
-                </div>
-            ));
             
-        }
-
-        const renderCharacterItems = () => {
-            if (!characterData || !characterData.equipment) return;
-            const specialSlotsStart = 6;
-            const items = Object.entries(characterData.equipment).map(([key, value]) => ({ key, value: value as number })).slice(specialSlotsStart, 9);
-            const desiredOrder = ['left_ring', 'right_ring', 'necklace'];
-            items.sort((a, b) => {
-                return desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key);
+            let items, specialSlotsStart, desiredOrder, backgroundImageUrl, isSpecialEquip;
+        
+            // Configure based on the category of items to render
+            switch (itemCategory) {
+                case 'standardEquip':
+                    items = Object.entries(characterData.equipment)
+                                .map(([key, value]) => ({ key, value }))
+                                .slice(0, 6); // Standard equipment slots
+                    backgroundImageUrl = 'equipment.png';
+                    isSpecialEquip = false;
+                    break;
+                case 'specialEquip':
+                    specialSlotsStart = 6;
+                    items = Object.entries(characterData.equipment)
+                                .map(([key, value]) => ({ key, value }))
+                                .slice(specialSlotsStart, 9); // Special equipment slots
+                    desiredOrder = ['left_ring', 'right_ring', 'necklace'];
+                    items.sort((a, b) => desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key));
+                    backgroundImageUrl = 'equipment.png';
+                    isSpecialEquip = true;
+                    break;
+                default:
+                    return null; // Or an empty component
+            }
+        
+            return items.map((item, index) => {
+                let content;
+                const itemData = getEquipmentById(item.value);
+                if (item.value < 0) {
+                    // Handle the case where there is no item equipped in this slot
+                    content = (
+                        <img src={`/inventory/${item.key}_icon.png`} alt={item.key}
+                             style={isSpecialEquip ? { transform: 'scaleY(0.6)' } : {}} />
+                    );
+                } else {
+                    // Handle the case where there is an item equipped
+                    const coordinates = mapFrameToCoordinates(itemData.frame);
+                    content = (
+                        <div className="special-equip" style={{
+                            backgroundImage: `url(${backgroundImageUrl})`,
+                            backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
+                        }} />
+                    );
+                }
+            
+                // Return the container div for each item
+                return (
+                    <div className={`equip-item ${isSpecialEquip ? 'sheet-item' : ''}`} key={index}
+                         onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}>
+                        {content}
+                    </div>
+                );
             });
-
-            // ${equipments[item.value]?.frame}
-            return items.map((item, index) => (
-                <div className="equip-item sheet-item" key={index} onClick={(e) => this.handleOpenModal(e, equipments[item.value], ItemDialogType.EQUIPMENTS, specialSlotsStart + index)}>
-                    {item.value < 0 ? (
-                        <img style={{ transform: 'scaleY(0.6)' }} src={`/inventory/${item.key}_icon.png`} alt={item.key} />
-                    ) : (
-                        <div className="special-equip" style={{ 
-                            backgroundImage: `url(equipment.png)`,
-                            backgroundPosition: `-${mapFrameToCoordinates(equipments[item.value].frame).x}px -${mapFrameToCoordinates(equipments[item.value].frame).y}px`,
-                        }}></div>
-                    )}
-                </div>
-            ));    
-        }
+        };
+    
 
         const renderInventoryItems = (inventoryType) => {
             if (!characterData) return;
@@ -240,7 +256,8 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                     </div>
                     <div className="team-items-container">
                         <div className="character-icon-container">
-                            {renderCharacterItems}
+                            {/* {renderCharacterItems()} */}
+                            {renderEquipmentItems('specialEquip')}
                         </div>
                         <div className="team-item-container">
                             <p className="team-item-heading">SPELLS</p>
@@ -257,7 +274,7 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
                     </div>
                 </div>
                 <div className="team-equip-container">
-                    {renderEquipItems()}
+                    {renderEquipmentItems('standardEquip')}
                 </div>
                 <ItemDialog 
                     isEquipped={true}

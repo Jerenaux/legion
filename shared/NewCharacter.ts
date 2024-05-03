@@ -262,8 +262,8 @@ export class NewCharacter {
         return [];
       case Class.WHITE_MAGE:
       case Class.BLACK_MAGE: {
-          const spells = getStarterSpells(this.characterClass);
-          return [spells[Math.floor(Math.random() * spells.length)]];
+          const starterSpells = getStarterSpells(this.characterClass);
+          return [starterSpells[Math.floor(Math.random() * starterSpells.length)]];
       }
       case Class.THIEF:
         return [];

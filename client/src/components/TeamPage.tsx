@@ -8,13 +8,11 @@ import Inventory from './inventory/Inventory';
 import Skeleton from 'react-loading-skeleton';
 
 import { apiFetch } from '../services/apiService';
-import { successToast, errorToast } from './utils';
+import { errorToast } from './utils';
 import TeamContentCard from './teamContentCard/TeamContentCard';
 import { Effect } from '@legion/shared/interfaces';
 import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/shared/enums';
-import { equipments } from '@legion/shared/Equipments';
-import { items } from '@legion/shared/Items';
-import { spells } from '@legion/shared/Spells';
+import { equipments, getEquipmentById } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
 interface TeamPageState {
   inventory: {
@@ -88,6 +86,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   }
 
   handleItemEffect = (effects: Effect[], actionType: InventoryActionType,  index?: number) => {
+    console.log(`Handling item effect`);
     // get slot name from action.slot field e.g. `weapon`
     const slot = EquipmentSlot[index]?.toLowerCase();
 
@@ -95,10 +94,11 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     let real_effects = effects.map(item => ({stat: item.stat, value: actionType > 0 ? -item.value : item.value }));
 
     // if there's already equipped item, then get its effect
-    let curr_effects = equipments[this.state.character_sheet_data.equipment[slot]]?.effects;
+    let curr_effects = getEquipmentById(this.state.character_sheet_data.equipment[slot])?.effects;
 
     let result_effects = real_effects;
     
+    console.log(`Current effects: ${curr_effects}, Real effects: ${real_effects}`);
 
     if(curr_effects) {
       // we need to remove current equipped item, so its effect value display minus
@@ -129,7 +129,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             errorToast('Character inventory is full!');
             return;
           }
-          const id = items[this.state.inventory.consumables[index]].id;
+          const id = this.state.inventory.consumables[index];
           consumables.splice(index, 1);
           this.state.character_sheet_data.inventory.push(id);
         } else {
@@ -137,7 +137,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             errorToast('Character inventory is full!');
             return;
           }
-          const id = items[this.state.character_sheet_data.inventory[index]].id;
+          const id = this.state.character_sheet_data.inventory[index];
           consumables.push(id);
           consumables.sort();
           this.state.character_sheet_data.inventory.splice(index, 1);
@@ -147,7 +147,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
       case 'equipment':
         const equipment = this.state.inventory.equipment;
         if (action === InventoryActionType.EQUIP) {
-          const data = equipments[equipment[index]];
+          const data = getEquipmentById(equipment[index]);
           const slotNumber = data.slot;
           const field = equipmentFields[slotNumber];
           const id = equipment[index];
@@ -184,7 +184,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             errorToast('Character spell slots are full!');
             return;
           }
-          const id = spells[this.state.inventory.spells[index]].id;
+          const id = this.state.inventory.spells[index];
           // Check if character already knows the spell
           if (this.state.character_sheet_data.skills.includes(id)) {
             errorToast('Character already knows this spell!');

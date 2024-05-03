@@ -1,6 +1,6 @@
 
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, Terrain, Rarity, StatusEffect, Class } from "./enums";
+import { Stat, Target, EffectDirection, Terrain, StatusEffect, Class } from "./enums";
 import { EffectModifier, EffectModifiers } from "./interfaces";
 
 export const spells:BaseSpell[] = [];

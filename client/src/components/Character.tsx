@@ -3,8 +3,8 @@ import { h, Component } from 'preact';
 import ActionItem from './game/HUD/Action';
 import { InventoryType } from '@legion/shared/enums';
 import { classEnumToString, statStrings } from './utils';
-import { items } from '@legion/shared/Items';
-import { spells } from '@legion/shared/Spells';
+import { getConsumableById } from '@legion/shared/Items';
+import { getSpellById } from '@legion/shared/Spells';
 import { CharacterStats } from '@legion/shared/interfaces';
 import { getXPThreshold } from '@legion/shared/levelling';
 
@@ -121,7 +121,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                   <div className="slots"> 
                   {filledItems && filledItems.map((item, i) => (
                     <ActionItem 
-                      action={item > -1 ? items[item] : null} 
+                      action={item > -1 ? getConsumableById(item) : null} 
                       index={i} 
                       clickedIndex={-1}
                       canAct={true} 
@@ -137,7 +137,7 @@ class Character extends Component<CharacterProps, CharacterState> {
                   <div className="slots">
                   {filledSpells && filledSpells.map((spell, i) => (
                     <ActionItem 
-                      action={spell > -1 ? spells[spell] : null} 
+                      action={spell > -1 ? getSpellById(spell) : null} 
                       index={i} 
                       clickedIndex={-1}
                       canAct={true} 

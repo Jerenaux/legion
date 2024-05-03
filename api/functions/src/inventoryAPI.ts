@@ -1,9 +1,9 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
-import {items} from "@legion/shared/Items";
-import {spells} from "@legion/shared/Spells";
-import {equipments} from "@legion/shared/Equipments";
+import {getConsumableById} from "@legion/shared/Items";
+import {getSpellById} from "@legion/shared/Spells";
+import {getEquipmentById} from "@legion/shared/Equipments";
 import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, ShopTabs}
   from "@legion/shared/enums";
 import {Equipment} from "@legion/shared/interfaces";
@@ -51,13 +51,13 @@ export const purchaseItem = onRequest((request, response) => {
         let itemPrice = 0;
         switch (inventoryType) {
           case ShopTabs.CONSUMABLES:
-            itemPrice = items[itemId].price;
+            itemPrice = getConsumableById(itemId).price;
             break;
           case ShopTabs.SPELLS:
-            itemPrice = spells[itemId].price;
+            itemPrice = getSpellById(itemId).price;
             break;
           case ShopTabs.EQUIPMENTS:
-            itemPrice = equipments[itemId].price;
+            itemPrice = getEquipmentById(itemId).price;
             break;
           default:
             response.status(500).send("Invalid inventory type");
@@ -213,7 +213,7 @@ function equipEquipment(playerData: any, characterData: any, index: number) {
   const item = equipment[index];
   equipment.splice(index, 1);
 
-  const data = equipments[item];
+  const data = getEquipmentById(item);
 
   let slotNumber: number = data.slot;
   if (slotNumber == EquipmentSlot.LEFT_RING) {
@@ -310,7 +310,7 @@ function applyEquipmentBonuses(equipped: Equipment) {
   for (const field of equipmentFields) {
     const item = equipped[field as keyof Equipment];
     if (item !== -1) {
-      const data = equipments[item];
+      const data = getEquipmentById(item);
       data.effects.forEach((effect) => {
         switch (effect.stat) {
         case 0:

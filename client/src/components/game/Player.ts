@@ -3,8 +3,8 @@ import { CircularProgress } from "./CircularProgress";
 import { Team } from './Team';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
-import { items } from '@legion/shared/Items';
-import { spells } from '@legion/shared/Spells';
+import { items, getConsumableById } from '@legion/shared/Items';
+import { getSpellById } from '@legion/shared/Spells';
 import { Target } from "@legion/shared/enums";
 import { Arena } from "./Arena";
 import { HUD } from "./HUD";
@@ -598,13 +598,13 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     addItem(item: number) {
-        this.inventory.push(items[item]);
+        this.inventory.push(getConsumableById(item));
     }
 
     setSpells(spellsIds: number[]) {
         // Map the spell IDs to the actual spell objects
         this.spells = spellsIds.map(spellId => {
-            return spells[spellId];
+            return getSpellById(spellId);
         });   
     }
 

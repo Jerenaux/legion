@@ -2,8 +2,8 @@ import { Team } from './Team';
 import { Item } from './Item';
 import { Spell } from './Spell';
 import { Stat, Terrain, StatusEffect } from "@legion/shared/enums";
-import { items } from '@legion/shared/Items';
-import { spells } from '@legion/shared/Spells';
+import { getConsumableById } from '@legion/shared/Items';
+import { getSpellById } from '@legion/shared/Spells';
 import { getXPThreshold } from '@legion/shared/levelling';
 
 const terrainDot = {
@@ -317,7 +317,7 @@ export class ServerPlayer {
 
     setInventory(capacity: number, inventory: number[]) {
         this.inventoryCapacity = capacity;
-        this.inventory = inventory.map(id => new Item(items[id]));
+        this.inventory = inventory.map(id => new Item(getConsumableById(id)));
     }
 
     addItem(item: Item) {
@@ -344,7 +344,7 @@ export class ServerPlayer {
     }
 
     setSpells(slots: number, spellsIds: number[]) {
-        this.spells = spellsIds.map(id => new Spell(spells[id]));
+        this.spells = spellsIds.map(id => new Spell(getSpellById(id)));
     }
 
     addSpell(spell: Spell) {

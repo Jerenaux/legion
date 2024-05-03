@@ -5,7 +5,7 @@ import { GameHUD, events } from './HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { CellsHighlight } from './CellsHighlight';
-import { spells } from '@legion/shared/Spells';
+import { getSpellById } from '@legion/shared/Spells';
 import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
@@ -667,7 +667,7 @@ export class Arena extends Phaser.Scene
     processCast(flag, {team, num, id, location,}) {
         // console.log(`Processing cast: ${flag} ${team} ${num} ${id} ${location}`);
         const player = this.getPlayer(team, num);
-        const spell = spells[id];
+        const spell = getSpellById(id);
         player.castAnimation(flag, spell?.name);
         if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
     }
@@ -741,7 +741,7 @@ export class Arena extends Phaser.Scene
     processLocalAnimation({x, y, id, isKill}) {
         // Convert x and y in grid coords to pixels
         const {x: pixelX, y: pixelYInitial} = this.gridToPixelCoords(x, y);
-        const spell = spells[id];
+        const spell = getSpellById(id);
         let pixelY = pixelYInitial;
         if (spell.yoffset) pixelY += spell.yoffset;
 
