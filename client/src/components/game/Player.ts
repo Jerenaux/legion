@@ -49,6 +49,13 @@ export class Player extends Phaser.GameObjects.Container {
     statuses: {
         frozen: number;
         paralyzed: number;
+        burning: number;
+        wet: number;
+        poisoned: number;
+        blind: number;
+        mute: number;
+        sleeping: number;
+        charmed: number;
     };
 
     constructor(
@@ -73,6 +80,13 @@ export class Player extends Phaser.GameObjects.Container {
         this.statuses = {
             frozen: 0,
             paralyzed: 0,
+            burning: 0,
+            wet: 0,
+            poisoned: 0,
+            blind: 0,
+            mute: 0,
+            sleeping: 0,
+            charmed: 0
         };
 
         this.baseSquare = scene.add.graphics().setAlpha(0.6);

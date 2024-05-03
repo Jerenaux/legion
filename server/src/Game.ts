@@ -79,7 +79,7 @@ export abstract class Game
         const team = this.teams.get(1).socket ? this.teams.get(2) : this.teams.get(1);
         this.socketMap.set(socket, team);
         team?.setSocket(socket);
-        this.sendGameStatus(socket);
+        this.sendGameStatus(socket, true);
     }
 
     abstract populateTeams(): void;
@@ -153,25 +153,29 @@ export abstract class Game
         }, 30 * 1000);
     }
 
-    sendGameStatus(socket: Socket) {
+    sendGameStatus(socket: Socket, reconnect: boolean = false) {
         const teamId = this.socketMap.get(socket)?.id!;
-        socket.emit('gameStart', this.getPlacementData(teamId));
+        socket.emit('gameStatus', this.getGameData(teamId, reconnect));
     }
 
     broadcast(event: string, data: any) {
         this.io.in(this.id).emit(event, data);
     }
 
-    getPlacementData(playerTeamId: number) {
+    getGameData(playerTeamId: number, reconnect: boolean = false) {
         const otherTeamId = this.getOtherTeam(playerTeamId).id;
         const data = {
-            'player': {
-                'teamId': playerTeamId,
-                'team': this.teams.get(playerTeamId)?.getMembers().map(player => player.getPlacementData(true))
+            general: {
+                reconnect,
+                tutorial: false,
             },
-            'opponent': {
-                'teamId': otherTeamId,
-                'team': this.teams.get(otherTeamId)?.getMembers().map(player => player.getPlacementData())
+            player: {
+                teamId: playerTeamId,
+                team: this.teams.get(playerTeamId)?.getMembers().map(player => player.getPlacementData(true))
+            },
+            opponent: {
+                teamId: otherTeamId,
+                team: this.teams.get(otherTeamId)?.getMembers().map(player => player.getPlacementData())
             }
         }
         return data;

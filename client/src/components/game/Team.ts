@@ -66,6 +66,7 @@ export class Team {
                 isPlayer: member.isPlayer,
                 cooldown: member.cooldownDuration,
                 totalCooldown: member.totalCooldownDuration,
+                statuses: member.statuses
             });
         });
 

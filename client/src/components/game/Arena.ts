@@ -121,7 +121,7 @@ export class Arena extends Phaser.Scene
             console.log('Disconnected from the server');
         }); 
 
-        this.socket.on('gameStart', this.initializeGame.bind(this));
+        this.socket.on('gameStatus', this.initializeGame.bind(this));
 
         this.socket.on('move', (data) => {
             this.processMove(data);
@@ -779,7 +779,6 @@ export class Arena extends Phaser.Scene
     processScoreUpdate({teamId, score}) {
         const team = this.teamsMap.get(teamId);
         team.setScore(score);
-        console.log(`Team ${teamId} score: ${score}`);
         this.emitEvent('overviewChange');
     }
 
@@ -1111,9 +1110,13 @@ export class Arena extends Phaser.Scene
         this.placeCharacters(data.player.team, true, this.teamsMap.get(data.player.teamId));
         this.placeCharacters(data.opponent.team, false, this.teamsMap.get(data.opponent.teamId));
 
-        const delay = 3000;
-        setTimeout(this.startAnimation.bind(this), delay);
-        setTimeout(this.updateOverview.bind(this), delay + 1000);
+        if (data.general.reconnect) {
+            this.updateOverview();
+        } else {
+            const delay = 3000;
+            setTimeout(this.startAnimation.bind(this), delay);
+            setTimeout(this.updateOverview.bind(this), delay + 1000);
+        }
 
         events.on('itemClick', (letter) => {
             this.selectedPlayer?.onLetterKey(letter);

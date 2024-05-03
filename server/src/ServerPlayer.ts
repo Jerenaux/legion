@@ -47,6 +47,13 @@ export class ServerPlayer {
     statuses: {
         frozen: number;
         paralyzed: number;
+        burning: number;
+        wet: number;
+        poisoned: number;
+        blind: number;
+        mute: number;
+        sleeping: number;
+        charmed: number;
     }
     interactedTargets: Set<ServerPlayer> = new Set();
 
@@ -61,6 +68,13 @@ export class ServerPlayer {
         this.statuses = {
             frozen: 0,
             paralyzed: 0,
+            burning: 0,
+            wet: 0,
+            poisoned: 0,
+            blind: 0,
+            mute: 0,
+            sleeping: 0,
+            charmed: 0
         };
         
         this.cooldowns = {
@@ -74,11 +88,12 @@ export class ServerPlayer {
 
     getPlacementData(includePersonal = false): playerNetworkData {
         const data: playerNetworkData = {
-            'name': this.name,
-            'frame': this.frame,
-            'x': this.x,
-            'y': this.y,
-            'hp': this.maxHP,
+            name: this.name,
+            frame: this.frame,
+            x: this.x,
+            y: this.y,
+            hp: this.maxHP,
+            statuses: this.statuses,
         }
         if (includePersonal) {
             data['mp'] = this.maxMP;
@@ -498,6 +513,7 @@ interface playerNetworkData {
     x: number;
     y: number;
     hp: number;
+    statuses: any;
     mp?: number;
     distance?: number;
     cooldown?: number;
