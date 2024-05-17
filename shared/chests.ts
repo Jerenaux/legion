@@ -4,9 +4,9 @@ import { spells } from "./Spells";
 import { equipments } from "./Equipments";
 import { AVERAGE_REWARD_PER_GAME } from "./economy";
 
-type RewardType = 'consumable' | 'spell' | 'equipment' | 'character' | 'gold';
+type RewardType = 'consumable' | 'spell' | 'equipment' | 'gold';
 type ItemRewardType = 'consumable' | 'spell' | 'equipment';
-type Reward = { type: RewardType, rarity: Rarity | null, id?: number, amount?: number, name?: string };
+export type ChestReward = { type: RewardType, rarity: Rarity | null, id?: number, amount?: number, name?: string };
 
 function getRandomType(distribution: { [key: string]: number }): ItemRewardType {
     const typeRoll = Math.random() * 100;
@@ -28,7 +28,7 @@ function getRandomItem(
     goldChance: number,
     goldAmount: number[],
     allowGold: boolean
-): Reward {
+): ChestReward {
     const rarityRoll = Math.random() * 100;
     let cumulativeProbability = 0;
     let chosenRarity: Rarity | null = null;
@@ -66,8 +66,6 @@ function getRandomItem(
         case 'equipment':
             rewardPool = equipments;
             break;
-        // case 'character':
-        //     return {type: 'character'};
         default:
             throw new Error('Invalid item type');
     }
@@ -85,7 +83,7 @@ function getRandomItem(
     return { type: rewardType, rarity: chosenRarity, id: item.id, name: item.name };
 }
 
-export function getChestContent(type: ChestType): Reward[] {
+export function getChestContent(type: ChestType): ChestReward[] {
     let allowGold = true;
 
     let rarityDistribution: { [key in Rarity]?: number[] };

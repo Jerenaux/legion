@@ -97,7 +97,8 @@ export interface OutcomeData {
     gold: number;
     characters?: CharacterUpdate[];
     elo: number;
-    chestsRewards: any;
+    keys: any;
+    chests: any;
 }
 
 export interface CharacterStats {

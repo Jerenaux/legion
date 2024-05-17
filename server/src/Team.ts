@@ -148,7 +148,7 @@ export class Team {
     }
 
     
-    getChestsRewards() {
+    getChestsKeys() {
         return this.chestKeys;
     }
 
@@ -165,7 +165,7 @@ export class Team {
         console.log(`Distributing XP: ${xp}`)
         const total = this.getTotalInteractedTargets();
         for (let i = 0; i < this.members.length; i++) {
-            const xpRatio = this.members[i].countInteractedTargets() / total;
+            const xpRatio = (this.members[i].countInteractedTargets() / total) || 0;
             const xpShare = Math.round(xp * xpRatio);
             console.log(`XP share for ${this.members[i].name}: ${xpShare} (${this.members[i].countInteractedTargets()} / ${total})`);
             this.members[i].gainXP(xpShare);

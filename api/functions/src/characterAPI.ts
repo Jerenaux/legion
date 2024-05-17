@@ -3,8 +3,9 @@ import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFields, Stat} from "@legion/shared/enums";
+import {Class, EquipmentSlot, statFields} from "@legion/shared/enums";
 import {OutcomeData, ChestsTimeData} from "@legion/shared/interfaces";
+import {ChestReward} from "@legion/shared/chests";
 
 export const rosterData = onRequest((request, response) => {
   logger.info("Fetching rosterData");
@@ -89,7 +90,7 @@ export const rewardsUpdate = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const {isWinner, xp, gold, characters, elo, chestsRewards} =
+      const {isWinner, xp, gold, characters, elo, keys, chests} =
         request.body as OutcomeData;
 
       await db.runTransaction(async (transaction) => {
@@ -111,22 +112,52 @@ export const rewardsUpdate = onRequest((request, response) => {
           return ["bronze", "silver", "gold"].includes(key);
         }
 
-        const chests = playerData.chests as ChestsTimeData;
-        if (chestsRewards) {
+        const chestsData = playerData.chests as ChestsTimeData;
+        if (keys) {
           for (const [chestColor, hasObtainedKey]
-            of Object.entries(chestsRewards)) {
+            of Object.entries(keys)) {
             if (hasObtainedKey && isKeyOfChestTimeData(chestColor) &&
-              chests[chestColor].hasKey === false) {
-              chests[chestColor].hasKey = true;
+            chestsData[chestColor].hasKey === false) {
+              chestsData[chestColor].hasKey = true;
             }
           }
         }
+
+        const inventory = playerDoc.data()?.inventory || {};
+        const consumables = inventory.consumables || [];
+        const spells = inventory.spells || [];
+        const equipment = inventory.equipment || [];
+
+        chests.forEach((chest: any) => {
+          chest.content.forEach((reward: ChestReward) => {
+            if (reward.type === "gold") {
+              transaction.update(playerRef, {
+                gold: admin.firestore.FieldValue.increment(reward.amount || 0),
+              });
+            } else if (reward.type == "consumable") {
+              consumables.push(reward.id);
+              transaction.update(playerRef, {
+                "inventory.consumables": consumables,
+              });
+            } else if (reward.type == "spell") {
+              spells.push(reward.id);
+              transaction.update(playerRef, {
+                "inventory.spells": spells,
+              });
+            } else if (reward.type == "equipment") {
+              equipment.push(reward.id);
+              transaction.update(playerRef, {
+                "inventory.equipment": equipment,
+              });
+            }
+          });
+        });
 
         transaction.update(playerRef, {
           xp: admin.firestore.FieldValue.increment(xp),
           gold: admin.firestore.FieldValue.increment(gold),
           elo: admin.firestore.FieldValue.increment(elo),
-          chests,
+          chests: chestsData,
         });
         if (isWinner) {
           transaction.update(playerRef, {

@@ -5,11 +5,11 @@ import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
-import { Terrain, PlayMode, Target, StatusEffect } from '@legion/shared/enums';
+import { Terrain, PlayMode, Target, StatusEffect, ChestType } from '@legion/shared/enums';
 import { OutcomeData, TerrainUpdate, ChestsData, ChestsKeysData } from '@legion/shared/interfaces';
 import { XP_PER_LEVEL } from '@legion/shared/levelling';
 import { AVERAGE_REWARD_PER_GAME } from '@legion/shared/economy';
-
+import { getChestContent } from '@legion/shared/chests';
 export abstract class Game
 {
     id: string;
@@ -243,7 +243,7 @@ export abstract class Game
     }
 
     processAction(action: string, data: any, socket: Socket | null = null) {
-        console.log(`Processing action ${action} with data ${JSON.stringify(data)}`);
+        // console.log(`Processing action ${action} with data ${JSON.stringify(data)}`);
         if (this.gameOver || !this.gameStarted) return;
 
         let team;
@@ -802,7 +802,24 @@ export abstract class Game
             gold: this.computeTeamGold(grade, mode),
             xp: this.computeTeamXP(team, otherTeam, grade, mode),
             elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
-            chestsRewards: mode == PlayMode.PRACTICE ? null : team.getChestsRewards() as ChestsKeysData,
+            keys: mode == PlayMode.PRACTICE ? null : team.getChestsKeys() as ChestsKeysData,
+            chests: this.computeChests(team.score, mode),
+        }
+    }
+
+    computeChests(score: number, mode: PlayMode) {
+        const chests = [];
+        if (mode != PlayMode.PRACTICE) this.computeAudienceRewards(score, chests);
+        return chests;
+    }
+
+    computeAudienceRewards(score, chests) {
+        if (score == 1500) {
+            chests.push({color: ChestType.GOLD, content: getChestContent(ChestType.GOLD)});
+        } else if (score >= 1000) {
+            chests.push({color: ChestType.SILVER, content: getChestContent(ChestType.SILVER)});
+        } else if (score >= 500) {
+            chests.push({color: ChestType.BRONZE, content: getChestContent(ChestType.BRONZE)});
         }
     }
 
@@ -906,7 +923,8 @@ export abstract class Game
                         xp: rewards.xp,
                         elo: rewards.elo,
                         characters: team.getCharactersDBUpdates(),
-                        chestsRewards: rewards.chestsRewards,
+                        keys: rewards.keys,
+                        chests: rewards.chests,
                     } as OutcomeData,
                 }
             );
