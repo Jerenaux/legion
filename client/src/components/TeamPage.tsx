@@ -145,6 +145,17 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         const equipment = this.state.inventory.equipment;
         if (action === InventoryActionType.EQUIP) {
           const data = getEquipmentById(equipment[index]);
+
+          if (data.minLevel > this.state.character_sheet_data.level) {
+            errorToast('Character level is too low!');
+            return;
+          }
+
+          if (data.classes && !data.classes.includes(this.state.character_sheet_data.class)) {
+            errorToast('Character class is not compatible!');
+            return;
+          }
+
           const slotNumber = data.slot;
           const field = equipmentFields[slotNumber];
           const id = equipment[index];

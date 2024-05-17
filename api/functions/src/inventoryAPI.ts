@@ -130,6 +130,15 @@ function canLearnSpell(characterData: any) {
   return characterData.skills.length < characterData.skill_slots;
 }
 
+function canEquipEquipment(characterData: any, equipmentId: any) {
+  const equipment = getEquipmentById(equipmentId);
+  if (!equipment) {
+    console.error("Invalid equipment ID");
+    return false;
+  }
+  return (equipment.minLevel <= characterData.level) && (equipment.classes.includes(characterData.class));
+}
+
 function equipConsumable(playerData: any, characterData: any, index: number) {
   const playerInventory = playerData.inventory;
   const consumables = playerInventory.consumables.sort();
@@ -395,9 +404,11 @@ export const inventoryTransaction = onRequest((request, response) => {
           case InventoryType.SKILLS:
             canDo = canLearnSpell(characterData);
             break;
-          case InventoryType.EQUIPMENTS:
-            canDo = true;
-            break;
+          case InventoryType.EQUIPMENTS: {
+              const itemId = playerData.inventory.equipment[index];
+              canDo = canEquipEquipment(characterData, itemId);
+              break;
+            }
           }
           if (!canDo) {
             response.send({status: 1});
