@@ -1,5 +1,7 @@
 // Overview.tsx
 import { h, Component } from 'preact';
+import { Player } from './GameHUD';
+import PlayerInfo from './PlayerInfo';
 
 interface Member {
   texture: string;
@@ -16,6 +18,7 @@ interface Member {
 
 interface Props {
   members: Member[];
+  player: Player;
   score: number;
   position: string;
 }
@@ -85,7 +88,7 @@ class Overview extends Component<Props, State> {
     }));
   }
 
-  render({ members, score, position }: Props, { cooldowns, blinking }: State) {
+  render({ members, score, position, player }: Props, { cooldowns, blinking }: State) {
     if (!members || !blinking.length) {
       return <div />;
     }
@@ -93,6 +96,7 @@ class Overview extends Component<Props, State> {
 
     return (
       <div className="overview">
+        <PlayerInfo player={player} />
         {members.map((member, memberIndex) => {
           const portraitStyle = {
             backgroundImage: `url(/sprites/${member.texture}.png)`,
@@ -116,6 +120,7 @@ class Overview extends Component<Props, State> {
           }
 
           const cooldown = cooldowns[cooldownIndex++];
+
           return (
             <div 
             key={memberIndex} 

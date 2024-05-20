@@ -5,8 +5,16 @@ import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
 
+export interface Player {
+  avatar: string;
+  name: string;
+  level: number;
+  rank: number;
+}
+
 interface Team {
   members: any[];
+  player: Player;
   score: number;
 }
 

@@ -132,3 +132,84 @@
     width: 16px;
     height: 18px;
 }
+
+.player_info_container {
+    background-image: url('@assets/HUD/player_info_bg.png');
+    background-size: 100% 100%;
+    width: 368px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    padding: 8px 16px 12px 36px;
+}
+
+.player_info_lv {
+    background-image: url('@assets/HUD/final_chest_bg.png');
+    background-size: 100% 100%;
+    width: 56px;
+    height: 56px;
+    position: absolute;
+    top: 30px;
+    left: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.player_info_lv span {
+    font-size: 10px;
+    color: #FFA600;
+}
+
+.player_info_lv .player_info_lvalue {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.player_info_player_profile {
+    background-image: url('@assets/HUD/player_profile_bg.png');
+    background-size: 100% 100%;
+    width: 86px;
+    height: 86px;
+}
+
+.player_info {
+    display: flex;
+    flex-direction: column;
+}
+
+.player_info_name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.player_info_rank {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.player_info_rank img {
+    width: 36px;
+    height: 36p;
+}
+
+.player_info_rank span {
+    font-size: 14px;
+    color: #71deff;
+}
+
+.player_info_team {
+    background-image: url('@assets/HUD/team_bg.png');
+    background-size: 100% 100%;
+    padding: 2px;
+    padding-left: 10px;
+    font-size: 14px;
+    color: #FFFFFF;
+    margin-left: -8px;
+}
