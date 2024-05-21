@@ -230,6 +230,7 @@ export abstract class Game
     }
 
     getPlayersInArea(x: number, y: number, radius: number) {
+        // Radius is the not-divided-by-2 size of the spell/item
         const players: ServerPlayer[] = [];
         this.teams.forEach(team => {
             team.getMembers().forEach(player => {

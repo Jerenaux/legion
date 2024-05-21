@@ -387,7 +387,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.playAnim('cast', false);
             this.animationSprite.setVisible(true).play('cast');
             this.displayOverheadText(name, 4000, '#fff');
-            this.arena.playSound('cast', 1, true);
+            this.arena.playSound('cast', 1);
         } else {
             this.playAnim('idle');
             this.animationSprite.setVisible(false);

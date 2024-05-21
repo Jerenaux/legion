@@ -17,7 +17,7 @@ export class Spell extends BaseSpell {
             const target = game.getPlayerAt(x, y);
             if (target) return [target];
         } else if (this.target === Target.AOE) {
-            return game.getPlayersInArea(x, y, Math.floor(this.size/2));
+            return game.getPlayersInArea(x, y, this.size);
         }
         return [];
     }
