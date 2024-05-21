@@ -8,11 +8,11 @@ import Inventory from './inventory/Inventory';
 import Skeleton from 'react-loading-skeleton';
 
 import { apiFetch } from '../services/apiService';
-import { errorToast } from './utils';
+import { errorToast, playSoundEffect } from './utils';
 import TeamContentCard from './teamContentCard/TeamContentCard';
 import { Effect } from '@legion/shared/interfaces';
 import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/shared/enums';
-import { equipments, getEquipmentById } from '@legion/shared/Equipments';
+import { getEquipmentById } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
 interface TeamPageState {
   inventory: {
@@ -204,6 +204,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         this.setState({ inventory: { ...this.state.inventory, spells: playerSpells } });
         break;
     }
+    playSoundEffect('sfx/equip.wav');
   }
 
   render() {

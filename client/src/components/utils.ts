@@ -48,3 +48,8 @@ export function mapFrameToCoordinates(frame: number) {
     y: Math.floor(frame / width) * 32
   }
 }
+
+export function playSoundEffect(src: string) {
+  const audio = new Audio(src);
+  audio.play().catch(error => console.error('Error playing sound:', error));
+}

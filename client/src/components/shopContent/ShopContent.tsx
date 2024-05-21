@@ -9,7 +9,7 @@ import { apiFetch } from '../../services/apiService';
 import { InventoryType, ShopTabs } from '@legion/shared/enums';
 import { PlayerInventory, ShopItems } from '@legion/shared/interfaces';
 import { ShopTabIcons } from './ShopContent.data';
-import { errorToast, successToast } from '../utils';
+import { errorToast, successToast, playSoundEffect } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
 import ShopEquipmentCard from '../shopEquipmentCard/ShopEquipmentCard';
@@ -107,6 +107,7 @@ class ShopContent extends Component<ShopContentProps> {
 
         this.props.updateInventory(id.toString(), quantity, this.state.curr_tab);
         this.context.setPlayerInfo({ gold: this.props.gold - price * quantity });
+        playSoundEffect('sfx/purchase.wav');
 
         apiFetch(this.state.curr_tab == ShopTabs.CHARACTERS ? 'purchaseCharacter' : 'purchaseItem', {
             method: 'POST',

@@ -783,8 +783,10 @@ export class Arena extends Phaser.Scene
 
     processScoreUpdate({teamId, score}) {
         const team = this.teamsMap.get(teamId);
+        const _score = team.score;
         team.setScore(score);
         this.emitEvent('overviewChange');
+        if (score - _score > 50) this.playSound('cheer', 2);
     }
 
     updateMusicIntensity(ratio){
@@ -807,7 +809,7 @@ export class Arena extends Phaser.Scene
         // // Calculate panning (left/right balance) based on positions
         // const pan = 100; // Phaser.Math.Clamp((audioSourcePosition.x - playerPosition.x) / 400, -1, 1);
 
-        this.SFX[name].play({delay: 0, loop});
+        this.SFX[name].play({delay: 0, volume, loop});
     }
 
     stopSound(name) {
