@@ -203,7 +203,10 @@ class PlayerTab extends Component<Props, State> {
             <p className="hud_actions_title">Spells</p>
             <div className="grid player_hud_action_container gap_4 padding_y_4">
               {Array.from({ length: 6 }, (_, idx) => (
-                <div className="player_hud_skills flex items_center justify_center relative" key={idx}>
+                <div
+                  className="player_hud_skills flex items_center justify_center relative"
+                  key={idx}
+                  onClick={this.actionClick.bind(this)}>
                   <ActionItem
                     action={items[player.items[idx]]}
                     index={idx}

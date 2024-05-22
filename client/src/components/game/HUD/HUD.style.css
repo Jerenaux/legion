@@ -66,6 +66,10 @@
     position: relative;
 }
 
+.cursor_pointer {
+    cursor: pointer;
+}
+
 .item {
     width: 43px;
     height: 43px;
@@ -449,11 +453,13 @@
 }
 
 .player_hud_skills {
-    width: 48px;
+    width: 100%;
+    max-width: 48px;
     height: 48px;
     background-color: #1c1f25;
     border: 1px solid #274c57;
     border-radius: 4px;
+    cursor: pointer;
 }
 
 .player_hud_skills:hover {
