@@ -95,7 +95,7 @@ class Overview extends Component<Props, State> {
     let cooldownIndex = 0;
 
     return (
-      <div className="overview">
+      <div className={`overview ${position === 'right' && 'overview_right'}`}>
         <PlayerInfo player={player} position={this.props.position} />
         {members.map((member, memberIndex) => {
           const portraitStyle = {
@@ -124,14 +124,14 @@ class Overview extends Component<Props, State> {
           return (
             <div 
             key={memberIndex} 
-            className={`member ${position === 'left' ? 'member-left' : 'member-right'} char_stats_container`} 
+            className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`} 
             onMouseEnter={() => this.setState({hovered: memberIndex})} 
             onMouseLeave={() => this.setState({hovered: null})} 
             onClick={() => this.setState({selected: memberIndex})}>
               <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
                 <div className="char_portrait" style={portraitStyle} />
               </div>
-              <div className="char_stats" style={charStatStyle(memberIndex)}>
+              <div className={`char_stats ${position === 'right' && 'char_stats_right'}`} style={charStatStyle(memberIndex)}>
                 <div className="char_stats_player_name">
                   <div className="char_stats_player_index">
                     <span>{memberIndex + 1}</span>
@@ -141,14 +141,14 @@ class Overview extends Component<Props, State> {
                 <div className="char_stats_bar">
                   <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
                 </div>
-                <div className="char_stats_bar">
+                {position === 'left' && <div className="char_stats_bar">
                   <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
-                </div>
+                </div>}
               </div>
-              <div className="char_stats_cooldown_bar">
+              {position === 'left' && <div className="char_stats_cooldown_bar">
                 <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
-              </div>
-              <div className="char_statuses">
+              </div>}
+              <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
                 <img src="/HUD/poison_icon.png" alt="" />
                 <img src="/HUD/frozen_icon.png" alt="" />
                 <img src="/HUD/burning_icon.png" alt="" />

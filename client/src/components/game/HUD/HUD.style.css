@@ -18,6 +18,10 @@
     flex: 1;
 }
 
+.flex_row_reverse {
+    flex-direction: row-reverse !important;
+}
+
 .width_full {
     width: 100%;
 }
@@ -70,6 +74,10 @@
     cursor: pointer;
 }
 
+.overview_right {
+    align-items: flex-end;
+}
+
 .item {
     width: 43px;
     height: 43px;
@@ -88,6 +96,7 @@
 .char_stats_container {
     display: flex;
     flex-direction: row;
+    cursor: pointer;
 }
 
 .char_profile {
@@ -126,6 +135,17 @@
     gap: 6px;
 }
 
+.char_stats_right {
+    margin-left: 0;
+    margin-right: -16px;
+    padding-left: 8px;
+    padding-right: 16px;
+}
+
+.char_stats_right .char_stats_player_name {
+    flex-direction: row-reverse;
+}
+
 .char_stats_player_name {
     display: flex;
     gap: 6px;
@@ -133,7 +153,7 @@
 }
 
 .char_stats_player_index {
-    width: 24px;
+    min-width: 24px;
     height: 24px;
     background-image: url('@assets/HUD/no_bg.png');
     background-size: 100% 100%;
@@ -147,6 +167,9 @@
     font-size: 14px;
     font-weight: 400;
     text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .char_stats_bar {
@@ -192,13 +215,21 @@
     gap: 4px;
     align-items: center;
     position: absolute;
-    right: 2px;
+    left: 96px;
     top: 88px;
 }
 
+.char_statuses_right {
+    left: auto;
+    right: 96px;
+}
+
 .char_statuses img {
-    width: 14px;
-    height: 18px;
+    width: 16px;
+    height: 20px;
+    background-color: #1c1f25;
+    padding: 2px;
+    border-radius: 2px;
 }
 
 .player_info_container {
@@ -437,8 +468,11 @@
 }
 
 .player_content_statuses img {
-    width: 14px;
-    height: 16px;
+    width: 16px;
+    height: 18px;
+    background-color: #1c1f25;
+    padding: 2px;
+    border-radius: 2px;
 }
 
 .xp_bar_bg_container {
