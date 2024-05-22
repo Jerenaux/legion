@@ -108,10 +108,10 @@ class GameHUD extends Component<object, State> {
     return (
       <div>
         <div className="hud-container">
-          <Overview position="left" {...team2} />
+          <Overview position="left" isSpectator={isSpectator} {...team2} />
           <PlayerTab player={playerData} eventEmitter={events} />
           {playerVisible && player ? <PlayerTab player={playerData} eventEmitter={events} /> : null}
-          <Overview position="right" {...team1} />
+          <Overview position="right" isSpectator={isSpectator} {...team1} />
         </div>
         {this.state.gameOver && <Endgame xpReward={this.state.xpReward} goldReward={this.state.goldReward} />}
       </div>

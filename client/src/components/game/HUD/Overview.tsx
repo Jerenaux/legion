@@ -21,6 +21,7 @@ interface Props {
   player: Player;
   score: number;
   position: string;
+  isSpectator: boolean;
 }
 
 interface State {
@@ -88,7 +89,7 @@ class Overview extends Component<Props, State> {
     }));
   }
 
-  render({ members, score, position, player }: Props, { cooldowns, blinking }: State) {
+  render({ members, score, position, player, isSpectator }: Props, { cooldowns, blinking }: State) {
     if (!members || !blinking.length) {
       return <div />;
     }
@@ -96,7 +97,7 @@ class Overview extends Component<Props, State> {
 
     return (
       <div className={`overview ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={player} position={this.props.position} />
+        <PlayerInfo player={player} position={this.props.position} isSpectator={isSpectator} />
         {members.map((member, memberIndex) => {
           const portraitStyle = {
             backgroundImage: `url(/sprites/${member.texture}.png)`,
