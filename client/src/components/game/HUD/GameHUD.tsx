@@ -4,6 +4,7 @@ import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
+import SpectatorFooter from './SpectatorFooter';
 
 export interface Player {
   avatar: string;
@@ -106,13 +107,14 @@ class GameHUD extends Component<object, State> {
     }
 
     return (
-      <div>
+      <div className="height_full flex flex_col justify_between padding_bottom_16">
         <div className="hud-container">
           <Overview position="left" isSpectator={isSpectator} {...team2} />
           <PlayerTab player={playerData} eventEmitter={events} />
           {playerVisible && player ? <PlayerTab player={playerData} eventEmitter={events} /> : null}
           <Overview position="right" isSpectator={isSpectator} {...team1} />
         </div>
+        <SpectatorFooter />
         {this.state.gameOver && <Endgame xpReward={this.state.xpReward} goldReward={this.state.goldReward} />}
       </div>
     );

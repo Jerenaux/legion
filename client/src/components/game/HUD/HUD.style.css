@@ -18,6 +18,10 @@
     flex: 1;
 }
 
+.flex_col {
+    flex-direction: column;
+}
+
 .flex_row_reverse {
     flex-direction: row-reverse !important;
 }
@@ -28,6 +32,10 @@
 
 .width_half {
     width: 50%;
+}
+
+.height_full {
+    height: 100vh;
 }
 
 .justify_center {
@@ -56,6 +64,10 @@
 
 .padding_top_16 {
     padding-top: 16px;
+}
+
+.padding_bottom_16 {
+    padding-bottom: 16px;
 }
 
 .padding_right_16 {
@@ -582,4 +594,99 @@
 .spectator_container_right div img {
     width: 100%;
     height: 100%;
+}
+
+.spectator_footer_container {
+    background-image: url('@assets/HUD/reward_footer_ornament.png');
+    background-size: 100% 100%;
+    height: 48px;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spectator_progress {
+    background-image: url('@assets/HUD/spectator_progress_bg.png');
+    background-size: 100% 100%;
+    width: 24%;
+    height: 48px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 16px;
+    position: relative;
+}
+
+.spectator_progress_bar_bg {
+    background-color: #1c1f25;
+    width: 100%;
+    height: 100%;
+}
+
+.spectator_progress_fill {
+    background-image: url('@assets/HUD/progress_fill.png');
+    background-size: 100% 100%;
+    height: 100%;
+}
+
+.progress_ches_mark {
+    width: 48px;
+    height: 48px;
+    background-image: url('@assets/HUD/player_lv_bg.png');
+    background-size: 100% 100%;
+    padding: 14px;
+    position: absolute;
+    right: -20px;
+}
+
+.progress_ches_mark img {
+    width: 100%;
+    height: 100%;
+}
+
+.progress_chest_bronze {
+    position: absolute;
+    left: 63%;
+    top: -21px;
+}
+
+.progress_chest_silver {
+    position: absolute;
+    left: 30%;
+    top: -21px;
+}
+
+.progress_chest_bronze img {
+    width: 24px;
+    height: 22px;
+}
+
+.progress_chest_silver img {
+    width: 24px;
+    height: 22px;
+}
+
+.skip_tutorial {
+    background-image: url('@assets/HUD/skip_btn_bg.png');
+    background-size: 100% 100%;
+    height: 54px;
+    position: absolute;
+    right: 64px;
+    padding: 0 24px 0 16px;
+    cursor: pointer;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 12px;
+    color: #FFFFFF;
+    text-transform: uppercase;
+}
+
+.skip_tutorial:hover {
+    opacity: 0.9;
 }

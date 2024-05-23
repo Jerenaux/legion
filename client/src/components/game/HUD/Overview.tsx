@@ -106,7 +106,8 @@ class Overview extends Component<Props, State> {
           const charProfileStyle = (idx: number) => {
             if (this.state.selected === idx) {
               return {
-                backgroundImage: `url(/HUD/char_profile_ready.png)`
+                backgroundImage: `url(/HUD/char_profile_ready.png)`,
+                transform: 'scale(1.1)'
               }
             }
             return {
@@ -116,7 +117,7 @@ class Overview extends Component<Props, State> {
 
           const charStatStyle = (idx: number) => {
             return {
-              backgroundImage: `url(/HUD/char_stats_bg${this.state.hovered === idx ? '_Active' : ''}.png)`
+              backgroundImage: `url(/HUD/char_stats_bg${this.state.hovered === idx ? '_Active' : ''}.png)`,
             }
           }
 
