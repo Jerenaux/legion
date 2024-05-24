@@ -48,7 +48,10 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration
         if (options.body && !headers.has('Content-Type')) {
             headers.append('Content-Type', 'application/json');
             options.body = JSON.stringify(options.body); // Stringify the body if it's an object
-        }
+        } 
+        // else {
+        //     endpoint += `?uid=${idToken}`;
+        // }
 
         headers.append("Authorization", `Bearer ${idToken}`);
 

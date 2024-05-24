@@ -7,7 +7,7 @@ import {apiFetch} from './API';
 import { Class, PlayMode } from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
-import { ChestsData } from '@legion/shared/interfaces';
+import { APIPlayerData } from '@legion/shared/interfaces';
 
 const TICK = 100;
 const AI_VS_AI = false;
@@ -69,7 +69,7 @@ export class AIGame extends Game {
         this.createAITeam(aiTeam!, nb, levels);
     }
 
-    async addPlayer(socket: Socket, playerData: any) {
+    async addPlayer(socket: Socket, playerData: APIPlayerData) {
         super.addPlayer(socket, playerData);
         if (this.sockets.length === this.nbExpectedPlayers) {
             this.start();

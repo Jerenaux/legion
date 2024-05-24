@@ -84,11 +84,10 @@ io.on('connection', async (socket: any) => {
         game.reconnectPlayer(socket);
       } else {
         const playerData = await apiFetch(
-          `playerData?id=${gameId}`,
+          `getPlayerData?id=${gameId}`,
           socket.firebaseToken,
         );
   
-        // game.addPlayer(socket, playerData.elo, playerData.chests);
         game.addPlayer(socket, playerData);
       }
 

@@ -5,6 +5,9 @@ import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css'
 
+import { apiFetch } from '../../services/apiService';
+import { errorToast } from '../utils';
+
 interface DailyLootBoxProps {
     data: any
   }
@@ -55,8 +58,17 @@ class DailyLootBox extends Component<DailyLootBoxProps> {
       second: Math.floor(this.state.time % 60)
     };
 
-    const handleOpen = () => {
-      console.log('Open box');
+    const handleOpen = async () => {
+      // TODO: move
+      try {
+          const data = await apiFetch(`claimChest?chestType=silver`);
+          console.log(data);
+          // this.setState({ 
+          //   ...data
+          // });
+      } catch (error) {
+          errorToast(`Error: ${error}`);
+      }
     }
 
     const handleReward = () => {

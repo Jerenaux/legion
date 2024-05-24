@@ -1,10 +1,12 @@
+import {Transaction} from "firebase-admin/firestore";
+
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, EquipmentSlot, statFields} from "@legion/shared/enums";
-import {OutcomeData, ChestsTimeData} from "@legion/shared/interfaces";
+import {Class, statFields} from "@legion/shared/enums";
+import {OutcomeData, ChestsTimeData, DailyLootAllData} from "@legion/shared/interfaces";
 import {ChestReward} from "@legion/shared/chests";
 
 export const rosterData = onRequest((request, response) => {
@@ -83,6 +85,42 @@ export const characterData = onRequest((request, response) => {
   });
 });
 
+export async function processChestRewards(
+  transaction: Transaction,
+  playerRef: admin.firestore.DocumentReference,
+  chests: any[],
+  consumables: any[],
+  spells: any[],
+  equipment: any[]
+) {
+  logger.info(`Processing chest rewards for player ${playerRef.id}: ${JSON.stringify(chests)}`);
+  chests.forEach((chest: any) => {
+    logger.info(`Processing chest ${JSON.stringify(chest)}`);
+    chest.content.forEach((reward: ChestReward) => {
+      if (reward.type === "gold") {
+        transaction.update(playerRef, {
+          gold: admin.firestore.FieldValue.increment(reward.amount || 0),
+        });
+      } else if (reward.type == "consumable") {
+        consumables.push(reward.id);
+        transaction.update(playerRef, {
+          "inventory.consumables": consumables,
+        });
+      } else if (reward.type == "spell") {
+        spells.push(reward.id);
+        transaction.update(playerRef, {
+          "inventory.spells": spells,
+        });
+      } else if (reward.type == "equipment") {
+        equipment.push(reward.id);
+        transaction.update(playerRef, {
+          "inventory.equipment": equipment,
+        });
+      }
+    });
+  });
+}
+
 export const rewardsUpdate = onRequest((request, response) => {
   logger.info("Updating rewards");
   const db = admin.firestore();
@@ -90,7 +128,7 @@ export const rewardsUpdate = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const {isWinner, xp, gold, characters, elo, keys, chests} =
+      const {isWinner, xp, gold, characters, elo, key, chests} =
         request.body as OutcomeData;
 
       await db.runTransaction(async (transaction) => {
@@ -112,15 +150,9 @@ export const rewardsUpdate = onRequest((request, response) => {
           return ["bronze", "silver", "gold"].includes(key);
         }
 
-        const chestsData = playerData.chests as ChestsTimeData;
-        if (keys) {
-          for (const [chestColor, hasObtainedKey]
-            of Object.entries(keys)) {
-            if (hasObtainedKey && isKeyOfChestTimeData(chestColor) &&
-            chestsData[chestColor].hasKey === false) {
-              chestsData[chestColor].hasKey = true;
-            }
-          }
+        const dailyLoot = playerData.dailyloot as DailyLootAllData;
+        if (key) {
+          dailyLoot[key].hasKey = true;
         }
 
         const inventory = playerDoc.data()?.inventory || {};
@@ -128,36 +160,13 @@ export const rewardsUpdate = onRequest((request, response) => {
         const spells = inventory.spells || [];
         const equipment = inventory.equipment || [];
 
-        chests.forEach((chest: any) => {
-          chest.content.forEach((reward: ChestReward) => {
-            if (reward.type === "gold") {
-              transaction.update(playerRef, {
-                gold: admin.firestore.FieldValue.increment(reward.amount || 0),
-              });
-            } else if (reward.type == "consumable") {
-              consumables.push(reward.id);
-              transaction.update(playerRef, {
-                "inventory.consumables": consumables,
-              });
-            } else if (reward.type == "spell") {
-              spells.push(reward.id);
-              transaction.update(playerRef, {
-                "inventory.spells": spells,
-              });
-            } else if (reward.type == "equipment") {
-              equipment.push(reward.id);
-              transaction.update(playerRef, {
-                "inventory.equipment": equipment,
-              });
-            }
-          });
-        });
+        await processChestRewards(transaction, playerRef, chests, consumables, spells, equipment);
 
         transaction.update(playerRef, {
           xp: admin.firestore.FieldValue.increment(xp),
           gold: admin.firestore.FieldValue.increment(gold),
           elo: admin.firestore.FieldValue.increment(elo),
-          chests: chestsData,
+          dailyloot: dailyLoot,
         });
         if (isWinner) {
           transaction.update(playerRef, {

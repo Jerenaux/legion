@@ -5,8 +5,8 @@ import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
-import { Terrain, PlayMode, Target, StatusEffect, ChestType } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate, ChestsData, ChestsKeysData } from '@legion/shared/interfaces';
+import { Terrain, PlayMode, Target, StatusEffect, ChestColor } from '@legion/shared/enums';
+import { OutcomeData, TerrainUpdate, APIPlayerData } from '@legion/shared/interfaces';
 import { XP_PER_LEVEL } from '@legion/shared/levelling';
 import { AVERAGE_REWARD_PER_GAME } from '@legion/shared/economy';
 import { getChestContent } from '@legion/shared/chests';
@@ -46,7 +46,7 @@ export abstract class Game
         socket.join(this.id);
     }
 
-    addPlayer(socket: Socket, playerData: any) {
+    addPlayer(socket: Socket, playerData: APIPlayerData) {
         try {
             if (this.sockets.length === 2) return;
             this.addSocket(socket);
@@ -56,7 +56,7 @@ export abstract class Game
             const team = this.teams.get(index + 1);
             this.socketMap.set(socket, team);
             team.setSocket(socket);
-            team.setPlayerData(playerData, this.mode);
+            team.setPlayerData(playerData);
         } catch (error) {
             console.error(error);
         }
@@ -802,7 +802,7 @@ export abstract class Game
             gold: this.computeTeamGold(grade, mode),
             xp: this.computeTeamXP(team, otherTeam, grade, mode),
             elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
-            keys: mode == PlayMode.PRACTICE ? null : team.getChestsKeys() as ChestsKeysData,
+            key: mode == PlayMode.PRACTICE ? null : team.getChestKey() as ChestColor,
             chests: this.computeChests(team.score, mode),
         }
     }
@@ -815,11 +815,11 @@ export abstract class Game
 
     computeAudienceRewards(score, chests) {
         if (score == 1500) {
-            chests.push({color: ChestType.GOLD, content: getChestContent(ChestType.GOLD)});
+            chests.push({color: ChestColor.GOLD, content: getChestContent(ChestColor.GOLD)});
         } else if (score >= 1000) {
-            chests.push({color: ChestType.SILVER, content: getChestContent(ChestType.SILVER)});
+            chests.push({color: ChestColor.SILVER, content: getChestContent(ChestColor.SILVER)});
         } else if (score >= 500) {
-            chests.push({color: ChestType.BRONZE, content: getChestContent(ChestType.BRONZE)});
+            chests.push({color: ChestColor.BRONZE, content: getChestContent(ChestColor.BRONZE)});
         }
     }
 
@@ -923,7 +923,7 @@ export abstract class Game
                         xp: rewards.xp,
                         elo: rewards.elo,
                         characters: team.getCharactersDBUpdates(),
-                        keys: rewards.keys,
+                        key: rewards.key,
                         chests: rewards.chests,
                     } as OutcomeData,
                 }

@@ -24,7 +24,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     
     async fetchPlayerData() {
         try {
-            const data = await apiFetch('playerData');
+            const data = await apiFetch('getPlayerData');
             console.log(data);
             this.setState({ 
                 player: {

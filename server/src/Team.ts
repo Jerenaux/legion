@@ -2,8 +2,8 @@ import { Socket } from "socket.io";
 
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
-import { CharacterUpdate, ChestData, ChestsData, ChestsKeysData } from '@legion/shared/interfaces';
-import { chestTypes, PlayMode } from '@legion/shared/enums';
+import { CharacterUpdate, APIPlayerData, TeamData } from '@legion/shared/interfaces';
+import { ChestColor, PlayMode } from '@legion/shared/enums';
 
 
 const MULTIHIT_SCORE_BASE = 6;
@@ -27,18 +27,21 @@ export class Team {
     levelTotal: number = 0;
     healedAmount: number = 0;
     offensiveActions: number = 0;
-    teamData: any;
+    teamData: TeamData;
 
     constructor(number: number, game: Game) {
         this.id = number;
         this.game = game;
         this.teamData = {
-            chestKeys: {
-                bronze: false,
-                silver: false,
-                gold: false,
-            }
-        }
+            elo: 0,
+            lvl: 0,
+            playerName: '',
+            teamName: '',
+            avatar: '',
+            league: 0,
+            rank: 0,
+            dailyloot: null
+        };
     }   
 
     addMember(player: ServerPlayer) {
@@ -134,7 +137,7 @@ export class Team {
     }
 
 
-    setPlayerData(playerData: any, mode: PlayMode) {
+    setPlayerData(playerData: APIPlayerData) {
         this.teamData.elo = playerData.elo;
         this.teamData.lvl = playerData.lvl;
         this.teamData.playerName = playerData.name;
@@ -142,23 +145,17 @@ export class Team {
         this.teamData.avatar = playerData.avatar;
         this.teamData.league = playerData.league;
         this.teamData.rank = playerData.rank;
-        if (mode != PlayMode.PRACTICE) this.registerChestsData(playerData.chests)
+        this.teamData.dailyloot = playerData.dailyloot;
     }
-
-    registerChestsData(chestsData: ChestsData) {
-        for(const key of chestTypes) {
-            const chest = chestsData[key] as ChestData;
-            if (chest.hasKey) continue;
-            if (chest.countdown <= 0) {
-                this.teamData.chestKeys[key] = true;
-                return; // Only one key unlocked per game
+    
+    getChestKey(): ChestColor | null {
+        for (const key in this.teamData.dailyloot) {
+            const chest = this.teamData.dailyloot[key];
+            if (!chest.hasKey && (chest.countdown === undefined || chest.countdown <= 0)) {
+                return key as ChestColor; // Only one key unlocked per game
             }
         }
-    }
-
-    
-    getChestsKeys() {
-        return this.teamData.chestKeys;
+        return null;
     }
 
     getElo() {

@@ -60,10 +60,10 @@ export enum Rarity {
     LEGENDARY
 }
 
-export enum ChestType {
-    BRONZE,
-    SILVER,
-    GOLD
+export enum ChestColor {
+    BRONZE = "bronze",
+    SILVER = "silver",
+    GOLD = "gold"
 }
 
 export enum InventoryType {
@@ -103,7 +103,6 @@ export enum StatusEffect {
 export const equipmentFields = ["weapon", "helmet", "armor", "belt", "gloves",
   "boots", "left_ring", "right_ring", "necklace"];
 
-export const chestTypes = ["bronze", "silver", "gold"];
 
 export enum rankNoImage {
     'gold_rankno',

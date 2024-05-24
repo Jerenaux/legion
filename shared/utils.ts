@@ -1,4 +1,5 @@
 import { PlayerInventory } from "./interfaces";
+import { ChestColor } from "./enums";
 
 function specialRound(num: number): number {
     if (num >= 0) {
@@ -71,3 +72,11 @@ export function inventorySize(inventory: PlayerInventory) {
     .map(arr => arr.length)
     .reduce((acc, curr) => acc + curr, 0);
 }
+
+export function chestTypeFromString(value: string): ChestColor {
+    const key = value.toUpperCase() as keyof typeof ChestColor;
+    if (ChestColor[key] === undefined) {
+        throw new Error(`Invalid ChestType: ${value}`);
+    }
+    return ChestColor[key];
+  }

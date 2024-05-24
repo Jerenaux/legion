@@ -1,7 +1,7 @@
 import { BaseEquipment } from "./BaseEquipment";
 import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, Rarity, StatusEffect, Class } from "./enums";
+import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor, StatusEffect, Class } from "./enums";
 
 export class EffectModifier {
     stat;
@@ -97,7 +97,7 @@ export interface OutcomeData {
     gold: number;
     characters?: CharacterUpdate[];
     elo: number;
-    keys: any;
+    key: ChestColor;
     chests: any;
 }
 
@@ -158,19 +158,37 @@ export interface ChestTimeData {
     time: number;
 }
 
-export interface ChestsData {
-    bronze: ChestData;
-    silver: ChestData;
-    gold: ChestData;
+export interface DailyLootAllData {
+    [ChestColor.BRONZE]: DailyLootData;
+    [ChestColor.SILVER]: DailyLootData;
+    [ChestColor.GOLD]: DailyLootData;
 }
 
-export interface ChestData {
+export interface DailyLootData {
     hasKey: boolean;
-    countdown: number;
+    countdown?: number;
+    time?: number;
 }
 
-export interface ChestsKeysData {
-    bronze: boolean;
-    silver: boolean;
-    gold: boolean;
+export interface APIPlayerData {
+    gold: number;
+    elo: number;
+    league: number;
+    lvl: number;
+    name: string;
+    teamName: string;
+    avatar: string;
+    rank: number;
+    dailyloot: DailyLootAllData;
+}
+
+export interface TeamData {
+    elo: number;
+    lvl: number;
+    playerName: string;
+    teamName: string;
+    avatar: string;
+    league: number;
+    rank: number;
+    dailyloot: DailyLootAllData;
 }

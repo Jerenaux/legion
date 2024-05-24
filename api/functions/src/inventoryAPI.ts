@@ -4,10 +4,10 @@ import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getConsumableById} from "@legion/shared/Items";
 import {getSpellById} from "@legion/shared/Spells";
 import {getEquipmentById} from "@legion/shared/Equipments";
-import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, ShopTabs, ChestType}
+import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, ShopTabs}
   from "@legion/shared/enums";
 import {Equipment} from "@legion/shared/interfaces";
-import {inventorySize} from "@legion/shared/utils";
+import {inventorySize, chestTypeFromString} from "@legion/shared/utils";
 import {getChestContent} from "@legion/shared/chests";
 
 export const inventoryData = onRequest((request, response) => {
@@ -514,14 +514,6 @@ export const inventorySave = onRequest((request, response) => {
     }
   });
 });
-
-function chestTypeFromString(value: string): ChestType {
-  const key = value.toUpperCase() as keyof typeof ChestType;
-  if (ChestType[key] === undefined) {
-      throw new Error(`Invalid ChestType: ${value}`);
-  }
-  return ChestType[key];
-}
 
 export const getReward = onRequest((request, response) => {
   logger.info("Getting reward");

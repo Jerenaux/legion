@@ -1,4 +1,4 @@
-import { Rarity, ChestType } from "./enums";
+import { Rarity, ChestColor } from "./enums";
 import { items } from "./Items";
 import { spells } from "./Spells";
 import { equipments } from "./Equipments";
@@ -83,14 +83,14 @@ function getRandomItem(
     return { type: rewardType, rarity: chosenRarity, id: item.id, name: item.name };
 }
 
-export function getChestContent(type: ChestType): ChestReward[] {
+export function getChestContent(type: ChestColor): ChestReward[] {
     let allowGold = true;
 
     let rarityDistribution: { [key in Rarity]?: number[] };
     let rewardTypeDistribution: { [key in ItemRewardType]: number };
 
     switch (type) {
-        case ChestType.BRONZE:
+        case ChestColor.BRONZE:
             rarityDistribution = {
                 [Rarity.COMMON]: [90],
                 [Rarity.RARE]: [10],
@@ -107,7 +107,7 @@ export function getChestContent(type: ChestType): ChestReward[] {
                 }
                 return item;
             });
-        case ChestType.SILVER:
+        case ChestColor.SILVER:
             rarityDistribution = {
                 [Rarity.COMMON]: [75],
                 [Rarity.RARE]: [20],
@@ -125,7 +125,7 @@ export function getChestContent(type: ChestType): ChestReward[] {
                 }
                 return item;
             });
-        case ChestType.GOLD:
+        case ChestColor.GOLD:
             rarityDistribution = {
                 [Rarity.COMMON]: [45],
                 [Rarity.RARE]: [40],
@@ -145,6 +145,6 @@ export function getChestContent(type: ChestType): ChestReward[] {
                 return item;
             });
         default:
-            throw new Error('Invalid ChestType');
+            throw new Error('Invalid ChestColor');
     }
 }
