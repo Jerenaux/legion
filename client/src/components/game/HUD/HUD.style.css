@@ -54,12 +54,20 @@
     gap: 4px
 }
 
+.gap_16 {
+    gap: 16px
+}
+
 .padding_4 {
     padding: 4px;
 }
 
 .padding_8 {
     padding: 8px
+}
+
+.padding_top_8 {
+    padding-top: 8px;
 }
 
 .padding_top_16 {
@@ -720,4 +728,168 @@
 
 .game_leave_btn:hover {
     background-image: url('@assets/HUD/button_bg_active.png');
+}
+
+.defeat_title {
+    background: linear-gradient(0.25turn, #2e3f4c, #242529, #2e3f4c);
+    height: 24px;
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 116px;
+    margin-bottom: 30px;
+}
+
+.defeat_title p {
+    font-size: 86px;
+    font-weight: 900;
+    color: #FFA600;
+    text-shadow: #147fa6 0px 8px;
+    text-align: center;
+}
+
+.endgame_score_bg {
+    background-color: #252b36;
+    border: 1px solid #51fdff;
+    border-radius: 4px;
+    padding: 4px 8px;
+    width: 260px;
+    height: 46px;
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.endgame_score_bg img {
+    width: 36px;
+    height: 36px;
+}
+
+.endgame_score_bg div span {
+    font-size: 24px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.endgame_character {
+    background-image: url('@assets/HUD/player_info_bg.png');
+    background-size: 100% 100%;
+    width: 274px;
+    height: 96px;
+    padding-right: 16px;
+
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    gap: 30px;
+
+    position: relative;
+}
+
+.endgame_character_lvl {
+    background-image: url('@assets/HUD/player_lv_bg.png');
+    background-size: 100% 100%;
+    width: 84px;
+    height: 84px;
+
+    position: absolute;
+    left: -20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.endgame_character_lvl .lvl {
+    font-size: 8px;
+    font-weight: 400;
+    color: #FFA600; 
+}
+
+.endgame_character_lvl span {
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.endgame_character_info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.endgame_character_name {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.endgame_character_class {
+    font-size: 12px;
+    color: #FFA600;
+    text-transform: uppercase;
+}
+
+.endgame_character_exp {
+    font-size: 8px;
+    color: #FFFFFF;
+}
+
+.endgame_character_expVal {
+    font-size: 8px;
+    color: #71deff;
+}
+
+.endgame_character_exp_bg {
+    background-color: #1c1f25;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.endgame_character_exp_bg > div {
+    background-color: #71deff;
+    width: 80%;
+    height: 100%;
+}
+
+.endgame_character_profile {
+    width: 64px;
+    height: 64px;
+    background-color: #1c1f25;
+    border-radius: 8px;
+}
+
+.endgame_character_lvlup {
+    background-color: #FFA600;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    padding: 2px 8px;
+
+    font-size: 7px;
+
+    position: absolute;
+    top: 6px;
+    left: 66px;
+}
+
+.endgame_leave {
+    background-image: url('@assets/HUD/skip_btn_bg.png');
+    background-size: 100% 100%;
+    width: 156px;
+    height: 56px;
+
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin-top: 120px;
+    cursor: pointer;
 }

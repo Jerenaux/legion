@@ -57,20 +57,49 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
     render() {
         return (
             <div className="endgame">
-                <div className="endgame-head">
-                    <div className="endgame-title">Victory!</div>
-                    <div className="endgame-rewards">
-                        <div className="endgame-gold" title='Gold'>
-                            <span className="endgame-gold-logo">G</span>
-                            <span className="endgame-gold-value">{this.state.displayGold}</span>
-                        </div>
-                        <div className="endgame-xp" title='XP'>
-                            <span className="endgame-xp-logo">XP</span>
-                            <span className="endgame-xp-value">{this.state.displayXp}</span>
-                        </div>
+                <div className="defeat_title">
+                    <p>DEFEAT</p>    
+                </div> 
+                <div className="endgame_score_bg">
+                    <div className="flex items_center gap_4">
+                        <img src="" alt="XP" />
+                        <span>32.349</span>
+                    </div>
+                    <div className="flex items_center gap_4">
+                        <img src="/gold_icon.png" alt="XP" />
+                        <span>500</span>
                     </div>
                 </div>
-                <i className="fa-solid fa-circle-xmark closebtn" onClick={this.closeGame}>X</i>
+                <div className="flex flex_wrap gap_16 justify_center items_center" style={{padding: '36px 48px'}}>
+                    {Array.from({length: 10}, (_, idx) => (
+                        <div className="endgame_character">
+                            <div className="endgame_character_lvl">
+                                <span className="lvl">Lv</span>
+                                <span>10</span>
+                            </div>
+                            {idx === 6 && <div className="endgame_character_lvlup">
+                                <span>LVL UP!</span>
+                            </div>}
+                            <div className="endgame_character_profile"></div>
+                            <div className="endgame_character_info">
+                                <p className="endgame_character_name">Character 01</p>
+                                <p className="endgame_character_class">Warrior</p>
+                                <div className="flex flex_col gap_4 width_full padding_top_8">
+                                    <div className="flex justify_between width_full">
+                                        <span className="endgame_character_exp">EXP</span>
+                                        <span className="endgame_character_expVal">+92.230</span>
+                                    </div>
+                                    <div className="endgame_character_exp_bg">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="endgame_leave">
+                    <span>Leave</span>
+                </div>
             </div>
         );
     }
