@@ -2,6 +2,7 @@ import { BaseEquipment } from "./BaseEquipment";
 import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
 import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor, StatusEffect, Class } from "./enums";
+import {ChestReward} from "@legion/shared/chests";
 
 export class EffectModifier {
     stat;
@@ -98,7 +99,7 @@ export interface OutcomeData {
     characters?: CharacterUpdate[];
     elo: number;
     key: ChestColor;
-    chests: any;
+    chests: GameOutcomeReward[] ;
 }
 
 export interface CharacterStats {
@@ -147,17 +148,6 @@ export interface StatusEffectData {
     chance: number;
 }
 
-export interface ChestsTimeData {
-    bronze: ChestTimeData;
-    silver: ChestTimeData;
-    gold: ChestTimeData;
-}
-
-export interface ChestTimeData {
-    hasKey: boolean;
-    time: number;
-}
-
 export interface DailyLootAllData {
     [ChestColor.BRONZE]: DailyLootData;
     [ChestColor.SILVER]: DailyLootData;
@@ -191,4 +181,9 @@ export interface TeamData {
     league: number;
     rank: number;
     dailyloot: DailyLootAllData;
+}
+
+export interface GameOutcomeReward {
+    color: ChestColor;
+    content: ChestReward[];
 }

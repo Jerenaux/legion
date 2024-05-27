@@ -6,7 +6,7 @@ import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate, APIPlayerData } from '@legion/shared/interfaces';
+import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward } from '@legion/shared/interfaces';
 import { XP_PER_LEVEL } from '@legion/shared/levelling';
 import { AVERAGE_REWARD_PER_GAME } from '@legion/shared/economy';
 import { getChestContent } from '@legion/shared/chests';
@@ -282,7 +282,9 @@ export abstract class Game
     }
 
     checkEndGame() {
+        console.log(`Checking end game...`);
         if (this.gameOver) return;
+        console.log(`Team 1: ${this.teams.get(1)!.isDefeated()}, Team 2: ${this.teams.get(2)!.isDefeated()}`);
         if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
             this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
         }
@@ -807,19 +809,20 @@ export abstract class Game
         }
     }
 
-    computeChests(score: number, mode: PlayMode) {
-        const chests = [];
-        if (mode != PlayMode.PRACTICE) this.computeAudienceRewards(score, chests);
+    computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
+        const chests: GameOutcomeReward[] = [];
+        // if (mode != PlayMode.PRACTICE) this.computeAudienceRewards(score, chests);
+        this.computeAudienceRewards(score, chests);
         return chests;
     }
 
-    computeAudienceRewards(score, chests) {
+    computeAudienceRewards(score, chests): void {
         if (score == 1500) {
-            chests.push({color: ChestColor.GOLD, content: getChestContent(ChestColor.GOLD)});
+            chests.push({color: ChestColor.GOLD, content: getChestContent(ChestColor.GOLD)} as GameOutcomeReward);
         } else if (score >= 1000) {
-            chests.push({color: ChestColor.SILVER, content: getChestContent(ChestColor.SILVER)});
+            chests.push({color: ChestColor.SILVER, content: getChestContent(ChestColor.SILVER)} as GameOutcomeReward);
         } else if (score >= 500) {
-            chests.push({color: ChestColor.BRONZE, content: getChestContent(ChestColor.BRONZE)});
+            chests.push({color: ChestColor.BRONZE, content: getChestContent(ChestColor.BRONZE)} as GameOutcomeReward);
         }
     }
 

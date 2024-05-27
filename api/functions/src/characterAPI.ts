@@ -6,7 +6,7 @@ import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFields} from "@legion/shared/enums";
-import {OutcomeData, ChestsTimeData, DailyLootAllData} from "@legion/shared/interfaces";
+import {OutcomeData, DailyLootAllData} from "@legion/shared/interfaces";
 import {ChestReward} from "@legion/shared/chests";
 
 export const rosterData = onRequest((request, response) => {
@@ -142,11 +142,6 @@ export const rewardsUpdate = onRequest((request, response) => {
           throw new Error("Data does not exist");
         }
 
-        // Type guard to check if a key is a valid key of ChestsTimeData
-        function isKeyOfChestTimeData(key: any): key is keyof ChestsTimeData {
-          return ["bronze", "silver", "gold"].includes(key);
-        }
-
         const dailyLoot = playerData.dailyloot as DailyLootAllData;
         if (key) {
           dailyLoot[key].hasKey = true;
@@ -157,7 +152,8 @@ export const rewardsUpdate = onRequest((request, response) => {
         const spells = inventory.spells || [];
         const equipment = inventory.equipment || [];
 
-        await processChestRewards(transaction, playerRef, chests, consumables, spells, equipment);
+        const contents = chests.map((chest) => chest.content).flat();
+        await processChestRewards(transaction, playerRef, contents, consumables, spells, equipment);
 
         transaction.update(playerRef, {
           xp: admin.firestore.FieldValue.increment(xp),

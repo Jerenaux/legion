@@ -1276,7 +1276,6 @@ export class Arena extends Phaser.Scene
 
     updateEnvironmentAudio() {
         const flames = this.environmentalAudioSources.flames;
-        console.log(`Flames: ${flames}`);
         if (flames > 0) {
             this.playSound('flames', 0.5, true);
         } else {
