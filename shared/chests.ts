@@ -6,7 +6,7 @@ import { AVERAGE_REWARD_PER_GAME } from "./economy";
 
 type RewardType = 'consumable' | 'spell' | 'equipment' | 'gold';
 type ItemRewardType = 'consumable' | 'spell' | 'equipment';
-export type ChestReward = { type: RewardType, rarity: Rarity | null, id?: number, amount?: number, name?: string };
+export type ChestReward = { type: RewardType, rarity: Rarity | null, id: number, amount: number, name: string };
 
 function getRandomType(distribution: { [key: string]: number }): ItemRewardType {
     const typeRoll = Math.random() * 100;
@@ -49,7 +49,7 @@ function getRandomItem(
 
     if (allowGold && Math.random() < goldChance) {
         const goldIndex = Math.floor(Math.random() * goldAmount.length);
-        return { type: 'gold', rarity: Rarity.COMMON, amount: goldAmount[goldIndex] };
+        return { type: 'gold', name: "gold", id: -1, rarity: Rarity.COMMON, amount: goldAmount[goldIndex] };
     }
 
     const rewardType = getRandomType(rewardTypeDistribution);
@@ -80,7 +80,7 @@ function getRandomItem(
     const itemIndex = Math.floor(Math.random() * filteredPool.length);
     console.log(`Reward type: ${rewardType}, Chosen rarity: ${chosenRarity}, pool length: ${filteredPool.length}, item index: ${itemIndex}`);
     const item = filteredPool[itemIndex];
-    return { type: rewardType, rarity: chosenRarity, id: item.id, name: item.name };
+    return { type: rewardType, rarity: chosenRarity, id: item.id, name: item.name, amount: 1 };
 }
 
 export function getChestContent(type: ChestColor): ChestReward[] {

@@ -88,36 +88,33 @@ export const characterData = onRequest((request, response) => {
 export async function processChestRewards(
   transaction: Transaction,
   playerRef: admin.firestore.DocumentReference,
-  chests: any[],
-  consumables: any[],
-  spells: any[],
-  equipment: any[]
+  content: ChestReward[],
+  consumables: number[],
+  spells: number[],
+  equipment: number[]
 ) {
-  logger.info(`Processing chest rewards for player ${playerRef.id}: ${JSON.stringify(chests)}`);
-  chests.forEach((chest: any) => {
-    logger.info(`Processing chest ${JSON.stringify(chest)}`);
-    chest.content.forEach((reward: ChestReward) => {
-      if (reward.type === "gold") {
-        transaction.update(playerRef, {
-          gold: admin.firestore.FieldValue.increment(reward.amount || 0),
-        });
-      } else if (reward.type == "consumable") {
-        consumables.push(reward.id);
-        transaction.update(playerRef, {
-          "inventory.consumables": consumables,
-        });
-      } else if (reward.type == "spell") {
-        spells.push(reward.id);
-        transaction.update(playerRef, {
-          "inventory.spells": spells,
-        });
-      } else if (reward.type == "equipment") {
-        equipment.push(reward.id);
-        transaction.update(playerRef, {
-          "inventory.equipment": equipment,
-        });
-      }
-    });
+  logger.info(`Processing chest rewards for player ${playerRef.id}: ${JSON.stringify(content)}`);
+  content.forEach((reward: ChestReward) => {
+    if (reward.type === "gold") {
+      transaction.update(playerRef, {
+        gold: admin.firestore.FieldValue.increment(reward.amount || 0),
+      });
+    } else if (reward.type == "consumable") {
+      consumables.push(reward.id);
+      transaction.update(playerRef, {
+        "inventory.consumables": consumables,
+      });
+    } else if (reward.type == "spell") {
+      spells.push(reward.id);
+      transaction.update(playerRef, {
+        "inventory.spells": spells,
+      });
+    } else if (reward.type == "equipment") {
+      equipment.push(reward.id);
+      transaction.update(playerRef, {
+        "inventory.equipment": equipment,
+      });
+    }
   });
 }
 

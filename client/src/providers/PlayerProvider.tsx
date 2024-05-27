@@ -18,6 +18,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           dailyloot: null,
         }
       };
+
+      // Bind the methods to ensure 'this' refers to the class instance
+      this.fetchPlayerData = this.fetchPlayerData.bind(this);
+      this.setPlayerInfo = this.setPlayerInfo.bind(this);
     }
 
     componentDidMount() {
@@ -25,22 +29,22 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
     
     async fetchPlayerData() {
-        try {
-            const data = await apiFetch('getPlayerData') as APIPlayerData;
-            console.log(data);
-            this.setState({ 
-                player: {
-                    name: data.name,
-                    lvl: data.lvl,
-                    gold: data.gold,
-                    elo: data.elo,
-                    ranking: data.rank,
-                    dailyloot: data.dailyloot
-                }
-            });
-        } catch (error) {
-            errorToast(`Error: ${error}`);
-        }
+      try {
+          const data = await apiFetch('getPlayerData') as APIPlayerData;
+          console.log(data);
+          this.setState({ 
+              player: {
+                  name: data.name,
+                  lvl: data.lvl,
+                  gold: data.gold,
+                  elo: data.elo,
+                  ranking: data.rank,
+                  dailyloot: data.dailyloot
+              }
+          });
+      } catch (error) {
+          errorToast(`Error: ${error}`);
+      }
     }
   
     setPlayerInfo = (updates: Partial<PlayerContextData>) => {
@@ -56,7 +60,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       return (
         <PlayerContext.Provider value={{
           player,
-          setPlayerInfo: this.setPlayerInfo
+          setPlayerInfo: this.setPlayerInfo,
+          refreshPlayerData: this.fetchPlayerData
         }}>
           {children}
         </PlayerContext.Provider>

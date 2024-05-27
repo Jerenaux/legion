@@ -9,8 +9,7 @@ import {uniqueNamesGenerator, adjectives, colors, animals}
 import {Class, ChestColor} from "@legion/shared/enums";
 import {APIPlayerData, DailyLootAllData} from "@legion/shared/interfaces";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {getChestContent} from "@legion/shared/chests";
-import {chestTypeFromString} from "@legion/shared/utils";
+import {getChestContent, ChestReward} from "@legion/shared/chests";
 import {processChestRewards} from "./characterAPI";
 
 const NB_START_CHARACTERS = 3;
@@ -100,6 +99,19 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
     });
 });
 
+const transformDailyLoot = (dailyloot: DailyLootAllData) => {
+  const now = Date.now() / 1000;
+  for (const color of Object.values(ChestColor)) {
+    const chest = dailyloot[color];
+    const timeLeft = chest.time! - now;
+    chest.countdown = timeLeft > 0 ? timeLeft : 0;
+    delete chest.time;
+    dailyloot[color] = chest;
+  }
+  return dailyloot;
+};
+
+
 export const getPlayerData = onRequest((request, response) => {
   logger.info("Fetching playerData");
   const db = admin.firestore();
@@ -117,15 +129,7 @@ export const getPlayerData = onRequest((request, response) => {
 
         // Transform the chest field so that the `time` field becomes
         // a `countdown` field
-        const now = Date.now() / 1000;
-        for (const color of Object.values(ChestColor)) {
-          const chest = playerData.dailyloot[color];
-          const timeLeft = chest.time - now;
-          // console.log(`timeLeft: ${timeLeft} (${chest.time} - ${now})`);
-          chest.countdown = timeLeft > 0 ? timeLeft : 0;
-          delete chest.time;
-          playerData.dailyloot[color] = chest;
-        }
+        playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
 
         response.send({
           gold: playerData.gold,
@@ -242,18 +246,18 @@ export const claimChest = onRequest((request, response) => {
           throw new Error("Invalid chest type");
         }
 
-        if (chest.hasKey && chest.time <= Date.now()) {
+        const now = Date.now() / 1000;
+        if (chest.hasKey && chest.time <= now) {
           playerData.dailyloot[chestType as keyof DailyLootAllData] = {
-            time: Date.now() + chestsDelays[chestType as keyof DailyLootAllData],
+            time: now + chestsDelays[chestType as keyof DailyLootAllData],
             hasKey: false,
           };
 
           transaction.update(playerRef, {
-            chests: playerData.chests,
+            dailyloot: playerData.dailyloot,
           });
 
-          const reward = chestTypeFromString(chestType as string);
-          const content = getChestContent(reward);
+          const content: ChestReward[] = getChestContent(chestType as ChestColor);
           logger.info(`Chest content: ${JSON.stringify(content)}`);
 
           const inventory = playerDoc.data()?.inventory || {};
@@ -263,8 +267,11 @@ export const claimChest = onRequest((request, response) => {
 
           await processChestRewards(transaction, playerRef, content, consumables, spells, equipment);
 
+          const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
+
           response.send({
             content,
+            dailyloot: dailyLootResponse,
           });
         } else {
           response.status(400).send("Chest not ready");

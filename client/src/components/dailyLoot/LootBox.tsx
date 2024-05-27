@@ -23,20 +23,38 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
     }
 
     componentDidMount() {
+        this.startInterval();
+    }
+
+    componentWillUnmount() {
+        this.clearInterval();
+    }
+
+    componentDidUpdate(prevProps: LootBoxProps) {
+        if (prevProps.timeRemaining !== this.props.timeRemaining) {
+            this.setState({ timeRemaining: this.props.timeRemaining });
+            this.clearInterval();
+            this.startInterval();
+        }
+    }
+
+    startInterval() {
         this.interval = setInterval(() => {
             this.setState((prevState) => {
                 if (prevState.timeRemaining > 0) {
                     return { timeRemaining: prevState.timeRemaining - 1 };
                 } else {
-                    clearInterval(this.interval);
+                    this.clearInterval();
                     return { timeRemaining: 0 };
                 }
             });
         }, 1000);
     }
 
-    componentWillUnmount() {
-        clearInterval(this.interval);
+    clearInterval() {
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
     }
 
     getTitle() {

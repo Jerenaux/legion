@@ -4,10 +4,10 @@ import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getConsumableById} from "@legion/shared/Items";
 import {getSpellById} from "@legion/shared/Spells";
 import {getEquipmentById} from "@legion/shared/Equipments";
-import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, ShopTabs}
+import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, ShopTabs, ChestColor}
   from "@legion/shared/enums";
 import {Equipment} from "@legion/shared/interfaces";
-import {inventorySize, chestTypeFromString} from "@legion/shared/utils";
+import {inventorySize} from "@legion/shared/utils";
 import {getChestContent} from "@legion/shared/chests";
 
 export const inventoryData = onRequest((request, response) => {
@@ -520,8 +520,7 @@ export const getReward = onRequest((request, response) => {
 
   corsMiddleware(request, response, async () => {
     try {
-      const reward = chestTypeFromString(request.query.chestType as string);
-      const content = getChestContent(reward);
+      const content = getChestContent(request.query.chestType as ChestColor);
 
       response.send({
         content,

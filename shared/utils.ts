@@ -72,11 +72,3 @@ export function inventorySize(inventory: PlayerInventory) {
     .map(arr => arr.length)
     .reduce((acc, curr) => acc + curr, 0);
 }
-
-export function chestTypeFromString(value: string): ChestColor {
-    const key = value.toUpperCase() as keyof typeof ChestColor;
-    if (ChestColor[key] === undefined) {
-        throw new Error(`Invalid ChestType: ${value}`);
-    }
-    return ChestColor[key];
-  }

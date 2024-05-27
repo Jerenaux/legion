@@ -10,17 +10,22 @@ import { errorToast } from '../utils';
 import { ChestColor } from "@legion/shared/enums";
 import { DailyLootAllData } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
+import { PlayerContext } from '../../contexts/PlayerContext';
+
 
 interface DailyLootProps {
-    data: DailyLootAllData
-  }
+    data: DailyLootAllData,
+    // refreshCallback: Function
+}
 
 class DailyLoot extends Component<DailyLootProps> {
+  static contextType = PlayerContext; 
 
   render() {
     const { data } = this.props;
-
-    const handleOpen = async (countdown: number, hasKey: boolean) => {
+    const chestsOrder = [ChestColor.BRONZE, ChestColor.SILVER, ChestColor.GOLD];
+    
+    const handleOpen = async (color: ChestColor, countdown: number, hasKey: boolean) => {
       // Check if countdown is over and if key is owned
       if (countdown > 0) {
           errorToast(`Chest locked, wait for the countdown to end!`);
@@ -30,39 +35,41 @@ class DailyLoot extends Component<DailyLootProps> {
           errorToast(`You need a key to open this chest, go play a casual or ranked game!`);
           return;
       }
-      // TODO: move
       try {
-          const data = await apiFetch(`claimChest?chestType=silver`);
+          const data = await apiFetch(`claimChest?chestType=${color}`);
           console.log(data);
-          // this.setState({ 
-          //   ...data
-          // });
+          this.context.setPlayerInfo({ dailyloot: data.dailyloot });
       } catch (error) {
           errorToast(`Error: ${error}`);
       }
     }
 
     return (
-      <div className="dailyLootContainer">
-        <BottomBorderDivider label='DAILY LOOT' />
-        {data ? <div className="dailyLoots">
-          {Object.keys(data).map((key, index) => {
-            const chest = data[key as keyof ChestColor];
-            return <LootBox 
-              key={index}
-              color={key as ChestColor}
-              timeRemaining={chest.countdown}
-              ownsKey={chest.hasKey}
-              onClick={() => handleOpen(chest.countdown, chest.hasKey)}
-            />
-          })}
-        </div> : <Skeleton
-          height={100}
-          count={1}
-          highlightColor='#0000004d'
-          baseColor='#0f1421'
-          style={{ margin: '2px 0', width: '100%'}} />}
-      </div>
+        <div className="dailyLootContainer">
+          <BottomBorderDivider label='DAILY LOOT' />
+          {data ? <div className="dailyLoots">
+            {chestsOrder.map((color) => {
+                const chest = data[color];
+                if (chest) {
+                  return (
+                    <LootBox 
+                      key={color}
+                      color={color}
+                      timeRemaining={chest.countdown}
+                      ownsKey={chest.hasKey}
+                      onClick={() => handleOpen(color, chest.countdown, chest.hasKey)}
+                    />
+                  );
+                }
+                return null;
+            })}
+          </div> : <Skeleton
+            height={100}
+            count={1}
+            highlightColor='#0000004d'
+            baseColor='#0f1421'
+            style={{ margin: '2px 0', width: '100%'}} />}
+        </div>
     );
   }
 }

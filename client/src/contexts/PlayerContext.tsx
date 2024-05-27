@@ -17,6 +17,7 @@ export interface PlayerContextState {
 export const PlayerContext = createContext<{
   player: PlayerContextData;
   setPlayerInfo: (updates: Partial<PlayerContextData>) => void;
+  refreshPlayerData: () => void;
 }>({
   player: {
     name: '',
@@ -26,5 +27,6 @@ export const PlayerContext = createContext<{
     ranking: 0,
     dailyloot: null,
   },
-  setPlayerInfo: () => {}
+  setPlayerInfo: () => {},
+  refreshPlayerData: () => {}
 });
