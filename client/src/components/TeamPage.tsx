@@ -10,7 +10,7 @@ import Skeleton from 'react-loading-skeleton';
 import { apiFetch } from '../services/apiService';
 import { errorToast, playSoundEffect } from './utils';
 import TeamContentCard from './teamContentCard/TeamContentCard';
-import { Effect } from '@legion/shared/interfaces';
+import { APICharacterData, Effect } from '@legion/shared/interfaces';
 import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/shared/enums';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
@@ -22,7 +22,7 @@ interface TeamPageState {
   };
   carrying_capacity: number;
   character_id: string;
-  character_sheet_data: any;
+  character_sheet_data: APICharacterData;
   item_effect: Effect[];
 }
 interface TeamPageProps {
@@ -69,7 +69,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   fetchCharacterData = async () => {
     try {
         const data = await apiFetch('rosterData');
-        const sheetData = this.state.character_id ? data.characters.filter((item: any) => item.id === this.state.character_id)[0] : data.characters[0];
+        const sheetData = this.state.character_id ? data.characters.filter((item: APICharacterData) => item.id === this.state.character_id)[0] : data.characters[0];
 
         this.setState({
           character_sheet_data: sheetData,

@@ -17,7 +17,11 @@ export const statStrings: string[] = Object.keys(Stat)
   .filter(key => key !== 'NONE')
   .map(key => key.toLowerCase());
 
-function showToast(text: string, duration: number = 3000, extraStyle?: any) {
+interface ExtraStyle {
+  background?: string;
+}
+
+function showToast(text: string, duration: number = 3000, extraStyle?: ExtraStyle) {
   Toastify({
     text,
     duration,

@@ -5,6 +5,7 @@ import { Stat, Terrain, StatusEffect } from "@legion/shared/enums";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getXPThreshold } from '@legion/shared/levelling';
+import { PlayerNetworkData } from '@legion/shared/interfaces';
 
 const terrainDot = {
     [Terrain.FIRE]: 10,
@@ -86,8 +87,8 @@ export class ServerPlayer {
         this.setStatusesTimer();
     }
 
-    getPlacementData(includePersonal = false): playerNetworkData {
-        const data: playerNetworkData = {
+    getPlacementData(includePersonal = false): PlayerNetworkData {
+        const data: PlayerNetworkData = {
             name: this.name,
             frame: this.frame,
             x: this.x,
@@ -510,16 +511,3 @@ export class ServerPlayer {
     }
 }
 
-interface playerNetworkData {
-    frame: string;
-    name: string;
-    x: number;
-    y: number;
-    hp: number;
-    statuses: any;
-    mp?: number;
-    distance?: number;
-    cooldown?: number;
-    inventory?: number[];
-    spells?: number[];
-}

@@ -7,7 +7,7 @@ import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 
 import {Class, ChestColor} from "@legion/shared/enums";
-import {APIPlayerData, DailyLootAllData} from "@legion/shared/interfaces";
+import {APIPlayerData, DailyLootAllData, DBPlayerData} from "@legion/shared/interfaces";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {getChestContent, ChestReward} from "@legion/shared/chests";
 import {processChestRewards} from "./characterAPI";
@@ -43,7 +43,7 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
       equipment: [0, 1, 2],
       spells: [0, 1, 2],
     },
-    characters: [] as admin.firestore.DocumentReference[],
+    characters: [],
     elo: 100,
     league: 0,
     wins: 0,
@@ -64,7 +64,7 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
         hasKey: false,
       },
     } as DailyLootAllData,
-  };
+  } as DBPlayerData;
 
   // Start a batch to ensure atomicity
   const batch = db.batch();

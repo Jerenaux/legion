@@ -1,5 +1,7 @@
 import { Player } from './Player';
 import { Arena } from './Arena';
+import { PlayerProfileData} from '@legion/shared/interfaces';
+
 
 export class Team {
     scene: Arena;
@@ -15,11 +17,11 @@ export class Team {
     playerRank: number;
     score = 0;
 
-    constructor(scene, number: number, isPlayerTeam: boolean, teamData: any) {
+    constructor(scene, number: number, isPlayerTeam: boolean, teamData: PlayerProfileData) {
         this.scene = scene;
         this.id = number;
         this.isPlayerTeam = isPlayerTeam;
-        this.teamName = teamData.name;
+        this.teamName = teamData.teamName;
         this.playerName = teamData.playerName;
         this.playerAvatar = teamData.playerAvatar;
         this.playerLevel = teamData.playerLevel;

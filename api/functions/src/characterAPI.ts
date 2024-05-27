@@ -6,7 +6,7 @@ import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFields} from "@legion/shared/enums";
-import {OutcomeData, DailyLootAllData} from "@legion/shared/interfaces";
+import {OutcomeData, DailyLootAllData, CharacterUpdate, APICharacterData} from "@legion/shared/interfaces";
 import {ChestReward} from "@legion/shared/chests";
 
 export const rosterData = onRequest((request, response) => {
@@ -34,7 +34,7 @@ export const rosterData = onRequest((request, response) => {
           }
         );
         response.send({
-          characters: rosterData,
+          characters: rosterData as APICharacterData[],
         });
       } else {
         response.status(404).send("Not Found: Invalid player ID");
@@ -173,13 +173,13 @@ export const rewardsUpdate = onRequest((request, response) => {
 
         // Iterate over the player's characters and increase their XP
         // Update XP for each character directly using their references
-        if (playerData.characters) {
+        if (playerData.characters && characters) {
           playerData.characters.forEach(
             (characterRef: admin.firestore.DocumentReference) => {
               if (characterRef instanceof admin.firestore.DocumentReference) {
                 // Find the corresponding CharacterRewards object
                 const characterRewards =
-                  characters!.find((c: any) => c.id === characterRef.id);
+                  characters.find((c: CharacterUpdate) => c.id === characterRef.id);
 
                 if (characterRewards) {
                   const sp = characterRewards.points;
@@ -220,7 +220,7 @@ async function createCharacterForSale(
   await db.collection("characters").add(character);
 }
 
-async function monitorCharactersOnSale(db: any) {
+async function monitorCharactersOnSale(db: FirebaseFirestore.Firestore) {
   const querySnapshot = await db.collection("characters")
     .where("onSale", "==", true)
     .get();

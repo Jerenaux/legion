@@ -3,6 +3,7 @@ import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
 import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor, StatusEffect, Class } from "./enums";
 import {ChestReward} from "@legion/shared/chests";
+import { DocumentReference, DocumentData } from '@firebase/firestore';
 
 export class EffectModifier {
     stat;
@@ -172,6 +173,21 @@ export interface APIPlayerData {
     dailyloot: DailyLootAllData;
 }
 
+export interface DBPlayerData {
+    name: string;
+    gold: number;
+    carrying_capacity: number;
+    inventory: PlayerInventory;
+    characters: any[];
+    elo: number;
+    league: number;
+    lvl: number;
+    dailyloot: DailyLootAllData;
+    wins: number;
+    losses: number;
+    xp: number;
+}
+
 export interface TeamData {
     elo: number;
     lvl: number;
@@ -186,4 +202,65 @@ export interface TeamData {
 export interface GameOutcomeReward {
     color: ChestColor;
     content: ChestReward[];
+}
+export interface DBCharacterData {
+    name: string;
+    portrait: string;
+    class: Class;
+    level: number;
+    xp: number;
+    sp: number;
+    allTimeSP: number;
+    stats: CharacterStats;
+    carrying_capacity: number;
+    carrying_capacity_bonus: number;
+    skill_slots: number;
+    inventory: number[];
+    equipment: Equipment;
+    equipment_bonuses: CharacterStats;
+    sp_bonuses: CharacterStats;
+    skills: number[];
+    onSale?: boolean;
+    price?: number;
+}
+
+export interface APICharacterData extends DBCharacterData{
+    id: string;
+}
+
+export interface PlayerNetworkData {
+    frame: string;
+    name: string;
+    x: number;
+    y: number;
+    hp: number;
+    statuses: any;
+    mp?: number;
+    distance?: number;
+    cooldown?: number;
+    inventory?: number[];
+    spells?: number[];
+}
+
+export interface PlayerProfileData {
+    teamName: string;
+    playerName: string;
+    playerLevel: number;
+    playerRank: number;
+    playerAvatar: string;
+}
+interface GamePlayerData {
+    teamId: number;
+    player: PlayerProfileData;
+    team: PlayerNetworkData[];
+}
+
+export interface GameData {
+    general: {
+        reconnect: boolean;
+        tutorial: boolean;
+        spectator: boolean;
+    },
+    player: GamePlayerData,
+    opponent: GamePlayerData,
 }

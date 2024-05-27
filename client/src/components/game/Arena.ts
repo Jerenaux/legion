@@ -10,7 +10,7 @@ import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain } from "@legion/shared/enums";
-import { TerrainUpdate } from '@legion/shared/interfaces';
+import { TerrainUpdate, GameData } from '@legion/shared/interfaces';
 
 const LOCAL_ANIMATION_SCALE = 3;
 export class Arena extends Phaser.Scene
@@ -1116,7 +1116,7 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    initializeGame(data) {
+    initializeGame(data: GameData): void {
         console.log(data);
         this.createHUD(); 
         this.playerTeamId = data.player.teamId;

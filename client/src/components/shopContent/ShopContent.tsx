@@ -7,7 +7,7 @@ import { h, Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
 import { InventoryType, ShopTabs } from '@legion/shared/enums';
-import { PlayerInventory, ShopItems } from '@legion/shared/interfaces';
+import { PlayerInventory, ShopItems, DBCharacterData } from '@legion/shared/interfaces';
 import { ShopTabIcons } from './ShopContent.data';
 import { errorToast, successToast, playSoundEffect } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
@@ -23,7 +23,7 @@ import { Link } from 'preact-router';
 interface ShopContentProps {
     gold: number;
     requireTab: number;
-    characters: CharacterData[];
+    characters: DBCharacterData[];
     inventory: PlayerInventory;
     fetchInventoryData: () => void;
     updateInventory: (articleId: string, quantity: number, shoptab: ShopTabs) => void;

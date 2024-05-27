@@ -6,10 +6,12 @@ import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward } from '@legion/shared/interfaces';
+import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData } from '@legion/shared/interfaces';
 import { XP_PER_LEVEL } from '@legion/shared/levelling';
 import { AVERAGE_REWARD_PER_GAME } from '@legion/shared/economy';
 import { getChestContent } from '@legion/shared/chests';
+
+
 export abstract class Game
 {
     id: string;
@@ -161,7 +163,7 @@ export abstract class Game
         this.io.in(this.id).emit(event, data);
     }
 
-    getGameData(playerTeamId: number, reconnect: boolean = false) {
+    getGameData(playerTeamId: number, reconnect: boolean = false): GameData {
         const otherTeamId = this.getOtherTeam(playerTeamId).id;
         const data = {
             general: {

@@ -1,5 +1,5 @@
 import {Class, Stat} from "./enums";
-import { CharacterStats, Equipment } from "./interfaces";
+import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
 import {warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites}
   from "./sprites";
 import {uniqueNamesGenerator, adjectives, colors, animals}
@@ -7,27 +7,6 @@ import {uniqueNamesGenerator, adjectives, colors, animals}
 import {selectStatToLevelUp, increaseStat} from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterSpells } from "./Spells";
-
-interface CharacterData {
-    name: string;
-    portrait: string;
-    class: Class;
-    level: number;
-    xp: number;
-    sp: number;
-    allTimeSP: number;
-    stats: CharacterStats;
-    carrying_capacity: number;
-    carrying_capacity_bonus: number;
-    skill_slots: number;
-    inventory: number[];
-    equipment: Equipment;
-    equipment_bonuses: CharacterStats;
-    sp_bonuses: CharacterStats;
-    skills: number[];
-    onSale?: boolean;
-    price?: number;
-}
 
 export class NewCharacter {
   name: string;
@@ -281,8 +260,8 @@ export class NewCharacter {
     return price + Math.floor(Math.random() * price * 0.2);
   }
 
-  getCharacterData(includePrice = false): CharacterData {
-    const data: CharacterData = {
+  getCharacterData(includePrice = false): DBCharacterData {
+    const data: DBCharacterData = {
       name: this.name,
       portrait: this.portrait,
       class: this.characterClass,

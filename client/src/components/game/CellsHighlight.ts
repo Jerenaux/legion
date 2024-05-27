@@ -1,14 +1,19 @@
+interface GridCorners {
+    startX: number;
+    startY: number;
+}
+
 export class CellsHighlight extends Phaser.GameObjects.Graphics {
     size: number;
     color: number;
     gridWidth: number;
     gridHeight: number;
     tileSize: number;
-    gridCorners: any;
+    gridCorners: GridCorners;
     lastX: number;
     lastY: number;
 
-    constructor(scene: Phaser.Scene, gridWidth: number, gridHeight: number, tileSize: number, gridCorners: any) {
+    constructor(scene: Phaser.Scene, gridWidth: number, gridHeight: number, tileSize: number, gridCorners: GridCorners) {
         super(scene);
         this.scene = scene;
         this.gridWidth = gridWidth;

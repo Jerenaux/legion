@@ -6,7 +6,7 @@ import {getSpellById} from "@legion/shared/Spells";
 import {getEquipmentById} from "@legion/shared/Equipments";
 import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, ShopTabs, ChestColor}
   from "@legion/shared/enums";
-import {Equipment} from "@legion/shared/interfaces";
+import {Equipment, DBCharacterData, DBPlayerData, PlayerInventory, CharacterStats} from "@legion/shared/interfaces";
 import {inventorySize} from "@legion/shared/utils";
 import {getChestContent} from "@legion/shared/chests";
 
@@ -121,16 +121,16 @@ export const purchaseItem = onRequest((request, response) => {
   });
 });
 
-function canEquipConsumable(characterData: any) {
+function canEquipConsumable(characterData: DBCharacterData): boolean {
   return characterData.inventory.length <
     characterData.carrying_capacity + characterData.carrying_capacity_bonus;
 }
 
-function canLearnSpell(characterData: any) {
+function canLearnSpell(characterData: DBCharacterData): boolean {
   return characterData.skills.length < characterData.skill_slots;
 }
 
-function canEquipEquipment(characterData: any, equipmentId: any) {
+function canEquipEquipment(characterData: DBCharacterData, equipmentId: number): boolean {
   const equipment = getEquipmentById(equipmentId);
   if (!equipment) {
     console.error("Invalid equipment ID");
@@ -139,7 +139,20 @@ function canEquipEquipment(characterData: any, equipmentId: any) {
   return (equipment.minLevel <= characterData.level) && (equipment.classes.includes(characterData.class));
 }
 
-function equipConsumable(playerData: any, characterData: any, index: number) {
+interface EquipUnequipOutcome {
+  playerUpdate: {
+    inventory: PlayerInventory;
+  };
+  characterUpdate: {
+    inventory?: number[];
+    skills?: number[];
+    equipment?: Equipment;
+    equipment_bonuses?: CharacterStats;
+    carrying_capacity_bonus?: number;
+  };
+}
+
+function equipConsumable(playerData: DBPlayerData, characterData: DBCharacterData, index: number): EquipUnequipOutcome | number {
   const playerInventory = playerData.inventory;
   const consumables = playerInventory.consumables.sort();
   const inventory = characterData.inventory as number[];
@@ -160,7 +173,7 @@ function equipConsumable(playerData: any, characterData: any, index: number) {
   };
 }
 
-function unequipConsumable(playerData: any, characterData: any, index: number) {
+function unequipConsumable(playerData: DBPlayerData, characterData: DBCharacterData, index: number): EquipUnequipOutcome | number {
   const playerInventory = playerData.inventory;
   const consumables = playerInventory.consumables.sort();
   const inventory = characterData.inventory as number[];
@@ -181,33 +194,33 @@ function unequipConsumable(playerData: any, characterData: any, index: number) {
   };
 }
 
-function learnSpell(playerData: any, characterData: any, index: number) {
+function learnSpell(playerData: DBPlayerData, characterData: DBCharacterData, index: number): EquipUnequipOutcome | number {
   const playerInventory = playerData.inventory;
-  const skills = playerInventory.spells.sort();
+  const spells = playerInventory.spells.sort();
   const inventory = characterData.skills as number[];
 
   // Check if index is valid
-  if (index < 0 || index >= skills.length) {
+  if (index < 0 || index >= spells.length) {
     return -1;
   }
 
-  const item = skills[index];
+  const item = spells[index];
   // Check if character already knows the spell
   if (inventory.includes(item)) {
     return -1;
   }
 
-  skills.splice(index, 1);
+  spells.splice(index, 1);
   inventory.push(item);
 
-  playerInventory.skills = skills;
+  playerInventory.spells = spells;
   return {
     playerUpdate: {inventory: playerInventory},
     characterUpdate: {skills: inventory},
   };
 }
 
-function equipEquipment(playerData: any, characterData: any, index: number) {
+function equipEquipment(playerData: DBPlayerData, characterData: DBCharacterData, index: number): EquipUnequipOutcome | number {
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort();
   const consumables = playerInventory.consumables.sort();
@@ -244,12 +257,16 @@ function equipEquipment(playerData: any, characterData: any, index: number) {
   equipped[field as keyof Equipment] = item;
 
   if (slotNumber == EquipmentSlot.BELT) {
+    if (!data.beltSize) {
+      console.error("Invalid belt size");
+      return -1;
+    }
     carrying_capacity_bonus = data.beltSize;
 
     while (inventory.length >
       characterData.carrying_capacity + carrying_capacity_bonus) {
       const excess = inventory.pop();
-      consumables.push(excess);
+      if (excess) consumables.push(excess);
     }
     playerInventory.consumables = consumables;
   }
@@ -267,7 +284,7 @@ function equipEquipment(playerData: any, characterData: any, index: number) {
   };
 }
 
-function unequipEquipment(playerData: any, characterData: any, index: number) {
+function unequipEquipment(playerData: DBPlayerData, characterData: DBCharacterData, index: number): EquipUnequipOutcome | number {
   // In this case `index` points to the slot
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort();
@@ -291,7 +308,7 @@ function unequipEquipment(playerData: any, characterData: any, index: number) {
       // remove the excess elements and push them to consumables
       while (inventory.length > characterData.carrying_capacity) {
         const excess = inventory.pop();
-        consumables.push(excess);
+        if (excess) consumables.push(excess);
       }
       playerInventory.consumables = consumables;
     }
@@ -312,7 +329,7 @@ function unequipEquipment(playerData: any, characterData: any, index: number) {
   };
 }
 
-function applyEquipmentBonuses(equipped: Equipment) {
+function applyEquipmentBonuses(equipped: Equipment): CharacterStats {
   const bonuses = {
     hp: 0,
     mp: 0,
@@ -379,8 +396,8 @@ export const inventoryTransaction = onRequest((request, response) => {
           throw new Error("Documents do not exist");
         }
 
-        const playerData = playerDoc.data();
-        const characterData = characterDoc.data();
+        const playerData = playerDoc.data() as DBPlayerData;
+        const characterData = characterDoc.data() as DBCharacterData;
 
         if (!playerData || !characterData) {
           throw new Error("Data does not exist");
