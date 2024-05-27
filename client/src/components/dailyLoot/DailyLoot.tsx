@@ -15,7 +15,6 @@ import { PlayerContext } from '../../contexts/PlayerContext';
 
 interface DailyLootProps {
     data: DailyLootAllData,
-    // refreshCallback: Function
 }
 
 class DailyLoot extends Component<DailyLootProps> {

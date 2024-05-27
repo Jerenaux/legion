@@ -149,10 +149,12 @@ export class Team {
     }
     
     getChestKey(): ChestColor | null {
-        for (const key in this.teamData.dailyloot) {
-            const chest = this.teamData.dailyloot[key];
+        const chestsOrder = [ChestColor.BRONZE, ChestColor.SILVER, ChestColor.GOLD];
+
+        for (const color of chestsOrder) {
+            const chest = this.teamData.dailyloot[color];
             if (!chest.hasKey && (chest.countdown === undefined || chest.countdown <= 0)) {
-                return key as ChestColor; // Only one key unlocked per game
+                return color as ChestColor; // Only one key unlocked per game
             }
         }
         return null;
