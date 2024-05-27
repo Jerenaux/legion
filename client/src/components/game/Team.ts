@@ -28,12 +28,12 @@ export class Team {
         this.playerRank = teamData.playerRank;
     }   
 
-    addMember(player: Player) {
+    addMember(player: Player): void {
         this.members.push(player);
         this.totalHPMax += player.maxHP;
     }
 
-    getMember(num: number) {
+    getMember(num: number): Player {
         return this.members[num - 1];
     }
 

@@ -2,20 +2,10 @@
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import { classEnumToString } from '../utils';
-import { CharacterStats } from '@legion/shared/interfaces';
+import { CharacterStats, APICharacterData } from '@legion/shared/interfaces';
 import './ChracterCard.style.css';
 
-interface CharacterProps {
-  id: number;
-  portrait: string;
-  name: string;
-  class: number;
-  level: number;
-  xp: number;
-  stats: CharacterStats
-}
-
-class CharacterCard extends Component<CharacterProps> {
+class CharacterCard extends Component<APICharacterData> {
   state = {
     active: false
   }

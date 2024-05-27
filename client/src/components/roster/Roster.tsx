@@ -11,9 +11,10 @@ import { route } from 'preact-router';
 import PlusIcon from '@assets/plus.svg';
 import { ShopTabs } from '@legion/shared/enums';
 import Skeleton from 'react-loading-skeleton';
+import { APICharacterData } from '@legion/shared/interfaces';
 
 interface RosterState {
-  characters: any[];
+  characters: APICharacterData[];
 }
 
 class Roster extends Component<object, RosterState> {

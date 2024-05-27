@@ -644,7 +644,6 @@ class RankPage extends Component {
   render() {
     if (!this.state.leaderboardData) return;
 
-    const columns = ['no', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
     const tabs = ['bronze', 'silver', 'gold', 'zenith', 'apex', 'alltime'];
 
     const getRankTabStyle = (index: number) => {
@@ -699,7 +698,6 @@ class RankPage extends Component {
           </div>
           {this.state.leaderboardData ? <LeaderboardTable
             data={this.state.leaderboardData.ranking}
-            columns={columns}
             promotionRows={this.state.leaderboardData.promotionRows}
             demotionRows={this.state.leaderboardData.demotionRows}
             camelCaseToNormal={this.camelCaseToNormal}

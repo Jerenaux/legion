@@ -12,7 +12,6 @@ interface LeaderboardTableProps {
         "winsRatio": string,
         "isFriend"?: boolean,
     }[];
-    columns: any;
     promotionRows: number;
     demotionRows: number;
     camelCaseToNormal: (text: string) => string;
@@ -25,7 +24,6 @@ enum rewardImage {
     'bronze_chest'
 }
 
-['no', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards']
 
 enum columnType {
     "elo" = "elo",
@@ -77,7 +75,8 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
     }
 
     render() {
-        const { demotionRows, promotionRows, columns, rankRowNumberStyle, camelCaseToNormal } = this.props;
+        const { demotionRows, promotionRows, rankRowNumberStyle, camelCaseToNormal } = this.props;
+        const columns = ['no', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
 
         const getUpgradeImage = (index: number) => {
             if (index <= promotionRows) return {

@@ -24,7 +24,7 @@ class SeasonCard extends Component<SeasonCardProps> {
         this.seasonTimer();
     }
 
-    componentDidUpdate(previousProps: Readonly<SeasonCardProps>, previousState: Readonly<{}>, snapshot: any): void {
+    componentDidUpdate(previousProps: Readonly<SeasonCardProps>, previousState: Readonly<{}>): void {
         if (this.props.currTab !== previousProps.currTab) {
             clearInterval(this.timer);
             this.seasonTimer();
