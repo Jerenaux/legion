@@ -243,7 +243,7 @@ function equipEquipment(playerData: DBPlayerData, characterData: DBCharacterData
     return -1;
   }
 
-  let slotNumber: number = data.slot;
+  let slotNumber: number = data?.slot ?? 0;
   if (slotNumber == EquipmentSlot.LEFT_RING) {
     if (equipped.left_ring !== -1) {
       slotNumber = EquipmentSlot.RIGHT_RING;

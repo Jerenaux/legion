@@ -57,7 +57,7 @@ export class NewCharacter {
       right_ring: -1,
       necklace: -1,
     };
-    this.skills = this.getSpells(unicornBonus);
+    this.skills = this.getSpells();
     this.stats = {
       hp: this.getHP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
       mp: this.getMP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),

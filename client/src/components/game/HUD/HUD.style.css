@@ -1,3 +1,108 @@
+* {
+    box-sizing: border-box;
+}
+
+.flex {
+    display: flex;
+}
+
+.grid {
+    display: grid;
+}
+
+.flex_wrap {
+    flex-wrap: wrap;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex_col {
+    flex-direction: column;
+}
+
+.flex_row_reverse {
+    flex-direction: row-reverse !important;
+}
+
+.width_full {
+    width: 100%;
+}
+
+.width_half {
+    width: 50%;
+}
+
+.max_w_lg {
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+.height_full {
+    height: 100vh;
+}
+
+.justify_center {
+    justify-content: center;
+}
+
+.justify_between {
+    justify-content: space-between;
+}
+
+.items_center {
+    align-items: center;
+}
+
+.gap_4 {
+    gap: 4px
+}
+
+.gap_16 {
+    gap: 16px
+}
+
+.padding_4 {
+    padding: 4px;
+}
+
+.padding_8 {
+    padding: 8px
+}
+
+.padding_top_8 {
+    padding-top: 8px;
+}
+
+.padding_top_16 {
+    padding-top: 16px;
+}
+
+.padding_bottom_16 {
+    padding-bottom: 16px;
+}
+
+.padding_right_16 {
+    padding-right: 16px;
+}
+
+.padding_y_4 {
+    padding: 4px 0;
+}
+
+.relative {
+    position: relative;
+}
+
+.cursor_pointer {
+    cursor: pointer;
+}
+
+.overview_right {
+    align-items: flex-end;
+}
+
 .item {
     width: 43px;
     height: 43px;
@@ -11,4 +116,870 @@
 
 .item:hover {
     border-color: #71deff;
+}
+
+.char_stats_container {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+}
+
+.char_profile {
+    background-size: 100% 100%;
+}
+
+.char_profile_container {
+    width: 74px;
+    height: 74px;
+    border-radius: 8px;
+    padding-bottom: 6px;
+    background-size: 100% 100%;
+    z-index: 20;
+}
+
+.char_portrait {
+    width: 100%;
+    height: 100%;
+    margin-left: 10px;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+    transform: scale(.6);
+}
+
+.char_stats {
+    background-size: 100% 100%;
+    height: 56px;
+    width: 172px;
+    margin-left: -16px;
+    margin-bottom: 4px;
+    padding: 8px;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.char_stats_right {
+    margin-left: 0;
+    margin-right: -16px;
+    padding-left: 8px;
+    padding-right: 16px;
+}
+
+.char_stats_right .char_stats_player_name {
+    flex-direction: row-reverse;
+}
+
+.char_stats_player_name {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.char_stats_player_index {
+    min-width: 24px;
+    height: 24px;
+    background-image: url('@assets/HUD/no_bg.png');
+    background-size: 100% 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+}
+
+.char_stats_player_name p {
+    font-size: 14px;
+    font-weight: 400;
+    text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.char_stats_bar {
+    background-color: #0e0e0e;
+    border-radius: 2px;
+    overflow: hidden;
+    width: 100%;
+    height: 4px;
+}
+
+.char_stats_hp {
+    background-color: #ca304d;
+    height: 100%;
+}
+
+.char_stats_mp {
+    background-color: #4583d0;
+    height: 100%;
+}
+
+.char_stats_cooldown_bar {
+    background-color: #0e0e0e;
+    width: 196px;
+    height: 4px;
+    margin-bottom: -24px;
+    border-radius: 2px;
+    overflow: hidden;
+    position: absolute;
+    right: 2px;
+    top: 62px;
+}
+
+.char_stats_cooldown {
+    background-image: url('@assets/HUD/orange_bar_fill.png');
+    background-size: 100% 100%;
+    height: 100%;
+}
+
+.char_statuses {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    position: absolute;
+    left: 80px;
+    top: 68px;
+}
+
+.char_statuses_right {
+    left: auto;
+    right: 78px;
+}
+
+.char_statuses img {
+    width: 16px;
+    height: 20px;
+    background-color: #1c1f25;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+.player_info_container {
+    background-image: url('@assets/HUD/player_info_bg.png');
+    background-size: 100% 100%;
+    width: 368px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    padding: 8px 16px 12px 36px;
+    cursor: pointer;
+}
+
+.player_info_container_right {
+    flex-direction: row-reverse;
+    margin-right: 20px;
+}
+
+.player_info_container_right .player_info_team {
+    transform: scaleX(-1);
+    margin-right: -8px;
+}
+
+.player_info_container_right .player_info_team span {
+    display: inline-block;
+    transform: scaleX(-1);
+}
+
+.player_info_lv {
+    background-image: url('@assets/HUD/final_chest_bg.png');
+    background-size: 100% 100%;
+    width: 56px;
+    height: 56px;
+    position: absolute;
+    top: 30px;
+    left: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.player_info_lv_right {
+    left: auto;
+    right: -20px;
+}
+
+.player_info_lv span {
+    font-size: 10px;
+    color: #FFA600;
+}
+
+.player_info_lv .player_info_lvalue {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.player_info_player_profile {
+    background-image: url('@assets/HUD/player_profile_bg.png');
+    background-size: 100% 100%;
+    width: 86px;
+    height: 86px;
+}
+
+.player_info {
+    display: flex;
+    flex-direction: column;
+}
+
+.player_info_name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.player_info_rank {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.player_info_rank img {
+    width: 36px;
+    height: 36p;
+}
+
+.player_info_rank span {
+    font-size: 14px;
+    color: #71deff;
+}
+
+.player_info_team {
+    background-image: url('@assets/HUD/team_bg.png');
+    background-size: 100% 100%;
+    padding: 2px;
+    padding-left: 10px;
+    font-size: 14px;
+    color: #FFFFFF;
+    margin-left: -8px;
+}
+
+.player_tab_container {
+    background-image: url('@assets/HUD/char_info_bg.png');
+    background-size: 100% 100%;
+    width: 692px;
+    height: 158px;
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+
+    position: relative; 
+    margin-top: 10px;
+    margin-left: 10px;
+    z-index: 2;
+    align-self: start;
+}
+
+.player_content_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+}
+
+.player_content {
+    display: flex;
+    gap: 8px;
+    padding: 0 8px;
+    padding-left: 16px;
+    width: 100%;
+}
+
+.player_content_portrait {
+    width: 96px;
+    height: 96px;
+    border-radius: 8px;
+    padding-bottom: 6px;
+    background-size: 100% 100%;
+    z-index: 20;
+    background-image: url('@assets/HUD/char_frame.png');
+    background-size: 100% 100%;
+}
+
+.character_portrait {
+    width: 100%;
+    height: 100%;
+    margin-left: 10px;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+    transform: scale(.6);
+}
+
+.player_content_name {
+    display: flex;
+    align-items: center;
+}
+
+.player_content_flag {
+    background-image: url('@assets/HUD/no_bg.png');
+    background-size: 100% 100%;
+    padding: 8px 10px;
+
+    font-size: 14px;
+    color: #FFFFFF;
+}
+
+.player_content_char_name {
+    background-image: url('@assets/HUD/charname_bg.png');
+    background-size: 100% 100%;
+    padding: 4px 8px;
+    width: 100%;
+
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.player_content_stats_bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.player_content_stats_icon {
+    background-image: url('@assets/HUD/small_box_btn_bg_active.png');
+    background-size: 100% 100%;
+    padding: 4px 4px 1px;
+}
+
+.player_content_stats_icon img {
+    width: 16px;
+    height: 16px;
+}
+
+.hud_bar_container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.hud_bar_bg {
+    flex: 1;
+    height: 8px;
+    background-color: #1c1f25;
+    border-radius: 2px;
+}
+
+.hud_bar_status {
+    font-size: 12px;
+    color: #FFFFFF;
+    min-width: 60px;
+    text-align: right;
+}
+
+.player_content_statuses {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding-top: 4px;
+}
+
+.player_content_statuses div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 10px;
+    color: #FFFFFF;
+}
+
+.player_content_statuses img {
+    width: 16px;
+    height: 18px;
+    background-color: #1c1f25;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+.xp_bar_bg_container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: #71deff;
+    width: 92%;
+    margin-left: 10px;
+}
+
+.xp_bar_bg {
+    height: 6px;
+    width: 100%;
+    flex: 1;
+    background-color: #1c1f25;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.cooldown_bar {
+    background-color: gold;
+    height: 6px;
+}
+
+.hud_actions_title {
+    width: 100%;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    border-bottom: 1px solid #FFA600;
+}
+
+.player_hud_skills {
+    width: 100%;
+    max-width: 48px;
+    height: 48px;
+    background-color: #1c1f25;
+    border: 1px solid #274c57;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.player_hud_skills:hover {
+    border: 1px solid #71deff;
+}
+
+.player_hud_action_container {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+.spectator_container {
+    position: absolute;
+    top: 8px;
+    right: -20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    z-index: 10;
+}
+
+.spectator_container_right {
+    position: absolute;
+    top: 8px;
+    left: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    z-index: 10;
+}
+
+.spectator_container div {
+    width: 24px;
+    height: 24px;
+    background-image: url('@assets/HUD/small_box_btn_bg.png');
+    background-size: 100% 100%;
+    padding: 4px;
+}
+
+.spectator_container div:hover {
+    background-image: url('@assets/HUD/small_box_btn_bg_active.png');
+}
+
+.spectator_container div img {
+    width: 100%;
+    height: 100%;
+}
+
+.spectator_container_right div {
+    width: 24px;
+    height: 24px;
+    background-image: url('@assets/HUD/small_box_btn_bg.png');
+    background-size: 100% 100%;
+    padding: 4px;
+}
+
+.spectator_container_right div:hover {
+    background-image: url('@assets/HUD/small_box_btn_bg_active.png');
+}
+
+.spectator_container_right div img {
+    width: 100%;
+    height: 100%;
+}
+
+.spectator_footer_container {
+    background-image: url('@assets/HUD/reward_footer_ornament.png');
+    background-size: 100% 100%;
+    height: 48px;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spectator_progress {
+    background-image: url('@assets/HUD/spectator_progress_bg.png');
+    background-size: 100% 100%;
+    width: 24%;
+    height: 48px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 16px;
+    position: relative;
+}
+
+.spectator_progress_bar_bg {
+    background-color: #1c1f25;
+    width: 100%;
+    height: 100%;
+}
+
+.spectator_progress_fill {
+    background-image: url('@assets/HUD/progress_fill.png');
+    background-size: 100% 100%;
+    height: 100%;
+}
+
+.progress_ches_mark {
+    width: 48px;
+    height: 48px;
+    background-image: url('@assets/HUD/player_lv_bg.png');
+    background-size: 100% 100%;
+    padding: 14px;
+    position: absolute;
+    right: -20px;
+}
+
+.progress_ches_mark img {
+    width: 100%;
+    height: 100%;
+}
+
+.progress_chest_bronze {
+    position: absolute;
+    left: 63%;
+    top: -21px;
+}
+
+.progress_chest_silver {
+    position: absolute;
+    left: 30%;
+    top: -21px;
+}
+
+.progress_chest_bronze img {
+    width: 24px;
+    height: 22px;
+}
+
+.progress_chest_silver img {
+    width: 24px;
+    height: 22px;
+}
+
+.skip_tutorial {
+    background-image: url('@assets/HUD/skip_btn_bg.png');
+    background-size: 100% 100%;
+    height: 54px;
+    position: absolute;
+    right: 64px;
+    padding: 0 24px 0 16px;
+    cursor: pointer;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 12px;
+    color: #FFFFFF;
+    text-transform: uppercase;
+}
+
+.skip_tutorial:hover {
+    opacity: 0.9;
+}
+
+.game_leave_dialog {
+    background-image: url('@assets/leaderboard/recap_bg.png');
+    background-size: 100% 100%;
+    width: 350px;
+    height: 140px;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #FFFFFF;
+}
+
+.game_leave_btn {
+    background-image: url('@assets/HUD/button_bg_idle.png');
+    background-size: 100% 100%;
+    width: 50%;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.game_leave_btn:hover {
+    background-image: url('@assets/HUD/button_bg_active.png');
+}
+
+.defeat_title {
+    background-image: url('@assets/HUD/combat_begins_bg.png');
+    background-size: 100% 100%;
+    height: 54px;
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 116px;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.defeat_title p {
+    font-size: 86px;
+    font-weight: 900;
+    text-shadow: #147fa6 0px 8px;
+    text-align: center;
+    margin-top: -12px;
+}
+
+.victory_title_effect {
+    position: absolute;
+    top: -46px;
+    left: calc(50% + 234px);
+    font-size: 172px;
+    font-weight: bolder;
+    color: #FFFFFF;
+    text-shadow: #afafaf 0px 4px;
+}
+
+.endgame_score_bg {
+    background-color: #252b36;
+    border: 1px solid #51fdff;
+    border-radius: 4px;
+    padding: 4px 8px;
+    width: 260px;
+    height: 46px;
+    margin-top: -24px;
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.endgame_score_bg img {
+    width: 36px;
+    height: 36px;
+}
+
+.endgame_score_bg div span {
+    font-size: 24px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.endgame_character {
+    background-image: url('@assets/HUD/player_info_bg.png');
+    background-size: 100% 100%;
+    width: 274px;
+    height: 96px;
+    padding-right: 16px;
+
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    gap: 30px;
+
+    position: relative;
+}
+
+.endgame_character_lvl {
+    background-image: url('@assets/HUD/player_lv_bg.png');
+    background-size: 100% 100%;
+    width: 84px;
+    height: 84px;
+
+    position: absolute;
+    left: -20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.endgame_character_lvl .lvl {
+    font-size: 8px;
+    font-weight: 400;
+    color: #FFA600; 
+}
+
+.endgame_character_lvl span {
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.endgame_character_info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.endgame_character_name {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.endgame_character_class {
+    font-size: 12px;
+    color: #FFA600;
+    text-transform: uppercase;
+}
+
+.endgame_character_exp {
+    font-size: 8px;
+    color: #FFFFFF;
+}
+
+.endgame_character_expVal {
+    font-size: 8px;
+    color: #71deff;
+}
+
+.endgame_character_exp_bg {
+    background-color: #1c1f25;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.endgame_character_exp_bg > div {
+    background-color: #71deff;
+    width: 80%;
+    height: 100%;
+}
+
+.endgame_character_profile {
+    width: 64px;
+    height: 64px;
+    background-color: #1c1f25;
+    border-radius: 8px;
+}
+
+.endgame_character_lvlup {
+    background-color: #FFA600;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    padding: 2px 8px;
+
+    font-size: 7px;
+
+    position: absolute;
+    top: 6px;
+    left: 66px;
+}
+
+.endgame_leave {
+    background-image: url('@assets/HUD/skip_btn_bg.png');
+    background-size: 100% 100%;
+    width: 156px;
+    height: 56px;
+
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin-top: 120px;
+    cursor: pointer;
+}
+
+.light_streak_container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(28, 31, 37, 0.8);
+}
+
+.light_streak_chest {
+    background-image: url('@assets/HUD/light_glow.png');
+    background-size: 100% 100%;
+    position: absolute;
+    width: 800px;
+    height: 800px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.streak_gold_list_container {
+    display: flex;
+    gap: 8px;
+    position: absolute;
+    bottom: 248px;
+}
+
+.streak_gold_list {
+    width: 68px;
+    height: 68px;
+    background-color: #1c1f25;
+    border: 1px solid #147fa6;
+    border-radius: 4px;
+}
+
+.light_streak {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+}
+
+.streak_cofirm_container {
+    background-image: url('@assets/HUD/reward_footer_ornament.png');
+    background-size: 100% 100%;
+    width: 100%;
+    height: 64px;
+    
+    display: flex;
+    justify-content: center;
+
+    position: absolute;
+    bottom: 164px;
+}
+
+.streak_confirm_btn {
+    background-image: url('@assets/HUD/confirm_btn_bg.png');
+    background-size: 100% 100%;
+    width: 168px;
+    height: 64px;
+
+    font-size: 16px;
+    font-weight: 600;
+    color: #FFFFFF;
+    text-transform: uppercase;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
 }

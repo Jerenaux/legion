@@ -48,7 +48,10 @@ class Action extends Component<ActionItemProps> {
 
   handleCloseModal = () => {
       this.setState({openModal: false});
-      this.props.handleItemEffect([], InventoryActionType.EQUIP);
+
+      if (this.props.handleItemEffect) {
+        this.props.handleItemEffect([], InventoryActionType.EQUIP);
+      }
   }
 
   render() {

@@ -1,5 +1,7 @@
 // Overview.tsx
 import { h, Component } from 'preact';
+import { Player } from './GameHUD';
+import PlayerInfo from './PlayerInfo';
 
 interface Member {
   texture: string;
@@ -16,14 +18,18 @@ interface Member {
 
 interface Props {
   members: Member[];
+  player: Player;
   score: number;
   position: string;
+  isSpectator: boolean;
 }
 
 interface State {
   cooldowns: number[];
   previousHPs: number[];
   blinking: boolean[];
+  hovered: number;
+  selected: number;
 }
 
 class Overview extends Component<Props, State> {
@@ -32,15 +38,17 @@ class Overview extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      cooldowns: props.members 
+      cooldowns: props.members
         ? props.members.map(member => member.cooldown)
         : [],
-      previousHPs: props.members 
+      previousHPs: props.members
         ? props.members.map(member => member.hp)
         : [],
-      blinking: props.members 
+      blinking: props.members
         ? props.members.map(() => false)
-        : []
+        : [],
+      hovered: null,
+      selected: null
     };
   }
 
@@ -81,44 +89,75 @@ class Overview extends Component<Props, State> {
     }));
   }
 
-  render({ members, score, position }: Props, { cooldowns, blinking }: State) {
+  render({ members, score, position, player, isSpectator }: Props, { cooldowns, blinking }: State) {
     if (!members || !blinking.length) {
-      return <div />; 
+      return <div />;
     }
     let cooldownIndex = 0;
+
     return (
-      <div className="overview">
-          {members.map((member, memberIndex) => {
-            const portraitStyle = {
-              backgroundImage: `url(assets/sprites/${member.texture}.png)`,
-              backgroundPosition: '-45px -45px',
-              backgroundRepeat: 'no-repeat',
-              filter: member.isAlive ? 'none' : 'grayscale(100%)',
-              transform: position === 'left' ? 'scaleX(-1)' : 'none'
-            };
-            const cooldown = cooldowns[cooldownIndex++];
-            return (
-              <div key={memberIndex} className={`box member ${position === 'left' ? 'member-left' : 'member-right'}`}>
-                <div style={portraitStyle} className={`member-portrait ${blinking[memberIndex] ? 'blink' : ''}`} >
-                {member.isPlayer && <span className="member-index">{memberIndex + 1}</span>}
-                </div>
-                <div className="member-name">{member.name}</div>
-                <div className="hp-bar">
-                  <div className="hp-fill" style={{width: `${(member.hp / member.maxHP) * 100}%`}} />
-                </div>
-                {member.isPlayer && (
-                  <div className="mp-bar">
-                    <div className="mp-fill" style={{width: `${(member.mp / member.maxMP) * 100}%`}} />
-                  </div>
-                )}
-                {member.isPlayer && (
-                <div className="cooldown-bar">
-                  <div className="cooldown-fill" style={{width: `${(1 - (cooldown / member.totalCooldown)) * 100}%`}} />
-                </div>
-                )}
+      <div className={`overview ${position === 'right' && 'overview_right'}`}>
+        <PlayerInfo player={player} position={this.props.position} isSpectator={isSpectator} />
+        {members.map((member, memberIndex) => {
+          const portraitStyle = {
+            backgroundImage: `url(/sprites/${member.texture}.png)`,
+          };
+
+          const charProfileStyle = (idx: number) => {
+            if (this.state.selected === idx) {
+              return {
+                backgroundImage: `url(/HUD/char_profile_ready.png)`,
+                transform: 'scale(1.1)'
+              }
+            }
+            return {
+              backgroundImage: `url(/HUD/char_profile_${this.state.hovered === idx ? 'active' : 'idle'}.png)`
+            }
+          }
+
+          const charStatStyle = (idx: number) => {
+            return {
+              backgroundImage: `url(/HUD/char_stats_bg${this.state.hovered === idx ? '_Active' : ''}.png)`,
+            }
+          }
+
+          const cooldown = cooldowns[cooldownIndex++];
+
+          return (
+            <div 
+            key={memberIndex} 
+            className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`} 
+            onMouseEnter={() => this.setState({hovered: memberIndex})} 
+            onMouseLeave={() => this.setState({hovered: null})} 
+            onClick={() => this.setState({selected: memberIndex})}>
+              <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
+                <div className="char_portrait" style={portraitStyle} />
               </div>
-            );
-          })}
+              <div className={`char_stats ${position === 'right' && 'char_stats_right'}`} style={charStatStyle(memberIndex)}>
+                <div className="char_stats_player_name">
+                  <div className="char_stats_player_index">
+                    <span>{memberIndex + 1}</span>
+                  </div>
+                  <p>{member.name}</p>
+                </div>
+                <div className="char_stats_bar">
+                  <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
+                </div>
+                {position === 'left' && <div className="char_stats_bar">
+                  <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
+                </div>}
+              </div>
+              {position === 'left' && <div className="char_stats_cooldown_bar">
+                <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
+              </div>}
+              <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
+                <img src="/HUD/poison_icon.png" alt="" />
+                <img src="/HUD/frozen_icon.png" alt="" />
+                <img src="/HUD/burning_icon.png" alt="" />
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   }

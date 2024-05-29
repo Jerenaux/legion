@@ -142,8 +142,7 @@ class ItemDialog extends Component<DialogProps> {
             </button>
           </div>
         </div>
-    );
-    
+      );    
     };
 
     const consumableDialog = (dialogData: BaseItem) => {

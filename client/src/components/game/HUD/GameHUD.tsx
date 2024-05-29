@@ -4,9 +4,18 @@ import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
+import SpectatorFooter from './SpectatorFooter';
+
+export interface Player {
+  avatar: string;
+  name: string;
+  level: number;
+  rank: number;
+}
 
 interface Team {
   members: any[];
+  player: Player;
   score: number;
 }
 
@@ -27,7 +36,7 @@ interface State {
 const events = new EventEmitter();
 
 class GameHUD extends Component<object, State> {
-  state: State = { 
+  state: State = {
     playerVisible: false,
     player: null,
     clickedItem: -1,
@@ -68,7 +77,7 @@ class GameHUD extends Component<object, State> {
   }
 
   endGame = (xp, gold) => {
-    this.setState({ 
+    this.setState({
       gameOver: true,
       xpReward: xp,
       goldReward: gold,
@@ -81,14 +90,32 @@ class GameHUD extends Component<object, State> {
 
   render() {
     const { playerVisible, player, team1, team2, isTutorial, isSpectator } = this.state;
+
+    const playerData = {
+      hp: 50,
+      maxHp: 70,
+      mp: 80,
+      maxMp: 100,
+      cooldown: 5,
+      maxCooldown: 7,
+      casting: true,
+      portrait: '2_2',
+      number: 2,
+      name: 'player_name',
+      spells: [3, 4],
+      items: [1, 2]
+    }
+
     return (
-      <div>
+      <div className="height_full flex flex_col justify_between padding_bottom_16">
         <div className="hud-container">
-            <Overview position="left" {...team2} />
-            {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
-            <Overview position="right" {...team1} />
+          <Overview position="left" isSpectator={isSpectator} {...team2} />
+          <PlayerTab player={playerData} eventEmitter={events} />
+          {playerVisible && player ? <PlayerTab player={playerData} eventEmitter={events} /> : null}
+          <Overview position="right" isSpectator={isSpectator} {...team1} />
         </div>
-        {this.state.gameOver && <Endgame xpReward={this.state.xpReward} goldReward={this.state.goldReward} />}
+        <SpectatorFooter />
+        {/* {!this.state.gameOver && <Endgame xpReward={this.state.xpReward} goldReward={this.state.goldReward} />} */}
       </div>
     );
   }
