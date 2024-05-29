@@ -129,8 +129,8 @@
 }
 
 .char_profile_container {
-    width: 96px;
-    height: 96px;
+    width: 74px;
+    height: 74px;
     border-radius: 8px;
     padding-bottom: 6px;
     background-size: 100% 100%;
@@ -149,15 +149,15 @@
 
 .char_stats {
     background-size: 100% 100%;
-    height: 74px;
-    width: 196px;
+    height: 56px;
+    width: 172px;
     margin-left: -16px;
     margin-bottom: 4px;
     padding: 8px;
     padding-left: 18px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .char_stats_right {
@@ -202,18 +202,16 @@
     border-radius: 2px;
     overflow: hidden;
     width: 100%;
-    height: 6px;
+    height: 4px;
 }
 
 .char_stats_hp {
-    background-image: url('@assets/HUD/hp_blue_bar.png');
-    background-size: 100% 100%;
+    background-color: #ca304d;
     height: 100%;
 }
 
 .char_stats_mp {
-    background-image: url('@assets/HUD/mp_blue_bar.png');
-    background-size: 100% 100%;
+    background-color: #4583d0;
     height: 100%;
 }
 
@@ -226,7 +224,7 @@
     overflow: hidden;
     position: absolute;
     right: 2px;
-    top: 80px;
+    top: 62px;
 }
 
 .char_stats_cooldown {
@@ -240,13 +238,13 @@
     gap: 4px;
     align-items: center;
     position: absolute;
-    left: 96px;
-    top: 88px;
+    left: 80px;
+    top: 68px;
 }
 
 .char_statuses_right {
     left: auto;
-    right: 96px;
+    right: 78px;
 }
 
 .char_statuses img {

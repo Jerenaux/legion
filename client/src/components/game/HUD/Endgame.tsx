@@ -112,7 +112,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 {this.state.isFailed && <div className="endgame_leave">
                     <span>Leave</span>
                 </div>}
-                <div className="light_streak_container">
+                {this.state.isFailed && <div className="light_streak_container">
                     <div className="light_streak" style={{width: width * 0.5}}>
                         <Confetti
                             width={width * 0.5}
@@ -130,7 +130,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                             <div className="streak_confirm_btn"><span>Confirm</span></div>
                         </div>
                     </div>
-                </div>
+                </div>}
             </div>
         );
     }
