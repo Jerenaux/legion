@@ -31,7 +31,7 @@ export class AIServerPlayer extends ServerPlayer {
         this.retargetCount = this.retargetRate;
 
         const cooldown = this.getCooldown('move') + this.entranceTime * 1000;
-        this.setCooldown(cooldown);
+        this.setCooldown(cooldown, false);
     }
 
     setArchetype() {

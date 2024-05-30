@@ -84,7 +84,7 @@ export class ServerPlayer {
             'move': 400,
             'attack': 800
         };
-        this.setCooldown(this.cooldowns.move + this.entranceTime * 1000);
+        this.setCooldown(this.cooldowns.move + this.entranceTime * 1000, false);
         this.setStatusesTimer();
     }
 
@@ -315,8 +315,11 @@ export class ServerPlayer {
         return this.cooldowns[action];
     }
     
-    setCooldown(duration: number) {
-        this.cooldown = duration * TIME_COEFFICIENT;
+    setCooldown(duration: number, applyCoefficient = true) {
+        this.cooldown = duration;
+        if (applyCoefficient) {
+            this.cooldown *= TIME_COEFFICIENT;
+        }
         if (this.cooldownTimer) {
             clearTimeout(this.cooldownTimer);
         }
