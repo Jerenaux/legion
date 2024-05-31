@@ -95,6 +95,239 @@ class Overview extends Component<Props, State> {
     }
     let cooldownIndex = 0;
 
+    // const testMembers = [
+    //   {
+    //     "texture": "6_8",
+    //     "name": "accused_tan",
+    //     "hp": 100,
+    //     "maxHP": 100,
+    //     "mp": 20,
+    //     "maxMP": 20,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "7_7",
+    //     "name": "resident_coffee",
+    //     "hp": 80,
+    //     "maxHP": 80,
+    //     "mp": 30,
+    //     "maxMP": 30,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "4_5",
+    //     "name": "brilliant_yellow",
+    //     "hp": 80,
+    //     "maxHP": 80,
+    //     "mp": 40,
+    //     "maxMP": 40,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "6_8",
+    //     "name": "accused_tan",
+    //     "hp": 100,
+    //     "maxHP": 100,
+    //     "mp": 20,
+    //     "maxMP": 20,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "7_7",
+    //     "name": "resident_coffee",
+    //     "hp": 80,
+    //     "maxHP": 80,
+    //     "mp": 30,
+    //     "maxMP": 30,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "4_5",
+    //     "name": "brilliant_yellow",
+    //     "hp": 80,
+    //     "maxHP": 80,
+    //     "mp": 40,
+    //     "maxMP": 40,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "6_8",
+    //     "name": "accused_tan",
+    //     "hp": 100,
+    //     "maxHP": 100,
+    //     "mp": 20,
+    //     "maxMP": 20,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "7_7",
+    //     "name": "resident_coffee",
+    //     "hp": 80,
+    //     "maxHP": 80,
+    //     "mp": 30,
+    //     "maxMP": 30,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "4_5",
+    //     "name": "brilliant_yellow",
+    //     "hp": 80,
+    //     "maxHP": 80,
+    //     "mp": 40,
+    //     "maxMP": 40,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    //   {
+    //     "texture": "4_5",
+    //     "name": "brilliant_yellow",
+    //     "hp": 80,
+    //     "maxHP": 80,
+    //     "mp": 40,
+    //     "maxMP": 40,
+    //     "isAlive": true,
+    //     "isPlayer": true,
+    //     "cooldown": 0,
+    //     "totalCooldown": 0,
+    //     "statuses": {
+    //       "frozen": 0,
+    //       "paralyzed": 0,
+    //       "burning": 0,
+    //       "wet": 0,
+    //       "poisoned": 0,
+    //       "blind": 0,
+    //       "mute": 0,
+    //       "sleeping": 0,
+    //       "charmed": 0
+    //     }
+    //   },
+    // ];
+
     return (
       <div className={`overview ${position === 'right' && 'overview_right'}`}>
         <PlayerInfo player={player} position={this.props.position} isSpectator={isSpectator} />
@@ -124,12 +357,12 @@ class Overview extends Component<Props, State> {
           const cooldown = cooldowns[cooldownIndex++];
 
           return (
-            <div 
-            key={memberIndex} 
-            className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`} 
-            onMouseEnter={() => this.setState({hovered: memberIndex})} 
-            onMouseLeave={() => this.setState({hovered: null})} 
-            onClick={() => this.setState({selected: memberIndex})}>
+            <div
+              key={memberIndex}
+              className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`}
+              onMouseEnter={() => this.setState({ hovered: memberIndex })}
+              onMouseLeave={() => this.setState({ hovered: null })}
+              onClick={() => this.setState({ selected: memberIndex })}>
               <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
                 <div className="char_portrait" style={portraitStyle} />
               </div>

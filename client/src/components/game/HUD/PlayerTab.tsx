@@ -180,7 +180,7 @@ class PlayerTab extends Component<Props, State> {
             </div>
           </div>
         </div>
-        <div className="flex width_half justify_between padding_8 padding_top_16 gap_4 padding_right_16">
+        <div className="flex width_half justify_between padding_8 padding_top_16 gap_24 padding_right_16">
           <div className="width_full">
             <p className="hud_actions_title">Items</p>
             <div className="grid player_hud_action_container gap_4 padding_y_4">

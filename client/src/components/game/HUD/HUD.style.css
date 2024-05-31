@@ -63,6 +63,10 @@
     gap: 16px
 }
 
+.gap_24 {
+    gap: 24px;
+}
+
 .padding_4 {
     padding: 4px;
 }
@@ -129,8 +133,8 @@
 }
 
 .char_profile_container {
-    width: 74px;
-    height: 74px;
+    width: 70px;
+    height: 70px;
     border-radius: 8px;
     padding-bottom: 6px;
     background-size: 100% 100%;
@@ -140,7 +144,7 @@
 .char_portrait {
     width: 100%;
     height: 100%;
-    margin-left: 10px;
+    margin-left: 6px;
     background-position: -40px -40px;
     background-repeat: no-repeat;
     animation: animate-sprite 0.7s steps(1) infinite;
@@ -150,11 +154,12 @@
 .char_stats {
     background-size: 100% 100%;
     height: 56px;
-    width: 172px;
+    width: 194px;
     margin-left: -16px;
     margin-bottom: 4px;
     padding: 8px;
-    padding-left: 18px;
+    padding-left: 22px;
+    padding-right: 12px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -163,8 +168,8 @@
 .char_stats_right {
     margin-left: 0;
     margin-right: -16px;
-    padding-left: 8px;
-    padding-right: 16px;
+    padding-left: 12px;
+    padding-right: 20px;
 }
 
 .char_stats_right .char_stats_player_name {
@@ -217,14 +222,14 @@
 
 .char_stats_cooldown_bar {
     background-color: #0e0e0e;
-    width: 196px;
+    width: 138px;
     height: 4px;
     margin-bottom: -24px;
     border-radius: 2px;
     overflow: hidden;
     position: absolute;
-    right: 2px;
-    top: 62px;
+    left: 74px;
+    top: 60px;
 }
 
 .char_stats_cooldown {
@@ -239,17 +244,18 @@
     align-items: center;
     position: absolute;
     left: 80px;
-    top: 68px;
+    top: 66px;
 }
 
 .char_statuses_right {
     left: auto;
+    top: 64px;
     right: 78px;
 }
 
 .char_statuses img {
-    width: 16px;
-    height: 20px;
+    width: 12px;
+    height: 14px;
     background-color: #1c1f25;
     padding: 2px;
     border-radius: 2px;
@@ -258,8 +264,8 @@
 .player_info_container {
     background-image: url('@assets/HUD/player_info_bg.png');
     background-size: 100% 100%;
-    width: 368px;
-    height: 120px;
+    width: 22vw;
+    height: 104px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -360,7 +366,8 @@
 .player_tab_container {
     background-image: url('@assets/HUD/char_info_bg.png');
     background-size: 100% 100%;
-    width: 692px;
+    width: 54vw;
+    max-width: 800px;
     height: 158px;
     display: flex;
     justify-content: space-between;
@@ -608,7 +615,7 @@
 }
 
 .spectator_footer_container {
-    background-image: url('@assets/HUD/reward_footer_ornament.png');
+    background-image: url('@assets/HUD/footer_ornament.png');
     background-size: 100% 100%;
     height: 48px;
     z-index: 10;
@@ -620,7 +627,7 @@
 .spectator_progress {
     background-image: url('@assets/HUD/spectator_progress_bg.png');
     background-size: 100% 100%;
-    width: 24%;
+    width: 36%;
     height: 48px;
 
     display: flex;
@@ -660,13 +667,13 @@
 
 .progress_chest_bronze {
     position: absolute;
-    left: 63%;
+    left: 64%;
     top: -21px;
 }
 
 .progress_chest_silver {
     position: absolute;
-    left: 30%;
+    left: 31.5%;
     top: -21px;
 }
 

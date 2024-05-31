@@ -1077,6 +1077,27 @@ export class Arena extends Phaser.Scene
         this.add.image(this.scale.width / 2, this.scale.height / 2, 'gradient').setOrigin(0.5, 0.5);
     }
     
+    setUpBackground() {
+        // Create a gradient texture
+        let gradientTexture = this.textures.createCanvas('gradient', this.scale.width, this.scale.height);
+        let context = gradientTexture.context;
+        let gradient = context.createLinearGradient(0, 0, 0, this.scale.height);
+
+        // Define gradient colors
+        gradient.addColorStop(0, '#242529'); // Red at the top
+        gradient.addColorStop(1, '#325268'); // Blue at the bottom
+
+        // Apply gradient to the context
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, this.scale.width, this.scale.height);
+
+        // Refresh the texture to apply changes
+        gradientTexture.refresh();
+
+        // Add the gradient as a sprite to the scene
+        this.add.image(this.scale.width / 2, this.scale.height / 2, 'gradient').setOrigin(0.5, 0.5);
+    }
+    
     // PhaserCreate
     create()
     {
