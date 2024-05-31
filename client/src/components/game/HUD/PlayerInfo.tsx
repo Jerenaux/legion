@@ -49,7 +49,7 @@ class PlayerInfo extends Component<Props> {
         <div className="player_info_player_profile"></div>
         <div className="player_info">
             <p className="player_info_name">{this.props.player.name}</p>
-            <div className="player_info_rank">
+            <div className={`player_info_rank ${position === 'right' && 'justify_end'}`}>
                 <img src="/icons/gold_rank.png" alt="" />
                 <span>RANK {this.props.player.rank}</span>
             </div>

@@ -51,6 +51,10 @@
     justify-content: space-between;
 }
 
+.justify_end {
+    justify-content: flex-end;
+}
+
 .items_center {
     align-items: center;
 }
@@ -228,7 +232,7 @@
     border-radius: 2px;
     overflow: hidden;
     position: absolute;
-    left: 74px;
+    left: 36px;
     top: 60px;
 }
 
@@ -244,12 +248,12 @@
     align-items: center;
     position: absolute;
     left: 80px;
-    top: 66px;
+    top: 60px;
 }
 
 .char_statuses_right {
     left: auto;
-    top: 64px;
+    top: 66px;
     right: 78px;
 }
 
@@ -268,7 +272,7 @@
     height: 104px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     position: relative;
     padding: 8px 16px 12px 36px;
     cursor: pointer;
@@ -281,7 +285,7 @@
 
 .player_info_container_right .player_info_team {
     transform: scaleX(-1);
-    margin-right: -8px;
+    margin-right: -4px;
 }
 
 .player_info_container_right .player_info_team span {
@@ -295,8 +299,8 @@
     width: 56px;
     height: 56px;
     position: absolute;
-    top: 30px;
-    left: 2px;
+    top: 22px;
+    left: -2px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -322,8 +326,8 @@
 .player_info_player_profile {
     background-image: url('@assets/HUD/player_profile_bg.png');
     background-size: 100% 100%;
-    width: 86px;
-    height: 86px;
+    width: 72px;
+    height: 72px;
 }
 
 .player_info {
@@ -332,9 +336,10 @@
 }
 
 .player_info_name {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
     color: #FFFFFF;
+    text-transform: capitalize;
 }
 
 .player_info_rank {
@@ -344,8 +349,8 @@
 }
 
 .player_info_rank img {
-    width: 36px;
-    height: 36p;
+    width: 24px;
+    height: 24p;
 }
 
 .player_info_rank span {
@@ -358,9 +363,9 @@
     background-size: 100% 100%;
     padding: 2px;
     padding-left: 10px;
-    font-size: 14px;
+    font-size: 10px;
     color: #FFFFFF;
-    margin-left: -8px;
+    margin-left: -4px;
 }
 
 .player_tab_container {
@@ -470,7 +475,8 @@
     flex: 1;
     height: 8px;
     background-color: #1c1f25;
-    border-radius: 2px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .hud_bar_status {
@@ -787,8 +793,8 @@
 }
 
 .endgame_score_bg img {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
 }
 
 .endgame_score_bg div span {

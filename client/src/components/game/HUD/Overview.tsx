@@ -95,242 +95,16 @@ class Overview extends Component<Props, State> {
     }
     let cooldownIndex = 0;
 
-    // const testMembers = [
-    //   {
-    //     "texture": "6_8",
-    //     "name": "accused_tan",
-    //     "hp": 100,
-    //     "maxHP": 100,
-    //     "mp": 20,
-    //     "maxMP": 20,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "7_7",
-    //     "name": "resident_coffee",
-    //     "hp": 80,
-    //     "maxHP": 80,
-    //     "mp": 30,
-    //     "maxMP": 30,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "4_5",
-    //     "name": "brilliant_yellow",
-    //     "hp": 80,
-    //     "maxHP": 80,
-    //     "mp": 40,
-    //     "maxMP": 40,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "6_8",
-    //     "name": "accused_tan",
-    //     "hp": 100,
-    //     "maxHP": 100,
-    //     "mp": 20,
-    //     "maxMP": 20,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "7_7",
-    //     "name": "resident_coffee",
-    //     "hp": 80,
-    //     "maxHP": 80,
-    //     "mp": 30,
-    //     "maxMP": 30,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "4_5",
-    //     "name": "brilliant_yellow",
-    //     "hp": 80,
-    //     "maxHP": 80,
-    //     "mp": 40,
-    //     "maxMP": 40,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "6_8",
-    //     "name": "accused_tan",
-    //     "hp": 100,
-    //     "maxHP": 100,
-    //     "mp": 20,
-    //     "maxMP": 20,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "7_7",
-    //     "name": "resident_coffee",
-    //     "hp": 80,
-    //     "maxHP": 80,
-    //     "mp": 30,
-    //     "maxMP": 30,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "4_5",
-    //     "name": "brilliant_yellow",
-    //     "hp": 80,
-    //     "maxHP": 80,
-    //     "mp": 40,
-    //     "maxMP": 40,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    //   {
-    //     "texture": "4_5",
-    //     "name": "brilliant_yellow",
-    //     "hp": 80,
-    //     "maxHP": 80,
-    //     "mp": 40,
-    //     "maxMP": 40,
-    //     "isAlive": true,
-    //     "isPlayer": true,
-    //     "cooldown": 0,
-    //     "totalCooldown": 0,
-    //     "statuses": {
-    //       "frozen": 0,
-    //       "paralyzed": 0,
-    //       "burning": 0,
-    //       "wet": 0,
-    //       "poisoned": 0,
-    //       "blind": 0,
-    //       "mute": 0,
-    //       "sleeping": 0,
-    //       "charmed": 0
-    //     }
-    //   },
-    // ];
+    const selectedPlayer: Player = {
+      avatar: members[this.state.selected]?.texture ?? '1_1',
+      level: 1,
+      rank: this.state.selected,
+      name: members[this.state.selected]?.name ?? 'Player Name'
+    }
 
     return (
       <div className={`overview ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={player} position={this.props.position} isSpectator={isSpectator} />
+        <PlayerInfo player={selectedPlayer} position={this.props.position} isSpectator={isSpectator} />
         {members.map((member, memberIndex) => {
           const portraitStyle = {
             backgroundImage: `url(/sprites/${member.texture}.png)`,
@@ -376,11 +150,11 @@ class Overview extends Component<Props, State> {
                 <div className="char_stats_bar">
                   <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
                 </div>
-                {position === 'left' && <div className="char_stats_bar">
+                {position === 'right' && <div className="char_stats_bar">
                   <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
                 </div>}
               </div>
-              {position === 'left' && <div className="char_stats_cooldown_bar">
+              {position === 'right' && <div className="char_stats_cooldown_bar">
                 <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
               </div>}
               <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>

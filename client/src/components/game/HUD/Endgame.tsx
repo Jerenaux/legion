@@ -74,7 +74,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 </div>
                 <div className="endgame_score_bg">
                     <div className="flex items_center gap_4">
-                        <img src="" alt="XP" />
+                        <img src="/HUD/xp1.png" alt="XP" />
                         <span>32.349</span>
                     </div>
                     <div className="flex items_center gap_4">

@@ -91,31 +91,15 @@ class GameHUD extends Component<object, State> {
   render() {
     const { playerVisible, player, team1, team2, isTutorial, isSpectator } = this.state;
 
-    const playerData = {
-      hp: 50,
-      maxHp: 70,
-      mp: 80,
-      maxMp: 100,
-      cooldown: 5,
-      maxCooldown: 7,
-      casting: true,
-      portrait: '2_2',
-      number: 2,
-      name: 'player_name',
-      spells: [3, 4],
-      items: [1, 2]
-    }
-
     return (
       <div className="height_full flex flex_col justify_between padding_bottom_16">
         <div className="hud-container">
           <Overview position="left" isSpectator={isSpectator} {...team2} />
-          <PlayerTab player={playerData} eventEmitter={events} />
-          {playerVisible && player ? <PlayerTab player={playerData} eventEmitter={events} /> : null}
+          {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
           <Overview position="right" isSpectator={isSpectator} {...team1} />
         </div>
         <SpectatorFooter />
-        {/* {!this.state.gameOver && <Endgame xpReward={this.state.xpReward} goldReward={this.state.goldReward} />} */}
+        {this.state.gameOver && <Endgame xpReward={this.state.xpReward} goldReward={this.state.goldReward} />}
       </div>
     );
   }
