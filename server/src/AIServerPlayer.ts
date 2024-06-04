@@ -165,7 +165,7 @@ export class AIServerPlayer extends ServerPlayer {
                 continue;
             }
             if (spell.target != Target.AOE) continue;
-            const tile = this.team?.game.scanGridForAoE(this, Math.floor(spell.size/2), 2);
+            const tile = this.team?.game.scanGridForAoE(this, spell.size, spell.size - 1);
             if (tile) {
                 const data = {
                     num: this.num,
