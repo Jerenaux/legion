@@ -78,7 +78,7 @@ function getRandomItem(
     }
 
     const itemIndex = Math.floor(Math.random() * filteredPool.length);
-    console.log(`Reward type: ${rewardType}, Chosen rarity: ${chosenRarity}, pool length: ${filteredPool.length}, item index: ${itemIndex}`);
+    // console.log(`Reward type: ${rewardType}, Chosen rarity: ${chosenRarity}, pool length: ${filteredPool.length}, item index: ${itemIndex}`);
     const item = filteredPool[itemIndex];
     return { type: rewardType, rarity: chosenRarity, id: item.id, name: item.name, amount: 1 };
 }

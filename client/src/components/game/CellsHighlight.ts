@@ -27,7 +27,7 @@ export class CellsHighlight extends Phaser.GameObjects.Graphics {
     }
 
     setNormalMode(refresh?: boolean) {
-        this.size = 0;
+        this.size = 1;
         this.color = 0xffffff;
         if (refresh) this.move(this.lastX, this.lastY);
     }

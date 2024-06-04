@@ -13,7 +13,7 @@ export class MusicManager {
         this.scene = scene;
         this.currentSound = null;
         this.startinIntensity = startinIntensity;
-        this.intensity = startinIntensity - 1;
+        this.intensity = this.startinIntensity;
         this.nbIntensities = nbIntensities;
         this.bridges = bridges;
     }
@@ -35,6 +35,7 @@ export class MusicManager {
             this.intensity++;
         }
         if (this.intensity > this.nbIntensities) this.intensity = this.nbIntensities;
+        console.log(`Intensity: ${this.intensity}`);
     }
 
     playBeginning() {
@@ -44,7 +45,7 @@ export class MusicManager {
     }
 
     playNext() {
-        this.currentSound = this.scene.sound.add(`bgm_loop_${this.intensity+1}`, this.soundConfig);
+        this.currentSound = this.scene.sound.add(`bgm_loop_${this.intensity}`, this.soundConfig);
         this.currentSound.once('complete', () => this.playNext(), this);
         this.currentSound.play();
         if (this.bridges.includes(this.intensity)) this.intensity++;

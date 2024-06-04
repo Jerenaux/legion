@@ -100,7 +100,12 @@ export class AIGame extends Game {
 
         AIteams.forEach(teamNum => {
             (this.teams.get(teamNum)?.getMembers() as AIServerPlayer[]).forEach(player => {
-                if (!FREEZE_AI) player.takeAction();
+                if (!FREEZE_AI){
+                    const delay = player.takeAction();
+                    setTimeout(() => {
+                        this.checkEndGame();
+                    }, delay);
+                }
             }, this);
         });
     }

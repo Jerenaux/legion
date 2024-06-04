@@ -69,16 +69,23 @@ export class AIServerPlayer extends ServerPlayer {
         return Math.floor(this.cooldowns[action] * (1 + Math.random() * 0.3));
     }
 
-    takeAction() {
-        if (!this.canAct()) return;
+    takeAction(): number {
+        if (!this.canAct()) return 0;
+        let delay = 0;
 
-        if (this.checkForItemUse()) return;
-        if (this.checkForHealUse()) return;
-        if (this.checkForAoE()) return;
+        if (this.checkForItemUse()) return 0;
+        
+        delay = this.checkForHealUse();
+        if (delay > -1)
+            return delay;
+
+        delay = this.checkForAoE();
+        if (delay > -1)
+            return delay;
 
         if (!this.target || !this.target.isAlive()) this.determineTarget();
         if(!this.target) {
-            console.log(`AI ${this.num} has no target! ${this.target}`);    
+            // console.log(`AI ${this.num} has no target! ${this.target}`);    
             return;
         }
 
@@ -93,6 +100,8 @@ export class AIServerPlayer extends ServerPlayer {
             this.target = null;
             this.retargetCount = this.retargetRate;
         }
+
+        return 0;
     }
 
     checkForItemUse() {
@@ -116,7 +125,7 @@ export class AIServerPlayer extends ServerPlayer {
         return false;
     }
 
-    checkForHealUse() {
+    checkForHealUse(): number {
         for (let i = 0; i < this.spells.length; i++) {
             const spell = this.spells[i];
             if (spell.cost > this.mp) continue;
@@ -124,9 +133,9 @@ export class AIServerPlayer extends ServerPlayer {
             if (!spell.isHealingSpell()) continue;
 
             const allies = this.team?.game.listAllAllies(this);
-            if (!allies || allies.length === 0) return;
+            if (!allies || allies.length === 0) return -1;
             const ally = this.getOptimalTarget(allies!, lowestHpComparator);
-            if (!ally) return;
+            if (!ally) return -1;
 
             const healAmount = spell.getHealAmount();
             if (ally.hp <= (ally.maxHP - healAmount)) {
@@ -139,15 +148,15 @@ export class AIServerPlayer extends ServerPlayer {
                     target: ally.num,
                 };
                 this.team?.game.processMagic(data, this.team);
-                return true;
+                return spell.castTime * 1000;
             }
         }
-        return false;
+        return -1;
     }
 
-    checkForAoE() {
+    checkForAoE(): number {
         // Return if random number below 0.5
-        if (Math.random() < 0.6) return false;
+        if (Math.random() < 0.6) return -1;
         for (let i = 0; i < this.spells.length; i++) {
             const spell = this.spells[i];
             // console.log(`AI ${this.num} checking spell ${spell.name}, cost = ${spell.cost}, mp = ${this.mp}`);
@@ -156,7 +165,7 @@ export class AIServerPlayer extends ServerPlayer {
                 continue;
             }
             if (spell.target != Target.AOE) continue;
-            const tile = this.team?.game.scanGridForAoE(this, Math.floor(spell.size/2), 2);
+            const tile = this.team?.game.scanGridForAoE(this, spell.size, spell.size - 1);
             if (tile) {
                 const data = {
                     num: this.num,
@@ -167,10 +176,10 @@ export class AIServerPlayer extends ServerPlayer {
                     target: null,
                 };
                 this.team?.game.processMagic(data, this.team);
-                return true;
+                return spell.castTime * 1000;
             }
         }
-        return false;
+        return -1;
     }
 
     determineTarget() {

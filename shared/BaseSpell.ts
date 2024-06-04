@@ -32,7 +32,7 @@ export class BaseSpell {
         this.price = getPrice(props.effort);
         this.rarity = getRarity(props.effort);
 
-        this.cost = 5;
+        this.cost = 3;
         this.cooldown = 2;
         this.castTime = 1;
         this.minLevel = 1;

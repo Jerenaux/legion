@@ -128,7 +128,7 @@ export class Team {
 
     sendScore() {
         if (this.score != this._score) {
-            this.game.broadcastScoreChange(this);
+            this.game.emitScoreChange(this);
         }
     }
 
