@@ -283,9 +283,9 @@ export abstract class Game
     }
 
     checkEndGame() {
-        console.log(`Checking end game...`);
+        // console.log(`Checking end game...`);
         if (this.gameOver) return;
-        console.log(`Team 1: ${this.teams.get(1)!.isDefeated()}, Team 2: ${this.teams.get(2)!.isDefeated()}`);
+        // console.log(`Team 1: ${this.teams.get(1)!.isDefeated()}, Team 2: ${this.teams.get(2)!.isDefeated()}`);
         if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
             this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
         }
@@ -631,6 +631,12 @@ export abstract class Game
         });
     }
 
+    emitScoreChange(team: Team) {
+        team.socket?.emit('score', {
+            score: team.score,
+        });
+    }
+
     broadcastHPchange(team: Team, num: number, hp: number, damage?: number) {
         this.broadcast('hpchange', {
             team: team.id,
@@ -837,7 +843,7 @@ export abstract class Game
         let offenseFactor;
         
         // Check for one-shot victories
-        if (teamOffensiveActions === 1 && otherTeamOffensiveActions === 0) {
+        if (teamOffensiveActions === 1) {
             // Maximum score for one-shot victory
             offenseFactor = 1.0;
         } else {

@@ -94,7 +94,7 @@ export async function processChestRewards(
   spells: number[],
   equipment: number[]
 ) {
-  logger.info(`Processing chest rewards for player ${playerRef.id}: ${JSON.stringify(content)}`);
+  // logger.info(`Processing chest rewards for player ${playerRef.id}: ${JSON.stringify(content)}`);
   content.forEach((reward: ChestReward) => {
     if (reward.type === "gold") {
       transaction.update(playerRef, {

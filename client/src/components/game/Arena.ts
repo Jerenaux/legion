@@ -87,7 +87,7 @@ export class Arena extends Phaser.Scene
 
 
         this.load.audio(`bgm_start`, `music/bgm_start.wav`);
-        for (let i = 2; i <= 13; i++) {
+        for (let i = 1; i <= 12; i++) {
             this.load.audio(`bgm_loop_${i}`, `music/bgm_loop_${i}.wav`);
         }
         this.load.audio(`bgm_end`, `music/bgm_end.wav`);
@@ -483,19 +483,23 @@ export class Arena extends Phaser.Scene
 
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
-        if (!this.selectedPlayer?.canAct()) return;
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
         if (pendingSpell != null) {
+            console.log(`Casting spell ${pendingSpell.name}`);
             this.sendSpell(gridX, gridY, player);
         } else if (this.selectedPlayer?.pendingItem != null) {
+            console.log(`Using item ${pendingItem.name}`)
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
         } else if (!player && this.hasObstacle(gridX, gridY)) {
+            console.log(`Clicked on obstacle at (${gridX}, ${gridY})`);
             this.sendObstacleAttack(gridX, gridY);
         } else if (this.selectedPlayer && !player) {
+            console.log(`Moving to (${gridX}, ${gridY})`);
             this.handleMove(gridX, gridY);
         } else if (player){ 
+            console.log(`Clicked on player ${player.num}`);
             if (pendingSpell?.target === Target.SINGLE) {
                 this.sendSpell(gridX, gridY, player);
             } if (pendingItem?.target === Target.SINGLE) {
@@ -503,6 +507,8 @@ export class Arena extends Phaser.Scene
             } else {
                 player.onClick();
             }
+        } else {
+            console.log(`Clicked on empty tile at (${gridX}, ${gridY})`);
         }
     }
 
@@ -782,8 +788,9 @@ export class Arena extends Phaser.Scene
         this.emitEvent('gameEnd', {isWinner, xp, gold});
     }
 
-    processScoreUpdate({teamId, score}) {
-        const team = this.teamsMap.get(teamId);
+    processScoreUpdate({score}) {
+        // console.log(`Team ${teamId} score updated to ${score}`);
+        const team = this.teamsMap.get(this.playerTeamId);
         const _score = team.score;
         team.setScore(score);
         this.emitEvent('overviewChange');
@@ -1091,7 +1098,7 @@ export class Arena extends Phaser.Scene
 
         this.input.mouse.disableContextMenu();
 
-        this.musicManager = new MusicManager(this, 2, 13, [5, 6, 11]);
+        this.musicManager = new MusicManager(this, 1, 12, [5, 6, 11]);
         this.musicManager.playBeginning();
         this.playSound('crowd', 0.5, true);
 
