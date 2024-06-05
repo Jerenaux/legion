@@ -82,7 +82,7 @@
 }
 
 .equip-dialog-container {
-    max-width: 96px;
+    max-width: 120px;
     background-color: #1c1f25;
     border: 1px solid #3c616c;
     border-radius: 4px;
@@ -102,8 +102,8 @@
 }
 
 .equip-dialog-image {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 42px;
     border: 1px solid #244752;
     padding: 4px;
     border-radius: 4px;
@@ -113,6 +113,7 @@
     font-size: 12px;
     margin-bottom: -6px;
     text-transform: capitalize;
+    text-align: center;
 }
 
 .equip-dialog-container .equip-dialog-desc {
@@ -134,7 +135,7 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    max-width: 98px;
+    max-width: 128px;
     position: relative;
 }
 
@@ -218,9 +219,10 @@
 }
 
 .dialog-item-container {
-    background-image: url("@assets/inventory/itemequip_bg.png");
-    background-size: 100% 100%;
-    width: 98px;
+    background-color: #1c1f25;
+    border: 1px solid #3f6f7d;
+    border-radius: 4px;
+    width: 118px;
     padding: 6px 12px;
     display: flex;
     flex-direction: column;
@@ -228,14 +230,24 @@
     position: relative;
 }
 
+.dialog-item-heading-bg {
+    background-color: #2f404d;
+    height: 24px;
+    width: 97%;
+
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    border-radius: 2px;
+}
+
 .dialog-item-heading {
     display: flex;
     align-items: flex-end;
     justify-content: flex-start;
     gap: 12px;
-    width: 100%;
     position: absolute;
-    top: -16px;
+    top: -18px;
 }
 
 .dialog-item-heading img {
@@ -248,8 +260,8 @@
 }
 
 .dialog-item-heading-image {
-    width: 32px;
-    height: 32px;
+    width: 42px;
+    height: 42px;
     background-color: #303540;
     border: 1px solid #3c616c;
     border-radius: 4px;
@@ -270,7 +282,7 @@
 }
 
 .dialog-item-desc {
-    margin-top: 28px;
+    margin-top: 32px;
     color: #71deff;
 }
 

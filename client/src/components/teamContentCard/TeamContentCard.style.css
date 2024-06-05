@@ -225,8 +225,8 @@
 }
 
 .character-info-bar {
-    width: 96px;
-    height: 18px;
+    width: 108px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
