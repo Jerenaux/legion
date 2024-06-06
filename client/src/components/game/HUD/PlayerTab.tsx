@@ -13,6 +13,8 @@ interface State {
   player: Player;
   clickedItem: number;
   clickedSpell: number;
+  poisonCounter: number;
+  frozenCounter: number;
 }
 
 class PlayerTab extends Component<Props, State> {
@@ -25,8 +27,25 @@ class PlayerTab extends Component<Props, State> {
       player: this.props.player,
       clickedItem: -1,
       clickedSpell: -1,
+      poisonCounter: 25,
+      frozenCounter: 15
     };
     this.events = this.props.eventEmitter;
+  }
+
+  componentDidMount() {
+    this.timerID = setInterval(() => this.tick(), 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  tick() {
+    this.setState(prevState => ({
+      poisonCounter: Math.max(0, prevState.poisonCounter - 1),
+      frozenCounter: Math.max(0, prevState.frozenCounter - 1)
+    }))
   }
 
   actionClick(type: string, letter: string, index: number) {
@@ -70,8 +89,8 @@ class PlayerTab extends Component<Props, State> {
             </div>
             <div style={{ flex: '1', height: '100%' }}>
               <div className="player_content_name">
-                <div className="player_content_flag"><span>4</span></div>
-                <div className="player_content_char_name"><span>Char Name</span></div>
+                <div className="player_content_flag"><span>{player.number}</span></div>
+                <div className="player_content_char_name"><span>{player.name}</span></div>
               </div>
               <div className="player_content_stats_bar">
                 <div className="player_content_stats_icon">
@@ -88,11 +107,11 @@ class PlayerTab extends Component<Props, State> {
               <div className="player_content_statuses">
                 <div>
                   <img src="/HUD/poison_icon.png" alt="" />
-                  <span>25s</span>
+                  <span>{this.state.poisonCounter}</span>
                 </div>
                 <div>
                   <img src="/HUD/frozen_icon.png" alt="" />
-                  <span>15s</span>
+                  <span>{this.state.frozenCounter}</span>
                 </div>
                 <div style={{ fontSize: '18px', lineHeight: '10px' }}>
                   <img src="/HUD/burning_icon.png" alt="" />
@@ -102,7 +121,7 @@ class PlayerTab extends Component<Props, State> {
             </div>
           </div>
           <div className="xp_bar_bg_container">
-            <span>{player.cooldown}</span>
+            <img src="/inventory/cd_icon.png" alt="" />
             <div className="xp_bar_bg">
               <div className="cooldown_bar" style={cooldownBarStyle}></div>
             </div>
@@ -142,7 +161,7 @@ class PlayerTab extends Component<Props, State> {
                     clickedIndex={this.state.clickedSpell}
                     canAct={canAct}
                     actionType={InventoryType.SKILLS}
-                    onActionClick={this.actionClick.bind(this)}
+                    onActionClick={() => {}}
                     key={idx}
                   />
                 </div>

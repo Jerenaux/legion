@@ -62,6 +62,10 @@ class Action extends Component<ActionItemProps> {
     const keyBinding = keyboardLayout.charAt(startPosition + index);
 
     const handleOnClickAction = (e: any) => {
+      const pathArray = window.location.pathname.split('/');
+
+      if (pathArray[1] === 'game') return;
+
       if (actionType === InventoryType.EQUIPMENTS) {
         this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP, (action as BaseEquipment).slot);
       }
