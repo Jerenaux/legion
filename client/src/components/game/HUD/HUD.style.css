@@ -653,6 +653,7 @@
 .spectator_progress_fill {
     background-image: url('@assets/HUD/progress_fill.png');
     background-size: 100% 100%;
+    width: 0%;
     height: 100%;
 }
 
