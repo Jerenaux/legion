@@ -55,17 +55,17 @@ class PlayerInfo extends Component<Props> {
             </div>
             <div className="player_info_team"><span>TEAM</span></div>
         </div>
-        <div className={position === 'right' ? 'spectator_container_right' : 'spectator_container'}>
+        {position === 'right' && <div className="spectator_container_right">
           <div onClick={() => {}}>
             <img src="/HUD/applause_icon.png" alt="" />
           </div>
           <div onClick={() => {}}>
             <img src="/HUD/donate_icon.png" alt="" />
           </div>
-          {!isSpectator && <div onClick={() => this.setState({modalOpen: true})}>
+          <div onClick={() => this.setState({modalOpen: true})}>
             <img src="/HUD/settings_icon.png" alt="" />
-          </div>}
-        </div>
+          </div>
+        </div>}
         <Modal isOpen={this.state.modalOpen}  onRequestClose={this.handleCloseModal} style={customStyles}>
           <div className="flex flex_col gap_4">
             <div className="game_leave_dialog">Are you sure want to leave?</div>
