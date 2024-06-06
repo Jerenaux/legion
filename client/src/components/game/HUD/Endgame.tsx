@@ -2,6 +2,7 @@ import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@react-hook/window-size';
+import CountUp from 'react-countup';
 
 /* eslint-disable react/prefer-stateless-function */
 interface EndgameState {
@@ -75,11 +76,11 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 <div className="endgame_score_bg">
                     <div className="flex items_center gap_4">
                         <img src="/HUD/xp1.png" alt="XP" />
-                        <span>32.349</span>
+                        <span><CountUp end={this.state.finalXp} decimal=',' decimals={3} duration={5} /></span>
                     </div>
                     <div className="flex items_center gap_4">
                         <img src="/gold_icon.png" alt="XP" />
-                        <span>500</span>
+                        <span><CountUp end={this.state.finalGold} duration={5} /></span>
                     </div>
                 </div>
                 <div className="flex flex_wrap gap_16 justify_center items_center max_w_lg" style={{ padding: '36px 48px' }}>
