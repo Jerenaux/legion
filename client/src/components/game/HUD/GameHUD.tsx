@@ -112,7 +112,7 @@ class GameHUD extends Component<object, State> {
           <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} {...team1} />
         </div>
         {team1 && <SpectatorFooter />}
-        {this.state.gameOver && <Endgame xpReward={this.state.xpReward} goldReward={this.state.goldReward} />}
+        {this.state.gameOver && <Endgame isWinner={this.state.isWinner} xpReward={this.state.xpReward} goldReward={this.state.goldReward} />}
       </div>
     );
   }

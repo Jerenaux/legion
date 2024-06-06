@@ -770,7 +770,6 @@
 }
 
 .defeat_title {
-    background-image: url('@assets/HUD/combat_begins_bg.png');
     background-size: 100% 100%;
     height: 54px;
     width: 80%;
@@ -783,12 +782,8 @@
     position: relative;
 }
 
-.defeat_title p {
-    font-size: 86px;
-    font-weight: 900;
-    text-shadow: #147fa6 0px 8px;
-    text-align: center;
-    margin-top: -12px;
+.defeat_title img {
+    height: 96px;
 }
 
 .victory_title_effect {
@@ -808,7 +803,7 @@
     padding: 4px 8px;
     width: 260px;
     height: 46px;
-    margin-top: -24px;
+    margin-top: -16px;
 
     display: flex;
     justify-content: space-around;
@@ -934,7 +929,7 @@
     width: 156px;
     height: 56px;
 
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     color: #FFFFFF;
 
@@ -943,6 +938,7 @@
     align-items: center;
 
     margin-top: 120px;
+    padding-right: 8px;
     cursor: pointer;
 }
 

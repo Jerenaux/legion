@@ -10,12 +10,12 @@ interface EndgameState {
     finalXp: number;
     displayGold: number;
     displayXp: number;
-    isFailed: boolean;
 }
 
 interface EndgameProps {
     xpReward: number;
     goldReward: number;
+    isWinner: boolean;
 }
 export class Endgame extends Component<EndgameProps, EndgameState> {
     constructor(props) {
@@ -25,7 +25,6 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
             finalXp: props.xpReward,
             displayGold: 0, // These are for display and will be incremented
             displayXp: 0,
-            isFailed: false,
         };
     }
 
@@ -60,18 +59,19 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         route('/play');
     }
 
-    render() {
-        const titleStyle = {
-            color: this.state.isFailed ? '#FFA600' : '#65d6ff',
+    endGameTitleBg = () => {
+        return {
+            backgroundImage: this.props.isWinner ? 'url("/game_end/victory_bg.png")' : 'url("/game_end/defeat_bg.png")',
         }
+    }
 
+    render() {
         const [width, height] = useWindowSize()
 
         return (
             <div className="endgame">
-                <div className="defeat_title">
-                    <p style={titleStyle}>{this.state.isFailed ? 'DEFEAT' : 'VICTORY!'}</p>
-                    {!this.state.isFailed && <span className="victory_title_effect">S+</span>}
+                <div className="defeat_title" style={this.endGameTitleBg()}>
+                    <img src={`/game_end/${this.props.isWinner ? 'Victory' : 'defeat'}.png`} alt="End Title" />
                 </div>
                 <div className="endgame_score_bg">
                     <div className="flex items_center gap_4">
@@ -110,10 +110,10 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         </div>
                     ))}
                 </div>
-                {this.state.isFailed && <div className="endgame_leave">
+                {!this.props.isWinner && <div className="endgame_leave" onClick={this.closeGame}>
                     <span>Leave</span>
                 </div>}
-                {!this.state.isFailed && <div className="light_streak_container">
+                {this.props.isWinner && <div className="light_streak_container">
                     <div className="light_streak" style={{width: width * 0.5}}>
                         <Confetti
                             width={width * 0.5}
@@ -127,7 +127,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                                 <div className="streak_gold_list"></div>
                             ))}
                         </div>
-                        <div className="streak_cofirm_container" style={{width: width * 0.8}}>
+                        <div className="streak_cofirm_container" style={{width: width * 0.8}} onClick={this.closeGame}>
                             <div className="streak_confirm_btn"><span>Confirm</span></div>
                         </div>
                     </div>
