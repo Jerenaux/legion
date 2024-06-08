@@ -3,7 +3,6 @@ import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
 import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor, StatusEffect, Class } from "./enums";
 import {ChestReward} from "@legion/shared/chests";
-import { DocumentReference, DocumentData } from '@firebase/firestore';
 
 export class EffectModifier {
     stat;
@@ -263,4 +262,24 @@ export interface GameData {
     },
     player: GamePlayerData,
     opponent: GamePlayerData,
+}
+
+export interface PlayerProps {
+    name: string;
+    number: number;
+    portrait: string;
+    hp: number;
+    maxHp: number;
+    mp: number;
+    maxMp: number;
+    cooldown: number;
+    maxCooldown: number;
+    spells: BaseSpell[];
+    items: BaseItem[];
+    casting: boolean;
+    statuses: StatusEffects;
+}
+
+export type StatusEffects = {
+    [key in StatusEffect]: number;
 }

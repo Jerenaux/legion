@@ -109,4 +109,3 @@ export enum rankNoImage {
     'silver_rankno',
     'bronze_rankno'
 }
-
