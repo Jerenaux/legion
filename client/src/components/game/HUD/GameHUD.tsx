@@ -4,7 +4,7 @@ import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
-import { PlayerProps } from "@legion/shared/interfaces";
+import { OutcomeData, PlayerProps } from "@legion/shared/interfaces";
 
 interface Team {
   members: any[];
@@ -70,7 +70,8 @@ class GameHUD extends Component<object, State> {
     this.setState({ isTutorial: general.isTutorial, isSpectator: general.isSpectator })
   }
 
-  endGame = (isWinner, xp, gold) => {
+  endGame = (data: OutcomeData) => {
+    const {isWinner, xp, gold} = data;
     this.setState({ 
       gameOver: true,
       isWinner,

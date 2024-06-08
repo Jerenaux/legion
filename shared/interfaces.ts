@@ -87,6 +87,7 @@ export interface EquipmentData {
 
 export interface CharacterUpdate {
     id: string;
+    num: number;
     points: number;
     xp: number;
     level: number;

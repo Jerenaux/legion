@@ -185,12 +185,12 @@ export class Team {
     }
 
     getCharactersDBUpdates(): CharacterUpdate[] {
-        // Map character id to the number of stats points earned
         return this.members.map((member) => ({
             id: member.dbId,
+            num: member.num,
             points: member.earnedStatsPoints,
-            xp: member.xp,
-            level: member.level
+            xp: member.earnedXP,
+            level: member.levelsGained
         }));
     }    
 

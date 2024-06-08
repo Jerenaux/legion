@@ -304,9 +304,10 @@ export abstract class Game
             const team = this.socketMap.get(socket);
             const otherTeam = this.getOtherTeam(team!.id);
             const outcomes = this.computeGameOutcomes(team, otherTeam, winner, this.duration, this.mode) as OutcomeData;
-            console.log(`Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
             team.distributeXp(outcomes.xp);
+            outcomes.characters = team.getCharactersDBUpdates();
             this.writeOutcomesToDb(team, outcomes);
+            console.log(`Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
             socket.emit('gameEnd', outcomes);
         });
     }
@@ -932,7 +933,7 @@ export abstract class Game
                         gold: rewards.gold,
                         xp: rewards.xp,
                         elo: rewards.elo,
-                        characters: team.getCharactersDBUpdates(),
+                        characters: rewards.characters,
                         key: rewards.key,
                         chests: rewards.chests,
                     } as OutcomeData,
