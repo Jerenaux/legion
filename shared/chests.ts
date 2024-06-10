@@ -4,18 +4,22 @@ import { spells } from "./Spells";
 import { equipments } from "./Equipments";
 import { AVERAGE_REWARD_PER_GAME } from "./economy";
 
-type RewardType = 'consumable' | 'spell' | 'equipment' | 'gold';
-type ItemRewardType = 'consumable' | 'spell' | 'equipment';
+enum RewardType {
+    CONSUMABLES = 'consumable',
+    SPELL = 'spell',
+    EQUIPMENT = 'equipment',
+    GOLD = 'gold',
+}
 export type ChestReward = { type: RewardType, rarity: Rarity | null, id: number, amount: number, name: string };
 
-function getRandomType(distribution: { [key: string]: number }): ItemRewardType {
+function getRandomType(distribution: { [key: string]: number }): RewardType {
     const typeRoll = Math.random() * 100;
     let cumulativeProbability = 0;
 
     for (const type in distribution) {
         cumulativeProbability += distribution[type];
         if (typeRoll < cumulativeProbability) {
-            return type as ItemRewardType;
+            return type as RewardType;
         }
     }
 
@@ -24,14 +28,18 @@ function getRandomType(distribution: { [key: string]: number }): ItemRewardType 
 
 function getRandomItem(
     rarityDistribution: { [key in Rarity]?: number[] },
-    rewardTypeDistribution: { [key in ItemRewardType]: number },
+    rewardTypeDistribution: { [key in RewardType]: number },
     goldChance: number,
-    goldAmount: number[],
+    goldAmount: number,
     allowGold: boolean
 ): ChestReward {
     const rarityRoll = Math.random() * 100;
     let cumulativeProbability = 0;
     let chosenRarity: Rarity | null = null;
+
+    if (allowGold && Math.random() < goldChance) {
+        return { type: RewardType.GOLD, name: "gold", id: -1, rarity: Rarity.COMMON, amount: goldAmount};
+    }
 
     for (const rarity in rarityDistribution) {
         // @ts-ignore
@@ -45,11 +53,6 @@ function getRandomItem(
 
     if (chosenRarity === null) {
         throw new Error('Failed to determine rarity');
-    }
-
-    if (allowGold && Math.random() < goldChance) {
-        const goldIndex = Math.floor(Math.random() * goldAmount.length);
-        return { type: 'gold', name: "gold", id: -1, rarity: Rarity.COMMON, amount: goldAmount[goldIndex] };
     }
 
     const rewardType = getRandomType(rewardTypeDistribution);
@@ -87,7 +90,9 @@ export function getChestContent(type: ChestColor): ChestReward[] {
     let allowGold = true;
 
     let rarityDistribution: { [key in Rarity]?: number[] };
-    let rewardTypeDistribution: { [key in ItemRewardType]: number };
+    let rewardTypeDistribution: { [key in RewardType]: number };
+    let numberOfItems: number;
+    let goldCoefficient: number;
 
     switch (type) {
         case ChestColor.BRONZE:
@@ -96,17 +101,14 @@ export function getChestContent(type: ChestColor): ChestReward[] {
                 [Rarity.RARE]: [10],
             };
             rewardTypeDistribution = {
-                consumable: 75,
-                spell: 15,
-                equipment: 10,
+                [RewardType.GOLD]: 0,
+                [RewardType.CONSUMABLES]: 75,
+                [RewardType.SPELL]: 15,
+                [RewardType.EQUIPMENT]: 10,
             };
-            return Array.from({ length: 2 }, () => {
-                const item = getRandomItem(rarityDistribution, rewardTypeDistribution, 0.1, [AVERAGE_REWARD_PER_GAME], allowGold);
-                if (item.type === 'gold') {
-                    allowGold = false;
-                }
-                return item;
-            });
+            numberOfItems = 2;
+            goldCoefficient = 1;
+            break;
         case ChestColor.SILVER:
             rarityDistribution = {
                 [Rarity.COMMON]: [75],
@@ -114,17 +116,14 @@ export function getChestContent(type: ChestColor): ChestReward[] {
                 [Rarity.EPIC]: [5],
             };
             rewardTypeDistribution = {
-                consumable: 65,
-                spell: 25,
-                equipment: 10,
+                [RewardType.GOLD]: 0,
+                [RewardType.CONSUMABLES]: 65,
+                [RewardType.SPELL]: 25,
+                [RewardType.EQUIPMENT]: 10,
             };
-            return Array.from({ length: 4 }, () => {
-                const item = getRandomItem(rarityDistribution, rewardTypeDistribution, 0.1, [AVERAGE_REWARD_PER_GAME * 3], allowGold);
-                if (item.type === 'gold') {
-                    allowGold = false;
-                }
-                return item;
-            });
+            numberOfItems = 4;
+            goldCoefficient = 3;
+            break;
         case ChestColor.GOLD:
             rarityDistribution = {
                 [Rarity.COMMON]: [45],
@@ -133,18 +132,23 @@ export function getChestContent(type: ChestColor): ChestReward[] {
                 [Rarity.LEGENDARY]: [5],
             };
             rewardTypeDistribution = {
-                consumable: 40,
-                spell: 30,
-                equipment: 30,
+                [RewardType.GOLD]: 0,
+                [RewardType.CONSUMABLES]: 40,
+                [RewardType.SPELL]: 30,
+                [RewardType.EQUIPMENT]: 30,
             };
-            return Array.from({ length: 6 }, () => {
-                const item = getRandomItem(rarityDistribution, rewardTypeDistribution, 0.1, [AVERAGE_REWARD_PER_GAME * 10], allowGold);
-                if (item.type === 'gold') {
-                    allowGold = false;
-                }
-                return item;
-            });
+            numberOfItems = 6;
+            goldCoefficient = 10;
+            break;
         default:
             throw new Error('Invalid ChestColor');
     }
+
+    return Array.from({ length: numberOfItems }, () => {
+        const item = getRandomItem(rarityDistribution, rewardTypeDistribution, 0.1, AVERAGE_REWARD_PER_GAME * goldCoefficient, allowGold);
+        if (item.type == RewardType.GOLD) {
+            allowGold = false;
+        }
+        return item;
+    });
 }
