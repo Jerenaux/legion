@@ -185,8 +185,8 @@ export const rewardsUpdate = onRequest((request, response) => {
                 if (characterRewards) {
                   const sp = characterRewards.points;
                   transaction.update(characterRef, {
-                    xp: characterRewards.xp,
-                    level: characterRewards.level,
+                    xp: admin.firestore.FieldValue.increment(characterRewards.xp),
+                    level: admin.firestore.FieldValue.increment(characterRewards.level),
                     sp: admin.firestore.FieldValue.increment(sp),
                     allTimeSP: admin.firestore.FieldValue.increment(sp),
                   });

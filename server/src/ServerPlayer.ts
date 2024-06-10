@@ -5,7 +5,7 @@ import { Stat, Terrain, StatusEffect } from "@legion/shared/enums";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { PlayerNetworkData } from '@legion/shared/interfaces';
+import { PlayerNetworkData, StatusEffects } from '@legion/shared/interfaces';
 import {TIME_COEFFICIENT} from "@legion/shared/config";
 
 
@@ -25,6 +25,8 @@ export class ServerPlayer {
     level: number = 1;
     xp: number = 0;
     earnedStatsPoints: number = 0;
+    earnedXP: number = 0;
+    levelsGained: number = 0;
     _hp: number = 0;
     _mp: number = 0;
     hp;
@@ -47,17 +49,7 @@ export class ServerPlayer {
     isCasting: boolean = false;
     damageDealt: number = 0;
     entranceTime: number = 2.5;
-    statuses: {
-        frozen: number;
-        paralyzed: number;
-        burning: number;
-        wet: number;
-        poisoned: number;
-        blind: number;
-        mute: number;
-        sleeping: number;
-        charmed: number;
-    }
+    statuses: StatusEffects;
     interactedTargets: Set<ServerPlayer> = new Set();
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
@@ -69,15 +61,11 @@ export class ServerPlayer {
         this.distance = 3;
 
         this.statuses = {
-            frozen: 0,
-            paralyzed: 0,
-            burning: 0,
-            wet: 0,
-            poisoned: 0,
-            blind: 0,
-            mute: 0,
-            sleeping: 0,
-            charmed: 0
+            [StatusEffect.FREEZE]: 0,
+            [StatusEffect.PARALYZE]: 0,
+            [StatusEffect.POISON]: 0,
+            [StatusEffect.BURN]: 0,
+            [StatusEffect.SLEEP]: 0,
         };
         
         this.cooldowns = {
@@ -121,11 +109,11 @@ export class ServerPlayer {
     }
 
     isFrozen() {
-        return this.statuses.frozen;
+        return this.statuses[StatusEffect.FREEZE] > 0;
     }
 
     isParalyzed() {
-        return this.statuses.paralyzed || this.isFrozen();
+        return (this.statuses[StatusEffect.PARALYZE] > 0) || this.isFrozen();
     }
 
     canAct() {
@@ -430,10 +418,10 @@ export class ServerPlayer {
         if (Math.random() > chance) return false;
         switch(status) {
             case StatusEffect.PARALYZE:
-                this.statuses.paralyzed = duration;
+                this.statuses[StatusEffect.PARALYZE] = duration;
                 break;
             case StatusEffect.FREEZE:
-                this.statuses.frozen = duration;
+                this.statuses[StatusEffect.FREEZE] = duration;
                 break;
             default:
                 break;
@@ -445,10 +433,10 @@ export class ServerPlayer {
     removeStatusEffect(status: StatusEffect) {
         switch(status) {
             case StatusEffect.PARALYZE:
-                this.statuses.paralyzed = 0;
+                this.statuses[StatusEffect.PARALYZE] = 0;
                 break;
             case StatusEffect.FREEZE:
-                this.statuses.frozen = 0;
+                this.statuses[StatusEffect.FREEZE] = 0;
                 break;
             default:
                 break;
@@ -476,6 +464,7 @@ export class ServerPlayer {
     gainXP(amount: number) {
         // console.log(`Player ${this.num} gained ${amount} XP`)
         this.xp += amount;
+        this.earnedXP += amount;
         // console.log(`${this.xp} / ${getXPThreshold(this.level)}`)
         while (this.xp >= getXPThreshold(this.level)) {
             this.levelUp();
@@ -485,6 +474,7 @@ export class ServerPlayer {
     levelUp() {
         this.xp -= getXPThreshold(this.level);
         this.level++;
+        this.levelsGained++;
         this.earnStatsPoints();
     }
 

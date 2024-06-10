@@ -1,5 +1,5 @@
 // GameHUD.tsx
-import { h, Component, render } from 'preact';
+import { h, Component } from 'preact';
 import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
@@ -22,6 +22,7 @@ export interface Player {
   spells: BaseSpell[];
   items: BaseItem[];
 }
+import { OutcomeData, PlayerProps } from "@legion/shared/interfaces";
 
 interface Team {
   members: any[];
@@ -31,7 +32,7 @@ interface Team {
 
 interface State {
   playerVisible: boolean;
-  player: any;
+  player: PlayerProps;
   clickedItem: number;
   clickedSpell: number;
   team1: Team;
@@ -75,7 +76,7 @@ class GameHUD extends Component<object, State> {
     events.off
   }
 
-  showPlayerBox = (playerData: any) => {
+  showPlayerBox = (playerData: PlayerProps) => {
     this.setState({ playerVisible: true, player: playerData });
   }
 
@@ -88,7 +89,8 @@ class GameHUD extends Component<object, State> {
     this.setState({ isTutorial: general.isTutorial, isSpectator: general.isSpectator })
   }
 
-  endGame = (isWinner, xp, gold) => {
+  endGame = (data: OutcomeData) => {
+    const {isWinner, xp, gold} = data;
     this.setState({ 
       gameOver: true,
       isWinner,

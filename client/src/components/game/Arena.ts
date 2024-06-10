@@ -179,7 +179,7 @@ export class Arena extends Phaser.Scene
             this.processLocalAnimation(data);
         });
 
-        this.socket.on('gameEnd', (data) => {
+        this.socket.on('gameEnd', (data: OutcomeData) => {
             this.processGameEnd(data);
         });
 
@@ -531,8 +531,8 @@ export class Arena extends Phaser.Scene
         if (this.overviewReady) events.emit('updateOverview', team1, team2, general);
     }
 
-    showEndgameScreen({isWinner, xp, gold}) {
-        if (this.overviewReady) events.emit('gameEnd', isWinner, xp, gold);
+    showEndgameScreen(data: OutcomeData) {
+        if (this.overviewReady) events.emit('gameEnd', data);
     }
 
     emitEvent(event, data?) {
@@ -776,16 +776,16 @@ export class Arena extends Phaser.Scene
          } 
     }
 
-    processGameEnd({isWinner, xp, gold}: OutcomeData) {
-        // TODO: handle winner = -1 for errors
+    processGameEnd(data: OutcomeData) {
+        console.log(`Game ended: ${JSON.stringify(data)}`);
         this.musicManager.playEnd();
-        const winningTeam = isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
+        const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
         setTimeout(() => {
             winningTeam.members.forEach((player) => {
                 player.victoryDance();
             });
         }, 200);
-        this.emitEvent('gameEnd', {isWinner, xp, gold});
+        this.emitEvent('gameEnd', data);
     }
 
     processScoreUpdate({score}) {

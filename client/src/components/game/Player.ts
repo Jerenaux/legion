@@ -3,11 +3,12 @@ import { CircularProgress } from "./CircularProgress";
 import { Team } from './Team';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
-import { items, getConsumableById } from '@legion/shared/Items';
+import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
-import { Target } from "@legion/shared/enums";
+import { Target, StatusEffect } from "@legion/shared/enums";
 import { Arena } from "./Arena";
 import { HUD } from "./HUD";
+import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -52,17 +53,7 @@ export class Player extends Phaser.GameObjects.Container {
     HURT_THRESHOLD = 0.5;
     team: Team;
     animationLock = false;
-    statuses: {
-        frozen: number;
-        paralyzed: number;
-        burning: number;
-        wet: number;
-        poisoned: number;
-        blind: number;
-        mute: number;
-        sleeping: number;
-        charmed: number;
-    };
+    statuses: StatusEffects;
 
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, hudScene: HUD, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
@@ -84,15 +75,11 @@ export class Player extends Phaser.GameObjects.Container {
         this.num = num;
 
         this.statuses = {
-            frozen: 0,
-            paralyzed: 0,
-            burning: 0,
-            wet: 0,
-            poisoned: 0,
-            blind: 0,
-            mute: 0,
-            sleeping: 0,
-            charmed: 0
+            [StatusEffect.FREEZE]: 0,
+            [StatusEffect.PARALYZE]: 0,
+            [StatusEffect.POISON]: 0,
+            [StatusEffect.BURN]: 0,
+            [StatusEffect.SLEEP]: 0,
         };
 
         this.baseSquare = scene.add.graphics().setAlpha(0.6);
@@ -165,7 +152,7 @@ export class Player extends Phaser.GameObjects.Container {
         scene.time.delayedCall(750, this.makeEntrance, [], this);
     }
 
-    getProps() {
+    getProps(): PlayerProps {
         return {
             name: this.name,
             number: this.num,
@@ -179,6 +166,7 @@ export class Player extends Phaser.GameObjects.Container {
             spells: this.spells,
             items: this.inventory,
             casting: this.casting,
+            statuses: this.statuses,
           }
     }
 
@@ -191,8 +179,12 @@ export class Player extends Phaser.GameObjects.Container {
         return this.hp > 0;
     }
 
+    isFrozen() {
+        return this.statuses[StatusEffect.FREEZE] > 0;
+    }
+
     isParalyzed() {
-        return this.statuses.paralyzed || this.statuses.frozen;
+        return (this.statuses[StatusEffect.PARALYZE] > 0) || this.isFrozen();
     }
 
     canAct() {
@@ -209,9 +201,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     handleAnimationComplete() {
-        if (this.statuses.frozen) {
-            return;
-        }
+        if (this.isFrozen()) return;
         this.playAnim(this.getIdleAnim());
     }
 
@@ -224,7 +214,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.sprite.removeListener('animationcomplete', this.handleAnimationComplete);
         this.sprite.anims.stop();
 
-        if (this.statuses.frozen) {
+        if (this.isFrozen()) {
             this.animationLock = false;
             return;
         }
@@ -633,24 +623,24 @@ export class Player extends Phaser.GameObjects.Container {
     setFrozen(duration) {
         if (duration != 0) 
         {
-            this.statuses.frozen = duration;   
+            this.statuses[StatusEffect.FREEZE] = duration;   
             this.sprite.anims.stop();   
             this.cooldownTween?.stop();
         } else {
-            this.statuses.frozen = 0;
+            this.statuses[StatusEffect.FREEZE] = 0;
             this.playAnim(this.getIdleAnim());
         }   
     }
 
     setParalyzed(duration) {
         if (duration != 0) {
-            this.statuses.paralyzed = duration;
+            this.statuses[StatusEffect.PARALYZE] = duration;
             this.sprite.anims.stop();
             this.cooldownTween?.stop();
             this.statusSprite.setVisible(true);
             this.statusSprite.anims.play('paralyzed');
         } else {
-            this.statuses.paralyzed = 0;
+            this.statuses[StatusEffect.PARALYZE] = 0;
             this.statusSprite.anims.stop();
             this.statusSprite.setVisible(false);
             this.playAnim(this.getIdleAnim());
