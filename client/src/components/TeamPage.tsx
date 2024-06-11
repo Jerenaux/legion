@@ -9,7 +9,7 @@ import Skeleton from 'react-loading-skeleton';
 
 import { apiFetch } from '../services/apiService';
 import { errorToast, playSoundEffect } from './utils';
-import TeamContentCard from './teamContentCard/TeamContentCard';
+import CharacterSheet from './characterSheet/CharacterSheet';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
 import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/shared/enums';
 import { getEquipmentById } from '@legion/shared/Equipments';
@@ -213,7 +213,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         <div className="team-content">
           <Roster />
           <div className="character-inventory-container">
-            {this.state.character_sheet_data ? <TeamContentCard 
+            {this.state.character_sheet_data ? <CharacterSheet 
               characterId={this.state.character_id} 
               characterData={this.state.character_sheet_data} 
               itemEffects={this.state.item_effect}

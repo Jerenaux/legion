@@ -1,7 +1,5 @@
-// TeamContentCard.tsx
 import { h, Component } from 'preact';
-import { useMemo } from 'react';
-import './TeamContentCard.style.css';
+import './CharacterSheet.style.css';
 import { classEnumToString, mapFrameToCoordinates } from '../utils';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
@@ -24,7 +22,7 @@ interface InventoryRequestPayload {
     updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
 }
 
-class TeamContentCard extends Component<InventoryRequestPayload> {
+class CharacterSheet extends Component<InventoryRequestPayload> {
     state = {
         characterItems: [],
         itemIndex: 0,
@@ -295,4 +293,4 @@ class TeamContentCard extends Component<InventoryRequestPayload> {
     }
 }
 
-export default TeamContentCard;
+export default CharacterSheet;
