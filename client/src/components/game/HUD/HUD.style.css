@@ -1107,6 +1107,29 @@
   bottom: 18px;
 }
 
+.spell_target_container {
+  z-index: 10;
+}
+
+.spell_target {
+  background-color: #1c1f25;
+  border: 1px solid #3c616c;
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.spell_target .equip-dialog-image {
+  width: 34px;
+  height: 36px;
+}
+
+.spell_target .dialog-spell-info {
+  gap: 2px;
+}
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);
