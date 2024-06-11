@@ -71,16 +71,17 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         return (
             <div className="endgame">
                 <div className="defeat_title" style={this.endGameTitleBg()}>
-                    <img src={`/game_end/${this.props.isWinner ? 'Victory' : 'defeat'}.png`} alt="End Title" />
+                    <img className="defeat_title_bg" src={`/game_end/${this.props.isWinner ? 'Victory' : 'defeat'}.png`} alt="End Title" />
+                    {this.props.isWinner && <img className="defeat_title_effect" src="/game_end/S+.png"  alt="" />}
                 </div>
                 <div className="endgame_score_bg">
                     <div className="flex items_center gap_4">
                         <img src="/game_end/XP_icon.png" alt="XP" />
-                        <span><CountUp end={this.state.finalXp} decimal=',' decimals={3} duration={Math.min(this.state.finalXp/100, 2)} /></span>
+                        <span><CountUp end={this.state.finalXp} decimal=',' decimals={3} duration={Math.min(this.state.finalXp / 100, 2)} /></span>
                     </div>
                     <div className="flex items_center gap_4">
                         <img src="/gold_icon.png" alt="XP" />
-                        <span><CountUp end={this.state.finalGold} duration={Math.min(this.state.finalGold/100, 2)} /></span>
+                        <span><CountUp end={this.state.finalGold} duration={Math.min(this.state.finalGold / 100, 2)} /></span>
                     </div>
                 </div>
                 <div className="flex flex_wrap gap_16 justify_center items_center max_w_lg" style={{ padding: '36px 48px' }}>
@@ -113,7 +114,23 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 {!this.props.isWinner && <div className="endgame_leave" onClick={this.closeGame}>
                     <span>Leave</span>
                 </div>}
-                {this.props.isWinner && <div className="light_streak_container">
+
+                {this.props.isWinner && <div className="endgame_rewards_container">
+                    <div className="endgame_rewards_heading_container">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
+
+                        <p className="endgame_rewards_heading">Rewards</p>
+                        
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
+                    </div>
+                    <div className="flex items_center justify_center gap_4 endgame_rewards_items">
+                        {Array.from({ length: 10 }, (_, idx) => (
+                            <div className="streak_gold_list"></div>
+                        ))}
+                    </div>
+                </div>}
+
+                {/* {this.props.isWinner && <div className="light_streak_container">
                     <div className="light_streak" style={{width: width * 0.5}}>
                         <Confetti
                             width={width * 0.5}
@@ -134,7 +151,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                             <div className="streak_confirm_btn"><span>Confirm</span></div>
                         </div>
                     </div>
-                </div>}
+                </div>} */}
             </div>
         );
     }
