@@ -93,11 +93,11 @@ export const RarityColor = [
 ]
 
 export enum StatusEffect {
-    FREEZE,
-    BURN,
-    POISON,
-    SLEEP,
-    PARALYZE
+    FREEZE = "Freeze",
+    BURN = "Burn",
+    POISON = "Poison",
+    SLEEP = "Sleep",
+    PARALYZE = "Paralyze",
 }
 
 export const equipmentFields = ["weapon", "helmet", "armor", "belt", "gloves",

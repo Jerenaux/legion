@@ -616,8 +616,9 @@ export class Player extends Phaser.GameObjects.Container {
 
     setStatuses(statuses) {
         if (!this.isAlive()) return;
-        this.setFrozen(statuses.frozen);
-        this.setParalyzed(statuses.paralyzed);
+        this.setFrozen(statuses[StatusEffect.FREEZE]);
+        this.setParalyzed(statuses[StatusEffect.PARALYZE]);
+        this.arena.emitEvent('statusesChange', {num: this.num})
     }
 
     setFrozen(duration) {
