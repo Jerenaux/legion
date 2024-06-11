@@ -76,11 +76,11 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 <div className="endgame_score_bg">
                     <div className="flex items_center gap_4">
                         <img src="/game_end/XP_icon.png" alt="XP" />
-                        <span><CountUp end={this.state.finalXp} decimal=',' decimals={3} duration={5} /></span>
+                        <span><CountUp end={this.state.finalXp} decimal=',' decimals={3} duration={Math.min(this.state.finalXp/100, 2)} /></span>
                     </div>
                     <div className="flex items_center gap_4">
                         <img src="/gold_icon.png" alt="XP" />
-                        <span><CountUp end={this.state.finalGold} duration={5} /></span>
+                        <span><CountUp end={this.state.finalGold} duration={Math.min(this.state.finalGold/100, 2)} /></span>
                     </div>
                 </div>
                 <div className="flex flex_wrap gap_16 justify_center items_center max_w_lg" style={{ padding: '36px 48px' }}>
