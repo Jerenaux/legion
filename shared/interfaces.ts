@@ -234,8 +234,10 @@ export interface PlayerNetworkData {
     x: number;
     y: number;
     hp: number;
+    maxHP: number;
     statuses: any;
     mp?: number;
+    maxMP?: number;
     distance?: number;
     cooldown?: number;
     inventory?: number[];
@@ -263,6 +265,7 @@ export interface GameData {
     },
     player: GamePlayerData,
     opponent: GamePlayerData,
+    terrain: TerrainUpdate[],
 }
 
 export interface PlayerProps {

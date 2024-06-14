@@ -83,11 +83,13 @@ export class ServerPlayer {
             frame: this.frame,
             x: this.x,
             y: this.y,
-            hp: this.maxHP,
+            hp: this.hp,
+            maxHP: this.maxHP,
             statuses: this.statuses,
         }
         if (includePersonal) {
-            data['mp'] = this.maxMP;
+            data['mp'] = this.mp;
+            data['maxMP'] = this.maxMP;
             data['distance'] = this.distance;
             data['cooldown'] = this.cooldown;
             data['inventory'] = this.getNetworkInventory();

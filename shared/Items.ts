@@ -155,6 +155,5 @@ export function getRandomConsumableByRarity(rarity: number): BaseItem {
 }
 
 export function getStarterConsumables(effort: number):number[] {
-    console.log(`Items for effort ${effort}: ${items.filter(item => item.effort <= effort)}`);
     return items.filter(item => item.effort <= effort).map(item => item.id);
 }

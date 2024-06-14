@@ -58,7 +58,7 @@ export class Player extends Phaser.GameObjects.Container {
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, hudScene: HUD, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
         num: number, texture: string, isPlayer: boolean,
-        hp: number, mp: number
+        hp: number, maxHP: number, mp: number, maxMP: number,
         ) {
         super(scene, x, y);
         this.scene = scene;
@@ -70,7 +70,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.name = name;
         this.isPlayer = isPlayer;
         this.distance = 2;
-        this.maxHP = hp;
+        this.maxHP = maxHP;
         this.hp = hp;
         this.num = num;
 
@@ -110,17 +110,18 @@ export class Player extends Phaser.GameObjects.Container {
 
             this.MPBar = new HealthBar(scene, 0, -40, 0x0099ff);
             this.add(this.MPBar);
-            this.maxMP = mp;
+            this.maxMP = maxMP;
             this.mp = mp;
 
             this.moveTo(this.numKey, 3);
             this.moveTo(this.sprite, 2);
 
+            this.setMP(mp);
         } else {
             this.baseSquare.lineStyle(4, 0xff0000); // red color
         }
 
-        if (this.x < this.arena.gridWidth/2) this.sprite.flipX = true;
+        if (gridX < this.arena.gridWidth/2) this.sprite.flipX = true;
 
         this.healthBar = new HealthBar(scene, 0, -50, 0x00ff08);
         this.add(this.healthBar);
@@ -148,8 +149,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
 
-        // Delay by X seconds
-        scene.time.delayedCall(750, this.makeEntrance, [], this);
+        this.setHP(hp);
     }
 
     getProps(): PlayerProps {

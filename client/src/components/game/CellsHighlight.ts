@@ -23,6 +23,7 @@ export class CellsHighlight extends Phaser.GameObjects.Graphics {
         this.lastX = -1;
         this.lastY = -1;
         this.setNormalMode();
+        this.setDepth(10);
         scene.add.existing(this);
     }
 

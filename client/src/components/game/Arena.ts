@@ -10,7 +10,7 @@ import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain } from "@legion/shared/enums";
-import { TerrainUpdate, GameData, OutcomeData } from '@legion/shared/interfaces';
+import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
 
 const LOCAL_ANIMATION_SCALE = 3;
 export class Arena extends Phaser.Scene
@@ -259,32 +259,35 @@ export class Arena extends Phaser.Scene
         return (x < skip || x >= this.gridWidth - skip);
     }
 
-    floatTiles(startX, startY) {
-
+    floatTiles(duration) {
+        const startX = this.gridCorners.startX;
+        const startY = this.gridCorners.startY;
         // Loop over each row
         for (let y = 0; y < this.gridHeight; y++) {
             // In each row, loop over each column
             for (let x = 0; x < this.gridWidth; x++) {
                 
                 if (this.isSkip(x, y)) continue;
-                this.floatOneTile(x, y, startX, startY);
+                this.floatOneTile(x, y, startX, startY, duration);
             }
         }
 
-        for (let x = -5; x < 1; x++) {
-            for (let y = 1; y < 8; y++) {
-                this.floatOneTile(x, y, startX, startY, true);
+        if (duration > 0) {
+            for (let x = -5; x < 1; x++) {
+                for (let y = 1; y < 8; y++) {
+                    this.floatOneTile(x, y, startX, startY, duration, true);
+                }
             }
-        }
 
-        for (let x = 19; x < 26; x++) {
-            for (let y = 1; y < 8; y++) {
-                this.floatOneTile(x, y, startX, startY, true);
+            for (let x = 19; x < 26; x++) {
+                for (let y = 1; y < 8; y++) {
+                    this.floatOneTile(x, y, startX, startY, duration, true);
+                }
             }
         }
     }
 
-    floatOneTile(x, y, startX, startY, yoyo = false) {
+    floatOneTile(x, y, startX, startY, duration, yoyo = false) {
         const tileWeights = {
             1: 15,
             2: 1,
@@ -312,13 +315,14 @@ export class Arena extends Phaser.Scene
             tileSprite.setFlipX(true);
         }
     
+        const delay = duration > 0 ? Math.random() * 500 : 0;
         // Tween the tile to its intended position
         this.tweens.add({
             targets: tileSprite,
             y: startY + y * this.tileSize,
-            duration: 1000, // duration of the tween in milliseconds
+            duration,
             ease: 'Power2', // easing function to make the movement smooth
-            delay: Math.random() * 500, // random delay to make the tiles fall at different times
+            delay,
             yoyo, // Enable yoyo to make the tween reverse after completing
             hold: yoyo ? 2000 : 0, // Holds the end position before reversing (optional, adjust as needed)
             repeat: 0, // No repeats, just go there and back again
@@ -374,14 +378,13 @@ export class Arena extends Phaser.Scene
         const startX = (gameWidth - totalWidth) / 2;
         const startY = (gameHeight - totalHeight) / 2 + verticalOffset;
 
-        this.floatTiles(startX, startY);
-
         this.gridCorners = {
             startX,
             startY,
         };
 
         this.cellsHighlight = new CellsHighlight(this, this.gridWidth, this.gridHeight, this.tileSize, this.gridCorners).setDepth(1);
+        this.cellsHighlight.setDepth(2);
 
          // Add a pointer move handler to highlight the hovered tile
          this.input.on('pointermove', function (pointer) {
@@ -1007,18 +1010,20 @@ export class Arena extends Phaser.Scene
         };
     }
 
-    placeCharacters(data, isPlayer, team: Team) {
-        data.forEach((character, i) => {
+    placeCharacters(data: PlayerNetworkData[], isPlayer: boolean, team: Team, isReconnect = false) {
+        data.forEach((character: PlayerNetworkData, i) => {
 
-            let offset;
-            if (character.x < this.gridWidth/2) offset = -Math.floor(this.gridWidth/2);
-            if (character.x > this.gridWidth/2) offset = Math.floor(this.gridWidth/2);
+            let offset = 0;
+            if (!isReconnect) {
+                if (character.x < this.gridWidth/2) offset = -Math.floor(this.gridWidth/2);
+                if (character.x > this.gridWidth/2) offset = Math.floor(this.gridWidth/2);
+            }
             const {x, y} = this.gridToPixelCoords(character.x + offset, character.y);
 
             const player = new Player(
                 this, this, this.HUD, team, character.name, character.x, character.y, x, y,
                 i + 1, character.frame, isPlayer,
-                character.hp, character.mp
+                character.hp, character.maxHP, character.mp, character.maxMP,
                 );
             
             if (isPlayer) {
@@ -1026,6 +1031,10 @@ export class Arena extends Phaser.Scene
                 player.setCooldown(character.cooldown);
                 player.setInventory(character.inventory);
                 player.setSpells(character.spells);
+            }
+
+            if (!isReconnect) {
+                this.time.delayedCall(750, player.makeEntrance, [], player);
             }
 
             this.gridMap.set(serializeCoords(character.x, character.y), player);
@@ -1152,6 +1161,9 @@ export class Arena extends Phaser.Scene
 
     initializeGame(data: GameData): void {
         console.log(data);
+
+        const isReconnect = data.general.reconnect;
+
         this.createHUD(); 
         this.playerTeamId = data.player.teamId;
 
@@ -1165,14 +1177,18 @@ export class Arena extends Phaser.Scene
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
 
-        this.placeCharacters(data.player.team, true, this.teamsMap.get(data.player.teamId));
-        this.placeCharacters(data.opponent.team, false, this.teamsMap.get(data.opponent.teamId));
+        this.placeCharacters(data.player.team, true, this.teamsMap.get(data.player.teamId), isReconnect);
+        this.placeCharacters(data.opponent.team, false, this.teamsMap.get(data.opponent.teamId), isReconnect);
 
-        if (data.general.reconnect) {
+        this.processTerrain(data.terrain);
+
+        const tilesDelay = isReconnect ? 0 : 1000;
+        this.floatTiles(tilesDelay);
+
+        if (isReconnect) {
             this.updateOverview();
         } else {
             const delay = 3000;
-            setTimeout(this.startAnimation.bind(this), delay);
             setTimeout(this.updateOverview.bind(this), delay + 1000);
         }
 

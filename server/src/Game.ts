@@ -191,7 +191,11 @@ export abstract class Game
                     playerAvatar: 'avatar',
                 },
                 team: this.teams.get(otherTeamId)?.getMembers().map(player => player.getPlacementData())
-            }
+            },
+            terrain: Array.from(this.terrainMap).map(([key, value]) => {
+                const [x, y] = key.split(',').map(Number);
+                return {x, y, terrain: value};
+            }),
         }
         return data;
     }
