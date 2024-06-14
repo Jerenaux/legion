@@ -7,7 +7,7 @@ import {uniqueNamesGenerator, adjectives, colors, animals}
 import {selectStatToLevelUp, increaseStat} from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterSpells } from "./Spells";
-
+import { getStarterConsumables } from "./Items";
 export class NewCharacter {
   name: string;
   characterClass: Class;
@@ -24,7 +24,7 @@ export class NewCharacter {
   equipment: Equipment;
   skills: number[];
 
-  constructor(characterClass = Class.RANDOM, level = 1, unicornBonus = false) {
+  constructor(characterClass = Class.RANDOM, level = 1, unicornBonus = false, isAI = false) {
     // console.log(`Creating new character of class ${Class[characterClass]} and level ${level}`);
     const nameOpts = {dictionaries: [adjectives, colors, animals], length: 2};
 
@@ -85,6 +85,10 @@ export class NewCharacter {
 
     for (let i = 1; i < this.level; i++) {
       this.lvlUp();
+    }
+
+    if (isAI) {
+      this.setUpInventory();
     }
   }
 
@@ -248,6 +252,10 @@ export class NewCharacter {
         return [];
       }
       return [];
+  }
+
+  setUpInventory() {
+    this.inventory = getStarterConsumables(this.level/2);
   }
 
   getPrice(): number {

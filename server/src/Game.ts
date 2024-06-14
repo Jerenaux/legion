@@ -322,7 +322,6 @@ export abstract class Game
             console.log(`Invalid move from ${player.x},${player.y} to ${tile.x},${tile.y}!`);
             return;
         }
-        console.log(`Remaining cooldown: ${player.cooldown}`);
         if (!player.canAct() || !player.canMoveTo(tile.x, tile.y)) {
             console.log(`Player ${num} cannot move to ${tile.x},${tile.y}!`);
             return;
@@ -945,7 +944,6 @@ export abstract class Game
     }
 
     async saveInventoryToDb(token: string, characterId: string, inventory: number[]) {
-        console.log('Saving inventory to DB');
         try {
             await apiFetch(
                 'inventorySave',

@@ -51,6 +51,7 @@ export class ServerPlayer {
     entranceTime: number = 2.5;
     statuses: StatusEffects;
     interactedTargets: Set<ServerPlayer> = new Set();
+    isAI = false;
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
         this.num = num;
@@ -249,7 +250,7 @@ export class ServerPlayer {
         return data.stats[stat] + data.equipment_bonuses[stat] + data.sp_bonuses[stat];
     }
 
-    setUpCharacter(data) {
+    setUpCharacter(data, isAI = false) {
         this.setHP(this.getStatValue(data, "hp"));
         this.setMP(this.getStatValue(data, "mp"));
         this.setStat(Stat.ATK, this.getStatValue(data, "atk"));
@@ -261,6 +262,7 @@ export class ServerPlayer {
         this.level = data.level;
         this.xp = data.xp;
         this.dbId = data.id;
+        this.isAI = isAI;
     }
 
     setStat(stat: Stat, value: number) {
@@ -346,7 +348,9 @@ export class ServerPlayer {
             return;
         }
         this.inventory.splice(index, 1);
-        this.team!.game.saveInventoryToDb(this.team!.getFirebaseToken(), this.dbId, this.inventory.map(item => item.id));
+        if (!this.isAI) {
+            this.team!.game.saveInventoryToDb(this.team!.getFirebaseToken(), this.dbId, this.inventory.map(item => item.id));
+        }
     }
 
     getItemAtIndex(index: number): Item | null {

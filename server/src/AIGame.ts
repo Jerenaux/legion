@@ -24,6 +24,7 @@ export class AIGame extends Game {
     }
 
     createAITeam(team: Team, nb: number, levels?: number[]) {
+        console.log(`Creating AI team with ${nb} members...`);
         const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
         if (!levels) {
             // Populate levels array with as many random values between 1 and 10 as needed
@@ -34,11 +35,11 @@ export class AIGame extends Game {
         }
 
         for (let i = 0; i < nb; i++) {
-            const character = new NewCharacter(classes[i], levels[i]).getCharacterData();
+            const character = new NewCharacter(classes[i], levels[i], false, true).getCharacterData();
             const position = this.getPosition(i, true);
             const newPlayer = new AIServerPlayer(i + 1, character.name, character.portrait, position.x, position.y)
             newPlayer.setTeam(team!);
-            newPlayer.setUpCharacter(character);
+            newPlayer.setUpCharacter(character, true);
             team?.addMember(newPlayer);
         }
 

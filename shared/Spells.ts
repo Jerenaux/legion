@@ -225,7 +225,7 @@ export function getSpellById(spellId: number): BaseSpell | undefined {
     return spells.find(spell => spell.id === spellId)!;
 }
 
-// export function getRandomSpellByRarity(rarity: number): BaseSpell {
-//     const filtered = spells.filter(item => item.rarity === rarity);
-//     return filtered[Math.floor(Math.random() * filtered.length)];
-// }
+export function getRandomSpellByRarity(rarity: number): BaseSpell {
+    const filtered = spells.filter(item => item.rarity === rarity);
+    return filtered[Math.floor(Math.random() * filtered.length)];
+}
