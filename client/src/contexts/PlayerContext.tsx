@@ -3,6 +3,7 @@ import { DailyLootAllData } from '@legion/shared/interfaces';
 
 export interface PlayerContextData {
   name: string;
+  avatar: string;
   lvl: number;
   gold: number;
   elo: number;
@@ -21,6 +22,7 @@ export const PlayerContext = createContext<{
 }>({
   player: {
     name: '',
+    avatar: '0',
     lvl: 0,
     gold: 0,
     elo: 0,

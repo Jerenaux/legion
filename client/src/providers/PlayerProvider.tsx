@@ -11,6 +11,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.state = {
         player: {
           name: '',
+          avatar: '0',
           lvl: 0,
           gold: 0,
           elo: 0,
@@ -35,6 +36,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           this.setState({ 
               player: {
                   name: data.name,
+                  avatar: data.avatar,
                   lvl: data.lvl,
                   gold: data.gold,
                   elo: data.elo,

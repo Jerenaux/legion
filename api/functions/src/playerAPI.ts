@@ -20,10 +20,18 @@ const chestsDelays = {
   [ChestColor.GOLD]: 24*60*60,
 };
 
+function selectRandomAvatar() {
+  // Return a random value betweem 1 and 31 included
+  return Math.floor(Math.random() * 31) + 1;
+}
+
 function generateName() {
   // limit names to length of 16 characters
-  const dicts = {dictionaries: [adjectives, colors, animals]};
-  const base = uniqueNamesGenerator(dicts);
+  const options = {
+    dictionaries: [adjectives, colors, animals],
+    length: 2,
+  };
+  const base = uniqueNamesGenerator(options);
   return base.length > 16 ? base.slice(0, 16) : base;
 }
 
@@ -36,6 +44,7 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
   // Define the character data structure
   const playerData = {
     name: generateName(),
+    avatar: selectRandomAvatar(),
     gold: 120,
     carrying_capacity: 40,
     inventory: {
@@ -137,7 +146,7 @@ export const getPlayerData = onRequest((request, response) => {
           lvl: playerData.lvl,
           name: playerData.name,
           teamName: "teamName",
-          avatar: "avatar",
+          avatar: playerData.avatar,
           league: playerData.league,
           rank: 1,
           dailyloot: playerData.dailyloot,
