@@ -242,6 +242,9 @@ export interface PlayerNetworkData {
     cooldown?: number;
     inventory?: number[];
     spells?: number[];
+    xp?: number;
+    class: Class;
+    level: number;
 }
 
 export interface PlayerProfileData {
@@ -286,4 +289,24 @@ export interface PlayerProps {
 
 export type StatusEffects = {
     [key in StatusEffect]: number;
+}
+
+export interface TeamMember {
+  texture: string;
+  name: string;
+  hp: number;
+  maxHP: number;
+  mp: number;
+  maxMP: number;
+  isAlive: boolean;
+  isPlayer: boolean;
+  cooldown: number;
+  totalCooldown: number;
+  class: Class;
+}
+
+export interface TeamOverview {
+    members: TeamMember[];
+    player: PlayerProfileData;
+    score: number;
 }

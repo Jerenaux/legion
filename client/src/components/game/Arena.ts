@@ -1022,8 +1022,9 @@ export class Arena extends Phaser.Scene
 
             const player = new Player(
                 this, this, this.HUD, team, character.name, character.x, character.y, x, y,
-                i + 1, character.frame, isPlayer,
+                i + 1, character.frame, isPlayer, character.class,
                 character.hp, character.maxHP, character.mp, character.maxMP,
+                character.level, character.xp,
                 );
             
             if (isPlayer) {

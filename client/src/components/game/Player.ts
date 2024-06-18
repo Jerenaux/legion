@@ -5,7 +5,7 @@ import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
-import { Target, StatusEffect } from "@legion/shared/enums";
+import { Target, StatusEffect, Class } from "@legion/shared/enums";
 import { Arena } from "./Arena";
 import { HUD } from "./HUD";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
@@ -54,11 +54,14 @@ export class Player extends Phaser.GameObjects.Container {
     team: Team;
     animationLock = false;
     statuses: StatusEffects;
+    class: Class;
+    xp: number;
+    level: number;
 
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, hudScene: HUD, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
-        num: number, texture: string, isPlayer: boolean,
-        hp: number, maxHP: number, mp: number, maxMP: number,
+        num: number, texture: string, isPlayer: boolean, characterClass: Class,
+        hp: number, maxHP: number, mp: number, maxMP: number, level: number, xp: number,
         ) {
         super(scene, x, y);
         this.scene = scene;
@@ -73,6 +76,9 @@ export class Player extends Phaser.GameObjects.Container {
         this.maxHP = maxHP;
         this.hp = hp;
         this.num = num;
+        this.class = characterClass;
+        this.xp = xp;
+        this.level = level;
 
         this.statuses = {
             [StatusEffect.FREEZE]: 0,
@@ -152,6 +158,8 @@ export class Player extends Phaser.GameObjects.Container {
         this.setHP(hp);
     }
 
+    // Returns the fields needed to display the top screen Player box in-game.
+    // For the fields needed for the team overviews on each side, see Team.ts:getOverview()
     getProps(): PlayerProps {
         return {
             name: this.name,

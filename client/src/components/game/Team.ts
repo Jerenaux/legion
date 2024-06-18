@@ -1,6 +1,6 @@
 import { Player } from './Player';
 import { Arena } from './Arena';
-import { PlayerProfileData} from '@legion/shared/interfaces';
+import { PlayerProfileData, TeamOverview, TeamMember } from '@legion/shared/interfaces';
 
 
 export class Team {
@@ -64,7 +64,7 @@ export class Team {
         this.score = score;
     }
 
-    getOverview() {
+    getOverview(): TeamOverview {
         const members = [];
         this.members.forEach(member => {
             members.push({
@@ -78,17 +78,21 @@ export class Team {
                 isPlayer: member.isPlayer,
                 cooldown: member.cooldownDuration,
                 totalCooldown: member.totalCooldownDuration,
-                statuses: member.statuses
-            });
+                statuses: member.statuses,
+                class: member.class,
+                xp: member.xp,
+                level: member.level,
+            } as TeamMember);
         });
 
         return {
             members,
             player: {
-                name: this.playerName,
-                avatar: this.playerAvatar,
-                level: this.playerLevel,
-                rank: this.playerRank
+                teamName: this.teamName,
+                playerName: this.playerName,
+                playerAvatar: this.playerAvatar,
+                playerLevel: this.playerLevel,
+                playerRank: this.playerRank
             },
             score: this.score
         };

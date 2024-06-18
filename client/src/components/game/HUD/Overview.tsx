@@ -1,21 +1,9 @@
 // Overview.tsx
 import { h, Component } from 'preact';
-
-interface Member {
-  texture: string;
-  name: string;
-  hp: number;
-  maxHP: number;
-  mp: number;
-  maxMP: number;
-  isAlive: boolean;
-  isPlayer: boolean;
-  cooldown: number;
-  totalCooldown: number;
-}
+import { TeamMember } from "@legion/shared/interfaces";
 
 interface Props {
-  members: Member[];
+  members: TeamMember[];
   score: number;
   position: string;
 }

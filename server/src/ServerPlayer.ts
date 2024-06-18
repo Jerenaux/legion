@@ -1,7 +1,7 @@
 import { Team } from './Team';
 import { Item } from './Item';
 import { Spell } from './Spell';
-import { Stat, Terrain, StatusEffect } from "@legion/shared/enums";
+import { Stat, Terrain, StatusEffect, Class } from "@legion/shared/enums";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getXPThreshold } from '@legion/shared/levelling';
@@ -51,6 +51,7 @@ export class ServerPlayer {
     entranceTime: number = 2.5;
     statuses: StatusEffects;
     interactedTargets: Set<ServerPlayer> = new Set();
+    class: Class;
     isAI = false;
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
@@ -86,6 +87,8 @@ export class ServerPlayer {
             hp: this.hp,
             maxHP: this.maxHP,
             statuses: this.statuses,
+            class: this.class,
+            level: this.level,
         }
         if (includePersonal) {
             data['mp'] = this.mp;
@@ -94,6 +97,7 @@ export class ServerPlayer {
             data['cooldown'] = this.cooldown;
             data['inventory'] = this.getNetworkInventory();
             data['spells'] = this.getNetworkSpells();
+            data['xp'] = this.xp;
         }
         return data;
     }
@@ -263,6 +267,7 @@ export class ServerPlayer {
         this.setSpells(data.skill_slots, data.skills);
         this.level = data.level;
         this.xp = data.xp;
+        this.class = data.class;
         this.dbId = data.id;
         this.isAI = isAI;
     }

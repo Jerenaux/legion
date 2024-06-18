@@ -4,20 +4,15 @@ import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
-import { OutcomeData, PlayerProps } from "@legion/shared/interfaces";
-
-interface Team {
-  members: any[];
-  score: number;
-}
+import { OutcomeData, PlayerProps, TeamOverview } from "@legion/shared/interfaces";
 
 interface State {
   playerVisible: boolean;
   player: PlayerProps;
   clickedItem: number;
   clickedSpell: number;
-  team1: Team;
-  team2: Team;
+  team1: TeamOverview;
+  team2: TeamOverview;
   gameOver: boolean;
   isWinner: boolean;
   xpReward: number;
@@ -65,7 +60,7 @@ class GameHUD extends Component<object, State> {
     this.setState({ playerVisible: false, player: null });
   }
 
-  updateOverview = (team1: Team, team2: Team, general: any) => {
+  updateOverview = (team1: TeamOverview, team2: TeamOverview, general: any) => {
     this.setState({ team1, team2 });
     this.setState({ isTutorial: general.isTutorial, isSpectator: general.isSpectator })
   }
@@ -86,6 +81,7 @@ class GameHUD extends Component<object, State> {
 
   render() {
     const { playerVisible, player, team1, team2, isTutorial, isSpectator } = this.state;
+    console.log(team1);
     return (
       <div>
         <div className="hud-container">
