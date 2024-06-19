@@ -2,6 +2,22 @@ import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware} from "./APIsetup";
 import * as functions from "firebase-functions";
+import {League} from "@legion/shared/enums";
+
+interface APILeaderboardResponse {
+  seasonEnd: number;
+  promotionRows: number;
+  demotionRows: number;
+  ranking: LeaderboardRow[];
+}
+interface LeaderboardRow {
+  rank: number;
+  player: string;
+  elo: number;
+  wins: number;
+  losses: number;
+  winsRatio: string;
+}
 
 export const fetchLeaderboard = onRequest((request, response) => {
   logger.info("Fetching leaderboard");
@@ -9,10 +25,44 @@ export const fetchLeaderboard = onRequest((request, response) => {
 
   corsMiddleware(request, response, async () => {
     try {
-      const docSnap = await db.collection("players").get();
+      const tabId = parseInt(request.query.tab as string);
+      console.log(`Fetching leaderboard for tab ${tabId}`);
+      if (typeof tabId !== "number" || isNaN(tabId)) {
+        throw new Error("Invalid tab ID");
+      }
+      const isAllTime = tabId === 5;
+
+      let seasonEnd = -1;
+      let promotionRows = 0;
+      let demotionRows = 0;
+
+      if (!isAllTime) {
+        // Compute number of seconds until end of the week
+        const now = new Date();
+        const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (7 - now.getDay()), 23, 59, 59);
+        seasonEnd = Math.floor(endOfWeek.getTime() / 1000);
+      }
+
+      const leaderboard: APILeaderboardResponse = {
+        seasonEnd,
+        promotionRows,
+        demotionRows,
+        ranking: [],
+      };
+
+      const query = isAllTime ? db.collection("players") : db.collection("players").where("league", "==", tabId);
+
+      const docSnap = await query.get();
       const players = docSnap.docs.map((doc) => doc.data());
+
+      if (!isAllTime) {
+        promotionRows = Math.ceil(players.length * 0.2);
+        demotionRows = Math.floor(players.length * 0.2);
+      }
+
       const sortedPlayers = players.sort((a, b) => b.elo - a.elo);
-      const leaderboard = sortedPlayers.map((player, index) => {
+
+      leaderboard.ranking = sortedPlayers.map((player, index) => {
         const denominator = player.wins + player.losses;
         let winsRatio = 0;
         if (denominator === 0) {
@@ -21,7 +71,7 @@ export const fetchLeaderboard = onRequest((request, response) => {
           winsRatio = Math.round((player.wins/denominator)*100);
         }
         return {
-          rank: index + 1,
+          rank: isAllTime ? index + 1 : player.rank,
           player: player.name,
           elo: player.elo,
           wins: player.wins,
@@ -74,3 +124,47 @@ export const leaguesUpdate = functions.pubsub.schedule("every 5 seconds")
     }
   });
 
+  export const updateRanksOnEloChange = functions.firestore
+  .document("players/{playerId}")
+  .onUpdate((change, context) => {
+      console.log("Updating ranks on ELO change");
+      const newValue = change.after.data();
+      const previousValue = change.before.data();
+
+      // Check if ELO has changed
+      if (newValue.elo !== previousValue.elo) {
+          const league = newValue.league;
+          return updateRanksForLeague(league);
+      }
+      return null;
+});
+
+export const updateRanksOnPlayerCreation = functions.firestore
+  .document("players/{playerId}")
+  .onCreate((snap, context) => {
+      console.log("New player created, updating ranks");
+      const newValue = snap.data();
+      const league = newValue.league;
+      return updateRanksForLeague(league);
+});
+
+
+async function updateRanksForLeague(league: League) {
+  console.log(`Updating ranks for league ${league}`);
+  const db = admin.firestore();
+  const playersSnapshot = await db.collection("players")
+      .where("league", "==", league)
+      .orderBy("elo", "desc")
+      .get();
+
+  const batch = db.batch();
+  let rank = 1;
+
+  playersSnapshot.forEach((doc) => {
+      const playerRef = db.collection("players").doc(doc.id);
+      batch.update(playerRef, {rank: rank});
+      rank++;
+  });
+
+  return batch.commit();
+}

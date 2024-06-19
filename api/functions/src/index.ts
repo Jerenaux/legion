@@ -1,13 +1,13 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
-import {fetchLeaderboard, leaguesUpdate} from "./leaderboardsAPI";
+import {fetchLeaderboard, leaguesUpdate, updateRanksOnEloChange,
+  updateRanksOnPlayerCreation} from "./leaderboardsAPI";
 import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getReward}
   from "./inventoryAPI";
 import {rosterData, characterData, rewardsUpdate,
   generateOnSaleCharacters, listOnSaleCharacters,
-  deleteOnSaleCharacters, purchaseCharacter, spendSP, updateRanksOnEloChange,
-  updateRanksOnPlayerCreation} from "./characterAPI";
+  deleteOnSaleCharacters, purchaseCharacter, spendSP} from "./characterAPI";
 import {createPlayer, getPlayerData, queuingData,
   saveGoldReward, claimChest} from "./playerAPI";
 import {createGame, gameData} from "./gameAPI";

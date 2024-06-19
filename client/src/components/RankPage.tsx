@@ -628,7 +628,7 @@ class RankPage extends Component {
   };
 
   async componentDidMount() {
-    // const response = await axios.get(`${process.env.API_URL}/fetchLeaderboard`);
+    // const response = await axios.get(`${process.env.API_URL}/fetchLeaderboard?tab=${this.state.curr_tab}`);
     // if (response.data) {
     //   this.setState({ leaderboardData: response.data });
     // }
