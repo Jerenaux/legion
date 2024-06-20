@@ -4,7 +4,7 @@ import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
-import { CharacterUpdate, OutcomeData, PlayerProps, TeamOverview } from "@legion/shared/interfaces";
+import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamOverview } from "@legion/shared/interfaces";
 import SpectatorFooter from './SpectatorFooter';
 
 interface State {
@@ -21,6 +21,8 @@ interface State {
   characters: CharacterUpdate[];
   isTutorial: boolean;
   isSpectator: boolean;
+  grade: string;
+  chests: GameOutcomeReward[];
 }
 
 const events = new EventEmitter();
@@ -40,6 +42,8 @@ class GameHUD extends Component<object, State> {
     xpReward: 0,
     goldReward: 0,
     characters: [],
+    grade: null,
+    chests: [],
   }
 
   componentDidMount() {
@@ -69,13 +73,15 @@ class GameHUD extends Component<object, State> {
   }
 
   endGame = (data: OutcomeData) => {
-    const {isWinner, xp, gold, characters} = data;
+    const {isWinner, xp, gold, grade, chests, characters} = data;
     this.setState({ 
       gameOver: true,
       isWinner,
+      grade: grade,
       xpReward: xp,
       goldReward: gold,
       characters: characters,
+      chests: chests
     });
   }
 
@@ -96,11 +102,13 @@ class GameHUD extends Component<object, State> {
         </div>
         {team1 && <SpectatorFooter />}
         {this.state.gameOver && <Endgame 
+          members={members} 
+          grade={this.state.grade}
+          chests={this.state.chests}
           isWinner={this.state.isWinner} 
           xpReward={this.state.xpReward} 
           goldReward={this.state.goldReward} 
-          members={members} 
-          characters={this.state.characters} 
+          characters={this.state.characters}
         />}
       </div>
     );

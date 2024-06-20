@@ -3,9 +3,13 @@ import { route } from 'preact-router';
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
-import { CharacterUpdate } from '@legion/shared/interfaces';
-import { getXPThreshold } from '@legion/shared/levelling';
+import { CharacterUpdate, GameOutcomeReward } from '@legion/shared/interfaces';
 import XPCountUp from './XPCountUp';
+import ActionItem from './Action';
+import { InventoryType } from '@legion/shared/enums';
+import { BaseItem } from '@legion/shared/BaseItem';
+import { mapFrameToCoordinates } from '../../utils';
+import { RewardType } from '@legion/shared/chests';
 
 /* eslint-disable react/prefer-stateless-function */
 interface EndgameState {
@@ -14,6 +18,7 @@ interface EndgameState {
     displayGold: number;
     displayXp: number;
     countedXP: number;
+    selectedChest: GameOutcomeReward;
 }
 
 interface EndgameProps {
@@ -22,6 +27,8 @@ interface EndgameProps {
     isWinner: boolean;
     characters: CharacterUpdate[];
     members: any[];
+    grade: string;
+    chests: GameOutcomeReward[];
 }
 export class Endgame extends Component<EndgameProps, EndgameState> {
     constructor(props) {
@@ -32,6 +39,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
             displayGold: 0, // These are for display and will be incremented
             displayXp: 0,
             countedXP: 0,
+            selectedChest: null,
         };
     }
 
@@ -72,6 +80,19 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         }
     }
 
+    getBgImageUrl = (rewardType: RewardType) => {
+        switch (rewardType) {
+            case RewardType.EQUIPMENT:
+                return '/equipment.png';
+            case RewardType.SPELL:
+                return '/spells.png';
+            case RewardType.CONSUMABLES:
+                return '/consumables.png';
+            case RewardType.GOLD:
+                return '/gold_icon.png';
+            }
+    }
+
     render() {
         const [width, height] = useWindowSize()
         const { members, characters } = this.props;
@@ -80,7 +101,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
             <div className="endgame">
                 <div className="defeat_title" style={this.endGameTitleBg()}>
                     <img className="defeat_title_bg" src={`/game_end/${this.props.isWinner ? 'Victory' : 'defeat'}.png`} alt="End Title" />
-                    {this.props.isWinner && <img className="defeat_title_effect" src="/game_end/S+.png" alt="" />}
+                    {this.props.isWinner && <img className="defeat_title_effect" src={`/game_end/${this.props.grade}.png`} alt="" />}
                 </div>
                 <div className="endgame_score_bg">
                     <div className="flex items_center gap_4">
@@ -111,8 +132,10 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                     </div>
                     <div className="flex items_center justify_center gap_4 endgame_rewards_items">
-                        {Array.from({ length: 10 }, (_, idx) => (
-                            <div className="streak_gold_list"></div>
+                        {this.props.chests.map((chest, idx) => (
+                            <div key={idx} className="streak_gold_list" onClick={() => this.setState({ selectedChest: chest })}>
+                                <img src={`/shop/${chest.color}_chest.png`} alt="" />
+                            </div>
                         ))}
                     </div>
                 </div>}
@@ -121,28 +144,38 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     <span>Leave</span>
                 </div>
 
-                {/* {this.props.isWinner && <div className="light_streak_container">
-                    <div className="light_streak" style={{width: width * 0.5}}>
+                {!!this.state.selectedChest && <div className="light_streak_container">
+                    <div className="light_streak" style={{ width: width * 0.5 }}>
                         <Confetti
                             width={width * 0.5}
                             height={height}
                         />
                         <div className="light_streak_chest">
-                            <img src="/shop/gold_chest.png" alt="" />
+                            <img src={`/shop/${this.state.selectedChest.color}_chest.png`} alt="" />
                         </div>
                         <div className="light_shining_bg">
                             <img src="/game_end/shine_bg.png" alt="" />
                         </div>
                         <div className="streak_gold_list_container">
-                            {Array.from({ length: 6 }, (_, idx) => (
-                                <div className="streak_gold_list"></div>
-                            ))}
+                            {this.state.selectedChest.content.map((reward, idx) => {
+                                const coordinates = mapFrameToCoordinates(reward?.id);
+                                const backgroundImageUrl = this.getBgImageUrl(reward?.type);
+                                return (
+                                    <div key={idx} className="streak_gold_list">
+                                        <div style={{
+                                            backgroundImage: `url(${backgroundImageUrl})`,
+                                            backgroundPosition: reward.type === RewardType.GOLD ? '' : `-${coordinates.x}px -${coordinates.y}px`,
+                                            backgroundSize: reward.type === RewardType.GOLD && '84% 100%',
+                                            }}></div>
+                                    </div>
+                                )
+                            })}
                         </div>
-                        <div className="streak_cofirm_container" style={{width: width * 0.8}} onClick={this.closeGame}>
+                        <div className="streak_cofirm_container" style={{ width: width * 0.8 }} onClick={() => this.setState({ selectedChest: null })}>
                             <div className="streak_confirm_btn"><span>Confirm</span></div>
                         </div>
                     </div>
-                </div>} */}
+                </div>}
             </div>
         );
     }

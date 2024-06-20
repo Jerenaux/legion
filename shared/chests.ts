@@ -4,7 +4,7 @@ import { spells } from "./Spells";
 import { equipments } from "./Equipments";
 import { AVERAGE_GOLD_REWARD_PER_GAME } from "./config";
 
-enum RewardType {
+export enum RewardType {
     CONSUMABLES = 'consumable',
     SPELL = 'spell',
     EQUIPMENT = 'equipment',
