@@ -7,8 +7,8 @@ import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor } from '@legion/shared/enums';
 import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData } from '@legion/shared/interfaces';
-import { XP_PER_LEVEL } from '@legion/shared/levelling';
-import { AVERAGE_REWARD_PER_GAME } from '@legion/shared/economy';
+import { XP_PER_LEVEL } from '@legion/shared/config';
+import { AVERAGE_GOLD_REWARD_PER_GAME } from '@legion/shared/config';
 import { getChestContent } from '@legion/shared/chests';
 
 
@@ -899,7 +899,7 @@ export abstract class Game
       }
 
     computeTeamGold(grade: number, mode: PlayMode) {
-        let gold = AVERAGE_REWARD_PER_GAME * (grade + 0.3);
+        let gold = AVERAGE_GOLD_REWARD_PER_GAME * (grade + 0.3);
         if (mode == PlayMode.PRACTICE) gold *= 0.1; // TODO: make 0
         if (mode == PlayMode.RANKED) gold *= 1.5;
         // Add +- 5% random factor

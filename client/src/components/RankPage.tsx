@@ -29,12 +29,6 @@ const data = {
       title: "Highest audience score",
       description: "Lorem ipsum blabla"
     },
-    {
-      player: "legal_pink_iguan",
-      avatar: "...",
-      title: "Most wins",
-      description: "Lorem ipsum blabla"
-    }
   ],
   promotionRows: 2, // means, show green promotion arrows for the first 5 rows
   demotionRows: 1, // red demotion arros for last 4
