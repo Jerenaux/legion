@@ -85,7 +85,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 <div className="endgame_score_bg">
                     <div className="flex items_center gap_4">
                         <img src="/game_end/XP_icon.png" alt="XP" />
-                        <span><CountUp end={this.state.finalXp} decimal=',' decimals={3} duration={Math.min(this.state.finalXp / 100, 2)} /></span>
+                        <span><CountUp end={this.state.finalXp} duration={Math.min(this.state.finalXp / 100, 2)} /></span>
                     </div>
                     <div className="flex items_center gap_4">
                         <img src="/gold_icon.png" alt="XP" />
@@ -101,9 +101,6 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         />
                     ))}
                 </div>
-                {!this.props.isWinner && <div className="endgame_leave" onClick={this.closeGame}>
-                    <span>Leave</span>
-                </div>}
 
                 {this.props.isWinner && <div className="endgame_rewards_container">
                     <div className="endgame_rewards_heading_container">
@@ -119,6 +116,10 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         ))}
                     </div>
                 </div>}
+
+                <div className="endgame_leave" onClick={this.closeGame}>
+                    <span>Leave</span>
+                </div>
 
                 {/* {this.props.isWinner && <div className="light_streak_container">
                     <div className="light_streak" style={{width: width * 0.5}}>

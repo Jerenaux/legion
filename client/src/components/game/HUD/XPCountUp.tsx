@@ -11,7 +11,7 @@ interface CountUpProps {
 }
 
 interface CountUpState {
-    isLevelUp: boolean;
+    isLevelUp: number;
     xpCounter: number;
     totalXP: number;
 }
@@ -19,19 +19,20 @@ interface CountUpState {
 class XPCountUp extends Component<CountUpProps, CountUpState> {
     private timer: NodeJS.Timeout | null = null;
     state: CountUpState = {
-        isLevelUp: false,
+        isLevelUp: 0,
         xpCounter: 0,
         totalXP: this.props.character.xp + this.props.member.xp,
     }
 
     componentDidMount(): void {
+        const interval = Math.max(0.1, this.state.totalXP / 500);
         this.timer = setInterval(() => {
             const { member, character } = this.props;
             const maxXP = getXPThreshold(character.level);
 
             if (this.state.totalXP > maxXP && this.state.xpCounter >= maxXP) {
                 this.setState(prevState => ({ 
-                    isLevelUp: true, 
+                    isLevelUp: prevState.isLevelUp + 1, 
                     xpCounter: 0, 
                     totalXP: prevState.totalXP - maxXP 
                 }));
@@ -43,7 +44,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                 clearInterval(this.timer);
                 this.timer = null;
             } else {
-                this.setState({ xpCounter: this.state.xpCounter + 0.1 });
+                this.setState({ xpCounter: this.state.xpCounter + interval });
             }
         }, 10);
     }
@@ -62,9 +63,9 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
             <div className="endgame_character">
                 <div className="endgame_character_lvl">
                     <span className="lvl">Lv</span>
-                    <span>{member.level}</span>
+                    <span>{member.level + this.state.isLevelUp}</span>
                 </div>
-                {this.state.isLevelUp && <div className="endgame_character_lvlup">
+                {this.state.isLevelUp > 0 && <div className="endgame_character_lvlup">
                     <span>LVL UP!</span>
                 </div>}
                 <div className="endgame_character_profile">
@@ -80,7 +81,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                         <div className="flex justify_between width_full">
                             <span className="endgame_character_exp">EXP</span>
                             <span className="endgame_character_expVal">
-                                +{this.state.xpCounter.toFixed(3)}
+                                +{Math.floor(this.state.xpCounter)}
                             </span>
                         </div>
                         <div className="endgame_character_exp_bg">
