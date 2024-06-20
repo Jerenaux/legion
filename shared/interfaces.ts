@@ -285,6 +285,7 @@ export interface PlayerProps {
     items: BaseItem[];
     casting: boolean;
     statuses: StatusEffects;
+    pendingSpell: number;
 }
 
 export type StatusEffects = {

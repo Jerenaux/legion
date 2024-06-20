@@ -555,6 +555,9 @@ export class Arena extends Phaser.Scene
                 this.refreshBox();
                 this.refreshOverview();
                 break;
+            case 'pendingSpellChange':
+                this.refreshBox();
+                break;
             case 'statusesChange':
                 this.refreshBox();
                 this.refreshOverview();

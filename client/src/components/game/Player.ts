@@ -175,6 +175,7 @@ export class Player extends Phaser.GameObjects.Container {
             items: this.inventory,
             casting: this.casting,
             statuses: this.statuses,
+            pendingSpell: this.pendingSpell,
           }
     }
 
@@ -401,6 +402,7 @@ export class Player extends Phaser.GameObjects.Container {
     cancelSkill() {
         this.pendingSpell = null;
         this.arena.toggleTargetMode(false);
+        this.arena.emitEvent('pendingSpellChange');
     }
 
     useSkill(index) {
@@ -421,6 +423,7 @@ export class Player extends Phaser.GameObjects.Container {
         
         this.pendingSpell = index;
         this.arena.toggleTargetMode(true, spell.size);
+        this.arena.emitEvent('pendingSpellChange');
     }
 
     isTarget() {
