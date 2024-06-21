@@ -19,7 +19,7 @@ class UserInfoBar extends Component<BarProps> {
         </div>
         <div className="userInfoLabel">
           <span className="labelSpan">{this.props.label}</span>
-          {this.props.elo && <span className="eloSpan">{this.props.elo} <strong>elo</strong></span>}
+          {this.props.elo && <span className="eloSpan">{this.props.elo.toFixed(3)} <strong>elo</strong></span>}
         </div>
       </div>
     );

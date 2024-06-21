@@ -18,7 +18,6 @@ interface State {
   poisonCounter: number;
   frozenCounter: number;
   selectedSpell: BaseSpell;
-  backgroundPosition: string;
 }
 
 class PlayerTab extends Component<Props, State> {
@@ -33,7 +32,6 @@ class PlayerTab extends Component<Props, State> {
       clickedSpell: -1,
       poisonCounter: 25,
       frozenCounter: 15,
-      backgroundPosition: '',
       selectedSpell: null,
     };
     this.events = this.props.eventEmitter;
@@ -66,14 +64,6 @@ class PlayerTab extends Component<Props, State> {
     const stateField = type == 'item' ? 'clickedItem' : 'clickedSpell';
     this.setState({ [stateField]: index });
 
-    if (type !== 'item') {
-      const coordinates = mapFrameToCoordinates(this.props.player.spells[index]?.frame);
-      coordinates.x = -coordinates.x + 0;
-      coordinates.y = -coordinates.y + 1;
-      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
-      this.setState({ backgroundPosition, selectedSpell: this.props.player.spells[index] });
-    }
-
     setTimeout(() => {
       this.setState({ [stateField]: -1 });
     }, 1000);
@@ -81,6 +71,14 @@ class PlayerTab extends Component<Props, State> {
 
   getCooldownRatio(player: PlayerProps): number {
     return (player.maxCooldown - player.cooldown) / player.maxCooldown;
+  }
+
+  getBackgroundPosition (pendingSpellIdx: number) {
+    const coordinates = mapFrameToCoordinates(this.props.player.spells[pendingSpellIdx]?.frame);
+    coordinates.x = -coordinates.x + 0;
+    coordinates.y = -coordinates.y + 1;
+    const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
+    return backgroundPosition;
   }
 
   render(props: Props, state: State) {
@@ -185,25 +183,25 @@ class PlayerTab extends Component<Props, State> {
             </div>
           </div>
         </div>
-        {this.props.player.pendingSpell === 0 && <div className="spell_target_container">
+        {player.pendingSpell !== null && <div className="spell_target_container">
           <p className="spell_target_title">Select a target</p>
           <div className="spell_target">
             <div className="equip-dialog-image" style={{
               backgroundImage: `url(spells.png)`,
-              backgroundPosition: this.state.backgroundPosition,
+              backgroundPosition: this.getBackgroundPosition(player.pendingSpell),
             }} />
             <div className="dialog-spell-info-container">
               <div className="dialog-spell-info">
                 <img src={'/inventory/mp_icon.png'} alt="mp" />
-                <span>{this.state.selectedSpell?.cost}</span>
+                <span>{player.spells[player.pendingSpell]?.cost}</span>
               </div>
               <div className="dialog-spell-info">
                 <img src={'/inventory/cd_icon.png'} alt="cd" />
-                <span>{this.state.selectedSpell?.cooldown}s</span>
+                <span>{player.spells[player.pendingSpell]?.cooldown}s</span>
               </div>
               <div className="dialog-spell-info">
                 <img src={'/inventory/target_icon.png'} alt="target" />
-                <span>{Target[this.state.selectedSpell?.target]}</span>
+                <span>{Target[player.spells[player.pendingSpell]?.target]}</span>
               </div>
             </div>
           </div>
