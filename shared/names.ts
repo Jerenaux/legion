@@ -123,7 +123,7 @@ export const female_names = [
     'Selphie',
     'Edea',
     'Dagga',
-    'Freya',
+    'Freija',
     'Quina',
     'Eiko',
     'Yuna',

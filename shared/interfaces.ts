@@ -94,6 +94,7 @@ export interface CharacterUpdate {
 }
 export interface OutcomeData {
     isWinner: boolean;
+    rawGrade: number;
     grade: string;
     xp: number;
     gold: number;
@@ -162,6 +163,7 @@ export interface DailyLootData {
 }
 
 export interface APIPlayerData {
+    uid: string;
     gold: number;
     elo: number;
     league: number;
@@ -189,6 +191,7 @@ export interface DBPlayerData {
 }
 
 export interface TeamData {
+    playerUID: string;
     elo: number;
     lvl: number;
     playerName: string;
@@ -310,3 +313,15 @@ export interface TeamOverview {
     player: PlayerProfileData;
     score: number;
 }
+
+export interface EndGameDataResults {
+    [key: string]: {
+        audience: number;
+        score: number;
+    }
+}
+
+export interface EndGameData {
+    winner: string,
+    results: EndGameDataResults,
+  }

@@ -117,3 +117,7 @@ export enum League {
     ZENITH,
     APEX,
 }
+export enum GameStatus {
+    ONGOING,
+    COMPLETED,
+  }

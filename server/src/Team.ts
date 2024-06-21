@@ -33,6 +33,7 @@ export class Team {
         this.id = number;
         this.game = game;
         this.teamData = {
+            playerUID: '',
             elo: 0,
             lvl: 0,
             playerName: '',
@@ -138,6 +139,7 @@ export class Team {
 
 
     setPlayerData(playerData: APIPlayerData) {
+        this.teamData.playerUID = playerData.uid;
         this.teamData.elo = playerData.elo;
         this.teamData.lvl = playerData.lvl;
         this.teamData.playerName = playerData.name;

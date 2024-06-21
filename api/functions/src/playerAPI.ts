@@ -143,6 +143,7 @@ export const getPlayerData = onRequest((request, response) => {
         playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
 
         response.send({
+          uid,
           gold: playerData.gold,
           elo: playerData.elo,
           lvl: playerData.lvl,

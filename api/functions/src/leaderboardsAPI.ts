@@ -2,7 +2,7 @@ import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware} from "./APIsetup";
 import * as functions from "firebase-functions";
-import {League} from "@legion/shared/enums";
+import {League, GameStatus} from "@legion/shared/enums";
 
 interface APILeaderboardResponse {
   seasonEnd: number;
@@ -124,10 +124,9 @@ export const leaguesUpdate = functions.pubsub.schedule("every 5 seconds")
     }
   });
 
-  export const updateRanksOnEloChange = functions.firestore
+export const updateRanksOnEloChange = functions.firestore
   .document("players/{playerId}")
   .onUpdate((change, context) => {
-      console.log("Updating ranks on ELO change");
       const newValue = change.after.data();
       const previousValue = change.before.data();
 
@@ -168,3 +167,16 @@ async function updateRanksForLeague(league: League) {
 
   return batch.commit();
 }
+
+export const updateHighlights = functions.firestore
+  .document("games/{gameId}")
+  .onUpdate((change, context) => {
+      const newValue = change.after.data();
+      const previousValue = change.before.data();
+
+      // Check if ELO has changed
+      if (newValue.status == GameStatus.COMPLETED) {
+          // ...
+      }
+      return null;
+});

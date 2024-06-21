@@ -6,7 +6,7 @@ import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData } from '@legion/shared/interfaces';
+import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
 import { XP_PER_LEVEL } from '@legion/shared/config';
 import { AVERAGE_GOLD_REWARD_PER_GAME } from '@legion/shared/config';
 import { getChestContent } from '@legion/shared/chests';
@@ -295,8 +295,8 @@ export abstract class Game
         }
     }
 
-    endGame(winner: number) {
-        console.log(`Team ${winner} wins!`);
+    endGame(winnerTeamID: number) {
+        console.log(`Team ${winnerTeamID} wins!`);
         this.duration = Date.now() - this.startTime;
         this.gameOver = true;
 
@@ -304,16 +304,27 @@ export abstract class Game
             team.clearAllTimers();
         }, this);
 
+        const results = {};
+        let winnerUID;
         this.sockets.forEach(socket => {
             const team = this.socketMap.get(socket);
             const otherTeam = this.getOtherTeam(team!.id);
-            const outcomes = this.computeGameOutcomes(team, otherTeam, winner, this.duration, this.mode) as OutcomeData;
+            const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID, this.duration, this.mode) as OutcomeData;
             team.distributeXp(outcomes.xp);
             outcomes.characters = team.getCharactersDBUpdates();
             this.writeOutcomesToDb(team, outcomes);
             console.log(`Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
             socket.emit('gameEnd', outcomes);
+
+            results[team.teamData.playerUID] = {
+                audience: team.score,
+                score: outcomes.rawGrade,
+            }
+            if (team.id === winnerTeamID) {
+                winnerUID = team.teamData.playerUID;
+            }
         });
+        this.updateGameInDB(winnerUID, results);
     }
 
     setCooldown(player: ServerPlayer, cooldown: number) {
@@ -811,6 +822,7 @@ export abstract class Game
         console.log(`Game grade for team ${team.id}: ${grade}, ${this.computeLetterGrade(grade)}`);
         return {
             isWinner,
+            rawGrade: grade,
             grade: this.computeLetterGrade(grade),
             gold: this.computeTeamGold(grade, mode),
             xp: this.computeTeamXP(team, otherTeam, grade, mode),
@@ -940,6 +952,25 @@ export abstract class Game
                         key: rewards.key,
                         chests: rewards.chests,
                     } as OutcomeData,
+                }
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async updateGameInDB(winnerUID: string, results: EndGameDataResults) {
+        try {
+            await apiFetch(
+                'completeGame',
+                '',
+                {
+                    method: 'POST',
+                    body: {
+                        gameId: this.id,
+                        winnerUID,
+                        results,
+                    },
                 }
             );
         } catch (error) {
