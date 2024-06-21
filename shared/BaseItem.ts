@@ -12,7 +12,7 @@ export class BaseItem {
     cooldown: number = 0;
     animation: string = '';
     sfx: string = '';
-    size: number = 1;
+    size?: number = 1;
     price: number = 0;
     rarity: Rarity = Rarity.COMMON;
     effort: number = 0;

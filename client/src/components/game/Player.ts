@@ -176,6 +176,7 @@ export class Player extends Phaser.GameObjects.Container {
             casting: this.casting,
             statuses: this.statuses,
             pendingSpell: this.pendingSpell,
+            pendingItem: this.pendingItem,
           }
     }
 
@@ -359,6 +360,10 @@ export class Player extends Phaser.GameObjects.Container {
 
     useItem(index) {
         // console.log(`Using item at slot ${index}`);
+        if (this.pendingItem == index) {
+            this.cancelItem();
+            return;
+        }
         const item = this.getItemAtSlot(index);
         if (!item) {
             console.error(`No item at slot ${index}`);
@@ -375,6 +380,7 @@ export class Player extends Phaser.GameObjects.Container {
             } else {
                 this.pendingItem = index;
                 this.arena.toggleItemMode(true);
+                this.arena.emitEvent('pendingItemChange');
             }
         }
     }
@@ -403,6 +409,13 @@ export class Player extends Phaser.GameObjects.Container {
         this.pendingSpell = null;
         this.arena.toggleTargetMode(false);
         this.arena.emitEvent('pendingSpellChange');
+    }
+
+    cancelItem() {
+        this.pendingItem = null;
+        this.arena.toggleTargetMode(false);
+        this.arena.toggleItemMode(false);
+        this.arena.emitEvent('pendingItemChange');
     }
 
     useSkill(index) {
