@@ -69,7 +69,7 @@ class PlayerTab extends Component<Props, State> {
     if (type !== 'item') {
       const coordinates = mapFrameToCoordinates(this.props.player.spells[index]?.frame);
       coordinates.x = -coordinates.x + 0;
-      coordinates.y = -coordinates.y + 0;
+      coordinates.y = -coordinates.y + 1;
       const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
       this.setState({ backgroundPosition, selectedSpell: this.props.player.spells[index] });
     }
@@ -136,7 +136,7 @@ class PlayerTab extends Component<Props, State> {
             </div>
             <div className="xp_bar_bg_container">
               <img src="/inventory/cd_icon.png" alt="" />
-              <div className="xp_bar_bg">
+              <div className={`xp_bar_bg ${cooldownRatio === 1 ? 'cooldown_bar_flash' : ''}`}>
                 <div className="cooldown_bar" style={cooldownBarStyle}></div>
               </div>
             </div>
@@ -174,7 +174,7 @@ class PlayerTab extends Component<Props, State> {
                       action={player.spells[idx]}
                       index={idx}
                       clickedIndex={this.state.clickedSpell}
-                      canAct={canAct}
+                      canAct={canAct && player.spells[idx]?.cost <= player.mp}
                       actionType={InventoryType.SKILLS}
                       onActionClick={() => { }}
                       key={idx}
@@ -185,7 +185,8 @@ class PlayerTab extends Component<Props, State> {
             </div>
           </div>
         </div>
-        {this.state.clickedSpell > -1 && <div className="spell_target_container">
+        {this.props.player.pendingSpell === 0 && <div className="spell_target_container">
+          <p className="spell_target_title">Select a target</p>
           <div className="spell_target">
             <div className="equip-dialog-image" style={{
               backgroundImage: `url(spells.png)`,

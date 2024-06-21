@@ -3,7 +3,7 @@ import { h, Component } from 'preact';
 import { route } from 'preact-router';
 
 interface SpectatorFooterProps {
-
+  isTutorial: boolean;
 }
 
 class SpectatorFooter extends Component<SpectatorFooterProps> {
@@ -25,9 +25,9 @@ class SpectatorFooter extends Component<SpectatorFooterProps> {
               <img src="/shop/bronze_chest.png" alt="" />
             </div>
         </div>
-        <div className="skip_tutorial">
+        {this.props.isTutorial && <div className="skip_tutorial">
           <span>Skip Tutorial</span>
-        </div>
+        </div>}
       </div>
     );
   }

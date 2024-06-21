@@ -127,7 +127,7 @@ class Overview extends Component<Props, State> {
               className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`}
             >
               <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
-                <div className="char_portrait" style={portraitStyle} />
+                <div className={`char_portrait ${position === 'left' ? 'flip' : 'char_portrait_right'} ${member.hp > 0 ? 'char_alive_animation' : ''}`} style={portraitStyle} />
               </div>
               <div className={`char_stats ${position === 'right' && 'char_stats_right'}`} style={charStatStyle(memberIndex)}>
                 <div className="char_stats_player_name">
@@ -143,7 +143,7 @@ class Overview extends Component<Props, State> {
                   <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
                 </div>}
               </div>
-              {position === 'right' && <div className="char_stats_cooldown_bar">
+              {position === 'right' && <div className={`char_stats_cooldown_bar ${member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`}>
                 <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
               </div>}
               <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>

@@ -100,7 +100,7 @@ class GameHUD extends Component<object, State> {
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
           <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} {...team1} />
         </div>
-        {team1 && <SpectatorFooter />}
+        {team1 && <SpectatorFooter isTutorial={isTutorial} />}
         {this.state.gameOver && <Endgame 
           members={members} 
           grade={this.state.grade}

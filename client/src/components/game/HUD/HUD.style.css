@@ -148,11 +148,17 @@
 .char_portrait {
   width: 100%;
   height: 100%;
-  margin-left: 6px;
   background-position: -40px -40px;
   background-repeat: no-repeat;
-  animation: animate-sprite 0.7s steps(1) infinite;
   transform: scale(0.6);
+}
+
+.char_portrait_right {
+  margin-left: 6px;
+}
+
+.char_alive_animation {
+  animation: animate-sprite 0.7s steps(1) infinite;
 }
 
 .char_stats {
@@ -242,6 +248,7 @@
   position: absolute;
   left: 36px;
   top: 60px;
+  padding: 0.5px;
 
   display: flex;
   justify-content: flex-end;
@@ -600,7 +607,7 @@
 .spectator_container_right {
   position: absolute;
   top: 8px;
-  left: 0px;
+  left: -2px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -609,13 +616,13 @@
   z-index: 10;
 }
 
-.spectator_container div {
+/* .spectator_container div {
   width: 24px;
   height: 24px;
   background-image: url("@assets/HUD/small_box_btn_bg.png");
   background-size: 100% 100%;
   padding: 4px;
-}
+} */
 
 .spectator_container div:hover {
   background-image: url("@assets/HUD/small_box_btn_bg_active.png");
@@ -626,13 +633,13 @@
   height: 100%;
 }
 
-.spectator_container_right div {
+/* .spectator_container_right div {
   width: 24px;
   height: 24px;
   background-image: url("@assets/HUD/small_box_btn_bg.png");
   background-size: 100% 100%;
   padding: 4px;
-}
+} */
 
 .spectator_container_right div:hover {
   background-image: url("@assets/HUD/small_box_btn_bg_active.png");
@@ -1154,6 +1161,50 @@
 
 .spell_target .dialog-spell-info {
   gap: 2px;
+}
+
+.cooldown_bar_flash {
+  animation: bgflash 0.3s linear infinite;
+}
+
+.spectator_div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.spectator {
+  width: 24px;
+  height: 24px;
+  background-image: url("@assets/HUD/small_box_btn_bg.png");
+  background-size: 100% 100%;
+  padding: 4px;
+}
+
+.flip {
+  transform: scale(0.6) scaleX(-1);
+}
+
+.spell_target_title {
+  line-height: 20px;
+  font-size: 12px;
+  text-transform: uppercase;
+  text-align: center;
+  color: #51fdff;
+}
+
+@keyframes bgflash {
+  0% {
+    background-color: #1c1f25;
+  }
+  50% {
+    background-color: #ffffff;
+  }
+  100% {
+    background-color: #1c1f25;
+  }
 }
 
 @keyframes rotate {
