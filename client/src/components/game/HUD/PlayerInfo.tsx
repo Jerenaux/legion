@@ -93,7 +93,7 @@ class PlayerInfo extends Component<Props> {
           <div className="player_info_team"><span>TEAM</span></div>
         </div>
         {position === 'right' && <div className="spectator_container_right">
-          {!isSpectator &&  <div className="spectator_div">
+          {isSpectator &&  <div className="spectator_div">
             <div className="spectator" onClick={() => { }}>
               <img src="/HUD/applause_icon.png" alt="" />
             </div>

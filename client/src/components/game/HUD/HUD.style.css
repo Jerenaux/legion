@@ -592,7 +592,7 @@
   grid-template-rows: repeat(2, 1fr);
 }
 
-/* .spectator_container {
+.spectator_container {
     position: absolute;
     top: 8px;
     right: -20px;
@@ -602,7 +602,7 @@
     justify-content: center;
     gap: 4px;
     z-index: 10;
-} */
+}
 
 .spectator_container_right {
   position: absolute;
@@ -616,33 +616,9 @@
   z-index: 10;
 }
 
-/* .spectator_container div {
-  width: 24px;
-  height: 24px;
-  background-image: url("@assets/HUD/small_box_btn_bg.png");
-  background-size: 100% 100%;
-  padding: 4px;
-} */
-
-.spectator_container div:hover {
-  background-image: url("@assets/HUD/small_box_btn_bg_active.png");
-}
-
 .spectator_container div img {
   width: 100%;
   height: 100%;
-}
-
-/* .spectator_container_right div {
-  width: 24px;
-  height: 24px;
-  background-image: url("@assets/HUD/small_box_btn_bg.png");
-  background-size: 100% 100%;
-  padding: 4px;
-} */
-
-.spectator_container_right div:hover {
-  background-image: url("@assets/HUD/small_box_btn_bg_active.png");
 }
 
 .spectator_container_right div img {
@@ -1181,6 +1157,10 @@
   background-image: url("@assets/HUD/small_box_btn_bg.png");
   background-size: 100% 100%;
   padding: 4px;
+}
+
+.spectator:hover {
+  background-image: url("@assets/HUD/small_box_btn_bg_active.png");
 }
 
 .flip {
