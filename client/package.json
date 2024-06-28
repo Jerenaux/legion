@@ -14,6 +14,7 @@
     "@types/react-tooltip": "^4.2.4",
     "axios": "^1.6.6",
     "firebaseui": "^6.1.0",
+    "gameanalytics": "^4.4.7",
     "html2canvas": "^1.4.1",
     "phaser": "^3.70.0",
     "phaser3-rex-plugins": "^1.60.9",

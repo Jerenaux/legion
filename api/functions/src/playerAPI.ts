@@ -12,7 +12,7 @@ import {NewCharacter} from "@legion/shared/NewCharacter";
 import {getChestContent, ChestReward} from "@legion/shared/chests";
 import {processChestRewards} from "./characterAPI";
 import {STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE} from "@legion/shared/config";
-
+import {updateDAU} from "./dashboardAPI";
 
 const NB_START_CHARACTERS = 3;
 
@@ -143,6 +143,8 @@ export const getPlayerData = onRequest((request, response) => {
         if (!playerData) {
           throw new Error("playerData is null");
         }
+
+        updateDAU(uid);
 
         // Transform the chest field so that the `time` field becomes
         // a `countdown` field
