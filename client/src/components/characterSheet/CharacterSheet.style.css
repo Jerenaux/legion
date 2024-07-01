@@ -21,6 +21,7 @@
     background-image: url('@assets/inventory/equip_panel_bg.png');
     background-size: 100% 100%;
     padding: 8px;
+    gap: 6px;;
     margin-left: -4px;
 }
 
@@ -43,11 +44,26 @@
 }
 
 .sheet-item {
-    background-image: url('@assets/inventory/item_box_idle.png');
+    box-sizing: border-box;
     width: 43px;
     height: 43px;
-    padding: 0;
+    background-color: #1c1f25;
+    border-radius: 6px;
+    border: 1px solid #274c57;
+    padding: 4px;
+    display: flex;
     justify-content: center;
+    align-items: center;
+}
+
+.sheet-item:hover {
+    cursor: pointer;
+    border: 1px solid #71deff;
+}
+
+.sheet-item img {
+    width: 100%;
+    height: 100%;
 }
 
 .special-equip {
@@ -257,8 +273,13 @@
     color: #ffffff;
 }
 
+.character-info-bar .curr-info-container {
+    width: 54px;
+    display: flex;
+    justify-content: center;
+}
+
 .character-info-bar .curr-info {
-    width: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;

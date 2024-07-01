@@ -10,7 +10,7 @@ import { getConsumableById } from '@legion/shared/Items';
 import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../itemDialog/ItemDialogType';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { InventoryActionType, InventoryType } from '@legion/shared/enums';
+import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
 import { Effect } from '@legion/shared/interfaces';
 
 interface InventoryRequestPayload {
@@ -60,7 +60,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
 
     render() {
         const { characterId, characterData, refreshCharacter } = this.props;
-        if(!this.props.characterData) return;
+        if (!this.props.characterData) return;
 
         const renderInfoBars = () => {
             if (!characterData) return;
@@ -72,7 +72,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                     value: value + equipmentBonus + spBonus // Sum the values from the three sources
                 };
             });
-            
+
 
             const order = ['hp', 'mp', 'atk', 'def', 'spatk', 'spdef'];
             const rearrangedItems = order.map(key => items.find(item => item.key === key));
@@ -81,20 +81,25 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                 return this.props.itemEffects.filter(effect => order[effect.stat] === key)[0]?.value;
             }
 
-            const effectString = (val: number) => {
-                return val > 0 ? `+${val}` : val;
-            }
+            const effectString = (key: string) => {
+                const val = effectVal(key);
 
-            const infoStyle = {
-                paddingRight: characterData?.sp > 0 ? '' : '12px'
+                if (val !== 0) {
+                    return val > 0 ? `+${val}` : val;
+                }
+
+                return null;
             }
 
             return rearrangedItems.map((item, index) => (
                 <div className="character-info-bar" key={index}>
                     <div className="info-class" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[item.key]] }}><span>{INFO_TYPE[item.key]}</span></div>
-                    <p className="curr-info" style={infoStyle}>{item.value}
-                        <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{effectString(effectVal(item.key))}</span>
-                    </p>
+                    <div className="curr-info-container">
+                        <p className="curr-info">{item.value}
+                            <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{effectString(item.key)}</span>
+                        </p>
+                    </div>
+
                     {characterData?.sp > 0 && <button className="info-bar-plus" onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO, index)}></button>}
                 </div>
             ));
@@ -102,7 +107,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
 
         const renderEquipmentItems = (itemCategory) => {
             if (!characterData || !characterData.equipment) return;
-            
+
             let items, desiredOrder, backgroundImageUrl, isSpecialEquip;
             const specialSlotsStart = 6;
 
@@ -110,15 +115,15 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
             switch (itemCategory) {
                 case 'standardEquip':
                     items = Object.entries(characterData.equipment)
-                                .map(([key, value]) => ({ key, value }))
-                                .slice(0, specialSlotsStart); // Standard equipment slots
+                        .map(([key, value]) => ({ key, value }))
+                        .slice(0, specialSlotsStart); // Standard equipment slots
                     backgroundImageUrl = 'equipment.png';
                     isSpecialEquip = false;
                     break;
                 case 'specialEquip':
                     items = Object.entries(characterData.equipment)
-                                .map(([key, value]) => ({ key, value }))
-                                .slice(specialSlotsStart, 9); // Special equipment slots
+                        .map(([key, value]) => ({ key, value }))
+                        .slice(specialSlotsStart, 9); // Special equipment slots
                     desiredOrder = ['left_ring', 'right_ring', 'necklace'];
                     items.sort((a, b) => desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key));
                     backgroundImageUrl = 'equipment.png';
@@ -127,7 +132,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                 default:
                     return null; // Or an empty component
             }
-        
+
             return items.map((item, index) => {
                 if (isSpecialEquip) index += specialSlotsStart;
                 let content;
@@ -136,7 +141,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                     // Handle the case where there is no item equipped in this slot
                     content = (
                         <img src={`/inventory/${item.key}_icon.png`} alt={item.key}
-                             style={isSpecialEquip ? { transform: 'scaleY(0.6)' } : {}} />
+                            style={{ transform: isSpecialEquip ? 'scaleY(0.6)' : 'scale(0.8)' }} />
                     );
                 } else {
                     // Handle the case where there is an item equipped
@@ -148,59 +153,72 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                         }} />
                     );
                 }
-            
+
+                const equipmentItem = getEquipmentById(item.value);
+
+                const slotStyle = {
+                    backgroundImage: item.value >= 0 && `linear-gradient(to bottom right, ${RarityColor[equipmentItem?.rarity]}, #1c1f25)`
+                }
+
                 // Return the container div for each item
                 return (
-                    <div className={`equip-item ${isSpecialEquip ? 'sheet-item' : ''}`} key={index}
-                         onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}>
+                    <div
+                        key={index}
+                        className="sheet-item"
+                        style={slotStyle}
+                        onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}>
                         {content}
                     </div>
                 );
             });
         };
-    
+
 
         const renderInventoryItems = (inventoryType) => {
             if (!characterData) return;
-          
+
             // Define the capacity and array of items based on type
             let capacity, items, dialogType, backgroundImageUrl, dataCallback;
             switch (inventoryType) {
-              case InventoryType.CONSUMABLES:
-                capacity = characterData.carrying_capacity + characterData.carrying_capacity_bonus;
-                items = characterData.inventory;
-                dialogType = ItemDialogType.CONSUMABLES;
-                backgroundImageUrl = 'consumables.png';
-                dataCallback = getConsumableById;
-                break;
-              case InventoryType.SKILLS:
-                capacity = characterData.skill_slots;
-                items = characterData.skills;
-                dialogType = ItemDialogType.SKILLS;
-                backgroundImageUrl = 'spells.png';
-                dataCallback = getSpellById;
-                break;
-              // Add other cases for different types
-              default:
-                return null; // Or render an empty component/error message
+                case InventoryType.CONSUMABLES:
+                    capacity = characterData.carrying_capacity + characterData.carrying_capacity_bonus;
+                    items = characterData.inventory;
+                    dialogType = ItemDialogType.CONSUMABLES;
+                    backgroundImageUrl = 'consumables.png';
+                    dataCallback = getConsumableById;
+                    break;
+                case InventoryType.SKILLS:
+                    capacity = characterData.skill_slots;
+                    items = characterData.skills;
+                    dialogType = ItemDialogType.SKILLS;
+                    backgroundImageUrl = 'spells.png';
+                    dataCallback = getSpellById;
+                    break;
+                // Add other cases for different types
+                default:
+                    return null; // Or render an empty component/error message
             }
-          
+
             return Array.from({ length: capacity }, (_, i) => {
-              if (i < items.length) {
-                const item = dataCallback(items[i]);
-                const coordinates = mapFrameToCoordinates(item?.frame);
-          
-                return (
-                  <div className="team-item" key={i} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
-                    <div className="special-equip" style={{
-                      backgroundImage: `url(${backgroundImageUrl})`,
-                      backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
-                    }} />
-                  </div>
-                );
-              } else {
-                return <div className="team-item" key={i} />;
-              }
+                if (i < items.length) {
+                    const item = dataCallback(items[i]);
+                    const coordinates = mapFrameToCoordinates(item?.frame);
+
+                    const slotStyle = {
+                        backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
+                    }
+
+                    return (
+                        <div className="team-item" key={i} style={inventoryType === InventoryType.CONSUMABLES && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
+                            <div className="special-equip" style={{
+                                backgroundImage: `url(${backgroundImageUrl})`,
+                                backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
+                            }} />
+                        </div>
+                    );
+                } else {
+                    return <div className="team-item" key={i} />;
+                }
             });
         };
 
@@ -275,17 +293,17 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                 <div className="team-equip-container">
                     {renderEquipmentItems('standardEquip')}
                 </div>
-                <ItemDialog 
+                <ItemDialog
                     isEquipped={true}
-                    actionType={InventoryActionType.UNEQUIP}  
-                    refreshCharacter={refreshCharacter} 
-                    characterId={characterId} 
-                    index={this.state.itemIndex} 
-                    dialogOpen={this.state.openModal} 
-                    dialogType={this.state.modalType} 
-                    position={this.state.modalPosition} 
-                    dialogData={this.state.modalData} 
-                    handleClose={this.handleCloseModal} 
+                    actionType={InventoryActionType.UNEQUIP}
+                    refreshCharacter={refreshCharacter}
+                    characterId={characterId}
+                    index={this.state.itemIndex}
+                    dialogOpen={this.state.openModal}
+                    dialogType={this.state.modalType}
+                    position={this.state.modalPosition}
+                    dialogData={this.state.modalData}
+                    handleClose={this.handleCloseModal}
                     updateInventory={this.props.updateInventory}
                 />
             </div>
