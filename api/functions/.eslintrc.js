@@ -25,7 +25,8 @@ module.exports = {
     "import",
   ],
   rules: {
-    "quotes": ["error", "double"],
+    "quotes": ["off", "double"],
+    "object-curly-spacing": ["off", "always"], // Disable the rule for enforcing spaces inside braces
     "import/no-unresolved": 0,
     "indent": "off",
     "require-jsdoc": "off",

@@ -30,7 +30,7 @@ The code is located in `client/src` and the entry point is `index.tsx`. The main
 To serve the client, run `npm run dev` in the `client` directory.
 
 # Dev setup:
-- `cd client && npm run dev` to start client in dev mode
+- `cd client && npm run start` to start client in dev mode
 - `cd server && npm run start` to start server in dev mode
 - `cd api/functions && npm run serve` to start Firebase emulators
 - `cd api/functions && npm run watch:functions` to watch API

@@ -42,11 +42,14 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
   const now = Date.now() / 1000;
+  const today = new Date().toISOString().split("T")[0];
 
   // Define the character data structure
   const playerData = {
     name: generateName(),
     avatar: selectRandomAvatar(),
+    joinDate: today,
+    lastActiveDate: today,
     gold: STARTING_GOLD,
     carrying_capacity: BASE_INVENTORY_SIZE,
     inventory: {
@@ -145,6 +148,13 @@ export const getPlayerData = onRequest((request, response) => {
         }
 
         updateDAU(uid);
+        // Update the lastActiveDate field
+        const today = new Date().toISOString().split("T")[0];
+        if (playerData.lastActiveDate !== today) {
+          await db.collection("players").doc(uid).update({
+            lastActiveDate: today,
+          });
+        }
 
         // Transform the chest field so that the `time` field becomes
         // a `countdown` field
