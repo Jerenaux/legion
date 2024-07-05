@@ -48,6 +48,7 @@ export async function updateDAU(userId: string) {
 }
 
 export async function logPlayerAction(playerId: string, actionType: string, details: any) {
+    console.log(`Logging player action: ${playerId}, ${actionType}, ${details}`);
     const db = admin.firestore();
     const actionRef = db.collection('players').doc(playerId).collection('actions').doc();
     await actionRef.set({
@@ -56,6 +57,12 @@ export async function logPlayerAction(playerId: string, actionType: string, deta
         details,
     });
 }
+
+export const logQueuingActivity = onRequest(async (request, response) => {
+    const { playerId, actionType, details } = request.body;
+    await logPlayerAction(playerId, actionType, details);
+    response.send({status: 0});
+});
 
 
 export const getDashboardData = onRequest(async (request, response) => {

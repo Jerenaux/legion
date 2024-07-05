@@ -42,6 +42,12 @@ class QueuePage extends Component<QPageProps, {}> {
         this.joinQueue();
     }    
 
+    componentWillUnmount() {
+        if (this.socket) {
+            this.socket.disconnect();
+        }
+    }
+
     render() {
 
         return (

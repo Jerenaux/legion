@@ -215,8 +215,25 @@ async function savePlayerGold(player: Player) {
     }
 }
 
-// Call savePlayerGold when removing a player from the queue
-
+async function logQueuingActivity(playerId: string, actionType: string, details: any) {
+    console.log(`Logging queuing activity: ${playerId}, ${actionType}, ${details}`);
+    try {
+        await apiFetch(
+            'logQueuingActivity',
+            '', // TODO: Add API key or player identification
+            {
+                method: 'POST',
+                body: {
+                    playerId,
+                    actionType,
+                    details,
+                },
+            }
+        );
+    } catch (error) {
+        console.error(`Error logging queuing activity: ${error}`);
+    }
+}
 
 io.on("connection", (socket: any) => {
     console.log(`Player connected`);
@@ -234,13 +251,16 @@ io.on("connection", (socket: any) => {
 
         notifyAdmin(data.mode);
         addToQueue(socket, data.mode);
+        logQueuingActivity(socket.uid, 'joinQueue', data.mode);
     });
 
     socket.on("disconnect", async () => {
+        console.log(`Player disconnected`);
         const index = playersQueue.findIndex(player => player.socket.id === socket.id);
         if (index !== -1) {
             await savePlayerGold(playersQueue[index]); 
             playersQueue.splice(index, 1);
+            logQueuingActivity(socket.uid, 'leaveQueue', null);
         }
     });
 });
