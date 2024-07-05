@@ -1,5 +1,3 @@
-# dashboard_data.py
-
 import os
 import requests
 import pandas as pd
@@ -7,11 +5,13 @@ from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from IPython.display import display
+from datetime import datetime, timedelta
+from matplotlib.ticker import MaxNLocator
 
 load_dotenv()
 
 API_URL = os.getenv('API_URL')
-
+plt.style.use('dark_background')
 class DashboardData:
     _instance = None
     _data = None
@@ -24,7 +24,6 @@ class DashboardData:
     def __init__(self):
         if self._data is None:
             self._data = self.fetch_data()
-            print(self._data)
             self.dau = self._data['DAU']
             self.total_players = self._data['totalPlayers']
             self.day1_retention = self._data['day1retention']
@@ -39,25 +38,71 @@ class DashboardData:
     def fetch_data(cls):
         response = requests.get(f"{API_URL}/getDashboardData")
         return response.json()
+    
+    def generate_date_range(self, start_date, end_date):
+        start = datetime.strptime(start_date, '%Y-%m-%d')
+        end = datetime.strptime(end_date, '%Y-%m-%d')
+        delta = timedelta(days=1)
+        dates = []
+        while start <= end:
+            dates.append(start.strftime('%Y-%m-%d'))
+            start += delta
+        return dates
+    
+    def prepare_dau_data(self):
+        dau_data = [{'date': entry['date'], 'userCount': entry['userCount']} for entry in self.dau]
+        if dau_data:
+            start_date = dau_data[0]['date']
+            end_date = datetime.now().strftime('%Y-%m-%d')
+            complete_dates = self.generate_date_range(start_date, end_date)
+            
+            dau_dict = {entry['date']: entry['userCount'] for entry in dau_data}
+            complete_data = [{'date': date, 'userCount': dau_dict.get(date, 0)} for date in complete_dates]
+            return complete_data
+        return []
 
     def prepare_new_players_data(self):
-        return [{'date': date, 'newPlayers': count} for date, count in self.new_players_per_day.items()]
+        new_players_data = [{'date': date, 'newPlayers': count} for date, count in self.new_players_per_day.items()]
+        if new_players_data:
+            start_date = new_players_data[0]['date']
+            end_date = datetime.now().strftime('%Y-%m-%d')
+            complete_dates = self.generate_date_range(start_date, end_date)
+            
+            new_players_dict = {entry['date']: entry['newPlayers'] for entry in new_players_data}
+            complete_data = [{'date': date, 'newPlayers': new_players_dict.get(date, 0)} for date in complete_dates]
+            return complete_data
+        return []
 
     def prepare_games_per_mode_data(self):
-        data = []
+        games_per_mode_data = []
         for date, modes in self.games_per_mode_per_day.items():
             for mode, count in modes.items():
-                data.append({'date': date, 'mode': mode, 'count': count})
-        return data
+                games_per_mode_data.append({'date': date, 'mode': mode, 'count': count})
+        
+        if games_per_mode_data:
+            start_date = min(entry['date'] for entry in games_per_mode_data)
+            end_date = datetime.now().strftime('%Y-%m-%d')
+            complete_dates = self.generate_date_range(start_date, end_date)
+            
+            mode_set = {entry['mode'] for entry in games_per_mode_data}
+            games_dict = {(entry['date'], entry['mode']): entry['count'] for entry in games_per_mode_data}
+            complete_data = [
+                {'date': date, 'mode': mode, 'count': games_dict.get((date, mode), 0)}
+                for date in complete_dates for mode in mode_set
+            ]
+            return complete_data
+        return []
+
 
 def plot_dau_and_new_players():
     data = DashboardData()
     
-    # Prepare DAU data
-    dau_dates = [entry['date'] for entry in data.dau]
-    dau_user_counts = [entry['userCount'] for entry in data.dau]
+    # Prepare DAU data with interpolated dates
+    dau_data = data.prepare_dau_data()
+    dau_dates = [entry['date'] for entry in dau_data]
+    dau_user_counts = [entry['userCount'] for entry in dau_data]
     
-    # Prepare new players data
+    # Prepare new players data with interpolated dates
     new_players_data = data.prepare_new_players_data()
     new_players_dates = [entry['date'] for entry in new_players_data]
     new_players_counts = [entry['newPlayers'] for entry in new_players_data]
@@ -71,6 +116,7 @@ def plot_dau_and_new_players():
     axes[0].set_xlabel('Date')
     axes[0].set_ylabel('User Count')
     axes[0].tick_params(axis='x', rotation=45)
+    axes[0].yaxis.set_major_locator(MaxNLocator(integer=True))
     axes[0].legend()
     
     # Plot New Players Per Day
@@ -81,25 +127,28 @@ def plot_dau_and_new_players():
     axes[1].tick_params(axis='x', rotation=45)
     axes[1].set_ylim(0, max(new_players_counts) + 1)
     axes[1].set_yticks(range(0, max(new_players_counts) + 2))
+    axes[1].yaxis.set_major_locator(MaxNLocator(integer=True))
     axes[1].legend()
     
     plt.tight_layout()
     plt.show()
 
-
 def plot_games_per_mode():
     data = DashboardData()
+    
+    # Prepare games per mode data with interpolated dates
     games_per_mode_data = data.prepare_games_per_mode_data()
     df = pd.DataFrame(games_per_mode_data)
     df['date'] = pd.to_datetime(df['date'])
     
     modes = df['mode'].unique()
+    mode_labels = {'0': 'Practice', '1': 'Casual', '2': 'Ranked'}
     mode_colors = {'0': 'blue', '1': 'green', '2': 'red'}
     
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(5, 3))
     for mode in modes:
         mode_data = df[df['mode'] == mode]
-        plt.plot(mode_data['date'], mode_data['count'], label=f'Mode {mode}', color=mode_colors.get(mode, 'black'))
+        plt.plot(mode_data['date'], mode_data['count'], label=mode_labels.get(mode, f'Mode {mode}'), color=mode_colors.get(mode, 'black'))
     
     plt.title('Games Per Mode Per Day')
     plt.xlabel('Date')
@@ -109,6 +158,7 @@ def plot_games_per_mode():
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m-%d'))
     plt.legend()
     plt.show()
+
 
 def display_retention_table():
     data = DashboardData()
@@ -132,5 +182,19 @@ def display_retention_table():
 
 def print_additional_info():
     data = DashboardData()
+
+    # Calculate ATH of DAU
+    dau_data = data.prepare_dau_data()
+    ath_dau = max(entry['userCount'] for entry in dau_data)
+
+    # Get yesterday's DAU
+    yesterday_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    yesterday_dau = next((entry['userCount'] for entry in dau_data if entry['date'] == yesterday_date), 0)
+
+    # Calculate the percentage of ATH
+    percentage_of_ath = (yesterday_dau / ath_dau) * 100 if ath_dau > 0 else 0
+
     print(f"Median Game Duration: {data.median_game_duration:.2f} min")
     print(f"Total Players: {data.total_players}")
+    print(f"ATH of DAU: {ath_dau}")
+    print(f"Yesterday's DAU: {yesterday_dau} ({percentage_of_ath:.2f}% of ATH)")

@@ -1,8 +1,31 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
-import {DashboardData, GamesPerModePerDay} from "@legion/shared/dashboardInterfaces";
 
+interface RetentionData {
+    returningPlayers: number;
+    retentionRate: number;
+}
+
+interface DashboardData {
+    DAU: {
+        date: string;
+        userCount: number;
+    }[];
+    totalPlayers: number;
+    day1retention: RetentionData;
+    day7retention: RetentionData;
+    day30retention: RetentionData;
+    yesterdayRetention: RetentionData;
+    newPlayersPerDay: { [key: string]: number };
+    gamesPerModePerDay: GamesPerModePerDay;
+    medianGameDuration: number;
+}
+interface GamesPerModePerDay {
+    [date: string]: {
+        [mode: string]: number;
+    };
+}
 
 export async function updateDAU(userId: string) {
     const db = admin.firestore();
