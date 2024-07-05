@@ -9,6 +9,7 @@ import {InventoryType, InventoryActionType, equipmentFields, EquipmentSlot, Shop
 import {Equipment, DBCharacterData, DBPlayerData, PlayerInventory, CharacterStats} from "@legion/shared/interfaces";
 import {inventorySize} from "@legion/shared/utils";
 import {getChestContent} from "@legion/shared/chests";
+import {logPlayerAction} from "./dashboardAPI";
 
 export const inventoryData = onRequest((request, response) => {
   logger.info("Fetching inventoryData");
@@ -107,6 +108,8 @@ export const purchaseItem = onRequest((request, response) => {
           gold,
           inventory,
         });
+
+        logPlayerAction(uid, "purchaseItem", {inventoryType, itemId, nb, totalPrice});
 
         response.send({
           gold,
@@ -478,6 +481,7 @@ export const inventoryTransaction = onRequest((request, response) => {
         }
       });
       console.log("Transaction successfully committed!");
+      logPlayerAction(uid, "inventoryTransaction", {action, characterId, inventoryType, index});
 
       response.send({status: 0});
     } catch (error) {

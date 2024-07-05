@@ -26,6 +26,15 @@ export const createGame = onRequest((request, response) => {
       };
 
       await db.collection("games").add(gameData);
+
+      for (const player of players) {
+        logPlayerAction(player, "gameStart", {
+          gameId,
+          league: gameData.league,
+          mode: gameData.mode,
+        });
+      }
+
       response.status(200).send({status: 0});
     } catch (error) {
       console.error("createGame error:", error);

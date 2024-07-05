@@ -2,7 +2,8 @@ import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import * as functions from "firebase-functions";
-import {League, GameStatus, ChestColor} from "@legion/shared/enums";
+import {League, ChestColor} from "@legion/shared/enums";
+import {logPlayerAction} from "./dashboardAPI";
 
 interface APILeaderboardResponse {
   seasonEnd: number;
@@ -175,6 +176,7 @@ export const fetchLeaderboard = onRequest((request, response) => {
           chestColor: chest,
         } as LeaderboardRow;
       });
+      logPlayerAction(uid, "fetchLeaderboard", {tabId});
       response.send(leaderboard);
     } catch (error) {
       console.error("fetchLeaderboard error:", error);

@@ -393,6 +393,7 @@ export const purchaseCharacter = onRequest((request, response) => {
         });
       });
       console.log("Transaction successfully committed!");
+      logPlayerAction(uid, "purchaseCharacter", {characterId, price});
       monitorCharactersOnSale(db);
 
       response.send({status: 0});
@@ -414,6 +415,7 @@ export const spendSP = onRequest((request, response) => {
       // const amount = request.body.amount;
       const amount = 1;
       const index = request.body.index as number;
+      let stat;
 
       await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
@@ -446,7 +448,7 @@ export const spendSP = onRequest((request, response) => {
           throw new Error("Character does not have enough skill points");
         }
 
-        const stat = statFields[index];
+        stat = statFields[index];
         const spBonuses = characterData.sp_bonuses;
         spBonuses[stat] += getSPIncrement(index) * amount;
 
@@ -456,6 +458,8 @@ export const spendSP = onRequest((request, response) => {
         });
       });
       console.log("Transaction successfully committed!");
+
+      logPlayerAction(uid, "spendSP", {characterId, amount, stat});
 
       response.send({status: 0});
     } catch (error) {

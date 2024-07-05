@@ -160,6 +160,7 @@ def plot_games_per_mode():
     plt.xlabel('Date')
     plt.ylabel('Games Count')
     plt.xticks(rotation=45)
+    plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator())
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%m'))
     plt.legend()

@@ -12,7 +12,7 @@ import {NewCharacter} from "@legion/shared/NewCharacter";
 import {getChestContent, ChestReward} from "@legion/shared/chests";
 import {processChestRewards} from "./characterAPI";
 import {STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE} from "@legion/shared/config";
-import {updateDAU} from "./dashboardAPI";
+import {logPlayerAction, updateDAU} from "./dashboardAPI";
 
 const NB_START_CHARACTERS = 3;
 
@@ -307,7 +307,7 @@ export const claimChest = onRequest((request, response) => {
         await processChestRewards(transaction, playerRef, content, consumables, spells, equipment);
 
         const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
-
+        logPlayerAction(uid, "claimChest", {chestType});
         response.send({
           content,
           dailyloot: dailyLootResponse,
