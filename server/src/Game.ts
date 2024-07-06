@@ -970,14 +970,17 @@ export abstract class Game
                 {
                     method: 'POST',
                     body: {
-                        isWinner: rewards.isWinner,
-                        gold: rewards.gold,
-                        xp: rewards.xp,
-                        elo: rewards.elo,
-                        characters: rewards.characters,
-                        key: rewards.key,
-                        chests: rewards.chests,
-                    } as OutcomeData,
+                        outcomes: {
+                            isWinner: rewards.isWinner,
+                            gold: rewards.gold,
+                            xp: rewards.xp,
+                            elo: rewards.elo,
+                            characters: rewards.characters,
+                            key: rewards.key,
+                            chests: rewards.chests
+                        } as OutcomeData,
+                        mode: this.mode,
+                    },
                 }
             );
         } catch (error) {

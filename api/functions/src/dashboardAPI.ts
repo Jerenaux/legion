@@ -142,10 +142,38 @@ export const getDashboardData = onRequest(async (request, response) => {
                 return { returningPlayers, retentionRate };
             };
 
+            const calculateInactivePlayers = () => {
+                const inactivePlayerIds: string[] = [];
+
+                playersSnapshot.forEach((doc) => {
+                    const { joinDate, lastActiveDate } = doc.data();
+                    const playerId = doc.id;
+
+                    if (joinDate && lastActiveDate) {
+                        const joinDateObj = new Date(joinDate);
+                        const lastActiveDateObj = new Date(lastActiveDate);
+
+                        if (!isNaN(joinDateObj.getTime()) && !isNaN(lastActiveDateObj.getTime())) {
+                            const daysActive = (lastActiveDateObj.getTime() - joinDateObj.getTime()) / (1000 * 60 * 60 * 24);
+                            const now = new Date();
+                            const daysSinceLastActive = (now.getTime() - lastActiveDateObj.getTime()) / (1000 * 60 * 60 * 24);
+
+                            if (daysActive > 1 && daysSinceLastActive > 2) {
+                                inactivePlayerIds.push(playerId);
+                            }
+                        }
+                    }
+                });
+
+                return inactivePlayerIds;
+            };
+
             const day1retention = calculateRetention(1, totalPlayers);
             const day7retention = calculateRetention(7, totalPlayers);
             const day30retention = calculateRetention(30, totalPlayers);
             const yesterdayRetention = calculateRetention(1, totalPlayers);
+
+            const inactivePlayerIds = calculateInactivePlayers();
 
             const newPlayersPerDay: { [key: string]: number } = {};
             playersSnapshot.forEach((doc) => {
@@ -197,6 +225,7 @@ export const getDashboardData = onRequest(async (request, response) => {
                 gamesPerModePerDay,
                 totalPlayers,
                 medianGameDuration,
+                inactivePlayerIds,
             });
         } catch (error) {
             console.error("DashboardData error:", error);
@@ -216,20 +245,65 @@ export const getActionLog = onRequest(async (request, response) => {
                 return;
             }
 
-            const snapshot = await db.collection("players")
+            // Fetch the player's action log
+            const actionLogSnapshot = await db.collection("players")
                 .doc(playerId.toString()).collection("actions")
                 .orderBy("timestamp", "asc").limit(100).get();
-            const data = snapshot.docs.map((doc) => ({
+            const actionLog = actionLogSnapshot.docs.map((doc) => ({
                 ...doc.data(),
                 id: doc.id,
             }));
-            response.send(data);
+
+            // Fetch the player's summary data
+            const playerDoc = await db.collection("players").doc(playerId.toString()).get();
+            if (!playerDoc.exists) {
+                response.status(404).send("Player not found");
+                return;
+            }
+            const playerData = playerDoc.data();
+            // @ts-ignore
+            const { gold, rank, allTimeRank, characters, lossesStreak } = playerData;
+
+            // Fetch character details
+            const characterDetails = [];
+            for (const characterRef of characters) {
+                const characterDoc = await characterRef.get();
+                if (characterDoc.exists) {
+                    const characterData = characterDoc.data();
+                    characterDetails.push({
+                        id: characterDoc.id,
+                        level: characterData.level,
+                        xp: characterData.xp,
+                        sp: characterData.sp,
+                        allTimeSP: characterData.allTimeSP,
+                        skills: characterData.skills,
+                        inventory: characterData.inventory,
+                        equipment: characterData.equipment,
+                    });
+                }
+            }
+
+            // Prepare the player summary
+            const playerSummary = {
+                gold,
+                rank,
+                allTimeRank,
+                lossesStreak,
+                characters: characterDetails,
+            };
+
+            // Send the response
+            response.send({
+                actionLog,
+                playerSummary,
+            });
         } catch (error) {
             console.error("getActionLog error:", error);
             response.status(500).send("Error");
         }
     });
 });
+
 
 export const getGameLog = onRequest(async (request, response) => {
     const db = admin.firestore();

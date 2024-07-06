@@ -31,6 +31,7 @@ module.exports = {
     "indent": "off",
     "require-jsdoc": "off",
     "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "react/prefer-stateless-function": "off",
     "camelcase": "off",
     "max-len": "off",

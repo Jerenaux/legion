@@ -5,7 +5,7 @@ import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFields} from "@legion/shared/enums";
+import {Class, statFields, PlayMode} from "@legion/shared/enums";
 import {MAX_CHARACTERS} from "@legion/shared/config";
 import {OutcomeData, DailyLootAllDBData, CharacterUpdate, APICharacterData} from "@legion/shared/interfaces";
 import {ChestReward} from "@legion/shared/chests";
@@ -128,7 +128,8 @@ export const rewardsUpdate = onRequest((request, response) => {
     try {
       const uid = await getUID(request);
       const {isWinner, xp, gold, characters, elo, key, chests} =
-        request.body as OutcomeData;
+        request.body.outcomes as OutcomeData;
+      const mode = request.body.mode as PlayMode;
 
       logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
 
@@ -165,14 +166,19 @@ export const rewardsUpdate = onRequest((request, response) => {
           elo: admin.firestore.FieldValue.increment(elo),
           dailyloot: dailyLoot,
         });
-        if (isWinner) {
-          transaction.update(playerRef, {
-            wins: admin.firestore.FieldValue.increment(1),
-          });
-        } else {
-          transaction.update(playerRef, {
-            losses: admin.firestore.FieldValue.increment(1),
-          });
+
+        if (mode != PlayMode.PRACTICE) {
+          if (isWinner) {
+              transaction.update(playerRef, {
+                wins: admin.firestore.FieldValue.increment(1),
+                lossesStreak: 0,
+              });
+          } else {
+              transaction.update(playerRef, {
+                losses: admin.firestore.FieldValue.increment(1),
+                lossesStreak: admin.firestore.FieldValue.increment(1),
+              });
+          }
         }
 
         // Iterate over the player's characters and increase their XP

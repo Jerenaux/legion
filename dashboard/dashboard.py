@@ -36,9 +36,11 @@ class DashboardData:
             self.new_players_per_day = self._data['newPlayersPerDay']
             self.games_per_mode_per_day = self._data['gamesPerModePerDay']
             self.median_game_duration = self._data['medianGameDuration']
+            self.inactive_player_ids = self._data['inactivePlayerIds']
 
     @classmethod
     def fetch_data(cls):
+        print("Making API call")
         response = requests.get(f"{API_URL}/getDashboardData")
         return response.json()
     
@@ -206,13 +208,14 @@ def print_additional_info():
     print(f"ATH of DAU: {ath_dau}")
     print(f"Yesterday's DAU: {yesterday_dau} ({percentage_of_ath:.2f}% of ATH)")
 
-def get_action_log(player_id):
+def get_player_log(player_id):
     endpoint = f"{API_URL}/getActionLog?playerId={player_id}"
     try:
         response = requests.get(endpoint)
         response.raise_for_status()  # Raise an HTTPError for bad responses
         data = response.json()
-        pretty_print_action_log(data)
+        pretty_print_action_log(data['actionLog'])
+        pretty_print_player_summary(data['playerSummary'])
     except requests.exceptions.RequestException as e:
         print(f"Error fetching action log for player {player_id}: {e}")
 
@@ -224,6 +227,25 @@ def pretty_print_action_log(action_log):
         print(f"{Fore.CYAN}{timestamp} - {Fore.GREEN}{action_type} - {Style.RESET_ALL}")
         pp.pprint(details)
         print(Style.RESET_ALL)
+
+def pretty_print_player_summary(player_summary):
+    print("\nPlayer Summary:")
+    print(f"Gold: {player_summary['gold']}")
+    print(f"Rank: {player_summary['rank']}")
+    print(f"All Time Rank: {player_summary['allTimeRank']}")
+    print(f"Losses streak: {player_summary['lossesStreak']}")
+    print("\nCharacters:")
+    for character in player_summary['characters']:
+        print(f"  Character ID: {character['id']}")
+        print(f"    Level: {character['level']}")
+        print(f"    XP: {character['xp']}")
+        print(f"    SP: {character['sp']}")
+        print(f"    All Time SP: {character['allTimeSP']}")
+        print(f"    Skills: {character['skills']}")
+        print(f"    Inventory: {character['inventory']}")
+        print(f"    Equipment: {character['equipment']}")
+        print()
+
 
 def get_game_log(game_id):
     endpoint = f"{API_URL}/getGameLog?gameId={game_id}"
@@ -243,3 +265,12 @@ def pretty_print_game_log(game_log):
         print(f"{Fore.CYAN}{timestamp} - {Fore.GREEN}{action_type} - {Style.RESET_ALL}")
         pp.pprint(details)
         print(Style.RESET_ALL)
+
+def list_inactive_players():
+    data = DashboardData()
+    if data.inactive_player_ids:
+        print(f"Inactive Players (Total: {len(data.inactive_player_ids)}):")
+        for player_id in data.inactive_player_ids:
+            print(player_id)
+    else:
+        print("No inactive players found.")
