@@ -28,15 +28,14 @@
 }
 
 .award-player-name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     color: #FFFFFF;
     position: absolute;
     top: 42px;
     text-transform: uppercase;
-    max-width: 86px;
+    max-width: 130px;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
@@ -47,9 +46,8 @@
     position: absolute;
     top: 56px;
     text-transform: uppercase;
-    max-width: 78px;
+    max-width: 120px;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 

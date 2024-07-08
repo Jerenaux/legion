@@ -13,6 +13,13 @@ interface APILeaderboardResponse {
   highlights: any[];
   ranking: LeaderboardRow[];
 }
+
+interface LeaderboardHighlight {
+  name: string;
+  avatar: string;
+  description: string;
+  title: string
+}
 interface LeaderboardRow {
   rank: number;
   player: string;
@@ -132,11 +139,59 @@ export const fetchLeaderboard = onRequest((request, response) => {
         }
       }
 
+      const getHighlightPlayer = (metric: string) => {
+        return players.reduce((prev, current) => {
+          // @ts-ignore
+          const prevMetric = isAllTime ? prev.allTimeStats[metric] : prev.leagueStats[metric];
+          // @ts-ignore
+          const currentMetric = isAllTime ? current.allTimeStats[metric] : current.leagueStats[metric];
+          return (prevMetric > currentMetric) ? prev : current;
+        }, players[0]);
+      };
+
+      const highestAvgGradePlayer = getHighlightPlayer("avgGrade");
+      const highestAvgScorePlayer = getHighlightPlayer("avgAudienceScore");
+      const highestWinStreakPlayer = getHighlightPlayer("winStreak");
+
+      const highlights: LeaderboardHighlight[] = [
+        {
+          name: highestAvgGradePlayer.name,
+          avatar: highestAvgGradePlayer.avatar,
+          title: "Ace Player",
+          description: `Highest Game Grades`,
+        },
+        {
+          name: highestAvgScorePlayer.name,
+          avatar: highestAvgScorePlayer.avatar,
+          title: "Crowd Favorite",
+          description: `Highest Audience Scores`,
+        },
+        {
+          name: highestWinStreakPlayer.name,
+          avatar: highestWinStreakPlayer.avatar,
+          title: "Unstoppable",
+          description: `Longest Win Streak`,
+        },
+      ];
+
+      if (isAllTime) {
+        const richestPlayer = players.reduce((prev, current) => {
+          return (prev.gold > current.gold) ? prev : current;
+        }, players[0]);
+        highlights.push({
+          name: richestPlayer.name,
+          avatar: richestPlayer.avatar,
+          title: "Richest Player",
+          description: `Player witht the most gold`,
+        });
+      }
+
+
       const leaderboard: APILeaderboardResponse = {
         seasonEnd,
         promotionRows,
         demotionRows,
-        highlights: [],
+        highlights,
         ranking: [],
       };
 
@@ -276,28 +331,3 @@ async function updateRanks(league: League) {
 
   return batch.commit();
 }
-
-// export const updateHighlights = functions.firestore
-//   .document("games/{gameId}")
-//   .onUpdate((change, context) => {
-//       const db = admin.firestore();
-//       const newValue = change.after.data();
-//       // const previousValue = change.before.data();
-
-//       if (newValue.status == GameStatus.COMPLETED) {
-//         const league = newValue.league;
-//         // Find in the collection 'leagues' if a document where 'league' is equal to the game's league exists,
-//         // if not create it
-//         const leagueSnap = await db.collection("leagues").where("league", "==", league).get();
-//         if (leagueSnap.empty) {
-//           db.collection("leagues").add({
-//             league,
-//             bestAudience: "",
-//             bestScore: "",
-//           });
-//         }
-
-
-//       }
-//       return null;
-// });

@@ -27,6 +27,7 @@ class DashboardData:
     def __init__(self):
         if self._data is None:
             self._data = self.fetch_data()
+            print(self._data)
             self.dau = self._data['DAU']
             self.total_players = self._data['totalPlayers']
             self.day1_retention = self._data['day1retention']
@@ -68,6 +69,7 @@ class DashboardData:
         return []
 
     def prepare_new_players_data(self):
+        print(f"In: {self.new_players_per_day}")
         new_players_data = [{'date': date, 'newPlayers': count} for date, count in self.new_players_per_day.items()]
         if new_players_data:
             start_date = new_players_data[0]['date']
@@ -76,6 +78,7 @@ class DashboardData:
             
             new_players_dict = {entry['date']: entry['newPlayers'] for entry in new_players_data}
             complete_data = [{'date': date, 'newPlayers': new_players_dict.get(date, 0)} for date in complete_dates]
+            print(f"Out: {complete_data}")
             return complete_data
         return []
 
@@ -111,6 +114,7 @@ def plot_dau_and_new_players():
     
     # Prepare new players data with interpolated dates
     new_players_data = data.prepare_new_players_data()
+    print(new_players_data)
     new_players_dates = [datetime.strptime(entry['date'], '%Y-%m-%d') for entry in new_players_data]
     new_players_counts = [entry['newPlayers'] for entry in new_players_data]
     
