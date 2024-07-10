@@ -65,6 +65,41 @@ class QueuePage extends Component<QPageProps, QpageState> {
             console.log(`Received gold update: ${gold}`);
         });
 
+        this.socket.on('queueData' , (data) => {
+            // {
+            //     goldRewardInterval,
+            //     goldReward,
+            //     estimatedWaitingTime: -1,
+            //     nbInQueue: countQueuingPlayers(player.mode, player.league),
+            //     tips: [
+            //         "o have data to use in the UI, use the Log In button and create an account, which will create a user in the Firestore database.",
+            //         "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great! New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great!",
+            //         "Event handlers have access to the event that triggered the function."
+            //     ],
+            //     news: [
+            //         {
+            //             title: "Title",
+            //             date: "2022-12-01",
+            //             text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
+            //             link: "https://www.google.com"
+            //         },
+            //         {
+            //             title: "Title",
+            //             date: "2022-12-01",
+            //             text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
+            //             link: "https://www.google.com"
+            //         },
+            //         {
+            //             title: "Title",
+            //             date: "2022-12-01",
+            //             text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
+            //             link: "https://www.google.com"
+            //         }
+            //     ]
+            // }
+            console.log(data);
+        });
+
         this.socket.emit('joinQueue', {mode: this.props.matches.mode || 0});
         console.log('Joining queue');
     }
