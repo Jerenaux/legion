@@ -40,8 +40,8 @@ module.exports = {
     alias: {
       'react': 'preact/compat',
       'react-dom': 'preact/compat',
-      '@legion/shared': path.resolve(__dirname, '../shared/'),
-      '@assets': path.resolve(__dirname, './public/'),
+      '@legion/shared': path.resolve(__dirname, 'shared'),
+      '@assets': path.resolve(__dirname, 'public'),
       'phaser': path.resolve(__dirname, 'node_modules/phaser/dist/phaser.js'),
     }
   },

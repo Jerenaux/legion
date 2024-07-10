@@ -1,0 +1,53 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./client:/usr/src/app
+      - ./shared:/usr/src/app/shared
+    environment:
+      - NODE_ENV=development
+
+  # server:
+  #   build:
+  #     context: .
+  #     dockerfile: ./server/Dockerfile
+  #   ports:
+  #     - "3123:3123"
+  #   volumes:
+  #     - ./server:/usr/src/app
+  #     - ./shared:/usr/src/app/shared
+  #   environment:
+  #     - NODE_ENV=development
+
+  api:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    ports:
+      - "4000:4000"
+      - "4400:4400"
+      - "5001:5001"
+      - "9099:9099"
+      - "9150:9150"
+      - "8090:8090"
+    # volumes:
+    #   - ./api:/usr/src/app
+    #   - ./shared:/usr/src/app/shared
+    environment:
+      - NODE_ENV=development
+
+  # matchmaker:
+  #   build:
+  #     context: .
+  #     dockerfile: ./matchmaker/Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./matchmaker:/usr/src/app
+  #     - ./shared:/usr/src/app/shared
+  #   environment:
+  #     - NODE_ENV=development

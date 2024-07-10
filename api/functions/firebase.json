@@ -1,8 +1,8 @@
 {
   "functions": 
   {
-    "source": "api/functions",
-    "runtime": "nodejs18",
+    "source": ".",
+    "runtime": "nodejs20",
     "codebase": "default",
     "ignore": [
       "node_modules",
@@ -17,16 +17,23 @@
   },
   "emulators": {
     "auth": {
-      "port": 9099
+      "port": 9099,
+      "host": "0.0.0.0"
     },
     "functions": {
-      "port": 5001
+      "port": 5001,
+      "host": "0.0.0.0",
+      "cors": ["http://127.0.0.1:4000", "http://localhost:4000"]
     },
     "firestore": {
-      "port": 8090
+      "port": 8090,
+      "host": "0.0.0.0",
+      "cors": ["http://127.0.0.1:4000", "http://localhost:4000"]
     },
     "ui": {
-      "enabled": true
+      "enabled": true,
+      "host": "0.0.0.0",
+      "port": 4000
     },
     "singleProjectMode": true
   }
