@@ -17,9 +17,6 @@ const discordClient = new Client({intents: [GatewayIntentBits.Guilds]});
 discordClient.login(process.env.DISCORD_TOKEN);
 
 admin.initializeApp(firebaseConfig);
-if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
-    process.env["FIREBASE_AUTH_EMULATOR_HOST"] = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-}
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
@@ -242,17 +239,28 @@ io.on("connection", (socket: any) => {
 
     socket.on("joinQueue", async (data: { mode: PlayMode }) => {
 
-        const decodedToken = await admin.auth().verifyIdToken(socket.firebaseToken);
-        socket.uid = decodedToken.uid;
+        try {
+            const decodedToken = await admin.auth().verifyIdToken(socket.firebaseToken);
+            console.log(`Decoded UID ${decodedToken.uid}`);
+            socket.uid = decodedToken.uid;
 
-        if (data.mode == PlayMode.PRACTICE) {
-            createGame(socket, null, PlayMode.PRACTICE);
-            return;
+            if (data.mode === PlayMode.PRACTICE) {
+                createGame(socket, null, PlayMode.PRACTICE);
+                return;
+            }
+
+            notifyAdmin(data.mode);
+            addToQueue(socket, data.mode);
+            logQueuingActivity(socket.uid, 'joinQueue', data.mode);
+        } catch (error) {
+            if (error.code === 'auth/id-token-revoked') {
+                console.log('The Firebase ID token has been revoked.');
+                socket.emit('authError', { message: 'Your session has expired. Please log in again.' });
+            } else {
+                console.error('Error verifying Firebase ID token:', error);
+                socket.emit('authError', { message: 'Authentication failed. Please try again.' });
+            }
         }
-
-        notifyAdmin(data.mode);
-        addToQueue(socket, data.mode);
-        logQueuingActivity(socket.uid, 'joinQueue', data.mode);
     });
 
     socket.on("disconnect", async () => {

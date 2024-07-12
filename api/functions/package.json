@@ -5,13 +5,16 @@
     "build": "webpack",
     "build:watch": "webpack --watch",
     "emulators:start": "firebase emulators:start --import ./firestore-emulator-data --export-on-exit ./firestore-emulator-data",
+    "emulators:start:functions": "firebase emulators:start --only functions",
     "functions:start": "firebase functions:shell",
-    "serve": "npm run build && npm run emulators:start",
+    "serve": "nodemon --watch 'src/**/*.ts' --watch 'shared/**/*.ts' --exec 'npm run build && npm run emulators:start'",
+    "serve:functions": "nodemon --watch 'src/**/*.ts' --watch 'shared/**/*.ts' --exec 'npm run build && npm run emulators:start:functions'",
     "watch:functions": "nodemon",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "docker:start": "npm run build && npm run emulators:start & npm run serve:functions"
   },
   "main": "lib/index.js",
   "dependencies": {
@@ -36,15 +39,5 @@
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
   },
-  "private": true,
-  "old_scripts": {
-    "lint": "eslint --ext .js,.ts .",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "serve": "npm run build && firebase emulators:start --import ./firestore-emulator-data --export-on-exit ./firestore-emulator-data",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
-  }
+  "private": true
 }

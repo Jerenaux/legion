@@ -377,48 +377,44 @@ function applyEquipmentBonuses(equipped: Equipment): CharacterStats {
   return bonuses;
 }
 
-export const inventoryTransaction = onRequest((request, response) => {
-  logger.info("Processing inventory transaction");
+export const inventoryTransaction = onRequest(async (request, response) => {
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
-      const uid = await getUID(request); // request.body.uid;
+      const uid = await getUID(request);
       const characterId = request.body.characterId as string;
       const inventoryType = request.body.inventoryType as InventoryType;
       const action = request.body.action as InventoryActionType;
       const index = request.body.index;
 
-      await db.runTransaction(async (transaction) => {
-        const playerRef = db.collection("players").doc(uid);
-        const characterRef = db.collection("characters").doc(characterId);
+      const playerRef = db.collection("players").doc(uid);
+      const characterRef = db.collection("characters").doc(characterId);
 
-        const playerDoc = await transaction.get(playerRef);
-        const characterDoc = await transaction.get(characterRef);
+      const playerDoc = await playerRef.get();
+      const characterDoc = await characterRef.get();
 
-        if (!playerDoc.exists || !characterDoc.exists) {
-          throw new Error("Documents do not exist");
-        }
+      if (!playerDoc.exists || !characterDoc.exists) {
+        throw new Error("Documents do not exist");
+      }
 
-        const playerData = playerDoc.data() as DBPlayerData;
-        const characterData = characterDoc.data() as DBCharacterData;
+      const playerData = playerDoc.data() as DBPlayerData;
+      const characterData = characterDoc.data() as DBCharacterData;
 
-        if (!playerData || !characterData) {
-          throw new Error("Data does not exist");
-        }
+      if (!playerData || !characterData) {
+        throw new Error("Data does not exist");
+      }
 
-        // Check that character is owned by player
-        const characters =
-            playerData.characters as admin.firestore.DocumentReference[];
-        const characterIds = characters.map((character) => character.id);
-        if (!characterIds.includes(characterId)) {
-          throw new Error("Character not owned by player");
-        }
+      const characters = playerData.characters as admin.firestore.DocumentReference[];
+      const characterIds = characters.map((character) => character.id);
+      if (!characterIds.includes(characterId)) {
+        throw new Error("Character not owned by player");
+      }
 
-        // Check for max capacity, if applicable
-        if (action === InventoryActionType.EQUIP) {
-          let canDo = false;
-          switch (inventoryType) {
+      logger.info("Checking conditions for transaction...");
+      let canDo = false;
+      if (action === InventoryActionType.EQUIP) {
+        switch (inventoryType) {
           case InventoryType.CONSUMABLES:
             canDo = canEquipConsumable(characterData);
             break;
@@ -426,30 +422,33 @@ export const inventoryTransaction = onRequest((request, response) => {
             canDo = canLearnSpell(characterData);
             break;
           case InventoryType.EQUIPMENTS: {
-              const itemId = playerData.inventory.equipment[index];
-              canDo = canEquipEquipment(characterData, itemId);
-              break;
-            }
-          }
-          if (!canDo) {
-            response.send({status: 1});
-            return;
-          }
-        } else { // unequipping
-          // Sum the length of the fields in playerData.inventory
-          const load = Object.values(playerData.inventory)
-            .filter(Array.isArray)
-            .map((arr) => arr.length)
-            .reduce((acc, curr) => acc + curr, 0);
-          if (load == characterData.carrying_capacity) {
-            response.send({status: 1});
-            return;
+            const itemId = playerData.inventory.equipment[index];
+            canDo = canEquipEquipment(characterData, itemId);
+            break;
           }
         }
+        if (!canDo) {
+          logger.info("Conditions not fulfilled to equip item");
+          response.send({ status: 1 });
+          return;
+        }
+      } else {
+        const load = Object.values(playerData.inventory)
+          .filter(Array.isArray)
+          .map((arr) => arr.length)
+          .reduce((acc, curr) => acc + curr, 0);
 
-        let update;
-        if (action === InventoryActionType.EQUIP) {
-          switch (inventoryType) {
+        if (load >= playerData.carrying_capacity) {
+          logger.info("Carrying capacity full");
+          response.send({ status: 1 });
+          return;
+        }
+      }
+
+      logger.info("Computing inventory update...");
+      let update;
+      if (action === InventoryActionType.EQUIP) {
+        switch (inventoryType) {
           case InventoryType.CONSUMABLES:
             update = equipConsumable(playerData, characterData, index);
             break;
@@ -459,37 +458,40 @@ export const inventoryTransaction = onRequest((request, response) => {
           case InventoryType.EQUIPMENTS:
             update = equipEquipment(playerData, characterData, index);
             break;
-          }
-        } else { // unequipping
-          switch (inventoryType) {
+        }
+      } else {
+        switch (inventoryType) {
           case InventoryType.CONSUMABLES:
             update = unequipConsumable(playerData, characterData, index);
             break;
           case InventoryType.EQUIPMENTS:
             update = unequipEquipment(playerData, characterData, index);
             break;
-          }
         }
+      }
 
-        if (update === -1) {
-          response.send({status: 1});
-          return;
-        }
-        if (typeof update != "number" && update !== undefined) {
-          transaction.update(playerRef, update.playerUpdate);
-          transaction.update(characterRef, update.characterUpdate);
-        }
-      });
-      console.log("Transaction successfully committed!");
-      logPlayerAction(uid, "inventoryTransaction", {action, characterId, inventoryType, index});
+      if (update === -1) {
+        logger.info("No update to perform");
+        response.send({ status: 1 });
+        return;
+      }
 
-      response.send({status: 0});
+      if (typeof update != "number" && update !== undefined) {
+        await playerRef.update(update.playerUpdate);
+        await characterRef.update(update.characterUpdate);
+      }
+
+      await logPlayerAction(uid, "inventoryTransaction", { action, characterId, inventoryType, index });
+      logger.info("inventoryTransaction successful");
+
+      response.send({ status: 0 });
     } catch (error) {
       console.error("inventoryTransaction error:", error);
       response.status(500).send("Error processing transaction");
     }
   });
 });
+
 
 export const inventorySave = onRequest((request, response) => {
   logger.info("Saving inventory");

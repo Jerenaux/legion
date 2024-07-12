@@ -2,8 +2,9 @@
 import * as admin from "firebase-admin";
 import cors from "cors";
 import {Request} from "express";
+import firebaseConfig from '@legion/shared/firebaseConfig';
 
-admin.initializeApp();
+admin.initializeApp(firebaseConfig);
 
 const corsOptions = {origin: true};
 export const corsMiddleware = cors(corsOptions);

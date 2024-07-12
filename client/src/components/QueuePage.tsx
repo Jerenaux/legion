@@ -15,7 +15,6 @@ class QueuePage extends Component<QPageProps, {}> {
     socket;
 
     joinQueue = async () => {
-        console.log(`Connecting to ${process.env.MATCHMAKER_URL}`);
         this.socket = io(
             process.env.MATCHMAKER_URL,
             {

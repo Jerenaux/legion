@@ -55,6 +55,7 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration
 
         headers.append("Authorization", `Bearer ${idToken}`);
 
+        console.log(`Calling ${apiBaseUrl}/${endpoint}`);
         const fetchPromise = fetch(`${apiBaseUrl}/${endpoint}`, {
             ...options,
             headers,
