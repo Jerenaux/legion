@@ -209,7 +209,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                     }
 
                     return (
-                        <div className="team-item" key={i} style={inventoryType === InventoryType.CONSUMABLES && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
+                        <div className="team-item" key={i} style={(inventoryType === InventoryType.SKILLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
                             <div className="special-equip" style={{
                                 backgroundImage: `url(${backgroundImageUrl})`,
                                 backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
