@@ -1516,8 +1516,8 @@ canvas {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: calc(14vw - 20px);
-  height: calc(14vw - 20px);
+  width: calc(14vw - 1vw);
+  height: calc(14vw - 1vw);
   border-radius: 50%;
   background: #080c15;
 }
@@ -1533,11 +1533,58 @@ canvas {
   width: 12vw;
   height: 12vw;
   border-radius: 50%;
-  background: linear-gradient(to right, grey 50%, cyan 50%);
   display: flex;
   justify-content: center;
   align-items: center;
 }
+@keyframes progress {
+  0% { --percentage: 0; }
+  100% { --percentage: var(--value); }
+}
+
+@property --percentage {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 20;
+}
+
+[role="progressbar"] {
+  --percentage: var(--value);
+  --primary: #369;
+  --secondary: #adf;
+  --size: 12vw;
+  /* animation: progress 2s 0.5s forwards; */
+  width: var(--size);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+[role="progressbar"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: conic-gradient(cyan calc(var(--percentage) * 1%), rgb(66, 66, 66) 0);
+  mask: radial-gradient(white 55%, transparent 0);
+  mask-mode: alpha;
+  -webkit-mask: radial-gradient(#0000 68%, black 0);
+  -webkit-mask-mode: alpha;
+}
+
+/* [role="progressbar"]::after {
+  counter-reset: percentage var(--value);
+  content: counter(percentage) '%';
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: calc(var(--size) / 5);
+  color: var(--primary);
+} */
+
 .queue-count-box {
   width: 11.5vw;
   height: 11.5vw;
@@ -1597,10 +1644,11 @@ canvas {
   justify-content: center;
   align-items: center;
   border-radius: 5px;
+  cursor: pointer;
 }
 .active {
-  background-color: #242330;
-  border: 1px solid yellow;
+  background-color: #3f3e49;
+  border: 1px solid goldenrod;
 }
 
 .queue-detail-body {
@@ -1608,7 +1656,9 @@ canvas {
   top: 3.2vw; 
   left: 10vw;
   height: 9vw;
-  width: 7.5vw;
+  width: 8.5vw;
+  font-family: Kim;
+  /* font-weight: bold; */
   /* background-color: tomato; */
 }
 .queue-detail-body > div {
@@ -1621,12 +1671,12 @@ canvas {
   border-image-repeat: repeat;
 }
 .queue-detail-body > div > div:first-child {
-  font-family: Franklin Gothic;
+  /* font-family: Franklin Gothic; */
   font-size: 0.8vw;
   color: white;
 }
 .queue-detail-body > div > div:last-child { 
-  font-family: Tahoma;
+  /* font-family: Tahoma; */
   font-size: 1vw;
   /* font-weight: bold; */
   color: white;
@@ -1667,9 +1717,33 @@ canvas {
 .queue-footer-text { 
   text-align: center;
   margin-left: 3vw;
-  color: white;
   font-family: Tahoma;
   font-size: 0.9vw;
+  color: white;
+}
+.queue-detail-footer:hover .queue-footer-text {
+  color: cyan;
+  /* opacity: 0.8; */
+}
+.queue-detail-arrow {
+  position: absolute; 
+  top: 7vw; 
+  left: 8.15vw; 
+}
+.queue-detail-arrow > img {
+  width: 0.6vw;
+  height: auto;
+}
+
+.queue-text {
+  position: absolute;
+  top: 18.75vw; 
+  width: 100%;
+  font-size: 1.5vw;
+  font-family: Kim;
+  text-align: center;
+  color: white;
+  /* background-color: tomato; */
 }
 
 .queue-news {
@@ -1697,6 +1771,7 @@ canvas {
   padding: 0.5vw 1vw;
   overflow: hidden;
   height: 4vw;
+  font-size: 0.8vw;
   /* background-color: cyan; */
 }
 .queue-news-title {
@@ -1704,6 +1779,7 @@ canvas {
   height: 2vw;
   /* background-color: cyan; */
   background-image: url('@assets/queue/news_title_bg.png'); 
+  font-size: 1vw;
   padding-left: 1vw;
   padding-right: 2vw;
   display: flex;
@@ -1713,6 +1789,7 @@ canvas {
 .queue-news-readmore {
   width: 21.4vw; 
   height: 2vw;
+  /* font-size: 1vw; */
   /* background-color: cyan; */
   background-image: url('@assets/queue/readmore_bg.png');
   background-position: center; 
@@ -1775,16 +1852,42 @@ canvas {
   display: flex;
   justify-content: center;
 }
-.queue-btns > div {
+.queue-btns > a > div {
   width: 2.5vw; 
   height: 2.5vw;
   cursor: pointer;
+  /* background-color: tomato; */
   /* background-color: grey; */
 }
-.queue-btns > div > img {
+.queue-btns > a > div > img {
   width: 100%;
   height: 100%;
 }
 .btn-x {
   margin-right: 0.25vw;
 }
+
+/* a:active,
+a:focus,
+a:visited {
+  text-decoration: none !important;
+} */
+
+a:-webkit-any-link {
+  text-decoration: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

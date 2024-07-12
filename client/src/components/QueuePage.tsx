@@ -1,33 +1,42 @@
-import { h, Component } from 'preact';
+import { h, Component, ErrorInfo } from 'preact';
 import { io } from 'socket.io-client';
 import { route } from 'preact-router';
+import { Link, useRouter } from 'preact-router';
 
 import { getFirebaseIdToken } from '../services/apiService';
 
 interface QPageProps {
     matches: {
-      mode?: number;
+        mode?: number;
     };
-  }
+}
 
 
 const tips = [
-    "To have data to use in the UI, use the Log In button and create an account, which will create a user in the Firestore database.", 
-    "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great! New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great!", 
+    "To have data to use in the UI, use the Log In button and create an account, which will create a user in the Firestore database.",
+    "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great! New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great!",
     "Event handlers have access to the event that triggered the function.",
 ]
 
 interface QpageState {
     tipCount: number;
-  }
+    progress: number;
+    findState: string;
+    waited: number;
+}
 
 
 /* eslint-disable react/prefer-stateless-function */
-class QueuePage extends Component<QPageProps, QpageState> { 
+class QueuePage extends Component<QPageProps, QpageState> {
+    interval = null;
+    intervalWaited = null;
     constructor(props: QPageProps) {
-        super(props); 
+        super(props);
         this.state = {
-            tipCount: 0, 
+            tipCount: 0,
+            progress: 0,
+            findState: 'quick',
+            waited: 0,
         };
     }
 
@@ -56,16 +65,16 @@ class QueuePage extends Component<QPageProps, QpageState> {
             }
         );
 
-        this.socket.on('matchFound', ({gameId}) => {
+        this.socket.on('matchFound', ({ gameId }) => {
             console.log(`Found game ${gameId}!`);
             route(`/game/${gameId}`);
         });
 
-        this.socket.on('updateGold', ({gold}) => {
+        this.socket.on('updateGold', ({ gold }) => {
             console.log(`Received gold update: ${gold}`);
         });
 
-        this.socket.on('queueData' , (data) => {
+        this.socket.on('queueData', (data) => {
             // {
             //     goldRewardInterval,
             //     goldReward,
@@ -97,19 +106,45 @@ class QueuePage extends Component<QPageProps, QpageState> {
             //         }
             //     ]
             // }
-            console.log(data);
+            console.log('data -> ', data);
         });
 
-        this.socket.emit('joinQueue', {mode: this.props.matches.mode || 0});
+        // this.socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });
         console.log('Joining queue');
+    }
+
+    handleQuickFind = () => {
+        this.setState({ findState: 'quick' });
+    }
+    handleAccurateFind = () => {
+        this.setState({ findState: 'accurate' });
     }
 
     componentDidMount() {
         this.joinQueue();
-    }    
+        this.interval = setInterval(() => {
+            // console.log('state -> ', this.state.progress);
+            this.setState((prevState) => ({
+                progress: prevState.progress + 1,
+            }));
+            if (this.state.progress == 100) {
+                clearInterval(this.interval);
+            }
+        }, 50);
+        this.intervalWaited = setInterval(() => {
+            this.setState((prevState) => ({
+                waited: prevState.waited + 1,
+            }))
+        }, 1000);
+    }
+
+    componentWillMount() {
+        clearInterval(this.interval);
+        clearInterval(this.intervalWaited);
+    }
 
     render() {
-
+        const { progress } = this.state;
         return (
             <div className="queue-container">
                 <div className="queue-body">
@@ -118,107 +153,124 @@ class QueuePage extends Component<QPageProps, QpageState> {
                             <div className="queue-spinner-loader"></div>
                         </div>
                         <div className="queue-count">
-                            <div className="queue-count-box"> 
-                                <div className="queue-count-number">
-                                    107
-                                </div>
-                                <div className="queue-count-text">
-                                    Queueing
+                            <div role="progressbar" style={`--value: ${progress}`}>
+                                <div>
+                                    <div className="queue-count-number">
+                                        107
+                                    </div>
+                                    <div className="queue-count-text">
+                                        Queueing
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div className="queue-detail">
                             <div>
                                 <div className="queue-detail-header">
-                                    <div className="queue-detail-btn">
-                                        Button 
+                                    <div
+                                        className={this.state.findState == 'quick' ? 'queue-detail-btn active' : 'queue-detail-btn'}
+                                        onClickCapture={this.handleQuickFind}
+                                    >
+                                        Quick find
                                     </div>
-                                    <div className="queue-detail-btn active">
-                                        Button
+                                    <div
+                                        className={this.state.findState == 'accurate' ? 'queue-detail-btn active' : 'queue-detail-btn'}
+                                        onClick={this.handleAccurateFind}
+                                    >
+                                        Accurate find
                                     </div>
                                 </div>
                                 <div className="queue-detail-body">
                                     <div>
-                                        <div>FIRSTVALUE</div>
+                                        <div>EARNINGS</div>
                                         <div>
                                             <div><img src="/gold_icon.png" /></div>
-                                            <div><span style={{color: 'coral'}}>10</span>6/<span style={{color: 'deepskyblue'}}>30</span>&nbsp;Sec</div>
+                                            <div><span style={{ color: 'coral' }}>10</span>/<span style={{ color: 'deepskyblue' }}>30</span>&nbsp;Sec</div>
                                         </div>
                                     </div>
                                     <div>
-                                        <div>SECOND</div>
+                                        <div>EARNED</div>
                                         <div>
                                             <div><img src="/gold_icon.png" /></div>
-                                            <div><span style={{color: 'coral'}}>30</span></div>
+                                            <div><span style={{ color: 'coral' }}>30</span></div>
                                         </div>
                                     </div>
                                     <div>
-                                        <div>THIRD</div>
+                                        <div>WAITED</div>
                                         <div>
-                                            <span style={{color: 'deepskyblue'}}>98</span>&nbsp;Secs
+                                            <span style={{ color: 'deepskyblue' }}>{this.state.waited}</span>&nbsp;Secs
                                         </div>
                                     </div>
                                     <div>
-                                        <div>FOURTH RATING</div>
+                                        <div>APPROX WAITING TIME</div>
                                         <div>
-                                            <span style={{color: 'deepskyblue'}}>123</span>&nbsp;Secs
+                                            <span style={{ color: 'deepskyblue' }}>123</span>&nbsp;Secs
                                         </div>
                                     </div>
                                 </div>
-                                <div className="queue-detail-footer">
-                                    <div className="queue-footer-exit">
-                                        <img src="/queue/exit_icon.png" />
+
+                                <Link href="/play">
+                                    <div className="queue-detail-footer">
+                                        <div className="queue-footer-exit">
+                                            <img src="/queue/exit_icon.png" />
+                                        </div>
+                                        <div className="queue-footer-text">
+                                            CANCEL QUEUE
+                                        </div>
                                     </div>
-                                    <div className="queue-footer-text">
-                                        CANCEL QUEUE
-                                    </div>
+                                </Link>
+                                <div className="queue-detail-arrow">
+                                    <img src="/queue/blue_triangle.png" />
                                 </div>
                             </div>
                         </div>
                         <div className="queue-number">
 
                         </div>
+                        <div className="queue-text">
+                            Waiting for players in casual mode…
+                        </div>
                     </div>
                 </div>
-                
+
                 <div className="queue-news">
                     <div className="queue-news-container">
                         <div class="queue-news-title">
-                            <div><span style={{color: 'cyan'}}>News Title DELL</span></div>
-                            <div><span style={{color: 'coral'}}>29 Apr 2024</span></div>
+                            <div><span style={{ color: 'cyan' }}>News Title</span></div>
+                            <div><span style={{ color: 'coral' }}>29 Apr 2024</span></div>
                         </div>
                         <div className="queue-news-content">
-                            New versio of legion game will be launched soon! 
+                            New version of legion game will be launched soon!
                             Expect great interface and wonderful game experience, excellent, fantastic, great!
                         </div>
                         <div className="queue-news-readmore">
-                            READ MORE &nbsp;&nbsp; <span style={{color: 'coral'}}>▶</span>
+                            READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
                         </div>
                     </div>
                     <div className="queue-news-container">
                         <div class="queue-news-title">
-                            <div><span style={{color: 'cyan'}}>News Title DELL</span></div>
-                            <div><span style={{color: 'coral'}}>29 Apr 2024</span></div>
+                            <div><span style={{ color: 'cyan' }}>News Title</span></div>
+                            <div><span style={{ color: 'coral' }}>29 Apr 2024</span></div>
                         </div>
                         <div className="queue-news-content">
-                            New versio of legion game will be launched soon! 
+                            New version of legion game will be launched soon!
                             Expect great interface and wonderful game experience, excellent, fantastic, great!
                         </div>
                         <div className="queue-news-readmore">
-                            READ MORE &nbsp;&nbsp; <span style={{color: 'coral'}}>▶</span>
+                            READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
                         </div>
                     </div>
                     <div className="queue-news-container">
                         <div class="queue-news-title">
-                            <div><span style={{color: 'cyan'}}>News Title DELL</span></div>
-                            <div><span style={{color: 'coral'}}>29 Apr 2024</span></div>
+                            <div><span style={{ color: 'cyan' }}>News Title</span></div>
+                            <div><span style={{ color: 'coral' }}>29 Apr 2024</span></div>
                         </div>
                         <div className="queue-news-content">
-                            New versio of legion game will be launched soon! 
+                            New version of legion game will be launched soon!
                             Expect great interface and wonderful game experience, excellent, fantastic, great!
                         </div>
                         <div className="queue-news-readmore">
-                            READ MORE &nbsp;&nbsp; <span style={{color: 'coral'}}>▶</span>
+                            READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
                         </div>
                     </div>
                 </div>
@@ -227,7 +279,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                     <div className="queue-tips-container">
                         <div>Tips</div>
                         <div>
-                            <span style={{color: 'cyan'}}>
+                            <span style={{ color: 'cyan' }}>
                                 {tips[this.state.tipCount]}
                             </span>
                         </div>
@@ -240,14 +292,18 @@ class QueuePage extends Component<QPageProps, QpageState> {
                     </div>
                 </div>
                 <div className="queue-btns">
-                    <div className="btn-x">
-                        <img src="/queue/x_btn.png" />
-                    </div>
-                    <div className="btn-discord">
-                        <img src="/queue/discord_btn.png" />
-                    </div>
+                    <Link href="https://x.com/iolegion" target="_blank">
+                        <div className="btn-x">
+                            <img src="/queue/x_btn.png" />
+                        </div>
+                    </Link>
+                    <Link href="">
+                        <div className="btn-discord">
+                            <img src="/queue/discord_btn.png" />
+                        </div>
+                    </Link>
                 </div>
-            </div>
+            </div >
         );
     }
 }
