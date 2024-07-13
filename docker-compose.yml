@@ -19,9 +19,9 @@ services:
       dockerfile: ./server/Dockerfile
     ports:
       - "3123:3123"
-    # volumes:
-    #   - ./server:/usr/src/app
-    #   - ./shared:/usr/src/app/shared
+    volumes:
+      - ./server:/usr/src/app
+      - ./shared:/usr/src/app/shared
     environment:
       - NODE_ENV=development
       - FIREBASE_AUTH_EMULATOR_HOST=${FIREBASE_AUTH_EMULATOR_HOST}
