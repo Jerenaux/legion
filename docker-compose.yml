@@ -9,8 +9,11 @@ services:
       - ./client:/usr/src/app
       - ./shared:/usr/src/app/shared
     environment:
-      - NODE_ENV=docker
-      - FIREBASE_AUTH_EMULATOR_HOST=${FIREBASE_AUTH_EMULATOR_HOST}
+      - API_URL=http://localhost:5001/legion-32c6d/us-central1
+      - FIREBASE_AUTH_EMULATOR_HOST=http://localhost:9099
+      - GAME_SERVER_URL=http://localhost:3123
+      - IS_DOCKER=true
+      - MATCHMAKER_URL=http://localhost:3000
       - USE_FIREBASE_EMULATOR=true
 
   server:

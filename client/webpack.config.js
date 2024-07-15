@@ -2,7 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
-const isDocker = process.env.NODE_ENV === 'docker';
+const isDocker = process.env.IS_DOCKER;
 
 module.exports = {
   mode: 'development',
@@ -95,6 +95,8 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: 'src/index.html'
     }),
-    new Dotenv()
+    new Dotenv({
+      systemvars: true // Load all system variables as well
+    })
   ]
 };
