@@ -41,7 +41,7 @@ services:
       - ./api/functions:/usr/src/app
       - ./shared:/usr/src/app/shared
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=docker
 
   matchmaker:
     build:

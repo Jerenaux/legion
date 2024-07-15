@@ -10,7 +10,7 @@
     "target": "es2017",
     "baseUrl": "./",
 		"paths": {
-			"@legion/shared/*": ["../../shared/*"]
+			"@legion/shared/*": ["shared/*"]
 		},
   },
   "compileOnSave": true,

@@ -1,5 +1,7 @@
 const path = require('path');
 
+const isDocker = process.env.NODE_ENV === 'docker';
+
 module.exports = {
   mode: 'development', 
   entry: './src/index.ts', 
@@ -8,8 +10,15 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        loader: 'ts-loader',
-        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: isDocker ? 'tsconfig.docker.json' : 'tsconfig.json'
+            }
+          }
+        ],
+        exclude: /node_modules/
       },
     ],
   },
