@@ -68,12 +68,12 @@
     font-size: 14px;
     max-width: 174px;
     margin-bottom: 5px;
-    height: 18px;
+    /* height: 18px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; */
 }
 
 .consumable-card-effect-container {
