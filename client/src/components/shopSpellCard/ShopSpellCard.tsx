@@ -35,7 +35,19 @@ interface ShopCardProps {
 
 class ShopSpellCard extends Component<ShopCardProps> {
   render() {
-    const { data } = this.props;
+    const getRarityValue = (effort) => {
+      if(effort < 10) {
+        return {val: "common", clr: "cyan"};
+      } else if(effort < 25) {
+        return {val: "rare", clr: "tomato"};
+      } else if(effort < 50) {
+        return {val: "epic", clr: "red"};
+      } else {
+        return {val: "legendary", clr: "orange"};
+      }
+    }
+
+    const { data } = this.props; 
 
     const classStyle = (classes: Class) => {
       return {
@@ -98,6 +110,11 @@ class ShopSpellCard extends Component<ShopCardProps> {
             <img src="/inventory/target_icon.png" alt="cost" />
             <span>{Target[data.target]}</span>
           </div>
+        </div>
+        <div style={{lineHeight: '0.5'}}>
+          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '11px'}}>
+            {getRarityValue(data.effort).val}
+          </span>
         </div>
         <div className="spell-card-price">
           <img src="/gold_icon.png" alt="gold" />

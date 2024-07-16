@@ -10,7 +10,8 @@ export class BaseEquipment {
     frame: number = 0;
     slot: EquipmentSlot = EquipmentSlot.WEAPON;
     effects: Effect[] = [];
-    price: number = 0;
+    price: number = 0; 
+    effort: number = 0;
     rarity: Rarity = Rarity.COMMON;
     minLevel: number = 0;
     classes: Class[] = [];

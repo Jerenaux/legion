@@ -20,8 +20,23 @@ interface ShopCharacteCardProps {
 }
 
 class ShopCharacterCard extends Component<ShopCharacteCardProps> {
-  render() {
+  render() { 
+    const getRarityValue = (effort) => {
+      if(effort < 10) {
+        return {val: "common", clr: "cyan"};
+      } else if(effort < 25) {
+        return {val: "rare", clr: "tomato"};
+      } else if(effort < 50) {
+        return {val: "epic", clr: "red"};
+      } else {
+        return {val: "legendary", clr: "orange"};
+      }
+    }
+
     const {data} = this.props;
+
+    console.log('character -> data -> ', data);
+
     const statsArray = Object.entries(data.stats).map(([key, value]) => ({ key, value: value as number }));
 
     const portraitStyle = {
@@ -70,6 +85,11 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps> {
             <div className="shop-character-card-effect-stat" style={statColor(stat.key)}><span>{INFO_TYPE[stat.key]}</span></div>
             <div className="shop-character-card-effect-value"><span>{stat.value}</span></div>
           </div>)}
+        </div>
+        <div style={{lineHeight: '0.5'}}>
+          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '11px'}}>
+            {getRarityValue(data.effort).val}
+          </span>
         </div>
         <div className="shop-card-price">
           <img src="/gold_icon.png" alt="gold" />
