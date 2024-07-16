@@ -45,7 +45,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
 
     const { data } = this.props; 
 
-    // console.log('equipment -> data -> ', data);
+    console.log('equipment -> data -> ', data);
 
     const classStyle = (classes: Class) => {
       return {
