@@ -9,8 +9,16 @@ const withAuth = (WrappedComponent) => {
         componentDidMount() {
             const { isAuthenticated } = this.context;
             if (!isAuthenticated) {
-                // Redirect to login or home page
-                route('/login'); // Adjust as per your login route
+                // Redirect to landing page
+                route('/'); 
+            }
+        }
+
+        componentDidUpdate() {
+            const { isAuthenticated } = this.context;
+            if (!isAuthenticated) {
+                // Redirect to landing page
+                route('/'); 
             }
         }
 
