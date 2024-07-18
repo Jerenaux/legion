@@ -1601,6 +1601,7 @@ canvas {
   font-size: 3.2vw;
   font-weight: 900;
   color: #f5b70e;
+  text-align: center;
 }
 .queue-count-text { 
   font-size: 1.4vw;

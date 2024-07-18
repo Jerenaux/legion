@@ -18,11 +18,26 @@ const tips = [
     "Event handlers have access to the event that triggered the function.",
 ]
 
+interface QueueData {
+    goldRewardInterval: number;
+    goldReward: number;
+    estimatedWaitingTime: number;
+    nbInQueue: number;
+    tips: string[];
+    news: {
+        title: string;
+        date: string;
+        text: string;
+        link: string;
+    }[];
+}
+
 interface QpageState {
     tipCount: number;
     progress: number;
     findState: string;
     waited: number;
+    queueData: QueueData;
 }
 
 
@@ -37,18 +52,51 @@ class QueuePage extends Component<QPageProps, QpageState> {
             progress: 0,
             findState: 'quick',
             waited: 0,
+            queueData: {
+                goldRewardInterval: 0,
+                goldReward: 0,
+                estimatedWaitingTime: 10,
+                nbInQueue: 0, // countQueuingPlayers(player.mode, player.league),
+                tips: [
+                    "o have data to use in the UI, use the Log In button and create an account, which will create a user in the Firestore database.",
+                    "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great! New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great!",
+                    "Event handlers have access to the event that triggered the function."
+                ],
+                news: [
+                    {
+                        title: "Title",
+                        date: "2022-12-01",
+                        text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, wonderful!",
+                        link: "https://www.google.com"
+                    },
+                    {
+                        title: "Title",
+                        date: "2022-12-01",
+                        text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, wonderful!",
+                        link: "https://www.google.com"
+                    },
+                    {
+                        title: "Title",
+                        date: "2022-12-01",
+                        text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, wonderful!",
+                        link: "https://www.google.com"
+                    }
+                ]
+            },
         };
     }
 
     prevTip = () => {
+        let len = this.state.queueData.tips.length;
         this.setState((prevState) => ({
-            tipCount: (prevState.tipCount - 1 + tips.length) % tips.length
+            tipCount: (prevState.tipCount - 1 + len) % len
         }));
     }
 
-    nextTip = () => {
+    nextTip = () => { 
+        let len = this.state.queueData.tips.length;
         this.setState((prevState) => ({
-            tipCount: (prevState.tipCount + 1 + tips.length) % tips.length
+            tipCount: (prevState.tipCount + 1 + len) % len
         }));
     }
 
@@ -75,6 +123,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
         });
 
         this.socket.on('queueData', (data) => {
+            this.setState({ queueData: { ...data } });
+
             // {
             //     goldRewardInterval,
             //     goldReward,
@@ -89,19 +139,19 @@ class QueuePage extends Component<QPageProps, QpageState> {
             //         {
             //             title: "Title",
             //             date: "2022-12-01",
-            //             text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
+            //             text: "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
             //             link: "https://www.google.com"
             //         },
             //         {
             //             title: "Title",
             //             date: "2022-12-01",
-            //             text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
+            //             text: "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
             //             link: "https://www.google.com"
             //         },
             //         {
             //             title: "Title",
             //             date: "2022-12-01",
-            //             text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
+            //             text: "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
             //             link: "https://www.google.com"
             //         }
             //     ]
@@ -121,7 +171,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     componentDidMount() {
-        this.joinQueue();
+        this.joinQueue(); 
+        let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
         this.interval = setInterval(() => {
             // console.log('state -> ', this.state.progress);
             this.setState((prevState) => ({
@@ -130,7 +181,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
             if (this.state.progress == 100) {
                 clearInterval(this.interval);
             }
-        }, 50);
+        }, timeInterval);
         this.intervalWaited = setInterval(() => {
             this.setState((prevState) => ({
                 waited: prevState.waited + 1,
@@ -144,7 +195,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     render() {
-        const { progress } = this.state;
+        const { progress, queueData } = this.state;
+
         return (
             <div className="queue-container">
                 <div className="queue-body">
@@ -156,7 +208,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                             <div role="progressbar" style={`--value: ${progress}`}>
                                 <div>
                                     <div className="queue-count-number">
-                                        107
+                                        {queueData.nbInQueue}
                                     </div>
                                     <div className="queue-count-text">
                                         Queueing
@@ -185,14 +237,14 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                         <div>EARNINGS</div>
                                         <div>
                                             <div><img src="/gold_icon.png" /></div>
-                                            <div><span style={{ color: 'coral' }}>10</span>/<span style={{ color: 'deepskyblue' }}>30</span>&nbsp;Sec</div>
+                                            <div><span style={{ color: 'coral' }}>{queueData.goldReward}</span>/<span style={{ color: 'deepskyblue' }}>{queueData.goldRewardInterval}</span>&nbsp;Sec</div>
                                         </div>
                                     </div>
                                     <div>
                                         <div>EARNED</div>
                                         <div>
                                             <div><img src="/gold_icon.png" /></div>
-                                            <div><span style={{ color: 'coral' }}>30</span></div>
+                                            <div><span style={{ color: 'coral' }}>0</span></div>
                                         </div>
                                     </div>
                                     <div>
@@ -234,45 +286,20 @@ class QueuePage extends Component<QPageProps, QpageState> {
                 </div>
 
                 <div className="queue-news">
-                    <div className="queue-news-container">
-                        <div class="queue-news-title">
-                            <div><span style={{ color: 'cyan' }}>News Title</span></div>
-                            <div><span style={{ color: 'coral' }}>29 Apr 2024</span></div>
+                    {queueData.news.map(newsItem => (
+                        <div className="queue-news-container">
+                            <div class="queue-news-title">
+                                <div><span style={{ color: 'cyan' }}>{newsItem.title}</span></div>
+                                <div><span style={{ color: 'coral' }}>{newsItem.date}</span></div>
+                            </div>
+                            <div className="queue-news-content">
+                                {newsItem.text}
+                            </div>
+                            <div className="queue-news-readmore">
+                                READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
+                            </div>
                         </div>
-                        <div className="queue-news-content">
-                            New version of legion game will be launched soon!
-                            Expect great interface and wonderful game experience, excellent, fantastic, great!
-                        </div>
-                        <div className="queue-news-readmore">
-                            READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
-                        </div>
-                    </div>
-                    <div className="queue-news-container">
-                        <div class="queue-news-title">
-                            <div><span style={{ color: 'cyan' }}>News Title</span></div>
-                            <div><span style={{ color: 'coral' }}>29 Apr 2024</span></div>
-                        </div>
-                        <div className="queue-news-content">
-                            New version of legion game will be launched soon!
-                            Expect great interface and wonderful game experience, excellent, fantastic, great!
-                        </div>
-                        <div className="queue-news-readmore">
-                            READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
-                        </div>
-                    </div>
-                    <div className="queue-news-container">
-                        <div class="queue-news-title">
-                            <div><span style={{ color: 'cyan' }}>News Title</span></div>
-                            <div><span style={{ color: 'coral' }}>29 Apr 2024</span></div>
-                        </div>
-                        <div className="queue-news-content">
-                            New version of legion game will be launched soon!
-                            Expect great interface and wonderful game experience, excellent, fantastic, great!
-                        </div>
-                        <div className="queue-news-readmore">
-                            READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
-                        </div>
-                    </div>
+                    ))}
                 </div>
 
                 <div className="queue-tips">
@@ -280,7 +307,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                         <div>Tips</div>
                         <div>
                             <span style={{ color: 'cyan' }}>
-                                {tips[this.state.tipCount]}
+                                {queueData.tips[this.state.tipCount]}
                             </span>
                         </div>
                     </div>
