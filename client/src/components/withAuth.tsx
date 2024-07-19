@@ -7,7 +7,9 @@ const withAuth = (WrappedComponent) => {
         static contextType = AuthContext;
 
         componentDidMount() {
+            console.log("#### MOUNTING WITHAUTH");
             const { isAuthenticated } = this.context;
+            console.log(`Authenticated: ${isAuthenticated}`);
             if (!isAuthenticated) {
                 // Redirect to landing page
                 route('/'); 
@@ -16,6 +18,7 @@ const withAuth = (WrappedComponent) => {
 
         componentDidUpdate() {
             const { isAuthenticated } = this.context;
+            console.log(`[updt] Authenticated: ${isAuthenticated}`);
             if (!isAuthenticated) {
                 // Redirect to landing page
                 route('/'); 

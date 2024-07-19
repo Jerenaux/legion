@@ -4,6 +4,7 @@ import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from '../components/utils';
 import { APIPlayerData } from '@legion/shared/interfaces';
 import {League} from "@legion/shared/enums";
+import { firebaseAuth } from '../services/firebaseService'; 
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
     constructor(props: {}) {
@@ -28,10 +29,16 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     componentDidMount() {
-        this.fetchPlayerData();
+      console.log('PlayerProvider mounted');
+      this.fetchPlayerData();
     }
     
     async fetchPlayerData() {
+      const user = firebaseAuth.currentUser;
+      if (!user) {
+          return;
+          // throw new Error("No authenticated user found");
+      }
       try {
           const data = await apiFetch('getPlayerData') as APIPlayerData;
           console.log(data);

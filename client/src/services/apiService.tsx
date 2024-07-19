@@ -6,7 +6,10 @@ const apiBaseUrl = process.env.API_URL;
 export async function getFirebaseIdToken() {
     try {
         const user = firebaseAuth.currentUser;
-        if (!user) throw new Error("No authenticated user found");
+        if (!user) {
+            return;
+            // throw new Error("No authenticated user found");
+        }
         return await user.getIdToken(true);
     } catch (error) {
         console.error("Error getting Firebase ID token", error);

@@ -14,9 +14,11 @@ class LandingPage extends Component {
         showLoginOptions: false,
     };
 
+    firebaseUIContainer = null;
+    firebaseUI = null;
+
     showLoginOptions = () => {
-        this.setState({ showLoginOptions: true });
-        this.initFirebaseUI();
+        this.setState({ showLoginOptions: true }, this.initFirebaseUI);
     };
 
     initFirebaseUI = () => {
@@ -29,30 +31,54 @@ class LandingPage extends Component {
             ],
         };
 
-        try {
-            const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
-            ui.start('#firebaseui-auth-container', uiConfig);
-        } catch (error) {
-            console.error('Error initializing Firebase UI: ', error);
+        if (this.firebaseUIContainer) {
+            try {
+                this.firebaseUI = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
+                this.firebaseUI.start(this.firebaseUIContainer, uiConfig);
+            } catch (error) {
+                console.error('Error initializing Firebase UI: ', error);
+            }
         }
-    }
+    };
+
+    clearFirebaseUI = () => {
+        if (this.firebaseUI) {
+            this.firebaseUI.reset();
+        }
+        this.setState({ showLoginOptions: false });
+    };
 
     render() {
         const { showLoginOptions } = this.state;
 
         return (
             <div className="landingPage">
-                {!showLoginOptions ? (
-                    <div>
-                        <button onClick={() => route('/tutorial')}>Proceed to Tutorial</button>
-                        <button onClick={this.showLoginOptions}>Skip and Log In</button>
-                    </div>
-                ) : (
-                    <div id="firebaseui-auth-container"></div>
-                )}
+                <div className="login-dialog">
+                    <img src="logobig.png" alt="Logo" className="logo" />
+                    {!showLoginOptions ? (
+                        <div>
+                            <div className="login-header"><br/><br/><br/>
+                                <p>Assemble your team and become the strongest of the arena!</p>
+                            </div>
+                            <div className="login-buttons">
+                                <button className="get-started" onClick={() => route('/tutorial')}>Get Started</button>
+                                <button className="already-account" onClick={this.showLoginOptions}>Already have an account?</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="login-header"><br/><br/><br/>
+                                <p>Choose your sign in/up method</p>
+                            </div>
+                            <div ref={(ref) => this.firebaseUIContainer = ref} id="firebaseui-auth-container"></div>
+                            <button className="back-button" onClick={this.clearFirebaseUI}>Back</button>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }
 }
+
 
 export default LandingPage;

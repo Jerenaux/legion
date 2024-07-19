@@ -59,15 +59,6 @@ class HomePage extends Component<object, {}> {
                                 </Router>
                             </div>
                         </div>
-                        {/* <div className={`dialog login-dialog ${!showFirebaseUI ? 'hidden' : ''}`}>
-                            <div className="shop-item-card-header" >
-                                <div className="shop-item-card-name">Sign up or sign in</div>
-                                <div className="shop-item-card-name-shadow">Sign up or sign in</div>
-                            </div>
-                            <div className="shop-item-card-content" id="firebaseui-auth-container">
-                                <i className="fa-solid fa-circle-xmark closebtn" onClick={this.hideFirebaseUI} />
-                            </div>
-                        </div> */}
                     </div>
                 )}
             </PlayerContext.Consumer>
