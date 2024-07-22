@@ -11,6 +11,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       super(props);
       this.state = {
         player: {
+          uid: '',
           name: '',
           avatar: '0',
           lvl: 0,
@@ -29,7 +30,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     componentDidMount() {
-      console.log('PlayerProvider mounted');
       this.fetchPlayerData();
     }
     
@@ -44,6 +44,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           console.log(data);
           this.setState({ 
               player: {
+                  uid: user.uid,
                   name: data.name,
                   avatar: data.avatar,
                   lvl: data.lvl,

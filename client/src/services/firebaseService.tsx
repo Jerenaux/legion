@@ -12,7 +12,7 @@ const firebaseApp = firebase.app();
 const firebaseAuth = firebase.auth();
 
 if (process.env.USE_FIREBASE_EMULATOR == 'true') {
-  console.log(`Using Firebase emulator`);
+  // console.log(`Using Firebase emulator`);
   firebaseAuth.useEmulator('http://localhost:9099');
 }
 

@@ -26,6 +26,7 @@ class QueuePage extends Component<QPageProps, {}> {
 
         this.socket.on('matchFound', ({gameId}) => {
             console.log(`Found game ${gameId}!`);
+            this.socket.disconnect();
             route(`/game/${gameId}`);
         });
 

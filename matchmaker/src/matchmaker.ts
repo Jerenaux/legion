@@ -61,7 +61,7 @@ async function notifyAdmin(mode: PlayMode) {
 // Initialize matchmaking functionality
 function setupMatchmaking() {
     setInterval(() => {
-        increaseEloRange();
+        queueTimeUpdate();
         tryMatchPlayers();
     }, 1000);
 }
@@ -73,8 +73,9 @@ function incrementGoldReward(player) {
     }
 }
 
-function increaseEloRange() {
+function queueTimeUpdate() {
     playersQueue.forEach(player => {
+        console.log(`queueTimeUpdate for player ${player.socket.id}`);
         player.waitingTime += 1;
 
         incrementGoldReward(player);

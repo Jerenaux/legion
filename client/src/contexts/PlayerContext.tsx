@@ -3,6 +3,7 @@ import { DailyLootAllAPIData } from '@legion/shared/interfaces';
 import {League} from "@legion/shared/enums";
 
 export interface PlayerContextData {
+  uid: string;
   name: string;
   avatar: string;
   lvl: number;
@@ -24,6 +25,7 @@ export const PlayerContext = createContext<{
   refreshPlayerData: () => void;
 }>({
   player: {
+    uid: '',
     name: '',
     avatar: '0',
     lvl: 0,

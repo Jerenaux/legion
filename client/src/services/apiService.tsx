@@ -12,7 +12,7 @@ export async function getFirebaseIdToken() {
         }
         return await user.getIdToken(true);
     } catch (error) {
-        console.error("Error getting Firebase ID token", error);
+        // console.error("Error getting Firebase ID token", error);
         throw error;
     }
 }
