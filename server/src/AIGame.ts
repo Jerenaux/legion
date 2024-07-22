@@ -24,7 +24,7 @@ export class AIGame extends Game {
     }
 
     createAITeam(team: Team, nb: number, levels?: number[]) {
-        console.log(`Creating AI team with ${nb} members...`);
+        console.log(`[AIGame:createAITeam] Creating AI team with ${nb} members...`);
         const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
         if (!levels) {
             // Populate levels array with as many random values between 1 and 10 as needed

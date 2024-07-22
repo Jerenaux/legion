@@ -623,12 +623,13 @@ export abstract class Game
         // console.log(`Processing magic for team ${team.id}, player ${num}, spell ${index}, target team ${targetTeam}, target ${target}`);
         const player = team.getMembers()[num - 1];
         if (!player.canAct()) {
-            console.log('cannot act');
+            console.log('[Game:processMagic] cannot act');
             return;
         }
 
         const spell: Spell | null = player.getSpellAtIndex(index);
         if (!spell) return;
+        console.log(`[Game:processMagic] Casting spell [${spell.id}] ${spell.name}`);
 
         if (spell.cost > player.getMP()) return;
         const mp = player.consumeMP(spell.cost);

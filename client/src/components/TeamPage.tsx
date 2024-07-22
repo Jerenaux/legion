@@ -50,6 +50,15 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.fetchInventoryData();
   }
 
+  componentDidUpdate(prevProps: TeamPageProps) {
+    if (prevProps.matches.id !== this.props.matches.id) {
+      this.setState({ character_id: this.props.matches.id }, () => {
+        this.fetchCharacterData();
+        this.fetchInventoryData();
+      });
+    }
+  }
+
   fetchInventoryData = async () => {
     try {
         const data = await apiFetch('inventoryData');

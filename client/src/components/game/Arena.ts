@@ -757,6 +757,7 @@ export class Arena extends Phaser.Scene
     }
 
     processLocalAnimation({x, y, id, isKill}) {
+        console.log(`Processing local animation`);
         const spell = getSpellById(id);
         if (spell.size % 2 === 0) {
             x += 0.5;
@@ -1132,6 +1133,7 @@ export class Arena extends Phaser.Scene
     }
 
     displaySpellArea(location, size, duration) {
+        console.log(`Displaying spell`);
         if (size % 2 === 0) {
             location.x += 0.5;
             location.y += 0.5;
@@ -1156,6 +1158,7 @@ export class Arena extends Phaser.Scene
             repeat: repeatCount - 1,    // Number of blinks (or -1 for infinite)
             onComplete: () => {
                 spellAreaImage.destroy(); // Destroy the image at the end
+                console.log('Destroyed spell area');
             }
         });
     }
