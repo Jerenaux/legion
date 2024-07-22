@@ -1567,3 +1567,7 @@ canvas {
 .back-button:hover {
   opacity: 0.8;
 }
+
+.toast {
+  border: 2px solid #ffbf00;
+}
