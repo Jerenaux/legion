@@ -100,7 +100,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
         <div className="spell-card-effect-container">
           <div className="spell-card-effect">
             <img src="/inventory/mp_icon.png" alt="cost" />
-            <span>+{data.cost}</span>
+            <span>{data.cost}</span>
           </div>
           <div className="spell-card-effect">
             <img src="/inventory/cd_icon.png" alt="cost" />

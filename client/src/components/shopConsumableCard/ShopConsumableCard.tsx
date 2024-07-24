@@ -106,7 +106,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
         </div>
         <div className="shop-card-price">
           <img src="/gold_icon.png" alt="gold" />
-          +{data.price}
+          {data.price}
         </div>
 
         <ReactTooltip

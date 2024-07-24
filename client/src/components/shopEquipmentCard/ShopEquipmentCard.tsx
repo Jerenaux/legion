@@ -69,7 +69,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
     const coordinates = mapFrameToCoordinates(data.frame);
 
     const getEffectValue = (effect: Effect) => {
-      return effect.value > 0 && effect.stat !== 1 ? `+${effect.value}` : effect.value;
+      return effect.value > 0 && effect.stat !== 1 ? `+${effect.value}` : `+${effect.value}`;
     }
 
     return (
@@ -115,7 +115,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
         </div>
         <div className="shop-card-price">
           <img src="/gold_icon.png" alt="gold" />
-          +{data.price}
+          {data.price}
         </div>
 
         <ReactTooltip
