@@ -79,6 +79,7 @@ export class Arena extends Phaser.Scene
         this.load.audio('flames', 'sfx/flame.wav');
         this.load.audio('crowd', 'sfx/crowd.wav');
         this.load.audio('cheer', 'sfx/cheer.wav');
+        this.load.audio('poison', 'sfx/poison.wav');
 
         this.load.audio('cast', 'sfx/spells/cast.wav');
         this.load.audio('fireball', 'sfx/spells/fire_3.wav');

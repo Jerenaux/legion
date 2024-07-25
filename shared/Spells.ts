@@ -216,6 +216,26 @@ spells.push(new BaseSpell({
     minLevel: 1,
 }));
 
+spells.push(new BaseSpell({
+    id: 10,
+    name: "Poison",
+    description: "Poison a single target for 3 minutes",
+    frame: 3,
+    vfx: "potion_heal",
+    sfx: "poison",
+    shake: false,
+
+    size: 1,
+    target: Target.SINGLE,
+    effects: [],
+    status: {effect: StatusEffect.PARALYZE, chance: 1, duration: 180},
+    effort: 14,
+
+    score: 10,
+    classes: [Class.WHITE_MAGE],
+    minLevel: 1,
+}));
+
 export function getStarterSpells(characterClass: Class):number[] {
     // Return the id's of lvl1 spells for the provided class
     return spells.filter(spell => spell.minLevel === 1 && spell.classes.includes(characterClass)).map(spell => spell.id);
