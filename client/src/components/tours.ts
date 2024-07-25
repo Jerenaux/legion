@@ -7,19 +7,24 @@ export function startTour(page, todoTours) {
         // console.log(`Tour for ${page} already completed`);
         return;
     }
+    let tour;
     switch (page) {
         case 'rank':
-            startRankTour();
+            tour = startRankTour();
             break;
         case 'play':
-            startPlayTour();
+            tour = startPlayTour();
             break;
         case 'team':
-            startTeamTour();
+            tour = startTeamTour();
+            break;
+        case 'shop':
+            tour = startShopTour();
             break;
         default:
             break;
     }
+    tour.start();
     apiFetch('completeTour', {
         method: 'POST',
         body: {
@@ -64,6 +69,7 @@ function step(tour, text, attachTo, isLast = false) {
         cancelIcon: {
             enabled: true,
         },
+        scrollTo: false,
       }
 }
 
@@ -120,11 +126,10 @@ function startPlayTour() {
         },
         true),
     );
-    tour.start();
+    return tour;
 }
 
 function startTeamTour() {
-    // Character sheet, character cards, inventory, inventory tabs
     const tour = getTour();
     tour.addStep(step(tour, 'This is the Team Page. From here you can manage your inventory and your characters\' equipment, spells and stats!', null))
     tour.addStep(step(
@@ -160,7 +165,46 @@ function startTeamTour() {
         },
         true),
     );
-    tour.start();
+    return tour;
+}
+
+function startShopTour() {
+    const tour = getTour();
+    tour.addStep(step(tour, 'This is the Shop Page. Here you can buy consumables, equipment, spells and even new characters to expand your team!', null))
+    tour.addStep(step(
+        tour,
+        'These tabs allow you to navigate between the different types of items available in the shop, from top to bottom: Consumables, Equipment, Spells and Characters.',
+        {
+            element: '.shop-tabs-container',
+            on: 'right'
+        })
+    );
+    tour.addStep(step(
+        tour,
+        'These icons indicate the effects of items, the duration of the cooldown and the type of target.',
+        {
+            element: '.consumable-card-effect-container',
+            on: 'right'
+        })
+    );
+    tour.addStep(step(
+        tour,
+        'This is how much of that item you already own!',
+        {
+            element: '.consumable-card-info-box',
+            on: 'bottom'
+        })
+    );
+    tour.addStep(step(
+        tour,
+        'And this is the price! Click on the item card to buy it!',
+        {
+            element: '.shop-card-price',
+            on: 'bottom'
+        },
+        true),
+    );
+    return tour;
 }
 
 function startRankTour() {
@@ -201,5 +245,5 @@ function startRankTour() {
         true)
     );
     
-    tour.start();
+    return tour;
 }

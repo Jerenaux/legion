@@ -27,7 +27,7 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
 
         if (curr_tab !== 1 && curr_tab !== 2) return; // only accept equipment & spells
 
-        const CharacterClasses = Object.values(Class).filter(value => typeof value === 'string');
+        const CharacterClasses = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
         const EquipmentSlots = Object.values(EquipmentSlot).filter(value => typeof value === 'string');
 
         const handleCurrentClass = (curr_class: string | Class) => {
@@ -95,8 +95,8 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
 
                     <ul>
                         {CharacterClasses.map(character_class => <li onClick={() => handleCurrentClass(character_class)}>
-                            {this.state.currClass === Class[character_class] && <img src="/inventory/confirm_icon.png" alt="confirm" />}
-                            <span>{character_class}</span>
+                            {this.state.currClass === character_class && <img src="/inventory/confirm_icon.png" alt="confirm" />}
+                            <span>{Class[character_class]}</span>
                         </li>)}
                     </ul>
                 </div>}
