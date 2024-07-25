@@ -42,7 +42,7 @@ function timeoutPromise(duration) {
     });
 }
 
-async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 10000) {
+async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 15000) {
     try {
         const idToken = await getFirebaseIdToken();
         const headers = new Headers(options.headers || {});

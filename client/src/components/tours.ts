@@ -2,9 +2,9 @@ import Shepherd from 'shepherd.js';
 import { apiFetch } from '../services/apiService';
 
 export function startTour(page, todoTours) {
-    console.log(`Starting tour for ${page}`);
+    // console.log(`Starting tour for ${page}`);
     if (!todoTours.includes(page)) {
-        console.log(`Tour for ${page} already completed`);
+        // console.log(`Tour for ${page} already completed`);
         return;
     }
     switch (page) {
@@ -13,6 +13,9 @@ export function startTour(page, todoTours) {
             break;
         case 'play':
             startPlayTour();
+            break;
+        case 'team':
+            startTeamTour();
             break;
         default:
             break;
@@ -65,7 +68,7 @@ function step(tour, text, attachTo, isLast = false) {
 }
 
 function startPlayTour() {
-    console.log('Starting play tour');
+    // console.log('Starting play tour');
     const tour = getTour();
     tour.addStep(step(tour, 'This is the Play Page. From here you can launch games, watch other player\'s games and claim your daily loot!', null))
     tour.addStep(step(
@@ -113,6 +116,46 @@ function startPlayTour() {
         'Now just jump into a practice game and start playing!',
         {
             element: '#playmode_0',
+            on: 'bottom'
+        },
+        true),
+    );
+    tour.start();
+}
+
+function startTeamTour() {
+    // Character sheet, character cards, inventory, inventory tabs
+    const tour = getTour();
+    tour.addStep(step(tour, 'This is the Team Page. From here you can manage your inventory and your characters\' equipment, spells and stats!', null))
+    tour.addStep(step(
+        tour,
+        'This is your inventory, where all the consumables, equipment and spells that you win and own are stored! Click on the item icons to see more details and equip them to your characters!',
+        {
+            element: '.inventoryFullContainer',
+            on: 'bottom'
+        })
+    );
+    tour.addStep(step(
+        tour,
+        'Use these tabs to navigate between the different types of items in your inventory!',
+        {
+            element: '.inventoryCategories',
+            on: 'bottom'
+        })
+    );
+    tour.addStep(step(
+        tour,
+        'This is the character sheet of the character you have selected. Here you can see their stats, level and experience, equipment and spells!',
+        {
+            element: '.team-content-card-container',
+            on: 'bottom'
+        })
+    );
+    tour.addStep(step(
+        tour,
+        'Click on the character cards to switch to another character!',
+        {
+            element: '.rosterContainer',
             on: 'bottom'
         },
         true),
