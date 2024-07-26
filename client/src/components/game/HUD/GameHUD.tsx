@@ -93,8 +93,9 @@ class GameHUD extends Component<object, State> {
     const { playerVisible, player, team1, team2, isTutorial, isSpectator } = this.state; 
     console.log('team1 -> ', team1);
     console.log('team2 -> ', team2);
-    const members = team1?.members[0].isPlayer ? team1?.members : team2?.members;
-    console.log('score -> ', team1?.members[0].isPlayer? team1?.score : team2?.score);
+    const members = team1?.members[0].isPlayer ? team1?.members : team2?.members; 
+    const score = team1?.members[0].isPlayer? team1?.score : team2?.score; 
+    console.log('score -> ', score);
 
     return (
       <div className="height_full flex flex_col justify_between padding_bottom_16">
@@ -103,7 +104,7 @@ class GameHUD extends Component<object, State> {
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
           <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} {...team1} />
         </div>
-        {team1 && <SpectatorFooter isTutorial={isTutorial} score={team1?.members[0].isPlayer? team2?.score : team1?.score } />}
+        {team1 && <SpectatorFooter isTutorial={isTutorial} score={score} />}
         {this.state.gameOver && <Endgame 
           members={members} 
           grade={this.state.grade}
