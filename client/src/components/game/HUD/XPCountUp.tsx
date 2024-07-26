@@ -32,7 +32,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
             const maxXP = getXPThreshold(this.props.member.level); 
 
             console.log('isLevelUp -> ', this.state.isLevelUp);
-            
+
             if (this.state.totalXP > maxXP && this.state.xpCounter >= maxXP) {
                 this.setState(prevState => ({ 
                     isLevelUp: prevState.isLevelUp + 1, 
@@ -86,7 +86,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                         <div className="flex justify_between width_full">
                             <span className="endgame_character_exp">EXP</span>
                             <span className="endgame_character_expVal">
-                                +{Math.floor(this.props.character.xp)}
+                                {Math.floor(this.props.character.xp) > 0 ? `+${Math.floor(this.props.character.xp)}`: ''}
                             </span>
                         </div>
                         <div className="endgame_character_exp_bg">
