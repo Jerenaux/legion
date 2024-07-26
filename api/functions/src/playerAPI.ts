@@ -184,7 +184,7 @@ export const getPlayerData = onRequest((request, response) => {
         // a `countdown` field
         playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
 
-        const tours = Object.keys(playerData.tours).filter((tour) => !playerData.tours[tour]);
+        const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
 
         response.send({
           uid,

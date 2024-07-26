@@ -36,6 +36,7 @@ class HomePage extends Component<object, {}> {
 
     render() {
         const { user } = this.context;
+        if (!user) return;
 
         return (
             <PlayerContext.Consumer> 
