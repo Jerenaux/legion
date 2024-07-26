@@ -85,7 +85,7 @@ class Navbar extends Component<Props, State> {
                         <div className="avatar"  style={{ backgroundImage: `url(avatars/${this.props.playerData?.avatar}.png)` }}></div>
                         <div className="userInfo">
                             <span>{this.props.playerData?.name}</span>
-                            <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div>
+                            {/* <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div> */}
                         </div>
                     </div>
                 </div>

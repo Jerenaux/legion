@@ -129,7 +129,7 @@ class Inventory extends Component<InventoryProps> {
           <div className="inventoryWrapper">
             {isCategoryEmpty ? (<div className='empty-slots-container'>
               <p>No items in this category, take a look at the shop!</p>
-              <Link href='/shop'>Next <img src="./inventory/shop_btn.png" alt="shop" /></Link>
+              <Link href='/shop'>Go to shop <img src="./inventory/shop_btn.png" alt="shop" /></Link>
             </div>) : slots}
           </div>
         </div>

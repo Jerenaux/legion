@@ -77,6 +77,7 @@
     background-size: 100% 100%;
     width: 64px;
     height: 64px;
+    font-family: 'Kim';
 }
 
 .team-level span {
@@ -131,6 +132,7 @@
     font-weight: 500;
     color: #ffffff;
     text-transform: capitalize;
+    font-family: 'Kim';
 }
 
 .team-character-class {
