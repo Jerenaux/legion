@@ -96,7 +96,7 @@ export class Arena extends Phaser.Scene
 
         this.load.atlas('groundTiles', 'tiles2.png', 'tiles2.json');
 
-        const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang'];
+        const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill'];
         GEN.forEach((name) => {
             this.load.image(name, `GEN/${name}.png`);
         });
@@ -1213,10 +1213,15 @@ export class Arena extends Phaser.Scene
         } else {
             const delay = 3000;
             setTimeout(this.updateOverview.bind(this), delay + 1000);
+            setTimeout(() => this.displayGEN('combat', 'begins'), delay);
         }
 
         events.on('itemClick', (index) => {
             this.selectedPlayer?.onKey(index);
+        });
+
+        events.on('abandonGame', () => {
+            this.abandonGame();
         });
     }
 
@@ -1275,7 +1280,7 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    displayGEN() {
+    displayGEN(text1, text2) {
         const textTweenDuration = 600;
         const textDelay = 400;
 
@@ -1288,7 +1293,7 @@ export class Arena extends Phaser.Scene
             ease: 'Power2',
         });
 
-        let combat = this.add.image(-300, this.cameras.main.centerY - 200, 'combat').setDepth(10);
+        let combat = this.add.image(-300, this.cameras.main.centerY - 200, text1).setDepth(10);
         this.tweens.add({
             targets: combat,
             x: this.cameras.main.centerX,
@@ -1297,7 +1302,7 @@ export class Arena extends Phaser.Scene
             delay: textDelay, 
         });
 
-        let begins = this.add.image(this.cameras.main.width + 100, this.cameras.main.centerY - 200, 'begins').setDepth(10);
+        let begins = this.add.image(this.cameras.main.width + 100, this.cameras.main.centerY - 200, text2).setDepth(10);
         this.tweens.add({
             targets: begins,
             x: this.cameras.main.centerX,
@@ -1407,6 +1412,41 @@ export class Arena extends Phaser.Scene
         }
     }
     
+    abandonGame() {
+        this.socket.emit('abandonGame');
+        this.destroy();
+    }
+
+    destroy() {
+        this.socket.disconnect();
+
+        Object.values(this.SFX).forEach(sound => {
+            // @ts-ignore
+            if (sound.isPlaying) {
+                // @ts-ignore
+                sound.stop();
+            }
+        });
+    
+        // Stop and destroy the music manager
+        if (this.musicManager) {
+            this.musicManager.stopAll();
+            this.musicManager.destroy();
+        }
+    
+        // Stop any ongoing tweens
+        this.tweens.killAll();
+    
+        // Stop any ongoing timers
+        this.time.removeAllEvents();
+    
+        // Stop the HUD and current scene
+        this.scene.stop('HUD');
+        this.scene.stop();
+
+        // Clean up any other resources or listeners
+        events.removeAllListeners();
+    }
 
     // update (time, delta)
     // {

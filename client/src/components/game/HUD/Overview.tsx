@@ -9,6 +9,7 @@ interface Props {
   position: string;
   isSpectator: boolean;
   selectedPlayer: PlayerProps;
+  eventEmitter: any;
 }
 
 interface State {
@@ -89,7 +90,7 @@ class Overview extends Component<Props, State> {
 
     return (
       <div className={`overview ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={playerTabData} position={this.props.position} isSpectator={isSpectator} />
+        <PlayerInfo player={playerTabData} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
         {members.map((member, memberIndex) => {
           const cooldown = cooldowns[cooldownIndex++];
 

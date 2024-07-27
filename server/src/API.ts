@@ -25,7 +25,7 @@ function timeoutPromise(duration) {
     });
 }
 
-export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {}, timeoutDuration = 10000) {
+export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {}, timeoutDuration = 15000) {
     try {
         const headers = new Headers(options.headers || {});
 

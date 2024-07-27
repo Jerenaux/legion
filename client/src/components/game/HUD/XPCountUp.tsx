@@ -25,13 +25,9 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
     }
 
     componentDidMount(): void { 
-        console.log('c ' + this.props.character.xp + ' m ' + this.props.member.xp);
         const interval = Math.max(0.1, this.state.totalXP / 500);
         this.timer = setInterval(() => {
-            const { member, character } = this.props;
             const maxXP = getXPThreshold(this.props.member.level); 
-
-            console.log('isLevelUp ', this.state.isLevelUp);
 
             if (this.state.totalXP > maxXP && this.state.xpCounter >= maxXP) {
                 this.setState(prevState => ({ 

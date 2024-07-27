@@ -12,7 +12,6 @@ import {ChestReward} from "@legion/shared/chests";
 import {logPlayerAction} from "./dashboardAPI";
 
 export const rosterData = onRequest((request, response) => {
-  logger.info("Fetching rosterData");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
@@ -160,9 +159,9 @@ export const postGameUpdate = onRequest((request, response) => {
         await processChestRewards(transaction, playerRef, contents, consumables, spells, equipment);
 
         transaction.update(playerRef, {
-          xp: admin.firestore.FieldValue.increment(xp),
-          gold: admin.firestore.FieldValue.increment(gold),
-          elo: admin.firestore.FieldValue.increment(elo),
+          xp: admin.firestore.FieldValue.increment(xp || 0),
+          gold: admin.firestore.FieldValue.increment(gold || 0),
+          elo: admin.firestore.FieldValue.increment(elo || 0),
           dailyloot: dailyLoot,
         });
 

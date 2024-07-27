@@ -9,17 +9,14 @@ interface SpectatorFooterProps {
 
 class SpectatorFooter extends Component<SpectatorFooterProps> {
   render() { 
-    console.log('propsScore -> ', this.props.score);
     return (
       <div className="spectator_footer_container"> 
-      {/* {'spectatorScore' + this.props.score} */}
         <div className="spectator_progress">
             <div className="spectator_progress_bar_bg">
               <div className="spectator_progress_fill" style={{width: `${this.props.score / 1500 * 100}%`}}></div>
             </div>
             <div 
               className="progress_ches_mark" 
-              // style={{left: `calc(${this.props.score / 1500 * 96}% - 12px)`}}
             >
               <img src="/shop/bronze_chest.png" alt="" />
             </div>

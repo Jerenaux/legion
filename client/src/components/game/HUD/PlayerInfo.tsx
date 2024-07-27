@@ -7,13 +7,25 @@ interface Props {
   player: any;
   position: string;
   isSpectator: boolean;
+  eventEmitter: any;  
+}
+interface State {
+  modalOpen: boolean;
+  modalOpen1: boolean;
+  modalPos: any;
 }
 
-class PlayerInfo extends Component<Props> {
-  state = {
-    modalOpen: false,
-    modalOpen1: false,
-    modalPos: null
+class PlayerInfo extends Component<Props, State> {
+  events: any;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      modalOpen: false,
+      modalOpen1: false,
+      modalPos: null
+    }
+    this.events = this.props.eventEmitter;
   }
 
   handleOpenModal = (e: any, isExit: boolean) => {
@@ -37,6 +49,11 @@ class PlayerInfo extends Component<Props> {
       modalOpen: false,
       modalOpen1: false
     });
+  }
+
+  handleExit = () => {
+    this.events.emit('abandonGame');
+    route('/play');
   }
 
   render() {
@@ -107,14 +124,14 @@ class PlayerInfo extends Component<Props> {
         </div>}
         <Modal isOpen={this.state.modalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
           <div className="exit_game_menu" onClick={(e) => this.handleOpenModal(e, true)}>
-            <p>Exit Game!</p>
+            <p>Abandon Game!</p>
           </div>
         </Modal>
         <Modal isOpen={this.state.modalOpen1} onRequestClose={this.handleCloseModal} style={customStyles1}>
           <div className="flex flex_col gap_4">
-            <div className="game_leave_dialog">Are you sure want to leave?</div>
+            <div className="game_leave_dialog">Are you sure want to abandon the game? This will count as a loss.</div>
             <div className="flex gap_4">
-              <div className="game_leave_btn" onClick={() => route('/play')}>Leave</div>
+              <div className="game_leave_btn" onClick={this.handleExit}>Leave</div>
               <div className="game_leave_btn" onClick={this.handleCloseModal}>Cancel</div>
             </div>
           </div>

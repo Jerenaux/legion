@@ -6,6 +6,9 @@ module.exports = {
   mode: 'development', 
   entry: './src/index.ts', 
   target: 'node', // Important for Firebase functions
+  stats: {
+    warnings: false
+  },
   module: {
     rules: [
       {

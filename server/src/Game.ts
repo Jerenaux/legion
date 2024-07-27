@@ -891,7 +891,11 @@ export abstract class Game
             offenseFactor = 1.0;
         } else {
             // Normal calculation when not a one-shot
-            offenseFactor = 1 - (teamOffensiveActions / (teamOffensiveActions + otherTeamOffensiveActions));
+            if (teamOffensiveActions + otherTeamOffensiveActions === 0) {
+                offenseFactor = 0;
+            } else {
+                offenseFactor = 1 - (teamOffensiveActions / (teamOffensiveActions + otherTeamOffensiveActions));
+            }
         }
 
         const levelFactor = 1 - (team.getTotalLevel() / (team.getTotalLevel() + otherTeam.getTotalLevel()));
@@ -1051,6 +1055,12 @@ export abstract class Game
             this.firstBlood = true;
             this.getOtherTeam(team.id).increaseScoreFromFirstBlood();
         }
+    }
+
+    abandonGame(socket) {
+        const team = this.socketMap.get(socket);
+        const otherTeam = this.getOtherTeam(team.id);
+        this.endGame(otherTeam.id);
     }
 }
 

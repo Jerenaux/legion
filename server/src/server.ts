@@ -125,6 +125,11 @@ io.on('connection', async (socket: any) => {
         const game = socketMap.get(socket);
         game?.processAction('spell', data, socket);
       });
+
+      socket.on('abandonGame', () => {
+        const game = socketMap.get(socket);
+        game?.abandonGame(socket);
+      });
     } catch (error) {
         console.error(`Error joining game server: ${error}`);
     }

@@ -97,9 +97,9 @@ class GameHUD extends Component<object, State> {
     return (
       <div className="height_full flex flex_col justify_between padding_bottom_16">
         <div className="hud-container">
-          <Overview position="left" isSpectator={isSpectator} selectedPlayer={player} {...team2} />
+          <Overview position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} {...team2} />
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
-          <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} {...team1} />
+          <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} {...team1} />
         </div>
         {team1 && <SpectatorFooter isTutorial={isTutorial} score={score} />}
         {this.state.gameOver && <Endgame 
