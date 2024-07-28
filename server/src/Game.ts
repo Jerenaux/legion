@@ -683,13 +683,19 @@ export abstract class Game
         if (!spell) return;
         console.log(`[Game:processMagic] Casting spell [${spell.id}] ${spell.name}`);
 
-        if (spell.cost > player.getMP()) return;
+        if (spell.cost > player.getMP()) {
+            console.log(`[Game:processMagic] Not enough MP!`);
+            return;
+        }
         const mp = player.consumeMP(spell.cost);
 
         let targetPlayer: ServerPlayer | null = null;
         if (spell.target === Target.SINGLE) {
             targetPlayer = this.teams.get(targetTeam)?.getMembers()[target - 1];
-            if (!targetPlayer || !targetPlayer.isAlive()) return;
+            if (!targetPlayer || !targetPlayer.isAlive()) {
+                console.log(`[Game:processMagic] Invalid target for SINGLE target type!`);
+                return;
+            }
             x = targetPlayer.x;
             y = targetPlayer.y;
         }

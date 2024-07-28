@@ -68,6 +68,7 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('ice', 'vfx/ice.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('ice2', 'vfx/ice2.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('impact', 'vfx/sword_impact.png', { frameWidth: 291, frameHeight: 291});
+        this.load.spritesheet('poison', 'vfx/poison.png', { frameWidth: 64, frameHeight: 64});
 
         this.load.spritesheet('statuses', 'States.png', { frameWidth: 96, frameHeight: 96});
 
@@ -81,14 +82,13 @@ export class Arena extends Phaser.Scene
         this.load.audio('flames', 'sfx/flame.wav');
         this.load.audio('crowd', 'sfx/crowd.wav');
         this.load.audio('cheer', 'sfx/cheer.wav');
-        this.load.audio('poison', 'sfx/poison.wav');
-
+        
         this.load.audio('cast', 'sfx/spells/cast.wav');
         this.load.audio('fireball', 'sfx/spells/fire_3.wav');
         this.load.audio('thunder', 'sfx/spells/thunder.wav');
         this.load.audio('ice', 'sfx/spells/ice.wav');
         this.load.audio('healing', 'sfx/spells/healing.wav');
-
+        this.load.audio('poison', 'sfx/spells/poison.wav');
 
         this.load.audio(`bgm_start`, `music/bgm_start.wav`);
         for (let i = 1; i <= 12; i++) {
@@ -827,7 +827,8 @@ export class Arena extends Phaser.Scene
 
     createSounds() {
         this.SFX = {};
-        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd', 'cheer']
+        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing',
+            'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd', 'cheer', 'poison']
         sounds.forEach((sound) => {
             this.SFX[sound] = this.sound.add(sound);
         })
@@ -1025,6 +1026,12 @@ export class Arena extends Phaser.Scene
             frames: this.anims.generateFrameNumbers('statuses', { start: 56, end: 63 }), 
             frameRate: 15,
             repeat: -1,
+        });
+
+        this.anims.create({
+            key: `poison`, 
+            frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 17 }), 
+            frameRate: 15,
         });
 
         this.animationScales = {

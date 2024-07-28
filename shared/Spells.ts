@@ -221,14 +221,14 @@ spells.push(new BaseSpell({
     name: "Poison",
     description: "Poison a single target for 3 minutes",
     frame: 3,
-    vfx: "potion_heal",
+    vfx: "poison",
     sfx: "poison",
     shake: false,
 
     size: 1,
-    target: Target.SINGLE,
+    target: Target.AOE,
     effects: [],
-    status: {effect: StatusEffect.PARALYZE, chance: 1, duration: 180},
+    status: {effect: StatusEffect.POISON, chance: 1, duration: 180},
     effort: 14,
 
     score: 10,

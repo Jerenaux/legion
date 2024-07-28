@@ -61,13 +61,6 @@ class PlayerTab extends Component<Props, State> {
 
   actionClick(type: string, index: number) {
     this.events.emit('itemClick', index);
-
-    if (type == 'item') {
-      console.log(this.state.player.items[index]?.name);
-    } else {
-      console.log(this.state.player.spells[index]?.name);
-    }
-
     const stateField = type == 'item' ? 'clickedItem' : 'clickedSpell';
     this.setState({ [stateField]: index });
 
