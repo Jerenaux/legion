@@ -438,19 +438,20 @@ export abstract class Game
         const cooldown = player.getCooldown('attack');
         this.setCooldown(player, cooldown);
 
-        if (oneShot) {
-            this.broadcast('gen', {
-                gen: GEN.ONE_SHOT
-            });
-        }
-
         this.broadcast('attack', {
             team: team.id,
             target,
             num,
             damage: -damage,
             hp: opponent.getHP(),
+            isKill: opponent.justDied,
         });
+
+        if (oneShot) { // Broadcast gen after attack
+            this.broadcast('gen', {
+                gen: GEN.ONE_SHOT
+            });
+        }
 
         team.socket?.emit('cooldown', {
             num,
@@ -634,7 +635,7 @@ export abstract class Game
         if (oneShot) GENs.push(GEN.ONE_SHOT);
         if (nbKills > 1) GENs.push(GEN.MULTI_KILL);
         if (nbHits > 1) GENs.push(GEN.MULTI_HIT);
-        this.broadcastGEN(GENs);
+        this.broadcastGEN(GENs); // Broadcast gen after localanimation
 
         team.socket?.emit('cooldown', {
             num: player.num,

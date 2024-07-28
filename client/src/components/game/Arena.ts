@@ -186,6 +186,7 @@ export class Arena extends Phaser.Scene
         });
 
         this.socket.on('gen', (data) => {
+            console.log(`Received GEN: ${data.gen}`);
             this.displayGEN(data.gen);
         });
 
@@ -647,10 +648,14 @@ export class Arena extends Phaser.Scene
         this.playSoundMultipleTimes('steps', 2);
     }
 
-    processAttack({team, target, num, damage, hp}) {
+    processAttack({team, target, num, damage, hp, isKill}) {
         const player = this.getPlayer(team, num);
         const otherTeam = this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
+
+        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
+        if (isKill) this.killCam(pixelX, pixelY);
+        
         this.playSound('slash');
         player.attack(targetPlayer.gridX);
         targetPlayer.setHP(hp);
@@ -1328,7 +1333,7 @@ export class Arena extends Phaser.Scene
             default:
                 break;
         }
-        console.log(`[GEN] ${text1} ${text2}`);
+        // console.log(`[GEN] ${text1} ${text2}`);
 
         const textTweenDuration = 600;
         const textDelay = 400;
