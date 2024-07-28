@@ -56,13 +56,11 @@ function getSecondsUntilEndOfWeek(): number {
 }
 
 export const fetchLeaderboard = onRequest((request, response) => {
-  logger.info("Fetching leaderboard");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      console.log(`Fetching leaderboard for ${uid}`);
       const tabId = parseInt(request.query.tab as string);
 
       if (typeof tabId !== "number" || isNaN(tabId)) {
@@ -153,37 +151,47 @@ export const fetchLeaderboard = onRequest((request, response) => {
       const highestAvgScorePlayer = getHighlightPlayer("avgAudienceScore");
       const highestWinStreakPlayer = getHighlightPlayer("winStreak");
 
-      const highlights: LeaderboardHighlight[] = [
-        {
+      const highlights: LeaderboardHighlight[] = [];
+
+      if (highestAvgGradePlayer) {
+        highlights.push({
           name: highestAvgGradePlayer.name,
           avatar: highestAvgGradePlayer.avatar,
           title: "Ace Player",
           description: `Highest Game Grades`,
-        },
-        {
+        });
+      }
+
+      if (highestAvgScorePlayer) {
+        highlights.push({
           name: highestAvgScorePlayer.name,
           avatar: highestAvgScorePlayer.avatar,
           title: "Crowd Favorite",
           description: `Highest Audience Scores`,
-        },
-        {
+        });
+      }
+
+      if (highestWinStreakPlayer) {
+        highlights.push({
           name: highestWinStreakPlayer.name,
           avatar: highestWinStreakPlayer.avatar,
           title: "Unstoppable",
           description: `Longest Win Streak`,
-        },
-      ];
+        });
+      }
 
       if (isAllTime) {
         const richestPlayer = players.reduce((prev, current) => {
           return (prev.gold > current.gold) ? prev : current;
         }, players[0]);
-        highlights.push({
-          name: richestPlayer.name,
-          avatar: richestPlayer.avatar,
-          title: "Richest Player",
-          description: `Player witht the most gold`,
-        });
+        if (richestPlayer) {
+          highlights.push({
+            name: richestPlayer.name,
+            avatar: richestPlayer.avatar,
+            title: "Richest Player",
+            description: `Player witht the most gold`,
+          });
+        }
       }
 
 

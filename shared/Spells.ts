@@ -233,7 +233,7 @@ spells.push(new BaseSpell({
 
     score: 10,
     classes: [Class.WHITE_MAGE],
-    minLevel: 1,
+    minLevel: 3,
 }));
 
 export function getStarterSpells(characterClass: Class):number[] {

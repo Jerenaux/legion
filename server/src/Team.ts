@@ -27,6 +27,7 @@ export class Team {
     levelTotal: number = 0;
     healedAmount: number = 0;
     offensiveActions: number = 0;
+    killStreak: number = 0;
     teamData: TeamData;
 
     constructor(number: number, game: Game) {
@@ -237,6 +238,14 @@ export class Team {
             total += this.members[i].countInteractedTargets();
         }
         return total;
+    }
+
+    incrementKillStreak() {
+        this.killStreak++;
+    }
+
+    resetKillStreak() {
+        this.killStreak = 0;
     }
 
     unsetSocket() {

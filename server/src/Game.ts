@@ -425,8 +425,8 @@ export abstract class Game
         player.addInteractedTarget(opponent);
 
         let oneShot = false;
-        if (opponent.isDead()) {
-            oneShot = damage == opponent.getMaxHP();
+        if (opponent.justDied) {
+            oneShot = (damage >= opponent.getMaxHP());
         }
 
         if (this.hasObstacle(opponent.x, opponent.y)) {
@@ -571,8 +571,9 @@ export abstract class Game
         targets.forEach(target => {
             if (target.HPHasChanged()) {
                 const delta = target.getHPDelta();
+                console.log(`[Game:applyMagic] delta: ${delta}, justDied: ${target.justDied}, targetHP: ${target.getHP()}, targetMaxHP: ${target.getMaxHP()}`);
                 player.increaseDamageDealt(delta);
-                if (!target.isAlive()){
+                if (target.justDied){
                     nbKills++;
                 }
                 if (delta > 0) {
@@ -581,7 +582,6 @@ export abstract class Game
                 } else if (delta < 0) {
                     nbHits++;
                 }
-                console.log(`[Game:applyMagic] delta: ${delta}, targetHP: ${target.getHP()}, targetMaxHP: ${target.getMaxHP()}`);
                 if (delta < 0 && Math.abs(delta) == target.getMaxHP()) {
                     oneShot = true;
                 }
@@ -589,17 +589,19 @@ export abstract class Game
             player.addInteractedTarget(target);
         });            
         // Add all targets to the list of interacted targets
-        player.team!.increaseScoreFromMultiHits(targets.length);
-        player.team!.increaseScoreFromSpell(spell.score);
+        team.increaseScoreFromMultiHits(targets.length);
+        team.increaseScoreFromSpell(spell.score);
 
         const nbFrozen = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
+        // Count how many values of terraiMap are Terrain.FIRE
+        const nbBurning = Array.from(this.terrainMap.values()).filter(terrain => terrain === Terrain.FIRE).length;
 
         if (spell.terrain) {
             const terrainUpdates = this.manageTerrain(spell, x, y);
             this.broadcastTerrain(terrainUpdates);
             // If any terrain update is not NONE
             if (terrainUpdates.some(update => update.terrain !== Terrain.NONE)) {
-                player.team!.increaseScoreFromTerrain();
+                team.increaseScoreFromTerrain();
             }
         }
 
@@ -608,12 +610,13 @@ export abstract class Game
                 const success = target.addStatusEffect(spell.status.effect, spell.status.duration, spell.status.chance);
                 console.log(`[Game:applyMagic] Status effect ${spell.status.effect} applied to target ${target.num}: ${success}`);
                 if (success) {
-                    player.team!.increaseScoreFromStatusEffect();
+                    team.increaseScoreFromStatusEffect();
                 }
             });
         }
 
         const nbFrozen_ = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
+        const nbBurning_ = Array.from(this.terrainMap.values()).filter(terrain => terrain === Terrain.FIRE).length;
 
         this.setCooldown(player, spell.cooldown * 1000);
         
@@ -625,7 +628,9 @@ export abstract class Game
         });
 
         const GENs = [];
+        // if (team.killStreak > 1) GENs.push(GEN.KILL_STREAK);
         if (nbFrozen_ > nbFrozen) GENs.push(GEN.FROZEN);
+        if (nbBurning_ > nbBurning) GENs.push(GEN.BURNING);
         if (oneShot) GENs.push(GEN.ONE_SHOT);
         if (nbKills > 1) GENs.push(GEN.MULTI_KILL);
         if (nbHits > 1) GENs.push(GEN.MULTI_HIT);
@@ -664,9 +669,17 @@ export abstract class Game
             this.broadcast('gen', {
                 gen: GEN.MULTI_HIT
             });
+        } else if (GENs.includes(GEN.KILL_STREAK)) {
+            this.broadcast('gen', {
+                gen: GEN.KILL_STREAK
+            });
         } else if (GENs.includes(GEN.FROZEN)) {
             this.broadcast('gen', {
                 gen: GEN.FROZEN
+            });
+        } else if (GENs.includes(GEN.BURNING)) {
+            this.broadcast('gen', {
+                gen: GEN.BURNING
             });
         }
     }
@@ -1114,6 +1127,11 @@ export abstract class Game
             this.firstBlood = true;
             this.getOtherTeam(team.id).increaseScoreFromFirstBlood();
         }
+    }
+
+    handleTeamKill(victimTeam) {
+        this.getOtherTeam(victimTeam.id).incrementKillStreak();
+        victimTeam.resetKillStreak();
     }
 
     abandonGame(socket) {

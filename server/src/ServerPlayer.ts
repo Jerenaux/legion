@@ -29,6 +29,7 @@ export class ServerPlayer {
     levelsGained: number = 0;
     _hp: number = 0;
     _mp: number = 0;
+    justDied: boolean = false;
     hp;
     maxHP;
     mp;
@@ -161,7 +162,15 @@ export class ServerPlayer {
     }
 
     takeDamage(damage: number) {
+        if(this.isDead()) return;
+        this.justDied = false;
+
         this.updateHP(damage);
+        if (this.isDead()) {
+            this.justDied = true;
+            this.team!.game.handleTeamKill(this.team);
+        }
+
         this.team!.game.checkFirstBlood(this.team);
     }
 

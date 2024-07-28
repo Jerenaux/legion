@@ -131,4 +131,6 @@ export enum GEN {
     MULTI_HIT,
     ONE_SHOT,
     FROZEN,
+    BURNING,
+    KILL_STREAK,
 }

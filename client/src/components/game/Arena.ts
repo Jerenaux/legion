@@ -1321,6 +1321,10 @@ export class Arena extends Phaser.Scene
             case GEN.FROZEN:
                 text1 = 'frozen';
                 break;
+            case GEN.BURNING:
+                text1 = 'stuff-is';
+                text2 = 'on-fire';
+                break;
             default:
                 break;
         }
