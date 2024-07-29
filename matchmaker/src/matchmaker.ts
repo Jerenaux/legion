@@ -76,7 +76,7 @@ function incrementGoldReward(player) {
 
 function queueTimeUpdate() {
     playersQueue.forEach(player => {
-        console.log(`queueTimeUpdate for player ${player.socket.id}`);
+        // console.log(`[matchnaker:queueTimeUpdate] ${player.socket.id}`);
         player.waitingTime += 1;
 
         incrementGoldReward(player);

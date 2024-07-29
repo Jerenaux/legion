@@ -186,7 +186,6 @@ export class Arena extends Phaser.Scene
         });
 
         this.socket.on('gen', (data) => {
-            console.log(`Received GEN: ${data.gen}`);
             this.displayGEN(data.gen);
         });
 
@@ -446,22 +445,24 @@ export class Arena extends Phaser.Scene
     }
 
     toggleTargetMode(flag: boolean, size?: number) {
-        // this.HUD.toggleCursor(flag, 'scroll');
         if (flag) {
             this.cellsHighlight.setTargetMode(size, true);
             this.clearHighlight();
+            this.emitEvent('pendingSpell');
         } else {
             this.cellsHighlight.setNormalMode(true);
+            this.emitEvent('clearPendingSpell');
         }
     }
 
     toggleItemMode(flag: boolean) {
-        // this.HUD.toggleCursor(flag, 'item');
         if (flag) {
             this.cellsHighlight.setItemMode(true);
             this.clearHighlight();
+            this.emitEvent('pendingItem');
         } else {
             this.cellsHighlight.setNormalMode(true);
+            this.emitEvent('clearPendingItem');
         }
     }
 
@@ -596,6 +597,18 @@ export class Arena extends Phaser.Scene
                 break;
             case 'hoverEnemyCharacter':
                 events.emit('hoverEnemyCharacter');
+                break;
+            case 'pendingSpell':
+                events.emit('pendingSpell');
+                break;
+            case 'pendingItem':
+                events.emit('pendingItem');
+                break;
+            case 'clearPendingSpell':
+                events.emit('clearPendingSpell');
+                break;
+            case 'clearPendingItem':
+                events.emit('clearPendingItem');
                 break;
             default:
                 break;

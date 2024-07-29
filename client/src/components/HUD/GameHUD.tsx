@@ -15,6 +15,8 @@ interface GameHUDState {
   player: PlayerProps;
   clickedItem: number;
   clickedSpell: number;
+  pendingSpell: boolean;
+  pendingItem: boolean;
   team1: TeamOverview;
   team2: TeamOverview;
   gameOver: boolean;
@@ -36,6 +38,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     player: null,
     clickedItem: -1,
     clickedSpell: -1,
+    pendingSpell: false,
+    pendingItem: false,
     team1: null,
     team2: null,
     isWinner: false,
@@ -55,10 +59,40 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('keyPress', this.keyPress);
     events.on('updateOverview', this.updateOverview);
     events.on('gameEnd', this.endGame);
-    events.on('hoverCharacter', () => this.handleCursorChange('pointerCursor'));
-    events.on('hoverEnemyCharacter', () => this.handleCursorChange('swordCursor'));
-    events.on('unhoverCharacter', () => this.handleCursorChange('normalCursor'));
+    events.on('hoverCharacter', () => {
+      if (this.state.pendingSpell || this.state.pendingItem) return;
+      this.handleCursorChange('pointerCursor')
+    });
 
+    events.on('hoverEnemyCharacter', () => {
+      if (this.state.pendingSpell || this.state.pendingItem) return;
+      this.handleCursorChange('swordCursor')
+    });
+
+    events.on('unhoverCharacter', () => {
+      if (this.state.pendingSpell || this.state.pendingItem) return;
+      this.handleCursorChange('normalCursor')
+    });
+    
+    events.on('pendingSpell', () => {
+      this.setState({ pendingSpell: true, pendingItem: false });
+      this.handleCursorChange('spellCursor')
+    });
+    
+    events.on('pendingItem', () => {
+      this.setState({ pendingSpell: false, pendingItem: true });
+      this.handleCursorChange('itemCursor')
+    });
+
+    events.on('clearPendingSpell', () => {
+      this.setState({ pendingSpell: false });
+      this.handleCursorChange('normalCursor')
+    });
+
+    events.on('clearPendingItem', () => {
+      this.setState({ pendingItem: false });
+      this.handleCursorChange('normalCursor')
+    });
   }
 
   componentWillUnmount() {

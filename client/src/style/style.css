@@ -2030,6 +2030,14 @@ a:-webkit-any-link {
   cursor: url('../../public/pointers/attack_pointer.png'), auto;
 }
 
+.spellCursor {
+  cursor: url('../../public/pointers/spell_pointer.png'), auto;
+}
+
+.itemCursor {
+  cursor: url('../../public/pointers/item_cursor.png'), auto;
+}
+
 
 
 
