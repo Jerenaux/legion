@@ -76,6 +76,28 @@ equipments[5] = new BaseEquipment({
     classes: [Class.WARRIOR],
 });
 
+equipments[6] = new BaseEquipment({
+    id: 6,
+    name: "Traveler's hat",
+    description: "",
+    frame: 70,
+    effects: [{stat: Stat.DEF, value: 2}],
+    slot: EquipmentSlot.HELMET,
+    effort: 3,
+    minLevel: 1,
+});
+
+equipments[7] = new BaseEquipment({
+    id: 7,
+    name: "Cloth tunic",
+    description: "",
+    frame: 90,
+    effects: [{stat: Stat.DEF, value: 4}],
+    slot: EquipmentSlot.ARMOR,
+    effort: 4,
+    minLevel: 1,
+});
+
 export function getEquipmentById(id:number): BaseEquipment | undefined {
     return equipments.find(e => e.id === id);
 }
