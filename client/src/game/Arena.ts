@@ -1074,9 +1074,10 @@ export class Arena extends Phaser.Scene
                 character.level, character.xp,
                 );
             
+            console.log(`isPlayer: ${isPlayer}, cooldown: ${character.cooldown}`);
             if (isPlayer) {
                 player.setDistance(character.distance);
-                player.setCooldown(character.cooldown);
+                player.setCooldown(1); // hack
                 player.setInventory(character.inventory);
                 player.setSpells(character.spells);
             }
@@ -1222,10 +1223,10 @@ export class Arena extends Phaser.Scene
         this.placeCharacters(data.player.team, true, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, false, this.teamsMap.get(data.opponent.teamId), isReconnect);
 
-        this.processTerrain(data.terrain);
-
         const tilesDelay = isReconnect ? 0 : 1000;
         this.floatTiles(tilesDelay);
+
+        this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
         if (isReconnect) {
             this.updateOverview();

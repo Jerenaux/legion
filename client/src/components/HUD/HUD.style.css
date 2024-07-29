@@ -107,6 +107,10 @@
   align-items: flex-end;
 }
 
+.overview_playerteam {
+  cursor: var(--game-pointer)
+}
+
 .item {
   width: 43px;
   height: 43px;
@@ -125,7 +129,6 @@
 .char_stats_container {
   display: flex;
   flex-direction: row;
-  cursor: pointer;
 }
 
 .char_profile {

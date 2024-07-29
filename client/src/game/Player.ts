@@ -585,18 +585,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.animationSprite.setVisible(true).play(name);
     }
 
-    // Function to toggle grayscale shader for a given sprite
-    // toggleGrayscale() {
-    //     if (this.canAct()) { // If grayscale already applied
-    //         this.sprite.resetPipeline(); // Reset to default pipeline
-    //     } else { // If grayscale not applied
-    //         this.sprite.setPipeline('GrayScale'); // Apply the grayscale pipeline
-    //     }
-    // }
-
     setCooldown(duration) {
-        // this.sprite.anims.stop();
-        // this.toggleGrayscale();
         this.cooldownDuration = duration;
         this.totalCooldownDuration = duration;
         this.arena.emitEvent('cooldownStarted', {num: this.num})
