@@ -95,7 +95,8 @@ export class Team {
                 playerLevel: this.playerLevel,
                 playerRank: this.playerRank
             },
-            score: this.score
+            score: this.score,
+            isPlayerTeam: this.isPlayerTeam
         };
     }
 }

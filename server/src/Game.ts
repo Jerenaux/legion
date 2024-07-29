@@ -63,6 +63,7 @@ export abstract class Game
             console.log(`[Game:addPlayer] Adding player ${index + 1} to game ${this.id}`);
 
             const team = this.teams.get(index + 1);
+            console.log(`[Game:addPlayer] Player ${playerData.name} assigned to team ${team.id}`);
             this.socketMap.set(socket, team);
             team.setSocket(socket);
             team.setPlayerData(playerData);
@@ -188,8 +189,8 @@ export abstract class Game
         const data = {
             general: {
                 reconnect,
-                tutorial: true,
-                spectator: true,
+                tutorial: false,
+                spectator: false,
             },
             player: {
                 teamId: playerTeamId,
@@ -305,9 +306,7 @@ export abstract class Game
     }
 
     checkEndGame() {
-        // console.log(`Checking end game...`);
         if (this.gameOver) return;
-        // console.log(`Team 1: ${this.teams.get(1)!.isDefeated()}, Team 2: ${this.teams.get(2)!.isDefeated()}`);
         if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
             this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
         }

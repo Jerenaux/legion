@@ -341,6 +341,7 @@ export interface TeamOverview {
     members: TeamMember[];
     player: PlayerProfileData;
     score: number;
+    isPlayerTeam: boolean;
 }
 
 export interface EndGameDataResults {
