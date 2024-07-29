@@ -87,7 +87,7 @@ class ItemIcon extends Component<ItemIconProps> {
       <div 
         onClick={handleOnClickAction}>
         {action.id > -1 && <div 
-          className='skill-item-image'
+          className='item-icon'
           style={{
             backgroundImage: `url(/${spritesheet}.png)`,
             backgroundPosition: `-${mapFrameToCoordinates(action.frame).x}px -${mapFrameToCoordinates(action.frame).y}px`,

@@ -50,11 +50,10 @@ class ItemIcon extends Component<ItemIconProps> {
     return (
       <div>
         {action.id > -1 && <div 
-          className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
+          className={!canAct ? 'item-icon item-icon-off' : 'item-icon item-icon-pointer'}
           style={{
             backgroundImage: `url(/${spritesheet}.png)`,
             backgroundPosition: `-${mapFrameToCoordinates(action.frame).x}px -${mapFrameToCoordinates(action.frame).y}px`,
-            cursor: 'pointer',
           }}
           />}
         <span className="key-binding">{keyBinding}</span>

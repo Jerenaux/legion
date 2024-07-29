@@ -7,7 +7,10 @@ import { EventEmitter } from 'eventemitter3';
 import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamOverview } from "@legion/shared/interfaces";
 import SpectatorFooter from './SpectatorFooter';
 
-interface State {
+interface GameHUDProps {
+  changeMainDivClass: (newClass: string) => void;
+}
+interface GameHUDState {
   playerVisible: boolean;
   player: PlayerProps;
   clickedItem: number;
@@ -27,8 +30,8 @@ interface State {
 
 const events = new EventEmitter();
 
-class GameHUD extends Component<object, State> {
-  state: State = {
+class GameHUD extends Component<GameHUDProps, GameHUDState> {
+  state: GameHUDState = {
     playerVisible: false,
     player: null,
     clickedItem: -1,
@@ -52,6 +55,10 @@ class GameHUD extends Component<object, State> {
     events.on('keyPress', this.keyPress);
     events.on('updateOverview', this.updateOverview);
     events.on('gameEnd', this.endGame);
+    events.on('hoverCharacter', () => this.handleCursorChange('pointerCursor'));
+    // events.on('hoverEnemyCharacter', () => this.handleCursorChange('swordCursor'));
+    events.on('unhoverCharacter', () => this.handleCursorChange('normalCursor'));
+
   }
 
   componentWillUnmount() {
@@ -89,13 +96,18 @@ class GameHUD extends Component<object, State> {
     this.setState({ clickedSpell: 0 });
   }
 
+  handleCursorChange = (newCursorClass: string) => {
+    console.log(`newCursorClass: ${newCursorClass}`);
+    this.props.changeMainDivClass(newCursorClass);
+  }
+
   render() {
     const { playerVisible, player, team1, team2, isTutorial, isSpectator } = this.state; 
     const members = team1?.members[0].isPlayer ? team1?.members : team2?.members; 
     const score = team1?.members[0].isPlayer? team1?.score : team2?.score; 
 
     return (
-      <div className="height_full flex flex_col justify_between padding_bottom_16">
+      <div className="gameCursor height_full flex flex_col justify_between padding_bottom_16">
         <div className="hud-container">
           <Overview position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} {...team2} />
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}

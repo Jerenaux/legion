@@ -103,10 +103,6 @@
   position: relative;
 }
 
-.cursor_pointer {
-  cursor: pointer;
-}
-
 .overview_right {
   align-items: flex-end;
 }
@@ -580,9 +576,7 @@
   border: 1px solid #274c57;
   border-radius: 4px;
   cursor: var(--game-pointer);
-
 }
-
 
 .player_hud_skills:hover, 
 .player_hud_skills:active, 

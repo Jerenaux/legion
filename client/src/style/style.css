@@ -214,14 +214,18 @@ canvas {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
-.skill-item-image {
+.item-icon {
     width: 32px;
     height: 32px; 
     background-repeat: no-repeat;
     border-radius: 6px;
 }
 
-.skill-item-image-off {
+.item-icon-pointer {
+    cursor: var(--game-pointer);
+}
+
+.item-icon-off {
     filter: grayscale(1);
 }
 
@@ -2014,9 +2018,17 @@ a:-webkit-any-link {
   text-decoration: none;
 }
 
-.gameCursor {
+.normalCursor {
   cursor: url('../../public/pointers/general_pointer.png'), auto;
 }
+
+.pointerCursor {
+  cursor: var(--game-pointer);
+}
+
+/* .swordCursor {
+  cursor: url('../../public/pointers/attack_pointer.png'), auto;
+} */
 
 
 

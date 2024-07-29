@@ -308,6 +308,7 @@ export class Player extends Phaser.GameObjects.Container {
             glowColor = GlowColors.Enemy;
         } else if (!this.isSelected()) {
             glowColor = GlowColors.Ally;
+            this.arena.emitEvent('hoverCharacter');
         }
         if (glowColor) {
             this.glowFx.color = glowColor;
@@ -319,6 +320,7 @@ export class Player extends Phaser.GameObjects.Container {
         if (!this.isPlayer && this.arena.selectedPlayer?.pendingSpell == null) {
             // this.hud.toggleCursor(false, 'scroll');
         }
+        this.arena.emitEvent('unhoverCharacter');
         if (this.isSelected()) return;
         this.glowFx.setActive(false);
     }

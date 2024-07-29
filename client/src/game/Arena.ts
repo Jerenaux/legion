@@ -561,34 +561,18 @@ export class Arena extends Phaser.Scene
                 }
                 this.refreshOverview();
                 break;
-            case 'mpChange':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'pendingSpellChange':
-                this.refreshBox();
-                break;
-            case 'statusesChange':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'selectPlayer':
+            case 'inventoryChange':
                 this.refreshBox();
                 break;
             case 'deselectPlayer':
                 events.emit('hidePlayerBox');
                 break;
-            case 'inventoryChange':
-                this.refreshBox();
-                break;
+            case 'mpChange':
+            case 'statusesChange':
             case 'cooldownStarted':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'cooldownEnded':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'cooldownChange':
                 this.refreshBox();
                 this.refreshOverview();
@@ -603,6 +587,12 @@ export class Arena extends Phaser.Scene
                 break;
             case 'gameEnd':
                 this.showEndgameScreen(data);
+                break;
+            case 'hoverCharacter':
+                events.emit('hoverCharacter');
+                break;
+            case 'unhoverCharacter':
+                events.emit('unhoverCharacter');
                 break;
             default:
                 break;
