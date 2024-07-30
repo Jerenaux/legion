@@ -16,8 +16,11 @@ dotenv.config();
 
 console.log(`FIREBASE_AUTH_EMULATOR_HOST: ${process.env.FIREBASE_AUTH_EMULATOR_HOST}`);
 
+const discordEnabled = (process.env.DISCORD_TOKEN !== undefined);
 const discordClient = new Client({intents: [GatewayIntentBits.Guilds]});
-discordClient.login(process.env.DISCORD_TOKEN);
+if (discordEnabled) {
+    discordClient.login(process.env.DISCORD_TOKEN);
+}
 
 admin.initializeApp(firebaseConfig);
 
@@ -51,6 +54,7 @@ const casualModeThresholdTime = 60; // seconds after which redirection probabili
 const maxWaitTimeForPractice = 300; // maximum wait time after which a player is guaranteed to be redirected
 
 async function notifyAdmin(mode: PlayMode) {
+    if (!discordEnabled) return;
     try {
         const adminUser = await discordClient.users.fetch('272906141728505867');
         adminUser.send(`A player has joined the queue in ${PlayMode[mode]} mode!`);

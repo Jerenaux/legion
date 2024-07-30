@@ -9,6 +9,20 @@ This repository contains all the different Typescript apps that are part of the 
 
 ## Local development
 
-Run `docker-compose up --build` at the root of the repository to launch all the apps locally. The apps will be available at the following URLs:
+Regardless of the method you use below, the apps will be available at the following URLs:
 - Client: http://localhost:8080
-- Firebase emulators: http://localhost:4000
+- Firebase emulators: http://localhost:4000 (useful to modify data in the database for testing)
+
+### Using Docker
+
+Run `docker-compose up --build` at the root of the repository to launch all the apps locally.
+
+### Bare-metal
+
+Alternatively run each service separately bare-metal:
+
+    cd client && npm run start
+    cd server && npm run start 
+    cd matchmaker && npm run start
+    cd api/functions && npm run emulators:start
+

@@ -1,7 +1,3 @@
 {
-    "watch": ["src"],
-    "ext": "ts",
-    "exec": "TS_NODE_PROJECT=tsconfig.docker.json npx ts-node -r tsconfig-paths/register ./src/matchmaker.ts",
-    "ignore": ["src/**/*.spec.ts"]
-  }
-  
+    "exec": "node nodemon.js"
+}

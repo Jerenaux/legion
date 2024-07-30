@@ -29,6 +29,7 @@ services:
       - API_URL=http://api:5001/legion-32c6d/us-central1
       - CLIENT_ORIGIN=*
       - FIREBASE_AUTH_EMULATOR_HOST=api:9099
+      - IS_DOCKER=true
       - NODE_ENV=development
 
   api:
@@ -63,5 +64,6 @@ services:
       - CLIENT_ORIGIN=*
       - DISCORD_TOKEN=MTAzNDE1NTg2MDY1NTYxMjAxNQ.Gofr5O.OLARZ3Qikq0DtpXLG3hYvARq09n8zOlVkU8fSM
       - FIREBASE_AUTH_EMULATOR_HOST=api:9099
+      - IS_DOCKER=true
       - NODE_ENV=development
 
