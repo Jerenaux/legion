@@ -17,9 +17,7 @@ RUN npm install
 
 RUN npm install -g firebase-tools
 
-# Copy the rest of the application code (not actually needed because of the volume mount in docker-compose.yml)
-# COPY api/functions/ .
-# COPY shared ./shared
+COPY api/functions/ .
 
 CMD ["npm", "run", "docker:start"]
 # CMD ["tail", "-f", "/dev/null"]

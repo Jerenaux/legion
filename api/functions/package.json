@@ -4,7 +4,7 @@
     "lint": "eslint --ext .js,.ts .",
     "build": "webpack",
     "build:watch": "webpack --watch",
-    "emulators:start": "firebase emulators:start --import ./firestore-emulator-data --export-on-exit ./firestore-emulator-data",
+    "emulators:start": "firebase emulators:start --import ./exports/firestore-emulator-data --export-on-exit ./exports/firestore-emulator-data",
     "serve:functions": "nodemon --watch 'src/**/*.ts' --exec 'npm run build'",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",

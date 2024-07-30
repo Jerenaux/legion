@@ -45,7 +45,8 @@ services:
       - "9099:9099"
       - "9150:9150"
     volumes:
-      - ./api/functions:/usr/src/app
+      - ./api/functions/src:/usr/src/app/src
+      - ./api/exports/:/usr/src/app/exports
       - ./shared:/usr/src/app/shared
     environment:
       - NODE_ENV=docker
