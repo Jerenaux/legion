@@ -7,6 +7,7 @@ import firebase from 'firebase/compat/app'
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from 'src/contexts/PlayerContext';
 import { successToast, errorToast } from '../utils';
+import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -85,7 +86,7 @@ class Navbar extends Component<Props, State> {
                         <div className="avatar"  style={{ backgroundImage: `url(avatars/${this.props.playerData?.avatar}.png)` }}></div>
                         <div className="userInfo">
                             <span>{this.props.playerData?.name}</span>
-                            {/* <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div> */}
+                            {ENABLE_PLAYER_LEVEL && <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div>}
                         </div>
                     </div>
                 </div>

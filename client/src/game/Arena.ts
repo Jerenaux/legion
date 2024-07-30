@@ -1041,7 +1041,7 @@ export class Arena extends Phaser.Scene
 
         this.anims.create({
             key: `poison`, 
-            frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 17 }), 
+            frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 16 }), 
             frameRate: 15,
         });
 

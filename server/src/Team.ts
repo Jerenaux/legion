@@ -38,7 +38,7 @@ export class Team {
             playerUID: '',
             elo: 0,
             lvl: 0,
-            playerName: '',
+            playerName: 'Legion Bot',
             teamName: '',
             avatar: '',
             league: 0,
@@ -148,8 +148,18 @@ export class Team {
         this.teamData.teamName = playerData.teamName;
         this.teamData.avatar = playerData.avatar;
         this.teamData.league = playerData.league;
-        this.teamData.rank = playerData.rank;
+        this.teamData.rank = playerData.rank; // league rank
         this.teamData.dailyloot = playerData.dailyloot;
+    }
+
+    getPlayerData() {
+        return {
+            teamName: this.teamData.teamName,
+            playerName: this.teamData.playerName,
+            playerLevel: this.teamData.lvl,
+            playerRank: this.teamData.rank,
+            playerAvatar: this.teamData.avatar,
+        }
     }
     
     getChestKey(): ChestColor | null {

@@ -294,6 +294,7 @@
   position: relative;
   padding: 8px 16px 12px 36px;
   max-width: 320px;
+  font-family: 'Kim';
 }
 
 .player_info_container_right {
@@ -323,6 +324,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  font-family: 'Kim';
 }
 
 .player_info_lv_right {
@@ -357,7 +359,6 @@
   font-size: 14px;
   font-weight: 600;
   color: #ffffff;
-  text-transform: capitalize;
 }
 
 .player_info_rank {
@@ -395,7 +396,7 @@
   display: flex;
   justify-content: space-between;
   gap: 4px;
-
+  font-family: 'Kim';
   position: relative;
   margin-top: 10px;
   margin-left: 10px;

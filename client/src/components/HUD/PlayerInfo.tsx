@@ -2,9 +2,12 @@
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import Modal from 'react-modal';
+import { PlayerProfileData } from "@legion/shared/interfaces";
+
+import { ENABLE_PLAYER_LEVEL, ENABLE_TEAM_NAME } from '@legion/shared/config';
 
 interface Props {
-  player: any;
+  player: PlayerProfileData;
   position: string;
   isSpectator: boolean;
   eventEmitter: any;  
@@ -96,18 +99,18 @@ class PlayerInfo extends Component<Props, State> {
 
     return (
       <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`} onClick={() => { }}>
-        <div className={`player_info_lv ${position === 'right' && 'player_info_lv_right'}`}>
-          <span>Lv</span>
-          <span className="player_info_lvalue">{this.props.player.level}</span>
-        </div>
+        {ENABLE_PLAYER_LEVEL && <div className={`player_info_lv ${position === 'right' && 'player_info_lv_right'}`}>
+          <span>Lvl</span>
+          <span className="player_info_lvalue">{this.props.player.playerLevel}</span>
+        </div>}
         <div className="player_info_player_profile"></div>
         <div className="player_info">
-          <p className="player_info_name">{this.props.player.name}</p>
+          <p className="player_info_name">{this.props.player.playerName}</p>
           <div className={`player_info_rank ${position === 'right' && 'justify_end'}`}>
             <img src="/icons/gold_rank.png" alt="" />
-            <span>RANK {this.props.player.rank}</span>
+            <span>RANK {this.props.player.playerRank}</span>
           </div>
-          <div className="player_info_team"><span>TEAM</span></div>
+          {ENABLE_TEAM_NAME && <div className="player_info_team"><span>TEAM</span></div>}
         </div>
         {position === 'right' && <div className="spectator_container_right">
           {isSpectator &&  <div className="spectator_div">

@@ -1,5 +1,5 @@
 import { h, Component } from 'preact';
-import { PlayerProps, TeamMember } from "@legion/shared/interfaces";
+import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
 import PlayerInfo from './PlayerInfo';
 
 interface Props {
@@ -10,6 +10,7 @@ interface Props {
   selectedPlayer: PlayerProps;
   eventEmitter: any;
   isPlayerTeam: boolean;
+  player: PlayerProfileData;
 }
 
 interface State {
@@ -90,7 +91,7 @@ class Overview extends Component<Props, State> {
 
     return (
       <div className={`overview ${this.props.isPlayerTeam && 'overview_playerteam'} ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={playerTabData} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
+        <PlayerInfo player={this.props.player} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
         {members.map((member, memberIndex) => {
           const cooldown = cooldowns[cooldownIndex++];
 

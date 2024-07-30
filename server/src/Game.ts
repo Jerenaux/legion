@@ -186,6 +186,7 @@ export abstract class Game
     getGameData(playerTeamId: number, reconnect: boolean = false): GameData {
         const otherTeamId = this.getOtherTeam(playerTeamId).id;
         const team = this.teams.get(playerTeamId);
+        const otherTeam = this.teams.get(otherTeamId);
         const data = {
             general: {
                 reconnect,
@@ -195,26 +196,14 @@ export abstract class Game
             },
             player: {
                 teamId: playerTeamId,
-                player: {
-                    teamName: 'TeamName',
-                    playerName: 'PlayerName',
-                    playerLevel: 1,
-                    playerRank: 1,
-                    playerAvatar: 'avatar',
-                },
+                player: team.getPlayerData(),
                 team: team.getMembers().map(player => player.getPlacementData(true)),
                 score: team.score,
             },
             opponent: {
                 teamId: otherTeamId,
-                player: {
-                    teamName: 'TeamName',
-                    playerName: 'PlayerName',
-                    playerLevel: 1,
-                    playerRank: 1,
-                    playerAvatar: 'avatar',
-                },
-                team: this.teams.get(otherTeamId)?.getMembers().map(player => player.getPlacementData()),
+                player: otherTeam.getPlayerData(),
+                team: otherTeam.getMembers().map(player => player.getPlacementData()),
                 score: -1,
             },
             terrain: Array.from(this.terrainMap).map(([key, value]) => {
