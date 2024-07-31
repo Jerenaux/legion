@@ -43,16 +43,17 @@ export class BaseSpell {
             this.minLevel *= props.size;
         }
         if (props.terrain != Terrain.NONE) {
-            this.cost *= 1.5;
-            this.cooldown *= 1.1;
-            this.castTime *= 1.2;
-            this.minLevel *= 2.3;
+            this.cost = Math.round(this.cost * 1.5);
+            this.cooldown = Math.round(this.cooldown * 1.1);
+            this.castTime = Math.round(this.castTime * 1.2);
+            this.minLevel = Math.round(this.minLevel * 2.3);
         }
+    
         if (props.status) {
-            this.cost *= 1.5;
-            this.cooldown *= 1.1;
-            this.castTime *= 1.2;
-            this.minLevel *= 2.3;
+            this.cost = Math.round(this.cost * 1.5);
+            this.cooldown = Math.round(this.cooldown * 1.1);
+            this.castTime = Math.round(this.castTime * 1.2);
+            this.minLevel = Math.round(this.minLevel * 2.3);
         }
         // Round cost to a multiple of 5
         this.cost = Math.ceil(this.cost/5)*5;

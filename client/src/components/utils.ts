@@ -29,9 +29,10 @@ function showToast(text: string, duration: number = 3000, extraStyle?: ExtraStyl
     gravity: "bottom", // `top` or `bottom`
     position: "center", // `left`, `center` or `right`
     stopOnFocus: true, // Prevents dismissing of toast on hover
+    className: "toast",
     style: {
-      borderRadius: "15px",
-      ...extraStyle
+      background: "#242b37",
+      // ...extraStyle
     }
     // onClick: function(){} // Callback after click
   }).showToast();

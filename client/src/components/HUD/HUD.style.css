@@ -103,12 +103,12 @@
   position: relative;
 }
 
-.cursor_pointer {
-  cursor: pointer;
-}
-
 .overview_right {
   align-items: flex-end;
+}
+
+.overview_playerteam {
+  cursor: var(--game-pointer)
 }
 
 .item {
@@ -129,7 +129,6 @@
 .char_stats_container {
   display: flex;
   flex-direction: row;
-  cursor: pointer;
 }
 
 .char_profile {
@@ -294,8 +293,8 @@
   gap: 4px;
   position: relative;
   padding: 8px 16px 12px 36px;
-  cursor: pointer;
   max-width: 320px;
+  font-family: 'Kim';
 }
 
 .player_info_container_right {
@@ -325,6 +324,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  font-family: 'Kim';
 }
 
 .player_info_lv_right {
@@ -359,7 +359,6 @@
   font-size: 14px;
   font-weight: 600;
   color: #ffffff;
-  text-transform: capitalize;
 }
 
 .player_info_rank {
@@ -397,7 +396,7 @@
   display: flex;
   justify-content: space-between;
   gap: 4px;
-
+  font-family: 'Kim';
   position: relative;
   margin-top: 10px;
   margin-left: 10px;
@@ -580,12 +579,8 @@
   background-color: #1c1f25;
   border: 1px solid #274c57;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
-
-/* .player_hud_skills:hover {
-  border: 1px solid #71deff;
-} */
 
 .player_hud_skills:hover, 
 .player_hud_skills:active, 
@@ -597,9 +592,6 @@
   border: 1px solid #71deff !important;
 } 
 
-/* .player_hud_skills:has(.skill-item-image) {
-  background-color: goldenrod;
-} */
 
 .goldend_background {
   background-color: goldenrod;
@@ -608,6 +600,7 @@
 .player_hud_action_container {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
+  cursor: var(--game-pointer);
 }
 
 .spectator_container {
@@ -746,11 +739,11 @@
   background-size: 100% 100%;
   width: 350px;
   height: 140px;
-
+  padding: 15px;
   display: flex;
+  text-align: center;
   justify-content: center;
   align-items: center;
-
   color: #ffffff;
 }
 
@@ -765,7 +758,6 @@
   justify-content: center;
 
   color: #ffffff;
-  cursor: pointer;
 }
 
 .game_leave_btn:hover {
@@ -1078,12 +1070,16 @@
   cursor: pointer;
 }
 
-.exit_game_menu {
+.exit_game_label {
   background-color: #252b36;
   border: 1px solid #4583d0;
   border-radius: 4px;
   padding: 6px 8px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
+}
+
+.exit_game_menu {
+  cursor: var(--game-pointer);
 }
 
 .light_shining_bg {
@@ -1181,6 +1177,7 @@
   background-image: url("@assets/HUD/small_box_btn_bg.png");
   background-size: 100% 100%;
   padding: 4px;
+  cursor: var(--game-pointer);
 }
 
 .spectator:hover {

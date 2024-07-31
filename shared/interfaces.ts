@@ -1,7 +1,7 @@
 import { BaseEquipment } from "./BaseEquipment";
 import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor, StatusEffect, Class } from "./enums";
+import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor, StatusEffect, Class, PlayMode } from "./enums";
 import {ChestReward} from "@legion/shared/chests";
 
 export class EffectModifier {
@@ -90,17 +90,20 @@ export interface CharacterUpdate {
     num: number;
     points: number;
     xp: number;
+    earnedXP: number;
     level: number;
 }
 export interface OutcomeData {
     isWinner: boolean;
+    rawGrade: number;
     grade: string;
     xp: number;
     gold: number;
     characters?: CharacterUpdate[];
     elo: number;
     key: ChestColor;
-    chests: GameOutcomeReward[] ;
+    chests: GameOutcomeReward[];
+    score: number;
 }
 
 export interface CharacterStats {
@@ -149,19 +152,30 @@ export interface StatusEffectData {
     chance: number;
 }
 
-export interface DailyLootAllData {
-    [ChestColor.BRONZE]: DailyLootData;
-    [ChestColor.SILVER]: DailyLootData;
-    [ChestColor.GOLD]: DailyLootData;
+export interface DailyLootAllAPIData {
+    [ChestColor.BRONZE]: DailyLootAPIData;
+    [ChestColor.SILVER]: DailyLootAPIData;
+    [ChestColor.GOLD]: DailyLootAPIData;
 }
 
-export interface DailyLootData {
+export interface DailyLootAPIData {
     hasKey: boolean;
-    countdown?: number;
-    time?: number;
+    countdown: number;
+}
+
+export interface DailyLootAllDBData {
+    [ChestColor.BRONZE]: DailyLootDBData;
+    [ChestColor.SILVER]: DailyLootDBData;
+    [ChestColor.GOLD]: DailyLootDBData;
+}
+
+export interface DailyLootDBData {
+    hasKey: boolean;
+    time: number;
 }
 
 export interface APIPlayerData {
+    uid: string;
     gold: number;
     elo: number;
     league: number;
@@ -170,11 +184,14 @@ export interface APIPlayerData {
     teamName: string;
     avatar: string;
     rank: number;
-    dailyloot: DailyLootAllData;
+    allTimeRank: number;
+    dailyloot: DailyLootAllAPIData;
+    tours: string[];
 }
 
 export interface DBPlayerData {
     name: string;
+    avatar: string;
     gold: number;
     carrying_capacity: number;
     inventory: PlayerInventory;
@@ -182,13 +199,25 @@ export interface DBPlayerData {
     elo: number;
     league: number;
     lvl: number;
-    dailyloot: DailyLootAllData;
+    dailyloot: DailyLootAllDBData;
+    xp: number;
+    leagueStats: LeagueStats;
+    allTimeStats: LeagueStats;
+}
+
+interface LeagueStats {
     wins: number;
     losses: number;
-    xp: number;
+    rank: number;
+    winStreak: number;
+    lossesStreak: number;
+    nbGames: number;
+    avgAudienceScore: number;
+    avgGrade: number;
 }
 
 export interface TeamData {
+    playerUID: string;
     elo: number;
     lvl: number;
     playerName: string;
@@ -196,7 +225,7 @@ export interface TeamData {
     avatar: string;
     league: number;
     rank: number;
-    dailyloot: DailyLootAllData;
+    dailyloot: DailyLootAllAPIData;
 }
 
 export interface GameOutcomeReward {
@@ -258,6 +287,7 @@ interface GamePlayerData {
     teamId: number;
     player: PlayerProfileData;
     team: PlayerNetworkData[];
+    score: number;
 }
 
 export interface GameData {
@@ -265,6 +295,7 @@ export interface GameData {
         reconnect: boolean;
         tutorial: boolean;
         spectator: boolean;
+        mode: PlayMode;
     },
     player: GamePlayerData,
     opponent: GamePlayerData,
@@ -312,4 +343,17 @@ export interface TeamOverview {
     members: TeamMember[];
     player: PlayerProfileData;
     score: number;
+    isPlayerTeam: boolean;
 }
+
+export interface EndGameDataResults {
+    [key: string]: {
+        audience: number;
+        score: number;
+    }
+}
+
+export interface EndGameData {
+    winner: string,
+    results: EndGameDataResults,
+  }

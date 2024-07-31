@@ -6,6 +6,8 @@ import { Link, useRouter } from 'preact-router';
 import firebase from 'firebase/compat/app'
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from 'src/contexts/PlayerContext';
+import { successToast, errorToast } from '../utils';
+import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -34,7 +36,6 @@ enum Routes {
 }
 
 interface Props {
-    initFirebaseUI: () => void;
     logout: () => void;
     user: firebase.User | null;
     playerData: PlayerContextData;
@@ -50,6 +51,15 @@ class Navbar extends Component<Props, State> {
         hovered: '',
         openDropdown: false,
     }
+
+    copyIDtoClipboard = () => {  
+        const textToCopy = this.props.playerData.uid;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            successToast(`Player ID ${textToCopy} copied!`);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+    };
 
     render() {
         const route = useRouter();
@@ -76,7 +86,7 @@ class Navbar extends Component<Props, State> {
                         <div className="avatar"  style={{ backgroundImage: `url(avatars/${this.props.playerData?.avatar}.png)` }}></div>
                         <div className="userInfo">
                             <span>{this.props.playerData?.name}</span>
-                            <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div>
+                            {ENABLE_PLAYER_LEVEL && <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div>}
                         </div>
                     </div>
                 </div>
@@ -104,16 +114,26 @@ class Navbar extends Component<Props, State> {
                     </Link>
                 </div>
 
-                <div className="flexContainer">
-                    {/* {this.props.user === null && <div className="notificationBarButton" onClick={this.props.initFirebaseUI}>Log in</div>}
-                    {this.props.user !== null && <div className="notificationBarButton" onClick={this.props.logout}>Log out</div>} */}
+                <div className="flexContainer" id="goldEloArea">
                     <UserInfoBar label={`${Math.round(this.props.playerData?.gold)}`}  />
-                    <UserInfoBar label="#1" elo={this.props.playerData?.elo} />
+                    <UserInfoBar label={`#${this.props.playerData?.rank}`} elo={this.props.playerData?.elo} league={this.props.playerData?.league} />
                     <div class="expand_btn" style={{backgroundImage: 'url("/expand_btn.png")'}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
                         <div class="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
-                            <div className="" onClick={this.props.user ? this.props.logout : this.props.initFirebaseUI}>{this.props.user ? 'Log out' : 'Log in'}</div>
-                            {/* <div><span>Link 2</span></div>
-                            <div><span>Link 3</span></div> */}
+                            <div className="" onClick={() => window.open('', '_blank')}>
+                                <img src="svg/help.svg" /> Help
+                            </div>
+                            <div className=""  onClick={() => window.open('https://x.com/iolegion', '_blank')}>
+                                <img src="svg/x.svg" /> X.com
+                            </div>
+                            <div className="" onClick={() => window.open('', '_blank')}>
+                                <img src="svg/discord.svg" /> Discord
+                            </div>
+                            <div className="" onClick={this.copyIDtoClipboard}>
+                                <img src="svg/copy.svg" /> Player ID
+                            </div>
+                            <div className="" onClick={this.props.logout}>
+                                <img src="svg/logout.svg" /> Log out
+                            </div>
                         </div>
                     </div>
                 </div>

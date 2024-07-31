@@ -243,7 +243,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
             <div className="team-content-card-container">
                 <div className="team-content-container">
                     <div className="team-level">
-                        <span>Lv</span>
+                        <span>Lvl</span>
                         <span className="level-span">{characterData?.level}</span>
                     </div>
                     <div className="team-info-container">

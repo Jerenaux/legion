@@ -5,16 +5,22 @@ import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import {apiFetch} from './API';
-import { Terrain, PlayMode, Target, StatusEffect, ChestColor } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData } from '@legion/shared/interfaces';
+import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN } from '@legion/shared/enums';
+import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL } from '@legion/shared/config';
 
-
+enum GameAction {
+    SPELL_USE,
+    ITEM_USE,
+    MOVE,
+    ATTACK
+}
 export abstract class Game
 {
     id: string;
     mode: PlayMode;
+    league: League;
     teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
     terrainMap = new Map<string, Terrain>();
@@ -27,18 +33,20 @@ export abstract class Game
     firstBlood: boolean = false;
     gameOver: boolean = false;
     audienceTimer: NodeJS.Timeout | null = null;
+    checkEndTimer: NodeJS.Timeout | null = null;
 
     gridWidth: number = 20;
     gridHeight: number = 10;
 
-    constructor(id: string, mode: PlayMode, io: Server) {
+    constructor(id: string, mode: PlayMode, league: League, io: Server) {
         this.id = id;
         this.mode = mode;
+        this.league = league;
         this.io = io;
 
         this.teams.set(1, new Team(1, this));
         this.teams.set(2, new Team(2, this));
-        console.log(`Created game ${this.id}`);
+        console.log(`[Game] Created game ${this.id}`);
     }
 
     addSocket(socket: Socket) {
@@ -51,9 +59,10 @@ export abstract class Game
             if (this.sockets.length === 2) return;
             this.addSocket(socket);
             const index = this.sockets.indexOf(socket);
-            console.log(`Adding player ${index + 1} to game ${this.id}`);
+            console.log(`[Game:addPlayer] Adding player ${index + 1} to game ${this.id}`);
 
             const team = this.teams.get(index + 1);
+            console.log(`[Game:addPlayer] Player ${playerData.name} assigned to team ${team.id}`);
             this.socketMap.set(socket, team);
             team.setSocket(socket);
             team.setPlayerData(playerData);
@@ -73,6 +82,7 @@ export abstract class Game
     }
 
     reconnectPlayer(socket: Socket) {
+        console.log(`Reconnecting player to game ${this.id} ...`)
         this.addSocket(socket);
         // Find which team has socket set to null
         const team = this.teams.get(1).socket ? this.teams.get(2) : this.teams.get(1);
@@ -84,7 +94,7 @@ export abstract class Game
     abstract populateTeams(): void;
 
     async start() {
-        console.log(`Starting game ${this.id}`);
+        console.log(`[Game:start]`);
         try {
             await this.populateTeams();
             this.populateGrid();
@@ -141,18 +151,30 @@ export abstract class Game
     }
 
     startGame() {
+        console.log(`[Game:startGame]`)
         this.startTime = Date.now();
         this.gameStarted = true;
-        this.sockets.forEach(this.sendGameStatus.bind(this));
+        this.sockets.forEach(socket => this.sendGameStatus(socket));
+        
         this.audienceTimer = setInterval(() => {
             this.teams.forEach(team => {
                 team.incrementScore(10);
                 team!.sendScore();
             });
         }, 30 * 1000);
+
+        this.checkEndTimer = setInterval(() => {
+            this.checkEndGame();
+        }, 1000);
     }
 
     sendGameStatus(socket: Socket, reconnect: boolean = false) {
+        if (reconnect) {
+            console.log(`[Game:sendGameStatus] Reconnect`);
+        }
+        if (reconnect && !this.gameStarted) {
+            console.error(`[Game:sendGameStatus] Reconnect flag set to true for game not started`);
+        }
         const teamId = this.socketMap.get(socket)?.id!;
         socket.emit('gameStatus', this.getGameData(teamId, reconnect));
     }
@@ -163,33 +185,26 @@ export abstract class Game
 
     getGameData(playerTeamId: number, reconnect: boolean = false): GameData {
         const otherTeamId = this.getOtherTeam(playerTeamId).id;
+        const team = this.teams.get(playerTeamId);
+        const otherTeam = this.teams.get(otherTeamId);
         const data = {
             general: {
                 reconnect,
-                tutorial: true,
-                spectator: true,
+                tutorial: false,
+                spectator: false,
+                mode: this.mode,
             },
             player: {
                 teamId: playerTeamId,
-                player: {
-                    teamName: 'TeamName',
-                    playerName: 'PlayerName',
-                    playerLevel: 1,
-                    playerRank: 1,
-                    playerAvatar: 'avatar',
-                },
-                team: this.teams.get(playerTeamId)?.getMembers().map(player => player.getPlacementData(true))
+                player: team.getPlayerData(),
+                team: team.getMembers().map(player => player.getPlacementData(true)),
+                score: team.score,
             },
             opponent: {
                 teamId: otherTeamId,
-                player: {
-                    teamName: 'TeamName',
-                    playerName: 'PlayerName',
-                    playerLevel: 1,
-                    playerRank: 1,
-                    playerAvatar: 'avatar',
-                },
-                team: this.teams.get(otherTeamId)?.getMembers().map(player => player.getPlacementData())
+                player: otherTeam.getPlayerData(),
+                team: otherTeam.getMembers().map(player => player.getPlacementData()),
+                score: -1,
             },
             terrain: Array.from(this.terrainMap).map(([key, value]) => {
                 const [x, y] = key.split(',').map(Number);
@@ -247,10 +262,9 @@ export abstract class Game
     }
 
     processAction(action: string, data: any, socket: Socket | null = null) {
-        // console.log(`Processing action ${action} with data ${JSON.stringify(data)}`);
         if (this.gameOver || !this.gameStarted) return;
 
-        let team;
+        let team: Team;
         if (socket) {
             team = this.socketMap.get(socket);
         } else {
@@ -260,59 +274,67 @@ export abstract class Game
         team!.incrementActions();
         team!.snapshotScore();
 
-        let delay;
         switch (action) {
             case 'move':
-                delay = this.processMove(data, team!);
+                this.processMove(data, team!);
+                this.saveGameAction(team.teamData.playerUID, GameAction.MOVE, data);
                 break;
             case 'attack':
-                delay = this.processAttack(data, team!);
+                this.processAttack(data, team!);
+                this.saveGameAction(team.teamData.playerUID, GameAction.ATTACK, data);
                 break;
             case 'obstacleattack':
-                delay = this.processObstacleAttack(data, team!);
+                this.processObstacleAttack(data, team!);
                 break;
             case 'useitem':
-                delay = this.processUseItem(data, team!);
+                this.processUseItem(data, team!);
+                this.saveGameAction(team.teamData.playerUID, GameAction.ITEM_USE, data);
                 break;
             case 'spell':
-                delay = this.processMagic(data, team!);
+                this.processMagic(data, team!);
+                this.saveGameAction(team.teamData.playerUID, GameAction.SPELL_USE, data);
                 break;
         }
-
-        setTimeout(() => {
-            team!.sendScore();
-            this.checkEndGame();
-        }, delay);
     }
 
     checkEndGame() {
-        // console.log(`Checking end game...`);
         if (this.gameOver) return;
-        // console.log(`Team 1: ${this.teams.get(1)!.isDefeated()}, Team 2: ${this.teams.get(2)!.isDefeated()}`);
         if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
             this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
         }
     }
 
-    endGame(winner: number) {
-        console.log(`Team ${winner} wins!`);
+    endGame(winnerTeamID: number) {
         this.duration = Date.now() - this.startTime;
         this.gameOver = true;
 
+        clearTimeout(this.audienceTimer!);
+        clearTimeout(this.checkEndTimer!);
         this.teams.forEach(team => {
             team.clearAllTimers();
         }, this);
 
+        const results = {};
+        let winnerUID;
         this.sockets.forEach(socket => {
             const team = this.socketMap.get(socket);
             const otherTeam = this.getOtherTeam(team!.id);
-            const outcomes = this.computeGameOutcomes(team, otherTeam, winner, this.duration, this.mode) as OutcomeData;
+            const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID) as OutcomeData;
             team.distributeXp(outcomes.xp);
             outcomes.characters = team.getCharactersDBUpdates();
             this.writeOutcomesToDb(team, outcomes);
-            console.log(`Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
+            console.log(`[Game:endGame] Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
             socket.emit('gameEnd', outcomes);
+
+            results[team.teamData.playerUID] = {
+                audience: team.score,
+                score: outcomes.rawGrade,
+            }
+            if (team.id === winnerTeamID) {
+                winnerUID = team.teamData.playerUID;
+            }
         });
+        this.updateGameInDB(winnerUID, results);
     }
 
     setCooldown(player: ServerPlayer, cooldown: number) {
@@ -330,7 +352,7 @@ export abstract class Game
             return;
         }
 
-        player.stopDoT();
+        player.stopTerrainDoT();
         
         // console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
         this.checkForTerrainEffects(player, listCellsOnTheWay(player.x, player.y, tile.x, tile.y));
@@ -393,6 +415,11 @@ export abstract class Game
         player.team.incrementOffensiveActions();
         player.addInteractedTarget(opponent);
 
+        let oneShot = false;
+        if (opponent.justDied) {
+            oneShot = (damage >= opponent.getMaxHP());
+        }
+
         if (this.hasObstacle(opponent.x, opponent.y)) {
             const terrainUpdate = this.removeTerrain(opponent.x, opponent.y);
             this.broadcastTerrain([terrainUpdate]);
@@ -408,7 +435,14 @@ export abstract class Game
             num,
             damage: -damage,
             hp: opponent.getHP(),
+            isKill: opponent.justDied,
         });
+
+        if (oneShot) { // Broadcast gen after attack
+            this.broadcast('gen', {
+                gen: GEN.ONE_SHOT
+            });
+        }
 
         team.socket?.emit('cooldown', {
             num,
@@ -523,48 +557,58 @@ export abstract class Game
         spell.applyEffect(player, targets);
         player.setCasting(false);
 
-        let isKill = false;
+        let nbKills = 0;
+        let nbHits = 0;
+        let oneShot = false;
         targets.forEach(target => {
-            const wasDead = !target.isAlive();
             if (target.HPHasChanged()) {
                 const delta = target.getHPDelta();
+                console.log(`[Game:applyMagic] delta: ${delta}, justDied: ${target.justDied}, targetHP: ${target.getHP()}, targetMaxHP: ${target.getMaxHP()}`);
                 player.increaseDamageDealt(delta);
-                if (!target.isAlive()){
-                    // player.team!.increaseScoreFromKill(player);
-                    isKill = true;
+                if (target.justDied){
+                    nbKills++;
                 }
-                // if (delta < 0) player.team!.increaseScoreFromDamage(-delta);
                 if (delta > 0) {
                     player.team!.increaseScoreFromHeal(player);
                     player.team!.incrementHealing(delta);
+                } else if (delta < 0) {
+                    nbHits++;
                 }
-                if (wasDead && target.isAlive()) {
-                    target.team!.increaseScoreFromRevive();
+                if (delta < 0 && Math.abs(delta) == target.getMaxHP()) {
+                    oneShot = true;
                 }
             }
             player.addInteractedTarget(target);
         });            
         // Add all targets to the list of interacted targets
-        player.team!.increaseScoreFromMultiHits(targets.length);
-        player.team!.increaseScoreFromSpell(spell.score);
+        team.increaseScoreFromMultiHits(targets.length);
+        team.increaseScoreFromSpell(spell.score);
+
+        const nbFrozen = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
+        // Count how many values of terraiMap are Terrain.FIRE
+        const nbBurning = Array.from(this.terrainMap.values()).filter(terrain => terrain === Terrain.FIRE).length;
 
         if (spell.terrain) {
             const terrainUpdates = this.manageTerrain(spell, x, y);
             this.broadcastTerrain(terrainUpdates);
             // If any terrain update is not NONE
             if (terrainUpdates.some(update => update.terrain !== Terrain.NONE)) {
-                player.team!.increaseScoreFromTerrain();
+                team.increaseScoreFromTerrain();
             }
         }
 
         if (spell.status) {
             targets.forEach(target => {
                 const success = target.addStatusEffect(spell.status.effect, spell.status.duration, spell.status.chance);
+                console.log(`[Game:applyMagic] Status effect ${spell.status.effect} applied to target ${target.num}: ${success}`);
                 if (success) {
-                    player.team!.increaseScoreFromStatusEffect();
+                    team.increaseScoreFromStatusEffect();
                 }
             });
         }
+
+        const nbFrozen_ = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
+        const nbBurning_ = Array.from(this.terrainMap.values()).filter(terrain => terrain === Terrain.FIRE).length;
 
         this.setCooldown(player, spell.cooldown * 1000);
         
@@ -572,8 +616,17 @@ export abstract class Game
             x,
             y,
             id: spell.id,
-            isKill,
+            isKill: nbKills > 0,
         });
+
+        const GENs = [];
+        // if (team.killStreak > 1) GENs.push(GEN.KILL_STREAK);
+        if (nbFrozen_ > nbFrozen) GENs.push(GEN.FROZEN);
+        if (nbBurning_ > nbBurning) GENs.push(GEN.BURNING);
+        if (oneShot) GENs.push(GEN.ONE_SHOT);
+        if (nbKills > 1) GENs.push(GEN.MULTI_KILL);
+        if (nbHits > 1) GENs.push(GEN.MULTI_HIT);
+        this.broadcastGEN(GENs); // Broadcast gen after localanimation
 
         team.socket?.emit('cooldown', {
             num: player.num,
@@ -588,24 +641,66 @@ export abstract class Game
         team.sendScore();
     }
 
+    broadcastGEN(GENs: GEN[]) {
+        /**
+         * Broadcast a single GEN among those in the array, based on the following priority order:
+         * 1. MULTI_KILL
+         * 2. ONE_SHOT
+         * 3. MULTI_HIT
+         * 4. FROZEN
+         */
+        if (GENs.includes(GEN.MULTI_KILL)) {
+            this.broadcast('gen', {
+                gen: GEN.MULTI_KILL
+            });
+        } else if (GENs.includes(GEN.ONE_SHOT)) {
+            this.broadcast('gen', {
+                gen: GEN.ONE_SHOT
+            });
+        } else if (GENs.includes(GEN.MULTI_HIT)) {
+            this.broadcast('gen', {
+                gen: GEN.MULTI_HIT
+            });
+        } else if (GENs.includes(GEN.KILL_STREAK)) {
+            this.broadcast('gen', {
+                gen: GEN.KILL_STREAK
+            });
+        } else if (GENs.includes(GEN.FROZEN)) {
+            this.broadcast('gen', {
+                gen: GEN.FROZEN
+            });
+        } else if (GENs.includes(GEN.BURNING)) {
+            this.broadcast('gen', {
+                gen: GEN.BURNING
+            });
+        }
+    }
+
     processMagic({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number, targetTeam: number, target: number}, team: Team ) {
         // console.log(`Processing magic for team ${team.id}, player ${num}, spell ${index}, target team ${targetTeam}, target ${target}`);
         const player = team.getMembers()[num - 1];
         if (!player.canAct()) {
-            console.log('cannot act');
+            console.log('[Game:processMagic] cannot act');
             return;
         }
 
         const spell: Spell | null = player.getSpellAtIndex(index);
         if (!spell) return;
+        console.log(`[Game:processMagic] Casting spell [${spell.id}] ${spell.name}`);
 
-        if (spell.cost > player.getMP()) return;
+        if (spell.cost > player.getMP()) {
+            console.log(`[Game:processMagic] Not enough MP!`);
+            return;
+        }
         const mp = player.consumeMP(spell.cost);
 
         let targetPlayer: ServerPlayer | null = null;
         if (spell.target === Target.SINGLE) {
             targetPlayer = this.teams.get(targetTeam)?.getMembers()[target - 1];
-            if (!targetPlayer || !targetPlayer.isAlive()) return;
+            if (!targetPlayer || !targetPlayer.isAlive()) {
+                console.log(`[Game:processMagic] Invalid target for SINGLE target type!`);
+                return;
+            }
             x = targetPlayer.x;
             y = targetPlayer.y;
         }
@@ -803,36 +898,45 @@ export abstract class Game
         }
     }
 
-    computeGameOutcomes(team: Team, otherTeam: Team, winnerTeamId: number, duration: number, mode: PlayMode): OutcomeData {
+    computeGameOutcomes(team: Team, otherTeam: Team, winnerTeamId: number): OutcomeData {
         const isWinner = team.id === winnerTeamId;
-        const eloUpdate = mode == PlayMode.RANKED ? this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : {winnerUpdate: 0, loserUpdate: 0};
+        const eloUpdate = this.mode == PlayMode.RANKED ? this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : {winnerUpdate: 0, loserUpdate: 0};
         const grade = this.computeGrade(team, otherTeam);
         console.log(`Game grade for team ${team.id}: ${grade}, ${this.computeLetterGrade(grade)}`);
         return {
             isWinner,
+            rawGrade: grade,
             grade: this.computeLetterGrade(grade),
-            gold: this.computeTeamGold(grade, mode),
-            xp: this.computeTeamXP(team, otherTeam, grade, mode),
+            gold: this.computeTeamGold(grade, this.mode),
+            xp: this.computeTeamXP(team, otherTeam, grade, this.mode),
             elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
-            key: mode == PlayMode.PRACTICE ? null : team.getChestKey() as ChestColor,
-            chests: this.computeChests(team.score, mode),
+            key: this.mode == PlayMode.PRACTICE ? null : team.getChestKey() as ChestColor,
+            chests: this.computeChests(team.score, this.mode),
+            score: team.score,
         }
     }
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
         const chests: GameOutcomeReward[] = [];
-        // if (mode != PlayMode.PRACTICE) this.computeAudienceRewards(score, chests);
-        this.computeAudienceRewards(score, chests);
+        if (mode != PlayMode.PRACTICE) this.computeAudienceRewards(score, chests);
         return chests;
     }
+    
+    computeAudienceRewards(score: number, chests: Array<GameOutcomeReward>): void {
+        const leagueRewards = {
+            [League.BRONZE]: [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.BRONZE],
+            [League.SILVER]: [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.SILVER],
+            [League.GOLD]: [ChestColor.BRONZE, ChestColor.SILVER, ChestColor.GOLD],
+            [League.ZENITH]: [ChestColor.SILVER, ChestColor.GOLD, ChestColor.GOLD],
+            [League.APEX]: [ChestColor.GOLD, ChestColor.GOLD, ChestColor.GOLD],
+        };
 
-    computeAudienceRewards(score, chests): void {
-        if (score == 1500) {
-            chests.push({color: ChestColor.GOLD, content: getChestContent(ChestColor.GOLD)} as GameOutcomeReward);
-        } else if (score >= 1000) {
-            chests.push({color: ChestColor.SILVER, content: getChestContent(ChestColor.SILVER)} as GameOutcomeReward);
-        } else if (score >= 500) {
-            chests.push({color: ChestColor.BRONZE, content: getChestContent(ChestColor.BRONZE)} as GameOutcomeReward);
+        const rewards = leagueRewards[this.league];
+        const numberOfChests = Math.floor(score / 500);
+    
+        for (let i = 0; i < numberOfChests && i < rewards.length; i++) {
+            const chestColor = rewards[i];
+            chests.push({color: chestColor, content: getChestContent(chestColor)} as GameOutcomeReward);
         }
     }
 
@@ -851,7 +955,11 @@ export abstract class Game
             offenseFactor = 1.0;
         } else {
             // Normal calculation when not a one-shot
-            offenseFactor = 1 - (teamOffensiveActions / (teamOffensiveActions + otherTeamOffensiveActions));
+            if (teamOffensiveActions + otherTeamOffensiveActions === 0) {
+                offenseFactor = 0;
+            } else {
+                offenseFactor = 1 - (teamOffensiveActions / (teamOffensiveActions + otherTeamOffensiveActions));
+            }
         }
 
         const levelFactor = 1 - (team.getTotalLevel() / (team.getTotalLevel() + otherTeam.getTotalLevel()));
@@ -887,8 +995,8 @@ export abstract class Game
         const actualScoreLoser = 0;
     
         // Calculate rating updates
-        const winnerUpdate = K_FACTOR * (actualScoreWinner - expectedScoreWinner);
-        const loserUpdate = K_FACTOR * (actualScoreLoser - expectedScoreLoser);
+        const winnerUpdate = Math.round(K_FACTOR * (actualScoreWinner - expectedScoreWinner));
+        const loserUpdate = Math.round(K_FACTOR * (actualScoreLoser - expectedScoreLoser));
     
         // Return the elo update for each team
         return {
@@ -926,19 +1034,41 @@ export abstract class Game
     async writeOutcomesToDb(team: Team, rewards: OutcomeData) {
         try {
             await apiFetch(
-                'rewardsUpdate',
+                'postGameUpdate',
                 team.getFirebaseToken(),
                 {
                     method: 'POST',
                     body: {
-                        isWinner: rewards.isWinner,
-                        gold: rewards.gold,
-                        xp: rewards.xp,
-                        elo: rewards.elo,
-                        characters: rewards.characters,
-                        key: rewards.key,
-                        chests: rewards.chests,
-                    } as OutcomeData,
+                        outcomes: {
+                            isWinner: rewards.isWinner,
+                            gold: rewards.gold,
+                            xp: rewards.xp,
+                            elo: rewards.elo,
+                            characters: rewards.characters,
+                            key: rewards.key,
+                            chests: rewards.chests
+                        } as OutcomeData,
+                        mode: this.mode,
+                    },
+                }
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async updateGameInDB(winnerUID: string, results: EndGameDataResults) {
+        try {
+            await apiFetch(
+                'completeGame',
+                '',
+                {
+                    method: 'POST',
+                    body: {
+                        gameId: this.id,
+                        winnerUID,
+                        results,
+                    },
                 }
             );
         } catch (error) {
@@ -964,11 +1094,42 @@ export abstract class Game
         }
     }
 
+    async saveGameAction(playerId: string, action: GameAction, details: any) {
+        try {
+            await apiFetch(
+                'insertGameAction',
+                '',
+                {
+                    method: 'POST',
+                    body: {
+                        gameId: this.id,
+                        playerId,
+                        actionType: action,
+                        details,
+                    },
+                }
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     checkFirstBlood(team) {
         if (!this.firstBlood) {
             this.firstBlood = true;
             this.getOtherTeam(team.id).increaseScoreFromFirstBlood();
         }
+    }
+
+    handleTeamKill(victimTeam) {
+        this.getOtherTeam(victimTeam.id).incrementKillStreak();
+        victimTeam.resetKillStreak();
+    }
+
+    abandonGame(socket) {
+        const team = this.socketMap.get(socket);
+        const otherTeam = this.getOtherTeam(team.id);
+        this.endGame(otherTeam.id);
     }
 }
 

@@ -109,3 +109,28 @@ export enum rankNoImage {
     'silver_rankno',
     'bronze_rankno'
 }
+
+export enum League {
+    BRONZE,
+    SILVER,
+    GOLD,
+    ZENITH,
+    APEX,
+}
+
+export const LeaguesNames = ['Bronze', 'Silver', 'Gold', 'Zenith', 'Apex', 'All Time'];
+
+export enum GameStatus {
+    ONGOING,
+    COMPLETED,
+  }
+
+export enum GEN {
+    COMBAT_BEGINS,
+    MULTI_KILL,
+    MULTI_HIT,
+    ONE_SHOT,
+    FROZEN,
+    BURNING,
+    KILL_STREAK,
+}

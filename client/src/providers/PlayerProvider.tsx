@@ -3,20 +3,26 @@ import { PlayerContextState, PlayerContextData, PlayerContext } from '../context
 import { apiFetch } from '../services/apiService';
 import { successToast, errorToast } from '../components/utils';
 import { APIPlayerData } from '@legion/shared/interfaces';
-
+import {League} from "@legion/shared/enums";
+import { firebaseAuth } from '../services/firebaseService'; 
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
     constructor(props: {}) {
       super(props);
       this.state = {
         player: {
+          uid: '',
           name: '',
           avatar: '0',
           lvl: 0,
           gold: 0,
           elo: 0,
-          ranking: 0,
+          rank: 0,
+          allTimeRank: 0,
           dailyloot: null,
+          league: League.BRONZE,
+          tours: [],
+          isLoaded: false,
         }
       };
 
@@ -26,22 +32,32 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     componentDidMount() {
-        this.fetchPlayerData();
+      this.fetchPlayerData();
     }
     
     async fetchPlayerData() {
+      const user = firebaseAuth.currentUser;
+      if (!user) {
+          return;
+          // throw new Error("No authenticated user found");
+      }
       try {
           const data = await apiFetch('getPlayerData') as APIPlayerData;
           console.log(data);
           this.setState({ 
               player: {
+                  uid: user.uid,
                   name: data.name,
                   avatar: data.avatar,
                   lvl: data.lvl,
                   gold: data.gold,
                   elo: data.elo,
-                  ranking: data.rank,
-                  dailyloot: data.dailyloot
+                  rank: data.rank,
+                  allTimeRank: data.allTimeRank,
+                  dailyloot: data.dailyloot,
+                  league: data.league,
+                  tours: data.tours,
+                  isLoaded: true,
               }
           });
       } catch (error) {

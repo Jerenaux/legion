@@ -5,13 +5,13 @@ import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFields} from "@legion/shared/enums";
+import {Class, statFields, PlayMode} from "@legion/shared/enums";
 import {MAX_CHARACTERS} from "@legion/shared/config";
-import {OutcomeData, DailyLootAllData, CharacterUpdate, APICharacterData} from "@legion/shared/interfaces";
+import {OutcomeData, DailyLootAllDBData, CharacterUpdate, APICharacterData} from "@legion/shared/interfaces";
 import {ChestReward} from "@legion/shared/chests";
+import {logPlayerAction} from "./dashboardAPI";
 
 export const rosterData = onRequest((request, response) => {
-  logger.info("Fetching rosterData");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
@@ -119,15 +119,17 @@ export async function processChestRewards(
   });
 }
 
-export const rewardsUpdate = onRequest((request, response) => {
-  logger.info("Updating rewards");
+export const postGameUpdate = onRequest((request, response) => {
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const {isWinner, xp, gold, characters, elo, key, chests} =
-        request.body as OutcomeData;
+      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
+        request.body.outcomes as OutcomeData;
+      const mode = request.body.mode as PlayMode;
+
+      logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
 
       await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
@@ -143,7 +145,7 @@ export const rewardsUpdate = onRequest((request, response) => {
           throw new Error("Data does not exist");
         }
 
-        const dailyLoot = playerData.dailyloot as DailyLootAllData;
+        const dailyLoot = playerData.dailyloot as DailyLootAllDBData;
         if (key) {
           dailyLoot[key].hasKey = true;
         }
@@ -157,19 +159,60 @@ export const rewardsUpdate = onRequest((request, response) => {
         await processChestRewards(transaction, playerRef, contents, consumables, spells, equipment);
 
         transaction.update(playerRef, {
-          xp: admin.firestore.FieldValue.increment(xp),
-          gold: admin.firestore.FieldValue.increment(gold),
-          elo: admin.firestore.FieldValue.increment(elo),
+          xp: admin.firestore.FieldValue.increment(xp || 0),
+          gold: admin.firestore.FieldValue.increment(gold || 0),
+          elo: admin.firestore.FieldValue.increment(elo || 0),
           dailyloot: dailyLoot,
         });
-        if (isWinner) {
-          transaction.update(playerRef, {
-            wins: admin.firestore.FieldValue.increment(1),
-          });
-        } else {
-          transaction.update(playerRef, {
-            losses: admin.firestore.FieldValue.increment(1),
-          });
+
+        if (mode != PlayMode.PRACTICE) {
+          if (isWinner) {
+              transaction.update(playerRef, {
+                lossesStreak: 0,
+              });
+          } else {
+              transaction.update(playerRef, {
+                lossesStreak: admin.firestore.FieldValue.increment(1),
+              });
+          }
+
+          if (mode == PlayMode.RANKED) {
+            if (isWinner) {
+              transaction.update(playerRef, {
+                'leagueStats.wins': admin.firestore.FieldValue.increment(1),
+                'allTimeStats.wins': admin.firestore.FieldValue.increment(1),
+                'leagueStats.winStreak': admin.firestore.FieldValue.increment(1),
+                'allTimeStats.winStreak': admin.firestore.FieldValue.increment(1),
+                'leagueStats.lossesStreak': 0,
+                'allTimeStats.lossesStreak': 0,
+              });
+            } else {
+              transaction.update(playerRef, {
+                'leagueStats.losses': admin.firestore.FieldValue.increment(1),
+                'allTimeStats.losses': admin.firestore.FieldValue.increment(1),
+                'leagueStats.winStreak': 0,
+                'allTimeStats.winStreak': 0,
+                'leagueStats.lossesStreak': admin.firestore.FieldValue.increment(1),
+                'allTimeStats.lossesStreak': admin.firestore.FieldValue.increment(1),
+              });
+            }
+            let leagueAvgAudienceScore = playerDoc.data()?.leagueStats.avgAudienceScore || 0;
+            let allTimeAvgAudienceScore = playerDoc.data()?.allTimeStats.avgAudienceScore || 0;
+            let leagueAvgGrade = playerDoc.data()?.leagueStats.avgGrade || 0;
+            let allTimeAvgGrade = playerDoc.data()?.allTimeStats.avgGrade || 0;
+            leagueAvgAudienceScore = (leagueAvgAudienceScore * playerData.leagueStats.nbGames + score) / (playerData.leagueStats.nbGames + 1);
+            allTimeAvgAudienceScore = (allTimeAvgAudienceScore * playerData.allTimeStats.nbGames + score) / (playerData.allTimeStats.nbGames + 1);
+            leagueAvgGrade = (leagueAvgGrade * playerData.leagueStats.nbGames + rawGrade) / (playerData.leagueStats.nbGames + 1);
+            allTimeAvgGrade = (allTimeAvgGrade * playerData.allTimeStats.nbGames + rawGrade) / (playerData.allTimeStats.nbGames + 1);
+            transaction.update(playerRef, {
+              'leagueStats.nbGames': admin.firestore.FieldValue.increment(1),
+              'allTimeStats.nbGames': admin.firestore.FieldValue.increment(1),
+              'leagueStats.avgAudienceScore': leagueAvgAudienceScore,
+              'allTimeStats.avgAudienceScore': allTimeAvgAudienceScore,
+              'leagueStats.avgGrade': leagueAvgGrade,
+              'allTimeStats.avgGrade': allTimeAvgGrade,
+            });
+          }
         }
 
         // Iterate over the player's characters and increase their XP
@@ -185,7 +228,7 @@ export const rewardsUpdate = onRequest((request, response) => {
                 if (characterRewards) {
                   const sp = characterRewards.points;
                   transaction.update(characterRef, {
-                    xp: admin.firestore.FieldValue.increment(characterRewards.xp),
+                    xp: characterRewards.xp,
                     level: admin.firestore.FieldValue.increment(characterRewards.level),
                     sp: admin.firestore.FieldValue.increment(sp),
                     allTimeSP: admin.firestore.FieldValue.increment(sp),
@@ -390,6 +433,7 @@ export const purchaseCharacter = onRequest((request, response) => {
         });
       });
       console.log("Transaction successfully committed!");
+      logPlayerAction(uid, "purchaseCharacter", {characterId, price});
       monitorCharactersOnSale(db);
 
       response.send({status: 0});
@@ -411,6 +455,7 @@ export const spendSP = onRequest((request, response) => {
       // const amount = request.body.amount;
       const amount = 1;
       const index = request.body.index as number;
+      let stat;
 
       await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
@@ -443,7 +488,7 @@ export const spendSP = onRequest((request, response) => {
           throw new Error("Character does not have enough skill points");
         }
 
-        const stat = statFields[index];
+        stat = statFields[index];
         const spBonuses = characterData.sp_bonuses;
         spBonuses[stat] += getSPIncrement(index) * amount;
 
@@ -454,6 +499,8 @@ export const spendSP = onRequest((request, response) => {
       });
       console.log("Transaction successfully committed!");
 
+      logPlayerAction(uid, "spendSP", {characterId, amount, stat});
+
       response.send({status: 0});
     } catch (error) {
       console.error("Error spending skill points:", error);
@@ -461,3 +508,4 @@ export const spendSP = onRequest((request, response) => {
     }
   });
 });
+

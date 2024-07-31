@@ -1,5 +1,4 @@
 import * as Phaser from 'phaser';
-import { HUD } from './HUD';
 import { Arena } from './Arena';
 import RoundRectanglePlugin from 'phaser3-rex-plugins/plugins/roundrectangle-plugin.js';
 
@@ -24,7 +23,7 @@ const config = {
             }
         ]
     },
-    scene: [Arena, HUD],
+    scene: [Arena],
 };
 
 export function startGame() {

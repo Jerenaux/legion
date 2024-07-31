@@ -8,13 +8,13 @@ import 'react-loading-skeleton/dist/skeleton.css'
 import { apiFetch } from '../../services/apiService';
 import { errorToast } from '../utils';
 import { ChestColor } from "@legion/shared/enums";
-import { DailyLootAllData } from "@legion/shared/interfaces";
+import { DailyLootAllAPIData } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
 import { PlayerContext } from '../../contexts/PlayerContext';
 
 
 interface DailyLootProps {
-    data: DailyLootAllData,
+    data: DailyLootAllAPIData,
 }
 
 class DailyLoot extends Component<DailyLootProps> {

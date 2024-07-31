@@ -39,7 +39,7 @@ class PlayModeButton extends Component<ButtonProps> {
         }
 
         return (
-            <div className="buttonContainer" style={btnBg} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})} onClick={this.handleCardClick}>
+            <div id={`playmode_${this.props.mode}`} className="buttonContainer" style={btnBg} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})} onClick={this.handleCardClick}>
                 <img src={btnIcons[this.props.label]} alt="" />
                 <div className="labelContainer">
                     <span className="label">{this.props.label}</span>

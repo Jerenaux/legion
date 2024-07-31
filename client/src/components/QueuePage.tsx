@@ -109,7 +109,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
     socket;
 
     joinQueue = async () => {
-        console.log(`Connecting to ${process.env.MATCHMAKER_URL}`);
         this.socket = io(
             process.env.MATCHMAKER_URL,
             {
@@ -121,6 +120,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
 
         this.socket.on('matchFound', ({ gameId }) => {
             console.log(`Found game ${gameId}!`);
+            this.socket.disconnect();
             route(`/game/${gameId}`);
         });
 
@@ -208,6 +208,12 @@ class QueuePage extends Component<QPageProps, QpageState> {
         this.joinQueue();
         clearInterval(this.interval);
         clearInterval(this.intervalWaited);
+    }
+
+    componentWillUnmount() {
+        if (this.socket) {
+            this.socket.disconnect();
+        }
     }
 
     render() {

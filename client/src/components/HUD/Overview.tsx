@@ -1,6 +1,5 @@
-// Overview.tsx
 import { h, Component } from 'preact';
-import { PlayerProps, TeamMember } from "@legion/shared/interfaces";
+import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
 import PlayerInfo from './PlayerInfo';
 
 interface Props {
@@ -9,6 +8,9 @@ interface Props {
   position: string;
   isSpectator: boolean;
   selectedPlayer: PlayerProps;
+  eventEmitter: any;
+  isPlayerTeam: boolean;
+  player: PlayerProfileData;
 }
 
 interface State {
@@ -88,8 +90,8 @@ class Overview extends Component<Props, State> {
     }
 
     return (
-      <div className={`overview ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={playerTabData} position={this.props.position} isSpectator={isSpectator} />
+      <div className={`overview ${this.props.isPlayerTeam && 'overview_playerteam'} ${position === 'right' && 'overview_right'}`}>
+        <PlayerInfo player={this.props.player} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
         {members.map((member, memberIndex) => {
           const cooldown = cooldowns[cooldownIndex++];
 
@@ -98,7 +100,7 @@ class Overview extends Component<Props, State> {
           };
 
           const charProfileStyle = (idx: number) => {
-            const isSelected = this.props.selectedPlayer?.number === idx + 1 && position === 'right';
+            const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
 
             if (cooldown === 0 && member.hp > 0) {
               return {
@@ -114,7 +116,7 @@ class Overview extends Component<Props, State> {
           }
 
           const charStatStyle = (idx: number) => {
-            const isSelected = this.props.selectedPlayer?.number === idx + 1 && position === 'right';
+            const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
 
             return {
               backgroundImage: `url(/HUD/char_stats_bg${isSelected ? '_Active' : ''}.png)`,
@@ -139,11 +141,11 @@ class Overview extends Component<Props, State> {
                 <div className="char_stats_bar" style={position === 'left' && {justifyContent: 'flex-start'}}>
                   <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
                 </div>
-                {position === 'right' && <div className="char_stats_bar">
+                {this.props.isPlayerTeam && <div className="char_stats_bar" style={position === 'left' && {justifyContent: 'flex-start'}}>
                   <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
                 </div>}
               </div>
-              {position === 'right' && <div className={`char_stats_cooldown_bar ${member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`}>
+              {this.props.isPlayerTeam && <div className={`char_stats_cooldown_bar ${member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`} style={position === 'left' && {justifyContent: 'flex-start'}}>
                 <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
               </div>}
               <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>

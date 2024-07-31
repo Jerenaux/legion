@@ -5,10 +5,7 @@ import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
 import { CharacterUpdate, GameOutcomeReward } from '@legion/shared/interfaces';
 import XPCountUp from './XPCountUp';
-import ActionItem from './Action';
-import { InventoryType } from '@legion/shared/enums';
-import { BaseItem } from '@legion/shared/BaseItem';
-import { mapFrameToCoordinates } from '../../utils';
+import { mapFrameToCoordinates } from '../utils';
 import { RewardType } from '@legion/shared/chests';
 
 /* eslint-disable react/prefer-stateless-function */

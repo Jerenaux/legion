@@ -1,15 +1,15 @@
 
 import { io } from 'socket.io-client';
 import { Player } from './Player';
-import { GameHUD, events } from './HUD/GameHUD';
+import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { CellsHighlight } from './CellsHighlight';
 import { getSpellById } from '@legion/shared/Spells';
 import { lineOfSight, serializeCoords } from '@legion/shared/utils';
-import { getFirebaseIdToken } from '../../services/apiService';
+import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { Target, Terrain } from "@legion/shared/enums";
+import { Target, Terrain, GEN } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
 
 const LOCAL_ANIMATION_SCALE = 3;
@@ -40,6 +40,8 @@ export class Arena extends Phaser.Scene
     sprites: Phaser.GameObjects.Sprite[] = [];
     environmentalAudioSources;
     gameSettings;
+    killCamActive = false;
+    pendingGEN: GEN;
 
     constructor() {
         super({ key: 'Arena' });
@@ -64,7 +66,9 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('slash', 'vfx/slash.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('thunder', 'vfx/bolts.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('ice', 'vfx/ice.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('ice2', 'vfx/ice2.png', { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('impact', 'vfx/sword_impact.png', { frameWidth: 291, frameHeight: 291});
+        this.load.spritesheet('poison', 'vfx/poison.png', { frameWidth: 64, frameHeight: 64});
 
         this.load.spritesheet('statuses', 'States.png', { frameWidth: 96, frameHeight: 96});
 
@@ -78,13 +82,13 @@ export class Arena extends Phaser.Scene
         this.load.audio('flames', 'sfx/flame.wav');
         this.load.audio('crowd', 'sfx/crowd.wav');
         this.load.audio('cheer', 'sfx/cheer.wav');
-
+        
         this.load.audio('cast', 'sfx/spells/cast.wav');
         this.load.audio('fireball', 'sfx/spells/fire_3.wav');
         this.load.audio('thunder', 'sfx/spells/thunder.wav');
         this.load.audio('ice', 'sfx/spells/ice.wav');
         this.load.audio('healing', 'sfx/spells/healing.wav');
-
+        this.load.audio('poison', 'sfx/spells/poison.wav');
 
         this.load.audio(`bgm_start`, `music/bgm_start.wav`);
         for (let i = 1; i <= 12; i++) {
@@ -94,7 +98,8 @@ export class Arena extends Phaser.Scene
 
         this.load.atlas('groundTiles', 'tiles2.png', 'tiles2.json');
 
-        const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang'];
+        const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill', 
+            'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire'];
         GEN.forEach((name) => {
             this.load.image(name, `GEN/${name}.png`);
         });
@@ -178,6 +183,10 @@ export class Arena extends Phaser.Scene
 
         this.socket.on('terrain', (data) => {
             this.processTerrain(data);
+        });
+
+        this.socket.on('gen', (data) => {
+            this.displayGEN(data.gen);
         });
 
         this.socket.on('localanimation', (data) => {
@@ -436,22 +445,24 @@ export class Arena extends Phaser.Scene
     }
 
     toggleTargetMode(flag: boolean, size?: number) {
-        this.HUD.toggleCursor(flag, 'scroll');
         if (flag) {
             this.cellsHighlight.setTargetMode(size, true);
             this.clearHighlight();
+            this.emitEvent('pendingSpell');
         } else {
             this.cellsHighlight.setNormalMode(true);
+            this.emitEvent('clearPendingSpell');
         }
     }
 
     toggleItemMode(flag: boolean) {
-        this.HUD.toggleCursor(flag, 'item');
         if (flag) {
             this.cellsHighlight.setItemMode(true);
             this.clearHighlight();
+            this.emitEvent('pendingItem');
         } else {
             this.cellsHighlight.setNormalMode(true);
+            this.emitEvent('clearPendingItem');
         }
     }
 
@@ -551,34 +562,18 @@ export class Arena extends Phaser.Scene
                 }
                 this.refreshOverview();
                 break;
-            case 'mpChange':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'pendingSpellChange':
-                this.refreshBox();
-                break;
-            case 'statusesChange':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'selectPlayer':
+            case 'inventoryChange':
                 this.refreshBox();
                 break;
             case 'deselectPlayer':
                 events.emit('hidePlayerBox');
                 break;
-            case 'inventoryChange':
-                this.refreshBox();
-                break;
+            case 'mpChange':
+            case 'statusesChange':
             case 'cooldownStarted':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'cooldownEnded':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
             case 'cooldownChange':
                 this.refreshBox();
                 this.refreshOverview();
@@ -593,6 +588,27 @@ export class Arena extends Phaser.Scene
                 break;
             case 'gameEnd':
                 this.showEndgameScreen(data);
+                break;
+            case 'hoverCharacter':
+                events.emit('hoverCharacter');
+                break;
+            case 'unhoverCharacter':
+                events.emit('unhoverCharacter');
+                break;
+            case 'hoverEnemyCharacter':
+                events.emit('hoverEnemyCharacter');
+                break;
+            case 'pendingSpell':
+                events.emit('pendingSpell');
+                break;
+            case 'pendingItem':
+                events.emit('pendingItem');
+                break;
+            case 'clearPendingSpell':
+                events.emit('clearPendingSpell');
+                break;
+            case 'clearPendingItem':
+                events.emit('clearPendingItem');
                 break;
             default:
                 break;
@@ -638,10 +654,14 @@ export class Arena extends Phaser.Scene
         this.playSoundMultipleTimes('steps', 2);
     }
 
-    processAttack({team, target, num, damage, hp}) {
+    processAttack({team, target, num, damage, hp, isKill}) {
         const player = this.getPlayer(team, num);
         const otherTeam = this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
+
+        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
+        if (isKill) this.killCam(pixelX, pixelY);
+        
         this.playSound('slash');
         player.attack(targetPlayer.gridX);
         targetPlayer.setHP(hp);
@@ -818,7 +838,8 @@ export class Arena extends Phaser.Scene
 
     createSounds() {
         this.SFX = {};
-        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd', 'cheer']
+        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing',
+            'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd', 'cheer', 'poison']
         sounds.forEach((sound) => {
             this.SFX[sound] = this.sound.add(sound);
         })
@@ -855,10 +876,11 @@ export class Arena extends Phaser.Scene
 
     createAnims() {
         allSprites.forEach((asset) => {
+            // Character postures
             this.anims.create({
                 key: `${asset}_anim_idle`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 9, end: 11 }), 
-                frameRate: 5, // Number of frames per second
+                frameRate: 5, 
                 repeat: -1,
                 yoyo: true 
             });
@@ -866,7 +888,7 @@ export class Arena extends Phaser.Scene
             this.anims.create({
                 key: `${asset}_anim_idle_hurt`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 33, end: 35 }), 
-                frameRate: 5, // Number of frames per second
+                frameRate: 5, 
                 repeat: -1, // Loop indefinitely,
                 yoyo: true
             });
@@ -874,50 +896,50 @@ export class Arena extends Phaser.Scene
             this.anims.create({
                 key: `${asset}_anim_walk`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 6, end: 8 }), 
-                frameRate: 5, // Number of frames per second
+                frameRate: 5, 
                 repeat: -1 // Loop indefinitely
             });
 
             this.anims.create({
                 key: `${asset}_anim_attack`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 12, end: 14 }), 
-                frameRate: 10, // Number of frames per second
+                frameRate: 10, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_dodge`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 45, end: 47 }), 
-                frameRate: 10, // Number of frames per second
+                frameRate: 10, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_item`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 48, end: 50 }), 
-                frameRate: 5, // Number of frames per second
+                frameRate: 5, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_hurt`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 42, end: 44 }), 
-                frameRate: 5, // Number of frames per second
+                frameRate: 5, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_cast`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 39, end: 41 }), 
-                frameRate: 5, // Number of frames per second
+                frameRate: 5, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_die`, 
                 frames: this.anims.generateFrameNumbers(asset, { frames: [51, 52, 53] }), 
-                frameRate: 10, // Number of frames per second
+                frameRate: 10, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_victory`, 
                 frames: this.anims.generateFrameNumbers(asset, { frames: [15, 16, 17] }), 
-                frameRate: 5, // Number of frames per second
+                frameRate: 5, 
                 repeat: -1,
                 yoyo: true 
             });
@@ -925,53 +947,67 @@ export class Arena extends Phaser.Scene
             this.anims.create({
                 key: `${asset}_anim_boast`, 
                 frames: this.anims.generateFrameNumbers(asset, { frames: [15, 16, 17] }), 
-                frameRate: 10, // Number of frames per second
+                frameRate: 10, 
                 repeat: 2,
                 yoyo: true 
             });
         }, this);
 
         this.anims.create({
+            key: `cast`, 
+            frames: this.anims.generateFrameNumbers('cast', { frames: [10, 11, 12] }), 
+            frameRate: 15, 
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: `slash`, 
+            frames: this.anims.generateFrameNumbers('slash', { frames: [99, 100, 101, 102] }), 
+            frameRate: 15, 
+        });
+
+        this.anims.create({
+            key: `impact`, 
+            frames: this.anims.generateFrameNumbers('impact', { start: 0, end: 12 }), 
+            frameRate: 25, 
+        });
+
+        // Spells VFX
+
+        this.anims.create({
             key: `potion_heal`, 
             frames: this.anims.generateFrameNumbers('potion_heal'), 
-            frameRate: 10, // Number of frames per second
+            frameRate: 10, 
         });
 
         this.anims.create({
             key: `explosion_1`, 
-            frames: this.anims.generateFrameNumbers('explosions', { start: 48, end: 60 }), 
-            frameRate: 15, // Number of frames per second
+            frames: this.anims.generateFrameNumbers('explosions', { start: 48, end: 59 }), 
+            frameRate: 15, 
         });
 
         this.anims.create({
             key: `explosion_2`, 
             frames: this.anims.generateFrameNumbers('explosions', { start: 12, end: 23 }), 
-            frameRate: 15, // Number of frames per second
+            frameRate: 15, 
         });
 
         this.anims.create({
             key: `explosion_3`, 
             frames: this.anims.generateFrameNumbers('explosions', { start: 0, end: 11 }), 
-            frameRate: 15, // Number of frames per second
+            frameRate: 15, 
         });
 
         this.anims.create({
             key: `thunder`, 
             frames: this.anims.generateFrameNumbers('thunder', { start: 36, end: 47 }), 
-            frameRate: 15, // Number of frames per second
+            frameRate: 15, 
         });
 
         this.anims.create({
             key: `thunder+`, 
             frames: this.anims.generateFrameNumbers('thunder2', { start: 15, end: 29 }), 
-            frameRate: 15, // Number of frames per second
-        });
-
-        this.anims.create({
-            key: `ground_flame`, 
-            frames: this.anims.generateFrameNumbers('thunder', { start: 48, end: 59 }), 
-            frameRate: 15, // Number of frames per second
-            repeat: -1
+            frameRate: 15, 
         });
 
         this.anims.create({
@@ -981,23 +1017,33 @@ export class Arena extends Phaser.Scene
         });
 
         this.anims.create({
-            key: `cast`, 
-            frames: this.anims.generateFrameNumbers('cast', { frames: [10, 11, 12] }), 
-            frameRate: 15, // Number of frames per second
+            key: `ice+`, 
+            frames: this.anims.generateFrameNumbers('ice', { start: 36, end: 48 }), 
+            frameRate: 15,
+        });
+
+        this.anims.create({
+            key: `iceX`, 
+            frames: this.anims.generateFrameNumbers('ice2', {frames: [128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171]}), 
+            frameRate: 15,
+        });
+
+        this.anims.create({
+            key: `poison`, 
+            frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 16 }), 
+            frameRate: 15,
+        });
+
+        // Terrain VFX
+
+        this.anims.create({
+            key: `ground_flame`, 
+            frames: this.anims.generateFrameNumbers('thunder', { start: 48, end: 59 }), 
+            frameRate: 15, 
             repeat: -1
         });
 
-        this.anims.create({
-            key: `slash`, 
-            frames: this.anims.generateFrameNumbers('slash', { frames: [99, 100, 101, 102] }), 
-            frameRate: 15, // Number of frames per second
-        });
-
-        this.anims.create({
-            key: `impact`, 
-            frames: this.anims.generateFrameNumbers('impact', { start: 0, end: 12 }), 
-            frameRate: 25, 
-        });
+        // Status effects VFX
 
         this.anims.create({
             key: `paralyzed`, 
@@ -1005,6 +1051,14 @@ export class Arena extends Phaser.Scene
             frameRate: 15,
             repeat: -1,
         });
+
+        this.anims.create({
+            key: `poisoned`, 
+            frames: this.anims.generateFrameNumbers('statuses', { start: 0, end: 7 }), 
+            frameRate: 10,
+            repeat: -1,
+        });
+
 
         this.animationScales = {
             slash: 1,
@@ -1029,7 +1083,7 @@ export class Arena extends Phaser.Scene
             const {x, y} = this.gridToPixelCoords(character.x + offset, character.y);
 
             const player = new Player(
-                this, this, this.HUD, team, character.name, character.x, character.y, x, y,
+                this, this, team, character.name, character.x, character.y, x, y,
                 i + 1, character.frame, isPlayer, character.class,
                 character.hp, character.maxHP, character.mp, character.maxMP,
                 character.level, character.xp,
@@ -1037,10 +1091,11 @@ export class Arena extends Phaser.Scene
             
             if (isPlayer) {
                 player.setDistance(character.distance);
-                player.setCooldown(character.cooldown);
+                player.setCooldown(1); // hack
                 player.setInventory(character.inventory);
                 player.setSpells(character.spells);
             }
+            player.setStatuses(character.statuses);
 
             if (!isReconnect) {
                 this.time.delayedCall(750, player.makeEntrance, [], player);
@@ -1131,12 +1186,8 @@ export class Arena extends Phaser.Scene
         this.gameSettings = {
             tutorial: false,
             spectator: false,
+            mode: null,
         }
-    }
-
-    createHUD() {
-        this.scene.launch('HUD'); 
-        this.HUD = this.scene.get('HUD');
     }
 
     displaySpellArea(location, size, duration) {
@@ -1173,7 +1224,6 @@ export class Arena extends Phaser.Scene
 
         const isReconnect = data.general.reconnect;
 
-        this.createHUD(); 
         this.playerTeamId = data.player.teamId;
 
         if(this.playerTeamId === undefined) {
@@ -1182,27 +1232,34 @@ export class Arena extends Phaser.Scene
 
         this.gameSettings.tutorial = data.general.tutorial;
         this.gameSettings.spectator = data.general.spectator;
+        this.gameSettings.mode = data.general.mode;
 
-        this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player));
+        this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
 
         this.placeCharacters(data.player.team, true, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, false, this.teamsMap.get(data.opponent.teamId), isReconnect);
 
-        this.processTerrain(data.terrain);
-
         const tilesDelay = isReconnect ? 0 : 1000;
         this.floatTiles(tilesDelay);
+
+        this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
         if (isReconnect) {
             this.updateOverview();
         } else {
             const delay = 3000;
             setTimeout(this.updateOverview.bind(this), delay + 1000);
+            setTimeout(() => this.displayGEN(GEN.COMBAT_BEGINS), delay);
         }
 
+        // Events from the HUD
         events.on('itemClick', (index) => {
             this.selectedPlayer?.onKey(index);
+        });
+
+        events.on('abandonGame', () => {
+            this.abandonGame();
         });
     }
 
@@ -1261,11 +1318,49 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    displayGEN() {
+    displayGEN(gen: GEN) {
+        if (this.killCamActive) {
+            this.pendingGEN = gen;
+            return;
+        }
+        let text1, text2;
+
+        switch (gen) {
+            case GEN.COMBAT_BEGINS:
+                text1 = 'combat';
+                text2 = 'begins';
+                break;
+            case GEN.MULTI_KILL:
+                text1 = 'multi';
+                text2 = 'kill';
+                break;
+            case GEN.MULTI_HIT:
+                text1 = 'multi';
+                text2 = 'hit';
+                break;
+            case GEN.ONE_SHOT:
+                text1 = 'one';
+                text2 = 'shot';
+                break;
+            case GEN.FROZEN:
+                text1 = 'frozen';
+                break;
+            case GEN.BURNING:
+                text1 = 'stuff-is';
+                text2 = 'on-fire';
+                break;
+            default:
+                break;
+        }
+        // console.log(`[GEN] ${text1} ${text2}`);
+
         const textTweenDuration = 600;
         const textDelay = 400;
+        const yOffset = 20;
+        const bgYPosition = (this.cameras.main.centerY / 2 + yOffset);
+        const yPosition = this.cameras.main.centerY - 200 + yOffset;
 
-        let genBg = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY / 2, 'gen_bg');
+        let genBg = this.add.image(this.cameras.main.centerX, bgYPosition, 'gen_bg');
         genBg.setAlpha(0).setDepth(10);
         this.tweens.add({
             targets: genBg,
@@ -1274,37 +1369,28 @@ export class Arena extends Phaser.Scene
             ease: 'Power2',
         });
 
-        let combat = this.add.image(-300, this.cameras.main.centerY - 200, 'combat').setDepth(10);
+        const targets = [
+            this.add.image(-300, yPosition, text1).setDepth(10),
+            this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang').setDepth(10)
+        ];
+        if (text2) {
+            targets.push(
+                this.add.image(this.cameras.main.width + 100, yPosition, text2).setDepth(10)
+            );
+        }
+
         this.tweens.add({
-            targets: combat,
+            targets,
             x: this.cameras.main.centerX,
             duration: textTweenDuration,
             ease: 'Power2',
             delay: textDelay, 
         });
 
-        let begins = this.add.image(this.cameras.main.width + 100, this.cameras.main.centerY - 200, 'begins').setDepth(10);
-        this.tweens.add({
-            targets: begins,
-            x: this.cameras.main.centerX,
-            duration: textTweenDuration,
-            ease: 'Power2',
-            delay: textDelay,
-        });
-
-        let blueBang = this.add.image(this.cameras.main.width + 100, this.cameras.main.centerY - 200, 'blue_bang').setDepth(10);
-        this.tweens.add({
-            targets: blueBang,
-            x: this.cameras.main.centerX,
-            duration: textTweenDuration,
-            ease: 'Power2',
-            delay: textDelay,
-        });
-
         // Fade out all images after a few seconds
         this.time.delayedCall(2000, () => {
             this.tweens.add({
-                targets: [genBg, combat, begins, blueBang],
+                targets: targets.concat([genBg]),
                 alpha: 0,
                 duration: 200,
                 ease: 'Power2',
@@ -1328,6 +1414,7 @@ export class Arena extends Phaser.Scene
     }
 
     killCam(x, y) {
+        this.killCamActive = true;
         // Save the original zoom and time scale
         const originalZoom = this.cameras.main.zoom;
         const originalTimeScale = this.localAnimationSprite.anims.timeScale;
@@ -1371,6 +1458,11 @@ export class Arena extends Phaser.Scene
             this.sprites.forEach((sprite) => {
                 sprite.anims.timeScale = originalTimeScale;
             });
+            this.killCamActive = false;
+            if (this.pendingGEN !== null) {
+                this.displayGEN(this.pendingGEN);
+                this.pendingGEN = null;
+            }
         });
     }
 
@@ -1393,6 +1485,41 @@ export class Arena extends Phaser.Scene
         }
     }
     
+    abandonGame() {
+        this.socket.emit('abandonGame');
+        this.destroy();
+    }
+
+    destroy() {
+        this.socket.disconnect();
+
+        Object.values(this.SFX).forEach(sound => {
+            // @ts-ignore
+            if (sound.isPlaying) {
+                // @ts-ignore
+                sound.stop();
+            }
+        });
+    
+        // Stop and destroy the music manager
+        if (this.musicManager) {
+            this.musicManager.stopAll();
+            this.musicManager.destroy();
+        }
+    
+        // Stop any ongoing tweens
+        this.tweens.killAll();
+    
+        // Stop any ongoing timers
+        this.time.removeAllEvents();
+    
+        // Stop the HUD and current scene
+        this.scene.stop('HUD');
+        this.scene.stop();
+
+        // Clean up any other resources or listeners
+        events.removeAllListeners();
+    }
 
     // update (time, delta)
     // {

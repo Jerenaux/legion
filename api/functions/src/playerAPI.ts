@@ -6,13 +6,13 @@ import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {uniqueNamesGenerator, adjectives, colors, animals}
   from "unique-names-generator";
 
-import {Class, ChestColor} from "@legion/shared/enums";
-import {APIPlayerData, DailyLootAllData, DBPlayerData} from "@legion/shared/interfaces";
+import {Class, ChestColor, League} from "@legion/shared/enums";
+import {APIPlayerData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData} from "@legion/shared/interfaces";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {getChestContent, ChestReward} from "@legion/shared/chests";
 import {processChestRewards} from "./characterAPI";
 import {STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE} from "@legion/shared/config";
-
+import {logPlayerAction, updateDAU} from "./dashboardAPI";
 
 const NB_START_CHARACTERS = 3;
 
@@ -22,9 +22,9 @@ const chestsDelays = {
   [ChestColor.GOLD]: 24*60*60,
 };
 
-function selectRandomAvatar() {
+function selectRandomAvatar(): string {
   // Return a random value betweem 1 and 31 included
-  return Math.floor(Math.random() * 31) + 1;
+  return (Math.floor(Math.random() * 31) + 1).toString();
 }
 
 function generateName() {
@@ -42,11 +42,14 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
   const now = Date.now() / 1000;
+  const today = new Date().toISOString().split("T")[0];
 
   // Define the character data structure
   const playerData = {
     name: generateName(),
     avatar: selectRandomAvatar(),
+    joinDate: today,
+    lastActiveDate: today,
     gold: STARTING_GOLD,
     carrying_capacity: BASE_INVENTORY_SIZE,
     inventory: {
@@ -56,9 +59,7 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
     },
     characters: [],
     elo: 100,
-    league: 0,
-    wins: 0,
-    losses: 0,
+    league: League.BRONZE,
     xp: 0,
     lvl: 1,
     dailyloot: {
@@ -74,7 +75,34 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
         time: now + chestsDelays.gold,
         hasKey: false,
       },
-    } as DailyLootAllData,
+    } as DailyLootAllDBData,
+    leagueStats: {
+      rank: -1,
+      wins: 0,
+      losses: 0,
+      winStreak: 0,
+      lossesStreak: 0,
+      nbGames: 0,
+      avgAudienceScore: 0,
+      avgGrade: 0,
+    },
+    allTimeStats: {
+      rank: -1,
+      wins: 0,
+      losses: 0,
+      winStreak: 0,
+      lossesStreak: 0,
+      nbGames: 0,
+      avgAudienceScore: 0,
+      avgGrade: 0,
+    },
+    tours: {
+      'play': false,
+      'team': false,
+      'rank': false,
+      'shop': false,
+      'queue': false,
+    },
   } as DBPlayerData;
 
   // Start a batch to ensure atomicity
@@ -110,21 +138,26 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
     });
 });
 
-const transformDailyLoot = (dailyloot: DailyLootAllData) => {
+const transformDailyLoot = (dailyloot: DailyLootAllDBData): DailyLootAllAPIData => {
   const now = Date.now() / 1000;
+  const transformedChests: DailyLootAllAPIData = {
+    [ChestColor.BRONZE]: {hasKey: false, countdown: 0},
+    [ChestColor.SILVER]: {hasKey: false, countdown: 0},
+    [ChestColor.GOLD]: {hasKey: false, countdown: 0},
+  };
   for (const color of Object.values(ChestColor)) {
     const chest = dailyloot[color];
-    const timeLeft = chest.time! - now;
-    chest.countdown = timeLeft > 0 ? timeLeft : 0;
-    delete chest.time;
-    dailyloot[color] = chest;
+    const timeLeft = chest.time - now;
+    transformedChests[color] = {
+      hasKey: chest.hasKey,
+      countdown: timeLeft > 0 ? timeLeft : 0,
+    };
   }
-  return dailyloot;
+  return transformedChests;
 };
 
 
 export const getPlayerData = onRequest((request, response) => {
-  logger.info("Fetching playerData");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
@@ -138,11 +171,23 @@ export const getPlayerData = onRequest((request, response) => {
           throw new Error("playerData is null");
         }
 
+        updateDAU(uid);
+        // Update the lastActiveDate field
+        const today = new Date().toISOString().split("T")[0];
+        if (playerData.lastActiveDate !== today) {
+          await db.collection("players").doc(uid).update({
+            lastActiveDate: today,
+          });
+        }
+
         // Transform the chest field so that the `time` field becomes
         // a `countdown` field
         playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
 
+        const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
+
         response.send({
+          uid,
           gold: playerData.gold,
           elo: playerData.elo,
           lvl: playerData.lvl,
@@ -150,8 +195,10 @@ export const getPlayerData = onRequest((request, response) => {
           teamName: "teamName",
           avatar: playerData.avatar,
           league: playerData.league,
-          rank: 1,
+          rank: playerData.leagueStats.rank,
+          allTimeRank: playerData.allTimeStats.rank,
           dailyloot: playerData.dailyloot,
+          tours,
         } as APIPlayerData);
       } else {
         response.status(404).send("Not Found: Invalid player ID");
@@ -164,7 +211,6 @@ export const getPlayerData = onRequest((request, response) => {
 });
 
 export const queuingData = onRequest((request, response) => {
-  logger.info("Fetching queuingData");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
@@ -230,7 +276,6 @@ export const saveGoldReward = onRequest((request, response) => {
 });
 
 export const claimChest = onRequest((request, response) => {
-  logger.info("Claiming chest");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
@@ -252,42 +297,46 @@ export const claimChest = onRequest((request, response) => {
           throw new Error("playerData is null");
         }
 
-        const chest = playerData.dailyloot[chestType as keyof DailyLootAllData];
+        const chest = playerData.dailyloot[chestType as keyof DailyLootAllDBData];
         if (!chest) {
           throw new Error("Invalid chest type");
         }
 
         const now = Date.now() / 1000;
-        if (chest.hasKey && chest.time <= now) {
-          playerData.dailyloot[chestType as keyof DailyLootAllData] = {
-            time: now + chestsDelays[chestType as keyof DailyLootAllData],
-            hasKey: false,
-          };
-
-          transaction.update(playerRef, {
-            dailyloot: playerData.dailyloot,
-          });
-
-          const content: ChestReward[] = getChestContent(chestType as ChestColor);
-          logger.info(`Chest content: ${JSON.stringify(content)}`);
-
-          const inventory = playerDoc.data()?.inventory || {};
-          const consumables = inventory.consumables || [];
-          const spells = inventory.spells || [];
-          const equipment = inventory.equipment || [];
-
-          await processChestRewards(transaction, playerRef, content, consumables, spells, equipment);
-
-          const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
-
-          response.send({
-            content,
-            dailyloot: dailyLootResponse,
-          });
-        } else {
-          response.status(400).send("Chest not ready");
+        if (!chest.hasKey) {
+          response.status(400).send("Key for chest not owned!");
           return;
         }
+        if (chest.time > now) {
+          response.status(400).send("Chest is still locked!");
+          return;
+        }
+
+        playerData.dailyloot[chestType as keyof DailyLootAllDBData] = {
+          time: now + chestsDelays[chestType as keyof DailyLootAllDBData],
+          hasKey: false,
+        };
+
+        transaction.update(playerRef, {
+          dailyloot: playerData.dailyloot,
+        });
+
+        const content: ChestReward[] = getChestContent(chestType as ChestColor);
+        logger.info(`Chest content: ${JSON.stringify(content)}`);
+
+        const inventory = playerDoc.data()?.inventory || {};
+        const consumables = inventory.consumables || [];
+        const spells = inventory.spells || [];
+        const equipment = inventory.equipment || [];
+
+        await processChestRewards(transaction, playerRef, content, consumables, spells, equipment);
+
+        const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
+        logPlayerAction(uid, "claimChest", {chestType});
+        response.send({
+          content,
+          dailyloot: dailyLootResponse,
+        });
       });
     } catch (error) {
       console.error("claimChest error:", error);
@@ -296,3 +345,39 @@ export const claimChest = onRequest((request, response) => {
   });
 });
 
+export const completeTour = onRequest((request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const tour = request.body.page;
+      logger.info("Completing tour for player:", uid, "tour:", tour);
+
+      await db.runTransaction(async (transaction) => {
+        const playerRef = db.collection("players").doc(uid);
+        const playerDoc = await transaction.get(playerRef);
+
+        if (!playerDoc.exists) {
+          throw new Error("Invalid player ID");
+        }
+
+        const playerData = playerDoc.data();
+        if (!playerData) {
+          throw new Error("playerData is null");
+        }
+
+        playerData.tours[tour as keyof typeof playerData.tours] = true;
+
+        transaction.update(playerRef, {
+          tours: playerData.tours,
+        });
+
+        response.send({});
+      });
+    } catch (error) {
+      console.error("completeTour error:", error);
+      response.status(500).send("Error");
+    }
+  });
+});

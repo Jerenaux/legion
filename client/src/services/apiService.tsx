@@ -6,10 +6,13 @@ const apiBaseUrl = process.env.API_URL;
 export async function getFirebaseIdToken() {
     try {
         const user = firebaseAuth.currentUser;
-        if (!user) throw new Error("No authenticated user found");
+        if (!user) {
+            return;
+            // throw new Error("No authenticated user found");
+        }
         return await user.getIdToken(true);
     } catch (error) {
-        console.error("Error getting Firebase ID token", error);
+        // console.error("Error getting Firebase ID token", error);
         throw error;
     }
 }
@@ -39,7 +42,7 @@ function timeoutPromise(duration) {
     });
 }
 
-async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 10000) {
+async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 15000) {
     try {
         const idToken = await getFirebaseIdToken();
         const headers = new Headers(options.headers || {});
@@ -55,6 +58,7 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration
 
         headers.append("Authorization", `Bearer ${idToken}`);
 
+        console.log(`Calling ${apiBaseUrl}/${endpoint}`);
         const fetchPromise = fetch(`${apiBaseUrl}/${endpoint}`, {
             ...options,
             headers,

@@ -1,20 +1,18 @@
-import './HUD.style.css';
+import './ItemIcon.style.css';
 import { h, Component } from 'preact';
 import { InventoryActionType, InventoryType } from '@legion/shared/enums';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import ItemDialog from '../../itemDialog/ItemDialog';
-import { CHARACTER_INFO, ItemDialogType } from '../../itemDialog/ItemDialogType';
+import ItemDialog from '../itemDialog/ItemDialog';
+import { CHARACTER_INFO, ItemDialogType } from '../itemDialog/ItemDialogType';
 import { Effect } from '@legion/shared/interfaces';
-import { mapFrameToCoordinates } from '../../utils';
+import { mapFrameToCoordinates } from '../utils';
 
-interface ActionItemProps {
+interface ItemIconProps {
   characterId?: string,
   action: BaseItem | BaseSpell | BaseEquipment | null;
   index: number;
-  clickedIndex: number;
-  canAct: boolean;
   actionType: InventoryType;
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
@@ -24,7 +22,7 @@ interface ActionItemProps {
 }
 /* eslint-disable react/prefer-stateless-function */
 
-class Action extends Component<ActionItemProps> {
+class ItemIcon extends Component<ItemIconProps> {
   state = {
     openModal: false,
     modalType: ItemDialogType.EQUIPMENTS,
@@ -55,7 +53,7 @@ class Action extends Component<ActionItemProps> {
   }
 
   render() {
-    const { action, index, clickedIndex, canAct, actionType, hideHotKey, onActionClick } = this.props; 
+    const { action, index, actionType, hideHotKey, onActionClick } = this.props; 
     // console.log('actionItem ', action);
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
@@ -87,10 +85,9 @@ class Action extends Component<ActionItemProps> {
 
     return (
       <div 
-        // className={`${index === clickedIndex ? 'flash-effect' : ''}`} 
         onClick={handleOnClickAction}>
         {action.id > -1 && <div 
-          className={!canAct ? 'skill-item-image skill-item-image-off' : 'skill-item-image'}
+          className='item-icon'
           style={{
             backgroundImage: `url(/${spritesheet}.png)`,
             backgroundPosition: `-${mapFrameToCoordinates(action.frame).x}px -${mapFrameToCoordinates(action.frame).y}px`,
@@ -98,9 +95,6 @@ class Action extends Component<ActionItemProps> {
           }}
           />}
         {!hideHotKey && <span className="key-binding">{keyBinding}</span>}
-        {/* {action.id > -1 && <div className="info-box box">
-          <InfoBox action={action} />
-        </div>} */}
         
         <ItemDialog 
           index={index}
@@ -120,4 +114,4 @@ class Action extends Component<ActionItemProps> {
   }
 }
 
-export default Action;
+export default ItemIcon;

@@ -3,7 +3,8 @@ import { Socket } from "socket.io";
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
 import { CharacterUpdate, APIPlayerData, TeamData } from '@legion/shared/interfaces';
-import { ChestColor, PlayMode } from '@legion/shared/enums';
+import { ChestColor } from '@legion/shared/enums';
+import { MAX_AUDIENCE_SCORE } from "@legion/shared/config";
 
 
 const MULTIHIT_SCORE_BASE = 6;
@@ -27,15 +28,17 @@ export class Team {
     levelTotal: number = 0;
     healedAmount: number = 0;
     offensiveActions: number = 0;
+    killStreak: number = 0;
     teamData: TeamData;
 
     constructor(number: number, game: Game) {
         this.id = number;
         this.game = game;
         this.teamData = {
+            playerUID: '',
             elo: 0,
             lvl: 0,
-            playerName: '',
+            playerName: 'Legion Bot',
             teamName: '',
             avatar: '',
             league: 0,
@@ -71,47 +74,46 @@ export class Team {
     }
 
     increaseScoreFromDamage(amount: number) {
-        this.score += amount;
+        this.incrementScore(amount);
     }
 
     increaseScoreFromSpell(amount: number) {
-        this.score += amount;
+        this.incrementScore(amount);
     }
 
     increaseScoreFromMultiHits(amount: number) {
         if (amount > 1) {
             // Apply an exponential multiplier to the score
-            this.score += Math.pow(MULTIHIT_SCORE_BASE, amount);
-            // console.log(`Multi hit: ${this.id} score: ${this.score}`);
+            this.incrementScore(Math.pow(MULTIHIT_SCORE_BASE, amount));
         }
     }
 
     increaseScoreFromKill(player: ServerPlayer) {
-        this.score += KILL_SCORE_BONUS * (1 + (1 - player.getHPratio()));
+        this.incrementScore(KILL_SCORE_BONUS * (1 + (1 - player.getHPratio())));
     }
 
     increaseScoreFromHeal(player: ServerPlayer) {
-        this.score += HEAL_SCORE_BONUS * (1 + (1 - player.getPreviousHPRatio()));
+        this.incrementScore(HEAL_SCORE_BONUS * (1 + (1 - player.getPreviousHPRatio())));
     }
 
     increaseScoreFromRevive(nb = 1) {
-        this.score += nb * REVIVE_SCORE_BONUS;
+        this.incrementScore(nb * REVIVE_SCORE_BONUS);
     }
 
     increaseScoreFromStatusEffect() {
-        this.score += STATUS_EFFECT_SCORE_BONUS;
+        this.incrementScore(STATUS_EFFECT_SCORE_BONUS);
     }
 
     increaseScoreFromTerrain() {
-        this.score += TERRAIN_SCORE_BONUS;
+        this.incrementScore(TERRAIN_SCORE_BONUS);
     }
 
     increaseScoreFromDot() {
-        this.score += DOT_SCORE_BONUS;
+        this.incrementScore(DOT_SCORE_BONUS);
     }
 
     increaseScoreFromFirstBlood() {
-        this.score += FIRST_BLOOD_BONUS
+        this.incrementScore(FIRST_BLOOD_BONUS);
     }
 
     incrementHealing(amount: number) {
@@ -119,7 +121,8 @@ export class Team {
     }
 
     incrementScore(amount: number) {
-        this.score += amount;
+        this.score = Math.min(MAX_AUDIENCE_SCORE, this.score + amount);
+        // console.log(`[Team:incrementScore] ${this.id} score: ${this.score}`);
     }
 
     snapshotScore() {
@@ -138,14 +141,25 @@ export class Team {
 
 
     setPlayerData(playerData: APIPlayerData) {
+        this.teamData.playerUID = playerData.uid;
         this.teamData.elo = playerData.elo;
         this.teamData.lvl = playerData.lvl;
         this.teamData.playerName = playerData.name;
         this.teamData.teamName = playerData.teamName;
         this.teamData.avatar = playerData.avatar;
         this.teamData.league = playerData.league;
-        this.teamData.rank = playerData.rank;
+        this.teamData.rank = playerData.rank; // league rank
         this.teamData.dailyloot = playerData.dailyloot;
+    }
+
+    getPlayerData() {
+        return {
+            teamName: this.teamData.teamName,
+            playerName: this.teamData.playerName,
+            playerLevel: this.teamData.lvl,
+            playerRank: this.teamData.rank,
+            playerAvatar: this.teamData.avatar,
+        }
     }
     
     getChestKey(): ChestColor | null {
@@ -174,12 +188,11 @@ export class Team {
     }
 
     distributeXp(xp: number) {
-        console.log(`Distributing XP: ${xp}`)
         const total = this.getTotalInteractedTargets();
         for (let i = 0; i < this.members.length; i++) {
             const xpRatio = (this.members[i].countInteractedTargets() / total) || 0;
             const xpShare = Math.round(xp * xpRatio);
-            console.log(`XP share for ${this.members[i].name}: ${xpShare} (${this.members[i].countInteractedTargets()} / ${total})`);
+            // console.log(`XP share for ${this.members[i].name}: ${xpShare} (${this.members[i].countInteractedTargets()} / ${total})`);
             this.members[i].gainXP(xpShare);
         }
     }
@@ -189,7 +202,8 @@ export class Team {
             id: member.dbId,
             num: member.num,
             points: member.earnedStatsPoints,
-            xp: member.earnedXP,
+            xp: member.xp,
+            earnedXP: member.earnedXP,
             level: member.levelsGained
         }));
     }    
@@ -234,6 +248,14 @@ export class Team {
             total += this.members[i].countInteractedTargets();
         }
         return total;
+    }
+
+    incrementKillStreak() {
+        this.killStreak++;
+    }
+
+    resetKillStreak() {
+        this.killStreak = 0;
     }
 
     unsetSocket() {

@@ -7,7 +7,6 @@ import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { Target, StatusEffect, Class } from "@legion/shared/enums";
 import { Arena } from "./Arena";
-import { HUD } from "./HUD";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
 
 enum GlowColors {
@@ -25,7 +24,6 @@ export class Player extends Phaser.GameObjects.Container {
     isPlayer = false;
     texture: string;
     arena: Arena;
-    hud: HUD;
     gridX: number;
     gridY: number;
     num: number;
@@ -59,14 +57,13 @@ export class Player extends Phaser.GameObjects.Container {
     level: number;
 
     constructor(
-        scene: Phaser.Scene, arenaScene: Arena, hudScene: HUD, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
+        scene: Phaser.Scene, arenaScene: Arena, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
         num: number, texture: string, isPlayer: boolean, characterClass: Class,
         hp: number, maxHP: number, mp: number, maxMP: number, level: number, xp: number,
         ) {
         super(scene, x, y);
         this.scene = scene;
         this.arena = arenaScene;
-        this.hud = hudScene;
 
         this.team = team;
         this.texture = texture;
@@ -190,11 +187,11 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     isFrozen() {
-        return this.statuses[StatusEffect.FREEZE] > 0;
+        return this.statuses[StatusEffect.FREEZE] != 0;
     }
 
     isParalyzed() {
-        return (this.statuses[StatusEffect.PARALYZE] > 0) || this.isFrozen();
+        return (this.statuses[StatusEffect.PARALYZE] != 0) || this.isFrozen();
     }
 
     canAct() {
@@ -226,9 +223,11 @@ export class Player extends Phaser.GameObjects.Container {
 
         if (this.isFrozen()) {
             this.animationLock = false;
+            console.log(`Blocking animation`);
             return;
         }
 
+        // console.log(`Playing animation ${key}`);
         this.sprite.play(`${this.texture}_anim_${key}`);
         if (revertToIdle) {
             this.sprite.once('animationcomplete', this.handleAnimationComplete, this);
@@ -296,7 +295,9 @@ export class Player extends Phaser.GameObjects.Container {
 
     onPointerOver() {
         if (this.isTarget() && this.arena.selectedPlayer.pendingSpell == null) {
-            this.hud.toggleCursor(true, 'swords');
+            this.arena.emitEvent('hoverEnemyCharacter');
+        } else if (this.isPlayer){
+            this.arena.emitEvent('hoverCharacter');
         }
         /**
          * If `isPlayer` is false, glow in red
@@ -318,8 +319,9 @@ export class Player extends Phaser.GameObjects.Container {
     
     onPointerOut() {
         if (!this.isPlayer && this.arena.selectedPlayer?.pendingSpell == null) {
-            this.hud.toggleCursor(false, 'scroll');
+            // this.hud.toggleCursor(false, 'scroll');
         }
+        this.arena.emitEvent('unhoverCharacter');
         if (this.isSelected()) return;
         this.glowFx.setActive(false);
     }
@@ -331,7 +333,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.arena.selectPlayer(this);
         } else if(this.isTarget()) {
             this.arena.sendAttack(this);
-            this.hud.toggleCursor(false);
+            // this.hud.toggleCursor(false);
         }
     }
 
@@ -583,18 +585,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.animationSprite.setVisible(true).play(name);
     }
 
-    // Function to toggle grayscale shader for a given sprite
-    // toggleGrayscale() {
-    //     if (this.canAct()) { // If grayscale already applied
-    //         this.sprite.resetPipeline(); // Reset to default pipeline
-    //     } else { // If grayscale not applied
-    //         this.sprite.setPipeline('GrayScale'); // Apply the grayscale pipeline
-    //     }
-    // }
-
     setCooldown(duration) {
-        // this.sprite.anims.stop();
-        // this.toggleGrayscale();
         this.cooldownDuration = duration;
         this.totalCooldownDuration = duration;
         this.arena.emitEvent('cooldownStarted', {num: this.num})
@@ -644,9 +635,9 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     setStatuses(statuses) {
-        if (!this.isAlive()) return;
         this.setFrozen(statuses[StatusEffect.FREEZE]);
         this.setParalyzed(statuses[StatusEffect.PARALYZE]);
+        this.setPoisoned(statuses[StatusEffect.POISON]);
         this.arena.emitEvent('statusesChange', {num: this.num})
     }
 
@@ -673,7 +664,20 @@ export class Player extends Phaser.GameObjects.Container {
             this.statuses[StatusEffect.PARALYZE] = 0;
             this.statusSprite.anims.stop();
             this.statusSprite.setVisible(false);
+            console.log(`[setParalyzed] playing ${this.getIdleAnim()}`);
             this.playAnim(this.getIdleAnim());
+        }
+    }
+
+    setPoisoned(duration) {
+        if (duration != 0) {
+            this.statuses[StatusEffect.POISON] = duration;
+            this.statusSprite.setVisible(true);
+            this.statusSprite.anims.play('poisoned');
+        } else {
+            this.statuses[StatusEffect.POISON] = 0;
+            this.statusSprite.anims.stop();
+            this.statusSprite.setVisible(false);
         }
     }
 }

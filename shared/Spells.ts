@@ -127,7 +127,7 @@ spells.push(new BaseSpell({
 
     size: 3,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -120, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -20, modifiers: SPBasedBoostDeboost}],
     status: {effect: StatusEffect.PARALYZE, chance: 0.9, duration: 120},
     effort: 60,
 
@@ -161,10 +161,10 @@ spells.push(new BaseSpell({
     name: "Ice+",
     description: "Generate a 2x2 pillar of ice and trap the targets in ice",
     frame: 11,
-    vfx: "ice",
+    vfx: "ice+",
     sfx: "ice",
     shake: false,
-    yoffset: 30,
+    yoffset: 60,
 
     size: 2,
     target: Target.AOE,
@@ -181,10 +181,10 @@ spells.push(new BaseSpell({
     name: "Ice X",
     description: "Generate a 3x3 pillar of ice and trap the targets in ice",
     frame: 12,
-    vfx: "ice",
+    vfx: "iceX",
     sfx: "ice",
     shake: false,
-    yoffset: 30,
+    yoffset: 60,
 
     size: 3,
     target: Target.AOE,
@@ -214,6 +214,25 @@ spells.push(new BaseSpell({
     score: 5,
     classes: [Class.WHITE_MAGE],
     minLevel: 1,
+}));
+
+spells.push(new BaseSpell({
+    id: 10,
+    name: "Poison",
+    description: "Poison a single target for 3 minutes",
+    frame: 3,
+    vfx: "poison",
+    sfx: "poison",
+    shake: false,
+
+    size: 1,
+    target: Target.AOE,
+    effects: [],
+    status: {effect: StatusEffect.POISON, chance: 1, duration: 180},
+    effort: 14,
+
+    score: 10,
+    classes: [Class.WHITE_MAGE],
 }));
 
 export function getStarterSpells(characterClass: Class):number[] {

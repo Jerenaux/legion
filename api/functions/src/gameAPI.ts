@@ -1,6 +1,9 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, {corsMiddleware} from "./APIsetup";
+import {EndGameData} from "@legion/shared/interfaces";
+import {GameStatus} from "@legion/shared/enums";
+import {logPlayerAction} from "./dashboardAPI";
 
 export const createGame = onRequest((request, response) => {
   logger.info("Creating game");
@@ -11,15 +14,27 @@ export const createGame = onRequest((request, response) => {
       const gameId = request.body.gameId;
       const players = request.body.players;
       const mode = request.body.mode;
+      const league = request.body.league;
 
       const gameData = {
         date: new Date(),
         gameId,
         players,
         mode,
+        league,
+        status: GameStatus.ONGOING,
       };
 
       await db.collection("games").add(gameData);
+
+      for (const player of players) {
+        logPlayerAction(player, "gameStart", {
+          gameId,
+          league: gameData.league,
+          mode: gameData.mode,
+        });
+      }
+
       response.status(200).send({status: 0});
     } catch (error) {
       console.error("createGame error:", error);
@@ -54,3 +69,51 @@ export const gameData = onRequest((request, response) => {
     }
   });
 });
+
+
+export const completeGame = onRequest((request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const gameId = request.body.gameId;
+      const winnerUID = request.body.winnerUID;
+      const results: EndGameData = request.body.results;
+
+      const gameRef = await db.collection("games").where("gameId", "==", gameId).limit(1).get();
+      if (gameRef.empty) {
+        throw new Error("Invalid game ID");
+      }
+
+      const gameDoc = gameRef.docs[0];
+      const gameData = gameDoc.data();
+      if (!gameData) {
+        throw new Error("gameData is null");
+      }
+
+      for (const player of gameData.players) {
+        logPlayerAction(player, "gameComplete", {
+          gameId,
+          winner: winnerUID == player,
+          results: results[player as keyof EndGameData],
+          league: gameData.league,
+          mode: gameData.mode,
+        });
+      }
+
+      const newGameData = {
+        status: GameStatus.COMPLETED,
+        winner: winnerUID,
+        results,
+        end: new Date(),
+      };
+
+      await gameDoc.ref.update(newGameData);
+      response.status(200).send({status: 0});
+    } catch (error) {
+      console.error("saveGameResult error:", error);
+      response.status(500).send("Error");
+    }
+  });
+});
+

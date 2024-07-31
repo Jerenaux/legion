@@ -61,4 +61,18 @@ export class MusicManager {
         this.currentSound.stop();
         this.scene.sound.add('bgm_end', this.soundConfig).play();
     }
+
+    stopAll() {
+        if (this.currentSound) {
+            this.currentSound.stop();
+            this.currentSound.removeAllListeners();
+        }
+        this.scene.sound.removeAll(); // This removes all sounds from the scene
+    }
+
+    destroy() {
+        this.stopAll();
+        this.scene = null;
+        this.currentSound = null;
+    }
 }

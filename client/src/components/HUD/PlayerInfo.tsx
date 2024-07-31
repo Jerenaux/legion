@@ -2,18 +2,33 @@
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import Modal from 'react-modal';
+import { PlayerProfileData } from "@legion/shared/interfaces";
+
+import { ENABLE_PLAYER_LEVEL, ENABLE_TEAM_NAME } from '@legion/shared/config';
 
 interface Props {
-  player: any;
+  player: PlayerProfileData;
   position: string;
   isSpectator: boolean;
+  eventEmitter: any;  
+}
+interface State {
+  modalOpen: boolean;
+  modalOpen1: boolean;
+  modalPos: any;
 }
 
-class PlayerInfo extends Component<Props> {
-  state = {
-    modalOpen: false,
-    modalOpen1: false,
-    modalPos: null
+class PlayerInfo extends Component<Props, State> {
+  events: any;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      modalOpen: false,
+      modalOpen1: false,
+      modalPos: null
+    }
+    this.events = this.props.eventEmitter;
   }
 
   handleOpenModal = (e: any, isExit: boolean) => {
@@ -37,6 +52,11 @@ class PlayerInfo extends Component<Props> {
       modalOpen: false,
       modalOpen1: false
     });
+  }
+
+  handleExit = () => {
+    this.events.emit('abandonGame');
+    route('/play');
   }
 
   render() {
@@ -79,18 +99,18 @@ class PlayerInfo extends Component<Props> {
 
     return (
       <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`} onClick={() => { }}>
-        <div className={`player_info_lv ${position === 'right' && 'player_info_lv_right'}`}>
-          <span>Lv</span>
-          <span className="player_info_lvalue">{this.props.player.level}</span>
-        </div>
+        {ENABLE_PLAYER_LEVEL && <div className={`player_info_lv ${position === 'right' && 'player_info_lv_right'}`}>
+          <span>Lvl</span>
+          <span className="player_info_lvalue">{this.props.player.playerLevel}</span>
+        </div>}
         <div className="player_info_player_profile"></div>
         <div className="player_info">
-          <p className="player_info_name">{this.props.player.name}</p>
+          <p className="player_info_name">{this.props.player.playerName}</p>
           <div className={`player_info_rank ${position === 'right' && 'justify_end'}`}>
             <img src="/icons/gold_rank.png" alt="" />
-            <span>RANK {this.props.player.rank}</span>
+            <span>RANK {this.props.player.playerRank}</span>
           </div>
-          <div className="player_info_team"><span>TEAM</span></div>
+          {ENABLE_TEAM_NAME && <div className="player_info_team"><span>TEAM</span></div>}
         </div>
         {position === 'right' && <div className="spectator_container_right">
           {isSpectator &&  <div className="spectator_div">
@@ -106,15 +126,15 @@ class PlayerInfo extends Component<Props> {
           </div>
         </div>}
         <Modal isOpen={this.state.modalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
-          <div className="exit_game_menu" onClick={(e) => this.handleOpenModal(e, true)}>
-            <p>Exit Game!</p>
+          <div className="exit_game_label" onClick={(e) => this.handleOpenModal(e, true)}>
+            <p>Abandon Game!</p>
           </div>
         </Modal>
         <Modal isOpen={this.state.modalOpen1} onRequestClose={this.handleCloseModal} style={customStyles1}>
-          <div className="flex flex_col gap_4">
-            <div className="game_leave_dialog">Are you sure want to leave?</div>
+          <div className="exit_game_menu flex flex_col gap_4">
+            <div className="game_leave_dialog">Are you sure want to abandon the game? This will count as a loss.</div>
             <div className="flex gap_4">
-              <div className="game_leave_btn" onClick={() => route('/play')}>Leave</div>
+              <div className="game_leave_btn" onClick={this.handleExit}>Leave</div>
               <div className="game_leave_btn" onClick={this.handleCloseModal}>Cancel</div>
             </div>
           </div>

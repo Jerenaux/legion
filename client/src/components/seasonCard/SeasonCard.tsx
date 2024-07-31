@@ -1,6 +1,6 @@
 // SeasonCard.tsx
 import './SeasonCard.style.css';
-import { h, Component } from 'preact';
+import { h, Component, createRef } from 'preact';
 
 interface SeasonCardProps {
     seasonEnd: number;
@@ -8,13 +8,13 @@ interface SeasonCardProps {
     playerRanking: {
         rank: number;
         elo: number;
-        player: string;
     };
     rankRowNumberStyle: (index: number) => {};
 }
 
 class SeasonCard extends Component<SeasonCardProps> {
     private timer: NodeJS.Timeout | null = null;
+    captureRef = createRef();
 
     state = {
         time: 0
@@ -25,11 +25,11 @@ class SeasonCard extends Component<SeasonCardProps> {
     }
 
     componentDidUpdate(previousProps: Readonly<SeasonCardProps>, previousState: Readonly<{}>): void {
-        if (this.props.currTab !== previousProps.currTab) {
+        if (this.props.currTab !== previousProps.currTab || this.props.seasonEnd !== previousProps.seasonEnd) {
             clearInterval(this.timer);
             this.seasonTimer();
         }
-    }
+    }    
 
     componentWillUnmount(): void {
         if (this.timer) {
@@ -41,13 +41,8 @@ class SeasonCard extends Component<SeasonCardProps> {
         if (this.props.seasonEnd === -1) {
             this.setState({ time: -1 });
         } else {
-            // Get the target end time from localStorage or set it if not present
-            const endTime = localStorage.getItem(`seasonEndtime_${this.props.currTab}`);
-            const targetEndTime = endTime || new Date().getTime() + this.props.seasonEnd * 1000;
+            const targetEndTime = new Date().getTime() + this.props.seasonEnd * 1000;
 
-            if (!endTime) {
-                localStorage.setItem(`seasonEndtime_${this.props.currTab}`, targetEndTime.toString());
-            }
 
             this.timer = setInterval(() => {
                 const currentTime = new Date().getTime();
@@ -57,11 +52,26 @@ class SeasonCard extends Component<SeasonCardProps> {
 
                 if (remainingTime <= 0) {
                     clearInterval(this.timer);
-                    localStorage.removeItem(`seasonEndtime_${this.props.currTab}`);
                 }
             }, 1000);
         }
 
+    }
+
+    shareOnTwitter = async (rank: number, tab: string) => {
+        const leagueName = tab === 'alltime' ? 'All Time' : tab.charAt(0).toUpperCase() + tab.slice(1);
+        const tweetText = `I'm ranked #${rank} in the ${leagueName} league in #Legion! Can you beat me? #PvP`
+        const twitterUrl = `https://x.com/intent/post?text=${encodeURIComponent(tweetText)}`;
+        const width = 550;
+        const height = 300;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+
+        window.open(
+            twitterUrl,
+            'Share on Twitter',
+            `width=${width},height=${height},top=${top},left=${left}`
+        );
     }
 
     render() {
@@ -86,7 +96,7 @@ class SeasonCard extends Component<SeasonCardProps> {
 
         return (
             <div className="season-card-container">
-                <div className="recap-single-container">
+                <div className="recap-single-container" ref={this.captureRef}>
                     <div className="season-recap">
                         <p className="season-recap-title">CURRENT</p>
                         <p className="season-recap-label">RANK</p>
@@ -125,7 +135,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                         {this.state.time !== -1 && <img src="/inventory/cd_icon.png" alt="timer" className="season-timer-icon" />}
                     </div>
                 </div>
-                <div className="season-share-button" onClick={() => { }}>
+                <div className="season-share-button" onClick={() => this.shareOnTwitter(this.props.playerRanking.rank, this.props.currTab)}>
                     <img src="/rank/share_icon.png" alt="" />
                     <span>SHARE</span>
                 </div>

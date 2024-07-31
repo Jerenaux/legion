@@ -1,3 +1,7 @@
+:root {
+  --game-pointer: url('/public/pointers/hand_pointer.png'), auto;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -50,7 +54,8 @@ canvas {
 
 @font-face {
     font-family: 'Kim';
-    src: url('../../public/kim.otf') format('opentype');
+    /* src: url('../../public/kim.otf') format('opentype'); */
+    src: url('/public/kim.otf') format('opentype');
 }
 
 .player-main {
@@ -209,14 +214,18 @@ canvas {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
-.skill-item-image {
+.item-icon {
     width: 32px;
     height: 32px; 
     background-repeat: no-repeat;
     border-radius: 6px;
 }
 
-.skill-item-image-off {
+.item-icon-pointer {
+    cursor: var(--game-pointer);
+}
+
+.item-icon-off {
     filter: grayscale(1);
 }
 
@@ -298,30 +307,7 @@ canvas {
     gap: 6px;
 }
 
-/* .member::before {
-  content: "";
-  position: absolute;
-  background-color: inherit;
-  z-index: -1;
-}
 
-.member-left::before {
-  top: -30px;
-  right: -60%;
-  bottom: 0;
-  left: -50%;
-  transform: rotate(45deg);
-  width: 170px;
-}
-
-.member-right::before {
-  top: -30px;
-  right: -50%;
-  bottom: 0;
-  left: -60%;
-  transform: rotate(-45deg);
-  width: 170px;
-} */
 
   .member {
     position: relative;
@@ -331,19 +317,9 @@ canvas {
     font-family: 'Kim', sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     color: white;
-/* 
-    border-top: 2px solid white;
-    border-bottom: 2px solid white; */
   }
 
-  /* .member-left {
-    background: linear-gradient(to right, lightblue, transparent);
-  }
 
-  .member-right {
-    background: linear-gradient(to left, lightblue, transparent);
-  }
-   */
   .member-portrait {
     position: relative;
     width: 50px;
@@ -1172,9 +1148,9 @@ canvas {
   color: #4a4947;
 }
 
-.login-dialog {
+/* .login-dialog {
   width: 300px;
-}
+} */
 
 
 .closebtn {
@@ -1360,22 +1336,7 @@ canvas {
 .purchase-adjust  {
   border-radius: 5px;
   cursor: pointer;
-  /* background-color: green; */
 }
-/* 
-.header-gold {
-  background: url('../../public/gold2.png') no-repeat left center;
-  background-size: contain;
-  color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  border-radius: 25px; 
-  padding: 5px 10px; 
-  padding-left: 60px;
-  font-family: Kim;
-  margin-left: 10px;
-  border: 1px solid #CD853F;
-  font-size: 30px;
-} */
 
 .endgame {
   background: linear-gradient(rgba(10, 10, 10, 0.9), rgba(20, 20, 20, 0.9)); /* Dark grey, almost black background with slight transparency */
@@ -1466,6 +1427,191 @@ canvas {
   background-size: cover;
 }
 
+.landingPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #080c15;
+}
+
+.login-dialog {
+  background-color: #242b37;
+  border: 1px solid #0096a1;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  padding: 40px 20px 20px; 
+  width: 400px;
+  font-family: Kim ;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.logo {
+  position: absolute;
+  top: 100px; /* Adjust this value to control the overflow amount */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px; 
+  height: auto;
+}
+
+.login-header p {
+  /* padding-top: 50px; */
+  font-size: 14px;
+  color: white;
+}
+
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+
+.get-started, .already-account {
+  background-color: #ffcc00; /* Golden color */
+  border: 2px solid #ffaa00; /* Slightly darker border for depth */
+  border-radius: 8px; /* Rounded corners */
+  color: #ffffff;
+  font-size: 16px;
+  margin: 10px 0; /* Vertical margin for spacing between buttons */
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 80%; /* Adjust width as needed */
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Depth effect */
+  transition: all 0.3s ease; /* Smooth hover and active transition */
+  font-family: Kim ;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.get-started:hover, .already-account:hover {
+  background-color: #ffaa00; /* Slightly darker on hover */
+  border-color: #ff9900; /* Darker border on hover */
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Deeper shadow on hover */
+  opacity: 0.9; /* Slight opacity change on hover */
+}
+
+.get-started:active, .already-account:active {
+  transform: scale(0.95); /* Scale down on press */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Less shadow on press */
+}
+
+
+
+#firebaseui-auth-container {
+  margin-top: 20px;
+}
+
+.back-button {
+  background-color: #cccccc;
+  border: none;
+  border-radius: 4px;
+  color: #333333;
+  font-size: 14px;
+  margin-top: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 50%; /* Adjust width as needed */
+  text-align: center;
+}
+
+.back-button:hover {
+  opacity: 0.8;
+}
+
+.toast {
+  border: 2px solid #ffbf00;
+}
+
+.tour-step {
+  border: 2px solid #ffbf00;
+  background-color: #242b37;
+  padding: 10px;
+  text-align: center;
+}
+
+.shepherd-button {
+  background-color: #ffbf00;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: 'Kim';
+  color: white;
+}
+
+.shepherd-button:not(:disabled):hover {
+  background-color: #ffaa00;
+  color: white;
+}
+
+.shepherd-text {
+  /* font-family: 'Kim' ; */
+  color: white;
+}
+
+.shepherd-arrow, .shepherd-arrow:before {
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  z-index: -1;
+}
+
+.shepherd-arrow:before {
+  content: "";
+  transform: rotate(45deg);
+  background: #242b37;
+}
+
+/* Top arrow */
+.shepherd-element[data-popper-placement^=bottom] > .shepherd-arrow:before {
+  border-top: 2px solid #ffbf00;
+  border-left: 2px solid #ffbf00;
+}
+
+/* Bottom arrow */
+.shepherd-element[data-popper-placement^=top] > .shepherd-arrow:before {
+  border-bottom: 2px solid #ffbf00;
+  border-right: 2px solid #ffbf00;
+}
+
+/* Left arrow */
+.shepherd-element[data-popper-placement^=right] > .shepherd-arrow:before {
+  border-left: 2px solid #ffbf00;
+  border-bottom: 2px solid #ffbf00;
+  left: 0px;
+}
+
+/* Right arrow */
+.shepherd-element[data-popper-placement^=left] > .shepherd-arrow:before {
+  border-top: 2px solid #ffbf00;
+  border-right: 2px solid #ffbf00;
+  right: 0px;
+}
+
+.shepherd-cancel-icon {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: rgb(255, 68, 68);
+  border-radius: 50%;
+  color: white;
+  font-size: 30px;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 1;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: 'Kim';
+}
+
+.shepherd-cancel-icon:hover {
+  background: rgb(224, 0, 0);
+  color: white;
+}
 /* queue page */
 .queue-container {
   display: flex;
@@ -1859,8 +2005,6 @@ canvas {
   width: 2.5vw; 
   height: 2.5vw;
   cursor: pointer;
-  /* background-color: tomato; */
-  /* background-color: grey; */
 }
 .queue-btns > a > div > img {
   width: 100%;
@@ -1870,16 +2014,29 @@ canvas {
   margin-right: 0.25vw;
 }
 
-/* a:active,
-a:focus,
-a:visited {
-  text-decoration: none !important;
-} */
-
 a:-webkit-any-link {
   text-decoration: none;
 }
 
+.normalCursor {
+  cursor: url('../../public/pointers/general_pointer.png'), auto;
+}
+
+.pointerCursor {
+  cursor: var(--game-pointer);
+}
+
+.swordCursor {
+  cursor: url('../../public/pointers/attack_pointer.png'), auto;
+}
+
+.spellCursor {
+  cursor: url('../../public/pointers/spell_pointer.png'), auto;
+}
+
+.itemCursor {
+  cursor: url('../../public/pointers/item_cursor.png'), auto;
+}
 
 
 

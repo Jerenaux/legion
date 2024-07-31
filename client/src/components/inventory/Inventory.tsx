@@ -5,7 +5,7 @@ import './Inventory.style.css';
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getEquipmentById } from '@legion/shared/Equipments';
-import ActionItem from '../game/HUD/Action';
+import ItemIcon from '../itemIcon/ItemIcon';
 import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
 
 import { Link } from 'preact-router';
@@ -73,12 +73,10 @@ class Inventory extends Component<InventoryProps> {
       }
 
       return <div key={i} className="item" style={slotStyle}>
-        <ActionItem
+        <ItemIcon
           characterId={this.props.id}
           action={item}
           index={i}
-          clickedIndex={-1}
-          canAct={true}
           hideHotKey={true}
           actionType={this.state.actionType}
           refreshCharacter={this.props.refreshCharacter}
@@ -121,7 +119,6 @@ class Inventory extends Component<InventoryProps> {
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.CONSUMABLES)}>CONSUMABLES</div>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.EQUIPMENTS)}>EQUIPMENT</div>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.SKILLS)}>SPELLS</div>
-              {/* <div className="inventoryCategory" style={this.state.actionType === InventoryType.UTILITIES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.UTILITIES)}>UTILITIES</div> */}
               <div className="categoryCount"><span>{this.inventoryLength()} </span>&nbsp;/&nbsp;{this.props.carrying_capacity}</div>
               <div className="categoryBtn" style={{ backgroundImage: 'url(./inventory/info_btn.png)' }} onClick={this.handleOpenModal}></div>
             </div>
@@ -129,7 +126,7 @@ class Inventory extends Component<InventoryProps> {
           <div className="inventoryWrapper">
             {isCategoryEmpty ? (<div className='empty-slots-container'>
               <p>No items in this category, take a look at the shop!</p>
-              <Link href='/shop'>Next <img src="./inventory/shop_btn.png" alt="shop" /></Link>
+              <Link href='/shop'>Go to shop <img src="./inventory/shop_btn.png" alt="shop" /></Link>
             </div>) : slots}
           </div>
         </div>

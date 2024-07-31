@@ -14,6 +14,9 @@ import { APICharacterData, Effect } from '@legion/shared/interfaces';
 import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/shared/enums';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
+import { PlayerContext } from '../contexts/PlayerContext';
+import { startTour } from './tours';
+
 interface TeamPageState {
   inventory: {
     consumables: number[];
@@ -33,6 +36,8 @@ interface TeamPageProps {
 /* eslint-disable react/prefer-stateless-function */
 
 class TeamPage extends Component<TeamPageProps, TeamPageState> { 
+  static contextType = PlayerContext; 
+
   state = {
     inventory: {
       consumables: [],
@@ -45,9 +50,19 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     item_effect: [],
   }
 
-  componentDidMount() {
-    this.fetchCharacterData();
-    this.fetchInventoryData();
+  async componentDidMount() {
+    await this.fetchCharacterData();
+    await this.fetchInventoryData();
+    startTour('team', this.context.player.tours);
+  }
+
+  componentDidUpdate(prevProps: TeamPageProps) {
+    if (prevProps.matches.id !== this.props.matches.id) {
+      this.setState({ character_id: this.props.matches.id }, () => {
+        this.fetchCharacterData();
+        this.fetchInventoryData();
+      });
+    }
   }
 
   fetchInventoryData = async () => {
@@ -151,7 +166,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             return;
           }
 
-          if (data.classes && !data.classes.includes(this.state.character_sheet_data.class)) {
+          if (data.classes.length && !data.classes.includes(this.state.character_sheet_data.class)) {
             errorToast('Character class is not compatible!');
             return;
           }

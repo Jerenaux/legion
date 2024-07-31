@@ -1,4 +1,5 @@
 // LeaderboardTable.tsx
+import {ChestColor} from "@legion/shared/enums";
 import './LeaderboardTable.style.css';
 import { h, Component } from 'preact';
 
@@ -18,10 +19,11 @@ interface LeaderboardTableProps {
     rankRowNumberStyle: (index: number) => {};
 }
 
-enum rewardImage {
-    'gold_chest',
-    'silver_chest',
-    'bronze_chest'
+
+const rewardImage = {
+    [ChestColor.BRONZE]: 'gold_chest',
+    [ChestColor.SILVER]: 'silver_chest',
+    [ChestColor.GOLD]: 'bronze_chest'
 }
 
 
@@ -83,7 +85,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                 backgroundImage: `url(/leaderboard/promote_icon.png)`,
             }
 
-            if (index > this.state.tableData.length - demotionRows) return {
+            if (demotionRows && index > this.state.tableData.length - demotionRows) return {
                 backgroundImage: `url(/leaderboard/demote_icon.png)`,
             }
 
@@ -93,7 +95,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
         }
 
         const getRowBG = (index: number) => {
-            if (this.state.tableData[index].player.includes('Me')) return {
+            if (this.state.tableData[index].isPlayer) return {
                 backgroundImage: `url(/leaderboard/leaderboard_bg_own.png)`,
             }
 
@@ -105,7 +107,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
         }
 
         const rankRowAvatar = (index: number) => {
-            if (this.state.tableData[index].player.includes('Me')) return {
+            if (this.state.tableData[index].isPlayer) return {
                 backgroundImage: `url(/leaderboard/leaderboard_avatar_frame.png)`,
             }
 
@@ -148,7 +150,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                                 <td className="rank-row-win">{item.wins}</td>
                                 <td>{item.losses}</td>
                                 <td className="rank-row-winRatio">{item.winsRatio}</td>
-                                <td className="rank-row-reward">{this.state.tableData[index].rank <= 3 && <img src={`/shop/${rewardImage[this.state.tableData[index].rank - 1]}.png`} alt="" />}</td>
+                                <td className="rank-row-reward">{rewardImage[this.state.tableData[index].chestColor] && <img src={`/shop/${rewardImage[this.state.tableData[index].chestColor]}.png`} alt="" />}</td>
                             </tr>
                         ))}
                     </tbody>

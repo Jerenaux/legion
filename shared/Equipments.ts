@@ -9,10 +9,10 @@ equipments[0] = new BaseEquipment({
     name: "Jagged Sword",
     description: "",
     frame: 0,
-    effects: [{stat: Stat.ATK, value: 10}],
+    effects: [{stat: Stat.ATK, value: 1000}],
     slot: EquipmentSlot.WEAPON,
     effort: 15,
-    minLevel: 5,
+    minLevel: 1,
     classes: [Class.WARRIOR],
 });
 
@@ -74,6 +74,28 @@ equipments[5] = new BaseEquipment({
     effort: 3,
     minLevel: 1,
     classes: [Class.WARRIOR],
+});
+
+equipments[6] = new BaseEquipment({
+    id: 6,
+    name: "Traveler's hat",
+    description: "",
+    frame: 70,
+    effects: [{stat: Stat.DEF, value: 2}],
+    slot: EquipmentSlot.HELMET,
+    effort: 3,
+    minLevel: 1,
+});
+
+equipments[7] = new BaseEquipment({
+    id: 7,
+    name: "Cloth tunic",
+    description: "",
+    frame: 90,
+    effects: [{stat: Stat.DEF, value: 4}],
+    slot: EquipmentSlot.ARMOR,
+    effort: 4,
+    minLevel: 1,
 });
 
 export function getEquipmentById(id:number): BaseEquipment | undefined {

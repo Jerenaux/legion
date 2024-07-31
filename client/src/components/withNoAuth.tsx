@@ -2,23 +2,21 @@ import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import AuthContext from '../contexts/AuthContext';
 
-const withAuth = (WrappedComponent) => {
+const withNoAuth = (WrappedComponent) => {
     return class extends Component {
         static contextType = AuthContext;
 
         componentDidMount() {
             const { isAuthenticated } = this.context;
-            if (!isAuthenticated) {
-                // Redirect to landing page
-                route('/'); 
+            if (isAuthenticated) {
+                route('/play'); 
             }
         }
 
         componentDidUpdate() {
             const { isAuthenticated } = this.context;
-            if (!isAuthenticated) {
-                // Redirect to landing page
-                route('/'); 
+            if (isAuthenticated) {
+                route('/play'); 
             }
         }
 
@@ -28,4 +26,4 @@ const withAuth = (WrappedComponent) => {
     };
 };
 
-export default withAuth;
+export default withNoAuth;
