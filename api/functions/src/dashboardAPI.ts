@@ -49,7 +49,6 @@ export async function updateDAU(userId: string) {
 
 export async function logPlayerAction(playerId: string, actionType: string, details: any) {
     if (playerId == null) return;
-    console.log(`Logging player action: ${playerId}, ${actionType}, ${details}`);
     const db = admin.firestore();
     const actionRef = db.collection('players').doc(playerId).collection('actions').doc();
     await actionRef.set({

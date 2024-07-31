@@ -13,6 +13,22 @@ const terrainDot = {
     [Terrain.FIRE]: 10,
 }
 
+const terrainDoTInterval = {
+    [Terrain.FIRE]: 3000,
+}
+
+const statusDot = {
+    [StatusEffect.POISON]: 5,
+    [StatusEffect.BURN]: 10,
+}
+
+const statusDoTInterval = {
+    [StatusEffect.POISON]: 3000,
+    [StatusEffect.BURN]: 3000,
+}
+
+const DoTStatuses = [StatusEffect.POISON, StatusEffect.BURN];
+
 export type ActionType = 'move' | 'attack';
 export class ServerPlayer {
     dbId: string;
@@ -42,7 +58,8 @@ export class ServerPlayer {
     cooldowns;
     cooldown: number = 0;
     cooldownTimer: NodeJS.Timeout | null = null;
-    DoTTimer: NodeJS.Timeout | null = null;
+    terrainDoTTimer: NodeJS.Timeout | null = null;
+    statusDoTTimer: NodeJS.Timeout | null = null;
     statusesTimer: NodeJS.Timeout | null = null;
     inventoryCapacity: number = 3;
     inventory: Item[] = [];
@@ -429,12 +446,12 @@ export class ServerPlayer {
         console.log(`[ServerPlayer:setUpTerrainEffect] Terrain effect ${terrain}`);
         switch (terrain) {
             case Terrain.FIRE:
-                if (this.DoTTimer) {
-                    clearTimeout(this.DoTTimer);
+                if (this.terrainDoTTimer) {
+                    clearTimeout(this.terrainDoTTimer);
                 }
-                this.DoTTimer = setInterval(() => {
+                this.terrainDoTTimer = setInterval(() => {
                     this.applyDoT(terrainDot[terrain]);
-                }, 3000);
+                }, terrainDoTInterval[terrain]);
                 break;
             case Terrain.ICE:
                 this.addStatusEffect(StatusEffect.FREEZE, -1, 1);
@@ -454,30 +471,25 @@ export class ServerPlayer {
 
     addStatusEffect(status: StatusEffect, duration: number, chance: number = 1) {
         if (Math.random() > chance) return false;
-        switch(status) {
-            case StatusEffect.PARALYZE:
-                this.statuses[StatusEffect.PARALYZE] = duration;
-                break;
-            case StatusEffect.FREEZE:
-                this.statuses[StatusEffect.FREEZE] = duration;
-                break;
-            default:
-                break;
+        this.statuses[status] = duration;
+        if (DoTStatuses.includes(status)) {
+            if (this.statusDoTTimer) {
+                clearTimeout(this.statusDoTTimer);
+            }
+            this.statusDoTTimer = setInterval(() => {
+                this.applyDoT(statusDot[status]);
+            }, statusDoTInterval[status]);
         }
         this.broadcastStatusEffectChange();
         return true;
     }
 
     removeStatusEffect(status: StatusEffect) {
-        switch(status) {
-            case StatusEffect.PARALYZE:
-                this.statuses[StatusEffect.PARALYZE] = 0;
-                break;
-            case StatusEffect.FREEZE:
-                this.statuses[StatusEffect.FREEZE] = 0;
-                break;
-            default:
-                break;
+        this.statuses[status] = 0;
+        if (DoTStatuses.includes(status)) {
+            if (this.statusDoTTimer) {
+                clearTimeout(this.statusDoTTimer);
+            }
         }
         this.broadcastStatusEffectChange();
     }
@@ -502,9 +514,9 @@ export class ServerPlayer {
         if (change) this.broadcastStatusEffectChange();
     }
 
-    stopDoT() {
-        if (this.DoTTimer) {
-            clearTimeout(this.DoTTimer);
+    stopTerrainDoT() {
+        if (this.terrainDoTTimer) {
+            clearTimeout(this.terrainDoTTimer);
         }
     }
 
@@ -533,11 +545,14 @@ export class ServerPlayer {
         if (this.cooldownTimer) {
             clearTimeout(this.cooldownTimer);
         }
-        if (this.DoTTimer) {
-            clearInterval(this.DoTTimer);
+        if (this.terrainDoTTimer) {
+            clearInterval(this.terrainDoTTimer);
         }
         if (this.statusesTimer) {
             clearInterval(this.statusesTimer);
+        }
+        if (this.statusDoTTimer) {
+            clearInterval(this.statusDoTTimer);
         }
     }
 

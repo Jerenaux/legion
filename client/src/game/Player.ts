@@ -637,6 +637,7 @@ export class Player extends Phaser.GameObjects.Container {
     setStatuses(statuses) {
         this.setFrozen(statuses[StatusEffect.FREEZE]);
         this.setParalyzed(statuses[StatusEffect.PARALYZE]);
+        this.setPoisoned(statuses[StatusEffect.POISON]);
         this.arena.emitEvent('statusesChange', {num: this.num})
     }
 
@@ -665,6 +666,18 @@ export class Player extends Phaser.GameObjects.Container {
             this.statusSprite.setVisible(false);
             console.log(`[setParalyzed] playing ${this.getIdleAnim()}`);
             this.playAnim(this.getIdleAnim());
+        }
+    }
+
+    setPoisoned(duration) {
+        if (duration != 0) {
+            this.statuses[StatusEffect.POISON] = duration;
+            this.statusSprite.setVisible(true);
+            this.statusSprite.anims.play('poisoned');
+        } else {
+            this.statuses[StatusEffect.POISON] = 0;
+            this.statusSprite.anims.stop();
+            this.statusSprite.setVisible(false);
         }
     }
 }

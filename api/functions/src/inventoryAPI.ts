@@ -140,6 +140,7 @@ function canEquipEquipment(characterData: DBCharacterData, equipmentId: number):
     console.error("Invalid equipment ID");
     return false;
   }
+  console.log(`[canEquipEquipment] Equipment name: [${equipmentId}] ${equipment.name} Character level: ${characterData.level}, Equipment min level: ${equipment.minLevel}, Equipment classes: ${equipment.classes}, Character class: ${characterData.class}`);
   return (equipment.minLevel <= characterData.level) && (!equipment.classes.length || equipment.classes.includes(characterData.class));
 }
 
@@ -387,6 +388,7 @@ export const inventoryTransaction = onRequest(async (request, response) => {
       const inventoryType = request.body.inventoryType as InventoryType;
       const action = request.body.action as InventoryActionType;
       const index = request.body.index;
+      console.log(`[inventoryTransaction] uid: ${uid}, characterId: ${characterId}, inventoryType: ${inventoryType}, action: ${action}, index in inventory: ${index}`);
 
       const playerRef = db.collection("players").doc(uid);
       const characterRef = db.collection("characters").doc(characterId);
@@ -411,7 +413,6 @@ export const inventoryTransaction = onRequest(async (request, response) => {
         throw new Error("Character not owned by player");
       }
 
-      logger.info("Checking conditions for transaction...");
       let canDo = false;
       if (action === InventoryActionType.EQUIP) {
         switch (inventoryType) {
@@ -422,7 +423,7 @@ export const inventoryTransaction = onRequest(async (request, response) => {
             canDo = canLearnSpell(characterData);
             break;
           case InventoryType.EQUIPMENTS: {
-            const itemId = playerData.inventory.equipment[index];
+            const itemId = playerData.inventory.equipment.sort()[index];
             canDo = canEquipEquipment(characterData, itemId);
             break;
           }

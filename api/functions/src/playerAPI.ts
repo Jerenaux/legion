@@ -211,7 +211,6 @@ export const getPlayerData = onRequest((request, response) => {
 });
 
 export const queuingData = onRequest((request, response) => {
-  logger.info("Fetching queuingData");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
@@ -277,7 +276,6 @@ export const saveGoldReward = onRequest((request, response) => {
 });
 
 export const claimChest = onRequest((request, response) => {
-  logger.info("Claiming chest");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {

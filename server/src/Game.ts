@@ -352,7 +352,7 @@ export abstract class Game
             return;
         }
 
-        player.stopDoT();
+        player.stopTerrainDoT();
         
         // console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
         this.checkForTerrainEffects(player, listCellsOnTheWay(player.x, player.y, tile.x, tile.y));
