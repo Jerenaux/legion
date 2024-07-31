@@ -3,7 +3,6 @@ import ItemIcon from './ItemIcon';
 import { InventoryType, Target } from '@legion/shared/enums';
 import TabBar from './TabBar';
 import { mapFrameToCoordinates } from '../utils';
-import { BaseSpell } from '@legion/shared/BaseSpell';
 import { PlayerProps } from '@legion/shared/interfaces';
 
 interface Props {
@@ -73,6 +72,8 @@ class PlayerTab extends Component<Props, State> {
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const itemsIndex = keyboardLayout.indexOf('Z');
+    const goldenGradient = 'linear-gradient(to bottom right, #bf9b30, #1c1f25)'
+
     return (
       <div className="flex flex_col items_center">
         <div className="player_tab_container">
@@ -124,7 +125,7 @@ class PlayerTab extends Component<Props, State> {
                     className="player_hud_skills flex items_center justify_center relative" 
                     key={idx}
                     style={{
-                      backgroundColor: player.pendingItem === idx ? '#bf9b30' : 'initial',
+                      background: player.pendingItem === idx ? goldenGradient : 'initial',
                     }}
                     onClick={(event: Event) => {
                       this.handleClick(event, itemsIndex + idx); 
@@ -149,7 +150,7 @@ class PlayerTab extends Component<Props, State> {
                     className="player_hud_skills flex items_center justify_center relative"
                     key={idx}
                     style={{
-                      backgroundColor: player.pendingSpell === idx ? '#bf9b30' : 'initial',
+                      background: player.pendingSpell === idx ? goldenGradient : 'initial',
                     }}
                     onClick={(event: Event) => {
                       this.handleClick(event, idx); 
