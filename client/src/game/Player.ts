@@ -43,7 +43,7 @@ export class Player extends Phaser.GameObjects.Container {
     inventory: BaseItem[] = [];
     spells: BaseSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
-    statusSprite: Phaser.GameObjects.Sprite;
+    statusSprites: Map<StatusEffect, Phaser.GameObjects.Sprite>;
     pendingSpell: number | null = null;
     pendingItem: number | null = null;
     casting = false;
@@ -77,6 +77,13 @@ export class Player extends Phaser.GameObjects.Container {
         this.xp = xp;
         this.level = level;
 
+        this.baseSquare = scene.add.graphics().setAlpha(0.6);
+        this.add(this.baseSquare);
+
+        // Create the sprite using the given key and add it to the container
+        this.sprite = scene.add.sprite(0, 0, texture);
+        this.add(this.sprite);
+
         this.statuses = {
             [StatusEffect.FREEZE]: 0,
             [StatusEffect.PARALYZE]: 0,
@@ -85,12 +92,15 @@ export class Player extends Phaser.GameObjects.Container {
             [StatusEffect.SLEEP]: 0,
         };
 
-        this.baseSquare = scene.add.graphics().setAlpha(0.6);
-        this.add(this.baseSquare);
+        const paralyzed = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
+        const poisoned = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
+        this.add(paralyzed);
+        this.add(poisoned);
 
-        // Create the sprite using the given key and add it to the container
-        this.sprite = scene.add.sprite(0, 0, texture);
-        this.add(this.sprite);
+        this.statusSprites = new Map();
+        this.statusSprites.set(StatusEffect.PARALYZE, paralyzed);
+        this.statusSprites.set(StatusEffect.POISON, poisoned);
+
         // @ts-ignore
         this.scene.sprites.push(this.sprite);
 
@@ -135,9 +145,6 @@ export class Player extends Phaser.GameObjects.Container {
         this.animationSprite = scene.add.sprite(0, 20, '').setScale(2).setVisible(false);
         this.animationSprite.on('animationcomplete', () => this.animationSprite.setVisible(false), this);
         this.add(this.animationSprite);
-
-        this.statusSprite = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
-        this.add(this.statusSprite);
 
         this.glowFx = this.sprite.preFX.addGlow(0x000000, 6);
         this.glowFx.setActive(false);
@@ -187,6 +194,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     isFrozen() {
+        if (!this.statuses) return false;
         return this.statuses[StatusEffect.FREEZE] != 0;
     }
 
@@ -515,7 +523,7 @@ export class Player extends Phaser.GameObjects.Container {
     die() {
         this.healthBar.setVisible(false);
         this.MPBar?.setVisible(false);
-        this.statusSprite.setVisible(false);
+        this.hideAllStatusAnimations();
         this.playAnim('die');
         if (this.arena.selectedPlayer == this) this.arena.deselectPlayer();
     }
@@ -641,6 +649,36 @@ export class Player extends Phaser.GameObjects.Container {
         this.arena.emitEvent('statusesChange', {num: this.num})
     }
 
+    showStatusAnimation(status: StatusEffect) {
+        const keys = {
+            [StatusEffect.FREEZE]: 'freeze',
+            [StatusEffect.PARALYZE]: 'paralyzed',
+            [StatusEffect.POISON]: 'poisoned',
+            [StatusEffect.BURN]: 'burn',
+            [StatusEffect.SLEEP]: 'sleep',
+        };
+        const sprite = this.statusSprites.get(status);
+        if (sprite) {
+            sprite.setVisible(true);
+            sprite.anims.play(keys[status]);
+        }
+    }
+
+    hideStatusAnimation(status: StatusEffect) {
+        const sprite = this.statusSprites.get(status);
+        if (sprite) {
+            sprite.setVisible(false);
+            sprite.anims.stop();
+        }
+    }
+
+    hideAllStatusAnimations() {
+        this.statusSprites.forEach(sprite => {
+            sprite.setVisible(false);
+            sprite.anims.stop();
+        });
+    }
+
     setFrozen(duration) {
         if (duration != 0) 
         {
@@ -658,13 +696,10 @@ export class Player extends Phaser.GameObjects.Container {
             this.statuses[StatusEffect.PARALYZE] = duration;
             this.sprite.anims.stop();
             this.cooldownTween?.stop();
-            this.statusSprite.setVisible(true);
-            console.log(`[setParalyzed] playing paralyzed animation`);
-            this.statusSprite.anims.play('poisoned');
+            this.showStatusAnimation(StatusEffect.PARALYZE);
         } else {
             this.statuses[StatusEffect.PARALYZE] = 0;
-            this.statusSprite.anims.stop();
-            this.statusSprite.setVisible(false);
+            this.hideStatusAnimation(StatusEffect.PARALYZE);
             this.playAnim(this.getIdleAnim());
         }
     }
@@ -672,13 +707,10 @@ export class Player extends Phaser.GameObjects.Container {
     setPoisoned(duration) {
         if (duration != 0) {
             this.statuses[StatusEffect.POISON] = duration;
-            this.statusSprite.setVisible(true);
-            console.log(`[setPoisoned] playing poisoned animation`);
-            this.statusSprite.anims.play('paralyzed');
+            this.showStatusAnimation(StatusEffect.POISON);
         } else {
             this.statuses[StatusEffect.POISON] = 0;
-            this.statusSprite.anims.stop();
-            this.statusSprite.setVisible(false);
+            this.hideStatusAnimation(StatusEffect.POISON);
         }
     }
 }
