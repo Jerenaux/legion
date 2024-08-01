@@ -10,6 +10,9 @@ export const MAX_AUDIENCE_SCORE = 1500;
 // Feature flags
 export const ENABLE_PLAYER_LEVEL = false;
 export const ENABLE_TEAM_NAME = false;
+export const ENABLE_APPROX_WT = false;
+export const ENABLE_MM_TOGGLE = false;
+export const ENABLE_Q_NEWS = false;
 
 // Admin
 export const TIME_COEFFICIENT = 1;

@@ -4,6 +4,7 @@ import { route } from 'preact-router';
 import { Link, useRouter } from 'preact-router';
 
 import { getFirebaseIdToken } from '../services/apiService';
+import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS } from '@legion/shared/config';
 
 interface QPageProps {
     matches: {
@@ -130,43 +131,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
         });
 
         this.socket.on('queueData', (data) => {
-
-            // console.log('data ', data);
-
             this.setState({ queueDataLoaded: true });
             this.setState({ queueData: { ...data } });
-
-            // {
-            //     goldRewardInterval,
-            //     goldReward,
-            //     estimatedWaitingTime: -1,
-            //     nbInQueue: countQueuingPlayers(player.mode, player.league),
-            //     tips: [
-            //         "o have data to use in the UI, use the Log In button and create an account, which will create a user in the Firestore database.",
-            //         "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great! New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, fantastic, great!",
-            //         "Event handlers have access to the event that triggered the function."
-            //     ],
-            //     news: [
-            //         {
-            //             title: "Title",
-            //             date: "2022-12-01",
-            //             text: "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
-            //             link: "https://www.google.com"
-            //         },
-            //         {
-            //             title: "Title",
-            //             date: "2022-12-01",
-            //             text: "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
-            //             link: "https://www.google.com"
-            //         },
-            //         {
-            //             title: "Title",
-            //             date: "2022-12-01",
-            //             text: "New version of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
-            //             link: "https://www.google.com"
-            //         }
-            //     ]
-            // }
         });
 
         this.socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });
@@ -181,14 +147,9 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     componentDidMount() {
-        // this.joinQueue(); 
-        // if(!this.state.queueDataLoaded) {
-
-        // }
         let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
         if (this.state.queueData.estimatedWaitingTime != -1) {
             this.interval = setInterval(() => {
-                // console.log('state ', this.state.progress);
                 this.setState((prevState) => ({
                     progress: prevState.progress + 1,
                 }));
@@ -244,7 +205,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                             </div>
                             <div className="queue-detail">
                                 <div>
-                                    <div className="queue-detail-header">
+                                    {ENABLE_MM_TOGGLE && <div className="queue-detail-header">
                                         <div
                                             className={this.state.findState == 'quick' ? 'queue-detail-btn active' : 'queue-detail-btn'}
                                             onClickCapture={this.handleQuickFind}
@@ -257,7 +218,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                         >
                                             Accurate find
                                         </div>
-                                    </div>
+                                    </div>}
                                     <div className="queue-detail-body">
                                         <div>
                                             <div>EARNINGS</div>
@@ -279,13 +240,13 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                                 <span style={{ color: 'deepskyblue' }}>{this.state.waited}</span>&nbsp;Secs
                                             </div>
                                         </div>
-                                        <div>
+                                        {ENABLE_APPROX_WT && <div>
                                             <div>APPROX WAITING TIME</div>
                                             <div>
                                                 <span style={{ color: 'deepskyblue' }}>{this.state.queueData.estimatedWaitingTime == -1 ? '?' : this.state.queueData.estimatedWaitingTime}</span>&nbsp;
                                                 {this.state.queueData.estimatedWaitingTime == -1 ? '' : 'Secs'}
                                             </div>
-                                        </div>
+                                        </div>}
                                     </div>
 
                                     <Link href="/play">
@@ -312,7 +273,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                         </div>
                     </div>
 
-                    <div className="queue-news">
+                    {ENABLE_Q_NEWS && <div className="queue-news">
                         {queueData.news.map(newsItem => (
                             <div className="queue-news-container">
                                 <div class="queue-news-title">
@@ -327,11 +288,11 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                    </div>}
 
                     <div className="queue-tips">
                         <div className="queue-tips-container">
-                            <div>Tips</div>
+                            <div style="font-family: Kim;">Tips</div>
                             <div>
                                 <span style={{ color: 'cyan' }}>
                                     {queueData.tips[this.state.tipCount]}
