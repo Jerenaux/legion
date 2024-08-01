@@ -42,6 +42,7 @@ export class Arena extends Phaser.Scene
     gameSettings;
     killCamActive = false;
     pendingGEN: GEN;
+    gameInitialized = false;
 
     constructor() {
         super({ key: 'Arena' });
@@ -617,6 +618,7 @@ export class Arena extends Phaser.Scene
     }
 
     selectPlayer(player: Player) {
+        if (!this.gameInitialized) return;
         if (this.selectedPlayer) {
             const isSelf = player.num === this.selectedPlayer.num;
             this.deselectPlayer();
@@ -1248,10 +1250,14 @@ export class Arena extends Phaser.Scene
 
         if (isReconnect) {
             this.updateOverview();
+            this.gameInitialized = true;
         } else {
             const delay = 3000;
             setTimeout(this.updateOverview.bind(this), delay + 1000);
-            setTimeout(() => this.displayGEN(GEN.COMBAT_BEGINS), delay);
+            setTimeout(() => {
+                this.displayGEN(GEN.COMBAT_BEGINS);
+                this.gameInitialized = true;
+            }, delay);
         }
 
         // Events from the HUD
