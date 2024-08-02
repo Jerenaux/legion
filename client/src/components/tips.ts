@@ -12,4 +12,5 @@ export const tips = [
     "The + and X versions of spells tend to have larger areas of effect and deal more damage!",
     "Every action in the game has a cooldown time. While a character is in cooldown, they cannot do anything, but you can still use your other characters in the meantime!",
     "Targetting ice spells on an empty cell will still create ice blocks that can be used to block your enemies' path!",
+    "The HP and MP of your whole team are fully replenished after each combat, so don't be afraid to use your spells!",
 ];

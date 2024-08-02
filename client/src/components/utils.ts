@@ -21,7 +21,7 @@ interface ExtraStyle {
   backgroundSize?: string;
 }
 
-function showToast(text: string, duration: number = 3000, extraStyle?: ExtraStyle) {
+function showToast(text: string, duration: number = 3000, avatar: string) {
   Toastify({
     text,
     duration,
@@ -30,30 +30,46 @@ function showToast(text: string, duration: number = 3000, extraStyle?: ExtraStyl
     position: "center", // `left`, `center` or `right`
     stopOnFocus: true, // Prevents dismissing of toast on hover
     className: "toast",
+    avatar,
     style: {
       background: "#242b37",
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "12px center",
-      backgroundSize: "24px",
-      paddingLeft: "44px", // 12px (left padding) + 24px (icon size) + 8px (space between icon and text)
-      ...extraStyle
     }
     // onClick: function(){} // Callback after click
   }).showToast();
 }
 
+export function showGuideToast(text: string, duration: number = 3000) {
+  Toastify({
+    text,
+    duration: -1,
+    close: true,
+    gravity: "bottom", // `top` or `bottom`
+    position: "center", // `left`, `center` or `right`
+    stopOnFocus: true, // Prevents dismissing of toast on hover
+    className: "toast",
+    // avatar: 'guide.png',
+    style: {
+      background: "#242b37 url('guide.png') 12px center no-repeat",
+      maxWidth: '300px',
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "12px center",
+      backgroundSize: "24px",
+      paddingLeft: "44px"
+    }
+    // onClick: function(){} // TODO
+  }).showToast();
+}
+
 export function successToast(text: string, duration: number = 3000) {
-  showToast(text, duration, {
-    background: "#242b37 url('svg/success.svg') 12px center no-repeat",
-    backgroundSize: "24px"
-  });
+  showToast(text, duration, 'svg/success.svg');
 }
 
 export function errorToast(text: string, duration: number = 3000) {
-  showToast(text, duration, {
-    background: "#242b37 url('svg/error.svg') 12px center no-repeat",
-    backgroundSize: "24px"
-  });
+  showToast(text, duration, 'svg/error.svg');
+}
+
+export function guideToast(text: string, duration: number = 3000) {
+  showToast(text, duration, 'svg/guide.svg');
 }
  
 export function mapFrameToCoordinates(frame: number) {
