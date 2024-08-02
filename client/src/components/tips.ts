@@ -14,4 +14,18 @@ export const tips = [
     "Targetting ice spells on an empty cell will still create ice blocks that can be used to block your enemies' path!",
     "The HP and MP of your whole team are fully replenished after each combat, so don't be afraid to use your spells!",
     "You can revive characters during combat by using a Clover!",
+    "The bar at the bottom of the game screen is the Audience bar. Impress the audience to earn extra rewards!",
+];
+
+export const guide = [
+    "You have a lot of gold, champion! Click here to go to the shop and buy something nice for your characters!",
+    "One of your characters has unspent SP! Click here to go to the team page and spend them to increase their stats!",
+    "A key for one of your daily loot chests is ready to be won! Click here to start a Casual game and win it!",
+    "You have unused equipment pieces in your inventory! Click here to go to the team page and equip them!",
+    "You have unused consumables in your inventory! Click here to go to the team page and equip them on your characters!",
+    "You have unused spells in your inventory! Click here to go to the team page and teach them to your characters!",
+    "Your characters know cool spells, this time why don't you give them a try in combat?",
+    "Not sure what to do? Just click here to start a Practice game and try out your characters and spells!",
+    "Now that you know the game a bit more, click here to play against another player in Casual mode!",
+    "You've had a few victories now, why don't you try your luck in Ranked mode and climb the ladder? Click here to start!",
 ];

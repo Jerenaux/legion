@@ -176,6 +176,17 @@ export const postGameUpdate = onRequest((request, response) => {
               });
           }
 
+          if (mode == PlayMode.CASUAL) {
+            transaction.update(playerRef, {
+              'casualStats.nbGames': admin.firestore.FieldValue.increment(1),
+            });
+            if (isWinner) {
+              transaction.update(playerRef, {
+                'casualStats.wins': admin.firestore.FieldValue.increment(1),
+              });
+            }
+          }
+
           if (mode == PlayMode.RANKED) {
             if (isWinner) {
               transaction.update(playerRef, {

@@ -1,6 +1,6 @@
 import { h, Component } from 'preact';
 import { apiFetch } from '../services/apiService';
-import { showGuideToast, errorToast } from './utils';
+import { errorToast } from './utils';
 import { DBCharacterData, PlayerInventory } from '@legion/shared/interfaces';
 import ShopContent from './shopContent/ShopContent';
 import {ShopTabs} from '@legion/shared/enums';
@@ -51,7 +51,6 @@ class ShopPage extends Component<ShopPageProps, State> {
     await this.fetchInventoryData(); 
     this.fetchCharactersOnSale();
     startTour('shop', this.context.player.tours);
-    showGuideToast('Welcome to the shop! Here you can buy consumables, equipment, spells and characters.');
   }
 
   async fetchInventoryData() {

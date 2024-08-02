@@ -43,7 +43,8 @@ export const purchaseItem = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const docSnap = await db.collection("players").doc(uid).get();
+      const playerDocRef = db.collection("players").doc(uid);
+      const docSnap = await playerDocRef.get();
 
       if (docSnap.exists) {
         const itemId = request.body.articleId;
@@ -83,38 +84,60 @@ export const purchaseItem = onRequest((request, response) => {
 
         gold -= totalPrice;
 
+        // switch (inventoryType) {
+        //   case ShopTabs.CONSUMABLES:
+        //     for (let i = 0; i < nb; i++) {
+        //       inventory.consumables.push(itemId);
+        //     }
+        //     break;
+        //   case ShopTabs.SPELLS:
+        //     for (let i = 0; i < nb; i++) {
+        //       inventory.spells.push(itemId);
+        //     }
+        //     break;
+        //   case ShopTabs.EQUIPMENTS:
+        //     for (let i = 0; i < nb; i++) {
+        //       inventory.equipment.push(itemId);
+        //     }
+        //     break;
+        //   default:
+        //     response.status(500).send("Invalid inventory type");
+        //     return;
+        // }
+        const inventoryUpdate = { ...inventory };
         switch (inventoryType) {
           case ShopTabs.CONSUMABLES:
-            for (let i = 0; i < nb; i++) {
-              inventory.consumables.push(itemId);
-            }
+            inventoryUpdate.consumables = [...inventory.consumables, ...Array(nb).fill(itemId)];
             break;
           case ShopTabs.SPELLS:
-            for (let i = 0; i < nb; i++) {
-              inventory.spells.push(itemId);
-            }
+            inventoryUpdate.spells = [...inventory.spells, ...Array(nb).fill(itemId)];
             break;
           case ShopTabs.EQUIPMENTS:
-            for (let i = 0; i < nb; i++) {
-              inventory.equipment.push(itemId);
-            }
+            inventoryUpdate.equipment = [...inventory.equipment, ...Array(nb).fill(itemId)];
             break;
-          default:
-            response.status(500).send("Invalid inventory type");
-            return;
         }
 
-        await db.collection("players").doc(uid).update({
-          gold,
-          inventory,
+        // await db.collection("players").doc(uid).update({
+        //   gold,
+        //   inventory,
+        // });
+
+        const result = await db.runTransaction(async (transaction) => {
+          transaction.update(playerDocRef, {
+            gold,
+            inventory: inventoryUpdate,
+          });
+  
+          return { gold, inventory: inventoryUpdate };
         });
 
         logPlayerAction(uid, "purchaseItem", {inventoryType, itemId, nb, totalPrice});
 
-        response.send({
-          gold,
-          inventory,
-        });
+        response.send(result);
+        // response.send({
+        //   gold,
+        //   inventory,
+        // });
       } else {
         response.status(404).send("Not Found: Invalid player ID");
       }

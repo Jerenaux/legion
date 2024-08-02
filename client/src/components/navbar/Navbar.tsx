@@ -6,8 +6,10 @@ import { Link, useRouter } from 'preact-router';
 import firebase from 'firebase/compat/app'
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from 'src/contexts/PlayerContext';
-import { successToast, errorToast } from '../utils';
+import { successToast, errorToast, showGuideToast } from '../utils';
 import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
+import { apiFetch } from '../../services/apiService';
+import { guide } from '../tips';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -50,6 +52,16 @@ class Navbar extends Component<Props, State> {
     state = {
         hovered: '',
         openDropdown: false,
+    }
+
+    componentDidMount(): void {
+        apiFetch('fetchGuideTip', {
+            method: 'GET',
+        })
+        .then((data) => {
+            showGuideToast(guide[data.guideId], data.route);
+        })
+        .catch(error => console.error(`Fetching tip error: ${error}`));
     }
 
     copyIDtoClipboard = () => {  
@@ -120,7 +132,7 @@ class Navbar extends Component<Props, State> {
                     <div class="expand_btn" style={{backgroundImage: 'url("/expand_btn.png")'}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
                         <div class="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
                             <div className="" onClick={() => window.open('', '_blank')}>
-                                <img src="svg/help.svg" /> Help
+                                <img src="svg/help.svg" /> How to play
                             </div>
                             <div className=""  onClick={() => window.open('https://x.com/iolegion', '_blank')}>
                                 <img src="svg/x.svg" /> X.com

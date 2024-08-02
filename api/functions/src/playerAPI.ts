@@ -99,12 +99,27 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
       avgAudienceScore: 0,
       avgGrade: 0,
     },
+    casualStats: {
+      nbGames: 0,
+      wins: 0,
+    },
     tours: {
       'play': false,
       'team': false,
       'rank': false,
       'shop': false,
       'queue': false,
+    },
+    guideTipsShown: [],
+    utilizationStats: {
+      everPurchased: false,
+      everSpentSP: false,
+      everOpenedDailyLoot: false,
+      everEquippedConsumable: false,
+      everEquippedEquipment: false,
+      everEquippedSpell: false,
+      everUsedSpell: false,
+      everPlayedPractice: false,
     },
   } as DBPlayerData;
 
@@ -380,6 +395,37 @@ export const completeTour = onRequest((request, response) => {
       });
     } catch (error) {
       console.error("completeTour error:", error);
+      response.status(500).send("Error");
+    }
+  });
+});
+
+export const fetchGuideTip = onRequest((request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      logger.info("Fetching guide tip for player:", uid);
+
+      const playerRef = db.collection("players").doc(uid);
+      const playerDoc = await playerRef.get();
+
+      if (!playerDoc.exists) {
+        throw new Error("Invalid player ID");
+      }
+
+      const playerData = playerDoc.data();
+      if (!playerData) {
+        throw new Error("playerData is null");
+      }
+
+      response.send({
+        guideId: 0,
+        route: 'shop/equipments',
+      });
+    } catch (error) {
+      console.error("fetchGuideTip error:", error);
       response.status(500).send("Error");
     }
   });

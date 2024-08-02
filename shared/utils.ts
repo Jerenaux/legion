@@ -1,5 +1,4 @@
 import { PlayerInventory } from "./interfaces";
-import { ChestColor } from "./enums";
 
 function specialRound(num: number): number {
     if (num >= 0) {

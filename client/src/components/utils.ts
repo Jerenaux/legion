@@ -38,16 +38,16 @@ function showToast(text: string, duration: number = 3000, avatar: string) {
   }).showToast();
 }
 
-export function showGuideToast(text: string, duration: number = 3000) {
+export function showGuideToast(text: string, destination: string, duration: number = 10000) {
   Toastify({
     text,
-    duration: -1,
+    duration,
     close: true,
     gravity: "bottom", // `top` or `bottom`
     position: "center", // `left`, `center` or `right`
     stopOnFocus: true, // Prevents dismissing of toast on hover
     className: "toast",
-    // avatar: 'guide.png',
+    destination,
     style: {
       background: "#242b37 url('guide.png') 12px center no-repeat",
       maxWidth: '300px',
@@ -55,8 +55,7 @@ export function showGuideToast(text: string, duration: number = 3000) {
       backgroundPosition: "12px center",
       backgroundSize: "24px",
       paddingLeft: "44px"
-    }
-    // onClick: function(){} // TODO
+    },
   }).showToast();
 }
 
