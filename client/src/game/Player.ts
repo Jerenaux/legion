@@ -93,30 +93,31 @@ export class Player extends Phaser.GameObjects.Container {
         this.add(this.selectionOval);
         this.add(this.sprite); // Add sprite after selection oval for proper depth
 
-        this.statuses = {
-            [StatusEffect.FREEZE]: 0,
-            [StatusEffect.PARALYZE]: 0,
-            [StatusEffect.POISON]: 0,
-            [StatusEffect.BURN]: 0,
-            [StatusEffect.SLEEP]: 0,
-        };
+        // this.statuses = {
+        //     [StatusEffect.FREEZE]: 0,
+        //     [StatusEffect.PARALYZE]: 0,
+        //     [StatusEffect.POISON]: 0,
+        //     [StatusEffect.BURN]: 0,
+        //     [StatusEffect.SLEEP]: 0,
+        // };
 
-        const paralyzed = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
-        const poisoned = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
-        this.add(paralyzed);
-        this.add(poisoned);
+        // const paralyzed = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
+        // const poisoned = scene.add.sprite(0, -20, 'statuses').setOrigin(0.5, 0.1).setVisible(false);
+        // this.add(paralyzed);
+        // this.add(poisoned);
 
-        this.statusSprites = new Map();
-        this.statusSprites.set(StatusEffect.PARALYZE, paralyzed);
-        this.statusSprites.set(StatusEffect.POISON, poisoned);
+        // this.statusSprites = new Map();
+        // this.statusSprites.set(StatusEffect.PARALYZE, paralyzed);
+        // this.statusSprites.set(StatusEffect.POISON, poisoned);
 
-        // List of sprites maintained for kill cam effect
-        // @ts-ignore
-        this.scene.sprites.push(this.sprite);
-        // @ts-ignore
-        this.scene.sprites.push(paralyzed);
-        // @ts-ignore
-        this.scene.sprites.push(poisoned);
+        // // List of sprites maintained for kill cam effect
+        // // @ts-ignore
+        // this.scene.sprites.push(this.sprite);
+        // // @ts-ignore
+        // this.scene.sprites.push(paralyzed);
+        // // @ts-ignore
+        // this.scene.sprites.push(poisoned);
+        this.setUpStatusEffects();
 
         // For cast effect, slash effect, etc.
         this.animationSprite = scene.add.sprite(0, 20, '').setScale(2).setVisible(false);
@@ -144,6 +145,9 @@ export class Player extends Phaser.GameObjects.Container {
 
         if (gridX < this.arena.gridWidth/2) this.sprite.flipX = true;
 
+        // @ts-ignore
+        this.scene.sprites.push(this.sprite);
+
         this.glowFx = this.sprite.preFX.addGlow(0x000000, 6);
         this.glowFx.setActive(false);
 
@@ -156,6 +160,34 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
+    }
+
+    setUpStatusEffects() {
+        const statusEffects = Object.keys(StatusEffect);
+
+        this.statuses = {
+            [StatusEffect.FREEZE]: 0,
+            [StatusEffect.PARALYZE]: 0,
+            [StatusEffect.POISON]: 0,
+            [StatusEffect.BURN]: 0,
+            [StatusEffect.SLEEP]: 0,
+        };
+        this.statusSprites = new Map();
+
+        statusEffects.forEach(effect => {
+            this.statuses[StatusEffect[effect]] = 0;
+
+            const sprite = this.scene.add.sprite(0, -20, 'statuses')
+                .setOrigin(0.5, 0.1)
+                .setVisible(false);
+            
+            this.add(sprite);
+            this.statusSprites.set(StatusEffect[effect], sprite);
+            
+            // Add to sprites list for kill cam effect
+            // @ts-ignore
+            this.scene.sprites.push(sprite);
+        });
     }
 
     // Returns the fields needed to display the top screen Player box in-game.
