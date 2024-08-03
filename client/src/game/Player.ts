@@ -109,7 +109,6 @@ export class Player extends Phaser.GameObjects.Container {
         // @ts-ignore
         this.scene.sprites.push(poisoned);
 
-        // TODO: refactor as subclass
         if (isPlayer) {
             this.numKey = scene.add.text(30, 70, num.toString(), { fontFamily: 'Kim', fontSize: '12px', color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(1,1);
             this.add(this.numKey);
@@ -121,23 +120,19 @@ export class Player extends Phaser.GameObjects.Container {
             this.selectionOval.setVisible(false);
             this.add(this.selectionOval);
 
-            this.baseSquare.lineStyle(4, 0x0000ff); // blue color
-
             this.cooldown = new CircularProgress(scene, -8, 28, 10, 0xffc400).setVisible(false);
             this.add(this.cooldown);
 
             this.MPBar = new HealthBar(scene, 0, -40, 0x0099ff);
             this.add(this.MPBar);
             this.maxMP = maxMP;
-            this.mp = mp;
+            this.setMP(mp);
 
             this.moveTo(this.numKey, 5);
             this.moveTo(this.sprite, 4);
+        } 
 
-            this.setMP(mp);
-        } else {
-            this.baseSquare.lineStyle(4, 0xff0000); // red color
-        }
+        this.baseSquare.lineStyle(4, isPlayer ? 0x0000ff : 0xff0000); 
 
         if (gridX < this.arena.gridWidth/2) this.sprite.flipX = true;
 
