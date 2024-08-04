@@ -503,6 +503,7 @@ export class Arena extends Phaser.Scene
 
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
+        if (!this.selectedPlayer) return;
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
@@ -512,7 +513,7 @@ export class Arena extends Phaser.Scene
         } else if (this.selectedPlayer?.pendingItem != null) {
             console.log(`Using item ${pendingItem.name}`)
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
-        } else if (!player && this.hasObstacle(gridX, gridY)) {
+        } else if ((!player || !player.isAlive()) && this.hasObstacle(gridX, gridY)) {
             console.log(`Clicked on obstacle at (${gridX}, ${gridY})`);
             this.sendObstacleAttack(gridX, gridY);
         } else if (this.selectedPlayer && !player) {
@@ -737,9 +738,7 @@ export class Arena extends Phaser.Scene
                     this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
                     break;
                 case Terrain.ICE:
-                    const icesprite = this.add.sprite(pixelX, pixelY, 'iceblock')
-                        .setDepth(3 + y/10).setAlpha(0.9).setOrigin(0.5, 0.35);
-                    icesprite.postFX.addShine(0.5, .2, 5);
+                    const icesprite = this.createIceBlock(x, y);
                     this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
                     
                     const tile = this.tilesMap.get(serializeCoords(x, y));
@@ -760,6 +759,30 @@ export class Arena extends Phaser.Scene
                     break;
             }
         });
+    }
+
+    createIceBlock(x: number, y: number) {
+        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        const depth = 3 + y/10;
+        const icesprite = this.add.sprite(pixelX, pixelY, 'iceblock')
+            .setDepth(depth).setAlpha(0.9).setOrigin(0.5, 0.35).setInteractive();
+        // Add pointerover event to sprite
+        icesprite.on('pointerover', () => {
+            console.log('Hovered over ice block');
+            if (this.selectedPlayer?.isNextTo(x, y) 
+                && this.selectedPlayer.canAct()
+                && this.selectedPlayer.pendingSpell == null
+                && this.selectedPlayer.pendingItem == null) {
+                this.emitEvent('hoverEnemyCharacter');
+            } 
+        });
+        // Add pointerout event to sprite
+        icesprite.on('pointerout', () => {
+            console.log('Unhovered over ice block');
+            this.emitEvent('unhoverCharacter');
+        });
+        icesprite.postFX.addShine(0.5, .2, 5);
+        return icesprite;
     }
 
     flickerAndDestroy(sprite, times, duration) {
