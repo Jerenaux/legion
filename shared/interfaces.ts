@@ -69,6 +69,7 @@ export interface ConsumableData {
     target: Target;
     size?: number;
     effects: Effect[];
+    statusRemovals?: StatusEffect[];
     effort: number;
 }
 

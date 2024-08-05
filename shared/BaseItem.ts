@@ -1,4 +1,4 @@
-import { Target, Rarity } from "./enums";
+import { Target, Rarity, StatusEffect } from "./enums";
 import { Effect, ConsumableData } from "./interfaces";
 import { getPrice, getRarity } from "./economy";
 
@@ -8,6 +8,7 @@ export class BaseItem {
     description: string = '';
     frame: number = 0;
     effects: Effect[] = [];
+    statusRemovals: StatusEffect[] = [];
     target: Target = Target.SINGLE;
     cooldown: number = 0;
     animation: string = '';

@@ -1,5 +1,5 @@
 import { BaseItem } from "./BaseItem";
-import { Stat, Target } from ".";
+import { Stat, StatusEffect, Target } from ".";
 
 export const items: BaseItem[] = [];
 
@@ -143,10 +143,25 @@ items[10] = new BaseItem({
     frame: 10,
     animation: "potion_heal",
     sfx: "healing",
+    cooldown: 3,
+    target: Target.SELF,
+    effects: [],
+    statusRemovals: [StatusEffect.POISON],
+    effort: 1.5,
+});
+
+items[11] = new BaseItem({
+    id: 11,
+    name: "Remedy",
+    description: "Cures all status effects",
+    frame: 11,
+    animation: "potion_heal",
+    sfx: "healing",
     cooldown: 7,
     target: Target.SELF,
     effects: [],
-    effort: 1.5,
+    statusRemovals: [StatusEffect.POISON, StatusEffect.PARALYZE, StatusEffect.SLEEP, StatusEffect.BURN],
+    effort: 4.5,
 });
 
 export function getConsumableById(id: number): BaseItem | undefined {

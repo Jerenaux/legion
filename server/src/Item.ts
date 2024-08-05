@@ -36,11 +36,12 @@ export class Item extends BaseItem {
                         break;
                 }
             });
+            this.statusRemovals.forEach(status => target.removeStatusEffect(status));
         });
     }
 
     effectsAreApplicable(target: ServerPlayer) {
-        return this.effects.every(effect => {
+        const mainEffectsApplicable = this.effects.every(effect => {
             if (effect.onKO && target.isAlive()) return false;
             switch (effect.stat) {
                 case Stat.HP:
@@ -49,6 +50,8 @@ export class Item extends BaseItem {
                     return target.mp < target.maxMP;
             }
         });
+        const statusRemovalsApplicable = this.statusRemovals.some(effect => target.hasStatusEffect(effect));
+        return mainEffectsApplicable || statusRemovalsApplicable;
     }
 
     isHealing() {
