@@ -8,8 +8,6 @@ import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from 'src/contexts/PlayerContext';
 import { successToast, errorToast, showGuideToast } from '../utils';
 import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
-import { apiFetch } from '../../services/apiService';
-import { guide } from '../tips';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -54,15 +52,10 @@ class Navbar extends Component<Props, State> {
         openDropdown: false,
     }
 
-    componentDidMount(): void {
-        apiFetch('fetchGuideTip', {
-            method: 'GET',
-        })
-        .then((data) => {
-            showGuideToast(guide[data.guideId], data.route);
-        })
-        .catch(error => console.error(`Fetching tip error: ${error}`));
-    }
+    componentDidUpdate(previousProps: Readonly<Props>, previousState: Readonly<State>, snapshot: any): void {
+        // if (previousProps.playerData?.lvl !== this.props.playerData?.lvl) {
+        //     successToast(`Level up! You are now level ${this.props.playerData?.lvl}`);
+}
 
     copyIDtoClipboard = () => {  
         const textToCopy = this.props.playerData.uid;

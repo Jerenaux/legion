@@ -120,6 +120,8 @@ export const createPlayer = functions.auth.user().onCreate((user) => {
       everEquippedSpell: false,
       everUsedSpell: false,
       everPlayedPractice: false,
+      everPlayedCasual: false,
+      everPlayedRanked: false,
     },
   } as DBPlayerData;
 
@@ -404,13 +406,142 @@ export const completeTour = onRequest((request, response) => {
   });
 });
 
+const figureOutGuideTip = (playerData: any) => {
+  if (!playerData.tours.play) {
+    return {
+      guideId: -1,
+      route: "/play",
+    };
+  }
+
+  if (!playerData.guideTipsShown.includes(0) &&
+  playerData.gold >= STARTING_GOLD * 3 &&
+  !playerData.utilizationStats.everPurchased) {
+    return {
+      guideId: 0,
+      route: "/shop",
+    };
+  }
+
+  if (!playerData.guideTipsShown.includes(1) && !playerData.utilizationStats.everSpentSP) {
+    // Iterate over the characters of the player to find one where sp > 0
+    for (const characterRef of playerData.characters) {
+      const characterData = characterRef.get();
+      if (characterData.sp > 0) {
+        return {
+          guideId: 1,
+          route: `/team/${characterRef.id}`,
+        };
+      }
+    }
+  }
+
+  if (!playerData.guideTipsShown.includes(2) && !playerData.utilizationStats.everOpenedDailyLoot) {
+    // Check in the daily loot of the character if one of the time fields is in the past
+    for (const chestType of Object.values(ChestColor)) {
+      if (playerData.dailyloot[chestType].time < Date.now() / 1000) {
+        return {
+          guideId: 2,
+          route: "/queue/1",
+        };
+      }
+    }
+  }
+
+  // You have unused equipment pieces in your inventory! Click here to go to the team page and equip them!
+  if (!playerData.guideTipsShown.includes(3) &&
+  playerData.inventory.equipment.length > 0 &&
+  !playerData.utilizationStats.everEquippedEquipment) {
+    return {
+      guideId: 3,
+      route: "/team",
+    };
+  }
+
+  // "You have unused consumables in your inventory! Click here to go to the team page and equip them on your characters!",
+  if (!playerData.guideTipsShown.includes(4) &&
+  playerData.inventory.consumables.length > 3 &&
+  !playerData.utilizationStats.everEquippedConsumable) {
+    return {
+      guideId: 4,
+      route: "/team",
+    };
+  }
+
+  // "You have unused spells in your inventory! Click here to go to the team page and teach them to your characters!",
+  if (!playerData.guideTipsShown.includes(5) &&
+  playerData.inventory.spells.length > 0 &&
+  !playerData.utilizationStats.everEquippedSpell) {
+    return {
+      guideId: 5,
+      route: "/team",
+    };
+  }
+
+  // "Not sure what to do? Just click here to start a Practice game and try out your characters and spells!",
+  if (!playerData.guideTipsShown.includes(6) &&
+  !playerData.utilizationStats.everPlayedPractice) {
+    return {
+      guideId: 6,
+      route: "/queue/0",
+    };
+  }
+
+  // "Now that you know the game a bit more, click here to play against another player in Casual mode!",
+  if (!playerData.guideTipsShown.includes(7) &&
+  playerData.utilizationStats.everPlayedPractice &&
+  !playerData.utilizationStats.everPlayedCasual) {
+    return {
+      guideId: 7,
+      route: "/queue/1",
+    };
+  }
+
+  // "You've had a few victories now, why don't you try your luck in Ranked mode and climb the ladder? Click here to start!",
+  if (!playerData.guideTipsShown.includes(8) &&
+  playerData.casualStats.wins >= 2 &&
+  !playerData.utilizationStats.everPlayedRanked) {
+    return {
+      guideId: 8,
+      route: "/queue/2",
+    };
+  }
+
+
+  return {
+    guideId: -1,
+    route: "",
+  };
+};
+
+const figureOutConbatTip = (playerData: any) => {
+  // "Your characters know cool spells, this time why don't you give them a try in combat?",
+  if (!playerData.guideTipsShown.includes(9) &&
+  playerData.characters.some((characterRef: any) => {
+    const characterData = characterRef.get();
+    return characterData.skills.length > 0;
+  }) &&
+  (playerData.utilizationStats.everPlayedPractice || playerData.utilizationStats.everPlayedCasual || playerData.utilizationStats.everPlayedRanked) &&
+  !playerData.utilizationStats.everUsedSpell) {
+    return {
+      guideId: 9,
+      route: "/queue/0",
+    };
+  }
+
+  return {
+    guideId: -1,
+    route: "",
+  };
+};
+
 export const fetchGuideTip = onRequest((request, response) => {
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      logger.info("Fetching guide tip for player:", uid);
+      const combatTip = request.query.combatTip;
 
       const playerRef = db.collection("players").doc(uid);
       const playerDoc = await playerRef.get();
@@ -424,9 +555,17 @@ export const fetchGuideTip = onRequest((request, response) => {
         throw new Error("playerData is null");
       }
 
+      const { guideId, route } = combatTip ? figureOutConbatTip(playerData) : figureOutGuideTip(playerData);
+      // Update the player document to add the guideId to the list of shown tips
+      if (guideId !== -1) {
+        await playerRef.update({
+          guideTipsShown: admin.firestore.FieldValue.arrayUnion(guideId),
+        });
+      }
+
       response.send({
-        guideId: 0,
-        route: 'shop/equipments',
+        guideId,
+        route,
       });
     } catch (error) {
       console.error("fetchGuideTip error:", error);

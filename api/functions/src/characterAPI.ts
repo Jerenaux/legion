@@ -128,6 +128,7 @@ export const postGameUpdate = onRequest((request, response) => {
       const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
         request.body.outcomes as OutcomeData;
       const mode = request.body.mode as PlayMode;
+      const spellsUsed = request.body.spellsUsed;
 
       logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
 
@@ -164,6 +165,26 @@ export const postGameUpdate = onRequest((request, response) => {
           elo: admin.firestore.FieldValue.increment(elo || 0),
           dailyloot: dailyLoot,
         });
+
+        if (spellsUsed) {
+          transaction.update(playerRef, {
+            'utilizationStats.everUsedSpells': true,
+          });
+        }
+
+        if (mode == PlayMode.PRACTICE) {
+          transaction.update(playerRef, {
+            'utilizationStats.everPlayedPractice': true,
+          });
+        } else if (mode == PlayMode.CASUAL) {
+          transaction.update(playerRef, {
+            'utilizationStats.everPlayedCasual': true,
+          });
+        } else if (mode == PlayMode.RANKED) {
+          transaction.update(playerRef, {
+            'utilizationStats.everPlayedRanked': true,
+          });
+        }
 
         if (mode != PlayMode.PRACTICE) {
           if (isWinner) {

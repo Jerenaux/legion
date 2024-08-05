@@ -8,14 +8,14 @@ import DailyLoot from './dailyLoot/DailyLoot';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css'
 import { PlayerContext } from '../contexts/PlayerContext';
-import { startTour } from './tours';
+import { manageHelp } from './utils';
 
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
   static contextType = PlayerContext; 
   componentDidUpdate() {
     if (!this.context.player.isLoaded) return;
-    startTour('play', this.context.player.tours);
+    manageHelp('play', this.context.player.tours);
   }
   render() {
     const data = {

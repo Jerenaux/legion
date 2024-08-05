@@ -706,6 +706,7 @@ export abstract class Game
         }
 
         if (!spell.isHealingSpell()) player.team.incrementOffensiveActions();
+        player.team.incrementSpellCasts();
 
         this.broadcast('cast', {
             team: team.id,
@@ -1049,6 +1050,7 @@ export abstract class Game
                             chests: rewards.chests
                         } as OutcomeData,
                         mode: this.mode,
+                        spellsUsed: team.anySpellsUsed()
                     },
                 }
             );

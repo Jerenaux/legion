@@ -28,6 +28,7 @@ export class Team {
     levelTotal: number = 0;
     healedAmount: number = 0;
     offensiveActions: number = 0;
+    spellCasts: number = 0;
     killStreak: number = 0;
     teamData: TeamData;
 
@@ -216,6 +217,14 @@ export class Team {
 
     incrementOffensiveActions() {
         this.offensiveActions++;
+    }
+
+    incrementSpellCasts() {
+        this.spellCasts++;
+    }
+
+    anySpellsUsed() {
+        return this.spellCasts > 0;
     }
 
     getTotalHP() {

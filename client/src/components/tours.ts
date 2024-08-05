@@ -1,12 +1,9 @@
 import Shepherd from 'shepherd.js';
 import { apiFetch } from '../services/apiService';
 
-export function startTour(page, todoTours) {
+export function startTour(page) {
     // console.log(`Starting tour for ${page}`);
-    if (!todoTours.includes(page)) {
-        // console.log(`Tour for ${page} already completed`);
-        return;
-    }
+   
     let tour;
     switch (page) {
         case 'rank':
@@ -76,10 +73,10 @@ function step(tour, text, attachTo, isLast = false) {
 function startPlayTour() {
     // console.log('Starting play tour');
     const tour = getTour();
-    tour.addStep(step(tour, 'This is the Play Page. From here you can launch games, watch other player\'s games and claim your daily loot!', null))
+    tour.addStep(step(tour, 'This is the Play Page of your Player Dashboard! From here you can launch games, watch other player\'s games and claim your daily loot!', null))
     tour.addStep(step(
         tour,
-        'Use these flags to navigate between the different menus!',
+        'Use these flags to navigate between the different menus of the Player Dashboard!',
         {
             element: '.menuItems',
             on: 'bottom'

@@ -1,4 +1,7 @@
 import {Class, Stat} from "@legion/shared/enums";
+import { apiFetch } from '../services/apiService';
+import { guide } from './tips';
+import { startTour } from './tours';  
 
 import Toastify from 'toastify-js'
 
@@ -82,4 +85,23 @@ export function mapFrameToCoordinates(frame: number) {
 export function playSoundEffect(src: string) {
   const audio = new Audio(src);
   audio.play().catch(error => console.error('Error playing sound:', error));
+}
+
+export function manageHelp(page: string, todoTours: string[]) {
+  if (todoTours.includes(page)) {
+    startTour(page);
+  } else {
+    fetchGuideTip();
+  }
+}
+
+function fetchGuideTip() {
+  apiFetch('fetchGuideTip', {
+      method: 'GET',
+  })
+  .then((data) => {
+      if (data.guideId == -1) return;
+      showGuideToast(guide[data.guideId], data.route);
+  })
+  .catch(error => console.error(`Fetching tip error: ${error}`));
 }

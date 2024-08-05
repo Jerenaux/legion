@@ -15,7 +15,7 @@ import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/sha
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
-import { startTour } from './tours';
+import { manageHelp } from './utils';
 
 interface TeamPageState {
   inventory: {
@@ -53,7 +53,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   async componentDidMount() {
     await this.fetchCharacterData();
     await this.fetchInventoryData();
-    startTour('team', this.context.player.tours);
+    manageHelp('team', this.context.player.tours);
   }
 
   componentDidUpdate(prevProps: TeamPageProps) {

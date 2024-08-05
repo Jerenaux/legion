@@ -24,8 +24,8 @@ export const guide = [
     "You have unused equipment pieces in your inventory! Click here to go to the team page and equip them!",
     "You have unused consumables in your inventory! Click here to go to the team page and equip them on your characters!",
     "You have unused spells in your inventory! Click here to go to the team page and teach them to your characters!",
-    "Your characters know cool spells, this time why don't you give them a try in combat?",
     "Not sure what to do? Just click here to start a Practice game and try out your characters and spells!",
     "Now that you know the game a bit more, click here to play against another player in Casual mode!",
     "You've had a few victories now, why don't you try your luck in Ranked mode and climb the ladder? Click here to start!",
+    "Your characters know cool spells, this time why don't you give them a try in combat?",
 ];
