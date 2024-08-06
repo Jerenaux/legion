@@ -42,7 +42,7 @@ function showToast(text: string, duration: number = 3000, avatar: string) {
   }).showToast();
 }
 
-export function showGuideToast(text: string, destination: string, duration: number = 10000) {
+export function showGuideToast(text: string, destination: string, duration: number = 5000) {
   Toastify({
     text,
     duration,
