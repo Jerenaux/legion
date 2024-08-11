@@ -7,6 +7,7 @@ import { CharacterUpdate, GameOutcomeReward } from '@legion/shared/interfaces';
 import XPCountUp from './XPCountUp';
 import { mapFrameToCoordinates } from '../utils';
 import { RewardType } from '@legion/shared/chests';
+import { ChestColor } from '@legion/shared/enums';
 
 /* eslint-disable react/prefer-stateless-function */
 interface EndgameState {
@@ -26,6 +27,7 @@ interface EndgameProps {
     members: any[];
     grade: string;
     chests: GameOutcomeReward[];
+    chestKey: ChestColor;
 }
 export class Endgame extends Component<EndgameProps, EndgameState> {
     constructor(props) {
@@ -134,6 +136,9 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                                 <img src={`/shop/${chest.color}_chest.png`} alt="" />
                             </div>
                         ))}
+                        {/* {this.props.chestKey && <div className="streak_gold_list">
+                            <img src={`/shop/silver_key_icon.png`} alt="" />
+                        </div>} */}
                     </div>
                 </div>}
 

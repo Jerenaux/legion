@@ -6,7 +6,7 @@ import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
 import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamOverview } from "@legion/shared/interfaces";
 import SpectatorFooter from './SpectatorFooter';
-import { PlayMode } from '@legion/shared/enums';
+import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { showGuideToast } from '../utils';
 import { guide } from '../tips';
@@ -31,6 +31,7 @@ interface GameHUDState {
   mode: PlayMode;
   grade: string;
   chests: GameOutcomeReward[];
+  key: ChestColor;
 }
 
 const events = new EventEmitter();
@@ -53,6 +54,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     characters: [],
     grade: null,
     chests: [],
+    key: null,
   }
 
   componentDidMount() {
@@ -128,7 +130,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   endGame = (data: OutcomeData) => {
-    const {isWinner, xp, gold, grade, chests, characters} = data;
+    const {isWinner, xp, gold, grade, chests, characters, key} = data;
     this.setState({ 
       gameOver: true,
       isWinner,
@@ -136,7 +138,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       xpReward: xp,
       goldReward: gold,
       characters: characters,
-      chests: chests
+      chests: chests,
+      key: key,
     });
   }
 
@@ -165,6 +168,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           xpReward={this.state.xpReward} 
           goldReward={this.state.goldReward} 
           characters={this.state.characters}
+          chestKey={ChestColor.SILVER}
         />}
       </div>
     );

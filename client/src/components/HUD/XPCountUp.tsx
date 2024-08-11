@@ -57,9 +57,6 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
         const { character, member, memberIdx } = this.props;
         const maxXP = getXPThreshold(this.props.member.level); 
 
-        // console.log('propsMember ', member); 
-        // console.log('maxXp ', maxXP);
-
         return (
             <div className="endgame_character">
                 <div className="endgame_character_lvl">

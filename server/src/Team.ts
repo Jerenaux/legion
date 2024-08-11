@@ -193,7 +193,7 @@ export class Team {
         for (let i = 0; i < this.members.length; i++) {
             const xpRatio = (this.members[i].countInteractedTargets() / total) || 0;
             const xpShare = Math.round(xp * xpRatio);
-            // console.log(`XP share for ${this.members[i].name}: ${xpShare} (${this.members[i].countInteractedTargets()} / ${total})`);
+            console.log(`[Team.distributeXp] XP share for ${this.members[i].name}: ${xpShare} (${this.members[i].countInteractedTargets()} / ${total})`);
             this.members[i].gainXP(xpShare);
         }
     }

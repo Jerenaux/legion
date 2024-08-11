@@ -89,8 +89,6 @@ export function playSoundEffect(src: string) {
 }
 
 export function manageHelp(page: string, context: any) {
-  console.log(`Manage help for ${page}`);
-  console.trace();
   const todoTours = context.player.tours;
   if (todoTours.includes(page)) {
     console.log(`Starting tour for ${page}`);
