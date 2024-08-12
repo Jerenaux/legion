@@ -42,7 +42,7 @@
     width: 10px;
     height: 10px;
     margin-right: 4px;
-}
+} 
 
 .character-info-dialog-container {
     display: flex;
@@ -216,6 +216,47 @@
 
 .dialog-spell-container .dialog-button-container {
     justify-content: center;
+} 
+
+.dialog-spell-modal {
+    position: absolute; 
+    top: 40px; 
+    left: -25%; 
+    background-color: #303540; 
+    border: 1px solid #71deff; 
+    border-radius: 4px; 
+    padding: 12px; 
+    width: 150%;
+} 
+
+.dialog-spell-modal-text {
+    font-size: 12px; 
+    color: #71deff; 
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.dialog-spell-modal-btns { 
+    display: flex; 
+    justify-content: center; 
+} 
+
+.dialog-spell-modal-btns > button { 
+    font-size: 10px; 
+    padding: 4px 6px; 
+    border: 1px solid #244752; 
+    border-radius: 4px; 
+    color: white; 
+    margin: 0 6px; 
+    cursor: pointer;
+}
+
+.dialog-spell-modal-confirm { 
+    background-color: darkgreen; 
+}
+
+.dialog-spell-modal-cancel { 
+    background-color: darkred;
 }
 
 .dialog-item-container {

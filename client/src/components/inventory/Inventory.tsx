@@ -14,7 +14,8 @@ import { Effect, PlayerInventory } from '@legion/shared/interfaces';
 
 Modal.setAppElement('#root');
 interface InventoryProps {
-  id: string;
+  id: string; 
+  name: string; 
   inventory: PlayerInventory;
   carrying_capacity: number;
   refreshCharacter: () => void;
@@ -70,11 +71,14 @@ class Inventory extends Component<InventoryProps> {
 
       const slotStyle = {
         backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
-      }
+      } 
+
+      // console.log("InventoryProps => ", this.props); 
 
       return <div key={i} className="item" style={slotStyle}>
         <ItemIcon
-          characterId={this.props.id}
+          characterId={this.props.id} 
+          characterName={this.props.name} 
           action={item}
           index={i}
           hideHotKey={true}

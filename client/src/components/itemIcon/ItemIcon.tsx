@@ -10,7 +10,8 @@ import { Effect } from '@legion/shared/interfaces';
 import { mapFrameToCoordinates } from '../utils';
 
 interface ItemIconProps {
-  characterId?: string,
+  characterId?: string, 
+  characterName?: string, 
   action: BaseItem | BaseSpell | BaseEquipment | null;
   index: number;
   actionType: InventoryType;
@@ -54,7 +55,7 @@ class ItemIcon extends Component<ItemIconProps> {
 
   render() {
     const { action, index, actionType, hideHotKey, onActionClick } = this.props; 
-    // console.log('actionItem ', action);
+    // console.log('ItemIconProps => ', this.props); 
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
@@ -100,6 +101,7 @@ class ItemIcon extends Component<ItemIconProps> {
           index={index}
           isEquipped={false}
           characterId={this.props.characterId} 
+          characterName={this.props.characterName} 
           actionType={InventoryActionType.EQUIP} 
           dialogOpen={this.state.openModal} 
           dialogType={this.state.modalType} 
