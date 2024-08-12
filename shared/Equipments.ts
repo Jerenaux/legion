@@ -120,6 +120,29 @@ equipments[9] = new BaseEquipment({
     minLevel: 1,
 });
 
+equipments[10] = new BaseEquipment({
+    id: 10,
+    name: "Golden necklace",
+    description: "",
+    frame: 50,
+    effects: [{stat: Stat.HP, value: 20}],
+    slot: EquipmentSlot.NECKLACE,
+    effort: 4,
+    minLevel: 1,
+});
+
+equipments[11] = new BaseEquipment({
+    id: 11,
+    name: "Helmet",
+    description: "",
+    frame: 71,
+    effects: [{stat: Stat.DEF, value: 15}],
+    slot: EquipmentSlot.HELMET,
+    effort: 11,
+    minLevel: 1,
+    classes: [Class.WARRIOR],
+});
+
 export function getEquipmentById(id:number): BaseEquipment | undefined {
     return equipments.find(e => e.id === id);
 }
