@@ -23,7 +23,8 @@ import targetIcon from '@assets/inventory/target_icon.png';
 
 Modal.setAppElement('#root');
 interface DialogProps {
-  characterId?: string;
+  characterId?: string; 
+  characterName?: string; 
   index?: number;
   isEquipped?: boolean;
   actionType: InventoryActionType;
@@ -37,18 +38,28 @@ interface DialogProps {
   handleClose: () => void;
   refreshCharacter?: () => void;
   updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
+} 
+
+interface DialogState { 
+  dialogSpellModalShow: boolean; 
 }
 
-class ItemDialog extends Component<DialogProps> {
+class ItemDialog extends Component<DialogProps, DialogState> { 
+  constructor(props: DialogProps) {
+    super(props); 
+    this.state = { 
+      dialogSpellModalShow: false, 
+    }; 
+  }
 
   AcceptAction = (type: string, index: number) => {
     if (!this.props.characterId) return;
 
     const payload = {
-      index,
-      characterId: this.props.characterId,
-      inventoryType: type,
-      action: this.props.actionType
+      index, 
+      characterId: this.props.characterId, 
+      inventoryType: type, 
+      action: this.props.actionType 
     };
 
     if(this.props.updateInventory) this.props.updateInventory(type, this.props.actionType, index)
@@ -95,7 +106,9 @@ class ItemDialog extends Component<DialogProps> {
       .catch(error => errorToast(`Error: ${error}`));
   }
 
-  render() {
+  render() { 
+    // console.log("characterName => ", this.props.characterName); 
+
     const { dialogType, dialogData, position, dialogOpen, isEquipped, handleClose } = this.props;
 
     const acceptBtn = this.props.actionType > 0 ? 'Remove' : 'Equip';
@@ -200,7 +213,8 @@ class ItemDialog extends Component<DialogProps> {
       const coordinates = mapFrameToCoordinates(dialogData.frame);
       coordinates.x = -coordinates.x + 0;
       coordinates.y = -coordinates.y + 0;
-      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
+      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`; 
+
       return (
         <div className="dialog-spell-container">
           <div className="spell-wrapper">
@@ -226,8 +240,17 @@ class ItemDialog extends Component<DialogProps> {
             </div>
           </div>
           <div className="dialog-button-container">
-            {!isEquipped && <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src={confirmIcon} alt="confirm" />{acceptBtn}</button>}
+            {!isEquipped && <button className="dialog-accept" onClick={() => this.setState({dialogSpellModalShow: true})}><img src={confirmIcon} alt="confirm" />{acceptBtn}</button>}
             <button className="dialog-decline" onClick={handleClose}><img src={cancelIcon} alt="decline" />Cancel</button>
+          </div> 
+          <div style={this.state.dialogSpellModalShow? {display: 'block'}: {display: 'none'}} class="dialog-spell-modal">
+              <div className="dialog-spell-modal-text">
+                Are you sure you want to teach {dialogData.name} to {this.props.characterName}?
+              </div>
+              <div className="dialog-spell-modal-btns">
+                <button onClick = {() => {this.AcceptAction(dialogType, this.props.index); this.setState({dialogSpellModalShow: false});}} className="dialog-spell-modal-confirm">Confirm</button> 
+                <button onClick={() => this.setState({dialogSpellModalShow: false})} className="dialog-spell-modal-cancel">Cancel</button>
+              </div>
           </div>
         </div>
       )

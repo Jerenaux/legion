@@ -73,7 +73,8 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
     }
 
     render() {
-        const { characterId, characterData, refreshCharacter } = this.props;
+        const { characterId, characterData, refreshCharacter } = this.props; 
+        // console.log("CharacterSheetProps => ", this.props); 
         if (!this.props.characterData) return;
 
         const renderInfoBars = () => {
@@ -189,7 +190,7 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                     backgroundImage: item.value >= 0 && `linear-gradient(to bottom right, ${RarityColor[equipmentItem?.rarity]}, #1c1f25)`
                 } 
                 
-                console.log("itemData => ", itemData); 
+                // console.log("itemData => ", itemData); 
 
                 // Return the container div for each item
                 return (
@@ -265,6 +266,8 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
             width: `${characterData?.xp * 100 / xpToLevel}%`,
         }
 
+        // console.log("CharacterSheetName => ", characterData.name); 
+
         return (
             <div className="team-content-card-container">
                 <div className="team-content-container">
@@ -322,7 +325,8 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                     isEquipped={true}
                     actionType={InventoryActionType.UNEQUIP}
                     refreshCharacter={refreshCharacter}
-                    characterId={characterId}
+                    characterId={characterId} 
+                    characterName={characterData.name}
                     index={this.state.itemIndex}
                     dialogOpen={this.state.openModal}
                     dialogType={this.state.modalType}

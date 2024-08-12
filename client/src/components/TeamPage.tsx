@@ -255,6 +255,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
             {this.state.character_sheet_data ? <Inventory 
               id={this.state.character_id} 
+              name={this.state.character_sheet_data.name} 
               inventory={this.state.inventory} 
               carrying_capacity={this.state.carrying_capacity}
               refreshCharacter={this.refreshCharacter} 
