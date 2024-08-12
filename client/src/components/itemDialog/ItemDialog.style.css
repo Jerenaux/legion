@@ -79,6 +79,33 @@
 
 .character-info-addition {
     display: flex;
+} 
+
+.dialog-consumable-info-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.dialog-consumable-info {
+    flex: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background-color: #303540;
+    border-radius: 4px;
+}
+
+.dialog-consumable-info img {
+    width: 12px;
+    height: 16px;
+}
+
+.dialog-consumable-info span {
+    font-size: 10px;
+    color: #ffffff;
 }
 
 .equip-dialog-container {
