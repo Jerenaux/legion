@@ -13,7 +13,8 @@ import { errorToast, successToast, mapFrameToCoordinates } from '../utils';
 Modal.setAppElement('#root');
 interface DialogProps {
   characterId?: string;
-  characterName?: string;
+  characterName?: string; 
+  characterLevel?: number; 
   index?: number;
   isEquipped?: boolean;
   actionType: InventoryActionType;
@@ -130,7 +131,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     const equipmentDialog = (dialogData: BaseEquipment) => {
-      if (!dialogData) return null;
+      if (!dialogData) return null; 
+
+      console.log("equipDialogData => ", dialogData); 
 
       const coordinates = mapFrameToCoordinates(dialogData.frame);
       coordinates.x = -coordinates.x + 5;
@@ -142,10 +145,18 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             backgroundImage: `url(equipment.png)`,
             backgroundPosition,
           }} />
-          <p className='equip-dialog-name'>{dialogData.name}</p>
+          <p className="equip-dialog-name">{dialogData.name}</p> 
+          <div style={this.props.characterLevel >= dialogData.minLevel + 1? {backgroundColor: "#2f404d"}: {backgroundColor: "darkred"}} className="equip-dialog-lvl">
+            LV <span>{dialogData.minLevel + 1}</span>
+          </div>
           <p className="equip-dialog-desc">{dialogData.description}</p>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}>
+            <button 
+              style={this.props.characterLevel < dialogData.minLevel + 1? {backgroundColor: "grey", opacity: "0.5"}: {}}
+              className="dialog-accept" 
+              disabled={this.props.characterLevel < dialogData.minLevel + 1} 
+              onClick={() => this.AcceptAction(dialogType, this.props.index)}
+            >
               <img src="/inventory/confirm_icon.png" alt="confirm" />
               {acceptBtn}
             </button>

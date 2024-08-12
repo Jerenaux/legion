@@ -141,6 +141,18 @@
     margin-bottom: -6px;
     text-transform: capitalize;
     text-align: center;
+} 
+
+.equip-dialog-container .equip-dialog-lvl { 
+    font-size: 10px; 
+    padding: 4px; 
+    border-radius: 4px; 
+    color: white;
+    /* background-color: #2f404d; */
+} 
+
+.equip-dialog-container .equip-dialog-lvl span { 
+    color: #71deff;
 }
 
 .equip-dialog-container .equip-dialog-desc {

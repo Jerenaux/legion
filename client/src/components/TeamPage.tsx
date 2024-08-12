@@ -224,6 +224,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
   render() {
 
+    // console.log("TeamCharacterSheetData => ", this.state.character_sheet_data); 
+
     return (
         <div className="team-content">
           <Roster />
@@ -245,6 +247,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             {this.state.character_sheet_data ? <Inventory 
               id={this.state.character_id} 
               name={this.state.character_sheet_data.name} 
+              level={this.state.character_sheet_data.level} 
               inventory={this.state.inventory} 
               carrying_capacity={this.state.carrying_capacity}
               refreshCharacter={this.refreshCharacter} 
