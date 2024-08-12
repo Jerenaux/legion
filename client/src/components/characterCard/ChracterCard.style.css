@@ -75,4 +75,18 @@
     background-repeat: no-repeat;
     animation: animate-sprite 0.7s steps(1) infinite;
     transform: scale(.6);
+} 
+
+.characterSp {
+  position: absolute; 
+  top: -4px; 
+  right: -4px;
+  width: 24px; 
+  height: 24px; 
+  background-color: darkred; 
+  border-radius: 4px; 
+  color: white; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center;
 }

@@ -24,7 +24,9 @@ class CharacterCard extends Component<APICharacterData> {
     const bgStyle = {
       backgroundImage: `url(/team_Bg_${this.state.active ? 'active' : 'idle'}.png)`,
       cursor: 'pointer'
-    }
+    } 
+
+    // console.log("CharacterCardProps => ", this.props); 
     
     return (
       <div className="cardContainer" style={bgStyle} onClick={this.handleCardClick} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})}>
@@ -38,6 +40,9 @@ class CharacterCard extends Component<APICharacterData> {
         </div>
         <div className="portraitContainer">
           <div className="portrait" style={portraitStyle} />
+        </div> 
+        <div className="characterSp">
+          {this.props.sp}
         </div>
       </div>
     );
