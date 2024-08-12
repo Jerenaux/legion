@@ -154,18 +154,21 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                     );
                 }
 
-                const equipmentItem = getEquipmentById(item.value);
+                const equipmentItem = getEquipmentById(item.value); 
 
                 const slotStyle = {
                     backgroundImage: item.value >= 0 && `linear-gradient(to bottom right, ${RarityColor[equipmentItem?.rarity]}, #1c1f25)`
-                }
+                } 
+                
+                console.log("itemData => ", itemData); 
 
                 // Return the container div for each item
                 return (
                     <div
                         key={index}
                         className="sheet-item"
-                        style={slotStyle}
+                        style={itemData !== undefined && slotStyle} 
+                        // style={(inventoryType === InventoryType.SKILLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle}
                         onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}>
                         {content}
                     </div>
