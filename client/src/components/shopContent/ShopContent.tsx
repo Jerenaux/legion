@@ -165,7 +165,9 @@ class ShopContent extends Component<ShopContentProps> {
 
         const getItemAmount = (index: number, type: InventoryType) => {
             return this.props.inventory[type].filter((item: number) => item == index).length;
-        }
+        } 
+
+        // console.log("spellData => ", this.state.inventoryData.spells); 
 
         const renderItems = () => {
             switch (this.state.curr_tab) {

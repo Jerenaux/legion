@@ -43,16 +43,16 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   AcceptAction = (type: string, index: number) => { 
-    // console.log("AcceptType => ", type); 
-    // console.log("AcceptIndex => ", index); 
+    console.log("AcceptType => ", type); 
+    console.log("AcceptIndex => ", index); 
 
-    if (!this.props.characterId) return; 
+    if (!this.props.characterId) return;
 
     const payload = {
-      index, 
-      characterId: this.props.characterId, 
-      inventoryType: type, 
-      action: this.props.actionType 
+      index,
+      characterId: this.props.characterId,
+      inventoryType: type,
+      action: this.props.actionType
     };
 
     if (this.props.updateInventory) this.props.updateInventory(type, this.props.actionType, index)
@@ -64,7 +64,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     })
       .then((data) => {
         if (data.status == 0) {
-          // successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!'); 
+          // successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!');
           
           this.props.refreshCharacter(); 
           // } else {

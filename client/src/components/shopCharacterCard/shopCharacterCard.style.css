@@ -188,13 +188,124 @@
     box-sizing: border-box;
     width: 43px;
     height: 43px;
-    background-color: #1c1f25;
+    background-color: #1c1f25; 
     border-radius: 6px;
     border: 1px solid #274c57;
-    padding: 4px;
-}
+    padding: 4px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+} 
 
 .shop-character-card-slot:hover {
     cursor: pointer;
     border: 1px solid #71deff;
+} 
+
+.shop-character-card-slot > div {
+    width: 32px; 
+    height: 32px;
+} 
+
+
+.shop-character-card-dialog-position { 
+    position: absolute; 
+    top: 20px; 
+    right: 20px; 
+    z-index: 2; 
 }
+.shop-character-card-dialog-container {
+    background-color: #1c1f25;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    /* justify-content: center; */
+    gap: 8px;
+    max-width: 128px;
+    position: relative;
+}
+
+.shop-character-card-dialog-container > img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #244752;
+    padding: 4px;
+    border-radius: 4px;
+    position: absolute;
+    top: -16px;
+    background-color: #1c1f25;    
+}
+
+.shop-character-card-dialog-wrapper {
+    width: 43px;
+    height: 43px;
+    border: 1px solid #3e5367;
+    border-radius: 6px;
+    background-color: #1c1f25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -20px;
+    margin-bottom: -20px;
+}
+
+.shop-character-card-dialog-container-image {
+    width: 32px;
+    height: 32px;
+    /* padding: 4px; */
+    border-radius: 4px;
+    position: absolute;
+    background-color: #1c1f25;    
+    background-repeat: no-repeat;
+}
+
+.shop-character-card-dialog-container p {
+    font-size: 10px;
+    text-align: center;
+}
+
+.shop-character-card-dialog-container .shop-character-card-dialog-name {
+    margin-top: 24px;
+    text-transform: capitalize;
+}
+
+.shop-character-card-dialog-container .shop-character-card-dialog-desc {
+    color: #71deff;
+}
+
+.shop-character-card-dialog-info-container { 
+    margin-top: 6px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.shop-character-card-dialog-info {
+    flex: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background-color: #303540;
+    border-radius: 4px;
+}
+
+.shop-character-card-dialog-info img {
+    width: 12px;
+    height: 16px;
+}
+
+.shop-character-card-dialog-info span {
+    font-size: 10px;
+    color: #ffffff;
+}
+
+.shop-character-card-dialog-container .dialog-button-container { 
+    margin-top: 8px; 
+    margin-bottom: 4px;
+    justify-content: center;
+} 
