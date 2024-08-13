@@ -54,6 +54,7 @@ spells.push(new BaseSpell({
 
     score: 20,
     classes: [Class.BLACK_MAGE],
+    minLevel: 10,
 }));
 
 spells.push(new BaseSpell({
@@ -73,6 +74,7 @@ spells.push(new BaseSpell({
 
     score: 100,
     classes: [Class.BLACK_MAGE],
+    minLevel: 1,
 }));
 
 spells.push(new BaseSpell({
@@ -87,7 +89,7 @@ spells.push(new BaseSpell({
     size: 1,
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
-    status: {effect: StatusEffect.PARALYZE, chance: 1, duration: 60},
+    status: {effect: StatusEffect.PARALYZE, chance: 0.5, duration: 60},
     effort: 8,
 
     score: 5,
@@ -113,6 +115,7 @@ spells.push(new BaseSpell({
 
     score: 15,
     classes: [Class.BLACK_MAGE],
+    minLevel: 10,
 }));
 
 spells.push(new BaseSpell({
@@ -133,6 +136,7 @@ spells.push(new BaseSpell({
 
     score: 50,
     classes: [Class.BLACK_MAGE],
+    minLevel: 20,
 }));
 
 spells.push(new BaseSpell({
@@ -174,6 +178,7 @@ spells.push(new BaseSpell({
     score: 10,
     effort: 50,
     classes: [Class.BLACK_MAGE],
+    minLevel: 20,
 }));
 
 spells.push(new BaseSpell({
@@ -194,6 +199,7 @@ spells.push(new BaseSpell({
     score: 20,
     effort: 70,
     classes: [Class.BLACK_MAGE],
+    minLevel: 20,
 }));
 
 
@@ -228,11 +234,12 @@ spells.push(new BaseSpell({
     size: 1,
     target: Target.AOE,
     effects: [],
-    status: {effect: StatusEffect.POISON, chance: 1, duration: 5},
+    status: {effect: StatusEffect.POISON, chance: 1, duration: 180},
     effort: 14,
 
     score: 10,
     classes: [Class.WHITE_MAGE],
+    minLevel: 5,
 }));
 
 spells.push(new BaseSpell({
@@ -252,6 +259,7 @@ spells.push(new BaseSpell({
 
     score: 10,
     classes: [Class.WHITE_MAGE],
+    minLevel: 2,
 }));
 
 export function getStarterSpells(characterClass: Class):number[] {

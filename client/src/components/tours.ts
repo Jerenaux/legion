@@ -73,7 +73,7 @@ function step(tour, text, attachTo, isLast = false) {
 function startPlayTour() {
     // console.log('Starting play tour');
     const tour = getTour();
-    tour.addStep(step(tour, 'This is the Play Page of your Player Dashboard! From here you can launch games, watch other player\'s games and claim your daily loot!', null))
+    tour.addStep(step(tour, 'This is the Play Page of your Player Dashboard! From here you can launch games and claim your daily loot!', null))
     tour.addStep(step(
         tour,
         'Use these flags to navigate between the different menus of the Player Dashboard!',

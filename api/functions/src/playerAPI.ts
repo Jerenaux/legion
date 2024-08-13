@@ -47,7 +47,6 @@ export const createPlayer = functions.auth.user().onCreate(async (user) => {
   const now = Date.now() / 1000;
   const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const startLeague = League.BRONZE;
-  console.log(`[createPlayer] Admin mode: ${process.env.ADMIN_MODE}`);
   const isAdmin = (process.env.ADMIN_MODE == 'true');
   console.log(`[createPlayer] isAdmin: ${isAdmin}`);
 

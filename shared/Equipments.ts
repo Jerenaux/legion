@@ -9,10 +9,10 @@ equipments[0] = new BaseEquipment({
     name: "Jagged Sword",
     description: "",
     frame: 0,
-    effects: [{stat: Stat.ATK, value: 1000}],
+    effects: [{stat: Stat.ATK, value: 15}],
     slot: EquipmentSlot.WEAPON,
     effort: 15,
-    minLevel: 1,
+    minLevel: 5,
     classes: [Class.WARRIOR],
 });
 
@@ -24,7 +24,7 @@ equipments[1] = new BaseEquipment({
     frame: 20,
     effects: [{stat: Stat.SPATK, value: 5}],
     slot: EquipmentSlot.WEAPON,
-    effort: 12,
+    effort: 9,
     minLevel: 1,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
@@ -51,6 +51,7 @@ equipments[3] = new BaseEquipment({
     slot: EquipmentSlot.BELT,
     effort: 30,
     beltSize: 1,
+    minLevel: 10,
 });
 
 equipments[4] = new BaseEquipment({
@@ -62,6 +63,7 @@ equipments[4] = new BaseEquipment({
     slot: EquipmentSlot.BELT,
     effort: 70,
     beltSize: 2,
+    minLevel: 20,
 });
 
 equipments[5] = new BaseEquipment({
@@ -139,7 +141,7 @@ equipments[11] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 15}],
     slot: EquipmentSlot.HELMET,
     effort: 11,
-    minLevel: 1,
+    minLevel: 5,
     classes: [Class.WARRIOR],
 });
 

@@ -101,9 +101,11 @@ export const purchaseItem = onRequest((request, response) => {
           transaction.update(playerDocRef, {
             gold,
             inventory: inventoryUpdate,
+          });
+          transaction.update(playerDocRef, {
             'utilizationStats.everPurchased': true,
           });
-  
+
           return { gold, inventory: inventoryUpdate };
         });
 
@@ -125,8 +127,17 @@ function canEquipConsumable(characterData: DBCharacterData): boolean {
     characterData.carrying_capacity + characterData.carrying_capacity_bonus;
 }
 
-function canLearnSpell(characterData: DBCharacterData): boolean {
-  return characterData.skills.length < characterData.skill_slots;
+function canLearnSpell(characterData: DBCharacterData, spellId: number): boolean {
+  const spell = getSpellById(spellId);
+  if (!spell) {
+    console.error("Invalid spell ID");
+    return false;
+  }
+  return (
+    spell.minLevel <= characterData.level) &&
+    (!spell.classes.length || spell.classes.includes(characterData.class) &&
+    characterData.skills.length < characterData.skill_slots
+  );
 }
 
 function canEquipEquipment(characterData: DBCharacterData, equipmentId: number): boolean {
@@ -286,6 +297,7 @@ function equipEquipment(playerData: DBPlayerData, characterData: DBCharacterData
 }
 
 function unequipEquipment(playerData: DBPlayerData, characterData: DBCharacterData, index: number): EquipUnequipOutcome | number {
+  console.log(`[unequipEquipment] index: ${index}`);
   // In this case `index` points to the slot
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort();
@@ -301,6 +313,7 @@ function unequipEquipment(playerData: DBPlayerData, characterData: DBCharacterDa
   const slotNumber: number = index;
   const field = equipmentFields[slotNumber];
   const item = equipped[field as keyof Equipment];
+  console.log(`[unequipEquipment] field: ${field}, item: ${item}`);
 
   if (item != -1) {
     if (slotNumber == EquipmentSlot.BELT) {
@@ -318,6 +331,8 @@ function unequipEquipment(playerData: DBPlayerData, characterData: DBCharacterDa
     equipment.push(item);
     playerInventory.equipment = equipment;
   }
+
+  // console.log(`[unequipEquipment] inventory updated: ${playerInventory.equipment}`);
 
   return {
     playerUpdate: {inventory: playerInventory},
@@ -415,9 +430,11 @@ export const inventoryTransaction = onRequest(async (request, response) => {
           case InventoryType.CONSUMABLES:
             canDo = canEquipConsumable(characterData);
             break;
-          case InventoryType.SKILLS:
-            canDo = canLearnSpell(characterData);
+          case InventoryType.SKILLS: {
+            const spellId = playerData.inventory.spells.sort()[index];
+            canDo = canLearnSpell(characterData, spellId);
             break;
+          }
           case InventoryType.EQUIPMENTS: {
             const itemId = playerData.inventory.equipment.sort()[index];
             canDo = canEquipEquipment(characterData, itemId);
@@ -442,7 +459,6 @@ export const inventoryTransaction = onRequest(async (request, response) => {
         }
       }
 
-      logger.info("Computing inventory update...");
       let update;
       if (action === InventoryActionType.EQUIP) {
         switch (inventoryType) {
@@ -479,7 +495,6 @@ export const inventoryTransaction = onRequest(async (request, response) => {
       }
 
       await logPlayerAction(uid, "inventoryTransaction", { action, characterId, inventoryType, index });
-      logger.info("inventoryTransaction successful");
 
       response.send({ status: 0 });
     } catch (error) {

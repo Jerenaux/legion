@@ -101,7 +101,7 @@ export enum StatusEffect {
     MUTE = "Mute",
 }
 
-export const equipmentFields = ["weapon", "helmet", "armor", "belt", "gloves",
+export const equipmentFields = ["weapon", "armor", "helmet", "belt", "gloves",
   "boots", "left_ring", "right_ring", "necklace"];
 
 

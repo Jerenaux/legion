@@ -13,6 +13,8 @@ export const ENABLE_TEAM_NAME = false;
 export const ENABLE_APPROX_WT = false;
 export const ENABLE_MM_TOGGLE = false;
 export const ENABLE_Q_NEWS = false;
+export const ENABLE_QUESTS = false;
+export const ENABLE_SPECTATOR_MODE = false;
 
 // Admin
 export const TIME_COEFFICIENT = 1;

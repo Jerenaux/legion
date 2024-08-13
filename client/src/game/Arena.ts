@@ -1074,7 +1074,8 @@ export class Arena extends Phaser.Scene
             key: `ground_flame`, 
             frames: this.anims.generateFrameNumbers('thunder', { start: 48, end: 59 }), 
             frameRate: 15, 
-            repeat: -1
+            repeat: -1,
+            // yoyo: true,
         });
 
         // Status effects VFX

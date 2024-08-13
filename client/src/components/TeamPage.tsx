@@ -16,6 +16,7 @@ import { getEquipmentById } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { manageHelp } from './utils';
+import { getSpellById } from '@legion/shared/Spells';
 
 interface TeamPageState {
   inventory: {
@@ -199,6 +200,16 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
       case 'spells':
         const playerSpells = this.state.inventory.spells;
         if (action === InventoryActionType.EQUIP) {
+          const data = getSpellById(playerSpells[index]);
+          if (data.classes.length && !data.classes.includes(this.state.character_sheet_data.class)) {
+            errorToast('Character class is not compatible!');
+            return;
+          }
+          if (data.minLevel > this.state.character_sheet_data.level) {
+            errorToast('Character level is too low!');
+            return;
+          }
+
           if (this.state.character_sheet_data.skill_slots == 0) {
             errorToast('Character has no spell slots!');
             return;

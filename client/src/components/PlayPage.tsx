@@ -9,6 +9,8 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css'
 import { PlayerContext } from '../contexts/PlayerContext';
 import { manageHelp } from './utils';
+import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
+
 
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
@@ -82,8 +84,6 @@ class PlayPage extends Component {
       ]
     }
 
-    const SHOW_QUESTS = false;
-
     return (
       <PlayerContext.Consumer> 
         {({ player }) => (
@@ -96,8 +96,8 @@ class PlayPage extends Component {
               baseColor='#0f1421'
               style={{ margin: '2px 146px', width: '1024px'}} />}
             <DailyLoot data={player.dailyloot} />
-            {SHOW_QUESTS && <DailyQuest questData={data.dailyQuests} />}
-            <OnGoingArena ongoingGameData={data.ongoingGames} />
+            {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}
+            {ENABLE_SPECTATOR_MODE && <OnGoingArena ongoingGameData={data.ongoingGames} />}
           </div>
         )}
       </PlayerContext.Consumer> 
