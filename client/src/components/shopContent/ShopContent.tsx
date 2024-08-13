@@ -70,10 +70,10 @@ class ShopContent extends Component<ShopContentProps> {
     }
 
     handleOpenModal = (e: any, modalData: modalData) => {
-        const elementRect = e.currentTarget.getBoundingClientRect();
+        const elementRect = e.currentTarget.getBoundingClientRect(); 
 
         const modalPosition = {
-            top: elementRect.top + elementRect.height / 2,
+            top: Math.min(elementRect.top + elementRect.height / 2, window.innerHeight - elementRect.height + 40),
             left: elementRect.left + elementRect.width / 2,
         };
 

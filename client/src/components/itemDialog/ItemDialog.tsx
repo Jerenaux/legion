@@ -42,14 +42,17 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
   }
 
-  AcceptAction = (type: string, index: number) => {
-    if (!this.props.characterId) return;
+  AcceptAction = (type: string, index: number) => { 
+    // console.log("AcceptType => ", type); 
+    // console.log("AcceptIndex => ", index); 
+
+    if (!this.props.characterId) return; 
 
     const payload = {
-      index,
-      characterId: this.props.characterId,
-      inventoryType: type,
-      action: this.props.actionType
+      index, 
+      characterId: this.props.characterId, 
+      inventoryType: type, 
+      action: this.props.actionType 
     };
 
     if (this.props.updateInventory) this.props.updateInventory(type, this.props.actionType, index)
@@ -61,9 +64,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     })
       .then((data) => {
         if (data.status == 0) {
-          // successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!');
-
-          this.props.refreshCharacter();
+          // successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!'); 
+          
+          this.props.refreshCharacter(); 
           // } else {
           //   errorToast('Character inventory is full!');
         }
@@ -135,7 +138,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
       console.log("equipDialogData => ", dialogData); 
 
-      const coordinates = mapFrameToCoordinates(dialogData.frame);
+      const coordinates = mapFrameToCoordinates(dialogData.frame); 
       coordinates.x = -coordinates.x + 5;
       coordinates.y = -coordinates.y + 5;
       const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
@@ -170,10 +173,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     const consumableDialog = (dialogData: BaseItem) => {
-      if (!dialogData) return;
+      if (!dialogData) return; 
 
-
-      // console.log("dialogData => ", dialogData);
+      // console.log("dialogData => ", dialogData); 
 
       const coordinates = mapFrameToCoordinates(dialogData.frame);
       coordinates.x = -coordinates.x + 5;
