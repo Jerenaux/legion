@@ -160,7 +160,10 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                             </tr>
                         ))}
                     </tbody>
-                </table>
+                </table> 
+                <div style={this.state.tableData.length === 0? {display: "block"}: {display: "none"}} className="table-empty">
+                    No players in this league yet. 
+                </div>
             </div>
         );
     }

@@ -1,6 +1,17 @@
 .rank-table-container {
     flex: 1;
-    height: 100%;
+    height: 100%; 
+    position: relative; 
+} 
+
+.table-empty { 
+    position: absolute; 
+    width: 400px; 
+    left: calc(50% - 200px);  
+    top: 30%;
+    font-size: 28px; 
+    text-align: center;
+    color: antiquewhite;
 }
 
 .rank-table {
