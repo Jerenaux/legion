@@ -29,7 +29,7 @@ class SeasonCard extends Component<SeasonCardProps> {
             clearInterval(this.timer);
             this.seasonTimer();
         }
-    }    
+    }
 
     componentWillUnmount(): void {
         if (this.timer) {
@@ -92,52 +92,65 @@ class SeasonCard extends Component<SeasonCardProps> {
             hour: Math.floor(Math.min(23, (this.state.time % 86400) / 3600)),
             minute: Math.floor((this.state.time % 3600) / 60),
             second: Math.floor(this.state.time % 60)
-        };
+        }; 
+
+        // console.log("seasonCardPropsData => ", this.props); 
 
         return (
             <div className="season-card-container">
-                <div className="recap-single-container" ref={this.captureRef}>
-                    <div className="season-recap">
-                        <p className="season-recap-title">CURRENT</p>
-                        <p className="season-recap-label">RANK</p>
-                        <div className="season-recap-img" style={this.props.rankRowNumberStyle(this.props.playerRanking.rank)}>
-                            <span>{this.props.playerRanking.rank}</span>
-                        </div>
-                    </div>
-                    <div className="season-recap">
-                        <p className="season-recap-title">ELO</p>
-                        <p className="season-recap-label">RATING</p>
-                        <div className="season-recap-img" style={eloBGStyle}>
-                            <span>{this.props.playerRanking.elo}</span>
-                        </div>
-                    </div>
-                    <div className="season-recap">
-                        <p className="season-recap-title">SEASON</p>
-                        <p className="season-recap-label">ENDS IN</p>
-                        <div className="recap-season-bg" style={seasonBGStyle}>
-                            {this.state.time === -1 ? <img src="/rank/infinity_icon.png" alt="infinity" /> : (
-                                <div style={{ width: '100%' }}>
-                                    <div className="recap-season-timer-label">
-                                        <span>D</span>
-                                        <span>H</span>
-                                        <span>M</span>
-                                        <span>S</span>
-                                    </div>
-                                    <div className="recap-season-timer">
-                                        <span>{`${countDown.day}`.padStart(2, "0")}</span> :
-                                        <span>{`${countDown.hour}`.padStart(2, "0")}</span> :
-                                        <span>{`${countDown.minute}`.padStart(2, "0")}</span> :
-                                        <span>{`${countDown.second}`.padStart(2, "0")}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        {this.state.time !== -1 && <img src="/inventory/cd_icon.png" alt="timer" className="season-timer-icon" />}
+                <div className="season-card-header">
+                    <div className="season-card-header-img">
+                        <img src={`/icons/${this.props.currTab}_rank.png`} />
+                    </div> 
+                    <div className="season-card-header-title">
+                        <span>{this.props.currTab.toUpperCase()} </span> 
+                        <span>LEAGUE</span>
                     </div>
                 </div>
-                <div className="season-share-button" onClick={() => this.shareOnTwitter(this.props.playerRanking.rank, this.props.currTab)}>
-                    <img src="/rank/share_icon.png" alt="" />
-                    <span>SHARE</span>
+                <div className="season-card-body">
+                    <div className="recap-single-container" ref={this.captureRef}>
+                        <div className="season-recap">
+                            <p className="season-recap-title">CURRENT</p>
+                            <p className="season-recap-label">RANK</p>
+                            <div className="season-recap-img" style={this.props.rankRowNumberStyle(this.props.playerRanking.rank)}>
+                                <span>{this.props.playerRanking.rank}</span>
+                            </div>
+                        </div>
+                        <div className="season-recap">
+                            <p className="season-recap-title">ELO</p>
+                            <p className="season-recap-label">RATING</p>
+                            <div className="season-recap-img" style={eloBGStyle}>
+                                <span>{this.props.playerRanking.elo}</span>
+                            </div>
+                        </div>
+                        <div className="season-recap">
+                            <p className="season-recap-title">SEASON</p>
+                            <p className="season-recap-label">ENDS IN</p>
+                            <div className="recap-season-bg" style={seasonBGStyle}>
+                                {this.state.time === -1 ? <img src="/rank/infinity_icon.png" alt="infinity" /> : (
+                                    <div style={{ width: '100%' }}>
+                                        <div className="recap-season-timer-label">
+                                            <span>D</span>
+                                            <span>H</span>
+                                            <span>M</span>
+                                            <span>S</span>
+                                        </div>
+                                        <div className="recap-season-timer">
+                                            <span>{`${countDown.day}`.padStart(2, "0")}</span> :
+                                            <span>{`${countDown.hour}`.padStart(2, "0")}</span> :
+                                            <span>{`${countDown.minute}`.padStart(2, "0")}</span> :
+                                            <span>{`${countDown.second}`.padStart(2, "0")}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            {this.state.time !== -1 && <img src="/inventory/cd_icon.png" alt="timer" className="season-timer-icon" />}
+                        </div>
+                    </div>
+                    <div className="season-share-button" onClick={() => this.shareOnTwitter(this.props.playerRanking.rank, this.props.currTab)}>
+                        <img src="/rank/share_icon.png" alt="" />
+                        <span>SHARE</span>
+                    </div>
                 </div>
             </div>
         );

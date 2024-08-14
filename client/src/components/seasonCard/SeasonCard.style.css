@@ -1,4 +1,40 @@
 .season-card-container {
+    font-family: 'Kim';
+}
+
+.season-card-header {
+    margin-right: 6px;
+    margin-left: 40px;
+    padding: 6px 0;
+    padding-left: 80px;
+    background-color: #252b36;
+    border: 1px solid #274c57;
+    border-radius: 4px;
+    position: relative;
+}
+
+
+.season-card-header-img {
+    position: absolute;
+    top: calc(50% - 27px);
+    left: 12px;
+    height: 54px;
+}
+
+.season-card-header-img>img {
+    width: auto;
+    height: 100%;
+}
+
+.season-card-header-title {
+    color: white;
+}
+
+.season-card-header-title>span:first-child {
+    color: #ffa600;
+}
+
+.season-card-body {
     background: url('@assets/rank/recap_bg.png');
     background-size: 100% 100%;
     display: flex;
@@ -8,7 +44,6 @@
     padding: 8px;
     padding-bottom: 14px;
     margin-left: 36px;
-    font-family: 'Kim';
 }
 
 .recap-single-container {
