@@ -28,6 +28,7 @@ const statusDoTInterval = {
 }
 
 const DoTStatuses = [StatusEffect.POISON, StatusEffect.BURN];
+const DoTTerrains = [Terrain.FIRE];
 
 export type ActionType = 'move' | 'attack';
 export class ServerPlayer {
@@ -445,29 +446,32 @@ export class ServerPlayer {
     // Called when the terrain effect is applied for the first time
     setUpTerrainEffect(terrain: Terrain) {
         console.log(`[ServerPlayer:setUpTerrainEffect] Terrain effect ${terrain}`);
-        switch (terrain) {
-            case Terrain.FIRE:
-                if (this.terrainDoTTimer) {
-                    clearTimeout(this.terrainDoTTimer);
-                }
-                this.terrainDoTTimer = setInterval(() => {
-                    this.applyDoT(terrainDot[terrain]);
-                }, terrainDoTInterval[terrain]);
-                break;
-            case Terrain.ICE:
-                this.addStatusEffect(StatusEffect.FREEZE, -1, 1);
-                break;
-            case Terrain.NONE:
-                console.log(`[ServerPlayer:setUpTerrainEffect] Terrain effect NONE`);
-                if (this.isFrozen()) {
-                    console.log(`[ServerPlayer:setUpTerrainEffect] Removing freeze`);
-                    this.removeStatusEffect(StatusEffect.FREEZE);
-                }
-                break;
-            default:
-                break;
+
+        if (DoTTerrains.includes(terrain)) {
+            this.startTerrainDoT(terrain);
         }
-        
+
+        if (terrain == Terrain.ICE) {
+            this.addStatusEffect(StatusEffect.FREEZE, -1, 1);
+        }
+    }
+
+    startTerrainDoT(terrain: Terrain) {
+        if (this.terrainDoTTimer) {
+            clearTimeout(this.terrainDoTTimer);
+        }
+        this.terrainDoTTimer = setInterval(() => {
+            this.applyDoT(terrainDot[terrain]);
+        }, terrainDoTInterval[terrain]);
+    }
+
+    removeTerrainEffect(terrain: Terrain) {
+        if (DoTTerrains.includes(terrain)) {
+            this.stopTerrainDoT();
+        }
+        if (terrain == Terrain.ICE) {
+            this.removeStatusEffect(StatusEffect.FREEZE);
+        }
     }
 
     addStatusEffect(status: StatusEffect, duration: number, chance: number = 1) {

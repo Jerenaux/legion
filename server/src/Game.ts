@@ -9,6 +9,7 @@ import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN } from
 import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL } from '@legion/shared/config';
+import { TerrainManager } from './TerrainManager';
 
 enum GameAction {
     SPELL_USE,
@@ -23,7 +24,7 @@ export abstract class Game
     league: League;
     teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
-    terrainMap = new Map<string, Terrain>();
+    terrainManager = new TerrainManager(this);
     io: Server;
     sockets: Socket[] = [];
     socketMap = new Map<Socket, Team>();
@@ -130,7 +131,7 @@ export abstract class Game
     }
 
     hasObstacle(gridX: number, gridY: number) {
-        return this.terrainMap.get(`${gridX},${gridY}`) === Terrain.ICE;
+        return this.terrainManager.terrainMap.get(`${gridX},${gridY}`) === Terrain.ICE;
     }
 
     freeCell(gridX: number, gridY: number) {
@@ -206,7 +207,7 @@ export abstract class Game
                 team: otherTeam.getMembers().map(player => player.getPlacementData()),
                 score: -1,
             },
-            terrain: Array.from(this.terrainMap).map(([key, value]) => {
+            terrain: Array.from(this.terrainManager.terrainMap).map(([key, value]) => {
                 const [x, y] = key.split(',').map(Number);
                 return {x, y, terrain: value};
             }),
@@ -383,7 +384,7 @@ export abstract class Game
     // Called when traversing cells with terrain effects
     checkForTerrainEffects(player: ServerPlayer, cells: Set<string>) {
         cells.forEach(cell => {
-            const terrain = this.terrainMap.get(cell);
+            const terrain = this.terrainManager.terrainMap.get(cell);
             if (terrain) {
                 player.applyTerrainEffect(terrain);
             }
@@ -392,7 +393,7 @@ export abstract class Game
 
     // Apply when ending on cell with terrain effect
     checkForStandingOnTerrain(player: ServerPlayer) {
-        const terrain = this.terrainMap.get(`${player.x},${player.y}`);
+        const terrain = this.terrainManager.getTerrain(player.x,player.y);
         if (terrain) {
             player.setUpTerrainEffect(terrain);
         }
@@ -421,8 +422,8 @@ export abstract class Game
         }
 
         if (this.hasObstacle(opponent.x, opponent.y)) {
-            const terrainUpdate = this.removeTerrain(opponent.x, opponent.y);
-            this.broadcastTerrain([terrainUpdate]);
+            const terrainUpdates = this.terrainManager.removeIce(opponent.x, opponent.y);
+            this.broadcastTerrain(terrainUpdates);
             opponent.removeStatusEffect(StatusEffect.FREEZE);
         }
         
@@ -464,8 +465,8 @@ export abstract class Game
         const cooldown = player.getCooldown('attack');
         this.setCooldown(player, cooldown);
 
-        const terrainUpdate = this.removeTerrain(x, y);
-        this.broadcastTerrain([terrainUpdate]);
+        const terrainUpdates = this.terrainManager.removeIce(x, y);
+        this.broadcastTerrain(terrainUpdates);
 
         this.broadcast('obstacleattack', {
             team: team.id,
@@ -586,10 +587,10 @@ export abstract class Game
 
         const nbFrozen = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
         // Count how many values of terraiMap are Terrain.FIRE
-        const nbBurning = Array.from(this.terrainMap.values()).filter(terrain => terrain === Terrain.FIRE).length;
+        const nbBurning = this.terrainManager.getNbBurning();
 
         if (spell.terrain) {
-            const terrainUpdates = this.manageTerrain(spell, x, y);
+            const terrainUpdates = this.terrainManager.updateTerrainFromSpell(spell, x, y);
             this.broadcastTerrain(terrainUpdates);
             // If any terrain update is not NONE
             if (terrainUpdates.some(update => update.terrain !== Terrain.NONE)) {
@@ -608,7 +609,7 @@ export abstract class Game
         }
 
         const nbFrozen_ = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
-        const nbBurning_ = Array.from(this.terrainMap.values()).filter(terrain => terrain === Terrain.FIRE).length;
+        const nbBurning_ = this.terrainManager.getNbBurning();
 
         this.setCooldown(player, spell.cooldown * 1000);
         
@@ -758,43 +759,6 @@ export abstract class Game
             num,
             mp,
         });
-    }
-
-    manageTerrain(spell: Spell, x: number, y: number) {
-        const terrainUpdates: TerrainUpdate[] = [];
-        const leftOffset = spell.size % 2 === 0 ? (spell.size / 2) - 1 : Math.floor(spell.size / 2);
-        const rightOffset = Math.floor(spell.size / 2);
-        for (let i = x - leftOffset; i <= x + rightOffset; i++) {
-            for (let j = y - leftOffset; j <= y + rightOffset; j++) {
-
-                const existingTerrain = this.terrainMap.get(`${i},${j}`);
-                if (existingTerrain && (existingTerrain == Terrain.ICE && spell.terrain == Terrain.FIRE
-                    || existingTerrain == Terrain.FIRE && spell.terrain == Terrain.ICE)) {
-                    this.terrainMap.delete(`${i},${j}`);
-                } else {
-                    this.terrainMap.set(`${i},${j}`, spell.terrain);
-                }
-
-                terrainUpdates.push({
-                    x: i,
-                    y: j,
-                    terrain: this.terrainMap.get(`${i},${j}`) || Terrain.NONE,
-                });
-
-                const player = this.getPlayerAt(i, j);
-                if (player) player.setUpTerrainEffect(this.terrainMap.get(`${player.x},${player.y}`) || Terrain.NONE);
-            }
-        }
-        return terrainUpdates;
-    }
-
-    removeTerrain(x: number, y: number) {
-        this.terrainMap.delete(`${x},${y}`);
-        return {
-            x,
-            y,
-            terrain: this.terrainMap.get(`${x},${y}`) || Terrain.NONE,
-        }
     }
 
     broadcastTerrain(terrainUpdates: TerrainUpdate[]) {
