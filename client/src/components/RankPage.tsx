@@ -18,7 +18,7 @@ class RankPage extends Component {
     leaderboardData: null,
     sortColumn: 'elo',
     sortAscending: false,
-    curr_tab: 0,
+    curr_tab: this.context.player.league,
     tour: null
   };
 
@@ -78,6 +78,8 @@ class RankPage extends Component {
         backgroundImage: `url(/leaderboard/active_rankno.png)`,
       }
     }
+
+    // console.log("currentLeague => ", this.context.player.league); 
 
     return (
       <div className="rank-content">
