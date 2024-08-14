@@ -1,5 +1,5 @@
 // LeaderboardTable.tsx
-import {ChestColor} from "@legion/shared/enums";
+import { ChestColor } from "@legion/shared/enums";
 import './LeaderboardTable.style.css';
 import { h, Component } from 'preact';
 
@@ -40,7 +40,7 @@ enum columnType {
 class LeaderboardTable extends Component<LeaderboardTableProps> {
     state = {
         tableData: [],
-        isAscending: Array(4).fill(false)
+        isAscending: Array(6).fill(false)
     }
 
     async componentDidMount() {
@@ -54,21 +54,23 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
     }
 
     handleSort(column: string, index: number) {
-        if (index < 2 || index > 5) return;
+        // console.log("tableData => ", this.state.tableData); 
+
+        if (index != 0 && (index < 2 || index > 5)) return;
 
         const sortedData = this.state.tableData.sort((a, b) => {
             if (isNaN(a[column])) {
                 const aTemp = parseFloat(a[column].match(/\d+(\.\d+)?/)[0]);
                 const bTemp = parseFloat(b[column].match(/\d+(\.\d+)?/)[0]);
 
-                return this.state.isAscending[index - 2] ? aTemp - bTemp : bTemp - aTemp;
+                return this.state.isAscending[index] ? aTemp - bTemp : bTemp - aTemp;
             } else {
-                return this.state.isAscending[index - 2] ? a[column] - b[column] : b[column] - a[column];
+                return this.state.isAscending[index] ? a[column] - b[column] : b[column] - a[column];
             }
         })
 
         let ascendingTemp = this.state.isAscending;
-        ascendingTemp[index - 2] = !this.state.isAscending[index - 2];
+        ascendingTemp[index] = !this.state.isAscending[index];
 
         this.setState({
             tableData: sortedData,
@@ -78,7 +80,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
 
     render() {
         const { demotionRows, promotionRows, rankRowNumberStyle, camelCaseToNormal } = this.props;
-        const columns = ['no', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
+        const columns = ['rank', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
 
         const getUpgradeImage = (index: number) => {
             if (index <= promotionRows) return {
@@ -120,7 +122,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
 
         const sortIconStyle = (index: number) => {
             return {
-                transform: `rotate(${this.state.isAscending[index - 2] ? '180' : '0'}deg)`
+                transform: `rotate(${this.state.isAscending[index] ? '180' : '0'}deg)`
             }
         }
 
@@ -131,8 +133,10 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                         <tr>
                             {columns.map((column, i) => (
                                 <th key={i} onClick={() => this.handleSort(columnType[column], i)}>
-                                    <span>{camelCaseToNormal(column)}</span>
-                                    {(i > 1 && i < 6) && <img className="thead-sort-icon" src="/leaderboard/arrow.png" alt="" style={sortIconStyle(i)} />}
+                                    <div>
+                                        <span>{camelCaseToNormal(column)}</span>
+                                        {(i !== 1 && i < 6) && <img className="thead-sort-icon" src="/leaderboard/arrow.png" alt="" style={sortIconStyle(i)} />}
+                                    </div>
                                 </th>
                             ))}
                         </tr>

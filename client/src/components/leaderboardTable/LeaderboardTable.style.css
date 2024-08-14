@@ -6,7 +6,6 @@
 .rank-table {
     width: 100%;
     border-collapse: collapse;
-
     color: #FFFFFF;
 }
 
@@ -16,16 +15,34 @@
     width: 100%;
 }
 
-.rank-table thead tr th:first-child {
-    width: 172px;
-}
+.rank-table thead tr th:nth-child(1) {
+    width: 152px; 
+    text-align: left;
+} 
 
-.rank-table thead tr th {
+.rank-table thead tr th:nth-child(1) > div { 
+    width: 78px; 
+    /* background-color: tomato;  */
+    text-align: center;
+} 
+
+.rank-table thead tr th:nth-child(2) {
+    width: 172px; 
+    text-align: left;
+} 
+
+.rank-table thead tr th { 
+    width: 126px;
     padding: 4px 0;
     font-size: 14px;
-    text-transform: capitalize;
+    text-transform: capitalize; 
     border-bottom: 1px solid #ffa600;
-    cursor: pointer;
+    cursor: pointer; 
+    text-align: center;
+} 
+
+.rank-table thead tr th > div {
+    text-align: center;
 }
 
 .rank-table .thead-sort-icon {
@@ -47,11 +64,14 @@
     background-size: 100% 100%;
     display: table;
     width: 100%;
-    table-layout: fixed;
     margin-top: 8px;
 }
 
-.rank-table tbody tr td:first-child {
+.rank-table tbody tr td:nth-child(1) {
+    width: 152px;
+} 
+
+.rank-table tbody tr td:nth-child(2) { 
     width: 172px;
 }
 
@@ -64,7 +84,7 @@
 }
 
 .rank-table tbody tr td {
-    width: 126px;
+    width: 126px; 
     text-align: center;
 }
 
@@ -75,7 +95,6 @@
     padding: 0 16px;
     gap: 10px;
     position: relative;
-    max-width: 132px;
 }
 
 .rank-row .rank-row-number {
@@ -101,7 +120,7 @@
     width: 24px;
     height: 24px;
     position: absolute;
-    right: -12px;
+    right: 12px;
 }
 
 .rank-row-win {
