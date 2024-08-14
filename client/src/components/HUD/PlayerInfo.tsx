@@ -10,7 +10,8 @@ interface Props {
   player: PlayerProfileData;
   position: string;
   isSpectator: boolean;
-  eventEmitter: any;  
+  eventEmitter: any; 
+  isPlayerTeam: boolean; 
 }
 interface State {
   modalOpen: boolean;
@@ -112,7 +113,7 @@ class PlayerInfo extends Component<Props, State> {
           </div>
           {ENABLE_TEAM_NAME && <div className="player_info_team"><span>TEAM</span></div>}
         </div>
-        {position === 'right' && <div className="spectator_container_right">
+        {this.props.isPlayerTeam && <div className="spectator_container_right">
           {isSpectator &&  <div className="spectator_div">
             <div className="spectator" onClick={() => { }}>
               <img src="/HUD/applause_icon.png" alt="" />

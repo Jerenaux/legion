@@ -89,9 +89,12 @@ class Overview extends Component<Props, State> {
       name: members[this.state.selected]?.name ?? 'Player Name'
     }
 
-    return (
+    // console.log("overviewPosition => ", position); 
+    // console.log("overviewIsPlayerTeam => ", this.props.isPlayerTeam); 
+
+    return ( 
       <div className={`overview ${this.props.isPlayerTeam && 'overview_playerteam'} ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={this.props.player} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
+        <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
         {members.map((member, memberIndex) => {
           const cooldown = cooldowns[cooldownIndex++];
 

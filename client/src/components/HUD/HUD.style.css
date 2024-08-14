@@ -618,8 +618,8 @@
 .spectator_container_right {
   position: absolute;
   top: 8px;
-  left: -2px;
-  display: flex;
+  left: 26px;
+  display: flex; 
   flex-direction: column;
   align-items: center;
   justify-content: center;
