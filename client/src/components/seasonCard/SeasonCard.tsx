@@ -87,7 +87,7 @@ class SeasonCard extends Component<SeasonCardProps> {
 
         const seasonBGStyle = {
             backgroundImage: `url(${recapBluebar})`,
-            width: '80%',
+            width: '100%',
             bottom: `${this.state.time === -1 ? '20px' : '36px'}`,
             padding: `${this.state.time === -1 ? '10px 8px' : '4px 8px'}`
         }
@@ -151,7 +151,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                                     </div>
                                 )}
                             </div>
-                            {this.state.time !== -1 && <img src={cdIcon} alt="timer" className="season-timer-icon" />}
+                            {this.state.time !== -1 && <div><img src={cdIcon} alt="timer" className="season-timer-icon" /></div>}
                         </div>
                     </div>
                     <div className="season-share-button" onClick={() => this.shareOnTwitter(this.props.playerRanking.rank, this.props.currTab)}>

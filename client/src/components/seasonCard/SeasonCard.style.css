@@ -18,12 +18,13 @@
     position: absolute;
     top: calc(50% - 27px);
     left: 12px;
-    height: 54px;
+    height: 54px; 
+    width: 54px;
 }
 
 .season-card-header-img>img {
-    width: auto;
-    height: 100%;
+    width: 100%;
+    height: auto;
 }
 
 .season-card-header-title {
@@ -94,8 +95,8 @@
 }
 
 .recap-season-bg {
-    position: absolute;
-    bottom: 20px;
+    /* position: absolute; */
+    /* bottom: 20px; */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -157,9 +158,10 @@
     font-size: 12px;
 }
 
-.season-timer-icon {
+.season-timer-icon { 
+    margin-top: 4px;
     width: 16px;
     height: 16px;
-    position: absolute;
-    bottom: 12px;
+    /* position: absolute;
+    bottom: 12px; */
 }
