@@ -20,8 +20,8 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
     private timer: NodeJS.Timeout | null = null;
     state: CountUpState = {
         isLevelUp: 0,
-        xpCounter: this.props.member.xp,
-        totalXP: this.props.character.xp + this.props.member.xp,
+        xpCounter: this.props.member.xp, // How much XP before starting the count up
+        totalXP: this.props.character.earnedXP + this.props.member.xp,
     }
 
     componentDidMount(): void { 
@@ -79,7 +79,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                         <div className="flex justify_between width_full">
                             <span className="endgame_character_exp">EXP</span>
                             <span className="endgame_character_expVal">
-                                {Math.floor(this.props.character.xp) > 0 ? `+${Math.floor(this.props.character.xp)}`: ''}
+                                {Math.floor(this.props.character.earnedXP) > 0 ? `+${Math.floor(this.props.character.earnedXP)}`: ''}
                             </span>
                         </div>
                         <div className="endgame_character_exp_bg">

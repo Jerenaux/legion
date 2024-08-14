@@ -116,7 +116,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     {characters.map((character, idx) => (
                         <XPCountUp
                             member={members[character.num - 1]}
-                            character={character}
+                            character={character as CharacterUpdate}
                             memberIdx={idx}
                         />
                     ))}
