@@ -108,9 +108,11 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
             return;
         }
 
-        const rankRowAvatar = (index: number) => {
+        const rankRowAvatar = (index: number) => { 
+            // console.log("tableIndexData => ", this.state.tableData[index]); 
             if (this.state.tableData[index].isPlayer) return {
-                backgroundImage: `url(/leaderboard/leaderboard_avatar_frame.png)`,
+                // backgroundImage: `url(/leaderboard/leaderboard_avatar_frame.png)`, 
+                backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`, 
             }
 
             if (this.state.tableData[index].isFriend) return {
