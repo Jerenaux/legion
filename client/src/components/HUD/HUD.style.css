@@ -344,10 +344,16 @@
 }
 
 .player_info_player_profile {
-  background-image: url("@assets/HUD/player_profile_bg.png");
+  background-image: url("@assets/HUD/player_profile_bg.png"); 
   background-size: 100% 100%;
   width: 72px;
-  height: 72px;
+  height: 72px; 
+  border: 1px solid #274c57;
+} 
+
+.player_info_player_profile > img { 
+  width: 100%; 
+  height: 100%;
 }
 
 .player_info {

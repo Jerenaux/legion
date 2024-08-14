@@ -96,7 +96,9 @@ class PlayerInfo extends Component<Props, State> {
         zIndex: 10,
         backgroundColor: 'rgba(0, 0, 0, 0.75)',
       }
-    };
+    }; 
+
+    console.log("playerInfoData => ", this.props.player); 
 
     return (
       <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`} onClick={() => { }}>
@@ -104,7 +106,9 @@ class PlayerInfo extends Component<Props, State> {
           <span>Lvl</span>
           <span className="player_info_lvalue">{this.props.player.playerLevel}</span>
         </div>}
-        <div className="player_info_player_profile"></div>
+        <div className="player_info_player_profile">
+          <img src={`/avatars/${this.props.player.playerAvatar? this.props.player.playerAvatar: 'default'}.png`} />
+        </div>
         <div className="player_info">
           <p className="player_info_name">{this.props.player.playerName}</p>
           <div className={`player_info_rank ${position === 'right' && 'justify_end'}`}>
