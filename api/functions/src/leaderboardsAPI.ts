@@ -2,6 +2,7 @@ import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import * as functions from "firebase-functions";
+import { firestore } from 'firebase-admin';
 import {League, ChestColor} from "@legion/shared/enums";
 import {logPlayerAction} from "./dashboardAPI";
 import {DBPlayerData} from "@legion/shared/interfaces";
@@ -88,7 +89,7 @@ export const fetchLeaderboard = onRequest((request, response) => {
       let bronzeElo = -1;
 
       if (!isAllTime) {
-        const initialPromotionRows = Math.ceil(players.length * 0.2);
+        const initialPromotionRows = Math.ceil(players.length * 0.2); // TODO: make config param
         const initialDemotionRows = tabId == 0 ? 0 : Math.floor(players.length * 0.2);
         console.log(`[fetchLeaderboard] Initial promotion rows: ${initialPromotionRows}, initial demotion rows: ${initialDemotionRows}`);
 
@@ -290,7 +291,7 @@ export const updateRanksOnEloChange = functions.firestore
       const previousValue = change.before.data();
 
       // Check if ELO has changed
-      if (newValue.elo !== previousValue.elo) {
+      if (newValue.elo !== previousValue.elo || newValue.leagueStats.wins !== previousValue.leagueStats.wins) {
           const league = newValue.league;
           return updateRanks(league);
       }
@@ -307,35 +308,66 @@ export const updateRanksOnPlayerCreation = functions.firestore
 });
 
 
+type RankingCriteria = {
+  whereClause?: [string, firestore.WhereFilterOp, any];
+  orderByField: string;
+  rankField: string;
+};
+
 async function updateRanks(league: League) {
   console.log(`Updating ranks for league ${league}`);
   const db = admin.firestore();
   const batch = db.batch();
 
-  const playersSnapshot = await db.collection("players")
-      .where("league", "==", league)
-      .orderBy("leagueStats.wins", "desc")
-      .get();
+  const leagueRankingCriteria: RankingCriteria = {
+    whereClause: ["league", "==", league],
+    orderByField: "leagueStats.wins",
+    rankField: "leagueStats.rank",
+  };
 
-  let rank = 1;
+  const allTimeRankingCriteria: RankingCriteria = {
+    orderByField: "elo",
+    rankField: "allTimeStats.rank",
+  };
 
-  playersSnapshot.forEach((doc) => {
-      const playerRef = db.collection("players").doc(doc.id);
-      batch.update(playerRef, {'leagueStats.rank': rank});
-      rank++;
-  });
-
-  const allTimeplayersSnapshot = await db.collection("players")
-      .orderBy("elo", "desc")
-      .get();
-
-  rank = 1;
-
-  allTimeplayersSnapshot.forEach((doc) => {
-      const playerRef = db.collection("players").doc(doc.id);
-      batch.update(playerRef, {'allTimeStats.rank': rank});
-      rank++;
-  });
+  await updateRankingsForCriteria(db, batch, leagueRankingCriteria);
+  await updateRankingsForCriteria(db, batch, allTimeRankingCriteria);
 
   return batch.commit();
+}
+
+async function updateRankingsForCriteria(
+  db: firestore.Firestore,
+  batch: firestore.WriteBatch,
+  criteria: RankingCriteria
+) {
+  let query = db.collection('players')
+    .orderBy(criteria.orderByField, "desc");
+
+  if (criteria.whereClause) {
+    query = query.where(...criteria.whereClause);
+  }
+
+  const snapshot = await query.get();
+  const players = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+  let rank = 1;
+  let previousScore: number | null = null;
+
+  players.forEach((player, index) => {
+    const currentScore = getNestedProperty(player, criteria.orderByField);
+
+    if (previousScore !== null && currentScore < previousScore) {
+      rank = index + 1;
+    }
+
+    const playerRef = db.collection('players').doc(player.id);
+    batch.update(playerRef, { [criteria.rankField]: rank });
+
+    previousScore = currentScore;
+  });
+}
+
+function getNestedProperty(obj: any, path: string): any {
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
 }
