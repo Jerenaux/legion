@@ -164,6 +164,20 @@ items[11] = new BaseItem({
     effort: 4.5,
 });
 
+items[12] = new BaseItem({
+    id: 12,
+    name: "Bocca",
+    description: "Cures mute",
+    frame: 12,
+    animation: "potion_heal",
+    sfx: "healing",
+    cooldown: 3,
+    target: Target.SELF,
+    effects: [],
+    statusRemovals: [StatusEffect.MUTE],
+    effort: 1.5,
+});
+
 export function getConsumableById(id: number): BaseItem | undefined {
     return items.find(item => item.id === id);
 }

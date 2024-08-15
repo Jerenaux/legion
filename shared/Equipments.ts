@@ -105,10 +105,10 @@ equipments[8] = new BaseEquipment({
     name: "Hardened gloves",
     description: "",
     frame: 110,
-    effects: [{stat: Stat.DEF, value: 3}],
+    effects: [{stat: Stat.DEF, value: 10}],
     slot: EquipmentSlot.GLOVES,
-    effort: 3,
-    minLevel: 1,
+    effort: 10,
+    minLevel: 5,
 });
 
 equipments[9] = new BaseEquipment({
@@ -143,6 +143,76 @@ equipments[11] = new BaseEquipment({
     effort: 11,
     minLevel: 5,
     classes: [Class.WARRIOR],
+});
+
+equipments[12] = new BaseEquipment({
+    id: 12,
+    name: "Leather armor",
+    description: "",
+    frame: 91,
+    effects: [{stat: Stat.DEF, value: 16}],
+    slot: EquipmentSlot.ARMOR,
+    effort: 12,
+    minLevel: 5,
+    classes: [Class.WARRIOR],
+});
+
+equipments[13] = new BaseEquipment({
+    id: 13,
+    name: "Armored gloves",
+    description: "",
+    frame: 111,
+    effects: [{stat: Stat.DEF, value: 18}],
+    slot: EquipmentSlot.GLOVES,
+    effort: 16,
+    minLevel: 10,
+    classes: [Class.WARRIOR],
+});
+
+equipments[14] = new BaseEquipment({
+    id: 14,
+    name: "Armored boots",
+    description: "",
+    frame: 131,
+    effects: [{stat: Stat.DEF, value: 11}],
+    slot: EquipmentSlot.BOOTS,
+    effort: 10,
+    minLevel: 5,
+    classes: [Class.WARRIOR],
+});
+
+equipments[15] = new BaseEquipment({
+    id: 15,
+    name: "Light gloves",
+    description: "",
+    frame: 112,
+    effects: [{stat: Stat.DEF, value: 3}],
+    slot: EquipmentSlot.GLOVES,
+    effort: 3,
+    minLevel: 1,
+});
+
+equipments[16] = new BaseEquipment({
+    id: 16,
+    name: "Jade necklace",
+    description: "",
+    frame: 51,
+    effects: [{stat: Stat.MP, value: 20}],
+    slot: EquipmentSlot.NECKLACE,
+    effort: 6,
+    minLevel: 1,
+    classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
+});
+
+equipments[17] = new BaseEquipment({
+    id: 17,
+    name: "Golden ring",
+    description: "",
+    frame: 41,
+    effects: [{stat: Stat.HP, value: 20}],
+    slot: EquipmentSlot.LEFT_RING,
+    effort: 4,
+    minLevel: 1,
 });
 
 export function getEquipmentById(id:number): BaseEquipment | undefined {

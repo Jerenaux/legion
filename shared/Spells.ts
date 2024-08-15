@@ -245,7 +245,7 @@ spells.push(new BaseSpell({
 spells.push(new BaseSpell({
     id: 11,
     name: "Silence",
-    description: "Make the target unable to cast spells for 3 minutes",
+    description: "Make the target mute, unable to cast spells for 3 minutes",
     frame: 4,
     vfx: "mute",
     sfx: "mute",
