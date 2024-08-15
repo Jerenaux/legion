@@ -91,11 +91,9 @@ export function playSoundEffect(src: string) {
 export function manageHelp(page: string, context: any) {
   const todoTours = context.player.tours;
   if (todoTours.includes(page)) {
-    console.log(`Starting tour for ${page}`);
     startTour(page);
     context.setPlayerInfo({ tours: todoTours.filter(tour => tour !== page) });
   } else {
-    console.log(`Fetching guide tip for ${page}`);
     fetchGuideTip();
   }
 }
