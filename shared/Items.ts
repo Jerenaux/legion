@@ -167,7 +167,7 @@ items[11] = new BaseItem({
 items[12] = new BaseItem({
     id: 12,
     name: "Bocca",
-    description: "Cures mute",
+    description: "Cures silence",
     frame: 12,
     animation: "potion_heal",
     sfx: "healing",

@@ -84,9 +84,9 @@ export const fetchLeaderboard = onRequest((request, response) => {
       const players: Player[] = docSnap.docs.map((doc) => ({id: doc.id, ...doc.data()})) as Player[];
       console.log(`Fetched ${players.length} players`);
 
-      let goldElo = -1;
-      let silverElo = -1;
-      let bronzeElo = -1;
+      let goldScore = -1;
+      let silverScore = -1;
+      let bronzeScore = -1;
 
       if (!isAllTime) {
         const initialPromotionRows = Math.ceil(players.length * 0.2); // TODO: make config param
@@ -96,9 +96,9 @@ export const fetchLeaderboard = onRequest((request, response) => {
         // Calculate promotion rows considering ties
         if (players.length > 0) {
           promotionRows = initialPromotionRows;
-          const promotionElo = players[initialPromotionRows - 1].elo;
+          const promotionScore = players[initialPromotionRows - 1].leagueStats.wins;
           for (let i = initialPromotionRows; i < players.length; i++) {
-            if (players[i].elo === promotionElo) {
+            if (players[i].leagueStats.wins === promotionScore) {
               promotionRows++;
             } else {
               break;
@@ -108,9 +108,9 @@ export const fetchLeaderboard = onRequest((request, response) => {
           // Calculate demotion rows considering ties
           demotionRows = initialDemotionRows;
           if (demotionRows) {
-            const demotionElo = players[players.length - initialDemotionRows].elo;
+            const demotionScore = players[players.length - initialDemotionRows].leagueStats.wins;
             for (let i = players.length - initialDemotionRows - 1; i >= 0; i--) {
-              if (players[i].elo === demotionElo) {
+              if (players[i].leagueStats.wins === demotionScore) {
                 demotionRows++;
               } else {
                 break;
@@ -120,17 +120,17 @@ export const fetchLeaderboard = onRequest((request, response) => {
         }
 
         if (players.length > 0) {
-          goldElo = players[0].elo;
+          goldScore = players[0].leagueStats.wins;
           for (let i = 1; i < players.length; i++) {
-            if (players[i].elo < goldElo) {
-              silverElo = players[i].elo;
+            if (players[i].leagueStats.wins < goldScore) {
+              silverScore = players[i].leagueStats.wins;
               break;
             }
           }
-          if (silverElo !== -1) {
+          if (silverScore !== -1) {
             for (let i = 1; i < players.length; i++) {
-              if (players[i].elo < silverElo) {
-                bronzeElo = players[i].elo;
+              if (players[i].leagueStats.wins < silverScore) {
+                bronzeScore = players[i].leagueStats.wins;
                 break;
               }
             }
@@ -217,11 +217,11 @@ export const fetchLeaderboard = onRequest((request, response) => {
 
         let chest = null;
         if (!isAllTime) {
-          if (player.elo === goldElo) {
+          if (player.leagueStats.wins === goldScore) {
             chest = ChestColor.GOLD;
-          } else if (player.elo === silverElo) {
+          } else if (player.leagueStats.wins === silverScore) {
             chest = ChestColor.SILVER;
-          } else if (player.elo === bronzeElo) {
+          } else if (player.leagueStats.wins === bronzeScore) {
             chest = ChestColor.BRONZE;
           }
         }
