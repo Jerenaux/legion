@@ -986,6 +986,7 @@ export abstract class Game
     }
 
     computeTeamXP(team: Team, otherTeam: Team, grade: number, mode: PlayMode) {
+        if (team.getTotalInteractedTargets() == 0) return 0;
         let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (grade + 0.3);
         console.log(`Base XP: ${xp}: ${otherTeam.getTotalLevel()} * ${XP_PER_LEVEL} * (${grade} + 0.3)`);
         if (mode == PlayMode.PRACTICE) xp *= 0.1;

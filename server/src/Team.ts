@@ -270,4 +270,8 @@ export class Team {
     unsetSocket() {
         this.socket = null;
     }
+
+    getTeamSize() {
+        return this.members.length;
+    }
 }
