@@ -13,7 +13,11 @@ class SpectatorFooter extends Component<SpectatorFooterProps> {
       <div className="spectator_footer_container"> 
         <div className="spectator_progress">
             <div className="spectator_progress_bar_bg">
-              <div className="spectator_progress_fill" style={{width: `${this.props.score / 1500 * 100}%`}}></div>
+              <div className="spectator_progress_fill">
+                <div className="spectator_progress_fill_mask" style={{width: `${100 - this.props.score / 1500 * 100}%`}}>
+
+                </div>
+              </div>
             </div>
             {this.props.mode != PlayMode.PRACTICE &&
               <div className="progress_ches_mark">
