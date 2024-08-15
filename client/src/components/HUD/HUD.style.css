@@ -358,7 +358,8 @@
 
 .player_info {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; 
+  position: relative; 
 }
 
 .player_info_name {
@@ -380,17 +381,23 @@
 
 .player_info_rank span {
   font-size: 14px;
-  color: #71deff;
+  color: #71deff; 
+  margin-top: -14px;
 }
 
 .player_info_team {
   background-image: url("@assets/HUD/team_bg.png");
   background-size: 100% 100%;
   padding: 2px;
-  padding-left: 10px;
+  /* padding-left: 10px; */
   font-size: 10px;
   color: #ffffff;
-  margin-left: -4px;
+  /* margin-left: -4px;  */
+  
+  width: 100%;
+  height: 14px;
+  position: absolute; 
+  bottom: 0;
 }
 
 .player_tab_container {

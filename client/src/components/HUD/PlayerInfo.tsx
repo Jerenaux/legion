@@ -115,7 +115,8 @@ class PlayerInfo extends Component<Props, State> {
             <img src="/icons/gold_rank.png" alt="" />
             <span>RANK {this.props.player.playerRank}</span>
           </div>
-          {ENABLE_TEAM_NAME && <div className="player_info_team"><span>TEAM</span></div>}
+          {/* {ENABLE_TEAM_NAME && <div className="player_info_team"><span>TEAM</span></div>}  */}
+          <div className="player_info_team"></div>
         </div>
         {this.props.isPlayerTeam && <div className="spectator_container_right">
           {isSpectator &&  <div className="spectator_div">
