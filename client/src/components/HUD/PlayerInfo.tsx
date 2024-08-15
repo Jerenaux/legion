@@ -111,7 +111,7 @@ class PlayerInfo extends Component<Props, State> {
         </div>
         <div className="player_info">
           <p className="player_info_name">{this.props.player.playerName}</p>
-          <div className={`player_info_rank ${position === 'right' && 'justify_end'}`}>
+          <div className={`player_info_rank ${position === 'right' && 'row_reverse'}`}>
             <img src="/icons/gold_rank.png" alt="" />
             <span>RANK {this.props.player.playerRank}</span>
           </div>

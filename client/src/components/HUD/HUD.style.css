@@ -55,6 +55,14 @@
   justify-content: flex-end;
 }
 
+.justify_start {
+  justify-content: flex-start;
+} 
+
+.row_reverse {
+  flex-direction: row-reverse;
+}
+
 .items_center {
   align-items: center;
 }
@@ -395,7 +403,7 @@
   /* margin-left: -4px;  */
   
   width: 100%;
-  height: 14px;
+  height: 14px; 
   position: absolute; 
   bottom: 0;
 }
