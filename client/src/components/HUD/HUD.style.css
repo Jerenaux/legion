@@ -109,6 +109,10 @@
 
 .relative {
   position: relative;
+} 
+
+.overview {
+  position: relative; 
 }
 
 .overview_right {
@@ -117,6 +121,11 @@
 
 .overview_playerteam {
   cursor: var(--game-pointer)
+} 
+
+.member_container { 
+  position: absolute; 
+  top: 108px;
 }
 
 .item {

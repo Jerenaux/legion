@@ -92,73 +92,75 @@ class Overview extends Component<Props, State> {
     // console.log("overviewPosition => ", position); 
     // console.log("overviewIsPlayerTeam => ", this.props.isPlayerTeam); 
 
-    return ( 
+    return (
       <div className={`overview ${this.props.isPlayerTeam && 'overview_playerteam'} ${position === 'right' && 'overview_right'}`}>
         <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
-        {members.map((member, memberIndex) => {
-          const cooldown = cooldowns[cooldownIndex++];
+        <div className="member_container">
+          {members.map((member, memberIndex) => {
+            const cooldown = cooldowns[cooldownIndex++];
 
-          const portraitStyle = {
-            backgroundImage: `url(/sprites/${member.texture}.png)`,
-          };
+            const portraitStyle = {
+              backgroundImage: `url(/sprites/${member.texture}.png)`,
+            };
 
-          const charProfileStyle = (idx: number) => {
-            const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
+            const charProfileStyle = (idx: number) => {
+              const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
 
-            if (cooldown === 0 && member.hp > 0) {
+              if (cooldown === 0 && member.hp > 0) {
+                return {
+                  backgroundImage: 'url(/HUD/char_profile_ready.png)',
+                  transform: 'scale(1.1)'
+                }
+              }
+
               return {
-                backgroundImage: 'url(/HUD/char_profile_ready.png)',
-                transform: 'scale(1.1)'
+                backgroundImage: `url(/HUD/char_profile_${isSelected ? 'active' : 'idle'}.png)`,
+                filter: `grayscale(${member.hp > 0 ? '0' : '1'})`
               }
             }
 
-            return {
-              backgroundImage: `url(/HUD/char_profile_${isSelected ? 'active' : 'idle'}.png)`,
-              filter: `grayscale(${member.hp > 0 ? '0' : '1'})`
+            const charStatStyle = (idx: number) => {
+              const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
+
+              return {
+                backgroundImage: `url(/HUD/char_stats_bg${isSelected ? '_Active' : ''}.png)`,
+              }
             }
-          }
 
-          const charStatStyle = (idx: number) => {
-            const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
-
-            return {
-              backgroundImage: `url(/HUD/char_stats_bg${isSelected ? '_Active' : ''}.png)`,
-            }
-          }
-
-          return (
-            <div
-              key={memberIndex}
-              className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`}
-            >
-              <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
-                <div className={`char_portrait ${position === 'left' ? 'flip' : 'char_portrait_right'} ${member.hp > 0 ? 'char_alive_animation' : ''}`} style={portraitStyle} />
-              </div>
-              <div className={`char_stats ${position === 'right' && 'char_stats_right'}`} style={charStatStyle(memberIndex)}>
-                <div className="char_stats_player_name">
-                  <div className="char_stats_player_index">
-                    <span>{memberIndex + 1}</span>
+            return (
+              <div
+                key={memberIndex}
+                className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`}
+              >
+                <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
+                  <div className={`char_portrait ${position === 'left' ? 'flip' : 'char_portrait_right'} ${member.hp > 0 ? 'char_alive_animation' : ''}`} style={portraitStyle} />
+                </div>
+                <div className={`char_stats ${position === 'right' && 'char_stats_right'}`} style={charStatStyle(memberIndex)}>
+                  <div className="char_stats_player_name">
+                    <div className="char_stats_player_index">
+                      <span>{memberIndex + 1}</span>
+                    </div>
+                    <p>{member.name}</p>
                   </div>
-                  <p>{member.name}</p>
+                  <div className="char_stats_bar" style={position === 'left' && { justifyContent: 'flex-start' }}>
+                    <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
+                  </div>
+                  {this.props.isPlayerTeam && <div className="char_stats_bar" style={position === 'left' && { justifyContent: 'flex-start' }}>
+                    <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
+                  </div>}
                 </div>
-                <div className="char_stats_bar" style={position === 'left' && {justifyContent: 'flex-start'}}>
-                  <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
-                </div>
-                {this.props.isPlayerTeam && <div className="char_stats_bar" style={position === 'left' && {justifyContent: 'flex-start'}}>
-                  <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
+                {this.props.isPlayerTeam && <div className={`char_stats_cooldown_bar ${member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`} style={position === 'left' && { justifyContent: 'flex-start' }}>
+                  <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
                 </div>}
-              </div>
-              {this.props.isPlayerTeam && <div className={`char_stats_cooldown_bar ${member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`} style={position === 'left' && {justifyContent: 'flex-start'}}>
-                <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
-              </div>}
-              <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
-                {Object.keys(member?.statuses).map((status: string) => {
+                <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
+                  {Object.keys(member?.statuses).map((status: string) => {
                     return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={`/HUD/${status}_icon.png`} alt="" />
-                })}
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     );
   }
