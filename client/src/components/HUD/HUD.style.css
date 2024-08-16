@@ -825,7 +825,14 @@
   right: 32px;
   width: 350px;
 
+  animation: bounce 0.8s ease alternate;
   -webkit-animation: bounce 0.8s ease alternate;
+}
+
+@keyframes bounce {
+  50% {
+    transform: scale(1.3);
+  }
 }
 
 @-webkit-keyframes bounce {
@@ -1106,6 +1113,16 @@
   align-items: center;
 
   cursor: pointer;
+} 
+
+.game_setting { 
+  background-color: #252b36;
+  border: 1px solid #4583d0;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 4px; 
+  text-align: center;
+  cursor: var(--game-pointer);
 }
 
 .exit_game_label {
@@ -1113,11 +1130,103 @@
   border: 1px solid #4583d0;
   border-radius: 4px;
   padding: 6px 8px;
+  margin-bottom: 4px; 
+  text-align: center;
   cursor: var(--game-pointer);
-}
+} 
 
 .exit_game_menu {
   cursor: var(--game-pointer);
+}
+ 
+.setting_menu { 
+  background-color: #252b36; 
+  padding: 16px; 
+  border: 2px solid #51fdff; 
+  border-radius: 8px;
+} 
+
+.setting_menu_btn {
+  background-image: url("@assets/HUD/button_bg_idle.png");
+  background-size: 100% 100%;
+  width: 50%;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff; 
+
+  cursor: pointer;
+}
+
+.setting_menu_btn:hover {
+  background-image: url("@assets/HUD/button_bg_active.png");
+} 
+
+.setting_dialog {
+  /* background-image: url("@assets/leaderboard/recap_bg.png"); */
+  background-size: 100% 100%;
+  width: 400px;
+  /* height: 140px; */
+  padding: 15px;
+  /* display: flex; 
+  text-align: center;
+  justify-content: center;
+  align-items: center;  */
+  color: #ffffff;
+} 
+
+.setting_dialog_keyboard { 
+  margin-bottom: 12px;
+}
+
+.setting_dialog_control_bar_container { 
+  display: flex; 
+  align-items: center;
+} 
+
+.setting_dialog_control_name { 
+  width: 30%;
+}
+
+.setting_dialog_control_bar {
+  display: flex;
+  align-items: center;
+  width: 60%;
+  height: 50px;
+  /* background-color: #f1f1f1; */
+  /* border: 1px solid #ccc; */
+  padding: 0 6px;
+}
+
+.setting_dialog_control_line {
+  flex-grow: 1;
+  height: 2px;
+  background-color: #4583d0;
+  position: relative;
+  margin: 0 0;
+}
+
+.setting_dialog_control_thumb {
+  width: 10px;
+  height: 20px;
+  background-color: #252b36; 
+  border: 2px solid #4583d0; 
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer; 
+
+}
+
+.setting_dialog_control_label_start {
+  width: 2.5%;
+} 
+
+.setting_dialog_control_label_end { 
+  width: 7.5%;
 }
 
 .light_shining_bg {
