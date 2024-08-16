@@ -6,7 +6,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import { apiFetch } from '../../services/apiService';
-import { errorToast } from '../utils';
+import { errorToast, successToast } from '../utils';
 import { ChestColor } from "@legion/shared/enums";
 import { DailyLootAllAPIData } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
@@ -36,8 +36,9 @@ class DailyLoot extends Component<DailyLootProps> {
       }
       try {
           const data = await apiFetch(`claimChest?chestType=${color}`);
-          console.log(data);
-          this.context.setPlayerInfo({ dailyloot: data.dailyloot });
+          // console.log("successData => ", data); 
+          this.context.setPlayerInfo({ dailyloot: data.dailyloot }); 
+          successToast("You got the daily loot successfully!"); 
       } catch (error) {
           errorToast(`Error: ${error}`);
       }
