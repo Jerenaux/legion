@@ -193,7 +193,7 @@ class PlayerInfo extends Component<Props, State> {
       }
     };
 
-    console.log("playerInfoData => ", this.props.player);
+    // console.log("playerInfoData => ", this.props.player); 
 
     return (
       <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`} onClick={() => { }}>
