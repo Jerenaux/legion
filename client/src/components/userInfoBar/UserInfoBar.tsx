@@ -24,8 +24,9 @@ class UserInfoBar extends Component<BarProps> {
   leagueIcon = 'apex';
   
   render() {
-    const leagueName = leagueMap.get(this.props.league);
-    const leagueIcon = leagueName?.toLowerCase();
+    const leagueName = leagueMap.get(this.props.league); 
+    let leagueIcon = "bronze"; 
+    leagueIcon = leagueName?.toLowerCase();
   
     return (
       <div className="userInfoBar">
