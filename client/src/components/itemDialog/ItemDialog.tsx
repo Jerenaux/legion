@@ -13,8 +13,8 @@ import { errorToast, successToast, mapFrameToCoordinates } from '../utils';
 Modal.setAppElement('#root');
 interface DialogProps {
   characterId?: string;
-  characterName?: string; 
-  characterLevel?: number; 
+  characterName?: string;
+  characterLevel?: number;
   index?: number;
   isEquipped?: boolean;
   actionType: InventoryActionType;
@@ -31,20 +31,22 @@ interface DialogProps {
 }
 
 interface DialogState {
-  dialogSpellModalShow: boolean;
+  dialogSpellModalShow: boolean; 
+  dialogValue: number; 
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
   constructor(props: DialogProps) {
     super(props);
     this.state = {
-      dialogSpellModalShow: false,
+      dialogSpellModalShow: false, 
+      dialogValue: 1, 
     };
   }
 
-  AcceptAction = (type: string, index: number) => { 
-    console.log("AcceptType => ", type); 
-    console.log("AcceptIndex => ", index); 
+  AcceptAction = (type: string, index: number) => {
+    console.log("AcceptType => ", type);
+    console.log("AcceptIndex => ", index);
 
     if (!this.props.characterId) return;
 
@@ -65,8 +67,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       .then((data) => {
         if (data.status == 0) {
           // successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!');
-          
-          this.props.refreshCharacter(); 
+
+          this.props.refreshCharacter();
           // } else {
           //   errorToast('Character inventory is full!');
         }
@@ -100,7 +102,20 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       .catch(error => errorToast(`Error: ${error}`));
   }
 
-  render() {
+  render() { 
+    const decrementValue = () => { 
+      if(this.state.dialogValue > 1) { 
+        this.setState({
+          dialogValue: this.state.dialogValue - 1
+        });
+      }
+    } 
+
+    const incrementValue = () => { 
+      this.setState({ 
+        dialogValue: this.state.dialogValue + 1
+      }); 
+    }
     // console.log("characterName => ", this.props.characterName); 
 
     const { dialogType, dialogData, position, dialogOpen, isEquipped, handleClose } = this.props;
@@ -134,11 +149,11 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     const equipmentDialog = (dialogData: BaseEquipment) => {
-      if (!dialogData) return null; 
+      if (!dialogData) return null;
 
-      console.log("equipDialogData => ", dialogData); 
+      console.log("equipDialogData => ", dialogData);
 
-      const coordinates = mapFrameToCoordinates(dialogData.frame); 
+      const coordinates = mapFrameToCoordinates(dialogData.frame);
       coordinates.x = -coordinates.x + 5;
       coordinates.y = -coordinates.y + 5;
       const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
@@ -148,16 +163,16 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             backgroundImage: `url(equipment.png)`,
             backgroundPosition,
           }} />
-          <p className="equip-dialog-name">{dialogData.name}</p> 
-          <div style={this.props.characterLevel >= dialogData.minLevel + 1? {backgroundColor: "#2f404d"}: {backgroundColor: "darkred"}} className="equip-dialog-lvl">
+          <p className="equip-dialog-name">{dialogData.name}</p>
+          <div style={this.props.characterLevel >= dialogData.minLevel + 1 ? { backgroundColor: "#2f404d" } : { backgroundColor: "darkred" }} className="equip-dialog-lvl">
             LV <span>{dialogData.minLevel + 1}</span>
           </div>
           <p className="equip-dialog-desc">{dialogData.description}</p>
           <div className="dialog-button-container">
-            <button 
-              style={this.props.characterLevel < dialogData.minLevel + 1? {backgroundColor: "grey", opacity: "0.5"}: {}}
-              className="dialog-accept" 
-              disabled={this.props.characterLevel < dialogData.minLevel + 1} 
+            <button
+              style={this.props.characterLevel < dialogData.minLevel + 1 ? { backgroundColor: "grey", opacity: "0.5" } : {}}
+              className="dialog-accept"
+              disabled={this.props.characterLevel < dialogData.minLevel + 1}
               onClick={() => this.AcceptAction(dialogType, this.props.index)}
             >
               <img src="/inventory/confirm_icon.png" alt="confirm" />
@@ -173,7 +188,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     const consumableDialog = (dialogData: BaseItem) => {
-      if (!dialogData) return; 
+      if (!dialogData) return;
 
       // console.log("dialogData => ", dialogData); 
 
@@ -274,11 +289,18 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     const characterInfoDialog = (dialogData: CHARACTER_INFO) => (
       <div className="character-info-dialog-container">
-        <div className="character-info-dialog-card" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[dialogData.key]] }}><span>{INFO_TYPE[dialogData.key]}</span></div>
-        <p>
-          {dialogData.value}
-          <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>
-        </p>
+        <div className="character-info-dialog-card-container">
+          <div className="character-info-dialog-card" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[dialogData.key]] }}><span>{INFO_TYPE[dialogData.key]}</span></div>
+          <div className="character-info-dialog-card-text">
+            {dialogData.value}
+            <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>
+          </div>
+        </div> 
+        <div className="character-info-dialog-control">
+          <div className="character-info-dialog-control-btn" onClick={decrementValue}>-</div>
+          <div className="character-info-dialog-control-val">{this.state.dialogValue}</div>
+          <div className="character-info-dialog-control-btn" onClick={incrementValue}>+</div>
+        </div>
         <div className="dialog-button-container">
           <button className="dialog-accept" onClick={() => this.spendSP(0)}><img src="/inventory/confirm_icon.png" alt="confirm" />Accept</button>
           <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
