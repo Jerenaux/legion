@@ -45,21 +45,29 @@
 } 
 
 .character-info-dialog-container {
-    display: flex;
+    /* display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 6px;
+    gap: 6px; */
     background-color: #1c1f25;
     border: 1px solid #3c616c;
-    border-radius: 4px;
-    padding: 4px;
+    border-radius: 16px;
+    padding: 16px 24px; 
+} 
+
+.character-info-dialog-card-container { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 8px;
 }
 
 .character-info-dialog-card {
     border-radius: 2px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: center; 
+    margin-right: 6px;
 }
 
 .character-info-dialog-card span {
@@ -69,17 +77,46 @@
     padding: 2px;
 }
 
-.character-info-dialog-container p {
+.character-info-dialog-card-text {
     display: flex;
     justify-content: space-between;
-    min-width: 28px;
+    /* min-width: 28px; */
     margin-right: 4px;
-    font-size: 12px;
+    font-size: 12px; 
+    color: white;
 }
 
 .character-info-addition {
     display: flex;
 } 
+
+.character-info-dialog-control { 
+    display: flex; 
+    justify-content: center; 
+    gap: 8px;
+    color: white; 
+    margin-bottom: 12px;
+}
+
+.character-info-dialog-control-btn { 
+    padding: 4px 8px; 
+    border: 1px solid #3c616c; 
+    border-radius: 4px; 
+} 
+
+.character-info-dialog-control-btn:hover { 
+    cursor: pointer; 
+}
+
+.character-info-dialog-control-val { 
+    padding: 4px 24px; 
+    border: 1px solid #3c616c; 
+    border-radius: 4px; 
+}
+
+.character-info-dialog-container .dialog-button-container { 
+    justify-content: center;
+}
 
 .dialog-consumable-info-container {
     display: grid;
