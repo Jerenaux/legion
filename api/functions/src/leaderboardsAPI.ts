@@ -56,9 +56,162 @@ function getSecondsUntilEndOfWeek(): number {
   return secondsUntilEndOfWeek;
 }
 
-export const fetchLeaderboard = onRequest((request, response) => {
-  const db = admin.firestore();
 
+async function getLeagueLeaderboard(uid: string, leagueID: number) {
+  const db = admin.firestore();
+  const isAllTime = leagueID === 5;
+
+  let seasonEnd = -1;
+  let promotionRows = 0;
+  let demotionRows = 0;
+
+  if (!isAllTime) {
+    seasonEnd = getSecondsUntilEndOfWeek();
+  }
+
+  let query = isAllTime ? db.collection("players") : db.collection("players").where("league", "==", leagueID);
+  query = query.orderBy(isAllTime ? "allTimeStats.rank" : "leagueStats.rank", "asc");
+
+  const docSnap = await query.get();
+  const players: Player[] = docSnap.docs.map((doc) => ({id: doc.id, ...doc.data()})) as Player[];
+  console.log(`Fetched ${players.length} players`);
+
+  if (!isAllTime) {
+    const initialPromotionRows = Math.ceil(players.length * 0.2); // TODO: make config param
+    const initialDemotionRows = leagueID == 0 ? 0 : Math.floor(players.length * 0.2);
+    console.log(`[fetchLeaderboard] Initial promotion rows: ${initialPromotionRows}, initial demotion rows: ${initialDemotionRows}`);
+
+    // Calculate promotion rows considering ties
+    if (players.length > 0) {
+      promotionRows = initialPromotionRows;
+      const promotionScore = players[initialPromotionRows - 1].leagueStats.wins;
+      for (let i = initialPromotionRows; i < players.length; i++) {
+        if (players[i].leagueStats.wins === promotionScore) {
+          promotionRows++;
+        } else {
+          break;
+        }
+      }
+
+      // Calculate demotion rows considering ties
+      demotionRows = initialDemotionRows;
+      if (demotionRows) {
+        const demotionScore = players[players.length - initialDemotionRows].leagueStats.wins;
+        for (let i = players.length - initialDemotionRows - 1; i >= 0; i--) {
+          if (players[i].leagueStats.wins === demotionScore) {
+            demotionRows++;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  const getHighlightPlayer = (metric: string) => {
+    return players.reduce((prev, current) => {
+      // @ts-ignore
+      const prevMetric = isAllTime ? prev.allTimeStats[metric] : prev.leagueStats[metric];
+      // @ts-ignore
+      const currentMetric = isAllTime ? current.allTimeStats[metric] : current.leagueStats[metric];
+      return (prevMetric > currentMetric) ? prev : current;
+    }, players[0]);
+  };
+
+  const highestAvgGradePlayer = getHighlightPlayer("avgGrade");
+  const highestAvgScorePlayer = getHighlightPlayer("avgAudienceScore");
+  const highestWinStreakPlayer = getHighlightPlayer("winStreak");
+
+  const highlights: LeaderboardHighlight[] = [];
+
+  if (highestAvgGradePlayer) {
+    highlights.push({
+      name: highestAvgGradePlayer.name,
+      avatar: highestAvgGradePlayer.avatar,
+      title: "Ace Player",
+      description: `Highest Game Grades`,
+    });
+  }
+
+  if (highestAvgScorePlayer) {
+    highlights.push({
+      name: highestAvgScorePlayer.name,
+      avatar: highestAvgScorePlayer.avatar,
+      title: "Crowd Favorite",
+      description: `Highest Audience Scores`,
+    });
+  }
+
+  if (highestWinStreakPlayer) {
+    highlights.push({
+      name: highestWinStreakPlayer.name,
+      avatar: highestWinStreakPlayer.avatar,
+      title: "Unstoppable",
+      description: `Longest Win Streak`,
+    });
+  }
+
+  if (isAllTime) {
+    const richestPlayer = players.reduce((prev, current) => {
+      return (prev.gold > current.gold) ? prev : current;
+    }, players[0]);
+    if (richestPlayer) {
+      highlights.push({
+        name: richestPlayer.name,
+        avatar: richestPlayer.avatar,
+        title: "Richest Player",
+        description: `Player witht the most gold`,
+      });
+    }
+  }
+
+
+  const leaderboard: APILeaderboardResponse = {
+    seasonEnd,
+    promotionRows,
+    demotionRows,
+    highlights,
+    ranking: [],
+  };
+
+  leaderboard.ranking = players.map((player, index) => {
+    const statsObject = isAllTime ? player.allTimeStats : player.leagueStats;
+
+    const denominator = statsObject.wins + statsObject.losses;
+    let winsRatio = 0;
+    if (denominator === 0) {
+      winsRatio = 0;
+    } else {
+      winsRatio = Math.round((statsObject.wins/denominator)*100);
+    }
+
+    let chest = null;
+    if (!isAllTime) {
+      if (player.leagueStats.rank === 1) {
+        chest = ChestColor.GOLD;
+      } else if (player.leagueStats.rank === 2) {
+        chest = ChestColor.SILVER;
+      } else if (player.leagueStats.rank === 3) {
+        chest = ChestColor.BRONZE;
+      }
+    }
+
+    return {
+      rank: statsObject.rank,
+      player: player.name,
+      elo: player.elo,
+      wins: statsObject.wins,
+      losses: statsObject.losses,
+      winsRatio: winsRatio + "%",
+      avatar: player.avatar,
+      isPlayer: player.id === uid,
+      chestColor: chest,
+    } as LeaderboardRow;
+  });
+  return leaderboard;
+}
+
+export const fetchLeaderboard = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
@@ -67,155 +220,7 @@ export const fetchLeaderboard = onRequest((request, response) => {
       if (typeof tabId !== "number" || isNaN(tabId)) {
         throw new Error("Invalid tab ID");
       }
-      const isAllTime = tabId === 5;
-
-      let seasonEnd = -1;
-      let promotionRows = 0;
-      let demotionRows = 0;
-
-      if (!isAllTime) {
-        seasonEnd = getSecondsUntilEndOfWeek();
-      }
-
-      let query = isAllTime ? db.collection("players") : db.collection("players").where("league", "==", tabId);
-      query = query.orderBy(isAllTime ? "allTimeStats.rank" : "leagueStats.rank", "asc");
-
-      const docSnap = await query.get();
-      const players: Player[] = docSnap.docs.map((doc) => ({id: doc.id, ...doc.data()})) as Player[];
-      console.log(`Fetched ${players.length} players`);
-
-      if (!isAllTime) {
-        const initialPromotionRows = Math.ceil(players.length * 0.2); // TODO: make config param
-        const initialDemotionRows = tabId == 0 ? 0 : Math.floor(players.length * 0.2);
-        console.log(`[fetchLeaderboard] Initial promotion rows: ${initialPromotionRows}, initial demotion rows: ${initialDemotionRows}`);
-
-        // Calculate promotion rows considering ties
-        if (players.length > 0) {
-          promotionRows = initialPromotionRows;
-          const promotionScore = players[initialPromotionRows - 1].leagueStats.wins;
-          for (let i = initialPromotionRows; i < players.length; i++) {
-            if (players[i].leagueStats.wins === promotionScore) {
-              promotionRows++;
-            } else {
-              break;
-            }
-          }
-
-          // Calculate demotion rows considering ties
-          demotionRows = initialDemotionRows;
-          if (demotionRows) {
-            const demotionScore = players[players.length - initialDemotionRows].leagueStats.wins;
-            for (let i = players.length - initialDemotionRows - 1; i >= 0; i--) {
-              if (players[i].leagueStats.wins === demotionScore) {
-                demotionRows++;
-              } else {
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      const getHighlightPlayer = (metric: string) => {
-        return players.reduce((prev, current) => {
-          // @ts-ignore
-          const prevMetric = isAllTime ? prev.allTimeStats[metric] : prev.leagueStats[metric];
-          // @ts-ignore
-          const currentMetric = isAllTime ? current.allTimeStats[metric] : current.leagueStats[metric];
-          return (prevMetric > currentMetric) ? prev : current;
-        }, players[0]);
-      };
-
-      const highestAvgGradePlayer = getHighlightPlayer("avgGrade");
-      const highestAvgScorePlayer = getHighlightPlayer("avgAudienceScore");
-      const highestWinStreakPlayer = getHighlightPlayer("winStreak");
-
-      const highlights: LeaderboardHighlight[] = [];
-
-      if (highestAvgGradePlayer) {
-        highlights.push({
-          name: highestAvgGradePlayer.name,
-          avatar: highestAvgGradePlayer.avatar,
-          title: "Ace Player",
-          description: `Highest Game Grades`,
-        });
-      }
-
-      if (highestAvgScorePlayer) {
-        highlights.push({
-          name: highestAvgScorePlayer.name,
-          avatar: highestAvgScorePlayer.avatar,
-          title: "Crowd Favorite",
-          description: `Highest Audience Scores`,
-        });
-      }
-
-      if (highestWinStreakPlayer) {
-        highlights.push({
-          name: highestWinStreakPlayer.name,
-          avatar: highestWinStreakPlayer.avatar,
-          title: "Unstoppable",
-          description: `Longest Win Streak`,
-        });
-      }
-
-      if (isAllTime) {
-        const richestPlayer = players.reduce((prev, current) => {
-          return (prev.gold > current.gold) ? prev : current;
-        }, players[0]);
-        if (richestPlayer) {
-          highlights.push({
-            name: richestPlayer.name,
-            avatar: richestPlayer.avatar,
-            title: "Richest Player",
-            description: `Player witht the most gold`,
-          });
-        }
-      }
-
-
-      const leaderboard: APILeaderboardResponse = {
-        seasonEnd,
-        promotionRows,
-        demotionRows,
-        highlights,
-        ranking: [],
-      };
-
-      leaderboard.ranking = players.map((player, index) => {
-        const statsObject = isAllTime ? player.allTimeStats : player.leagueStats;
-
-        const denominator = statsObject.wins + statsObject.losses;
-        let winsRatio = 0;
-        if (denominator === 0) {
-          winsRatio = 0;
-        } else {
-          winsRatio = Math.round((statsObject.wins/denominator)*100);
-        }
-
-        let chest = null;
-        if (!isAllTime) {
-          if (player.leagueStats.rank === 1) {
-            chest = ChestColor.GOLD;
-          } else if (player.leagueStats.rank === 2) {
-            chest = ChestColor.SILVER;
-          } else if (player.leagueStats.rank === 3) {
-            chest = ChestColor.BRONZE;
-          }
-        }
-
-        return {
-          rank: statsObject.rank,
-          player: player.name,
-          elo: player.elo,
-          wins: statsObject.wins,
-          losses: statsObject.losses,
-          winsRatio: winsRatio + "%",
-          avatar: player.avatar,
-          isPlayer: player.id === uid,
-          chestColor: chest,
-        } as LeaderboardRow;
-      });
+      const leaderboard = await getLeagueLeaderboard(uid, tabId);
       logPlayerAction(uid, "fetchLeaderboard", {tabId});
       response.send(leaderboard);
     } catch (error) {
