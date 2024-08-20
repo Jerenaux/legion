@@ -136,7 +136,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
             </div>
             <div className="streak_gold_list_container">
               {this.state.chestContent.map((reward, idx) => {
-                // console.log('rewardItem ', idx, reward); 
+                console.log('dailyRewardItem ', idx, reward); 
                 const coordinates = mapFrameToCoordinates(reward?.frame);
                 const backgroundImageUrl = this.getBgImageUrl(reward?.type);
                 return (
@@ -146,6 +146,9 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
                       backgroundPosition: reward.type === RewardType.GOLD ? '' : `-${coordinates.x}px -${coordinates.y}px`,
                       backgroundSize: reward.type === RewardType.GOLD && '84% 100%',
                     }}></div>
+                    <div className="streak_gold_list_amount">
+                      {reward.amount}
+                    </div>
                   </div>
                 )
               })}

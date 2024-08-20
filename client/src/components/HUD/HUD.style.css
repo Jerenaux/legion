@@ -1061,7 +1061,8 @@
   align-items: center;
   cursor: pointer;
 
-  z-index: 10;
+  z-index: 10; 
+  position: relative;
 }
 
 .streak_gold_list img {
@@ -1070,10 +1071,19 @@
   margin-left: 6px;
 }
 
-.streak_gold_list > div {
+.streak_gold_list > div:first-child {
   width: 32px; 
   height: 32px; 
   background-repeat: no-repeat;
+} 
+
+.streak_gold_list_amount { 
+  position: absolute; 
+  top: 6px; 
+  right: 6px; 
+  font-size: 16px; 
+  font-weight: bold; 
+  color: #51fdff; 
 }
 
 .light_streak {

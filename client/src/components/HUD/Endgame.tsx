@@ -87,7 +87,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 return '/consumables.png';
             case RewardType.GOLD:
                 return '/gold_icon.png';
-            }
+        }
     }
 
     render() {
@@ -154,7 +154,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                             <img src="/game_end/shine_bg.png" alt="" />
                         </div>
                         <div className="streak_gold_list_container">
-                            {this.state.selectedChest.content.map((reward, idx) => { 
+                            {this.state.selectedChest.content.map((reward, idx) => {
                                 // console.log('rewardItem ', idx, reward); 
                                 const coordinates = mapFrameToCoordinates(reward?.frame);
                                 const backgroundImageUrl = this.getBgImageUrl(reward?.type);
@@ -164,7 +164,10 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                                             backgroundImage: `url(${backgroundImageUrl})`,
                                             backgroundPosition: reward.type === RewardType.GOLD ? '' : `-${coordinates.x}px -${coordinates.y}px`,
                                             backgroundSize: reward.type === RewardType.GOLD && '84% 100%',
-                                            }}></div>
+                                        }}></div>
+                                        <div className="streak_gold_list_amount">
+                                            {reward.amount}
+                                        </div>
                                     </div>
                                 )
                             })}
