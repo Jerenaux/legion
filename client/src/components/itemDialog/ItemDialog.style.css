@@ -419,7 +419,9 @@
 
 .dialog-item-info-container { 
     display: flex; 
-    justify-content: center;
+    justify-content: center; 
+    align-items: center; 
+    flex-flow: column; 
 }
 
 .dialog-item-info {
