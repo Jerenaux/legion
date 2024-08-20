@@ -1,6 +1,7 @@
 const path = require('path');
 
 const isDocker = process.env.NODE_ENV === 'docker';
+const sharedPrefix = process.env.DEPLOY ? '../../' : '';
 
 module.exports = {
   mode: 'development', 
@@ -28,7 +29,7 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
-        '@legion/shared': path.resolve(__dirname, 'shared'),
+        '@legion/shared': path.resolve(__dirname, `${sharedPrefix}shared`),
       },
   },
   output: {

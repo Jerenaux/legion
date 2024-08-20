@@ -20,9 +20,13 @@ Run `docker-compose up --build` at the root of the repository to launch all the 
 ### Bare-metal
 
 Alternatively run each service separately bare-metal:
-
+```
     cd client && npm run start
     cd server && npm run start 
     cd matchmaker && npm run start
     cd api/functions && npm run emulators:start
+```
 
+## Deployment
+
+API deployment: `bash deploy_api.sh`
