@@ -149,7 +149,7 @@
 }
 
 .equip-dialog-container {
-    max-width: 120px;
+    max-width: 132px;
     background-color: #1c1f25;
     border: 1px solid #3c616c;
     border-radius: 4px;
@@ -193,7 +193,26 @@
 
 .equip-dialog-container .equip-dialog-lvl span { 
     color: #71deff;
+} 
+
+.equip-dialog-container .equip-dialog-class-container { 
+    display: flex; 
+    flex-flow: wrap; 
+    justify-content: center;
 }
+
+.equip-dialog-container .equip-dialog-class { 
+    font-size: 12px; 
+    padding: 4px 8px; 
+    border-radius: 8px; 
+    background-color: #303540; 
+    margin-bottom: 4px; 
+    color: white;
+} 
+
+.equip-dialog-container .equip-dialog-class:last-child { 
+    margin-bottom: 0;
+} 
 
 .equip-dialog-container .equip-dialog-desc {
     font-size: 10px;
