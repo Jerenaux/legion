@@ -8,19 +8,21 @@ import { getEquipmentById } from '@legion/shared/Equipments';
 import ItemIcon from '../itemIcon/ItemIcon';
 import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
 
+import Skeleton from 'react-loading-skeleton';
+
 import { Link } from 'preact-router';
 import Modal from 'react-modal';
 import { Effect, PlayerInventory } from '@legion/shared/interfaces';
 
 Modal.setAppElement('#root');
 interface InventoryProps {
-  id: string; 
-  name: string; 
-  level: number; 
+  id: string;
+  name: string;
+  level: number;
   inventory: PlayerInventory;
   carrying_capacity: number;
   refreshCharacter: () => void;
-  handleItemEffect: (effects: Effect[], actionType: InventoryActionType,  index?: number) => void;
+  handleItemEffect: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
   updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
 }
 
@@ -72,23 +74,28 @@ class Inventory extends Component<InventoryProps> {
 
       const slotStyle = {
         backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
-      } 
+      }
 
       // console.log("InventoryProps => ", this.props); 
 
       return <div key={i} className="item" style={slotStyle}>
-        <ItemIcon
-          characterId={this.props.id} 
-          characterName={this.props.name} 
-          characterLevel={this.props.level} 
-          action={item}
-          index={i}
-          hideHotKey={true}
-          actionType={this.state.actionType}
-          refreshCharacter={this.props.refreshCharacter}
-          handleItemEffect={this.props.handleItemEffect}
-          updateInventory={this.props.updateInventory}
-        />
+        {this.props ? (
+          <ItemIcon
+            characterId={this.props.id}
+            characterName={this.props.name}
+            characterLevel={this.props.level}
+            action={item}
+            index={i}
+            hideHotKey={true}
+            actionType={this.state.actionType}
+            refreshCharacter={this.props.refreshCharacter}
+            handleItemEffect={this.props.handleItemEffect}
+            updateInventory={this.props.updateInventory}
+          />
+        ) : (
+          <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0', width: '48px' }} />
+        )}
+
       </div>
     });
 
