@@ -120,8 +120,11 @@
 
 .dialog-consumable-info-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(2, 2fr);
+    gap: 4px; 
+    /* text-align: center; 
+    justify-content: center; 
+    align-items: center; */
 }
 
 .dialog-consumable-info {
@@ -401,7 +404,8 @@
 
 .dialog-item-desc {
     margin-top: 32px;
-    color: #71deff;
+    color: #71deff; 
+    text-align: center;
 }
 
 .dialog-item-title .dialog-item-title-info {
@@ -410,6 +414,11 @@
 }
 
 .dialog-item-container .dialog-button-container {
+    justify-content: center;
+} 
+
+.dialog-item-info-container { 
+    display: flex; 
     justify-content: center;
 }
 
