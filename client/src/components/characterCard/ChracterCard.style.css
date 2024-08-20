@@ -81,13 +81,24 @@
   position: absolute; 
   top: -4px; 
   right: -4px; 
-  padding: 4px 8px;
+  padding: 3px 6px;
   /* width: 24px;  */
   /* height: 24px;  */
-  background-color: darkred; 
+  /* background-color: rgb(206, 60, 50);  */
   border-radius: 4px; 
+  font-size: 14px;
   color: white; 
-  /* display: flex; 
-  justify-content: center; 
-  align-items: center; */
+  animation: bgColorChange 1s ease-in-out infinite; 
+} 
+
+@keyframes bgColorChange { 
+  0% { 
+    background-color: rgb(192, 38, 27);
+  } 
+  50% { 
+    background-color: rgb(250, 47, 47);
+  } 
+  100% { 
+    background-color: rgb(192, 38, 27);
+  }
 }
