@@ -99,7 +99,8 @@ class ShopPage extends Component<ShopPageProps, State> {
     });
   }
 
-  async fetchCharactersOnSale() {
+  async fetchCharactersOnSale() { 
+    // await new Promise(resolve => setTimeout(resolve, 2000)); 
     try {
         const data = await apiFetch('listOnSaleCharacters');
 
