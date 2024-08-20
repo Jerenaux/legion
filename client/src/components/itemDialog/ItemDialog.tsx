@@ -6,9 +6,10 @@ import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from './Item
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat, Target } from '@legion/shared/enums';
+import { InventoryActionType, Stat, Target, Class } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
-import { errorToast, successToast, mapFrameToCoordinates } from '../utils';
+import { errorToast, successToast, mapFrameToCoordinates, classEnumToString } from '../utils';
+import { getEquipmentById } from '@legion/shared/Equipments';
 
 Modal.setAppElement('#root');
 interface DialogProps {
@@ -34,6 +35,11 @@ interface DialogProps {
 interface DialogState {
   dialogSpellModalShow: boolean; 
   dialogValue: number; 
+  inventory: {
+    consumables: number[];
+    equipment: number[];
+    spells: number[];
+  }; 
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
@@ -42,7 +48,31 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     this.state = {
       dialogSpellModalShow: false, 
       dialogValue: 1, 
+      inventory: {
+        consumables: [],
+        equipment: [],
+        spells: [],
+      },
     };
+  } 
+
+  async componentDidMount() {
+    await this.fetchInventoryData();
+  }
+
+  fetchInventoryData = async () => {
+    try {
+        const data = await apiFetch('inventoryData');
+        this.setState({ 
+          inventory: {
+            consumables: data.inventory.consumables?.sort(),
+            equipment: data.inventory.equipment?.sort(), 
+            spells: data.inventory.spells?.sort(),
+          },
+        });
+    } catch (error) {
+        errorToast(`Error: ${error}`);
+    }
   }
 
   AcceptAction = (type: string, index: number) => {
@@ -58,8 +88,12 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       action: this.props.actionType
     };
 
+    // console.log("before update inventory"); 
+
     if (this.props.updateInventory) this.props.updateInventory(type, this.props.actionType, index)
     this.props.handleClose();
+
+    // console.log("after update inventory"); 
 
     apiFetch('inventoryTransaction', {
       method: 'POST',
@@ -69,6 +103,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
         if (data.status == 0) {
           // successToast(this.props.actionType > 0 ? 'Item un-equipped!' : 'Item equipped!');
 
+          // console.log("propsData => ", this.props); 
           this.props.refreshCharacter();
           // } else {
           //   errorToast('Character inventory is full!');
@@ -157,12 +192,19 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     const equipmentDialog = (dialogData: BaseEquipment) => {
       if (!dialogData) return null;
 
-      console.log("equipDialogData => ", dialogData);
+      // console.log("equipDialogData => ", dialogData);
 
       const coordinates = mapFrameToCoordinates(dialogData.frame);
       coordinates.x = -coordinates.x + 5;
       coordinates.y = -coordinates.y + 5;
-      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
+      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`; 
+
+      const equipment = this.state.inventory.equipment; 
+      const equipmentData = getEquipmentById(equipment[this.props.index]); 
+
+      // console.log("equipmentEquipment => ", equipment); 
+      // console.log("equipmentData => ", this.props.index, equipmentData); 
+
       return (
         <div className="equip-dialog-container">
           <div className="equip-dialog-image" style={{
@@ -170,15 +212,22 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             backgroundPosition,
           }} />
           <p className="equip-dialog-name">{dialogData.name}</p>
-          <div style={this.props.characterLevel >= dialogData.minLevel + 1 ? { backgroundColor: "#2f404d" } : { backgroundColor: "darkred" }} className="equip-dialog-lvl">
-            LV <span>{dialogData.minLevel + 1}</span>
+          <div style={this.props.characterLevel >= dialogData.minLevel ? { backgroundColor: "#2f404d" } : { backgroundColor: "darkred" }} className="equip-dialog-lvl">
+            LV <span>{dialogData.minLevel}</span>
+          </div> 
+          <div className="equip-dialog-class-container">
+            {equipmentData.classes?.map((item) => 
+              <div className="equip-dialog-class">
+                {classEnumToString(item)}
+              </div>
+            )}
           </div>
-          <p className="equip-dialog-desc">{dialogData.description}</p>
+          {dialogData.description && <p className="equip-dialog-desc">{dialogData.description}</p>}
           <div className="dialog-button-container">
             <button
-              style={this.props.characterLevel < dialogData.minLevel + 1 ? { backgroundColor: "grey", opacity: "0.5" } : {}}
+              style={this.props.characterLevel < dialogData.minLevel ? { backgroundColor: "grey", opacity: "0.5" } : {}}
               className="dialog-accept"
-              disabled={this.props.characterLevel < dialogData.minLevel + 1}
+              disabled={this.props.characterLevel < dialogData.minLevel}
               onClick={() => this.AcceptAction(dialogType, this.props.index)}
             >
               <img src="/inventory/confirm_icon.png" alt="confirm" />
