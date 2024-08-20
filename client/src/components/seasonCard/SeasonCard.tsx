@@ -105,7 +105,8 @@ class SeasonCard extends Component<SeasonCardProps> {
                     <div className="season-card-header-title">
                         <span>{this.props.currTab.toUpperCase()} </span> 
                         <span>LEAGUE</span>
-                    </div>
+                    </div> 
+                    <div className="categoryBtn" style={{ backgroundImage: 'url(./inventory/info_btn.png)' }} onClick={() => {}}></div>
                 </div>
                 <div className="season-card-body">
                     <div className="recap-single-container" ref={this.captureRef}>
@@ -128,7 +129,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                             <p className="season-recap-label">ENDS IN</p>
                             <div className="recap-season-bg" style={seasonBGStyle}>
                                 {this.state.time === -1 ? <img src="/rank/infinity_icon.png" alt="infinity" /> : (
-                                    <div style={{ width: '100%' }}>
+                                    <div style={{ width: '78px' }}>
                                         <div className="recap-season-timer-label">
                                             <span>D</span>
                                             <span>H</span>
