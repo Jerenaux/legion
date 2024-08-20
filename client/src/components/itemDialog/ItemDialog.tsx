@@ -278,9 +278,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             <div className="dialog-spell-modal-text">
               Are you sure you want to teach {dialogData.name} to {this.props.characterName}?
             </div>
-            <div className="dialog-spell-modal-btns">
-              <button onClick={() => { this.AcceptAction(dialogType, this.props.index); this.setState({ dialogSpellModalShow: false }); }} className="dialog-spell-modal-confirm">Confirm</button>
-              <button onClick={() => this.setState({ dialogSpellModalShow: false })} className="dialog-spell-modal-cancel">Cancel</button>
+            <div className="dialog-button-container">
+              <button className="dialog-accept" onClick={() => { this.AcceptAction(dialogType, this.props.index); this.setState({ dialogSpellModalShow: false }); }}><img src="/inventory/confirm_icon.png" alt="confirm" />Confirm</button>
+              <button className="dialog-decline" onClick={() => this.setState({ dialogSpellModalShow: false })}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
             </div>
           </div>
         </div>

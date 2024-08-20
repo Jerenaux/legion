@@ -298,15 +298,16 @@
     position: absolute; 
     top: 40px; 
     left: -25%; 
-    background-color: #303540; 
-    border: 1px solid #71deff; 
+    /* background-color: #303540;  */
+    background-color: #1c1f25;
+    border: 1px solid #3c616c; 
     border-radius: 4px; 
     padding: 12px; 
     width: 150%;
 } 
 
 .dialog-spell-modal-text {
-    font-size: 12px; 
+    font-size: 10px; 
     color: #71deff; 
     text-align: center;
     margin-bottom: 8px;
