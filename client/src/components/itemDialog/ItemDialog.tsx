@@ -23,7 +23,8 @@ import targetIcon from '@assets/inventory/target_icon.png';
 
 Modal.setAppElement('#root');
 interface DialogProps {
-  characterId?: string;
+  characterId?: string; 
+  characterSp?: number; 
   characterName?: string;
   characterLevel?: number;
   index?: number;
@@ -122,9 +123,11 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     } 
 
     const incrementValue = () => { 
-      this.setState({ 
-        dialogValue: this.state.dialogValue + 1
-      }); 
+      if(this.state.dialogValue < this.props.characterSp) {
+        this.setState({ 
+          dialogValue: this.state.dialogValue + 1
+        }); 
+      }
     }
     // console.log("characterName => ", this.props.characterName); 
 
@@ -303,7 +306,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           <div className="character-info-dialog-card" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[dialogData.key]] }}><span>{INFO_TYPE[dialogData.key]}</span></div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}
-            <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>
+            {/* <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>  */}
+            <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>+{this.state.dialogValue}</span> 
           </div>
         </div> 
         <div className="character-info-dialog-control">
