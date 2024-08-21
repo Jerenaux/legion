@@ -113,13 +113,13 @@ equipments[8] = new BaseEquipment({
 
 equipments[9] = new BaseEquipment({
     id: 9,
-    name: "Light boots",
+    name: "Sturdy boots",
     description: "",
     frame: 130,
-    effects: [{stat: Stat.DEF, value: 3}],
+    effects: [{stat: Stat.DEF, value: 8}],
     slot: EquipmentSlot.BOOTS,
-    effort: 3,
-    minLevel: 1,
+    effort: 10,
+    minLevel: 5,
 });
 
 equipments[10] = new BaseEquipment({
@@ -174,10 +174,10 @@ equipments[14] = new BaseEquipment({
     name: "Armored boots",
     description: "",
     frame: 131,
-    effects: [{stat: Stat.DEF, value: 11}],
+    effects: [{stat: Stat.DEF, value: 16}],
     slot: EquipmentSlot.BOOTS,
-    effort: 10,
-    minLevel: 5,
+    effort: 15,
+    minLevel: 10,
     classes: [Class.WARRIOR],
 });
 
@@ -237,6 +237,17 @@ equipments[19] = new BaseEquipment({
     effort: 23,
     minLevel: 10,
     classes: [Class.WARRIOR],
+});
+
+equipments[20] = new BaseEquipment({
+    id: 20,
+    name: "Light boots",
+    description: "",
+    frame: 132,
+    effects: [{stat: Stat.DEF, value: 3}],
+    slot: EquipmentSlot.BOOTS,
+    effort: 6,
+    minLevel: 1,
 });
 
 export function getEquipmentById(id:number): BaseEquipment | undefined {
