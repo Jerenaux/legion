@@ -13,8 +13,8 @@ import { getEquipmentById } from '@legion/shared/Equipments';
 
 Modal.setAppElement('#root');
 interface DialogProps {
-  characterId?: string; 
-  characterSp?: number; 
+  characterId?: string;
+  characterSp?: number;
   characterName?: string;
   characterLevel?: number;
   index?: number;
@@ -34,12 +34,13 @@ interface DialogProps {
 
 interface DialogState {
   dialogSpellModalShow: boolean; 
-  dialogValue: number; 
+  dialogSPModalShow: boolean; 
+  dialogValue: number;
   inventory: {
     consumables: number[];
     equipment: number[];
     spells: number[];
-  }; 
+  };
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
@@ -47,14 +48,15 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     super(props);
     this.state = {
       dialogSpellModalShow: false, 
-      dialogValue: 1, 
+      dialogSPModalShow: false, 
+      dialogValue: 1,
       inventory: {
         consumables: [],
         equipment: [],
         spells: [],
       },
     };
-  } 
+  }
 
   async componentDidMount() {
     await this.fetchInventoryData();
@@ -62,16 +64,16 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   fetchInventoryData = async () => {
     try {
-        const data = await apiFetch('inventoryData');
-        this.setState({ 
-          inventory: {
-            consumables: data.inventory.consumables?.sort(),
-            equipment: data.inventory.equipment?.sort(), 
-            spells: data.inventory.spells?.sort(),
-          },
-        });
+      const data = await apiFetch('inventoryData');
+      this.setState({
+        inventory: {
+          consumables: data.inventory.consumables?.sort(),
+          equipment: data.inventory.equipment?.sort(),
+          spells: data.inventory.spells?.sort(),
+        },
+      });
     } catch (error) {
-        errorToast(`Error: ${error}`);
+      errorToast(`Error: ${error}`);
     }
   }
 
@@ -141,20 +143,20 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       .catch(error => errorToast(`Error: ${error}`));
   }
 
-  render() { 
-    const decrementValue = () => { 
-      if(this.state.dialogValue > 1) { 
+  render() {
+    const decrementValue = () => {
+      if (this.state.dialogValue > 1) {
         this.setState({
           dialogValue: this.state.dialogValue - 1
         });
       }
-    } 
+    }
 
-    const incrementValue = () => { 
-      if(this.state.dialogValue < this.props.characterSp) {
-        this.setState({ 
+    const incrementValue = () => {
+      if (this.state.dialogValue < this.props.characterSp) {
+        this.setState({
           dialogValue: this.state.dialogValue + 1
-        }); 
+        });
       }
     }
     // console.log("characterName => ", this.props.characterName); 
@@ -197,10 +199,10 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       const coordinates = mapFrameToCoordinates(dialogData.frame);
       coordinates.x = -coordinates.x + 5;
       coordinates.y = -coordinates.y + 5;
-      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`; 
+      const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
 
-      const equipment = this.state.inventory.equipment; 
-      const equipmentData = getEquipmentById(equipment[this.props.index]); 
+      const equipment = this.state.inventory.equipment;
+      const equipmentData = getEquipmentById(equipment[this.props.index]);
 
       // console.log("equipmentEquipment => ", equipment); 
       // console.log("equipmentData => ", this.props.index, equipmentData); 
@@ -214,9 +216,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           <p className="equip-dialog-name">{dialogData.name}</p>
           <div style={this.props.characterLevel >= dialogData.minLevel ? { backgroundColor: "#2f404d" } : { backgroundColor: "darkred" }} className="equip-dialog-lvl">
             LV <span>{dialogData.minLevel}</span>
-          </div> 
+          </div>
           <div className="equip-dialog-class-container">
-            {equipmentData.classes?.map((item) => 
+            {equipmentData.classes?.map((item) =>
               <div className="equip-dialog-class">
                 {classEnumToString(item)}
               </div>
@@ -349,17 +351,27 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           <div className="character-info-dialog-card-text">
             {dialogData.value}
             {/* <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>  */}
-            <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>+{this.state.dialogValue}</span> 
+            <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>+{this.state.dialogValue}</span>
           </div>
-        </div> 
+        </div>
         <div className="character-info-dialog-control">
           <div className="character-info-dialog-control-btn" onClick={decrementValue}>-</div>
           <div className="character-info-dialog-control-val">{this.state.dialogValue}</div>
           <div className="character-info-dialog-control-btn" onClick={incrementValue}>+</div>
         </div>
         <div className="dialog-button-container">
-          <button className="dialog-accept" onClick={() => this.spendSP(0)}><img src="/inventory/confirm_icon.png" alt="confirm" />Accept</button>
+          <button className="dialog-accept" onClick={() => this.setState({ dialogSPModalShow: true })}><img src="/inventory/confirm_icon.png" alt="confirm" />Accept</button>
           <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+        </div>
+
+        <div style={this.state.dialogSPModalShow ? { display: 'block' } : { display: 'none' }} class="dialog-spell-modal dialog-SP-modal">
+          <div className="dialog-spell-modal-text">
+            Are you sure you want to spend {this.state.dialogValue} SP?
+          </div>
+          <div className="dialog-button-container">
+            <button className="dialog-accept" onClick={() => { this.spendSP(0); this.setState({ dialogSPModalShow: false }); }}><img src="/inventory/confirm_icon.png" alt="confirm" />Confirm</button>
+            <button className="dialog-decline" onClick={() => this.setState({ dialogSPModalShow: false })}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+          </div>
         </div>
       </div>
     );
