@@ -14,7 +14,7 @@ const AuthenticatedHomePage = withAuth(HomePage);
 const AuthenticatedGamePage = withAuth(GamePage);
 
 interface AppState {
-    currentUrl: string;
+	currentUrl: string;
 }
 
 class App extends Component<{}, AppState> {
