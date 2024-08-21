@@ -18,18 +18,18 @@ class CharacterCard extends Component<APICharacterData> {
   render() {
     const { portrait, name, class: characterClass, level } = this.props;
     const portraitStyle = {
-        backgroundImage: `url(/sprites/${portrait}.png)`,
+      backgroundImage: `url(/sprites/${portrait}.png)`,
     };
 
     const bgStyle = {
       backgroundImage: `url(/team_Bg_${this.state.active ? 'active' : 'idle'}.png)`,
       cursor: 'pointer'
-    } 
+    }
 
     // console.log("CharacterCardProps => ", this.props); 
-    
+
     return (
-      <div className="cardContainer" style={bgStyle} onClick={this.handleCardClick} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})}>
+      <div className="cardContainer" style={bgStyle} onClick={this.handleCardClick} onMouseEnter={() => this.setState({ active: true })} onMouseLeave={() => this.setState({ active: false })}>
         <div className="characterLevel">
           <span className="level">Lvl</span>
           <span className="levelVal">{level}</span>
@@ -40,10 +40,12 @@ class CharacterCard extends Component<APICharacterData> {
         </div>
         <div className="portraitContainer">
           <div className="portrait" style={portraitStyle} />
-        </div> 
-        <div className="characterSp">
-          {this.props.sp}
         </div>
+        {this.props?.sp > 0 && (
+          <div className="characterSp">
+            {this.props.sp}
+          </div>
+        )}
       </div>
     );
   }
