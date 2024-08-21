@@ -85,12 +85,12 @@ class Navbar extends Component<Props, State> {
                         </Link>
                     </div>
                     <div className="avatarContainer">
-                        {this.props.playerData ? (
+                        {this.props.playerData.uid ? (
                             <div className="avatar" style={{ backgroundImage: `url(avatars/${this.props.playerData?.avatar}.png)` }}></div>
                         ) : (
                             <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 0', width: '48px' }} />
                         )}
-                        {this.props.playerData ? (
+                        {this.props.playerData.uid ? (
                             <div className="userInfo">
                                 <span>{this.props.playerData?.name}</span>
                                 {ENABLE_PLAYER_LEVEL && <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div>}
@@ -127,12 +127,12 @@ class Navbar extends Component<Props, State> {
                 </div>
 
                 <div className="flexContainer" id="goldEloArea">
-                    {this.props.playerData ? (
+                    {this.props.playerData.uid ? (
                         <UserInfoBar label={`${Math.round(this.props.playerData?.gold)}`} />
                     ) : (
                         <Skeleton height={24} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 0', width: '100px' }} />
                     )}
-                    {this.props.playerData ? (
+                    {this.props.playerData.uid ? (
                         <UserInfoBar label={`#${this.props.playerData?.rank}`} elo={this.props.playerData?.elo} league={this.props.playerData?.league} />
                     ) : (
                         <Skeleton height={24} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0', width: '100px' }} />
