@@ -80,7 +80,7 @@ class Inventory extends Component<InventoryProps> {
       // console.log("InventoryProps => ", this.props); 
 
       return <div key={i} className="item" style={slotStyle}>
-        {this.props ? (
+        {this.props.id != '' ? (
           <ItemIcon
             characterId={this.props.id}
             characterName={this.props.name}
@@ -95,7 +95,7 @@ class Inventory extends Component<InventoryProps> {
             updateInventory={this.props.updateInventory}
           />
         ) : (
-          <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0', width: '48px' }} />
+          <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0 16px', width: '48px' }} />
         )}
 
       </div>
