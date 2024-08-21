@@ -18,7 +18,7 @@ import playActiveIcon from '@assets/play_btn_active.png';
 import teamActiveIcon from '@assets/team_btn_active.png';
 import shopActiveIcon from '@assets/shop_btn_active.png';
 import rankActiveIcon from '@assets/rank_btn_active.png';
-
+const avatarContext = require.context('@assets/avatars', false, /\.(png|jpe?g|svg)$/);
 
 enum MenuItems {
     PLAY = 'PLAY',
@@ -44,18 +44,37 @@ interface Props {
 interface State {
     hovered: string;
     openDropdown: boolean;
+    avatarUrl: string | null;
 }
 
 class Navbar extends Component<Props, State> {
     state = {
         hovered: '',
         openDropdown: false,
+        avatarUrl: null,
     }
 
-    componentDidUpdate(previousProps: Readonly<Props>, previousState: Readonly<State>, snapshot: any): void {
-        // if (previousProps.playerData?.lvl !== this.props.playerData?.lvl) {
-        //     successToast(`Level up! You are now level ${this.props.playerData?.lvl}`);
-}
+    componentDidMount() {
+        this.loadAvatar();
+    }
+
+    componentDidUpdate(prevProps: Readonly<Props>) {
+        if (prevProps.playerData?.avatar !== this.props.playerData?.avatar) {
+            this.loadAvatar();
+        }
+    }
+
+    loadAvatar = () => {
+        const { avatar } = this.props.playerData;
+        if (avatar != '0') {
+            try {
+                const avatarUrl = avatarContext(`./${avatar}.png`);
+                this.setState({ avatarUrl });
+            } catch (error) {
+                console.error(`Failed to load avatar: ${avatar}.png`, error);
+            }
+        }
+    }
 
     copyIDtoClipboard = () => {  
         const textToCopy = this.props.playerData.uid;
@@ -97,7 +116,7 @@ class Navbar extends Component<Props, State> {
                         </Link>
                     </div>
                     <div className="avatarContainer">
-                        <div className="avatar"  style={{ backgroundImage: `url(avatars/${this.props.playerData?.avatar}.png)` }}></div>
+                        <div className="avatar" style={{ backgroundImage: this.state.avatarUrl ? `url(${this.state.avatarUrl})` : 'none' }}></div>
                         <div className="userInfo">
                             <span>{this.props.playerData?.name}</span>
                             {ENABLE_PLAYER_LEVEL && <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div>}

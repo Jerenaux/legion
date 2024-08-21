@@ -1,6 +1,14 @@
 import { h, Component } from 'preact';
 import { ChestColor } from "@legion/shared/enums";
 
+// Explicit imports for chest images
+import bronzeChestImage from '@assets/shop/bronze_chest.png';
+import silverChestImage from '@assets/shop/silver_chest.png';
+import goldChestImage from '@assets/shop/gold_chest.png';
+
+// Import for the key icon
+import silverKeyIcon from '@assets/shop/silver_key_icon.png';
+
 interface LootBoxProps {
     color: ChestColor;
     timeRemaining: number;
@@ -10,7 +18,7 @@ interface LootBoxProps {
 
 interface LootBoxState {
     timeRemaining: number;
-  }
+}
 
 class LootBox extends Component<LootBoxProps, LootBoxState> {
     interval: NodeJS.Timeout;
@@ -60,32 +68,24 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
     getTitle() {
         const { color } = this.props;
         switch (color) {
-        case ChestColor.BRONZE:
-            return "Bronze Chest";
-        case ChestColor.SILVER:
-            return "Silver Chest";
-        case ChestColor.GOLD:
-            return "Golden Chest";
-        default:
-            return "";
+            case ChestColor.BRONZE: return "Bronze Chest";
+            case ChestColor.SILVER: return "Silver Chest";
+            case ChestColor.GOLD: return "Golden Chest";
+            default: return "";
         }
     }
 
     getImageSrc() {
         const { color } = this.props;
         switch (color) {
-        case ChestColor.BRONZE:
-            return "/shop/bronze_chest.png";
-        case ChestColor.SILVER:
-            return "/shop/silver_chest.png";
-        case ChestColor.GOLD:
-            return "/shop/gold_chest.png";
-        default:
-            return "";
+            case ChestColor.BRONZE: return bronzeChestImage;
+            case ChestColor.SILVER: return silverChestImage;
+            case ChestColor.GOLD: return goldChestImage;
+            default: return "";
         }
     }
 
-    computeTimeFields(timeInSeconds) {
+    computeTimeFields(timeInSeconds: number) {
         const hour = Math.floor(timeInSeconds / 3600);
         const minute = Math.floor((timeInSeconds % 3600) / 60);
         const second = Math.round(timeInSeconds % 60);
@@ -100,19 +100,19 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
             const { hour, minute, second } = this.computeTimeFields(timeRemaining);
             return (
                 <div>
-                Available in
-                <span className="loot-box-countdown">
-                    {`${hour}`.padStart(2, "0")}:
-                    {`${minute}`.padStart(2, "0")}:
-                    {`${second}`.padStart(2, "0")}
-                </span>
+                    Available in
+                    <span className="loot-box-countdown">
+                        {`${hour}`.padStart(2, "0")}:
+                        {`${minute}`.padStart(2, "0")}:
+                        {`${second}`.padStart(2, "0")}
+                    </span>
                 </div>
             );
         } else if (!ownsKey) {
             return (
                 <div>
-                <img src="/shop/silver_key_icon.png" alt="key icon" />
-                <span className="loot-box-key">0 / 1</span>
+                    <img src={silverKeyIcon} alt="key icon" />
+                    <span className="loot-box-key">0 / 1</span>
                 </div>
             );
         } else {
@@ -123,11 +123,11 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
     render() {
         const { onClick } = this.props;
         return (
-        <div className="lootBoxContainer" onClick={onClick}>
-            <div className="loot-box-title"><span>{this.getTitle()}</span></div>
-            <img className="loot-box-image" src={this.getImageSrc()} alt={this.props.color} />
-            <div className="loot-box-footer">{this.getFooterContent()}</div>
-        </div>
+            <div className="lootBoxContainer" onClick={onClick}>
+                <div className="loot-box-title"><span>{this.getTitle()}</span></div>
+                <img className="loot-box-image" src={this.getImageSrc()} alt={this.props.color} />
+                <div className="loot-box-footer">{this.getFooterContent()}</div>
+            </div>
         );
     }
 }
