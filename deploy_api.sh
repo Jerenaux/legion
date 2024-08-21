@@ -1,5 +1,4 @@
 #!/bin/bash
 
-cd api/functions
-export DEPLOY=true
+export DEPLOY=true # For webpack to know where to find the shared code
 firebase deploy

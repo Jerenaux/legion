@@ -6,3 +6,4 @@ dist
 firestore-emulator-data
 firebase-export-*
 .env
+*.log

@@ -18,6 +18,7 @@ RUN npm install
 RUN npm install -g firebase-tools
 
 COPY api/functions/ .
+COPY .firebaserc .
 
 CMD ["npm", "run", "docker:start"]
 # CMD ["tail", "-f", "/dev/null"]
