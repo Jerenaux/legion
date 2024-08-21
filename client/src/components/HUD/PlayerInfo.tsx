@@ -17,23 +17,23 @@ interface State {
   modalOpen: boolean;
   modalOpen1: boolean;
   modalOpen2: boolean;
-  modalPos: any; 
-  musicCurrentValue: number; 
-  musicMinValue: number; 
-  musicMaxValue: number; 
-  sfxCurrentValue: number; 
-  sfxMinValue: number; 
-  sfxMaxValue: number; 
-  settingMenuCur: number; 
+  modalPos: any;
+  musicCurrentValue: number;
+  musicMinValue: number;
+  musicMaxValue: number;
+  sfxCurrentValue: number;
+  sfxMinValue: number;
+  sfxMaxValue: number;
+  settingMenuCur: number;
 }
 
 class PlayerInfo extends Component<Props, State> {
   events: any;
 
-  musicControlLineRef = createRef(); 
-  musicControlThumbRef = createRef(); 
-  sfxControlLineRef = createRef(); 
-  sfxControlThumbRef = createRef(); 
+  musicControlLineRef = createRef();
+  musicControlThumbRef = createRef();
+  sfxControlLineRef = createRef();
+  sfxControlThumbRef = createRef();
 
   constructor(props: Props) {
     super(props);
@@ -41,39 +41,39 @@ class PlayerInfo extends Component<Props, State> {
       modalOpen: false,
       modalOpen1: false,
       modalOpen2: false,
-      modalPos: null, 
-      musicCurrentValue: 50, 
-      musicMinValue: 0, 
-      musicMaxValue: 100, 
-      sfxCurrentValue: 50, 
-      sfxMinValue: 0, 
-      sfxMaxValue: 100, 
-      settingMenuCur: 0, 
+      modalPos: null,
+      musicCurrentValue: 50,
+      musicMinValue: 0,
+      musicMaxValue: 100,
+      sfxCurrentValue: 50,
+      sfxMinValue: 0,
+      sfxMaxValue: 100,
+      settingMenuCur: 0,
     }
-    this.events = this.props.eventEmitter; 
-  } 
+    this.events = this.props.eventEmitter;
+  }
 
   componentDidMount() {
-    this.updateMusicControlThumb(); 
-    this.updateSFXControlThumb(); 
-  } 
+    this.updateMusicControlThumb();
+    this.updateSFXControlThumb();
+  }
 
-  componentDidUpdate(prevProps, prevState) { 
-    if (prevState.musicCurrentValue !== this.state.musicCurrentValue) { 
-      this.updateMusicControlThumb(); 
-    } 
-    if (prevState.sfxCurrentValue !== this.state.sfxCurrentValue) { 
-      this.updateSFXControlThumb(); 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.musicCurrentValue !== this.state.musicCurrentValue) {
+      this.updateMusicControlThumb();
     }
-  } 
+    if (prevState.sfxCurrentValue !== this.state.sfxCurrentValue) {
+      this.updateSFXControlThumb();
+    }
+  }
 
-  updateMusicControlThumb = () => { 
+  updateMusicControlThumb = () => {
     if (this.musicControlLineRef.current && this.musicControlThumbRef.current) {
       const musicControlLineRect = this.musicControlLineRef.current.getBoundingClientRect();
       const musicThumbPosition = ((this.state.musicCurrentValue - this.state.musicMinValue) / (this.state.musicMaxValue - this.state.musicMinValue)) * musicControlLineRect.width;
       this.musicControlThumbRef.current.style.left = `${musicThumbPosition}px`;
     }
-  } 
+  }
 
   handleMusicThumbDrag = (event) => {
     event.preventDefault();
@@ -93,15 +93,15 @@ class PlayerInfo extends Component<Props, State> {
 
     document.addEventListener('mousemove', handleMusicMouseMove);
     document.addEventListener('mouseup', handleMusicMouseUp);
-  }; 
+  };
 
-  updateSFXControlThumb = () => { 
+  updateSFXControlThumb = () => {
     if (this.sfxControlLineRef.current && this.sfxControlThumbRef.current) {
       const sfxControlLineRect = this.sfxControlLineRef.current.getBoundingClientRect();
       const sfxThumbPosition = ((this.state.sfxCurrentValue - this.state.sfxMinValue) / (this.state.sfxMaxValue - this.state.sfxMinValue)) * sfxControlLineRect.width;
       this.sfxControlThumbRef.current.style.left = `${sfxThumbPosition}px`;
     }
-  } 
+  }
 
   handleSFXThumbDrag = (event) => {
     event.preventDefault();
@@ -132,7 +132,7 @@ class PlayerInfo extends Component<Props, State> {
         this.setState({ modalOpen: false, modalOpen1: false, modalOpen2: true });
         return;
       }
-    } 
+    }
 
     const elementRect = e.currentTarget.getBoundingClientRect();
 
@@ -207,7 +207,12 @@ class PlayerInfo extends Component<Props, State> {
           <img src={`/avatars/${this.props.player.playerAvatar ? this.props.player.playerAvatar : 'default'}.png`} />
         </div>
         <div className="player_info">
-          <p className="player_info_name">{this.props.player.playerName}</p>
+          <div
+            className="player_info_name"
+            style={position === 'right' ? { backgroundImage: `url("/HUD/team_bg_reverse.png")`, textAlign: "right" } : { backgroundImage: `url("/HUD/team_bg.png")` }}
+          >
+            {this.props.player.playerName}
+          </div>
           <div className={`player_info_rank ${position === 'right' && 'row_reverse'}`}>
             <img src="/icons/gold_rank.png" alt="" />
             <span>RANK {this.props.player.playerRank}</span>
@@ -215,7 +220,7 @@ class PlayerInfo extends Component<Props, State> {
           {/* {ENABLE_TEAM_NAME && <div className="player_info_team"><span>TEAM</span></div>}  */}
           {/* <div className="player_info_team"></div> */}
         </div>
-        {this.props.isPlayerTeam && <div className={position === 'right'? "spectator_container_right": "spectator_container"}>
+        {this.props.isPlayerTeam && <div className={position === 'right' ? "spectator_container_right" : "spectator_container"}>
           {isSpectator && <div className="spectator_div">
             <div className="spectator" onClick={() => { }}>
               <img src="/HUD/applause_icon.png" alt="" />
@@ -254,11 +259,11 @@ class PlayerInfo extends Component<Props, State> {
                 Keyboard layout:
               </div>
               <div className="setting_dialog_keyboard_btn_container flex justify_center gap_4">
-                <div className={this.state.settingMenuCur === 0? "setting_menu_btn setting_menu_btn_active": "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({settingMenuCur: 0})}>Azerty</div>
-                <div className={this.state.settingMenuCur === 1? "setting_menu_btn setting_menu_btn_active": "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({settingMenuCur: 1})}>Qwerty</div>
+                <div className={this.state.settingMenuCur === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ settingMenuCur: 0 })}>Azerty</div>
+                <div className={this.state.settingMenuCur === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ settingMenuCur: 1 })}>Qwerty</div>
               </div>
               <div className="setting_dialog_control_bar_container">
-                <div className="setting_dialog_control_name">Music volume: </div> 
+                <div className="setting_dialog_control_name">Music volume: </div>
                 <div className="setting_dialog_contol_lable_start">{this.state.musicMinValue}</div>
                 <div className="setting_dialog_control_bar">
                   <div className="setting_dialog_control_line" ref={this.musicControlLineRef}>
@@ -268,7 +273,7 @@ class PlayerInfo extends Component<Props, State> {
                 <div className="setting_dialog_control_label_end">{this.state.musicMaxValue}</div>
               </div>
               <div className="setting_dialog_control_bar_container">
-                <div className="setting_dialog_control_name">SFX volume: </div> 
+                <div className="setting_dialog_control_name">SFX volume: </div>
                 <div className="setting_dialog_contol_lable_start">{this.state.sfxMinValue}</div>
                 <div className="setting_dialog_control_bar">
                   <div className="setting_dialog_control_line" ref={this.sfxControlLineRef}>

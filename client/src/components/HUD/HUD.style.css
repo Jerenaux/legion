@@ -377,6 +377,7 @@
   display: flex;
   flex-direction: column; 
   position: relative; 
+  width: 100%;
 }
 
 .player_info_name {
@@ -385,7 +386,7 @@
   color: #ffffff; 
   padding: 3px;
   background-image: url("@assets/HUD/team_bg.png"); 
-  background-size: 100% 100%;
+  background-size: 100% 100%; 
 }
 
 .player_info_rank {
@@ -639,7 +640,7 @@
 .spectator_container {
     position: absolute;
     top: 8px;
-    right: 6px;
+    right: 0.5vw;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -651,7 +652,7 @@
 .spectator_container_right {
   position: absolute;
   top: 8px;
-  left: 20px;
+  left: 1.75vw;
   display: flex; 
   flex-direction: column;
   align-items: center;
