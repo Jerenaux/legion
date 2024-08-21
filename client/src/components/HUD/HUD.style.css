@@ -1178,6 +1178,15 @@
   background-image: url("@assets/HUD/button_bg_active.png");
 } 
 
+.setting_menu_btn_inactive {
+  opacity: 0.5;
+}
+
+.setting_menu_btn_active { 
+  color: #51fdff; 
+  opacity: 1.0;
+}
+
 .setting_dialog {
   /* background-image: url("@assets/leaderboard/recap_bg.png"); */
   background-size: 100% 100%;

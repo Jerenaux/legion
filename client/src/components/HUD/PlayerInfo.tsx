@@ -24,6 +24,7 @@ interface State {
   sfxCurrentValue: number; 
   sfxMinValue: number; 
   sfxMaxValue: number; 
+  settingMenuCur: number; 
 }
 
 class PlayerInfo extends Component<Props, State> {
@@ -47,6 +48,7 @@ class PlayerInfo extends Component<Props, State> {
       sfxCurrentValue: 50, 
       sfxMinValue: 0, 
       sfxMaxValue: 100, 
+      settingMenuCur: 0, 
     }
     this.events = this.props.eventEmitter; 
   } 
@@ -252,8 +254,8 @@ class PlayerInfo extends Component<Props, State> {
                 Keyboard layout:
               </div>
               <div className="setting_dialog_keyboard_btn_container flex justify_center gap_4">
-                <div className="setting_menu_btn">Azerty</div>
-                <div className="setting_menu_btn">Qwerty</div>
+                <div className={this.state.settingMenuCur === 0? "setting_menu_btn setting_menu_btn_active": "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({settingMenuCur: 0})}>Azerty</div>
+                <div className={this.state.settingMenuCur === 1? "setting_menu_btn setting_menu_btn_active": "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({settingMenuCur: 1})}>Qwerty</div>
               </div>
               <div className="setting_dialog_control_bar_container">
                 <div className="setting_dialog_control_name">Music volume: </div> 
