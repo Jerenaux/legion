@@ -1,7 +1,9 @@
 // LeaderboardTable.tsx
 import { ChestColor } from "@legion/shared/enums";
 import './LeaderboardTable.style.css';
-import { h, Component } from 'preact';
+import { h, Component } from 'preact'; 
+
+import Skeleton from 'react-loading-skeleton';
 
 interface LeaderboardTableProps {
     data: {
@@ -108,11 +110,11 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
             return;
         }
 
-        const rankRowAvatar = (index: number) => { 
+        const rankRowAvatar = (index: number) => {
             // console.log("tableIndexData => ", this.state.tableData[index]); 
             if (this.state.tableData[index].isPlayer) return {
                 // backgroundImage: `url(/leaderboard/leaderboard_avatar_frame.png)`, 
-                backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`, 
+                backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`,
             }
 
             if (this.state.tableData[index].isFriend) return {
@@ -126,7 +128,9 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
             return {
                 transform: `rotate(${this.state.isAscending[index] ? '180' : '0'}deg)`
             }
-        }
+        } 
+
+        // console.log("tableData => ", this.state.tableData); 
 
         return (
             <div className="rank-table-container">
@@ -144,7 +148,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.state.tableData.map((item, index) => (
+                        {this.props.data ? this.state.tableData.map((item, index) => (
                             <tr key={index} className={item.player === 'Me' ? 'highlighted-row' : ''} style={getRowBG(index)}>
                                 <td className="rank-row">
                                     <div className="rank-row-number" style={rankRowNumberStyle(this.state.tableData[index].rank)}>{item.rank}</div>
@@ -158,11 +162,17 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
                                 <td className="rank-row-winRatio">{item.winsRatio}</td>
                                 <td className="rank-row-reward">{rewardImage[this.state.tableData[index].chestColor] && <img src={`/shop/${rewardImage[this.state.tableData[index].chestColor]}.png`} alt="" />}</td>
                             </tr>
-                        ))}
+                        )) : <Skeleton
+                            height={46}
+                            count={6}
+                            highlightColor='#0000004d'
+                            baseColor='#0f1421'
+                            style={{ margin: '4px 0 0px', width: '940px' }}
+                        />}
                     </tbody>
-                </table> 
-                <div style={this.state.tableData.length === 0? {display: "block"}: {display: "none"}} className="table-empty">
-                    No players in this league yet. 
+                </table>
+                <div style={this.state.tableData.length === 0 ? { display: "block" } : { display: "none" }} className="table-empty">
+                    No players in this league yet.
                 </div>
             </div>
         );
