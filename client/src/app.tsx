@@ -13,20 +13,20 @@ const AuthenticatedHomePage = withAuth(HomePage);
 const AuthenticatedGamePage = withAuth(GamePage);
 
 interface AppState {
-    currentUrl: string;
+	currentUrl: string;
 }
-class App extends Component<{}, AppState>  {
+class App extends Component<{}, AppState> {
 	state: AppState = {
-        currentUrl: '/'
-    };
+		currentUrl: '/'
+	};
 
 	handleRoute = (e: RouterOnChangeArgs) => {
-        this.setState({ currentUrl: e.url });
-    };
+		this.setState({ currentUrl: e.url });
+	};
 
-    render() {
-        return (
-            <AuthProvider>
+	render() {
+		return (
+			<AuthProvider>
 				<PlayerProvider>
 					<Router onChange={this.handleRoute}>
 						<Route path="/" component={withNoAuth(LandingPage)} />
@@ -39,9 +39,9 @@ class App extends Component<{}, AppState>  {
 						<Route default component={AuthenticatedHomePage} />
 					</Router>
 				</PlayerProvider>
-            </AuthProvider>
-        );
-    }
+			</AuthProvider>
+		);
+	}
 }
 
 export default App;
