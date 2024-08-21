@@ -127,16 +127,18 @@ class Navbar extends Component<Props, State> {
                 </div>
 
                 <div className="flexContainer" id="goldEloArea">
-                    {this.props.playerData.uid ? (
-                        <UserInfoBar label={`${Math.round(this.props.playerData?.gold)}`} />
+                    <UserInfoBar isgold={true} gold={this.props.playerData.gold} label={`${Math.round(this.props.playerData?.gold)}`} />
+                    <UserInfoBar isgold={false} gold={this.props.playerData.gold} label={`#${this.props.playerData?.rank}`} elo={this.props.playerData?.elo} league={this.props.playerData?.league} />
+                    {/* {this.props.playerData.uid ? (
+                        <UserInfoBar isgold={true} label={`${Math.round(this.props.playerData?.gold)}`} />
                     ) : (
                         <Skeleton height={24} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 0', width: '100px' }} />
                     )}
                     {this.props.playerData.uid ? (
-                        <UserInfoBar label={`#${this.props.playerData?.rank}`} elo={this.props.playerData?.elo} league={this.props.playerData?.league} />
+                        <UserInfoBar isgold={false} label={`#${this.props.playerData?.rank}`} elo={this.props.playerData?.elo} league={this.props.playerData?.league} />
                     ) : (
                         <Skeleton height={24} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0', width: '100px' }} />
-                    )}
+                    )} */}
                     <div class="expand_btn" style={{ backgroundImage: 'url("/expand_btn.png")' }} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
                         <div class="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
                             <div className="" onClick={() => window.open('', '_blank')}>

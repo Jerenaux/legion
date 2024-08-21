@@ -15,7 +15,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         name: '',
         avatar: '0',
         lvl: 0,
-        gold: 0,
+        gold: -1,
         elo: 0,
         rank: 0,
         allTimeRank: 0,
@@ -42,7 +42,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       // throw new Error("No authenticated user found");
     }
     try {
-      // await new Promise(resolve => setTimeout(resolve, 4000)); 
+      // await new Promise(resolve => setTimeout(resolve, 3000)); 
       const data = await apiFetch('getPlayerData') as APIPlayerData;
       console.log(data);
       this.setState({
