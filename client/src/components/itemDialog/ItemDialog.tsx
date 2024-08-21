@@ -16,7 +16,8 @@ interface DialogProps {
   characterId?: string;
   characterSp?: number;
   characterName?: string;
-  characterLevel?: number;
+  characterLevel?: number; 
+  characterClass?: number; 
   index?: number;
   isEquipped?: boolean;
   actionType: InventoryActionType;
@@ -205,7 +206,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       const equipmentData = getEquipmentById(equipment[this.props.index]);
 
       // console.log("equipmentEquipment => ", equipment); 
-      // console.log("equipmentData => ", this.props.index, equipmentData); 
+      // console.log("equipmentData => ", equipmentData); 
+      // console.log("itemDialogClass => ", this.props.characterClass); 
+      // console.log("itemDialogIncludes => ", equipmentData.classes.includes(this.props.characterClass)); 
 
       return (
         <div className="equip-dialog-container">
@@ -227,9 +230,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           {dialogData.description && <p className="equip-dialog-desc">{dialogData.description}</p>}
           <div className="dialog-button-container">
             <button
-              style={this.props.characterLevel < dialogData.minLevel ? { backgroundColor: "grey", opacity: "0.5" } : {}}
+              style={(this.props.characterLevel < dialogData.minLevel || (equipmentData.classes.length > 0 && !equipmentData.classes.includes(this.props.characterClass))) ? { backgroundColor: "grey", opacity: "0.5" } : {}}
               className="dialog-accept"
-              disabled={this.props.characterLevel < dialogData.minLevel}
+              disabled={(this.props.characterLevel < dialogData.minLevel || (equipmentData.classes.length > 0 && !equipmentData.classes.includes(this.props.characterClass)))}
               onClick={() => this.AcceptAction(dialogType, this.props.index)}
             >
               <img src="/inventory/confirm_icon.png" alt="confirm" />

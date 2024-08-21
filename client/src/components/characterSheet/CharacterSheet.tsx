@@ -305,7 +305,9 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                     refreshCharacter={refreshCharacter}
                     characterId={characterId} 
                     characterSp={characterData?.sp}
-                    characterName={characterData.name}
+                    characterName={characterData.name} 
+                    characterLevel={characterData.level} 
+                    characterClass={characterData.class} 
                     index={this.state.itemIndex}
                     dialogOpen={this.state.openModal}
                     dialogType={this.state.modalType}

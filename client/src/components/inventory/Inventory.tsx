@@ -18,7 +18,8 @@ Modal.setAppElement('#root');
 interface InventoryProps {
   id: string;
   name: string;
-  level: number;
+  level: number; 
+  class: number; 
   inventory: PlayerInventory;
   carrying_capacity: number;
   refreshCharacter: () => void;
@@ -83,7 +84,8 @@ class Inventory extends Component<InventoryProps> {
           <ItemIcon
             characterId={this.props.id}
             characterName={this.props.name}
-            characterLevel={this.props.level}
+            characterLevel={this.props.level} 
+            characterClass={this.props.class}
             action={item}
             index={i}
             hideHotKey={true}
