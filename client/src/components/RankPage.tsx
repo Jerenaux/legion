@@ -4,7 +4,6 @@ import { apiFetch } from '../services/apiService';
 import LeaderboardTable from './leaderboardTable/LeaderboardTable';
 import SeasonCard from './seasonCard/SeasonCard';
 import AwardedPlayer from './awardedPlayer/AwardedPlayer';
-import { rankNoImage } from '@legion/shared/enums';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { manageHelp } from './utils';
 import 'react-loading-skeleton/dist/skeleton.css'
@@ -20,6 +19,16 @@ import goldRankIcon from '@assets/icons/gold_rank.png';
 import zenithRankIcon from '@assets/icons/zenith_rank.png';
 import apexRankIcon from '@assets/icons/apex_rank.png';
 import alltimeRankIcon from '@assets/icons/alltime_rank.png';
+
+import goldRankNo from '@assets/leaderboard/gold_rankno.png';
+import silverRankNo from '@assets/leaderboard/silver_rankno.png';
+import bronzeRankNo from '@assets/leaderboard/bronze_rankno.png';
+
+const rankNoImage = [
+  goldRankNo,
+  silverRankNo,
+  bronzeRankNo,
+];
 
 const rankIcons = {
   bronze: bronzeRankIcon,

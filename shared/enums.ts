@@ -104,13 +104,6 @@ export enum StatusEffect {
 export const equipmentFields = ["weapon", "armor", "helmet", "belt", "gloves",
   "boots", "left_ring", "right_ring", "necklace"];
 
-
-export enum rankNoImage {
-    'gold_rankno',
-    'silver_rankno',
-    'bronze_rankno'
-}
-
 export enum League {
     BRONZE,
     SILVER,
