@@ -1,9 +1,11 @@
 import Shepherd from 'shepherd.js';
 import { apiFetch } from '../services/apiService';
 
+let tourLock = false;
 export function startTour(page) {
     // console.log(`Starting tour for ${page}`);
-   
+    if (tourLock) return;
+    tourLock = true;
     let tour;
     switch (page) {
         case 'rank':
@@ -27,6 +29,8 @@ export function startTour(page) {
         body: {
             page
         }
+    }).then(() => {
+        tourLock = false;
     });
 }
 

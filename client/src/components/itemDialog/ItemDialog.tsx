@@ -11,6 +11,16 @@ import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast, mapFrameToCoordinates } from '../utils';
 import { getSPIncrement } from '@legion/shared/levelling';
 
+import equipmentSpritesheet from '@assets/equipment.png';
+import consumablesSpritesheet from '@assets/consumables.png';
+import spellsSpritesheet from '@assets/spells.png';
+
+import confirmIcon from '@assets/inventory/confirm_icon.png';
+import cancelIcon from '@assets/inventory/cancel_icon.png';
+import mpIcon from '@assets/inventory/mp_icon.png';
+import cdIcon from '@assets/inventory/cd_icon.png';
+import targetIcon from '@assets/inventory/target_icon.png';
+
 Modal.setAppElement('#root');
 interface DialogProps {
   characterId?: string;
@@ -126,18 +136,18 @@ class ItemDialog extends Component<DialogProps> {
       return (
         <div className="equip-dialog-container">
           <div className="equip-dialog-image" style={{ 
-              backgroundImage: `url(equipment.png)`,
+              backgroundImage: `url(${equipmentSpritesheet})`,
               backgroundPosition,
             }} />
           <p className='equip-dialog-name'>{dialogData.name}</p>
           <p className="equip-dialog-desc">{dialogData.description}</p>
           <div className="dialog-button-container">
             <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}>
-              <img src="/inventory/confirm_icon.png" alt="confirm" />
+              <img src={confirmIcon} alt="confirm" />
               {acceptBtn}
             </button>
             <button className="dialog-decline" onClick={handleClose}>
-              <img src="/inventory/cancel_icon.png" alt="decline" />
+              <img src={cancelIcon} alt="decline" />
               Cancel
             </button>
           </div>
@@ -157,7 +167,7 @@ class ItemDialog extends Component<DialogProps> {
           <div className="dialog-item-heading-bg"></div>
           <div className="dialog-item-heading">
             <div className="dialog-item-heading-image" style={{ 
-              backgroundImage: `url(consumables.png)`,
+              backgroundImage: `url(${consumablesSpritesheet})`,
               backgroundPosition,
             }} />
             <div className="dialog-item-title">
@@ -177,8 +187,8 @@ class ItemDialog extends Component<DialogProps> {
             }
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" />{acceptBtn}</button>
-            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src={confirmIcon} alt="confirm" />{acceptBtn}</button>
+            <button className="dialog-decline" onClick={handleClose}><img src={cancelIcon} alt="decline" />Cancel</button>
           </div>
         </div>
       );
@@ -195,7 +205,7 @@ class ItemDialog extends Component<DialogProps> {
         <div className="dialog-spell-container">
           <div className="spell-wrapper">
             <div className="dialog-spell-container-image" style={{ 
-              backgroundImage: `url(spells.png)`,
+              backgroundImage: `url(${spellsSpritesheet})`,
               backgroundPosition,
             }} />
           </div>
@@ -203,21 +213,21 @@ class ItemDialog extends Component<DialogProps> {
           <p className="dialog-spell-desc">{dialogData.description}</p>
           <div className="dialog-spell-info-container">
             <div className="dialog-spell-info">
-              <img src={'/inventory/mp_icon.png'} alt="mp" />
+              <img src={mpIcon} alt="mp" />
               <span>{dialogData.cost}</span>
             </div>
             <div className="dialog-spell-info">
-              <img src={'/inventory/cd_icon.png'} alt="cd" />
+              <img src={cdIcon} alt="cd" />
               <span>{dialogData.cooldown}s</span>
             </div>
             <div className="dialog-spell-info">
-              <img src={'/inventory/target_icon.png'} alt="target" />
+              <img src={targetIcon} alt="target" />
               <span>{Target[dialogData.target]}</span>
             </div>
           </div>
           <div className="dialog-button-container">
-            {!isEquipped && <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src="/inventory/confirm_icon.png" alt="confirm" />{acceptBtn}</button>}
-            <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+            {!isEquipped && <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src={confirmIcon} alt="confirm" />{acceptBtn}</button>}
+            <button className="dialog-decline" onClick={handleClose}><img src={cancelIcon} alt="decline" />Cancel</button>
           </div>
         </div>
       )
@@ -231,8 +241,8 @@ class ItemDialog extends Component<DialogProps> {
           <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>{getInfoVal(dialogData.effect)}</span>
         </p>
         <div className="dialog-button-container">
-          <button className="dialog-accept" onClick={() => this.spendSP(dialogData.key)}><img src="/inventory/confirm_icon.png" alt="confirm" />Accept</button>
-          <button className="dialog-decline" onClick={handleClose}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+          <button className="dialog-accept" onClick={() => this.spendSP(dialogData.key)}><img src={confirmIcon} alt="confirm" />Accept</button>
+          <button className="dialog-decline" onClick={handleClose}><img src={cancelIcon} alt="decline" />Cancel</button>
         </div>
       </div>
     );

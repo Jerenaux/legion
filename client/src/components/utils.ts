@@ -94,17 +94,22 @@ export function manageHelp(page: string, context: any) {
     startTour(page);
     context.setPlayerInfo({ tours: todoTours.filter(tour => tour !== page) });
   } else {
+    console.log(`Fetching guide tip form page ${page}`);
     fetchGuideTip();
   }
 }
 
+let tipLock = false;
 function fetchGuideTip() {
+  if (tipLock) return;
+  tipLock = true;
   apiFetch('fetchGuideTip', {
       method: 'GET',
   })
   .then((data) => {
       if (data.guideId == -1) return;
       showGuideToast(guide[data.guideId], data.route);
+      tipLock = false;
   })
   .catch(error => console.error(`Fetching tip error: ${error}`));
 }
