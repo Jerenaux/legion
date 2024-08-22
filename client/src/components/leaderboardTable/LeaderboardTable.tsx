@@ -118,7 +118,8 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
             }
 
             if (this.state.tableData[index].isFriend) return {
-                backgroundImage: `url(/leaderboard/leaderboard_avatar_frame_friend.png)`,
+                // backgroundImage: `url(/leaderboard/leaderboard_avatar_frame_friend.png)`, 
+                backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`,
             }
 
             return;
