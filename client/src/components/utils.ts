@@ -2,7 +2,10 @@ import {Class, Stat} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
 import { guide } from './tips';
 import { startTour } from './tours';  
-import { PlayerContext } from '../contexts/PlayerContext';
+
+import guideIcon from '@assets/guide.png';
+import successIcon from '@assets/svg/success.svg';
+import errorIcon from '@assets/svg/error.svg';
 
 import Toastify from 'toastify-js'
 
@@ -53,7 +56,7 @@ export function showGuideToast(text: string, destination: string, duration: numb
     className: "toast",
     destination,
     style: {
-      background: "#242b37 url('guide.png') 12px center no-repeat",
+      background: `#242b37 url(${guideIcon}) 12px center no-repeat`,
       maxWidth: '300px',
       backgroundRepeat: "no-repeat",
       backgroundPosition: "12px center",
@@ -64,15 +67,11 @@ export function showGuideToast(text: string, destination: string, duration: numb
 }
 
 export function successToast(text: string, duration: number = 3000) {
-  showToast(text, duration, 'svg/success.svg');
+  showToast(text, duration, successIcon);
 }
 
 export function errorToast(text: string, duration: number = 3000) {
-  showToast(text, duration, 'svg/error.svg');
-}
-
-export function guideToast(text: string, duration: number = 3000) {
-  showToast(text, duration, 'svg/guide.svg');
+  showToast(text, duration, errorIcon);
 }
  
 export function mapFrameToCoordinates(frame: number) {
