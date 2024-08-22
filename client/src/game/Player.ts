@@ -223,6 +223,10 @@ export class Player extends Phaser.GameObjects.Container {
         return (this.statuses[StatusEffect.PARALYZE] != 0) || this.isFrozen();
     }
 
+    isMuted() {
+        return this.statuses[StatusEffect.MUTE] != 0;
+    }
+
     canAct() {
         return this.cooldownDuration == 0 && this.isAlive() && !this.casting && !this.isParalyzed();
     }
@@ -467,7 +471,7 @@ export class Player extends Phaser.GameObjects.Container {
         if (this.pendingItem != null) {
             this.cancelItem();
         }
-        if (!this.canAct() || spell.cost > this.mp) {
+        if (!this.canAct() || spell.cost > this.mp || this.isMuted()) {
             this.arena.playSound('nope', 0.2);
             return;
         }

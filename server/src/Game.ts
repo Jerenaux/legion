@@ -685,6 +685,8 @@ export abstract class Game
             return;
         }
 
+        if (player.isMuted()) return;
+
         const spell: Spell | null = player.getSpellAtIndex(index);
         if (!spell) return;
         console.log(`[Game:processMagic] Casting spell [${spell.id}] ${spell.name}`);

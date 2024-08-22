@@ -144,6 +144,10 @@ export class ServerPlayer {
         return (this.statuses[StatusEffect.PARALYZE] != 0) || this.isFrozen();
     }
 
+    isMuted() {
+        return this.statuses[StatusEffect.MUTE] != 0;
+    }
+
     canAct() {
         return this.cooldown == 0 && this.isAlive() && !this.isCasting && !this.isParalyzed();
     }
