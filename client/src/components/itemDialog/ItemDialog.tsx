@@ -30,7 +30,8 @@ interface DialogProps {
   };
   handleClose: () => void;
   refreshCharacter?: () => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
+  updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
+  handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
 
 interface DialogState {

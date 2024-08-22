@@ -21,7 +21,8 @@ interface ItemIconProps {
   refreshCharacter?: () => void;
   handleItemEffect?: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
   updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
-  onActionClick?: (type: string, letter: string, index: number) => void;
+  onActionClick?: (type: string, letter: string, index: number) => void; 
+  handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
 /* eslint-disable react/prefer-stateless-function */
 
@@ -47,7 +48,9 @@ class ItemIcon extends Component<ItemIconProps> {
     this.setState({ openModal: true, modalType, modalPosition, modalData });
   }
 
-  handleCloseModal = () => {
+  handleCloseModal = () => { 
+    this.props.handleSelectedEquipmentSlot(-1); 
+
     this.setState({ openModal: false });
 
     if (this.props.handleItemEffect) {
@@ -70,6 +73,14 @@ class ItemIcon extends Component<ItemIconProps> {
 
       if (actionType === InventoryType.EQUIPMENTS) {
         this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP, (action as BaseEquipment).slot);
+      } 
+
+      // console.log("itemIconE => ", e); 
+      // console.log("itemIconAction => ", action); 
+      // console.log("itemIconActionType => ", actionType); 
+
+      if(actionType === InventoryType.EQUIPMENTS) {
+        this.props.handleSelectedEquipmentSlot((action as BaseEquipment).slot); 
       }
 
       this.handleOpenModal(e, action, actionType);
@@ -116,7 +127,8 @@ class ItemIcon extends Component<ItemIconProps> {
           dialogData={this.state.modalData}
           handleClose={this.handleCloseModal}
           refreshCharacter={this.props.refreshCharacter}
-          updateInventory={this.props.updateInventory}
+          updateInventory={this.props.updateInventory} 
+          handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot} 
         />
       </div>
     );

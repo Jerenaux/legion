@@ -24,7 +24,8 @@ interface InventoryProps {
   carrying_capacity: number;
   refreshCharacter: () => void;
   handleItemEffect: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
+  updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
+  handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
 
 class Inventory extends Component<InventoryProps> {
@@ -92,7 +93,8 @@ class Inventory extends Component<InventoryProps> {
             actionType={this.state.actionType}
             refreshCharacter={this.props.refreshCharacter}
             handleItemEffect={this.props.handleItemEffect}
-            updateInventory={this.props.updateInventory}
+            updateInventory={this.props.updateInventory} 
+            handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot} 
           />
         ) : (
           <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0 16px', width: '48px' }} />

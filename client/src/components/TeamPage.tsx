@@ -26,7 +26,8 @@ interface TeamPageState {
   carrying_capacity: number;
   character_id: string;
   character_sheet_data: APICharacterData;
-  item_effect: Effect[];
+  item_effect: Effect[]; 
+  selectedEquipmentSlot: number; 
 }
 interface TeamPageProps {
   matches: {
@@ -42,12 +43,17 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     inventory: {
       consumables: [],
       equipment: [],
-      spells: [],
+      spells: [], 
     },
     carrying_capacity: 0,
     character_id: this.props.matches.id || '',
     character_sheet_data: null,
-    item_effect: [],
+    item_effect: [], 
+    selectedEquipmentSlot: -1, 
+  } 
+
+  handleSelectedEquipmentSlot = (newValue) => { 
+    this.setState({ selectedEquipmentSlot: newValue }); 
   }
 
   async componentDidMount() {
@@ -236,7 +242,9 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               itemEffects={this.state.item_effect}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
-              updateInventory={this.updateInventory.bind(this)}
+              updateInventory={this.updateInventory.bind(this)} 
+              selectedEquipmentSlot={this.state.selectedEquipmentSlot} 
+              handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
             /> : <Skeleton 
             height={400} 
             count={1} 
@@ -253,7 +261,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               carrying_capacity={this.state.carrying_capacity}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
-              updateInventory={this.updateInventory.bind(this)}
+              updateInventory={this.updateInventory.bind(this)} 
+              handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot}
             /> : <Skeleton 
             height={297} 
             count={1} 
