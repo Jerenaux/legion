@@ -229,7 +229,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           </div> 
           <div className="equip-dialog-class-container">
             {equipmentData.classes?.map((item) =>
-              <div className="equip-dialog-class">
+              <div style={equipmentData.classes.length > 0 && !equipmentData.classes.includes(this.props.characterClass) && {backgroundColor: "red"}} className="equip-dialog-class">
                 {classEnumToString(item)}
               </div>
             )}
