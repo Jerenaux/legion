@@ -28,6 +28,7 @@ interface TeamPageState {
   character_sheet_data: APICharacterData;
   item_effect: Effect[]; 
   selectedEquipmentSlot: number; 
+  setInventoryData: boolean; 
 }
 interface TeamPageProps {
   matches: {
@@ -50,6 +51,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     character_sheet_data: null,
     item_effect: [], 
     selectedEquipmentSlot: -1, 
+    setInventoryData: false, 
   } 
 
   handleSelectedEquipmentSlot = (newValue) => { 
@@ -71,7 +73,9 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     }
   }
 
-  fetchInventoryData = async () => {
+  fetchInventoryData = async () => { 
+    // await new Promise(resolve => setTimeout(resolve, 2000));
+
     try {
         const data = await apiFetch('inventoryData');
         this.setState({ 
@@ -81,7 +85,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             spells: data.inventory.spells?.sort(),
           },
           carrying_capacity: data.carrying_capacity
-        });
+        }); 
+        this.setState({ setInventoryData: true }); 
     } catch (error) {
         errorToast(`Error: ${error}`);
     }
@@ -262,7 +267,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)} 
-              handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot}
+              handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
+              setInventoryData={this.state.setInventoryData} 
             /> : <Skeleton 
             height={297} 
             count={1} 

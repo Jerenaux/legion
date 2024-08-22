@@ -18,14 +18,15 @@ Modal.setAppElement('#root');
 interface InventoryProps {
   id: string;
   name: string;
-  level: number; 
-  class: number; 
+  level: number;
+  class: number;
   inventory: PlayerInventory;
   carrying_capacity: number;
   refreshCharacter: () => void;
   handleItemEffect: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
-  handleSelectedEquipmentSlot: (newValue: number) => void; 
+  updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
+  handleSelectedEquipmentSlot: (newValue: number) => void;
+  setInventoryData: boolean;
 }
 
 class Inventory extends Component<InventoryProps> {
@@ -81,11 +82,26 @@ class Inventory extends Component<InventoryProps> {
       // console.log("InventoryProps => ", this.props); 
 
       return <div key={i} className="item" style={slotStyle}>
-        {this.props.id != '' ? (
+        <ItemIcon
+          characterId={this.props.id}
+          characterName={this.props.name}
+          characterLevel={this.props.level}
+          characterClass={this.props.class}
+          action={item}
+          index={i}
+          hideHotKey={true}
+          actionType={this.state.actionType}
+          refreshCharacter={this.props.refreshCharacter}
+          handleItemEffect={this.props.handleItemEffect}
+          updateInventory={this.props.updateInventory}
+          handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
+        />
+
+        {/* {this.props.id != '' ? (
           <ItemIcon
             characterId={this.props.id}
             characterName={this.props.name}
-            characterLevel={this.props.level} 
+            characterLevel={this.props.level}
             characterClass={this.props.class}
             action={item}
             index={i}
@@ -93,12 +109,12 @@ class Inventory extends Component<InventoryProps> {
             actionType={this.state.actionType}
             refreshCharacter={this.props.refreshCharacter}
             handleItemEffect={this.props.handleItemEffect}
-            updateInventory={this.props.updateInventory} 
-            handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot} 
+            updateInventory={this.props.updateInventory}
+            handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
           />
         ) : (
           <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0 16px', width: '48px' }} />
-        )}
+        )} */}
 
       </div>
     });
@@ -141,10 +157,32 @@ class Inventory extends Component<InventoryProps> {
             </div>
           </div>
           <div className="inventoryWrapper">
-            {isCategoryEmpty ? (<div className='empty-slots-container'>
+            {
+              !this.props.setInventoryData ?
+                <div style={{ display: "flex", gap: '6px' }}>
+                  {[...Array(6)].map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      height={48}
+                      highlightColor="#0000004d"
+                      baseColor="#0f1421"
+                      style={{
+                        width: '48px',
+                      }}
+                    />
+                  ))}
+                </div> :
+                isCategoryEmpty ?
+                  <div className='empty-slots-container'>
+                    <p>No items in this category, take a look at the shop!</p>
+                    <Link href='/shop'>Go to shop <img src="./inventory/shop_btn.png" alt="shop" /></Link>
+                  </div> :
+                slots
+            }
+            {/* {isCategoryEmpty ? (<div className='empty-slots-container'>
               <p>No items in this category, take a look at the shop!</p>
               <Link href='/shop'>Go to shop <img src="./inventory/shop_btn.png" alt="shop" /></Link>
-            </div>) : slots}
+            </div>) : slots} */}
           </div>
         </div>
         <Modal isOpen={this.state.openModal} style={customStyles} onRequestClose={this.handleCloseModal}>
