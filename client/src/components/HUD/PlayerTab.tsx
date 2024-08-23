@@ -1,6 +1,6 @@
 import { h, Component } from 'preact';
 import ItemIcon from './ItemIcon';
-import { InventoryType, Target } from '@legion/shared/enums';
+import { InventoryType, StatusEffect, Target } from '@legion/shared/enums';
 import TabBar from './TabBar';
 import { mapFrameToCoordinates } from '../utils';
 import { PlayerProps } from '@legion/shared/interfaces';
@@ -65,6 +65,7 @@ class PlayerTab extends Component<Props, State> {
     const isCooldownActive = player.cooldown > 0;
     const isDead = player.hp <= 0;
     const canAct = !isCooldownActive && !isDead && !player.casting && !player.isParalyzed;
+    const isMuted = player.statuses[StatusEffect.MUTE] != 0;
     const cooldownRatio = this.getCooldownRatio(player);
     const cooldownBarStyle = {
       width: `${cooldownRatio * 100}%`,
@@ -156,7 +157,7 @@ class PlayerTab extends Component<Props, State> {
                     <ItemIcon
                       action={player.spells[idx]}
                       index={idx}
-                      canAct={canAct && player.spells[idx]?.cost <= player.mp}
+                      canAct={canAct && !isMuted && player.spells[idx]?.cost <= player.mp}
                       actionType={InventoryType.SKILLS}
                       key={idx}
                     />
