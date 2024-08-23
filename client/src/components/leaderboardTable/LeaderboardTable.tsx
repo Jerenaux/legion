@@ -111,18 +111,22 @@ class LeaderboardTable extends Component<LeaderboardTableProps> {
         }
 
         const rankRowAvatar = (index: number) => {
-            // console.log("tableIndexData => ", this.state.tableData[index]); 
-            if (this.state.tableData[index].isPlayer) return {
-                // backgroundImage: `url(/leaderboard/leaderboard_avatar_frame.png)`, 
-                backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`,
-            }
+            console.log("tableIndexData => ", this.state.tableData[index]); 
+            return { 
+                backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`, 
+            }; 
 
-            if (this.state.tableData[index].isFriend) return {
-                // backgroundImage: `url(/leaderboard/leaderboard_avatar_frame_friend.png)`, 
-                backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`,
-            }
+            // if (this.state.tableData[index].isPlayer) return {
+            //     // backgroundImage: `url(/leaderboard/leaderboard_avatar_frame.png)`, 
+            //     backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`,
+            // }
 
-            return;
+            // if (this.state.tableData[index].isFriend) return {
+            //     // backgroundImage: `url(/leaderboard/leaderboard_avatar_frame_friend.png)`, 
+            //     backgroundImage: `url(/avatars/${this.state.tableData[index].avatar}.png)`,
+            // }
+
+            // return;
         }
 
         const sortIconStyle = (index: number) => {
