@@ -159,7 +159,7 @@ class Inventory extends Component<InventoryProps> {
           <div className="inventoryWrapper">
             {
               !this.props.setInventoryData ?
-                <div style={{ display: "flex", gap: '6px' }}>
+                <div style={{ position: "absolute", display: "flex", gap: '6px' }}>
                   {[...Array(6)].map((_, index) => (
                     <Skeleton
                       key={index}

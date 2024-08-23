@@ -74,7 +74,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   }
 
   fetchInventoryData = async () => { 
-    // await new Promise(resolve => setTimeout(resolve, 2000));
+    // await new Promise(resolve => setTimeout(resolve, 20000));
 
     try {
         const data = await apiFetch('inventoryData');
