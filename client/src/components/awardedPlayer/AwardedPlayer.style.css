@@ -20,11 +20,29 @@
     margin-bottom: 4px;
 }
 
-.award-player-container img {
+/* .award-player-container img {
     position: absolute;
     width: 64px;
     height: 64px;
     top: -32px;
+}  */
+
+.award-player-avatar-container { 
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    top: -32px; 
+    background-image: url('@assets/rank/player_profile_bg.png'); 
+    background-size: 100% 100%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+} 
+
+.award-player-avatar-container > img { 
+    width: 60px; 
+    height: 60px; 
+    border-radius: 6px;
 }
 
 .award-player-name {

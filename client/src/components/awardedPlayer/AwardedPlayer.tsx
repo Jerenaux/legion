@@ -11,13 +11,17 @@ interface AwardedPlayerProps {
     }[]
 }
 
-class AwardedPlayer extends Component<AwardedPlayerProps> {
+class AwardedPlayer extends Component<AwardedPlayerProps> { 
 
   render() {
+    // console.log("awardedProps => ", this.props.players); 
     return (
       <div className="highlights-container">
         {this.props.players.map(player => <div className="award-player-container">
-            <img src="/rank/player_profile_bg.png" alt="profile" />
+            {/* <img src="/rank/player_profile_bg.png" alt="profile" /> */}
+            <div className="award-player-avatar-container">
+              <img src={`/avatars/${player.avatar}.png`} />
+            </div>  
             <span className="award-player-name">{player.name}</span>
             <span className="award-player-title">{player.title}</span>
 
