@@ -2,9 +2,10 @@
   "name": "matchmaker",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "start": "nodemon"
+    "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "start": "node dist/src/matchmaker.js",
+    "dev": "nodemon"
   },
   "author": "",
   "license": "ISC",
@@ -14,11 +15,14 @@
     "firebase-admin": "^12.0.0",
     "node-fetch": "^2.7.0",
     "socket.io": "^4.7.4",
-    "uuid": "^9.0.1",
-    "ts-node": "^10.9.2"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "tsconfig-paths": "^4.2.0",
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0",
+    "tsc-alias": "1.8.10",
+    "tsconfig-paths": "^4.2.0"
   }
 }

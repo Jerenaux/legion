@@ -8,5 +8,5 @@ RUN npm install
 
 COPY shared/ ./ 
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]
 # CMD ["tail", "-f", "/dev/null"]

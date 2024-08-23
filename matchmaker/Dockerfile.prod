@@ -1,0 +1,49 @@
+# Build stage
+FROM node:20 AS builder
+
+WORKDIR /usr/src/app
+
+COPY matchmaker/package*.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Copy shared directory content
+COPY shared/ ./shared
+
+# Copy matchmaker source code and TypeScript config
+COPY matchmaker/tsconfig.docker.json ./tsconfig.json
+COPY matchmaker/src/ ./src/
+
+# Build the TypeScript code
+RUN npm run build
+
+# Production stage
+FROM node:20-slim
+
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json
+COPY matchmaker/package*.json ./
+
+# Install only production dependencies
+RUN npm install --omit=dev
+
+# Copy built JavaScript files from the builder stage
+COPY --from=builder /usr/src/app/dist ./dist
+
+# RUN set -x && \
+#     echo "Contents of /usr/src/app:" && \
+#     ls /usr/src/app && \
+#     echo "Contents of /usr/src/app/dist:" && \
+#     ls /usr/src/app/dist && \
+#     echo "Contents of /usr/src/app/dist/shared:" && \
+#     ls /usr/src/app/dist/shared && \
+#     echo "Contents of tsconfig.json:" && \
+#     cat /usr/src/app/tsconfig.json && \
+#     echo "Contents of /usr/src/app/dist/src/matchmaker.js:" && \
+#     cat /usr/src/app/dist/src/matchmaker.js
+
+# ENV NODE_DEBUG=module
+
+CMD ["npm", "run", "start"]

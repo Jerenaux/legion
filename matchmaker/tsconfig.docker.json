@@ -1,9 +1,17 @@
 {
   "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": ".",
+    "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": "./", 
+    "baseUrl": ".", 
     "paths": {
       "@legion/shared/*": ["shared/*"] 
     }
   },
+  "include": ["src/**/*", "shared/**/*"],
+  "exclude": ["node_modules"]
 }
