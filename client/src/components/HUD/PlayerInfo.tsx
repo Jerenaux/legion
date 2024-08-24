@@ -4,7 +4,7 @@ import { route } from 'preact-router';
 import Modal from 'react-modal';
 import { PlayerProfileData } from "@legion/shared/interfaces";
 
-import { ENABLE_PLAYER_LEVEL, ENABLE_TEAM_NAME } from '@legion/shared/config';
+import { ENABLE_PLAYER_LEVEL, ENABLE_SETTINGS } from '@legion/shared/config';
 
 interface Props {
   player: PlayerProfileData;
@@ -235,9 +235,9 @@ class PlayerInfo extends Component<Props, State> {
         </div>}
         <Modal isOpen={this.state.modalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
           <div>
-            <div className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
-              <p>Setting</p>
-            </div>
+            {ENABLE_SETTINGS && <div className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
+              <p>Settings</p>
+            </div>}
             <div className="exit_game_label" onClick={(e) => this.handleOpenModal(e, "exit_modal")}>
               <p>Abandon Game!</p>
             </div>

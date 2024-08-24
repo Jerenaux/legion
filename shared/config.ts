@@ -1,3 +1,5 @@
+const isDev = process.env.NODE_ENV === 'development';
+
 // Gameplay
 export const MAX_CHARACTERS = 10;
 export const BASE_INVENTORY_SIZE = 20;
@@ -18,6 +20,7 @@ export const ENABLE_MM_TOGGLE = false;
 export const ENABLE_Q_NEWS = false;
 export const ENABLE_QUESTS = false;
 export const ENABLE_SPECTATOR_MODE = false;
+export const ENABLE_SETTINGS = false;
 
 // Admin
 export const TIME_COEFFICIENT = 1;
