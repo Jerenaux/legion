@@ -78,27 +78,45 @@
 } 
 
 .characterSp {
-  position: absolute; 
-  top: -4px; 
-  right: -4px; 
-  padding: 3px 6px;
-  /* width: 24px;  */
-  /* height: 24px;  */
-  /* background-color: rgb(206, 60, 50);  */
-  border-radius: 4px; 
-  font-size: 14px;
-  color: white; 
-  animation: bgColorChange 1s ease-in-out infinite; 
-} 
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: white;
+  animation: bgColorChange 0.5s ease-in-out infinite;
+  
+  /* New styles for fuzzy effect */
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+  backdrop-filter: blur(2px);
+}
+
+/* blur the text as well */
+.characterSp::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: blur(1px);
+}
 
 @keyframes bgColorChange { 
   0% { 
-    background-color: rgb(192, 38, 27);
+    background-color: rgb(219, 43, 31);
   } 
   50% { 
-    background-color: rgb(250, 47, 47);
+    background-color: rgb(253, 36, 36);
   } 
   100% { 
-    background-color: rgb(192, 38, 27);
+    background-color: rgb(219, 43, 31);
   }
 }

@@ -37,8 +37,6 @@ class CharacterCard extends Component<APICharacterData> {
       cursor: 'pointer'
     }
 
-    // console.log("CharacterCardProps => ", this.props); 
-
     return (
       <div className="cardContainer" style={bgStyle} onClick={this.handleCardClick} onMouseEnter={() => this.setState({ active: true })} onMouseLeave={() => this.setState({ active: false })}>
         <div className="characterLevel">
@@ -54,7 +52,7 @@ class CharacterCard extends Component<APICharacterData> {
         </div>
         {this.props?.sp > 0 && (
           <div className="characterSp">
-            {this.props.sp}
+            SP
           </div>
         )}
       </div>

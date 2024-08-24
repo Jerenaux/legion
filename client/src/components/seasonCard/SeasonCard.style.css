@@ -22,7 +22,7 @@
 
 .season-card-header-img {
     position: absolute;
-    top: calc(50% - 27px);
+    top: calc(50% - 20px);
     left: 12px;
     height: 54px; 
     width: 54px;

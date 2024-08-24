@@ -8,6 +8,7 @@ import recapBluebar from '@assets/rank/recap_blue_bar.png';
 import infinityIcon from '@assets/rank/infinity_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import shareIcon from '@assets/rank/share_icon.png';
+import infoIcon from '@assets/inventory/info_btn.png';
 
 interface SeasonCardProps {
     seasonEnd: number;
@@ -99,8 +100,6 @@ class SeasonCard extends Component<SeasonCardProps> {
             second: Math.floor(this.state.time % 60)
         }; 
 
-        // console.log("seasonCardPropsData => ", this.props); 
-
         const isAllTime = this.props.currTab === 'alltime';
 
         return (
@@ -113,7 +112,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                         <span>{this.props.currTab.toUpperCase()} </span> 
                         <span>LEAGUE</span>
                     </div> 
-                    <div className="categoryBtn" style={{ backgroundImage: 'url(./inventory/info_btn.png)' }} onClick={() => {}}></div>
+                    <div className="categoryBtn" style={{ backgroundImage: `url({${infoIcon}})` }} onClick={() => {}}></div>
                 </div>
                 <div className="season-card-body">
                     <div className="recap-single-container" ref={this.captureRef}>
@@ -135,7 +134,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                             <p className="season-recap-title">SEASON</p>
                             <p className="season-recap-label">ENDS IN</p>
                             <div className="recap-season-bg" style={seasonBGStyle}>
-                                {this.state.time === -1 ? <img src="/rank/infinity_icon.png" alt="infinity" /> : (
+                                {this.state.time === -1 ? <img src={infinityIcon} alt="infinity" /> : (
                                     <div style={{ width: '78px' }}>
                                         <div className="recap-season-timer-label">
                                             <span>D</span>
