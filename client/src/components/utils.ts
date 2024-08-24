@@ -2,6 +2,7 @@ import {Class, Stat} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
 import { guide } from './tips';
 import { startTour } from './tours';  
+import { LeaguesNames } from "@legion/shared/enums";
 
 import guideIcon from '@assets/guide.png';
 import successIcon from '@assets/svg/success.svg';
@@ -11,6 +12,7 @@ import Toastify from 'toastify-js'
 
 const spriteContext = require.context('@assets/sprites', false, /\.(png|jpe?g|svg)$/);
 export const avatarContext = require.context('@assets/avatars', false, /\.(png|jpe?g|svg)$/);
+const leagueIconContext = require.context('@assets/icons', false, /_rank\.png$/);
 
 export function classEnumToString(characterClass: Class) {
     const classToName: { [key in Class]?: string } = {};
@@ -133,4 +135,13 @@ export function loadAvatar(avatar) {
           console.error(`Failed to load avatar: ${avatar}.png`, error);
       }
   }
+}
+
+export function getLeagueIcon(leagueName: string | number | undefined): string {
+  if (leagueName === undefined) return '';
+  if (typeof leagueName === 'number') {
+    leagueName = LeaguesNames[leagueName];
+  }
+  const iconName = `${leagueName.toLowerCase()}_rank.png`;
+  return leagueIconContext(`./${iconName}`);
 }

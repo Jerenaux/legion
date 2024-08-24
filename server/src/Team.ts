@@ -160,6 +160,7 @@ export class Team {
             playerLevel: this.teamData.lvl,
             playerRank: this.teamData.rank,
             playerAvatar: this.teamData.avatar,
+            playerLeague: this.teamData.league,
         }
     }
     

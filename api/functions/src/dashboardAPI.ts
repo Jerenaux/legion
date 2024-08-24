@@ -289,7 +289,7 @@ export const getActionLog = onRequest(async (request, response) => {
                 allTimeRank: allTimeStats.rank,
                 lossesStreak: allTimeStats.lossesStreak,
                 characters: characterDetails,
-                utilizationStats, 
+                utilizationStats,
             };
 
             // Send the response

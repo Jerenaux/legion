@@ -397,14 +397,18 @@
 }
 
 .player_info_rank img {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 36px;
 }
 
 .player_info_rank span {
-  font-size: 14px;
-  color: #71deff; 
-  margin-top: -14px;
+  font-size: 24px;
+  color: white; 
+  margin-top: -2px;
+  margin-right: 4px;
+  font-style: italic;
+  font-family: 'Kim';
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .player_info_team {

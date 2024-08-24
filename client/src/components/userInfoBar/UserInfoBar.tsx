@@ -2,8 +2,7 @@ import { h, Component } from 'preact';
 import './UserInfoBar.style.css';
 import GoldIcon from '@assets/gold_icon.png';
 import {League} from "@legion/shared/enums";
-
-const leagueIconContext = require.context('@assets/icons', false, /_rank\.png$/);
+import {getLeagueIcon} from "../utils";
 
 interface BarProps {
     elo?: number;
@@ -20,15 +19,10 @@ const leagueMap = new Map([
 ]);
 
 class UserInfoBar extends Component<BarProps> {
-    getLeagueIcon(leagueName: string | undefined): string {
-        if (!leagueName) return GoldIcon;
-        const iconName = `${leagueName.toLowerCase()}_rank.png`;
-        return leagueIconContext(`./${iconName}`);
-    }
-
+    
     render() {
         const leagueName = leagueMap.get(this.props.league);
-        const leagueIcon = this.getLeagueIcon(leagueName);
+        const leagueIcon = getLeagueIcon(leagueName);
 
         return (
             <div className="userInfoBar">

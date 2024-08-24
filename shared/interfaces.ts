@@ -284,6 +284,7 @@ export interface PlayerProfileData {
     playerLevel: number;
     playerRank: number;
     playerAvatar: string;
+    playerLeague: number;
 }
 interface GamePlayerData {
     teamId: number;

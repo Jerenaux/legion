@@ -82,16 +82,6 @@ class Overview extends Component<Props, State> {
     }
     let cooldownIndex = 0;
 
-    const playerTabData: any = {
-      avatar: members[this.state.selected]?.texture ?? '1_1',
-      level: 1,
-      rank: this.state.selected,
-      name: members[this.state.selected]?.name ?? 'Player Name'
-    }
-
-    // console.log("overviewPosition => ", position); 
-    // console.log("overviewIsPlayerTeam => ", this.props.isPlayerTeam); 
-
     return (
       <div className={`overview ${this.props.isPlayerTeam && 'overview_playerteam'} ${position === 'right' && 'overview_right'}`}>
         <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
