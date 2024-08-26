@@ -19,12 +19,9 @@ export async function getFirebaseIdToken() {
         const user = firebaseAuth.currentUser;
         if (!user) {
             return;
-            // throw new Error("No authenticated user found");
         }
-        // return await user.getIdToken(true);
         return await getTokenWithRetry(user);
     } catch (error) {
-        // console.error("Error getting Firebase ID token", error);
         throw error;
     }
 }
@@ -54,42 +51,57 @@ function timeoutPromise(duration) {
     });
 }
 
-async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 15000) {
-    try {
-        const idToken = await getFirebaseIdToken();
-        const headers = new Headers(options.headers || {});
+async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 15000, maxRetries = 3, retryDelay = 100) {
+    let lastError;
 
-        // Automatically set 'Content-Type' to 'application/json' if there is a body
-        if (options.body && !headers.has('Content-Type')) {
-            headers.append('Content-Type', 'application/json');
-            options.body = JSON.stringify(options.body); // Stringify the body if it's an object
-        } 
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const idToken = await getFirebaseIdToken();
+            const headers = new Headers(options.headers || {});
 
-        headers.append("Authorization", `Bearer ${idToken}`);
+            if (options.body && !headers.has('Content-Type')) {
+                headers.append('Content-Type', 'application/json');
+                options.body = JSON.stringify(options.body);
+            } 
 
-        // console.log(`API URL: ${apiBaseUrl}`);
-        const fullEndpoint = `${apiBaseUrl}/${endpoint}`;
-        console.log(`Calling ${fullEndpoint}`);
-        const fetchPromise = fetch(fullEndpoint, {
-            ...options,
-            headers,
-        });
+            headers.append("Authorization", `Bearer ${idToken}`);
 
-        const response = await Promise.race([
-            fetchPromise,
-            timeoutPromise(timeoutDuration)
-        ]) as Response;
+            const fullEndpoint = `${apiBaseUrl}/${endpoint}`;
+            console.log(`Attempt ${attempt + 1} of ${maxRetries}: Calling ${fullEndpoint}`);
+            
+            const fetchPromise = fetch(fullEndpoint, {
+                ...options,
+                headers,
+            });
 
-        if (!response.ok) {
-            const errorBody = await response.text();
-            throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
+            const response = await Promise.race([
+                fetchPromise,
+                timeoutPromise(timeoutDuration)
+            ]) as Response;
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
+            }
+
+            return response.json();
+        } catch (error) {
+            console.error(`Attempt ${attempt + 1} failed for API call to ${endpoint}:`, error);
+            lastError = error;
+
+            // If it's the last attempt, throw the error
+            if (attempt === maxRetries - 1) {
+                throw error;
+            }
+
+            // Always retry, regardless of error type
+            console.log(`Retrying in ${retryDelay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
-
-        return response.json();
-    } catch (error) {
-        console.error(`Error in API call to ${endpoint}:`, error);
-        throw error;
     }
+
+    // This line should never be reached due to the throw in the loop, but TypeScript doesn't know that
+    throw lastError;
 }
 
 export { apiFetch };
