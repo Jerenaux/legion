@@ -196,6 +196,8 @@ class PlayerInfo extends Component<Props, State> {
       }
     };
 
+    const isBot = this.props.player.playerRank == -1;
+
     return (
       <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`} onClick={() => { }}>
         {ENABLE_PLAYER_LEVEL && <div className={`player_info_lv ${position === 'right' && 'player_info_lv_right'}`}>
@@ -210,11 +212,16 @@ class PlayerInfo extends Component<Props, State> {
             className="player_info_name"
             style={position === 'right' ? { backgroundImage: `url("/HUD/team_bg_reverse.png")`, textAlign: "right" } : { backgroundImage: `url("/HUD/team_bg.png")` }}
           >
-            {this.props.player.playerName}
+            {!isBot && this.props.player.playerName}
+            {isBot && <div class="glitch">
+              {this.props.player.playerName}
+                <span aria-hidden="true">{this.props.player.playerName}</span>
+                <span aria-hidden="true">{this.props.player.playerName}</span>
+            </div>}
           </div>
           <div className={`player_info_rank ${position === 'right' && 'row_reverse'}`}>
             <img src={getLeagueIcon(this.props.player.playerLeague)} alt="" />
-            <span>{this.props.player.playerRank > -1 ? `# ${this.props.player.playerRank}` : ''}</span>
+            <span>{!isBot ? `# ${this.props.player.playerRank}` : ''}</span>
           </div>
         </div>
         {this.props.isPlayerTeam && <div className={position === 'right' ? "spectator_container_right" : "spectator_container"}>
