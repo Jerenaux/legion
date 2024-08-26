@@ -1,7 +1,7 @@
 // ShopCharacterCard.tsx
 import './shopCharacterCard.style.css';
 import { h, Component } from 'preact';
-import { INFO_BG_COLOR, INFO_TYPE } from '../itemDialog/ItemDialogType';
+import { STATS_BG_COLOR, STATS_NAMES } from '../itemDialog/ItemDialogType';
 import { classEnumToString, getSpritePath } from '../utils';
 import { modalData } from '../shopContent/ShopContent';
 
@@ -42,7 +42,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
     const statColor = (stat: string) => {
       return {
-        backgroundColor: INFO_BG_COLOR[INFO_TYPE[stat]]
+        backgroundColor: STATS_BG_COLOR[STATS_NAMES[stat]]
       }
     }
 
@@ -55,13 +55,8 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
       isCharacter: true
     }
 
-    // console.log("dataSkillSlots => ", data.skill_slots);
-    // console.log("characterData => ", data);
-
-    // console.log("spellData => ", spells);
 
     const getSpell = (spellId) => {
-      // console.log("individualSpell => ", spells.find(item => item.id == spellId)); 
       return spells.find(item => item.id == spellId);
     }
 
@@ -155,7 +150,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
           {statsArray.map((stat, index) => (
             <div key={index} className="shop-character-card-effect">
               <div className="shop-character-card-effect-stat" style={statColor(stat.key)}>
-                <span>{INFO_TYPE[stat.key]}</span>
+                <span>{STATS_NAMES[stat.key]}</span>
               </div>
               <div className="shop-character-card-effect-value">
                 <span>{stat.value}</span>

@@ -1,12 +1,10 @@
 import './HUD.style.css';
 import { h, Component } from 'preact';
-import { InventoryActionType, InventoryType } from '@legion/shared/enums';
+import { InventoryType } from '@legion/shared/enums';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import ItemDialog from '../itemDialog/ItemDialog';
-import { CHARACTER_INFO, ItemDialogType } from '../itemDialog/ItemDialogType';
-import { Effect } from '@legion/shared/interfaces';
+import { ItemDialogType } from '../itemDialog/ItemDialogType';
 import { mapFrameToCoordinates } from '../utils';
 
 interface ItemIconProps {

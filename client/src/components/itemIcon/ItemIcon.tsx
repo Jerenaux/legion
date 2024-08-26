@@ -5,7 +5,7 @@ import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import ItemDialog from '../itemDialog/ItemDialog';
-import { CHARACTER_INFO, ItemDialogType } from '../itemDialog/ItemDialogType';
+import { ItemDialogType } from '../itemDialog/ItemDialogType';
 import { Effect } from '@legion/shared/interfaces';
 import { mapFrameToCoordinates } from '../utils';
 
@@ -41,7 +41,7 @@ class ItemIcon extends Component<ItemIconProps> {
     }
   }
 
-  handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO, modalType: string) => {
+  handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: string) => {
     const elementRect = e.currentTarget.getBoundingClientRect();
 
     const modalPosition = {

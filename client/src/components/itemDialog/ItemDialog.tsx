@@ -2,7 +2,7 @@
 import './ItemDialog.style.css';
 import Modal from 'react-modal';
 import { h, Component } from 'preact';
-import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from './ItemDialogType';
+import { SPSPendingData, STATS_BG_COLOR, STATS_NAMES, ItemDialogType } from './ItemDialogType';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -33,7 +33,7 @@ interface DialogProps {
   actionType: InventoryActionType;
   dialogType: string;
   dialogOpen: boolean;
-  dialogData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO | null;
+  dialogData: BaseItem | BaseSpell | BaseEquipment | SPSPendingData | null;
   position: {
     top: number,
     left: number
@@ -114,14 +114,12 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       .catch(error => errorToast(`Error: ${error}`));
   }
 
-  spendSP = (stat: string) => {
+  spendSP = (stat: Stat, amount: number) => {
     if (!this.props.characterId) return;
-
-    const index = statFields.indexOf(stat);
-    if (index === -1) return;
   
     const payload = {
-      index,
+      stat,
+      amount,
       characterId: this.props.characterId,
     };
 
@@ -133,7 +131,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     })
       .then((data) => {
         if (data.status == 0) {
-          successToast(`${statFields[index].toUpperCase()} increased by ${getSPIncrement(index)}!`);
+          successToast(`${statFields[stat].toUpperCase()} increased by ${getSPIncrement(stat)*amount}!`);
           
           this.props.refreshCharacter();
         } else {
@@ -269,7 +267,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             {
               dialogData.effects.map(effect =>
                 <div className="dialog-item-info">
-                  <div className="character-info-dialog-card" style={{ backgroundColor: INFO_BG_COLOR[Stat[effect.stat]] }}><span>{Stat[effect.stat]}</span></div>
+                  <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[Stat[effect.stat]] }}><span>{Stat[effect.stat]}</span></div>
                   <span style={effect.value > 0 || effect.value == -1 ? { color: '#9ed94c' } : { color: '#c95a74' }}>{effect.value > 0 ? `+${effect.value}` : (effect.value == -1 ? '∞' : effect.value)}</span>
                 </div>
               )
@@ -332,13 +330,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       )
     };
 
-    const characterInfoDialog = (dialogData: CHARACTER_INFO) => (
+    const SPSpendDialog = (dialogData: SPSPendingData) => (
       <div className="character-info-dialog-container">
         <div className="character-info-dialog-card-container">
-          <div className="character-info-dialog-card" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[dialogData.key]] }}><span>{INFO_TYPE[dialogData.key]}</span></div>
+          <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[STATS_NAMES[dialogData.stat]] }}><span>{STATS_NAMES[dialogData.stat]}</span></div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}
-            <span className='character-info-addition' style={dialogData.effect && Number(dialogData.effect) < 0 ? { color: '#c95a74' } : { color: '#9ed94c' }}>+{this.state.dialogValue}</span>
+            <span className='character-info-addition' style={{ color: '#9ed94c' }}>&nbsp; + {getSPIncrement(dialogData.stat) * this.state.dialogValue}</span>
           </div>
         </div>
         <div className="character-info-dialog-control">
@@ -356,7 +354,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             Are you sure you want to spend {this.state.dialogValue} SP?
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => { this.spendSP(dialogData.key); this.setState({ dialogSPModalShow: false }); }}><img src="/inventory/confirm_icon.png" alt="confirm" />Confirm</button>
+            <button className="dialog-accept" onClick={() => { this.spendSP(dialogData.stat, this.state.dialogValue); this.setState({ dialogSPModalShow: false }); }}><img src="/inventory/confirm_icon.png" alt="confirm" />Confirm</button>
             <button className="dialog-decline" onClick={() => this.setState({ dialogSPModalShow: false })}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
           </div>
         </div>
@@ -371,8 +369,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           return consumableDialog(dialogData as BaseItem);
         case ItemDialogType.SKILLS:
           return skillDialog(dialogData as BaseSpell);
-        case ItemDialogType.CHARACTER_INFO:
-          return characterInfoDialog(dialogData as CHARACTER_INFO);
+        case ItemDialogType.SP:
+          return SPSpendDialog(dialogData as SPSPendingData);
         default: null;
       }
     }

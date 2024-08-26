@@ -485,11 +485,10 @@ export const spendSP = onRequest((request, response) => {
     try {
       const uid = await getUID(request);
       const characterId = request.body.characterId as string;
-      // const amount = request.body.amount;
-      const amount = 1;
-      const index = request.body.index as number;
+      const amount = request.body.amount;
+      const index = request.body.stat as number;
       let stat;
-      console.log(`Spending ${amount} SP on stat ${index} = ${statFields[index]}`);
+      console.log(`[spendSP] Spending ${amount} SP on stat [${index} ] ${statFields[index]}`);
 
       if (index < 0 || index >= statFields.length) {
         throw new Error("Invalid stat index");

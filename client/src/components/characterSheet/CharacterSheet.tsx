@@ -7,10 +7,10 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpellById } from '@legion/shared/Spells';
 import { getConsumableById } from '@legion/shared/Items';
-import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../itemDialog/ItemDialogType';
+import { STATS_BG_COLOR, STATS_NAMES, ItemDialogType, SPSPendingData } from '../itemDialog/ItemDialogType';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
+import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, Stat, statFields } from '@legion/shared/enums';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
 import { equipmentFields } from '@legion/shared/enums';
 
@@ -53,7 +53,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         powerUpActive: false, //this.props.powerUpActive
     }
 
-    handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | CHARACTER_INFO, modalType: string, index: number) => {
+    handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | SPSPendingData, modalType: ItemDialogType, index: number) => {
         const elementRect = e.currentTarget.getBoundingClientRect();
 
         const modalPosition = {
@@ -69,7 +69,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         this.props.handleItemEffect([], InventoryActionType.UNEQUIP);
     }
 
-    handleUnEquipItem = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: string, index: number) => {
+    handleUnEquipItem = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: ItemDialogType, index: number) => {
         if (!modalData) return;
         this.handleOpenModal(e, modalData, modalType, index);
         this.props.handleItemEffect(modalData.effects, InventoryActionType.UNEQUIP);
@@ -81,7 +81,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
 
         const renderInfoBars = () => {
             if (!characterData) return;
-            const items = Object.entries(characterData.stats).map(([key, value]) => {
+            const characterStats = Object.entries(characterData.stats).map(([key, value]) => {
                 const equipmentBonus = characterData.equipment_bonuses[key] || 0; // Fallback to 0 if key is not present
                 const spBonus = characterData.sp_bonuses[key] || 0; // Fallback to 0 if key is not present
                 return {
@@ -90,28 +90,37 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 };
             });
 
-
-            const order = ['hp', 'mp', 'atk', 'def', 'spatk', 'spdef'];
-            const rearrangedItems = order.map(key => items.find(item => item.key === key));
+            const rearrangedStats = statFields.map(key => characterStats.find(item => item.key === key));
 
             const effectVal = (key: string): number => {
-                return this.props.itemEffects.filter(effect => order[effect.stat] === key)[0]?.value;
+                return this.props.itemEffects.filter(effect => statFields[effect.stat] === key)[0]?.value;
             }
 
             const totalStat = (baseValue: number, modifierKey: string) => {
                 return baseValue + (effectVal(modifierKey) || 0);
             }
 
-            return rearrangedItems.map((item, index) => (
+            return rearrangedStats.map((item, index) => (
                 <div className="character-info-bar" key={index}>
-                    <div className="info-class" style={{ backgroundColor: INFO_BG_COLOR[INFO_TYPE[item.key]] }}><span>{INFO_TYPE[item.key]}</span></div>
+                    <div className="info-class" style={{ backgroundColor: STATS_BG_COLOR[STATS_NAMES[item.key]] }}><span>{STATS_NAMES[item.key]}</span></div>
                     <div className="curr-info-container">
                         <p className="curr-info">
                             <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : effectVal(item.key) < 0 ? { color: '#c95a74' } : {}}>{totalStat(item.value, item.key)}</span>
                         </p>
                     </div>
 
-                    {characterData?.sp > 0 && <button className="info-bar-plus" onClick={(e) => this.handleOpenModal(e, item, ItemDialogType.CHARACTER_INFO, index)}></button>}
+                    {characterData?.sp > 0 && <button className="info-bar-plus" onClick={
+                            (e) => this.handleOpenModal(
+                                e, 
+                                {
+                                    stat: index,
+                                    value: item.value,
+                                },
+                                ItemDialogType.SP,
+                                index
+                            )
+                        }></button>
+                    }
                 </div>
             ));
         };

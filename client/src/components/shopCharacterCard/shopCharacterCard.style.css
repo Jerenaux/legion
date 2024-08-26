@@ -8,6 +8,7 @@
     align-items: center;
     gap: 6px;
     cursor: pointer;
+    font-family: 'Kim';
 }
 
 .shop-character-card-container:hover {
