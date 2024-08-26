@@ -51,6 +51,7 @@ interface State {
     hovered: string;
     openDropdown: boolean;
     avatarUrl: string | null;
+    isLoading: boolean;
 }
 
 class Navbar extends Component<Props, State> {
@@ -58,6 +59,7 @@ class Navbar extends Component<Props, State> {
         hovered: '',
         openDropdown: false,
         avatarUrl: null,
+        isLoading: true,
     }
 
     componentDidMount() {
@@ -71,13 +73,15 @@ class Navbar extends Component<Props, State> {
     }
 
     loadAvatar = () => {
+        this.setState({ isLoading: true });
         const { avatar } = this.props.playerData;
         if (avatar != '0') {
             try {
                 const avatarUrl = avatarContext(`./${avatar}.png`);
-                this.setState({ avatarUrl });
+                this.setState({ avatarUrl, isLoading: false });
             } catch (error) {
                 console.error(`Failed to load avatar: ${avatar}.png`, error);
+                this.setState({ isLoading: false });
             }
         }
     }
@@ -121,10 +125,28 @@ class Navbar extends Component<Props, State> {
                         </Link>
                     </div>
                     <div className="avatarContainer">
-                        <div className="avatar" style={{ backgroundImage: this.state.avatarUrl ? `url(${this.state.avatarUrl})` : 'none' }}></div>
+                        {this.state.isLoading ? (
+                            <div className="avatar spinner-container">
+                                <div className=" loading-spinner"></div>
+                            </div>
+                        ) : (
+                            <div className="avatar" style={{ backgroundImage: this.state.avatarUrl ? `url(${this.state.avatarUrl})` : 'none' }}></div>
+                        )}
                         <div className="userInfo">
-                            <span>{this.props.playerData?.name}</span>
-                            {ENABLE_PLAYER_LEVEL && <div className="userLevel"><span>Lvl. {this.props.playerData?.lvl}</span></div>}
+                            {this.state.isLoading ? (
+                                <span className="loading-placeholder">Loading...</span>
+                            ) : (
+                                <span>{this.props.playerData?.name}</span>
+                            )}
+                            {ENABLE_PLAYER_LEVEL && (
+                                <div className="userLevel">
+                                    {this.state.isLoading ? (
+                                        <span className="loading-placeholder">Lvl. --</span>
+                                    ) : (
+                                        <span>Lvl. {this.props.playerData?.lvl}</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -153,8 +175,8 @@ class Navbar extends Component<Props, State> {
                 </div>
 
                 <div className="flexContainer" id="goldEloArea">
-                    <UserInfoBar label={`${this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
-                    <UserInfoBar label={`#${this.props.playerData?.rank}`} elo={this.props.playerData?.elo || 1} league={this.props.playerData?.league} />
+                    <UserInfoBar label={`${this.state.isLoading ? 'Loading...' : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
+                    <UserInfoBar label={this.state.isLoading ? 'Loading...' : `#${this.props.playerData?.rank}`} isLeague={true} bigLabel={!this.state.isLoading} league={this.props.playerData?.league} />
                     <div className="expand_btn" style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
                         <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
                             <div onClick={() => window.open('', '_blank')}>

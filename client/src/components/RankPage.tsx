@@ -66,7 +66,6 @@ class RankPage extends Component {
 
   async fetchLeaderboard() {
     this.setState({ isLoading: true });
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const data = await apiFetch(`fetchLeaderboard?tab=${this.state.curr_tab}`);
     if (data) {

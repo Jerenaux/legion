@@ -5,9 +5,10 @@ import {League} from "@legion/shared/enums";
 import {getLeagueIcon} from "../utils";
 
 interface BarProps {
-    elo?: number;
+    bigLabel?: boolean;
     league?: League;
     label: string;
+    isLeague?: boolean;
 }
 
 const leagueMap = new Map([
@@ -28,11 +29,11 @@ class UserInfoBar extends Component<BarProps> {
             <div className="userInfoBar">
                 <div className="barLogo">
                     <img 
-                        src={this.props.elo ? leagueIcon : GoldIcon}
+                        src={this.props.isLeague ? leagueIcon : GoldIcon}
                     />
                 </div>
                 <div className="userInfoLabel">
-                    <span className={`labelSpan ${this.props.elo ? 'bigLabel' : 'smallLabel'}`}>
+                    <span className={`labelSpan ${this.props.bigLabel ? 'bigLabel' : 'smallLabel'}`}>
                         {this.props.label}
                     </span>
                 </div>
