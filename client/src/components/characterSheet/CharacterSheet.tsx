@@ -10,7 +10,7 @@ import { getConsumableById } from '@legion/shared/Items';
 import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../itemDialog/ItemDialogType';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
+import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
 import { Effect } from '@legion/shared/interfaces';
 import { equipmentFields } from '@legion/shared/enums';
 
@@ -28,7 +28,7 @@ import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
 
-interface InventoryRequestPayload {
+interface CharacterSheetProps {
     characterId: string;
     characterData: any;
     itemEffects: Effect[];
@@ -39,7 +39,7 @@ interface InventoryRequestPayload {
     handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
 
-class CharacterSheet extends Component<InventoryRequestPayload> {
+class CharacterSheet extends Component<CharacterSheetProps> {
     state = {
         characterItems: [],
         itemIndex: 0,
@@ -77,7 +77,6 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
 
     render() {
         const { characterId, characterData, refreshCharacter } = this.props; 
-        // console.log("CharacterSheetProps => ", this.props); 
         if (!this.props.characterData) return;
 
         const renderInfoBars = () => {
@@ -193,7 +192,17 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                 const slotStyle = {
                     backgroundImage: item.value >= 0 && `linear-gradient(to bottom right, ${RarityColor[equipmentItem?.rarity]}, #1c1f25)`
                 } 
+                
+                if (this.props.selectedEquipmentSlot > -1) { // Equipping something
+                    if (this.props.selectedEquipmentSlot == EquipmentSlot.LEFT_RING 
+                        && characterData.equipment.left_ring != -1
+                        && characterData.equipment.right_ring == -1
+                    ) {
+                        this.props.selectedEquipmentSlot = EquipmentSlot.RIGHT_RING;
+                    }
+                }
 
+                
                 // Return the container div for each item
                 return (
                     <div
@@ -206,7 +215,6 @@ class CharacterSheet extends Component<InventoryRequestPayload> {
                             : ''
                       }`}
                       style={(itemData !== undefined) ? slotStyle : {}}
-                      // style={(inventoryType === InventoryType.SKILLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle}
                       onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}
                     >
                       {content}

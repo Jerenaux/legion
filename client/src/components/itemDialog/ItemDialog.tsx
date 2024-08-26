@@ -9,7 +9,6 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { InventoryActionType, Stat, Target, statFields } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast, mapFrameToCoordinates, classEnumToString } from '../utils';
-import { getEquipmentById } from '@legion/shared/Equipments'
 import { getSPIncrement } from '@legion/shared/levelling';
 
 import equipmentSpritesheet from '@assets/equipment.png';
@@ -103,12 +102,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       action: this.props.actionType
     };
 
-    // console.log("before update inventory"); 
-
     if (this.props.updateInventory) this.props.updateInventory(type, this.props.actionType, index)
     this.props.handleClose();
-
-    // console.log("after update inventory"); 
 
     apiFetch('inventoryTransaction', {
       method: 'POST',
@@ -202,9 +197,6 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       coordinates.y = -coordinates.y + 5;
       const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
 
-      const equipment = this.state.inventory.equipment;
-      const equipmentData = getEquipmentById(equipment[this.props.index]);
-
       return (
         <div className="equip-dialog-container">
           <div className="equip-dialog-image" style={{
@@ -216,8 +208,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             Lvl <span>{dialogData.minLevel}</span>
           </div> 
           <div className="equip-dialog-class-container">
-            {equipmentData.classes?.map((item) =>
-              <div style={equipmentData.classes.length > 0 && !equipmentData.classes.includes(this.props.characterClass) && {backgroundColor: "darkred"}} className="equip-dialog-class">
+            {dialogData.classes?.map((item) =>
+              <div style={dialogData.classes.length > 0 && !dialogData.classes.includes(this.props.characterClass) && {backgroundColor: "darkred"}} className="equip-dialog-class">
                 {classEnumToString(item)}
               </div>
             )}
@@ -225,9 +217,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           {dialogData.description && <p className="equip-dialog-desc">{dialogData.description}</p>}
           <div className="dialog-button-container">
             <button
-              style={(this.props.characterLevel < dialogData.minLevel || (equipmentData.classes.length > 0 && !equipmentData.classes.includes(this.props.characterClass))) ? { backgroundColor: "grey", opacity: "0.5" } : {}}
+              style={(this.props.characterLevel < dialogData.minLevel || (dialogData.classes.length > 0 && !dialogData.classes.includes(this.props.characterClass))) ? { backgroundColor: "grey", opacity: "0.5" } : {}}
               className="dialog-accept"
-              disabled={(this.props.characterLevel < dialogData.minLevel || (equipmentData.classes.length > 0 && !equipmentData.classes.includes(this.props.characterClass)))}
+              disabled={(this.props.characterLevel < dialogData.minLevel || (dialogData.classes.length > 0 && !dialogData.classes.includes(this.props.characterClass)))}
               onClick={() => this.AcceptAction(dialogType, this.props.index)}
             >
               <img src={confirmIcon} alt="confirm" />
@@ -244,8 +236,6 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     const consumableDialog = (dialogData: BaseItem) => {
       if (!dialogData) return;
-
-      // console.log("dialogData => ", dialogData); 
 
       const coordinates = mapFrameToCoordinates(dialogData.frame);
       coordinates.x = -coordinates.x + 5;

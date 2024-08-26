@@ -27,7 +27,7 @@ interface TeamPageState {
   carrying_capacity: number;
   character_id: string;
   character_sheet_data: APICharacterData;
-  item_effect: Effect[]; 
+  statsModifiers: Effect[]; 
   selectedEquipmentSlot: number; 
   setInventoryData: boolean; 
 }
@@ -50,7 +50,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     carrying_capacity: 0,
     character_id: this.props.matches.id || '',
     character_sheet_data: null,
-    item_effect: [], 
+    statsModifiers: [], 
     selectedEquipmentSlot: -1, 
     setInventoryData: false, 
   } 
@@ -113,6 +113,14 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   }
 
   handleItemEffect = (effects: Effect[], actionType: InventoryActionType,  index?: number) => {
+    // If index corresponds to left ring and actionType is 0 (equip), check if right ring slot is free
+    // and if so change the slot to that
+    if (index == EquipmentSlot.LEFT_RING && actionType == InventoryActionType.EQUIP) {
+      if (this.state.character_sheet_data.equipment['right_ring'] === -1) {
+        index = EquipmentSlot.RIGHT_RING;
+      }
+    }
+
     // get slot name from action.slot field e.g. `weapon`
     const slot = EquipmentSlot[index]?.toLowerCase();
 
@@ -140,7 +148,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
       }, []);
     }
 
-    this.setState({item_effect: result_effects});
+    this.setState({statsModifiers: result_effects});
   }
 
 
@@ -183,7 +191,14 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             return;
           }
 
-          const slotNumber = data.slot;
+          let slotNumber = data.slot;
+
+          if (slotNumber === EquipmentSlot.LEFT_RING 
+            && this.state.character_sheet_data.equipment['left_ring'] > -1
+            && this.state.character_sheet_data.equipment['right_ring'] == -1) {
+              slotNumber = EquipmentSlot.RIGHT_RING;
+          }
+
           const field = equipmentFields[slotNumber];
           const id = equipment[index];
           equipment.splice(index, 1);
@@ -246,8 +261,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
   render() {
 
-    // console.log("TeamCharacterSheetData => ", this.state.character_sheet_data); 
-
     return (
         <div className="team-content">
           <Roster />
@@ -255,7 +268,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             {this.state.character_sheet_data ? <CharacterSheet 
               characterId={this.state.character_id} 
               characterData={this.state.character_sheet_data} 
-              itemEffects={this.state.item_effect}
+              itemEffects={this.state.statsModifiers}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)} 
