@@ -891,6 +891,7 @@ export abstract class Game
     
     computeAudienceRewards(score: number, chests: Array<GameOutcomeReward>): void {
         console.log(`[Game:computeAudienceRewards] League: ${this.league}, Score: ${score}`);
+        const casualRewards = [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.SILVER];
         const leagueRewards = {
             [League.BRONZE]: [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.BRONZE],
             [League.SILVER]: [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.SILVER],
@@ -899,7 +900,7 @@ export abstract class Game
             [League.APEX]: [ChestColor.GOLD, ChestColor.GOLD, ChestColor.GOLD],
         };
 
-        const rewards = leagueRewards[this.league];
+        const rewards = this.mode == PlayMode.RANKED ? leagueRewards[this.league] : casualRewards;
         const numberOfChests = Math.floor(score / 500);
     
         for (let i = 0; i < numberOfChests && i < rewards.length; i++) {

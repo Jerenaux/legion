@@ -11,6 +11,7 @@ import {
 import { apiFetch } from "./API";
 import { PlayMode, League } from '@legion/shared/enums';
 import firebaseConfig from '@legion/shared/firebaseConfig';
+import {eloRangeIncreaseInterval, eloRangeStart, eloRangeStep, goldRewardInterval, goldReward, casualModeThresholdTime, maxWaitTimeForPractice} from '@legion/shared/config';
 
 dotenv.config();
 
@@ -44,14 +45,6 @@ interface Player {
 }
 
 const playersQueue: Player[] = [];
-// TODO: move to config
-const eloRangeIncreaseInterval = 20; // seconds
-const eloRangeStart = 50;
-const eloRangeStep = 50; // Increase range by 50 points every interval
-const goldRewardInterval = 15;
-const goldReward = 1;
-const casualModeThresholdTime = 60; // seconds after which redirection probability starts increasing
-const maxWaitTimeForPractice = 300; // maximum wait time after which a player is guaranteed to be redirected
 
 async function notifyAdmin(mode: PlayMode) {
     if (!discordEnabled) return;
@@ -93,14 +86,15 @@ function queueTimeUpdate() {
 }
 
 function switcherooCheck(player, i) {
+    console.log(`[matchmaker:switcherooCheck] isCasual: ${player.mode == PlayMode.CASUAL}, waitingTime: ${player.waitingTime}, threshold: ${casualModeThresholdTime}`);
     if (player.mode == PlayMode.CASUAL && player.waitingTime > casualModeThresholdTime) {
         // Calculate the probability of redirecting to a PRACTICE game
         const waitTimeBeyondThreshold = player.waitingTime - casualModeThresholdTime;
         const redirectionProbability = Math.min(1, waitTimeBeyondThreshold / (maxWaitTimeForPractice - casualModeThresholdTime));
 
         if (Math.random() < redirectionProbability) {
-            console.log(`Redirecting ${player.socket.id} to a PRACTICE game due to long wait.`);
-            createGame(player.socket, null, PlayMode.PRACTICE, null);
+            console.log(`Redirecting ${player.socket.id} to a CASUAL_VS_AI game due to long wait.`);
+            createGame(player.socket, null, PlayMode.CASUAL_VS_AI, null);
             savePlayerGold(player);
             playersQueue.splice(i, 1); // Remove player from the queue
             return true;

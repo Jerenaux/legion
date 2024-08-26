@@ -38,6 +38,7 @@ export enum Terrain {
 export enum PlayMode {
     PRACTICE,
     CASUAL,
+    CASUAL_VS_AI,
     RANKED
 }
 

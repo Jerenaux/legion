@@ -75,7 +75,7 @@ io.on('connection', async (socket: any) => {
       let game: Game;
       if (!gamesMap.has(gameId)) {
         console.log(`[server:connection] Creating game ${gameId}`);
-        const gameType = gameData.mode === PlayMode.PRACTICE ? AIGame : PvPGame;
+        const gameType = gameData.mode === PlayMode.PRACTICE || gameData.mode == PlayMode.CASUAL_VS_AI ? AIGame : PvPGame;
         game = new gameType(gameId, gameData.mode, gameData.league, io);
         gamesMap.set(gameId, game);
       }

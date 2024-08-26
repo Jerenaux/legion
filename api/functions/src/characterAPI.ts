@@ -192,7 +192,7 @@ export const postGameUpdate = onRequest((request, response) => {
           transaction.update(playerRef, {
             'utilizationStats.everPlayedPractice': true,
           });
-        } else if (mode == PlayMode.CASUAL) {
+        } else if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
           transaction.update(playerRef, {
             'utilizationStats.everPlayedCasual': true,
           });
@@ -213,7 +213,7 @@ export const postGameUpdate = onRequest((request, response) => {
               });
           }
 
-          if (mode == PlayMode.CASUAL) {
+          if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
             transaction.update(playerRef, {
               'casualStats.nbGames': admin.firestore.FieldValue.increment(1),
             });

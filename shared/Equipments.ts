@@ -71,7 +71,7 @@ equipments[5] = new BaseEquipment({
     name: "Dagger",
     description: "",
     frame: 1,
-    effects: [{stat: Stat.ATK, value: 3}, {stat: Stat.DEF, value: 3}],
+    effects: [{stat: Stat.ATK, value: 3}],
     slot: EquipmentSlot.WEAPON,
     effort: 3,
     minLevel: 1,
