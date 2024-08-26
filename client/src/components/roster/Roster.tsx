@@ -49,7 +49,7 @@ class Roster extends Component<object, RosterState> {
                 <img src={PlusIcon} alt="Plus" />
               </div>
             </div>
-        </div> : <Skeleton height={24} count={4} highlightColor='#0000004d' baseColor='#0f1421' style={{margin: '2px 0', width: '1024px'}}/>}
+        </div> : <Skeleton height={100} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{margin: '2px 0', width: '1024px'}}/>}
       </div>
     );
   }
