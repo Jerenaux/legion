@@ -362,6 +362,7 @@ function applyEquipmentBonuses(equipped: Equipment): CharacterStats {
         console.error("Invalid equipment ID");
         return bonuses;
       }
+      console.log(`[applyEquipmentBonuses] Applying: ${data.name}, effects: ${data.effects}`);
       data.effects.forEach((effect) => {
         switch (effect.stat) {
         case 0:

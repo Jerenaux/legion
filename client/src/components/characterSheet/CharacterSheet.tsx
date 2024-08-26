@@ -11,7 +11,7 @@ import { CHARACTER_INFO, INFO_BG_COLOR, INFO_TYPE, ItemDialogType } from '../ite
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
-import { Effect } from '@legion/shared/interfaces';
+import { APICharacterData, Effect } from '@legion/shared/interfaces';
 import { equipmentFields } from '@legion/shared/enums';
 
 import helmetIcon from '@assets/inventory/helmet_icon.png';
@@ -30,7 +30,7 @@ import spellsSpritesheet from '@assets/spells.png';
 
 interface CharacterSheetProps {
     characterId: string;
-    characterData: any;
+    characterData: APICharacterData;
     itemEffects: Effect[];
     refreshCharacter: () => void;
     handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
@@ -277,8 +277,6 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             width: `${characterData?.xp * 100 / xpToLevel}%`,
         }
 
-        // console.log("CharacterSheetName => ", characterData.name); 
-
         return (
             <div className="team-content-card-container">
                 <div className="team-content-container">
@@ -314,12 +312,12 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                         <div className="character-icon-container">
                             {renderEquipmentItems('specialEquip')}
                         </div>
-                        <div className="team-item-container">
+                        {characterData.skill_slots > 0 && <div className="team-item-container">
                             <p className="team-item-heading">SPELLS</p>
                             <div className="team-items">
                                 {renderInventoryItems(InventoryType.SKILLS)}
                             </div>
-                        </div>
+                        </div>}
                         <div className="team-item-container">
                             <p className="team-item-heading">ITEMS</p>
                             <div className="team-items">

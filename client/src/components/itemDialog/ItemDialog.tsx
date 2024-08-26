@@ -159,11 +159,14 @@ class ItemDialog extends Component<DialogProps, DialogState> {
         });
       }
     }
-    // console.log("characterName => ", this.props.characterName); 
 
     const { dialogType, dialogData, position, dialogOpen, isEquipped, handleClose } = this.props;
 
-    const acceptBtn = this.props.actionType > 0 ? 'Remove' : 'Equip';
+    let acceptBtn = this.props.actionType > 0 ? 'Remove' : 'Equip';
+    // If dialogData is of type spell , display "Learn" instead of "Equip"
+    if (dialogType === ItemDialogType.SKILLS) {
+      acceptBtn = 'Learn';
+    }
 
     if (!dialogData) {
       return null;
