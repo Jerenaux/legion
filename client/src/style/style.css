@@ -489,14 +489,6 @@ canvas {
     height: 32px;
 }
 
-.shop-container {
-    display: flex;
-    flex-direction: column;
-    gap: 48px;
-    max-width: 1024px;
-    margin: 0 auto;
-}
-
   .notificationBarButton {
     position: relative;
     display: inline-flex;

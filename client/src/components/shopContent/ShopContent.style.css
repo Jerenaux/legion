@@ -1,3 +1,11 @@
+.shop-container {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
 .shop-content {
     display: flex;
     gap: 24px;

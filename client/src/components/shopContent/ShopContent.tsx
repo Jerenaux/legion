@@ -1,4 +1,3 @@
-// ShopContent.tsx
 import './ShopContent.style.css';
 import 'react-loading-skeleton/dist/skeleton.css'
 
@@ -72,16 +71,27 @@ class ShopContent extends Component<ShopContentProps> {
             equipment: equipments.sort(sortByRarityAndPrice),
             spells: spells.sort(sortByRarityAndPrice)
         },
+        isLoadingCharacters: false,
     }
 
     componentDidMount(): void {
-        if (this.state.inventoryData) {
-            console.log("true");
-        } else {
-            console.log("false");
-        }
+        this.setState({ curr_tab: this.props.requireTab ?? ShopTabs.CONSUMABLES }, () => {
+            if (this.state.curr_tab === ShopTabs.CHARACTERS) {
+                this.loadCharacters();
+            }
+        });
+    }
 
-        this.setState({ curr_tab: this.props.requireTab ?? ShopTabs.CONSUMABLES });
+    loadCharacters = async () => {
+        this.setState({ isLoadingCharacters: true });
+        try {
+            await this.props.fetchCharactersOnSale();
+        } catch (error) {
+            console.error("Error fetching characters:", error);
+            errorToast("Failed to load characters. Please try again.");
+        } finally {
+            this.setState({ isLoadingCharacters: false });
+        }
     }
 
     handleOpenModal = (e: any, modalData: modalData) => {
@@ -161,8 +171,7 @@ class ShopContent extends Component<ShopContentProps> {
     }
 
     render() {
-        if (!this.props.characters) return;
-        if (!this.state.inventoryData) return;
+        if (!this.state.inventoryData) return null;
 
         const defaultShopItems = {
             consumables: items,
@@ -182,8 +191,6 @@ class ShopContent extends Component<ShopContentProps> {
             return this.props.inventory[type].filter((item: number) => item == index).length;
         }
 
-        // console.log("spellData => ", this.state.inventoryData.spells); 
-
         const renderItems = () => {
             switch (this.state.curr_tab) {
                 case ShopTabs.SPELLS:
@@ -193,11 +200,34 @@ class ShopContent extends Component<ShopContentProps> {
                 case ShopTabs.EQUIPMENTS:
                     return this.state.inventoryData.equipment.map((item, index) => <ShopEquipmentCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
                 case ShopTabs.CHARACTERS:
-                    return characters?.map((item, index) => <ShopCharacterCard key={index} data={item} handleOpenModal={this.handleOpenModal} />)
+                    return this.state.isLoadingCharacters ? 
+                        renderSkeletons() :
+                        characters?.map((item, index) => <ShopCharacterCard key={index} data={item} handleOpenModal={this.handleOpenModal} />)
                 default:
                     return null;
             }
         }
+
+        const renderSkeletons = () => (
+            <div className="shop-items-container"
+            style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '16px',
+                }}
+            >
+                {[...Array(12)].map((_, index) => (
+                    <div key={index} >
+                        <Skeleton
+                            height={320}
+                            width={200} 
+                            highlightColor="#0000004d"
+                            baseColor="#0f1421"
+                        />
+                    </div>
+                ))}
+            </div>
+        )
 
         const shopTabIcons = [consumablesIcon, equipmentsIcon, spellsIcon, charactersIcon];
 
@@ -212,7 +242,12 @@ class ShopContent extends Component<ShopContentProps> {
                     {this.state.inventoryData && shopTabIcons.map((icon, index) =>
                         <Link
                             href={`/shop/${ShopTabs[index].toLowerCase()}`}
-                            onClick={() => this.setState({ curr_tab: index })}
+                            onClick={() => {
+                                this.setState({ curr_tab: index });
+                                if (index === ShopTabs.CHARACTERS) {
+                                    this.loadCharacters();
+                                }
+                            }}
                             key={index}
                             className='shop-tab-item'
                             style={tabItemStyle(index)}>
@@ -220,27 +255,7 @@ class ShopContent extends Component<ShopContentProps> {
                         </Link>
                     )}
                 </div>
-                {(this.state.inventoryData && this.props.characters.length) ? <div className='shop-items-container'>{renderItems()}</div> : (
-                    <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        justifyContent: 'center',
-                        gap: '16px',
-                    }}>
-                        {[...Array(12)].map((_, index) => (
-                            <Skeleton
-                                key={index}
-                                height={320}
-                                highlightColor="#0000004d"
-                                baseColor="#0f1421"
-                                style={{
-                                    width: '200px',
-                                    margin: '2px 0',
-                                }}
-                            />
-                        ))}
-                    </div>
-                )}
+                <div className='shop-items-container'>{renderItems()}</div>
                 <PurchaseDialog
                     gold={this.props.gold}
                     position={this.state.position}
