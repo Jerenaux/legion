@@ -128,20 +128,21 @@
 }
 
 .shop-character-card-effect span {
-    font-size: 14px;
+    font-size: 11px;
 }
 
 .shop-character-card-effect-stat {
     position: absolute;
     top: 0;
     left: 0;
-    width: 56px;
+    width: 46px;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     font-weight: 600;
     color: #FFFFFF;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .shop-character-card-effect-value {
