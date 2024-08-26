@@ -5,12 +5,14 @@ import { STATS_BG_COLOR, STATS_NAMES } from '../itemDialog/ItemDialogType';
 import { classEnumToString, getSpritePath } from '../utils';
 import { modalData } from '../shopContent/ShopContent';
 
-// Import image assets
 import goldIcon from '@assets/gold_icon.png';
 import { spells } from '@legion/shared/Spells';
 import { mapFrameToCoordinates } from '../utils';
-import { Target } from '@legion/shared/enums';
+import { Target, RarityColor } from '@legion/shared/enums';
 import { BaseSpell } from '@legion/shared/BaseSpell';
+
+import spellsSpritesheet from '@assets/spells.png';
+
 interface ShopCharacteCardProps {
   key: number;
   data: any;
@@ -84,7 +86,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
             {data.skills.map((item, i) => (
               <div
                 key={i}
-                style={{ backgroundImage: 'linear-gradient(to right, white, #1c1f25)' }}
+                style={{ backgroundImage: `linear-gradient(to bottom right, ${RarityColor[getSpell(item)?.rarity]}, #1c1f25)` }}
                 className="shop-character-card-slot"
                 onClick={() => {
                   this.setState({ shopCharacterCardDialogShow: true });
@@ -93,7 +95,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
               >
                 <div
                   style={{
-                    backgroundImage: `url(/spells.png)`,
+                    backgroundImage: `url(${spellsSpritesheet})`,
                     backgroundPosition: `-${mapFrameToCoordinates(getSpell(item).frame).x}px -${mapFrameToCoordinates(getSpell(item).frame).y}px`,
                     cursor: 'pointer',
                   }}
