@@ -11,40 +11,56 @@ import {OutcomeData, DailyLootAllDBData, CharacterUpdate, APICharacterData} from
 import {ChestReward} from "@legion/shared/chests";
 import {logPlayerAction} from "./dashboardAPI";
 
-export const rosterData = onRequest((request, response) => {
+export const rosterData = onRequest(async (request, response) => {
   const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const docSnap = await db.collection("players").doc(uid).get();
+  try {
+    const uid = await getUID(request);
+    const docSnap = await db.collection("players").doc(uid).get();
 
-      if (docSnap.exists) {
-        const characters =
-            docSnap.data()?.characters as admin.firestore.DocumentReference[];
-        const characterDocs = await Promise.all(
-          characters.map((character) => character.get())
-        );
-        const rosterData = characterDocs.map(
-          (characterDoc) => {
-            const characterData = characterDoc.data();
-            return {
-              id: characterDoc.id, // Include the document ID
-              ...characterData,
-            };
-          }
-        );
-        response.send({
-          characters: rosterData as APICharacterData[],
-        });
-      } else {
-        response.status(404).send("Not Found: Invalid player ID");
-      }
-    } catch (error) {
-      console.error("rosterData error:", error);
-      response.status(401).send("Unauthorized");
+    if (docSnap.exists) {
+      const characters = docSnap.data()?.characters as admin.firestore.DocumentReference[];
+
+      // Batch get operation
+      const characterDocs = await db.getAll(...characters, {
+        fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
+          'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
+          'skills',
+        ],
+      });
+
+      const rosterData = characterDocs.map((characterDoc) => {
+        return {
+          id: characterDoc.id,
+          name: characterDoc.get('name'),
+          level: characterDoc.get('level'),
+          class: characterDoc.get('class'),
+          experience: characterDoc.get('experience'),
+          portrait: characterDoc.get('portrait'),
+          xp: characterDoc.get('xp'),
+          sp: characterDoc.get('sp'),
+          stats: characterDoc.get('stats'),
+          carrying_capacity: characterDoc.get('carrying_capacity'),
+          carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
+          skill_slots: characterDoc.get('skill_slots'),
+          inventory: characterDoc.get('inventory'),
+          equipment: characterDoc.get('equipment'),
+          equipment_bonuses: characterDoc.get('equipment_bonuses'),
+          sp_bonuses: characterDoc.get('sp_bonuses'),
+          skills: characterDoc.get('skills'),
+        };
+      });
+
+      response.send({
+        characters: rosterData,
+      });
+    } else {
+      response.status(404).send("Not Found: Invalid player ID");
     }
-  });
+  } catch (error) {
+    console.error("rosterData error:", error);
+    response.status(401).send("Unauthorized");
+  }
 });
 
 export const characterData = onRequest((request, response) => {
