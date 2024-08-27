@@ -26,10 +26,6 @@
       "port": 8090,
       "host": "0.0.0.0"
     },
-    "pubsub": {
-      "port": 8085,
-      "host": "0.0.0.0"
-    },
     "ui": {
       "enabled": true,
       "host": "0.0.0.0",

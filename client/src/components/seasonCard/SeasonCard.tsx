@@ -110,13 +110,12 @@ class SeasonCard extends Component<SeasonCardProps> {
                 <div className="season-card-header">
                     <div className="season-card-header-img">
                         <img src={rankIcons[leagues.indexOf(this.props.currTab)]} />
-                        {/* <img src={`/icons/${this.props.currTab}_rank.png`} /> */}
                     </div> 
                     <div className="season-card-header-title">
                         <span>{this.props.currTab.toUpperCase()} </span> 
                         <span>LEAGUE</span>
                     </div> 
-                    <div className="categoryBtn" style={{ backgroundImage: `url({${infoIcon}})` }} onClick={() => {}}></div>
+                    {/* <div className="categoryBtn" style={{ backgroundImage: `url(${infoIcon})` }} onClick={() => {}}></div> */}
                 </div>
                 <div className="season-card-body">
                     <div className="recap-single-container" ref={this.captureRef}>
