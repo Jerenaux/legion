@@ -1,6 +1,8 @@
 import { Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
-import * as admin from "firebase-admin";
+import * as admin from 'firebase-admin';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import axios from 'axios';
 import {
     Client,
     GatewayIntentBits,
@@ -18,7 +20,9 @@ if (discordEnabled) {
     discordClient.login(process.env.DISCORD_TOKEN);
 }
 
-admin.initializeApp(firebaseConfig);
+if (process.env.NODE_ENV === 'development') {
+    admin.initializeApp(firebaseConfig);
+} 
 
 interface Player {
     socket: any,
@@ -258,10 +262,17 @@ async function logQueuingActivity(playerId: string, actionType: string, details:
     }
 }
 
+async function getUID(IDToken) {
+    if (process.env.NODE_ENV === 'development') {
+        return (await admin.auth().verifyIdToken(IDToken)).uid;
+    } else {
+        return await validateFirebaseIdToken(IDToken, firebaseConfig.projectId);
+    }
+}
+
 export async function processJoinQueue(socket, data: { mode: PlayMode }) {
     try {
-        const decodedToken = await admin.auth().verifyIdToken(socket.firebaseToken);
-        socket.uid = decodedToken.uid;
+        socket.uid = await getUID(socket.firebaseToken);
 
         if (data.mode == PlayMode.PRACTICE) {
             createGame(socket, null, PlayMode.PRACTICE);
@@ -291,3 +302,112 @@ export async function processDisconnect(socket) {
         logQueuingActivity(socket.uid, 'leaveQueue', null);
     }
 }
+
+interface FirebasePublicKeys {
+  [key: string]: string;
+}
+
+interface FirebaseTokenHeader {
+    alg: string;
+    kid: string;
+  }
+  
+interface FirebaseTokenPayload extends JwtPayload {
+aud: string;
+iss: string;
+sub: string;
+auth_time: number;
+}
+
+const FIREBASE_PUBLIC_KEYS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
+
+function isFirebaseTokenHeader(header: any): header is FirebaseTokenHeader {
+    return typeof header === 'object' && header !== null &&
+           typeof header.alg === 'string' &&
+           typeof header.kid === 'string';
+  }
+  
+  function isFirebaseTokenPayload(payload: any): payload is FirebaseTokenPayload {
+    return typeof payload === 'object' && payload !== null &&
+           typeof payload.exp === 'number' &&
+           typeof payload.iat === 'number' &&
+           typeof payload.aud === 'string' &&
+           typeof payload.iss === 'string' &&
+           typeof payload.sub === 'string' &&
+           typeof payload.auth_time === 'number';
+  }
+  
+  async function validateFirebaseIdToken(idToken: string, projectId: string): Promise<string> {
+    // Fetch Firebase public keys
+    const { data: publicKeys, headers } = await axios.get<FirebasePublicKeys>(FIREBASE_PUBLIC_KEYS_URL);
+    
+    // Get max-age from Cache-Control header
+    const cacheControl = headers['cache-control'];
+    const maxAge = parseInt(cacheControl.split('max-age=')[1]) || 3600;
+  
+    // Decode the token without verifying to get the header and payload
+    const decodedToken = jwt.decode(idToken, { complete: true });
+    // console.log(`Decoded token: ${JSON.stringify(decodedToken)}`);
+  
+    if (!decodedToken || typeof decodedToken !== 'object') {
+      throw new Error('Invalid token format');
+    }
+  
+    if (!isFirebaseTokenHeader(decodedToken.header)) {
+      throw new Error('Invalid token header');
+    }
+  
+    if (!isFirebaseTokenPayload(decodedToken.payload)) {
+      throw new Error('Invalid token payload');
+    }
+  
+    const { header, payload } = decodedToken;
+  
+    // Verify header claims
+    if (header.alg !== 'RS256') {
+      throw new Error(`Invalid algorithm ${header.alg}`);
+    }
+  
+    const kid = header.kid;
+    if (!publicKeys[kid]) {
+      throw new Error('Invalid key ID');
+    }
+  
+    // Verify signature and decode payload
+    const publicKey = publicKeys[kid];
+    try {
+      jwt.verify(idToken, publicKey, { algorithms: ['RS256'] });
+    } catch (error) {
+      throw new Error('Invalid token signature');
+    }
+  
+    // Verify payload claims
+    const now = Math.floor(Date.now() / 1000);
+  
+    if (payload.exp <= now) {
+      throw new Error('Token has expired');
+    }
+  
+    if (payload.iat > now) {
+      throw new Error('Invalid issued-at time');
+    }
+  
+    if (payload.aud !== projectId) {
+      throw new Error('Invalid audience');
+    }
+  
+    if (payload.iss !== `https://securetoken.google.com/${projectId}`) {
+      throw new Error('Invalid issuer');
+    }
+  
+    if (!payload.sub || typeof payload.sub !== 'string') {
+      throw new Error('Invalid subject');
+    }
+  
+    if (payload.auth_time > now) {
+      throw new Error('Invalid auth time');
+    }
+  
+    return payload.sub;
+  }
+  

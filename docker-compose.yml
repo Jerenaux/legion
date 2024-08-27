@@ -13,7 +13,6 @@ services:
       - FIREBASE_AUTH_EMULATOR_HOST=http://localhost:9099
       - GAME_SERVER_URL=http://localhost:3123
       - IS_DOCKER=true
-      - MATCHMAKER_URL__=https://matchmaker-n7q3wfpxea-uc.a.run.app:8080
       - MATCHMAKER_URL=http://localhost:3000
       - USE_FIREBASE_EMULATOR=true
 

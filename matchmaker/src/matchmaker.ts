@@ -16,7 +16,7 @@ const io = new Server(httpServer, {
     cors: {
         origin: (origin, callback) => {
             
-            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            if (!origin || allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.indexOf('*') !== -1) {
               console.log("Successful connection from origin:", origin);
               callback(null, true);
             } else {

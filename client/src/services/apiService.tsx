@@ -1,9 +1,10 @@
 // apiService.js
+import firebase from 'firebase/compat/app';
 import { firebaseAuth } from './firebaseService'; 
 
 const apiBaseUrl = process.env.API_URL;
 
-const getTokenWithRetry = async (user, maxAttempts = 3, delay = 100) => {
+const getTokenWithRetry = async (user: firebase.User, maxAttempts = 3, delay = 100) => {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
             return await user.getIdToken(true);
