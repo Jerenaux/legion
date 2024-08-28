@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVICE_NAME="matchmaker"
+SERVICE_NAME="matchmaker2"
 IMAGE="gcr.io/legion-32c6d/$SERVICE_NAME"
 TAG="latest"
 REGION="us-central1"

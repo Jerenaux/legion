@@ -137,7 +137,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
         });
 
         this.socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });
-        console.log('Joining queue');
     }
 
     handleQuickFind = () => {
