@@ -1,11 +1,16 @@
-// PlayerInfo.tsx
 import { h, Component, createRef } from 'preact';
 import { route } from 'preact-router';
 import Modal from 'react-modal';
 import { PlayerProfileData } from "@legion/shared/interfaces";
-import {getLeagueIcon} from "../utils";
+import { getLeagueIcon, loadAvatar } from "../utils";
 
 import { ENABLE_PLAYER_LEVEL, ENABLE_SETTINGS } from '@legion/shared/config';
+
+import teamBg from '@assets/HUD/team_bg.png';
+import teamBgReverse from '@assets/HUD/team_bg_reverse.png';
+import applauseIcon from '@assets/HUD/applause_icon.png';
+import donateIcon from '@assets/HUD/donate_icon.png';
+import settingsIcon from '@assets/HUD/settings_icon.png';
 
 interface Props {
   player: PlayerProfileData;
@@ -205,12 +210,12 @@ class PlayerInfo extends Component<Props, State> {
           <span className="player_info_lvalue">{this.props.player.playerLevel}</span>
         </div>}
         <div className="player_info_player_profile">
-          <img src={`/avatars/${this.props.player.playerAvatar ? this.props.player.playerAvatar : 'default'}.png`} />
+          <img src={this.props.player.playerAvatar ? loadAvatar(this.props.player.playerAvatar) : loadAvatar('default')} />
         </div>
         <div className="player_info">
           <div
             className="player_info_name"
-            style={position === 'right' ? { backgroundImage: `url("/HUD/team_bg_reverse.png")`, textAlign: "right" } : { backgroundImage: `url("/HUD/team_bg.png")` }}
+            style={position === 'right' ? { backgroundImage: `url(${teamBgReverse})`, textAlign: "right" } : { backgroundImage: `url(${teamBg})` }}
           >
             {!isBot && this.props.player.playerName}
             {isBot && <div class="glitch">
@@ -227,14 +232,14 @@ class PlayerInfo extends Component<Props, State> {
         {this.props.isPlayerTeam && <div className={position === 'right' ? "spectator_container_right" : "spectator_container"}>
           {isSpectator && <div className="spectator_div">
             <div className="spectator" onClick={() => { }}>
-              <img src="/HUD/applause_icon.png" alt="" />
+              <img src={applauseIcon} alt="" />
             </div>
             <div className="spectator" onClick={() => { }}>
-              <img src="/HUD/donate_icon.png" alt="" />
+              <img src={donateIcon} alt="" />
             </div>
           </div>}
           <div className="spectator" onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
-            <img src="/HUD/settings_icon.png" alt="" />
+            <img src={settingsIcon} alt="" />
           </div>
         </div>}
         <Modal isOpen={this.state.modalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
@@ -288,7 +293,6 @@ class PlayerInfo extends Component<Props, State> {
               </div>
             </div>
             <div className="justify_center flex gap_4">
-              {/* <div className="setting_exit_btn" onClick={() => {}}>Leave</div> */}
               <div className="setting_menu_btn" onClick={this.handleCloseModal}>Exit</div>
             </div>
           </div>
