@@ -96,6 +96,7 @@ io.on('connection', async (socket: any) => {
       socketMap.set(socket, game);
   
       socket.on('disconnect', () => {
+          console.log(`[server:disconnect] User ${shortToken(socket.uid)} disconnected`);
           socketMap.get(socket)?.handleDisconnect(socket);
           socketMap.delete(socket);
       });

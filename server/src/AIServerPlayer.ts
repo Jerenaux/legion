@@ -32,7 +32,7 @@ export class AIServerPlayer extends ServerPlayer {
         this.retargetRate = Math.floor(Math.random() * 10) + 1;
         this.retargetCount = this.retargetRate;
 
-        this.setCooldown(Math.floor(INITIAL_COOLDOWN * 1000 * (1 + Math.random() * 0.15)));
+        this.setCooldown(Math.floor(INITIAL_COOLDOWN * 1000 * (1 + Math.random() * 0.3)));
     }
 
     setArchetype() {
