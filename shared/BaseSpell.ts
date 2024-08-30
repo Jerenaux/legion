@@ -36,9 +36,9 @@ export class BaseSpell {
         this.cooldown = 3;
         this.castTime = 1;
         if (props.target == Target.AOE) {
-            this.cost *= props.size * 5;
-            this.cooldown *= props.size;
-            this.castTime *= props.size;
+            this.cost *= Math.round(props.size * 5);
+            this.cooldown *= Math.round(props.size);
+            this.castTime *= Math.round(props.size);
         }
         if (props.terrain == Terrain.FIRE) {
             this.cost = Math.round(this.cost * 1);

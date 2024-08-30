@@ -103,7 +103,6 @@ class SeasonCard extends Component<SeasonCardProps> {
         }; 
 
         const isAllTime = this.props.currTab === 'alltime';
-        console.log(this.props.currTab);
 
         return (
             <div className="season-card-container">
