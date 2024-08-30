@@ -5,6 +5,16 @@ import { ChestReward, RewardType } from "@legion/shared/chests";
 import { ChestColor } from "@legion/shared/enums";
 import { mapFrameToCoordinates } from '../utils';
 
+import equipmentSpritesheet from '@assets/equipment.png';
+import consumablesSpritesheet from '@assets/consumables.png';
+import spellsSpritesheet from '@assets/spells.png';
+import goldIcon from '@assets/gold_icon.png';
+
+import bronzeChest from '@assets/shop/bronze_chest.png';
+import silverChest from '@assets/shop/silver_chest.png';
+import goldChest from '@assets/shop/gold_chest.png';
+import shineBg from '@assets/game_end/shine_bg.png';
+
 interface OpenedChestProps {
     width: number;
     height: number;
@@ -21,13 +31,24 @@ class OpenedChest extends Component<OpenedChestProps> {
   getBgImageUrl(rewardType: RewardType) {
     switch (rewardType) {
         case RewardType.EQUIPMENT:
-            return '/equipment.png';
+            return equipmentSpritesheet;
         case RewardType.SPELL:
-            return '/spells.png';
+            return spellsSpritesheet;
         case RewardType.CONSUMABLES:
-            return '/consumables.png';
+            return consumablesSpritesheet;
         case RewardType.GOLD:
-            return '/gold_icon.png';
+            return goldIcon;
+    }
+  }
+
+  getChestImage(color: ChestColor) {
+    switch (color) {
+        case ChestColor.BRONZE:
+            return bronzeChest;
+        case ChestColor.SILVER:
+            return silverChest;
+        case ChestColor.GOLD:
+            return goldChest;
     }
   }
 
@@ -40,10 +61,10 @@ class OpenedChest extends Component<OpenedChestProps> {
             height={this.props.height}
           />
           <div className="light_streak_chest">
-            <img src={`/shop/${this.props.color}_chest.png`} alt="" />
+            <img src={this.getChestImage(this.props.color)} alt="" />
           </div>
           <div className="light_shining_bg">
-            <img src="/game_end/shine_bg.png" alt="" />
+            <img src={shineBg} alt="" />
           </div>
           <div className="streak_gold_list_container">
             {this.props.content.map((reward, idx) => {
