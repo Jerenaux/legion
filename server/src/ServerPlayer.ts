@@ -56,7 +56,6 @@ export class ServerPlayer {
     def;
     spatk;
     spdef;
-    cooldowns;
     cooldown: number = 0;
     cooldownTimer: NodeJS.Timeout | null = null;
     terrainDoTTimer: NodeJS.Timeout | null = null;

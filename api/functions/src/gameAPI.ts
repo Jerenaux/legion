@@ -79,6 +79,7 @@ export const completeGame = onRequest((request, response) => {
       const gameId = request.body.gameId;
       const winnerUID = request.body.winnerUID || -1; // -1 for AI
       const results: EndGameData = request.body.results;
+      console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(results)}`);
 
       const gameRef = await db.collection("games").where("gameId", "==", gameId).limit(1).get();
       if (gameRef.empty) {

@@ -32,8 +32,7 @@ export class AIServerPlayer extends ServerPlayer {
         this.retargetRate = Math.floor(Math.random() * 10) + 1;
         this.retargetCount = this.retargetRate;
 
-        this.setCooldown(INITIAL_COOLDOWN * 1000);
-
+        this.setCooldown(Math.floor(INITIAL_COOLDOWN * 1000 * (1 + Math.random() * 0.15)));
     }
 
     setArchetype() {
@@ -66,9 +65,9 @@ export class AIServerPlayer extends ServerPlayer {
         }
     }
 
-    getCooldown(action: ActionType) {
+    getCooldownMs(action: ActionType) {
         // Return a random number between 1 and 1.3 times the cooldown
-        return Math.floor(this.cooldowns[action] * (1 + Math.random() * 0.3));
+        return Math.floor(super.getCooldownMs(action) * (1 + Math.random() * 0.3));
     }
 
     takeAction(): number {
