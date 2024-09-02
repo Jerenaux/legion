@@ -127,9 +127,9 @@ equipments[10] = new BaseEquipment({
     name: "Golden necklace",
     description: "",
     frame: 50,
-    effects: [{stat: Stat.HP, value: 20}],
+    effects: [{stat: Stat.HP, value: 40}],
     slot: EquipmentSlot.NECKLACE,
-    effort: 4,
+    effort: 10,
     minLevel: 1,
 });
 
@@ -259,6 +259,17 @@ equipments[21] = new BaseEquipment({
     slot: EquipmentSlot.LEFT_RING,
     effort: 11,
     minLevel: 5,
+});
+
+equipments[22] = new BaseEquipment({
+    id: 22,
+    name: "Teardrop necklace",
+    description: "",
+    frame: 52,
+    effects: [{stat: Stat.HP, value: 20}],
+    slot: EquipmentSlot.NECKLACE,
+    effort: 4,
+    minLevel: 1,
 });
 
 export function getEquipmentById(id:number): BaseEquipment | undefined {
