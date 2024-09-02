@@ -27,10 +27,41 @@ function selectRandomAvatar(): string {
   return (Math.floor(Math.random() * 31) + 1).toString();
 }
 
+const coolAdjectives: string[] = [
+  "Fearless", "Mystic", "Swift", "Shadowed", "Blazing",
+  "Ancient", "Vengeful", "Arcane", "Radiant", "Savage",
+  "Infernal", "Silent", "Crimson", "Lunar", "Stormy",
+  "Valiant", "Cunning", "Divine", "Phantom", "Celestial",
+  "Feral", "Venomous", "Majestic", "Abyssal", "Noble",
+  "Frosty", "Ethereal", "Vigilant", "Obsidian", "Dreadful",
+  "Mighty", "Ruthless", "Brave", "Glimmering", "Spectral",
+  "Merciless", "Burning", "Thunderous", "Enigmatic",
+  "Grim", "Titanic", "Raging", "Wicked", "Radiant",
+  "Elusive", "Mystical", "Frozen", "Unyielding", "Temporal",
+  "Unseen", "Furious", "Shimmering", "Howling", "Galactic",
+  "Daring", "Void", "Zealous", "Ironclad", "Sinister",
+  "Tempestuous", "Aegis",
+];
+
+const coolNouns: string[] = [
+  "Warrior", "Hunter", "Sorcerer", "Knight", "Rogue",
+  "Phoenix", "Dragon", "Wolf", "Shadow", "Reaper",
+  "Wraith", "Titan", "Guardian", "Berserker", "Valkyrie",
+  "Sage", "Beast", "Paladin", "Ranger", "Assassin",
+  "Seer", "Giant", "Mystic", "Viper", "Lion",
+  "Storm", "Demon", "Specter", "Falcon", "Raven",
+  "Blade", "Champion", "Samurai", "Wanderer", "Invoker",
+  "Druid", "Ember", "Oracle", "Sentinel",
+  "Invoker", "Spellbinder", "Gladiator", "Warlord", "Avenger",
+  "Shade", "Thorn", "Predator", "Harbinger",
+  "Vanguard", "Nomad", "Crusader", "Stalker", "Enigma",
+  "Harpy", "Tempest", "Prophet", "Fury", "Juggernaut",
+];
+
+
 function generateName() {
-  // limit names to length of 16 characters
   const options = {
-    dictionaries: [adjectives, colors, animals],
+    dictionaries: [coolAdjectives, coolNouns],
     length: 2,
     separator: " ",
     style: "capital",
