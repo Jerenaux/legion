@@ -44,7 +44,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       }
       try {
           const data = await apiFetch('getPlayerData') as APIPlayerData;
-          console.log(data);
           this.setState({ 
               player: {
                   uid: user.uid,

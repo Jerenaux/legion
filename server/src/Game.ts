@@ -8,7 +8,8 @@ import {apiFetch} from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN } from '@legion/shared/enums';
 import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
-import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, MOVE_COOLDOWN, ATTACK_COOLDOWN } from '@legion/shared/config';
+import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, MOVE_COOLDOWN, ATTACK_COOLDOWN,
+    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 
 enum GameAction {
@@ -979,8 +980,8 @@ export abstract class Game
 
     computeTeamGold(grade: number, mode: PlayMode) {
         let gold = AVERAGE_GOLD_REWARD_PER_GAME * (grade + 0.3);
-        if (mode == PlayMode.PRACTICE) gold *= 0.1; // TODO: make 0
-        if (mode == PlayMode.RANKED) gold *= 1.5;
+        if (mode == PlayMode.PRACTICE) gold *= PRACTICE_GOLD_COEF; 
+        if (mode == PlayMode.RANKED) gold *= RANKED_GOLD_COEF;
         // Add +- 5% random factor
         gold *= 0.95 + Math.random() * 0.1;
         return Math.round(gold);
@@ -996,8 +997,8 @@ export abstract class Game
         if (team.getTotalInteractedTargets() == 0) return 0;
         let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (grade + 0.3);
         console.log(`Base XP: ${xp}: ${otherTeam.getTotalLevel()} * ${XP_PER_LEVEL} * (${grade} + 0.3)`);
-        if (mode == PlayMode.PRACTICE) xp *= 0.1;
-        if (mode == PlayMode.RANKED) xp *= 1.2;
+        if (mode == PlayMode.PRACTICE) xp *= PRACTICE_XP_COEF;
+        if (mode == PlayMode.RANKED) xp *= RANKED_XP_COEF;
         // Add +- 5% random factor
         xp *= 0.95 + Math.random() * 0.1;
 

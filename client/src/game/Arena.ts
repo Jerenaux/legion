@@ -1333,8 +1333,6 @@ export class Arena extends Phaser.Scene
     }
 
     initializeGame(data: GameData): void {
-        console.log(data);
-
         const isReconnect = data.general.reconnect;
 
         this.playerTeamId = data.player.teamId;

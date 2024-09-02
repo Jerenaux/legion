@@ -12,8 +12,13 @@ export const PROMOTION_RATIO = 0.2;
 export const DEMOTION_RATIO = 0.2;
 export const SEASON_END_CRON = '0 19 * * 5' // UTC
 
+export const PRACTICE_XP_COEF = 0.3;
+export const PRACTICE_GOLD_COEF = 0.1; // TODO: make 0?
+export const RANKED_XP_COEF = 1.2;
+export const RANKED_GOLD_COEF = 1.5;
+
 // Time, all in seconds
-export const TIME_COEFFICIENT = 5;
+export const TIME_COEFFICIENT = 4;
 
 export const MOVE_COOLDOWN = 1;
 export const ATTACK_COOLDOWN = 3;
