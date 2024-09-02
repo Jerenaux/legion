@@ -186,12 +186,16 @@ export class ServerPlayer {
 
         this.updateHP(damage);
         if (this.isDead()) {
-            this.justDied = true;
-            this.clearStatusEffects();
-            this.team!.game.handleTeamKill(this.team);
+            this.die();
         }
 
         this.team!.game.checkFirstBlood(this.team);
+    }
+
+    die() {
+        this.justDied = true;
+        this.clearStatusEffects();
+        this.team!.game.handleTeamKill(this.team);
     }
 
     heal(amount: number) {

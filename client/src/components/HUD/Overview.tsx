@@ -115,7 +115,10 @@ class Overview extends Component<Props, State> {
         <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
         <div className="member_container">
           {members.map((member, memberIndex) => {
+            const isAlive = member.hp > 0;
             const cooldown = cooldowns[cooldownIndex++];
+            let cooldownPct = cooldown / member.totalCooldown;
+            if (!isAlive) cooldownPct = 1;
 
             const portraitStyle = {
               backgroundImage: `url(${getSpritePath(member.texture)})`,
@@ -124,7 +127,7 @@ class Overview extends Component<Props, State> {
             const charProfileStyle = (idx: number) => {
               const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
 
-              if (cooldown === 0 && member.hp > 0) {
+              if (cooldown === 0 && isAlive) {
                 return {
                   backgroundImage: `url(${charProfileReady})`,
                   transform: 'scale(1.1)'
@@ -167,9 +170,14 @@ class Overview extends Component<Props, State> {
                     <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
                   </div>}
                 </div>
-                {this.props.isPlayerTeam && <div className={`char_stats_cooldown_bar ${member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`} style={position === 'left' && { justifyContent: 'flex-start', marginLeft: '40px' }}>
-                  <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
-                </div>}
+                {this.props.isPlayerTeam && 
+                  <div className={
+                    `char_stats_cooldown_bar
+                    ${member.isAlive && member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`
+                    } 
+                    style={position === 'left' && { justifyContent: 'flex-start', marginLeft: '40px' }}>
+                      <div className="char_stats_cooldown" style={{ width: `${(1 - cooldownPct) * 100}%` }}></div>
+                  </div>}
                 <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
                   {Object.keys(member?.statuses).map((status: StatusEffect) => {
                     return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={this.statusIcons[status]}  alt="" />
