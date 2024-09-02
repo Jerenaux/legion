@@ -12,6 +12,7 @@
 		"paths": {
 			"@legion/shared/*": ["shared/*"]
 		},
+    "skipLibCheck": true,
   },
   "compileOnSave": true,
   "include": [

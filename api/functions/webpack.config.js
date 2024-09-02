@@ -1,4 +1,5 @@
 const path = require('path');
+const Dotenv = require('dotenv-webpack');
 
 const isDocker = process.env.NODE_ENV === 'docker';
 const sharedPrefix = process.env.DEPLOY ? '../../' : '';
@@ -37,5 +38,10 @@ module.exports = {
     filename: 'index.js', // Output file name
     libraryTarget: 'commonjs', // !! Important for Firebase functions
   },
+  plugins: [
+    new Dotenv({
+      path: path.resolve(__dirname, '.production.env'),
+    })
+  ],
   devtool: 'inline-source-map', // For development mode
 };

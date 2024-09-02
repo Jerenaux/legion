@@ -13,6 +13,7 @@ import { apiFetch } from "./API";
 import {eloRangeIncreaseInterval, eloRangeStart, eloRangeStep, goldRewardInterval,
     goldReward, casualModeThresholdTime, maxWaitTimeForPractice} from '@legion/shared/config';
 import { PlayMode, League } from '@legion/shared/enums';
+import { sendMessageToAdmin } from '@legion/shared/utils';
 
 const discordEnabled = (process.env.DISCORD_TOKEN !== undefined);
 const discordClient = new Client({intents: [GatewayIntentBits.Guilds]});
@@ -39,8 +40,7 @@ const playersQueue: Player[] = [];
 async function notifyAdmin(mode: PlayMode) {
     if (!discordEnabled) return;
     try {
-        const adminUser = await discordClient.users.fetch('272906141728505867');
-        adminUser.send(`A player has joined the queue in ${PlayMode[mode]} mode!`);
+        sendMessageToAdmin(discordClient, `A player has joined the queue in ${PlayMode[mode]} mode!`);
     } catch (error) {
         console.error('Failed to send DM:', error);
     }
