@@ -41,6 +41,7 @@ interface DialogProps {
   handleClose: () => void;
   refreshCharacter?: () => void;
   updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
+  updateStats?: (stat: Stat, amount: number) => void;
   handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
 
@@ -123,6 +124,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       characterId: this.props.characterId,
     };
 
+    this.props.updateStats(stat, amount);
     this.props.handleClose();
 
     apiFetch('spendSP', {

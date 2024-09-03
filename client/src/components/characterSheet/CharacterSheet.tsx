@@ -35,6 +35,7 @@ interface CharacterSheetProps {
     refreshCharacter: () => void;
     handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
     updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
+    updateStats?: (stat: Stat, value: number) => void;
     selectedEquipmentSlot: number; 
     handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
@@ -354,6 +355,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     dialogData={this.state.modalData}
                     handleClose={this.handleCloseModal}
                     updateInventory={this.props.updateInventory} 
+                    updateStats={this.props.updateStats}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
             </div>

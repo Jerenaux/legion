@@ -11,12 +11,14 @@ import { apiFetch } from '../services/apiService';
 import { errorToast, playSoundEffect } from './utils';
 import CharacterSheet from './characterSheet/CharacterSheet';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
-import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/shared/enums';
+import { EquipmentSlot, InventoryActionType, equipmentFields, Stat } from '@legion/shared/enums';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { manageHelp } from './utils';
 import { getSpellById } from '@legion/shared/Spells';
+import { getSPIncrement } from '@legion/shared/levelling';
+
 
 interface TeamPageState {
   inventory: {
@@ -163,6 +165,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   }
 
 
+  // Immediate feedback method to apply inventory changes without waiting for API response
   updateInventory(type: string, action: InventoryActionType, index: number) {
     switch(type) {
       case 'consumables':
@@ -270,6 +273,21 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     playSoundEffect('sfx/equip.wav');
   }
 
+  // Immediate feedback method to apply stats and SP changes without waiting for API response
+  updateStats(stat: Stat, amount: number) {
+    this.setState((prevState) => {
+      const newStats = { ...prevState.character_sheet_data.stats };
+      newStats[stat] += getSPIncrement(stat)*amount;
+      return { 
+        character_sheet_data: { 
+          ...prevState.character_sheet_data,
+          stats: newStats,
+          sp: prevState.character_sheet_data.sp - amount
+        } 
+      };
+    });
+  }
+
   render() {
 
     return (
@@ -282,7 +300,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               itemEffects={this.state.statsModifiers}
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
-              updateInventory={this.updateInventory.bind(this)} 
+              updateInventory={this.updateInventory.bind(this)}
+              updateStats={this.updateStats.bind(this)} 
               selectedEquipmentSlot={this.state.selectedEquipmentSlot} 
               handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
             /> : <Skeleton 

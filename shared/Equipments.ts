@@ -272,6 +272,18 @@ equipments[22] = new BaseEquipment({
     minLevel: 1,
 });
 
+equipments[23] = new BaseEquipment({
+    id: 23,
+    name: "Astral Scepter",
+    description: "",
+    frame: 21,
+    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.MP, value: 30}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 25}, {stat: Stat.SPDEF, value: 15}],
+    slot: EquipmentSlot.WEAPON,
+    effort: 35,
+    minLevel: 10,
+    classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
+});
+
 export function getEquipmentById(id:number): BaseEquipment | undefined {
     return equipments.find(e => e.id === id);
 }
