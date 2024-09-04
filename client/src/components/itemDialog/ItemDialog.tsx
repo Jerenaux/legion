@@ -356,8 +356,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             Are you sure you want to spend {this.state.dialogValue} SP?
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => { this.spendSP(dialogData.stat, this.state.dialogValue); this.setState({ dialogSPModalShow: false }); }}><img src="/inventory/confirm_icon.png" alt="confirm" />Confirm</button>
-            <button className="dialog-decline" onClick={() => this.setState({ dialogSPModalShow: false })}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+            <button className="dialog-accept" onClick={() => { this.spendSP(dialogData.stat, this.state.dialogValue); this.setState({ dialogSPModalShow: false }); }}><img src={confirmIcon} alt="confirm" />Confirm</button>
+            <button className="dialog-decline" onClick={() => this.setState({ dialogSPModalShow: false })}><img src={cancelIcon} alt="decline" />Cancel</button>
           </div>
         </div>
       </div>
