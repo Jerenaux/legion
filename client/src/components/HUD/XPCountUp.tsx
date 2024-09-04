@@ -1,7 +1,7 @@
 // XPCountUp.tsx
 import { h, Component } from 'preact';
 
-import { Class } from '@legion/shared/enums';
+import { ClassLabels } from '@legion/shared/enums';
 import { CharacterUpdate } from '@legion/shared/interfaces';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { getSpritePath } from '../utils';
@@ -62,7 +62,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
         return (
             <div className="endgame_character">
                 <div className="endgame_character_lvl">
-                    <span className="lvl">Lv</span>
+                    <span className="lvl">Lvl</span>
                     <span>{member.level + this.state.isLevelUp}</span>
                 </div>
                 {this.state.isLevelUp > 0 && <div className="endgame_character_lvlup">
@@ -76,7 +76,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                 </div>
                 <div className="endgame_character_info">
                     <p className="endgame_character_name">{member.name}</p>
-                    <p className="endgame_character_class">{Class[member.class]}</p>
+                    <p className="endgame_character_class">{ClassLabels[member.class]}</p>
                     <div className="flex flex_col gap_4 width_full padding_top_8">
                         <div className="flex justify_between width_full">
                             <span className="endgame_character_exp">EXP</span>

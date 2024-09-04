@@ -1,5 +1,5 @@
 // ShopItemFilter.tsx
-import { Class, EquipmentSlot, ShopTabs } from '@legion/shared/enums';
+import { Class, ClassLabels, EquipmentSlot, ShopTabs } from '@legion/shared/enums';
 import './ShopItemFilter.style.css'
 import { h, Component } from 'preact';
 import { ShopItems } from '@legion/shared/interfaces';
@@ -130,7 +130,7 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
                             {CharacterClasses.map(character_class => (
                                 <li key={character_class} onClick={() => handleCurrentClass(character_class)}>
                                     {this.state.currClass === character_class && <img src={confirmIcon} alt="confirm" />}
-                                    <span>{Class[character_class]}</span>
+                                    <span>{ClassLabels[character_class]}</span>
                                 </li>
                             ))}
                         </ul>

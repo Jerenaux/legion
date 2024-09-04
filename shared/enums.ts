@@ -8,6 +8,7 @@ export enum Stat {
     NONE
 }
 
+// TODO: do like ClassLabels below
 export const statFields = ["hp", "mp", "atk", "def", "spatk", "spdef"];
 
 export enum Target {
@@ -28,6 +29,14 @@ export enum Class {
     THIEF,
     RANDOM
 }
+
+export const ClassLabels = {
+    [Class.WARRIOR]: 'Warrior',
+    [Class.WHITE_MAGE]: 'White Mage',
+    [Class.BLACK_MAGE]: 'Black Mage',
+    [Class.THIEF]: 'Thief',
+    [Class.RANDOM]: 'Random'
+};
 
 export enum Terrain {
     NONE,

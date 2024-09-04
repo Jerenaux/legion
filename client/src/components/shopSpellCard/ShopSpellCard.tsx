@@ -75,7 +75,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
           <span>{data.name}</span>
           <div className="spell-card-info-container">
             <div className="spell-card-info-box">
-              <span className="spell-card-info-lv">LV</span>
+              <span className="spell-card-info-lv">Lvl</span>
               <span>{data.minLevel}</span>
             </div>
             <div className="spell-card-info-box">
