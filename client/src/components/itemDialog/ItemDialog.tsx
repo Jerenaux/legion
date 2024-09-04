@@ -31,7 +31,7 @@ interface DialogProps {
   index?: number;
   isEquipped?: boolean;
   actionType: InventoryActionType;
-  dialogType: string;
+  dialogType: ItemDialogType; 
   dialogOpen: boolean;
   dialogData: BaseItem | BaseSpell | BaseEquipment | SPSPendingData | null;
   position: {
@@ -98,7 +98,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     }
   }
 
-  AcceptAction = (type: string, index: number) => {
+  AcceptAction = (type: ItemDialogType, index: number) => {
     if (!this.props.characterId) return;
 
     const payload = {
@@ -110,6 +110,10 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     if (this.props.updateInventory) this.props.updateInventory(type, this.props.actionType, index)
     this.props.handleClose();
+
+    if (type === ItemDialogType.SPELLS) {
+      successToast('Spell learned!');
+    }
 
     apiFetch('inventoryTransaction', {
       method: 'POST',
@@ -171,7 +175,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     let acceptLabel = this.props.actionType > 0 ? 'Remove' : 'Equip';
     // If dialogData is of type spell , display "Learn" instead of "Equip"
-    if (dialogType === ItemDialogType.SKILLS) {
+    if (dialogType === ItemDialogType.SPELLS) {
       acceptLabel = 'Learn';
     }
 
@@ -394,7 +398,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           return equipmentDialog(dialogData as BaseEquipment);
         case ItemDialogType.CONSUMABLES:
           return consumableDialog(dialogData as BaseItem);
-        case ItemDialogType.SKILLS:
+        case ItemDialogType.SPELLS:
           return spellDialog(dialogData as BaseSpell);
         case ItemDialogType.SP:
           return SPSpendDialog(dialogData as SPSPendingData);

@@ -244,7 +244,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 case InventoryType.SKILLS:
                     capacity = characterData.skill_slots;
                     items = characterData.skills;
-                    dialogType = ItemDialogType.SKILLS;
+                    dialogType = ItemDialogType.SPELLS;
                     backgroundImageUrl = spellsSpritesheet;
                     dataCallback = getSpellById;
                     break;
