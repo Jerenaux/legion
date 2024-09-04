@@ -103,7 +103,6 @@ io.on('connection', async (socket: any) => {
   
       socket.on('move', (data: any) => {
         const game = socketMap.get(socket);
-        console.log(`Moving in game ${game?.id}`);
         game?.processAction('move', data, socket);
       });
   

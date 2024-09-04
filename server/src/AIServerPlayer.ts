@@ -65,9 +65,9 @@ export class AIServerPlayer extends ServerPlayer {
         }
     }
 
-    getCooldownMs(action: ActionType) {
+    getCooldownDurationMs(action: ActionType) {
         // Return a random number between 1 and 1.3 times the cooldown
-        return Math.floor(super.getCooldownMs(action) * (1 + Math.random() * 0.3));
+        return Math.floor(super.getCooldownDurationMs(action) * (1 + Math.random() * 0.3));
     }
 
     takeAction(): number {

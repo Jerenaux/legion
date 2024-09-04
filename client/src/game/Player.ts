@@ -8,6 +8,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { Target, StatusEffect, Class } from "@legion/shared/enums";
 import { Arena } from "./Arena";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
+import { paralyzingStatuses } from '@legion/shared/utils';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -686,8 +687,9 @@ export class Player extends Phaser.GameObjects.Container {
             } 
         });
 
-        if (statuses[StatusEffect.FREEZE] != null) this.toggleCharacterImmobilization(statuses[StatusEffect.FREEZE]);
-        if (statuses[StatusEffect.PARALYZE] != null) this.toggleCharacterImmobilization(statuses[StatusEffect.PARALYZE]);
+        // Compute if any of the paralyzing statuses are active
+        const paralyzing = paralyzingStatuses.some(status => statuses[status] != null && statuses[status] != 0);
+        this.toggleCharacterImmobilization(paralyzing);
 
         this.arena.emitEvent('statusesChange', {num: this.num})
     }
@@ -748,13 +750,14 @@ export class Player extends Phaser.GameObjects.Container {
         });
     }
 
-    toggleCharacterImmobilization(duration) {
-        if (duration != 0) 
+    toggleCharacterImmobilization(flag: boolean) {
+        if (flag) 
         {
             this.sprite.anims.stop();   
-            this.cooldownTween?.stop();
+            if (this.cooldownTween?.progress < 1) this.cooldownTween?.pause();
         } else {
             this.playAnim(this.getIdleAnim());
+            if (this.cooldownTween?.paused) this.cooldownTween?.play();
         }   
     }
 

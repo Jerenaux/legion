@@ -346,12 +346,16 @@ export abstract class Game
 
     processMove({tile, num}: {tile: Tile, num: number}, team: Team) {
         const player = team.getMembers()[num - 1];
-        if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) {
-            console.log(`Invalid move from ${player.x},${player.y} to ${tile.x},${tile.y}!`);
+        if (!player.canAct()) {
+            console.log(`[Game:processMove] Player ${num} cannot act: paralyzed = ${player.isParalyzed()}, cooldown = ${player.getActiveCooldown()}!`);
             return;
         }
-        if (!player.canAct() || !player.canMoveTo(tile.x, tile.y)) {
-            console.log(`Player ${num} cannot move to ${tile.x},${tile.y}!`);
+        if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) {
+            console.log(`[Game:processMove] Invalid move from ${player.x},${player.y} to ${tile.x},${tile.y}!`);
+            return;
+        }
+        if (!player.canMoveTo(tile.x, tile.y)) {
+            console.log(`[Game:processMove] Player ${num} cannot move to ${tile.x},${tile.y}!`);
             return;
         }
 
@@ -366,7 +370,7 @@ export abstract class Game
         
         this.checkForStandingOnTerrain(player);
 
-        const cooldown = player.getCooldownMs(MOVE_COOLDOWN);
+        const cooldown = player.getCooldownDurationMs(MOVE_COOLDOWN);
         this.setCooldown(player, cooldown);
         
         this.broadcast('move', {
@@ -377,7 +381,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         return 0;
@@ -429,7 +433,7 @@ export abstract class Game
             opponent.removeStatusEffect(StatusEffect.FREEZE);
         }
         
-        const cooldown = player.getCooldownMs(ATTACK_COOLDOWN);
+        const cooldown = player.getCooldownDurationMs(ATTACK_COOLDOWN);
         this.setCooldown(player, cooldown);
 
         this.broadcast('attack', {
@@ -449,7 +453,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         return 0;
@@ -464,7 +468,7 @@ export abstract class Game
             !this.hasObstacle(x, y)
         ) return;
 
-        const cooldown = player.getCooldownMs(ATTACK_COOLDOWN);
+        const cooldown = player.getCooldownDurationMs(ATTACK_COOLDOWN);
         this.setCooldown(player, cooldown);
 
         const terrainUpdates = this.terrainManager.removeIce(x, y);
@@ -478,7 +482,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         return 0;
@@ -519,7 +523,7 @@ export abstract class Game
             player.team!.increaseScoreFromRevive(deadTargets_ - deadTargets);
         }
 
-        const cooldown = player.getCooldownMs(item.cooldown);
+        const cooldown = player.getCooldownDurationMs(item.cooldown);
         this.setCooldown(player, cooldown);
 
         player.removeItem(item);
@@ -544,7 +548,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         team.socket?.emit('inventory', {
@@ -613,7 +617,7 @@ export abstract class Game
         const nbFrozen_ = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
         const nbBurning_ = this.terrainManager.getNbBurning();
 
-        const cooldown = player.getCooldownMs(spell.cooldown);
+        const cooldown = player.getCooldownDurationMs(spell.cooldown);
         this.setCooldown(player, cooldown);
         
         this.broadcast('localanimation', {
@@ -634,7 +638,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num: player.num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         this.broadcast('endcast', {
