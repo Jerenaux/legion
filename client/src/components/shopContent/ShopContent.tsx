@@ -24,11 +24,12 @@ import { Link } from 'preact-router';
 import tabActiveImage from '@assets/shop/tabs_active.png';
 import tabIdleImage from '@assets/shop/tabs_idle.png';
 
-// Import shop tab icons
 import spellsIcon from '@assets/shop/spells_icon.png';
 import consumablesIcon from '@assets/shop/consumables_icon.png';
 import equipmentsIcon from '@assets/shop/helmet_icon.png';
 import charactersIcon from '@assets/shop/char_icon.png';
+
+import purchaseSfx from '@assets/sfx/purchase.wav';
 
 interface ShopContentProps {
     gold: number;
@@ -150,7 +151,7 @@ class ShopContent extends Component<ShopContentProps> {
 
         this.props.updateInventory(id.toString(), quantity, this.state.curr_tab);
         this.context.setPlayerInfo({ gold: this.props.gold - price * quantity });
-        playSoundEffect('sfx/purchase.wav');
+        playSoundEffect(purchaseSfx);
 
         apiFetch(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', {
             method: 'POST',

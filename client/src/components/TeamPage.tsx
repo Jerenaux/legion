@@ -19,6 +19,8 @@ import { manageHelp } from './utils';
 import { getSpellById } from '@legion/shared/Spells';
 import { getSPIncrement } from '@legion/shared/levelling';
 
+import equipSfx from '@assets/sfx/equip.wav';
+
 
 interface TeamPageState {
   inventory: {
@@ -295,7 +297,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         this.setState({ inventory: { ...this.state.inventory, spells: playerSpells } });
         break;
     }
-    playSoundEffect('sfx/equip.wav');
+    playSoundEffect(equipSfx);
   }
 
   render() {
