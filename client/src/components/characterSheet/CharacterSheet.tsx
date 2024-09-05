@@ -32,9 +32,7 @@ interface CharacterSheetProps {
     characterId: string;
     characterData: APICharacterData;
     itemEffects: Effect[];
-    refreshCharacter: () => void;
     handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
-    updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
     selectedEquipmentSlot: number; 
     handleSelectedEquipmentSlot: (newValue: number) => void; 
     updateCharacterData: () => void;
@@ -78,7 +76,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
     }
 
     render() {
-        const { characterId, characterData, refreshCharacter } = this.props; 
+        const { characterId, characterData } = this.props; 
         if (!this.props.characterData) return;
 
         const renderInfoBars = () => {
@@ -343,7 +341,6 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 <ItemDialog
                     isEquipped={true}
                     actionType={InventoryActionType.UNEQUIP}
-                    refreshCharacter={refreshCharacter}
                     characterId={characterId} 
                     characterSp={characterData?.sp}
                     characterName={characterData.name} 
@@ -355,7 +352,6 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     position={this.state.modalPosition}
                     dialogData={this.state.modalData}
                     handleClose={this.handleCloseModal}
-                    updateInventory={this.props.updateInventory} 
                     updateCharacterData={this.props.updateCharacterData}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />

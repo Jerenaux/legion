@@ -15,6 +15,7 @@ import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
   static contextType = PlayerContext; 
+  
   componentDidUpdate() {
     if (!this.context.player.isLoaded) return;
     manageHelp('play', this.context);

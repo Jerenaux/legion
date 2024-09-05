@@ -7,6 +7,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import ItemIcon from '../itemIcon/ItemIcon';
 import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 import Skeleton from 'react-loading-skeleton';
 
@@ -26,14 +27,14 @@ interface InventoryProps {
   class: number;
   inventory: PlayerInventory;
   carrying_capacity: number;
-  refreshCharacter: () => void;
   handleItemEffect: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
   handleSelectedEquipmentSlot: (newValue: number) => void;
   isInventoryLoaded: boolean;
 }
 
 class Inventory extends Component<InventoryProps> {
+  static contextType = PlayerContext; 
+
   state = {
     actionType: InventoryType.CONSUMABLES,
     openModal: false
@@ -60,7 +61,7 @@ class Inventory extends Component<InventoryProps> {
 
   render() {
 
-    const activeInventory = this.props.inventory[this.state.actionType];
+    const activeInventory = this.context.inventory[this.state.actionType];
     const isCategoryEmpty = !activeInventory || !activeInventory?.length;
 
     const getItem = (itemID: number) => {
@@ -83,8 +84,6 @@ class Inventory extends Component<InventoryProps> {
         backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
       }
 
-      // console.log("InventoryProps => ", this.props); 
-
       return <div key={i} className="item" style={slotStyle}>
         <ItemIcon
           characterId={this.props.id}
@@ -95,31 +94,9 @@ class Inventory extends Component<InventoryProps> {
           index={i}
           hideHotKey={true}
           actionType={this.state.actionType}
-          refreshCharacter={this.props.refreshCharacter}
           handleItemEffect={this.props.handleItemEffect}
-          updateInventory={this.props.updateInventory}
           handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
         />
-
-        {/* {this.props.id != '' ? (
-          <ItemIcon
-            characterId={this.props.id}
-            characterName={this.props.name}
-            characterLevel={this.props.level}
-            characterClass={this.props.class}
-            action={item}
-            index={i}
-            hideHotKey={true}
-            actionType={this.state.actionType}
-            refreshCharacter={this.props.refreshCharacter}
-            handleItemEffect={this.props.handleItemEffect}
-            updateInventory={this.props.updateInventory}
-            handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
-          />
-        ) : (
-          <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0 16px', width: '48px' }} />
-        )} */}
-
       </div>
     });
 
@@ -162,7 +139,7 @@ class Inventory extends Component<InventoryProps> {
           </div>
           <div className="inventoryWrapper">
             {
-              !this.props.isInventoryLoaded ?
+              !this.context.isInventoryLoaded ?
                 <div style={{ position: "absolute", display: "flex", gap: '6px' }}>
                   {[...Array(6)].map((_, index) => (
                     <Skeleton

@@ -15,15 +15,38 @@ const AuthenticatedGamePage = withAuth(GamePage);
 
 interface AppState {
 	currentUrl: string;
+    currentMainRoute: string;
 }
 
 class App extends Component<{}, AppState> {
     state: AppState = {
-        currentUrl: '/'
+        currentUrl: '/',
+        currentMainRoute: '/'
     };
 
-    handleRoute = (e: RouterOnChangeArgs) => {
-        this.setState({ currentUrl: e.url });
+    getMainRoute(url: string): string {
+        const parts = url.split('/');
+        return parts[1] || '/'; // Return the first part after the initial slash, or '/' if it's the root
+    }
+
+    handleRoute = (e: RouterOnChangeArgs, refreshPlayerData: () => void, updateActiveCharacter: (id: string | null) => void) => {
+        const newMainRoute = this.getMainRoute(e.url);
+        
+        if (newMainRoute !== this.state.currentMainRoute) {
+            refreshPlayerData();
+        }
+
+        if (newMainRoute === 'team') {
+            const teamId = e.url.split('/')[2] || null;
+            updateActiveCharacter(teamId);
+        } else {
+            updateActiveCharacter(null);
+        }
+
+        this.setState({ 
+            currentUrl: e.url,
+            currentMainRoute: newMainRoute
+        });
     };
 
     render() {
@@ -31,11 +54,8 @@ class App extends Component<{}, AppState> {
             <AuthProvider>
                 <PlayerProvider>
                     <PlayerContext.Consumer>
-                        {({ refreshPlayerData }) => (
-                            <Router onChange={(e: RouterOnChangeArgs) => {
-                                this.handleRoute(e);
-                                refreshPlayerData();
-                            }}>
+                        {({ refreshPlayerData, updateActiveCharacter }) => (
+                            <Router onChange={(e: RouterOnChangeArgs) => this.handleRoute(e, refreshPlayerData, updateActiveCharacter)}>
                                 <Route path="/" component={withNoAuth(LandingPage)} />
                                 <Route path="/game/:id" component={AuthenticatedGamePage} />
                                 <Route path="/play" component={AuthenticatedHomePage} />

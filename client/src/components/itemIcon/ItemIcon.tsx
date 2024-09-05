@@ -24,7 +24,6 @@ interface ItemIconProps {
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
   handleItemEffect?: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
   onActionClick?: (type: string, letter: string, index: number) => void; 
   handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
@@ -127,8 +126,6 @@ class ItemIcon extends Component<ItemIconProps> {
           position={this.state.modalPosition}
           dialogData={this.state.modalData}
           handleClose={this.handleCloseModal}
-          refreshCharacter={this.props.refreshCharacter}
-          updateInventory={this.props.updateInventory} 
           handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot} 
         />
       </div>

@@ -40,8 +40,6 @@ interface DialogProps {
     left: number
   };
   handleClose: () => void;
-  refreshCharacter?: () => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
   handleSelectedEquipmentSlot: (newValue: number) => void; 
   updateCharacterData?: () => void;
 }
@@ -102,16 +100,16 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   AcceptAction = (type: ItemDialogType, index: number) => {
-    if (!this.props.characterId) return;
+    if (!this.context.activeCharacterId) return;
 
     const payload = {
       index,
-      characterId: this.props.characterId,
+      characterId: this.context.activeCharacterId,
       inventoryType: type,
       action: this.props.actionType
     };
 
-    if (this.props.updateInventory) this.props.updateInventory(type, this.props.actionType, index)
+    this.context.updateInventory(type, this.props.actionType, index)
     this.props.handleClose();
 
     if (type === ItemDialogType.SPELLS) {
@@ -122,24 +120,19 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       method: 'POST',
       body: payload
     })
-      .then((data) => {
-        if (data.status == 0) {          
-          this.props.refreshCharacter();
-        }
-      })
       .catch(error => errorToast(`Error: ${error}`));
   }
 
   spendSP = async (stat: Stat, amount: number) => {
-    if (!this.props.characterId) return;
+    if (!this.context.activeCharacterId) return;
   
     const payload = {
       stat,
       amount,
-      characterId: this.props.characterId,
+      characterId: this.context.activeCharacterId,
     };
 
-    this.context.updateCharacterStats(this.props.characterId, stat, amount);
+    this.context.updateCharacterStats(this.context.activeCharacterId, stat, amount);
 
     this.props.updateCharacterData();
     this.props.handleClose();
@@ -149,13 +142,6 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       method: 'POST',
       body: payload
     })
-      .then((data) => {
-        if (data.status == 0) {
-          this.props.refreshCharacter();
-        } else {
-          errorToast('Not enough SP!');
-        }
-      })
       .catch(error => errorToast(`Error: ${error}`));
   }
 
