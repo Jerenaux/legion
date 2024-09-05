@@ -10,6 +10,7 @@ import { InventoryActionType, Stat, Target, statFields } from '@legion/shared/en
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast, mapFrameToCoordinates, classEnumToString } from '../utils';
 import { getSPIncrement } from '@legion/shared/levelling';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
@@ -41,8 +42,8 @@ interface DialogProps {
   handleClose: () => void;
   refreshCharacter?: () => void;
   updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
-  updateStats?: (stat: Stat, amount: number) => void;
   handleSelectedEquipmentSlot: (newValue: number) => void; 
+  updateCharacterData?: () => void;
 }
 
 interface DialogState {
@@ -57,6 +58,8 @@ interface DialogState {
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
+  static contextType = PlayerContext; 
+
   constructor(props: DialogProps) {
     super(props);
     this.state = {
@@ -127,7 +130,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       .catch(error => errorToast(`Error: ${error}`));
   }
 
-  spendSP = (stat: Stat, amount: number) => {
+  spendSP = async (stat: Stat, amount: number) => {
     if (!this.props.characterId) return;
   
     const payload = {
@@ -136,7 +139,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       characterId: this.props.characterId,
     };
 
-    this.props.updateStats(stat, amount);
+    this.context.updateCharacterStats(this.props.characterId, stat, amount);
+
+    this.props.updateCharacterData();
     this.props.handleClose();
     successToast(`${statFields[stat].toUpperCase()} increased by ${getSPIncrement(stat)*amount}!`);
 

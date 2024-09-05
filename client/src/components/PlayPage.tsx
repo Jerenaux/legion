@@ -19,6 +19,7 @@ class PlayPage extends Component {
     if (!this.context.player.isLoaded) return;
     manageHelp('play', this.context);
   }
+
   render() {
     const data = {
       dailyQuests: [
@@ -85,22 +86,18 @@ class PlayPage extends Component {
     }
 
     return (
-      <PlayerContext.Consumer> 
-        {({ player }) => (
-          <div className="play-content">
-            <Roster />
-            {data ? <PlayModes /> : <Skeleton
-              height={50}
-              count={2}
-              highlightColor='#0000004d'
-              baseColor='#0f1421'
-              style={{ margin: '2px 146px', width: '1024px'}} />}
-            <DailyLoot data={player.dailyloot} />
-            {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}
-            {ENABLE_SPECTATOR_MODE && <OnGoingArena ongoingGameData={data.ongoingGames} />}
-          </div>
-        )}
-      </PlayerContext.Consumer> 
+      <div className="play-content">
+        <Roster characters={this.context.characters}/>
+        {data ? <PlayModes /> : <Skeleton
+          height={50}
+          count={2}
+          highlightColor='#0000004d'
+          baseColor='#0f1421'
+          style={{ margin: '2px 146px', width: '1024px'}} />}
+        <DailyLoot data={this.context.  player.dailyloot} />
+        {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}
+        {ENABLE_SPECTATOR_MODE && <OnGoingArena ongoingGameData={data.ongoingGames} />}
+      </div>
     );
   }
 }

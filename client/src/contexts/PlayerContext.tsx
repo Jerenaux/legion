@@ -1,6 +1,6 @@
 import { createContext } from 'preact';
-import { DailyLootAllAPIData } from '@legion/shared/interfaces';
-import {League} from "@legion/shared/enums";
+import { DailyLootAllAPIData, APICharacterData } from '@legion/shared/interfaces';
+import { League, Stat } from "@legion/shared/enums";
 
 export interface PlayerContextData {
   uid: string;
@@ -20,12 +20,19 @@ export interface PlayerContextData {
 
 export interface PlayerContextState {
   player: PlayerContextData;
+  characters: APICharacterData[];
+  characterSheetIsDirty: boolean;
 }
 
 export const PlayerContext = createContext<{
   player: PlayerContextData;
+  characters: APICharacterData[];
+  characterSheetIsDirty: boolean;
   setPlayerInfo: (updates: Partial<PlayerContextData>) => void;
   refreshPlayerData: () => void;
+  fetchRosterData: () => Promise<void>;
+  updateCharacterStats: (characterId: string, stat: Stat, amount: number) => void;
+  getCharacter: (characterId: string) => APICharacterData | undefined;
 }>({
   player: {
     uid: '',
@@ -42,6 +49,11 @@ export const PlayerContext = createContext<{
     tours: [],
     isLoaded: false,
   },
+  characters: [],
+  characterSheetIsDirty: false,
   setPlayerInfo: () => {},
-  refreshPlayerData: () => {}
+  refreshPlayerData: () => {},
+  fetchRosterData: async () => {},
+  updateCharacterStats: () => {},
+  getCharacter: () => undefined,
 });

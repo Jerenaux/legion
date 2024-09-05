@@ -17,7 +17,6 @@ import { inventorySize } from '@legion/shared/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { manageHelp } from './utils';
 import { getSpellById } from '@legion/shared/Spells';
-import { getSPIncrement } from '@legion/shared/levelling';
 
 import equipSfx from '@assets/sfx/equip.wav';
 
@@ -66,17 +65,28 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   }
 
   async componentDidMount() {
-    await this.fetchCharacterData();
+    if (this.context.characters.length === 0) {
+      await this.context.fetchRosterData();
+    }
+    await this.updateCharacterData();
     await this.fetchInventoryData();
     manageHelp('team', this.context);
   }
 
-  componentDidUpdate(prevProps: TeamPageProps) {
-    if (prevProps.matches.id !== this.props.matches.id) {
-      this.setState({ character_id: this.props.matches.id }, () => {
-        this.updateCharacterData();
-      });
+  componentDidUpdate(prevProps) {
+    if (prevProps.matches.id !== this.props.matches.id || this.context.characterSheetIsDirty) {
+      this.setState({ character_id: this.props.matches.id }, this.updateCharacterData);
     }
+  }
+
+  updateCharacterData = () => {
+    const characterData = this.context.getCharacter(this.state.character_id || this.context.characters[0].id);
+    this.setState({ character_sheet_data: characterData });
+    this.context.characterSheetIsDirty = false;
+  }
+
+  getCurrentCharacterData = (): APICharacterData => {
+    return this.context.getCharacter(this.state.character_id || this.context.characters[0].id);
   }
 
   fetchInventoryData = async () => { 
@@ -98,37 +108,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     }
   }
 
-  fetchCharacterData = async () => {
-    try {
-        const data = await apiFetch('rosterData');
-
-        this.setState({
-          roster_data: data.characters,
-          character_id: this.props.matches.id || data.characters[0].id,
-        }, () => {
-          this.updateCharacterData();
-        });
-      } catch (error) {
-          errorToast(`Error: ${error}`);
-      }
-  }
-
-  updateCharacterData = () => {
-    const sheetData = 
-      this.state.character_id ? 
-      this.state.roster_data.filter((item: APICharacterData) => item.id === this.state.character_id)[0] : 
-      this.state.roster_data[0];
-
-    this.setState({
-      character_sheet_data: sheetData,
-    });
-  }
-    
-
-  refreshCharacter = () => {
-    // this.fetchCharacterData();
-    // this.fetchInventoryData();
-  }
+  refreshCharacter = () => {}
 
   handleItemEffect = (effects: Effect[], actionType: InventoryActionType,  index?: number) => {
     // If index corresponds to left ring and actionType is 0 (equip), check if right ring slot is free
@@ -167,29 +147,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     }
 
     this.setState({statsModifiers: result_effects});
-  }
-
-  // Immediate feedback method to apply stats and SP changes without waiting for API response
-  updateStats(stat: Stat, amount: number) {
-    console.log('updateStats', stat, amount);
-    this.setState((prevState) => {
-      const newStats = { ...prevState.character_sheet_data.stats };
-      newStats[statFields[stat]] += getSPIncrement(stat)*amount;
-      return {
-        roster_data: prevState.roster_data.map((item: APICharacterData) => {
-          if (item.id === prevState.character_id) {
-            return { 
-              ...item, 
-              stats: newStats,
-              sp: item.sp - amount
-            };
-          }
-          return item;
-        })
-      }
-    }, () => {
-      this.updateCharacterData();
-    });
   }
 
   // Immediate feedback method to apply inventory changes without waiting for API response
@@ -304,7 +261,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
     return (
         <div className="team-content">
-          <Roster />
+          <Roster characters={this.context.characters}/>
           <div className="character-inventory-container">
             {this.state.character_sheet_data ? <CharacterSheet 
               characterId={this.state.character_id} 
@@ -313,9 +270,9 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
               updateInventory={this.updateInventory.bind(this)}
-              updateStats={this.updateStats.bind(this)} 
               selectedEquipmentSlot={this.state.selectedEquipmentSlot} 
               handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
+              updateCharacterData={this.updateCharacterData}
             /> : <Skeleton 
             height={400} 
             count={1} 

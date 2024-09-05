@@ -11,6 +11,24 @@ export enum Stat {
 // TODO: do like ClassLabels below
 export const statFields = ["hp", "mp", "atk", "def", "spatk", "spdef"];
 
+export const StatFields = {
+    [Stat.HP]: 'hp',
+    [Stat.MP]: 'mp',
+    [Stat.ATK]: 'atk',
+    [Stat.DEF]: 'def',
+    [Stat.SPATK]: 'spatk',
+    [Stat.SPDEF]: 'spdef'
+}
+
+export const StatLabels = {
+    [Stat.HP]: 'HP',
+    [Stat.MP]: 'MP',
+    [Stat.ATK]: 'ATK',
+    [Stat.DEF]: 'DEF',
+    [Stat.SPATK]: 'SP.ATK',
+    [Stat.SPDEF]: 'SP.DEF'
+}
+
 export enum Target {
     SELF,
     AOE,
