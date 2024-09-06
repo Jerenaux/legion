@@ -59,6 +59,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.fetchRosterData = this.fetchRosterData.bind(this);
       this.updateCharacterStats = this.updateCharacterStats.bind(this);
       this.getCharacter = this.getCharacter.bind(this);
+      this.getActiveCharacter = this.getActiveCharacter.bind(this);
       this.updateInventory = this.updateInventory.bind(this);
       this.updateActiveCharacter = this.updateActiveCharacter.bind(this);
     }
@@ -224,6 +225,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       return this.state.characters.find(char => char.id === characterId);
     }
 
+    getActiveCharacter = (): APICharacterData | undefined => {
+      return this.getCharacter(this.state.activeCharacterId);
+    }
+
     setPlayerInfo = (updates: Partial<PlayerContextData>) => {
       this.setState(({ player }) => ({
         player: { ...player, ...updates }
@@ -244,6 +249,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           fetchRosterData: this.fetchRosterData,
           updateCharacterStats: this.updateCharacterStats,
           getCharacter: this.getCharacter,
+          getActiveCharacter: this.getActiveCharacter,
           updateInventory: this.updateInventory,
           updateActiveCharacter: this.updateActiveCharacter,
         }}>

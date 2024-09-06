@@ -19,6 +19,7 @@ export const PlayerContext = createContext<{
   fetchRosterData: () => Promise<void>;
   updateCharacterStats: (characterId: string, stat: Stat, amount: number) => void;
   getCharacter: (characterId: string) => APICharacterData | undefined;
+  getActiveCharacter: () => APICharacterData | undefined;
   updateInventory: (type: string, action: InventoryActionType, index: number) => void;
   updateActiveCharacter: (characterId: string) => void;
 }>({
@@ -51,6 +52,7 @@ export const PlayerContext = createContext<{
   fetchRosterData: async () => {},
   updateCharacterStats: () => {},
   getCharacter: () => undefined,
+  getActiveCharacter: () => undefined,
   updateInventory: () => {},
   updateActiveCharacter: () => {},
 });

@@ -8,6 +8,7 @@ import { getEquipmentById } from '@legion/shared/Equipments';
 import ItemIcon from '../itemIcon/ItemIcon';
 import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
+import { inventorySize } from '@legion/shared/utils';
 
 import Skeleton from 'react-loading-skeleton';
 
@@ -25,8 +26,6 @@ interface InventoryProps {
   name: string;
   level: number;
   class: number;
-  inventory: PlayerInventory;
-  carrying_capacity: number;
   handleItemEffect: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
   handleSelectedEquipmentSlot: (newValue: number) => void;
   isInventoryLoaded: boolean;
@@ -53,11 +52,6 @@ class Inventory extends Component<InventoryProps> {
   handleCloseModal = () => {
     this.setState({ openModal: false });
   }
-
-  inventoryLength = () => Object.values(this.props.inventory)
-    .filter(Array.isArray)
-    .map(arr => arr.length)
-    .reduce((acc, curr) => acc + curr, 0);
 
   render() {
     const activeInventory = this.context.player.inventory[this.state.actionType];
@@ -132,7 +126,7 @@ class Inventory extends Component<InventoryProps> {
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.CONSUMABLES)}>CONSUMABLES</div>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.EQUIPMENTS)}>EQUIPMENT</div>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.SKILLS)}>SPELLS</div>
-              <div className="categoryCount"><span>{this.inventoryLength()} </span>&nbsp;/&nbsp;{this.props.carrying_capacity}</div>
+              <div className="categoryCount"><span>{inventorySize(this.context.player.inventory)} </span>&nbsp;/&nbsp;{this.context.player.carrying_capacity}</div>
               {/* <div className="categoryBtn" style={{ backgroundImage: `url(${helpIcon}` }} onClick={this.handleOpenModal}></div> */}
             </div>
           </div>

@@ -12,6 +12,17 @@ import { errorToast, successToast, mapFrameToCoordinates, classEnumToString } fr
 import { getSPIncrement } from '@legion/shared/levelling';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
+import {
+  canEquipConsumable,
+  canLearnSpell,
+  canEquipEquipment,
+  equipConsumable,
+  unequipConsumable,
+  learnSpell,
+  equipEquipment,
+  unequipEquipment
+} from '@legion/shared/inventory';
+
 import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -278,7 +289,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             }
           </div>
           <div className="dialog-button-container">
-            <button className="dialog-accept" onClick={() => this.AcceptAction(dialogType, this.props.index)}><img src={confirmIcon} alt="confirm" />{acceptLabel}</button>
+            <button 
+              className="dialog-accept" 
+              onClick={() => this.AcceptAction(dialogType, this.props.index)}
+              // disabled={!canEquipConsumable(this.context.getActiveCharacter())}
+              >
+                  <img src={confirmIcon} alt="confirm" />{acceptLabel}
+            </button>
             <button className="dialog-decline" onClick={handleClose}><img src={cancelIcon} alt="decline" />Cancel</button>
           </div>
         </div>

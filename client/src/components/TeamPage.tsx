@@ -137,8 +137,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               name={this.state.character_sheet_data.name} 
               level={this.state.character_sheet_data.level} 
               class={this.state.character_sheet_data.class} 
-              inventory={this.state.inventory} 
-              carrying_capacity={this.state.carrying_capacity}
               handleItemEffect={this.handleItemEffect}
               handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
               isInventoryLoaded={this.state.isInventoryLoaded} 
