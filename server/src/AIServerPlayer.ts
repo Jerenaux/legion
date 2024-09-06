@@ -266,6 +266,7 @@ export class AIServerPlayer extends ServerPlayer {
         const data = {
             num: this.num,
             target: target.num,
+            sameTeam: target.team.id === this.team!.id,
         }
         this.team?.game.processAttack(data, this.team);
     }

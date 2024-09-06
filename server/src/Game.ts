@@ -406,16 +406,21 @@ export abstract class Game
         }
     }
 
-    processAttack({num, target}: {num: number, target: number}, team: Team) {
+    processAttack({num, target, sameTeam}: {num: number, target: number, sameTeam: boolean}, team: Team) {
+        console.log(`[Game:processAttack] Player ${num} attacking target ${target}`);
         const player = team.getMembers()[num - 1];
-        const opponentTeam = this.getOtherTeam(team.id);
+        const opponentTeam = sameTeam ? team : this.getOtherTeam(team.id);
         const opponent = opponentTeam.getMembers()[target - 1];
         
         if (
             !player.canAct() || 
             !player.isNextTo(opponent.x, opponent.y) || 
             !opponent.isAlive()
-        ) return;
+        ) {
+            console.log(`[Game:processAttack] Action refused: canAct = ${player.canAct()}, isNextTo = ${player.isNextTo(opponent.x, opponent.y)}, isAlive = ${opponent.isAlive()}!`);
+            console.log(`[Game:processAttack] Player ${num} at ${player.x},${player.y}, target ${target} at ${opponent.x},${opponent.y}`);
+            return
+        };
         
         const damage = this.calculateDamage(player, opponent);
         opponent.takeDamage(damage);
@@ -444,6 +449,7 @@ export abstract class Game
             damage: -damage,
             hp: opponent.getHP(),
             isKill: opponent.justDied,
+            sameTeam,
         });
 
         if (oneShot) { // Broadcast gen after attack

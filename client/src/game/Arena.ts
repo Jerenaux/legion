@@ -265,6 +265,7 @@ export class Arena extends Phaser.Scene
         const data = {
             num: this.selectedPlayer.num,
             target: player.num,
+            sameTeam: player.team.id === this.selectedPlayer.team.id,
         };
         this.send('attack', data);
     }
@@ -711,10 +712,10 @@ export class Arena extends Phaser.Scene
         this.playSoundMultipleTimes('steps', 2);
     }
 
-    processAttack({team, target, num, damage, hp, isKill}) {
+    processAttack({team, target, num, damage, hp, isKill, sameTeam}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
-        const otherTeam = this.getOtherTeam(team);
+        const otherTeam = sameTeam ? team : this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
 
         const {x: pixelX, y: pixelY} = this.gridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
@@ -831,7 +832,6 @@ export class Arena extends Phaser.Scene
             .setDepth(depth).setAlpha(0.9).setOrigin(0.5, 0.35).setInteractive();
         // Add pointerover event to sprite
         icesprite.on('pointerover', () => {
-            console.log('Hovered over ice block');
             if (this.selectedPlayer?.isNextTo(x, y) 
                 && this.selectedPlayer.canAct()
                 && this.selectedPlayer.pendingSpell == null
@@ -841,7 +841,6 @@ export class Arena extends Phaser.Scene
         });
         // Add pointerout event to sprite
         icesprite.on('pointerout', () => {
-            console.log('Unhovered over ice block');
             this.emitEvent('unhoverCharacter');
         });
         icesprite.postFX.addShine(0.5, .2, 5);

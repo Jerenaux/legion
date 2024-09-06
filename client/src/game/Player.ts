@@ -354,22 +354,22 @@ export class Player extends Phaser.GameObjects.Container {
     }
     
     onPointerOut() {
-        if (!this.isPlayer && this.arena.selectedPlayer?.pendingSpell == null) {
-            // this.hud.toggleCursor(false, 'scroll');
-        }
         this.arena.emitEvent('unhoverCharacter');
         if (this.isSelected()) return;
         this.glowFx.setActive(false);
+    }
+
+    isInIce() {
+        return this.arena.hasObstacle(this.gridX, this.gridY);
     }
     
 
     onClick() {
         this.arena.playSound('click');
-        if (this.isPlayer) { // If clicking on a player of your team
+        if (this.isPlayer && !this.isInIce()) { // If clicking on a player of your team
             this.arena.selectPlayer(this);
         } else if(this.isTarget()) {
             this.arena.sendAttack(this);
-            // this.hud.toggleCursor(false);
         }
     }
 
@@ -483,7 +483,9 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     isTarget() {
-        return !this.isPlayer && this.isAlive() && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)
+        return (!this.isPlayer || this.isInIce())
+            && this.isAlive()
+            && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)
     }
 
     isNextTo(x: number, y: number) {
