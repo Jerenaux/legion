@@ -49,11 +49,14 @@ export let FREEZE_AI = true;
 export const STARTING_GOLD_ADMIN = 100000;
 export const STARTING_SPELLS_ADMIN = [2];
 export const STARTING_EQUIPMENT_ADMIN = [2];
-export let INJURED_MODE = true;
-export let AUTO_DEFEAT = true;
+export let INJURED_MODE = false;
+
+export const remoteConfig = {
+    AUTO_DEFEAT: false,
+    HIGH_DAMAGE: true,
+}
 
 if (!isDev) {
     FREEZE_AI = false;
     INJURED_MODE = false;
-    AUTO_DEFEAT = true;
 }

@@ -66,7 +66,7 @@ export class MusicManager {
             this.currentSound.stop();
             this.currentSound.removeAllListeners();
         }
-        this.scene.sound.removeAll(); // This removes all sounds from the scene
+        if (this.scene) this.scene.sound.removeAll(); // This removes all sounds from the scene
     }
 
     destroy() {

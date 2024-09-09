@@ -130,8 +130,11 @@ export const getRemoteConfig = onRequest((request, response) => {
       const configValues: { [key: string]: any } = {};
       for (const [key, parameter] of Object.entries(template.parameters)) {
         console.log(`Parameter ${key}: ${JSON.stringify(parameter)}`);
-        // @ts-expect-error
-        configValues[key] = parameter.defaultValue?.value;
+        // @ts-ignore
+        let value = parameter.defaultValue?.value;
+        if (value == "true") value = true;
+        if (value == "false") value = false;
+        configValues[key] = value;
       }
 
       // Send the config values as the response

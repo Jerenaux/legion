@@ -4,12 +4,12 @@ import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
-import {apiFetch} from './API';
+import { apiFetch, getRemoteConfig } from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN } from '@legion/shared/enums';
 import { OutcomeData, TerrainUpdate, PlayerContextData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, MOVE_COOLDOWN, ATTACK_COOLDOWN,
-    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, AUTO_DEFEAT } from '@legion/shared/config';
+    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 
 enum GameAction {
@@ -36,6 +36,7 @@ export abstract class Game
     gameOver: boolean = false;
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
+    config: any;
 
     gridWidth: number = 20;
     gridHeight: number = 10;
@@ -78,9 +79,6 @@ export abstract class Game
         disconnectingTeam.unsetSocket();
         // Slice the player from the game
         this.sockets = this.sockets.filter(s => s !== socket);
-        // if (!this.gameOver) {
-        //     this.endGame(this.getOtherTeam(disconnectingTeam.id).id);
-        // }
     }
 
     reconnectPlayer(socket: Socket) {
@@ -98,6 +96,7 @@ export abstract class Game
     async start() {
         console.log(`[Game:start]`);
         try {
+            await this.getRemoteConfig();
             await this.populateTeams();
             this.populateGrid();
             this.startGame();
@@ -105,6 +104,12 @@ export abstract class Game
             this.endGame(-1);
             console.error(error);
         }
+    }
+
+    async getRemoteConfig() {
+        const isDev = process.env.NODE_ENV === 'development';
+        this.config = isDev ? remoteConfig : await getRemoteConfig();
+        console.log(`[Game:getRemoteConfig] [isDev: ${isDev}] ${JSON.stringify(this.config)}`);
     }
 
     getPosition(index, flip) {
@@ -169,7 +174,7 @@ export abstract class Game
             this.checkEndGame();
         }, 1000);
 
-        if (AUTO_DEFEAT) {
+        if (this.config.AUTO_DEFEAT) {
             setTimeout(() => {
                 this.endGame(2);
             }, 5000);
@@ -223,6 +228,9 @@ export abstract class Game
     }
 
     calculateDamage(attacker: ServerPlayer, defender: ServerPlayer) {
+        if (this.config.HIGH_DAMAGE) {
+            return 1000;
+        }
         // Calculate the base damage
         // let baseDamage = attacker.atk - defender.def;
         let baseDamage = attacker.atk / (1 + defender.def);

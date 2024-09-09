@@ -1633,7 +1633,6 @@ export class Arena extends Phaser.Scene
     
         // Stop and destroy the music manager
         if (this.musicManager) {
-            this.musicManager.stopAll();
             this.musicManager.destroy();
         }
     
