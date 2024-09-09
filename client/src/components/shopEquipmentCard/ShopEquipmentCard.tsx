@@ -1,7 +1,7 @@
 // ShopEquipmentCard.tsx
 import './ShopEquipmentCard.style.css';
 import { h, Component } from 'preact';
-import { Class, InventoryType, RarityColor, equipmentFields } from "@legion/shared/enums";
+import { Class, InventoryType, equipmentSlotFields } from "@legion/shared/enums";
 import { mapFrameToCoordinates } from '../utils';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { StatIcons } from '../shopConsumableCard/ShopConsumableCard';
@@ -104,7 +104,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
             ))}
           </div>
           <div className="equipment-card-class-badge">
-            <img src={require(`@assets/inventory/${equipmentFields[data.slot]}_icon.png`)} alt="" />
+            <img src={require(`@assets/inventory/${equipmentSlotFields[data.slot]}_icon.png`)} alt="" />
           </div>
         </div>
         <p data-tooltip-id={`equipment-desc-tooltip-${data.id}`} className="equipment-card-description">{data.description}</p>

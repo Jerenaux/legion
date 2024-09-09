@@ -22,13 +22,8 @@ import helpIcon from '@assets/inventory/info_btn.png';
 
 Modal.setAppElement('#root');
 interface InventoryProps {
-  id: string;
-  name: string;
-  level: number;
-  class: number;
   handleItemEffect: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
   handleSelectedEquipmentSlot: (newValue: number) => void;
-  isInventoryLoaded: boolean;
 }
 
 class Inventory extends Component<InventoryProps> {

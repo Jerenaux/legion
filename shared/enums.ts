@@ -81,6 +81,30 @@ export enum EquipmentSlot {
     NECKLACE
 }
 
+export const equipmentSlotLabels = {
+    [EquipmentSlot.WEAPON]: 'Weapon',
+    [EquipmentSlot.HELMET]: 'Helmet',
+    [EquipmentSlot.ARMOR]: 'Armor',
+    [EquipmentSlot.BELT]: 'Belt',
+    [EquipmentSlot.GLOVES]: 'Gloves',
+    [EquipmentSlot.BOOTS]: 'Boots',
+    [EquipmentSlot.LEFT_RING]: 'Left Ring',
+    [EquipmentSlot.RIGHT_RING]: 'Right Ring',
+    [EquipmentSlot.NECKLACE]: 'Necklace'
+}
+
+export const equipmentSlotFields = {
+    [EquipmentSlot.WEAPON]: 'weapon',
+    [EquipmentSlot.HELMET]: 'helmet',
+    [EquipmentSlot.ARMOR]: 'armor',
+    [EquipmentSlot.BELT]: 'belt',
+    [EquipmentSlot.GLOVES]: 'gloves',
+    [EquipmentSlot.BOOTS]: 'boots',
+    [EquipmentSlot.LEFT_RING]: 'left_ring',
+    [EquipmentSlot.RIGHT_RING]: 'right_ring',
+    [EquipmentSlot.NECKLACE]: 'necklace'
+}
+
 export enum Rarity {
     COMMON,
     RARE,
@@ -128,9 +152,6 @@ export enum StatusEffect {
     PARALYZE = "Paralyze",
     MUTE = "Mute",
 }
-
-export const equipmentFields = ["weapon", "armor", "helmet", "belt", "gloves",
-  "boots", "left_ring", "right_ring", "necklace"];
 
 export enum League {
     BRONZE,

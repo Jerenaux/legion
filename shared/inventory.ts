@@ -1,9 +1,11 @@
 import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment } from './interfaces';
-import { EquipmentSlot, equipmentFields, Class } from "./enums";
+import { EquipmentSlot, equipmentSlotFields, Class } from "./enums";
 import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
 import { inventorySize } from '@legion/shared/utils';
 import { getConsumableById } from './Items';
+
+const dev = process.env.NODE_ENV === "development";
 
 export function numericalSort(a: number, b: number): number {
     return a - b;
@@ -45,7 +47,7 @@ export function canEquipEquipment(characterData: DBCharacterData | APICharacterD
     console.error("Invalid equipment ID");
     return false;
   }
-  console.log(`[canEquipEquipment] equipmentId: ${equipmentId}, equipment: ${equipment.name}`);
+  if (dev) console.log(`[canEquipEquipment] equipmentId: ${equipmentId}, equipment: ${equipment.name}`);
 
   return (
     hasMinLevel(characterData, equipment.minLevel) &&
@@ -63,7 +65,7 @@ export function equipConsumable(playerData: PlayerContextData | DBPlayerData, ch
   }
 
   const item = consumables[index];
-  console.log(`[equipConsumable] index: ${index}, item: ${item}, name: ${getConsumableById(item)?.name}`);
+  if (dev) console.log(`[equipConsumable] index: ${index}, item: ${item}, name: ${getConsumableById(item)?.name}`);
   consumables.splice(index, 1);
   inventory.push(item);
 
@@ -120,9 +122,9 @@ export function learnSpell(playerData: PlayerContextData | DBPlayerData, charact
 
 export function equipEquipment(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
   const playerInventory = playerData.inventory;
-  console.log(`[equipEquipment] player inventory: ${playerInventory.equipment}`);
+  if (dev) console.log(`[equipEquipment] player inventory: ${playerInventory.equipment}`);
   const equipment = playerInventory.equipment.sort(numericalSort);
-  console.log(`[equipEquipment] equipment inventory: ${equipment}, index: ${index}`);
+  if (dev) console.log(`[equipEquipment] equipment inventory: ${equipment}, index: ${index}`);
   const equipped = characterData.equipment as Equipment;
 
   if (index < 0 || index >= equipment.length) {
@@ -137,7 +139,7 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
     console.error("Invalid equipment ID");
     return null;
   }
-  console.log(`[equipEquipment] equipment ID: ${item}, equipment: ${data.name}`);
+  if (dev) console.log(`[equipEquipment] equipment ID: ${item}, equipment: ${data.name}`);
 
   let slotNumber: number = data.slot;
   if (slotNumber == EquipmentSlot.LEFT_RING) {
@@ -146,7 +148,7 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
     }
   }
 
-  const field = equipmentFields[slotNumber];
+  const field = equipmentSlotFields[slotNumber as EquipmentSlot];
   const currentlyEquipped = equipped[field as keyof Equipment];
   if (currentlyEquipped != -1) {
     equipment.push(currentlyEquipped);
@@ -164,17 +166,20 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
 }
 
 export function unequipEquipment(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+  if (dev) console.log(`[unequipEquipment] index: ${index}`);
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort(numericalSort);
   const equipped = characterData.equipment as Equipment;
 
-  if (index < 0 || index >= equipmentFields.length) {
+  if (index < 0 || index >= Object.keys(equipmentSlotFields).length) {
+    if (dev) console.log(`[unequipEquipment] invalid index: ${index} not in range 0-${Object.keys(equipmentSlotFields).length}`);
     return null;
   }
 
   const slotNumber: number = index;
-  const field = equipmentFields[slotNumber];
+  const field = equipmentSlotFields[slotNumber as EquipmentSlot];
   const item = equipped[field as keyof Equipment];
+  if (dev) console.log(`[unequipEquipment] slotNumber: ${slotNumber}, field: ${field}, item: ${item}`);
 
   if (item != -1) {
     equipped[field as keyof Equipment] = -1;
@@ -200,7 +205,7 @@ function applyEquipmentBonuses(equipped: Equipment) {
     spatk: 0,
     spdef: 0,
   };
-  for (const field of equipmentFields) {
+  for (const field of Object.values(equipmentSlotFields)) {
     const item = equipped[field as keyof Equipment];
     if (item !== -1) {
       const data = getEquipmentById(item);

@@ -4,6 +4,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 const isDocker = process.env.IS_DOCKER;
+const isProduction = process.env.NODE_ENV === 'production';
 
 const sharedPrefix = isDocker ? '' : '../';
 
@@ -108,7 +109,7 @@ module.exports = {
       hash: true,
     }),
     new Dotenv({
-      path: path.resolve(__dirname, '.production.env'),
+      path: path.resolve(__dirname, `.${isProduction ? 'production.' : ''}env`),
       systemvars: true // Load all system variables as well to get those defined in docker-compose.yml
     }),
     new CopyWebpackPlugin({

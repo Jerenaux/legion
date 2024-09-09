@@ -77,7 +77,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     // If index corresponds to left ring and actionType is 0 (equip), check if right ring slot is free
     // and if so change the slot to that
     if (index == EquipmentSlot.LEFT_RING && actionType == InventoryActionType.EQUIP) {
-      if (this.state.character_sheet_data.equipment['right_ring'] === -1) {
+      if (this.context.getActiveCharacter().equipment['right_ring'] === -1) {
         index = EquipmentSlot.RIGHT_RING;
       }
     }
@@ -89,7 +89,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     let real_effects = effects.map(item => ({stat: item.stat, value: actionType > 0 ? -item.value : item.value }));
 
     // if there's already equipped item, then get its effect
-    let curr_effects = getEquipmentById(this.state.character_sheet_data.equipment[slot])?.effects;
+    let curr_effects = getEquipmentById(this.context.getActiveCharacter().equipment[slot])?.effects;
 
     let result_effects = real_effects;
     
@@ -118,9 +118,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
         <div className="team-content">
           <Roster/>
           <div className="character-inventory-container">
-            {this.state.character_sheet_data ? <CharacterSheet 
-              characterId={this.state.character_id} 
-              characterData={this.state.character_sheet_data} 
+            {this.context.player.isLoaded ? <CharacterSheet 
               itemEffects={this.state.statsModifiers}
               handleItemEffect={this.handleItemEffect}
               selectedEquipmentSlot={this.state.selectedEquipmentSlot} 
@@ -133,14 +131,9 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             baseColor='#0f1421' 
             style={{margin: '2px 0', width: '434px'}}/>}
 
-            {this.state.character_sheet_data ? <Inventory 
-              id={this.state.character_id} 
-              name={this.state.character_sheet_data.name} 
-              level={this.state.character_sheet_data.level} 
-              class={this.state.character_sheet_data.class} 
+            {this.context.player.isLoaded ? <Inventory 
               handleItemEffect={this.handleItemEffect}
               handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
-              isInventoryLoaded={this.state.isInventoryLoaded} 
             /> : <Skeleton 
             height={297} 
             count={1} 

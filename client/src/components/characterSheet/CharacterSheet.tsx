@@ -12,7 +12,8 @@ import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, Stat, statFields } from '@legion/shared/enums';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
-import { equipmentFields } from '@legion/shared/enums';
+import { equipmentSlotFields } from '@legion/shared/enums';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 import helmetIcon from '@assets/inventory/helmet_icon.png';
 import armorIcon from '@assets/inventory/armor_icon.png';
@@ -29,8 +30,6 @@ import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
 
 interface CharacterSheetProps {
-    characterId: string;
-    characterData: APICharacterData;
     itemEffects: Effect[];
     handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
     selectedEquipmentSlot: number; 
@@ -39,6 +38,7 @@ interface CharacterSheetProps {
 }
 
 class CharacterSheet extends Component<CharacterSheetProps> {
+    static contextType = PlayerContext; 
 
     state = {
         characterItems: [],
@@ -76,8 +76,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
     }
 
     render() {
-        const { characterId, characterData } = this.props; 
-        if (!this.props.characterData) return;
+        const characterData = this.context.getActiveCharacter(); 
+        if (!characterData) return;
 
         const renderInfoBars = () => {
             if (!characterData) return;
@@ -137,6 +137,15 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     items = Object.entries(characterData.equipment)
                         .map(([key, value]) => ({ key, value }))
                         .slice(0, specialSlotsStart); // Standard equipment slots
+                    desiredOrder = [
+                        equipmentSlotFields[EquipmentSlot.WEAPON],
+                        equipmentSlotFields[EquipmentSlot.HELMET],
+                        equipmentSlotFields[EquipmentSlot.ARMOR],
+                        equipmentSlotFields[EquipmentSlot.BELT],
+                        equipmentSlotFields[EquipmentSlot.GLOVES],
+                        equipmentSlotFields[EquipmentSlot.BOOTS],
+                    ];
+                    items.sort((a, b) => desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key));
                     backgroundImageUrl = equipmentSpritesheet;
                     isSpecialEquip = false;
                     break;
@@ -144,7 +153,11 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     items = Object.entries(characterData.equipment)
                         .map(([key, value]) => ({ key, value }))
                         .slice(specialSlotsStart, 9); // Special equipment slots
-                    desiredOrder = ['left_ring', 'right_ring', 'necklace'];
+                    desiredOrder = [
+                        equipmentSlotFields[EquipmentSlot.LEFT_RING],
+                        equipmentSlotFields[EquipmentSlot.RIGHT_RING],
+                        equipmentSlotFields[EquipmentSlot.NECKLACE],
+                    ];
                     items.sort((a, b) => desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key));
                     backgroundImageUrl = equipmentSpritesheet;
                     isSpecialEquip = true;
@@ -172,7 +185,6 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 if (isSpecialEquip) index += specialSlotsStart;
                 let content;
                 const itemData = getEquipmentById(item.value); 
-                // console.log("sheetItemData => ", item); 
                 if (item.value < 0) {
                     // Handle the case where there is no item equipped in this slot
                     content = (
@@ -213,7 +225,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                       className={`sheet-item ${
                         (itemData !== undefined)
                           ? ''
-                          : (this.props.selectedEquipmentSlot > -1 && equipmentFields[this.props.selectedEquipmentSlot] === item.key)
+                          : (this.props.selectedEquipmentSlot > -1 && equipmentSlotFields[this.props.selectedEquipmentSlot] === item.key)
                             ? 'blinking-gradient'
                             : ''
                       }`}
