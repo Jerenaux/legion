@@ -68,7 +68,7 @@ class SeasonCard extends Component<SeasonCardProps> {
 
     shareOnTwitter = async (rank: number, tab: string) => {
         const leagueName = tab === 'alltime' ? 'All Time' : tab.charAt(0).toUpperCase() + tab.slice(1);
-        const tweetText = `I'm ranked #${rank} in the ${leagueName} league in #Legion! Can you beat me? #PvP`
+        const tweetText = `I'm ranked #${rank} in the ${leagueName} league in #Legion! Can you beat me? https://www.play-legion.io ! #PvP`
         const twitterUrl = `https://x.com/intent/post?text=${encodeURIComponent(tweetText)}`;
         const width = 550;
         const height = 300;

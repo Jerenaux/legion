@@ -71,6 +71,9 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     fetchAllData() {
+      const user = firebaseAuth.currentUser;
+      if (!user) return;
+
       this.fetchPlayerData();
       this.fetchRosterData();
     }

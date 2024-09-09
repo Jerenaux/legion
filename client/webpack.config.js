@@ -109,7 +109,7 @@ module.exports = {
       hash: true,
     }),
     new Dotenv({
-      path: path.resolve(__dirname, `.${isProduction ? 'production.' : ''}env`),
+      path: path.resolve(__dirname, `.production.env`),
       systemvars: true // Load all system variables as well to get those defined in docker-compose.yml
     }),
     new CopyWebpackPlugin({
