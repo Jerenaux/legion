@@ -13,7 +13,7 @@ items[0] = new BaseItem({
     cooldown: 2,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 50}],
-    effort: 1,
+    effort: 0.3,
 });
 
 items[1] = new BaseItem({
@@ -26,7 +26,7 @@ items[1] = new BaseItem({
     cooldown: 3,
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 10}],
-    effort: 1.5,
+    effort: 0.7,
 });
 
 items[2] = new BaseItem({
@@ -39,7 +39,7 @@ items[2] = new BaseItem({
     cooldown: 8,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}],
-    effort: 3,
+    effort: 1.5,
 });
 
 items[3] = new BaseItem({
@@ -52,7 +52,7 @@ items[3] = new BaseItem({
     cooldown: 12,
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 50}],
-    effort: 4,
+    effort: 2,
 });
 
 items[4] = new BaseItem({
@@ -91,7 +91,7 @@ items[6] = new BaseItem({
     cooldown: 15,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 50}],
-    effort: 9,
+    effort: 7,
 
 });
 
@@ -146,7 +146,7 @@ items[10] = new BaseItem({
     target: Target.SELF,
     effects: [],
     statusRemovals: [StatusEffect.POISON],
-    effort: 1.5,
+    effort: 0.7,
 });
 
 items[11] = new BaseItem({
@@ -174,7 +174,7 @@ items[12] = new BaseItem({
     target: Target.SELF,
     effects: [],
     statusRemovals: [StatusEffect.MUTE],
-    effort: 1.5,
+    effort: 0.7,
 });
 
 export function getConsumableById(id: number): BaseItem | undefined {
