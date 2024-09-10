@@ -9,6 +9,7 @@ import { League, Stat, StatFields, InventoryActionType, ShopTab
 import { firebaseAuth } from '../services/firebaseService'; 
 import { getSPIncrement } from '@legion/shared/levelling';
 import { playSoundEffect } from '../components/utils';
+import { ChestReward } from "@legion/shared/chests";
 
 import {
   canEquipConsumable,
@@ -276,6 +277,11 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         }
       });
     }
+
+    // addChestContentToInventory = (content: ChestReward[]) => {
+    //   const { inventory } = this.state.player;
+      
+    // }
 
     getCharacter = (characterId: string): APICharacterData | undefined => {
       return this.state.characters.find(char => char.id === characterId);

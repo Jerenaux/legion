@@ -6,7 +6,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
 import { useWindowSize } from '@react-hook/window-size';
-import { RewardType } from '@legion/shared/chests';
+import { ChestReward } from '@legion/shared/chests';
 
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast } from '../utils';
@@ -15,6 +15,7 @@ import { DailyLootAllAPIData } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
 import { PlayerContext } from '../../contexts/PlayerContext';
 import OpenedChest from '../dailyLoot/OpenedChest';
+import { IMMEDIATE_LOOT } from '@legion/shared/config';
 
 interface DailyLootProps {
   data: DailyLootAllAPIData, 
@@ -22,7 +23,7 @@ interface DailyLootProps {
 
 interface DailyLootState {
   chestColor: ChestColor,
-  chestContent: any[], 
+  chestContent: ChestReward[], 
   chestDailyLoot: any, 
 }
 
@@ -45,16 +46,17 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
     const handleOpen = async (color: ChestColor, countdown: number, hasKey: boolean) => {
 
       // Check if countdown is over and if key is owned
-      if (countdown > 0) {
+      if (countdown > 0 && !IMMEDIATE_LOOT) {
         errorToast(`Chest locked, wait for the countdown to end!`);
         return;
       }
-      if (!hasKey) {
+      if (!hasKey && !IMMEDIATE_LOOT) {
         errorToast(`You need a key to open this chest, go play a casual or ranked game!`);
         return;
       }
       try {
         const data = await apiFetch(`claimChest?chestType=${color}`);
+        this.context.refreshAllData();
 
         this.setState({ chestColor: color });
         this.setState({ chestContent: data.content }); 

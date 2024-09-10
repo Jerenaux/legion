@@ -1,26 +1,27 @@
-import {onRequest} from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions";
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, { corsMiddleware, getUID } from "./APIsetup";
 
-import {uniqueNamesGenerator}
+import { uniqueNamesGenerator }
   from "unique-names-generator";
 
-import {Class, ChestColor, League} from "@legion/shared/enums";
-import {PlayerContextData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData, PlayerInventory} from "@legion/shared/interfaces";
-import {NewCharacter} from "@legion/shared/NewCharacter";
-import {getChestContent, ChestReward} from "@legion/shared/chests";
-import {STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE, STARTING_GOLD_ADMIN, STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN} from "@legion/shared/config";
-import {logPlayerAction, updateDAU} from "./dashboardAPI";
-import {getEmptyLeagueStats} from "./leaderboardsAPI";
+import { Class, ChestColor, League } from "@legion/shared/enums";
+import { PlayerContextData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData, PlayerInventory } from "@legion/shared/interfaces";
+import { NewCharacter } from "@legion/shared/NewCharacter";
+import { getChestContent, ChestReward } from "@legion/shared/chests";
+import { STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE, STARTING_GOLD_ADMIN,
+  STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN, IMMEDIATE_LOOT } from "@legion/shared/config";
+import { logPlayerAction, updateDAU } from "./dashboardAPI";
+import { getEmptyLeagueStats } from "./leaderboardsAPI";
 import { numericalSort } from "@legion/shared/inventory";
 
 const NB_START_CHARACTERS = 3;
 
 const chestsDelays = {
-  [ChestColor.BRONZE]: 6*60*60,
-  [ChestColor.SILVER]: 12*60*60,
-  [ChestColor.GOLD]: 24*60*60,
+  [ChestColor.BRONZE]: 6 * 60 * 60,
+  [ChestColor.SILVER]: 12 * 60 * 60,
+  [ChestColor.GOLD]: 24 * 60 * 60,
 };
 
 function selectRandomAvatar(): string {
@@ -182,9 +183,9 @@ export const createPlayer = functions.auth.user().onCreate(async (user) => {
 const transformDailyLoot = (dailyloot: DailyLootAllDBData): DailyLootAllAPIData => {
   const now = Date.now() / 1000;
   const transformedChests: DailyLootAllAPIData = {
-    [ChestColor.BRONZE]: {hasKey: false, countdown: 0},
-    [ChestColor.SILVER]: {hasKey: false, countdown: 0},
-    [ChestColor.GOLD]: {hasKey: false, countdown: 0},
+    [ChestColor.BRONZE]: { hasKey: false, countdown: 0 },
+    [ChestColor.SILVER]: { hasKey: false, countdown: 0 },
+    [ChestColor.GOLD]: { hasKey: false, countdown: 0 },
   };
   for (const color of Object.values(ChestColor)) {
     const chest = dailyloot[color];
@@ -415,11 +416,11 @@ export const claimChest = onRequest((request, response) => {
       }
 
       const now = Date.now() / 1000;
-      if (!chest.hasKey) {
+      if (!chest.hasKey && !IMMEDIATE_LOOT) {
         response.status(400).send("Key for chest not owned!");
         return;
       }
-      if (chest.time > now) {
+      if (chest.time > now && !IMMEDIATE_LOOT) {
         response.status(400).send("Chest is still locked!");
         return;
       }
@@ -447,7 +448,7 @@ export const claimChest = onRequest((request, response) => {
       const content = await awardChestContent(playerRef, chestType as ChestColor);
 
       const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
-      logPlayerAction(uid, "claimChest", {chestType});
+      logPlayerAction(uid, "claimChest", { chestType });
       response.send({
         content,
         dailyloot: dailyLootResponse,
@@ -507,8 +508,8 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   if (!playerData.guideTipsShown.includes(0) &&
-  playerData.gold >= STARTING_GOLD * 3 &&
-  !playerData.utilizationStats.everPurchased) {
+    playerData.gold >= STARTING_GOLD * 3 &&
+    !playerData.utilizationStats.everPurchased) {
     return {
       guideId: 0,
       route: "/shop",
@@ -542,8 +543,8 @@ const figureOutGuideTip = (playerData: any) => {
 
   // You have unused equipment pieces in your inventory! Click here to go to the team page and equip them!
   if (!playerData.guideTipsShown.includes(3) &&
-  playerData.inventory.equipment.length > 0 &&
-  !playerData.utilizationStats.everEquippedEquipment) {
+    playerData.inventory.equipment.length > 0 &&
+    !playerData.utilizationStats.everEquippedEquipment) {
     return {
       guideId: 3,
       route: "/team",
@@ -552,8 +553,8 @@ const figureOutGuideTip = (playerData: any) => {
 
   // "You have unused consumables in your inventory! Click here to go to the team page and equip them on your characters!",
   if (!playerData.guideTipsShown.includes(4) &&
-  playerData.inventory.consumables.length > 3 &&
-  !playerData.utilizationStats.everEquippedConsumable) {
+    playerData.inventory.consumables.length > 3 &&
+    !playerData.utilizationStats.everEquippedConsumable) {
     return {
       guideId: 4,
       route: "/team",
@@ -562,8 +563,8 @@ const figureOutGuideTip = (playerData: any) => {
 
   // "You have unused spells in your inventory! Click here to go to the team page and teach them to your characters!",
   if (!playerData.guideTipsShown.includes(5) &&
-  playerData.inventory.spells.length > 0 &&
-  !playerData.utilizationStats.everEquippedSpell) {
+    playerData.inventory.spells.length > 0 &&
+    !playerData.utilizationStats.everEquippedSpell) {
     return {
       guideId: 5,
       route: "/team",
@@ -572,7 +573,7 @@ const figureOutGuideTip = (playerData: any) => {
 
   // "Not sure what to do? Just click here to start a Practice game and try out your characters and spells!",
   if (!playerData.guideTipsShown.includes(6) &&
-  !playerData.utilizationStats.everPlayedPractice) {
+    !playerData.utilizationStats.everPlayedPractice) {
     return {
       guideId: 6,
       route: "/queue/0",
@@ -581,8 +582,8 @@ const figureOutGuideTip = (playerData: any) => {
 
   // "Now that you know the game a bit more, click here to play against another player in Casual mode!",
   if (!playerData.guideTipsShown.includes(7) &&
-  playerData.utilizationStats.everPlayedPractice &&
-  !playerData.utilizationStats.everPlayedCasual) {
+    playerData.utilizationStats.everPlayedPractice &&
+    !playerData.utilizationStats.everPlayedCasual) {
     return {
       guideId: 7,
       route: "/queue/1",
@@ -591,8 +592,8 @@ const figureOutGuideTip = (playerData: any) => {
 
   // "You've had a few victories now, why don't you try your luck in Ranked mode and climb the ladder? Click here to start!",
   if (!playerData.guideTipsShown.includes(8) &&
-  playerData.casualStats.wins >= 2 &&
-  !playerData.utilizationStats.everPlayedRanked) {
+    playerData.casualStats.wins >= 2 &&
+    !playerData.utilizationStats.everPlayedRanked) {
     return {
       guideId: 8,
       route: "/queue/2",
@@ -609,8 +610,8 @@ const figureOutGuideTip = (playerData: any) => {
 const figureOutConbatTip = (playerData: any) => {
   // "Your characters know cool spells, this time why don't you give them a try in combat?",
   if (!playerData.guideTipsShown.includes(9) &&
-  (playerData.utilizationStats.everPlayedPractice || playerData.utilizationStats.everPlayedCasual || playerData.utilizationStats.everPlayedRanked) &&
-  !playerData.utilizationStats.everUsedSpell) {
+    (playerData.utilizationStats.everPlayedPractice || playerData.utilizationStats.everPlayedCasual || playerData.utilizationStats.everPlayedRanked) &&
+    !playerData.utilizationStats.everUsedSpell) {
     return {
       guideId: 9,
       route: "",

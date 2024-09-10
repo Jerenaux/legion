@@ -51,6 +51,7 @@ export const STARTING_SPELLS_ADMIN = [2];
 export const STARTING_EQUIPMENT_ADMIN = [2];
 export let INJURED_MODE = false;
 export let SKIP_LEVEL_RESTRICTIONS = true;
+export let IMMEDIATE_LOOT = true;
 
 export const remoteConfig = {
     AUTO_DEFEAT: false,
@@ -63,4 +64,5 @@ if (!isDev) {
     FREEZE_AI = false;
     INJURED_MODE = false;
     SKIP_LEVEL_RESTRICTIONS = false;
+    IMMEDIATE_LOOT = false;
 }
