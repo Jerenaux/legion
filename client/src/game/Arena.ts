@@ -150,7 +150,7 @@ export class Arena extends Phaser.Scene
         this.load.atlas('groundTiles', groundTilesImage, groundTilesAtlas);
     
         const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill', 
-            'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire'];
+            'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire', 'tutorial'];
         GEN.forEach((name) => {
             this.load.image(name, require(`@assets/GEN/${name}.png`));
         });
@@ -1473,6 +1473,9 @@ export class Arena extends Phaser.Scene
             case GEN.BURNING:
                 text1 = 'stuff-is';
                 text2 = 'on-fire';
+                break;
+            case GEN.TUTORIAL:
+                text1 = 'tutorial';
                 break;
             default:
                 return;

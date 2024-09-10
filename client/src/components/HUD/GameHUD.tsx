@@ -195,7 +195,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
           <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
         </div>
-        {team1 && <SpectatorFooter isTutorial={isTutorial} score={score} mode={mode} />}
+        {team1 && mode != PlayMode.TUTORIAL && <SpectatorFooter isTutorial={isTutorial} score={score} mode={mode} />}
         {this.state.gameOver && <Endgame 
           members={members} 
           grade={this.state.grade}

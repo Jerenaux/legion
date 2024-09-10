@@ -66,7 +66,8 @@ export enum PlayMode {
     PRACTICE,
     CASUAL,
     CASUAL_VS_AI,
-    RANKED
+    RANKED,
+    TUTORIAL
 }
 
 export enum EquipmentSlot {
@@ -176,4 +177,5 @@ export enum GEN {
     FROZEN,
     BURNING,
     KILL_STREAK,
+    TUTORIAL,
 }

@@ -179,6 +179,12 @@ export abstract class Game
                 this.endGame(2);
             }, 5000);
         }
+
+        if (this.mode == PlayMode.TUTORIAL) {
+            this.broadcast('gen', {
+                gen: GEN.TUTORIAL
+            });
+        }
     }
 
     sendGameStatus(socket: Socket, reconnect: boolean = false) {
@@ -902,7 +908,7 @@ export abstract class Game
             gold: this.computeTeamGold(grade, this.mode),
             xp: this.computeTeamXP(team, otherTeam, grade, this.mode),
             elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
-            key: this.mode == PlayMode.PRACTICE ? null : team.getChestKey() as ChestColor,
+            key: (this.mode == PlayMode.PRACTICE || this.mode == PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
             chests: this.computeChests(team.score, this.mode),
             score: team.score,
         }
@@ -910,7 +916,7 @@ export abstract class Game
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
         const chests: GameOutcomeReward[] = [];
-        if (mode != PlayMode.PRACTICE) this.computeAudienceRewards(score, chests);
+        if (mode != PlayMode.PRACTICE && mode != PlayMode.TUTORIAL) this.computeAudienceRewards(score, chests);
 
         return chests;
     }
@@ -1002,7 +1008,7 @@ export abstract class Game
 
     computeTeamGold(grade: number, mode: PlayMode) {
         let gold = AVERAGE_GOLD_REWARD_PER_GAME * (grade + 0.3);
-        if (mode == PlayMode.PRACTICE) gold *= PRACTICE_GOLD_COEF; 
+        if (mode == PlayMode.PRACTICE || mode == PlayMode.TUTORIAL) gold *= PRACTICE_GOLD_COEF; 
         if (mode == PlayMode.RANKED) gold *= RANKED_GOLD_COEF;
         // Add +- 5% random factor
         gold *= 0.95 + Math.random() * 0.1;
@@ -1019,7 +1025,7 @@ export abstract class Game
         if (team.getTotalInteractedTargets() == 0) return 0;
         let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (grade + 0.3);
         console.log(`Base XP: ${xp}: ${otherTeam.getTotalLevel()} * ${XP_PER_LEVEL} * (${grade} + 0.3)`);
-        if (mode == PlayMode.PRACTICE) xp *= PRACTICE_XP_COEF;
+        if (mode == PlayMode.PRACTICE || mode == PlayMode.TUTORIAL) xp *= PRACTICE_XP_COEF;
         if (mode == PlayMode.RANKED) xp *= RANKED_XP_COEF;
         // Add +- 5% random factor
         xp *= 0.95 + Math.random() * 0.1;

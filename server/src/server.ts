@@ -3,6 +3,7 @@ import { Socket, Server } from 'socket.io';
 import { createServer } from 'http';
 import dotenv from 'dotenv';
 import * as admin from "firebase-admin";
+import { v4 as uuidv4 } from "uuid";
 
 import {apiFetch} from './API';
 import { Game } from './Game';
@@ -52,18 +53,31 @@ io.on('connection', async (socket: any) => {
       const decodedToken = await admin.auth().verifyIdToken(socket.firebaseToken);
       socket.uid = decodedToken.uid;
       
-      const gameId = socket.handshake.auth.gameId;
+      let gameId = socket.handshake.auth.gameId;
       if (!gameId) {
         console.log('No game ID provided!');
         socket.disconnect();
         return;
       }
-      console.log(`[server:connection] User ${shortToken(socket.uid)} connecting to game ${gameId}`);
+      const isTutorial = gameId === 'tutorial';
+      console.log(`[server:connection] User ${shortToken(socket.uid)} connecting to game ${gameId}, [isTutorial: ${isTutorial}]`);
 
-      const gameData = await apiFetch(
-        `gameData?id=${gameId}`,
-        '', // TODO: add API key
-      );
+
+      let gameData;
+      if (isTutorial) {
+        gameId = uuidv4();
+
+        gameData = {
+          players: [socket.uid],
+          mode: PlayMode.TUTORIAL,
+          league: 0,
+        };
+      } else {
+        gameData = await apiFetch(
+          `gameData?id=${gameId}`,
+          '', // TODO: add API key
+        );
+      }
   
       // Check if firebase UID is in gameData.players
       if (!gameData.players.includes(socket.uid)) {
@@ -75,7 +89,8 @@ io.on('connection', async (socket: any) => {
       let game: Game;
       if (!gamesMap.has(gameId)) {
         console.log(`[server:connection] Creating game ${gameId}`);
-        const gameType = gameData.mode === PlayMode.PRACTICE || gameData.mode == PlayMode.CASUAL_VS_AI ? AIGame : PvPGame;
+        const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.TUTORIAL];
+        const gameType = AImodes.includes(gameData.mode) ? AIGame : PvPGame;
         game = new gameType(gameId, gameData.mode, gameData.league, io);
         gamesMap.set(gameId, game);
       }
@@ -86,7 +101,7 @@ io.on('connection', async (socket: any) => {
         game.reconnectPlayer(socket);
       } else {
         const playerData = await apiFetch(
-          `getPlayerData?id=${gameId}`,
+          `getPlayerData`,
           socket.firebaseToken,
         );
   

@@ -9,6 +9,8 @@ interface SpectatorFooterProps {
 
 class SpectatorFooter extends Component<SpectatorFooterProps> {
   render() { 
+    const showChests = this.props.mode != PlayMode.PRACTICE && this.props.mode != PlayMode.TUTORIAL;
+
     return (
       <div className="spectator_footer_container"> 
         <div className="spectator_progress">
@@ -19,17 +21,17 @@ class SpectatorFooter extends Component<SpectatorFooterProps> {
                 </div>
               </div>
             </div>
-            {this.props.mode != PlayMode.PRACTICE &&
+            {showChests &&
               <div className="progress_ches_mark">
                 <img src="/shop/bronze_chest.png" alt="" />
               </div>
             }
-            {  this.props.mode != PlayMode.PRACTICE &&
+            {showChests &&
               <div className="progress_chest_bronze">
                 <img src="/shop/bronze_chest.png" alt="" />
               </div>
             }
-            { this.props.mode != PlayMode.PRACTICE &&
+            {showChests &&
               <div className="progress_chest_silver">
                 <img src="/shop/bronze_chest.png" alt="" />
               </div> 
