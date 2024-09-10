@@ -29,7 +29,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -15, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.FIRE,
-    effort: 7,
+    effort: 3,
 
     score: 10,
     classes: [Class.BLACK_MAGE],
@@ -50,7 +50,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -25, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.FIRE,
-    effort: 25,
+    effort: 12,
 
     score: 20,
     classes: [Class.BLACK_MAGE],
@@ -70,7 +70,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -60, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.FIRE,
-    effort: 50,
+    effort: 25,
 
     score: 100,
     classes: [Class.BLACK_MAGE],
@@ -90,7 +90,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
     status: {effect: StatusEffect.PARALYZE, chance: 0.5, duration: 60},
-    effort: 8,
+    effort: 4,
 
     score: 5,
     classes: [Class.BLACK_MAGE],
@@ -111,7 +111,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -60, modifiers: SPBasedBoostDeboost}],
     status: {effect: StatusEffect.PARALYZE, chance: 0.7, duration: 90},
-    effort: 30,
+    effort: 15,
 
     score: 15,
     classes: [Class.BLACK_MAGE],
@@ -132,7 +132,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -20, modifiers: SPBasedBoostDeboost}],
     status: {effect: StatusEffect.PARALYZE, chance: 0.9, duration: 120},
-    effort: 60,
+    effort: 30,
 
     score: 50,
     classes: [Class.BLACK_MAGE],
@@ -155,7 +155,7 @@ spells.push(new BaseSpell({
     terrain: Terrain.ICE,
 
     score: 5,
-    effort: 9,
+    effort: 5,
     classes: [Class.BLACK_MAGE],
     minLevel: 1,
 }));
@@ -176,7 +176,7 @@ spells.push(new BaseSpell({
     terrain: Terrain.ICE,
 
     score: 10,
-    effort: 50,
+    effort: 25,
     classes: [Class.BLACK_MAGE],
     minLevel: 20,
 }));
@@ -197,7 +197,7 @@ spells.push(new BaseSpell({
     terrain: Terrain.ICE,
 
     score: 20,
-    effort: 70,
+    effort: 35,
     classes: [Class.BLACK_MAGE],
     minLevel: 20,
 }));
@@ -215,7 +215,7 @@ spells.push(new BaseSpell({
     size: 1,
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}],
-    effort: 9,
+    effort: 4,
     cost: 20,
 
     score: 5,
@@ -236,7 +236,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [],
     status: {effect: StatusEffect.POISON, chance: 1, duration: 180},
-    effort: 14,
+    effort: 7,
 
     score: 10,
     classes: [Class.WHITE_MAGE],
@@ -257,11 +257,11 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     effects: [],
     status: {effect: StatusEffect.MUTE, chance: 1, duration: 180},
-    effort: 9,
+    effort: 5,
 
     score: 10,
     classes: [Class.WHITE_MAGE],
-    minLevel: 1,
+    minLevel: 5,
 }));
 
 export function getStarterSpells(characterClass: Class):number[] {

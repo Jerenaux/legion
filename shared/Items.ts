@@ -13,20 +13,20 @@ items[0] = new BaseItem({
     cooldown: 2,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 50}],
-    effort: 0.3,
+    effort: 0.15    ,
 });
 
 items[1] = new BaseItem({
     id: 1,
     name: "Ether",
-    description: "Restores 10 MP",
+    description: "Restores 20 MP",
     frame: 3,
     animation: "potion_heal",
     sfx: "healing",
     cooldown: 3,
     target: Target.SELF,
-    effects: [{stat: Stat.MP, value: 10}],
-    effort: 0.7,
+    effects: [{stat: Stat.MP, value: 20}],
+    effort: 0.3,
 });
 
 items[2] = new BaseItem({
@@ -39,19 +39,19 @@ items[2] = new BaseItem({
     cooldown: 8,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}],
-    effort: 1.5,
+    effort: 1,
 });
 
 items[3] = new BaseItem({
     id: 3,
     name: "Hi-Ether",
-    description: "Restores 50 MP",
+    description: "Restores 100 MP",
     frame: 4,
     animation: "potion_heal",
     sfx: "healing",
     cooldown: 12,
     target: Target.SELF,
-    effects: [{stat: Stat.MP, value: 50}],
+    effects: [{stat: Stat.MP, value: 100}],
     effort: 2,
 });
 
@@ -65,46 +65,46 @@ items[4] = new BaseItem({
     cooldown: 25,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 1000}],
-    effort: 10,
+    effort: 5.5,
 });
 
 items[5] = new BaseItem({
     id: 5,
     name: "X-Ether",
-    description: "Restores 200 MP",
+    description: "Restores 300 MP",
     frame: 5,
     animation: "potion_heal",
     sfx: "healing",
     cooldown: 40,
     target: Target.SELF,
-    effects: [{stat: Stat.MP, value: 200}],
-    effort: 12,
+    effects: [{stat: Stat.MP, value: 300}],
+    effort: 8,
 });
 
 items[6] = new BaseItem({
     id: 6,
     name: "Elixir",
-    description: "Restores 250 HP and 50 MP",
+    description: "Restores 250 HP and 100 MP",
     frame: 6,
     animation: "potion_heal",
     sfx: "healing",
     cooldown: 15,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 50}],
-    effort: 7,
+    effects: [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 100}],
+    effort: 4,
 
 });
 
 items[7] = new BaseItem({
     id: 7,
     name: "X-Elixir",
-    description: "Restores 1000 HP and 200 MP",
+    description: "Restores 1000 HP and 300 MP",
     frame: 7, 
     animation: "potion_heal",
     sfx: "healing",
     cooldown: 50,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: 1000}, {stat: Stat.MP, value: 200}],
+    effects: [{stat: Stat.HP, value: 1000}, {stat: Stat.MP, value: 300}],
     effort: 18,
 });
 
@@ -119,7 +119,7 @@ items[8] = new BaseItem({
     cooldown: 10,
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 10, onKO: true}],
-    effort: 10,
+    effort: 1,
 });
 
 items[9] = new BaseItem({
@@ -146,7 +146,7 @@ items[10] = new BaseItem({
     target: Target.SELF,
     effects: [],
     statusRemovals: [StatusEffect.POISON],
-    effort: 0.7,
+    effort: 0.5,
 });
 
 items[11] = new BaseItem({
@@ -160,7 +160,7 @@ items[11] = new BaseItem({
     target: Target.SELF,
     effects: [],
     statusRemovals: [StatusEffect.POISON, StatusEffect.PARALYZE, StatusEffect.SLEEP, StatusEffect.BURN],
-    effort: 4.5,
+    effort: 3.5,
 });
 
 items[12] = new BaseItem({
@@ -174,7 +174,7 @@ items[12] = new BaseItem({
     target: Target.SELF,
     effects: [],
     statusRemovals: [StatusEffect.MUTE],
-    effort: 0.7,
+    effort: 0.5,
 });
 
 export function getConsumableById(id: number): BaseItem | undefined {
