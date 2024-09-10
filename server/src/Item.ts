@@ -41,16 +41,19 @@ export class Item extends BaseItem {
     }
 
     effectsAreApplicable(target: ServerPlayer) {
-        const mainEffectsApplicable = this.effects.every(effect => {
+        const mainEffectsApplicable = this.effects.length > 0 && this.effects.every(effect => {
             if (effect.onKO && target.isAlive()) return false;
             switch (effect.stat) {
                 case Stat.HP:
                     return target.hp < target.maxHP;
                 case Stat.MP:
                     return target.mp < target.maxMP;
+                default:
+                    return false;
             }
         });
         const statusRemovalsApplicable = this.statusRemovals.some(effect => target.hasStatusEffect(effect));
+        // console.log(`[Item:effectsAreApplicable] ${this.name} is applicable for ${target.name}? Main effects: ${mainEffectsApplicable}, status removals: ${statusRemovalsApplicable}`);
         return mainEffectsApplicable || statusRemovalsApplicable;
     }
 

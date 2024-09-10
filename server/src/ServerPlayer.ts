@@ -6,7 +6,9 @@ import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { PlayerNetworkData, StatusEffects } from '@legion/shared/interfaces';
-import {TIME_COEFFICIENT} from "@legion/shared/config";
+import { INITIAL_COOLDOWN, TIME_COEFFICIENT, INJURED_MODE } from "@legion/shared/config";
+import { CooldownManager } from './CooldownManager';
+import { paralyzingStatuses } from '@legion/shared/utils';
 
 
 const terrainDot = {
@@ -56,9 +58,7 @@ export class ServerPlayer {
     def;
     spatk;
     spdef;
-    cooldowns;
-    cooldown: number = 0;
-    cooldownTimer: NodeJS.Timeout | null = null;
+    cooldownManager: CooldownManager;
     terrainDoTTimer: NodeJS.Timeout | null = null;
     statusDoTTimer: NodeJS.Timeout | null = null;
     statusesTimer: NodeJS.Timeout | null = null;
@@ -89,12 +89,10 @@ export class ServerPlayer {
             [StatusEffect.SLEEP]: 0,
             [StatusEffect.MUTE]: 0,
         };
+
+        this.cooldownManager = new CooldownManager();
         
-        this.cooldowns = {
-            'move': 400,
-            'attack': 800
-        };
-        this.setCooldown(this.cooldowns.move + this.entranceTime * 1000, false);
+        this.setCooldown(INITIAL_COOLDOWN * 1000);
         this.setStatusesTimer();
     }
 
@@ -114,7 +112,7 @@ export class ServerPlayer {
             data['mp'] = this.mp;
             data['maxMP'] = this.maxMP;
             data['distance'] = this.distance;
-            data['cooldown'] = this.cooldown;
+            data['cooldown'] = this.getActiveCooldown();
             data['inventory'] = this.getNetworkInventory();
             data['spells'] = this.getNetworkSpells();
             data['xp'] = this.xp;
@@ -149,7 +147,7 @@ export class ServerPlayer {
     }
 
     canAct() {
-        return this.cooldown == 0 && this.isAlive() && !this.isCasting && !this.isParalyzed();
+        return this.getActiveCooldown() == 0 && this.isAlive() && !this.isCasting && !this.isParalyzed();
     }
 
     canMoveTo(x: number, y: number) {
@@ -191,12 +189,16 @@ export class ServerPlayer {
 
         this.updateHP(damage);
         if (this.isDead()) {
-            this.justDied = true;
-            this.clearStatusEffects();
-            this.team!.game.handleTeamKill(this.team);
+            this.die();
         }
 
         this.team!.game.checkFirstBlood(this.team);
+    }
+
+    die() {
+        this.justDied = true;
+        this.clearStatusEffects();
+        this.team!.game.handleTeamKill(this.team);
     }
 
     heal(amount: number) {
@@ -277,7 +279,7 @@ export class ServerPlayer {
 
     setHP(hp: number) {
         this.maxHP = hp;
-        this.hp = this.maxHP;
+        this.hp = INJURED_MODE ? this.maxHP / 2 : this.maxHP;
         this._hp = this.maxHP;
     }
 
@@ -303,6 +305,8 @@ export class ServerPlayer {
     }
 
     setUpCharacter(data, isAI = false) {
+        console.log(`[ServerPlayer:setUpCharacter] Setting up character ${data.name}`);
+        console.log(`[ServerPlayer:setUpCharacter] Spells: ${JSON.stringify(data.skills)}`);
         this.setHP(this.getStatValue(data, "hp"));
         this.setMP(this.getStatValue(data, "mp"));
         this.setStat(Stat.ATK, this.getStatValue(data, "atk"));
@@ -354,21 +358,20 @@ export class ServerPlayer {
         }
     }
 
-    getCooldown(action: ActionType): number {
-        return this.cooldowns[action];
+    // Return the cooldown that the player has to wait before being able to act again
+    getCooldownDurationMs(baseCooldown): number {
+        const speedModifier = 1;
+        return baseCooldown * speedModifier * TIME_COEFFICIENT * 1000;
+    }
+
+     // Returns current ongoing cooldown active on the player
+     getActiveCooldown() {
+        return this.cooldownManager.getCooldown();
     }
     
-    setCooldown(duration: number, applyCoefficient = true) {
-        this.cooldown = duration;
-        if (applyCoefficient) {
-            this.cooldown *= TIME_COEFFICIENT;
-        }
-        if (this.cooldownTimer) {
-            clearTimeout(this.cooldownTimer);
-        }
-        this.cooldownTimer = setTimeout(() => {
-            this.cooldown = 0;
-        }, this.cooldown);
+    setCooldown(durationMs: number) {
+        if (this.team?.game.config.FAST_MODE) durationMs = this.team?.game.config.COOLDOWN_OVERRIDE;
+        this.cooldownManager.setCooldown(durationMs);
     }
 
     setStatusesTimer() {
@@ -482,6 +485,7 @@ export class ServerPlayer {
         if (this.isDead()) return false;
         if (Math.random() > chance) return false;
         this.statuses[status] = duration;
+        
         if (DoTStatuses.includes(status)) {
             if (this.statusDoTTimer) {
                 clearTimeout(this.statusDoTTimer);
@@ -490,17 +494,25 @@ export class ServerPlayer {
                 this.applyDoT(statusDot[status]);
             }, statusDoTInterval[status]);
         }
+
+        if (paralyzingStatuses.includes(status)) {
+            this.cooldownManager.pauseCooldown();
+        }
+
         this.broadcastStatusEffectChange();
         return true;
     }
 
     removeStatusEffect(status: StatusEffect) {
+        console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
         this.statuses[status] = 0;
-        if (DoTStatuses.includes(status)) {
-            if (this.statusDoTTimer) {
-                clearTimeout(this.statusDoTTimer);
-            }
+        
+        this.clearDoTSatus(status);
+
+        if (paralyzingStatuses.includes(status)) {
+            this.cooldownManager.resumeCooldown();
         }
+
         this.broadcastStatusEffectChange();
     }
 
@@ -511,7 +523,7 @@ export class ServerPlayer {
                 this.statuses[status]--;
                 if (this.statuses[status] == 0) {
                     change = true;
-                    this.clearDoTSatus(status as keyof StatusEffects);
+                    this.removeStatusEffect(status as keyof StatusEffects);
                 }
             }
         }
@@ -531,7 +543,7 @@ export class ServerPlayer {
         for (const status in this.statuses) {
             if (this.statuses[status] != 0) change = true;
             this.statuses[status] = 0;
-            this.clearDoTSatus(status as keyof StatusEffects);
+            this.removeStatusEffect(status as keyof StatusEffects);
         }
         if (change) this.broadcastStatusEffectChange();
     }
@@ -564,9 +576,10 @@ export class ServerPlayer {
     }
 
     clearAllTimers() {
-        if (this.cooldownTimer) {
-            clearTimeout(this.cooldownTimer);
-        }
+        // if (this.cooldownTimer) {
+        //     clearTimeout(this.cooldownTimer);
+        // }
+        this.cooldownManager.clearCooldown();
         if (this.terrainDoTTimer) {
             clearInterval(this.terrainDoTTimer);
         }

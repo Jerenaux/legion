@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
-import { CharacterUpdate, APIPlayerData, TeamData } from '@legion/shared/interfaces';
+import { CharacterUpdate, PlayerContextData, TeamData } from '@legion/shared/interfaces';
 import { ChestColor } from '@legion/shared/enums';
 import { MAX_AUDIENCE_SCORE } from "@legion/shared/config";
 
@@ -146,12 +146,12 @@ export class Team {
     }
 
 
-    setPlayerData(playerData: APIPlayerData) {
+    setPlayerData(playerData: PlayerContextData) {
         this.teamData.playerUID = playerData.uid;
         this.teamData.elo = playerData.elo;
         this.teamData.lvl = playerData.lvl;
         this.teamData.playerName = playerData.name;
-        this.teamData.teamName = playerData.teamName;
+        this.teamData.teamName = '';
         this.teamData.avatar = playerData.avatar;
         this.teamData.league = playerData.league;
         this.teamData.rank = playerData.rank; // league rank

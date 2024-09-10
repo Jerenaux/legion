@@ -1,6 +1,7 @@
 import { Target, Rarity, StatusEffect } from "./enums";
 import { Effect, ConsumableData } from "./interfaces";
 import { getPrice, getRarity } from "./economy";
+import { TIME_COEFFICIENT } from "@legion/shared/config";
 
 export class BaseItem {
     id: number = -1;
@@ -22,5 +23,9 @@ export class BaseItem {
         Object.assign(this, props);
         this.price = getPrice(props.effort);
         this.rarity = getRarity(props.effort);
+    }
+
+    getCooldown() {
+        return this.cooldown * TIME_COEFFICIENT;
     }
 }

@@ -1,5 +1,7 @@
 import { ServerPlayer, ActionType } from './ServerPlayer';
 import { Target } from "@legion/shared/enums";
+import { INITIAL_COOLDOWN } from "@legion/shared/config";
+
 
 type Comparator<T> = (a: T, b: T) => number;
 
@@ -30,8 +32,7 @@ export class AIServerPlayer extends ServerPlayer {
         this.retargetRate = Math.floor(Math.random() * 10) + 1;
         this.retargetCount = this.retargetRate;
 
-        const cooldown = this.getCooldown('move') + this.entranceTime * 1000;
-        this.setCooldown(cooldown, false);
+        this.setCooldown(Math.floor((INITIAL_COOLDOWN + 1) * 1000 * (1 + Math.random() * 0.7)));
     }
 
     setArchetype() {
@@ -64,9 +65,9 @@ export class AIServerPlayer extends ServerPlayer {
         }
     }
 
-    getCooldown(action: ActionType) {
+    getCooldownDurationMs(action: ActionType) {
         // Return a random number between 1 and 1.3 times the cooldown
-        return Math.floor(this.cooldowns[action] * (1 + Math.random() * 0.3));
+        return Math.floor(super.getCooldownDurationMs(action) * (1 + Math.random() * 0.3));
     }
 
     takeAction(): number {
@@ -265,6 +266,7 @@ export class AIServerPlayer extends ServerPlayer {
         const data = {
             num: this.num,
             target: target.num,
+            sameTeam: target.team.id === this.team!.id,
         }
         this.team?.game.processAttack(data, this.team);
     }

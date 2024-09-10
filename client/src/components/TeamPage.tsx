@@ -7,29 +7,21 @@ import Roster from './roster/Roster';
 import Inventory from './inventory/Inventory';
 import Skeleton from 'react-loading-skeleton';
 
-import { apiFetch } from '../services/apiService';
-import { errorToast, playSoundEffect } from './utils';
 import CharacterSheet from './characterSheet/CharacterSheet';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
-import { EquipmentSlot, InventoryActionType, equipmentFields } from '@legion/shared/enums';
+import { EquipmentSlot, InventoryActionType } from '@legion/shared/enums';
 import { getEquipmentById } from '@legion/shared/Equipments';
-import { inventorySize } from '@legion/shared/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { manageHelp } from './utils';
-import { getSpellById } from '@legion/shared/Spells';
 
 interface TeamPageState {
-  inventory: {
-    consumables: number[];
-    equipment: number[];
-    spells: number[];
-  };
   carrying_capacity: number;
+  roster_data: APICharacterData[];
   character_id: string;
   character_sheet_data: APICharacterData;
   statsModifiers: Effect[]; 
   selectedEquipmentSlot: number; 
-  setInventoryData: boolean; 
+  isInventoryLoaded: boolean; 
 }
 interface TeamPageProps {
   matches: {
@@ -52,7 +44,8 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     character_sheet_data: null,
     statsModifiers: [], 
     selectedEquipmentSlot: -1, 
-    setInventoryData: false, 
+    isInventoryLoaded: false, 
+    roster_data: [],
   } 
 
   handleSelectedEquipmentSlot = (newValue) => { 
@@ -60,63 +53,31 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   }
 
   async componentDidMount() {
-    await this.fetchCharacterData();
-    await this.fetchInventoryData();
+    if (this.context.characters.length === 0) {
+      await this.context.fetchRosterData();
+    }
+    await this.updateCharacterData();
     manageHelp('team', this.context);
   }
 
-  componentDidUpdate(prevProps: TeamPageProps) {
-    if (prevProps.matches.id !== this.props.matches.id) {
-      this.setState({ character_id: this.props.matches.id }, () => {
-        this.fetchCharacterData();
-        this.fetchInventoryData();
-      });
+  componentDidUpdate(prevProps) {
+    if (prevProps.matches.id !== this.props.matches.id || this.context.characterSheetIsDirty) {
+      this.updateCharacterData();
     }
   }
 
-  fetchInventoryData = async () => { 
-    // await new Promise(resolve => setTimeout(resolve, 20000));
-
-    try {
-        const data = await apiFetch('inventoryData');
-        this.setState({ 
-          inventory: {
-            consumables: data.inventory.consumables?.sort(),
-            equipment: data.inventory.equipment?.sort(), 
-            spells: data.inventory.spells?.sort(),
-          },
-          carrying_capacity: data.carrying_capacity
-        }); 
-        this.setState({ setInventoryData: true }); 
-    } catch (error) {
-        errorToast(`Error: ${error}`);
-    }
-  }
-
-  fetchCharacterData = async () => {
-    try {
-        const data = await apiFetch('rosterData');
-        const sheetData = this.state.character_id ? data.characters.filter((item: APICharacterData) => item.id === this.state.character_id)[0] : data.characters[0];
-
-        this.setState({
-          character_sheet_data: sheetData,
-          character_id: sheetData.id,
-        });
-      } catch (error) {
-          errorToast(`Error: ${error}`);
-      }
-  }
-
-  refreshCharacter = () => {
-    this.fetchCharacterData();
-    this.fetchInventoryData();
+  updateCharacterData = () => {
+    if (!this.context.characters.length) return;
+    const characterData = this.context.getCharacter(this.context.activeCharacterId || this.context.characters[0].id);
+    this.setState({ character_sheet_data: characterData });
+    this.context.characterSheetIsDirty = false;
   }
 
   handleItemEffect = (effects: Effect[], actionType: InventoryActionType,  index?: number) => {
     // If index corresponds to left ring and actionType is 0 (equip), check if right ring slot is free
     // and if so change the slot to that
     if (index == EquipmentSlot.LEFT_RING && actionType == InventoryActionType.EQUIP) {
-      if (this.state.character_sheet_data.equipment['right_ring'] === -1) {
+      if (this.context.getActiveCharacter().equipment['right_ring'] === -1) {
         index = EquipmentSlot.RIGHT_RING;
       }
     }
@@ -128,7 +89,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     let real_effects = effects.map(item => ({stat: item.stat, value: actionType > 0 ? -item.value : item.value }));
 
     // if there's already equipped item, then get its effect
-    let curr_effects = getEquipmentById(this.state.character_sheet_data.equipment[slot])?.effects;
+    let curr_effects = getEquipmentById(this.context.getActiveCharacter().equipment[slot])?.effects;
 
     let result_effects = real_effects;
     
@@ -151,129 +112,18 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.setState({statsModifiers: result_effects});
   }
 
-
-  updateInventory(type: string, action: InventoryActionType, index: number) {
-    switch(type) {
-      case 'consumables':
-        const consumables = this.state.inventory.consumables;
-        if (action === InventoryActionType.EQUIP) {
-          if (this.state.character_sheet_data.inventory.length >= this.state.character_sheet_data.carrying_capacity + this.state.character_sheet_data.carrying_capacity_bonus) {
-            errorToast('Character inventory is full!');
-            return;
-          }
-          const id = this.state.inventory.consumables[index];
-          consumables.splice(index, 1);
-          this.state.character_sheet_data.inventory.push(id);
-        } else {
-          if (inventorySize(this.state.inventory) >= this.state.carrying_capacity) {
-            errorToast('Character inventory is full!');
-            return;
-          }
-          const id = this.state.character_sheet_data.inventory[index];
-          consumables.push(id);
-          consumables.sort();
-          this.state.character_sheet_data.inventory.splice(index, 1);
-        }
-        this.setState({ inventory: { ...this.state.inventory, consumables } });
-        break;
-      case 'equipment':
-        const equipment = this.state.inventory.equipment;
-        if (action === InventoryActionType.EQUIP) {
-          const data = getEquipmentById(equipment[index]);
-
-          if (data.minLevel > this.state.character_sheet_data.level) {
-            errorToast('Character level is too low!');
-            return;
-          }
-
-          if (data.classes.length && !data.classes.includes(this.state.character_sheet_data.class)) {
-            errorToast('Character class is not compatible!');
-            return;
-          }
-
-          let slotNumber = data.slot;
-
-          if (slotNumber === EquipmentSlot.LEFT_RING 
-            && this.state.character_sheet_data.equipment['left_ring'] > -1
-            && this.state.character_sheet_data.equipment['right_ring'] == -1) {
-              slotNumber = EquipmentSlot.RIGHT_RING;
-          }
-
-          const field = equipmentFields[slotNumber];
-          const id = equipment[index];
-          equipment.splice(index, 1);
-
-          if (this.state.character_sheet_data.equipment[field] !== -1) {
-            const removed_id = this.state.character_sheet_data.equipment[field];
-            equipment.push(removed_id);
-            equipment.sort();
-          }
-
-          this.state.character_sheet_data.equipment[field] = id;
-        } else {
-          if (inventorySize(this.state.inventory) >= this.state.carrying_capacity) {
-            errorToast('Character inventory is full!');
-            return;
-          }
-          const field = equipmentFields[index];
-          const id = this.state.character_sheet_data.equipment[field];
-          this.state.character_sheet_data.equipment[field] = -1;
-          equipment.push(id);
-          equipment.sort();
-        }
-        this.setState({ inventory: { ...this.state.inventory, equipment } });
-        break;
-      case 'spells':
-        const playerSpells = this.state.inventory.spells;
-        if (action === InventoryActionType.EQUIP) {
-          const data = getSpellById(playerSpells[index]);
-          if (data.classes.length && !data.classes.includes(this.state.character_sheet_data.class)) {
-            errorToast('Character class is not compatible!');
-            return;
-          }
-          if (data.minLevel > this.state.character_sheet_data.level) {
-            errorToast('Character level is too low!');
-            return;
-          }
-
-          if (this.state.character_sheet_data.skill_slots == 0) {
-            errorToast('Character has no spell slots!');
-            return;
-          }
-          if (this.state.character_sheet_data.skills.length >= this.state.character_sheet_data.skill_slots) {
-            errorToast('Character spell slots are full!');
-            return;
-          }
-          const id = this.state.inventory.spells[index];
-          // Check if character already knows the spell
-          if (this.state.character_sheet_data.skills.includes(id)) {
-            errorToast('Character already knows this spell!');
-            return;
-          }
-          playerSpells.splice(index, 1);
-          this.state.character_sheet_data.skills.push(id);
-        }
-        this.setState({ inventory: { ...this.state.inventory, spells: playerSpells } });
-        break;
-    }
-    playSoundEffect('sfx/equip.wav');
-  }
-
   render() {
 
     return (
         <div className="team-content">
-          <Roster />
+          <Roster/>
           <div className="character-inventory-container">
-            {this.state.character_sheet_data ? <CharacterSheet 
-              characterId={this.state.character_id} 
-              characterData={this.state.character_sheet_data} 
+            {this.context.player.isLoaded ? <CharacterSheet 
               itemEffects={this.state.statsModifiers}
-              refreshCharacter={this.refreshCharacter} 
               handleItemEffect={this.handleItemEffect}
-              updateInventory={this.updateInventory.bind(this)} 
               selectedEquipmentSlot={this.state.selectedEquipmentSlot} 
               handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
+              updateCharacterData={this.updateCharacterData}
             /> : <Skeleton 
             height={400} 
             count={1} 
@@ -281,18 +131,9 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             baseColor='#0f1421' 
             style={{margin: '2px 0', width: '434px'}}/>}
 
-            {this.state.character_sheet_data ? <Inventory 
-              id={this.state.character_id} 
-              name={this.state.character_sheet_data.name} 
-              level={this.state.character_sheet_data.level} 
-              class={this.state.character_sheet_data.class} 
-              inventory={this.state.inventory} 
-              carrying_capacity={this.state.carrying_capacity}
-              refreshCharacter={this.refreshCharacter} 
+            {this.context.player.isLoaded ? <Inventory 
               handleItemEffect={this.handleItemEffect}
-              updateInventory={this.updateInventory.bind(this)} 
               handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot} 
-              setInventoryData={this.state.setInventoryData} 
             /> : <Skeleton 
             height={297} 
             count={1} 

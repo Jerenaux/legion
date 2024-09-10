@@ -1,31 +1,29 @@
 import { createContext } from 'preact';
-import { DailyLootAllAPIData } from '@legion/shared/interfaces';
-import {League} from "@legion/shared/enums";
-
-export interface PlayerContextData {
-  uid: string;
-  name: string;
-  avatar: string;
-  lvl: number;
-  gold: number;
-  elo: number;
-  wins: number;
-  rank: number;
-  allTimeRank: number;
-  dailyloot: DailyLootAllAPIData;
-  league: League;
-  tours: string[];
-  isLoaded: boolean;
-}
+import { PlayerContextData, APICharacterData } from '@legion/shared/interfaces';
+import { League, Stat, InventoryActionType, ShopTab } from "@legion/shared/enums";
 
 export interface PlayerContextState {
   player: PlayerContextData;
+  characters: APICharacterData[];
+  activeCharacterId: string;
+  characterSheetIsDirty: boolean;
 }
 
 export const PlayerContext = createContext<{
   player: PlayerContextData;
+  characters: APICharacterData[];
+  activeCharacterId: string;
+  characterSheetIsDirty: boolean;
   setPlayerInfo: (updates: Partial<PlayerContextData>) => void;
   refreshPlayerData: () => void;
+  fetchRosterData: () => Promise<void>;
+  updateCharacterStats: (characterId: string, stat: Stat, amount: number) => void;
+  getCharacter: (characterId: string) => APICharacterData | undefined;
+  getActiveCharacter: () => APICharacterData | undefined;
+  updateInventory: (type: string, action: InventoryActionType, index: number) => void;
+  applyPurchase: (articleId: number, price: number, quantity: number, shoptab: ShopTab) => void;
+  updateActiveCharacter: (characterId: string) => void;
+  refreshAllData: () => void;
 }>({
   player: {
     uid: '',
@@ -41,7 +39,24 @@ export const PlayerContext = createContext<{
     league: League.BRONZE,
     tours: [],
     isLoaded: false,
+    inventory: {
+      consumables: [],
+      equipment: [],
+      spells: [],
+    },
+    carrying_capacity: 0,
   },
+  characters: [],
+  activeCharacterId: '',
+  characterSheetIsDirty: false,
   setPlayerInfo: () => {},
-  refreshPlayerData: () => {}
+  refreshPlayerData: () => {},
+  fetchRosterData: async () => {},
+  updateCharacterStats: () => {},
+  getCharacter: () => undefined,
+  getActiveCharacter: () => undefined,
+  updateInventory: () => {},
+  applyPurchase: () => {},
+  updateActiveCharacter: () => {},
+  refreshAllData: () => {},
 });

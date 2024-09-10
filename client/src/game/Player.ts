@@ -8,6 +8,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { Target, StatusEffect, Class } from "@legion/shared/enums";
 import { Arena } from "./Arena";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
+import { paralyzingStatuses } from '@legion/shared/utils';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -56,6 +57,7 @@ export class Player extends Phaser.GameObjects.Container {
     class: Class;
     xp: number;
     level: number;
+    lastOverheadMessage: number;
 
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
@@ -354,22 +356,22 @@ export class Player extends Phaser.GameObjects.Container {
     }
     
     onPointerOut() {
-        if (!this.isPlayer && this.arena.selectedPlayer?.pendingSpell == null) {
-            // this.hud.toggleCursor(false, 'scroll');
-        }
         this.arena.emitEvent('unhoverCharacter');
         if (this.isSelected()) return;
         this.glowFx.setActive(false);
+    }
+
+    isInIce() {
+        return this.arena.hasObstacle(this.gridX, this.gridY);
     }
     
 
     onClick() {
         this.arena.playSound('click');
-        if (this.isPlayer) { // If clicking on a player of your team
+        if (this.isPlayer && !this.isInIce()) { // If clicking on a player of your team
             this.arena.selectPlayer(this);
         } else if(this.isTarget()) {
             this.arena.sendAttack(this);
-            // this.hud.toggleCursor(false);
         }
     }
 
@@ -483,7 +485,9 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     isTarget() {
-        return !this.isPlayer && this.isAlive() && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)
+        return (!this.isPlayer || this.isInIce())
+            && this.isAlive()
+            && this.arena.selectedPlayer?.isNextTo(this.gridX, this.gridY)
     }
 
     isNextTo(x: number, y: number) {
@@ -585,13 +589,18 @@ export class Player extends Phaser.GameObjects.Container {
 
     displayOverheadText(text, duration, color) {
         const randomXOffset = 0; //(Math.random() - 0.5) * 30; 
-        const randomYOffset = 0; // (Math.random() - 0.5) * 10; 
+        let randomYOffset = 0; // (Math.random() - 0.5) * 10; 
+
+        if (Date.now() - this.lastOverheadMessage < 100) {
+            randomYOffset -= 30;
+        }
 
         const textObject = this.scene.add.text(
             randomXOffset,( -this.sprite.height / 2) + 15 + randomYOffset, `${String(text)}`, 
             { fontSize: '24px', color, stroke: '#000', strokeThickness: 3, fontFamily: 'Kim',}
             ).setOrigin(0.5).setDepth(10)   ;
         this.add(textObject);
+        this.lastOverheadMessage = Date.now();
     
         // Create a tween to animate the damage text
         this.scene.tweens.add({
@@ -687,8 +696,9 @@ export class Player extends Phaser.GameObjects.Container {
             } 
         });
 
-        if (statuses[StatusEffect.FREEZE] != null) this.toggleCharacterImmobilization(statuses[StatusEffect.FREEZE]);
-        if (statuses[StatusEffect.PARALYZE] != null) this.toggleCharacterImmobilization(statuses[StatusEffect.PARALYZE]);
+        // Compute if any of the paralyzing statuses are active
+        const paralyzing = paralyzingStatuses.some(status => statuses[status] != null && statuses[status] != 0);
+        this.toggleCharacterImmobilization(paralyzing);
 
         this.arena.emitEvent('statusesChange', {num: this.num})
     }
@@ -717,7 +727,6 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     showStatusAnimation(status: StatusEffect) {
-        console.log(`Showing status animation for ${status}`);
         const keys = {
             [StatusEffect.FREEZE]: 'freeze',
             [StatusEffect.PARALYZE]: 'paralyzed',
@@ -742,19 +751,21 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     hideAllStatusAnimations() {
+        if (!this.statusSprites) return;
         this.statusSprites.forEach(sprite => {
             sprite.setVisible(false);
             sprite.anims.stop();
         });
     }
 
-    toggleCharacterImmobilization(duration) {
-        if (duration != 0) 
+    toggleCharacterImmobilization(flag: boolean) {
+        if (flag) 
         {
             this.sprite.anims.stop();   
-            this.cooldownTween?.stop();
+            if (this.cooldownTween?.progress < 1) this.cooldownTween?.pause();
         } else {
             this.playAnim(this.getIdleAnim());
+            if (this.cooldownTween?.paused) this.cooldownTween?.play();
         }   
     }
 
@@ -767,4 +778,18 @@ export class Player extends Phaser.GameObjects.Container {
             this.hideStatusAnimation(StatusEffect.POISON);
         }
     }
+
+    destroy() {
+        this.clearStatusTimer();
+
+        // Stop all tweens related to this player
+        this.scene.tweens.killTweensOf(this);
+    
+        // Stop any ongoing animations
+        this.sprite.anims.stop();
+        this.animationSprite.anims.stop();
+    
+        // Call the parent class's destroy method
+        super.destroy();
+      }
 }

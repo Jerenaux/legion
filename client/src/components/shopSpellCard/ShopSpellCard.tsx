@@ -75,12 +75,12 @@ class ShopSpellCard extends Component<ShopCardProps> {
           <span>{data.name}</span>
           <div className="spell-card-info-container">
             <div className="spell-card-info-box">
-              <span className="spell-card-info-lv">LV</span>
+              <span className="spell-card-info-lv">Lvl</span>
               <span>{data.minLevel}</span>
             </div>
             <div className="spell-card-info-box">
               <img src={itemCountIcon} alt="count icon" />
-              <span>{this.props.getItemAmount(data.id, InventoryType.SKILLS)}</span>
+              <span>{this.props.getItemAmount(data.id, InventoryType.SPELLS)}</span>
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
           </div>
           <div className="spell-card-effect">
             <img src={cdIcon} alt="cooldown" />
-            <span>{data.cooldown}</span>
+            <span>{data.getCooldown()}</span>
           </div>
           <div className="spell-card-effect">
             <img src={targetIcon} alt="target" />

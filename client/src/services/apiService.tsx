@@ -52,7 +52,7 @@ function timeoutPromise(duration) {
     });
 }
 
-async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 15000, maxRetries = 3, retryDelay = 100) {
+async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 15000, maxRetries = 3, retryDelay = 250) {
     let lastError;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -68,7 +68,9 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration
             headers.append("Authorization", `Bearer ${idToken}`);
 
             const fullEndpoint = `${apiBaseUrl}/${endpoint}`;
-            console.log(`Attempt ${attempt + 1} of ${maxRetries}: Calling ${fullEndpoint}`);
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`Attempt ${attempt + 1} of ${maxRetries}: Calling ${fullEndpoint}`);
+            }
             
             const fetchPromise = fetch(fullEndpoint, {
                 ...options,
@@ -87,7 +89,9 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration
 
             return response.json();
         } catch (error) {
-            console.error(`Attempt ${attempt + 1} failed for API call to ${endpoint}:`, error);
+            if (process.env.NODE_ENV === 'development') {
+                console.error(`Attempt ${attempt + 1} failed for API call to ${endpoint}:`, error);
+            }
             lastError = error;
 
             // If it's the last attempt, throw the error
@@ -96,7 +100,9 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration
             }
 
             // Always retry, regardless of error type
-            console.log(`Retrying in ${retryDelay}ms...`);
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`Retrying in ${retryDelay}ms...`);
+            }
             await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
     }

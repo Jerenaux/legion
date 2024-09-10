@@ -97,47 +97,47 @@ export function getChestContent(type: ChestColor): ChestReward[] {
     switch (type) {
         case ChestColor.BRONZE:
             rarityDistribution = {
-                [Rarity.COMMON]: [90],
-                [Rarity.RARE]: [10],
+                [Rarity.COMMON]: [95],
+                [Rarity.RARE]: [5],
             };
             rewardTypeDistribution = {
                 [RewardType.GOLD]: 0,
-                [RewardType.CONSUMABLES]: 75,
-                [RewardType.SPELL]: 15,
-                [RewardType.EQUIPMENT]: 10,
+                [RewardType.CONSUMABLES]: 85,
+                [RewardType.SPELL]: 0,
+                [RewardType.EQUIPMENT]: 15,
             };
-            numberOfItems = 2;
+            numberOfItems = 1;
             goldCoefficient = 1;
             break;
         case ChestColor.SILVER:
             rarityDistribution = {
                 [Rarity.COMMON]: [75],
-                [Rarity.RARE]: [20],
-                [Rarity.EPIC]: [5],
+                [Rarity.RARE]: [24],
+                [Rarity.EPIC]: [1],
             };
             rewardTypeDistribution = {
                 [RewardType.GOLD]: 0,
-                [RewardType.CONSUMABLES]: 65,
-                [RewardType.SPELL]: 25,
-                [RewardType.EQUIPMENT]: 10,
+                [RewardType.CONSUMABLES]: 75,
+                [RewardType.SPELL]: 10,
+                [RewardType.EQUIPMENT]: 15,
             };
-            numberOfItems = 4;
+            numberOfItems = 2;
             goldCoefficient = 3;
             break;
         case ChestColor.GOLD:
             rarityDistribution = {
                 [Rarity.COMMON]: [45],
-                [Rarity.RARE]: [40],
-                [Rarity.EPIC]: [10],
-                [Rarity.LEGENDARY]: [5],
+                [Rarity.RARE]: [45],
+                [Rarity.EPIC]: [7],
+                [Rarity.LEGENDARY]: [3],
             };
             rewardTypeDistribution = {
                 [RewardType.GOLD]: 0,
-                [RewardType.CONSUMABLES]: 40,
-                [RewardType.SPELL]: 30,
-                [RewardType.EQUIPMENT]: 30,
+                [RewardType.CONSUMABLES]: 50,
+                [RewardType.SPELL]: 15,
+                [RewardType.EQUIPMENT]: 35,
             };
-            numberOfItems = 6;
+            numberOfItems = 3;
             goldCoefficient = 10;
             break;
         default:

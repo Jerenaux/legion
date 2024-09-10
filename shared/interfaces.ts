@@ -1,7 +1,8 @@
 import { BaseEquipment } from "./BaseEquipment";
 import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor, StatusEffect, Class, PlayMode } from "./enums";
+import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
+    StatusEffect, Class, PlayMode, League } from "./enums";
 import {ChestReward} from "@legion/shared/chests";
 
 export class EffectModifier {
@@ -175,23 +176,6 @@ export interface DailyLootDBData {
     hasKey: boolean;
     time: number;
 }
-
-export interface APIPlayerData {
-    uid: string;
-    gold: number;
-    elo: number;
-    wins: number;
-    league: number;
-    lvl: number;
-    name: string;
-    teamName: string;
-    avatar: string;
-    rank: number;
-    allTimeRank: number;
-    dailyloot: DailyLootAllAPIData;
-    tours: string[];
-}
-
 export interface DBPlayerData {
     name: string;
     avatar: string;
@@ -361,4 +345,22 @@ export interface EndGameDataResults {
 export interface EndGameData {
     winner: string,
     results: EndGameDataResults,
+  }
+
+  export interface PlayerContextData {
+    uid: string;
+    name: string;
+    avatar: string;
+    lvl: number;
+    gold: number;
+    elo: number;
+    wins: number;
+    rank: number;
+    allTimeRank: number;
+    dailyloot: DailyLootAllAPIData;
+    league: League;
+    tours: string[];
+    isLoaded: boolean;
+    inventory: PlayerInventory;
+    carrying_capacity: number;
   }

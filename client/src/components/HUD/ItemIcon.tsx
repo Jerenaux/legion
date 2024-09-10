@@ -7,6 +7,9 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { ItemDialogType } from '../itemDialog/ItemDialogType';
 import { mapFrameToCoordinates } from '../utils';
 
+import consumablesSpritesheet from '@assets/consumables.png';
+import spellsSpritesheet from '@assets/spells.png';
+
 interface ItemIconProps {
   characterId?: string,
   action: BaseItem | BaseSpell | BaseEquipment | null;
@@ -39,9 +42,8 @@ class ItemIcon extends Component<ItemIconProps> {
     }
 
     const spriteSheetsMap = {
-      [InventoryType.CONSUMABLES]: 'consumables',
-      [InventoryType.SKILLS]: 'spells',
-      [InventoryType.EQUIPMENTS]: 'equipment'
+      [InventoryType.CONSUMABLES]: consumablesSpritesheet,
+      [InventoryType.SPELLS]: spellsSpritesheet,
     }
     const spritesheet = spriteSheetsMap[actionType];
 
@@ -50,7 +52,7 @@ class ItemIcon extends Component<ItemIconProps> {
         {action.id > -1 && <div 
           className={!canAct ? 'item-icon item-icon-off' : 'item-icon item-icon-pointer'}
           style={{
-            backgroundImage: `url(/${spritesheet}.png)`,
+            backgroundImage: `url(${spritesheet})`,
             backgroundPosition: `-${mapFrameToCoordinates(action.frame).x}px -${mapFrameToCoordinates(action.frame).y}px`,
           }}
           />}

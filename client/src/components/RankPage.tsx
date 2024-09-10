@@ -69,7 +69,6 @@ class RankPage extends Component {
 
     const data = await apiFetch(`fetchLeaderboard?tab=${this.state.curr_tab}`);
     if (data) {
-      console.log(`Ldb data: ${JSON.stringify(data)}`);
       this.setState({ leaderboardData: data, isLoading: false });
     }
   }

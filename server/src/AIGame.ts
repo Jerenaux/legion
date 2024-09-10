@@ -7,7 +7,7 @@ import {apiFetch} from './API';
 import { Class, PlayMode, League } from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
-import { APIPlayerData } from '@legion/shared/interfaces';
+import { PlayerContextData } from '@legion/shared/interfaces';
 import {FREEZE_AI} from "@legion/shared/config";
 
 
@@ -71,7 +71,7 @@ export class AIGame extends Game {
         this.createAITeam(aiTeam!, nb, levels);
     }
 
-    async addPlayer(socket: Socket, playerData: APIPlayerData) {
+    async addPlayer(socket: Socket, playerData: PlayerContextData) {
         super.addPlayer(socket, playerData);
         if (this.sockets.length === this.nbExpectedPlayers) {
             this.start();

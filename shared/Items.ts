@@ -13,7 +13,7 @@ items[0] = new BaseItem({
     cooldown: 2,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 50}],
-    effort: 1,
+    effort: 0.3,
 });
 
 items[1] = new BaseItem({
@@ -26,7 +26,7 @@ items[1] = new BaseItem({
     cooldown: 3,
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 10}],
-    effort: 1.5,
+    effort: 0.7,
 });
 
 items[2] = new BaseItem({
@@ -36,10 +36,10 @@ items[2] = new BaseItem({
     frame: 1,
     animation: "potion_heal",
     sfx: "healing",
-    cooldown: 4,
+    cooldown: 8,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}],
-    effort: 3,
+    effort: 1.5,
 });
 
 items[3] = new BaseItem({
@@ -49,10 +49,10 @@ items[3] = new BaseItem({
     frame: 4,
     animation: "potion_heal",
     sfx: "healing",
-    cooldown: 6,
+    cooldown: 12,
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 50}],
-    effort: 4,
+    effort: 2,
 });
 
 items[4] = new BaseItem({
@@ -62,7 +62,7 @@ items[4] = new BaseItem({
     frame: 2,
     animation: "potion_heal",
     sfx: "healing",
-    cooldown: 8,
+    cooldown: 25,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 1000}],
     effort: 10,
@@ -75,11 +75,10 @@ items[5] = new BaseItem({
     frame: 5,
     animation: "potion_heal",
     sfx: "healing",
-    cooldown: 12,
+    cooldown: 40,
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 200}],
     effort: 12,
-
 });
 
 items[6] = new BaseItem({
@@ -89,10 +88,10 @@ items[6] = new BaseItem({
     frame: 6,
     animation: "potion_heal",
     sfx: "healing",
-    cooldown: 12,
+    cooldown: 15,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 50}],
-    effort: 9,
+    effort: 7,
 
 });
 
@@ -103,7 +102,7 @@ items[7] = new BaseItem({
     frame: 7, 
     animation: "potion_heal",
     sfx: "healing",
-    cooldown: 22,
+    cooldown: 50,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 1000}, {stat: Stat.MP, value: 200}],
     effort: 18,
@@ -130,7 +129,7 @@ items[9] = new BaseItem({
     frame: 8,
     animation: "potion_heal",
     sfx: "healing",
-    cooldown: 40,
+    cooldown: 70,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: -1}, {stat: Stat.MP, value: -1}],
     effort: 20,
@@ -147,7 +146,7 @@ items[10] = new BaseItem({
     target: Target.SELF,
     effects: [],
     statusRemovals: [StatusEffect.POISON],
-    effort: 1.5,
+    effort: 0.7,
 });
 
 items[11] = new BaseItem({
@@ -175,7 +174,7 @@ items[12] = new BaseItem({
     target: Target.SELF,
     effects: [],
     statusRemovals: [StatusEffect.MUTE],
-    effort: 1.5,
+    effort: 0.7,
 });
 
 items[13] = new BaseItem({

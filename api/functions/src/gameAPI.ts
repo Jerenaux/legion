@@ -77,8 +77,9 @@ export const completeGame = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const gameId = request.body.gameId;
-      const winnerUID = request.body.winnerUID;
+      const winnerUID = request.body.winnerUID || -1; // -1 for AI
       const results: EndGameData = request.body.results;
+      console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(results)}`);
 
       const gameRef = await db.collection("games").where("gameId", "==", gameId).limit(1).get();
       if (gameRef.empty) {
@@ -111,8 +112,36 @@ export const completeGame = onRequest((request, response) => {
       await gameDoc.ref.update(newGameData);
       response.status(200).send({status: 0});
     } catch (error) {
-      console.error("saveGameResult error:", error);
+      console.error("[saveGameResult] Error:", error);
       response.status(500).send("Error");
+    }
+  });
+});
+
+export const getRemoteConfig = onRequest((request, response) => {
+  const remoteConfig = admin.remoteConfig();
+
+  corsMiddleware(request, response, async () => {
+    try {
+       // Fetch the Remote Config template
+      const template = await remoteConfig.getTemplate();
+
+      // Extract parameter values from the template
+      const configValues: { [key: string]: any } = {};
+      for (const [key, parameter] of Object.entries(template.parameters)) {
+        console.log(`Parameter ${key}: ${JSON.stringify(parameter)}`);
+        // @ts-ignore
+        let value = parameter.defaultValue?.value;
+        if (value == "true") value = true;
+        if (value == "false") value = false;
+        configValues[key] = value;
+      }
+
+      // Send the config values as the response
+      response.status(200).json(configValues);
+    } catch (error) {
+      console.error("getRemoteConfig error:", error);
+      response.status(500).send("Error fetching remote config");
     }
   });
 });

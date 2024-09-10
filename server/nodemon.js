@@ -4,7 +4,7 @@ console.log(`Starting nodemon, Docker mode is ${process.env.IS_DOCKER ? 'enabled
 const tsConfigFile = process.env.IS_DOCKER ? 'tsconfig.docker.json' : 'tsconfig.json';
 
 nodemon({
-    watch: ["src"],
+    watch: ["src", "shared"],
     ext: "ts",
     exec: `TS_NODE_PROJECT=${tsConfigFile} npx ts-node -r tsconfig-paths/register ./src/server.ts`,
     ignore: ["src/**/*.spec.ts"]

@@ -4,11 +4,12 @@ import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
-import {apiFetch} from './API';
+import { apiFetch, getRemoteConfig } from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate, APIPlayerData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
+import { OutcomeData, TerrainUpdate, PlayerContextData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
-import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL } from '@legion/shared/config';
+import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, MOVE_COOLDOWN, ATTACK_COOLDOWN,
+    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 
 enum GameAction {
@@ -35,6 +36,7 @@ export abstract class Game
     gameOver: boolean = false;
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
+    config: any;
 
     gridWidth: number = 20;
     gridHeight: number = 10;
@@ -55,7 +57,7 @@ export abstract class Game
         socket.join(this.id);
     }
 
-    addPlayer(socket: Socket, playerData: APIPlayerData) {
+    addPlayer(socket: Socket, playerData: PlayerContextData) {
         try {
             if (this.sockets.length === 2) return;
             this.addSocket(socket);
@@ -77,9 +79,6 @@ export abstract class Game
         disconnectingTeam.unsetSocket();
         // Slice the player from the game
         this.sockets = this.sockets.filter(s => s !== socket);
-        // if (!this.gameOver) {
-        //     this.endGame(this.getOtherTeam(disconnectingTeam.id).id);
-        // }
     }
 
     reconnectPlayer(socket: Socket) {
@@ -97,6 +96,7 @@ export abstract class Game
     async start() {
         console.log(`[Game:start]`);
         try {
+            await this.getRemoteConfig();
             await this.populateTeams();
             this.populateGrid();
             this.startGame();
@@ -104,6 +104,12 @@ export abstract class Game
             this.endGame(-1);
             console.error(error);
         }
+    }
+
+    async getRemoteConfig() {
+        const isDev = process.env.NODE_ENV === 'development';
+        this.config = isDev ? remoteConfig : await getRemoteConfig();
+        console.log(`[Game:getRemoteConfig] [isDev: ${isDev}] ${JSON.stringify(this.config)}`);
     }
 
     getPosition(index, flip) {
@@ -167,6 +173,12 @@ export abstract class Game
         this.checkEndTimer = setInterval(() => {
             this.checkEndGame();
         }, 1000);
+
+        if (this.config.AUTO_DEFEAT) {
+            setTimeout(() => {
+                this.endGame(2);
+            }, 5000);
+        }
     }
 
     sendGameStatus(socket: Socket, reconnect: boolean = false) {
@@ -216,6 +228,9 @@ export abstract class Game
     }
 
     calculateDamage(attacker: ServerPlayer, defender: ServerPlayer) {
+        if (this.config.HIGH_DAMAGE) {
+            return 1000;
+        }
         // Calculate the base damage
         // let baseDamage = attacker.atk - defender.def;
         let baseDamage = attacker.atk / (1 + defender.def);
@@ -306,6 +321,7 @@ export abstract class Game
     }
 
     endGame(winnerTeamID: number) {
+        console.log(`[Game:endGame] Game ${this.id} ended!`);
         this.duration = Date.now() - this.startTime;
         this.gameOver = true;
 
@@ -317,6 +333,7 @@ export abstract class Game
 
         const results = {};
         let winnerUID;
+        if (!this.sockets.length) return;
         this.sockets.forEach(socket => {
             const team = this.socketMap.get(socket);
             const otherTeam = this.getOtherTeam(team!.id);
@@ -344,12 +361,16 @@ export abstract class Game
 
     processMove({tile, num}: {tile: Tile, num: number}, team: Team) {
         const player = team.getMembers()[num - 1];
-        if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) {
-            console.log(`Invalid move from ${player.x},${player.y} to ${tile.x},${tile.y}!`);
+        if (!player.canAct()) {
+            console.log(`[Game:processMove] Player ${num} cannot act: paralyzed = ${player.isParalyzed()}, cooldown = ${player.getActiveCooldown()}!`);
             return;
         }
-        if (!player.canAct() || !player.canMoveTo(tile.x, tile.y)) {
-            console.log(`Player ${num} cannot move to ${tile.x},${tile.y}!`);
+        if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) {
+            console.log(`[Game:processMove] Invalid move from ${player.x},${player.y} to ${tile.x},${tile.y}!`);
+            return;
+        }
+        if (!player.canMoveTo(tile.x, tile.y)) {
+            console.log(`[Game:processMove] Player ${num} cannot move to ${tile.x},${tile.y}!`);
             return;
         }
 
@@ -364,7 +385,7 @@ export abstract class Game
         
         this.checkForStandingOnTerrain(player);
 
-        const cooldown = player.getCooldown('move');
+        const cooldown = player.getCooldownDurationMs(MOVE_COOLDOWN);
         this.setCooldown(player, cooldown);
         
         this.broadcast('move', {
@@ -375,7 +396,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         return 0;
@@ -399,16 +420,21 @@ export abstract class Game
         }
     }
 
-    processAttack({num, target}: {num: number, target: number}, team: Team) {
+    processAttack({num, target, sameTeam}: {num: number, target: number, sameTeam: boolean}, team: Team) {
+        console.log(`[Game:processAttack] Player ${num} attacking target ${target}`);
         const player = team.getMembers()[num - 1];
-        const opponentTeam = this.getOtherTeam(team.id);
+        const opponentTeam = sameTeam ? team : this.getOtherTeam(team.id);
         const opponent = opponentTeam.getMembers()[target - 1];
         
         if (
             !player.canAct() || 
             !player.isNextTo(opponent.x, opponent.y) || 
             !opponent.isAlive()
-        ) return;
+        ) {
+            console.log(`[Game:processAttack] Action refused: canAct = ${player.canAct()}, isNextTo = ${player.isNextTo(opponent.x, opponent.y)}, isAlive = ${opponent.isAlive()}!`);
+            console.log(`[Game:processAttack] Player ${num} at ${player.x},${player.y}, target ${target} at ${opponent.x},${opponent.y}`);
+            return
+        };
         
         const damage = this.calculateDamage(player, opponent);
         opponent.takeDamage(damage);
@@ -427,7 +453,7 @@ export abstract class Game
             opponent.removeStatusEffect(StatusEffect.FREEZE);
         }
         
-        const cooldown = player.getCooldown('attack');
+        const cooldown = player.getCooldownDurationMs(ATTACK_COOLDOWN);
         this.setCooldown(player, cooldown);
 
         this.broadcast('attack', {
@@ -437,6 +463,7 @@ export abstract class Game
             damage: -damage,
             hp: opponent.getHP(),
             isKill: opponent.justDied,
+            sameTeam,
         });
 
         if (oneShot) { // Broadcast gen after attack
@@ -447,7 +474,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         return 0;
@@ -462,7 +489,7 @@ export abstract class Game
             !this.hasObstacle(x, y)
         ) return;
 
-        const cooldown = player.getCooldown('attack');
+        const cooldown = player.getCooldownDurationMs(ATTACK_COOLDOWN);
         this.setCooldown(player, cooldown);
 
         const terrainUpdates = this.terrainManager.removeIce(x, y);
@@ -476,14 +503,13 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         return 0;
     }
 
     processUseItem({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number,  targetTeam: number, target: number | null}, team: Team) {
-        console.log(`Processing item for team ${team.id}, player ${num}, item ${index}, target team ${targetTeam}, target ${target}`)
         const player = team.getMembers()[num - 1];
         if (!player.canAct()) return;
 
@@ -517,7 +543,7 @@ export abstract class Game
             player.team!.increaseScoreFromRevive(deadTargets_ - deadTargets);
         }
 
-        const cooldown = item?.cooldown * 1000;
+        const cooldown = player.getCooldownDurationMs(item.cooldown);
         this.setCooldown(player, cooldown);
 
         player.removeItem(item);
@@ -532,7 +558,6 @@ export abstract class Game
 
         targets.forEach(target => {
             if (target.HPHasChanged()) {
-                this.broadcastHPchange(target.team!, target.num, target.getHP(), target.getHPDelta());
                 target.team.incrementHealing(target.getHPDelta());
             }
             if (target.MPHasChanged()) {
@@ -542,7 +567,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         team.socket?.emit('inventory', {
@@ -611,7 +636,8 @@ export abstract class Game
         const nbFrozen_ = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
         const nbBurning_ = this.terrainManager.getNbBurning();
 
-        this.setCooldown(player, spell.cooldown * 1000);
+        const cooldown = player.getCooldownDurationMs(spell.cooldown);
+        this.setCooldown(player, cooldown);
         
         this.broadcast('localanimation', {
             x,
@@ -631,7 +657,7 @@ export abstract class Game
 
         team.socket?.emit('cooldown', {
             num: player.num,
-            cooldown: player.cooldown,
+            cooldown: player.getActiveCooldown(),
         });
 
         this.broadcast('endcast', {
@@ -692,7 +718,7 @@ export abstract class Game
         console.log(`[Game:processMagic] Casting spell [${spell.id}] ${spell.name}`);
 
         if (spell.cost > player.getMP()) {
-            console.log(`[Game:processMagic] Not enough MP!`);
+            console.log(`[Game:processMagic] Not enough MP, ${spell.cost} > ${player.getMP()}!`);
             return;
         }
         const mp = player.consumeMP(spell.cost);
@@ -869,7 +895,6 @@ export abstract class Game
         const isWinner = team.id === winnerTeamId;
         const eloUpdate = this.mode == PlayMode.RANKED ? this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : {winnerUpdate: 0, loserUpdate: 0};
         const grade = this.computeGrade(team, otherTeam);
-        console.log(`Game grade for team ${team.id}: ${grade}, ${this.computeLetterGrade(grade)}`);
         return {
             isWinner,
             rawGrade: grade,
@@ -886,6 +911,7 @@ export abstract class Game
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
         const chests: GameOutcomeReward[] = [];
         if (mode != PlayMode.PRACTICE) this.computeAudienceRewards(score, chests);
+
         return chests;
     }
     
@@ -932,7 +958,7 @@ export abstract class Game
         }
 
         const levelFactor = 1 - (team.getTotalLevel() / (team.getTotalLevel() + otherTeam.getTotalLevel()));
-        console.log(`HP: ${hpFactor}, Healing: ${healingFactor}, Offense: ${offenseFactor}, Level: ${levelFactor}`);
+        // console.log(`HP: ${hpFactor}, Healing: ${healingFactor}, Offense: ${offenseFactor}, Level: ${levelFactor}`);
 
         const hpCoefficient = 1.5;
         const healingCoefficient = 1;
@@ -976,8 +1002,8 @@ export abstract class Game
 
     computeTeamGold(grade: number, mode: PlayMode) {
         let gold = AVERAGE_GOLD_REWARD_PER_GAME * (grade + 0.3);
-        if (mode == PlayMode.PRACTICE) gold *= 0.1; // TODO: make 0
-        if (mode == PlayMode.RANKED) gold *= 1.5;
+        if (mode == PlayMode.PRACTICE) gold *= PRACTICE_GOLD_COEF; 
+        if (mode == PlayMode.RANKED) gold *= RANKED_GOLD_COEF;
         // Add +- 5% random factor
         gold *= 0.95 + Math.random() * 0.1;
         return Math.round(gold);
@@ -993,8 +1019,8 @@ export abstract class Game
         if (team.getTotalInteractedTargets() == 0) return 0;
         let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (grade + 0.3);
         console.log(`Base XP: ${xp}: ${otherTeam.getTotalLevel()} * ${XP_PER_LEVEL} * (${grade} + 0.3)`);
-        if (mode == PlayMode.PRACTICE) xp *= 0.1;
-        if (mode == PlayMode.RANKED) xp *= 1.2;
+        if (mode == PlayMode.PRACTICE) xp *= PRACTICE_XP_COEF;
+        if (mode == PlayMode.RANKED) xp *= RANKED_XP_COEF;
         // Add +- 5% random factor
         xp *= 0.95 + Math.random() * 0.1;
 

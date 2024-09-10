@@ -1,9 +1,17 @@
 {
   "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": ".",
+    "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": "./", // This should be set to the root of your backend project
+    "baseUrl": ".", 
     "paths": {
-      "@legion/shared/*": ["shared/*"] // Adjust this path to correctly point to your shared directory
+      "@legion/shared/*": ["shared/*"] 
     }
   },
+  "include": ["src/**/*", "shared/**/*"],
+  "exclude": ["node_modules"]
 }

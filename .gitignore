@@ -5,7 +5,8 @@ dist
 **/node_modules
 firestore-emulator-data
 firebase-export-*
-.env
 *.log
 .firebase
 serviceAccountKey.json
+/build
+/*.log

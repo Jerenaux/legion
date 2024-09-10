@@ -8,7 +8,26 @@ export enum Stat {
     NONE
 }
 
+// TODO: do like ClassLabels below
 export const statFields = ["hp", "mp", "atk", "def", "spatk", "spdef"];
+
+export const StatFields = {
+    [Stat.HP]: 'hp',
+    [Stat.MP]: 'mp',
+    [Stat.ATK]: 'atk',
+    [Stat.DEF]: 'def',
+    [Stat.SPATK]: 'spatk',
+    [Stat.SPDEF]: 'spdef'
+}
+
+export const StatLabels = {
+    [Stat.HP]: 'HP',
+    [Stat.MP]: 'MP',
+    [Stat.ATK]: 'ATK',
+    [Stat.DEF]: 'DEF',
+    [Stat.SPATK]: 'SP.ATK',
+    [Stat.SPDEF]: 'SP.DEF'
+}
 
 export enum Target {
     SELF,
@@ -28,6 +47,14 @@ export enum Class {
     THIEF,
     RANDOM
 }
+
+export const ClassLabels = {
+    [Class.WARRIOR]: 'Warrior',
+    [Class.WHITE_MAGE]: 'White Mage',
+    [Class.BLACK_MAGE]: 'Black Mage',
+    [Class.THIEF]: 'Thief',
+    [Class.RANDOM]: 'Random'
+};
 
 export enum Terrain {
     NONE,
@@ -54,6 +81,30 @@ export enum EquipmentSlot {
     NECKLACE
 }
 
+export const equipmentSlotLabels = {
+    [EquipmentSlot.WEAPON]: 'Weapon',
+    [EquipmentSlot.HELMET]: 'Helmet',
+    [EquipmentSlot.ARMOR]: 'Armor',
+    [EquipmentSlot.BELT]: 'Belt',
+    [EquipmentSlot.GLOVES]: 'Gloves',
+    [EquipmentSlot.BOOTS]: 'Boots',
+    [EquipmentSlot.LEFT_RING]: 'Left Ring',
+    [EquipmentSlot.RIGHT_RING]: 'Right Ring',
+    [EquipmentSlot.NECKLACE]: 'Necklace'
+}
+
+export const equipmentSlotFields = {
+    [EquipmentSlot.WEAPON]: 'weapon',
+    [EquipmentSlot.HELMET]: 'helmet',
+    [EquipmentSlot.ARMOR]: 'armor',
+    [EquipmentSlot.BELT]: 'belt',
+    [EquipmentSlot.GLOVES]: 'gloves',
+    [EquipmentSlot.BOOTS]: 'boots',
+    [EquipmentSlot.LEFT_RING]: 'left_ring',
+    [EquipmentSlot.RIGHT_RING]: 'right_ring',
+    [EquipmentSlot.NECKLACE]: 'necklace'
+}
+
 export enum Rarity {
     COMMON,
     RARE,
@@ -70,11 +121,11 @@ export enum ChestColor {
 export enum InventoryType {
     CONSUMABLES = 'consumables',
     EQUIPMENTS = 'equipment',
-    SKILLS = 'spells',
+    SPELLS = 'spells',
     UTILITIES = 'utilities'
 }
 
-export enum ShopTabs {
+export enum ShopTab {
     CONSUMABLES,
     EQUIPMENTS,
     SPELLS,
@@ -102,9 +153,6 @@ export enum StatusEffect {
     MUTE = "Mute",
     HASTE = "Haste",
 }
-
-export const equipmentFields = ["weapon", "armor", "helmet", "belt", "gloves",
-  "boots", "left_ring", "right_ring", "necklace"];
 
 export enum League {
     BRONZE,

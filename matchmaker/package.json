@@ -26,5 +26,8 @@
     "tsc-alias": "1.8.10",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
+  },
+  "resolutions": {
+    "discord.js": "github:discordjs/discord.js#8dd69cf2811d86ed8da2a7b1e9a6a94022554e96"
   }
 }

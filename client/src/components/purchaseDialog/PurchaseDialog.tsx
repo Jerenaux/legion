@@ -4,6 +4,7 @@ import Modal from 'react-modal';
 import { h, Component } from 'preact';
 import { mapFrameToCoordinates, getSpritePath } from '../utils';
 import { modalData } from '../shopContent/ShopContent';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 // Import image assets
 import goldIcon from '@assets/gold_icon.png';
@@ -13,7 +14,6 @@ import cancelIcon from '@assets/inventory/cancel_icon.png';
 Modal.setAppElement('#root');
 
 interface PurchaseDialogProps {
-  gold: number;
   dialogOpen: boolean;
   dialogData: modalData,
   position: {
@@ -29,6 +29,8 @@ interface PurchaseDialogState {
 }
 
 class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState> {
+  static contextType = PlayerContext;
+
   state: PurchaseDialogState = {
     count: 1
   }
@@ -50,7 +52,7 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
       return null;
     }
 
-    const hasEnoughGold = this.state.count * dialogData.price <= this.props.gold;
+    const hasEnoughGold = this.state.count * dialogData.price <= this.context.player.gold;
 
     const customStyles = {
       content: {

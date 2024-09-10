@@ -82,13 +82,14 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
         <div className="shop-character-card-content">
           <div className="character-card-portrait" style={portraitStyle}></div>
-          <div className="shop-character-card-class-container">
+          <div onClick={(event) => event.stopPropagation()} className="shop-character-card-class-container">
             {data.skills.map((item, i) => (
               <div
                 key={i}
                 style={{ backgroundImage: `linear-gradient(to bottom right, ${RarityColor[getSpell(item)?.rarity]}, #1c1f25)` }}
                 className="shop-character-card-slot"
-                onClick={() => {
+                onClick={(event) => {
+                  event.stopPropagation();
                   this.setState({ shopCharacterCardDialogShow: true });
                   this.setState({ curItem: getSpell(item) });
                 }}

@@ -74,7 +74,7 @@ spells.push(new BaseSpell({
 
     score: 100,
     classes: [Class.BLACK_MAGE],
-    minLevel: 1,
+    minLevel: 20,
 }));
 
 spells.push(new BaseSpell({
@@ -216,6 +216,7 @@ spells.push(new BaseSpell({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}],
     effort: 9,
+    cost: 20,
 
     score: 5,
     classes: [Class.WHITE_MAGE],

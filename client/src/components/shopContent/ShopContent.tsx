@@ -5,9 +5,9 @@ import Skeleton from 'react-loading-skeleton';
 import { h, Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
-import { InventoryType, ShopTabs } from '@legion/shared/enums';
+import { InventoryType, ShopTab } from '@legion/shared/enums';
 import { MAX_CHARACTERS } from "@legion/shared/config";
-import { PlayerInventory, ShopItems, DBCharacterData } from '@legion/shared/interfaces';
+import { ShopItems, DBCharacterData } from '@legion/shared/interfaces';
 import { errorToast, successToast, playSoundEffect } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
@@ -24,21 +24,16 @@ import { Link } from 'preact-router';
 import tabActiveImage from '@assets/shop/tabs_active.png';
 import tabIdleImage from '@assets/shop/tabs_idle.png';
 
-// Import shop tab icons
 import spellsIcon from '@assets/shop/spells_icon.png';
 import consumablesIcon from '@assets/shop/consumables_icon.png';
 import equipmentsIcon from '@assets/shop/helmet_icon.png';
 import charactersIcon from '@assets/shop/char_icon.png';
 
+import purchaseSfx from '@assets/sfx/purchase.wav';
+
 interface ShopContentProps {
-    gold: number;
-    requireTab: number;
     characters: DBCharacterData[];
-    inventory: PlayerInventory;
-    carrying_capacity: number;
-    nb_characters: number;
-    fetchInventoryData: () => void;
-    updateInventory: (articleId: string, quantity: number, shoptab: ShopTabs) => void;
+    requiredTab: number;
     fetchCharactersOnSale: () => void;
 }
 
@@ -62,7 +57,7 @@ class ShopContent extends Component<ShopContentProps> {
     static contextType = PlayerContext;
 
     state = {
-        curr_tab: ShopTabs.CONSUMABLES,
+        curr_tab: ShopTab.CONSUMABLES,
         openModal: false,
         position: null,
         modalData: null,
@@ -75,8 +70,8 @@ class ShopContent extends Component<ShopContentProps> {
     }
 
     componentDidMount(): void {
-        this.setState({ curr_tab: this.props.requireTab ?? ShopTabs.CONSUMABLES }, () => {
-            if (this.state.curr_tab === ShopTabs.CHARACTERS) {
+        this.setState({ curr_tab: this.props.requiredTab ?? ShopTab.CONSUMABLES }, () => {
+            if (this.state.curr_tab === ShopTab.CHARACTERS) {
                 this.loadCharacters();
             }
         });
@@ -114,10 +109,10 @@ class ShopContent extends Component<ShopContentProps> {
     }
 
     hasEnoughGold = (quantity: number) => {
-        return this.props.gold >= this.state.modalData.price * quantity;
+        return this.context.player.gold >= this.state.modalData.price * quantity;
     }
 
-    purchase = (id: string | number, quantity: number, price: number) => {
+    purchase = async (id: string | number, quantity: number, price: number) => {
         if (!id && id != 0) {
             errorToast('No article selected!');
             return;
@@ -128,15 +123,15 @@ class ShopContent extends Component<ShopContentProps> {
             return;
         }
 
-        const purchasingCharacter = this.state.curr_tab == ShopTabs.CHARACTERS;
+        const purchasingCharacter = this.state.curr_tab == ShopTab.CHARACTERS;
 
         if (purchasingCharacter) {
-            if (this.props.nb_characters >= MAX_CHARACTERS) {
+            if (this.context.characters.length >= MAX_CHARACTERS) {
                 errorToast('Character limit reached!');
                 return;
             }
         } else {
-            if (inventorySize(this.props.inventory) + quantity > this.props.carrying_capacity) {
+            if (inventorySize(this.context.player.inventory) + quantity > this.context.player.carrying_capacity) {
                 errorToast('Not enough room in inventory!');
                 return;
             }
@@ -148,26 +143,23 @@ class ShopContent extends Component<ShopContentProps> {
             inventoryType: this.state.curr_tab
         };
 
-        this.props.updateInventory(id.toString(), quantity, this.state.curr_tab);
-        this.context.setPlayerInfo({ gold: this.props.gold - price * quantity });
-        playSoundEffect('sfx/purchase.wav');
+        if (!purchasingCharacter) this.context.applyPurchase(id, price, quantity, this.state.curr_tab);
+        playSoundEffect(purchaseSfx);
+        successToast('Purchase successful!');
+        this.handleCloseModal();
 
-        apiFetch(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', {
+        await apiFetch(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', {
             method: 'POST',
             body: payload
         })
             .then(data => {
-                console.log(data);
                 if (purchasingCharacter) {
                     this.props.fetchCharactersOnSale();
-                } else {
-                    this.props.fetchInventoryData();
                 }
-                successToast('Purchase successful!');
             })
             .catch(error => errorToast(`Error: ${error}`));
 
-        this.handleCloseModal();
+        if (purchasingCharacter) this.context.applyPurchase(id, price, quantity, this.state.curr_tab);
     }
 
     render() {
@@ -188,18 +180,18 @@ class ShopContent extends Component<ShopContentProps> {
         }
 
         const getItemAmount = (index: number, type: InventoryType) => {
-            return this.props.inventory[type].filter((item: number) => item == index).length;
+            return this.context.player.inventory[type].filter((item: number) => item == index).length;
         }
 
         const renderItems = () => {
             switch (this.state.curr_tab) {
-                case ShopTabs.SPELLS:
+                case ShopTab.SPELLS:
                     return this.state.inventoryData.spells.map((item, index) => <ShopSpellCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
-                case ShopTabs.CONSUMABLES:
+                case ShopTab.CONSUMABLES:
                     return this.state.inventoryData.consumables.map((item, index) => <ShopConsumableCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
-                case ShopTabs.EQUIPMENTS:
+                case ShopTab.EQUIPMENTS:
                     return this.state.inventoryData.equipment.map((item, index) => <ShopEquipmentCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
-                case ShopTabs.CHARACTERS:
+                case ShopTab.CHARACTERS:
                     return this.state.isLoadingCharacters ? 
                         renderSkeletons() :
                         characters?.map((item, index) => <ShopCharacterCard key={index} data={item} handleOpenModal={this.handleOpenModal} />)
@@ -241,23 +233,22 @@ class ShopContent extends Component<ShopContentProps> {
                 <div className='shop-tabs-container'>
                     {this.state.inventoryData && shopTabIcons.map((icon, index) =>
                         <Link
-                            href={`/shop/${ShopTabs[index].toLowerCase()}`}
+                            href={`/shop/${ShopTab[index].toLowerCase()}`}
                             onClick={() => {
                                 this.setState({ curr_tab: index });
-                                if (index === ShopTabs.CHARACTERS) {
+                                if (index === ShopTab.CHARACTERS) {
                                     this.loadCharacters();
                                 }
                             }}
                             key={index}
                             className='shop-tab-item'
                             style={tabItemStyle(index)}>
-                            <img src={icon} alt={`${ShopTabs[index]} icon`} />
+                            <img src={icon} alt={`${ShopTab[index]} icon`} />
                         </Link>
                     )}
                 </div>
                 <div className='shop-items-container'>{renderItems()}</div>
                 <PurchaseDialog
-                    gold={this.props.gold}
                     position={this.state.position}
                     dialogOpen={this.state.openModal}
                     dialogData={this.state.modalData}

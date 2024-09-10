@@ -5,7 +5,7 @@ import { h, Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
 import firebase from 'firebase/compat/app'
 import UserInfoBar from '../userInfoBar/UserInfoBar';
-import { PlayerContextData } from 'src/contexts/PlayerContext';
+import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, avatarContext } from '../utils';
 import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
 

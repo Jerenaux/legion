@@ -1,7 +1,7 @@
 import {Stat} from '@legion/shared/enums';
 
 export enum ItemDialogType {
-    SKILLS = 'spells',
+    SPELLS = 'spells',
     EQUIPMENTS = 'equipment',
     CONSUMABLES = 'consumables',
     UTILITIES = 'utilities',

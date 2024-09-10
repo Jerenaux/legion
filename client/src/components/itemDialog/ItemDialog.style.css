@@ -185,7 +185,13 @@
     padding: 4px; 
     border-radius: 4px; 
     color: white;
-    /* background-color: #2f404d; */
+}
+
+.dialog-spell-container .equip-dialog-lvl { 
+    font-size: 10px; 
+    padding: 4px; 
+    border-radius: 4px; 
+    color: white;
 } 
 
 .equip-dialog-container .equip-dialog-lvl span { 
@@ -198,7 +204,18 @@
     justify-content: center;
 }
 
+
 .equip-dialog-container .equip-dialog-class { 
+    font-size: 12px; 
+    padding: 4px 8px; 
+    border-radius: 8px; 
+    background-color: #303540; 
+    margin-bottom: 4px; 
+    color: white;
+} 
+
+
+.dialog-spell-container .equip-dialog-class { 
     font-size: 12px; 
     padding: 4px 8px; 
     border-radius: 8px; 

@@ -1,4 +1,5 @@
 import { PlayerInventory } from "./interfaces";
+import { StatusEffect } from "./enums";
 
 function specialRound(num: number): number {
     if (num >= 0) {
@@ -71,3 +72,10 @@ export function inventorySize(inventory: PlayerInventory): number {
     .map(arr => arr.length)
     .reduce((acc, curr) => acc + curr, 0);
 }
+
+export async function sendMessageToAdmin(client: any, message: string) {
+    const adminUser = await client.users.fetch('272906141728505867');
+    adminUser.send(message);
+}
+
+export const paralyzingStatuses = [StatusEffect.FREEZE, StatusEffect.PARALYZE, StatusEffect.SLEEP];

@@ -1,7 +1,22 @@
 import { h, Component } from 'preact';
 import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
 import PlayerInfo from './PlayerInfo';
-import { PlayMode } from '@legion/shared/enums';
+import { PlayMode, StatusEffect } from '@legion/shared/enums';
+import { getSpritePath } from '../utils';
+
+import charProfileReady from '@assets/HUD/char_profile_ready.png';
+import charProfileActive from '@assets/HUD/char_profile_active.png';
+import charProfileIdle from '@assets/HUD/char_profile_idle.png';
+import charStatsBgActive from '@assets/HUD/char_stats_bg_Active.png';
+import charStatsBg from '@assets/HUD/char_stats_bg.png';
+
+import freezeIcon from '@assets/HUD/freeze_icon.png';
+import muteIcon from '@assets/HUD/mute_icon.png';
+import paralyzeIcon from '@assets/HUD/paralyze_icon.png';
+import blindIcon from '@assets/HUD/blind_icon.png';
+import sleepIcon from '@assets/HUD/sleep_icon.png';
+import poisonIcon from '@assets/HUD/poison_icon.png';
+import burnIcon from '@assets/HUD/burn_icon.png';
 
 interface Props {
   members: TeamMember[];
@@ -39,6 +54,16 @@ class Overview extends Component<Props, State> {
         : [],
       selected: null
     };
+  }
+
+  statusIcons = {
+    'Freeze': freezeIcon,
+    'Mute': muteIcon,
+    'Paralyze': paralyzeIcon,
+    'Blind': blindIcon,
+    'Sleep': sleepIcon,
+    'Poison': poisonIcon,
+    'Burn': burnIcon,
   }
 
   componentDidMount() {
@@ -89,24 +114,28 @@ class Overview extends Component<Props, State> {
         <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
         <div className="member_container">
           {members.map((member, memberIndex) => {
+            const isAlive = member.hp > 0;
             const cooldown = cooldowns[cooldownIndex++];
+            let cooldownPct = cooldown / member.totalCooldown;
+            const isParalyzed = member.statuses[StatusEffect.PARALYZE] != 0 || member.statuses[StatusEffect.FREEZE] != 0;
+            if (!isAlive || isParalyzed) cooldownPct = 1;
 
             const portraitStyle = {
-              backgroundImage: `url(/sprites/${member.texture}.png)`,
+              backgroundImage: `url(${getSpritePath(member.texture)})`,
             };
 
             const charProfileStyle = (idx: number) => {
               const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
 
-              if (cooldown === 0 && member.hp > 0) {
+              if (cooldown === 0 && isAlive) {
                 return {
-                  backgroundImage: 'url(/HUD/char_profile_ready.png)',
+                  backgroundImage: `url(${charProfileReady})`,
                   transform: 'scale(1.1)'
                 }
               }
 
               return {
-                backgroundImage: `url(/HUD/char_profile_${isSelected ? 'active' : 'idle'}.png)`,
+                backgroundImage: `url(${isSelected ? charProfileActive : charProfileIdle})`,
                 filter: `grayscale(${member.hp > 0 ? '0' : '1'})`
               }
             }
@@ -115,7 +144,7 @@ class Overview extends Component<Props, State> {
               const isSelected = this.props.selectedPlayer?.number === idx + 1 && this.props.isPlayerTeam;
 
               return {
-                backgroundImage: `url(/HUD/char_stats_bg${isSelected ? '_Active' : ''}.png)`,
+                backgroundImage: `url(${isSelected ? charStatsBgActive : charStatsBg})`,
               }
             }
 
@@ -141,12 +170,17 @@ class Overview extends Component<Props, State> {
                     <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
                   </div>}
                 </div>
-                {this.props.isPlayerTeam && <div className={`char_stats_cooldown_bar ${member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`} style={position === 'left' && { justifyContent: 'flex-start', marginLeft: '40px' }}>
-                  <div className="char_stats_cooldown" style={{ width: `${(1 - (cooldown / member.totalCooldown)) * 100}%` }}></div>
-                </div>}
+                {this.props.isPlayerTeam && 
+                  <div className={
+                    `char_stats_cooldown_bar
+                    ${member.isAlive && !isParalyzed && member.totalCooldown && cooldown === 0 ? 'cooldown_bar_flash' : ''}`
+                    } 
+                    style={position === 'left' && { justifyContent: 'flex-start', marginLeft: '40px' }}>
+                      <div className="char_stats_cooldown" style={{ width: `${(1 - cooldownPct) * 100}%` }}></div>
+                  </div>}
                 <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
-                  {Object.keys(member?.statuses).map((status: string) => {
-                    return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={`/HUD/${status}_icon.png`} alt="" />
+                  {Object.keys(member?.statuses).map((status: StatusEffect) => {
+                    return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={this.statusIcons[status]}  alt="" />
                   })}
                 </div>
               </div>

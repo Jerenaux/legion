@@ -7,12 +7,14 @@ import { getSpellById } from '@legion/shared/Spells';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import ItemIcon from '../itemIcon/ItemIcon';
 import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
+import { PlayerContext } from '../../contexts/PlayerContext';
+import { inventorySize } from '@legion/shared/utils';
 
 import Skeleton from 'react-loading-skeleton';
 
 import { Link } from 'preact-router';
 import Modal from 'react-modal';
-import { Effect, PlayerInventory } from '@legion/shared/interfaces';
+import { Effect } from '@legion/shared/interfaces';
 
 import shopIcon from '@assets/inventory/shop_btn.png';
 import helpIcon from '@assets/inventory/info_btn.png';
@@ -20,20 +22,13 @@ import helpIcon from '@assets/inventory/info_btn.png';
 
 Modal.setAppElement('#root');
 interface InventoryProps {
-  id: string;
-  name: string;
-  level: number;
-  class: number;
-  inventory: PlayerInventory;
-  carrying_capacity: number;
-  refreshCharacter: () => void;
   handleItemEffect: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
   handleSelectedEquipmentSlot: (newValue: number) => void;
-  setInventoryData: boolean;
 }
 
 class Inventory extends Component<InventoryProps> {
+  static contextType = PlayerContext; 
+
   state = {
     actionType: InventoryType.CONSUMABLES,
     openModal: false
@@ -53,21 +48,15 @@ class Inventory extends Component<InventoryProps> {
     this.setState({ openModal: false });
   }
 
-  inventoryLength = () => Object.values(this.props.inventory)
-    .filter(Array.isArray)
-    .map(arr => arr.length)
-    .reduce((acc, curr) => acc + curr, 0);
-
   render() {
-
-    const activeInventory = this.props.inventory[this.state.actionType];
+    const activeInventory = this.context.player.inventory[this.state.actionType];
     const isCategoryEmpty = !activeInventory || !activeInventory?.length;
 
     const getItem = (itemID: number) => {
       switch (this.state.actionType) {
         case InventoryType.CONSUMABLES:
           return getConsumableById(itemID);
-        case InventoryType.SKILLS:
+        case InventoryType.SPELLS:
           return getSpellById(itemID);
         case InventoryType.EQUIPMENTS:
           return getEquipmentById(itemID);
@@ -83,43 +72,15 @@ class Inventory extends Component<InventoryProps> {
         backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
       }
 
-      // console.log("InventoryProps => ", this.props); 
-
       return <div key={i} className="item" style={slotStyle}>
         <ItemIcon
-          characterId={this.props.id}
-          characterName={this.props.name}
-          characterLevel={this.props.level}
-          characterClass={this.props.class}
           action={item}
           index={i}
           hideHotKey={true}
           actionType={this.state.actionType}
-          refreshCharacter={this.props.refreshCharacter}
           handleItemEffect={this.props.handleItemEffect}
-          updateInventory={this.props.updateInventory}
           handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
         />
-
-        {/* {this.props.id != '' ? (
-          <ItemIcon
-            characterId={this.props.id}
-            characterName={this.props.name}
-            characterLevel={this.props.level}
-            characterClass={this.props.class}
-            action={item}
-            index={i}
-            hideHotKey={true}
-            actionType={this.state.actionType}
-            refreshCharacter={this.props.refreshCharacter}
-            handleItemEffect={this.props.handleItemEffect}
-            updateInventory={this.props.updateInventory}
-            handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
-          />
-        ) : (
-          <Skeleton height={48} count={1} highlightColor='#0000004d' baseColor='#0f1421' style={{ margin: '0 12px 0 16px', width: '48px' }} />
-        )} */}
-
       </div>
     });
 
@@ -155,14 +116,14 @@ class Inventory extends Component<InventoryProps> {
               <Link href='/shop' className="categoryBtn" style={{ backgroundImage: `url(${shopIcon})` }}></Link>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.CONSUMABLES)}>CONSUMABLES</div>
               <div className="inventoryCategory" style={this.state.actionType === InventoryType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.EQUIPMENTS)}>EQUIPMENT</div>
-              <div className="inventoryCategory" style={this.state.actionType === InventoryType.SKILLS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.SKILLS)}>SPELLS</div>
-              <div className="categoryCount"><span>{this.inventoryLength()} </span>&nbsp;/&nbsp;{this.props.carrying_capacity}</div>
+              <div className="inventoryCategory" style={this.state.actionType === InventoryType.SPELLS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.SPELLS)}>SPELLS</div>
+              <div className="categoryCount"><span>{inventorySize(this.context.player.inventory)} </span>&nbsp;/&nbsp;{this.context.player.carrying_capacity}</div>
               {/* <div className="categoryBtn" style={{ backgroundImage: `url(${helpIcon}` }} onClick={this.handleOpenModal}></div> */}
             </div>
           </div>
           <div className="inventoryWrapper">
             {
-              !this.props.setInventoryData ?
+              !this.context.player.isLoaded ?
                 <div style={{ position: "absolute", display: "flex", gap: '6px' }}>
                   {[...Array(6)].map((_, index) => (
                     <Skeleton

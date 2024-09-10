@@ -1342,6 +1342,7 @@ canvas {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  font-family: "Kim";
 }
 
 .endgame-head {

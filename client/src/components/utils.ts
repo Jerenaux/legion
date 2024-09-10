@@ -98,7 +98,6 @@ export function manageHelp(page: string, context: any) {
     startTour(page);
     context.setPlayerInfo({ tours: todoTours.filter(tour => tour !== page) });
   } else {
-    console.log(`Fetching guide tip form page ${page}`);
     fetchGuideTip();
   }
 }

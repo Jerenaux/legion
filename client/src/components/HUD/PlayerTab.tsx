@@ -2,8 +2,25 @@ import { h, Component } from 'preact';
 import ItemIcon from './ItemIcon';
 import { InventoryType, StatusEffect, Target } from '@legion/shared/enums';
 import TabBar from './TabBar';
-import { mapFrameToCoordinates } from '../utils';
+import { mapFrameToCoordinates, getSpritePath } from '../utils';
 import { PlayerProps } from '@legion/shared/interfaces';
+
+import consumablesSpritesheet from '@assets/consumables.png';
+import spellsSpritesheet from '@assets/spells.png';
+
+import hpIcon from '@assets/shop/hp_icon.png';
+import mpIcon from '@assets/inventory/mp_icon.png';
+import cdIcon from '@assets/inventory/cd_icon.png';
+import targetIcon from '@assets/inventory/target_icon.png';
+
+import freezeIcon from '@assets/HUD/freeze_icon.png';
+import muteIcon from '@assets/HUD/mute_icon.png';
+import paralyzeIcon from '@assets/HUD/paralyze_icon.png';
+import blindIcon from '@assets/HUD/blind_icon.png';
+import sleepIcon from '@assets/HUD/sleep_icon.png';
+import poisonIcon from '@assets/HUD/poison_icon.png';
+import burnIcon from '@assets/HUD/burn_icon.png';
+
 
 interface Props {
   player: PlayerProps;
@@ -23,6 +40,16 @@ class PlayerTab extends Component<Props, State> {
       player: this.props.player,
     };
     this.events = this.props.eventEmitter;
+  }
+
+  statusIcons = {
+    'Freeze': freezeIcon,
+    'Mute': muteIcon,
+    'Paralyze': paralyzeIcon,
+    'Blind': blindIcon,
+    'Sleep': sleepIcon,
+    'Poison': poisonIcon,
+    'Burn': burnIcon,
   }
 
   componentDidMount() {
@@ -60,7 +87,7 @@ class PlayerTab extends Component<Props, State> {
     if (!player) return;
 
     const portraitStyle = {
-      backgroundImage: `url(/sprites/${player.portrait}.png)`,
+      backgroundImage: `url(${getSpritePath(player.portrait)})`,
     };
     const isCooldownActive = player.cooldown > 0;
     const isDead = player.hp <= 0;
@@ -90,19 +117,19 @@ class PlayerTab extends Component<Props, State> {
                 </div>
                 <div className="player_content_stats_bar">
                   <div className="player_content_stats_icon">
-                    <img src="/shop/hp_icon.png" alt="HP" />
+                    <img src={hpIcon} alt="HP" />
                   </div>
                   <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="char_stats_hp" />
                 </div>
                 <div className="player_content_stats_bar">
                   <div className="player_content_stats_icon">
-                    <img src="/inventory/mp_icon.png" alt="HP" />
+                    <img src={mpIcon} alt="HP" />
                   </div>
                   <TabBar title="HP" value={player.mp} maxValue={player.maxMp} barClass="char_stats_mp" />
                 </div>
                 <div className="player_content_statuses">
                   {Object.keys(player.statuses).map((status: string) => player?.statuses[status] !== 0 && <div>
-                    <img key={status} src={`/HUD/${status}_icon.png`} alt="" />
+                    <img key={status} src={this.statusIcons[status]} alt="" />
                     <span>{player.statuses[status] == -1 ? '∞' : player.statuses[status] }</span>
                   </div>
                   )}
@@ -110,7 +137,7 @@ class PlayerTab extends Component<Props, State> {
               </div>
             </div>
             <div className="xp_bar_bg_container">
-              <img src="/inventory/cd_icon.png" alt="" />
+              <img src={cdIcon} alt="" />
               <div className={`xp_bar_bg ${cooldownRatio === 1 ? 'cooldown_bar_flash' : ''}`}>
                 <div className="cooldown_bar" style={cooldownBarStyle}></div>
               </div>
@@ -158,7 +185,7 @@ class PlayerTab extends Component<Props, State> {
                       action={player.spells[idx]}
                       index={idx}
                       canAct={canAct && !isMuted && player.spells[idx]?.cost <= player.mp}
-                      actionType={InventoryType.SKILLS}
+                      actionType={InventoryType.SPELLS}
                       key={idx}
                     />
                   </div>
@@ -171,20 +198,20 @@ class PlayerTab extends Component<Props, State> {
           <p className="spell_target_title">Select a target</p>
           <div className="spell_target">
             <div className="equip-dialog-image" style={{
-              backgroundImage: `url(spells.png)`,
+              backgroundImage: `url(${spellsSpritesheet})`,
               backgroundPosition: this.getBackgroundPosition(this.props.player.spells[player.pendingSpell].frame),
             }} />
             <div className="dialog-spell-info-container">
               <div className="dialog-spell-info">
-                <img src={'/inventory/mp_icon.png'} alt="mp" />
+                <img src={mpIcon} alt="mp" />
                 <span>{player.spells[player.pendingSpell]?.cost}</span>
               </div>
               <div className="dialog-spell-info">
-                <img src={'/inventory/cd_icon.png'} alt="cd" />
-                <span>{player.spells[player.pendingSpell]?.cooldown}s</span>
+                <img src={cdIcon} alt="cd" className="cd-icon"/>
+                <span>{player.spells[player.pendingSpell]?.getCooldown()}s</span>
               </div>
               <div className="dialog-spell-info">
-                <img src={'/inventory/target_icon.png'} alt="target" />
+                <img src={targetIcon} alt="target" />
                 <span>{Target[player.spells[player.pendingSpell]?.target]}</span>
               </div>
             </div>
@@ -194,16 +221,16 @@ class PlayerTab extends Component<Props, State> {
           <p className="spell_target_title">Select a target</p>
           <div className="spell_target">
             <div className="equip-dialog-image" style={{
-              backgroundImage: `url(consumables.png)`,
+              backgroundImage: `url(${consumablesSpritesheet})`,
               backgroundPosition: this.getBackgroundPosition(this.props.player.items[player.pendingItem].frame),
             }} />
             <div className="dialog-item-info-container">
               <div className="dialog-spell-info">
-                <img src={'/inventory/cd_icon.png'} alt="cd" />
-                <span>{player.items[player.pendingItem]?.cooldown}s</span>
+                <img src={cdIcon} alt="cd"/>
+                <span>{player.items[player.pendingItem]?.getCooldown()}s</span>
               </div>
               <div className="dialog-spell-info">
-                <img src={'/inventory/target_icon.png'} alt="target" />
+                <img src={targetIcon} alt="target" />
                 <span>{Target[player.items[player.pendingItem]?.target]}</span>
               </div>
             </div>

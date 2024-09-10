@@ -35,7 +35,6 @@ export class MusicManager {
             this.intensity++;
         }
         if (this.intensity > this.nbIntensities) this.intensity = this.nbIntensities;
-        console.log(`Intensity: ${this.intensity}`);
     }
 
     playBeginning() {
@@ -67,7 +66,7 @@ export class MusicManager {
             this.currentSound.stop();
             this.currentSound.removeAllListeners();
         }
-        this.scene.sound.removeAll(); // This removes all sounds from the scene
+        if (this.scene) this.scene.sound.removeAll(); // This removes all sounds from the scene
     }
 
     destroy() {

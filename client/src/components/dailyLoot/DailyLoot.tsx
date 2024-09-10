@@ -5,10 +5,8 @@ import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
-import Confetti from 'react-confetti';
 import { useWindowSize } from '@react-hook/window-size';
 import { RewardType } from '@legion/shared/chests';
-import { mapFrameToCoordinates } from '../utils';
 
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast } from '../utils';
@@ -16,14 +14,14 @@ import { ChestColor } from "@legion/shared/enums";
 import { DailyLootAllAPIData } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
 import { PlayerContext } from '../../contexts/PlayerContext';
-
+import OpenedChest from '../dailyLoot/OpenedChest';
 
 interface DailyLootProps {
   data: DailyLootAllAPIData, 
 }
 
 interface DailyLootState {
-  chestColor: string,
+  chestColor: ChestColor,
   chestContent: any[], 
   chestDailyLoot: any, 
 }
@@ -40,25 +38,11 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
 
   static contextType = PlayerContext;
 
-  getBgImageUrl = (rewardType: RewardType) => {
-    switch (rewardType) {
-      case RewardType.EQUIPMENT:
-        return '/equipment.png';
-      case RewardType.SPELL:
-        return '/spells.png';
-      case RewardType.CONSUMABLES:
-        return '/consumables.png';
-      case RewardType.GOLD:
-        return '/gold_icon.png';
-    }
-  }
-
   render() {
     const { data } = this.props;
     const chestsOrder = [ChestColor.BRONZE, ChestColor.SILVER, ChestColor.GOLD];
 
     const handleOpen = async (color: ChestColor, countdown: number, hasKey: boolean) => {
-      // console.log("dailyPropsData => ", data); 
 
       // Check if countdown is over and if key is owned
       if (countdown > 0) {
@@ -71,7 +55,6 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
       }
       try {
         const data = await apiFetch(`claimChest?chestType=${color}`);
-        console.log("successData => ", data);
 
         this.setState({ chestColor: color });
         this.setState({ chestContent: data.content }); 
@@ -89,10 +72,10 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
         chestContent: [], 
         chestDailyLoot: null, 
       });
-      successToast("You got the daily loot successfully!"); 
+      successToast("Chest claimed successfully!"); 
     }
 
-    const [width, height] = useWindowSize();
+    const [width, height] = useWindowSize()
 
     return (
       <div className="dailyLootContainer">
@@ -100,7 +83,6 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
         {data ? <div className="dailyLoots">
           {chestsOrder.map((color) => {
             const chest = data[color];
-            // console.log("dailyChest => ", chest); 
 
             if (chest) {
               return (
@@ -121,43 +103,14 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
           highlightColor='#0000004d'
           baseColor='#0f1421'
           style={{ margin: '2px 0', width: '100%' }} />}
-
-        {!!this.state.chestColor && <div style={{top: `${document.documentElement.scrollTop}px`, overflow: "hidden", zIndex: "9999999999"}} className="light_streak_container">
-          <div className="light_streak" style={{ width: width * 0.5 }}>
-            <Confetti
-              width={width * 0.5}
-              height={height}
-            />
-            <div className="light_streak_chest">
-              <img src={`/shop/${this.state.chestColor}_chest.png`} alt="" />
-            </div>
-            <div className="light_shining_bg">
-              <img src="/game_end/shine_bg.png" alt="" />
-            </div>
-            <div className="streak_gold_list_container">
-              {this.state.chestContent.map((reward, idx) => {
-                console.log('dailyRewardItem ', idx, reward); 
-                const coordinates = mapFrameToCoordinates(reward?.frame);
-                const backgroundImageUrl = this.getBgImageUrl(reward?.type);
-                return (
-                  <div key={idx} className="streak_gold_list">
-                    <div style={{
-                      backgroundImage: `url(${backgroundImageUrl})`,
-                      backgroundPosition: reward.type === RewardType.GOLD ? '' : `-${coordinates.x}px -${coordinates.y}px`,
-                      backgroundSize: reward.type === RewardType.GOLD && '84% 100%',
-                    }}></div>
-                    <div className="streak_gold_list_amount">
-                      {reward.amount}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="streak_cofirm_container" style={{ width: width * 0.8 }} onClick={chestConfirm}>
-              <div className="streak_confirm_btn"><span>Confirm</span></div>
-            </div>
-          </div>
-        </div>}
+        {!!this.state.chestColor && 
+          <OpenedChest 
+                width={width}
+                height={height}
+                color={this.state.chestColor}
+                content={this.state.chestContent}
+                onClick={chestConfirm}
+            />}
       </div>
     );
   }

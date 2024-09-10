@@ -96,13 +96,13 @@ io.on('connection', async (socket: any) => {
       socketMap.set(socket, game);
   
       socket.on('disconnect', () => {
+          console.log(`[server:disconnect] User ${shortToken(socket.uid)} disconnected`);
           socketMap.get(socket)?.handleDisconnect(socket);
           socketMap.delete(socket);
       });
   
       socket.on('move', (data: any) => {
         const game = socketMap.get(socket);
-        console.log(`Moving in game ${game?.id}`);
         game?.processAction('move', data, socket);
       });
   
@@ -135,6 +135,7 @@ io.on('connection', async (socket: any) => {
     }
 });
 
-server.listen(PORT, () => {
+const port = process.env.PORT || 3123;
+server.listen(port, () => {
     console.log(`Server is running on port ${PORT}`);
 });

@@ -30,7 +30,7 @@ export class NewCharacter {
   skills: number[];
 
   constructor(characterClass = Class.RANDOM, level = 1, unicornBonus = false, isAI = false) {
-    // console.log(`Creating new character of class ${Class[characterClass]} and level ${level}`);
+    console.log(`[NewCharacter:constructor] Creating new character with class ${characterClass}, level ${level}, unicornBonus ${unicornBonus}, isAI ${isAI}`);
     if (characterClass === Class.RANDOM) {
       const candidates = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
       // Get random value from candidates
@@ -276,7 +276,17 @@ export class NewCharacter {
   }
 
   setUpInventory() {
-    this.inventory = getStarterConsumables(this.level/2);
+    const consumables = getStarterConsumables(this.level/2);
+    console.log(`[NewCharacter:setUpInventory] Consumables for AI ${this.name}: ${consumables}`);
+    if (consumables.length === 0) return;
+    // For each available slot, add a random consumable or possibly nothing
+    for (let i = 0; i < this.carrying_capacity; i++) {
+      if (Math.random() < 0.6) {
+        // Pick a random consumable
+        this.inventory.push(consumables[Math.floor(Math.random() * consumables.length)]);
+      }
+    }
+    console.log(`[NewCharacter:setUpInventory] Inventory for AI ${this.name}: ${this.inventory} (length: ${this.inventory.length})`);
   }
 
   getPrice(): number {

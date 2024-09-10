@@ -898,6 +898,7 @@
   gap: 30px;
 
   position: relative;
+  font-family: "Kim";
 }
 
 .endgame_character_lvl {
@@ -1332,6 +1333,10 @@
 
 .spell_target .dialog-spell-info {
   gap: 2px;
+}
+
+.cd-icon {
+  margin-top: 1px;
 }
 
 .cooldown_bar_flash {

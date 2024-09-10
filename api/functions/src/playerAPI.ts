@@ -3,16 +3,17 @@ import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 
-import {uniqueNamesGenerator, adjectives, colors, animals}
+import {uniqueNamesGenerator}
   from "unique-names-generator";
 
 import {Class, ChestColor, League} from "@legion/shared/enums";
-import {APIPlayerData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData} from "@legion/shared/interfaces";
+import {PlayerContextData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData, PlayerInventory} from "@legion/shared/interfaces";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {getChestContent, ChestReward} from "@legion/shared/chests";
 import {STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE, STARTING_GOLD_ADMIN, STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN} from "@legion/shared/config";
 import {logPlayerAction, updateDAU} from "./dashboardAPI";
 import {getEmptyLeagueStats} from "./leaderboardsAPI";
+import { numericalSort } from "@legion/shared/inventory";
 
 const NB_START_CHARACTERS = 3;
 
@@ -27,10 +28,41 @@ function selectRandomAvatar(): string {
   return (Math.floor(Math.random() * 31) + 1).toString();
 }
 
+const coolAdjectives: string[] = [
+  "Fearless", "Mystic", "Swift", "Shadowed", "Blazing",
+  "Ancient", "Vengeful", "Arcane", "Radiant", "Savage",
+  "Infernal", "Silent", "Crimson", "Lunar", "Stormy",
+  "Valiant", "Cunning", "Divine", "Phantom", "Celestial",
+  "Feral", "Venomous", "Majestic", "Abyssal", "Noble",
+  "Frosty", "Ethereal", "Vigilant", "Obsidian", "Dreadful",
+  "Mighty", "Ruthless", "Brave", "Glimmering", "Spectral",
+  "Merciless", "Burning", "Thunderous", "Enigmatic",
+  "Grim", "Titanic", "Raging", "Wicked", "Radiant",
+  "Elusive", "Mystical", "Frozen", "Unyielding", "Temporal",
+  "Unseen", "Furious", "Shimmering", "Howling", "Galactic",
+  "Daring", "Void", "Zealous", "Ironclad", "Sinister",
+  "Tempestuous", "Aegis",
+];
+
+const coolNouns: string[] = [
+  "Warrior", "Hunter", "Sorcerer", "Knight", "Rogue",
+  "Phoenix", "Dragon", "Wolf", "Shadow", "Reaper",
+  "Wraith", "Titan", "Guardian", "Berserker", "Valkyrie",
+  "Sage", "Beast", "Paladin", "Ranger", "Assassin",
+  "Seer", "Giant", "Mystic", "Viper", "Lion",
+  "Storm", "Demon", "Specter", "Falcon", "Raven",
+  "Blade", "Champion", "Samurai", "Wanderer", "Invoker",
+  "Druid", "Ember", "Oracle", "Sentinel",
+  "Invoker", "Spellbinder", "Gladiator", "Warlord", "Avenger",
+  "Shade", "Thorn", "Predator", "Harbinger",
+  "Vanguard", "Nomad", "Crusader", "Stalker", "Enigma",
+  "Harpy", "Tempest", "Prophet", "Fury", "Juggernaut",
+];
+
+
 function generateName() {
-  // limit names to length of 16 characters
   const options = {
-    dictionaries: [adjectives, colors, animals],
+    dictionaries: [coolAdjectives, coolNouns],
     length: 2,
     separator: " ",
     style: "capital",
@@ -195,6 +227,12 @@ export const getPlayerData = onRequest((request, response) => {
 
         const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
 
+        const sortedInventory: PlayerInventory = {
+          consumables: playerData.inventory.consumables.sort(numericalSort),
+          spells: playerData.inventory.spells.sort(numericalSort),
+          equipment: playerData.inventory.equipment.sort(numericalSort),
+        };
+
         response.send({
           uid,
           gold: playerData.gold,
@@ -209,7 +247,10 @@ export const getPlayerData = onRequest((request, response) => {
           allTimeRank: playerData.allTimeStats.rank,
           dailyloot: playerData.dailyloot,
           tours,
-        } as APIPlayerData);
+          inventory: sortedInventory,
+          carrying_capacity: playerData.carrying_capacity,
+          isLoaded: false,
+        } as PlayerContextData);
       } else {
         response.status(404).send("Not Found: Invalid player ID");
       }

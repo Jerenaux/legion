@@ -4,7 +4,7 @@ import { Game } from './Game';
 import {apiFetch} from './API';
 import { ServerPlayer } from './ServerPlayer';
 import { PlayMode, League } from "@legion/shared/enums";
-import { APIPlayerData } from '@legion/shared/interfaces';
+import { PlayerContextData } from '@legion/shared/interfaces';
 
 
 export class PvPGame extends Game {
@@ -29,7 +29,7 @@ export class PvPGame extends Game {
     }
         
 
-    async addPlayer(socket: Socket, playerData: APIPlayerData) {
+    async addPlayer(socket: Socket, playerData: PlayerContextData) {
         super.addPlayer(socket, playerData);
         if (this.sockets.length === this.nbExpectedPlayers) {
             this.start();

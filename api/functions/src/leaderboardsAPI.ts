@@ -80,7 +80,7 @@ function getSecondsUntilNextOccurrence(cronExpression: string): number {
   if (target <= now) {
     target = addWeeks(target, 1);
   }
-  // console.log(`[getSecondsUntilNextOccurrence] now: ${now}, target: ${target}`);
+  console.log(`[getSecondsUntilNextOccurrence] now: ${now}, target: ${target}`);
 
   // Calculate the difference in seconds
   const secondsLeft = differenceInSeconds(target, now);

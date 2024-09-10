@@ -12,7 +12,8 @@ import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, Stat, statFields } from '@legion/shared/enums';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
-import { equipmentFields } from '@legion/shared/enums';
+import { equipmentSlotFields } from '@legion/shared/enums';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 import helmetIcon from '@assets/inventory/helmet_icon.png';
 import armorIcon from '@assets/inventory/armor_icon.png';
@@ -29,17 +30,16 @@ import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
 
 interface CharacterSheetProps {
-    characterId: string;
-    characterData: APICharacterData;
     itemEffects: Effect[];
-    refreshCharacter: () => void;
     handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
-    updateInventory?: (type: string, action: InventoryActionType, index: number) => void; 
     selectedEquipmentSlot: number; 
     handleSelectedEquipmentSlot: (newValue: number) => void; 
+    updateCharacterData: () => void;
 }
 
 class CharacterSheet extends Component<CharacterSheetProps> {
+    static contextType = PlayerContext; 
+
     state = {
         characterItems: [],
         itemIndex: 0,
@@ -76,8 +76,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
     }
 
     render() {
-        const { characterId, characterData, refreshCharacter } = this.props; 
-        if (!this.props.characterData) return;
+        const characterData = this.context.getActiveCharacter(); 
+        if (!characterData) return;
 
         const renderInfoBars = () => {
             if (!characterData) return;
@@ -137,6 +137,15 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     items = Object.entries(characterData.equipment)
                         .map(([key, value]) => ({ key, value }))
                         .slice(0, specialSlotsStart); // Standard equipment slots
+                    desiredOrder = [
+                        equipmentSlotFields[EquipmentSlot.WEAPON],
+                        equipmentSlotFields[EquipmentSlot.HELMET],
+                        equipmentSlotFields[EquipmentSlot.ARMOR],
+                        equipmentSlotFields[EquipmentSlot.BELT],
+                        equipmentSlotFields[EquipmentSlot.GLOVES],
+                        equipmentSlotFields[EquipmentSlot.BOOTS],
+                    ];
+                    items.sort((a, b) => desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key));
                     backgroundImageUrl = equipmentSpritesheet;
                     isSpecialEquip = false;
                     break;
@@ -144,7 +153,11 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     items = Object.entries(characterData.equipment)
                         .map(([key, value]) => ({ key, value }))
                         .slice(specialSlotsStart, 9); // Special equipment slots
-                    desiredOrder = ['left_ring', 'right_ring', 'necklace'];
+                    desiredOrder = [
+                        equipmentSlotFields[EquipmentSlot.LEFT_RING],
+                        equipmentSlotFields[EquipmentSlot.RIGHT_RING],
+                        equipmentSlotFields[EquipmentSlot.NECKLACE],
+                    ];
                     items.sort((a, b) => desiredOrder.indexOf(a.key) - desiredOrder.indexOf(b.key));
                     backgroundImageUrl = equipmentSpritesheet;
                     isSpecialEquip = true;
@@ -172,7 +185,6 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 if (isSpecialEquip) index += specialSlotsStart;
                 let content;
                 const itemData = getEquipmentById(item.value); 
-                // console.log("sheetItemData => ", item); 
                 if (item.value < 0) {
                     // Handle the case where there is no item equipped in this slot
                     content = (
@@ -213,7 +225,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                       className={`sheet-item ${
                         (itemData !== undefined)
                           ? ''
-                          : (this.props.selectedEquipmentSlot > -1 && equipmentFields[this.props.selectedEquipmentSlot] === item.key)
+                          : (this.props.selectedEquipmentSlot > -1 && equipmentSlotFields[this.props.selectedEquipmentSlot] === item.key)
                             ? 'blinking-gradient'
                             : ''
                       }`}
@@ -240,10 +252,10 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     backgroundImageUrl = consumablesSpritesheet;
                     dataCallback = getConsumableById;
                     break;
-                case InventoryType.SKILLS:
+                case InventoryType.SPELLS:
                     capacity = characterData.skill_slots;
                     items = characterData.skills;
-                    dialogType = ItemDialogType.SKILLS;
+                    dialogType = ItemDialogType.SPELLS;
                     backgroundImageUrl = spellsSpritesheet;
                     dataCallback = getSpellById;
                     break;
@@ -262,7 +274,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     }
 
                     return (
-                        <div className="team-item" key={i} style={(inventoryType === InventoryType.SKILLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
+                        <div className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
                             <div className="special-equip" style={{
                                 backgroundImage: `url(${backgroundImageUrl})`,
                                 backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
@@ -324,7 +336,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                         {characterData.skill_slots > 0 && <div className="team-item-container">
                             <p className="team-item-heading">SPELLS</p>
                             <div className="team-items">
-                                {renderInventoryItems(InventoryType.SKILLS)}
+                                {renderInventoryItems(InventoryType.SPELLS)}
                             </div>
                         </div>}
                         <div className="team-item-container">
@@ -341,19 +353,13 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 <ItemDialog
                     isEquipped={true}
                     actionType={InventoryActionType.UNEQUIP}
-                    refreshCharacter={refreshCharacter}
-                    characterId={characterId} 
-                    characterSp={characterData?.sp}
-                    characterName={characterData.name} 
-                    characterLevel={characterData.level} 
-                    characterClass={characterData.class} 
                     index={this.state.itemIndex}
                     dialogOpen={this.state.openModal}
                     dialogType={this.state.modalType}
                     position={this.state.modalPosition}
                     dialogData={this.state.modalData}
                     handleClose={this.handleCloseModal}
-                    updateInventory={this.props.updateInventory} 
+                    updateCharacterData={this.props.updateCharacterData}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
             </div>

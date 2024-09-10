@@ -110,7 +110,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
           ))}
           <div className="consumable-card-effect">
             <img src={cdIcon} style={{transform: 'scaleX(0.8)'}} alt="cooldown" />
-            <span>{data.cooldown}</span>
+            <span>{data.getCooldown()}</span>
           </div>
           <div className="consumable-card-effect">
             <img src={targetIcon} alt="target" />

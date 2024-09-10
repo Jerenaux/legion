@@ -3,9 +3,8 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import dotenv from 'dotenv';
 
-import { setupMatchmaking, processJoinQueue, processDisconnect } from './matchmaking';
-
 dotenv.config();
+import { setupMatchmaking, processJoinQueue, processDisconnect } from './matchmaking';
 
 const allowedOrigins = [process.env.CLIENT_ORIGIN];
 console.log(`Allowed client origins: ${allowedOrigins}`);

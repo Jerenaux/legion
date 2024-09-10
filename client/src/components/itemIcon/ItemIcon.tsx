@@ -14,17 +14,12 @@ import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
 
 interface ItemIconProps {
-  characterId?: string,
-  characterName?: string,
-  characterLevel?: number, 
-  characterClass?: number, 
   action: BaseItem | BaseSpell | BaseEquipment | null;
   index: number;
   actionType: InventoryType;
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
   handleItemEffect?: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  updateInventory?: (type: string, action: InventoryActionType, index: number) => void;
   onActionClick?: (type: string, letter: string, index: number) => void; 
   handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
@@ -96,7 +91,7 @@ class ItemIcon extends Component<ItemIconProps> {
 
     const spriteSheetsMap = {
       [InventoryType.CONSUMABLES]: consumablesSpritesheet,
-      [InventoryType.SKILLS]: spellsSpritesheet,
+      [InventoryType.SPELLS]: spellsSpritesheet,
       [InventoryType.EQUIPMENTS]: equipmentSpritesheet,
     };
     const spritesheet = spriteSheetsMap[actionType];
@@ -117,18 +112,12 @@ class ItemIcon extends Component<ItemIconProps> {
         <ItemDialog
           index={index}
           isEquipped={false}
-          characterId={this.props.characterId}
-          characterName={this.props.characterName}
-          characterLevel={this.props.characterLevel} 
-          characterClass={this.props.characterClass} 
           actionType={InventoryActionType.EQUIP}
           dialogOpen={this.state.openModal}
           dialogType={this.state.modalType}
           position={this.state.modalPosition}
           dialogData={this.state.modalData}
           handleClose={this.handleCloseModal}
-          refreshCharacter={this.props.refreshCharacter}
-          updateInventory={this.props.updateInventory} 
           handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot} 
         />
       </div>

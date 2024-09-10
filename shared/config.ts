@@ -12,6 +12,19 @@ export const PROMOTION_RATIO = 0.2;
 export const DEMOTION_RATIO = 0.2;
 export const SEASON_END_CRON = '0 19 * * 5' // UTC
 
+export const PRACTICE_XP_COEF = 0.6;
+export const PRACTICE_GOLD_COEF = 0.1; // TODO: make 0?
+export const RANKED_XP_COEF = 1.2;
+export const RANKED_GOLD_COEF = 1.5;
+
+// Time, all in seconds
+export const TIME_COEFFICIENT = 4;
+
+export const MOVE_COOLDOWN = 1;
+export const ATTACK_COOLDOWN = 2;
+
+export const INITIAL_COOLDOWN = 3; // sec
+
 // Matchmaking
 export const eloRangeIncreaseInterval = 20; // seconds
 export const eloRangeStart = 50;
@@ -32,8 +45,22 @@ export const ENABLE_SPECTATOR_MODE = false;
 export const ENABLE_SETTINGS = false;
 
 // Admin
-export const TIME_COEFFICIENT = 1;
-export const FREEZE_AI = true;
+export let FREEZE_AI = true;
 export const STARTING_GOLD_ADMIN = 100000;
 export const STARTING_SPELLS_ADMIN = [2];
 export const STARTING_EQUIPMENT_ADMIN = [2];
+export let INJURED_MODE = false;
+export let SKIP_LEVEL_RESTRICTIONS = true;
+
+export const remoteConfig = {
+    AUTO_DEFEAT: false,
+    HIGH_DAMAGE: false,
+    FAST_MODE: false,
+    COOLDOWN_OVERRIDE: 500,
+}
+
+if (!isDev) {
+    FREEZE_AI = false;
+    INJURED_MODE = false;
+    SKIP_LEVEL_RESTRICTIONS = false;
+}

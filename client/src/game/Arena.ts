@@ -1,4 +1,3 @@
-
 import { io } from 'socket.io-client';
 import { Player } from './Player';
 import { GameHUD, events } from '../components/HUD/GameHUD';
@@ -11,6 +10,49 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
+
+import bgImage from '@assets/aarena_bg.png';
+import killzoneImage from '@assets/killzone.png';
+import iceblockImage from '@assets/iceblock.png';
+
+import potionHealImage from '@assets/vfx/potion_heal.png';
+import explosionsImage from '@assets/vfx/explosions.png';
+import thunderImage from '@assets/vfx/thunder.png';
+import castImage from '@assets/vfx/cast.png';
+import slashImage from '@assets/vfx/slash.png';
+import boltsImage from '@assets/vfx/bolts.png';
+import iceImage from '@assets/vfx/ice.png';
+import ice2Image from '@assets/vfx/ice2.png';
+import impactImage from '@assets/vfx/sword_impact.png';
+import poisonImage from '@assets/vfx/poison.png';
+import muteImage from '@assets/vfx/mute.png';
+
+import statusesImage from '@assets/States.png';
+
+import clickSFX from '@assets/sfx/click_2.wav';
+import slashSFX from '@assets/sfx/swish_2.wav';
+import stepsSFX from '@assets/sfx/steps.wav';
+import nopeSFX from '@assets/sfx/nope.wav';
+import heartSFX from '@assets/sfx/heart.wav';
+import cooldownSFX from '@assets/sfx/cooldown.wav';
+import shatterSFX from '@assets/sfx/shatter.wav';
+import flamesSFX from '@assets/sfx/flame.wav';
+import crowdSFX from '@assets/sfx/crowd.wav';
+import cheerSFX from '@assets/sfx/cheer.wav';
+import castSoundSFX from '@assets/sfx/spells/cast.wav';
+import fireballSFX from '@assets/sfx/spells/fire_3.wav';
+import thunderSoundSFX from '@assets/sfx/spells/thunder.wav';
+import iceSoundSFX from '@assets/sfx/spells/ice.wav';
+import healingSFX from '@assets/sfx/spells/healing.wav';
+import poisonSoundSFX from '@assets/sfx/spells/poison.wav';
+import muteSoundSFX from '@assets/sfx/spells/mute.wav';
+import bgmStartSFX from '@assets/music/bgm_start.wav';
+import bgmEndSFX from '@assets/music/bgm_end.wav';
+
+// Static imports for tile atlas
+import groundTilesImage from '@assets/tiles2.png';
+import groundTilesAtlas from '@assets/tiles2.json';
+
 
 const LOCAL_ANIMATION_SCALE = 3;
 export class Arena extends Phaser.Scene
@@ -43,6 +85,7 @@ export class Arena extends Phaser.Scene
     killCamActive = false;
     pendingGEN: GEN;
     gameInitialized = false;
+    gameEnded = false;
 
     constructor() {
         super({ key: 'Arena' });
@@ -52,59 +95,64 @@ export class Arena extends Phaser.Scene
     {
         this.gamehud = new GameHUD();
         
-        this.load.image('bg',  'aarena_bg.png');
-        this.load.image('killzone',  'killzone.png');
-        this.load.image('iceblock',  'iceblock.png');
+        this.load.image('bg',  bgImage);
+        this.load.image('killzone',  killzoneImage);
+        this.load.image('iceblock',  iceblockImage);
         const frameConfig = { frameWidth: 144, frameHeight: 144};
         // Iterate over assetsMap and load spritesheets
         allSprites.forEach((sprite) => {
-            this.load.spritesheet(sprite, `sprites/${sprite}.png`, frameConfig);
+            // this.load.spritesheet(sprite, `sprites/${sprite}.png`, frameConfig);
+            this.load.spritesheet(sprite, require(`@assets/sprites/${sprite}.png`), frameConfig);
         });
-        this.load.spritesheet('potion_heal', 'vfx/potion_heal.png', { frameWidth: 48, frameHeight: 64});
-        this.load.spritesheet('explosions', 'vfx/explosions.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('thunder2', 'vfx/thunder.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('cast', 'vfx/cast.png', { frameWidth: 48, frameHeight: 64});
-        this.load.spritesheet('slash', 'vfx/slash.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('thunder', 'vfx/bolts.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('ice', 'vfx/ice.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('ice2', 'vfx/ice2.png', { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('impact', 'vfx/sword_impact.png', { frameWidth: 291, frameHeight: 291});
-        this.load.spritesheet('poison', 'vfx/poison.png', { frameWidth: 64, frameHeight: 64});
-        this.load.spritesheet('mute', 'vfx/mute.png', { frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet('potion_heal', potionHealImage, { frameWidth: 48, frameHeight: 64});
+        this.load.spritesheet('explosions', explosionsImage, { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('thunder2', thunderImage, { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('cast', castImage, { frameWidth: 48, frameHeight: 64});
+        this.load.spritesheet('slash', slashImage, { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('thunder', boltsImage, { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('ice', iceImage, { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('ice2', ice2Image, { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('impact', impactImage, { frameWidth: 291, frameHeight: 291});
+        this.load.spritesheet('poison', poisonImage, { frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet('mute', muteImage, { frameWidth: 64, frameHeight: 64});
 
-        this.load.spritesheet('statuses', 'States.png', { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('statuses', statusesImage, { frameWidth: 96, frameHeight: 96});
 
-        this.load.audio('click', 'sfx/click_2.wav');
-        this.load.audio('slash', 'sfx/swish_2.wav');
-        this.load.audio('steps', 'sfx/steps.wav');
-        this.load.audio('nope', 'sfx/nope.wav');
-        this.load.audio('heart', 'sfx/heart.wav');
-        this.load.audio('cooldown', 'sfx/cooldown.wav');
-        this.load.audio('shatter', 'sfx/shatter.wav');
-        this.load.audio('flames', 'sfx/flame.wav');
-        this.load.audio('crowd', 'sfx/crowd.wav');
-        this.load.audio('cheer', 'sfx/cheer.wav');
-        
-        this.load.audio('cast', 'sfx/spells/cast.wav');
-        this.load.audio('fireball', 'sfx/spells/fire_3.wav');
-        this.load.audio('thunder', 'sfx/spells/thunder.wav');
-        this.load.audio('ice', 'sfx/spells/ice.wav');
-        this.load.audio('healing', 'sfx/spells/healing.wav');
-        this.load.audio('poison', 'sfx/spells/poison.wav');
-        this.load.audio('mute', 'sfx/spells/mute.wav');
+        this.load.audio('click', clickSFX);
+        this.load.audio('slash', slashSFX);
+        this.load.audio('steps', stepsSFX);
+        this.load.audio('nope', nopeSFX);
+        this.load.audio('heart', heartSFX);
+        this.load.audio('cooldown', cooldownSFX);
+        this.load.audio('shatter', shatterSFX);
+        this.load.audio('flames', flamesSFX);
+        this.load.audio('crowd', crowdSFX);
+        this.load.audio('cheer', cheerSFX);
 
-        this.load.audio(`bgm_start`, `music/bgm_start.wav`);
+        // Load spell sounds
+        this.load.audio('cast', castSoundSFX);
+        this.load.audio('fireball', fireballSFX);
+        this.load.audio('thunder', thunderSoundSFX);
+        this.load.audio('ice', iceSoundSFX);
+        this.load.audio('healing', healingSFX);
+        this.load.audio('poison', poisonSoundSFX);
+        this.load.audio('mute', muteSoundSFX);
+
+        // Load music
+        this.load.audio('bgm_start', bgmStartSFX);
+        this.load.audio('bgm_end', bgmEndSFX);
+
         for (let i = 1; i <= 12; i++) {
-            this.load.audio(`bgm_loop_${i}`, `music/bgm_loop_${i}.wav`);
+            // this.load.audio(`bgm_loop_${i}`, `music/bgm_loop_${i}.wav`);
+            this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
         }
-        this.load.audio(`bgm_end`, `music/bgm_end.wav`);
 
-        this.load.atlas('groundTiles', 'tiles2.png', 'tiles2.json');
-
+        this.load.atlas('groundTiles', groundTilesImage, groundTilesAtlas);
+    
         const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill', 
             'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire'];
         GEN.forEach((name) => {
-            this.load.image(name, `GEN/${name}.png`);
+            this.load.image(name, require(`@assets/GEN/${name}.png`));
         });
 
     }
@@ -117,6 +165,7 @@ export class Arena extends Phaser.Scene
     }
 
     async connectToServer() {
+        console.log('Connecting to the server ...');
         const gameId = this.extractGameIdFromUrl();
         console.log('Game ID:', gameId);
 
@@ -140,9 +189,7 @@ export class Arena extends Phaser.Scene
 
         this.socket.on('gameStatus', this.initializeGame.bind(this));
 
-        this.socket.on('move', (data) => {
-            this.processMove(data);
-        });
+        this.socket.on('move',this.processMove.bind(this));
 
         this.socket.on('attack', (data) => {
             this.processAttack(data);
@@ -218,6 +265,7 @@ export class Arena extends Phaser.Scene
         const data = {
             num: this.selectedPlayer.num,
             target: player.num,
+            sameTeam: player.team.id === this.selectedPlayer.team.id,
         };
         this.send('attack', data);
     }
@@ -412,7 +460,7 @@ export class Arena extends Phaser.Scene
              const gridX = Math.floor(pointerX / this.tileSize);
              const gridY = Math.floor(pointerY / this.tileSize);
  
-             this.cellsHighlight.move(gridX, gridY);
+             if (this.gameInitialized) this.cellsHighlight.move(gridX, gridY);
          }, this);
 
          // Add a pointer down handler to print the clicked tile coordinates
@@ -550,8 +598,10 @@ export class Arena extends Phaser.Scene
     }
     
     refreshOverview() {
-        const { team1, team2, general } = this.getOverview();
-        if (this.overviewReady) events.emit('updateOverview', team1, team2, general);
+        const { team1, team2, general, initialized } = this.getOverview();
+        if (this.overviewReady) {
+            events.emit('updateOverview', team1, team2, general, initialized);
+        }
     }
 
     showEndgameScreen(data: OutcomeData) {
@@ -651,6 +701,7 @@ export class Arena extends Phaser.Scene
     }
 
     processMove({team, tile, num}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
 
         this.gridMap.set(serializeCoords(player.gridX, player.gridY), null);
@@ -660,9 +711,10 @@ export class Arena extends Phaser.Scene
         this.playSoundMultipleTimes('steps', 2);
     }
 
-    processAttack({team, target, num, damage, hp, isKill}) {
+    processAttack({team, target, num, damage, hp, isKill, sameTeam}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
-        const otherTeam = this.getOtherTeam(team);
+        const otherTeam = sameTeam ? team : this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
 
         const {x: pixelX, y: pixelY} = this.gridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
@@ -676,6 +728,7 @@ export class Arena extends Phaser.Scene
     }
 
     processObstacleAttack({team, num, x, y}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         this.playSound('slash');
         this.playSound('shatter');
@@ -684,39 +737,46 @@ export class Arena extends Phaser.Scene
     }
 
     processCooldown({num, cooldown}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(this.playerTeamId, num);
         player.setCooldown(cooldown);
     }
 
     processInventory({num, inventory}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(this.playerTeamId, num);
         player.setInventory(inventory);
         this.emitEvent('inventoryChange', {num});
     }
 
     processHPChange({team, num, hp, damage}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player.setHP(hp);
         if (damage) player.displayDamage(damage);
     }
 
     processStatusChange({team, num, statuses}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player.setStatuses(statuses);
     }
 
     processMPChange({num, mp}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(this.playerTeamId, num);
         player.setMP(mp);
     }
 
     processUseItem({team, num, animation, name, sfx}) {
+        if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player.useItemAnimation(animation, name);
         this.playSound(sfx);
     }
 
     processCast(flag, {team, num, id, location,}) {
+        if (this.gameEnded) return;
         // console.log(`Processing cast: ${flag} ${team} ${num} ${id} ${location}`);
         const player = this.getPlayer(team, num);
         const spell = getSpellById(id);
@@ -725,6 +785,7 @@ export class Arena extends Phaser.Scene
     }
 
     processTerrain(updates: TerrainUpdate[]) {
+        if (this.gameEnded) return;
         updates.forEach(({x, y, terrain}) => {
             const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
             switch (terrain) {
@@ -770,7 +831,6 @@ export class Arena extends Phaser.Scene
             .setDepth(depth).setAlpha(0.9).setOrigin(0.5, 0.35).setInteractive();
         // Add pointerover event to sprite
         icesprite.on('pointerover', () => {
-            console.log('Hovered over ice block');
             if (this.selectedPlayer?.isNextTo(x, y) 
                 && this.selectedPlayer.canAct()
                 && this.selectedPlayer.pendingSpell == null
@@ -780,7 +840,6 @@ export class Arena extends Phaser.Scene
         });
         // Add pointerout event to sprite
         icesprite.on('pointerout', () => {
-            console.log('Unhovered over ice block');
             this.emitEvent('unhoverCharacter');
         });
         icesprite.postFX.addShine(0.5, .2, 5);
@@ -840,7 +899,6 @@ export class Arena extends Phaser.Scene
     }
 
     processGameEnd(data: OutcomeData) {
-        console.log(`Game ended: ${JSON.stringify(data)}`);
         this.musicManager.playEnd();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
         setTimeout(() => {
@@ -894,7 +952,6 @@ export class Arena extends Phaser.Scene
         const sound = this.SFX[key];
     
         sound.once('complete', () => {
-            // sound.destroy(); // Destroy the sound instance once done playing
             this.playSoundMultipleTimes(key, times - 1); // Play the sound again
         });
     
@@ -1277,8 +1334,6 @@ export class Arena extends Phaser.Scene
     }
 
     initializeGame(data: GameData): void {
-        console.log(data);
-
         const isReconnect = data.general.reconnect;
 
         this.playerTeamId = data.player.teamId;
@@ -1303,14 +1358,13 @@ export class Arena extends Phaser.Scene
         this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
         if (isReconnect) {
-            this.updateOverview();
-            this.gameInitialized = true;
+            this.setGameInitialized();
         } else {
             const delay = 3000;
             setTimeout(this.updateOverview.bind(this), delay + 1000);
             setTimeout(() => {
                 this.displayGEN(GEN.COMBAT_BEGINS);
-                this.gameInitialized = true;
+                this.setGameInitialized();
             }, delay);
         }
 
@@ -1322,6 +1376,16 @@ export class Arena extends Phaser.Scene
         events.on('abandonGame', () => {
             this.abandonGame();
         });
+
+        events.on('exitGame', () => {
+            console.log('Exit game event received');
+            this.destroy();
+        });
+    }
+
+    setGameInitialized() {
+        this.gameInitialized = true;
+        this.updateOverview();
     }
 
     startAnimation() {
@@ -1470,6 +1534,7 @@ export class Arena extends Phaser.Scene
             team1: this.teamsMap.get(1).getOverview(),
             team2: this.teamsMap.get(2).getOverview(),
             general: this.gameSettings,
+            initialized: this.gameInitialized,
         };
         return overview;
     }
@@ -1538,6 +1603,7 @@ export class Arena extends Phaser.Scene
     }
 
     updateEnvironmentAudio() {
+        if (this.gameEnded) return;
         const flames = this.environmentalAudioSources.flames;
         if (flames > 0) {
             this.playSound('flames', 0.5, true);
@@ -1552,7 +1618,15 @@ export class Arena extends Phaser.Scene
     }
 
     destroy() {
+        console.log('Destroying game');
+        this.gameEnded = true;
         this.socket.disconnect();
+
+        this.teamsMap.forEach((team) => {
+            team.members.forEach((player) => {
+                player.destroy();
+            });
+        });
 
         Object.values(this.SFX).forEach(sound => {
             // @ts-ignore
@@ -1564,7 +1638,6 @@ export class Arena extends Phaser.Scene
     
         // Stop and destroy the music manager
         if (this.musicManager) {
-            this.musicManager.stopAll();
             this.musicManager.destroy();
         }
     
