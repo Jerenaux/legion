@@ -11,7 +11,7 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import { manageHelp } from './utils';
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
 import { firebaseAuth } from '../services/firebaseService'; 
-
+import Welcome from './welcome/Welcome';
 
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
@@ -94,6 +94,7 @@ class PlayPage extends Component {
 
     return (
       <div className="play-content">
+        <Welcome />
         <Roster/>
         {data ? <PlayModes /> : <Skeleton
           height={50}
