@@ -2,6 +2,8 @@ import { h, Component } from 'preact';
 import AuthContext from '../contexts/AuthContext';
 import { firebaseAuth } from '../services/firebaseService';
 import firebase from 'firebase/compat/app';
+import AuthUIService from '../services/AuthUIService';
+import { successToast, errorToast } from '../components/utils';
 
 class AuthProvider extends Component {
     state = {
@@ -41,12 +43,59 @@ class AuthProvider extends Component {
         }
     };
 
+    initFirebaseUI = (container: HTMLElement): void => {
+        AuthUIService.initFirebaseUI(container, this.onSignInSuccess);
+    };
+
+    onSignInSuccess = async (authResult: any): Promise<void> => {
+        const initialUser = this.state.user;
+        
+        if (initialUser?.isAnonymous) {
+            const googleProvider = new firebase.auth.GoogleAuthProvider();
+            const credential = authResult.credential;
+            
+            try {
+                const usercred = await initialUser.linkWithPopup(googleProvider);
+                const user = usercred.user;
+                console.log("Anonymous account successfully upgraded", user);
+                successToast("Account successfully created!");
+            } catch (error: any) {
+                console.error("Error upgrading anonymous account", error);
+                
+                if (error.code === 'auth/credential-already-in-use') {
+                    console.warn("Credential already in use. This might be due to emulator behavior.");
+                    try {
+                        await firebase.auth().signInWithCredential(credential);
+                        console.log("Signed in with existing credential");
+                        successToast("Signed in successfully!");
+                    } catch (signInError) {
+                        console.error("Error signing in with existing credential", signInError);
+                        errorToast("Error signing in. Please try again.");
+                    }
+                } else {
+                    errorToast("Error creating account. Please try again.");
+                }
+            }
+        } else {
+            console.log("User signed in (not an upgrade from anonymous)");
+            // successToast("Sign-in successful!");
+        }
+        
+        console.log("Sign-in process completed");
+    };
+
+    resetUI = (): void => {
+        AuthUIService.resetUI();
+    };
+
     render({ children }) {
         return (
             <AuthContext.Provider value={{ 
                 ...this.state, 
                 firebaseAuth,
-                signInAsGuest: this.signInAsGuest
+                signInAsGuest: this.signInAsGuest,
+                initFirebaseUI: this.initFirebaseUI,
+                resetUI: this.resetUI
             }}>
                 {!this.state.isLoading && children}
             </AuthContext.Provider>

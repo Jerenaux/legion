@@ -15,6 +15,8 @@ interface AuthContextType {
     isLoading: boolean;
     firebaseAuth: typeof firebaseAuth;
     signInAsGuest: () => Promise<firebase.User | null>;
+    initFirebaseUI: (container: HTMLElement) => void;
+    resetUI: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,6 +26,12 @@ const AuthContext = createContext<AuthContextType>({
     firebaseAuth,
     signInAsGuest: async () => {
         throw new Error('signInAsGuest not implemented');
+    },
+    initFirebaseUI: () => {
+        throw new Error('initFirebaseUI not implemented');
+    },
+    resetUI: () => {
+        throw new Error('resetUI not implemented');
     },
 });
 
