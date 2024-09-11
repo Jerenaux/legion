@@ -1,6 +1,7 @@
 import { h, Component, ComponentType } from 'preact';
 import { route, RouteProps } from 'preact-router';
 import AuthContext from '../contexts/AuthContext';
+import { firebaseAuth } from '../services/firebaseService'; 
 
 // Define the props that will be passed to the wrapped component
 interface WithAuthProps {
@@ -19,7 +20,7 @@ const withAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
         }
 
         componentDidUpdate() {
-            this.checkAuth();
+            this.checkUnauth();
         }
 
         checkAuth() {
@@ -28,16 +29,28 @@ const withAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
 
             if (!isAuthenticated) {
                 if (path === '/game/:id' && matches?.id === 'tutorial') {
-                    // Allow guest access to tutorial
-                    signInAsGuest().catch(
-                        () => {
-                            console.log('Sign in failed, redirecting to landing page');
-                            route('/')
+                    if (!firebaseAuth.currentUser) {
+                        // Allow guest access to tutorial
+                        signInAsGuest().catch(
+                            () => {
+                                console.log('Sign in failed, redirecting to landing page');
+                                route('/')
                         });
+                    }
                 } else {
                     // Redirect to landing page for other routes
                     route('/');
                 }
+            }
+        }
+
+        checkUnauth() {
+            const { isAuthenticated } = this.context;
+            const { path, matches } = this.props;
+
+
+            if (!isAuthenticated && !(path === '/game/:id' && matches?.id === 'tutorial')) {
+                route('/');
             }
         }
 

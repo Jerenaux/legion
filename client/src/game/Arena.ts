@@ -167,7 +167,6 @@ export class Arena extends Phaser.Scene
     async connectToServer() {
         console.log('Connecting to the server ...');
         const gameId = this.extractGameIdFromUrl();
-        console.log('Game ID:', gameId);
 
         this.socket = io(
             process.env.GAME_SERVER_URL,
@@ -1498,7 +1497,7 @@ export class Arena extends Phaser.Scene
         });
 
         const targets = [
-            this.add.image(-300, yPosition, text1).setDepth(10),
+            this.add.image(-350, yPosition, text1).setDepth(10),
             this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang').setDepth(10)
         ];
         if (text2) {

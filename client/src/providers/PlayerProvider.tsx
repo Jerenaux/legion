@@ -52,6 +52,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         characters: [],
         activeCharacterId: '',
         characterSheetIsDirty: false,
+        welcomeShown: false,
       };
 
       // Bind the methods to ensure 'this' refers to the class instance
@@ -65,10 +66,17 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.applyPurchase = this.applyPurchase.bind(this);
       this.updateActiveCharacter = this.updateActiveCharacter.bind(this);
       this.fetchAllData = this.fetchAllData.bind(this);
+      this.markShownWelcome = this.markShownWelcome.bind(this);
     }
 
     componentDidMount() {
       this.fetchAllData();
+    }
+
+    componentWillUnmount(): void {
+      this.setState({
+        welcomeShown: false,
+      });
     }
 
     fetchAllData() {
@@ -296,6 +304,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         player: { ...player, ...updates }
       }));
     }
+
+    markShownWelcome = () => {
+      this.setState({ welcomeShown: true });
+    }
   
     render() {
       const { children } = this.props;
@@ -306,6 +318,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           characters: this.state.characters,
           activeCharacterId: this.state.activeCharacterId,
           characterSheetIsDirty: this.state.characterSheetIsDirty,
+          welcomeShown: this.state.welcomeShown,
           setPlayerInfo: this.setPlayerInfo,
           refreshPlayerData: this.fetchPlayerData,
           refreshAllData: this.fetchAllData,
@@ -316,6 +329,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           updateInventory: this.updateInventory,
           applyPurchase: this.applyPurchase,
           updateActiveCharacter: this.updateActiveCharacter,
+          markWelcomeShown: this.markShownWelcome,
         }}>
           {children}
         </PlayerContext.Provider>

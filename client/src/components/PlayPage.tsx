@@ -17,15 +17,30 @@ import Welcome from './welcome/Welcome';
 class PlayPage extends Component {
   static contextType = PlayerContext; 
 
+  state = {
+    showWelcome: false,
+  };
+
   componentDidMount() {
     const user = firebaseAuth.currentUser;
-    console.log(`ANONYMOUS? ${user?.isAnonymous}`);
+    
+    this.setState({
+      showWelcome: user?.isAnonymous && !this.context.welcomeShown,
+    });
   }
   
   componentDidUpdate() {
     if (!this.context.player.isLoaded) return;
-    manageHelp('play', this.context);
+    if (!this.state.showWelcome) {
+      manageHelp('play', this.context);
+    }
   }
+
+  hideWelcome = () => {
+    this.setState({ showWelcome: false });
+    this.context.markWelcomeShown();
+    manageHelp('play', this.context);
+  };
 
   render() {
     const data = {
@@ -94,7 +109,7 @@ class PlayPage extends Component {
 
     return (
       <div className="play-content">
-        <Welcome />
+        {this.state.showWelcome && <Welcome onHide={this.hideWelcome} />}
         <Roster/>
         {data ? <PlayModes /> : <Skeleton
           height={50}
