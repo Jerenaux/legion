@@ -50,39 +50,7 @@ class AuthProvider extends Component {
     };
 
     onSignInSuccess = async (authResult: any): Promise<void> => {
-        const initialUser = this.state.user;
-        
-        if (initialUser?.isAnonymous) {
-            const credential = authResult.credential;
-            
-            try {
-                const usercred = await initialUser.linkWithPopup(); 
-                const user = usercred.user;
-                console.log("Anonymous account successfully upgraded", user);
-                successToast("Account successfully created!");
-            } catch (error: any) {
-                console.error("Error upgrading anonymous account", error);
-                
-                if (error.code === 'auth/credential-already-in-use') {
-                    console.warn("Credential already in use.");
-                    try {
-                        await firebase.auth().signInWithCredential(credential);
-                        // console.log("Signed in with existing credential");
-                        successToast("Signed in successfully!");
-                    } catch (signInError) {
-                        console.error("Error signing in with existing credential", signInError);
-                        errorToast("Error signing in. Please try again.");
-                    }
-                } else {
-                    errorToast("Error creating account. Please try again.");
-                }
-            }
-        } else {
-            console.log("User signed in (not an upgrade from anonymous)");
-            // successToast("Sign-in successful!");
-        }
-        
-        // console.log("Sign-in process completed");
+        successToast("Sign-in successful!");
         this.notifySignInCallbacks();
     };
 
