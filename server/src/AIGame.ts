@@ -17,10 +17,12 @@ const AI_VS_AI = false;
 export class AIGame extends Game {
     nbExpectedPlayers = 1;
     tickTimer: NodeJS.Timeout | null = null;
+    temporaryFrozen = false;
 
 
     constructor(id: string, mode: PlayMode, league: League, io: Server) {
         super(id, mode, league, io);
+        if (mode === PlayMode.TUTORIAL) this.temporaryFrozen = true;
     }
 
     createAITeam(team: Team, nb: number, levels?: number[]) {
@@ -99,14 +101,14 @@ export class AIGame extends Game {
 
         const AIteams = AI_VS_AI ? [1, 2] : [2];
 
+        if (FREEZE_AI || this.temporaryFrozen) return;
+
         AIteams.forEach(teamNum => {
             (this.teams.get(teamNum)?.getMembers() as AIServerPlayer[]).forEach(player => {
-                if (!FREEZE_AI){
-                    const delay = player.takeAction();
-                    setTimeout(() => {
-                        this.checkEndGame();
-                    }, delay);
-                }
+                const delay = player.takeAction();
+                setTimeout(() => {
+                    this.checkEndGame();
+                }, delay);
             }, this);
         });
     }

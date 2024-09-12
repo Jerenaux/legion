@@ -8,7 +8,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { Target, Terrain, GEN } from "@legion/shared/enums";
+import { Target, Terrain, GEN, PlayMode } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
 
 import bgImage from '@assets/aarena_bg.png';
@@ -48,6 +48,9 @@ import poisonSoundSFX from '@assets/sfx/spells/poison.wav';
 import muteSoundSFX from '@assets/sfx/spells/mute.wav';
 import bgmStartSFX from '@assets/music/bgm_start.wav';
 import bgmEndSFX from '@assets/music/bgm_end.wav';
+
+import speechBubble from '@assets/speech_bubble.png';
+import speechTail from '@assets/speech_tail.png';
 
 // Static imports for tile atlas
 import groundTilesImage from '@assets/tiles2.png';
@@ -98,6 +101,8 @@ export class Arena extends Phaser.Scene
         this.load.image('bg',  bgImage);
         this.load.image('killzone',  killzoneImage);
         this.load.image('iceblock',  iceblockImage);
+        this.load.image('speech_bubble', speechBubble);
+        this.load.image('speech_tail', speechTail);
         const frameConfig = { frameWidth: 144, frameHeight: 144};
         // Iterate over assetsMap and load spritesheets
         allSprites.forEach((sprite) => {
@@ -1297,7 +1302,7 @@ export class Arena extends Phaser.Scene
         }
 
         this.gameSettings = {
-            // tutorial: false,
+            tutorial: false,
             spectator: false,
             mode: null,
         }
@@ -1341,7 +1346,7 @@ export class Arena extends Phaser.Scene
             console.error('Player team id is undefined');
         }
 
-        // this.gameSettings.tutorial = data.general.tutorial;
+        this.gameSettings.tutorial = (data.general.mode == PlayMode.TUTORIAL);
         this.gameSettings.spectator = data.general.spectator;
         this.gameSettings.mode = data.general.mode;
 
@@ -1365,6 +1370,10 @@ export class Arena extends Phaser.Scene
                 this.displayGEN(GEN.COMBAT_BEGINS);
                 this.setGameInitialized();
             }, delay);
+
+            if (this.gameSettings.tutorial) {
+                setTimeout(this.tutorial.bind(this), delay + 3000);
+            }
         }
 
         // Events from the HUD
@@ -1380,6 +1389,13 @@ export class Arena extends Phaser.Scene
             console.log('Exit game event received');
             this.destroy();
         });
+    }
+
+    tutorial() {
+        // Fetch playert team
+        const playerTeam = this.teamsMap.get(this.playerTeamId);
+        const player = playerTeam.getMember(1);
+        player.talk('Welcome to the tutorial!');
     }
 
     setGameInitialized() {

@@ -104,7 +104,7 @@ io.on('connection', async (socket: any) => {
           `getPlayerData`,
           socket.firebaseToken,
           {},
-          3,
+          4,
           500,
         );
   

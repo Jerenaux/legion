@@ -13,6 +13,9 @@ const config = {
     // },
     backgroundColor: '#000',
     parent: 'scene',
+    dom: {
+        createContainer: true
+    },
     pixelArt: true,
     plugins: {
         global:[

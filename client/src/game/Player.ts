@@ -9,6 +9,7 @@ import { Target, StatusEffect, Class } from "@legion/shared/enums";
 import { Arena } from "./Arena";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
 import { paralyzingStatuses } from '@legion/shared/utils';
+import { SpeechBubble } from "./SpeechBubble";
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -58,6 +59,7 @@ export class Player extends Phaser.GameObjects.Container {
     xp: number;
     level: number;
     lastOverheadMessage: number;
+    speechBubble: SpeechBubble;
 
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
@@ -141,6 +143,9 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
+
+        this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, 'Hello!').setVisible(false);
+        this.add(this.speechBubble);
     }
 
     setUpStatusEffects() {
@@ -776,6 +781,14 @@ export class Player extends Phaser.GameObjects.Container {
             this.statuses[StatusEffect.POISON] = 0;
             this.hideStatusAnimation(StatusEffect.POISON);
         }
+    }
+
+    talk(text: string) {
+        this.speechBubble.setText(text);
+        this.speechBubble.setVisible(true);
+        this.scene.time.delayedCall(2000, () => {
+            this.speechBubble.setVisible(false);
+        });
     }
 
     destroy() {
