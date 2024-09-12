@@ -1,14 +1,18 @@
 // SpectatorFooter.tsx
 import { h, Component } from 'preact';
+import { route } from 'preact-router';
 import { PlayMode } from '@legion/shared/enums';
 interface SpectatorFooterProps {
   isTutorial: boolean; 
   score: number;
   mode: PlayMode;
+  closeGame: () => void;
 }
 
 class SpectatorFooter extends Component<SpectatorFooterProps> {
   render() { 
+    const showChests = this.props.mode != PlayMode.PRACTICE && this.props.mode != PlayMode.TUTORIAL;
+
     return (
       <div className="spectator_footer_container"> 
         <div className="spectator_progress">
@@ -19,24 +23,24 @@ class SpectatorFooter extends Component<SpectatorFooterProps> {
                 </div>
               </div>
             </div>
-            {this.props.mode != PlayMode.PRACTICE &&
+            {showChests &&
               <div className="progress_ches_mark">
                 <img src="/shop/bronze_chest.png" alt="" />
               </div>
             }
-            {  this.props.mode != PlayMode.PRACTICE &&
+            {showChests &&
               <div className="progress_chest_bronze">
                 <img src="/shop/bronze_chest.png" alt="" />
               </div>
             }
-            { this.props.mode != PlayMode.PRACTICE &&
+            {showChests &&
               <div className="progress_chest_silver">
                 <img src="/shop/bronze_chest.png" alt="" />
               </div> 
             }
             
         </div>
-        {this.props.isTutorial && <div className="skip_tutorial">
+        {this.props.isTutorial && <div className="skip_tutorial" onClick={this.props.closeGame}>
           <span>Skip Tutorial</span>
         </div>}
       </div>

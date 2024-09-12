@@ -1,5 +1,6 @@
 // GameHUD.tsx
 import { h, Component } from 'preact';
+import { route } from 'preact-router';
 import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
@@ -10,6 +11,7 @@ import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { showGuideToast } from '../utils';
 import { guide } from '../tips';
+import { firebaseAuth } from '../../services/firebaseService'; 
 
 interface GameHUDProps {
   changeMainDivClass: (newClass: string) => void;
@@ -26,7 +28,6 @@ interface GameHUDState {
   xpReward: number;
   goldReward: number;
   characters: CharacterUpdate[];
-  isTutorial: boolean;
   isSpectator: boolean;
   mode: PlayMode;
   grade: string;
@@ -47,7 +48,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     team2: null,
     isWinner: false,
     gameOver: false,
-    isTutorial: false,
     isSpectator: false,
     mode: null,
     xpReward: 0,
@@ -69,7 +69,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       team2: null,
       isWinner: false,
       gameOver: false,
-      isTutorial: false,
       isSpectator: false,
       mode: null,
       xpReward: 0,
@@ -83,15 +82,20 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   componentDidMount() {
+    const user = firebaseAuth.currentUser;
+      
     this.resetState();
-    apiFetch('fetchGuideTip?combatTip=1', {
-        method: 'GET',
-    })
-    .then((data) => {
-        if (data.guideId == -1) return;
-        showGuideToast(guide[data.guideId], data.route);
-    })
-    .catch(error => console.error(`Fetching tip error: ${error}`));
+
+    if (user) {
+      apiFetch('fetchGuideTip?combatTip=1', {
+          method: 'GET',
+      })
+      .then((data) => {
+          if (data.guideId == -1) return;
+          showGuideToast(guide[data.guideId], data.route);
+      })
+      .catch(error => console.error(`Fetching tip error: ${error}`));
+    }
     
     events.on('showPlayerBox', this.showPlayerBox);
     events.on('hidePlayerBox', this.hidePlayerBox);
@@ -148,7 +152,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   updateOverview = (team1: TeamOverview, team2: TeamOverview, general: any, initialized: boolean) => {
     this.setState({ team1, team2 });
     this.setState({ 
-      isTutorial: general.isTutorial,
       isSpectator: general.isSpectator,
       mode : general.mode,
       gameInitialized: initialized
@@ -173,8 +176,13 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     this.props.changeMainDivClass(newCursorClass);
   }
 
+  closeGame = () => {
+    events.emit('exitGame');
+    route('/play');
+}
+
   render() {
-    const { playerVisible, player, team1, team2, isTutorial, isSpectator, mode, gameInitialized } = this.state; 
+    const { playerVisible, player, team1, team2, isSpectator, mode, gameInitialized } = this.state; 
     const members = team1?.members[0].isPlayer ? team1?.members : team2?.members; 
     const score = team1?.members[0].isPlayer? team1?.score : team2?.score; 
 
@@ -189,7 +197,12 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
           <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
         </div>
-        {team1 && <SpectatorFooter isTutorial={isTutorial} score={score} mode={mode} />}
+        {team1 && <SpectatorFooter 
+          isTutorial={mode == PlayMode.TUTORIAL}
+          score={score} 
+          mode={mode} 
+          closeGame={this.closeGame}
+          />}
         {this.state.gameOver && <Endgame 
           members={members} 
           grade={this.state.grade}
@@ -199,6 +212,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           goldReward={this.state.goldReward} 
           characters={this.state.characters}
           chestKey={ChestColor.SILVER}
+          mode={mode}
+          closeGame={this.closeGame}
           eventEmitter={events}
         />}
       </div>

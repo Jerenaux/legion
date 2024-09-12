@@ -1,11 +1,9 @@
 import { h, Component } from 'preact';
-import { route } from 'preact-router';
 import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
 import { CharacterUpdate, GameOutcomeReward } from '@legion/shared/interfaces';
 import XPCountUp from './XPCountUp';
-import { RewardType } from '@legion/shared/chests';
-import { ChestColor } from '@legion/shared/enums';
+import { ChestColor, PlayMode } from '@legion/shared/enums';
 import OpenedChest from '../dailyLoot/OpenedChest';
 
 // Asset imports
@@ -42,7 +40,9 @@ interface EndgameProps {
     grade: string;
     chests: GameOutcomeReward[];
     chestKey: ChestColor;
+    mode: PlayMode;
     eventEmitter: any;
+    closeGame: () => void;
 }
 
 export class Endgame extends Component<EndgameProps, EndgameState> {
@@ -88,10 +88,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         }, stepTime);
     }
 
-    closeGame = () => {
-        this.events.emit('exitGame');
-        route('/play');
-    }
+   
 
     endGameTitleBg = () => {
         return {
@@ -120,6 +117,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
     render() {
         const [width, height] = useWindowSize()
         const { members, characters } = this.props;
+        const isTutorial = this.props.mode == PlayMode.TUTORIAL;
 
         return (
             <div className="endgame">
@@ -137,6 +135,9 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         <span><CountUp end={this.state.finalGold} duration={Math.min(this.state.finalGold / 100, 2)} /></span>
                     </div>
                 </div>
+
+                {isTutorial && <div className="endgame_meet_team_msg">You earned your first 3 characters!</div>}
+
                 <div className="flex flex_wrap gap_16 justify_center items_center max_w_lg" style={{ padding: '36px 48px', minHeight: '400px', alignItems: 'flex-start' }}>
                     {characters.map((character, idx) => (
                         <XPCountUp
@@ -146,6 +147,18 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         />
                     ))}
                 </div>
+
+                {/* {isTutorial && <div className="tutorial-end">
+                    You can keep playing without registering, but make sure to sign up if you don't want to lose your progress! 
+
+                    <div className="endgame_leave" onClick={this.closeGame}>
+                        <span>Continue without signing up</span>
+                    </div>
+
+                    <div className="endgame_leave" onClick={this.closeGame}>
+                        <span>Sign up</span>
+                    </div>
+                </div>} */}
 
                 {this.props.isWinner && this.props.chests.length > 0 && (
                     <div className="endgame_rewards_container">
@@ -167,8 +180,8 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     </div>
                 )}
 
-                <div className="endgame_leave" onClick={this.closeGame}>
-                    <span>Leave</span>
+                <div className="endgame_leave" onClick={this.props.closeGame}>
+                    <span>Continue</span>
                 </div>
 
                 {!!this.state.selectedChest && <OpenedChest 

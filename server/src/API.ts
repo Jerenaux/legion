@@ -25,36 +25,48 @@ function timeoutPromise(duration) {
     });
 }
 
-export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {}, timeoutDuration = 15000) {
-    try {
-        const headers = new Headers(options.headers || {});
+const TIMEOUT_DURATION = 15000;
 
-        if (options.body && !headers.has('Content-Type')) {
-            headers.append('Content-Type', 'application/json');
-            options.body = JSON.stringify(options.body);
+export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {}, maxRetries = 1, retryDelay = 250) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const headers = new Headers(options.headers || {});
+
+            if (options.body && !headers.has('Content-Type')) {
+                headers.append('Content-Type', 'application/json');
+                options.body = JSON.stringify(options.body);
+            }
+
+            headers.append("Authorization", `Bearer ${idToken}`);
+
+            const fetchPromise = fetch(`${process.env.API_URL}/${endpoint}`, {
+                ...options,
+                headers,
+            });
+
+            const response = await Promise.race([
+                fetchPromise,
+                timeoutPromise(TIMEOUT_DURATION)
+            ]) as Response;
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
+            }
+
+            return response.json();
+        } catch (error) {
+            console.error(`Attempt ${attempt + 1} failed for API call to ${endpoint}:`, error);
+            
+            if (attempt === maxRetries - 1) {
+                throw error;
+            }
+
+            // Always retry, regardless of error type
+            
+            console.log(`Retrying in ${retryDelay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
-
-        headers.append("Authorization", `Bearer ${idToken}`);
-
-        const fetchPromise = fetch(`${process.env.API_URL}/${endpoint}`, {
-            ...options,
-            headers,
-        });
-
-        const response = await Promise.race([
-            fetchPromise,
-            timeoutPromise(timeoutDuration) // Make sure this utility is implemented
-        ]) as Response;
-
-        if (!response.ok) {
-            const errorBody = await response.text();
-            throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
-        }
-
-        return response.json();
-    } catch (error) {
-        console.error(`Error in API call to ${endpoint}:`, error);
-        throw error;
     }
 }
 

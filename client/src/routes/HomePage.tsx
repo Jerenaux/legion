@@ -14,26 +14,6 @@ import QueuePage from '../components/QueuePage';
 class HomePage extends Component<object, {}> {
     static contextType = AuthContext;
 
-
-    // handleRouteChange = (e) => {
-
-    //     const showFirebaseUI = false;
-
-    //     this.setState({
-    //         showFirebaseUI,
-    //     });
-    // };
-
-    logout = () => {
-        // Use context to handle logout
-        const { firebaseAuth } = this.context;
-        firebaseAuth.signOut().then(() => {
-            // No need to update state here since AuthProvider will handle it
-        }).catch((error) => {
-            console.error('Error signing out: ', error);
-        });
-    }
-
     render() {
         const { user } = this.context;
         if (!user) return;
@@ -42,10 +22,9 @@ class HomePage extends Component<object, {}> {
             <PlayerContext.Consumer> 
                 {({ player }) => (
                     <div className="homePage">
-                        <Navbar user={user} playerData={player} logout={this.logout} />
+                        <Navbar user={user} playerData={player} logout={this.context.logout} />
                         <div className="content">
                             <div className="mainContent">
-                                {/* <Router onChange={this.handleRouteChange}> */}
                                 <Router>
                                     <Route path="/play" component={PlayPage} />
                                     <Route path="/queue/:mode" component={QueuePage} />

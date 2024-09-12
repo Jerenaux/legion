@@ -5,6 +5,8 @@ export const MAX_CHARACTERS = 10;
 export const BASE_INVENTORY_SIZE = 20;
 export const STARTING_GOLD = 100;
 export const STARTING_CONSUMABLES = [0,0,1];
+export const STARTING_WHITE_MAGE_SPELLS = [9];
+export const STARTING_BLACK_MAGE_SPELLS = [0];
 export const XP_PER_LEVEL = 50;
 export const AVERAGE_GOLD_REWARD_PER_GAME = 100; 
 export const MAX_AUDIENCE_SCORE = 1500;
@@ -52,6 +54,7 @@ export const STARTING_EQUIPMENT_ADMIN = [2];
 export let INJURED_MODE = false;
 export let SKIP_LEVEL_RESTRICTIONS = true;
 export let IMMEDIATE_LOOT = true;
+export let LOTSA_MP = true;
 
 export const remoteConfig = {
     AUTO_DEFEAT: false,
@@ -60,9 +63,14 @@ export const remoteConfig = {
     COOLDOWN_OVERRIDE: 500,
 }
 
+if (isDev) {
+    STARTING_BLACK_MAGE_SPELLS.push(2);
+}
+
 if (!isDev) {
     FREEZE_AI = false;
     INJURED_MODE = false;
     SKIP_LEVEL_RESTRICTIONS = false;
     IMMEDIATE_LOOT = false;
+    LOTSA_MP = false;
 }

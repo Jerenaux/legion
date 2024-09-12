@@ -150,7 +150,7 @@ export class Arena extends Phaser.Scene
         this.load.atlas('groundTiles', groundTilesImage, groundTilesAtlas);
     
         const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill', 
-            'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire'];
+            'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire', 'tutorial'];
         GEN.forEach((name) => {
             this.load.image(name, require(`@assets/GEN/${name}.png`));
         });
@@ -167,7 +167,6 @@ export class Arena extends Phaser.Scene
     async connectToServer() {
         console.log('Connecting to the server ...');
         const gameId = this.extractGameIdFromUrl();
-        console.log('Game ID:', gameId);
 
         this.socket = io(
             process.env.GAME_SERVER_URL,
@@ -1298,7 +1297,7 @@ export class Arena extends Phaser.Scene
         }
 
         this.gameSettings = {
-            tutorial: false,
+            // tutorial: false,
             spectator: false,
             mode: null,
         }
@@ -1342,7 +1341,7 @@ export class Arena extends Phaser.Scene
             console.error('Player team id is undefined');
         }
 
-        this.gameSettings.tutorial = data.general.tutorial;
+        // this.gameSettings.tutorial = data.general.tutorial;
         this.gameSettings.spectator = data.general.spectator;
         this.gameSettings.mode = data.general.mode;
 
@@ -1474,6 +1473,9 @@ export class Arena extends Phaser.Scene
                 text1 = 'stuff-is';
                 text2 = 'on-fire';
                 break;
+            case GEN.TUTORIAL:
+                text1 = 'tutorial';
+                break;
             default:
                 return;
         }
@@ -1495,7 +1497,7 @@ export class Arena extends Phaser.Scene
         });
 
         const targets = [
-            this.add.image(-300, yPosition, text1).setDepth(10),
+            this.add.image(-350, yPosition, text1).setDepth(10),
             this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang').setDepth(10)
         ];
         if (text2) {

@@ -145,6 +145,7 @@ export const createPlayer = functions.auth.user().onCreate(async (user) => {
       everPlayedCasual: false,
       everPlayedRanked: false,
     },
+    // isGuest: user.providerData.length === 0,
   } as DBPlayerData;
 
   // Start a batch to ensure atomicity

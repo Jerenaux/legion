@@ -1,29 +1,68 @@
-import { h, Component } from 'preact';
-import { route } from 'preact-router';
+import { h, Component, ComponentType } from 'preact';
+import { route, RouteProps } from 'preact-router';
 import AuthContext from '../contexts/AuthContext';
+import { firebaseAuth } from '../services/firebaseService'; 
 
-const withAuth = (WrappedComponent) => {
-    return class extends Component {
+// Define the props that will be passed to the wrapped component
+interface WithAuthProps {
+    path: string;
+    matches?: {
+        id?: string;
+    };
+}
+
+const withAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
+    return class extends Component<P & WithAuthProps> {
         static contextType = AuthContext;
 
         componentDidMount() {
-            const { isAuthenticated } = this.context;
-            if (!isAuthenticated) {
-                // Redirect to landing page
-                route('/'); 
-            }
+            this.checkAuth();
         }
 
         componentDidUpdate() {
-            const { isAuthenticated } = this.context;
+            this.checkUnauth();
+        }
+
+        checkAuth() {
+            const { isAuthenticated, signInAsGuest } = this.context;
+            const { path, matches } = this.props;
+
             if (!isAuthenticated) {
-                // Redirect to landing page
-                route('/'); 
+                if (path === '/game/:id' && matches?.id === 'tutorial') {
+                    if (!firebaseAuth.currentUser) {
+                        // Allow guest access to tutorial
+                        signInAsGuest().catch(
+                            () => {
+                                console.log('Sign in failed, redirecting to landing page');
+                                route('/')
+                        });
+                    }
+                } else {
+                    // Redirect to landing page for other routes
+                    route('/');
+                }
             }
         }
 
-        render(props) {
-            return <WrappedComponent {...props} />;
+        checkUnauth() {
+            const { isAuthenticated } = this.context;
+            const { path, matches } = this.props;
+
+
+            if (!isAuthenticated && !(path === '/game/:id' && matches?.id === 'tutorial')) {
+                route('/');
+            }
+        }
+
+        render() {
+            const { isAuthenticated } = this.context;
+            const { path, matches } = this.props;
+
+            if (!isAuthenticated && (path !== '/game/:id' || matches?.id !== 'tutorial')) {
+                return null;
+            }
+
+            return <WrappedComponent {...this.props} />;
         }
     };
 };

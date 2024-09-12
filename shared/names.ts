@@ -39,7 +39,7 @@ export const male_names = [
     'Squall',
     'Zell',
     'Irvine',
-    'Saifer',
+    'Seifer',
     'Laguna',
     'Kiros',
     'Ward',

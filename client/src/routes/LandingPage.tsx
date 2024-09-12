@@ -1,12 +1,6 @@
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import AuthContext from '../contexts/AuthContext';
-import firebase from 'firebase/compat/app';
-import * as firebaseui from 'firebaseui';
-import 'firebaseui/dist/firebaseui.css';
-import 'firebase/compat/auth';
-
-// Import image assets
 import logoBig from '@assets/logobig.png';
 
 interface LandingPageState {
@@ -21,36 +15,17 @@ class LandingPage extends Component<{}, LandingPageState> {
   };
 
   private firebaseUIContainer: HTMLDivElement | null = null;
-  private firebaseUI: firebaseui.auth.AuthUI | null = null;
 
   showLoginOptions = (): void => {
-    this.setState({ showLoginOptions: true }, this.initFirebaseUI);
-  };
-
-  initFirebaseUI = (): void => {
-    const uiConfig: firebaseui.auth.Config = {
-      signInFlow: 'popup',
-      signInSuccessUrl: '/play',
-      signInOptions: [
-        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        firebase.auth.EmailAuthProvider.PROVIDER_ID,
-      ],
-    };
-
-    if (this.firebaseUIContainer) {
-      try {
-        this.firebaseUI = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
-        this.firebaseUI.start(this.firebaseUIContainer, uiConfig);
-      } catch (error) {
-        console.error('Error initializing Firebase UI: ', error);
+    this.setState({ showLoginOptions: true }, () => {
+      if (this.firebaseUIContainer) {
+        this.context.initFirebaseUI(this.firebaseUIContainer);
       }
-    }
+    });
   };
 
   clearFirebaseUI = (): void => {
-    if (this.firebaseUI) {
-      this.firebaseUI.reset();
-    }
+    this.context.resetUI();
     this.setState({ showLoginOptions: false });
   };
 
@@ -61,7 +36,7 @@ class LandingPage extends Component<{}, LandingPageState> {
         <p>Assemble your team and become the strongest of the arena!</p>
       </div>
       <div className="login-buttons">
-        <button className="get-started" onClick={() => route('/tutorial')}>Get Started</button>
+        <button className="get-started" onClick={() => route('/game/tutorial')}>Get Started</button>
         <button className="already-account" onClick={this.showLoginOptions}>Already have an account?</button>
       </div>
     </div>

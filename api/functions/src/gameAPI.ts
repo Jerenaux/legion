@@ -82,8 +82,9 @@ export const completeGame = onRequest((request, response) => {
       console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(results)}`);
 
       const gameRef = await db.collection("games").where("gameId", "==", gameId).limit(1).get();
-      if (gameRef.empty) {
-        throw new Error("Invalid game ID");
+      if (gameRef.empty) { // Most likely a tutorial ending
+        // throw new Error("Invalid game ID");
+        response.status(200).send({status: 0});
       }
 
       const gameDoc = gameRef.docs[0];

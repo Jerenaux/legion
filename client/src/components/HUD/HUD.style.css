@@ -1467,3 +1467,11 @@
                    -0.04em -0.025em 0 #fffc00;
   }
 }
+
+.endgame_meet_team_msg {
+  font-family: 'Kim';
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  color: white;
+  font-size: 24px;
+  margin-top: 20px;
+}

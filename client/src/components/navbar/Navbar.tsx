@@ -127,7 +127,7 @@ class Navbar extends Component<Props, State> {
                     <div className="avatarContainer">
                         {this.state.isLoading ? (
                             <div className="avatar spinner-container">
-                                <div className=" loading-spinner"></div>
+                                <div className="loading-spinner"></div>
                             </div>
                         ) : (
                             <div className="avatar" style={{ backgroundImage: this.state.avatarUrl ? `url(${this.state.avatarUrl})` : 'none' }}></div>

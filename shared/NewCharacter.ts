@@ -5,8 +5,9 @@ import {warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, female
 import { male_names, female_names } from "./names";
 import {selectStatToLevelUp, increaseStat} from "./levelling";
 import { getPrice } from "./economy";
-import { getStarterSpells } from "./Spells";
 import { getStarterConsumables } from "./Items";
+
+import { STARTING_BLACK_MAGE_SPELLS, STARTING_WHITE_MAGE_SPELLS, LOTSA_MP} from "@legion/shared/config";
 
 enum Gender {
   M,
@@ -193,7 +194,7 @@ export class NewCharacter {
     case Class.WHITE_MAGE:
       return 30;
     case Class.BLACK_MAGE:
-      return 40;
+      return LOTSA_MP ? 1000 : 40;
     case Class.THIEF:
       return 20;
     }
@@ -265,10 +266,9 @@ export class NewCharacter {
       case Class.WARRIOR:
         return [];
       case Class.WHITE_MAGE:
-      case Class.BLACK_MAGE: {
-          const starterSpells = getStarterSpells(this.characterClass);
-          return [starterSpells[Math.floor(Math.random() * starterSpells.length)]];
-      }
+        return STARTING_WHITE_MAGE_SPELLS;
+      case Class.BLACK_MAGE:
+          return STARTING_BLACK_MAGE_SPELLS;
       case Class.THIEF:
         return [];
       }
