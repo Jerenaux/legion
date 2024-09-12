@@ -1,13 +1,13 @@
-import {Class, Stat} from "./enums";
+import { Class, Stat } from "./enums";
 import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
-import {warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites}
+import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
   from "./sprites";
 import { male_names, female_names } from "./names";
-import {selectStatToLevelUp, increaseStat} from "./levelling";
+import { selectStatToLevelUp, increaseStat } from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterConsumables } from "./Items";
 
-import { STARTING_BLACK_MAGE_SPELLS, STARTING_WHITE_MAGE_SPELLS, LOTSA_MP, BASE_CARRYING_CAPACITY} from "@legion/shared/config";
+import { STARTING_BLACK_MAGE_SPELLS, STARTING_WHITE_MAGE_SPELLS, LOTSA_MP, BASE_CARRYING_CAPACITY } from "@legion/shared/config";
 
 enum Gender {
   M,
@@ -134,8 +134,8 @@ export class NewCharacter {
         return 3;
       case Class.THIEF:
         return 1;
-      }
-      return 0;
+    }
+    return 0;
   }
 
   determineGender(): Gender {
@@ -154,7 +154,7 @@ export class NewCharacter {
       return female_names[Math.floor(Math.random() * female_names.length)];
     }
   }
-  
+
   getFrame(): string {
     switch (this.characterClass) {
       case Class.WARRIOR:
@@ -169,8 +169,8 @@ export class NewCharacter {
         ];
       case Class.THIEF:
         return thiefSprites[Math.floor(Math.random() * thiefSprites.length)];
-      }
-      return warriorSprites[Math.floor(Math.random() * warriorSprites.length)];
+    }
+    return warriorSprites[Math.floor(Math.random() * warriorSprites.length)];
   }
 
   getHP(): number {
@@ -189,14 +189,14 @@ export class NewCharacter {
 
   getMP(): number {
     switch (this.characterClass) {
-    case Class.WARRIOR:
-      return 20;
-    case Class.WHITE_MAGE:
-      return 30;
-    case Class.BLACK_MAGE:
-      return LOTSA_MP ? 1000 : 40;
-    case Class.THIEF:
-      return 20;
+      case Class.WARRIOR:
+        return 20;
+      case Class.WHITE_MAGE:
+        return 30;
+      case Class.BLACK_MAGE:
+        return LOTSA_MP ? 1000 : 40;
+      case Class.THIEF:
+        return 20;
     }
     return 20;
   }
@@ -207,56 +207,56 @@ export class NewCharacter {
 
   getAtk(): number {
     switch (this.characterClass) {
-    case Class.WARRIOR:
-      return this.getRandom(8, 12);
-    case Class.WHITE_MAGE:
-      return this.getRandom(5, 8);
-    case Class.BLACK_MAGE:
-      return this.getRandom(5, 8);
-    case Class.THIEF:
-      return this.getRandom(5, 10);
+      case Class.WARRIOR:
+        return this.getRandom(8, 12);
+      case Class.WHITE_MAGE:
+        return this.getRandom(5, 8);
+      case Class.BLACK_MAGE:
+        return this.getRandom(5, 8);
+      case Class.THIEF:
+        return this.getRandom(5, 10);
     }
     return 5;
   }
 
   getDef(): number {
     switch (this.characterClass) {
-    case Class.WARRIOR:
-      return this.getRandom(8, 12);
-    case Class.WHITE_MAGE:
-      return this.getRandom(5, 8);
-    case Class.BLACK_MAGE:
-      return this.getRandom(5, 8);
-    case Class.THIEF:
-      return this.getRandom(5, 10);
+      case Class.WARRIOR:
+        return this.getRandom(8, 12);
+      case Class.WHITE_MAGE:
+        return this.getRandom(5, 8);
+      case Class.BLACK_MAGE:
+        return this.getRandom(5, 8);
+      case Class.THIEF:
+        return this.getRandom(5, 10);
     }
     return 5;
   }
 
   getSpatk(): number {
     switch (this.characterClass) {
-    case Class.WARRIOR:
-      return this.getRandom(5, 8);
-    case Class.WHITE_MAGE:
-      return this.getRandom(8, 12);
-    case Class.BLACK_MAGE:
-      return this.getRandom(8, 12);
-    case Class.THIEF:
-      return this.getRandom(5, 8);
+      case Class.WARRIOR:
+        return this.getRandom(5, 8);
+      case Class.WHITE_MAGE:
+        return this.getRandom(8, 12);
+      case Class.BLACK_MAGE:
+        return this.getRandom(8, 12);
+      case Class.THIEF:
+        return this.getRandom(5, 8);
     }
     return 5;
   }
 
   getSpdef(): number {
     switch (this.characterClass) {
-    case Class.WARRIOR:
-      return this.getRandom(5, 8);
-    case Class.WHITE_MAGE:
-      return this.getRandom(8, 12);
-    case Class.BLACK_MAGE:
-      return this.getRandom(8, 12);
-    case Class.THIEF:
-      return this.getRandom(5, 8);
+      case Class.WARRIOR:
+        return this.getRandom(5, 8);
+      case Class.WHITE_MAGE:
+        return this.getRandom(8, 12);
+      case Class.BLACK_MAGE:
+        return this.getRandom(8, 12);
+      case Class.THIEF:
+        return this.getRandom(5, 8);
     }
     return 5;
   }
@@ -268,15 +268,15 @@ export class NewCharacter {
       case Class.WHITE_MAGE:
         return STARTING_WHITE_MAGE_SPELLS;
       case Class.BLACK_MAGE:
-          return STARTING_BLACK_MAGE_SPELLS;
+        return STARTING_BLACK_MAGE_SPELLS;
       case Class.THIEF:
         return [];
-      }
-      return [];
+    }
+    return [];
   }
 
   setUpInventory() {
-    const consumables = getStarterConsumables(this.level/2);
+    const consumables = getStarterConsumables(this.level / 2);
     console.log(`[NewCharacter:setUpInventory] Consumables for AI ${this.name}: ${consumables}`);
     if (consumables.length === 0) return;
     // For each available slot, add a random consumable or possibly nothing

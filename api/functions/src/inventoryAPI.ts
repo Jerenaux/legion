@@ -224,6 +224,7 @@ export const inventoryTransaction = onRequest(async (request, response) => {
       }
 
       await playerRef.update(update.playerUpdate);
+      console.log(`[inventoryTransaction] Character update: ${JSON.stringify(update.characterUpdate)}`);
       await characterRef.update(update.characterUpdate);
 
       await logPlayerAction(uid, "inventoryTransaction", { action, characterId, inventoryType, index });
