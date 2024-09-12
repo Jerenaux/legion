@@ -2018,7 +2018,9 @@ a:-webkit-any-link {
   cursor: url('../../public/pointers/item_cursor.png'), auto;
 }
 
-
+.firebaseui-container {
+  text-shadow: none;
+}
 
 
 

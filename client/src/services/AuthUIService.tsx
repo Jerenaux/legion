@@ -26,7 +26,10 @@ class AuthUIService {
       signInSuccessUrl: '/play',
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        firebase.auth.EmailAuthProvider.PROVIDER_ID,
+        {
+            provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
+            requireDisplayName: false
+        },
       ],
       callbacks: {
         signInSuccessWithAuthResult: (authResult: any) => {
