@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import AuthContext from '../contexts/AuthContext';
 import logoBig from '@assets/logobig.png';
-
+import './LandingPage.style.css';
 interface LandingPageState {
   showLoginOptions: boolean;
 }
@@ -32,7 +32,6 @@ class LandingPage extends Component<{}, LandingPageState> {
   renderInitialView = (): h.JSX.Element => (
     <div>
       <div className="login-header">
-        <br/><br/><br/>
         <p>Assemble your team and become the strongest of the arena!</p>
       </div>
       <div className="login-buttons">
@@ -45,7 +44,6 @@ class LandingPage extends Component<{}, LandingPageState> {
   renderLoginOptions = (): h.JSX.Element => (
     <div>
       <div className="login-header">
-        <br/><br/><br/>
         <p>Choose your sign in/up method</p>
       </div>
       <div ref={(ref) => this.firebaseUIContainer = ref} id="firebaseui-auth-container"></div>
@@ -58,9 +56,11 @@ class LandingPage extends Component<{}, LandingPageState> {
 
     return (
       <div className="landingPage">
-        <div className="login-dialog">
+        <div className="login-container">
           <img src={logoBig} alt="Logo" className="logo" />
-          {showLoginOptions ? this.renderLoginOptions() : this.renderInitialView()}
+          <div className="login-dialog">
+            {showLoginOptions ? this.renderLoginOptions() : this.renderInitialView()}
+          </div>
         </div>
       </div>
     );
