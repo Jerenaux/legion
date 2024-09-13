@@ -10,13 +10,15 @@ interface GamePageProps {
 
 interface GamePageState {
   mainDivClass: string;
+  loading: boolean;
 }
 
 class GamePage extends Component<GamePageProps, GamePageState> {
   constructor(props: GamePageProps) {
     super(props);
     this.state = {
-      mainDivClass: 'normalCursor'
+      mainDivClass: 'normalCursor',
+      loading: true,
     };
   }
 
@@ -28,11 +30,18 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     this.setState({ mainDivClass: newClass });
   }
 
+  markLoaded = () => {
+    this.setState({ loading: false });
+  }
+
   render() {
     return (
       <div className={this.state.mainDivClass}>
-        <GameHUD changeMainDivClass={this.changeMainDivClass} />
+        <GameHUD changeMainDivClass={this.changeMainDivClass} markLoaded={this.markLoaded}/>
         <div id="scene" />
+        {this.state.loading && <div className="loading-div">
+          <div className="loading-game-spinner" />
+        </div>}
       </div>
     )
   }

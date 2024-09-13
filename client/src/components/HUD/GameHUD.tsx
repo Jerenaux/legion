@@ -15,6 +15,7 @@ import { firebaseAuth } from '../../services/firebaseService';
 
 interface GameHUDProps {
   changeMainDivClass: (newClass: string) => void;
+  markLoaded: () => void;
 }
 interface GameHUDState {
   playerVisible: boolean;
@@ -134,6 +135,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('clearPendingItem', () => {
       this.setState({ pendingItem: false });
       this.handleCursorChange('normalCursor')
+    });
+
+    events.on('gameInitialized', () => {
+      this.props.markLoaded();
     });
   }
 

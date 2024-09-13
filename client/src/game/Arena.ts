@@ -1401,6 +1401,8 @@ export class Arena extends Phaser.Scene
             console.log('Exit game event received');
             this.destroy();
         });
+
+        events.emit('gameInitialized');
     }
 
     sleep(duration) {
