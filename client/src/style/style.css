@@ -1896,6 +1896,7 @@ canvas {
   display: flex;
   flex-flow: column;
   justify-content: space-between;
+  font-family: 'Kim';
 }
 .queue-news-content {
   color: white; 
@@ -1910,12 +1911,16 @@ canvas {
   height: 2vw;
   /* background-color: cyan; */
   background-image: url('@assets/queue/news_title_bg.png'); 
-  font-size: 1vw;
-  padding-left: 1vw;
-  padding-right: 2vw;
+  font-size: 16px;
+  /* padding-left: 1vw;
+  padding-right: 2vw; */
+  padding: 5px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.queue-news-date {
+  font-size: 14px;
 }
 .queue-news-readmore {
   width: 21.4vw; 

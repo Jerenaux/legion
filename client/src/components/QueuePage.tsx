@@ -67,26 +67,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                 goldReward: 0,
                 estimatedWaitingTime: -1,
                 nbInQueue: 0,
-                news: [
-                    {
-                        title: "Title",
-                        date: "2022-12-01",
-                        text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, wonderful!",
-                        link: "https://www.google.com"
-                    },
-                    {
-                        title: "Title",
-                        date: "2022-12-01",
-                        text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, wonderful!",
-                        link: "https://www.google.com"
-                    },
-                    {
-                        title: "Title",
-                        date: "2022-12-01",
-                        text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, wonderful!",
-                        link: "https://www.google.com"
-                    }
-                ]
+                news: [],
             },
             earnedGold: 0,
             queueDataLoaded: false,
@@ -283,12 +264,12 @@ class QueuePage extends Component<QPageProps, QpageState> {
                         <div className="queue-news-container">
                             <div class="queue-news-title">
                                 <div><span style={{ color: 'cyan' }}>{newsItem.title}</span></div>
-                                <div><span style={{ color: 'coral' }}>{newsItem.date}</span></div>
+                                <div class='queue-news-date'><span style={{ color: 'coral' }}>{newsItem.date}</span></div>
                             </div>
                             <div className="queue-news-content">
                                 {newsItem.text}
                             </div>
-                            <div className="queue-news-readmore">
+                            <div className="queue-news-readmore"  onClick={() => window.open(newsItem.link, '_blank')}>
                                 READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
                             </div>
                         </div>

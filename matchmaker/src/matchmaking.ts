@@ -177,23 +177,11 @@ function sendQData(player: Player) {
         nbInQueue: countQueuingPlayers(player.mode, player.league),
         news: [
             {
-                title: "Title",
-                date: "2022-12-01",
-                text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
-                link: "https://www.google.com"
+                title: "Legion Play Guide released!",
+                date: "2024-09-13",
+                text: "Check out our new guide to learn how to play Legion like a pro!",
+                link: "https://guide.play-legion.io"
             },
-            {
-                title: "Title",
-                date: "2022-12-01",
-                text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
-                link: "https://www.google.com"
-            },
-            {
-                title: "Title",
-                date: "2022-12-01",
-                text: "New versio of legion game will be launched soon! Expect great interface and wonderful game experience, excellent, ",
-                link: "https://www.google.com"
-            }
         ]
     });
 }
