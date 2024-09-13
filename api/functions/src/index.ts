@@ -25,6 +25,5 @@ export {
 };
 
 export const helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
-  response.send(`API online - [AdminMode: ${process.env.ADMIN_MODE}] - [Discord token: ${process.env.DISCORD_TOKEN?.slice(0, 3)}]`);
+  response.send(`API online - [AdminMode: ${process.env.ADMIN_MODE}] - [NODE_ENV: ${process.env.NODE_ENV}]`);
 });

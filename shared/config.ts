@@ -1,4 +1,5 @@
 const isDev = process.env.NODE_ENV === 'development';
+const isAdmin = (process.env.ADMIN_MODE == 'true');
 
 // Gameplay
 export const MAX_CHARACTERS = 10;

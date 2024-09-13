@@ -8,6 +8,7 @@ export interface PlayerContextState {
   activeCharacterId: string;
   characterSheetIsDirty: boolean;
   welcomeShown: boolean;
+  lastHelp: number;
 }
 
 export const PlayerContext = createContext<{

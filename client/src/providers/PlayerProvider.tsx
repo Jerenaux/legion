@@ -73,6 +73,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         activeCharacterId: '',
         characterSheetIsDirty: false,
         welcomeShown: false,
+        lastHelp: 0,
       };
     }
 
@@ -335,8 +336,11 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
             tours: todoTours.filter(tour => tour !== page)
           }
         });
+        this.setState({ lastHelp: Date.now() });
       } else {
-        fetchGuideTip();
+        if (Date.now() - this.state.lastHelp >= 3000) {
+          fetchGuideTip();
+        }
       }
     }
   
