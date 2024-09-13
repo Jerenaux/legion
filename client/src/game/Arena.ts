@@ -10,6 +10,7 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, PlayMode } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
+import { Tutorial } from './tutorial';
 
 import bgImage from '@assets/aarena_bg.png';
 import killzoneImage from '@assets/killzone.png';
@@ -89,6 +90,7 @@ export class Arena extends Phaser.Scene
     pendingGEN: GEN;
     gameInitialized = false;
     gameEnded = false;
+    tutorial;
 
     constructor() {
         super({ key: 'Arena' });
@@ -272,6 +274,7 @@ export class Arena extends Phaser.Scene
             sameTeam: player.team.id === this.selectedPlayer.team.id,
         };
         this.send('attack', data);
+        if (this.gameSettings.tutorial) events.emit('playerAttacked');
     }
 
     sendObstacleAttack(x, y) {
@@ -557,7 +560,6 @@ export class Arena extends Phaser.Scene
 
     handleTileClick(gridX, gridY) {
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
-        if (!this.selectedPlayer) return;
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
@@ -593,6 +595,7 @@ export class Arena extends Phaser.Scene
         this.playSound('click');
         this.sendMove(gridX, gridY);
         this.clearHighlight();
+        if (this.gameSettings.tutorial) events.emit('playerMoved');
     }
 
     refreshBox() {
@@ -1361,6 +1364,8 @@ export class Arena extends Phaser.Scene
 
         this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
+        this.tutorial = new Tutorial(this);
+
         if (isReconnect) {
             this.setGameInitialized();
         } else {
@@ -1372,7 +1377,7 @@ export class Arena extends Phaser.Scene
             }, delay);
 
             if (this.gameSettings.tutorial) {
-                setTimeout(this.tutorial.bind(this), delay + 3000);
+                setTimeout(() => events.emit('tutorialStarted'), delay + 3000);
             }
         }
 
@@ -1391,12 +1396,28 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    tutorial() {
-        // Fetch playert team
-        const playerTeam = this.teamsMap.get(this.playerTeamId);
-        const player = playerTeam.getMember(1);
-        player.talk('Welcome to the tutorial!');
+    sleep(duration) {
+        return new Promise(resolve => {
+            this.time.delayedCall(duration, resolve, [], this);
+        });
     }
+
+    // async tutorial() {
+    //     const playerTeam = this.teamsMap.get(this.playerTeamId);
+    //     const p1 = playerTeam.getMember(1);
+    //     const p2 = playerTeam.getMember(2);
+    //     const p3 = playerTeam.getMember(3);
+    //     p1.talk('Hi!');
+    //     await this.sleep(1000);
+    //     p2.talk('Hello!');
+    //     await this.sleep(500);
+    //     p3.talk('Hey!');
+    //     await this.sleep(500);
+    //     await this.sleep(p1.talk('We\'re your team!'));
+    //     await this.sleep(p3.talk('We need to defeat the other team!'));
+    //     await this.sleep(p1.talk('Let me show you how to move!'));
+    //     p1.talk('Click on me, then click on a yellow tile to move!');
+    // }
 
     setGameInitialized() {
         this.gameInitialized = true;

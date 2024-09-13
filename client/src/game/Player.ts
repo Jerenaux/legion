@@ -783,12 +783,28 @@ export class Player extends Phaser.GameObjects.Container {
         }
     }
 
-    talk(text: string) {
-        this.speechBubble.setText(text);
+    calculateDisplayDuration(text) {
+        const wordsPerMinute = 150; // Average reading speed
+        const words = text.split(' ').length;
+        const minutes = words / wordsPerMinute;
+        const duration = minutes * 60 * 1000; // Convert minutes to milliseconds
+        return Math.max(1000, duration);
+    }
+
+    talk(text: string, sticky = false) {
         this.speechBubble.setVisible(true);
-        this.scene.time.delayedCall(2000, () => {
-            this.speechBubble.setVisible(false);
-        });
+        this.speechBubble.setText(text);
+        const duration = this.calculateDisplayDuration(text);
+        if (!sticky) {
+            this.scene.time.delayedCall(duration, () => {
+                this.hideBubble();
+            });
+        }
+        return duration;
+    }
+
+    hideBubble() {
+        this.speechBubble.setVisible(false);
     }
 
     destroy() {
