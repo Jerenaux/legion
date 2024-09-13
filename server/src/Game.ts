@@ -360,8 +360,9 @@ export abstract class Game
         this.updateGameInDB(winnerUID, results);
     }
 
-    setCooldown(player: ServerPlayer, cooldown: number) {
-        player.setCooldown(cooldown);
+    setCooldown(player: ServerPlayer, cooldownMs: number) {
+        // if (this.mode == PlayMode.TUTORIAL && player.isAI) cooldownMs *= 1.5;
+        player.setCooldown(cooldownMs);
     }
 
     processMove({tile, num}: {tile: Tile, num: number}, team: Team) {

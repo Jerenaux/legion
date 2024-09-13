@@ -93,6 +93,11 @@ export class AIGame extends Game {
         super.endGame(winner);
     }
 
+    endTutorial() {
+        console.log('[AIGame:endTutorial] Ending tutorial...');
+        this.temporaryFrozen = false;
+    }
+
     AItick() {
         if (this.gameOver) {
             clearInterval(this.tickTimer!);

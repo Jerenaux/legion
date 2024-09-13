@@ -148,6 +148,14 @@ io.on('connection', async (socket: any) => {
         const game = socketMap.get(socket);
         game?.abandonGame(socket);
       });
+
+      socket.on('endTutorial', () => {
+        console.log(`[server:endTutorial] User ${shortToken(socket.uid)} ending tutorial`);
+        const game = socketMap.get(socket);
+        if(game instanceof AIGame) {
+          game.endTutorial();
+        }
+      })
     } catch (error) {
         console.error(`Error joining game server: ${error}`);
     }

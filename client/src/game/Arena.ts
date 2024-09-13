@@ -300,6 +300,7 @@ export class Arena extends Phaser.Scene
         this.send('spell', data);
         this.toggleTargetMode(false);
         this.selectedPlayer.pendingSpell = null;
+        if (this.gameSettings.tutorial) events.emit('playerCastSpell');
     }
 
     sendUseItem(index: number, x: number, y: number, player: Player | null) {
@@ -315,6 +316,12 @@ export class Arena extends Phaser.Scene
         this.send('useitem', data);
         this.toggleItemMode(false);
         this.selectedPlayer.pendingItem = null;
+    }
+
+    endTutorial() {
+        if (this.socket) {
+            this.socket.emit('endTutorial');
+        }
     }
 
     send(channel, data) {

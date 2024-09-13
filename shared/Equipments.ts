@@ -320,6 +320,17 @@ equipments[26] = new BaseEquipment({
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
 });
 
+equipments[27] = new BaseEquipment({
+    id: 27,
+    name: "Traveler's gloves",
+    description: "",
+    frame: 113,
+    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.ATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    slot: EquipmentSlot.GLOVES,
+    effort: 8,
+    minLevel: 1,
+});
+
 export function getEquipmentById(id:number): BaseEquipment | undefined {
     return equipments.find(e => e.id === id);
 }
