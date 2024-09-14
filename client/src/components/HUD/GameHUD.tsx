@@ -15,7 +15,7 @@ import { firebaseAuth } from '../../services/firebaseService';
 
 interface GameHUDProps {
   changeMainDivClass: (newClass: string) => void;
-  markLoaded: () => void;
+  updateProgress: (progress: number) => void;
 }
 interface GameHUDState {
   playerVisible: boolean;
@@ -137,8 +137,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       this.handleCursorChange('normalCursor')
     });
 
-    events.on('gameInitialized', () => {
-      this.props.markLoaded();
+    events.on('progressUpdate', (progress: number) => {
+      this.props.updateProgress(progress);
     });
   }
 

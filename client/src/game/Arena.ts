@@ -12,7 +12,6 @@ import { Target, Terrain, GEN, PlayMode } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
 import { Tutorial } from './tutorial';
 
-import bgImage from '@assets/aarena_bg.png';
 import killzoneImage from '@assets/killzone.png';
 import iceblockImage from '@assets/iceblock.png';
 
@@ -100,7 +99,6 @@ export class Arena extends Phaser.Scene
     {
         this.gamehud = new GameHUD();
         
-        this.load.image('bg',  bgImage);
         this.load.image('killzone',  killzoneImage);
         this.load.image('iceblock',  iceblockImage);
         this.load.image('speech_bubble', speechBubble);
@@ -108,7 +106,6 @@ export class Arena extends Phaser.Scene
         const frameConfig = { frameWidth: 144, frameHeight: 144};
         // Iterate over assetsMap and load spritesheets
         allSprites.forEach((sprite) => {
-            // this.load.spritesheet(sprite, `sprites/${sprite}.png`, frameConfig);
             this.load.spritesheet(sprite, require(`@assets/sprites/${sprite}.png`), frameConfig);
         });
         this.load.spritesheet('potion_heal', potionHealImage, { frameWidth: 48, frameHeight: 64});
@@ -122,7 +119,6 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('impact', impactImage, { frameWidth: 291, frameHeight: 291});
         this.load.spritesheet('poison', poisonImage, { frameWidth: 64, frameHeight: 64});
         this.load.spritesheet('mute', muteImage, { frameWidth: 64, frameHeight: 64});
-
         this.load.spritesheet('statuses', statusesImage, { frameWidth: 96, frameHeight: 96});
 
         this.load.audio('click', clickSFX);
@@ -150,7 +146,6 @@ export class Arena extends Phaser.Scene
         this.load.audio('bgm_end', bgmEndSFX);
 
         for (let i = 1; i <= 12; i++) {
-            // this.load.audio(`bgm_loop_${i}`, `music/bgm_loop_${i}.wav`);
             this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
         }
 
@@ -162,6 +157,13 @@ export class Arena extends Phaser.Scene
             this.load.image(name, require(`@assets/GEN/${name}.png`));
         });
 
+        this.load.on('progress', (value) => {
+            this.emitEvent('progressUpdate', Math.floor(value * 100));
+        });
+
+        this.load.on('complete', () => {
+            this.emitEvent('progressUpdate', 100);
+        });
     }
 
     extractGameIdFromUrl() {
@@ -172,6 +174,7 @@ export class Arena extends Phaser.Scene
     }
 
     async connectToServer() {
+        return;
         console.log('Connecting to the server ...');
         const gameId = this.extractGameIdFromUrl();
 
@@ -499,13 +502,6 @@ export class Arena extends Phaser.Scene
             }
         }, this);
 
-        // const bg = this.add.image(0, -230, 'bg').setOrigin(0, 0);
-
-        // const scaleX = gameWidth / bg.width;
-        // const scaleY = gameHeight / bg.height;
-        // const scale = Math.max(scaleX, scaleY);
-        // bg.setScale(scale).setAlpha(0.7);
-
         this.input.keyboard.on('keydown', this.handleKeyDown, this);
     }
 
@@ -678,6 +674,9 @@ export class Arena extends Phaser.Scene
                 break;
             case 'clearPendingItem':
                 events.emit('clearPendingItem');
+                break;
+            case 'progressUpdate':
+                events.emit('progressUpdate', data);
                 break;
             default:
                 break;
@@ -1401,8 +1400,6 @@ export class Arena extends Phaser.Scene
             console.log('Exit game event received');
             this.destroy();
         });
-
-        events.emit('gameInitialized');
     }
 
     sleep(duration) {
