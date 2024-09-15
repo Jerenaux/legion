@@ -2,8 +2,8 @@ export class MusicManager {
     scene: Phaser.Scene;
     currentSound;
     startinIntensity = 0;
-    intensity = 0;
-    combatIntensity = 0;
+    intensity = 0; // Current playing intensity level
+    desiredIntensity = 0; // Desired intensity level based on game state
     nbIntensities = 0;
     bridges = [];
     gameOver = false;
@@ -14,6 +14,7 @@ export class MusicManager {
         this.currentSound = null;
         this.startinIntensity = startinIntensity;
         this.intensity = this.startinIntensity;
+        this.desiredIntensity = this.startinIntensity;
         this.nbIntensities = nbIntensities;
         this.bridges = bridges;
     }
@@ -30,34 +31,89 @@ export class MusicManager {
 
     updateMusicIntensity(ratio) {
         if (this.gameOver) return;
-        this.combatIntensity = this.computeMusicIntensity(ratio) + this.startinIntensity; 
-        if (this.combatIntensity > this.intensity) {
-            this.intensity++;
+
+        // Compute the desired intensity based on the game ratio
+        this.desiredIntensity = this.computeMusicIntensity(ratio) + this.startinIntensity;
+
+        // Cap the desired intensity to the maximum available
+        if (this.desiredIntensity > this.nbIntensities) {
+            this.desiredIntensity = this.nbIntensities;
         }
-        if (this.intensity > this.nbIntensities) this.intensity = this.nbIntensities;
+
+        // Attempt to increase the current intensity towards the desired intensity
+        if (this.desiredIntensity > this.intensity) {
+            for (let i = this.intensity + 1; i <= this.desiredIntensity; i++) {
+                const key = `bgm_loop_${i}`;
+                if (this.scene.cache.audio.has(key)) {
+                    this.intensity = i; // Asset is loaded; advance to this intensity
+                } else {
+                    // Asset not loaded; cannot advance further
+                    break;
+                }
+            }
+        }
+        // Note: You can implement decreasing intensity similarly if needed
     }
 
     playBeginning() {
+        // Play the starting music
         this.currentSound = this.scene.sound.add('bgm_start', this.soundConfig);
         this.currentSound.once('complete', () => this.playNext(), this);
         this.currentSound.play();
     }
 
     playNext() {
-        this.currentSound = this.scene.sound.add(`bgm_loop_${this.intensity}`, this.soundConfig);
+        let key = `bgm_loop_${this.intensity}`;
+
+        // Check if the current intensity's asset is loaded
+        if (!this.scene.cache.audio.has(key)) {
+            // Attempt to find the highest available intensity below the desired one
+            let fallbackIntensity = this.intensity;
+            while (fallbackIntensity > 0) {
+                key = `bgm_loop_${fallbackIntensity}`;
+                if (this.scene.cache.audio.has(key)) {
+                    this.intensity = fallbackIntensity;
+                    break;
+                }
+                fallbackIntensity--;
+            }
+
+            if (fallbackIntensity === 0) {
+                // No suitable asset found; cannot play background music
+                console.warn('No suitable background music loaded to play.');
+                return;
+            }
+        }
+
+        // Play the music at the current intensity level
+        this.currentSound = this.scene.sound.add(key, this.soundConfig);
         this.currentSound.once('complete', () => this.playNext(), this);
         this.currentSound.play();
-        if (this.bridges.includes(this.intensity)) this.intensity++;
+
+        // After starting playback, attempt to advance intensity for the next loop
+        if (this.intensity < this.desiredIntensity) {
+            const nextIntensity = this.intensity + 1;
+            const nextKey = `bgm_loop_${nextIntensity}`;
+            if (this.scene.cache.audio.has(nextKey)) {
+                this.intensity = nextIntensity;
+            }
+        }
+
+        // Handle bridges if applicable
+        if (this.bridges.includes(this.intensity)) {
+            const nextIntensity = this.intensity + 1;
+            const nextKey = `bgm_loop_${nextIntensity}`;
+            if (this.scene.cache.audio.has(nextKey)) {
+                this.intensity = nextIntensity;
+            }
+        }
     }
 
     playEnd() {
         this.gameOver = true;
-        // if (this.currentSound && this.currentSound.isPlaying) {
-        //     this.currentSound.once('complete', () => {
-        //         this.scene.sound.add('bgm_end').play();
-        //     });
-        // } 
-        this.currentSound.stop();
+        if (this.currentSound) {
+            this.currentSound.stop();
+        }
         this.scene.sound.add('bgm_end', this.soundConfig).play();
     }
 
@@ -66,7 +122,9 @@ export class MusicManager {
             this.currentSound.stop();
             this.currentSound.removeAllListeners();
         }
-        if (this.scene) this.scene.sound.removeAll(); // This removes all sounds from the scene
+        if (this.scene) {
+            this.scene.sound.removeAll(); // Removes all sounds from the scene
+        }
     }
 
     destroy() {

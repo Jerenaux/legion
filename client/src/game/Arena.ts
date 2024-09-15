@@ -143,11 +143,7 @@ export class Arena extends Phaser.Scene
 
         // Load music
         this.load.audio('bgm_start', bgmStartSFX);
-        this.load.audio('bgm_end', bgmEndSFX);
-
-        for (let i = 1; i <= 12; i++) {
-            this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
-        }
+        this.load.audio(`bgm_loop_1`, require(`@assets/music/bgm_loop_1.wav`));
 
         this.load.atlas('groundTiles', groundTilesImage, groundTilesAtlas);
     
@@ -174,7 +170,6 @@ export class Arena extends Phaser.Scene
     }
 
     async connectToServer() {
-        return;
         console.log('Connecting to the server ...');
         const gameId = this.extractGameIdFromUrl();
 
@@ -1291,6 +1286,7 @@ export class Arena extends Phaser.Scene
     // PhaserCreate
     create()
     {
+        this.loadBackgroundMusic();
         this.setUpBackground();
         this.setUpArena();
         this.createAnims();
@@ -1316,6 +1312,29 @@ export class Arena extends Phaser.Scene
             mode: null,
         }
     }
+
+    loadBackgroundMusic() {
+        // Add the music files to the loader
+        for (let i = 2; i <= 12; i++) {
+            this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
+        }
+        this.load.audio('bgm_end', bgmEndSFX);
+
+    
+        // Optional: Set up progress or completion events
+        // this.load.on('filecomplete', (key, type, data) => {
+        //     console.log(`Loaded: ${key}`);
+        // });
+    
+        // this.load.on('complete', () => {
+        //     console.log('All background music loaded');
+        //     // Now you can use the loaded music tracks
+        // });
+    
+        // Start the loader
+        this.load.start();
+    }
+    
 
     displaySpellArea(location, size, duration) {
         if (size % 2 === 0) {
@@ -1407,24 +1426,7 @@ export class Arena extends Phaser.Scene
             this.time.delayedCall(duration, resolve, [], this);
         });
     }
-
-    // async tutorial() {
-    //     const playerTeam = this.teamsMap.get(this.playerTeamId);
-    //     const p1 = playerTeam.getMember(1);
-    //     const p2 = playerTeam.getMember(2);
-    //     const p3 = playerTeam.getMember(3);
-    //     p1.talk('Hi!');
-    //     await this.sleep(1000);
-    //     p2.talk('Hello!');
-    //     await this.sleep(500);
-    //     p3.talk('Hey!');
-    //     await this.sleep(500);
-    //     await this.sleep(p1.talk('We\'re your team!'));
-    //     await this.sleep(p3.talk('We need to defeat the other team!'));
-    //     await this.sleep(p1.talk('Let me show you how to move!'));
-    //     p1.talk('Click on me, then click on a yellow tile to move!');
-    // }
-
+    
     setGameInitialized() {
         this.gameInitialized = true;
         this.updateOverview();
