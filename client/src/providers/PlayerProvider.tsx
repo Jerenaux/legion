@@ -27,6 +27,9 @@ import {
 
 import equipSfx from "@assets/sfx/equip.wav";
 class PlayerProvider extends Component<{}, PlayerContextState> {
+    private fetchAllDataTimeout: NodeJS.Timeout | null = null;
+    private fetchAllDataDelay: number = 200; 
+
     constructor(props: {}) {
       super(props);
       this.state = this.getInitialState();
@@ -82,17 +85,32 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     componentDidMount() {
-      this.fetchAllData();
     }
 
     componentDidUpdate() {
       const user = firebaseAuth.currentUser;
-      if (!user && this.state.player.isLoaded) this.resetState();
-      if (user && !this.state.player.isLoaded) this.fetchAllData();
+      if (!user && this.state.player.isLoaded) {
+        this.resetState();
+      } else if (user && !this.state.player.isLoaded) {
+        this.debouncedFetchAllData();
+      }
     }
 
     componentWillUnmount(): void {
       this.resetState();
+      if (this.fetchAllDataTimeout !== null) {
+        clearTimeout(this.fetchAllDataTimeout);
+      }
+    }
+
+    debouncedFetchAllData = () => {
+      if (this.fetchAllDataTimeout !== null) {
+        clearTimeout(this.fetchAllDataTimeout);
+      }
+      this.fetchAllDataTimeout = setTimeout(() => {
+        this.fetchAllData();
+        this.fetchAllDataTimeout = null;
+      }, this.fetchAllDataDelay);
     }
 
     fetchAllData() {
