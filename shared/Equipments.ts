@@ -113,13 +113,14 @@ equipments[8] = new BaseEquipment({
 
 equipments[9] = new BaseEquipment({
     id: 9,
-    name: "Sturdy boots",
+    name: "Whispering Boots",
     description: "",
     frame: 130,
-    effects: [{stat: Stat.DEF, value: 15}, {stat: Stat.SPDEF, value: 15}],
+    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.MP, value: 15}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
     slot: EquipmentSlot.BOOTS,
-    effort: 10,
-    minLevel: 5,
+    effort: 9,
+    minLevel: 1,
+    classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
 equipments[10] = new BaseEquipment({
@@ -329,6 +330,18 @@ equipments[27] = new BaseEquipment({
     slot: EquipmentSlot.GLOVES,
     effort: 8,
     minLevel: 1,
+});
+
+equipments[28] = new BaseEquipment({
+    id: 28,
+    name: "Sentinel's Greaves",
+    description: "",
+    frame: 133,
+    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPDEF, value: 5}],
+    slot: EquipmentSlot.BOOTS,
+    effort: 10,
+    minLevel: 5,
+    classes: [Class.WARRIOR],
 });
 
 export function getEquipmentById(id:number): BaseEquipment | undefined {
