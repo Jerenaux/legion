@@ -240,7 +240,7 @@ spells.push(new BaseSpell({
 
     score: 10,
     classes: [Class.WHITE_MAGE],
-    minLevel: 5,
+    minLevel: 1,
 }));
 
 spells.push(new BaseSpell({

@@ -1246,48 +1246,11 @@ export class Arena extends Phaser.Scene
     clearHighlight() {
         if (this.highlight) this.highlight.clear();
     }
-
-    setUpBackground() {
-        // Calculate dimensions for the larger background
-        const extraSize = 100; // Extra pixels on each side
-        const bgWidth = this.scale.width + extraSize * 2;
-        const bgHeight = this.scale.height + extraSize * 2;
-    
-        // Create a gradient texture
-        let gradientTexture = this.textures.createCanvas('gradient', bgWidth, bgHeight);
-        let context = gradientTexture.context;
-        let gradient = context.createLinearGradient(0, 0, 0, bgHeight);
-    
-        // Define gradient colors
-        gradient.addColorStop(0, '#242529'); // Dark color at the top
-        gradient.addColorStop(1, '#325268'); // Light color at the bottom
-    
-        // Apply gradient to the context
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, bgWidth, bgHeight);
-    
-        // Refresh the texture to apply changes
-        gradientTexture.refresh();
-    
-        // Add the gradient as a sprite to the scene
-        // Position it at the center of the screen
-        let background = this.add.image(this.scale.width / 2, this.scale.height / 2, 'gradient');
-        
-        // Set the origin to the center
-        background.setOrigin(0.5, 0.5);
-    
-        // Scale the background to cover the entire screen plus extra area
-        background.setDisplaySize(bgWidth, bgHeight);
-    
-        // Ensure the background is rendered behind other game objects
-        background.setDepth(-1);
-    }
     
     // PhaserCreate
     create()
     {
         this.loadBackgroundMusic();
-        this.setUpBackground();
         this.setUpArena();
         this.createAnims();
         this.createSounds();
