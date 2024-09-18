@@ -468,6 +468,14 @@
   margin-left: 10px;
   z-index: 2;
   align-self: start;
+
+  position: absolute;
+  top: 10px; 
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  margin-top: 0;
+  margin-left: 0;
 }
 
 .player_content_container {
