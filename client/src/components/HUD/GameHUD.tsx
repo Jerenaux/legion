@@ -191,7 +191,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
 
     return (
-      <div className="gameCursor height_full flex flex_col justify_between padding_bottom_16">
+      <div className="gamehud">
         <div className="hud-container">
           <Overview position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
           {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}

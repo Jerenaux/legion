@@ -39,8 +39,10 @@
   margin: 0 auto;
 }
 
-.height_full {
-  height: 100vh;
+.gamehud {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .justify_center {
@@ -93,10 +95,6 @@
 
 .padding_top_16 {
   padding-top: 16px;
-}
-
-.padding_bottom_16 {
-  padding-bottom: 16px;
 }
 
 .padding_right_16 {
