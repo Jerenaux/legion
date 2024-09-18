@@ -45,6 +45,35 @@
   height: 100%;
 }
 
+.hud-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+
+.overview {
+  position: relative;
+  margin: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+
+
+.member {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Kim', sans-serif;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  color: white;
+}
+
 .justify_center {
   justify-content: center;
 }
@@ -59,7 +88,7 @@
 
 .justify_start {
   justify-content: flex-start;
-} 
+}
 
 .row_reverse {
   flex-direction: row-reverse;
@@ -107,10 +136,10 @@
 
 .relative {
   position: relative;
-} 
+}
 
 .overview {
-  position: relative; 
+  position: relative;
 }
 
 .overview_right {
@@ -119,10 +148,10 @@
 
 .overview_playerteam {
   cursor: var(--game-pointer)
-} 
+}
 
-.member_container { 
-  position: absolute; 
+.member_container {
+  position: absolute;
   top: 108px;
 }
 
@@ -308,7 +337,7 @@
   gap: 4px;
   position: relative;
   padding: 8px 16px 12px 36px;
-  max-width: 320px; 
+  max-width: 320px;
   min-width: 260px;
   font-family: 'Kim';
 }
@@ -360,32 +389,32 @@
 }
 
 .player_info_player_profile {
-  background-image: url("@assets/HUD/player_profile_bg.png"); 
+  background-image: url("@assets/HUD/player_profile_bg.png");
   background-size: 100% 100%;
   width: 72px;
-  height: 72px; 
+  height: 72px;
   border: 1px solid #274c57;
-} 
+}
 
-.player_info_player_profile > img { 
-  width: 100%; 
+.player_info_player_profile>img {
+  width: 100%;
   height: 100%;
 }
 
 .player_info {
   display: flex;
-  flex-direction: column; 
-  position: relative; 
+  flex-direction: column;
+  position: relative;
   width: calc(100% - 72px);
 }
 
 .player_info_name {
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff; 
+  color: #ffffff;
   padding: 3px;
-  background-image: url("@assets/HUD/team_bg.png"); 
-  background-size: 100% 100%; 
+  background-image: url("@assets/HUD/team_bg.png");
+  background-size: 100% 100%;
 }
 
 .player_info_rank {
@@ -401,7 +430,7 @@
 
 .player_info_rank span {
   font-size: 24px;
-  color: white; 
+  color: white;
   margin-top: -2px;
   margin-right: 4px;
   font-style: italic;
@@ -417,10 +446,10 @@
   font-size: 10px;
   color: #ffffff;
   /* margin-left: -4px;  */
-  
+
   width: 100%;
-  height: 14px; 
-  position: absolute; 
+  height: 14px;
+  position: absolute;
   bottom: 0;
 }
 
@@ -619,15 +648,14 @@
   cursor: var(--game-pointer);
 }
 
-.player_hud_skills:hover, 
-.player_hud_skills:active, 
-.player_hud_skills:focus, 
-.player_hud_skills:focus-within, 
-.player_hud_skills:visited, 
-.player_hud_skills:target
-{
+.player_hud_skills:hover,
+.player_hud_skills:active,
+.player_hud_skills:focus,
+.player_hud_skills:focus-within,
+.player_hud_skills:visited,
+.player_hud_skills:target {
   border: 1px solid #71deff !important;
-} 
+}
 
 
 .goldend_background {
@@ -641,22 +669,22 @@
 }
 
 .spectator_container {
-    position: absolute;
-    top: 8px;
-    right: 0.5vw;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    z-index: 10;
+  position: absolute;
+  top: 8px;
+  right: 0.5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  z-index: 10;
 }
 
 .spectator_container_right {
   position: absolute;
   top: 8px;
   left: 1.75vw;
-  display: flex; 
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -708,14 +736,14 @@
   background-image: url("@assets/HUD/progress_fill.png");
   background-size: 100% 100%;
   width: 100%;
-  height: 100%; 
-  transition: width 0.3s ease-in-out; 
-  display: flex; 
+  height: 100%;
+  transition: width 0.3s ease-in-out;
+  display: flex;
   flex-direction: row-reverse;
-} 
+}
 
 .spectator_progress_fill_mask {
-  height: 100%; 
+  height: 100%;
   /* width: 50%;  */
   background-color: #1c1f25;
 }
@@ -965,7 +993,7 @@
   overflow: hidden;
 }
 
-.endgame_character_exp_bg > div {
+.endgame_character_exp_bg>div {
   background-color: #71deff;
   width: 80%;
   height: 100%;
@@ -1069,7 +1097,7 @@
   align-items: center;
   cursor: pointer;
 
-  z-index: 10; 
+  z-index: 10;
   position: relative;
 }
 
@@ -1079,19 +1107,19 @@
   margin-left: 6px;
 }
 
-.streak_gold_list > div:first-child {
-  width: 32px; 
-  height: 32px; 
+.streak_gold_list>div:first-child {
+  width: 32px;
+  height: 32px;
   background-repeat: no-repeat;
-} 
+}
 
-.streak_gold_list_amount { 
-  position: absolute; 
-  bottom: 6px; 
-  right: 12px; 
-  font-size: 12px; 
-  font-weight: bold; 
-  color: white; 
+.streak_gold_list_amount {
+  position: absolute;
+  bottom: 6px;
+  right: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
 }
 
 .light_streak {
@@ -1131,14 +1159,14 @@
   align-items: center;
 
   cursor: pointer;
-} 
+}
 
-.game_setting { 
+.game_setting {
   background-color: #252b36;
   border: 1px solid #4583d0;
   border-radius: 4px;
   padding: 6px 8px;
-  margin-bottom: 4px; 
+  margin-bottom: 4px;
   text-align: center;
   cursor: var(--game-pointer);
 }
@@ -1148,21 +1176,21 @@
   border: 1px solid #4583d0;
   border-radius: 4px;
   padding: 6px 8px;
-  margin-bottom: 4px; 
+  margin-bottom: 4px;
   text-align: center;
   cursor: var(--game-pointer);
-} 
+}
 
 .exit_game_menu {
   cursor: var(--game-pointer);
 }
- 
-.setting_menu { 
-  background-color: #252b36; 
-  padding: 16px; 
-  border: 2px solid #51fdff; 
+
+.setting_menu {
+  background-color: #252b36;
+  padding: 16px;
+  border: 2px solid #51fdff;
   border-radius: 8px;
-} 
+}
 
 .setting_menu_btn {
   background-image: url("@assets/HUD/button_bg_idle.png");
@@ -1174,21 +1202,21 @@
   align-items: center;
   justify-content: center;
 
-  color: #ffffff; 
+  color: #ffffff;
 
   cursor: pointer;
 }
 
 .setting_menu_btn:hover {
   background-image: url("@assets/HUD/button_bg_active.png");
-} 
+}
 
 .setting_menu_btn_inactive {
   opacity: 0.5;
 }
 
-.setting_menu_btn_active { 
-  color: #51fdff; 
+.setting_menu_btn_active {
+  color: #51fdff;
   opacity: 1.0;
 }
 
@@ -1203,18 +1231,18 @@
   justify-content: center;
   align-items: center;  */
   color: #ffffff;
-} 
+}
 
-.setting_dialog_keyboard { 
+.setting_dialog_keyboard {
   margin-bottom: 12px;
 }
 
-.setting_dialog_control_bar_container { 
-  display: flex; 
+.setting_dialog_control_bar_container {
+  display: flex;
   align-items: center;
-} 
+}
 
-.setting_dialog_control_name { 
+.setting_dialog_control_name {
   width: 30%;
 }
 
@@ -1239,20 +1267,20 @@
 .setting_dialog_control_thumb {
   width: 10px;
   height: 20px;
-  background-color: #252b36; 
-  border: 2px solid #4583d0; 
+  background-color: #252b36;
+  border: 2px solid #4583d0;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  cursor: pointer; 
+  cursor: pointer;
 
 }
 
 .setting_dialog_control_label_start {
   width: 2.5%;
-} 
+}
 
-.setting_dialog_control_label_end { 
+.setting_dialog_control_label_end {
   width: 7.5%;
 }
 
@@ -1279,7 +1307,7 @@
   align-items: center;
 
   position: absolute;
-  bottom: 94px; 
+  bottom: 94px;
 
   z-index: 0;
 }
@@ -1379,9 +1407,11 @@
   0% {
     background-color: #1c1f25;
   }
+
   50% {
     background-color: #ffffff;
   }
+
   100% {
     background-color: #1c1f25;
   }
@@ -1391,15 +1421,24 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 @keyframes oscillate-brightness {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.5); }
+
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.5);
+  }
 }
+
 .blinking-gradient {
   background: linear-gradient(to bottom right, #ecbb29, #1c1f25);
   animation: oscillate-brightness 0.5s ease-in-out infinite;
@@ -1411,7 +1450,7 @@
   text-transform: uppercase;
   position: relative;
   text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
-               0.025em 0.04em 0 #fffc00;
+    0.025em 0.04em 0 #fffc00;
   animation: glitch 725ms infinite;
 }
 
@@ -1437,32 +1476,38 @@
 
 @keyframes glitch {
   0% {
-      text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
-                   0.025em 0.04em 0 #fffc00;
+    text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
+      0.025em 0.04em 0 #fffc00;
   }
+
   15% {
-      text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
-                   0.025em 0.04em 0 #fffc00;
+    text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
+      0.025em 0.04em 0 #fffc00;
   }
+
   16% {
-      text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff,
-                   -0.05em -0.05em 0 #fffc00;
+    text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff,
+      -0.05em -0.05em 0 #fffc00;
   }
+
   49% {
-      text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff,
-                   -0.05em -0.05em 0 #fffc00;
+    text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff,
+      -0.05em -0.05em 0 #fffc00;
   }
+
   50% {
-      text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff,
-                   0 -0.04em 0 #fffc00;
+    text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff,
+      0 -0.04em 0 #fffc00;
   }
+
   99% {
-      text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff,
-                   0 -0.04em 0 #fffc00;
+    text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff,
+      0 -0.04em 0 #fffc00;
   }
+
   100% {
-      text-shadow: -0.05em 0 0 #00fffc, -0.025em -0.04em 0 #fc00ff,
-                   -0.04em -0.025em 0 #fffc00;
+    text-shadow: -0.05em 0 0 #00fffc, -0.025em -0.04em 0 #fc00ff,
+      -0.04em -0.025em 0 #fffc00;
   }
 }
 

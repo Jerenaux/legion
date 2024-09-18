@@ -475,6 +475,8 @@ export class Arena extends Phaser.Scene
     }
 
     setUpArena() {
+        // this.cameras.main.setZoom(1.5);
+
         const totalWidth = this.tileSize * this.gridWidth;
         const totalHeight = this.tileSize * this.gridHeight;
 
