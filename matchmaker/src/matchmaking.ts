@@ -76,7 +76,7 @@ function queueTimeUpdate() {
 }
 
 function switcherooCheck(player, i) {
-    console.log(`[matchmaker:switcherooCheck] isCasual: ${player.mode == PlayMode.CASUAL}, waitingTime: ${player.waitingTime}, threshold: ${casualModeThresholdTime}`);
+    // console.log(`[matchmaker:switcherooCheck] isCasual: ${player.mode == PlayMode.CASUAL}, waitingTime: ${player.waitingTime}, threshold: ${casualModeThresholdTime}`);
     if (player.mode == PlayMode.CASUAL && player.waitingTime > casualModeThresholdTime) {
         // Calculate the probability of redirecting to a PRACTICE game
         const waitTimeBeyondThreshold = player.waitingTime - casualModeThresholdTime;
@@ -95,6 +95,9 @@ function switcherooCheck(player, i) {
 
 function tryMatchPlayers() {
     let i = 0;
+    if (playersQueue.length > 0) {
+        console.log(`\n[matchmaker:tryMatchPlayers] #### ${playersQueue.length} players in Q`);
+    }
     while (i < playersQueue.length) {
         let player1 = playersQueue[i];
         let matchFound = false;
@@ -103,6 +106,7 @@ function tryMatchPlayers() {
 
         for (let j = i + 1; j < playersQueue.length; j++) {
             let player2 = playersQueue[j];
+            console.log(`[matchmaker:tryMatchPlayers] Considering ${player1.socket.id} with ${player2.socket.id} ...`);
             if (player1.mode == player2.mode && canBeMatched(player1, player2)) {
                 console.log(`Match found between ${player1.socket.id} and ${player2.socket.id}`);
                 // Start a game for these two players
@@ -115,6 +119,12 @@ function tryMatchPlayers() {
                 }
                 matchFound = true;
                 break;
+            } else {
+                if (player1.mode == player2.mode) {
+                    console.log(`[matchmaker:tryMatchPlayers] Mismatchibg modes`);
+                } else {
+                    console.log(`[matchmaker:tryMatchPlayers] Incompatible ELOs: ${player1.elo} vs ${player2.elo}, ranges: ${player1.range} vs ${player2.range}`);
+                }
             }
         }
 
