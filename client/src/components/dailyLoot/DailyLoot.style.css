@@ -85,3 +85,17 @@
     color: #ffb653;
     text-shadow: 0px 0px 16px #ef8056;
 }
+
+@keyframes shake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+    100% { transform: rotate(0deg); }
+  }
+  
+  /* Example usage in CSS classes if preferred over inline styles */
+  .shake-animation {
+    animation: shake 0.5s infinite;
+  }
+  

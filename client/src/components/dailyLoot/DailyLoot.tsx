@@ -22,9 +22,9 @@ interface DailyLootProps {
 }
 
 interface DailyLootState {
-  chestColor: ChestColor,
-  chestContent: ChestReward[], 
-  chestDailyLoot: any, 
+  chestColor: ChestColor | null,
+  chestContent: ChestReward[] | null, 
+  chestDailyLoot: any | null, 
 }
 
 class DailyLoot extends Component<DailyLootProps, DailyLootState> {
@@ -32,7 +32,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
     super(props);
     this.state = {
       chestColor: null,
-      chestContent: [], 
+      chestContent: null, 
       chestDailyLoot: null, 
     }
   }
@@ -54,24 +54,41 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
         errorToast(`You need a key to open this chest, go play a casual or ranked game!`);
         return;
       }
+
+       // Immediately show OpenedChest with loading state
+      this.setState({
+        chestColor: color,
+        chestContent: null, // Indicates loading
+        chestDailyLoot: null,
+      });
+
       try {
         const data = await apiFetch(`claimChest?chestType=${color}`);
         this.context.refreshAllData();
 
-        this.setState({ chestColor: color });
-        this.setState({ chestContent: data.content }); 
-        this.setState({ chestDailyLoot: data.dailyloot}); 
+        // Update state with fetched data
+        this.setState({ 
+          chestContent: data.content, 
+          chestDailyLoot: data.dailyloot 
+        });
 
       } catch (error) {
+        this.setState({
+          chestColor: null,
+          chestContent: null,
+          chestDailyLoot: null,
+        });
         errorToast(`Error: ${error}`);
       }
     } 
 
     const chestConfirm = () => { 
-      this.context.setPlayerInfo({ dailyloot: this.state.chestDailyLoot }); 
+      if (this.state.chestDailyLoot) {
+        this.context.setPlayerInfo({ dailyloot: this.state.chestDailyLoot }); 
+      }
       this.setState({
         chestColor: null, 
-        chestContent: [], 
+        chestContent: null, 
         chestDailyLoot: null, 
       });
       successToast("Chest claimed successfully!"); 
@@ -105,7 +122,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
           highlightColor='#0000004d'
           baseColor='#0f1421'
           style={{ margin: '2px 0', width: '100%' }} />}
-        {!!this.state.chestColor && 
+        {this.state.chestColor && 
           <OpenedChest 
                 width={width}
                 height={height}
