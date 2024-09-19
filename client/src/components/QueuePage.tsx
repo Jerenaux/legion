@@ -77,6 +77,39 @@ class QueuePage extends Component<QPageProps, QpageState> {
         };
     }
 
+    componentDidMount() {
+        this.joinQueue();
+        let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
+        if (this.state.queueData.estimatedWaitingTime != -1) {
+            this.interval = setInterval(() => {
+                this.setState((prevState) => ({
+                    progress: prevState.progress + 1,
+                }));
+                if (this.state.progress == 100) {
+                    clearInterval(this.interval);
+                }
+            }, timeInterval);
+        }
+        this.intervalWaited = setInterval(() => {
+            this.setState((prevState) => ({
+                waited: prevState.waited + 1,
+            }))
+        }, 1000);
+    }
+
+    // componentWillMount() {
+    //     this.joinQueue();
+    // }
+
+    componentWillUnmount() {
+        if (this.socket) {
+            this.manualDisconnect = true;
+            this.socket.disconnect();
+        }
+        clearInterval(this.interval);
+        clearInterval(this.intervalWaited);
+    }
+
     prevTip = () => {
         let len = this.state.tips.length;
         this.setState((prevState) => ({
@@ -124,10 +157,14 @@ class QueuePage extends Component<QPageProps, QpageState> {
 
         this.socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });
 
-        this.socket.on('disconnect', () => {
-            if (!this.manualDisconnect) {
-                errorToast('Disconnected from matchmaker, please refresh the page to queue again.');
-            }
+        // this.socket.on('disconnect', () => {
+        //     if (!this.manualDisconnect) {
+        //         errorToast('Disconnected from server, pleae refresh the page');
+        //     }
+        // });
+
+        this.socket.on('error', (e) => {
+            errorToast(e);
         });
     }
 
@@ -136,37 +173,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
     handleAccurateFind = () => {
         this.setState({ findState: 'accurate' });
-    }
-
-    componentDidMount() {
-        let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
-        if (this.state.queueData.estimatedWaitingTime != -1) {
-            this.interval = setInterval(() => {
-                this.setState((prevState) => ({
-                    progress: prevState.progress + 1,
-                }));
-                if (this.state.progress == 100) {
-                    clearInterval(this.interval);
-                }
-            }, timeInterval);
-        }
-        this.intervalWaited = setInterval(() => {
-            this.setState((prevState) => ({
-                waited: prevState.waited + 1,
-            }))
-        }, 1000);
-    }
-
-    componentWillMount() {
-        this.joinQueue();
-        clearInterval(this.interval);
-        clearInterval(this.intervalWaited);
-    }
-
-    componentWillUnmount() {
-        if (this.socket) {
-            this.socket.disconnect();
-        }
     }
 
     render() {

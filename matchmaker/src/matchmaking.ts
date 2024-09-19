@@ -46,13 +46,19 @@ async function notifyAdmin(mode: PlayMode) {
     }
 }
 
-// Initialize matchmaking functionality
 export function setupMatchmaking() {
     setInterval(() => {
         queueTimeUpdate();
-        tryMatchPlayers();
+        (async () => {
+            try {
+                await tryMatchPlayers();
+            } catch (error) {
+                console.error('Error in tryMatchPlayers:', error);
+            }
+        })();
     }, 1000);
 }
+
 
 function incrementGoldReward(player) {
     if (player.mode != PlayMode.PRACTICE && player.waitingTime % goldRewardInterval === 0) {
@@ -93,7 +99,7 @@ function switcherooCheck(player, i) {
     return false;
 }
 
-function tryMatchPlayers() {
+async function tryMatchPlayers() {
     let i = 0;
     if (playersQueue.length > 0) {
         console.log(`\n[matchmaker:tryMatchPlayers] #### ${playersQueue.length} players in Q`);
@@ -110,7 +116,7 @@ function tryMatchPlayers() {
             if (player1.mode == player2.mode && canBeMatched(player1, player2)) {
                 console.log(`Match found between ${player1.socket.id} and ${player2.socket.id}`);
                 // Start a game for these two players
-                const success = createGame(player1.socket, player2.socket, player1.mode, player1.league);
+                const success = await createGame(player1.socket, player2.socket, player1.mode, player1.league);
                 if (success) {
                     savePlayerGold(player1); 
                     savePlayerGold(player2);
@@ -166,9 +172,6 @@ async function createGame(player1: Socket, player2?: Socket, mode: PlayMode = Pl
                 }
             }
         );
-        // io.to(player1.id).emit("matchFound", { gameId });
-        // if (player2)
-        //     io.to(player2.id).emit("matchFound", { gameId });
         player1.nsp.to(player1.id).emit("matchFound", { gameId });
         if (player2)
             player2.nsp.to(player2.id).emit("matchFound", { gameId });
@@ -272,12 +275,13 @@ export async function processJoinQueue(socket, data: { mode: PlayMode }) {
     try {
         socket.uid = await getUID(socket.firebaseToken);
 
+        notifyAdmin(data.mode);
+
         if (data.mode == PlayMode.PRACTICE) {
             createGame(socket, null, PlayMode.PRACTICE);
             return;
         }
 
-        notifyAdmin(data.mode);
         addToQueue(socket, data.mode);
         logQueuingActivity(socket.uid, 'joinQueue', data.mode);
     } catch (error) {

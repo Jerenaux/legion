@@ -35,7 +35,7 @@ async function getUserWithRetry(maxRetries, interval) {
 
 export async function getFirebaseIdToken() {
     try {
-        const user = await getUserWithRetry(3, 250);
+        const user = await getUserWithRetry(4, 250);
         if (!user) {
             errorToast('Cannot get ID token: no active user');
             return;

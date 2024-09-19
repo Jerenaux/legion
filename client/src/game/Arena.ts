@@ -910,7 +910,7 @@ export class Arena extends Phaser.Scene
         this.musicManager.playEnd();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
         setTimeout(() => {
-            winningTeam.members.forEach((player) => {
+            winningTeam?.members.forEach((player) => {
                 player.victoryDance();
             });
         }, 200);
