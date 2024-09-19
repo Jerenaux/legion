@@ -213,7 +213,26 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     makeEntrance() {
-        const callback = () => { this.playAnim('boast', true);};
+        const combatStartPhrases: string[] = [
+            "Let's dance!",
+            "Prepare to fall!",
+            "Show me what you've got!",
+            "This ends now!",
+            "I've been waiting for this!",
+            "Victory or death!",
+            "No mercy!",
+            "This is my moment!",
+            "Let the battle begin!"
+          ];
+        const callback = () => { 
+            this.playAnim('boast', true);
+            // Say the phrase with a random delay
+            if (this.isPlayer) {
+                setTimeout(() => {
+                    this.talk(combatStartPhrases[Math.floor(Math.random() * combatStartPhrases.length)]);
+                }, Math.random() * 600);
+            }
+        };
         this.walkTo(this.gridX, this.gridY, 2000, callback);
     }
 
