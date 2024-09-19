@@ -37,6 +37,7 @@ export abstract class Game
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
     config: any;
+    GENhistory: Set<GEN> = new Set<GEN>();
 
     gridWidth: number = 20;
     gridHeight: number = 10;
@@ -181,9 +182,7 @@ export abstract class Game
         }
 
         if (this.mode == PlayMode.TUTORIAL) {
-            this.broadcast('gen', {
-                gen: GEN.TUTORIAL
-            });
+            this.broadcastGEN([GEN.TUTORIAL]);
         }
     }
 
@@ -473,9 +472,7 @@ export abstract class Game
         });
 
         if (oneShot) { // Broadcast gen after attack
-            this.broadcast('gen', {
-                gen: GEN.ONE_SHOT
-            });
+            this.broadcastGEN([GEN.ONE_SHOT]);
         }
 
         team.socket?.emit('cooldown', {
@@ -675,6 +672,12 @@ export abstract class Game
     }
 
     broadcastGEN(GENs: GEN[]) {
+        const noRepeatGENs = [GEN.BURNING, GEN.FROZEN];
+        // Filter out repeated GENs that are in the GEN history, allow others
+        GENs = GENs.filter(gen => !this.GENhistory.has(gen) || !noRepeatGENs.includes(gen) || (noRepeatGENs.includes(gen) && !this.GENhistory.has(gen)));
+        // Add the new GENs to the history
+        GENs.forEach(gen => this.GENhistory.add(gen));
+    
         /**
          * Broadcast a single GEN among those in the array, based on the following priority order:
          * 1. MULTI_KILL
