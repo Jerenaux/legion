@@ -151,8 +151,19 @@ class QueuePage extends Component<QPageProps, QpageState> {
         });
 
         this.socket.on('queueData', (data) => {
-            this.setState({ queueDataLoaded: true });
-            this.setState({ queueData: { ...data } });
+            this.setState({ 
+                queueDataLoaded: true,
+                queueData: { ...data }
+            });
+        });
+
+        this.socket.on('queueCount', (data) => {
+            this.setState({
+                queueData: {
+                    ...this.state.queueData,
+                    nbInQueue: data.count
+                }
+            });
         });
 
         this.socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });

@@ -47,4 +47,4 @@ io.on("connection", (socket: any) => {
     socket.on("disconnect", () => processDisconnect(socket));
 });
 
-setupMatchmaking();
+setupMatchmaking(io);

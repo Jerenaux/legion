@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import * as admin from 'firebase-admin';
 import jwt, { JwtPayload } from 'jsonwebtoken';
@@ -35,6 +35,8 @@ interface Player {
     gold: number;
 }
 
+let io: Server;
+
 const playersQueue: Player[] = [];
 
 async function notifyAdmin(mode: PlayMode) {
@@ -46,7 +48,9 @@ async function notifyAdmin(mode: PlayMode) {
     }
 }
 
-export function setupMatchmaking() {
+export function setupMatchmaking(ioInstance: Server) {
+    io = ioInstance;
+
     setInterval(() => {
         queueTimeUpdate();
         (async () => {
@@ -59,8 +63,22 @@ export function setupMatchmaking() {
     }, 1000);
 }
 
+function emitQueueCount() {
+    const count = playersQueue.length;
+    // console.log(`[matchmaker:emitQueueCount] ${count} players in queue`);
+    io.emit('queueCount', { count }); 
+}
 
-function incrementGoldReward(player) {
+function removePlayerFromQ(player: Player) {
+    const index = playersQueue.findIndex(p => p.socket.id === player.socket.id);
+    if (index !== -1) {
+        savePlayerGold(player);
+        playersQueue.splice(index, 1);
+        emitQueueCount();
+    }
+}
+
+function incrementGoldReward(player: Player) {
     if (player.mode != PlayMode.PRACTICE && player.waitingTime % goldRewardInterval === 0) {
         player.gold += goldReward; 
         player.socket.emit("updateGold", { gold: player.gold });
@@ -81,7 +99,7 @@ function queueTimeUpdate() {
     });
 }
 
-function switcherooCheck(player, i) {
+function switcherooCheck(player: Player) {
     // console.log(`[matchmaker:switcherooCheck] isCasual: ${player.mode == PlayMode.CASUAL}, waitingTime: ${player.waitingTime}, threshold: ${casualModeThresholdTime}`);
     if (player.mode == PlayMode.CASUAL && player.waitingTime > casualModeThresholdTime) {
         // Calculate the probability of redirecting to a PRACTICE game
@@ -91,8 +109,7 @@ function switcherooCheck(player, i) {
         if (Math.random() < redirectionProbability) {
             console.log(`Redirecting ${player.socket.id} to a CASUAL_VS_AI game due to long wait.`);
             createGame(player.socket, null, PlayMode.CASUAL_VS_AI, null);
-            savePlayerGold(player);
-            playersQueue.splice(i, 1); // Remove player from the queue
+            removePlayerFromQ(player);
             return true;
         }
     }
@@ -102,13 +119,13 @@ function switcherooCheck(player, i) {
 async function tryMatchPlayers() {
     let i = 0;
     if (playersQueue.length > 0) {
-        console.log(`\n[matchmaker:tryMatchPlayers] #### ${playersQueue.length} players in Q`);
+        console.log(`[matchmaker:tryMatchPlayers] ${playersQueue.length} players in Q`);
     }
     while (i < playersQueue.length) {
         let player1 = playersQueue[i];
         let matchFound = false;
 
-        if (switcherooCheck(player1, i)) return;
+        if (switcherooCheck(player1)) return;
 
         for (let j = i + 1; j < playersQueue.length; j++) {
             let player2 = playersQueue[j];
@@ -118,10 +135,8 @@ async function tryMatchPlayers() {
                 // Start a game for these two players
                 const success = await createGame(player1.socket, player2.socket, player1.mode, player1.league);
                 if (success) {
-                    savePlayerGold(player1); 
-                    savePlayerGold(player2);
-                    playersQueue.splice(j, 1); // Remove player2 first since it's later in the array
-                    playersQueue.splice(i, 1); // Remove player1
+                    removePlayerFromQ(player2.socket); // Remove player2 first since it's later in the array
+                    removePlayerFromQ(player1.socket);
                 }
                 matchFound = true;
                 break;
@@ -217,6 +232,7 @@ async function addToQueue(socket: any, mode: PlayMode) {
         };
         playersQueue.push(player);
         sendQData(player);
+        emitQueueCount();
         console.log(`Player ${socket.id} joined queue  in mode ${mode} with elo ${player.elo} and league ${player.league}`);
     } catch (error) {
         console.error(`Error adding player to queue: ${error}`);
@@ -297,12 +313,9 @@ export async function processJoinQueue(socket, data: { mode: PlayMode }) {
 
 export async function processDisconnect(socket) {
     console.log(`Player disconnected`);
-    const index = playersQueue.findIndex(player => player.socket.id === socket.id);
-    if (index !== -1) {
-        await savePlayerGold(playersQueue[index]); 
-        playersQueue.splice(index, 1);
-        logQueuingActivity(socket.uid, 'leaveQueue', null);
-    }
+    const player = playersQueue.find(player => player.socket.id === socket.id);
+    removePlayerFromQ(player);
+    logQueuingActivity(socket.uid, 'leaveQueue', null);
 }
 
 interface FirebasePublicKeys {
