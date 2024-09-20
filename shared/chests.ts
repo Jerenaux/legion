@@ -38,6 +38,8 @@ function getRandomItem(
     let chosenRarity: Rarity | null = null;
 
     if (allowGold && Math.random() < goldChance) {
+        // Make the amount vary between 0.5*goldAmoutn and 1.5*goldAmount
+        goldAmount = Math.floor(goldAmount * (0.5 + Math.random()));
         return { type: RewardType.GOLD, name: "gold", id: -1, frame: -1, rarity: Rarity.COMMON, amount: goldAmount};
     }
 
@@ -137,8 +139,8 @@ export function getChestContent(type: ChestColor): ChestReward[] {
                 [RewardType.SPELL]: 15,
                 [RewardType.EQUIPMENT]: 35,
             };
-            numberOfItems = 3;
-            goldCoefficient = 10;
+            numberOfItems = 2;
+            goldCoefficient = 5;
             break;
         default:
             throw new Error('Invalid ChestColor');

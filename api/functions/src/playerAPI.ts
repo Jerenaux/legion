@@ -206,7 +206,7 @@ export const getPlayerData = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const docSnap = await db.collection("players").doc(uid).get();
+      const docSnap = await db.collection('players').doc(uid).get();
 
       if (docSnap.exists) {
         const playerData = docSnap.data();
