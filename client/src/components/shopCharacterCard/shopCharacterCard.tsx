@@ -8,7 +8,7 @@ import { modalData } from '../shopContent/ShopContent';
 import goldIcon from '@assets/gold_icon.png';
 import { spells } from '@legion/shared/Spells';
 import { mapFrameToCoordinates } from '../utils';
-import { Target, RarityColor } from '@legion/shared/enums';
+import { Target, RarityColor, statFields } from '@legion/shared/enums';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 
 import spellsSpritesheet from '@assets/spells.png';
@@ -37,6 +37,8 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
     const { data } = this.props;
 
     const statsArray = Object.entries(data.stats).map(([key, value]) => ({ key, value: value as number }));
+    // Make the entires in statsArray follow the order in statsFields
+    statsArray.sort((a, b) => statFields.indexOf(a.key) - statFields.indexOf(b.key));
 
     const portraitStyle = {
       backgroundImage: `url(${getSpritePath(data.portrait)})`,
