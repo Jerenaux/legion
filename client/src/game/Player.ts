@@ -747,9 +747,9 @@ export class Player extends Phaser.GameObjects.Container {
                 this.arena.emitEvent('cooldownEnded', {num: this.num})
                 this.arena.playSound('cooldown');
 
-                if (this.isPlayer) {
-                    this.startBlinkingBaseSquare();
-                }
+                // if (this.isPlayer) {
+                //     this.startBlinkingBaseSquare();
+                // }
             }
         });
     }
