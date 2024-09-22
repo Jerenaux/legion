@@ -88,6 +88,8 @@ export class Arena extends Phaser.Scene
     gameSettings;
     killCamActive = false;
     pendingGEN: GEN;
+    genQueue: GEN[] = [];
+    isDisplayingGEN: boolean = false;
     eventsQueue = [];
     isLateToTheParty = false;
     sceneCreated = false;
@@ -164,7 +166,6 @@ export class Arena extends Phaser.Scene
 
         this.load.on('complete', () => {
             this.emitEvent('progressUpdate', 100);
-            console.log('Assets preloaded');
         });
         this.connectToServer();
     }
@@ -264,7 +265,12 @@ export class Arena extends Phaser.Scene
         });
 
         this.socket.on('gen', (data) => {
-            this.displayGEN(data.gen);
+            console.log('Received GEN:', data);
+            if (Array.isArray(data)) {
+                data.forEach(g => this.enqueueGEN(g));
+            } else {
+                this.enqueueGEN(data.gen);
+            }
         });
 
         this.socket.on('localanimation', (data) => {
@@ -1310,7 +1316,6 @@ export class Arena extends Phaser.Scene
     // PhaserCreate
     create()
     {
-        console.log('Creating scene...');
         this.loadBackgroundMusic();
         this.setUpBackground();
         this.setUpArena();
@@ -1513,85 +1518,118 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    displayGEN(gen: GEN) {
-        if (this.killCamActive) {
-            this.pendingGEN = gen;
+    enqueueGEN(gen: GEN) {
+        console.log(`Enqueueing GEN: ${gen}`);
+        this.genQueue.push(gen);
+        this.processGENQueue();
+    }
+
+    processGENQueue() {
+        if (this.isDisplayingGEN || this.killCamActive || this.genQueue.length === 0) {
             return;
         }
-        let text1, text2;
+        this.isDisplayingGEN = true;
+        const gen = this.genQueue.shift();
+        this.displayGEN(gen).then(() => {
+            this.isDisplayingGEN = false;
+            this.processGENQueue(); // Proceed to next GEN
+        });
+    }
 
-        switch (gen) {
-            case GEN.COMBAT_BEGINS:
-                text1 = 'combat';
-                text2 = 'begins';
-                break;
-            case GEN.MULTI_KILL:
-                text1 = 'multi';
-                text2 = 'kill';
-                break;
-            case GEN.MULTI_HIT:
-                text1 = 'multi';
-                text2 = 'hit';
-                break;
-            case GEN.ONE_SHOT:
-                text1 = 'one';
-                text2 = 'shot';
-                break;
-            case GEN.FROZEN:
-                text1 = 'frozen';
-                break;
-            case GEN.BURNING:
-                text1 = 'stuff-is';
-                text2 = 'on-fire';
-                break;
-            case GEN.TUTORIAL:
-                text1 = 'tutorial';
-                break;
-            default:
+    displayGEN(gen: GEN): Promise<void> {
+        return new Promise((resolve) => {
+            if (this.killCamActive) {
+                // If kill cam is active, re-enqueue the GEN and resolve immediately
+                this.genQueue.unshift(gen);
+                resolve();
                 return;
-        }
-        // console.log(`[GEN] ${text1} ${text2}`);
+            }
 
-        const textTweenDuration = 600;
-        const textDelay = 400;
-        const yOffset = 20;
-        const bgYPosition = (this.cameras.main.centerY / 2 + yOffset);
-        const yPosition = this.cameras.main.centerY - 200 + yOffset;
+            let text1, text2;
 
-        let genBg = this.add.image(this.cameras.main.centerX, bgYPosition, 'gen_bg');
-        genBg.setAlpha(0).setDepth(10);
-        this.tweens.add({
-            targets: genBg,
-            alpha: 0.7,
-            duration: 200,
-            ease: 'Power2',
-        });
+            switch (gen) {
+                case GEN.COMBAT_BEGINS:
+                    text1 = 'combat';
+                    text2 = 'begins';
+                    break;
+                case GEN.MULTI_KILL:
+                    text1 = 'multi';
+                    text2 = 'kill';
+                    break;
+                case GEN.MULTI_HIT:
+                    text1 = 'multi';
+                    text2 = 'hit';
+                    break;
+                case GEN.ONE_SHOT:
+                    text1 = 'one';
+                    text2 = 'shot';
+                    break;
+                case GEN.FROZEN:
+                    text1 = 'frozen';
+                    break;
+                case GEN.BURNING:
+                    text1 = 'stuff-is';
+                    text2 = 'on-fire';
+                    break;
+                case GEN.TUTORIAL:
+                    text1 = 'tutorial';
+                    break;
+                default:
+                    resolve();
+                    return;
+            }
 
-        const targets = [
-            this.add.image(-350, yPosition, text1).setDepth(10),
-            this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang').setDepth(10)
-        ];
-        if (text2) {
-            targets.push(
-                this.add.image(this.cameras.main.width + 100, yPosition, text2).setDepth(10)
-            );
-        }
+            // Setup GEN Background
+            const textTweenDuration = 600;
+            const textDelay = 400;
+            const yOffset = 20;
+            const bgYPosition = (this.cameras.main.centerY / 2 + yOffset);
+            const yPosition = this.cameras.main.centerY - 200 + yOffset;
 
-        this.tweens.add({
-            targets,
-            x: this.cameras.main.centerX,
-            duration: textTweenDuration,
-            ease: 'Power2',
-            delay: textDelay, 
-        });
-
-        // Fade out all images after a few seconds
-        this.time.delayedCall(2000, () => {
+            let genBg = this.add.image(this.cameras.main.centerX, bgYPosition, 'gen_bg');
+            genBg.setAlpha(0).setDepth(10);
             this.tweens.add({
-                targets: targets.concat([genBg]),
-                alpha: 0,
+                targets: genBg,
+                alpha: 0.7,
                 duration: 200,
                 ease: 'Power2',
+            });
+
+            // Setup GEN Texts
+            const targets = [
+                this.add.image(-350, yPosition, text1).setDepth(10),
+                this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang').setDepth(10)
+            ];
+            if (text2) {
+                targets.push(
+                    this.add.image(this.cameras.main.width + 100, yPosition, text2).setDepth(10)
+                );
+            }
+
+            // Animate GEN Texts into View
+            this.tweens.add({
+                targets,
+                x: this.cameras.main.centerX,
+                duration: textTweenDuration,
+                ease: 'Power2',
+                delay: textDelay,
+                onComplete: () => {
+                    // After displaying, wait for a duration then fade out
+                    this.time.delayedCall(2000, () => {
+                        this.tweens.add({
+                            targets: targets.concat([genBg]),
+                            alpha: 0,
+                            duration: 200,
+                            ease: 'Power2',
+                            onComplete: () => {
+                                // Clean up GEN elements
+                                targets.forEach(t => t.destroy());
+                                genBg.destroy();
+                                resolve(); // Resolve the promise to allow next GEN to be processed
+                            }
+                        });
+                    });
+                }
             });
         });
     }
@@ -1658,10 +1696,11 @@ export class Arena extends Phaser.Scene
                 sprite.anims.timeScale = originalTimeScale;
             });
             this.killCamActive = false;
-            if (this.pendingGEN !== null && this.pendingGEN !== undefined) {
-                this.displayGEN(this.pendingGEN);
-                this.pendingGEN = null;
-            }
+            // if (this.pendingGEN !== null && this.pendingGEN !== undefined) {
+            //     this.displayGEN(this.pendingGEN);
+            //     this.pendingGEN = null;
+            // }
+            this.processGENQueue(); // Trigger processing of GEN queue after kill cam
         });
     }
 

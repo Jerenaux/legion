@@ -677,39 +677,14 @@ export abstract class Game
         GENs = GENs.filter(gen => !this.GENhistory.has(gen) || !noRepeatGENs.includes(gen) || (noRepeatGENs.includes(gen) && !this.GENhistory.has(gen)));
         // Add the new GENs to the history
         GENs.forEach(gen => this.GENhistory.add(gen));
-    
-        /**
-         * Broadcast a single GEN among those in the array, based on the following priority order:
-         * 1. MULTI_KILL
-         * 2. ONE_SHOT
-         * 3. MULTI_HIT
-         * 4. FROZEN
-         */
-        if (GENs.includes(GEN.MULTI_KILL)) {
-            this.broadcast('gen', {
-                gen: GEN.MULTI_KILL
-            });
-        } else if (GENs.includes(GEN.ONE_SHOT)) {
-            this.broadcast('gen', {
-                gen: GEN.ONE_SHOT
-            });
-        } else if (GENs.includes(GEN.MULTI_HIT)) {
-            this.broadcast('gen', {
-                gen: GEN.MULTI_HIT
-            });
-        } else if (GENs.includes(GEN.KILL_STREAK)) {
-            this.broadcast('gen', {
-                gen: GEN.KILL_STREAK
-            });
-        } else if (GENs.includes(GEN.FROZEN)) {
-            this.broadcast('gen', {
-                gen: GEN.FROZEN
-            });
-        } else if (GENs.includes(GEN.BURNING)) {
-            this.broadcast('gen', {
-                gen: GEN.BURNING
-            });
+
+        // If GEN.MULTI_KILL is in the array, remove GEN.MULTI_HIT if it's present
+        if (GENs.includes(GEN.MULTI_KILL) && GENs.includes(GEN.MULTI_HIT)) {
+            GENs = GENs.filter(gen => gen !== GEN.MULTI_HIT);
         }
+    
+        console.log(`[Game:broadcastGEN] GENs: ${GENs}`);
+        this.broadcast('gen', GENs);
     }
 
     processMagic({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number, targetTeam: number, target: number}, team: Team ) {
