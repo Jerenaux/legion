@@ -47,8 +47,12 @@ const socketMap = new Map<Socket, Game>();
 const gamesMap = new Map<string, Game>();
 
 io.on('connection', async (socket: any) => {
-    console.log(`[server:connection] Connected with token ${socket.handshake.auth.token}`);
     try {
+      console.log(`[server:connection] Connected with token ${socket.handshake.auth.token}`);
+      // throw an exception if the token is not provided
+      if (!socket.handshake.auth.token) {
+        throw new Error('No token provided');
+      }
       socket.firebaseToken = socket.handshake.auth.token.toString();
       const decodedToken = await admin.auth().verifyIdToken(socket.firebaseToken);
       socket.uid = decodedToken.uid;
@@ -157,7 +161,7 @@ io.on('connection', async (socket: any) => {
         }
       })
     } catch (error) {
-        console.error(`Error joining game server: ${error}`);
+        console.error(`[server:connection] Error joining game server: ${error}`);
     }
 });
 

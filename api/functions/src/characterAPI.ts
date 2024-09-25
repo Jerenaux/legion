@@ -59,7 +59,7 @@ export const rosterData = onRequest(async (request, response) => {
       }
     } catch (error) {
       console.error("rosterData error:", error);
-      response.status(401).send("Unauthorized");
+      response.status(500).send(error);
     }
   });
 });

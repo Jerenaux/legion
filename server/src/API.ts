@@ -49,14 +49,16 @@ export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {},
                 timeoutPromise(TIMEOUT_DURATION)
             ]) as Response;
 
-            if (!response.ok) {
+            if (response.ok) {
+                console.log(`[API:apiFetch] API call to ${endpoint} succeeded on attempt ${attempt + 1}`);
+            } else {
                 const errorBody = await response.text();
                 throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
             }
 
             return response.json();
         } catch (error) {
-            console.error(`Attempt ${attempt + 1} failed for API call to ${endpoint}:`, error);
+            console.error(`[API:apiFetch] Attempt ${attempt + 1}/${maxRetries} failed for API call to ${endpoint}:`, error);
             
             if (attempt === maxRetries - 1) {
                 throw error;
