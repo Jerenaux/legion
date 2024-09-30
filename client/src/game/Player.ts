@@ -903,8 +903,10 @@ export class Player extends Phaser.GameObjects.Container {
         this.clearStatusTimer();
 
         // Stop all tweens related to this player
-        this.scene.tweens.killTweensOf(this);
-        this.scene.tweens.killTweensOf(this.baseSquare);
+        if (this.scene.tweens) {
+            this.scene.tweens.killTweensOf(this);
+            this.scene.tweens.killTweensOf(this.baseSquare);
+        }
     
         if (this.blinkTween) {
             this.blinkTween.stop();
