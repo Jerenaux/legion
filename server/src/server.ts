@@ -1,3 +1,4 @@
+// require("./instrument");
 import express from 'express';
 import { Socket, Server } from 'socket.io';
 import { createServer } from 'http';
@@ -47,6 +48,7 @@ const socketMap = new Map<Socket, Game>();
 const gamesMap = new Map<string, Game>();
 
 io.on('connection', async (socket: any) => {
+    console.error('Connection');
     try {
       console.log(`[server:connection] Connected with token ${socket.handshake.auth.token}`);
       // throw an exception if the token is not provided
@@ -59,7 +61,7 @@ io.on('connection', async (socket: any) => {
       
       let gameId = socket.handshake.auth.gameId;
       if (!gameId) {
-        console.log('No game ID provided!');
+        console.error('No game ID provided!');
         socket.disconnect();
         return;
       }
@@ -85,7 +87,7 @@ io.on('connection', async (socket: any) => {
   
       // Check if firebase UID is in gameData.players
       if (!gameData.players.includes(socket.uid)) {
-        console.log(`Player with UID ${shortToken(socket.uid)} is not in game ${gameId}!`);
+        console.error(`Player with UID ${shortToken(socket.uid)} is not in game ${gameId}!`);
         socket.disconnect();
         return;
       } 
