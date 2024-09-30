@@ -75,6 +75,10 @@ export function successToast(text: string, duration: number = 3000) {
   showToast(text, duration, successIcon);
 }
 
+export function silentErrorToast(text: string, duration: number = -1) {
+  showToast(text, duration, errorIcon);
+}
+
 export function errorToast(text: string, duration: number = -1) {
   console.error(text);
   showToast(text, duration, errorIcon);

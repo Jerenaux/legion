@@ -9,7 +9,7 @@ import { useWindowSize } from '@react-hook/window-size';
 import { ChestReward } from '@legion/shared/chests';
 
 import { apiFetch } from '../../services/apiService';
-import { errorToast, successToast } from '../utils';
+import { errorToast, silentErrorToast, successToast } from '../utils';
 import { ChestColor } from "@legion/shared/enums";
 import { DailyLootAllAPIData } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
@@ -47,11 +47,11 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
 
       // Check if countdown is over and if key is owned
       if (countdown > 0 && !IMMEDIATE_LOOT) {
-        errorToast(`Chest locked, wait for the countdown to end!`);
+        silentErrorToast(`Chest locked, wait for the countdown to end!`);
         return;
       }
       if (!hasKey && !IMMEDIATE_LOOT) {
-        errorToast(`You need a key to open this chest, go play a casual or ranked game!`);
+        silentErrorToast(`You need a key to open this chest, go play a casual or ranked game!`);
         return;
       }
 
