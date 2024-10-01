@@ -9,6 +9,7 @@ import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS, DISCORD_LINK, X_LINK
 import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';
 import { errorToast } from './utils';
+import { QueueTips } from './queueTips/QueueTips';
 
 import goldIcon from '@assets/gold_icon.png';
 import exitIcon from '@assets/queue/exit_icon.png';
@@ -303,22 +304,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
                     ))}
                 </div>}
 
-                <div className="queue-tips">
-                    <div className="queue-tips-container">
-                        <div style="font-family: Kim;">Tips</div>
-                        <div>
-                            <span style={{ color: 'cyan' }}>
-                                {this.state.tips[this.state.tipCount]}
-                            </span>
-                        </div>
-                    </div>
-                    <div onClick={this.prevTip} className="queue-tips-arrow prev">
-                        ◀
-                    </div>
-                    <div onClick={this.nextTip} className="queue-tips-arrow next">
-                        ▶
-                    </div>
-                </div>
+                <QueueTips />
+
                 <div className="queue-btns">
                     <Link href={X_LINK} target="_blank">
                         <div className="btn-x">

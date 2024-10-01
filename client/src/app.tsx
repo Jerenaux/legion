@@ -63,6 +63,10 @@ class App extends Component<{}, AppState> {
     handleRoute = (e: RouterOnChangeArgs, refreshAllData: () => void, updateActiveCharacter: (id: string | null) => void) => {
         const newMainRoute = this.getMainRoute(e.url);
 
+        if (this.state.currentMainRoute === '/') {
+            this.warmUpMatchmaker();
+        }
+
         if (this.state.currentMainRoute === 'game' && newMainRoute !== 'game') {
             refreshAllData();
             this.warmUpMatchmaker();
