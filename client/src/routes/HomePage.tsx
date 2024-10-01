@@ -63,12 +63,12 @@ class HomePage extends Component<{}, HomePageState> {
                 </Router>
               </div>
             </div>
-            {user.isAnonymous && welcomeShown && (
+            {/* {user.isAnonymous && welcomeShown && (
               <div className="anonymous-warning">
                 You are playing as a guest. Sign up to save your progress!
                 <button className="sign-up-btn-smol" onClick={this.showLoginOptions}>Sign up</button>
               </div>
-            )}
+            )} */}
             {this.state.showLoginOptions && (
               <div className="login-modal-overlay">
                 <div className="login-modal-dialog">
