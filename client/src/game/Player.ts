@@ -887,7 +887,6 @@ export class Player extends Phaser.GameObjects.Container {
         this.speechBubble.setText(text);
         this.speechBubble.setVisible(true);
         const duration = this.speechBubble.setDuration(sticky);
-        console.log(`Duration: ${duration}`);
         return duration;
     }
 

@@ -65,7 +65,6 @@ export function setupMatchmaking(ioInstance: Server) {
 
 function emitQueueCount() {
     const count = playersQueue.length;
-    // console.log(`[matchmaker:emitQueueCount] ${count} players in queue`);
     io.emit('queueCount', { count }); 
 }
 
@@ -119,7 +118,7 @@ function switcherooCheck(player: Player) {
 async function tryMatchPlayers() {
     let i = 0;
     if (playersQueue.length > 0) {
-        console.log(`[matchmaker:tryMatchPlayers] ${playersQueue.length} players in Q`);
+        console.log(`[matchmaker:tryMatchPlayers] ${playersQueue.length} players in Q: ${playersQueue.map(p => p.socket.id)}`);
     }
     while (i < playersQueue.length) {
         let player1 = playersQueue[i];

@@ -258,7 +258,7 @@ equipments[21] = new BaseEquipment({
     frame: 42,
     effects: [{stat: Stat.HP, value: 10}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}],
     slot: EquipmentSlot.LEFT_RING,
-    effort: 11,
+    effort: 6,
     minLevel: 5,
 });
 
@@ -342,6 +342,17 @@ equipments[28] = new BaseEquipment({
     effort: 10,
     minLevel: 5,
     classes: [Class.WARRIOR],
+});
+
+equipments[29] = new BaseEquipment({
+    id: 29,
+    name: "Ruby signet",
+    description: "",
+    frame: 43,
+    effects: [{stat: Stat.HP, value: 10}, {stat: Stat.MP, value: 15}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    slot: EquipmentSlot.LEFT_RING,
+    effort: 12,
+    minLevel: 8,
 });
 
 export function getEquipmentById(id:number): BaseEquipment | undefined {
