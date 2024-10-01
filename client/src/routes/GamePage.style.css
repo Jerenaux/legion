@@ -1,4 +1,4 @@
-.loading-div, .waiting-div {
+.loading-div, .waiting-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -7,6 +7,7 @@
   z-index: 1000;
   color: white;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.5);
@@ -67,7 +68,15 @@
   font-family: 'Kim';
 }
 
+.waiting-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .waiting-div {
   font-family: 'Kim';
   font-size: 24px;
+  margin-bottom: 20px;
 }

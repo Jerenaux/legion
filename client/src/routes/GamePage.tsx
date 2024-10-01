@@ -1,5 +1,6 @@
 import { h, Component, Fragment } from 'preact';
 import { GameHUD, events } from '../components/HUD/GameHUD';
+import { QueueTips } from '../components/queueTips/QueueTips';
 import { startGame } from '../game/game';
 import './GamePage.style.css';
 
@@ -25,7 +26,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
       progress: 0,
       loading: true,
       initialized: false,
-      isPortraitMode: false, // Initialize the isPortraitMode state
+      isPortraitMode: false,
     };
   }
 
@@ -40,27 +41,18 @@ class GamePage extends Component<GamePageProps, GamePageState> {
       this.setState({ initialized: true });
     });
 
-    // Check initial orientation
     this.checkOrientation();
-
-    // Add event listeners for orientation changes
     window.addEventListener('resize', this.checkOrientation);
     window.addEventListener('orientationchange', this.checkOrientation);
   }
 
   componentWillUnmount() {
-    // Remove event listeners to prevent memory leaks
     window.removeEventListener('resize', this.checkOrientation);
     window.removeEventListener('orientationchange', this.checkOrientation);
   }
 
-  // Method to check the device orientation
   checkOrientation = () => {
-    if (window.matchMedia('(orientation: portrait)').matches) {
-      this.setState({ isPortraitMode: true });
-    } else {
-      this.setState({ isPortraitMode: false });
-    }
+    this.setState({ isPortraitMode: window.matchMedia('(orientation: portrait)').matches });
   };
 
   changeMainDivClass = (newClass: string) => {
@@ -68,10 +60,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   updateProgress = (progress: number) => {
-    this.setState({ progress });
-    if (progress === 100) {
-      this.setState({ loading: false });
-    }
+    this.setState({ progress, loading: progress !== 100 });
   };
 
   render() {
@@ -88,7 +77,12 @@ class GamePage extends Component<GamePageProps, GamePageState> {
               </div>
             </div>
           )}
-          {!this.state.loading && !this.state.initialized && <div className='waiting-div'>Waiting for server ...</div>}
+          {!this.state.loading && !this.state.initialized && (
+            <div className='waiting-container'>
+              <div className='waiting-div'>Waiting for server ...</div>
+              <QueueTips />
+            </div>
+          )}
         </div>
         {this.state.isPortraitMode && <OrientationOverlay />}
       </Fragment>
@@ -96,7 +90,6 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   }
 }
 
-// Overlay Component
 function OrientationOverlay() {
   return (
     <div className="orientation-overlay">
