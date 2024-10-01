@@ -360,7 +360,7 @@ export abstract class Game
     }
 
     setCooldown(player: ServerPlayer, cooldownMs: number) {
-        // if (this.mode == PlayMode.TUTORIAL && player.isAI) cooldownMs *= 1.5;
+        if (this.mode == PlayMode.TUTORIAL && player.isAI) cooldownMs *= 1.5;
         player.setCooldown(cooldownMs);
     }
 
