@@ -67,7 +67,8 @@ export enum PlayMode {
     CASUAL,
     CASUAL_VS_AI,
     RANKED,
-    TUTORIAL
+    TUTORIAL,
+    STAKED,
 }
 
 export enum EquipmentSlot {

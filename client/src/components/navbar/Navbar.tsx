@@ -10,7 +10,7 @@ import { successToast, avatarContext } from '../utils';
 import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
 import { apiFetch } from '../../services/apiService';
 import { Token } from "@legion/shared/enums";
-import * as solanaWeb3 from '@solana/web3.js';
+import SolanaWalletService from '../../services/SolanaWalletService';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -28,20 +28,6 @@ import discordIcon from '@assets/svg/discord.svg';
 import copyIcon from '@assets/svg/copy.svg';
 import logoutIcon from '@assets/svg/logout.svg';
 import walletIcon from '@assets/svg/wallet.svg';
-
-declare global {
-    interface Window {
-      solana?: {
-        isPhantom?: boolean;
-        connect: () => Promise<{ publicKey: solanaWeb3.PublicKey }>;
-        disconnect: () => Promise<void>;
-        on: (event: string, callback: () => void) => void;
-        off: (event: string, callback: () => void) => void;
-        isConnected: boolean;
-        publicKey: solanaWeb3.PublicKey;
-      };
-    }
-  }
 
 enum MenuItems {
     PLAY = 'PLAY',
@@ -72,33 +58,29 @@ interface State {
     isSolanaWalletPresent: boolean;
     isSolanaWalletConnected: boolean;
     solanaBalance: number | null;
-    solanaConnection: solanaWeb3.Connection | null;
-    walletAddress: string | null;
 }
 
 class Navbar extends Component<Props, State> {
-    state = {
+    private walletService: SolanaWalletService;
+    
+    state: State = {
         hovered: '',
         openDropdown: false,
         avatarUrl: null,
         isLoading: true,
         isSolanaWalletPresent: false,
         isSolanaWalletConnected: false,
-        solanaConnection: null,
-        solanaBalance: null,
-        walletAddress: null,
+        solanaBalance: null
+    }
+
+    constructor(props: Props) {
+        super(props);
+        this.walletService = SolanaWalletService.getInstance();
     }
 
     async componentDidMount() {
         this.loadAvatar();
-        this.checkSolanaWallet();
-        this.addWalletListeners();
-        this.initializeSolanaConnection();
-        await this.checkSavedWalletConnection();
-    }
-
-    componentWillUnmount() {
-        this.removeWalletListeners();
+        await this.checkSolanaWallet();
     }
 
     componentDidUpdate(prevProps: Readonly<Props>) {
@@ -106,122 +88,6 @@ class Navbar extends Component<Props, State> {
             this.loadAvatar();
         }
     }
-
-    addWalletListeners = () => {
-        if (window.solana) {
-            window.solana.on('connect', this.handleWalletConnect);
-            window.solana.on('disconnect', this.handleWalletDisconnect);
-        }
-    }
-
-    removeWalletListeners = () => {
-        if (window.solana) {
-            window.solana.off('connect', this.handleWalletConnect);
-            window.solana.off('disconnect', this.handleWalletDisconnect);
-        }
-    }
-
-    handleWalletConnect = () => {
-        this.setState({ isSolanaWalletConnected: true });
-        this.updateSolanaBalance();
-    }
-
-    handleWalletDisconnect = () => {
-        this.setState({ isSolanaWalletConnected: false, solanaBalance: null });
-    }
-
-    initializeSolanaConnection = () => {
-        // #TODO MAinnet
-        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed');
-        this.setState({ solanaConnection: connection });
-    }
-
-    checkSavedWalletConnection = async () => {
-        const savedWalletAddress = localStorage.getItem('walletAddress');
-        if (savedWalletAddress && window.solana) {
-            try {
-                // Try to reconnect
-                await window.solana.connect();
-                this.setState({
-                    isSolanaWalletConnected: true,
-                    walletAddress: savedWalletAddress
-                });
-                await this.updateSolanaBalance();
-            } catch (error) {
-                console.error('Error reconnecting to saved wallet:', error);
-                // Clear saved data if reconnection fails
-                localStorage.removeItem('walletAddress');
-            }
-        }
-    }
-
-    checkSolanaWallet = async () => {
-        const isSolanaPresent = typeof window.solana !== 'undefined';
-        this.setState({ isSolanaWalletPresent: isSolanaPresent });
-
-        if (isSolanaPresent && window.solana) {
-            try {
-                const connected = window.solana.isConnected;
-                this.setState({ isSolanaWalletConnected: connected });
-
-                if (connected) {
-                    await this.updateSolanaBalance();
-                }
-            } catch (error) {
-                console.error('Error checking Solana wallet:', error);
-            }
-        }
-    };
-
-    connectSolanaWallet = async () => {
-        if (this.state.isSolanaWalletPresent && window.solana) {
-            try {
-                const { publicKey } = await window.solana.connect();
-                const walletAddress = publicKey.toString();
-                this.setState({ 
-                    isSolanaWalletConnected: true,
-                    walletAddress: walletAddress
-                });
-                apiFetch('registerAddress', {
-                    method: 'POST',
-                    body: {
-                        address: publicKey.toString()
-                    }
-                });
-                localStorage.setItem('walletAddress', walletAddress);
-                await this.updateSolanaBalance();
-            } catch (error) {
-                console.error('Error connecting to Solana wallet:', error);
-            }
-        }
-    };
-
-    disconnectSolanaWallet = async () => {
-        if (this.state.isSolanaWalletPresent && this.state.isSolanaWalletConnected && window.solana) {
-            try {
-                await window.solana.disconnect();
-                this.setState({ 
-                    isSolanaWalletConnected: false, 
-                    solanaBalance: null,
-                    walletAddress: null
-                });
-                localStorage.removeItem('walletAddress');
-            } catch (error) {
-                console.error('Error disconnecting Solana wallet:', error);
-            }
-        }
-    };
-
-    updateSolanaBalance = async () => {
-        if (this.state.isSolanaWalletConnected && window.solana && this.state.solanaConnection) {
-            try {
-                const balance = await this.state.solanaConnection.getBalance(window.solana.publicKey);
-                this.setState({ solanaBalance: balance / solanaWeb3.LAMPORTS_PER_SOL });
-            } catch (error) {
-                console.error('Error fetching Solana balance:', error);
-            }
-        }
-    };
 
     loadAvatar = () => {
         this.setState({ isLoading: true });
@@ -237,6 +103,36 @@ class Navbar extends Component<Props, State> {
         }
     }
 
+    checkSolanaWallet = async () => {
+        const isSolanaWalletPresent = this.walletService.isWalletDetected();
+        const isSolanaWalletConnected = await this.walletService.checkWalletConnection();
+        const solanaBalance = this.walletService.getBalance();
+        
+        this.setState({ 
+            isSolanaWalletPresent, 
+            isSolanaWalletConnected, 
+            solanaBalance 
+        });
+    };
+
+    connectSolanaWallet = async () => {
+        const connected = await this.walletService.connectWallet();
+        if (connected) {
+            this.setState({ 
+                isSolanaWalletConnected: true,
+                solanaBalance: this.walletService.getBalance()
+            });
+        }
+    };
+
+    disconnectSolanaWallet = async () => {
+        await this.walletService.disconnectWallet();
+        this.setState({ 
+            isSolanaWalletConnected: false, 
+            solanaBalance: null
+        });
+    };
+
     copyIDtoClipboard = () => {  
         const textToCopy = this.props.playerData.uid;
         navigator.clipboard.writeText(textToCopy).then(() => {
@@ -250,7 +146,7 @@ class Navbar extends Component<Props, State> {
         const format = 'en-US';
         return new Intl.NumberFormat(format, { 
           useGrouping: true,
-          maximumFractionDigits: 0
+          maximumFractionDigits: 2
         }).format(number);
     };
 

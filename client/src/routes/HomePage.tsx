@@ -9,6 +9,7 @@ import ShopPage from '../components/ShopPage';
 import RankPage from '../components/RankPage';
 import Navbar from '../components/navbar/Navbar';
 import QueuePage from '../components/QueuePage';
+import ElysiumPage from '../components/ElysiumPage';
 
 interface HomePageState {
   showLoginOptions: boolean;
@@ -60,6 +61,7 @@ class HomePage extends Component<{}, HomePageState> {
                   <Route path="/team/:id?" component={TeamPage} />
                   <Route path="/shop/:id?" component={ShopPage} />
                   <Route path="/rank" component={RankPage} />
+                  <Route path="/elysium" component={ElysiumPage} />
                 </Router>
               </div>
             </div>

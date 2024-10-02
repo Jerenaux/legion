@@ -24,7 +24,12 @@ class PlayModeButton extends Component<ButtonProps> {
     }
 
     handleCardClick = () => {
-        route(`/queue/${this.props.mode}`);
+        if (this.props.mode == PlayMode.STAKED) {
+            route(`/elysium`);
+            return;
+        } else {
+            route(`/queue/${this.props.mode}`);
+        }
     }
     
     render() {

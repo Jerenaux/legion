@@ -35,7 +35,7 @@ class PlayModes extends Component {
         <PlayModeButton label={MiddleBtns.CASUAL} players={0} mode={PlayMode.CASUAL}/>
         <PlayModeButton label={MiddleBtns.RANKED} players={8} mode={PlayMode.RANKED}/>
         {isSolanaWalletPresent && (
-          <PlayModeButton label={MiddleBtns.ELYSIUM} players={8} mode={PlayMode.RANKED}/>
+          <PlayModeButton label={MiddleBtns.ELYSIUM} players={8} mode={PlayMode.STAKED}/>
         )}
       </div>
     );
