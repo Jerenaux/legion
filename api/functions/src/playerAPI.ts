@@ -663,3 +663,24 @@ export const fetchGuideTip = onRequest((request, response) => {
     }
   });
 });
+
+export const registerAddress = onRequest((request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const address = request.body.address;
+      logger.info("Registering address for player:", uid, "address:", address);
+
+      await db.collection("players").doc(uid).update({
+        address,
+      });
+
+      response.send({});
+    } catch (error) {
+      console.error("registerAddress error:", error);
+      response.status(500).send("Error");
+    }
+  });
+});

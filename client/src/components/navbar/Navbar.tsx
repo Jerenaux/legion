@@ -8,6 +8,7 @@ import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, avatarContext } from '../utils';
 import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
+import { apiFetch } from '../../services/apiService';
 import * as solanaWeb3 from '@solana/web3.js';
 
 import legionLogo from '@assets/logo.png';
@@ -71,6 +72,7 @@ interface State {
     isSolanaWalletConnected: boolean;
     solanaBalance: number | null;
     solanaConnection: solanaWeb3.Connection | null;
+    walletAddress: string | null;
 }
 
 class Navbar extends Component<Props, State> {
@@ -82,7 +84,8 @@ class Navbar extends Component<Props, State> {
         isSolanaWalletPresent: false,
         isSolanaWalletConnected: false,
         solanaConnection: null,
-        solanaBalance: null
+        solanaBalance: null,
+        walletAddress: null,
     }
 
     componentDidMount() {
@@ -152,8 +155,28 @@ class Navbar extends Component<Props, State> {
     connectSolanaWallet = async () => {
         if (this.state.isSolanaWalletPresent && window.solana) {
             try {
-                await window.solana.connect();
-                this.setState({ isSolanaWalletConnected: true });
+                const { publicKey } = await window.solana.connect();
+                this.setState({ 
+                    isSolanaWalletConnected: true,
+                    walletAddress: publicKey.toString()
+                });
+                apiFetch('registerAddress', {
+                    method: 'POST',
+                    body: {
+                        address: publicKey.toString()
+                    }
+                });
+                // apiFetch('completeTour', {
+                //     method: 'POST',
+                //     body: {
+                //         page: publicKey.toString()
+                //     }
+                // });
+                // .then(() => {
+                //     // successToast('Wallet connected successfully!');
+                // }).catch((error) => {
+                //     console.error('Error connecting wallet:', error);
+                // });
                 await this.updateSolanaBalance();
             } catch (error) {
                 console.error('Error connecting to Solana wallet:', error);
@@ -165,7 +188,11 @@ class Navbar extends Component<Props, State> {
         if (this.state.isSolanaWalletPresent && this.state.isSolanaWalletConnected && window.solana) {
             try {
                 await window.solana.disconnect();
-                this.setState({ isSolanaWalletConnected: false, solanaBalance: null });
+                this.setState({ 
+                    isSolanaWalletConnected: false, 
+                    solanaBalance: null,
+                    walletAddress: null
+                });
             } catch (error) {
                 console.error('Error disconnecting Solana wallet:', error);
             }
