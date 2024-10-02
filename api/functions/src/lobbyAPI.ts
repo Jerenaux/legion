@@ -1,14 +1,16 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, { corsMiddleware, getUID } from "./APIsetup";
+import { Token } from "@legion/shared/enums";
 
 const db = admin.firestore();
 
 export const createLobby = onRequest((request, response) => {
-    corsMiddleware(request, response, async () => {
+    return corsMiddleware(request, response, async () => {
         try {
             const uid = await getUID(request);
             const stake = Number(request.body.stake);
+            console.log(`[createLobby] uid: ${uid}, stake: ${stake}`);
 
             // Fetch player data
             const playerDoc = await db.collection("players").doc(uid).get();
@@ -30,10 +32,10 @@ export const createLobby = onRequest((request, response) => {
             const lobbyData = {
                 creatorUID: uid,
                 avatar: playerData.avatar,
-                nickname: playerData.nickname,
+                nickname: playerData.name,
                 elo: playerData.elo,
                 league: playerData.league,
-                rank: playerData.rank,
+                rank: playerData.leagueStats.rank,
                 stake: stake,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                 status: "open",
@@ -43,19 +45,19 @@ export const createLobby = onRequest((request, response) => {
 
             // Deduct stake from player's balance
             await playerDoc.ref.update({
-                "tokens.SOL": admin.firestore.FieldValue.increment(-stake),
+                [`tokens.${Token.SOL}`]: admin.firestore.FieldValue.increment(-stake),
             });
 
-            response.status(200).send({ lobbyId: lobbyRef.id });
+            return response.status(200).send({ lobbyId: lobbyRef.id });
         } catch (error) {
             logger.error("createLobby error:", error);
-            response.status(500).send("Error creating lobby");
+            return response.status(500).send("Error creating lobby");
         }
     });
 });
 
 export const joinLobby = onRequest((request, response) => {
-    corsMiddleware(request, response, async () => {
+    return corsMiddleware(request, response, async () => {
         try {
             const uid = await getUID(request);
             const lobbyId = request.body.lobbyId;
@@ -108,16 +110,16 @@ export const joinLobby = onRequest((request, response) => {
                 "tokens.SOL": admin.firestore.FieldValue.increment(-lobbyData.stake),
             });
 
-            response.status(200).send({ status: "joined" });
+            return response.status(200).send({ status: "joined" });
         } catch (error) {
             logger.error("joinLobby error:", error);
-            response.status(500).send("Error joining lobby");
+            return response.status(500).send("Error joining lobby");
         }
     });
 });
 
 export const cancelLobby = onRequest((request, response) => {
-    corsMiddleware(request, response, async () => {
+    return corsMiddleware(request, response, async () => {
         try {
             const uid = await getUID(request);
             const lobbyId = request.body.lobbyId;
@@ -147,10 +149,10 @@ export const cancelLobby = onRequest((request, response) => {
                 "tokens.SOL": admin.firestore.FieldValue.increment(lobbyData.stake),
             });
 
-            response.status(200).send({ status: "cancelled" });
+            return response.status(200).send({ status: "cancelled" });
         } catch (error) {
             logger.error("cancelLobby error:", error);
-            response.status(500).send("Error cancelling lobby");
+            return response.status(500).send("Error cancelling lobby");
         }
     });
 });

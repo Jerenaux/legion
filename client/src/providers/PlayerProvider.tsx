@@ -123,6 +123,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
     
     async fetchPlayerData() {
+      console.log('fetching player data');
       const user = firebaseAuth.currentUser;
       if (!user) return;
     

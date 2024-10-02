@@ -2107,3 +2107,178 @@ a:-webkit-any-link {
 #firebaseui-auth-container {
   width: 100%;
 }
+
+
+
+.elysium-page {
+  padding: 20px;
+}
+
+.lobbies-header {
+  color: white;
+  font-family: 'Kim';
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.lobbies-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.lobby-item, .lobby-skeleton {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.lobby-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.lobby-info {
+  flex-grow: 1;
+}
+
+.wallet-info {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #242b37;
+  border: 1px solid #0096a1;
+  border-radius: 5px;
+}
+
+.no-lobbies-message {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  color: #666;
+}
+
+.create-lobby-btn {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  color: white;
+  font-family: 'Kim';
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  background-color: #242b37;
+  border: 1px solid #0096a1;
+  padding: 20px;
+  border-radius: 4px;
+  width: 300px;
+}
+
+.modal h3 {
+  margin-top: 0;
+}
+
+.modal-content {
+  margin-top: 20px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.modal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.cancel-btn, .confirm-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+  margin-right: 10px;
+}
+
+.confirm-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.confirm-btn.disabled {
+  background-color: #ddd;
+  color: #666;
+  cursor: not-allowed;
+}
+
+stake-limits {
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+
+.stake-limits p {
+  margin: 5px 0;
+}
+
+.stake-limits small {
+  display: block;
+  color: #666;
+  font-style: italic;
+  margin-top: 5px;
+}
+
+.stake-limits p.invalid {
+  color: red;
+}
+
+.lobby-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -182,5 +182,5 @@ export enum GEN {
 }
 
 export enum Token {
-    SOL,
+    SOL = "SOL",
 }
