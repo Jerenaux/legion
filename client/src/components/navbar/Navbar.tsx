@@ -1,13 +1,14 @@
 // Navbar.tsx
 
 import './navbar.style.css';
-import { h, Component, Fragment } from 'preact';
+import { h, Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
 import firebase from 'firebase/compat/app'
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, avatarContext } from '../utils';
 import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
+import * as solanaWeb3 from '@solana/web3.js';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -30,12 +31,12 @@ declare global {
     interface Window {
       solana?: {
         isPhantom?: boolean;
-        connect: () => Promise<{ publicKey: { toString: () => string } }>;
+        connect: () => Promise<{ publicKey: solanaWeb3.PublicKey }>;
         disconnect: () => Promise<void>;
         on: (event: string, callback: () => void) => void;
         off: (event: string, callback: () => void) => void;
         isConnected: boolean;
-        getBalance: () => Promise<number>;
+        publicKey: solanaWeb3.PublicKey;
       };
     }
   }
@@ -69,6 +70,7 @@ interface State {
     isSolanaWalletPresent: boolean;
     isSolanaWalletConnected: boolean;
     solanaBalance: number | null;
+    solanaConnection: solanaWeb3.Connection | null;
 }
 
 class Navbar extends Component<Props, State> {
@@ -79,6 +81,7 @@ class Navbar extends Component<Props, State> {
         isLoading: true,
         isSolanaWalletPresent: false,
         isSolanaWalletConnected: false,
+        solanaConnection: null,
         solanaBalance: null
     }
 
@@ -86,6 +89,7 @@ class Navbar extends Component<Props, State> {
         this.loadAvatar();
         this.checkSolanaWallet();
         this.addWalletListeners();
+        this.initializeSolanaConnection();
     }
 
     componentWillUnmount() {
@@ -119,6 +123,12 @@ class Navbar extends Component<Props, State> {
 
     handleWalletDisconnect = () => {
         this.setState({ isSolanaWalletConnected: false, solanaBalance: null });
+    }
+
+    initializeSolanaConnection = () => {
+        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed');
+        this.setState({ solanaConnection: connection });
+        this.checkSolanaWallet();
     }
 
     checkSolanaWallet = async () => {
@@ -163,10 +173,10 @@ class Navbar extends Component<Props, State> {
     };
 
     updateSolanaBalance = async () => {
-        if (this.state.isSolanaWalletConnected && window.solana) {
+        if (this.state.isSolanaWalletConnected && window.solana && this.state.solanaConnection) {
             try {
-                const balance = await window.solana.getBalance();
-                this.setState({ solanaBalance: balance / 1e9 }); // Convert lamports to SOL
+                const balance = await this.state.solanaConnection.getBalance(window.solana.publicKey);
+                this.setState({ solanaBalance: balance / solanaWeb3.LAMPORTS_PER_SOL });
             } catch (error) {
                 console.error('Error fetching Solana balance:', error);
             }

@@ -16,6 +16,7 @@
     "@sentry/react": "^8.32.0",
     "@sentry/tracing": "^7.114.0",
     "@sentry/webpack-plugin": "^2.22.4",
+    "@solana/web3.js": "^1.95.3",
     "@types/react-tooltip": "^4.2.4",
     "axios": "^1.6.6",
     "copy-webpack-plugin": "^12.0.2",
