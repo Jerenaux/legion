@@ -7,7 +7,7 @@ import cors from 'cors';
 dotenv.config();
 import { setupMatchmaking, processJoinQueue, processDisconnect } from './matchmaking';
 
-const allowedOrigins = [process.env.CLIENT_ORIGIN];
+const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com'];
 console.log(`Allowed client origins: ${allowedOrigins}`);
 
 const corsSettings = {
