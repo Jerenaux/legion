@@ -140,3 +140,34 @@ export function getLeagueIcon(leagueName: string | number | undefined): string {
   const iconName = `${leagueName.toLowerCase()}_rank.png`;
   return leagueIconContext(`./${iconName}`);
 }
+
+
+export function cropFrame(
+  spriteSheetUrl: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    // img.crossOrigin = 'anonymous'; // Necessary if the image is hosted on a different domain
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Draw the specific frame onto the canvas
+        ctx.drawImage(img, -x, -y);
+        // Get the Data URL of the canvas content
+        const dataUrl = canvas.toDataURL();
+        resolve(dataUrl);
+      } else {
+        reject(new Error('Could not get canvas context'));
+      }
+    };
+    img.onerror = (err) => reject(err);
+    img.src = spriteSheetUrl;
+  });
+}

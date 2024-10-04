@@ -7,7 +7,7 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { ItemDialogType } from '../itemDialog/ItemDialogType';
 import { Effect } from '@legion/shared/interfaces';
-import { mapFrameToCoordinates } from '../utils';
+import { mapFrameToCoordinates, cropFrame } from '../utils';
 
 import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
@@ -23,26 +23,84 @@ interface ItemIconProps {
   onActionClick?: (type: string, letter: string, index: number) => void; 
   handleSelectedEquipmentSlot: (newValue: number) => void; 
 }
-/* eslint-disable react/prefer-stateless-function */
 
-class ItemIcon extends Component<ItemIconProps> {
-  state = {
+interface ItemIconState {
+  openModal: boolean;
+  modalType: ItemDialogType;
+  modalData: BaseItem | BaseSpell | BaseEquipment | null;
+  modalPosition: {
+    top: number;
+    left: number;
+  };
+  croppedImageUrl: string | null;
+}
+
+class ItemIcon extends Component<ItemIconProps, ItemIconState> {
+  state: ItemIconState = {
     openModal: false,
     modalType: ItemDialogType.EQUIPMENTS,
     modalData: null,
     modalPosition: {
       top: 0,
       left: 0
+    },
+    croppedImageUrl: null
+  }
+
+  componentDidMount() {
+    this.cropSpritesheet();
+  }
+
+  componentDidUpdate(prevProps: ItemIconProps) {
+    if (prevProps.action !== this.props.action) {
+      this.cropSpritesheet();
     }
   }
 
-  handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: string) => {
+  cropSpritesheet = async () => {
+    const { action, actionType } = this.props;
+    if (!action) return;
+
+    const spriteSheetsMap = {
+      [InventoryType.CONSUMABLES]: consumablesSpritesheet,
+      [InventoryType.SPELLS]: spellsSpritesheet,
+      [InventoryType.EQUIPMENTS]: equipmentSpritesheet,
+    };
+    const spritesheet = spriteSheetsMap[actionType];
+
+    const { x, y } = mapFrameToCoordinates(action.frame);
+    try {
+      const croppedImageUrl = await cropFrame(spritesheet, x, y, 32, 32); // Assuming 32x32 sprite size
+      this.setState({ croppedImageUrl });
+    } catch (error) {
+      console.error('Error cropping spritesheet:', error);
+    }
+  }
+
+  convertInventoryTypeToItemDialogType = (inventoryType: InventoryType): ItemDialogType => {
+    switch (inventoryType) {
+      case InventoryType.CONSUMABLES:
+        return ItemDialogType.CONSUMABLES;
+      case InventoryType.EQUIPMENTS:
+        return ItemDialogType.EQUIPMENTS;
+      case InventoryType.SPELLS:
+        return ItemDialogType.SPELLS;
+      case InventoryType.UTILITIES:
+        return ItemDialogType.UTILITIES;
+      default:
+        throw new Error(`Unsupported InventoryType: ${inventoryType}`);
+    }
+  }
+
+  handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, inventoryType: InventoryType) => {
     const elementRect = e.currentTarget.getBoundingClientRect();
 
     const modalPosition = {
       top: elementRect.top + elementRect.height / 2,
       left: elementRect.left + elementRect.width / 2,
     };
+
+    const modalType = this.convertInventoryTypeToItemDialogType(inventoryType);
 
     this.setState({ openModal: true, modalType, modalPosition, modalData });
   }
@@ -58,8 +116,8 @@ class ItemIcon extends Component<ItemIconProps> {
   }
 
   render() {
-    const { action, index, actionType, hideHotKey, onActionClick } = this.props;
-    // console.log('ItemIconProps => ', this.props); 
+    const { action, index, actionType, hideHotKey } = this.props;
+    const { croppedImageUrl } = this.state;
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
@@ -74,10 +132,6 @@ class ItemIcon extends Component<ItemIconProps> {
         this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP, (action as BaseEquipment).slot);
       } 
 
-      // console.log("itemIconE => ", e); 
-      // console.log("itemIconAction => ", action); 
-      // console.log("itemIconActionType => ", actionType); 
-
       if(actionType === InventoryType.EQUIPMENTS) {
         this.props.handleSelectedEquipmentSlot((action as BaseEquipment).slot); 
       }
@@ -89,24 +143,18 @@ class ItemIcon extends Component<ItemIconProps> {
       return <div className={`${actionType}`} />;
     }
 
-    const spriteSheetsMap = {
-      [InventoryType.CONSUMABLES]: consumablesSpritesheet,
-      [InventoryType.SPELLS]: spellsSpritesheet,
-      [InventoryType.EQUIPMENTS]: equipmentSpritesheet,
-    };
-    const spritesheet = spriteSheetsMap[actionType];
-
     return (
-      <div
-        onClick={handleOnClickAction}>
-        {action.id > -1 && <div
-          className='item-icon'
-          style={{
-            backgroundImage: `url(${spritesheet})`,
-            backgroundPosition: `-${mapFrameToCoordinates(action.frame).x}px -${mapFrameToCoordinates(action.frame).y}px`,
-            cursor: 'pointer',
-          }}
-        />}
+      <div onClick={handleOnClickAction}>
+        {action.id > -1 && (
+          <div
+            className='item-icon'
+            style={{
+              backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : 'none',
+              backgroundSize: 'cover',
+              cursor: 'pointer',
+            }}
+          />
+        )}
         {!hideHotKey && <span className="key-binding">{keyBinding}</span>}
 
         <ItemDialog
