@@ -513,6 +513,7 @@
   margin-left: 0;
   transition: all .2s;
 
+
   @media screen and (max-width: 1500px) and (orientation: landscape) {
     transform: scale(0.9) translateX(-50%);
     transform-origin: top left;
@@ -1419,12 +1420,16 @@
 }
 
 .spell_target_container {
+  position: absolute; /* or fixed, depending on your needs */
+  top: 20%;
+
   z-index: 10;
   transition: all .2s;
 
   @media screen and (max-width: 1500px) and (orientation: landscape) {
     transform: scale(0.9);
     transform-origin: top center;
+    top: 21%;
   }
 
   @media screen and (max-width: 1400px) and (orientation: landscape) {
