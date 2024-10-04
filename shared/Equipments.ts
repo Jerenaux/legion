@@ -366,6 +366,21 @@ equipments[30] = new BaseEquipment({
     minLevel: 1,
 });
 
+equipments[31] = new BaseEquipment({
+    id: 31,
+    name: "Sturdy Iron Sword",
+    description: "",
+    frame: 2,
+    effects: [
+        {stat: Stat.ATK, value: 25},
+        {stat: Stat.DEF, value: 5}
+    ],
+    slot: EquipmentSlot.WEAPON,
+    effort: 6,
+    minLevel: 3,
+    classes: [Class.WARRIOR],
+});
+
 export function getEquipmentById(id:number): BaseEquipment | undefined {
     return equipments.find(e => e.id === id);
 }
