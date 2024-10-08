@@ -48,8 +48,10 @@ export class AIGame extends Game {
         return levels;
     }
 
-    async fetchZombieTeam(team: Team) {
-        const data = await apiFetch('zombieData', ''); // TODO: Add API key
+    async fetchZombieTeam(team: Team, elo: number) {
+        // console.log(`[AIGame:fetchZombieTeam] mode = ${this.mode}, league = ${this.league}, elo = ${elo}`);
+        const league = this.mode == PlayMode.RANKED_VS_AI ? this.league : -1;
+        const data = await apiFetch(`zombieData?league=${league}&elo=${elo}`, ''); // TODO: Add API key
         console.log(`[AIGame:fetchZombieTeam] Zombie player data: ${JSON.stringify(data.playerData)}`);
         team.setPlayerData(data.playerData);
         data.rosterData.characters.forEach((character: any, index) => {
@@ -84,8 +86,8 @@ export class AIGame extends Game {
             nb = teamData.characters.length;
         }
 
-        if (this.mode === PlayMode.CASUAL_VS_AI) {
-            await this.fetchZombieTeam(aiTeam!);
+        if (this.mode === PlayMode.CASUAL_VS_AI || this.mode === PlayMode.RANKED_VS_AI) {
+            await this.fetchZombieTeam(aiTeam!, playerTeam.teamData.elo);
         } else {
             this.createAITeam(aiTeam!, nb, levels);
         }

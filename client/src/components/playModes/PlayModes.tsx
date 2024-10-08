@@ -14,8 +14,8 @@ class PlayModes extends Component {
     return (
       <div className="barContainer">
         <PlayModeButton label={MiddleBtns.PRACTICE} mode={PlayMode.PRACTICE}/>
-        <PlayModeButton label={MiddleBtns.CASUAL} players={0} mode={PlayMode.CASUAL}/>
-        <PlayModeButton label={MiddleBtns.RANKED} players={8} mode={PlayMode.RANKED}/>
+        <PlayModeButton label={MiddleBtns.CASUAL} players={Math.floor(Math.random() * 4) + 1} mode={PlayMode.CASUAL}/>
+        <PlayModeButton label={MiddleBtns.RANKED} players={Math.floor(Math.random() * 2) + 1} mode={PlayMode.RANKED}/>
       </div>
     );
   }

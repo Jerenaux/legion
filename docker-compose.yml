@@ -69,4 +69,6 @@ services:
       - FIREBASE_AUTH_EMULATOR_HOST=api:9099
       - IS_DOCKER=true
       - NODE_ENV=development
+      - DISCORD_TOKEN=MTAzNDE1NTg2MDY1NTYxMjAxNQ.Gofr5O.OLARZ3Qikq0DtpXLG3hYvARq09n8zOlVkU8fSM
+
 

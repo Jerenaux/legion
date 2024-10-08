@@ -782,102 +782,53 @@ export const zombieData = onRequest(async (req, res) => {
     const db = admin.firestore();
     const auth = admin.auth();
 
-    // Get all player document IDs
-    const playersSnapshot = await db.collection('players').get();
-    const playerIds = playersSnapshot.docs.map((doc) => doc.id);
+    // Get the league and elo parameters from the request
+    const league = parseInt(req.query.league as string, 10);
+    const targetElo = parseInt(req.query.elo as string, 10);
 
-    // Shuffle the array of player IDs
-    for (let i = playerIds.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [playerIds[i], playerIds[j]] = [playerIds[j], playerIds[i]];
+    if (isNaN(league) || isNaN(targetElo)) {
+      res.status(400).json({ error: 'Valid league and elo parameters are required' });
+      return;
     }
 
-    // Find the first dangling player ID and get its data
-    for (const playerId of playerIds) {
+    // Prepare the query
+    let playersQuery = db.collection('players');
+    if (league !== -1) {
+      // @ts-ignore
+      playersQuery = playersQuery.where('league', '==', league);
+    }
+
+    // Get all matching player documents
+    const playersSnapshot = await playersQuery.get();
+    const playerDocs = playersSnapshot.docs;
+
+    // Shuffle the array of player documents
+    for (let i = playerDocs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [playerDocs[i], playerDocs[j]] = [playerDocs[j], playerDocs[i]];
+    }
+
+    // Select up to 10 random players
+    const selectedPlayers = playerDocs.slice(0, 10);
+
+    // Find the dangling player with the closest ELO
+    let closestPlayer = null;
+    let closestEloDiff = Infinity;
+
+    for (const playerDoc of selectedPlayers) {
+      const playerId = playerDoc.id;
       try {
         await auth.getUser(playerId);
       } catch (error) {
         // @ts-ignore
         if (error.code === 'auth/user-not-found') {
-          // We found a dangling ID, now let's get its data
-          const playerDoc = await db.collection('players').doc(playerId).get();
-
-          if (playerDoc.exists) {
-            const playerData = playerDoc.data();
-
-            if (!playerData) {
-              throw Error(`Player ${playerId} has no data`);
+          const playerData = playerDoc.data();
+          if (playerData) {
+            const eloDiff = Math.abs(playerData.elo - targetElo);
+            if (eloDiff < closestEloDiff) {
+              closestEloDiff = eloDiff;
+              closestPlayer = { id: playerId, data: playerData };
             }
-
-            // Get character data
-            const characterRefs = playerData.characters || [];
-            const characterDocs = await db.getAll(...characterRefs, {
-              fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
-                'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
-                'skills',
-              ],
-            });
-
-            const rosterData = characterDocs.map((characterDoc) => ({
-              id: characterDoc.id,
-              name: characterDoc.get('name'),
-              level: characterDoc.get('level'),
-              class: characterDoc.get('class'),
-              experience: characterDoc.get('experience'),
-              portrait: characterDoc.get('portrait'),
-              xp: characterDoc.get('xp'),
-              sp: characterDoc.get('sp'),
-              stats: characterDoc.get('stats'),
-              carrying_capacity: characterDoc.get('carrying_capacity'),
-              carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
-              skill_slots: characterDoc.get('skill_slots'),
-              inventory: characterDoc.get('inventory'),
-              equipment: characterDoc.get('equipment'),
-              equipment_bonuses: characterDoc.get('equipment_bonuses'),
-              sp_bonuses: characterDoc.get('sp_bonuses'),
-              skills: characterDoc.get('skills'),
-            }));
-
-            // Transform dailyloot
-            const transformedDailyLoot = transformDailyLoot(playerData.dailyloot);
-
-            // Prepare tours data
-            const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
-
-            // Sort inventory
-            const sortedInventory = {
-              consumables: playerData.inventory.consumables.sort(numericalSort),
-              spells: playerData.inventory.spells.sort(numericalSort),
-              equipment: playerData.inventory.equipment.sort(numericalSort),
-            };
-
-            // Prepare the response object
-            const responseData = {
-              playerData: {
-                uid: playerId,
-                gold: playerData.gold,
-                elo: playerData.elo,
-                lvl: playerData.lvl,
-                name: playerData.name,
-                teamName: "teamName",
-                avatar: playerData.avatar,
-                league: playerData.league,
-                rank: playerData.leagueStats.rank,
-                wins: playerData.leagueStats.wins,
-                allTimeRank: playerData.allTimeStats.rank,
-                dailyloot: transformedDailyLoot,
-                tours,
-                inventory: sortedInventory,
-                carrying_capacity: playerData.carrying_capacity,
-                isLoaded: false,
-              },
-              rosterData: {
-                characters: rosterData,
-              },
-            };
-
-            res.json(responseData);
-            return; // Exit the function after sending the response
           }
         } else {
           console.error(`Error checking user ${playerId}:`, error);
@@ -885,10 +836,83 @@ export const zombieData = onRequest(async (req, res) => {
       }
     }
 
-    // If we've gone through all IDs without finding a dangling one
-    res.json({ message: "No dangling player IDs found" });
+    if (closestPlayer) {
+      const { id: playerId, data: playerData } = closestPlayer;
+
+      // Get character data
+      const characterRefs = playerData.characters || [];
+      const characterDocs = await db.getAll(...characterRefs, {
+        fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
+          'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
+          'skills',
+        ],
+      });
+
+      const rosterData = characterDocs.map((characterDoc) => ({
+        id: characterDoc.id,
+        name: characterDoc.get('name'),
+        level: characterDoc.get('level'),
+        class: characterDoc.get('class'),
+        experience: characterDoc.get('experience'),
+        portrait: characterDoc.get('portrait'),
+        xp: characterDoc.get('xp'),
+        sp: characterDoc.get('sp'),
+        stats: characterDoc.get('stats'),
+        carrying_capacity: characterDoc.get('carrying_capacity'),
+        carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
+        skill_slots: characterDoc.get('skill_slots'),
+        inventory: characterDoc.get('inventory'),
+        equipment: characterDoc.get('equipment'),
+        equipment_bonuses: characterDoc.get('equipment_bonuses'),
+        sp_bonuses: characterDoc.get('sp_bonuses'),
+        skills: characterDoc.get('skills'),
+      }));
+
+      // Transform dailyloot
+      const transformedDailyLoot = transformDailyLoot(playerData.dailyloot);
+
+      // Prepare tours data
+      const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
+
+      // Sort inventory
+      const sortedInventory = {
+        consumables: playerData.inventory.consumables.sort(numericalSort),
+        spells: playerData.inventory.spells.sort(numericalSort),
+        equipment: playerData.inventory.equipment.sort(numericalSort),
+      };
+
+      // Prepare the response object
+      const responseData = {
+        playerData: {
+          uid: playerId,
+          gold: playerData.gold,
+          elo: playerData.elo,
+          lvl: playerData.lvl,
+          name: playerData.name,
+          teamName: "teamName",
+          avatar: playerData.avatar,
+          league: playerData.league,
+          rank: playerData.leagueStats.rank,
+          wins: playerData.leagueStats.wins,
+          allTimeRank: playerData.allTimeStats.rank,
+          dailyloot: transformedDailyLoot,
+          tours,
+          inventory: sortedInventory,
+          carrying_capacity: playerData.carrying_capacity,
+          isLoaded: false,
+        },
+        rosterData: {
+          characters: rosterData,
+        },
+      };
+
+      res.json(responseData);
+    } else {
+      res.json({ message: `No dangling player IDs found${league !== -1 ? ` in league ${league}` : ''}` });
+    }
   } catch (error) {
-    console.error('Error in getRandomDanglingPlayerData:', error);
+    console.error('Error in zombieData:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+

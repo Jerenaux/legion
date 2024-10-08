@@ -118,7 +118,6 @@ export class ServerPlayer {
             data['spells'] = this.getNetworkSpells();
             data['xp'] = this.xp;
         }
-        console.log(`[ServerPlayer:getPlacementData] ${JSON.stringify(data)}`);
         return data;
     }
 
