@@ -1,9 +1,10 @@
-import { h, Component } from 'preact';
+import { h, Component, Fragment } from 'preact';
 import ItemIcon from './ItemIcon';
 import { InventoryType, StatusEffect, Target } from '@legion/shared/enums';
 import TabBar from './TabBar';
-import { mapFrameToCoordinates, getSpritePath } from '../utils';
+import { mapFrameToCoordinates, getSpritePath, cropFrame, statusIcons } from '../utils';
 import { PlayerProps } from '@legion/shared/interfaces';
+import { BaseSpell } from '@legion/shared/BaseSpell';
 
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -13,21 +14,17 @@ import mpIcon from '@assets/inventory/mp_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 
-import freezeIcon from '@assets/HUD/freeze_icon.png';
-import muteIcon from '@assets/HUD/mute_icon.png';
-import paralyzeIcon from '@assets/HUD/paralyze_icon.png';
-import blindIcon from '@assets/HUD/blind_icon.png';
-import sleepIcon from '@assets/HUD/sleep_icon.png';
-import poisonIcon from '@assets/HUD/poison_icon.png';
-import burnIcon from '@assets/HUD/burn_icon.png';
-
 
 interface Props {
   player: PlayerProps;
   eventEmitter: any;
 }
+
 interface State {
   player: PlayerProps;
+  croppedImages: {
+    [key: string]: string;
+  };
 }
 
 class PlayerTab extends Component<Props, State> {
@@ -38,26 +35,52 @@ class PlayerTab extends Component<Props, State> {
     super(props);
     this.state = {
       player: this.props.player,
+      croppedImages: {},
     };
     this.events = this.props.eventEmitter;
   }
 
-  statusIcons = {
-    'Freeze': freezeIcon,
-    'Mute': muteIcon,
-    'Paralyze': paralyzeIcon,
-    'Blind': blindIcon,
-    'Sleep': sleepIcon,
-    'Poison': poisonIcon,
-    'Burn': burnIcon,
+  componentDidMount() {
+    this.cropAllSprites();
   }
 
-  componentDidMount() {
-    // this.timerID = setInterval(() => this.tick(), 1000); 
+  componentDidUpdate(prevProps: Props) {
+    if (prevProps.player !== this.props.player) {
+      this.cropAllSprites();
+    }
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerID); 
+    clearInterval(this.timerID);
+  }
+
+  cropAllSprites = async () => {
+    const { player } = this.props;
+    const newCroppedImages = { ...this.state.croppedImages };
+
+    for (const item of player.items) {
+      if (item && !newCroppedImages[`item-${item.id}`]) {
+        newCroppedImages[`item-${item.id}`] = await this.cropSprite(consumablesSpritesheet, item.frame);
+      }
+    }
+
+    for (const spell of player.spells) {
+      if (spell && !newCroppedImages[`spell-${spell.id}`]) {
+        newCroppedImages[`spell-${spell.id}`] = await this.cropSprite(spellsSpritesheet, spell.frame);
+      }
+    }
+
+    this.setState({ croppedImages: newCroppedImages });
+  }
+
+  cropSprite = async (spritesheet: string, frame: number): Promise<string> => {
+    const { x, y } = mapFrameToCoordinates(frame);
+    try {
+      return await cropFrame(spritesheet, x, y, 32, 32); // Assuming 32x32 sprite size
+    } catch (error) {
+      console.error('Error cropping spritesheet:', error);
+      return '';
+    }
   }
 
   actionClick(index: number) {
@@ -73,18 +96,78 @@ class PlayerTab extends Component<Props, State> {
     return (player.maxCooldown - player.cooldown) / player.maxCooldown;
   }
 
-  getBackgroundPosition (frame: number) {
-    const coordinates = mapFrameToCoordinates(frame);
-    coordinates.x = -coordinates.x + 0;
-    coordinates.y = -coordinates.y + 1;
-    const backgroundPosition = `${coordinates.x}px ${coordinates.y}px`;
-    return backgroundPosition;
+  renderActionContainer(title: string, actions: any[], canAct: boolean, isMuted: boolean, startIndex: number, inventoryType: InventoryType) {
+    const { player } = this.props;
+    const goldenGradient = 'linear-gradient(to bottom right, #bf9b30, #1c1f25)';
+
+    return (
+      <div className="width_full">
+        <p className="hud_actions_title">{title}</p>
+        <div className="grid player_hud_action_container gap_4 padding_y_4">
+          {Array.from({ length: 6 }, (_, idx) => (
+            <div 
+              className={`player_hud_skills flex items_center justify_center relative ${player[inventoryType === InventoryType.CONSUMABLES ? 'pendingItem' : 'pendingSpell'] === idx ? 'blinking-gradient' : ''}`}
+              key={idx}
+              style={{
+                background: player[inventoryType === InventoryType.CONSUMABLES ? 'pendingItem' : 'pendingSpell'] === idx ? goldenGradient : 'initial',
+              }}
+              onClick={(event: Event) => {
+                this.handleClick(event, startIndex + idx); 
+              }}
+            >
+              <ItemIcon
+                action={actions[idx]}
+                index={idx}
+                canAct={canAct && (inventoryType === InventoryType.CONSUMABLES || (!isMuted && actions[idx]?.cost <= player.mp))}
+                actionType={inventoryType}
+                key={idx}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
+
+  renderTargetContainer(type: 'spell' | 'item', index: number) {
+    const { player } = this.props;
+    const action = type === 'spell' ? player.spells[index] : player.items[index];
+    const croppedImage = this.state.croppedImages[`${type}-${action.id}`];
+
+    return (
+      <div className="spell_target_container">
+        <p className="spell_target_title">Select a target</p>
+        <div className="spell_target">
+          <div className="equip-dialog-image" style={{
+            backgroundImage: `url(${croppedImage})`,
+            backgroundSize: 'cover',
+          }} />
+          <div className={`dialog-${type}-info-container`}>
+            {type === 'spell' && 'cost' in action && (
+              <div className="dialog-spell-info">
+                <img src={mpIcon} alt="mp" />
+                <span>{(action as BaseSpell).cost}</span>
+              </div>
+            )}
+            <div className="dialog-spell-info">
+              <img src={cdIcon} alt="cd" className={type === 'spell' ? 'cd-icon' : ''} />
+              <span>{action.getCooldown()}s</span>
+            </div>
+            <div className="dialog-spell-info">
+              <img src={targetIcon} alt="target" />
+              <span>{Target[action.target]}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   render(props: Props, state: State) {
     const { player } = props;
 
-    if (!player) return;
+    if (!player) return null;
 
     const portraitStyle = {
       backgroundImage: `url(${getSpritePath(player.portrait)})`,
@@ -100,7 +183,6 @@ class PlayerTab extends Component<Props, State> {
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const itemsIndex = keyboardLayout.indexOf('Z');
-    const goldenGradient = 'linear-gradient(to bottom right, #bf9b30, #1c1f25)'
 
     return (
       <div className="flex flex_col items_center">
@@ -129,7 +211,7 @@ class PlayerTab extends Component<Props, State> {
                 </div>
                 <div className="player_content_statuses">
                   {Object.keys(player.statuses).map((status: string) => player?.statuses[status] !== 0 && <div>
-                    <img key={status} src={this.statusIcons[status]} alt="" />
+                    <img key={status} src={statusIcons[status]} alt="" />
                     <span>{player.statuses[status] == -1 ? '∞' : player.statuses[status] }</span>
                   </div>
                   )}
@@ -145,97 +227,12 @@ class PlayerTab extends Component<Props, State> {
           </div>
 
           <div className="flex width_half justify_between padding_8 padding_top_16 gap_24 padding_right_16">
-            <div className="width_full">
-              <p className="hud_actions_title">Items</p>
-              <div className="grid player_hud_action_container gap_4 padding_y_4">
-                {Array.from({ length: 6 }, (_, idx) => (
-                  <div 
-                    className={`player_hud_skills flex items_center justify_center relative ${player.pendingItem === idx ? 'blinking-gradient' : ''}`}                    
-                    key={idx}
-                    style={{
-                      background: player.pendingItem === idx ? goldenGradient : 'initial',
-                    }}
-                    onClick={(event: Event) => {
-                      this.handleClick(event, itemsIndex + idx); 
-                    }}
-                  >
-                    <ItemIcon
-                      action={player.items[idx]}
-                      index={idx}
-                      canAct={canAct}
-                      actionType={InventoryType.CONSUMABLES}
-                      key={idx}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="width_full">
-              <p className="hud_actions_title">Spells</p>
-              <div className="grid player_hud_action_container gap_4 padding_y_4">
-                {Array.from({ length: 6 }, (_, idx) => (
-                  <div
-                  className={`player_hud_skills flex items_center justify_center relative ${player.pendingSpell === idx ? 'blinking-gradient' : ''}`}                    
-                  key={idx}
-                  onClick={(event: Event) => {
-                    this.handleClick(event, idx); 
-                  }}
-                  >
-                    <ItemIcon
-                      action={player.spells[idx]}
-                      index={idx}
-                      canAct={canAct && !isMuted && player.spells[idx]?.cost <= player.mp}
-                      actionType={InventoryType.SPELLS}
-                      key={idx}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {this.renderActionContainer("Items", player.items, canAct, isMuted, itemsIndex, InventoryType.CONSUMABLES)}
+            {this.renderActionContainer("Spells", player.spells, canAct, isMuted, 0, InventoryType.SPELLS)}
           </div>
         </div>
-        {player.pendingSpell !== null && <div className="spell_target_container">
-          <p className="spell_target_title">Select a target</p>
-          <div className="spell_target">
-            <div className="equip-dialog-image" style={{
-              backgroundImage: `url(${spellsSpritesheet})`,
-              backgroundPosition: this.getBackgroundPosition(this.props.player.spells[player.pendingSpell].frame),
-            }} />
-            <div className="dialog-spell-info-container">
-              <div className="dialog-spell-info">
-                <img src={mpIcon} alt="mp" />
-                <span>{player.spells[player.pendingSpell]?.cost}</span>
-              </div>
-              <div className="dialog-spell-info">
-                <img src={cdIcon} alt="cd" className="cd-icon"/>
-                <span>{player.spells[player.pendingSpell]?.getCooldown()}s</span>
-              </div>
-              <div className="dialog-spell-info">
-                <img src={targetIcon} alt="target" />
-                <span>{Target[player.spells[player.pendingSpell]?.target]}</span>
-              </div>
-            </div>
-          </div>
-        </div>}
-        {player.pendingItem !== null && <div className="spell_target_container">
-          <p className="spell_target_title">Select a target</p>
-          <div className="spell_target">
-            <div className="equip-dialog-image" style={{
-              backgroundImage: `url(${consumablesSpritesheet})`,
-              backgroundPosition: this.getBackgroundPosition(this.props.player.items[player.pendingItem].frame),
-            }} />
-            <div className="dialog-item-info-container">
-              <div className="dialog-spell-info">
-                <img src={cdIcon} alt="cd"/>
-                <span>{player.items[player.pendingItem]?.getCooldown()}s</span>
-              </div>
-              <div className="dialog-spell-info">
-                <img src={targetIcon} alt="target" />
-                <span>{Target[player.items[player.pendingItem]?.target]}</span>
-              </div>
-            </div>
-          </div>
-        </div>}
+        {player.pendingSpell !== null && this.renderTargetContainer('spell', player.pendingSpell)}
+        {player.pendingItem !== null && this.renderTargetContainer('item', player.pendingItem)}
       </div>
     );
   }

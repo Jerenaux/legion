@@ -39,13 +39,34 @@ export class AIGame extends Game {
         for (let i = 0; i < nb; i++) {
             const character = new NewCharacter(classes[i], levels[i], false, true).getCharacterData();
             const position = this.getPosition(i, true);
-            const newPlayer = new AIServerPlayer(i + 1, character.name, character.portrait, position.x, position.y)
-            newPlayer.setTeam(team!);
-            newPlayer.setUpCharacter(character, true);
-            team?.addMember(newPlayer);
+            const newCharacter = new AIServerPlayer(i + 1, character.name, character.portrait, position.x, position.y)
+            newCharacter.setTeam(team!);
+            newCharacter.setUpCharacter(character, true);
+            team?.addMember(newCharacter);
         }
 
         return levels;
+    }
+
+    async fetchZombieTeam(team: Team, elo: number, nb: number, levels: number[]) {
+        // console.log(`[AIGame:fetchZombieTeam] mode = ${this.mode}, league = ${this.league}, elo = ${elo}`);
+        const league = this.mode == PlayMode.RANKED_VS_AI ? this.league : -1;
+        const data = await apiFetch(`zombieData?league=${league}&elo=${elo}`, ''); // TODO: Add API key
+        console.log(`[AIGame:fetchZombieTeam] Zombie player data: ${JSON.stringify(data.playerData)}`);
+        
+        if (data.playerData === undefined) {
+            console.log('[AIGame:fetchZombieTeam] Failed to fetch zombie data. Falling back to createAITeam.');
+            this.createAITeam(team, nb, levels);
+        } else {
+            team.setPlayerData(data.playerData);
+            data.rosterData.characters.forEach((character: any, index) => {
+                const position = this.getPosition(index, true);
+                const newCharacter = new AIServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
+                newCharacter.setTeam(team);
+                newCharacter.setUpCharacter(character);
+                team.addMember(newCharacter);
+            });
+        }
     }
 
     async populateTeams() {
@@ -62,16 +83,20 @@ export class AIGame extends Game {
             const teamData = await apiFetch('rosterData', playerTeam.getFirebaseToken());
             teamData.characters.forEach((character: any, index) => {
                 const position = this.getPosition(index, false);
-                const newPlayer = new ServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
-                newPlayer.setTeam(playerTeam!);
-                newPlayer.setUpCharacter(character);
-                playerTeam?.addMember(newPlayer);
+                const newCharacter = new ServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
+                newCharacter.setTeam(playerTeam!);
+                newCharacter.setUpCharacter(character);
+                playerTeam?.addMember(newCharacter);
                 levels.push(character.level);
             });
             nb = teamData.characters.length;
         }
 
-        this.createAITeam(aiTeam!, nb, levels);
+        if (this.mode === PlayMode.CASUAL_VS_AI || this.mode === PlayMode.RANKED_VS_AI) {
+            await this.fetchZombieTeam(aiTeam!, playerTeam.teamData.elo, nb, levels);
+        } else {
+            this.createAITeam(aiTeam!, nb, levels);
+        }
     }
 
     async addPlayer(socket: Socket, playerData: PlayerContextData) {

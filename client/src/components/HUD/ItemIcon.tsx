@@ -6,6 +6,7 @@ import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { ItemDialogType } from '../itemDialog/ItemDialogType';
 import { mapFrameToCoordinates } from '../utils';
+import { cropFrame } from '../utils'; 
 
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -17,21 +18,62 @@ interface ItemIconProps {
   canAct: boolean;
   actionType: InventoryType;
 }
-/* eslint-disable react/prefer-stateless-function */
 
-class ItemIcon extends Component<ItemIconProps> {
-  state = {
+interface ItemIconState {
+  openModal: boolean;
+  modalType: ItemDialogType;
+  modalData: any;
+  modalPosition: {
+    top: number;
+    left: number;
+  };
+  croppedImageUrl: string | null;
+}
+
+class ItemIcon extends Component<ItemIconProps, ItemIconState> {
+  state: ItemIconState = {
     openModal: false,
     modalType: ItemDialogType.EQUIPMENTS,
     modalData: null,
     modalPosition: {
-        top: 0,
-        left: 0
+      top: 0,
+      left: 0
+    },
+    croppedImageUrl: null
+  }
+
+  componentDidMount() {
+    this.cropSpritesheet();
+  }
+
+  componentDidUpdate(prevProps: ItemIconProps) {
+    if (prevProps.action !== this.props.action) {
+      this.cropSpritesheet();
+    }
+  }
+
+  cropSpritesheet = async () => {
+    const { action, actionType } = this.props;
+    if (!action) return;
+
+    const spriteSheetsMap = {
+      [InventoryType.CONSUMABLES]: consumablesSpritesheet,
+      [InventoryType.SPELLS]: spellsSpritesheet,
+    };
+    const spritesheet = spriteSheetsMap[actionType];
+
+    const { x, y } = mapFrameToCoordinates(action.frame);
+    try {
+      const croppedImageUrl = await cropFrame(spritesheet, x, y, 32, 32); // Assuming 32x32 sprite size
+      this.setState({ croppedImageUrl });
+    } catch (error) {
+      console.error('Error cropping spritesheet:', error);
     }
   }
 
   render() {
-    const { action, index, canAct, actionType } = this.props; 
+    const { action, index, canAct, actionType } = this.props;
+    const { croppedImageUrl } = this.state;
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
@@ -41,21 +83,17 @@ class ItemIcon extends Component<ItemIconProps> {
       return <div className={`${actionType}`} />;
     }
 
-    const spriteSheetsMap = {
-      [InventoryType.CONSUMABLES]: consumablesSpritesheet,
-      [InventoryType.SPELLS]: spellsSpritesheet,
-    }
-    const spritesheet = spriteSheetsMap[actionType];
-
     return (
       <div>
-        {action.id > -1 && <div 
-          className={!canAct ? 'item-icon item-icon-off' : 'item-icon item-icon-pointer'}
-          style={{
-            backgroundImage: `url(${spritesheet})`,
-            backgroundPosition: `-${mapFrameToCoordinates(action.frame).x}px -${mapFrameToCoordinates(action.frame).y}px`,
-          }}
-          />}
+        {action.id > -1 && (
+          <div 
+            className={!canAct ? 'item-icon item-icon-off' : 'item-icon item-icon-pointer'}
+            style={{
+              backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : 'none',
+              backgroundSize: 'cover',
+            }}
+          />
+        )}
         <span className="key-binding">{keyBinding}</span>
       </div>
     );

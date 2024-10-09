@@ -36,7 +36,7 @@ export function selectStatToLevelUp(characterClass: Class): Stat {
 
 export function increaseStat(stat: Stat, currentValue: number, level: number, characterClass: Class) {
     const increments = [1, 1, 1, 1, 2, 2, 2, 3, 3, 4];
-    const increment = increments[Math.floor(Math.random() * increments.length)];
+    const increment = increments[Math.floor(Math.random() * increments.length)] * getSPIncrement(stat);
     return currentValue + increment;
 }
 

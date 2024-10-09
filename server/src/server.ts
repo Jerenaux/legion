@@ -99,7 +99,7 @@ io.on('connection', async (socket: any) => {
       let game: Game;
       if (!gamesMap.has(gameId)) {
         console.log(`[server:connection] Creating game ${gameId}`);
-        const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.TUTORIAL];
+        const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI, PlayMode.TUTORIAL];
         const gameType = AImodes.includes(gameData.mode) ? AIGame : PvPGame;
         game = new gameType(gameId, gameData.mode, gameData.league, io);
         gamesMap.set(gameId, game);
@@ -114,7 +114,7 @@ io.on('connection', async (socket: any) => {
           `getPlayerData`,
           socket.firebaseToken,
           {},
-          5,
+          6,
           500,
         );
   

@@ -11,7 +11,7 @@ import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, PlayMode } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
 import { Tutorial } from './tutorial';
-import { KILL_CAM_DURATION } from '@legion/shared/config';
+import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE } from '@legion/shared/config';
 
 import killzoneImage from '@assets/killzone.png';
 import iceblockImage from '@assets/iceblock.png';
@@ -56,7 +56,7 @@ import speechTail from '@assets/speech_tail.png';
 // Static imports for tile atlas
 import groundTilesImage from '@assets/tiles2.png';
 import groundTilesAtlas from '@assets/tiles2.json';
-import { errorToast } from '../components/utils';
+import { errorToast, silentErrorToast } from '../components/utils';
 
 
 const LOCAL_ANIMATION_SCALE = 3;
@@ -205,11 +205,23 @@ export class Arena extends Phaser.Scene
         };
 
         this.socket.on('connect', () => {
-            console.log('Connected to the server');
+            // console.log('Connected to the server');
         });
         
-        this.socket.on('disconnect', () => {
-            console.log('Disconnected from the server');
+        this.socket.on('disconnect', (reason) => {
+            console.log(`Disconnected from the server, ${reason}`);
+            if (reason != 'io client disconnect') {
+                // The disconnection was initiated by the server
+                console.error(`Server disconnect during game: ${reason}`);
+                const isTutorial = gameId === 'tutorial';
+                if (isTutorial) {
+                    silentErrorToast('Disconnected from server');
+                } else {
+                    silentErrorToast('Disconnected from server. Restarting tutorial...');
+                }
+                events.emit('serverDisconnect');
+                this.destroy();
+            } 
         }); 
 
         this.socket.on('error', (error) => {
@@ -584,6 +596,10 @@ export class Arena extends Phaser.Scene
         return !this.gridMap.get(serializeCoords(gridX, gridY)) && !this.obstaclesMap.get(serializeCoords(gridX, gridY));
     }
 
+    hasPlayer(gridX, gridY) {
+        return this.gridMap.has(serializeCoords(gridX, gridY));
+    }
+
     hasObstacle(gridX, gridY) {
         return this.obstaclesMap.has(serializeCoords(gridX, gridY));
     }
@@ -744,7 +760,8 @@ export class Arena extends Phaser.Scene
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
 
-        this.gridMap.set(serializeCoords(player.gridX, player.gridY), null);
+        // this.gridMap.set(serializeCoords(player.gridX, player.gridY), null);
+        this.gridMap.delete(serializeCoords(player.gridX, player.gridY));
         this.gridMap.set(serializeCoords(tile.x, tile.y), player);
 
         player.walkTo(tile.x, tile.y);
@@ -1005,7 +1022,7 @@ export class Arena extends Phaser.Scene
             this.anims.create({
                 key: `${asset}_anim_idle`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 9, end: 11 }), 
-                frameRate: 5, 
+                frameRate: BASE_ANIM_FRAME_RATE, 
                 repeat: -1,
                 yoyo: true 
             });
@@ -1013,7 +1030,7 @@ export class Arena extends Phaser.Scene
             this.anims.create({
                 key: `${asset}_anim_idle_hurt`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 33, end: 35 }), 
-                frameRate: 5, 
+                frameRate: BASE_ANIM_FRAME_RATE, 
                 repeat: -1, // Loop indefinitely,
                 yoyo: true
             });
@@ -1021,50 +1038,50 @@ export class Arena extends Phaser.Scene
             this.anims.create({
                 key: `${asset}_anim_walk`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 6, end: 8 }), 
-                frameRate: 5, 
+                frameRate: BASE_ANIM_FRAME_RATE, 
                 repeat: -1 // Loop indefinitely
             });
 
             this.anims.create({
                 key: `${asset}_anim_attack`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 12, end: 14 }), 
-                frameRate: 10, 
+                frameRate: BASE_ANIM_FRAME_RATE * 2, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_dodge`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 45, end: 47 }), 
-                frameRate: 10, 
+                frameRate: BASE_ANIM_FRAME_RATE * 2, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_item`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 48, end: 50 }), 
-                frameRate: 5, 
+                frameRate: BASE_ANIM_FRAME_RATE, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_hurt`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 42, end: 44 }), 
-                frameRate: 5, 
+                frameRate: BASE_ANIM_FRAME_RATE, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_cast`, 
                 frames: this.anims.generateFrameNumbers(asset, { start: 39, end: 41 }), 
-                frameRate: 5, 
+                frameRate: BASE_ANIM_FRAME_RATE, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_die`, 
                 frames: this.anims.generateFrameNumbers(asset, { frames: [51, 52, 53] }), 
-                frameRate: 10, 
+                frameRate: BASE_ANIM_FRAME_RATE * 2, 
             });
 
             this.anims.create({
                 key: `${asset}_anim_victory`, 
                 frames: this.anims.generateFrameNumbers(asset, { frames: [15, 16, 17] }), 
-                frameRate: 5, 
+                frameRate: BASE_ANIM_FRAME_RATE, 
                 repeat: -1,
                 yoyo: true 
             });
@@ -1072,7 +1089,7 @@ export class Arena extends Phaser.Scene
             this.anims.create({
                 key: `${asset}_anim_boast`, 
                 frames: this.anims.generateFrameNumbers(asset, { frames: [15, 16, 17] }), 
-                frameRate: 10, 
+                frameRate: BASE_ANIM_FRAME_RATE * 2, 
                 repeat: 2,
                 yoyo: true 
             });
@@ -1391,7 +1408,7 @@ export class Arena extends Phaser.Scene
             const delay = 3000;
             setTimeout(this.updateOverview.bind(this), delay + 1000);
             setTimeout(() => {
-                this.displayGEN(GEN.COMBAT_BEGINS);
+                if (!this.gameSettings.tutorial) this.displayGEN(GEN.COMBAT_BEGINS);
                 this.setGameInitialized();
             }, delay);
 
@@ -1635,7 +1652,7 @@ export class Arena extends Phaser.Scene
         
         // For every sprites in this.sprites, set anims.timeScale to slowMotionScale
         this.sprites.forEach((sprite) => {
-            sprite.anims.timeScale = slowMotionScale;
+            if (sprite.anims) sprite.anims.timeScale = slowMotionScale;
         });
 
         const firstDelay = 0;

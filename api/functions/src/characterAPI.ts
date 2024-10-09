@@ -141,9 +141,10 @@ export const postGameUpdate = onRequest((request, response) => {
 
   corsMiddleware(request, response, async () => {
     try {
-      const uid = await getUID(request);
+      const uid = request.body.uid;
       const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
         request.body.outcomes as OutcomeData;
+      console.log(`[postGameUpdate] isWinner: ${isWinner}, xp: ${xp}, gold: ${gold}, elo: ${elo}, key: ${key}, chests: ${chests}, rawGrade: ${rawGrade}, score: ${score}`);
       const mode = request.body.mode as PlayMode;
       const spellsUsed = request.body.spellsUsed;
 
@@ -197,7 +198,7 @@ export const postGameUpdate = onRequest((request, response) => {
           transaction.update(playerRef, {
             'utilizationStats.everPlayedCasual': true,
           });
-        } else if (mode == PlayMode.RANKED) {
+        } else if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
           transaction.update(playerRef, {
             'utilizationStats.everPlayedRanked': true,
           });
@@ -225,7 +226,7 @@ export const postGameUpdate = onRequest((request, response) => {
             }
           }
 
-          if (mode == PlayMode.RANKED) {
+          if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
             if (isWinner) {
               transaction.update(playerRef, {
                 'leagueStats.wins': admin.firestore.FieldValue.increment(1),
@@ -294,8 +295,6 @@ export const postGameUpdate = onRequest((request, response) => {
             });
         }
       });
-      console.log("Transaction successfully committed!");
-
       response.send({status: 0});
     } catch (error) {
       console.error("Error processing reward:", error);

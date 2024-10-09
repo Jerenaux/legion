@@ -1,5 +1,5 @@
 import { Target, Rarity, StatusEffect } from "./enums";
-import { Effect, ConsumableData } from "./interfaces";
+import { Effect, ConsumableData, StatusEffectData } from "./interfaces";
 import { getPrice, getRarity } from "./economy";
 import { TIME_COEFFICIENT } from "@legion/shared/config";
 
@@ -18,6 +18,7 @@ export class BaseItem {
     price: number = 0;
     rarity: Rarity = Rarity.COMMON;
     effort: number = 0;
+    status?: StatusEffectData;
 
     constructor(props: ConsumableData) {
         Object.assign(this, props);

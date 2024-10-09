@@ -15,6 +15,7 @@ export const tips = [
     "The HP and MP of your whole team are fully replenished after each combat, so don't be afraid to use your spells!",
     "You can revive characters during combat by using a Clover!",
     "The bar at the bottom of the game screen is the Audience bar. Impress the audience to earn extra rewards!",
+    "Haste Potions cut your cooldowns in half, very useful before casting a powerful spell!",
 ];
 
 export const guide = [

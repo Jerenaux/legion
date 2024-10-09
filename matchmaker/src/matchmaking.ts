@@ -11,7 +11,7 @@ import {
 import firebaseConfig from '@legion/shared/firebaseConfig';
 import { apiFetch } from "./API";
 import {eloRangeIncreaseInterval, eloRangeStart, eloRangeStep, goldRewardInterval,
-    goldReward, casualModeThresholdTime, maxWaitTimeForPractice} from '@legion/shared/config';
+    goldReward, casualModeThresholdTime, maxWaitTimeForPractice, ALLOW_SWITCHEROO_RANKED} from '@legion/shared/config';
 import { PlayMode, League } from '@legion/shared/enums';
 import { sendMessageToAdmin } from '@legion/shared/utils';
 
@@ -38,11 +38,20 @@ interface Player {
 let io: Server;
 
 const playersQueue: Player[] = [];
+const RND = true;
 
-async function notifyAdmin(mode: PlayMode) {
+async function notifyAdmin(uid1: string, uid2:string, mode: PlayMode, action: string) {
     if (!discordEnabled) return;
     try {
-        sendMessageToAdmin(discordClient, `A player has joined the queue in ${PlayMode[mode]} mode!`);
+        let message;
+        if (action == 'left') {
+            message = `Player ${uid1} has left the queue.`;
+        } else if(action == 'joined') {
+            message = `Player ${uid1} has joined the queue in ${PlayMode[mode]} mode!`;
+        } else if (action == 'matched') {
+            message = `Players ${uid1} and ${uid2} have been matched in ${PlayMode[mode]} mode!`;
+        }
+        sendMessageToAdmin(discordClient, message);
     } catch (error) {
         console.error('Failed to send DM:', error);
     }
@@ -64,7 +73,10 @@ export function setupMatchmaking(ioInstance: Server) {
 }
 
 function emitQueueCount() {
-    const count = playersQueue.length;
+    let count = playersQueue.length;
+    if (RND) {
+        count = Math.floor(Math.random() * 4) + 2;
+    }
     io.emit('queueCount', { count }); 
 }
 
@@ -104,15 +116,18 @@ function queueTimeUpdate() {
 }
 
 function switcherooCheck(player: Player) {
-    // console.log(`[matchmaker:switcherooCheck] isCasual: ${player.mode == PlayMode.CASUAL}, waitingTime: ${player.waitingTime}, threshold: ${casualModeThresholdTime}`);
-    if (player.mode == PlayMode.CASUAL && player.waitingTime > casualModeThresholdTime) {
+    if ((player.mode == PlayMode.CASUAL 
+        || (ALLOW_SWITCHEROO_RANKED && player.mode == PlayMode.RANKED)) 
+        && player.waitingTime > casualModeThresholdTime) {
         // Calculate the probability of redirecting to a PRACTICE game
         const waitTimeBeyondThreshold = player.waitingTime - casualModeThresholdTime;
         const redirectionProbability = Math.min(1, waitTimeBeyondThreshold / (maxWaitTimeForPractice - casualModeThresholdTime));
 
         if (Math.random() < redirectionProbability) {
             console.log(`Redirecting ${player.socket.id} to a CASUAL_VS_AI game due to long wait.`);
-            createGame(player.socket, null, PlayMode.CASUAL_VS_AI, null);
+            const mode = player.mode == PlayMode.CASUAL ? PlayMode.CASUAL_VS_AI : PlayMode.RANKED_VS_AI;
+            const league = player.mode = PlayMode.RANKED ? player.league : null;
+            createGame(player.socket, null, mode, league);
             removePlayerFromQ(player);
             return true;
         }
@@ -164,7 +179,11 @@ function countQueuingPlayers(mode: PlayMode, league: League): number {
     if (mode == PlayMode.RANKED) {
         return playersInMode.filter(player => player.league === league).length;
     }
-    return playersInMode.length;
+    if (RND) {
+        return Math.floor(Math.random() * 4) + 2;
+    } else {
+        return playersInMode.length;
+    }
 }
 
 function canBeMatched(player1: Player, player2: Player): boolean {
@@ -176,6 +195,8 @@ function canBeMatched(player1: Player, player2: Player): boolean {
 
 async function createGame(player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null) {
     try {
+        // @ts-ignore
+        notifyAdmin(player1?.uid, player2?.uid, mode, 'matched');
         const gameId = uuidv4();
         await apiFetch(
             'createGame',
@@ -295,7 +316,7 @@ export async function processJoinQueue(socket, data: { mode: PlayMode }) {
     try {
         socket.uid = await getUID(socket.firebaseToken);
 
-        notifyAdmin(data.mode);
+        notifyAdmin(socket.uid, null, data.mode, 'joined');
 
         if (data.mode == PlayMode.PRACTICE) {
             createGame(socket, null, PlayMode.PRACTICE);
@@ -319,6 +340,7 @@ export async function processDisconnect(socket) {
     console.log(`Player ${socket.id} disconnected`);
     const player = playersQueue.find(player => player.socket.id === socket.id);
     if (!player) return;
+    notifyAdmin(socket.uid, null, player.mode, 'left');
     removePlayerFromQ(player);
     logQueuingActivity(socket.uid, 'leaveQueue', null);
 }

@@ -10,6 +10,7 @@ import { Arena } from "./Arena";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
 import { paralyzingStatuses } from '@legion/shared/utils';
 import { SpeechBubble } from "./SpeechBubble";
+import { BASE_ANIM_FRAME_RATE } from '@legion/shared/config';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -150,6 +151,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
+        this.sprite.on('pointerdown', this.onPointerDown, this);
 
         this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, 'Hello!').setVisible(false);
         this.add(this.speechBubble);
@@ -165,6 +167,7 @@ export class Player extends Phaser.GameObjects.Container {
             [StatusEffect.BURN]: 0,
             [StatusEffect.SLEEP]: 0,
             [StatusEffect.MUTE]: 0,
+            [StatusEffect.HASTE]: 0,
         };
 
         const yOffsets = {
@@ -295,6 +298,11 @@ export class Player extends Phaser.GameObjects.Container {
         return this.statuses[StatusEffect.MUTE] != 0;
     }
 
+    isHasted() {
+        if (!this.statuses) return false;
+        return this.statuses[StatusEffect.HASTE] != 0;
+    }
+
     canAct() {
         return this.cooldownDuration == 0 && this.isAlive() && !this.casting && !this.isParalyzed();
     }
@@ -328,8 +336,16 @@ export class Player extends Phaser.GameObjects.Container {
             return;
         }
 
+         // Check if there is another player on the cell above
+         if (this.arena.hasPlayer(this.gridX, this.gridY - 1)) {
+            if (key == 'idle') key = 'hurt';
+         };
+
         // console.log(`Playing animation ${key}`);
-        this.sprite.play(`${this.texture}_anim_${key}`);
+        this.sprite.play({
+            key: `${this.texture}_anim_${key}`,
+            frameRate: this.isHasted() ? BASE_ANIM_FRAME_RATE * 1.5 : BASE_ANIM_FRAME_RATE,
+        });
         if (revertToIdle) {
             this.sprite.once('animationcomplete', this.handleAnimationComplete, this);
         }
@@ -426,11 +442,26 @@ export class Player extends Phaser.GameObjects.Container {
         this.glowFx.setActive(false);
     }
 
+    onPointerDown() {
+        // const selectedPlayer = this.arena.selectedPlayer;
+        // if (!selectedPlayer || (!selectedPlayer?.hasPendingSpell() && !selectedPlayer?.hasPendingItem())) {
+        //     console.log('Relaying pointer down to handle click');
+        //     this.arena.handleTileClick(this.gridX, this.gridY);
+        // }
+    }
+
+    hasPendingSpell() {
+        return this.pendingSpell != null;
+    }
+
+    hasPendingItem() {
+        return this.pendingItem != null;
+    }
+
     isInIce() {
         return this.arena.hasObstacle(this.gridX, this.gridY);
     }
     
-
     onClick() {
         this.arena.playSound('click');
         if (this.isPlayer && !this.isInIce()) { // If clicking on a player of your team
@@ -832,6 +863,7 @@ export class Player extends Phaser.GameObjects.Container {
             [StatusEffect.SLEEP]: 'sleep',
             [StatusEffect.MUTE]: 'muted',
         };
+        if (!keys[status]) return;
         const sprite = this.statusSprites.get(status);
         if (sprite) {
             sprite.setVisible(true);
@@ -900,7 +932,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.clearStatusTimer();
 
         // Stop all tweens related to this player
-        if (this.scene.tweens) {
+        if (this.scene?.tweens) {
             this.scene.tweens.killTweensOf(this);
             this.scene.tweens.killTweensOf(this.baseSquare);
         }
@@ -911,7 +943,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
 
         // Stop any ongoing animations
-        this.sprite.anims.stop();
+        this.sprite.anims?.stop();
         this.animationSprite.anims.stop();
     
         // Call the parent class's destroy method

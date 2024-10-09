@@ -1,7 +1,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions";
-import admin, { corsMiddleware, getUID } from "./APIsetup";
+import admin, { corsMiddleware, getUID, checkAPIKey } from "./APIsetup";
 
 import { uniqueNamesGenerator }
   from "unique-names-generator";
@@ -11,8 +11,10 @@ import { PlayerContextData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerDat
   PlayerInventory } from "@legion/shared/interfaces";
 import { NewCharacter } from "@legion/shared/NewCharacter";
 import { getChestContent, ChestReward } from "@legion/shared/chests";
-import { STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE, STARTING_GOLD_ADMIN,
-  STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN, IMMEDIATE_LOOT } from "@legion/shared/config";
+import {
+  STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE, STARTING_GOLD_ADMIN,
+  STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN, IMMEDIATE_LOOT,
+} from "@legion/shared/config";
 import { logPlayerAction, updateDAU } from "./dashboardAPI";
 import { getEmptyLeagueStats } from "./leaderboardsAPI";
 import { numericalSort } from "@legion/shared/inventory";
@@ -74,7 +76,7 @@ function generateName() {
   return base.length > 16 ? base.slice(0, 16) : base;
 }
 
-export const createPlayer = functions.auth.user().onCreate(async (user) => {
+export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().onCreate(async (user) => {
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
   const now = Date.now() / 1000;
@@ -259,7 +261,7 @@ export const getPlayerData = onRequest((request, response) => {
           tokens: playerData.tokens,
         } as PlayerContextData);
       } else {
-        response.status(404).send("Not Found: Invalid player ID");
+        response.status(404).send(`Player ID ${uid} not found`);
       }
     } catch (error) {
       console.error("playerData error:", error);
@@ -688,4 +690,254 @@ export const registerAddress = onRequest((request, response) => {
       response.status(500).send("Error");
     }
   });
+});
+
+export const setPlayerOnSteroids = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
+
+      const { uid } = request.body;
+
+      // Start a new transaction
+      await db.runTransaction(async (transaction) => {
+        const playerRef = db.collection("players").doc(uid);
+        const playerDoc = await transaction.get(playerRef);
+
+        if (!playerDoc.exists) {
+          throw new Error("Invalid player ID");
+        }
+
+        const playerData = playerDoc.data();
+        if (!playerData) {
+          throw new Error("playerData is null");
+        }
+
+        // Delete existing characters
+        for (const characterRef of playerData.characters) {
+          transaction.delete(characterRef);
+        }
+
+        // Create new characters
+        const levelBase = 10;
+        const newCharacters = [
+          new NewCharacter(Class.WARRIOR, Math.floor(Math.random() * 20) + levelBase),
+          new NewCharacter(Class.WHITE_MAGE, Math.floor(Math.random() * 20) + levelBase),
+          new NewCharacter(Class.BLACK_MAGE, Math.floor(Math.random() * 20) + levelBase),
+          new NewCharacter(Class.BLACK_MAGE, Math.floor(Math.random() * 20) + levelBase),
+        ];
+
+        const newCharacterRefs = [];
+        for (const character of newCharacters) {
+          const characterRef = db.collection("characters").doc();
+          const characterData = character.getCharacterData();
+
+          // Add some SP
+          characterData.sp = Math.floor(Math.random() * 10) + 1;
+          characterData.allTimeSP = characterData.sp;
+
+          // Adjust spells for white mage and black mages
+          if (character.characterClass === Class.WHITE_MAGE) {
+            characterData.skills = [9, 10, 11];
+          } else if (character.characterClass === Class.BLACK_MAGE) {
+            characterData.skill_slots = 5;
+            characterData.skills = [];
+          }
+
+          transaction.set(characterRef, characterData);
+          newCharacterRefs.push(characterRef);
+        }
+
+        // Distribute spells 1-8 among black mages
+        const blackMageRefs = newCharacterRefs.filter((_, index) => index > 1);
+        const spells = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        for (const spell of spells) {
+          const randomBlackMage = blackMageRefs[Math.floor(Math.random() * blackMageRefs.length)];
+          transaction.update(randomBlackMage, {
+            skills: admin.firestore.FieldValue.arrayUnion(spell),
+          });
+        }
+
+        // Update player data
+        const newInventory = {
+          consumables: [],
+          equipment: [],
+          spells: [],
+        };
+
+        // Add random amounts of consumables
+        for (let i = 0; i <= 12; i++) {
+          const amount = Math.floor(Math.random() * 3) + 1;
+          for (let j = 0; j < amount; j++) {
+            // @ts-ignore
+            newInventory.consumables.push(i);
+          }
+        }
+
+        // Add random amounts of equipment
+        for (let i = 0; i <= 31; i++) {
+          const amount = Math.floor(Math.random() * 2) + 1;
+          for (let j = 0; j < amount; j++) {
+            // @ts-ignore
+            newInventory.equipment.push(i);
+          }
+        }
+
+        transaction.update(playerRef, {
+          characters: newCharacterRefs,
+          gold: 35000,
+          inventory: newInventory,
+        });
+      });
+
+      response.send({ message: "Player reset successfully" });
+    } catch (error) {
+      console.error("resetPlayer error:", error);
+      response.status(500).send(`Error resetting player: ${error}`);
+    }
+  });
+});
+
+export const zombieData = onRequest(async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const auth = admin.auth();
+
+    // Get the league and elo parameters from the request
+    const league = parseInt(req.query.league as string, 10);
+    const targetElo = parseInt(req.query.elo as string, 10);
+
+    if (isNaN(league) || isNaN(targetElo)) {
+      res.status(400).json({ error: 'Valid league and elo parameters are required' });
+      return;
+    }
+
+    // Prepare the query
+    let playersQuery = db.collection('players');
+    if (league !== -1) {
+      // @ts-ignore
+      playersQuery = playersQuery.where('league', '==', league);
+    }
+
+    // Get all matching player documents
+    const playersSnapshot = await playersQuery.get();
+    const playerDocs = playersSnapshot.docs;
+
+    // Shuffle the array of player documents
+    for (let i = playerDocs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [playerDocs[i], playerDocs[j]] = [playerDocs[j], playerDocs[i]];
+    }
+
+    // Select up to 10 random players
+    const selectedPlayers = playerDocs.slice(0, 10);
+
+    // Find the dangling player with the closest ELO
+    let closestPlayer = null;
+    let closestEloDiff = Infinity;
+
+    for (const playerDoc of selectedPlayers) {
+      const playerId = playerDoc.id;
+      try {
+        await auth.getUser(playerId);
+      } catch (error) {
+        // @ts-ignore
+        if (error.code === 'auth/user-not-found') {
+          const playerData = playerDoc.data();
+          if (playerData) {
+            const eloDiff = Math.abs(playerData.elo - targetElo);
+            if (eloDiff < closestEloDiff) {
+              closestEloDiff = eloDiff;
+              closestPlayer = { id: playerId, data: playerData };
+            }
+          }
+        } else {
+          console.error(`Error checking user ${playerId}:`, error);
+        }
+      }
+    }
+
+    if (closestPlayer) {
+      const { id: playerId, data: playerData } = closestPlayer;
+
+      // Get character data
+      const characterRefs = playerData.characters || [];
+      const characterDocs = await db.getAll(...characterRefs, {
+        fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
+          'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
+          'skills',
+        ],
+      });
+
+      const rosterData = characterDocs.map((characterDoc) => ({
+        id: characterDoc.id,
+        name: characterDoc.get('name'),
+        level: characterDoc.get('level'),
+        class: characterDoc.get('class'),
+        experience: characterDoc.get('experience'),
+        portrait: characterDoc.get('portrait'),
+        xp: characterDoc.get('xp'),
+        sp: characterDoc.get('sp'),
+        stats: characterDoc.get('stats'),
+        carrying_capacity: characterDoc.get('carrying_capacity'),
+        carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
+        skill_slots: characterDoc.get('skill_slots'),
+        inventory: characterDoc.get('inventory'),
+        equipment: characterDoc.get('equipment'),
+        equipment_bonuses: characterDoc.get('equipment_bonuses'),
+        sp_bonuses: characterDoc.get('sp_bonuses'),
+        skills: characterDoc.get('skills'),
+      }));
+
+      // Transform dailyloot
+      const transformedDailyLoot = transformDailyLoot(playerData.dailyloot);
+
+      // Prepare tours data
+      const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
+
+      // Sort inventory
+      const sortedInventory = {
+        consumables: playerData.inventory.consumables.sort(numericalSort),
+        spells: playerData.inventory.spells.sort(numericalSort),
+        equipment: playerData.inventory.equipment.sort(numericalSort),
+      };
+
+      // Prepare the response object
+      const responseData = {
+        playerData: {
+          uid: playerId,
+          gold: playerData.gold,
+          elo: playerData.elo,
+          lvl: playerData.lvl,
+          name: playerData.name,
+          teamName: "teamName",
+          avatar: playerData.avatar,
+          league: playerData.league,
+          rank: playerData.leagueStats.rank,
+          wins: playerData.leagueStats.wins,
+          allTimeRank: playerData.allTimeStats.rank,
+          dailyloot: transformedDailyLoot,
+          tours,
+          inventory: sortedInventory,
+          carrying_capacity: playerData.carrying_capacity,
+          isLoaded: false,
+        },
+        rosterData: {
+          characters: rosterData,
+        },
+      };
+
+      res.json(responseData);
+    } else {
+      res.json({ message: `No dangling player IDs found${league !== -1 ? ` in league ${league}` : ''}` });
+    }
+  } catch (error) {
+    console.error('Error in zombieData:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });

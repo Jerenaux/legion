@@ -8,7 +8,7 @@ import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { InventoryActionType, Stat, Target, statFields } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
-import { errorToast, successToast, mapFrameToCoordinates, classEnumToString } from '../utils';
+import { errorToast, successToast, mapFrameToCoordinates, classEnumToString, cropFrame } from '../utils';
 import { getSPIncrement } from '@legion/shared/levelling';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
@@ -58,6 +58,9 @@ interface DialogState {
     equipment: number[];
     spells: number[];
   };
+  croppedImages: {
+    [key: string]: string | null;
+  };
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
@@ -65,10 +68,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   constructor(props: DialogProps) {
     super(props);
-    this.state = this.getInitialState();
+    this.state = {
+      ...this.getInitialState(),
+      croppedImages: {},
+    };
   }
 
-  getInitialState(): DialogState {
+  getInitialState(): Omit<DialogState, 'croppedImages'> {
     return {
       dialogSpellModalShow: false,
       dialogSPModalShow: false,
@@ -81,11 +87,41 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
   }
 
+  componentDidMount() {
+    this.cropSprites();
+  }
+
   componentDidUpdate(prevProps: DialogProps) {
-    // Check if the dialog is being opened
     if (this.props.dialogOpen && !prevProps.dialogOpen) {
-      // Reset dialogValue to 1 when the dialog opens
       this.setState({ dialogValue: 1 });
+      this.cropSprites();
+    }
+  }
+
+  cropSprites = async () => {
+    const { dialogType, dialogData } = this.props;
+    if (!dialogData || !('frame' in dialogData) ) return;
+
+    const spriteSheetsMap = {
+      [ItemDialogType.EQUIPMENTS]: equipmentSpritesheet,
+      [ItemDialogType.CONSUMABLES]: consumablesSpritesheet,
+      [ItemDialogType.SPELLS]: spellsSpritesheet,
+    };
+
+    const spritesheet = spriteSheetsMap[dialogType];
+    if (!spritesheet) return;
+
+    const { x, y } = mapFrameToCoordinates(dialogData.frame);
+    try {
+      const croppedImageUrl = await cropFrame(spritesheet, x, y, 32, 32); // Assuming 32x32 sprite size
+      this.setState(prevState => ({
+        croppedImages: {
+          ...prevState.croppedImages,
+          [dialogType]: croppedImageUrl
+        }
+      }));
+    } catch (error) {
+      console.error('Error cropping spritesheet:', error);
     }
   }
 
@@ -188,8 +224,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return (
       <div className="equip-dialog-container">
         <div className="equip-dialog-image" style={{
-          backgroundImage: `url(${equipmentSpritesheet})`,
-          backgroundPosition,
+          backgroundImage: `url(${this.state.croppedImages[ItemDialogType.EQUIPMENTS] || ''})`,
+          backgroundSize: 'cover',
         }} />
         <p className="equip-dialog-name">{dialogData.name}</p>
         <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
@@ -222,9 +258,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       <div className="dialog-item-container">
         <div className="dialog-item-heading-bg"></div>
         <div className="dialog-item-heading">
-          <div className="dialog-item-heading-image" style={{ 
-            backgroundImage: `url(${consumablesSpritesheet})`,
-            backgroundPosition,
+        <div className="dialog-item-heading-image" style={{ 
+            backgroundImage: `url(${this.state.croppedImages[ItemDialogType.CONSUMABLES] || ''})`,
+            backgroundSize: 'cover',
           }} />
           <div className="dialog-item-title">
             <span>{dialogData.name}</span>
@@ -269,9 +305,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return (
       <div className="dialog-spell-container">
         <div className="spell-wrapper">
-          <div className="dialog-spell-container-image" style={{ 
-            backgroundImage: `url(${spellsSpritesheet})`,
-            backgroundPosition,
+        <div className="dialog-spell-container-image" style={{ 
+            backgroundImage: `url(${this.state.croppedImages[ItemDialogType.SPELLS] || ''})`,
+            backgroundSize: 'cover',
           }} />
         </div>
         <p className="dialog-spell-name">{dialogData.name}</p>

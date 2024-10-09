@@ -88,6 +88,7 @@ export class ServerPlayer {
             [StatusEffect.BURN]: 0,
             [StatusEffect.SLEEP]: 0,
             [StatusEffect.MUTE]: 0,
+            [StatusEffect.HASTE]: 0,
         };
 
         this.cooldownManager = new CooldownManager();
@@ -117,7 +118,6 @@ export class ServerPlayer {
             data['spells'] = this.getNetworkSpells();
             data['xp'] = this.xp;
         }
-        console.log(`[ServerPlayer:getPlacementData] ${JSON.stringify(data)}`);
         return data;
     }
 
@@ -140,6 +140,10 @@ export class ServerPlayer {
 
     isParalyzed() {
         return (this.statuses[StatusEffect.PARALYZE] != 0) || this.isFrozen();
+    }
+
+    isHasted() {
+        return this.statuses[StatusEffect.HASTE] != 0;
     }
 
     isMuted() {
@@ -371,6 +375,7 @@ export class ServerPlayer {
     
     setCooldown(durationMs: number) {
         if (this.team?.game.config.FAST_MODE) durationMs = this.team?.game.config.COOLDOWN_OVERRIDE;
+        if (this.isHasted()) durationMs /= 2;
         this.cooldownManager.setCooldown(durationMs);
     }
 
@@ -484,6 +489,7 @@ export class ServerPlayer {
     addStatusEffect(status: StatusEffect, duration: number, chance: number = 1) {
         if (this.isDead()) return false;
         if (Math.random() > chance) return false;
+        console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} seconds`);
         this.statuses[status] = duration;
         
         if (DoTStatuses.includes(status)) {

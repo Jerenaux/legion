@@ -3,7 +3,7 @@ import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
 import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
   from "./sprites";
 import { male_names, female_names } from "./names";
-import { selectStatToLevelUp, increaseStat } from "./levelling";
+import { selectStatToLevelUp, increaseStat, getSPIncrement } from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterConsumables } from "./Items";
 

@@ -177,6 +177,20 @@ items[12] = new BaseItem({
     effort: 0.5,
 });
 
+items[13] = new BaseItem({
+    id: 13,
+    name: "Haste potion",
+    description: "Hastes a character for 3 minutes, cutting cooldowns in half.",
+    frame: 13,
+    animation: "potion_heal",
+    sfx: "healing",
+    cooldown: 0.2,
+    target: Target.SELF,
+    effects: [],
+    status: {effect: StatusEffect.HASTE, chance: 1, duration: 180},
+    effort: 6,
+});
+
 export function getConsumableById(id: number): BaseItem | undefined {
     return items.find(item => item.id === id);
 }

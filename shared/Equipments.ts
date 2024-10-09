@@ -130,7 +130,7 @@ equipments[10] = new BaseEquipment({
     frame: 50,
     effects: [{stat: Stat.HP, value: 40}],
     slot: EquipmentSlot.NECKLACE,
-    effort: 10,
+    effort: 12,
     minLevel: 1,
 });
 
@@ -269,7 +269,7 @@ equipments[22] = new BaseEquipment({
     frame: 52,
     effects: [{stat: Stat.HP, value: 20}],
     slot: EquipmentSlot.NECKLACE,
-    effort: 4,
+    effort: 6,
     minLevel: 1,
 });
 
@@ -353,6 +353,32 @@ equipments[29] = new BaseEquipment({
     slot: EquipmentSlot.LEFT_RING,
     effort: 12,
     minLevel: 8,
+});
+
+equipments[30] = new BaseEquipment({
+    id: 30,
+    name: "Wayfarer's cord",
+    description: "",
+    frame: 53,
+    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.MP, value: 5}],
+    slot: EquipmentSlot.NECKLACE,
+    effort: 3,
+    minLevel: 1,
+});
+
+equipments[31] = new BaseEquipment({
+    id: 31,
+    name: "Sturdy Iron Sword",
+    description: "",
+    frame: 2,
+    effects: [
+        {stat: Stat.ATK, value: 25},
+        {stat: Stat.DEF, value: 5}
+    ],
+    slot: EquipmentSlot.WEAPON,
+    effort: 6,
+    minLevel: 3,
+    classes: [Class.WARRIOR],
 });
 
 export function getEquipmentById(id:number): BaseEquipment | undefined {

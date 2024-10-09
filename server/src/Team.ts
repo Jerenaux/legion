@@ -170,6 +170,7 @@ export class Team {
     }
     
     getChestKey(): ChestColor | null {
+        console.log(`[Team:getChestKey] Daily loot data: ${JSON.stringify(this.teamData.dailyloot)}`);
         const chestsOrder = [ChestColor.BRONZE, ChestColor.SILVER, ChestColor.GOLD];
 
         for (const color of chestsOrder) {

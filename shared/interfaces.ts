@@ -1,9 +1,11 @@
 import { BaseEquipment } from "./BaseEquipment";
 import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
-    StatusEffect, Class, PlayMode, League } from "./enums";
-import {ChestReward} from "@legion/shared/chests";
+import {
+    Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
+    StatusEffect, Class, PlayMode, League
+} from "./enums";
+import { ChestReward } from "@legion/shared/chests";
 
 export class EffectModifier {
     stat;
@@ -71,6 +73,7 @@ export interface ConsumableData {
     size?: number;
     effects: Effect[];
     statusRemovals?: StatusEffect[];
+    status?: StatusEffectData;
     effort: number;
 }
 
@@ -140,7 +143,7 @@ export interface ShopItems {
     consumables: BaseItem[];
     spells: BaseSpell[];
     equipment: BaseEquipment[];
-  }
+}
 
 export interface TerrainUpdate {
     x: number;
@@ -239,7 +242,7 @@ export interface DBCharacterData {
     price?: number;
 }
 
-export interface APICharacterData extends DBCharacterData{
+export interface APICharacterData extends DBCharacterData {
     id: string;
 }
 
@@ -312,18 +315,18 @@ export type StatusEffects = {
 }
 
 export interface TeamMember {
-  texture: string;
-  name: string;
-  hp: number;
-  maxHP: number;
-  mp: number;
-  maxMP: number;
-  isAlive: boolean;
-  isPlayer: boolean;
-  cooldown: number;
-  totalCooldown: number;
-  class: Class;
-  statuses: StatusEffects;
+    texture: string;
+    name: string;
+    hp: number;
+    maxHP: number;
+    mp: number;
+    maxMP: number;
+    isAlive: boolean;
+    isPlayer: boolean;
+    cooldown: number;
+    totalCooldown: number;
+    class: Class;
+    statuses: StatusEffects;
 }
 
 export interface TeamOverview {
@@ -343,9 +346,9 @@ export interface EndGameDataResults {
 export interface EndGameData {
     winner: string,
     results: EndGameDataResults,
-  }
+}
 
-  export interface PlayerContextData {
+export interface PlayerContextData {
     uid: string;
     name: string;
     avatar: string;

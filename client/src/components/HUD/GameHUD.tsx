@@ -86,16 +86,16 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       
     this.resetState();
 
-    if (user) {
-      apiFetch('fetchGuideTip?combatTip=1', {
-          method: 'GET',
-      })
-      .then((data) => {
-          if (data.guideId == -1) return;
-          showGuideToast(guide[data.guideId], data.route);
-      })
-      .catch(error => console.error(`Fetching tip error: ${error}`));
-    }
+    // if (user) {
+    //   apiFetch('fetchGuideTip?combatTip=1', {
+    //       method: 'GET',
+    //   })
+    //   .then((data) => {
+    //       if (data.guideId == -1) return;
+    //       showGuideToast(guide[data.guideId], data.route);
+    //   })
+    //   .catch(error => console.error(`Fetching tip error: ${error}`));
+    // }
     
     events.on('showPlayerBox', this.showPlayerBox);
     events.on('hidePlayerBox', this.hidePlayerBox);
@@ -191,7 +191,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
 
     return (
-      <div className="gamehud">
+      <div className="gamehud height_full flex flex_col justify_between padding_bottom_16">
         <div className="hud-container">
           <Overview position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
           <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />

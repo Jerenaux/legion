@@ -216,7 +216,7 @@ spells.push(new BaseSpell({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}],
     effort: 4,
-    cost: 20,
+    cost: 15,
 
     score: 5,
     classes: [Class.WHITE_MAGE],

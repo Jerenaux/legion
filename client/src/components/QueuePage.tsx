@@ -151,7 +151,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
         this.socket.on('updateGold', ({ gold }) => {
             this.setState({ earnedGold: gold });
             this.context.setPlayerInfo({ gold: this.context.player.gold + 1 });
-            console.log(`Received gold update: ${gold}`);
         });
 
         this.socket.on('queueData', (data) => {

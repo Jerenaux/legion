@@ -37,10 +37,14 @@ export class Item extends BaseItem {
                 }
             });
             this.statusRemovals.forEach(status => target.removeStatusEffect(status));
+            if (this.status) {
+                target.addStatusEffect(this.status.effect, this.status.duration, this.status.chance)
+            }
         });
     }
 
     effectsAreApplicable(target: ServerPlayer) {
+        if (this.effects.length === 0 && (!this.statusRemovals || this.statusRemovals.length === 0)) return true;
         const mainEffectsApplicable = this.effects.length > 0 && this.effects.every(effect => {
             if (effect.onKO && target.isAlive()) return false;
             switch (effect.stat) {

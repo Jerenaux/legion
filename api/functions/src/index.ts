@@ -1,5 +1,4 @@
 import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
 
 import {fetchLeaderboard, leaguesUpdate, updateRanksOnEloChange,
   updateRanksOnPlayerCreation, manualLeaguesUpdate} from "./leaderboardsAPI";
@@ -9,11 +8,14 @@ import {rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters,
   deleteOnSaleCharacters, purchaseCharacter, spendSP} from "./characterAPI";
 import {createPlayer, getPlayerData, queuingData,
-  saveGoldReward, claimChest, completeTour, fetchGuideTip, registerAddress} from "./playerAPI";
+  saveGoldReward, claimChest, completeTour, fetchGuideTip, registerAddress,
+  setPlayerOnSteroids, zombieData} from "./playerAPI";
+import { createLobby, joinLobby, cancelLobby, listLobbies } from "./lobbyAPI";
 import {createGame, gameData, completeGame, getRemoteConfig} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog} from "./dashboardAPI";
-import { createLobby, joinLobby, cancelLobby, listLobbies } from "./lobbyAPI";
+import { checkAPIKey, isDevelopment } from "./APIsetup";
+
 export {
   fetchLeaderboard, inventoryData, purchaseItem,
   createPlayer, rosterData, characterData, postGameUpdate,
@@ -23,9 +25,15 @@ export {
   getReward, claimChest, updateRanksOnEloChange, updateRanksOnPlayerCreation,
   completeGame, getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, completeTour, fetchGuideTip, manualLeaguesUpdate, getRemoteConfig,
-  registerAddress, createLobby, joinLobby, cancelLobby, listLobbies,
+  registerAddress, createLobby, joinLobby, cancelLobby, listLobbies, setPlayerOnSteroids,
+  zombieData,
 };
 
-export const helloWorld = onRequest((request, response) => {
-  response.send(`API online - [AdminMode: ${process.env.ADMIN_MODE}] - [NODE_ENV: ${process.env.NODE_ENV}]`);
+export const helloWorld = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
+  response.send(`
+    API online - 
+    [isDevelopment: ${isDevelopment}] - 
+    [NODE_ENV: ${process.env.NODE_ENV}] - 
+    [API KEY check: ${checkAPIKey(request)}]
+    ${request.headers["x-api-key"]}`);
 });

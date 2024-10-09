@@ -1,5 +1,6 @@
 import { events } from '../components/HUD/GameHUD';
 import { Arena } from './Arena';
+import { GEN }  from "@legion/shared/enums";
 
 export class Tutorial {
     p1;
@@ -77,6 +78,7 @@ export class Tutorial {
             await game.sleep(await this.p2.talk('The enemy wasn\'t reacting, but in normal games they will attack you!'));
             await game.sleep(await this.p2.talk('Now the enemy will start attacking! Use what you just learned to defeat them!'));
             await game.sleep(await this.p2.talk('Good luck!'));
+            game.displayGEN(GEN.COMBAT_BEGINS);
             await game.sleep(3000);
             game.endTutorial();
         });

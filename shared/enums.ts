@@ -69,6 +69,7 @@ export enum PlayMode {
     RANKED,
     TUTORIAL,
     STAKED,
+    RANKED_VS_AI,
 }
 
 export enum EquipmentSlot {
@@ -153,6 +154,7 @@ export enum StatusEffect {
     SLEEP = "Sleep",
     PARALYZE = "Paralyze",
     MUTE = "Mute",
+    HASTE = "Haste",
 }
 
 export enum League {

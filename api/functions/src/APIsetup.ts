@@ -25,4 +25,16 @@ export async function getUID(request: Request): Promise<string> {
   }
 }
 
+export const isDevelopment = process.env.NODE_ENV != "production";
+
+export const checkAPIKey = (request: Request): boolean => {
+  if (isDevelopment) return true;
+  const apiKey = request.headers["x-api-key"];
+  if (!apiKey) {
+    return false;
+  }
+
+  return apiKey === process.env.API_KEY;
+};
+
 export default admin;

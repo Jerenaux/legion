@@ -28,12 +28,12 @@ class PlayModes extends Component {
 
   render() {
     const { isSolanaWalletPresent } = this.state;
-
+    
     return (
       <div className="barContainer">
         <PlayModeButton label={MiddleBtns.PRACTICE} mode={PlayMode.PRACTICE}/>
-        <PlayModeButton label={MiddleBtns.CASUAL} players={0} mode={PlayMode.CASUAL}/>
-        <PlayModeButton label={MiddleBtns.RANKED} players={8} mode={PlayMode.RANKED}/>
+        <PlayModeButton label={MiddleBtns.CASUAL} players={(Math.random() * 4) + 1} mode={PlayMode.CASUAL}/>
+        <PlayModeButton label={MiddleBtns.RANKED} players={(Math.random() * 2) + 1} mode={PlayMode.RANKED}/>
         {isSolanaWalletPresent && (
           <PlayModeButton label={MiddleBtns.ELYSIUM} players={8} mode={PlayMode.STAKED}/>
         )}

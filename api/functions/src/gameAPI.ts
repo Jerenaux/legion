@@ -78,8 +78,13 @@ export const completeGame = onRequest((request, response) => {
     try {
       const gameId = request.body.gameId;
       const winnerUID = request.body.winnerUID || -1; // -1 for AI
-      const results: EndGameData = request.body.results;
-      console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(results)}`);
+      const rawResults: EndGameData = request.body.results;
+      console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(rawResults)}`);
+      // Filter out the results object to remove keys that are empty strings
+      const results = Object.fromEntries(
+        Object.entries(rawResults).filter(([key]) => key !== '')
+      );
+      console.log(`[completeGame] Filtered results: ${JSON.stringify(results)}`);
 
       const gameRef = await db.collection("games").where("gameId", "==", gameId).limit(1).get();
       if (gameRef.empty) { // Most likely a tutorial ending

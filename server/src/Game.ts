@@ -325,38 +325,41 @@ export abstract class Game
     }
 
     endGame(winnerTeamID: number) {
-        console.log(`[Game:endGame] Game ${this.id} ended!`);
-        this.duration = Date.now() - this.startTime;
-        this.gameOver = true;
+        try {
+            console.log(`[Game:endGame] Game ${this.id} ended!`);
+            this.duration = Date.now() - this.startTime;
+            this.gameOver = true;
 
-        clearTimeout(this.audienceTimer!);
-        clearTimeout(this.checkEndTimer!);
-        this.teams.forEach(team => {
-            team.clearAllTimers();
-        }, this);
+            clearTimeout(this.audienceTimer!);
+            clearTimeout(this.checkEndTimer!);
+            this.teams.forEach(team => {
+                team.clearAllTimers();
+            }, this);
 
-        const results = {};
-        let winnerUID;
-        if (!this.sockets.length) return;
-        this.sockets.forEach(socket => {
-            const team = this.socketMap.get(socket);
-            const otherTeam = this.getOtherTeam(team!.id);
-            const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID) as OutcomeData;
-            team.distributeXp(outcomes.xp);
-            outcomes.characters = team.getCharactersDBUpdates();
-            this.writeOutcomesToDb(team, outcomes);
-            console.log(`[Game:endGame] Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
-            socket.emit('gameEnd', outcomes);
+            const results = {};
+            let winnerUID;
+            if (!this.sockets.length) return;
+            this.teams.forEach(team => {
+                const otherTeam = this.getOtherTeam(team!.id);
+                const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID) as OutcomeData;
+                team.distributeXp(outcomes.xp);
+                outcomes.characters = team.getCharactersDBUpdates();
+                this.writeOutcomesToDb(team, outcomes);
+                console.log(`[Game:endGame] Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
+                team.getSocket()?.emit('gameEnd', outcomes);
 
-            results[team.teamData.playerUID] = {
-                audience: team.score,
-                score: outcomes.rawGrade,
-            }
-            if (team.id === winnerTeamID) {
-                winnerUID = team.teamData.playerUID;
-            }
-        });
-        this.updateGameInDB(winnerUID, results);
+                results[team.teamData.playerUID] = {
+                    audience: team.score,
+                    score: outcomes.rawGrade,
+                }
+                if (team.id === winnerTeamID) {
+                    winnerUID = team.teamData.playerUID;
+                }
+            });
+            this.updateGameInDB(winnerUID, results);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     setCooldown(player: ServerPlayer, cooldownMs: number) {
@@ -514,16 +517,23 @@ export abstract class Game
 
     processUseItem({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number,  targetTeam: number, target: number | null}, team: Team) {
         const player = team.getMembers()[num - 1];
-        if (!player.canAct()) return;
+        console.log(`[Game:processUseItem] Player ${num} using item ${index}`);
+        if (!player.canAct()) {
+            console.log(`[Game:processUseItem] Player ${num} cannot act!`);
+            return;
+        }
 
         const item = player.getItemAtIndex(index);
-        if (!item) return;
+        if (!item) {
+            console.log(`[Game:processUseItem] Invalid item index ${index}!`);
+            return;
+        }
 
         let targetPlayer: ServerPlayer | null = null;
         if (item.target === Target.SINGLE) {
             targetPlayer = this.teams.get(targetTeam)?.getMembers()[target - 1];
             if (!targetPlayer) {
-                console.log('Invalid target!');
+                console.log('[Game:processUseItem] Invalid target!');
                 return;
             }
         }
@@ -531,7 +541,7 @@ export abstract class Game
 
         // Only check if the item is applicable if there is a single target
         if (targets.length == 1 && !item.effectsAreApplicable(targets[0])) {
-            console.log(`Item ${item.name} is not applicable!`);
+            console.log(`[Game:processUseItem] Item ${item.name} is not applicable!`);
             return;
         };
 
@@ -877,7 +887,10 @@ export abstract class Game
 
     computeGameOutcomes(team: Team, otherTeam: Team, winnerTeamId: number): OutcomeData {
         const isWinner = team.id === winnerTeamId;
-        const eloUpdate = this.mode == PlayMode.RANKED ? this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : {winnerUpdate: 0, loserUpdate: 0};
+        const eloUpdate = 
+            this.mode == PlayMode.RANKED || this.mode == PlayMode.RANKED_VS_AI ? 
+            this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : 
+            {winnerUpdate: 0, loserUpdate: 0};
         const grade = this.computeGrade(team, otherTeam);
         return {
             isWinner,
@@ -910,7 +923,10 @@ export abstract class Game
             [League.APEX]: [ChestColor.GOLD, ChestColor.GOLD, ChestColor.GOLD],
         };
 
-        const rewards = this.mode == PlayMode.RANKED ? leagueRewards[this.league] : casualRewards;
+        const rewards = 
+            this.mode == PlayMode.RANKED || this.mode == PlayMode.RANKED_VS_AI ?
+            leagueRewards[this.league] :
+            casualRewards;
         const numberOfChests = Math.floor(score / 500);
     
         for (let i = 0; i < numberOfChests && i < rewards.length; i++) {
@@ -987,7 +1003,7 @@ export abstract class Game
     computeTeamGold(grade: number, mode: PlayMode) {
         let gold = AVERAGE_GOLD_REWARD_PER_GAME * (grade + 0.3);
         if (mode == PlayMode.PRACTICE || mode == PlayMode.TUTORIAL) gold *= PRACTICE_GOLD_COEF; 
-        if (mode == PlayMode.RANKED) gold *= RANKED_GOLD_COEF;
+        if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) gold *= RANKED_GOLD_COEF;
         // Add +- 5% random factor
         gold *= 0.95 + Math.random() * 0.1;
         return Math.round(gold);
@@ -1004,7 +1020,7 @@ export abstract class Game
         let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (grade + 0.3);
         console.log(`Base XP: ${xp}: ${otherTeam.getTotalLevel()} * ${XP_PER_LEVEL} * (${grade} + 0.3)`);
         if (mode == PlayMode.PRACTICE || mode == PlayMode.TUTORIAL) xp *= PRACTICE_XP_COEF;
-        if (mode == PlayMode.RANKED) xp *= RANKED_XP_COEF;
+        if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) xp *= RANKED_XP_COEF;
         // Add +- 5% random factor
         xp *= 0.95 + Math.random() * 0.1;
 
@@ -1012,13 +1028,15 @@ export abstract class Game
     }
 
     async writeOutcomesToDb(team: Team, rewards: OutcomeData) {
+        console.log(`[Game:writeOutcomesToDb] Writing outcomes to DB for team ${team.id}`);
         try {
             await apiFetch(
                 'postGameUpdate',
-                team.getFirebaseToken(),
+                '', // TODO: API KEY
                 {
                     method: 'POST',
                     body: {
+                        uid: team.teamData.playerUID,
                         outcomes: {
                             isWinner: rewards.isWinner,
                             gold: rewards.gold,

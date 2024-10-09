@@ -109,7 +109,7 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
 
   if (!isAllTime) {
     promotionRank = Math.max(Math.ceil(players.length * PROMOTION_RATIO), 3);
-    demotionRank = leagueID == 0 ? 0 : Math.floor(players.length * DEMOTION_RATIO);
+    demotionRank = leagueID == 0 ? 0 : players.length - Math.floor(players.length * DEMOTION_RATIO);
   }
 
   const getHighlightPlayer = (metric: string) => {

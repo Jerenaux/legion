@@ -57,7 +57,7 @@ class PlayModeButton extends Component<ButtonProps> {
                 <img src={btnIcons[this.props.label]} alt="" />
                 <div className="labelContainer">
                     <span className="label">{this.props.label}</span>
-                    {/* {this.props.players && <span className="player"><span style={playerSpanStyle}>{this.props.players}</span> Players Queuing</span>} */}
+                    {this.props.players && <span className="player"><span style={playerSpanStyle}>{this.props.players}</span> Players Queuing</span>}
                 </div>
             </div>
         );

@@ -7,6 +7,15 @@ import guideIcon from '@assets/guide.png';
 import successIcon from '@assets/svg/success.svg';
 import errorIcon from '@assets/svg/error.svg';
 
+import freezeIcon from '@assets/HUD/freeze_icon.png';
+import muteIcon from '@assets/HUD/mute_icon.png';
+import paralyzeIcon from '@assets/HUD/paralyze_icon.png';
+import blindIcon from '@assets/HUD/blind_icon.png';
+import sleepIcon from '@assets/HUD/sleep_icon.png';
+import poisonIcon from '@assets/HUD/poison_icon.png';
+import burnIcon from '@assets/HUD/burn_icon.png';
+import hasteIcon from '@assets/HUD/haste_icon.png';
+
 import Toastify from 'toastify-js'
 
 const spriteContext = require.context('@assets/sprites', false, /\.(png|jpe?g|svg)$/);
@@ -140,3 +149,44 @@ export function getLeagueIcon(leagueName: string | number | undefined): string {
   const iconName = `${leagueName.toLowerCase()}_rank.png`;
   return leagueIconContext(`./${iconName}`);
 }
+
+export function cropFrame(
+  spriteSheetUrl: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    // img.crossOrigin = 'anonymous'; // Necessary if the image is hosted on a different domain
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Draw the specific frame onto the canvas
+        ctx.drawImage(img, -x, -y);
+        // Get the Data URL of the canvas content
+        const dataUrl = canvas.toDataURL();
+        resolve(dataUrl);
+      } else {
+        reject(new Error('Could not get canvas context'));
+      }
+    };
+    img.onerror = (err) => reject(err);
+    img.src = spriteSheetUrl;
+  });
+}
+
+export const statusIcons = {
+  'Freeze': freezeIcon,
+  'Mute': muteIcon,
+  'Paralyze': paralyzeIcon,
+  'Blind': blindIcon,
+  'Sleep': sleepIcon,
+  'Poison': poisonIcon,
+  'Burn': burnIcon,
+  'Haste': hasteIcon,
+};
