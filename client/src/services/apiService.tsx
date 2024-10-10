@@ -5,6 +5,8 @@ import { errorToast } from '../components/utils';
 
 const apiBaseUrl = process.env.API_URL;
 
+const TIMEOUT_DURATION = 10000;
+
 const getTokenWithRetry = async (user: firebase.User, maxAttempts = 3, delay = 100) => {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
@@ -71,7 +73,7 @@ function timeoutPromise(duration) {
     });
 }
 
-async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration = 15000, maxRetries = 3, retryDelay = 300) {
+async function apiFetch(endpoint, options: ApiFetchOptions = {}, maxRetries = 1, retryDelay = 300) {
     let lastError;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -98,7 +100,7 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, timeoutDuration
 
             const response = await Promise.race([
                 fetchPromise,
-                timeoutPromise(timeoutDuration)
+                timeoutPromise(TIMEOUT_DURATION)
             ]) as Response;
 
             if (!response.ok) {

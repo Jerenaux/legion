@@ -6,9 +6,11 @@ import {
 } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import '@solana/wallet-adapter-react-ui/styles.css';
+import { RPC } from '@legion/shared/config';
 
 const WalletContextProvider: FunctionComponent = ({ children }) => {
-  const endpoint = process.env.SOLANA_RPC_ENDPOINT || 'https://solana-devnet.g.alchemy.com/v2/7aGAP4QZtAC0FxXqFvVSTz0X4jPLFSd4';
+    console.log(`Provider: ${RPC}`);
+  const endpoint = RPC;
   
   const wallets = useMemo(
     () => [], []

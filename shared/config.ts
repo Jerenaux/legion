@@ -64,6 +64,11 @@ export let SKIP_LEVEL_RESTRICTIONS = true;
 export let IMMEDIATE_LOOT = false;
 export let LOTSA_MP = false;
 
+// Web3
+export const RPC = 'https://solana-devnet.g.alchemy.com/v2/7aGAP4QZtAC0FxXqFvVSTz0X4jPLFSd4';
+export const GAME_WALLET = '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY';
+
+// Social
 export const DISCORD_LINK = 'https://discord.gg/s2XZhYCK2m';
 export const X_LINK = 'https://x.com/iolegion';
 

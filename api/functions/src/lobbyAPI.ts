@@ -1,7 +1,12 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, { corsMiddleware, getUID } from "./APIsetup";
+import {
+    Connection, LAMPORTS_PER_SOL, ParsedInstruction,
+    PartiallyDecodedInstruction, ParsedTransactionWithMeta,
+} from '@solana/web3.js';
 import { Token } from "@legion/shared/enums";
+import { GAME_WALLET, RPC } from '@legion/shared/config';
 
 const db = admin.firestore();
 
@@ -10,6 +15,9 @@ export const createLobby = onRequest((request, response) => {
         try {
             const uid = await getUID(request);
             const stake = Number(request.body.stake);
+            const transactionSignature = request.body.transactionSignature;
+            const playerAddress = request.body.playerAddress; // Add playerAddress from request body
+
             console.log(`[createLobby] uid: ${uid}, stake: ${stake}`);
 
             // Fetch player data
@@ -23,10 +31,51 @@ export const createLobby = onRequest((request, response) => {
                 return response.status(404).send("Player data not found");
             }
 
-            // Check if player has enough balance
-            if (playerData.tokens.SOL < stake) {
-                return response.status(400).send("Insufficient balance");
+            if (!playerData.address) {
+                return response.status(400).send("Player's blockchain address not found");
             }
+
+            // Verify that the provided playerAddress matches the stored address
+            if (playerAddress !== playerData.address) {
+                return response.status(400).send("Player address does not match records");
+            }
+
+            // Get player's in-game balance
+            const currentIngameBalance = playerData.tokens?.[Token.SOL] || 0;
+
+            // Calculate the amount needed from on-chain balance
+            const amountNeededFromOnchain = stake - currentIngameBalance;
+
+            if (amountNeededFromOnchain > 0) {
+                // If in-game balance is insufficient, verify the transaction
+                if (!transactionSignature) {
+                    return response.status(400).send("Transaction signature is required when in-game balance is insufficient");
+                }
+
+                // Call the separate transaction verification method
+                const transactionValid = await verifyTransaction(transactionSignature, playerAddress, amountNeededFromOnchain);
+
+                if (!transactionValid) {
+                    return response.status(400).send("Transaction verification failed");
+                }
+
+                // Update player's in-game balance
+                const newIngameBalance = currentIngameBalance + amountNeededFromOnchain;
+
+                await playerDoc.ref.update({
+                    [`tokens.${Token.SOL}`]: newIngameBalance,
+                });
+            } else {
+                // If no on-chain funds are needed, ensure the in-game balance is sufficient
+                if (currentIngameBalance < stake) {
+                    return response.status(400).send("Insufficient in-game balance");
+                }
+            }
+
+            // Deduct stake from player's balance
+            await playerDoc.ref.update({
+                [`tokens.${Token.SOL}`]: admin.firestore.FieldValue.increment(-stake),
+            });
 
             // Create lobby document
             const lobbyData = {
@@ -43,18 +92,136 @@ export const createLobby = onRequest((request, response) => {
 
             const lobbyRef = await db.collection("lobbies").add(lobbyData);
 
-            // Deduct stake from player's balance
-            await playerDoc.ref.update({
-                [`tokens.${Token.SOL}`]: admin.firestore.FieldValue.increment(-stake),
-            });
-
             return response.status(200).send({ lobbyId: lobbyRef.id });
         } catch (error) {
-            logger.error("createLobby error:", error);
+            console.error("createLobby error:", error);
             return response.status(500).send("Error creating lobby");
         }
     });
 });
+
+// Type guard function
+function isParsedInstruction(
+    instruction: ParsedInstruction | PartiallyDecodedInstruction
+): instruction is ParsedInstruction {
+    return 'parsed' in instruction;
+}
+
+async function verifyTransaction(
+    transactionSignature: string,
+    playerAddress: string,
+    amountNeededFromOnchain: number
+) {
+    try {
+        console.log(`[verifyTransaction] Verifying transaction: ${transactionSignature}`);
+        const connection = new Connection(
+            RPC,
+            'confirmed'
+        );
+
+        const maxRetries = 5;
+        const retryDelay = 2000; // milliseconds
+
+        let transaction: ParsedTransactionWithMeta | null = null;
+        let attempts = 0;
+
+        // Retry loop
+        while (attempts < maxRetries) {
+        attempts += 1;
+
+        // Fetch the transaction
+        transaction = await connection.getParsedTransaction(transactionSignature, 'confirmed');
+
+        if (transaction) {
+            console.log(`[verifyTransaction] Transaction found on attempt ${attempts}`);
+            break; // Transaction found, exit the loop
+        } else {
+            console.log(
+            `[verifyTransaction] Transaction not found on attempt ${attempts}, retrying in ${retryDelay}ms...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+        }
+
+        if (!transaction) {
+            console.error('Invalid transaction signature');
+            return false;
+        }
+
+        const expectedGamePublicKey = GAME_WALLET;
+
+        const amountNeededFromOnchainLamports = Math.round(
+            amountNeededFromOnchain * LAMPORTS_PER_SOL
+        ); // Convert SOL to lamports
+
+        const { meta, transaction: txn } = transaction;
+
+        if (meta?.err) {
+            console.error('Transaction failed');
+            return false;
+        }
+
+        // Find the transfer instruction
+        const transferInstruction = txn.message.instructions.find((ix) => {
+            if (
+                ix.programId.toBase58() === '11111111111111111111111111111111' &&
+                isParsedInstruction(ix)
+            ) {
+                return ix.parsed.type === 'transfer';
+            }
+            return false;
+        });
+
+        if (!transferInstruction) {
+            console.error('No transfer instruction found in the transaction');
+            return false;
+        }
+
+        // Now we can safely access 'parsed' property
+        const parsedInstruction = transferInstruction as ParsedInstruction;
+        const { info } = parsedInstruction.parsed;
+
+        if (info.source !== playerAddress) {
+            console.error('Transaction source does not match player address');
+            return false;
+        }
+
+        if (info.destination !== expectedGamePublicKey) {
+            console.error('Transaction destination does not match game account');
+            return false;
+        }
+
+        if (parseInt(info.lamports) !== amountNeededFromOnchainLamports) {
+            console.error('Transaction amount does not match expected amount');
+            return false;
+        }
+
+        // Prevent double-spending by checking if the transaction has been processed before
+        const transactionDoc = await db
+            .collection('processedTransactions')
+            .doc(transactionSignature)
+            .get();
+        if (transactionDoc.exists) {
+            console.error('Transaction has already been processed');
+            return false;
+        }
+
+        // Record the transaction as processed
+        await db
+            .collection('processedTransactions')
+            .doc(transactionSignature)
+            .set({
+                playerAddress: playerAddress,
+                amount: amountNeededFromOnchain,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+        return true;
+    } catch (error) {
+        console.error('Error verifying transaction:', error);
+        return false;
+    }
+}
 
 export const joinLobby = onRequest((request, response) => {
     return corsMiddleware(request, response, async () => {

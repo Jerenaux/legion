@@ -123,12 +123,11 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
     
     async fetchPlayerData() {
-      console.log('fetching player data');
       const user = firebaseAuth.currentUser;
       if (!user) return;
     
       try {
-          const data = await apiFetch('getPlayerData') as PlayerContextData;
+          const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
           this.setState({ 
               player: {
                   uid: user.uid,
@@ -156,7 +155,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     async fetchRosterData() {
       try {
-        const data = await apiFetch('rosterData');
+        const data = await apiFetch('rosterData', {}, 3);
         this.setState({
           characters: data.characters
         });
