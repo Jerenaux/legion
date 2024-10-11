@@ -33,9 +33,11 @@ const ElysiumPage = () => {
     const [isLoadingLobbies, setIsLoadingLobbies] = useState(false);
     const [isCreatingLobby, setIsCreatingLobby] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [stakeAmount, setStakeAmount] = useState('0.01');
     const [onchainBalance, setOnchainBalance] = useState(0);
     const [registeredAddress, setRegisteredAddress] = useState<string | null>(null);
+    const [amountNeededFromOnchain, setAmountNeededFromOnchain] = useState(0);
 
     const { connected, publicKey, wallets, sendTransaction } = useWallet();
     const { connection } = useConnection();
@@ -149,67 +151,64 @@ const ElysiumPage = () => {
 
     const handleCreateLobby = async () => {
         const stake = parseFloat(stakeAmount);
+        const amountNeeded = stake - ingameBalance;
 
+        if (amountNeeded > 0) {
+            if (onchainBalance >= amountNeeded) {
+                setAmountNeededFromOnchain(amountNeeded);
+                setShowConfirmationModal(true);
+            } else {
+                errorToast('Not enough balance in your wallet to cover the stake difference.');
+            }
+        } else {
+            // Proceed with creating the lobby if no additional funds are needed
+            await createLobbyTransaction();
+        }
+    };
+
+    const createLobbyTransaction = async () => {
+        setShowConfirmationModal(false);
         setIsCreatingLobby(true);
 
         try {
-            const amountNeededFromOnchain = stake - ingameBalance;
             let transactionSignature = null;
 
             if (amountNeededFromOnchain > 0) {
-                if (onchainBalance >= amountNeededFromOnchain) {
-                    // Initiate a transaction to transfer the difference
-                    const gamePublicKey = new PublicKey(GAME_WALLET);
+                const gamePublicKey = new PublicKey(GAME_WALLET);
 
-                    const transaction = new Transaction().add(
-                        SystemProgram.transfer({
-                            fromPubkey: publicKey!,
-                            toPubkey: gamePublicKey,
-                            lamports: Math.round(
-                                amountNeededFromOnchain * LAMPORTS_PER_SOL
-                            ),
-                        })
-                    );
+                const transaction = new Transaction().add(
+                    SystemProgram.transfer({
+                        fromPubkey: publicKey!,
+                        toPubkey: gamePublicKey,
+                        lamports: Math.round(amountNeededFromOnchain * LAMPORTS_PER_SOL),
+                    })
+                );
 
-                    // Send the transaction
-                    transactionSignature = await sendTransaction(
-                        transaction,
-                        connection
-                    );
-                    console.log(`Transaction signature: ${transactionSignature}`);
+                transactionSignature = await sendTransaction(transaction, connection);
+                console.log(`Transaction signature: ${transactionSignature}`);
 
-                    // Update onchainBalance
-                    setOnchainBalance(
-                        (prevBalance) => prevBalance - amountNeededFromOnchain
-                    );
-
-                    playerContext.refreshPlayerData();
-                } else {
-                    // Not enough balance on-chain
-                    errorToast(
-                        'Not enough balance in your wallet to cover the stake difference.'
-                    );
-                    setIsCreatingLobby(false);
-                    return;
-                }
+                setOnchainBalance((prevBalance) => prevBalance - amountNeededFromOnchain);
+                playerContext.refreshPlayerData();
             }
 
-            // Proceed to create the lobby
             await apiFetch('createLobby', {
                 method: 'POST',
                 body: {
-                    stake,
+                    stake: parseFloat(stakeAmount),
                     transactionSignature,
                     playerAddress: publicKey.toBase58(),
                 },
             });
+
             setIsModalOpen(false);
             setIsCreatingLobby(false);
+            setShowConfirmationModal(false);
             playerContext.refreshPlayerData();
             fetchLobbies();
         } catch (error) {
             errorToast('Error creating lobby: ' + (error.message || error));
             setIsCreatingLobby(false);
+            setShowConfirmationModal(false);
         }
     };
 
@@ -319,6 +318,29 @@ const ElysiumPage = () => {
                                     </button>
                                 </Fragment>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showConfirmationModal && (
+                <div className="modal-overlay">
+                    <div className="modal confirmation-modal">
+                        <h3>Confirm Lobby Creation</h3>
+                        <div className="modal-content">
+                            <p>
+                                Your in-game balance is insufficient to create this lobby.
+                                An additional {amountNeededFromOnchain.toFixed(4)} SOL will be transferred from your wallet to cover the stake.
+                            </p>
+                            <p>Do you want to proceed?</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button onClick={() => setShowConfirmationModal(false)} className="cancel-btn">
+                                Cancel
+                            </button>
+                            <button onClick={createLobbyTransaction} className="confirm-btn">
+                                Confirm
+                            </button>
                         </div>
                     </div>
                 </div>

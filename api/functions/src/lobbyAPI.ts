@@ -3,7 +3,7 @@ import * as logger from "firebase-functions/logger";
 import admin, { corsMiddleware, getUID } from "./APIsetup";
 import {
     Connection, LAMPORTS_PER_SOL, ParsedInstruction,
-    PartiallyDecodedInstruction, ParsedTransactionWithMeta,
+    PartiallyDecodedInstruction, ParsedTransactionWithMeta, Commitment,
 } from '@solana/web3.js';
 import { Token } from "@legion/shared/enums";
 import { GAME_WALLET, RPC } from '@legion/shared/config';
@@ -107,6 +107,41 @@ function isParsedInstruction(
     return 'parsed' in instruction;
 }
 
+export async function fetchParsedTransactionWithRetry(
+    transactionSignature: string,
+    connection: Connection,
+    maxRetries = 5,
+    retryDelay = 2000 // milliseconds
+): Promise<ParsedTransactionWithMeta | null> {
+    let transaction: ParsedTransactionWithMeta | null = null;
+    let attempts = 0;
+
+    while (attempts < maxRetries) {
+        attempts += 1;
+
+        // Attempt to fetch the transaction
+        transaction = await connection.getParsedTransaction(transactionSignature, 'confirmed');
+
+        if (transaction) {
+            console.log(`Transaction found on attempt ${attempts}`);
+            break;
+        } else {
+            console.log(
+                `Transaction not found on attempt ${attempts}, retrying in ${retryDelay}ms...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+    }
+
+    if (!transaction) {
+        console.error(
+            `Transaction not found after ${maxRetries} attempts`
+        );
+    }
+
+    return transaction;
+}
+
 async function verifyTransaction(
     transactionSignature: string,
     playerAddress: string,
@@ -119,32 +154,13 @@ async function verifyTransaction(
             'confirmed'
         );
 
-        const maxRetries = 5;
-        const retryDelay = 2000; // milliseconds
-
-        let transaction: ParsedTransactionWithMeta | null = null;
-        let attempts = 0;
-
-        // Retry loop
-        while (attempts < maxRetries) {
-        attempts += 1;
-
-        // Fetch the transaction
-        transaction = await connection.getParsedTransaction(transactionSignature, 'confirmed');
-
-        if (transaction) {
-            console.log(`[verifyTransaction] Transaction found on attempt ${attempts}`);
-            break; // Transaction found, exit the loop
-        } else {
-            console.log(
-            `[verifyTransaction] Transaction not found on attempt ${attempts}, retrying in ${retryDelay}ms...`
-            );
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        }
-        }
+        const transaction = await fetchParsedTransactionWithRetry(
+            transactionSignature,
+            connection,
+        );
 
         if (!transaction) {
-            console.error('Invalid transaction signature');
+            console.error('Invalid transaction signature or transaction not found after retries');
             return false;
         }
 
