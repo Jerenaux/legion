@@ -400,3 +400,54 @@ export const listLobbies = onRequest((request, response) => {
         }
     });
 });
+
+export const getLobbyDetails = onRequest((request, response) => {
+    return corsMiddleware(request, response, async () => {
+        try {
+            const uid = await getUID(request);
+            const lobbyId = request.query.lobbyId as string;
+
+            console.log(`[getLobbyDetails] uid: ${uid}, lobbyId: ${lobbyId}`);
+
+            if (!lobbyId) {
+                return response.status(400).send("Lobby ID is required");
+            }
+
+            const lobbyDoc = await db.collection("lobbies").doc(lobbyId).get();
+            if (!lobbyDoc.exists) {
+                return response.status(404).send("Lobby not found");
+            }
+
+            const lobbyData = lobbyDoc.data();
+
+            if (!lobbyData) {
+                return response.status(404).send("Lobby data not found");
+            }
+
+            // Check if the requesting user is either the creator or the opponent
+            if (uid !== lobbyData.creatorUID && uid !== lobbyData.opponentUID) {
+                return response.status(403).send("Unauthorized to view this lobby");
+            }
+
+            // Prepare the lobby details
+            const lobbyDetails = {
+                id: lobbyDoc.id,
+                creatorId: lobbyData.creatorUID,
+                opponentId: lobbyData.opponentUID || null,
+                avatar: lobbyData.avatar,
+                nickname: lobbyData.nickname,
+                elo: lobbyData.elo,
+                league: lobbyData.league,
+                rank: lobbyData.rank,
+                stake: lobbyData.stake,
+                status: lobbyData.status,
+                createdAt: lobbyData.createdAt.toDate(),
+            };
+
+            return response.status(200).json(lobbyDetails);
+        } catch (error) {
+            logger.error("getLobbyDetails error:", error);
+            return response.status(500).send("Error fetching lobby details");
+        }
+    });
+});

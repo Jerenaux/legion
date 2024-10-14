@@ -35,7 +35,45 @@ interface Player {
     gold: number;
 }
 
+class Lobby {
+    id: string;
+    creatorId: string;
+    opponentId: string;
+    creatorSocket: Socket;
+    opponentSocket: Socket;
+    mode: PlayMode;
+    league: League | null;
+
+    constructor(id: string, creatorId: string, opponentId: string, mode: PlayMode, league: League | null = null) {
+        this.id = id;
+        this.creatorId = creatorId;
+        this.opponentId = opponentId;
+        this.creatorSocket = null;
+        this.opponentSocket = null;
+        this.mode = mode;
+        this.league = league;
+    }
+
+    addPlayer(socket: any): boolean {
+        if (this.creatorSocket == null && socket.uid === this.creatorId) {
+            this.creatorSocket = socket;
+            return true;
+        }
+        if (this.opponentSocket == null && socket.uid === this.opponentId) {
+            this.opponentSocket = socket;
+            return true;
+        }
+        return false;
+    }
+
+    isFull(): boolean {
+        console.log(`[matchmaker:Lobby:isFull] creatorSocket: ${this.creatorSocket}, opponentSocket: ${this.opponentSocket}`);
+        return this.creatorSocket != null && this.opponentSocket != null;
+    }
+}
+
 let io: Server;
+const lobbies: Map<string, Lobby> = new Map();
 
 const playersQueue: Player[] = [];
 const RND = true;
@@ -339,19 +377,53 @@ export async function processJoinQueue(socket, data: { mode: PlayMode }) {
 export async function processJoinLobby(socket, data: { lobbyId: string }) {
     try {
         socket.uid = await getUID(socket.firebaseToken);
-        console.log(`[matchmaker:processJoinLobby] Player ${socket.uid} joined lobby ${data.lobbyId}`);
+        console.log(`[matchmaker:processJoinLobby] Player ${socket.uid} attempting to join lobby ${data.lobbyId} ...`);
 
-        notifyAdmin(socket.uid, null, PlayMode.STAKED, 'joined');
-
+        let lobby = lobbies.get(data.lobbyId);
         
-        logQueuingActivity(socket.uid, 'joinQueue', PlayMode.STAKED);
+        if (!lobby) {
+            console.log(`[matchmaker:processJoinLobby] Lobby ${data.lobbyId} not found, fetching details...`);
+            // Fetch lobby details if it doesn't exist
+            const lobbyDetails = await apiFetch(
+                `getLobbyDetails?lobbyId=${data.lobbyId}`,
+                socket.firebaseToken,
+            );
+
+            lobby = new Lobby(
+                data.lobbyId,
+                lobbyDetails.creatorId,
+                lobbyDetails.opponentId,
+                lobbyDetails.mode,
+                lobbyDetails.league
+            );
+            lobbies.set(data.lobbyId, lobby);
+        }
+
+        if (lobby.addPlayer(socket)) {
+            notifyAdmin(socket.uid, null, lobby.mode, 'joined');
+            logQueuingActivity(socket.uid, 'joinLobby', PlayMode.STAKED);
+            console.log(`[matchmaker:processJoinLobby] Player ${socket.uid} joined lobby ${data.lobbyId}`);
+
+
+            if (lobby.isFull()) {
+                await createGame(
+                    lobby.creatorSocket,
+                    lobby.opponentSocket,
+                    lobby.mode,
+                    lobby.league
+                );
+                lobbies.delete(data.lobbyId);
+            }
+        } else {
+            socket.emit('lobbyError', { message: 'Unable to join lobby. It might be full or you are not authorized.' });
+        }
     } catch (error) {
         if (error.code === 'auth/id-token-revoked') {
             console.log('The Firebase ID token has been revoked.');
             socket.emit('authError', { message: 'Your session has expired. Please log in again.' });
         } else {
-            console.error('Error verifying Firebase ID token:', error);
-            socket.emit('authError', { message: 'Authentication failed. Please try again.' });
+            console.error('Error processing join lobby:', error);
+            socket.emit('lobbyError', { message: 'Failed to join lobby. Please try again.' });
         }
     }
 }

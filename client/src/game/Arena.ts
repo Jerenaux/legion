@@ -749,7 +749,7 @@ export class Arena extends Phaser.Scene
     }
 
     getPlayer(team: number, num: number): Player {
-        return this.teamsMap.get(team).getMember(num);
+        return this.teamsMap?.get(team).getMember(num);
     }
 
     getOtherTeam(id: number): number {
@@ -759,6 +759,10 @@ export class Arena extends Phaser.Scene
     processMove({team, tile, num}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
+        if (!player) {
+            console.error(`[processMove] Player ${num} not found`);
+            return;
+        }
 
         // this.gridMap.set(serializeCoords(player.gridX, player.gridY), null);
         this.gridMap.delete(serializeCoords(player.gridX, player.gridY));
