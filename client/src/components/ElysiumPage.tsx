@@ -39,10 +39,14 @@ const ElysiumPage = () => {
     const [registeredAddress, setRegisteredAddress] = useState<string | null>(null);
     const [amountNeededFromOnchain, setAmountNeededFromOnchain] = useState(0);
 
-    // New state variables for withdrawal
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
     const [withdrawAmount, setWithdrawAmount] = useState('0.01');
     const [isWithdrawing, setIsWithdrawing] = useState(false);
+
+    const [selectedLobby, setSelectedLobby] = useState<Lobby | null>(null);
+    const [showJoinConfirmationModal, setShowJoinConfirmationModal] = useState(false);
+    const [showJoinTransactionModal, setShowJoinTransactionModal] = useState(false);
+    const [isJoiningLobby, setIsJoiningLobby] = useState(false);
 
     const { connected, publicKey, wallets, sendTransaction } = useWallet();
     const { connection } = useConnection();
@@ -122,7 +126,7 @@ const ElysiumPage = () => {
         }
 
         return lobbies.map((lobby) => (
-            <div key={lobby.id} className="lobby-item">
+            <div key={lobby.id} className="lobby-item" onClick={() => handleLobbyClick(lobby)}>
                 <img
                     src={lobby.avatar}
                     alt={`${lobby.nickname}'s avatar`}
@@ -139,6 +143,74 @@ const ElysiumPage = () => {
             </div>
         ));
     };
+
+    const handleLobbyClick = (lobby: Lobby) => {
+        setSelectedLobby(lobby);
+        setShowJoinConfirmationModal(true);
+    };
+
+    const handleJoinLobbyConfirmation = () => {
+        setShowJoinConfirmationModal(false);
+        const amountNeeded = selectedLobby.stake - ingameBalance;
+
+        if (amountNeeded > 0) {
+            if (onchainBalance >= amountNeeded) {
+                setAmountNeededFromOnchain(amountNeeded);
+                setShowJoinTransactionModal(true);
+            } else {
+                errorToast('Not enough balance in your wallet to cover the stake difference.');
+            }
+        } else {
+            joinLobbyTransaction();
+        }
+    };
+
+    // New function to handle join lobby transaction
+    const joinLobbyTransaction = async () => {
+        setShowJoinTransactionModal(false);
+        setIsJoiningLobby(true);
+
+        try {
+            let transactionSignature = null;
+
+            if (amountNeededFromOnchain > 0) {
+                const gamePublicKey = new PublicKey(GAME_WALLET);
+
+                const transaction = new Transaction().add(
+                    SystemProgram.transfer({
+                        fromPubkey: publicKey!,
+                        toPubkey: gamePublicKey,
+                        lamports: Math.round(amountNeededFromOnchain * LAMPORTS_PER_SOL),
+                    })
+                );
+
+                transactionSignature = await sendTransaction(transaction, connection);
+                console.log(`Transaction signature: ${transactionSignature}`);
+
+                setOnchainBalance((prevBalance) => prevBalance - amountNeededFromOnchain);
+                playerContext.refreshPlayerData();
+            }
+
+            console.log(`Calling joinLobby with lobbyId: ${selectedLobby.id} ...`);
+            const response = await apiFetch('joinLobby', {
+                method: 'POST',
+                body: {
+                    lobbyId: selectedLobby.id,
+                    transactionSignature,
+                    playerAddress: publicKey.toBase58(),
+                },
+            });
+
+            // successToast('Successfully joined the lobby!');
+            route(`/lobby/${selectedLobby.id}`);
+        } catch (error) {
+            errorToast('Error joining lobby: ' + (error.message || error));
+        } finally {
+            setIsJoiningLobby(false);
+            setSelectedLobby(null);
+        }
+    };
+    
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -418,7 +490,6 @@ const ElysiumPage = () => {
                 </div>
             )}
 
-            {/* Withdraw Modal */}
             {isWithdrawModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal">
@@ -490,6 +561,67 @@ const ElysiumPage = () => {
                                     </button>
                                 </Fragment>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+{showJoinConfirmationModal && selectedLobby && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h3>Confirm Joining Lobby</h3>
+                        <div className="modal-content">
+                            <p>
+                                You are about to join {selectedLobby.nickname}'s lobby with a stake of {selectedLobby.stake} SOL.
+                            </p>
+                            <p>
+                                {selectedLobby.stake <= ingameBalance
+                                    ? 'The stake will be deducted from your in-game balance.'
+                                    : `Your in-game balance is insufficient. An additional ${(selectedLobby.stake - ingameBalance).toFixed(4)} SOL will be transferred from your wallet.`}
+                            </p>
+                            <p>Do you want to proceed?</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                onClick={() => setShowJoinConfirmationModal(false)}
+                                className="cancel-btn"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleJoinLobbyConfirmation}
+                                className="confirm-btn"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showJoinTransactionModal && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h3>Confirm Transaction</h3>
+                        <div className="modal-content">
+                            <p>
+                                An additional {amountNeededFromOnchain.toFixed(4)} SOL will be transferred from your wallet to cover the stake.
+                            </p>
+                            <p>Do you want to proceed with the transaction?</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                onClick={() => setShowJoinTransactionModal(false)}
+                                className="cancel-btn"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={joinLobbyTransaction}
+                                className="confirm-btn"
+                            >
+                                Confirm Transaction
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -339,10 +339,11 @@ export async function processJoinQueue(socket, data: { mode: PlayMode }) {
 export async function processJoinLobby(socket, data: { lobbyId: string }) {
     try {
         socket.uid = await getUID(socket.firebaseToken);
+        console.log(`[matchmaker:processJoinLobby] Player ${socket.uid} joined lobby ${data.lobbyId}`);
 
         notifyAdmin(socket.uid, null, PlayMode.STAKED, 'joined');
 
-        // ...
+        
         logQueuingActivity(socket.uid, 'joinQueue', PlayMode.STAKED);
     } catch (error) {
         if (error.code === 'auth/id-token-revoked') {

@@ -9,7 +9,6 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 import { RPC } from '@legion/shared/config';
 
 const WalletContextProvider: FunctionComponent = ({ children }) => {
-    console.log(`Provider: ${RPC}`);
   const endpoint = RPC;
   
   const wallets = useMemo(
