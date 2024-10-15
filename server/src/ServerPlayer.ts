@@ -457,7 +457,7 @@ export class ServerPlayer {
 
     // Called when the terrain effect is applied for the first time
     setUpTerrainEffect(terrain: Terrain) {
-        console.log(`[ServerPlayer:setUpTerrainEffect] Terrain effect ${terrain}`);
+        // console.log(`[ServerPlayer:setUpTerrainEffect] Terrain effect ${terrain}`);
 
         if (DoTTerrains.includes(terrain)) {
             this.startTerrainDoT(terrain);
@@ -510,7 +510,7 @@ export class ServerPlayer {
     }
 
     removeStatusEffect(status: StatusEffect) {
-        console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
+        // console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
         this.statuses[status] = 0;
         
         this.clearDoTSatus(status);

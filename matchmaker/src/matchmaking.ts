@@ -38,29 +38,26 @@ interface Player {
 class Lobby {
     id: string;
     creatorId: string;
-    opponentId: string;
     creatorSocket: Socket;
     opponentSocket: Socket;
-    mode: PlayMode;
-    league: League | null;
     stake: number;
-    constructor(id: string, creatorId: string, opponentId: string, mode: PlayMode, league: League | null = null, stake: number = 0) {
+    constructor(id: string, creatorId: string, stake: number = 0) {
         this.id = id;
         this.creatorId = creatorId;
-        this.opponentId = opponentId;
         this.creatorSocket = null;
         this.opponentSocket = null;
-        this.mode = mode;
-        this.league = league;
         this.stake = stake;
     }
 
     addPlayer(socket: any): boolean {
+        console.log(`[matchmaker:Lobby:addPlayer] Adding player ${socket.uid} to lobby ${this.id} ...`);
+        // @ts-ignore
+        console.log(`[matchmaker:Lobby:addPlayer] creatorSocket: ${this.creatorSocket?.uid}, creatorId: ${this.creatorId}, isCreator: ${socket.uid === this.creatorId}, opponentSocket: ${this.opponentSocket?.uid}`);
         if (this.creatorSocket == null && socket.uid === this.creatorId) {
             this.creatorSocket = socket;
             return true;
         }
-        if (this.opponentSocket == null && socket.uid === this.opponentId) {
+        if (this.opponentSocket == null && socket.uid != this.creatorId) {
             this.opponentSocket = socket;
             return true;
         }
@@ -68,7 +65,8 @@ class Lobby {
     }
 
     isFull(): boolean {
-        console.log(`[matchmaker:Lobby:isFull] creatorSocket: ${this.creatorSocket}, opponentSocket: ${this.opponentSocket}`);
+        // @ts-ignore
+        console.log(`[matchmaker:Lobby:isFull] creatorSocket: ${this.creatorSocket?.uid}, opponentSocket: ${this.opponentSocket?.uid}`);
         return this.creatorSocket != null && this.opponentSocket != null;
     }
 }
@@ -396,16 +394,13 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
             lobby = new Lobby(
                 data.lobbyId,
                 lobbyDetails.creatorId,
-                lobbyDetails.opponentId,
-                lobbyDetails.mode,
-                lobbyDetails.league,
                 lobbyDetails.stake
             );
             lobbies.set(data.lobbyId, lobby);
         }
 
         if (lobby.addPlayer(socket)) {
-            notifyAdmin(socket.uid, null, lobby.mode, 'joined');
+            notifyAdmin(socket.uid, null, PlayMode.STAKED, 'joined');
             logQueuingActivity(socket.uid, 'joinLobby', PlayMode.STAKED);
             console.log(`[matchmaker:processJoinLobby] Player ${socket.uid} joined lobby ${data.lobbyId}`);
 
@@ -414,8 +409,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
                 await createGame(
                     lobby.creatorSocket,
                     lobby.opponentSocket,
-                    lobby.mode,
-                    lobby.league,
+                    PlayMode.STAKED,
+                    null,
                     lobby.stake
                 );
                 lobbies.delete(data.lobbyId);

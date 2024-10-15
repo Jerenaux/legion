@@ -144,7 +144,9 @@ export const postGameUpdate = onRequest((request, response) => {
       const uid = request.body.uid;
       const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score, tokens} =
         request.body.outcomes as OutcomeData;
-      console.log(`[postGameUpdate] isWinner: ${isWinner}, xp: ${xp}, gold: ${gold}, elo: ${elo}, key: ${key}, chests: ${chests}, rawGrade: ${rawGrade}, score: ${score}`);
+      console.log(
+        `[postGameUpdate] isWinner: ${isWinner}, xp: ${xp}, gold: ${gold}, elo: ${elo}, key: ${key}, chests: ${chests}, 
+          rawGrade: ${rawGrade}, score: ${score}, tokens: ${tokens}`);
       const mode = request.body.mode as PlayMode;
       const spellsUsed = request.body.spellsUsed;
 

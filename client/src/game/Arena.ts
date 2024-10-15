@@ -215,9 +215,9 @@ export class Arena extends Phaser.Scene
                 console.error(`Server disconnect during game: ${reason}`);
                 const isTutorial = gameId === 'tutorial';
                 if (isTutorial) {
-                    silentErrorToast('Disconnected from server');
-                } else {
                     silentErrorToast('Disconnected from server. Restarting tutorial...');
+                } else {
+                    silentErrorToast('Disconnected from server');
                 }
                 events.emit('serverDisconnect');
                 this.destroy();
@@ -749,7 +749,7 @@ export class Arena extends Phaser.Scene
     }
 
     getPlayer(team: number, num: number): Player {
-        return this.teamsMap?.get(team).getMember(num);
+        return this.teamsMap?.get(team)?.getMember(num);
     }
 
     getOtherTeam(id: number): number {
@@ -1328,11 +1328,13 @@ export class Arena extends Phaser.Scene
             mode: null,
         }
 
+        console.log(`[Arena:create] Scene created`);
         this.sceneCreated = true;
         this.emptyQueue();
     }
 
     emptyQueue(){ // Process the events that have been queued during initialization
+        console.log(`[Arena:emptyQueue] Emptying event queue`);
         if (this.eventsQueue.length > 1) this.isLateToTheParty = true;
         this.eventsQueue.forEach((event) => {
             this.socket.onevent.call(this.socket, event);

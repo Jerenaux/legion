@@ -327,7 +327,7 @@ export abstract class Game
 
     endGame(winnerTeamID: number) {
         try {
-            console.log(`[Game:endGame] Game ${this.id} ended!`);
+            console.log(`[Game:endGame] Game ${this.id} ended, mode = ${this.mode}`);
             this.duration = Date.now() - this.startTime;
             this.gameOver = true;
 
@@ -346,7 +346,7 @@ export abstract class Game
                 team.distributeXp(outcomes.xp);
                 outcomes.characters = team.getCharactersDBUpdates();
                 this.writeOutcomesToDb(team, outcomes);
-                console.log(`[Game:endGame] Team ${team!.id} outcomes: ${JSON.stringify(outcomes)}`);
+                console.log(`[Game:endGame] Team ${team!.id} (UID: ${team.teamData.playerUID}) outcomes: ${JSON.stringify(outcomes)}`);
                 team.getSocket()?.emit('gameEnd', outcomes);
 
                 results[team.teamData.playerUID] = {
@@ -1053,6 +1053,7 @@ export abstract class Game
                             chests: rewards.chests,
                             score: rewards.score,
                             rawGrade: rewards.rawGrade,
+                            tokens: rewards.tokens,
                         } as OutcomeData,
                         mode: this.mode,
                         spellsUsed: team.anySpellsUsed()

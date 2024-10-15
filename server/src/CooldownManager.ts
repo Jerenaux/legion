@@ -30,7 +30,7 @@ export class CooldownManager {
     }
 
     resumeCooldown() {
-        console.log(`[CooldownManager] Resuming cooldown for ${this.remainingTime}ms`);
+        // console.log(`[CooldownManager] Resuming cooldown for ${this.remainingTime}ms`);
         if (this.remainingTime > 0) {
             this.startTimer();
         }
