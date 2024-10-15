@@ -7,7 +7,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
 import { Token } from '@legion/shared/enums';
-import { avatarContext, errorToast, successToast } from './utils';
+import { avatarContext, errorToast, successToast, getLeagueIcon } from './utils';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import {
     LAMPORTS_PER_SOL,
@@ -17,6 +17,15 @@ import {
 } from '@solana/web3.js';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { GAME_WALLET, MIN_WITHDRAW } from '@legion/shared/config';
+import { League } from "@legion/shared/enums";
+
+const leagueMap = new Map([
+    [League.BRONZE, 'Bronze'],
+    [League.SILVER, 'Silver'],
+    [League.GOLD, 'Gold'],
+    [League.ZENITH, 'Zenith'],
+    [League.APEX, 'Apex'],
+]);
 
 interface Lobby {
     id: string;
@@ -150,33 +159,42 @@ const ElysiumPage = () => {
         if (!lobbies || lobbies.length === 0) {
             return (
                 <div className="no-lobbies-message">
-                    No opponents are currently waiting, create a game yourself!
+                    No lobbies are currently available.
                 </div>
             );
         }
-
-        return lobbies.map((lobby) => (
-            <div key={lobby.id} className="lobby-item" onClick={() => handleLobbyClick(lobby)}>
-                {isLoadingAvatars[lobby.id] ? (
-                    <div className="avatar-spinner">
-                        <div className="loading-spinner"></div>
+    
+        return lobbies.map((lobby) => {
+            const leagueName = leagueMap.get(lobby.league as unknown as League);
+            const leagueIcon = getLeagueIcon(leagueName);
+    
+            return (
+                <div key={lobby.id} className="lobby-item" onClick={() => handleLobbyClick(lobby)}>
+                    {isLoadingAvatars[lobby.id] ? (
+                        <div className="avatar-spinner">
+                            <div className="loading-spinner"></div>
+                        </div>
+                    ) : (
+                        <div 
+                            className="lobby-avatar" 
+                            style={{ backgroundImage: lobbyAvatars[lobby.id] ? `url(${lobbyAvatars[lobby.id]})` : 'none' }}
+                        ></div>
+                    )}
+                    <div className="lobby-info">
+                        <h3>{lobby.nickname}</h3>
+                        <p>ELO: {lobby.elo}</p>
+                        <div className="lobby-league">
+                            <img src={leagueIcon} alt={leagueName} className="league-icon" />
+                            <span>#{lobby.rank}</span>
+                        </div>
                     </div>
-                ) : (
-                    <div 
-                        className="lobby-avatar" 
-                        style={{ backgroundImage: lobbyAvatars[lobby.id] ? `url(${lobbyAvatars[lobby.id]})` : 'none' }}
-                    ></div>
-                )}
-                <div className="lobby-info">
-                    <h3>{lobby.nickname}</h3>
-                    <p>ELO: {lobby.elo}</p>
-                    <p>
-                        {lobby.league} - {lobby.rank}
-                    </p>
-                    <p>Stake: {lobby.stake} SOL</p>
+                    <div className="lobby-stake">
+                        <span className="stake-label">Stake</span>
+                        <span className="stake-amount">{lobby.stake} SOL</span>
+                    </div>
                 </div>
-            </div>
-        ));
+            );
+        });
     };
 
     const handleLobbyClick = (lobby: Lobby) => {
@@ -451,8 +469,8 @@ const ElysiumPage = () => {
             {isModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal">
-                        <h3>Create a New Lobby</h3>
-                        <p>Set the stake amount for your new lobby.</p>
+                        <h3>Create a New Game</h3>
+                        <p>Set the stake amount for your new game.</p>
                         <div className="modal-content">
                             <label htmlFor="stake">Stake (SOL)</label>
                             <input
@@ -517,13 +535,14 @@ const ElysiumPage = () => {
             {showConfirmationModal && (
                 <div className="modal-overlay">
                     <div className="modal confirmation-modal">
-                        <h3>Confirm Lobby Creation</h3>
+                        <h3>Confirm Game Creation</h3>
                         <div className="modal-content">
                             <p>
-                                Your in-game balance is insufficient to create
-                                this lobby. An additional{' '}
-                                {amountNeededFromOnchain.toFixed(4)} SOL will be
-                                transferred from your wallet to cover the stake.
+                                Your in-game balance is insufficient to create this game. An additional{' '}
+                                <span className="highlight-amount">
+                                    {Number(amountNeededFromOnchain.toFixed(4))} SOL
+                                </span>{' '}
+                                will be transferred from your wallet to cover the stake.
                             </p>
                             <p>Do you want to proceed?</p>
                         </div>
@@ -621,34 +640,53 @@ const ElysiumPage = () => {
                 </div>
             )}
 
-{showJoinConfirmationModal && selectedLobby && (
+            {showJoinConfirmationModal && selectedLobby && (
                 <div className="modal-overlay">
                     <div className="modal">
-                        <h3>Confirm Joining Lobby</h3>
+                        <h3>Confirm Joining Game</h3>
                         <div className="modal-content">
                             <p>
-                                You are about to join {selectedLobby.nickname}'s lobby with a stake of {selectedLobby.stake} SOL.
+                                You are about to join {selectedLobby.nickname}'s game with a stake of {' '}
+                                <span className="highlight-amount">
+                                    {selectedLobby.stake} SOL
+                                </span>{' '}
+                                .
                             </p>
                             <p>
                                 {selectedLobby.stake <= ingameBalance
                                     ? 'The stake will be deducted from your in-game balance.'
-                                    : `Your in-game balance is insufficient. An additional ${(selectedLobby.stake - ingameBalance).toFixed(4)} SOL will be transferred from your wallet.`}
+                                    : (
+                                        <>
+                                            Your in-game balance is insufficient. An additional{' '}
+                                            <span className="highlight-amount">
+                                                {Number((selectedLobby.stake - ingameBalance).toFixed(4))}
+                                            </span>{' '}
+                                            SOL will be transferred from your wallet.
+                                        </>
+                                    )
+                                }
                             </p>
                             <p>Do you want to proceed?</p>
                         </div>
                         <div className="modal-footer">
-                            <button
-                                onClick={() => setShowJoinConfirmationModal(false)}
-                                className="cancel-btn"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleJoinLobbyConfirmation}
-                                className="confirm-btn"
-                            >
-                                Confirm
-                            </button>
+                            {isJoiningLobby ? (
+                                <div className="lobby-spinner"></div>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => setShowJoinConfirmationModal(false)}
+                                        className="cancel-btn"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleJoinLobbyConfirmation}
+                                        className="confirm-btn"
+                                    >
+                                        Confirm
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
