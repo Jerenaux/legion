@@ -379,6 +379,11 @@ export const cancelLobby = onRequest((request, response) => {
                 return response.status(403).send("Only the creator can cancel the lobby");
             }
 
+            // If status is not open, do not refund stake
+            if (lobbyData.status !== "open") {
+                return response.status(400).send("Lobby is not open");
+            }
+
             // Update lobby status
             await lobbyDoc.ref.update({
                 status: "cancelled",

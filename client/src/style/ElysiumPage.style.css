@@ -1,0 +1,356 @@
+.elysium-page {
+    padding: 20px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: Kim;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #242b37;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.balance-info {
+    display: flex;
+    gap: 20px;
+}
+
+.balance-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.balance-label {
+    font-size: 14px;
+    color: #ffcc00;
+    margin-bottom: 5px;
+}
+
+.balance-value {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.wallet-button-container {
+    display: flex;
+    gap: 10px;
+}
+
+.withdraw-btn {
+    background-color: #ffcc00;
+    border: 2px solid #ffaa00;
+    color: #fff;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    font-family: Kim;
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.withdraw-btn:hover {
+    background-color: #ffaa00;
+}
+
+.withdraw-btn:disabled {
+    background-color: #cccccc;
+    border-color: #bbbbbb;
+    cursor: not-allowed;
+}
+
+.lobbies-header {
+    font-family: 'Kim', sans-serif;
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.create-lobby-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.create-lobby-btn {
+    background-color: #ffcc00;
+    border: 2px solid #ffaa00;
+    color: #fff;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    font-family: Kim;
+    font-size: 18px;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.create-lobby-info {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #ff4444;
+}
+
+.create-lobby-btn:hover {
+    background-color: #ffaa00;
+    transform: translateY(-2px);
+}
+
+.create-lobby-btn:disabled {
+    background-color: #cccccc;
+    border-color: #bbbbbb;
+    cursor: not-allowed;
+}
+
+.lobbies-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.lobby-item, .lobby-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #242b37;
+    border: 1px solid #0096a1;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.lobby-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 150, 161, 0.3);
+}
+
+.lobby-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 3px solid #ffcc00;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.avatar-spinner {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+
+.lobby-info {
+    text-align: center;
+}
+
+.lobby-info h3 {
+    margin: 0 0 10px 0;
+    color: #ffcc00;
+}
+
+.lobby-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.no-lobbies-message {
+    text-align: center;
+    padding: 20px;
+    color: #999999;
+    grid-column: 1 / -1;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal {
+    background-color: #242b37;
+    border: 2px solid #0096a1;
+    padding: 30px;
+    border-radius: 10px;
+    width: 400px;
+    color: #ffffff;
+    font-family: 'Kim', sans-serif;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal h3 {
+    margin-top: 0;
+    /* color: #ffcc00; */
+    text-align: center;
+}
+
+.modal-content {
+    margin-top: 20px;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 10px;
+    /* color: #ffcc00; */
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #0096a1;
+    border-radius: 5px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.modal-footer {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.cancel-btn, .confirm-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn {
+    background-color: #ff4444;
+    color: #ffffff;
+    font-family: Kim;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.cancel-btn:hover {
+    background-color: #ff0000;
+}
+
+.confirm-btn {
+    background-color: #ffcc00;
+    color: #ffffff;
+    font-family: Kim;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.confirm-btn:hover {
+    background-color: #ffaa00;
+}
+
+.confirm-btn.disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+.stake-limits {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.stake-limits p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.stake-limits small {
+    display: block;
+    color: #999999;
+    /* font-style: italic; */
+    margin-top: 5px;
+}
+
+.stake-limits p.invalid {
+    color: #ff4444;
+}
+
+.lobby-spinner {
+    border: 4px solid #242b37;
+    border-top: 4px solid #ffcc00;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 1200px) {
+    .lobbies-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .lobbies-container {
+        grid-template-columns: 1fr;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .wallet-info {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .balance-info {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .wallet-button-container {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+    }
+}

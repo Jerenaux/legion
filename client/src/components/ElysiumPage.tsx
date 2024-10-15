@@ -1,4 +1,4 @@
-// ElysiumPage.tsx
+import '../style/ElysiumPage.style.css';
 import { h, Fragment } from 'preact';
 import { route } from 'preact-router';
 import { useState, useEffect, useContext } from 'preact/hooks';
@@ -7,7 +7,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
 import { Token } from '@legion/shared/enums';
-import { errorToast, successToast } from './utils';
+import { avatarContext, errorToast, successToast } from './utils';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import {
     LAMPORTS_PER_SOL,
@@ -48,11 +48,40 @@ const ElysiumPage = () => {
     const [showJoinTransactionModal, setShowJoinTransactionModal] = useState(false);
     const [isJoiningLobby, setIsJoiningLobby] = useState(false);
 
+    const [lobbyAvatars, setLobbyAvatars] = useState<{ [key: string]: string | null }>({});
+    const [isLoadingAvatars, setIsLoadingAvatars] = useState<{ [key: string]: boolean }>({});
+
     const { connected, publicKey, wallets, sendTransaction } = useWallet();
     const { connection } = useConnection();
     const playerContext = useContext(PlayerContext);
 
     const ingameBalance = playerContext.player.tokens?.[Token.SOL] || 0;
+
+    const loadAvatar = (lobbyId: string, avatar: string) => {
+        setIsLoadingAvatars(prev => ({ ...prev, [lobbyId]: true }));
+        if (avatar !== '0') {
+            try {
+                const avatarUrl = avatarContext(`./${avatar}.png`);
+                setLobbyAvatars(prev => ({ ...prev, [lobbyId]: avatarUrl }));
+            } catch (error) {
+                console.error(`Failed to load avatar: ${avatar}.png`, error);
+                setLobbyAvatars(prev => ({ ...prev, [lobbyId]: null }));
+            }
+        } else {
+            setLobbyAvatars(prev => ({ ...prev, [lobbyId]: null }));
+        }
+        setIsLoadingAvatars(prev => ({ ...prev, [lobbyId]: false }));
+    };
+
+    useEffect(() => {
+        if (lobbies) {
+            lobbies.forEach(lobby => {
+                if (!lobbyAvatars[lobby.id]) {
+                    loadAvatar(lobby.id, lobby.avatar);
+                }
+            });
+        }
+    }, [lobbies]);
 
     useEffect(() => {
         if (connected && publicKey) {
@@ -92,6 +121,7 @@ const ElysiumPage = () => {
     const fetchLobbies = async () => {
         setIsLoadingLobbies(true);
         try {
+            // await new Promise(resolve => setTimeout(resolve, 10000));
             const data = await apiFetch('listLobbies');
             setLobbies(data);
             setIsLoadingLobbies(false);
@@ -120,18 +150,23 @@ const ElysiumPage = () => {
         if (!lobbies || lobbies.length === 0) {
             return (
                 <div className="no-lobbies-message">
-                    No lobbies are currently available.
+                    No opponents are currently waiting, create a game yourself!
                 </div>
             );
         }
 
         return lobbies.map((lobby) => (
             <div key={lobby.id} className="lobby-item" onClick={() => handleLobbyClick(lobby)}>
-                <img
-                    src={lobby.avatar}
-                    alt={`${lobby.nickname}'s avatar`}
-                    className="lobby-avatar"
-                />
+                {isLoadingAvatars[lobby.id] ? (
+                    <div className="avatar-spinner">
+                        <div className="loading-spinner"></div>
+                    </div>
+                ) : (
+                    <div 
+                        className="lobby-avatar" 
+                        style={{ backgroundImage: lobbyAvatars[lobby.id] ? `url(${lobbyAvatars[lobby.id]})` : 'none' }}
+                    ></div>
+                )}
                 <div className="lobby-info">
                     <h3>{lobby.nickname}</h3>
                     <p>ELO: {lobby.elo}</p>
@@ -361,36 +396,56 @@ const ElysiumPage = () => {
 
     return (
         <div className="elysium-page">
-            <div className="wallet-button-container">
-                <WalletMultiButton />
-                <button
-                    onClick={handleOpenWithdrawModal}
-                    className="withdraw-btn"
-                    disabled={!connected || ingameBalance < minWithdraw}
-                >
-                    Withdraw
-                </button>
+            <div className="top-bar">
+                <div className="wallet-info">
+                    <div className="balance-info">
+                        <div className="balance-item">
+                            <span className="balance-label">In-game balance</span>
+                            <span className="balance-value">{ingameBalance} SOL</span>
+                        </div>
+                        <div className="balance-item">
+                            <span className="balance-label">On-chain balance</span>
+                            <span className="balance-value">{onchainBalance.toFixed(4)} SOL</span>
+                        </div>
+                    </div>
+                    <div className="wallet-button-container">
+                        <WalletMultiButton />
+                        <button
+                            onClick={handleOpenWithdrawModal}
+                            className="withdraw-btn"
+                            disabled={!connected || ingameBalance < minWithdraw}
+                        >
+                            Withdraw
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <h2 className="lobbies-header">Available Lobbies</h2>
-            <button
-                onClick={handleOpenModal}
-                className="create-lobby-btn"
-                disabled={!connected}
-            >
-                Create Lobby
-            </button>
+            <h2 className="lobbies-header">Available Opponents</h2>
+
+            <div className="create-lobby-container">
+                <button
+                    onClick={handleOpenModal}
+                    className="create-lobby-btn"
+                    disabled={!connected || (ingameBalance + onchainBalance) < minStake}
+                >
+                    Create Game
+                </button>
+                {!connected && (
+                    <p className="create-lobby-info">
+                        Please connect your wallet to create a game.
+                    </p>
+                )}
+                {connected && (ingameBalance + onchainBalance) < minStake && (
+                    <p className="create-lobby-info">
+                        Insufficient funds to create a game. Minimum stake required: {minStake} SOL
+                    </p>
+                )}
+            </div>
+
             <div className="lobbies-container">
                 {isLoadingLobbies ? renderLobbySkeletons() : renderLobbies()}
             </div>
-
-            {connected && (
-                <div className="wallet-info">
-                    <p>Address: {publicKey?.toBase58()}</p>
-                    <p>In-game balance: {ingameBalance} SOL</p>
-                    <p>On-chain balance: {onchainBalance.toFixed(4)} SOL</p>
-                </div>
-            )}
 
             {/* Create Lobby Modal */}
             {isModalOpen && (
@@ -423,7 +478,7 @@ const ElysiumPage = () => {
                                         currentStake > maxStake ? 'invalid' : ''
                                     }
                                 >
-                                    Max stake: {maxStake} SOL
+                                    Max stake: {maxStake.toFixed(4)} SOL
                                 </p>
                                 <small>
                                     (Max stake is the sum of in-game and

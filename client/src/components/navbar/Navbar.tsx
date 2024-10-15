@@ -8,7 +8,6 @@ import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, avatarContext } from '../utils';
 import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
-import { Token } from "@legion/shared/enums";
 import SolanaWalletService from '../../services/SolanaWalletService';
 
 import legionLogo from '@assets/logo.png';
