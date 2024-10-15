@@ -1,7 +1,4 @@
-import { PlayMode } from "./enums";
-
 const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
-const isAdmin = (process.env.ADMIN_MODE == 'true');
 
 // Gameplay
 export const MAX_CHARACTERS = 10;
@@ -65,8 +62,10 @@ export let IMMEDIATE_LOOT = false;
 export let LOTSA_MP = false;
 
 // Web3
-export const RPC = 'https://solana-devnet.g.alchemy.com/v2/7aGAP4QZtAC0FxXqFvVSTz0X4jPLFSd4';
-export const GAME_WALLET = '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY';
+export const NETWORK = isDev ? 'devnet' : 'mainnet';
+const ALCHEMY_API_KEY = '7aGAP4QZtAC0FxXqFvVSTz0X4jPLFSd4';
+export const RPC = `https://solana-${NETWORK}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+export const GAME_WALLET = NETWORK === 'devnet' ? '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY' : null;
 export const MIN_WITHDRAW = 0.01;
 export const LEGION_CUT = 0.02;
 
