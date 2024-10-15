@@ -6,7 +6,11 @@ import firebaseConfig from '@legion/shared/firebaseConfig';
 
 admin.initializeApp(firebaseConfig);
 
-const corsOptions = {origin: true};
+const corsOptions = {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'sentry-trace']
+};
 export const corsMiddleware = cors(corsOptions);
 
 export async function getUID(request: Request): Promise<string> {

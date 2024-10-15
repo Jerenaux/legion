@@ -68,6 +68,7 @@ export let LOTSA_MP = false;
 export const RPC = 'https://solana-devnet.g.alchemy.com/v2/7aGAP4QZtAC0FxXqFvVSTz0X4jPLFSd4';
 export const GAME_WALLET = '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY';
 export const MIN_WITHDRAW = 0.01;
+export const LEGION_CUT = 0.02;
 
 // Social
 export const DISCORD_LINK = 'https://discord.gg/s2XZhYCK2m';

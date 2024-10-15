@@ -104,6 +104,7 @@ export interface OutcomeData {
     grade: string;
     xp: number;
     gold: number;
+    tokens: number;
     characters?: CharacterUpdate[];
     elo: number;
     key: ChestColor;

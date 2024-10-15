@@ -15,6 +15,7 @@ export const createGame = onRequest((request, response) => {
       const players = request.body.players;
       const mode = request.body.mode;
       const league = request.body.league;
+      const stake = request.body.stake;
 
       const gameData = {
         date: new Date(),
@@ -23,6 +24,7 @@ export const createGame = onRequest((request, response) => {
         mode,
         league,
         status: GameStatus.ONGOING,
+        stake,
       };
 
       await db.collection("games").add(gameData);
@@ -32,6 +34,7 @@ export const createGame = onRequest((request, response) => {
           gameId,
           league: gameData.league,
           mode: gameData.mode,
+          stake: gameData.stake,
         });
       }
 

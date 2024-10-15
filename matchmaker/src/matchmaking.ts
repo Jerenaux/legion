@@ -43,8 +43,8 @@ class Lobby {
     opponentSocket: Socket;
     mode: PlayMode;
     league: League | null;
-
-    constructor(id: string, creatorId: string, opponentId: string, mode: PlayMode, league: League | null = null) {
+    stake: number;
+    constructor(id: string, creatorId: string, opponentId: string, mode: PlayMode, league: League | null = null, stake: number = 0) {
         this.id = id;
         this.creatorId = creatorId;
         this.opponentId = opponentId;
@@ -52,6 +52,7 @@ class Lobby {
         this.opponentSocket = null;
         this.mode = mode;
         this.league = league;
+        this.stake = stake;
     }
 
     addPlayer(socket: any): boolean {
@@ -231,7 +232,9 @@ function canBeMatched(player1: Player, player2: Player): boolean {
     return isDifferentPlayers && isEloCompatible && isLeagueCompatible;
 }
 
-async function createGame(player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null) {
+async function createGame(
+    player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null, stake: number = 0
+) {
     try {
         // @ts-ignore
         notifyAdmin(player1?.uid, player2?.uid, mode, 'matched');
@@ -247,6 +250,7 @@ async function createGame(player1: Socket, player2?: Socket, mode: PlayMode = Pl
                     players: [player1.uid, player2?.uid],
                     mode,
                     league,
+                    stake,
                 }
             }
         );
@@ -394,7 +398,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
                 lobbyDetails.creatorId,
                 lobbyDetails.opponentId,
                 lobbyDetails.mode,
-                lobbyDetails.league
+                lobbyDetails.league,
+                lobbyDetails.stake
             );
             lobbies.set(data.lobbyId, lobby);
         }
@@ -410,7 +415,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
                     lobby.creatorSocket,
                     lobby.opponentSocket,
                     lobby.mode,
-                    lobby.league
+                    lobby.league,
+                    lobby.stake
                 );
                 lobbies.delete(data.lobbyId);
             }

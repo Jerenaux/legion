@@ -102,6 +102,9 @@ io.on('connection', async (socket: any) => {
         const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI, PlayMode.TUTORIAL];
         const gameType = AImodes.includes(gameData.mode) ? AIGame : PvPGame;
         game = new gameType(gameId, gameData.mode, gameData.league, io);
+        if (gameData.mode === PlayMode.STAKED) {
+          game.setStake(gameData.stake);
+        }
         gamesMap.set(gameId, game);
       }
       game = gamesMap.get(gameId)!;

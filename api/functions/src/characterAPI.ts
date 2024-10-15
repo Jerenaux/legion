@@ -142,7 +142,7 @@ export const postGameUpdate = onRequest((request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = request.body.uid;
-      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
+      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score, tokens} =
         request.body.outcomes as OutcomeData;
       console.log(`[postGameUpdate] isWinner: ${isWinner}, xp: ${xp}, gold: ${gold}, elo: ${elo}, key: ${key}, chests: ${chests}, rawGrade: ${rawGrade}, score: ${score}`);
       const mode = request.body.mode as PlayMode;
@@ -183,6 +183,12 @@ export const postGameUpdate = onRequest((request, response) => {
           elo: admin.firestore.FieldValue.increment(elo || 0),
           dailyloot: dailyLoot,
         });
+
+        if (tokens) {
+          transaction.update(playerRef, {
+            'tokens.SOL': admin.firestore.FieldValue.increment(tokens || 0),
+          });
+        }
 
         if (spellsUsed) {
           transaction.update(playerRef, {

@@ -9,7 +9,7 @@ import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN } from
 import { OutcomeData, TerrainUpdate, PlayerContextData, GameOutcomeReward, GameData, EndGameDataResults } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, MOVE_COOLDOWN, ATTACK_COOLDOWN,
-    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig } from '@legion/shared/config';
+    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig, LEGION_CUT } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 
 enum GameAction {
@@ -22,6 +22,7 @@ export abstract class Game
 {
     id: string;
     mode: PlayMode;
+    stake: number = 0;
     league: League;
     teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
@@ -902,7 +903,12 @@ export abstract class Game
             key: (this.mode == PlayMode.PRACTICE || this.mode == PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
             chests: this.computeChests(team.score, this.mode),
             score: team.score,
+            tokens: isWinner ? this.computeStakeRewards() : 0,
         }
+    }
+
+    computeStakeRewards() {
+        return this.stake * 2 * (1 - LEGION_CUT);
     }
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
@@ -1132,6 +1138,10 @@ export abstract class Game
         const otherTeam = this.getOtherTeam(team.id);
         this.endGame(otherTeam.id);
     }
+
+    setStake(stake: number) {
+        this.stake = stake;
+    } 
 }
 
 interface Tile {
