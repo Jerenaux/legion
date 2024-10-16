@@ -268,14 +268,6 @@ function sendQData(player: Player) {
         goldReward,
         estimatedWaitingTime: 10,
         nbInQueue: countQueuingPlayers(player.mode, player.league),
-        news: [
-            {
-                title: "Legion Play Guide released!",
-                date: "2024-09-13",
-                text: "Check out our new guide to learn how to play Legion like a pro!",
-                link: "https://guide.play-legion.io"
-            },
-        ]
     });
 }
 

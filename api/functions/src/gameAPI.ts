@@ -1,6 +1,6 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import admin, {corsMiddleware} from "./APIsetup";
+import admin, {checkAPIKey, corsMiddleware} from "./APIsetup";
 import {EndGameData} from "@legion/shared/interfaces";
 import {GameStatus} from "@legion/shared/enums";
 import {logPlayerAction} from "./dashboardAPI";
@@ -155,3 +155,38 @@ export const getRemoteConfig = onRequest((request, response) => {
   });
 });
 
+export const getNews = onRequest((request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const newsCollection = db.collection("news");
+      const newsSnapshot = await newsCollection.get();
+      const newsData = newsSnapshot.docs.map(doc => doc.data());
+      response.status(200).json(newsData);
+    } catch (error) {
+      console.error("getNews error:", error);
+      response.status(500).send("Error fetching news");
+    }
+  });
+});
+
+export const addNews = onRequest({secrets: ["API_KEY"]}, (request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
+
+      const newsData = request.body;
+      await db.collection("news").add(newsData);
+      response.status(200).send("News added successfully");
+    } catch (error) {
+      console.error("addNews error:", error);
+      response.status(500).send("Error adding news");
+    }
+  });
+});

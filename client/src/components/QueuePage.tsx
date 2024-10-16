@@ -5,7 +5,7 @@ import { route } from 'preact-router';
 import { Link, useRouter } from 'preact-router';
 import Skeleton from 'react-loading-skeleton';
 
-import { getFirebaseIdToken } from '../services/apiService';
+import { apiFetch, getFirebaseIdToken } from '../services/apiService';
 import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS, DISCORD_LINK, X_LINK } from '@legion/shared/config';
 import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';
@@ -33,12 +33,13 @@ interface QueueData {
     goldReward: number;
     estimatedWaitingTime: number;
     nbInQueue: number;
-    news: {
-        title: string;
-        date: string;
-        text: string;
-        link: string;
-    }[];
+}
+
+interface NewsItem {
+    title: string;
+    date: string;
+    text: string;
+    link: string;
 }
 
 interface QpageState {
@@ -50,6 +51,8 @@ interface QpageState {
     queueData: QueueData;
     earnedGold: number;
     queueDataLoaded: boolean;
+    news: NewsItem[];
+    newsLoaded: boolean;
 }
 
 
@@ -73,15 +76,17 @@ class QueuePage extends Component<QPageProps, QpageState> {
                 goldReward: 0,
                 estimatedWaitingTime: -1,
                 nbInQueue: 0,
-                news: [],
             },
             earnedGold: 0,
             queueDataLoaded: false,
+            news: [], // Add this line
+            newsLoaded: false, // Add this line
         };
     }
 
     componentDidMount() {
         this.joinQueue();
+        this.loadNews();
         let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
         if (this.state.queueData.estimatedWaitingTime != -1) {
             this.interval = setInterval(() => {
@@ -106,6 +111,16 @@ class QueuePage extends Component<QPageProps, QpageState> {
         }
         clearInterval(this.interval);
         clearInterval(this.intervalWaited);
+    }
+
+    loadNews = async () => {
+        try {
+            const news = await apiFetch('getNews');
+            this.setState({ news, newsLoaded: true });
+        } catch (error) {
+            console.error('Failed to load news:', error);
+            this.setState({ newsLoaded: true });
+        }
     }
 
     prevTip = () => {
@@ -194,7 +209,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     render() {
-        const { progress, queueData } = this.state;
+        const { progress, queueData, news, newsLoaded } = this.state;
         const isLobbyMode = this.props.matches.id !== undefined;
 
         return (
@@ -332,26 +347,37 @@ class QueuePage extends Component<QPageProps, QpageState> {
                     )}
                 </div>
 
-                {/* Conditionally render QueueNews and QueueTips */}
-                {!isLobbyMode && ENABLE_Q_NEWS && (
+                {ENABLE_Q_NEWS && (
                     <div className="queue-news">
-                        {queueData.news.map((newsItem) => (
-                            <div className="queue-news-container" key={newsItem.title}>
-                                <div className="queue-news-title">
-                                    <div><span style={{ color: 'cyan' }}>{newsItem.title}</span></div>
-                                    <div className="queue-news-date"><span style={{ color: 'coral' }}>{newsItem.date}</span></div>
+                        {newsLoaded ? (
+                            news.map((newsItem) => (
+                                <div className="queue-news-container" key={newsItem.title}>
+                                    <div className="queue-news-title">
+                                        <div><span style={{ color: 'cyan' }}>{newsItem.title}</span></div>
+                                        <div className="queue-news-date"><span style={{ color: 'coral' }}>{newsItem.date}</span></div>
+                                    </div>
+                                    <div className="queue-news-content">
+                                        {newsItem.text}
+                                    </div>
+                                    <div
+                                        className="queue-news-readmore"
+                                        onClick={() => window.open(newsItem.link, '_blank')}
+                                    >
+                                        READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
+                                    </div>
                                 </div>
-                                <div className="queue-news-content">
-                                    {newsItem.text}
-                                </div>
-                                <div
-                                    className="queue-news-readmore"
-                                    onClick={() => window.open(newsItem.link, '_blank')}
-                                >
-                                    READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="queue-news-loading">
+                                <Skeleton
+                                    height={100}
+                                    width={300}
+                                    count={1}
+                                    highlightColor="#0000004d"
+                                    baseColor="#0f1421"
+                                />
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
 
