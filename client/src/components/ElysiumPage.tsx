@@ -82,6 +82,19 @@ const ElysiumPage = () => {
     };
 
     useEffect(() => {
+        // Refresh player data when the component mounts
+        playerContext.refreshPlayerData();
+    
+        // Set up an interval to refresh player data every 30 seconds
+        // const refreshInterval = setInterval(() => {
+        //     playerContext.refreshPlayerData();
+        // }, 30000); // 30 seconds
+    
+        // // Clean up the interval when the component unmounts
+        // return () => clearInterval(refreshInterval);
+    }, []);
+
+    useEffect(() => {
         if (lobbies) {
             lobbies.forEach(lobby => {
                 if (!lobbyAvatars[lobby.id]) {
@@ -520,7 +533,7 @@ const ElysiumPage = () => {
                                             !isStakeValid ? 'disabled' : ''
                                         }`}
                                     >
-                                        Create Lobby
+                                        Create Game
                                     </button>
                                 </Fragment>
                             )}
