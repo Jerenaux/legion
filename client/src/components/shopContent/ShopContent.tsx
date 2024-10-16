@@ -8,7 +8,7 @@ import { apiFetch } from '../../services/apiService';
 import { InventoryType, ShopTab } from '@legion/shared/enums';
 import { MAX_CHARACTERS } from "@legion/shared/config";
 import { ShopItems, DBCharacterData } from '@legion/shared/interfaces';
-import { errorToast, successToast, playSoundEffect } from '../utils';
+import { errorToast, successToast, playSoundEffect, silentErrorToast } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
 import ShopEquipmentCard from '../shopEquipmentCard/ShopEquipmentCard';
@@ -119,7 +119,7 @@ class ShopContent extends Component<ShopContentProps> {
         }
 
         if (!this.hasEnoughGold(quantity)) {
-            errorToast('Not enough gold!');
+            silentErrorToast('Not enough gold!');
             return;
         }
 
@@ -127,12 +127,12 @@ class ShopContent extends Component<ShopContentProps> {
 
         if (purchasingCharacter) {
             if (this.context.characters.length >= MAX_CHARACTERS) {
-                errorToast('Character limit reached!');
+                silentErrorToast('Character limit reached!');
                 return;
             }
         } else {
             if (inventorySize(this.context.player.inventory) + quantity > this.context.player.carrying_capacity) {
-                errorToast('Not enough room in inventory!');
+                silentErrorToast('Not enough room in inventory!');
                 return;
             }
         }

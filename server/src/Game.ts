@@ -434,7 +434,7 @@ export abstract class Game
     }
 
     processAttack({num, target, sameTeam}: {num: number, target: number, sameTeam: boolean}, team: Team) {
-        console.log(`[Game:processAttack] Player ${num} attacking target ${target}`);
+        // console.log(`[Game:processAttack] Player ${num} attacking target ${target}`);
         const player = team.getMembers()[num - 1];
         const opponentTeam = sameTeam ? team : this.getOtherTeam(team.id);
         const opponent = opponentTeam.getMembers()[target - 1];

@@ -1679,7 +1679,7 @@ export class Arena extends Phaser.Scene
             this.tweens.timeScale = originalTweenRate;
 
             this.sprites.forEach((sprite) => {
-                sprite.anims.timeScale = originalTimeScale;
+                if (sprite.anims) sprite.anims.timeScale = originalTimeScale;
             });
             this.killCamActive = false;
             this.processGENQueue(); // Trigger processing of GEN queue after kill cam
