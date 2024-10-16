@@ -1,4 +1,3 @@
-// Middle Button.tsx
 import './playModeButton.style.css'
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
@@ -11,16 +10,34 @@ import specialBtnBgIdle from '@assets/special_btn_bg_idle.png';
 import middlePlayActive from '@assets/middle_play_active.png';
 import middlePlayIdle from '@assets/middle_play_idle.png';
 import { PlayMode } from '@legion/shared/enums';
+import { apiFetch } from '../../services/apiService';
 
 interface ButtonProps {
     players?: number;
     label: string;
     mode: PlayMode;
+    isLobbies?: boolean;
 }
 
 class PlayModeButton extends Component<ButtonProps> {
     state = {
-        active: false
+        active: false,
+        lobbiesCount: null
+    }
+
+    componentDidMount() {
+        if (this.props.isLobbies) {
+            this.fetchLobbiesCount();
+        }
+    }
+
+    fetchLobbiesCount = async () => {
+        try {
+            const data = await apiFetch('countLobbies');
+            this.setState({ lobbiesCount: data.count });
+        } catch (error) {
+            console.error('Error fetching lobbies count:', error);
+        }
     }
 
     handleCardClick = () => {
@@ -57,7 +74,10 @@ class PlayModeButton extends Component<ButtonProps> {
                 <img src={btnIcons[this.props.label]} alt="" />
                 <div className="labelContainer">
                     <span className="label">{this.props.label}</span>
-                    {this.props.players && <span className="player"><span style={playerSpanStyle}>{this.props.players}</span> Players Queuing</span>}
+                    {this.props.isLobbies 
+                        ? (this.state.lobbiesCount > 0 && <span className="player"><span style={playerSpanStyle}>{this.state.lobbiesCount}</span> Opponents Waiting</span>)
+                        : (this.props.players && <span className="player"><span style={playerSpanStyle}>{this.props.players}</span> Players Queuing</span>)
+                    }
                 </div>
             </div>
         );

@@ -403,3 +403,20 @@
     color: #ffcc00;
     font-weight: bold;
 }
+
+.lobby-item.insufficient-balance {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.insufficient-balance-text {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(255, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+}

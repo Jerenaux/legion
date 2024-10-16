@@ -158,17 +158,24 @@ const ElysiumPage = () => {
         if (!lobbies || lobbies.length === 0) {
             return (
                 <div className="no-lobbies-message">
-                    No lobbies are currently available.
+                    No opponents are currently waiting, create a game to start!
                 </div>
             );
         }
     
+        const totalBalance = ingameBalance + onchainBalance;
+    
         return lobbies.map((lobby) => {
             const leagueName = leagueMap.get(lobby.league as unknown as League);
             const leagueIcon = getLeagueIcon(leagueName);
+            const insufficientBalance = totalBalance < lobby.stake;
     
             return (
-                <div key={lobby.id} className="lobby-item" onClick={() => handleLobbyClick(lobby)}>
+                <div 
+                    key={lobby.id} 
+                    className={`lobby-item ${insufficientBalance ? 'insufficient-balance' : ''}`} 
+                    onClick={() => insufficientBalance ? null : handleLobbyClick(lobby)}
+                >
                     {isLoadingAvatars[lobby.id] ? (
                         <div className="avatar-spinner">
                             <div className="loading-spinner"></div>
@@ -191,6 +198,9 @@ const ElysiumPage = () => {
                         <span className="stake-label">Stake</span>
                         <span className="stake-amount">{lobby.stake} SOL</span>
                     </div>
+                    {insufficientBalance && (
+                        <div className="insufficient-balance-text">Insufficient balances</div>
+                    )}
                 </div>
             );
         });
@@ -409,7 +419,9 @@ const ElysiumPage = () => {
                         </div>
                         <div className="balance-item">
                             <span className="balance-label">On-chain balance</span>
-                            <span className="balance-value">{Number(onchainBalance.toFixed(4))} SOL</span>
+                            <span className="balance-value">
+                                {connected ? `${Number(onchainBalance.toFixed(4))} SOL` : "???"}
+                            </span>
                         </div>
                     </div>
                     <div className="wallet-button-container">

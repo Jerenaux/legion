@@ -430,6 +430,21 @@ export const listLobbies = onRequest((request, response) => {
     });
 });
 
+export const countLobbies = onRequest((request, response) => {
+    return corsMiddleware(request, response, async () => {
+        try {
+            const lobbiesSnapshot = await db.collection("lobbies")
+                .where("status", "==", "open")
+                .get();
+            const lobbies = lobbiesSnapshot.docs.length;
+            return response.status(200).send({ count: lobbies });
+        } catch (error) {
+            logger.error("countLobbies error:", error);
+            return response.status(500).send("Error counting lobbies");
+        }
+    });
+});
+
 export const getLobbyDetails = onRequest((request, response) => {
     return corsMiddleware(request, response, async () => {
         try {

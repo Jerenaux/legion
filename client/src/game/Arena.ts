@@ -209,7 +209,7 @@ export class Arena extends Phaser.Scene
         });
         
         this.socket.on('disconnect', (reason) => {
-            console.log(`Disconnected from the server, ${reason}`);
+            // console.log(`Disconnected from the server, ${reason}`);
             if (reason != 'io client disconnect') {
                 // The disconnection was initiated by the server
                 console.error(`Server disconnect during game: ${reason}`);
@@ -1307,7 +1307,6 @@ export class Arena extends Phaser.Scene
         this.setUpArena();
         this.createAnims();
         this.createSounds();
-        // this.connectToServer();
 
         this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(LOCAL_ANIMATION_SCALE).setOrigin(0.5, 0.7).setVisible(false);
         this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);
@@ -1722,13 +1721,15 @@ export class Arena extends Phaser.Scene
             });
         });
 
-        Object.values(this.SFX).forEach(sound => {
-            // @ts-ignore
+        if (this.SFX) {
+            Object.values(this.SFX).forEach(sound => {
+                // @ts-ignore
             if (sound.isPlaying) {
                 // @ts-ignore
                 sound.stop();
-            }
-        });
+                }
+            });
+        }
     
         // Stop and destroy the music manager
         if (this.musicManager) {
