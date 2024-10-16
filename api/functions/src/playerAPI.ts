@@ -958,6 +958,7 @@ export const withdrawSOL = onRequest(async (request, response) => {
 
       const uid = await getUID(request);
       const amount = parseFloat(request.body.amount);
+      console.log(`[withdrawSOL] Withdrawing ${amount} SOL for ${uid} on ${RPC}`);
 
       if (isNaN(amount) || amount < MIN_WITHDRAW) {
         return response.status(400).send({ error: `Invalid withdrawal amount. Minimum is ${MIN_WITHDRAW} SOL.` });
@@ -965,7 +966,7 @@ export const withdrawSOL = onRequest(async (request, response) => {
 
       const result = await performLockedOperation(uid, async () => {
         return db.runTransaction(async (transaction) => {
-          // Fetch player data
+          
           const playerDocRef = db.collection('players').doc(uid);
           const playerDoc = await transaction.get(playerDocRef);
 

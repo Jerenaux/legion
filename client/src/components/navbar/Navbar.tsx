@@ -8,7 +8,6 @@ import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, avatarContext } from '../utils';
 import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
-import SolanaWalletService from '../../services/SolanaWalletService';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -59,7 +58,6 @@ interface State {
 }
 
 class Navbar extends Component<Props, State> {
-    private walletService: SolanaWalletService;
     
     state: State = {
         hovered: '',
@@ -73,25 +71,11 @@ class Navbar extends Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        this.walletService = SolanaWalletService.getInstance();
     }
 
     async componentDidMount() {
         this.loadAvatar();
-        await this.checkSolanaWallet();
-        this.walletService.addWalletStateListener(this.handleWalletStateChange);
     }
-
-    componentWillUnmount() {
-        this.walletService.removeWalletStateListener(this.handleWalletStateChange);
-    }
-
-    handleWalletStateChange = () => {
-        this.setState({
-          isSolanaWalletConnected: this.walletService.isWalletConnected(),
-          solanaBalance: this.walletService.getBalance(),
-        });
-    };
 
     componentDidUpdate(prevProps: Readonly<Props>) {
         if (prevProps.playerData?.avatar !== this.props.playerData?.avatar) {
@@ -112,36 +96,6 @@ class Navbar extends Component<Props, State> {
             }
         }
     }
-
-    checkSolanaWallet = async () => {
-        const isSolanaWalletPresent = this.walletService.isWalletDetected();
-        const isSolanaWalletConnected = await this.walletService.checkWalletConnection();
-        const solanaBalance = this.walletService.getBalance();
-        
-        this.setState({ 
-            isSolanaWalletPresent, 
-            isSolanaWalletConnected, 
-            solanaBalance 
-        });
-    };
-
-    connectSolanaWallet = async () => {
-        const connected = await this.walletService.connectWallet();
-        if (connected) {
-            this.setState({ 
-                isSolanaWalletConnected: true,
-                solanaBalance: this.walletService.getBalance()
-            });
-        }
-    };
-
-    disconnectSolanaWallet = async () => {
-        await this.walletService.disconnectWallet();
-        this.setState({ 
-            isSolanaWalletConnected: false, 
-            solanaBalance: null
-        });
-    };
 
     copyIDtoClipboard = () => {  
         const textToCopy = this.props.playerData.uid;

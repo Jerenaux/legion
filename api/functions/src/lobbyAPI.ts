@@ -120,7 +120,7 @@ function isParsedInstruction(
 export async function fetchParsedTransactionWithRetry(
     transactionSignature: string,
     connection: Connection,
-    maxRetries = 5,
+    maxRetries = 6,
     retryDelay = 2000 // milliseconds
 ): Promise<ParsedTransactionWithMeta | null> {
     let transaction: ParsedTransactionWithMeta | null = null;
@@ -158,7 +158,7 @@ async function verifyTransaction(
     amountNeededFromOnchain: number
 ) {
     try {
-        console.log(`[verifyTransaction] Verifying transaction: ${transactionSignature}`);
+        console.log(`[verifyTransaction] Verifying transaction: ${transactionSignature} on ${RPC}`);
         const connection = new Connection(
             RPC,
             'confirmed'

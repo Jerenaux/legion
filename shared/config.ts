@@ -50,6 +50,7 @@ export const ENABLE_Q_NEWS = true;
 export const ENABLE_QUESTS = false;
 export const ENABLE_SPECTATOR_MODE = false;
 export const ENABLE_SETTINGS = false;
+export const ENABLE_ELYSIUM = true;
 
 // Admin
 export let FREEZE_AI = true;
@@ -62,10 +63,10 @@ export let IMMEDIATE_LOOT = false;
 export let LOTSA_MP = false;
 
 // Web3
-export const NETWORK = isDev ? 'devnet' : 'mainnet';
+export let NETWORK = isDev ? 'devnet' : 'mainnet';
 const ALCHEMY_API_KEY = '7aGAP4QZtAC0FxXqFvVSTz0X4jPLFSd4';
-export const RPC = `https://solana-${NETWORK}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
-export const GAME_WALLET = NETWORK === 'devnet' ? '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY' : null;
+export const RPC = NETWORK === 'devnet' ? `https://solana-${NETWORK}.g.alchemy.com/v2/${ALCHEMY_API_KEY}` : 'https://snowy-lively-tree.solana-mainnet.quiknode.pro/06a13c157e50528707e63ef977c12ef76163056f';
+export const GAME_WALLET = NETWORK === 'devnet' ? '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY' : '3An5UbyPzsoaHHCiqfou7SX88V9JJM1x1XzN77JyYWNh';
 export const MIN_WITHDRAW = 0.01;
 export const LEGION_CUT = 0.02;
 

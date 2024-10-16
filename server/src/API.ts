@@ -74,7 +74,7 @@ export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {},
 
 export async function getRemoteConfig() {
     try {
-        const response = await apiFetch('getRemoteConfig', ''); // TODO: API key
+        const response = await apiFetch('getRemoteConfig', ''); // TODO: API key?
         return response;
     } catch (error) {
         console.error('Error fetching remote config:', error);

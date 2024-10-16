@@ -129,7 +129,7 @@ const ElysiumPage = () => {
                     },
                 })
                     .then(() => {
-                        console.log('Address registered successfully.');
+                        // console.log('Address registered successfully.');
                         setRegisteredAddress(newAddress);
                     })
                     .catch((error) => {
@@ -385,6 +385,15 @@ const ElysiumPage = () => {
                 successToast(`Withdrawal successful. Transaction signature: ${response.signature}`);
                 setIsWithdrawModalOpen(false);
                 playerContext.refreshPlayerData();
+
+                if (publicKey) {
+                    try {
+                        const newBalance = await connection.getBalance(publicKey);
+                        setOnchainBalance(newBalance / LAMPORTS_PER_SOL);
+                    } catch (error) {
+                        console.error('Failed to update on-chain balance:', error);
+                    }
+                }
             } else {
                 errorToast(`Withdrawal failed: ${response.error}`);
             }
@@ -618,7 +627,7 @@ const ElysiumPage = () => {
                             <p>
                                 Funds will be sent to your wallet address:{' '}
                                 <strong>
-                                    {publicKey?.toBase58()}
+                                    {publicKey?.toBase58().slice(0, 4) + '...' + publicKey?.toBase58().slice(-4)}
                                 </strong>
                             </p>
                         </div>
