@@ -88,9 +88,9 @@ export const completeGame = onRequest((request, response) => {
       const winnerUID = request.body.winnerUID || -1; // -1 for AI
       const rawResults: EndGameData = request.body.results;
       console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(rawResults)}`);
-      // Filter out the results object to remove keys that are empty strings
+      // Filter out the results object to remove keys that are empty strings or undefined
       const results = Object.fromEntries(
-        Object.entries(rawResults).filter(([key]) => key !== '')
+        Object.entries(rawResults).filter(([key, value]) => key !== '' && value !== undefined)
       );
       console.log(`[completeGame] Filtered results: ${JSON.stringify(results)}`);
 
@@ -98,6 +98,7 @@ export const completeGame = onRequest((request, response) => {
       if (gameRef.empty) { // Most likely a tutorial ending
         // throw new Error("Invalid game ID");
         response.status(200).send({status: 0});
+        return; // Exit the function early
       }
 
       const gameDoc = gameRef.docs[0];
@@ -107,13 +108,15 @@ export const completeGame = onRequest((request, response) => {
       }
 
       for (const player of gameData.players) {
-        logPlayerAction(player, "gameComplete", {
-          gameId,
-          winner: winnerUID == player,
-          results: results[player as keyof EndGameData],
-          league: gameData.league,
-          mode: gameData.mode,
-        });
+        if (player) { // Add a check to ensure player is not undefined or empty string
+          logPlayerAction(player, "gameComplete", {
+            gameId,
+            winner: winnerUID == player,
+            results: results[player as keyof EndGameData],
+            league: gameData.league,
+            mode: gameData.mode,
+          });
+        }
       }
 
       const newGameData = {
@@ -123,10 +126,15 @@ export const completeGame = onRequest((request, response) => {
         end: new Date(),
       };
 
+      // Only add results to newGameData if it's not empty
+      if (Object.keys(results).length > 0) {
+        newGameData['results'] = results;
+      }
+
       await gameDoc.ref.update(newGameData);
       response.status(200).send({status: 0});
     } catch (error) {
-      console.error("[saveGameResult] Error:", error);
+      console.error("[completeGame] Error:", error);
       response.status(500).send("Error");
     }
   });

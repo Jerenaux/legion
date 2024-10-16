@@ -341,12 +341,16 @@ export abstract class Game
             let winnerUID;
             if (!this.sockets.length) return;
             this.teams.forEach(team => {
+                const uid = team.teamData.playerUID;
+                if (!uid || typeof uid !== 'string' || uid.trim() === '') {
+                    return;
+                }
                 const otherTeam = this.getOtherTeam(team!.id);
                 const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID) as OutcomeData;
                 team.distributeXp(outcomes.xp);
                 outcomes.characters = team.getCharactersDBUpdates();
                 this.writeOutcomesToDb(team, outcomes);
-                console.log(`[Game:endGame] Team ${team!.id} (UID: ${team.teamData.playerUID}) outcomes: ${JSON.stringify(outcomes)}`);
+                console.log(`[Game:endGame] Team ${team!.id} (UID: ${uid}) outcomes: ${JSON.stringify(outcomes)}`);
                 team.getSocket()?.emit('gameEnd', outcomes);
 
                 results[team.teamData.playerUID] = {
@@ -603,7 +607,7 @@ export abstract class Game
         targets.forEach(target => {
             if (target.HPHasChanged()) {
                 const delta = target.getHPDelta();
-                console.log(`[Game:applyMagic] delta: ${delta}, justDied: ${target.justDied}, targetHP: ${target.getHP()}, targetMaxHP: ${target.getMaxHP()}`);
+                // console.log(`[Game:applyMagic] delta: ${delta}, justDied: ${target.justDied}, targetHP: ${target.getHP()}, targetMaxHP: ${target.getMaxHP()}`);
                 player.increaseDamageDealt(delta);
                 if (target.justDied){
                     nbKills++;

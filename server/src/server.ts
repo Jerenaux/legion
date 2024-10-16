@@ -55,7 +55,6 @@ const gamesMap = new Map<string, Game>();
 
 io.on('connection', async (socket: any) => {
     try {
-      console.log(`[server:connection] Connected with token ${socket.handshake.auth.token}`);
       // Throw an exception if the token is not provided
       if (!socket.handshake.auth.token) {
         throw new Error('No token provided');
@@ -98,7 +97,7 @@ io.on('connection', async (socket: any) => {
 
       let game: Game;
       if (!gamesMap.has(gameId)) {
-        console.log(`[server:connection] Creating game ${gameId}`);
+        console.log(`[server:connection] Creating game ${gameId} with mode ${gameData.mode}`);
         const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI, PlayMode.TUTORIAL];
         const gameType = AImodes.includes(gameData.mode) ? AIGame : PvPGame;
         game = new gameType(gameId, gameData.mode, gameData.league, io);

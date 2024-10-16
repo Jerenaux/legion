@@ -899,6 +899,8 @@ export const zombieData = onRequest(async (req, res) => {
         skills: characterDoc.get('skills'),
       }));
 
+      console.log(`[zombieData] playerData dailyloot: ${JSON.stringify(playerData.dailyloot)}`);
+
       // Transform dailyloot
       const transformedDailyLoot = transformDailyLoot(playerData.dailyloot);
 

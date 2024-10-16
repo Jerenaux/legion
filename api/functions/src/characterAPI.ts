@@ -150,6 +150,10 @@ export const postGameUpdate = onRequest((request, response) => {
       const mode = request.body.mode as PlayMode;
       const spellsUsed = request.body.spellsUsed;
 
+      if (!uid || typeof uid !== 'string' || uid.trim() === '') {
+        throw new Error('Invalid or missing uid');
+      }
+
       logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
 
       await db.runTransaction(async (transaction) => {
@@ -157,13 +161,13 @@ export const postGameUpdate = onRequest((request, response) => {
         const playerDoc = await transaction.get(playerRef);
 
         if (!playerDoc.exists) {
-          throw new Error("Documents do not exist");
+          throw new Error("Player document does not exist");
         }
 
         const playerData = playerDoc.data();
 
         if (!playerData) {
-          throw new Error("Data does not exist");
+          throw new Error("Player data does not exist");
         }
 
         const dailyLoot = playerData.dailyloot as DailyLootAllDBData;
@@ -171,7 +175,7 @@ export const postGameUpdate = onRequest((request, response) => {
           dailyLoot[key].hasKey = true;
         }
 
-        const inventory = playerDoc.data()?.inventory || {};
+        const inventory = playerData.inventory || {};
         const consumables = inventory.consumables || [];
         const spells = inventory.spells || [];
         const equipment = inventory.equipment || [];
@@ -254,16 +258,18 @@ export const postGameUpdate = onRequest((request, response) => {
                 'allTimeStats.lossesStreak': admin.firestore.FieldValue.increment(1),
               });
             }
-            let leagueAvgAudienceScore = playerDoc.data()?.leagueStats.avgAudienceScore || 0;
+            let leagueAvgAudienceScore = playerData.leagueStats?.avgAudienceScore || 0;
             console.log(`[postGameUpdate] previous leagueAvgAudienceScore: ${leagueAvgAudienceScore}`);
-            let allTimeAvgAudienceScore = playerDoc.data()?.allTimeStats.avgAudienceScore || 0;
-            let leagueAvgGrade = playerDoc.data()?.leagueStats.avgGrade || 0;
-            let allTimeAvgGrade = playerDoc.data()?.allTimeStats.avgGrade || 0;
-            leagueAvgAudienceScore = (leagueAvgAudienceScore * playerData.leagueStats.nbGames + score) / (playerData.leagueStats.nbGames + 1);
-            console.log(`[postGameUpdate] new leagueAvgAudienceScore: ${leagueAvgAudienceScore}, nbGames: ${playerData.leagueStats.nbGames}, score: ${score}`);
-            allTimeAvgAudienceScore = (allTimeAvgAudienceScore * playerData.allTimeStats.nbGames + score) / (playerData.allTimeStats.nbGames + 1);
-            leagueAvgGrade = (leagueAvgGrade * playerData.leagueStats.nbGames + rawGrade) / (playerData.leagueStats.nbGames + 1);
-            allTimeAvgGrade = (allTimeAvgGrade * playerData.allTimeStats.nbGames + rawGrade) / (playerData.allTimeStats.nbGames + 1);
+            let allTimeAvgAudienceScore = playerData.allTimeStats?.avgAudienceScore || 0;
+            let leagueAvgGrade = playerData.leagueStats?.avgGrade || 0;
+            let allTimeAvgGrade = playerData.allTimeStats?.avgGrade || 0;
+            const leagueNbGames = playerData.leagueStats?.nbGames || 0;
+            const allTimeNbGames = playerData.allTimeStats?.nbGames || 0;
+            leagueAvgAudienceScore = (leagueAvgAudienceScore * leagueNbGames + score) / (leagueNbGames + 1);
+            console.log(`[postGameUpdate] new leagueAvgAudienceScore: ${leagueAvgAudienceScore}, nbGames: ${leagueNbGames}, score: ${score}`);
+            allTimeAvgAudienceScore = (allTimeAvgAudienceScore * allTimeNbGames + score) / (allTimeNbGames + 1);
+            leagueAvgGrade = (leagueAvgGrade * leagueNbGames + rawGrade) / (leagueNbGames + 1);
+            allTimeAvgGrade = (allTimeAvgGrade * allTimeNbGames + rawGrade) / (allTimeNbGames + 1);
             transaction.update(playerRef, {
               'leagueStats.nbGames': admin.firestore.FieldValue.increment(1),
               'allTimeStats.nbGames': admin.firestore.FieldValue.increment(1),
@@ -277,36 +283,34 @@ export const postGameUpdate = onRequest((request, response) => {
 
         // Iterate over the player's characters and increase their XP
         // Update XP for each character directly using their references
-        if (playerData.characters && characters) {
-          playerData.characters.forEach(
-            (characterRef: admin.firestore.DocumentReference) => {
-              if (characterRef instanceof admin.firestore.DocumentReference) {
-                // Find the corresponding CharacterRewards object
-                const characterRewards =
-                  characters.find((c: CharacterUpdate) => c.id === characterRef.id);
+        if (playerData.characters && Array.isArray(playerData.characters) && characters) {
+          for (const characterRef of playerData.characters) {
+            if (characterRef instanceof admin.firestore.DocumentReference) {
+              // Find the corresponding CharacterRewards object
+              const characterRewards =
+                characters.find((c: CharacterUpdate) => c.id === characterRef.id);
 
-                if (characterRewards) {
-                  const sp = characterRewards.points;
-                  transaction.update(characterRef, {
-                    xp: characterRewards.xp,
-                    level: admin.firestore.FieldValue.increment(characterRewards.level),
-                    sp: admin.firestore.FieldValue.increment(sp),
-                    allTimeSP: admin.firestore.FieldValue.increment(sp),
-                  });
-                } else {
-                  console.error(`No matching CharacterRewards found for
-                    ${characterRef.id}`);
-                }
+              if (characterRewards) {
+                const sp = characterRewards.points;
+                transaction.update(characterRef, {
+                  xp: characterRewards.xp,
+                  level: admin.firestore.FieldValue.increment(characterRewards.level),
+                  sp: admin.firestore.FieldValue.increment(sp),
+                  allTimeSP: admin.firestore.FieldValue.increment(sp),
+                });
               } else {
-                console.error(`Invalid character reference ${characterRef}`);
+                console.error(`No matching CharacterRewards found for ${characterRef.id}`);
               }
-            });
+            } else {
+              console.error(`Invalid character reference ${characterRef}`);
+            }
+          }
         }
       });
       response.send({status: 0});
     } catch (error) {
       console.error("Error processing reward:", error);
-      response.status(500).send("Error");
+      response.status(500).send("Error: " + (error instanceof Error ? error.message : "Unknown error"));
     }
   });
 });

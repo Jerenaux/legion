@@ -92,6 +92,7 @@ export class AIGame extends Game {
             nb = teamData.characters.length;
         }
 
+        console.log(`[AIGame:populateTeams] Game mode is ${this.mode}, isZombie: ${this.mode === PlayMode.CASUAL_VS_AI || this.mode === PlayMode.RANKED_VS_AI}`);
         if (this.mode === PlayMode.CASUAL_VS_AI || this.mode === PlayMode.RANKED_VS_AI) {
             await this.fetchZombieTeam(aiTeam!, playerTeam.teamData.elo, nb, levels);
         } else {
