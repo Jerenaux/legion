@@ -34,3 +34,9 @@ API deployment: `bash deploy_api.sh`
 Client deployment: `bash deploy_client.sh`
 
 Note: The API has its own `firebase.json` file used for local development with the Firebase emulators. The `firebase.json` at the root of the repository is the one used for deployment to prod.
+
+### Setting up secrets
+
+For Firebase Functions:  `firebase functions:secrets:set SECRET_NAME`, you'll then be prompted to enter the secret value. It can then be accessed in the code with `process.env.SECRET_NAME`.
+
+To access it in one of the Cloud Run services, go to the Google Cloud Console, select the project, then click on the service and edit to create a new revision. In the secrets tab you can add a secret referring to the one set in Firebase.

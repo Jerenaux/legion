@@ -5,12 +5,17 @@ import {EndGameData} from "@legion/shared/interfaces";
 import {GameStatus} from "@legion/shared/enums";
 import {logPlayerAction} from "./dashboardAPI";
 
-export const createGame = onRequest((request, response) => {
+
+export const createGame = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
   logger.info("Creating game");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
+      // if (!checkAPIKey(request)) {
+      //   response.status(401).send('Unauthorized');
+      //   return;
+      // }
       const gameId = request.body.gameId;
       const players = request.body.players;
       const mode = request.body.mode;
