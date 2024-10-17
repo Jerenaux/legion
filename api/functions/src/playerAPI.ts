@@ -954,10 +954,6 @@ export const withdrawSOL = onRequest(async (request, response) => {
 
   return corsMiddleware(request, response, async () => {
     try {
-      if (!checkAPIKey(request)) {
-        return response.status(401).send('Unauthorized');
-      }
-
       const uid = await getUID(request);
       const amount = parseFloat(request.body.amount);
       console.log(`[withdrawSOL] Withdrawing ${amount} SOL for ${uid} on ${RPC}`);
