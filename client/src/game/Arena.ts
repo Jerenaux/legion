@@ -100,10 +100,19 @@ export class Arena extends Phaser.Scene
     gameEnded = false;
     tutorial;
     sfxVolume: number;
+    inputLocked = false;
 
     constructor() {
         super({ key: 'Arena' });
         this.sfxVolume = this.getSFXVolumeFromLocalStorage();
+    }
+
+    lockInput() {
+        this.inputLocked = true;
+    }
+
+    unlockInput() {
+        this.inputLocked = false;
     }
 
     getSFXVolumeFromLocalStorage(): number {
@@ -621,6 +630,10 @@ export class Arena extends Phaser.Scene
     }
 
     handleTileClick(gridX, gridY) {
+        if (this.inputLocked) {
+            this.unlockInput();
+            return;
+        }
         console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];

@@ -443,11 +443,13 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onPointerDown() {
-        // const selectedPlayer = this.arena.selectedPlayer;
-        // if (!selectedPlayer || (!selectedPlayer?.hasPendingSpell() && !selectedPlayer?.hasPendingItem())) {
-        //     console.log('Relaying pointer down to handle click');
-        //     this.arena.handleTileClick(this.gridX, this.gridY);
-        // }
+        const selectedPlayer = this.arena.selectedPlayer;
+        if (selectedPlayer) {
+            if (selectedPlayer == this) return; // Might be a move up order
+            if (selectedPlayer.hasPendingSpell() || selectedPlayer.hasPendingItem()) return;
+        }
+        this.arena.handleTileClick(this.gridX, this.gridY);
+        this.arena.lockInput();
     }
 
     hasPendingSpell() {
