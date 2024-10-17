@@ -7,6 +7,7 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { ItemDialogType } from '../itemDialog/ItemDialogType';
 import { mapFrameToCoordinates } from '../utils';
 import { cropFrame } from '../utils'; 
+import { events } from '../HUD/GameHUD';
 
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -28,6 +29,7 @@ interface ItemIconState {
     left: number;
   };
   croppedImageUrl: string | null;
+  keyboardLayout: number; // 0 for AZERTY, 1 for QWERTY
 }
 
 class ItemIcon extends Component<ItemIconProps, ItemIconState> {
@@ -39,16 +41,35 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
       top: 0,
       left: 0
     },
-    croppedImageUrl: null
+    croppedImageUrl: null,
+    keyboardLayout: 0
   }
 
   componentDidMount() {
     this.cropSpritesheet();
+    this.loadKeyboardLayout();
+    events.on('settingsChanged', this.handleSettingsChanged);
   }
 
   componentDidUpdate(prevProps: ItemIconProps) {
     if (prevProps.action !== this.props.action) {
       this.cropSpritesheet();
+    }
+  }
+
+  componentWillUnmount() {
+    events.off('settingsChanged', this.handleSettingsChanged);
+  }
+
+  handleSettingsChanged = (settings) => {
+    this.setState({ keyboardLayout: settings.keyboardLayout });
+  }
+
+  loadKeyboardLayout = () => {
+    const settingsString = localStorage.getItem('gameSettings');
+    if (settingsString) {
+      const settings = JSON.parse(settingsString);
+      this.setState({ keyboardLayout: settings.keyboardLayout });
     }
   }
 
@@ -71,13 +92,28 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     }
   }
 
-  render() {
-    const { action, index, canAct, actionType } = this.props;
-    const { croppedImageUrl } = this.state;
+  getKeyBinding = () => {
+    const { index, actionType } = this.props;
+    const { keyboardLayout } = this.state;
 
-    const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
-    const keyBinding = keyboardLayout.charAt(startPosition + index);
+    const qwertyLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+    const azertyLayout = 'AZERTYUIOPQSDFGHJKLMWXCVBN';
+
+    const layout = keyboardLayout === 0 ? azertyLayout : qwertyLayout;
+    
+    let startPosition;
+    if (actionType === InventoryType.CONSUMABLES) {
+      startPosition = keyboardLayout === 0 ? layout.indexOf('W') : layout.indexOf('Z');
+    } else { // For spells
+      startPosition = keyboardLayout === 0 ? layout.indexOf('A') : layout.indexOf('Q');
+    }
+
+    return layout.charAt(startPosition + index);
+  }
+
+  render() {
+    const { action, canAct, actionType } = this.props;
+    const { croppedImageUrl } = this.state;
 
     if (!action) {
       return <div className={`${actionType}`} />;
@@ -94,7 +130,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
             }}
           />
         )}
-        <span className="key-binding">{keyBinding}</span>
+        <span className="key-binding">{this.getKeyBinding()}</span>
       </div>
     );
   }

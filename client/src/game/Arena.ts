@@ -971,7 +971,6 @@ export class Arena extends Phaser.Scene
             .setScale(scale)
             .play(spell.vfx);
         this.playSound(spell.sfx);
-        console.log(`[Arena:processLocalAnimation] Depth: ${this.localAnimationSprite.depth}: ${this.yToZ(y)} + ${DEPTH_OFFSET}`);
 
         if (spell.shake) {
             const duration = isKill ? 2000 : 250;

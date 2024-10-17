@@ -410,7 +410,6 @@ export class Player extends Phaser.GameObjects.Container {
         this.gridX = x;
         this.gridY = y;
         this.setDepth(this.arena.yToZ(y));
-        console.log(`[Player:updatePos] Depth: ${this.depth}`);
     }
 
     onPointerOver() {
@@ -473,10 +472,16 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onLetterKey(keyCode) {
-        // console.log(`Pressed ${keyCode}`);
         this.arena.playSound('click');
-        const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-        const index = keyboardLayout.indexOf(keyCode);
+        const qwertyLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+        const azertyLayout = 'AZERTYUIOPQSDFGHJKLMWXCVBN';
+        
+        // Get the current keyboard layout from settings
+        const settingsString = localStorage.getItem('gameSettings');
+        const settings = settingsString ? JSON.parse(settingsString) : { keyboardLayout: 0 };
+        const layout = settings.keyboardLayout === 0 ? azertyLayout : qwertyLayout;
+
+        const index = layout.indexOf(keyCode);
         this.onKey(index);
     }
 
