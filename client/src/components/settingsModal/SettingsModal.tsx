@@ -1,4 +1,5 @@
 import { h, Component, createRef } from 'preact';
+import { events } from '../HUD/GameHUD';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -17,10 +18,11 @@ export class SettingsModal extends Component<SettingsModalProps> {
       sfxCurrentValue: 50,
       sfxMinValue: 0,
       sfxMaxValue: 100,
-      settingMenuCur: 0,
+      selectedKeyboardLayout: 0,
     }
   
     componentDidMount() {
+      this.loadSettings();
       this.updateMusicControlThumb();
       this.updateSFXControlThumb();
     }
@@ -28,10 +30,37 @@ export class SettingsModal extends Component<SettingsModalProps> {
     componentDidUpdate(prevProps, prevState) {
       if (prevState.musicCurrentValue !== this.state.musicCurrentValue) {
         this.updateMusicControlThumb();
+        this.saveSettings();
       }
       if (prevState.sfxCurrentValue !== this.state.sfxCurrentValue) {
         this.updateSFXControlThumb();
+        this.saveSettings();
       }
+      if (prevState.selectedKeyboardLayout !== this.state.selectedKeyboardLayout) {
+        this.saveSettings();
+      }
+    }
+  
+    loadSettings = () => {
+      const savedSettings = localStorage.getItem('gameSettings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        this.setState({
+          musicCurrentValue: settings.musicVolume,
+          sfxCurrentValue: settings.sfxVolume,
+          selectedKeyboardLayout: settings.keyboardLayout,
+        });
+      }
+    }
+  
+    saveSettings = () => {
+      const settings = {
+        musicVolume: this.state.musicCurrentValue,
+        sfxVolume: this.state.sfxCurrentValue,
+        keyboardLayout: this.state.selectedKeyboardLayout,
+      };
+      localStorage.setItem('gameSettings', JSON.stringify(settings));
+      events.emit('settingsChanged', settings);  // Emit the settingsChanged event
     }
   
     updateMusicControlThumb = () => {
@@ -98,8 +127,8 @@ export class SettingsModal extends Component<SettingsModalProps> {
               Keyboard layout:
             </div>
             <div className="setting_dialog_keyboard_btn_container flex justify_center gap_4">
-              <div className={this.state.settingMenuCur === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ settingMenuCur: 0 })}>Azerty</div>
-              <div className={this.state.settingMenuCur === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ settingMenuCur: 1 })}>Qwerty</div>
+              <div className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>Azerty</div>
+              <div className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>Qwerty</div>
             </div>
             <div className="setting_dialog_control_bar_container">
               <div className="setting_dialog_control_name">Music volume: </div>

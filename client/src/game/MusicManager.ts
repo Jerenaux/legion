@@ -1,3 +1,5 @@
+import { events } from '../components/HUD/GameHUD';
+
 export class MusicManager {
     scene: Phaser.Scene;
     currentSound;
@@ -7,7 +9,8 @@ export class MusicManager {
     nbIntensities = 0;
     bridges = [];
     gameOver = false;
-    soundConfig = { volume: 0.3 };
+    soundConfig: { volume: number };
+    volume: number;
 
     constructor(scene, startinIntensity, nbIntensities, bridges) {
         this.scene = scene;
@@ -17,6 +20,33 @@ export class MusicManager {
         this.desiredIntensity = this.startinIntensity;
         this.nbIntensities = nbIntensities;
         this.bridges = bridges;
+        this.volume = this.getMusicVolumeFromLocalStorage();
+        this.soundConfig = { volume: this.volume };
+
+        // Listen for volume changes
+        events.on('settingsChanged', this.onSettingsChanged, this);
+    }
+
+    getMusicVolumeFromLocalStorage(): number {
+        const settingsString = localStorage.getItem('gameSettings');
+        if (settingsString) {
+            const settings = JSON.parse(settingsString);
+            return settings.musicVolume / 100; // Convert percentage to decimal
+        }
+        return 0.3; // Default to 30% volume if setting is not found
+    }
+
+    onSettingsChanged = () => {
+        const newVolume = this.getMusicVolumeFromLocalStorage();
+        this.setVolume(newVolume);
+    }
+
+    setVolume(volume: number) {
+        this.volume = volume;
+        this.soundConfig.volume = this.volume;
+        if (this.currentSound) {
+            this.currentSound.setVolume(this.volume);
+        }
     }
 
     computeMusicIntensity(ratio) {
@@ -129,6 +159,7 @@ export class MusicManager {
 
     destroy() {
         this.stopAll();
+        events.off('settingsChanged', this.onSettingsChanged, this);
         this.scene = null;
         this.currentSound = null;
     }

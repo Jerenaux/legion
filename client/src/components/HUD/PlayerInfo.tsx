@@ -1,4 +1,4 @@
-import { h, Component, createRef } from 'preact';
+import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import Modal from 'react-modal';
 import { PlayerProfileData } from "@legion/shared/interfaces";
