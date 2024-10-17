@@ -99,9 +99,20 @@ export class Arena extends Phaser.Scene
     gameInitialized = false;
     gameEnded = false;
     tutorial;
+    sfxVolume: number;
 
     constructor() {
         super({ key: 'Arena' });
+        this.sfxVolume = this.getSFXVolumeFromLocalStorage();
+    }
+
+    getSFXVolumeFromLocalStorage(): number {
+        const settingsString = localStorage.getItem('gameSettings');
+        if (settingsString) {
+            const settings = JSON.parse(settingsString);
+            return settings.sfxVolume / 100; // Convert percentage to decimal
+        }
+        return 0.5; // Default to 50% volume if setting is not found
     }
 
     preload()
@@ -1000,17 +1011,18 @@ export class Arena extends Phaser.Scene
         sounds.forEach((sound) => {
             this.SFX[sound] = this.sound.add(sound);
         })
+
+        // Listen for settings changes
+        events.on('settingsChanged', this.onSettingsChanged, this);
+    }
+
+    onSettingsChanged = (settings) => {
+        this.sfxVolume = settings.sfxVolume / 100;
     }
 
     playSound(name, volume = 1, loop = false) {
-        // this.SFX[name].play({volume, loop});
-
-        // const playerPosition = { x: 100, y: 100 };
-        // const audioSourcePosition = { x: 300, y: 100 };
-        // // Calculate panning (left/right balance) based on positions
-        // const pan = 100; // Phaser.Math.Clamp((audioSourcePosition.x - playerPosition.x) / 400, -1, 1);
-
-        this.SFX[name].play({delay: 0, volume, loop});
+        const adjustedVolume = volume * this.sfxVolume;
+        this.SFX[name].play({delay: 0, volume: adjustedVolume, loop});
     }
 
     stopSound(name) {
@@ -1758,6 +1770,7 @@ export class Arena extends Phaser.Scene
 
         // Clean up any other resources or listeners
         events.removeAllListeners();
+        events.off('settingsChanged', this.onSettingsChanged, this);
     }
 
     // update (time, delta)
