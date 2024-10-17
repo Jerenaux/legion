@@ -60,6 +60,7 @@ import { errorToast, silentErrorToast } from '../components/utils';
 
 
 const LOCAL_ANIMATION_SCALE = 3;
+const DEPTH_OFFSET = 0.01;
 
 export class Arena extends Phaser.Scene
 {
@@ -856,7 +857,7 @@ export class Arena extends Phaser.Scene
             switch (terrain) {
                 case Terrain.FIRE:
                     const sprite = this.add.sprite(pixelX, pixelY, '')
-                        .setDepth(3 + y/10).setScale(2).setAlpha(0.9);
+                        .setDepth(this.yToZ(y)).setScale(2).setAlpha(0.9);
                     this.addFlames();
                     sprite.on('destroy', () => {
                         this.removeFlames();
@@ -931,9 +932,13 @@ export class Arena extends Phaser.Scene
         const {x: pixelX, y: pixelY} = this.gridToPixelCoords(gridX, gridY);
         this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
             .setVisible(true)
-            .setDepth(3.5 + gridY/10)
+            .setDepth(this.yToZ(gridY) + DEPTH_OFFSET)
             .setScale(0.5)
             .play('impact');
+    }
+
+    yToZ(y) {
+        return Number((3.5 + y/10).toFixed(2));
     }
 
     processLocalAnimation({x, y, id, isKill}) {
@@ -951,10 +956,11 @@ export class Arena extends Phaser.Scene
         const scale = spell.scale > 1 ? spell.scale : LOCAL_ANIMATION_SCALE;
         this.localAnimationSprite.setPosition(pixelX, pixelY)
             .setVisible(true)
-            .setDepth(3.5 + y/10)
+            .setDepth(this.yToZ(y) + DEPTH_OFFSET)
             .setScale(scale)
             .play(spell.vfx);
         this.playSound(spell.sfx);
+        console.log(`[Arena:processLocalAnimation] Depth: ${this.localAnimationSprite.depth}: ${this.yToZ(y)} + ${DEPTH_OFFSET}`);
 
         if (spell.shake) {
             const duration = isKill ? 2000 : 250;

@@ -409,7 +409,8 @@ export class Player extends Phaser.GameObjects.Container {
     updatePos(x, y) {
         this.gridX = x;
         this.gridY = y;
-        this.setDepth(3 + this.gridY/10);
+        this.setDepth(this.arena.yToZ(y));
+        console.log(`[Player:updatePos] Depth: ${this.depth}`);
     }
 
     onPointerOver() {
