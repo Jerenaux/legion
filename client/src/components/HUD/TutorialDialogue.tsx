@@ -6,6 +6,7 @@ interface TutorialDialogueProps {
   isVisible: boolean;
   avatarSrc?: string;
   speakerName?: string;
+  onNext?: () => void;
 }
 
 interface TutorialDialogueState {
@@ -74,7 +75,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   }
 
   render() {
-    const { isVisible, avatarSrc = 'avatars/default.png', speakerName = 'Taskmaster' } = this.props;
+    const { isVisible, avatarSrc = 'avatars/default.png', speakerName = 'Taskmaster', onNext } = this.props;
     const { displayedMessage, isAvatarLoaded } = this.state;
 
     if (!isVisible) {
@@ -93,6 +94,9 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
           <div className="tutorial-dialogue-speaker">{speakerName}</div>
           <p>{displayedMessage}</p>
         </div>
+        <button className="tutorial-dialogue-next" onClick={onNext} aria-label="Next">
+          <div className="tutorial-dialogue-next-arrow"></div>
+        </button>
       </div>
     );
   }

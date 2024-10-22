@@ -38,6 +38,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding-right: 30px;
 }
 
 .tutorial-dialogue-speaker {
@@ -81,4 +82,37 @@
   100% {
     box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
   }
+}
+
+.tutorial-dialogue-next {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: transparent;
+  color: #4a90e2;
+  border: none;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  padding: 0;
+}
+
+.tutorial-dialogue-next:hover {
+  color: #357abd;
+}
+
+.tutorial-dialogue-next:focus {
+  outline: none;
+}
+
+.tutorial-dialogue-next-arrow {
+  width: 0;
+  height: 0;
+  border-left: 8px solid currentColor;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
 }

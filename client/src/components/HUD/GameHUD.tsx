@@ -206,6 +206,11 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     });
   }
 
+  handleNextTutorial = () => {
+    // This method will be implemented later to handle moving to the next tutorial message
+    console.log('Next tutorial message');
+  }
+
   render() {
     const { playerVisible, player, team1, team2, isSpectator, mode, gameInitialized } = this.state; 
     const members = team1?.members[0].isPlayer ? team1?.members : team2?.members; 
@@ -246,6 +251,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           isVisible={this.state.isTutorialVisible}
           avatarSrc={this.state.tutorialAvatarSrc}
           speakerName="Taskmaster"
+          onNext={this.handleNextTutorial}
         />
       </div>
     );
