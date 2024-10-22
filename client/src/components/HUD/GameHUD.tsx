@@ -143,6 +143,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       this.setState({ pendingItem: false });
       this.handleCursorChange('normalCursor')
     });
+
+    // Ensure the tutorial is shown initially
+    this.showTutorial(this.state.tutorialMessage);
   }
 
   componentWillUnmount() {

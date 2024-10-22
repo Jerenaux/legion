@@ -7,10 +7,16 @@
   color: white;
   padding: 15px;
   border-radius: 5px;
-  max-width: 80%;
+  width: 400px;
   z-index: 1000;
   display: flex;
   align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.tutorial-dialogue.visible {
+  opacity: 1;
 }
 
 .tutorial-dialogue-avatar {
@@ -18,26 +24,17 @@
   height: 50px;
   border-radius: 25px;
   margin-right: 15px;
+  flex-shrink: 0;
 }
 
 .tutorial-dialogue-content {
   flex: 1;
+  overflow: hidden;
 }
 
 .tutorial-dialogue p {
   margin: 0;
   font-size: 16px;
-  position: relative;
-}
-
-.tutorial-dialogue p::after {
-  content: '|';
-  position: absolute;
-  right: -10px;
-  animation: blink 0.7s infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
+  white-space: nowrap;
+  overflow: hidden;
 }
