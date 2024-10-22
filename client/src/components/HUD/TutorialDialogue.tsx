@@ -5,6 +5,7 @@ interface TutorialDialogueProps {
   message: string;
   isVisible: boolean;
   avatarSrc?: string;
+  speakerName?: string;
 }
 
 interface TutorialDialogueState {
@@ -73,7 +74,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   }
 
   render() {
-    const { isVisible, avatarSrc = 'avatars/default.png' } = this.props;
+    const { isVisible, avatarSrc = 'avatars/default.png', speakerName = 'Taskmaster' } = this.props;
     const { displayedMessage, isAvatarLoaded } = this.state;
 
     if (!isVisible) {
@@ -89,6 +90,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
           onLoad={this.handleAvatarLoad}
         />
         <div className="tutorial-dialogue-content">
+          <div className="tutorial-dialogue-speaker">{speakerName}</div>
           <p>{displayedMessage}</p>
         </div>
       </div>

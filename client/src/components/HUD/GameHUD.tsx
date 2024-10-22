@@ -245,6 +245,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           message={this.state.tutorialMessage}
           isVisible={this.state.isTutorialVisible}
           avatarSrc={this.state.tutorialAvatarSrc}
+          speakerName="Taskmaster"
         />
       </div>
     );
