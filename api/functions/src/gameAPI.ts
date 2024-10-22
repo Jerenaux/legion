@@ -12,10 +12,10 @@ export const createGame = onRequest({ secrets: ["API_KEY"] }, (request, response
 
   corsMiddleware(request, response, async () => {
     try {
-      // if (!checkAPIKey(request)) {
-      //   response.status(401).send('Unauthorized');
-      //   return;
-      // }
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
       const gameId = request.body.gameId;
       const players = request.body.players;
       const mode = request.body.mode;

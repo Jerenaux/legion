@@ -243,7 +243,7 @@ async function createGame(
         const gameId = uuidv4();
         await apiFetch(
             'createGame',
-            '', // TODO: add API key
+            '',
             {
                 method: 'POST',
                 body: {
@@ -253,6 +253,9 @@ async function createGame(
                     mode,
                     league,
                     stake,
+                },
+                headers: {
+                    'x-api-key': process.env.API_KEY,
                 }
             }
         );
@@ -305,13 +308,16 @@ async function savePlayerGold(player: Player) {
     try {
         await apiFetch(
             'saveGoldReward',
-            '', // TODO: Add API key or player identification
+            '',
             {
                 method: 'POST',
                 body: {
                     uid: player.socket.uid, 
                     gold: player.gold,
                 },
+                headers: {
+                    'x-api-key': process.env.API_KEY,
+                }
             }
         );
         console.log(`Saved ${player.gold} gold for player ${player.socket.id}`);
@@ -325,7 +331,7 @@ async function logQueuingActivity(playerId: string, actionType: string, details:
     try {
         await apiFetch(
             'logQueuingActivity',
-            '', // TODO: Add API key or player identification
+            '',
             {
                 method: 'POST',
                 body: {
@@ -333,6 +339,9 @@ async function logQueuingActivity(playerId: string, actionType: string, details:
                     actionType,
                     details,
                 },
+                headers: {
+                    'x-api-key': process.env.API_KEY,
+                }
             }
         );
     } catch (error) {

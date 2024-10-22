@@ -303,12 +303,16 @@ export const queuingData = onRequest((request, response) => {
   });
 });
 
-export const saveGoldReward = onRequest((request, response) => {
+export const saveGoldReward = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
   logger.info("Saving gold reward");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
       const uid = request.body.uid;
       const gold = request.body.gold;
 

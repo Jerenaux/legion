@@ -1,6 +1,6 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
 
 interface RetentionData {
     returningPlayers: number;
@@ -82,7 +82,11 @@ export async function logGameAction(gameId: string, playerId: string, actionType
     });
 }
 
-export const logQueuingActivity = onRequest(async (request, response) => {
+export const logQueuingActivity = onRequest({ secrets: ["API_KEY"] }, async (request, response) => {
+    if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+    }
     const { playerId, actionType, details } = request.body;
     await logPlayerAction(playerId, actionType, details);
     response.send({status: 0});
