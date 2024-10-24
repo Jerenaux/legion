@@ -10,7 +10,6 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, PlayMode } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
-// import { Tutorial } from './tutorial';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE } from '@legion/shared/config';
 
 import killzoneImage from '@assets/killzone.png';
@@ -57,8 +56,7 @@ import speechTail from '@assets/speech_tail.png';
 import groundTilesImage from '@assets/tiles2.png';
 import groundTilesAtlas from '@assets/tiles2.json';
 import { errorToast, silentErrorToast } from '../components/utils';
-
-
+import { Tutorial } from './Tutorial';
 const LOCAL_ANIMATION_SCALE = 3;
 const DEPTH_OFFSET = 0.01;
 
@@ -1440,6 +1438,11 @@ export class Arena extends Phaser.Scene
 
         this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
+        if (this.gameSettings.tutorial) {
+            this.tutorial = new Tutorial(this, this.gamehud);
+            this.tutorial.start();
+        }
+
         if (isReconnect) {
             this.setGameInitialized();
         } else {
@@ -1448,11 +1451,11 @@ export class Arena extends Phaser.Scene
             setTimeout(() => {
                 if (!this.gameSettings.tutorial) this.displayGEN(GEN.COMBAT_BEGINS);
                 this.setGameInitialized();
-            }, delay);
 
-            if (this.gameSettings.tutorial) {
-                // setTimeout(() => events.emit('tutorialStarted'), delay + 3000);
-            }
+                if (this.gameSettings.tutorial) {
+                    this.tutorial.start();
+                }
+            }, delay);
         }
 
         // Events from the HUD

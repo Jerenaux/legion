@@ -92,9 +92,9 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
           <div className="tutorial-dialogue-speaker">{speakerName}</div>
           <p>{displayedMessage}</p>
         </div>
-        <button className="tutorial-dialogue-next" onClick={onNext} aria-label="Next">
+        {/* <button className="tutorial-dialogue-next" onClick={onNext} aria-label="Next">
           <div className="tutorial-dialogue-next-arrow"></div>
-        </button>
+        </button> */}
       </div>
     );
   }

@@ -11,7 +11,7 @@ import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { showGuideToast } from '../utils';
 import { guide } from '../tips';
-import { firebaseAuth } from '../../services/firebaseService'; 
+import { firebaseAuth } from '../../services/firebaseService';
 import TutorialDialogue from './TutorialDialogue';
 
 interface GameHUDProps {
@@ -89,7 +89,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   componentDidMount() {
     const user = firebaseAuth.currentUser;
-      
+
     this.resetState();
 
     // if (user) {
@@ -102,7 +102,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     //   })
     //   .catch(error => console.error(`Fetching tip error: ${error}`));
     // }
-    
+
     events.on('showPlayerBox', this.showPlayerBox);
     events.on('hidePlayerBox', this.hidePlayerBox);
     events.on('updateOverview', this.updateOverview);
@@ -121,12 +121,12 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       if (this.state.pendingSpell || this.state.pendingItem) return;
       this.handleCursorChange('normalCursor')
     });
-    
+
     events.on('pendingSpell', () => {
       this.setState({ pendingSpell: true, pendingItem: false });
       this.handleCursorChange('spellCursor')
     });
-    
+
     events.on('pendingItem', () => {
       this.setState({ pendingSpell: false, pendingItem: true });
       this.handleCursorChange('itemCursor')
@@ -142,8 +142,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       this.handleCursorChange('normalCursor')
     });
 
-    // Ensure the tutorial is shown initially
-    this.showTutorial(this.state.tutorialMessage);
   }
 
   componentWillUnmount() {
@@ -160,16 +158,16 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   updateOverview = (team1: TeamOverview, team2: TeamOverview, general: any, initialized: boolean) => {
     this.setState({ team1, team2 });
-    this.setState({ 
+    this.setState({
       isSpectator: general.isSpectator,
-      mode : general.mode,
+      mode: general.mode,
       gameInitialized: initialized
     })
   }
 
   endGame = (data: OutcomeData) => {
-    const {isWinner, xp, gold, grade, chests, characters, key} = data;
-    this.setState({ 
+    const { isWinner, xp, gold, grade, chests, characters, key } = data;
+    this.setState({
       gameOver: true,
       isWinner,
       grade: grade,
@@ -188,9 +186,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   closeGame = () => {
     events.emit('exitGame');
     route('/play');
-}
+  }
 
-  showTutorial = (message: string) => {
+  showTutorialMessage = (message: string) => {
     this.setState({
       tutorialMessage: message,
       isTutorialVisible: true,
@@ -209,12 +207,12 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   render() {
-    const { playerVisible, player, team1, team2, isSpectator, mode, gameInitialized } = this.state; 
-    const members = team1?.members[0].isPlayer ? team1?.members : team2?.members; 
-    const score = team1?.members[0].isPlayer? team1?.score : team2?.score; 
+    const { playerVisible, player, team1, team2, isSpectator, mode, gameInitialized } = this.state;
+    const members = team1?.members[0].isPlayer ? team1?.members : team2?.members;
+    const score = team1?.members[0].isPlayer ? team1?.score : team2?.score;
 
     if (!gameInitialized) {
-      return null; 
+      return null;
     }
 
     const isTutorialMode = mode === PlayMode.TUTORIAL;
@@ -230,33 +228,33 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
             {playerVisible && player ? <PlayerTab player={player} eventEmitter={events} /> : null}
           </>
         )}
-        <SpectatorFooter 
+        <SpectatorFooter
           isTutorial={isTutorialMode}
-          score={score} 
-          mode={mode} 
+          score={score}
+          mode={mode}
           closeGame={this.closeGame}
         />
-        {this.state.gameOver && !isTutorialMode && <Endgame 
-          members={members} 
+        {this.state.gameOver && !isTutorialMode && <Endgame
+          members={members}
           grade={this.state.grade}
           chests={this.state.chests}
-          isWinner={this.state.isWinner} 
-          xpReward={this.state.xpReward} 
-          goldReward={this.state.goldReward} 
+          isWinner={this.state.isWinner}
+          xpReward={this.state.xpReward}
+          goldReward={this.state.goldReward}
           characters={this.state.characters}
           chestKey={ChestColor.SILVER}
           mode={mode}
           closeGame={this.closeGame}
           eventEmitter={events}
         />}
-        {/* {isTutorialMode && (
+        {this.state.isTutorialVisible && (
           <TutorialDialogue
             message={this.state.tutorialMessage}
             isVisible={this.state.isTutorialVisible}
             speakerName="Taskmaster"
             onNext={this.handleNextTutorial}
           />
-        )} */}
+        )}
       </div>
     );
   }
