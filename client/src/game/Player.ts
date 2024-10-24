@@ -145,6 +145,7 @@ export class Player extends Phaser.GameObjects.Container {
         // Add the container to the scene
         scene.add.existing(this);
         this.updatePos(gridX, gridY);
+        this.y -= 1000;
 
         this.playAnim('idle');
         this.sprite.setInteractive(new Phaser.Geom.Rectangle(35, 40, 70, 100), Phaser.Geom.Rectangle.Contains);
@@ -255,6 +256,52 @@ export class Player extends Phaser.GameObjects.Container {
         }
         this.setBaseSquareColor(this.normalColor);
         this.baseSquare.setAlpha(1);
+    }
+
+    makeAirEntrance(isTutorial = false) {
+        // Ensure the player is visible
+        const {x: targetX, y: targetY} = this.arena.gridToPixelCoords(this.gridX, this.gridY);
+
+        console.log(`targetY: ${targetY}, ${this.gridY}`);
+
+        // Create a dust cloud effect
+        const emitter = this.scene.add.particles(this.x, targetY + 50, 'dust', {
+            speed: { min: 20, max: 100 },
+            angle: { min: 0, max: 360 },
+            scale: { start: 0.5, end: 0 },
+            alpha: { start: 1, end: 0 },
+            lifespan: 1000,
+            gravityY: 300,
+            quantity: 0
+        });
+
+        // Tween for the dramatic landing
+        this.scene.tweens.add({
+            targets: this,
+            y: targetY,
+            duration: 500,
+            // ease: 'Bounce.easeOut',
+            onStart: () => {
+                this.playAnim('hurt');
+            },
+            onComplete: () => {
+                // Burst of particles on landing
+                emitter.explode(30);
+
+                // Camera shake effect
+                this.scene.cameras.main.shake(200, 0.005);
+
+                // Revert to idle animation after a short delay
+                this.scene.time.delayedCall(300, () => {
+                    this.playAnim('boast', true);
+                });
+
+                // Clean up the particle emitter after landing
+                this.scene.time.delayedCall(1000, () => {
+                    emitter.destroy();
+                });
+            }
+        });
     }
 
     makeEntrance(isTutorial = false) {
@@ -956,4 +1003,7 @@ export class Player extends Phaser.GameObjects.Container {
         // Call the parent class's destroy method
         super.destroy();
       }
+
+    
 }
+

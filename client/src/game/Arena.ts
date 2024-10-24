@@ -1266,13 +1266,7 @@ export class Arena extends Phaser.Scene
 
     placeCharacters(data: PlayerNetworkData[], isPlayer: boolean, team: Team, isReconnect = false) {
         data.forEach((character: PlayerNetworkData, i) => {
-
-            let offset = 0;
-            if (!isReconnect) {
-                if (character.x < this.gridWidth/2) offset = -Math.floor(this.gridWidth/2);
-                if (character.x > this.gridWidth/2) offset = Math.floor(this.gridWidth/2);
-            }
-            const {x, y} = this.gridToPixelCoords(character.x + offset, character.y);
+            const {x, y} = this.gridToPixelCoords(character.x, character.y);
 
             const player = new Player(
                 this, this, team, character.name, character.x, character.y, x, y,
@@ -1289,9 +1283,10 @@ export class Arena extends Phaser.Scene
             }
             player.setStatuses(character.statuses);
 
-            if (!isReconnect) {
-                this.time.delayedCall(750, player.makeEntrance, [this.gameSettings.tutorial], player);
-            }
+            // Stagger the entrance of each player with a random offset between -200 and +200 ms
+            const randomOffset = Math.floor(Math.random() * 401) - 200; // Random number between -200 and 200
+            const entranceDelay = 750 + randomOffset;
+            this.time.delayedCall(entranceDelay, player.makeAirEntrance, [this.gameSettings.tutorial], player);
 
             this.gridMap.set(serializeCoords(character.x, character.y), player);
 
