@@ -17,6 +17,7 @@ import iceblockImage from '@assets/iceblock.png';
 
 import potionHealImage from '@assets/vfx/potion_heal.png';
 import explosionsImage from '@assets/vfx/explosions.png';
+import smokeImage from '@assets/vfx/smoke.png';
 import thunderImage from '@assets/vfx/thunder.png';
 import castImage from '@assets/vfx/cast.png';
 import slashImage from '@assets/vfx/slash.png';
@@ -139,6 +140,7 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('potion_heal', potionHealImage, { frameWidth: 48, frameHeight: 64});
         this.load.spritesheet('explosions', explosionsImage, { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('thunder2', thunderImage, { frameWidth: 96, frameHeight: 96});
+        this.load.spritesheet('smoke', smokeImage, { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('cast', castImage, { frameWidth: 48, frameHeight: 64});
         this.load.spritesheet('slash', slashImage, { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('thunder', boltsImage, { frameWidth: 96, frameHeight: 96});
@@ -1226,6 +1228,12 @@ export class Arena extends Phaser.Scene
             frameRate: 15, 
             repeat: -1,
             // yoyo: true,
+        });
+
+        this.anims.create({
+            key: `smoke`, 
+            frames: this.anims.generateFrameNumbers('smoke', { start: 32, end: 42 }), 
+            frameRate: 10,
         });
 
         // Status effects VFX

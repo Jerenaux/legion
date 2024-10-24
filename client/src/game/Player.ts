@@ -261,17 +261,6 @@ export class Player extends Phaser.GameObjects.Container {
     makeAirEntrance(isTutorial = false) {
         const {x: targetX, y: targetY} = this.arena.gridToPixelCoords(this.gridX, this.gridY);
 
-        // Create a dust cloud effect
-        const emitter = this.scene.add.particles(this.x, targetY + 50, 'dust', {
-            speed: { min: 20, max: 100 },
-            angle: { min: 0, max: 360 },
-            scale: { start: 0.5, end: 0 },
-            alpha: { start: 1, end: 0 },
-            lifespan: 1000,
-            gravityY: 300,
-            quantity: 0
-        });
-
         // Create a trail effect
         const trailSprites: Phaser.GameObjects.Sprite[] = [];
         const trailInterval = 50; // Interval between trail sprites in ms
@@ -310,8 +299,18 @@ export class Player extends Phaser.GameObjects.Container {
                 });
             },
             onComplete: () => {
-                // Burst of particles on landing
-                emitter.explode(30);
+                // Create a smoke effect on landing
+                const smokeSprite = this.scene.add.sprite(targetX, targetY + 15, '')
+                    .setDepth(this.sprite.depth + 1)
+                    .setScale(2)
+                    // .setAlpha(0.8);
+
+                smokeSprite.play('smoke');
+
+                // Destroy the smoke sprite after the animation completes
+                smokeSprite.on('animationcomplete', () => {
+                    smokeSprite.destroy();
+                });
 
                 // Camera shake effect
                 this.scene.cameras.main.shake(200, 0.005);
@@ -319,11 +318,6 @@ export class Player extends Phaser.GameObjects.Container {
                 // Revert to idle animation after a short delay
                 this.scene.time.delayedCall(300, () => {
                     this.playAnim('boast', true);
-                });
-
-                // Clean up the particle emitter after landing
-                this.scene.time.delayedCall(1000, () => {
-                    emitter.destroy();
                 });
             }
         });
@@ -1036,4 +1030,5 @@ export class Player extends Phaser.GameObjects.Container {
 
     
 }
+
 
