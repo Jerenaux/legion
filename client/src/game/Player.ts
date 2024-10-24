@@ -262,8 +262,6 @@ export class Player extends Phaser.GameObjects.Container {
         // Ensure the player is visible
         const {x: targetX, y: targetY} = this.arena.gridToPixelCoords(this.gridX, this.gridY);
 
-        console.log(`targetY: ${targetY}, ${this.gridY}`);
-
         // Create a dust cloud effect
         const emitter = this.scene.add.particles(this.x, targetY + 50, 'dust', {
             speed: { min: 20, max: 100 },
@@ -279,7 +277,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.scene.tweens.add({
             targets: this,
             y: targetY,
-            duration: 500,
+            duration: 400,
             // ease: 'Bounce.easeOut',
             onStart: () => {
                 this.playAnim('hurt');
@@ -383,16 +381,21 @@ export class Player extends Phaser.GameObjects.Container {
             return;
         }
 
-         // Check if there is another player on the cell above
-         if (this.arena.hasPlayer(this.gridX, this.gridY - 1)) {
-            if (key == 'idle') key = 'hurt';
-         };
+        // Check if there is another player on the cell above
+        // if (this.arena.hasPlayer(this.gridX, this.gridY - 1)) {
+        //     if (key == 'idle') key = 'hurt';
+        // }
 
-        // console.log(`Playing animation ${key}`);
+        // Retrieve the animation by its key
+        const animation = this.scene.anims.get(`${this.texture}_anim_${key}`);
+        const frameRate = animation ? animation.frameRate : BASE_ANIM_FRAME_RATE;
+
+        // Play the animation with the retrieved frame rate
         this.sprite.play({
             key: `${this.texture}_anim_${key}`,
-            frameRate: this.isHasted() ? BASE_ANIM_FRAME_RATE * 1.5 : BASE_ANIM_FRAME_RATE,
+            frameRate: this.isHasted() ? frameRate * 1.5 : frameRate,
         });
+
         if (revertToIdle) {
             this.sprite.once('animationcomplete', this.handleAnimationComplete, this);
         }
