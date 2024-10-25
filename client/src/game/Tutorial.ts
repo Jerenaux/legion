@@ -12,7 +12,7 @@ export class Tutorial {
 
     start() {
         const messages = [
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            "I'm the Taskmaster of the Arena! My job is to make sure you learn the ropes and know how to order your warriors around!",
             "Second message",
         ];
         console.log(`Emitting tutorial messages: ${messages}`);

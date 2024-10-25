@@ -30,8 +30,8 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
     }
   }
 
-  componentDidUpdate(prevProps: TutorialDialogueProps) {
-    if (this.props.messages !== prevProps.messages) {
+  componentDidUpdate(prevProps: TutorialDialogueProps, prevState: TutorialDialogueState) {
+    if (this.props.messages !== prevProps.messages || this.state.messageIndex !== prevState.messageIndex) {
       this.resetTyping();
     }
   }
@@ -73,14 +73,17 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   }
 
   handleNext = () => {
-    this.setState({ messageIndex: this.state.messageIndex + 1 });
+    this.setState(
+      { messageIndex: this.state.messageIndex + 1 },
+      () => {
+        this.resetTyping();
+      }
+    );
   }
 
   render() {
     const { displayedMessage, isAvatarLoaded, messageIndex } = this.state;
     const { messages } = this.props;
-
-    // console.log(`Messages: ${messages}, messageIndex: ${messageIndex}`);
 
     return (
       <div className={`tutorial-dialogue ${isAvatarLoaded ? 'visible' : ''}`}>
@@ -92,11 +95,14 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
         />
         <div className="tutorial-dialogue-content">
           <div className="tutorial-dialogue-speaker">{DEFAULT_SPEAKER_NAME}</div>
-          <p>{displayedMessage}</p>
+          <p className="tutorial-dialogue-message">{displayedMessage}</p>
         </div>
-        {messageIndex < messages.length - 1 && <button className="tutorial-dialogue-next" onClick={this.handleNext} aria-label="Next">
-          <div className="tutorial-dialogue-next-arrow"></div>
-        </button>}
+        {messageIndex < messages.length - 1 && (
+          <button className="tutorial-dialogue-next" onClick={this.handleNext}>
+            <span className="tutorial-dialogue-next-text">Next</span>
+            <span className="tutorial-dialogue-next-arrow"></span>
+          </button>
+        )}
       </div>
     );
   }
