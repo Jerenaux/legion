@@ -772,6 +772,7 @@ export class Arena extends Phaser.Scene
         this.selectedPlayer = player;
         this.selectedPlayer.select();
         this.emitEvent('selectPlayer', {num: this.selectedPlayer.num})
+        events.emit('selectPlayer', {num: this.selectedPlayer.num}); // TODO: consolidate
     }
 
     deselectPlayer() {
@@ -1456,7 +1457,6 @@ export class Arena extends Phaser.Scene
 
         if (this.gameSettings.tutorial) {
             this.tutorial = new Tutorial(this, this.gamehud);
-            this.showFloatingHand(500, 500, 'down');
         }
 
         if (isReconnect) {
@@ -1808,12 +1808,29 @@ export class Arena extends Phaser.Scene
     // }
 
     showFloatingHand(x: number, y: number, orientation: 'up' | 'down' | 'left' | 'right' = 'up') {
-        if (this.handSprite) {
-            this.handSprite.destroy();
+        const scale = 0.3;
+
+        if (!this.handSprite) {
+            this.handSprite = this.add.sprite(x, y, 'hand').setDepth(1000).setScale(scale);
+            // Add white glow effect
+            this.handSprite.preFX.addGlow(0xffffff, 4, 0, false, 0.1, 16);
+        } else {
+            // Stop existing tweens
+            this.tweens.killTweensOf(this.handSprite);
+            
+            // Move the hand to the new position
+            this.handSprite.setPosition(x, y);
         }
 
-        const scale = 0.3;
-        this.handSprite = this.add.sprite(x, y, 'hand').setDepth(1000).setScale(scale);
+        // Add a floating animation
+        this.tweens.add({
+            targets: this.handSprite,
+            y: y - 10,
+            duration: 300,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
 
         // Set the appropriate angle based on orientation
         switch (orientation) {
@@ -1830,26 +1847,6 @@ export class Arena extends Phaser.Scene
                 this.handSprite.setAngle(0);
         }
 
-        // Add a floating animation
-        this.tweens.add({
-            targets: this.handSprite,
-            y: y - 10,
-            duration: 1000,
-            ease: 'Sine.easeInOut',
-            yoyo: true,
-            repeat: -1
-        });
-
-        // Add a pulsating effect
-        this.tweens.add({
-            targets: this.handSprite,
-            scale: scale * 1.1,
-            duration: 500,
-            ease: 'Sine.easeInOut',
-            yoyo: true,
-            repeat: -1
-        });
-
         return this.handSprite;
     }
 
@@ -1859,5 +1856,15 @@ export class Arena extends Phaser.Scene
             this.handSprite.destroy();
             this.handSprite = null;
         }
+    }
+
+    pointToCharacter(characterIdx: number) {
+        const character = this.teamsMap.get(this.playerTeamId).members[characterIdx];
+        this.showFloatingHand(character.x - 5, character.y - 70, 'down');
+    }
+
+    pointToTile(tileX: number, tileY: number) {
+        const {x, y} = this.gridToPixelCoords(tileX, tileY);
+        this.showFloatingHand(x - 5, y, 'down');
     }
 }

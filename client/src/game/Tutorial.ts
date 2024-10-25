@@ -10,7 +10,11 @@ export class Tutorial {
         this.gameHUD = gameHUD;
 
         events.on('nextTutorialMessage', () => {
-            console.log('nextTutorialMessage');
+            this.game.pointToCharacter(0);
+        });
+
+        events.on('selectPlayer', () => {
+            this.game.pointToTile(6, 4);
         });
     }
 

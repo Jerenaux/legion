@@ -99,11 +99,11 @@ export class Player extends Phaser.GameObjects.Container {
         this.sprite = scene.add.sprite(0, 0, texture);
 
         // Create a Graphics object for the selection oval
-        this.selectionOval = scene.add.graphics();
-        this.selectionOval.lineStyle(4, 0xffd700, 1);
-        this.selectionOval.strokeEllipse(0, 55, 70, this.sprite.height / 4);
-        this.selectionOval.setVisible(false);
-        this.add(this.selectionOval);
+        // this.selectionOval = scene.add.graphics();
+        // this.selectionOval.lineStyle(4, 0xffd700, 1);
+        // this.selectionOval.strokeEllipse(0, 55, 70, this.sprite.height / 4);
+        // this.selectionOval.setVisible(false);
+        // this.add(this.selectionOval);
         this.add(this.sprite); // Add sprite after selection oval for proper depth
 
         this.healthBar = new HealthBar(scene, 0, -50, 0x00ff08);
@@ -442,7 +442,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     select() {
-        this.selectionOval.setVisible(true);
+        this.selectionOval?.setVisible(true);
         this.glowFx.color = GlowColors.Selected;
         this.glowFx.setActive(true);
         this.displayMovementRange();
@@ -452,7 +452,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     deselect() {
-        this.selectionOval.setVisible(false);
+        this.selectionOval?.setVisible(false);
         this.hideMovementRange();
         this.selected = false;
         this.glowFx.setActive(false);
