@@ -1,4 +1,5 @@
 import { h, Component } from 'preact';
+import { events } from './GameHUD';
 import '../../styles/components/TutorialDialogue.css';
 
 const DEFAULT_AVATAR_SRC = 'avatars/default.png';
@@ -73,6 +74,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   }
 
   handleNext = () => {
+    events.emit('nextTutorialMessage');
     this.setState(
       { messageIndex: this.state.messageIndex + 1 },
       () => {

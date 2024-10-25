@@ -27,6 +27,7 @@ import ice2Image from '@assets/vfx/ice2.png';
 import impactImage from '@assets/vfx/sword_impact.png';
 import poisonImage from '@assets/vfx/poison.png';
 import muteImage from '@assets/vfx/mute.png';
+import handImage from '@assets/hand.png';
 
 import statusesImage from '@assets/States.png';
 
@@ -101,6 +102,7 @@ export class Arena extends Phaser.Scene
     tutorial;
     sfxVolume: number;
     inputLocked = false;
+    handSprite: Phaser.GameObjects.Sprite;
 
     constructor() {
         super({ key: 'Arena' });
@@ -133,6 +135,7 @@ export class Arena extends Phaser.Scene
         this.load.image('iceblock',  iceblockImage);
         this.load.image('speech_bubble', speechBubble);
         this.load.image('speech_tail', speechTail);
+        this.load.image('hand', handImage);
         const frameConfig = { frameWidth: 144, frameHeight: 144};
         // Iterate over assetsMap and load spritesheets
         allSprites.forEach((sprite) => {
@@ -1453,6 +1456,7 @@ export class Arena extends Phaser.Scene
 
         if (this.gameSettings.tutorial) {
             this.tutorial = new Tutorial(this, this.gamehud);
+            this.showFloatingHand(500, 500, 'down');
         }
 
         if (isReconnect) {
@@ -1802,4 +1806,58 @@ export class Arena extends Phaser.Scene
     // update (time, delta)
     // {
     // }
+
+    showFloatingHand(x: number, y: number, orientation: 'up' | 'down' | 'left' | 'right' = 'up') {
+        if (this.handSprite) {
+            this.handSprite.destroy();
+        }
+
+        const scale = 0.3;
+        this.handSprite = this.add.sprite(x, y, 'hand').setDepth(1000).setScale(scale);
+
+        // Set the appropriate angle based on orientation
+        switch (orientation) {
+            case 'down':
+                this.handSprite.setAngle(180);
+                break;
+            case 'left':
+                this.handSprite.setAngle(-90);
+                break;
+            case 'right':
+                this.handSprite.setAngle(90);
+                break;
+            default: // 'up'
+                this.handSprite.setAngle(0);
+        }
+
+        // Add a floating animation
+        this.tweens.add({
+            targets: this.handSprite,
+            y: y - 10,
+            duration: 1000,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+
+        // Add a pulsating effect
+        this.tweens.add({
+            targets: this.handSprite,
+            scale: scale * 1.1,
+            duration: 500,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+
+        return this.handSprite;
+    }
+
+    hideFloatingHand() {
+        if (this.handSprite) {
+            this.tweens.killTweensOf(this.handSprite);
+            this.handSprite.destroy();
+            this.handSprite = null;
+        }
+    }
 }
