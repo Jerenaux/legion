@@ -161,6 +161,13 @@ io.on('connection', async (socket: any) => {
         game?.abandonGame(socket);
       });
 
+      socket.on('tutorialEvent', (data: any) => {
+        const game = socketMap.get(socket);
+        if(game instanceof AIGame) {
+          game?.processTutorialEvent(data);
+        }
+      });
+
       socket.on('endTutorial', () => {
         console.log(`[server:endTutorial] User ${shortToken(socket.uid)} ending tutorial`);
         const game = socketMap.get(socket);

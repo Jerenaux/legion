@@ -69,6 +69,7 @@ export class Team {
     }
 
     isDefeated() {
+        if (this.members.length === 0) return false; // In the case of the tutorial
         for (let i = 0; i < this.members.length; i++) {
             if (this.members[i].isAlive()) return false;
         }

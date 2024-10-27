@@ -7,7 +7,7 @@ import {apiFetch} from './API';
 import { Class, PlayMode, League } from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
-import { PlayerContextData } from '@legion/shared/interfaces';
+import { DBCharacterData, PlayerContextData } from '@legion/shared/interfaces';
 import {FREEZE_AI} from "@legion/shared/config";
 
 
@@ -25,6 +25,28 @@ export class AIGame extends Game {
         if (mode === PlayMode.TUTORIAL) this.temporaryFrozen = true;
     }
 
+    summonEnemy() {
+        console.log('[AIGame:summonEnemy] Summoning enemy...');
+        const aiTeam = this.teams.get(2);
+        const character = new NewCharacter(Class.WARRIOR, 1, false, true).getCharacterData();
+        character.portrait = 'mil1_3';
+        const newCharacter = this.addAICharacter(aiTeam!, character);
+        // Emit to human client
+        this.broadcast('addCharacter', {
+            team: aiTeam!.id,
+            character: newCharacter.getPlacementData(false),
+        });
+    }
+
+    addAICharacter(team: Team, character: DBCharacterData) {
+        const position = this.getPosition(team.getMembers().length, true);
+        const newCharacter = new AIServerPlayer(team.getMembers().length + 1, character.name, character.portrait, position.x, position.y);
+        newCharacter.setTeam(team);
+        newCharacter.setUpCharacter(character);
+        team.addMember(newCharacter);
+        return newCharacter;
+    }
+
     createAITeam(team: Team, nb: number, levels?: number[]) {
         console.log(`[AIGame:createAITeam] Creating AI team with ${nb} members...`);
         const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
@@ -38,11 +60,7 @@ export class AIGame extends Game {
 
         for (let i = 0; i < nb; i++) {
             const character = new NewCharacter(classes[i], levels[i], false, true).getCharacterData();
-            const position = this.getPosition(i, true);
-            const newCharacter = new AIServerPlayer(i + 1, character.name, character.portrait, position.x, position.y)
-            newCharacter.setTeam(team!);
-            newCharacter.setUpCharacter(character, true);
-            team?.addMember(newCharacter);
+            this.addAICharacter(team, character);
         }
 
         return levels;
@@ -59,12 +77,8 @@ export class AIGame extends Game {
             this.createAITeam(team, nb, levels);
         } else {
             team.setPlayerData(data.playerData);
-            data.rosterData.characters.forEach((character: any, index) => {
-                const position = this.getPosition(index, true);
-                const newCharacter = new AIServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
-                newCharacter.setTeam(team);
-                newCharacter.setUpCharacter(character);
-                team.addMember(newCharacter);
+            data.rosterData.characters.forEach((character: DBCharacterData, index: number) => {
+                this.addAICharacter(team, character);
             });
         }
     }
@@ -138,6 +152,14 @@ export class AIGame extends Game {
     endTutorial() {
         console.log('[AIGame:endTutorial] Ending tutorial...');
         this.temporaryFrozen = false;
+    }
+
+    processTutorialEvent(data: any) {
+        switch (data.action) {
+            case 'summonEnemy':
+                this.summonEnemy();
+                break;
+        }
     }
 
     AItick() {

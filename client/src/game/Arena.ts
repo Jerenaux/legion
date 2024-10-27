@@ -327,6 +327,10 @@ export class Arena extends Phaser.Scene
         this.socket.on('score', (data) => {
             this.processScoreUpdate(data);
         });
+
+        this.socket.on('addCharacter', (data) => {
+            this.processAddCharacter(data);
+        });
     }
 
     sendMove(x, y) {
@@ -655,7 +659,7 @@ export class Arena extends Phaser.Scene
             // console.log(`Clicked on obstacle at (${gridX}, ${gridY})`);
             this.sendObstacleAttack(gridX, gridY);
         } else if (this.selectedPlayer && !player) {
-            // console.log(`Moving to (${gridX}, ${gridY})`);
+            console.log(`Moving to (${gridX}, ${gridY})`);
             this.handleMove(gridX, gridY);
         } else if (player){ 
             // console.log(`Clicked on player ${player.num}`);
@@ -672,8 +676,14 @@ export class Arena extends Phaser.Scene
     }
 
     handleMove(gridX, gridY) {
-        if (!this.selectedPlayer.canMoveTo(gridX, gridY)) return;
-        if (!this.isFree(gridX, gridY)) return;
+        if (!this.selectedPlayer.canMoveTo(gridX, gridY)) {
+            console.log(`Cannot move to (${gridX}, ${gridY})`);
+            return;
+        }
+        if (!this.isFree(gridX, gridY)) {
+            console.log(`Tile at (${gridX}, ${gridY}) is not free`);
+            return
+        };
         this.playSound('click');
         this.sendMove(gridX, gridY);
         this.clearHighlight();
@@ -1020,6 +1030,12 @@ export class Arena extends Phaser.Scene
         if (score - _score > 50) this.playSound('cheer', 2);
     }
 
+    processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
+        console.log(`[Arena:processAddCharacter] ${JSON.stringify(data)}`);
+        const team = this.teamsMap.get(data.team);
+        this.placeCharacter(data.character, false, team, false);
+    }
+
     updateMusicIntensity(ratio){
         this.musicManager.updateMusicIntensity(ratio);
     }
@@ -1280,41 +1296,43 @@ export class Arena extends Phaser.Scene
         };
     }
 
+    placeCharacter(character: PlayerNetworkData, isPlayer: boolean, team: Team, isReconnect = false) {
+        const {x, y} = this.gridToPixelCoords(character.x, character.y);
+
+        const player = new Player(
+            this, this, team, character.name, character.x, character.y, x, y,
+            team.getMembers().length + 1, character.frame, isPlayer, character.class,
+            character.hp, character.maxHP, character.mp, character.maxMP,
+            character.level, character.xp,
+            );
+
+        if (this.gameSettings.tutorial) {
+            player.stripForTutorial();
+        }
+        
+        if (isPlayer) {
+            player.setDistance(character.distance);
+            player.setCooldown(1); // hack
+            player.setInventory(character.inventory);
+            player.setSpells(character.spells);
+        }
+        player.setStatuses(character.statuses);
+
+        if (!isReconnect) {
+            player.y -= 1000;
+            // Stagger the entrance of each player with a random offset between -200 and +200 ms
+            const randomOffset = Math.floor(Math.random() * 401) - 200; // Random number between -200 and 200
+            const entranceDelay = 750 + randomOffset;
+            this.time.delayedCall(entranceDelay, player.makeAirEntrance, [this.gameSettings.tutorial], player);
+        }
+
+        this.gridMap.set(serializeCoords(character.x, character.y), player);
+
+        team.addMember(player);
+    }
+
     placeCharacters(data: PlayerNetworkData[], isPlayer: boolean, team: Team, isReconnect = false) {
-        data.forEach((character: PlayerNetworkData, i) => {
-            const {x, y} = this.gridToPixelCoords(character.x, character.y);
-
-            const player = new Player(
-                this, this, team, character.name, character.x, character.y, x, y,
-                i + 1, character.frame, isPlayer, character.class,
-                character.hp, character.maxHP, character.mp, character.maxMP,
-                character.level, character.xp,
-                );
-
-            if (this.gameSettings.tutorial) {
-                player.stripForTutorial();
-            }
-            
-            if (isPlayer) {
-                player.setDistance(character.distance);
-                player.setCooldown(1); // hack
-                player.setInventory(character.inventory);
-                player.setSpells(character.spells);
-            }
-            player.setStatuses(character.statuses);
-
-            if (!isReconnect) {
-                player.y -= 1000;
-                // Stagger the entrance of each player with a random offset between -200 and +200 ms
-                const randomOffset = Math.floor(Math.random() * 401) - 200; // Random number between -200 and 200
-                const entranceDelay = 750 + randomOffset;
-                this.time.delayedCall(entranceDelay, player.makeAirEntrance, [this.gameSettings.tutorial], player);
-            }
-
-            this.gridMap.set(serializeCoords(character.x, character.y), player);
-
-            team.addMember(player);
-        }, this);
+        data.forEach(player => this.placeCharacter(player, isPlayer, team, isReconnect));
     }
   
     isValidCell(fromX, fromY, toX, toY) {
@@ -1866,5 +1884,9 @@ export class Arena extends Phaser.Scene
     pointToTile(tileX: number, tileY: number) {
         const {x, y} = this.gridToPixelCoords(tileX, tileY);
         this.showFloatingHand(x - 5, y, 'down');
+    }
+
+    summonEnemy() {
+        this.send('tutorialEvent', {action: 'summonEnemy'});
     }
 }

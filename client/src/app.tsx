@@ -13,15 +13,17 @@ import withNoAuth from './components/withNoAuth';
 
 import * as Sentry from "@sentry/react";
 
-Sentry.init({
+// Only initialize Sentry if not in development mode
+if (process.env.NODE_ENV !== 'development') {
+  Sentry.init({
     environment: process.env.NODE_ENV,
     dsn: "https://c3c72f4dedb26b85b58c0eb82feea9c1@o4508024644567040.ingest.de.sentry.io/4508024650268752",
     integrations: [
-        Sentry.browserTracingIntegration(),
-        Sentry.replayIntegration(),
-        Sentry.captureConsoleIntegration({
-            levels: ['error']
-        })
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration(),
+      Sentry.captureConsoleIntegration({
+        levels: ['error']
+      })
     ],
     // Tracing
     tracesSampleRate: 1.0, //  Capture 100% of the transactions
@@ -30,7 +32,8 @@ Sentry.init({
     // Session Replay
     replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
     replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
-});
+  });
+}
 
 const AuthenticatedHomePage = withAuth(HomePage);
 const AuthenticatedGamePage = withAuth(GamePage);

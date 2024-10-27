@@ -17,9 +17,12 @@ export const femaleSprites = ['1_2', '1_4', '1_5','1_6','1_7','1_8','2_8','3_1',
     '3_2','3_3','3_6','4_3','4_6','5_3','5_5','6_4','6_5', '7_6'
 ];
 
+export const aiSprites = ['mil1_3'];
+
 export const allSprites = [
     ...warriorSprites,
     ...whiteMageSprites,
     ...blackMageSprites,
     ...thiefSprites,
+    ...aiSprites,
 ];

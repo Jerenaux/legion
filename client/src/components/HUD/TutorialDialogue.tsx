@@ -32,6 +32,9 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   }
 
   componentDidUpdate(prevProps: TutorialDialogueProps, prevState: TutorialDialogueState) {
+    if (this.props.messages !== prevProps.messages) {
+      this.setState({ messageIndex: 0 });
+    }
     if (this.props.messages !== prevProps.messages || this.state.messageIndex !== prevState.messageIndex) {
       this.resetTyping();
     }
