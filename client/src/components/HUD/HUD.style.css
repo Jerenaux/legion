@@ -48,12 +48,21 @@
 .hud-container {
   display: flex;
   justify-content: space-between;
-  border: 2px solid red;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 2;
+  padding: 10px;
+  pointer-events: none; /* Allow clicking through the container */
 }
 
 .overview {
-  position: relative;
-  margin: 10px;
+  position: fixed; /* Change from relative to fixed */
+  top: 10px;
+  pointer-events: auto; /* Re-enable pointer events for the overview components */
+  margin: 0; /* Remove margin since we're using fixed positioning */
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -62,6 +71,58 @@
   gap: 6px;
 }
 
+/* Position the left overview */
+.overview:not(.overview_right) {
+  left: 10px;
+}
+
+/* Position the right overview */
+.overview.overview_right {
+  right: 10px;
+}
+
+/* Update the media queries for scaling */
+@media screen and (max-width: 1500px) and (orientation: landscape) {
+  .overview:not(.overview_right) {
+    transform: scale(0.9);
+    transform-origin: top left;
+  }
+  
+  .overview.overview_right {
+    transform: scale(0.9);
+    transform-origin: top right;
+  }
+}
+
+@media screen and (max-width: 1400px) and (orientation: landscape) {
+  .overview:not(.overview_right) {
+    transform: scale(0.75);
+  }
+  
+  .overview.overview_right {
+    transform: scale(0.75);
+  }
+}
+
+@media screen and (max-width: 1100px) and (orientation: landscape) {
+  .overview:not(.overview_right) {
+    transform: scale(0.65);
+  }
+  
+  .overview.overview_right {
+    transform: scale(0.65);
+  }
+}
+
+@media screen and (max-width: 980px) and (orientation: landscape) {
+  .overview:not(.overview_right) {
+    transform: scale(0.55);
+  }
+  
+  .overview.overview_right {
+    transform: scale(0.55);
+  }
+}
 
 .member {
   position: relative;
@@ -1646,3 +1707,4 @@
 .padding_bottom_16 {
   padding-bottom: 16px;
 }
+
