@@ -260,6 +260,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     makeAirEntrance() {
+        this.baseSquare.setVisible(false);
         const {x: targetX, y: targetY} = this.arena.gridToPixelCoords(this.gridX, this.gridY);
 
         // Create a trail effect
@@ -318,6 +319,7 @@ export class Player extends Phaser.GameObjects.Container {
 
                 // Camera shake effect
                 this.scene.cameras.main.shake(200, 0.005);
+                this.baseSquare.setVisible(true);
 
                 // Revert to idle animation after a short delay
                 this.scene.time.delayedCall(300, () => {
@@ -666,6 +668,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.pendingSpell = index;
         this.arena.toggleTargetMode(true, spell.size);
         this.arena.emitEvent('pendingSpellChange');
+        this.arena.relayEvent(`selectedSpell_${spell.id}`);
     }
 
     isTarget() {

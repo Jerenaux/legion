@@ -277,7 +277,7 @@ export class NewCharacter {
 
   setUpInventory() {
     const consumables = getStarterConsumables(this.level / 2);
-    console.log(`[NewCharacter:setUpInventory] Consumables for AI ${this.name}: ${consumables}`);
+    // console.log(`[NewCharacter:setUpInventory] Consumables for AI ${this.name}: ${consumables}`);
     if (consumables.length === 0) return;
     // For each available slot, add a random consumable or possibly nothing
     for (let i = 0; i < this.carrying_capacity; i++) {
@@ -286,7 +286,7 @@ export class NewCharacter {
         this.inventory.push(consumables[Math.floor(Math.random() * consumables.length)]);
       }
     }
-    console.log(`[NewCharacter:setUpInventory] Inventory for AI ${this.name}: ${this.inventory} (length: ${this.inventory.length})`);
+    // console.log(`[NewCharacter:setUpInventory] Inventory for AI ${this.name}: ${this.inventory} (length: ${this.inventory.length})`);
   }
 
   getPrice(): number {

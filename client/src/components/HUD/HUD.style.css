@@ -787,9 +787,10 @@
 }
 
 .player_hud_action_container {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 48px);
+  grid-template-rows: repeat(2, 48px);
   cursor: var(--game-pointer);
+  width: fit-content; /* This ensures the grid takes only the space it needs */
 }
 
 .spectator_container {

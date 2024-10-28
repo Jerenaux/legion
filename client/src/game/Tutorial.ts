@@ -206,12 +206,124 @@ export class Tutorial {
                     this.revealTopMenu();
                     this.game.hideFloatingHand();
                     this.showMessages([
-                        "This menu appears when you select a character. You can see better their HP and MP, and in the case of mages, their spells!",
+                        "This menu appears when you select a character. You can see better their HP (red bar) and MP (blue bar), and in the case of mages, their spells!",
+                        "Click on the Fireball icon to select that spell!",
                     ]);
                 },
                 transitions: {
-                    // lastMessage: 'mageInstructions4',
+                    selectedSpell_FIREBALL: 'mageInstructions5',
                 },
+            },
+            mageInstructions5: {
+                onEnter: () => {
+                    if (this.flags['playerCastSpell_FIREBALL']) {
+                        this.transition('playerCastSpell_FIREBALL');
+                    } else {
+                        this.game.summonEnemy(10, 4);
+                        this.showMessages([
+                            "Great! Now, click on the enemy to cast the spell on it!",
+                        ]);
+                    }
+                },
+                transitions: {
+                    playerCastSpell_FIREBALL: 'introToCooldown',
+                }
+            },
+            introToCooldown: {
+                onEnter: () => {
+                    console.log(`[Tutorial:introToCooldown] onEnter`);
+                    this.game.hideFloatingHand();
+                    this.gameHUD.revealCooldown();
+                    if (!this.game.isCharacterSelected(1)) { 
+                        console.log(`[Tutorial:introToCooldown] Transitioning to ensureSelectedMageForCooldown`);
+                        this.transition('ensureSelectedMageForCooldown');
+                    } else {
+                        console.log(`[Tutorial:introToCooldown] Showing messages`);
+                        this.showMessages([
+                            "You see that loading yellow bar in the menu at the top? That's the cooldown bar of your character.",
+                            "Whenever a character performs an action, any action, they enter a cooldown state for a few seconds and cannot perform any other actions.",
+                            "The cooldown bar slowly fills up as time passes, and once it's full, the character can perform the action again.",
+                            "While one character is on cooldown, you can switch to another character and perform actions with them!",
+                            "",
+                        ]);
+                    }
+                },
+                transitions: {
+                    lastMessage: 'introToFlames',
+                }
+            },
+            introToFlames: {
+                onEnter: () => {
+                    this.showMessages([
+                        "Notice the flame that appeared? Elemental spells can affect the terrain of the arena!",
+                        "Make sure not to step through flames or keep a character in a flame after being targeted by a fire spell, or they will lose HP repeatedly over time!",
+                        "",
+                    ]);
+                },
+                transitions: {
+                    enemyAdded: 'ensureSelectedMageForItems',
+                }
+            },
+            ensureSelectedMageForCooldown: {
+                onEnter: () => {
+                    console.log(`[Tutorial:ensureSelectedMageForCooldown] onEnter`);
+                    this.game.pointToCharacter(true, 1);
+                    this.showMessages([
+                        "Now, select the Black Mage again!",
+                    ]);
+                },
+                transitions: {
+                    selectCharacter_BLACK_MAGE: 'introToCooldown',
+                }
+            },
+            ensureSelectedMageForItems: {
+                onEnter: () => {
+                    this.game.pointToCharacter(true, 1);
+                    this.showMessages([
+                        "Now, select the Black Mage again!",
+                    ]);
+                },
+                transitions: {
+                    selectCharacter_BLACK_MAGE: 'introToItems',
+                }
+            },
+            introToItems: {
+                onEnter: () => {
+                    this.game.hideFloatingHand();
+                    this.gameHUD.revealItems();
+                    this.showMessages([
+                        "Now you can see your items! Each character can carry some items to use in battle.",
+                        "You can use an item by clicking on it. The blue potion is an Ether, it will restore some MP to the character. Go ahead and use it!",
+                    ]);
+                },
+                transitions: {
+                    playerUseItem_1: 'introToOverview',
+                }
+            },
+            introToOverview: {
+                onEnter: () => {
+                    this.gameHUD.revealOverview();
+                    this.showMessages([
+                        "Now you can see the entire interface. This last part, on the sides, is the overview of each team.",
+                        "There you can see in a glance what are the HP, MP and cooldown of each character!",
+                        "",
+                    ]);
+                },
+                transitions: {
+                    lastMessage: 'introToHealing',
+                }
+            },
+            introToHealing: {
+                onEnter: () => {
+                    this.game.summonAlly(16, 4, Class.WHITE_MAGE);
+                    this.showMessages([
+                        "Now your initial team is complete! Here is your White Mage. White mages can cast healing spells and learn more tactical spells as well.",
+                        "",
+                    ]);
+                },
+                transitions: {
+                    enemyAdded: 'introToOverview2',
+                }
             },
         };
     }
@@ -226,17 +338,24 @@ export class Tutorial {
         events.on('hpChange', () => this.transition('hpChange'));
         events.on('lastTutorialMessage', () => this.transition('lastMessage'));
         events.on('selectCharacter_2', () => this.setFlag('selectCharacter_BLACK_MAGE', true));
+        events.on('selectedSpell_0', () => this.transition('selectedSpell_FIREBALL'));
+        events.on('playerCastSpell_0', () => this.setFlag('playerCastSpell_FIREBALL', true));
+        events.on('playerUseItem_1', () => this.transition('playerUseItem_ETHER'));
     }
 
     private setFlag(flag: string, value: boolean) {
+        console.log(`[Tutorial:setFlag] Setting flag ${flag} to ${value}`);
         this.flags[flag] = value;
         this.checkFlagTransitions();
     }
 
     private checkFlagTransitions() {
         const currentState = this.states[this.currentState];
+        console.log(`[Tutorial:checkFlagTransitions] Checking transitions for ${this.currentState}`);
         for (const [action, nextState] of Object.entries(currentState.transitions)) {
+            console.log(`[Tutorial:checkFlagTransitions] Checking action ${action}`);
             if (this.flags[action]) {
+                console.log(`[Tutorial:checkFlagTransitions] Transitioning to ${nextState}`);
                 this.transition(action);
                 break;
             }

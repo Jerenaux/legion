@@ -32,6 +32,7 @@ export class AIGame extends Game {
         const position = this.findFreeCellNear(data.x, data.y);
         character.x = position.x;
         character.y = position.y;
+        character.num = team.getMembers().length + 1;
         team.addMember(character);
 
         this.broadcast('addCharacter', {
@@ -79,6 +80,10 @@ export class AIGame extends Game {
         for (let i = 0; i < nb; i++) {
             const character = new NewCharacter(classes[i], levels[i], false, true).getCharacterData();
             this.addAICharacter(team, character);
+        }
+
+        if (this.mode === PlayMode.TUTORIAL) {
+            team.teamData.playerName = 'Taskmaster';
         }
 
         return levels;

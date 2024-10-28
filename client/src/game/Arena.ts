@@ -375,8 +375,10 @@ export class Arena extends Phaser.Scene
         };
         this.send('spell', data);
         this.toggleTargetMode(false);
+        const spell = this.selectedPlayer.spells[this.selectedPlayer.pendingSpell];
+        console.log(`[Arena:sendSpell] Emitting playerCastSpell_${spell.id}`);
+        if (this.gameSettings.tutorial) events.emit(`playerCastSpell_${spell.id}`);
         this.selectedPlayer.pendingSpell = null;
-        if (this.gameSettings.tutorial) events.emit('playerCastSpell');
     }
 
     sendUseItem(index: number, x: number, y: number, player: Player | null) {
@@ -392,6 +394,8 @@ export class Arena extends Phaser.Scene
         this.send('useitem', data);
         this.toggleItemMode(false);
         this.selectedPlayer.pendingItem = null;
+        const item = this.selectedPlayer.inventory[index];
+        if (this.gameSettings.tutorial) events.emit(`playerUseItem_${item.id}`);
     }
 
     endTutorial() {
@@ -1942,6 +1946,10 @@ export class Arena extends Phaser.Scene
                 player.revealMPBar();
             });
         });
+    }
+
+    isCharacterSelected(index: number) {
+        return this.selectedPlayer?.num === index;
     }
 
 }
