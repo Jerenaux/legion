@@ -187,6 +187,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   revealCooldown = () => {
+    console.log(`[GameHUD:revealCooldown] Revealing cooldown`);
     this.setState({ showCooldown: true });
   }
 

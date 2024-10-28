@@ -376,7 +376,6 @@ export class Arena extends Phaser.Scene
         this.send('spell', data);
         this.toggleTargetMode(false);
         const spell = this.selectedPlayer.spells[this.selectedPlayer.pendingSpell];
-        console.log(`[Arena:sendSpell] Emitting playerCastSpell_${spell.id}`);
         if (this.gameSettings.tutorial) events.emit(`playerCastSpell_${spell.id}`);
         this.selectedPlayer.pendingSpell = null;
     }

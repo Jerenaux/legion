@@ -231,14 +231,11 @@ export class Tutorial {
             },
             introToCooldown: {
                 onEnter: () => {
-                    console.log(`[Tutorial:introToCooldown] onEnter`);
                     this.game.hideFloatingHand();
                     this.gameHUD.revealCooldown();
-                    if (!this.game.isCharacterSelected(1)) { 
-                        console.log(`[Tutorial:introToCooldown] Transitioning to ensureSelectedMageForCooldown`);
+                    if (!this.game.isCharacterSelected(2)) { 
                         this.transition('ensureSelectedMageForCooldown');
                     } else {
-                        console.log(`[Tutorial:introToCooldown] Showing messages`);
                         this.showMessages([
                             "You see that loading yellow bar in the menu at the top? That's the cooldown bar of your character.",
                             "Whenever a character performs an action, any action, they enter a cooldown state for a few seconds and cannot perform any other actions.",
@@ -250,6 +247,7 @@ export class Tutorial {
                 },
                 transitions: {
                     lastMessage: 'introToFlames',
+                    ensureSelectedMageForCooldown: 'ensureSelectedMageForCooldown',
                 }
             },
             introToFlames: {
@@ -266,7 +264,6 @@ export class Tutorial {
             },
             ensureSelectedMageForCooldown: {
                 onEnter: () => {
-                    console.log(`[Tutorial:ensureSelectedMageForCooldown] onEnter`);
                     this.game.pointToCharacter(true, 1);
                     this.showMessages([
                         "Now, select the Black Mage again!",
@@ -344,18 +341,14 @@ export class Tutorial {
     }
 
     private setFlag(flag: string, value: boolean) {
-        console.log(`[Tutorial:setFlag] Setting flag ${flag} to ${value}`);
         this.flags[flag] = value;
         this.checkFlagTransitions();
     }
 
     private checkFlagTransitions() {
         const currentState = this.states[this.currentState];
-        console.log(`[Tutorial:checkFlagTransitions] Checking transitions for ${this.currentState}`);
         for (const [action, nextState] of Object.entries(currentState.transitions)) {
-            console.log(`[Tutorial:checkFlagTransitions] Checking action ${action}`);
             if (this.flags[action]) {
-                console.log(`[Tutorial:checkFlagTransitions] Transitioning to ${nextState}`);
                 this.transition(action);
                 break;
             }
