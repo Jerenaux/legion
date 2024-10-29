@@ -151,7 +151,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         this.sprite.on('pointerover', this.onPointerOver, this);
         this.sprite.on('pointerout', this.onPointerOut, this);
-        this.sprite.on('pointerdown', this.onPointerDown, this);
+        // this.sprite.on('pointerdown', this.onPointerDown, this);
 
         this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, 'Hello!').setVisible(false);
         this.add(this.speechBubble);
@@ -376,6 +376,10 @@ export class Player extends Phaser.GameObjects.Container {
         return this.statuses[StatusEffect.HASTE] != 0;
     }
 
+    isReady() {
+        return this.cooldownDuration == 0;
+    }
+
     canAct() {
         return this.cooldownDuration == 0 && this.isAlive() && !this.casting && !this.isParalyzed();
     }
@@ -526,6 +530,7 @@ export class Player extends Phaser.GameObjects.Container {
         if (selectedPlayer) {
             if (selectedPlayer == this) return; // Might be a move up order
             if (selectedPlayer.hasPendingSpell() || selectedPlayer.hasPendingItem()) return; // Spell cast or item use should be tile-based
+            if (!this.isNextTo(selectedPlayer.gridX, selectedPlayer.gridY)) return;
         }
         this.arena.handleTileClick(this.gridX, this.gridY);
         this.arena.lockInput();
@@ -870,6 +875,7 @@ export class Player extends Phaser.GameObjects.Container {
                 this.cooldownDuration = 0;
                 if (this.isSelected()) this.displayMovementRange();
                 this.arena.emitEvent('cooldownEnded', {num: this.num})
+                this.arena.relayEvent(`cooldownEnded_${this.num - 1}`);
                 this.arena.playSound('cooldown');
 
                 // if (this.isPlayer) {

@@ -379,6 +379,7 @@ export class Arena extends Phaser.Scene
     }
 
     sendUseItem(index: number, x: number, y: number, player: Player | null) {
+        if (this.gameSettings.tutorial && !this.tutorialSettings.allowUseItem) return;
         if (!this.selectedPlayer.canAct()) return;
         const data = {
             num: this.selectedPlayer.num,
@@ -1413,6 +1414,7 @@ export class Arena extends Phaser.Scene
         this.tutorialSettings = {
             showHealthBars: false,
             showMPBars: false,
+            allowUseItem: false,
         }
 
         // console.log(`[Arena:create] Scene created`);
@@ -1528,6 +1530,10 @@ export class Arena extends Phaser.Scene
         events.on('exitGame', () => {
             console.log('Exit game event received');
             this.destroy();
+        });
+
+        events.on('revealItems', () => {
+            this.tutorialSettings.allowUseItem = true;
         });
         
         events.emit('gameInitialized');
@@ -1927,6 +1933,14 @@ export class Arena extends Phaser.Scene
         this.send('tutorialEvent', {action: 'summonAlly', x, y, className});
     }
 
+    putInFormation() {
+        this.send('tutorialEvent', {action: 'putInFormation'});
+    }
+
+    slowDownCooldowns() {
+        this.send('tutorialEvent', {action: 'slowDownCooldowns'});
+    }
+
     revealHealthBars() {
         this.tutorialSettings.showHealthBars = true;
         // Iterate over all team members and reveal their health bars
@@ -1951,4 +1965,7 @@ export class Arena extends Phaser.Scene
         return this.selectedPlayer?.num === index;
     }
 
+    isCharacterReady(index: number) {
+        return this.teamsMap.get(this.playerTeamId).members[index].isReady();
+    }
 }

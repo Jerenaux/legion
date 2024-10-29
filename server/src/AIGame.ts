@@ -9,6 +9,8 @@ import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
 import { DBCharacterData, PlayerContextData } from '@legion/shared/interfaces';
 import {FREEZE_AI} from "@legion/shared/config";
+import { Item } from './Item';
+import { getConsumableById } from '@legion/shared/Items';
 
 
 const TICK = 100;
@@ -30,8 +32,7 @@ export class AIGame extends Game {
         const team = this.teams.get(1);
         const character = this.savedCharacters[data.className];
         const position = this.findFreeCellNear(data.x, data.y);
-        character.x = position.x;
-        character.y = position.y;
+        character.setPosition(position.x, position.y);
         character.num = team.getMembers().length + 1;
         team.addMember(character);
 
@@ -41,15 +42,23 @@ export class AIGame extends Game {
         });
     }
 
-    summonEnemy(data: {x: number, y: number, attackMode: AIAttackMode}) {
-        console.log('[AIGame:summonEnemy] Summoning enemy...');
+    summonEnemy(data: {x: number, y: number, attackMode: AIAttackMode, className: Class, full: boolean}) {
+        if (!data.className) data.className = Class.WARRIOR;
         const aiTeam = this.teams.get(2);
-        const character = new NewCharacter(Class.WARRIOR, 1, false, true).getCharacterData();
-        character.portrait = 'mil1_3';
-        character.stats.hp = 20;
+        const character = new NewCharacter(data.className, 1, false, true).getCharacterData();
+        if (!data.full) {
+            character.portrait = 'mil1_3';
+            character.stats.hp = 40;
+        }
+        // Half all the stats of the character
+        Object.keys(character.stats).forEach(stat => {
+            character.stats[stat] = Math.floor(character.stats[stat] / 2);
+        });
+
         const position = this.findFreeCellNear(data.x, data.y);
         const newCharacter = this.addAICharacter(aiTeam!, character, position);
-        newCharacter.attackMode = data.attackMode;
+        newCharacter.setCooldown(3500);
+        newCharacter.setAttackMode(data.attackMode);
 
         this.broadcast('addCharacter', {
             team: aiTeam!.id,
@@ -107,11 +116,14 @@ export class AIGame extends Game {
     }
 
     modifyTeamForTutorial(characters: ServerPlayer[]) {
-        // Save all characters in a map for later use, mapping class to character
-        characters.forEach(character => {
-            this.savedCharacters[character.class] = character;
-        });
         if (this.mode == PlayMode.TUTORIAL) {
+            // Save all characters in a map for later use, mapping class to character
+            characters.forEach(character => {
+                this.savedCharacters[character.class] = character;
+            });
+            this.savedCharacters[Class.WARRIOR].addItem(new Item(getConsumableById(0)));
+            this.savedCharacters[Class.BLACK_MAGE].addItem(new Item(getConsumableById(1)));
+            this.savedCharacters[Class.WHITE_MAGE].addItem(new Item(getConsumableById(0))); 
             characters = [this.savedCharacters[Class.WARRIOR]];
             characters[0].y += 1;
         }
@@ -165,6 +177,25 @@ export class AIGame extends Game {
         }
     }
 
+    putInFormation() {
+        console.log('[AIGame:putInFormation] Putting in formation...');
+        // Iterate over the player team and set their formation to the default one
+        this.teams.get(1)?.getMembers().forEach(player => {
+            const newPosition = this.getPosition(player.num - 1, false);
+            this.updatePlayerPosition(player, newPosition.x, newPosition.y);
+            this.broadcastMove(this.teams.get(1)!, player.num, newPosition);
+        });
+        // iterate over the enemy team and set their attack mode to UNLIMITED
+        this.teams.get(2)?.getMembers().forEach(player => {
+            (player as AIServerPlayer).setAttackMode(AIAttackMode.UNLIMITED);
+        });
+        // Summon 3 enemies in the mirror positions, one of each class
+        [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].forEach((className, index) => {
+            const newPosition = this.getPosition(index, true);
+            this.summonEnemy({x: newPosition.x, y: newPosition.y, attackMode: AIAttackMode.UNLIMITED, className, full: true});
+        });
+    }
+
     async start() {
         if (this.teams.size < this.nbExpectedPlayers) return;
         super.start();
@@ -179,6 +210,7 @@ export class AIGame extends Game {
     endTutorial() {
         console.log('[AIGame:endTutorial] Ending tutorial...');
         this.temporaryFrozen = false;
+        this.tutorialSettings.allowVictoryConditions = true;
     }
 
     processTutorialEvent(data: any) {
@@ -188,6 +220,12 @@ export class AIGame extends Game {
                 break;
             case 'summonAlly':
                 this.summonAlly(data);
+                break;
+            case 'putInFormation':
+                this.putInFormation();
+                break;
+            case 'slowDownCooldowns':
+                this.tutorialSettings.shortCooldowns = false;
                 break;
         }
     }

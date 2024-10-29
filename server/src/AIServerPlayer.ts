@@ -36,10 +36,11 @@ export class AIServerPlayer extends ServerPlayer {
         this.retargetCount = this.retargetRate;
 
         let cooldown = Math.floor((INITIAL_COOLDOWN + 1) * 1000 * (1 + Math.random() * 0.7));
-        if (this.team?.game.isTutorial()) {
-            cooldown = 1000;
-        }
         this.setCooldown(cooldown);
+    }
+
+    setAttackMode(attackMode: AIAttackMode) {
+        this.attackMode = attackMode;
     }
 
     setArchetype() {
@@ -78,6 +79,7 @@ export class AIServerPlayer extends ServerPlayer {
     }
 
     takeAction(): number {
+        // console.log(`AI ${this.num} taking action, cooldown = ${this.getActiveCooldown()}`);
         if (this.team?.game.isTutorial()) {
             if (this.attackMode === AIAttackMode.IDLE) return 0;
             if (this.actionCount > 0 && this.attackMode === AIAttackMode.ATTACK_ONCE) return 0;

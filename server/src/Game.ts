@@ -55,6 +55,7 @@ export abstract class Game
 
         this.tutorialSettings = {
             allowVictoryConditions: false,
+            shortCooldowns: true,
         }
         console.log(`[Game] Created game ${this.id}`);
     }
@@ -417,6 +418,7 @@ export abstract class Game
 
     setCooldown(player: ServerPlayer, cooldownMs: number) {
         if (this.mode == PlayMode.TUTORIAL && player.isAI) cooldownMs *= 1.5;
+        if (this.isTutorial() && this.tutorialSettings.shortCooldowns) cooldownMs = 500;
         player.setCooldown(cooldownMs);
     }
 
@@ -440,20 +442,14 @@ export abstract class Game
         // console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
         this.checkForTerrainEffects(player, listCellsOnTheWay(player.x, player.y, tile.x, tile.y));
 
-        this.freeCell(player.x, player.y);
-        player.updatePos(tile.x, tile.y);
-        this.occupyCell(player.x, player.y, player);
+        this.updatePlayerPosition(player, tile.x, tile.y);
         
         this.checkForStandingOnTerrain(player);
 
         const cooldown = player.getCooldownDurationMs(MOVE_COOLDOWN);
         this.setCooldown(player, cooldown);
         
-        this.broadcast('move', {
-            team: team.id,
-            tile,
-            num,
-        });
+        this.broadcastMove(team, num, tile);
 
         team.socket?.emit('cooldown', {
             num,
@@ -461,6 +457,20 @@ export abstract class Game
         });
 
         return 0;
+    }
+
+    updatePlayerPosition(player: ServerPlayer, x: number, y: number) {
+        this.freeCell(player.x, player.y);
+        player.updatePos(x, y);
+        this.occupyCell(player.x, player.y, player);
+    }
+
+    broadcastMove(team: Team, num: number, tile: Tile) {
+        this.broadcast('move', {
+            team: team.id,
+            tile,
+            num,
+        });
     }
 
     // Called when traversing cells with terrain effects

@@ -1,6 +1,7 @@
 import { Arena } from './Arena';
 import { events, GameHUD } from '../components/HUD/GameHUD';
-import { AIAttackMode, Class } from '@legion/shared/enums';
+import { AIAttackMode, Class, GEN } from '@legion/shared/enums';
+import { lastEventId } from '@sentry/react';
 
 type TutorialState = {
   onEnter?: () => void;
@@ -190,7 +191,7 @@ export class Tutorial {
             },
             mageInstructions3: {
                 onEnter: () => {
-                    if (this.flags['playerSelected']) {
+                    if (this.game.isCharacterSelected(2)) {
                         this.transition('selectCharacter_BLACK_MAGE');
                     } else {
                         this.showMessages([
@@ -217,6 +218,7 @@ export class Tutorial {
             },
             mageInstructions5: {
                 onEnter: () => {
+                    this.game.slowDownCooldowns();
                     if (this.flags['playerCastSpell_FIREBALL']) {
                         this.transition('playerCastSpell_FIREBALL');
                     } else {
@@ -240,7 +242,7 @@ export class Tutorial {
                         this.showMessages([
                             "You see that loading yellow bar in the menu at the top? That's the cooldown bar of your character.",
                             "Whenever a character performs an action, any action, they enter a cooldown state for a few seconds and cannot perform any other actions.",
-                            "The cooldown bar slowly fills up as time passes, and once it's full, the character can perform the action again.",
+                            "The cooldown bar slowly fills up as time passes, and once it's full, the character can perform actions again.",
                             "While one character is on cooldown, you can switch to another character and perform actions with them!",
                             "",
                         ]);
@@ -296,41 +298,107 @@ export class Tutorial {
             introToItems: {
                 onEnter: () => {
                     this.game.hideFloatingHand();
-                    this.gameHUD.revealItems();
+                    this.revealItems();
                     this.showMessages([
-                        "Now you can see your items! Each character can carry some items to use in battle.",
-                        "You can use an item by clicking on it. The blue potion is an Ether, it will restore some MP to the character. Go ahead and use it!",
+                        "Now you can see your items in the top menu! Each character can carry some items to use in battle.",
+                        "You can use an item by clicking on it. The blue potion is an Ether, it will restore some MP to the character.",
+                        ""
                     ]);
                 },
                 transitions: {
-                    playerUseItem_1: 'introToOverview',
+                    lastMessage: 'waitForCooldown',
+                    playerUseItem_ETHER: 'introToOverview',
                 }
             },
-            introToOverview: {
+            waitForCooldown: {
                 onEnter: () => {
-                    this.gameHUD.revealOverview();
+                    if (this.game.isCharacterReady(1)) {
+                        this.transition('cooldownEnded_BLACK_MAGE');
+                    } else {
+                        this.showMessages([
+                            "Wait for the cooldown to finish before you can use the item!",
+                        ]);
+                    }
+                },
+                transitions: {
+                    cooldownEnded_BLACK_MAGE: 'useItem',
+                }
+            },
+            useItem: {
+                onEnter: () => {
                     this.showMessages([
-                        "Now you can see the entire interface. This last part, on the sides, is the overview of each team.",
-                        "There you can see in a glance what are the HP, MP and cooldown of each character!",
+                        "Now, use the Ether by clicking on it!",
+                    ]);
+                },
+                transitions: {
+                    playerUseItem_ETHER: 'congratsItem',
+                }
+            },
+            congratsItem: {
+                onEnter: () => {
+                    this.showMessages([
+                        "Well done, your Black Mage restored some MP!",
                         "",
                     ]);
                 },
                 transitions: {
-                    lastMessage: 'introToHealing',
+                    lastMessage: 'introToOverview',
                 }
             },
-            introToHealing: {
+            introToOverview: {
                 onEnter: () => {
-                    this.game.summonAlly(16, 4, Class.WHITE_MAGE);
+                    this.revealOverview();
+                    this.showMessages([
+                        "Now you can see the entire interface! On the sides are the overviews of each team. Your team is on the left, and the enemy team is on the right.",
+                        "There you can see at a glance what are the HP, MP and cooldown of your characters!",
+                        "",
+                    ]);
+                },
+                transitions: {
+                    lastMessage: 'whiteMageEntrance',
+                }
+            },
+            whiteMageEntrance: {
+                onEnter: () => {
+                    this.game.summonAlly(4, 5, Class.WHITE_MAGE);
+                },
+                transitions: {
+                    characterAdded: 'fullTeam',
+                }
+            },
+            fullTeam: {
+                onEnter: () => {
                     this.showMessages([
                         "Now your initial team is complete! Here is your White Mage. White mages can cast healing spells and learn more tactical spells as well.",
                         "",
                     ]);
                 },
                 transitions: {
-                    enemyAdded: 'introToOverview2',
+                    lastMessage: 'pvpInto',
                 }
             },
+            pvpInto: {
+                onEnter: () => {
+                    this.showMessages([
+                        "Now it's time for a real battle! Use what you learned to control your 3 characters and defeat the enemy team!",
+                        "Once you finish this battle, these 3 characters will be yours to keep! The beginning of your team!",
+                        "After that you'll be able to use them in any game mode, including against other human players!",
+                        "Good luck!",
+                        "",
+                    ]);
+                },
+                transitions: {
+                    lastMessage: 'coda',
+                }
+            },
+            coda: {
+                onEnter: () => {
+                    this.game.displayGEN(GEN.COMBAT_BEGINS);
+                    this.game.putInFormation();
+                    this.game.endTutorial();
+                },
+                transitions: {}
+            }
         };
     }
 
@@ -347,6 +415,7 @@ export class Tutorial {
         events.on('selectedSpell_0', () => this.transition('selectedSpell_FIREBALL'));
         events.on('playerCastSpell_0', () => this.setFlag('playerCastSpell_FIREBALL', true));
         events.on('playerUseItem_1', () => this.transition('playerUseItem_ETHER'));
+        events.on('cooldownEnded_1', () => this.transition('cooldownEnded_BLACK_MAGE'));
     }
 
     private setFlag(flag: string, value: boolean) {
@@ -386,9 +455,16 @@ export class Tutorial {
         events.emit('revealTopMenu');
     }
 
+    private revealOverview() {
+        events.emit('revealOverview');
+    }
+
     private revealCooldown() {
-        this.cooldownVisible = true;
         events.emit('revealCooldown');
+    }
+
+    private revealItems() {
+        events.emit('revealItems');
     }
 
     start() {

@@ -278,6 +278,11 @@ export class ServerPlayer {
         return this.statuses[status] != 0;
     }
     
+    setPosition(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+
     setLevel(level: number) {
         this.level = level;
     }

@@ -18,7 +18,6 @@ import targetIcon from '@assets/inventory/target_icon.png';
 interface Props {
   player: PlayerProps;
   eventEmitter: any;
-  showItems: boolean;
   isTutorial?: boolean;
 }
 
@@ -28,6 +27,7 @@ interface State {
     [key: string]: string;
   };
   cooldownVisible: boolean;
+  itemsVisible: boolean;
 }
 
 class PlayerTab extends Component<Props, State> {
@@ -40,11 +40,16 @@ class PlayerTab extends Component<Props, State> {
       player: this.props.player,
       croppedImages: {},
       cooldownVisible: !props.isTutorial,
+      itemsVisible: !props.isTutorial,
     };
     this.events = this.props.eventEmitter;
 
     this.events.on('revealCooldown', () => {
       this.setState({ cooldownVisible: true });
+    });
+
+    this.events.on('revealItems', () => {
+      this.setState({ itemsVisible: true });
     });
   }
 
@@ -237,7 +242,7 @@ class PlayerTab extends Component<Props, State> {
           </div>
 
           <div className="flex width_half justify_between padding_8 padding_top_16 gap_24 padding_right_16">
-            {this.props.showItems && this.renderActionContainer("Items", player.items, canAct, isMuted, itemsIndex, InventoryType.CONSUMABLES)}
+            {this.state.itemsVisible && this.renderActionContainer("Items", player.items, canAct, isMuted, itemsIndex, InventoryType.CONSUMABLES)}
             {this.renderActionContainer("Spells", player.spells, canAct, isMuted, 0, InventoryType.SPELLS)}
           </div>
         </div>
