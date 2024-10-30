@@ -156,7 +156,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, 'Hello!').setVisible(false);
         this.add(this.speechBubble);
 
-        this.adaptToTutorial();
+        this.displayBars();
     }
 
     setUpStatusEffects() {
@@ -409,7 +409,6 @@ export class Player extends Phaser.GameObjects.Container {
 
         if (this.isFrozen()) {
             this.animationLock = false;
-            console.log(`Blocking animation`);
             return;
         }
 
@@ -731,8 +730,8 @@ export class Player extends Phaser.GameObjects.Container {
             }
 
             if (!this.casting) this.playAnim('hurt', true);
-            this.healthBar.setVisible(this.arena.tutorialSettings.showHealthBars);
-            this.MPBar?.setVisible(this.arena.tutorialSettings.showMPBars);
+            
+            this.displayBars();
         }
 
         if(this.hp != _hp) {
@@ -1023,9 +1022,15 @@ export class Player extends Phaser.GameObjects.Container {
         this.speechBubble.setVisible(false);
     }
 
-    adaptToTutorial() {
-        this.healthBar.setVisible(this.arena.tutorialSettings.showHealthBars);
-        this.MPBar?.setVisible(this.arena.tutorialSettings.showMPBars);
+    displayBars() {
+        const isTutorial = this.arena.isTutorial();
+        if (isTutorial) {
+            this.healthBar.setVisible(this.arena.tutorialSettings.showHealthBars);
+            this.MPBar?.setVisible(this.arena.tutorialSettings.showMPBars);
+        } else {
+            this.healthBar.setVisible(true);
+            this.MPBar?.setVisible(true);
+        }
     }
 
     revealHealthBar() {

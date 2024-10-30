@@ -1969,4 +1969,8 @@ export class Arena extends Phaser.Scene
     isCharacterReady(index: number) {
         return this.teamsMap.get(this.playerTeamId).members[index].isReady();
     }
+
+    isTutorial() {
+        return this.gameSettings.tutorial;
+    }
 }
