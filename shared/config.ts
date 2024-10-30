@@ -53,7 +53,7 @@ export const ENABLE_SETTINGS = true;
 export const ENABLE_ELYSIUM = false;
 
 // Admin
-export let FREEZE_AI = false;
+export let FREEZE_AI = true;
 export const STARTING_GOLD_ADMIN = 100000;
 export const STARTING_SPELLS_ADMIN = [2];
 export const STARTING_EQUIPMENT_ADMIN = [2];

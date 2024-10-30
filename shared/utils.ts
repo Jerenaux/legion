@@ -79,3 +79,4 @@ export async function sendMessageToAdmin(client: any, message: string) {
 }
 
 export const paralyzingStatuses = [StatusEffect.FREEZE, StatusEffect.PARALYZE, StatusEffect.SLEEP];
+

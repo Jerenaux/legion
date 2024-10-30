@@ -197,12 +197,20 @@ export const statusIcons = {
   'Haste': hasteIcon,
 };
 
+interface ActionDetails {
+  message: string;
+  isMobile: boolean;
+}
+
 function recordPlayerAction(actionType: string, details: string) {
   apiFetch('recordPlayerAction', {
     method: 'POST',
     body: {
       actionType,
-      details,
+      details: {
+        message: details,
+        isMobile: isMobileDevice()
+      },
     },
   });
 }
@@ -213,4 +221,28 @@ export function recordLoadingStep(step: string) {
 
 export function recordPageView(page: string) {
   recordPlayerAction('pageView', page);
+}
+
+export function isMobileDevice(): boolean {
+  // Check if running in browser environment
+  if (typeof window === 'undefined') return false;
+  
+  return (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      // Include tablet detection
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform)) ||
+      // Alternative method using screen size for devices that might spoof user agent
+      window.innerWidth <= 768
+  );
+}
+
+// You can also add a more specific check if needed
+export function isTabletDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  const userAgent = navigator.userAgent.toLowerCase();
+  return (
+      /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP))))/i.test(userAgent) ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform))
+  );
 }
