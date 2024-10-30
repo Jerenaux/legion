@@ -197,13 +197,20 @@ export const statusIcons = {
   'Haste': hasteIcon,
 };
 
-
-export function recordLoadingStep(step: string) {
+function recordPlayerAction(actionType: string, details: string) {
   apiFetch('recordPlayerAction', {
     method: 'POST',
     body: {
-      actionType: 'loadGame',
-      details: step,
+      actionType,
+      details,
     },
   });
+}
+
+export function recordLoadingStep(step: string) {
+  recordPlayerAction('loadGame', step);
+}
+
+export function recordPageView(page: string) {
+  recordPlayerAction('pageView', page);
 }

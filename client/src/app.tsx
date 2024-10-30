@@ -12,6 +12,7 @@ import withAuth from './components/withAuth';
 import withNoAuth from './components/withNoAuth';
 
 import * as Sentry from "@sentry/react";
+import { recordPageView } from './components/utils';
 
 // Only initialize Sentry if not in development mode
 if (process.env.NODE_ENV !== 'development') {
@@ -85,6 +86,8 @@ class App extends Component<{}, AppState> {
             currentUrl: e.url,
             currentMainRoute: newMainRoute
         });
+
+        recordPageView(e.url);
     };
 
     render() {
