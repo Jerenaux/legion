@@ -13,6 +13,7 @@ import withNoAuth from './components/withNoAuth';
 
 import * as Sentry from "@sentry/react";
 import { recordPageView } from './components/utils';
+import { firebaseAuth } from './services/firebaseService';
 
 // Only initialize Sentry if not in development mode
 if (process.env.NODE_ENV !== 'development') {
@@ -87,7 +88,10 @@ class App extends Component<{}, AppState> {
             currentMainRoute: newMainRoute
         });
 
-        recordPageView(e.url);
+        const user = firebaseAuth.currentUser;
+        if (user) {
+            recordPageView(e.url);
+        }
     };
 
     render() {
