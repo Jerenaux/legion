@@ -1,7 +1,7 @@
 import { Arena } from './Arena';
 import { events, GameHUD } from '../components/HUD/GameHUD';
 import { AIAttackMode, Class, GEN } from '@legion/shared/enums';
-import { apiFetch } from 'src/services/apiService';
+import { apiFetch } from '../services/apiService';
 
 type TutorialState = {
   onEnter?: () => void;
@@ -44,12 +44,6 @@ export class Tutorial {
         this.states = {
             initial: {
                 onEnter: () => {
-                    apiFetch('recordPlayerAction', {
-                        body: {
-                            actionType: 'tutorial',
-                            details: 'initial',
-                        },
-                    });
                     this.showMessages([
                         "I'm the Taskmaster of the Arena! My job is to make sure you learn the ropes and know how to order your characters around!",
                         "Let's start with a single character. Click on the warrior to select them.",
@@ -440,7 +434,7 @@ export class Tutorial {
         }
     }
 
-    private transition(action: string) {
+    private async transition(action: string) {
         const currentState = this.states[this.currentState];
         const nextStateName = currentState.transitions[action];
 
@@ -450,7 +444,10 @@ export class Tutorial {
             this.currentState = nextStateName;
             const nextState = this.states[nextStateName];
             
-            if (nextState.onEnter) nextState.onEnter();
+            if (nextState.onEnter) {
+                this.recordTutorialStep(nextStateName);
+                nextState.onEnter();
+            };
         }
     }
 
@@ -476,6 +473,19 @@ export class Tutorial {
 
     start() {
         const initialState = this.states[this.currentState];
-        if (initialState.onEnter) initialState.onEnter();
+        if (initialState.onEnter) {
+            this.recordTutorialStep('initial');
+            initialState.onEnter();
+        };
+    }
+
+    recordTutorialStep(step: string) {
+        apiFetch('recordPlayerAction', {
+            method: 'POST',
+            body: {
+                actionType: 'tutorial',
+                details: step,
+            },
+        });
     }
 }

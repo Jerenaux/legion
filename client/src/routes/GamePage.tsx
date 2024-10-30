@@ -4,6 +4,7 @@ import { GameHUD, events } from '../components/HUD/GameHUD';
 import { QueueTips } from '../components/queueTips/QueueTips';
 import { startGame } from '../game/game';
 import './GamePage.style.css';
+import { recordLoadingStep } from '../components/utils';
 
 interface GamePageProps {
   matches: {
@@ -46,6 +47,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   }
 
   initializeGame = () => {
+    recordLoadingStep('start');
     startGame();
 
     events.on('progressUpdate', this.updateProgress);

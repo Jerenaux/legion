@@ -196,3 +196,14 @@ export const statusIcons = {
   'Burn': burnIcon,
   'Haste': hasteIcon,
 };
+
+
+export function recordLoadingStep(step: string) {
+  apiFetch('recordPlayerAction', {
+    method: 'POST',
+    body: {
+      actionType: 'loadGame',
+      details: step,
+    },
+  });
+}

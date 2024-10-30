@@ -58,7 +58,7 @@ import speechTail from '@assets/speech_tail.png';
 // Static imports for tile atlas
 import groundTilesImage from '@assets/tiles2.png';
 import groundTilesAtlas from '@assets/tiles2.json';
-import { errorToast, silentErrorToast } from '../components/utils';
+import { errorToast, recordLoadingStep, silentErrorToast } from '../components/utils';
 import { Tutorial } from './Tutorial';
 const LOCAL_ANIMATION_SCALE = 3;
 const DEPTH_OFFSET = 0.01;
@@ -1472,6 +1472,7 @@ export class Arena extends Phaser.Scene
     }
 
     initializeGame(data: GameData): void {
+        recordLoadingStep('finish');
         const isReconnect = data.general.reconnect || this.isLateToTheParty;
 
         this.playerTeamId = data.player.teamId;
