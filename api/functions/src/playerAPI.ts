@@ -1053,3 +1053,19 @@ export const withdrawSOL = onRequest({ secrets: ["GAME_WALLET_PRIVATE_KEY"] }, a
     }
   });
 });
+
+export const recordPlayerAction = onRequest((request, response) => {
+  const db = admin.firestore();
+  return corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const actionType = request.body.actionType;
+      const details = request.body.details;
+      logPlayerAction(uid, actionType, details);
+      response.status(200).send({});
+    } catch (error) {
+      console.error('recordPlayerAction error:', error);
+      response.status(500).send('An error occurred during recordPlayerAction: ' + (error instanceof Error ? error.message : String(error)));
+    }
+  });
+});

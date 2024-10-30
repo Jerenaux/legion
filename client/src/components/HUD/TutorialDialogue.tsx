@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 import { events } from './GameHUD';
 import '../../styles/components/TutorialDialogue.css';
 
-const DEFAULT_AVATAR_SRC = 'avatars/default.png';
+import avatarSrc from '@assets/avatars/default.png';
 const DEFAULT_SPEAKER_NAME = 'Taskmaster';
 
 interface TutorialDialogueProps {
@@ -96,10 +96,11 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
 
     if (displayedMessage.length === 0) return null;
 
+
     return (
       <div className={`tutorial-dialogue ${isAvatarLoaded ? 'visible' : ''}`}>
         <img 
-          src={DEFAULT_AVATAR_SRC} 
+          src={avatarSrc} 
           alt="Character Avatar" 
           className="tutorial-dialogue-avatar" 
           onLoad={this.handleAvatarLoad}
