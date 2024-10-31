@@ -241,8 +241,8 @@ export class Tutorial {
                         this.transition('ensureSelectedMageForCooldown');
                     } else {
                         this.showMessages([
-                            "You see that loading yellow bar in the menu at the top? That's the cooldown bar of your character.",
-                            "Whenever a character performs an action, any action, they enter a cooldown state for a few seconds and cannot perform any other actions.",
+                            "Great job! You see that loading yellow bar in the menu at the top? That's the cooldown bar of your character.",
+                            "When a character acts, they enter a cooldown state and cannot act again for a few seconds.",
                             "The cooldown bar slowly fills up as time passes, and once it's full, the character can perform actions again.",
                             "While one character is on cooldown, you can switch to another character and perform actions with them!",
                             "",
@@ -258,7 +258,7 @@ export class Tutorial {
                 onEnter: () => {
                     this.showMessages([
                         "Notice the flame that appeared? Elemental spells can affect the terrain of the arena!",
-                        "Make sure not to step through flames or keep a character in a flame after being targeted by a fire spell, or they will lose HP repeatedly over time!",
+                        "Make sure not to step through flames or keep a character in one, or they will lose HP repeatedly over time!",
                         "",
                     ]);
                 },
@@ -302,7 +302,7 @@ export class Tutorial {
                     this.revealItems();
                     this.showMessages([
                         "Now you can see your items in the top menu! Each character can carry some items to use in battle.",
-                        "You can use an item by clicking on it. The blue potion is an Ether, it will restore some MP to the character.",
+                        "You can use an item by clicking on it. The blue potion is an Ether, it will restore MP to the character.",
                         ""
                     ]);
                 },
@@ -350,7 +350,8 @@ export class Tutorial {
                 onEnter: () => {
                     this.revealOverview();
                     this.showMessages([
-                        "Now you can see the entire interface! On the sides are the overviews of each team. Your team is on the left, and the enemy team is on the right.",
+                        "Now you can see the entire interface!", 
+                        "On the sides are the overviews of each team. Your team is on the left, and the enemy team is on the right.",
                         "There you can see at a glance what are the HP, MP and cooldown of your characters!",
                         "",
                     ]);
@@ -370,7 +371,8 @@ export class Tutorial {
             fullTeam: {
                 onEnter: () => {
                     this.showMessages([
-                        "Now your initial team is complete! Here is your White Mage. White mages can cast healing spells and learn more tactical spells as well.",
+                        "Now your initial team is complete! Here is your White Mage.", 
+                        "White mages can cast healing spells and learn more tactical spells as well.",
                         "",
                     ]);
                 },

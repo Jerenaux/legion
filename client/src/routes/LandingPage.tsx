@@ -20,7 +20,7 @@ class LandingPage extends Component<{}, LandingPageState> {
   warmUpServer = (): void => {
     axios.get(process.env.GAME_SERVER_URL)
       .then(response => {
-        console.log(`Server warmed up`);
+        // console.log(`Server warmed up`);
       })
       .catch(error => {
         console.error(`Error warming up the server: ${error}`);
