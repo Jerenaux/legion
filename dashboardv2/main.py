@@ -53,7 +53,7 @@ def format_date(date_str):
         return 'N/A'
     try:
         dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-        return dt.strftime('%Y-%m-%d %H:%M:%S')
+        return dt.strftime('%d/%m/%y %H:%M:%S')
     except:
         return date_str
 
@@ -79,6 +79,7 @@ async def fetch_action_log(player_id=None):
         return
 
     spinner = ui.spinner(size='3em').classes('absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2')
+
     try:
         response = requests.get(
             f"{current_api}/getActionLog",
@@ -254,9 +255,13 @@ def fetch_dashboard_data():
                 title='New Players per Day',
                 xaxis_title='Date',
                 yaxis_title='Number of New Players',
-                height=300,
-                width=500,
-                margin=dict(l=50, r=20, t=40, b=40)
+                height=400,
+                width=600,
+                margin=dict(l=50, r=20, t=40, b=40),
+                xaxis=dict(
+                    dtick='D1',  # One tick per day
+                    tickformat='%d/%m'  # Show as DD/MM
+                )
             )
             
             # Calculate total games per day
@@ -278,9 +283,13 @@ def fetch_dashboard_data():
                 title='Games Played per Day',
                 xaxis_title='Date',
                 yaxis_title='Number of Games',
-                height=300,
-                width=500,
-                margin=dict(l=50, r=20, t=40, b=40)
+                height=400,
+                width=600,
+                margin=dict(l=50, r=20, t=40, b=40),
+                xaxis=dict(
+                    dtick='D1',  # One tick per day
+                    tickformat='%d/%m'  # Show as DD/MM
+                )
             )
             
             # Update the plots in the UI
@@ -315,10 +324,10 @@ def dashboard():
                 date_input = ui.input(value='2024-10-31', placeholder='YYYY-MM-DD')
                 date_input.on('change', lambda: fetch_dashboard_data())
             
-            with ui.row().classes('w-full gap-4 mt-4'):
-                with ui.card().classes('w-1/2'):
+            with ui.row().classes('w-full gap-4 mt-4 flex-wrap'):
+                with ui.card().classes('w-[600px]'):
                     new_players_plot = ui.column().classes('w-full')
-                with ui.card().classes('w-1/2'):
+                with ui.card().classes('w-[600px]'):
                     games_plot = ui.column().classes('w-full')
             
             with ui.row().classes('items-center gap-4 mt-4'):
