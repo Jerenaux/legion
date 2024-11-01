@@ -202,17 +202,21 @@ interface ActionDetails {
   isMobile: boolean;
 }
 
-function recordPlayerAction(actionType: string, details: string) {
-  apiFetch('recordPlayerAction', {
-    method: 'POST',
-    body: {
-      actionType,
-      details: {
+export async function recordPlayerAction(actionType: string, details: string) {
+  try {
+    await apiFetch('recordPlayerAction', {
+      method: 'POST',
+      body: {
+        actionType,
+        details: {
         message: details,
-        isMobile: isMobileDevice()
+          isMobile: isMobileDevice()
+        },
       },
-    },
-  });
+    }, 1, 300, true);
+  } catch (error) {
+    console.error(`Error recording player action: ${error}`);
+  }
 }
 
 export function recordLoadingStep(step: string) {

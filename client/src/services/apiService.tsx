@@ -73,8 +73,8 @@ function timeoutPromise(duration) {
     });
 }
 
-async function apiFetch(endpoint, options: ApiFetchOptions = {}, maxRetries = 1, retryDelay = 300) {
-    let lastError;
+async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetries = 1, retryDelay = 300, invisibleErrors = false) {
+    let lastError: Error | ApiError;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -117,7 +117,11 @@ async function apiFetch(endpoint, options: ApiFetchOptions = {}, maxRetries = 1,
 
             // If it's the last attempt, throw the error
             if (attempt === maxRetries - 1) {
-                errorToast(`${error.message}`);
+                if (!invisibleErrors) {
+                    errorToast(`${error.message}`);
+                } else {
+                    console.error(`${error.message}`);
+                }
                 throw error;
             }
 
