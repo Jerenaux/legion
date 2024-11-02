@@ -27,6 +27,13 @@ interface GamesPerModePerDay {
     };
 }
 
+interface EngagementMetrics {
+    totalPlayers: number;
+    tutorialCompletionRate: number;
+    playedOneGameRate: number;
+    playedMultipleGamesRate: number;
+}
+
 export async function updateDAU(userId: string) {
     const db = admin.firestore();
     const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
@@ -374,5 +381,79 @@ export const listPlayerIDs = onRequest(async (request, response) => {
             joinDate: doc.data().joinDate,
         }));
         response.send(players);
+    });
+});
+
+export const getEngagementMetrics = onRequest(async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const startDate = request.query.date;
+            if (!startDate) {
+                response.status(400).send("Bad Request: Missing date parameter");
+                return;
+            }
+
+            // Get all players who joined after the start date
+            const playersSnapshot = await db.collection("players")
+                .where("joinDate", ">=", startDate)
+                .get();
+
+            const totalPlayers = playersSnapshot.size;
+            if (totalPlayers === 0) {
+                response.send({
+                    totalPlayers: 0,
+                    tutorialCompletionRate: 0,
+                    playedOneGameRate: 0,
+                    playedMultipleGamesRate: 0
+                });
+                return;
+            }
+
+            let completedTutorial = 0;
+            let playedOneGame = 0;
+            let playedMultipleGames = 0;
+
+            // Process each player
+            for (const playerDoc of playersSnapshot.docs) {
+                // Check tutorial completion
+                const tutorialActions = await playerDoc.ref
+                    .collection("actions")
+                    .where("actionType", "==", "tutorial")
+                    .where("details", "==", "coda")
+                    .limit(1)
+                    .get();
+                
+                if (!tutorialActions.empty) {
+                    completedTutorial++;
+                }
+
+                // Check games played
+                const gamesQuery = await db.collection("games")
+                    .where("players", "array-contains", playerDoc.id)
+                    .get();
+
+                const gamesCount = gamesQuery.size;
+                if (gamesCount >= 1) {
+                    playedOneGame++;
+                }
+                if (gamesCount > 1) {
+                    playedMultipleGames++;
+                }
+            }
+
+            const metrics: EngagementMetrics = {
+                totalPlayers,
+                tutorialCompletionRate: (completedTutorial / totalPlayers) * 100,
+                playedOneGameRate: (playedOneGame / totalPlayers) * 100,
+                playedMultipleGamesRate: (playedMultipleGames / totalPlayers) * 100
+            };
+
+            response.send(metrics);
+        } catch (error) {
+            console.error("getEngagementMetrics error:", error);
+            response.status(500).send("Error calculating engagement metrics");
+        }
     });
 });

@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 import plotly.graph_objects as go
 from collections import defaultdict
+from datetime import timedelta
 
 # Load environment variables
 load_dotenv()
@@ -305,9 +306,47 @@ def fetch_dashboard_data():
     except Exception as e:
         ui.notify(f'Error: {str(e)}', type='error')
 
+def fetch_engagement_metrics():
+    try:
+        # Use the same date as the dashboard data
+        date = date_input.value
+        
+        response = requests.get(
+            f"{current_api}/getEngagementMetrics",
+            params={'date': date},
+            headers=get_headers()
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Update the metrics cards
+            metrics_container.clear()
+            with metrics_container:
+                with ui.row().classes('w-full gap-4 justify-between'):
+                    with ui.card().classes('flex-1 p-4'):
+                        ui.label('Total New Players').classes('text-lg font-bold')
+                        ui.label(str(data['totalPlayers'])).classes('text-2xl mt-2')
+                    
+                    with ui.card().classes('flex-1 p-4'):
+                        ui.label('Tutorial Completion').classes('text-lg font-bold')
+                        ui.label(f"{data['tutorialCompletionRate']:.1f}%").classes('text-2xl mt-2')
+                    
+                    with ui.card().classes('flex-1 p-4'):
+                        ui.label('Played At Least 1 Game').classes('text-lg font-bold')
+                        ui.label(f"{data['playedOneGameRate']:.1f}%").classes('text-2xl mt-2')
+                    
+                    with ui.card().classes('flex-1 p-4'):
+                        ui.label('Played Multiple Games').classes('text-lg font-bold')
+                        ui.label(f"{data['playedMultipleGamesRate']:.1f}%").classes('text-2xl mt-2')
+        else:
+            ui.notify(f'Error fetching engagement metrics: {response.status_code}', type='error')
+    except Exception as e:
+        ui.notify(f'Error: {str(e)}', type='error')
+
 @ui.page('/')
 def dashboard():    
-    global api_label, player_id_input, actions, players_list, new_players_plot, games_plot, date_input
+    global api_label, player_id_input, actions, players_list, new_players_plot, games_plot, date_input, metrics_container
     
     with ui.row().classes('w-full h-full gap-4 p-4'):
         with ui.column().classes('w-1/4 min-w-[250px]'):
@@ -322,7 +361,10 @@ def dashboard():
                 api_label = ui.label(f"Current API: {current_api}")
                 ui.label('Show data from:').classes('ml-4')
                 date_input = ui.input(value='2024-10-31', placeholder='YYYY-MM-DD')
-                date_input.on('change', lambda: fetch_dashboard_data())
+                date_input.on('change', lambda: [fetch_dashboard_data(), fetch_engagement_metrics()])
+            
+            # Add the metrics container
+            metrics_container = ui.row().classes('w-full mt-4')
             
             with ui.row().classes('w-full gap-4 mt-4 flex-wrap'):
                 with ui.card().classes('w-[600px]'):
@@ -340,6 +382,7 @@ def dashboard():
     update_last_visit()
     load_players()
     fetch_dashboard_data()
+    fetch_engagement_metrics()
 
 def format_timestamp(timestamp):
     if isinstance(timestamp, dict):
