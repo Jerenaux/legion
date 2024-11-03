@@ -344,9 +344,77 @@ def fetch_engagement_metrics():
     except Exception as e:
         ui.notify(f'Error: {str(e)}', type='error')
 
+def fetch_tutorial_dropoff():
+    try:
+        date = date_input.value
+        
+        response = requests.get(
+            f"{current_api}/getTutorialDropoffStats",
+            params={'date': date},
+            headers=get_headers()
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Create a bar chart for tutorial dropoff
+            steps = []
+            counts = []
+            percentages = []
+            
+            for step, stats in data['dropoffPoints'].items():
+                steps.append(step)
+                counts.append(stats['count'])
+                percentages.append(stats['percentage'])
+            
+            fig = go.Figure(data=[
+                go.Bar(
+                    name='Count',
+                    x=steps,
+                    y=counts,
+                    text=counts,
+                    textposition='auto',
+                ),
+                go.Bar(
+                    name='Percentage',
+                    x=steps,
+                    y=percentages,
+                    text=[f'{p:.1f}%' for p in percentages],
+                    textposition='auto',
+                    yaxis='y2'
+                )
+            ])
+            
+            fig.update_layout(
+                title=f'Tutorial Dropoff Points (Average Last Step: {data["averageLastStep"]})',
+                barmode='group',
+                yaxis=dict(
+                    title='Number of Players',
+                    side='left'
+                ),
+                yaxis2=dict(
+                    title='Percentage',
+                    side='right',
+                    overlaying='y',
+                    ticksuffix='%'
+                ),
+                height=400,
+                width=800,
+                margin=dict(l=50, r=50, t=50, b=50)
+            )
+            
+            # Update the plot
+            tutorial_plot.clear()
+            with tutorial_plot:
+                ui.plotly(fig).classes('w-full')
+        else:
+            ui.notify(f'Error fetching tutorial dropoff stats: {response.status_code}', type='error')
+    except Exception as e:
+        ui.notify(f'Error: {str(e)}', type='error')
+
 @ui.page('/')
 def dashboard():    
-    global api_label, player_id_input, actions, players_list, new_players_plot, games_plot, date_input, metrics_container
+    global api_label, player_id_input, actions, players_list, new_players_plot, games_plot, date_input, metrics_container, tutorial_plot
     
     with ui.row().classes('w-full h-full gap-4 p-4'):
         with ui.column().classes('w-1/4 min-w-[250px]'):
@@ -366,6 +434,10 @@ def dashboard():
             # Add the metrics container
             metrics_container = ui.row().classes('w-full mt-4')
             
+            # Add tutorial dropoff plot
+            with ui.card().classes('w-full mt-4'):
+                tutorial_plot = ui.column().classes('w-full')
+            
             with ui.row().classes('w-full gap-4 mt-4 flex-wrap'):
                 with ui.card().classes('w-[600px]'):
                     new_players_plot = ui.column().classes('w-full')
@@ -381,8 +453,9 @@ def dashboard():
     # Update last visit time and load data
     update_last_visit()
     load_players()
-    fetch_dashboard_data()
-    fetch_engagement_metrics()
+    # fetch_dashboard_data ()
+    # fetch_engagement_metrics()
+    # fetch_tutorial_dropoff()
 
 def format_timestamp(timestamp):
     if isinstance(timestamp, dict):

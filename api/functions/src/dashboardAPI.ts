@@ -34,6 +34,17 @@ interface EngagementMetrics {
     playedMultipleGamesRate: number;
 }
 
+interface TutorialDropoffStats {
+    totalPlayers: number;
+    dropoffPoints: {
+        [tutorialStep: string]: {
+            count: number;
+            percentage: number;
+        }
+    };
+    averageLastStep: string;
+}
+
 export async function updateDAU(userId: string) {
     const db = admin.firestore();
     const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
@@ -457,3 +468,91 @@ export const getEngagementMetrics = onRequest(async (request, response) => {
         }
     });
 });
+
+export const getTutorialDropoffStats = onRequest(async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const startDate = request.query.date;
+            if (!startDate) {
+                response.status(400).send("Bad Request: Missing date parameter");
+                return;
+            }
+
+            // Get all players who joined after the start date
+            const playersSnapshot = await db.collection("players")
+                .where("joinDate", ">=", startDate)
+                .get();
+
+            const totalPlayers = playersSnapshot.size;
+            if (totalPlayers === 0) {
+                response.send({
+                    totalPlayers: 0,
+                    dropoffPoints: {},
+                    averageLastStep: "none"
+                });
+                return;
+            }
+
+            // Collect all unique tutorial steps and count occurrences
+            const dropoffPoints: { [key: string]: number } = {};
+            const stepOrder: string[] = []; // To keep track of step discovery order
+
+            // Process each player
+            for (const playerDoc of playersSnapshot.docs) {
+                // Get all tutorial actions for this player
+                const tutorialActions = await playerDoc.ref
+                    .collection("actions")
+                    .where("actionType", "==", "tutorial")
+                    .orderBy("timestamp", "desc")
+                    .limit(1)
+                    .get();
+
+                if (!tutorialActions.empty) {
+                    const lastAction = tutorialActions.docs[0].data();
+                    const lastStep = lastAction.details;
+                    
+                    if (typeof lastStep === 'string') {
+                        // Add step to order list if it's new
+                        if (!stepOrder.includes(lastStep)) {
+                            stepOrder.push(lastStep);
+                        }
+                        
+                        // Increment count for this step
+                        dropoffPoints[lastStep] = (dropoffPoints[lastStep] || 0) + 1;
+                    }
+                }
+            }
+
+            // Calculate percentages and format response
+            const stats: TutorialDropoffStats = {
+                totalPlayers,
+                dropoffPoints: {},
+                averageLastStep: "none"
+            };
+
+            // Calculate weighted average to find average last step
+            let weightedSum = 0;
+            stepOrder.forEach((step, index) => {
+                const count = dropoffPoints[step] || 0;
+                stats.dropoffPoints[step] = {
+                    count,
+                    percentage: (count / totalPlayers) * 100
+                };
+                weightedSum += index * count;
+            });
+
+            const averageStepIndex = stepOrder.length > 0 ? 
+                Math.round(weightedSum / totalPlayers) : -1;
+            stats.averageLastStep = averageStepIndex >= 0 ? 
+                stepOrder[averageStepIndex] : "none";
+
+            response.send(stats);
+        } catch (error) {
+            console.error("getTutorialDropoffStats error:", error);
+            response.status(500).send("Error calculating tutorial dropoff stats");
+        }
+    });
+});
+
