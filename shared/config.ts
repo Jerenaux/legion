@@ -50,7 +50,7 @@ export const ENABLE_Q_NEWS = true;
 export const ENABLE_QUESTS = false;
 export const ENABLE_SPECTATOR_MODE = false;
 export const ENABLE_SETTINGS = true;
-export const ENABLE_ELYSIUM = false;
+export const ENABLE_ELYSIUM = true;
 
 // Admin
 export let FREEZE_AI = true;

@@ -1100,7 +1100,7 @@ export abstract class Game
         try {
             await apiFetch(
                 'postGameUpdate',
-                '', // TODO: API KEY
+                '',
                 {
                     method: 'POST',
                     body: {
@@ -1120,6 +1120,9 @@ export abstract class Game
                         mode: this.mode,
                         spellsUsed: team.anySpellsUsed()
                     },
+                    headers: {
+                        'x-api-key': process.env.API_KEY,
+                    }
                 }
             );
         } catch (error) {

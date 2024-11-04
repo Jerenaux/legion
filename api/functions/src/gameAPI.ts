@@ -51,12 +51,16 @@ export const createGame = onRequest({ secrets: ["API_KEY"] }, (request, response
   });
 });
 
-export const gameData = onRequest((request, response) => {
+export const gameData = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
   logger.info("Fetching gameData");
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
       const gameId = request.query.id;
       if (!gameId) {
         response.status(400).send("Bad Request: Missing game ID");
@@ -140,11 +144,15 @@ export const completeGame = onRequest((request, response) => {
   });
 });
 
-export const getRemoteConfig = onRequest((request, response) => {
+export const getRemoteConfig = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
   const remoteConfig = admin.remoteConfig();
 
   corsMiddleware(request, response, async () => {
     try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
        // Fetch the Remote Config template
       const template = await remoteConfig.getTemplate();
 

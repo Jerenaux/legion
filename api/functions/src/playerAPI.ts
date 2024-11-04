@@ -812,8 +812,13 @@ export const setPlayerOnSteroids = onRequest({ secrets: ["API_KEY"] }, (request,
   });
 });
 
-export const zombieData = onRequest(async (req, res) => {
+export const zombieData = onRequest({ secrets: ["API_KEY"] }, async (req, res) => {
   try {
+    if (!checkAPIKey(req)) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
+
     const db = admin.firestore();
     const auth = admin.auth();
 

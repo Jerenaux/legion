@@ -84,7 +84,12 @@ io.on('connection', async (socket: any) => {
       } else {
         gameData = await apiFetch(
           `gameData?id=${gameId}`,
-          '', // TODO: add API key
+          '',
+          {
+            headers: {
+              'x-api-key': process.env.API_KEY,
+            }
+          }
         );
       }
   

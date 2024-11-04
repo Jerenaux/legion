@@ -101,7 +101,15 @@ export class AIGame extends Game {
     async fetchZombieTeam(team: Team, elo: number, nb: number, levels: number[]) {
         // console.log(`[AIGame:fetchZombieTeam] mode = ${this.mode}, league = ${this.league}, elo = ${elo}`);
         const league = this.mode == PlayMode.RANKED_VS_AI ? this.league : -1;
-        const data = await apiFetch(`zombieData?league=${league}&elo=${elo}`, ''); // TODO: Add API key
+        const data = await apiFetch(
+            `zombieData?league=${league}&elo=${elo}`,
+            '',
+            {
+                headers: {
+                    'x-api-key': process.env.API_KEY,
+                }
+            }
+        );
         console.log(`[AIGame:fetchZombieTeam] Zombie player data: ${JSON.stringify(data.playerData)}`);
         
         if (data.playerData === undefined) {

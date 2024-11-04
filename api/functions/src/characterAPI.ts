@@ -2,7 +2,7 @@ import {Transaction} from "firebase-admin/firestore";
 
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
 import {getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFields, PlayMode} from "@legion/shared/enums";
@@ -136,11 +136,15 @@ export async function processChestRewards(
   });
 }
 
-export const postGameUpdate = onRequest((request, response) => {
+export const postGameUpdate = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
       const uid = request.body.uid;
       const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score, tokens} =
         request.body.outcomes as OutcomeData;
