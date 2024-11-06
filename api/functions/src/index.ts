@@ -11,7 +11,7 @@ import {createPlayer, getPlayerData, queuingData,
   saveGoldReward, claimChest, completeTour, fetchGuideTip, registerAddress,
   setPlayerOnSteroids, zombieData, withdrawSOL, recordPlayerAction} from "./playerAPI";
 import { createLobby, joinLobby, cancelLobby, listLobbies, getLobbyDetails, countLobbies } from "./lobbyAPI";
-import {createGame, gameData, completeGame, getRemoteConfig, addNews, getNews} from "./gameAPI";
+import {createGame, gameData, completeGame, getRemoteConfig, addNews, getNews, saveReplay, getReplay} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats} from "./dashboardAPI";
 import { checkAPIKey, isDevelopment } from "./APIsetup";
@@ -27,7 +27,7 @@ export {
   getGameLog, completeTour, fetchGuideTip, manualLeaguesUpdate, getRemoteConfig,
   registerAddress, createLobby, joinLobby, cancelLobby, listLobbies, setPlayerOnSteroids,
   zombieData, withdrawSOL, getLobbyDetails, countLobbies, addNews, getNews, recordPlayerAction,
-  listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats
+  listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats, saveReplay, getReplay
 };
 
 export const helloWorld = onRequest({ secrets: ["API_KEY"] }, (request, response) => {

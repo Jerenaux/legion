@@ -105,9 +105,45 @@ export class Arena extends Phaser.Scene
     inputLocked = false;
     handSprite: Phaser.GameObjects.Sprite;
 
+    isReplay: boolean = false;
+    replayData: any = null;
+    replayTimer: Phaser.Time.TimerEvent = null;
+    currentReplayIndex: number = 0;
+
+    // Add this near the top of the class definition
+    eventHandlers: Map<string, (data: any) => void>;
+
     constructor() {
         super({ key: 'Arena' });
         this.sfxVolume = this.getSFXVolumeFromLocalStorage();
+        
+        // Initialize event handlers map
+        this.eventHandlers = new Map([
+            ['gameStatus', this.initializeGame.bind(this)],
+            ['move', this.processMove.bind(this)],
+            ['attack', this.processAttack.bind(this)],
+            ['obstacleattack', this.processObstacleAttack.bind(this)],
+            ['cooldown', this.processCooldown.bind(this)],
+            ['inventory', this.processInventory.bind(this)],
+            ['hpchange', this.processHPChange.bind(this)],
+            ['statuseffectchange', this.processStatusChange.bind(this)],
+            ['mpchange', this.processMPChange.bind(this)],
+            ['useitem', this.processUseItem.bind(this)],
+            ['cast', (data) => this.processCast(true, data)],
+            ['endcast', (data) => this.processCast(false, data)],
+            ['terrain', this.processTerrain.bind(this)],
+            ['gen', (data) => {
+                if (Array.isArray(data)) {
+                    data.forEach(g => this.enqueueGEN(g));
+                } else {
+                    this.enqueueGEN(data.gen);
+                }
+            }],
+            ['localanimation', this.processLocalAnimation.bind(this)],
+            ['gameEnd', this.processGameEnd.bind(this)],
+            ['score', this.processScoreUpdate.bind(this)],
+            ['addCharacter', this.processAddCharacter.bind(this)],
+        ]);
     }
 
     lockInput() {
@@ -213,13 +249,17 @@ export class Arena extends Phaser.Scene
 
     async connectToServer() {
         console.log('Connecting to the server ...');
-        const gameId = this.extractGameIdFromUrl();
+        const pathParts = window.location.pathname.split('/');
+        const isReplay = pathParts[1] === 'replay';
+        const gameId = pathParts[2];
+
         this.socket = io(
             process.env.GAME_SERVER_URL,
             {
                 auth: {
                     token: await getFirebaseIdToken(),
                     gameId,
+                    isReplay,
                 },
             }
         );
@@ -236,6 +276,12 @@ export class Arena extends Phaser.Scene
             }
         };
 
+        // Set up socket event listeners using the event handlers map
+        this.eventHandlers.forEach((handler, event) => {
+            this.socket.on(event, handler);
+        });
+
+        // Add special handlers that aren't part of the regular game flow
         this.socket.on('connect', () => {
             // console.log('Connected to the server');
         });
@@ -261,77 +307,7 @@ export class Arena extends Phaser.Scene
             errorToast(`An error occurred: ${error}`);
         });
 
-        this.socket.on('gameStatus', this.initializeGame.bind(this));
-
-        this.socket.on('move',this.processMove.bind(this));
-
-        this.socket.on('attack', (data) => {
-            this.processAttack(data);
-        });
-
-        this.socket.on('obstacleattack', (data) => {
-            this.processObstacleAttack(data);
-        });
-
-        this.socket.on('cooldown', (data) => {
-            this.processCooldown(data);
-        });
-
-        this.socket.on('inventory', (data) => {
-            this.processInventory(data);
-        });
-
-        this.socket.on('hpchange', (data) => {
-            this.processHPChange(data);
-        });
-
-        this.socket.on('statuseffectchange', (data) => {
-            this.processStatusChange(data);
-        });
-
-        this.socket.on('mpchange', (data) => {
-            this.processMPChange(data);
-        });
-
-        this.socket.on('useitem', (data) => {
-            this.processUseItem(data);
-        });
-
-        this.socket.on('cast', (data) => {
-            this.processCast(true, data);
-        });
-
-        this.socket.on('endcast', (data) => {
-            this.processCast(false, data);
-        });
-
-        this.socket.on('terrain', (data) => {
-            this.processTerrain(data);
-        });
-
-        this.socket.on('gen', (data) => {
-            if (Array.isArray(data)) {
-                data.forEach(g => this.enqueueGEN(g));
-            } else {
-                this.enqueueGEN(data.gen);
-            }
-        });
-
-        this.socket.on('localanimation', (data) => {
-            this.processLocalAnimation(data);
-        });
-
-        this.socket.on('gameEnd', (data: OutcomeData) => {
-            this.processGameEnd(data);
-        });
-
-        this.socket.on('score', (data) => {
-            this.processScoreUpdate(data);
-        });
-
-        this.socket.on('addCharacter', (data) => {
-            this.processAddCharacter(data);
-        });
+        this.socket.on('replayData', this.handleReplayData.bind(this));
     }
 
     sendMove(x, y) {
@@ -1972,5 +1948,56 @@ export class Arena extends Phaser.Scene
 
     isTutorial() {
         return this.gameSettings.tutorial;
+    }
+
+    handleReplayData(data: any) {
+        this.isReplay = true;
+        this.replayData = data;
+        
+        // Initialize game with first gameStatus message
+        const initialStatus = this.replayData.messages.find(m => m.event === 'gameStatus');
+        if (initialStatus) {
+            this.initializeGame(initialStatus.data);
+        }
+
+        // Start replay timer
+        this.startReplayPlayback();
+    }
+
+    startReplayPlayback() {
+        this.currentReplayIndex = 0;
+        this.processNextReplayEvent();
+    }
+
+    processNextReplayEvent() {
+        if (this.currentReplayIndex >= this.replayData.messages.length) {
+            console.log('Replay finished');
+            return;
+        }
+
+        const currentMessage = this.replayData.messages[this.currentReplayIndex];
+        const nextMessage = this.replayData.messages[this.currentReplayIndex + 1];
+
+        // Process current message
+        if (currentMessage.event !== 'gameStatus') { // We already processed gameStatus
+            this.processReplayMessage(currentMessage);
+        }
+
+        this.currentReplayIndex++;
+
+        // Schedule next message if there is one
+        if (nextMessage) {
+            const delay = nextMessage.timestamp - currentMessage.timestamp;
+            this.time.delayedCall(delay, this.processNextReplayEvent, [], this);
+        }
+    }
+
+    processReplayMessage(message: any) {
+        const handler = this.eventHandlers.get(message.event);
+        if (handler) {
+            handler(message.data);
+        } else {
+            console.warn(`No handler found for replay event: ${message.event}`);
+        }
     }
 }

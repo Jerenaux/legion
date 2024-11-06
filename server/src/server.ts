@@ -64,11 +64,37 @@ io.on('connection', async (socket: any) => {
       socket.uid = decodedToken.uid;
       
       let gameId = socket.handshake.auth.gameId;
+      const isReplay = socket.handshake.auth.isReplay;
+
       if (!gameId) {
         console.error('No game ID provided!');
         socket.disconnect();
         return;
       }
+
+      if (isReplay) {
+        console.log(`[server:connection] User ${shortToken(socket.uid)} requesting replay of game ${gameId}`);
+        const replayData = await apiFetch(
+          `getReplay?id=${gameId}`,
+          '',
+          {
+            headers: {
+              'x-api-key': process.env.API_KEY,
+            }
+          }
+        );
+        
+        if (!replayData) {
+          console.error(`Replay ${gameId} not found!`);
+          socket.disconnect();
+          return;
+        }
+
+        // Send replay data immediately
+        socket.emit('replayData', replayData);
+        return;
+      }
+
       const isTutorial = gameId === 'tutorial';
       console.log(`[server:connection] User ${shortToken(socket.uid)} connecting to game ${gameId}, [isTutorial: ${isTutorial}]`);
 

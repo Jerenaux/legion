@@ -422,6 +422,12 @@ export abstract class Game
                 console.log(`[Game:endGame] Team ${team!.id} (UID: ${uid}) outcomes: ${JSON.stringify(outcomes)}`);
                 team.getSocket()?.emit('gameEnd', outcomes);
 
+                this.replayMessages.push({
+                    timestamp: Date.now() - this.startTime,
+                    event: 'gameEnd',
+                    data: outcomes
+                });
+
                 results[team.teamData.playerUID] = {
                     audience: team.score,
                     score: outcomes.rawGrade,

@@ -232,15 +232,24 @@ export const saveReplay = onRequest({ secrets: ["API_KEY"] }, (request, response
 
       // Create replay data object
       const replayData = {
-        gameId,
         messages: messages as GameReplayMessage[],
         duration,
         mode,
         savedAt: new Date(),
       };
 
-      // Save to a new 'replays' collection
-      await db.collection("replays").doc(gameId).set(replayData);
+      // Find the game document and update it with replay data
+      const gameRef = await db.collection("games")
+        .where("gameId", "==", gameId)
+        .limit(1)
+        .get();
+
+      if (gameRef.empty) {
+        response.status(404).send("Game not found");
+        return;
+      }
+
+      await gameRef.docs[0].ref.update({ replay: replayData });
 
       response.status(200).send({status: 0});
     } catch (error) {
@@ -261,15 +270,23 @@ export const getReplay = onRequest((request, response) => {
         return;
       }
 
-      const replayDoc = await db.collection("replays").doc(gameId.toString()).get();
+      const gameRef = await db.collection("games")
+        .where("gameId", "==", gameId.toString())
+        .limit(1)
+        .get();
 
-      if (!replayDoc.exists) {
+      if (gameRef.empty) {
+        response.status(404).send("Game not found");
+        return;
+      }
+
+      const gameData = gameRef.docs[0].data();
+      if (!gameData.replay) {
         response.status(404).send("Replay not found");
         return;
       }
 
-      const replayData = replayDoc.data();
-      response.status(200).json(replayData);
+      response.status(200).json(gameData.replay);
     } catch (error) {
       console.error("getReplay error:", error);
       response.status(500).send("Error fetching replay");
