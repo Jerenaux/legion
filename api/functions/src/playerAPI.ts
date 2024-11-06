@@ -141,7 +141,7 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
       'queue': false,
     },
     guideTipsShown: [],
-    utilizationStats: {
+    engagementStats: {
       everPurchased: false,
       everSpentSP: false,
       everOpenedDailyLoot: false,
@@ -455,7 +455,7 @@ export const claimChest = onRequest((request, response) => {
 
       // Update utilization stats
       batch.update(playerRef, {
-        'utilizationStats.everOpenedDailyLoot': true,
+        'engagementStats.everOpenedDailyLoot': true,
       });
 
       // Commit the batch
@@ -526,14 +526,14 @@ const figureOutGuideTip = (playerData: any) => {
 
   if (!playerData.guideTipsShown.includes(0) &&
     playerData.gold >= STARTING_GOLD * 3 &&
-    !playerData.utilizationStats.everPurchased) {
+    !playerData.engagementStats.everPurchased) {
     return {
       guideId: 0,
       route: "/shop",
     };
   }
 
-  if (!playerData.guideTipsShown.includes(1) && !playerData.utilizationStats.everSpentSP) {
+  if (!playerData.guideTipsShown.includes(1) && !playerData.engagementStats.everSpentSP) {
     // Iterate over the characters of the player to find one where sp > 0
     for (const characterRef of playerData.characters) {
       const characterData = characterRef.get();
@@ -546,7 +546,7 @@ const figureOutGuideTip = (playerData: any) => {
     }
   }
 
-  if (!playerData.guideTipsShown.includes(2) && !playerData.utilizationStats.everOpenedDailyLoot) {
+  if (!playerData.guideTipsShown.includes(2) && !playerData.engagementStats.everOpenedDailyLoot) {
     // Check in the daily loot of the character if one of the time fields is in the past
     for (const chestType of Object.values(ChestColor)) {
       if (playerData.dailyloot[chestType].time < Date.now() / 1000) {
@@ -561,7 +561,7 @@ const figureOutGuideTip = (playerData: any) => {
   // You have unused equipment pieces in your inventory! Click here to go to the team page and equip them!
   if (!playerData.guideTipsShown.includes(3) &&
     playerData.inventory.equipment.length > 0 &&
-    !playerData.utilizationStats.everEquippedEquipment) {
+    !playerData.engagementStats.everEquippedEquipment) {
     return {
       guideId: 3,
       route: "/team",
@@ -571,7 +571,7 @@ const figureOutGuideTip = (playerData: any) => {
   // "You have unused consumables in your inventory! Click here to go to the team page and equip them on your characters!",
   if (!playerData.guideTipsShown.includes(4) &&
     playerData.inventory.consumables.length > 3 &&
-    !playerData.utilizationStats.everEquippedConsumable) {
+    !playerData.engagementStats.everEquippedConsumable) {
     return {
       guideId: 4,
       route: "/team",
@@ -581,7 +581,7 @@ const figureOutGuideTip = (playerData: any) => {
   // "You have unused spells in your inventory! Click here to go to the team page and teach them to your characters!",
   if (!playerData.guideTipsShown.includes(5) &&
     playerData.inventory.spells.length > 0 &&
-    !playerData.utilizationStats.everEquippedSpell) {
+    !playerData.engagementStats.everEquippedSpell) {
     return {
       guideId: 5,
       route: "/team",
@@ -590,7 +590,7 @@ const figureOutGuideTip = (playerData: any) => {
 
   // "Not sure what to do? Just click here to start a Practice game and try out your characters and spells!",
   if (!playerData.guideTipsShown.includes(6) &&
-    !playerData.utilizationStats.everPlayedPractice) {
+    !playerData.engagementStats.everPlayedPractice) {
     return {
       guideId: 6,
       route: "/queue/0",
@@ -599,8 +599,8 @@ const figureOutGuideTip = (playerData: any) => {
 
   // "Now that you know the game a bit more, click here to play against another player in Casual mode!",
   if (!playerData.guideTipsShown.includes(7) &&
-    playerData.utilizationStats.everPlayedPractice &&
-    !playerData.utilizationStats.everPlayedCasual) {
+    playerData.engagementStats.everPlayedPractice &&
+    !playerData.engagementStats.everPlayedCasual) {
     return {
       guideId: 7,
       route: "/queue/1",
@@ -610,7 +610,7 @@ const figureOutGuideTip = (playerData: any) => {
   // "You've had a few victories now, why don't you try your luck in Ranked mode and climb the ladder? Click here to start!",
   if (!playerData.guideTipsShown.includes(8) &&
     playerData.casualStats.wins >= 2 &&
-    !playerData.utilizationStats.everPlayedRanked) {
+    !playerData.engagementStats.everPlayedRanked) {
     return {
       guideId: 8,
       route: "/queue/2",
@@ -627,8 +627,8 @@ const figureOutGuideTip = (playerData: any) => {
 const figureOutConbatTip = (playerData: any) => {
   // "Your characters know cool spells, this time why don't you give them a try in combat?",
   if (!playerData.guideTipsShown.includes(9) &&
-    (playerData.utilizationStats.everPlayedPractice || playerData.utilizationStats.everPlayedCasual || playerData.utilizationStats.everPlayedRanked) &&
-    !playerData.utilizationStats.everUsedSpell) {
+    (playerData.engagementStats.everPlayedPractice || playerData.engagementStats.everPlayedCasual || playerData.engagementStats.everPlayedRanked) &&
+    !playerData.engagementStats.everUsedSpell) {
     return {
       guideId: 9,
       route: "",

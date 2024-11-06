@@ -114,7 +114,7 @@ export const purchaseItem = onRequest((request, response) => {
             inventory: inventoryUpdate,
           });
           transaction.update(playerDocRef, {
-            'utilizationStats.everPurchased': true,
+            'engagementStats.everPurchased': true,
           });
 
           return { gold, inventory: inventoryUpdate };

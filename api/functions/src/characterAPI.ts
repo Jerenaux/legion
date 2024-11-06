@@ -202,21 +202,21 @@ export const postGameUpdate = onRequest({ secrets: ["API_KEY"] }, (request, resp
 
         if (spellsUsed) {
           transaction.update(playerRef, {
-            'utilizationStats.everUsedSpells': true,
+            'engagementStats.everUsedSpells': true,
           });
         }
 
         if (mode == PlayMode.PRACTICE) {
           transaction.update(playerRef, {
-            'utilizationStats.everPlayedPractice': true,
+            'engagementStats.everPlayedPractice': true,
           });
         } else if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
           transaction.update(playerRef, {
-            'utilizationStats.everPlayedCasual': true,
+            'engagementStats.everPlayedCasual': true,
           });
         } else if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
           transaction.update(playerRef, {
-            'utilizationStats.everPlayedRanked': true,
+            'engagementStats.everPlayedRanked': true,
           });
         }
 
@@ -567,7 +567,7 @@ export const spendSP = onRequest((request, response) => {
         });
 
         transaction.update(playerRef, {
-          'utilizationStats.everSpentSP': true,
+          'engagementStats.everSpentSP': true,
         });
       });
 
