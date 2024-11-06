@@ -2,7 +2,7 @@ import { Arena } from '../../game/Arena';
 import { Team } from '../../game/Team';
 import { Player } from '../../game/Player';
 import { PlayMode, GEN, AIAttackMode } from '@legion/shared/enums';
-import { GameData, PlayerNetworkData } from '@legion/shared/interfaces';
+import { GameData, PlayerNetworkData, PlayerProfileData } from '@legion/shared/interfaces';
 
 // Mock Phaser
 const mockPhaser = {
@@ -54,6 +54,15 @@ jest.mock('socket.io-client', () => ({
         disconnect: jest.fn()
     }))
 }));
+
+const mockPlayerProfile: PlayerProfileData = {
+    teamName: 'Test Team',
+    playerName: 'Test Player',
+    playerLevel: 1,
+    playerRank: 1,
+    playerAvatar: 'default',
+    playerLeague: 1
+};
 
 describe('Arena', () => {
     let arena: Arena;
@@ -118,13 +127,13 @@ describe('Arena', () => {
                 player: {
                     teamId: 1,
                     team: [],
-                    player: 'Player1',
+                    player: mockPlayerProfile,
                     score: 0
                 },
                 opponent: {
                     teamId: 2,
                     team: [],
-                    player: 'Player2',
+                    player: mockPlayerProfile,
                     score: 0
                 },
                 general: {
