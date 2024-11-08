@@ -144,7 +144,7 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
     engagementStats: {
       startedGames: 0, // Total games started
       totalGames: 0, // Total games played and finished
-      finishedTutorial: false,
+      completedTutorial: false,
       everPurchased: false,
       everSpentSP: false,
       everOpenedDailyLoot: false,

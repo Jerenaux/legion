@@ -430,13 +430,13 @@ export const getEngagementMetrics = onRequest(async (request, response) => {
             // Process each player
             for (const playerDoc of playersSnapshot.docs) {
                 const playerData = playerDoc.data();
-                const totalGames = playerData.engagementMetrics?.totalGames || 0;
+                const totalGames = playerData.engagementStats?.totalGames || 0;
                 
                 if (totalGames >= 1) playedOneGame++;
                 if (totalGames > 1) playedMultipleGames++;
 
                 // Check tutorial completion using the new flag
-                if (playerData.engagementMetrics?.completedTutorial) {
+                if (playerData.engagementStats?.completedTutorial) {
                     completedTutorialCount++;
                 }
             }
@@ -631,6 +631,158 @@ export const getTutorialDropoffStats = onRequest(async (request, response) => {
         } catch (error) {
             console.error("getTutorialDropoffStats error:", error);
             response.status(500).send("Error calculating tutorial dropoff stats");
+        }
+    });
+});
+
+export const migrateEngagementMetrics = onRequest(async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            // Get all players
+            const playersSnapshot = await db.collection("players").get();
+            const playerIds = playersSnapshot.docs.map(doc => doc.id);
+            
+            console.log(`Starting migration for ${playerIds.length} players`);
+            const results = {
+                totalPlayers: playerIds.length,
+                updatedPlayers: 0,
+                errors: [] as string[]
+            };
+
+            // Process players in batches
+            const gameBatchSize = 30; // Firestore array-contains-any limit
+            const tutorialBatchSize = 500;
+
+            // Process each player
+            for (let i = 0; i < playerIds.length; i += tutorialBatchSize) {
+                const batchPlayerIds = playerIds.slice(i, i + tutorialBatchSize);
+                
+                // Create parallel promises for tutorial completion check
+                const tutorialQueries = batchPlayerIds.map(playerId =>
+                    db.collection("players").doc(playerId)
+                        .collection("actions")
+                        .where("actionType", "==", "tutorial")
+                        .where("details", "==", "coda")
+                        .limit(1)
+                        .get()
+                );
+
+                // Get tutorial completion results
+                const tutorialResults = await Promise.all(tutorialQueries);
+                const completedTutorials = new Map(
+                    tutorialResults.map((result, index) => 
+                        [batchPlayerIds[index], !result.empty])
+                );
+
+                // Count games per player
+                const gamesPerPlayer = new Map<string, number>();
+                
+                // Process games in sub-batches due to array-contains-any limit
+                for (let j = 0; j < batchPlayerIds.length; j += gameBatchSize) {
+                    const gamesBatchPlayerIds = batchPlayerIds.slice(j, j + gameBatchSize);
+                    const gamesQuery = await db.collection("games")
+                        .where("players", "array-contains-any", gamesBatchPlayerIds)
+                        .get();
+
+                    // Count games per player
+                    gamesQuery.docs.forEach(gameDoc => {
+                        const players = gameDoc.data().players || [];
+                        players.forEach((playerId: string) => {
+                            if (gamesBatchPlayerIds.includes(playerId)) {
+                                gamesPerPlayer.set(playerId, (gamesPerPlayer.get(playerId) || 0) + 1);
+                            }
+                        });
+                    });
+                }
+
+                // Update each player's engagement metrics
+                const updates = batchPlayerIds.map(async (playerId) => {
+                    try {
+                        const totalGames = gamesPerPlayer.get(playerId) || 0;
+                        const completedTutorial = completedTutorials.get(playerId) || false;
+
+                        await db.collection("players").doc(playerId).update({
+                            'engagementStats.totalGames': totalGames,
+                            'engagementStats.completedTutorial': completedTutorial
+                        });
+
+                        results.updatedPlayers++;
+                    } catch (error) {
+                        results.errors.push(`Error updating player ${playerId}: ${error}`);
+                    }
+                });
+
+                await Promise.all(updates);
+                
+                // Log progress
+                console.log(`Processed ${Math.min(i + tutorialBatchSize, playerIds.length)} out of ${playerIds.length} players`);
+            }
+
+            response.send({
+                message: "Migration completed",
+                results
+            });
+
+        } catch (error) {
+            console.error("Migration error:", error);
+            response.status(500).send({
+                message: "Error during migration",
+                // @ts-ignore
+                error: error.toString()
+            });
+        }
+    });
+});
+
+export const migrateMetricsToStats = onRequest(async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            // Get all players that have engagementMetrics
+            const playersSnapshot = await db.collection("players")
+                .where("engagementMetrics", "!=", null)
+                .get();
+            
+            console.log(`Found ${playersSnapshot.size} players with engagementMetrics`);
+            const results = {
+                totalPlayers: playersSnapshot.size,
+                updatedPlayers: 0,
+                errors: [] as string[]
+            };
+
+            // Update each player
+            const updates = playersSnapshot.docs.map(async (doc) => {
+                try {
+                    const data = doc.data();
+                    if (data.engagementMetrics) {
+                        await doc.ref.update({
+                            'engagementStats': data.engagementMetrics,
+                            'engagementMetrics': admin.firestore.FieldValue.delete()
+                        });
+                        results.updatedPlayers++;
+                    }
+                } catch (error) {
+                    results.errors.push(`Error updating player ${doc.id}: ${error}`);
+                }
+            });
+
+            await Promise.all(updates);
+
+            response.send({
+                message: "Migration completed",
+                results
+            });
+
+        } catch (error) {
+            console.error("Migration error:", error);
+            response.status(500).send({
+                message: "Error during migration",
+                // @ts-ignore
+                error: error.toString()
+            });
         }
     });
 });

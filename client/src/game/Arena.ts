@@ -1599,6 +1599,7 @@ export class Arena extends Phaser.Scene
     }
 
     displayGEN(gen: GEN): Promise<void> {
+        if (this.gameEnded) return;
         return new Promise((resolve) => {
             if (this.killCamActive) {
                 // If kill cam is active, re-enqueue the GEN and resolve immediately
