@@ -422,6 +422,67 @@ export const getEngagementMetrics = onRequest(async (request, response) => {
                 return;
             }
 
+            // Count players based on their metrics
+            let playedOneGame = 0;
+            let playedMultipleGames = 0;
+            let completedTutorialCount = 0;
+
+            // Process each player
+            for (const playerDoc of playersSnapshot.docs) {
+                const playerData = playerDoc.data();
+                const totalGames = playerData.engagementMetrics?.totalGames || 0;
+                
+                if (totalGames >= 1) playedOneGame++;
+                if (totalGames > 1) playedMultipleGames++;
+
+                // Check tutorial completion using the new flag
+                if (playerData.engagementMetrics?.completedTutorial) {
+                    completedTutorialCount++;
+                }
+            }
+
+            const metrics: EngagementMetrics = {
+                totalPlayers,
+                tutorialCompletionRate: (completedTutorialCount / totalPlayers) * 100,
+                playedOneGameRate: (playedOneGame / totalPlayers) * 100,
+                playedMultipleGamesRate: (playedMultipleGames / totalPlayers) * 100
+            };
+
+            response.send(metrics);
+        } catch (error) {
+            console.error("getEngagementMetrics error:", error);
+            response.status(500).send("Error calculating engagement metrics");
+        }
+    });
+});
+
+export const getOldEngagementMetrics = onRequest(async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const startDate = request.query.date;
+            if (!startDate) {
+                response.status(400).send("Bad Request: Missing date parameter");
+                return;
+            }
+
+            // Get all players who joined after the start date
+            const playersSnapshot = await db.collection("players")
+                .where("joinDate", ">=", startDate)
+                .get();
+
+            const totalPlayers = playersSnapshot.size;
+            if (totalPlayers === 0) {
+                response.send({
+                    totalPlayers: 0,
+                    tutorialCompletionRate: 0,
+                    playedOneGameRate: 0,
+                    playedMultipleGamesRate: 0
+                });
+                return;
+            }
+
             const playerIds = playersSnapshot.docs.map(doc => doc.id);
             const gamesPerPlayer = new Map<string, number>();
 

@@ -206,6 +206,10 @@ export const postGameUpdate = onRequest({ secrets: ["API_KEY"] }, (request, resp
           });
         }
 
+        transaction.update(playerRef, {
+          'engagementStats.totalGames': admin.firestore.FieldValue.increment(1),
+        });
+
         if (mode == PlayMode.PRACTICE) {
           transaction.update(playerRef, {
             'engagementStats.everPlayedPractice': true,

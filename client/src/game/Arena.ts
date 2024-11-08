@@ -110,7 +110,6 @@ export class Arena extends Phaser.Scene
     replayTimer: Phaser.Time.TimerEvent = null;
     currentReplayIndex: number = 0;
 
-    // Add this near the top of the class definition
     eventHandlers: Map<string, (data: any) => void>;
 
     constructor() {

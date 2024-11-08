@@ -142,6 +142,9 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
     },
     guideTipsShown: [],
     engagementStats: {
+      startedGames: 0, // Total games started
+      totalGames: 0, // Total games played and finished
+      finishedTutorial: false,
       everPurchased: false,
       everSpentSP: false,
       everOpenedDailyLoot: false,
@@ -1066,6 +1069,15 @@ export const recordPlayerAction = onRequest((request, response) => {
       const actionType = request.body.actionType;
       const details = request.body.details;
       logPlayerAction(uid, actionType, details);
+
+      // if (actionType == 'loadGame' && details.message == 'finish') {
+      //   await incrementStartedGames(uid);
+      // }
+
+      if (actionType == 'tutorial' && details == 'coda') {
+        await incrementCompletedTutorial(uid);
+      }
+
       response.status(200).send({});
     } catch (error) {
       console.error('recordPlayerAction error:', error);
@@ -1073,3 +1085,17 @@ export const recordPlayerAction = onRequest((request, response) => {
     }
   });
 });
+
+async function incrementStartedGames(uid: string) {
+  const db = admin.firestore();
+  await db.collection('players').doc(uid).update({
+    'engagementStats.startedGames': admin.firestore.FieldValue.increment(1),
+  });
+}
+
+async function incrementCompletedTutorial(uid: string) {
+  const db = admin.firestore();
+  await db.collection('players').doc(uid).update({
+    'engagementStats.completedTutorial': true,
+  });
+}
