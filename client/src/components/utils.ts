@@ -119,7 +119,8 @@ export function fetchGuideTip() {
   tipLock = true;
   apiFetch('fetchGuideTip', {
       method: 'GET',
-  })
+
+  }, 1, 300, true)
   .then((data) => {
       if (data.guideId == -1) return;
       showGuideToast(guide[data.guideId], data.route);

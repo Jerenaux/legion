@@ -382,6 +382,10 @@ def fetch_engagement_metrics():
                     with ui.card().classes('flex-1 p-4'):
                         ui.label('Played Multiple Games').classes('text-lg font-bold')
                         ui.label(f"{data['playedMultipleGamesRate']:.1f}%").classes('text-2xl mt-2')
+                    
+                    with ui.card().classes('flex-1 p-4'):
+                        ui.label('Game Completion Rate').classes('text-lg font-bold')
+                        ui.label(f"{data['gameCompletionRate']:.1f}%").classes('text-2xl mt-2')
         else:
             ui.notify(f'Error fetching engagement metrics: {response.status_code}', type='error')
     except Exception as e:
@@ -455,7 +459,7 @@ def fetch_tutorial_dropoff():
     except Exception as e:
         ui.notify(f'Error: {str(e)}', type='error')
 
-@ui.page('/')
+@ui.page('/', response_timeout=4)
 async def dashboard():    
     global api_label, player_id_input, actions, players_list, new_players_plot, games_plot, date_input
     global metrics_container, tutorial_plot, fetch_spinner, selected_player_id, player_cards
