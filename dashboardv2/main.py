@@ -9,6 +9,9 @@ from collections import defaultdict
 from datetime import timedelta
 import asyncio
 import pytz
+import logging
+from enum import IntEnum
+
 # Load environment variables
 load_dotenv()
 API_KEY = os.getenv('API_KEY', '')
@@ -30,6 +33,25 @@ PLAY_MODE = {
 }
 
 TIMEZONE = pytz.timezone('Europe/Brussels')
+
+# At the start of your script, configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+class GameAction(IntEnum):
+    SPELL_USE = 0
+    ITEM_USE = 1
+    MOVE = 2
+    ATTACK = 3
+
+GAME_ACTION_NAMES = {
+    GameAction.SPELL_USE: "Used spell",
+    GameAction.ITEM_USE: "Used item",
+    GameAction.MOVE: "Moved",
+    GameAction.ATTACK: "Attacked"
+}
 
 def get_headers():
     if current_api == PROD_API:
@@ -165,10 +187,42 @@ async def fetch_action_log(player_id=None):
                     action_type = action.get('actionType', 'N/A')
                     details = action.get('details', {})
                     
+                    # Check for game pageView and create additional card
+                    if action_type == 'pageView' and isinstance(details, dict):
+                        message = details.get('message', '')
+                        if message.startswith('/game/'):
+                            game_id = message.replace('/game/', '')
+                            logging.info(f"Game ID found: {game_id}")
+                            
+                            # Fetch game log
+                            try:
+                                game_log_response = requests.get(
+                                    f"{current_api}/getGameLog",
+                                    params={'gameId': game_id},
+                                    headers=get_headers()
+                                )
+                                if game_log_response.status_code == 200:
+                                    game_log = game_log_response.json()
+                                else:
+                                    game_log = f"Error fetching game log: {game_log_response.status_code}"
+                            except Exception as e:
+                                game_log = f"Error fetching game log: {str(e)}"
+                            
+                            # Add the game log card with a slightly later timestamp
+                            cards.append({
+                                'timestamp_value': timestamp_value + 0.1,  # Slightly after the pageView
+                                'time_str': format_timestamp(timestamp),
+                                'content': f"Game Log for {game_id}",
+                                'type': 'game_log',
+                                'details': game_log,
+                                'is_mobile': isinstance(details, dict) and details.get('mobile')
+                            })
+                    
                     # Handle loadGame, pageView, and gameStart actions
                     if action_type == 'loadGame' and isinstance(details, dict) and details.get('message'):
                         content = f"loadGame - {details.get('message')}"
                     elif action_type == 'pageView' and isinstance(details, dict) and details.get('message'):
+                        logging.info(f"pageView - {details.get('message')}")
                         content = f"pageView - {details.get('message')}"
                     elif action_type == 'gameStart' and isinstance(details, dict) and details.get('mode') is not None:
                         mode = PLAY_MODE.get(details.get('mode'), 'UNKNOWN')
@@ -198,7 +252,33 @@ async def fetch_action_log(player_id=None):
                                 ui.label('📱' if card['is_mobile'] else '💻').classes('text-xl')
                             
                             if card['details']:
-                                ui.label(f"Details: {card['details']}").classes('text-sm font-mono')
+                                if card['type'] == 'game_log':
+                                    # Create an expandable section for the game log
+                                    with ui.expansion().classes('w-full'):
+                                        # Extract game ID from the content
+                                        game_id = card['content'].replace('Game Log for ', '')
+                                        replay_url = f"https://www.play-legion.io/replay/{game_id}"
+                                        
+                                        # Create header with link
+                                        with ui.row().classes('items-center gap-2 w-full'):
+                                            ui.link(f'Game Log for {game_id}', replay_url, new_tab=True).classes('text-blue-600 hover:text-blue-800')
+                                        
+                                        if isinstance(card['details'], list):
+                                            # Display each log entry on its own line
+                                            for entry in card['details']:
+                                                timestamp, action_display, formatted_entry = format_game_log_entry(entry)
+                                                with ui.row().classes('items-start gap-2'):
+                                                    if timestamp:
+                                                        # Only show the time portion (last 8 characters: HH:MM:SS)
+                                                        ui.label(timestamp[-8:]).classes('font-mono text-gray-600 w-20')
+                                                    if action_display:
+                                                        ui.label(action_display).classes('font-mono text-blue-600 w-48')
+                                                    ui.label(formatted_entry).classes('text-sm font-mono whitespace-pre-wrap mb-1 flex-grow')
+                                        else:
+                                            # Fallback for non-list responses (like error messages)
+                                            ui.label(str(card['details'])).classes('text-sm font-mono whitespace-pre-wrap')
+                                else:
+                                    ui.label(f"Details: {card['details']}").classes('text-sm font-mono')
     except Exception as e:
         ui.notify(f'Error: {str(e)}', type='error')
     finally:
@@ -459,7 +539,7 @@ def fetch_tutorial_dropoff():
     except Exception as e:
         ui.notify(f'Error: {str(e)}', type='error')
 
-@ui.page('/', response_timeout=4)
+@ui.page('/', response_timeout=30)
 async def dashboard():    
     global api_label, player_id_input, actions, players_list, new_players_plot, games_plot, date_input
     global metrics_container, tutorial_plot, fetch_spinner, selected_player_id, player_cards
@@ -539,4 +619,62 @@ async def copy_to_clipboard(text: str):
     await ui.run_javascript(f'navigator.clipboard.writeText("{text}")')
     ui.notify('Player ID copied to clipboard', type='positive')
 
-ui.run(port=8050, host='0.0.0.0')
+def format_game_log_entry(entry):
+    """Format a single game log entry by removing certain fields and formatting the timestamp"""
+    if not isinstance(entry, dict):
+        return None, None, str(entry)
+    
+    # Create a copy to avoid modifying the original
+    formatted_entry = entry.copy()
+    
+    # Extract and format timestamp
+    timestamp = None
+    if 'timestamp' in formatted_entry:
+        timestamp = format_timestamp(formatted_entry['timestamp'])
+        formatted_entry.pop('timestamp')
+    
+    # Extract and format action type
+    action_display = None
+    details_display = None
+    
+    if 'actionType' in formatted_entry:
+        try:
+            action_type = int(formatted_entry['actionType'])
+            details = formatted_entry.get('details', {})
+            unit_num = details.get('num', '?')  # Get the unit number from details
+            
+            if action_type == GameAction.MOVE and isinstance(details, dict):
+                tile = details.get('tile', {})
+                x, y = tile.get('x'), tile.get('y')
+                if x is not None and y is not None:
+                    action_display = f"[{unit_num}] Moved to {x},{y}"
+                    details_display = f"(raw: {details})"
+            
+            elif action_type == GameAction.ATTACK and isinstance(details, dict):
+                target = details.get('target')
+                if target is not None:
+                    action_display = f"[{unit_num}] Attacked {target}"
+                    details_display = f"(raw: {details})"
+            
+            else:
+                # Default case for other action types
+                action_str = GAME_ACTION_NAMES.get(action_type, "Unknown action")
+                action_display = f"[{unit_num}] {action_str}"
+                details_display = f"(raw: {details})"
+            
+            formatted_entry.pop('actionType')
+            formatted_entry.pop('details', None)
+            
+        except (ValueError, TypeError):
+            pass
+    
+    # Remove fields we want to hide
+    formatted_entry.pop('playerId', None)
+    formatted_entry.pop('id', None)
+    
+    # Return remaining JSON only if it contains data other than what we've already displayed
+    remaining_json = str(formatted_entry) if formatted_entry and formatted_entry != {} else ""
+    
+    return timestamp, action_display, details_display or remaining_json
+
+ui.run(port=8050, host='0.0.0.0', reload=True)
