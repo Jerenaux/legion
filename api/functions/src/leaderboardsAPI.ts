@@ -92,7 +92,7 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
 
   const docSnap = await query.get();
   const players: Player[] = docSnap.docs.map((doc) => ({id: doc.id, ...doc.data()})) as Player[];
-  console.log(`Fetched ${players.length} players`);
+  console.log(`[getLeagueLeaderboard]Fetched ${players.length} players`);
 
   if (!isAllTime) {
     promotionRank = Math.max(Math.ceil(players.length * PROMOTION_RATIO), 3);
@@ -245,13 +245,16 @@ export const fetchLeaderboard = onRequest((request, response) => {
   });
 });
 
-async function updateLeagues() {
+async function updateLeagues(specificLeague?: number) {
+  console.log(`[updateLeagues] Updating leagues${specificLeague !== undefined ? ` for league ${specificLeague}` : ''}`);
   const db = admin.firestore();
-  const leaguesToUpdate = [0, 1, 2, 3, 4];
-  const updatedPlayers = new Set<string>(); // Set to keep track of updated player IDs
+  const leaguesToUpdate = specificLeague !== undefined ? [specificLeague] : [0, 1, 2, 3, 4];
+  const updatedPlayers = new Set<string>();
 
+  // First step: Handle promotions/demotions and chest rewards
   for (const leagueID of leaguesToUpdate) {
     const players = await getLeagueLeaderboard(leagueID, true) as LeaderboardRow[];
+    console.log(`[updateLeagues] Found ${players.length} players to update for league ${leagueID}`);
 
     await db.runTransaction(async (transaction) => {
       const playerUpdates = players.map((player) => {
@@ -278,7 +281,6 @@ async function updateLeagues() {
           ref: playerRef,
           data: {
             league: newLeague,
-            leagueStats: getEmptyLeagueStats(),
           },
         };
       }).filter((update) => update !== null);
@@ -289,8 +291,35 @@ async function updateLeagues() {
         }
       });
     });
+  }
 
-    // Call updateRanks after all players in the league have been updated
+  // Second step: Reset leagueStats for all players
+  const allPlayersSnapshot = await db.collection('players').get();
+  const batchSize = 500;
+  let batch = db.batch();
+  let operationCount = 0;
+
+  console.log(`[updateLeagues] Resetting leagueStats for ${allPlayersSnapshot.size} players`);
+
+  for (const doc of allPlayersSnapshot.docs) {
+    batch.update(doc.ref, {
+      leagueStats: getEmptyLeagueStats()
+    });
+    operationCount++;
+
+    if (operationCount >= batchSize) {
+      await batch.commit();
+      batch = db.batch();
+      operationCount = 0;
+    }
+  }
+
+  if (operationCount > 0) {
+    await batch.commit();
+  }
+
+  // Finally, update ranks for all leagues
+  for (const leagueID of leaguesToUpdate) {
     await updateRanks(leagueID);
   }
 }
@@ -308,10 +337,29 @@ export function getEmptyLeagueStats(rank = 1) {
   };
 }
 
+export const manualLeaguesUpdate = onRequest((request, response) => {
+  corsMiddleware(request, response, async () => {
+    try {
+      const league = request.query.league ? parseInt(request.query.league as string) : undefined;
+      
+      // Validate league parameter if provided
+      if (league !== undefined && (isNaN(league) || league < 0 || league > 4)) {
+        throw new Error("Invalid league parameter. Must be between 0 and 4.");
+      }
+
+      await updateLeagues(league);
+      response.send(`Leagues updated${league !== undefined ? ` for league ${league}` : ''}`);
+    } catch (error) {
+      console.error("manualLeaguesUpdate error:", error);
+      response.status(400).send(error instanceof Error ? error.message : 'An unknown error occurred');
+    }
+  });
+});
+
 export const leaguesUpdate = functions.pubsub.schedule(SEASON_END_CRON)
   .onRun(async (context) => {
     try {
-      await updateLeagues();
+      await updateLeagues(undefined);
     } catch (error) {
       console.error("leaguesUpdate error:", error);
     }
@@ -426,8 +474,3 @@ function areScoresEqual(
     }
   });
 }
-
-export const manualLeaguesUpdate = onRequest(async (request, response) => {
-  await updateLeagues();
-  response.send("Leagues updates");
-});
