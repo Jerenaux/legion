@@ -23,6 +23,7 @@ import {
   Connection, LAMPORTS_PER_SOL, Keypair, Transaction, SystemProgram, PublicKey,
 } from '@solana/web3.js';
 import bs58 from 'bs58';
+import { onSchedule } from "firebase-functions/v2/scheduler";
 
 const NB_START_CHARACTERS = 3;
 
@@ -1126,3 +1127,63 @@ async function incrementCompletedGame(uid: string) {
     }
   }, { merge: true });
 }
+
+export const updateInactivePlayersStats = onSchedule("every day 00:00", async (event) => {
+  const db = admin.firestore();
+  const now = new Date();
+  
+  // Calculate the timestamp for 48 hours ago
+  const cutoffDate = new Date(now.getTime() - (48 * 60 * 60 * 1000));
+  const cutoffDateString = cutoffDate.toISOString().replace('T', ' ').slice(0, 19);
+
+  try {
+    // Query for inactive players who have no wins/losses
+    const snapshot = await db.collection("players")
+      .where("lastActiveDate", "<", cutoffDateString)
+      .where("leagueStats.wins", "==", 0)
+      .where("leagueStats.losses", "==", 0)
+      .get();
+
+    const batch = db.batch();
+    let updatedCount = 0;
+
+    snapshot.forEach(doc => {
+      // Generate random number using Box-Muller transform for normal distribution
+      let u1 = Math.random();
+      let u2 = Math.random();
+      let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+      
+      // Mean = 0, Standard deviation = 4
+      const randomGames = Math.max(0, Math.round(Math.abs(z0 * 4))); // We want a positive number of games
+      
+      // Generate win ratio with slight negative bias (0.45 instead of 0.5)
+      const wins = Math.round(randomGames * 0.45);
+      const losses = randomGames - wins;
+      
+      // Adjust ELO based on win/loss difference
+      // Small ELO adjustment: +/- 1 point per net win/loss
+      const netWinLoss = wins - losses;
+      const eloAdjustment = netWinLoss;
+      
+      const currentElo = doc.data()?.elo || 100;
+      
+      batch.update(doc.ref, {
+        'leagueStats.wins': wins,
+        'leagueStats.losses': losses,
+        elo: currentElo + eloAdjustment
+      });
+      
+      updatedCount++;
+    });
+
+    if (updatedCount > 0) {
+      await batch.commit();
+      logger.info(`Updated ${updatedCount} inactive players' stats with synthetic games`);
+    } else {
+      logger.info("No inactive players found needing updates");
+    }
+  } catch (error) {
+    logger.error("Error updating inactive players:", error);
+    throw error;
+  }
+});
