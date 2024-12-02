@@ -8,6 +8,7 @@ import { getPrice } from "./economy";
 import { getStarterConsumables } from "./Items";
 
 import { STARTING_BLACK_MAGE_SPELLS, STARTING_WHITE_MAGE_SPELLS, LOTSA_MP, BASE_CARRYING_CAPACITY } from "@legion/shared/config";
+import { getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
   M,
@@ -266,9 +267,8 @@ export class NewCharacter {
       case Class.WARRIOR:
         return [];
       case Class.WHITE_MAGE:
-        return STARTING_WHITE_MAGE_SPELLS;
       case Class.BLACK_MAGE:
-        return STARTING_BLACK_MAGE_SPELLS;
+        return getSpellsUpToLevel(this.characterClass, this.level);
       case Class.THIEF:
         return [];
     }

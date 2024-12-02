@@ -143,7 +143,7 @@ export class AIServerPlayer extends ServerPlayer {
     }
 
     checkForSpellUse(): number {
-        // console.log(`[AIServerPlayer:checkForSpellUse] Checking for spells among ${this.spells.map(spell => spell.id)}`);
+        console.log(`[AIServerPlayer:checkForSpellUse] Checking for spells among ${this.spells.map(spell => spell.id)}`);
         let delay = -1;
         for (let i = 0; i < this.spells.length; i++) {
             const spell = this.spells[i];
