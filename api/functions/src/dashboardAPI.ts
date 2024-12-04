@@ -46,6 +46,17 @@ interface TutorialDropoffStats {
     averageLastStep: string;
 }
 
+interface PlayerGameHistory {
+    gameId: string;
+    startDate: Date;
+    endDate: Date | null;
+    league: string;
+    mode: string;
+    hasReplay: boolean;
+    playerWon: boolean;
+    actions: any[];
+}
+
 export async function updateDAU(userId: string) {
     const db = admin.firestore();
     const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
@@ -271,7 +282,7 @@ export const getActionLog = onRequest(async (request, response) => {
             // Fetch the player's action log
             const actionLogSnapshot = await db.collection("players")
                 .doc(playerId.toString()).collection("actions")
-                .orderBy("timestamp", "asc").limit(100).get();
+                .orderBy("timestamp", "asc").get();
             const actionLog = actionLogSnapshot.docs.map((doc) => ({
                 ...doc.data(),
                 id: doc.id,
@@ -697,6 +708,59 @@ export const migrateMetricsToStats = onRequest(async (request, response) => {
                 // @ts-ignore
                 error: error.toString()
             });
+        }
+    });
+});
+
+export const getPlayerGameHistory = onRequest(async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const playerId = request.query.playerId;
+            if (!playerId) {
+                response.status(400).send("Bad Request: Missing player ID");
+                return;
+            }
+
+            // Query games where the player was a participant
+            const gamesSnapshot = await db.collection("games")
+                .where("players", "array-contains", playerId.toString())
+                .orderBy("date", "desc")
+                .get();
+
+            const gameHistories: PlayerGameHistory[] = [];
+
+            // Process each game
+            for (const gameDoc of gamesSnapshot.docs) {
+                const gameData = gameDoc.data();
+                
+                // Get actions for this game
+                const actionsSnapshot = await gameDoc.ref.collection("actions")
+                    .orderBy("timestamp", "asc")
+                    .get();
+                
+                const actions = actionsSnapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.id,
+                }));
+
+                gameHistories.push({
+                    gameId: gameData.gameId,
+                    startDate: gameData.date.toDate(),
+                    endDate: gameData.end ? gameData.end.toDate() : null,
+                    league: gameData.league || "unknown",
+                    mode: gameData.mode,
+                    hasReplay: !!gameData.replay,
+                    playerWon: gameData.winner === playerId,
+                    actions: actions,
+                });
+            }
+
+            response.send(gameHistories);
+        } catch (error) {
+            console.error("getPlayerGameHistory error:", error);
+            response.status(500).send("Error fetching player game history");
         }
     });
 });

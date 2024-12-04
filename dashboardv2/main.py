@@ -101,6 +101,21 @@ def is_new_player(join_date: str) -> bool:
     except:
         return False
 
+async def fetch_game_history(player_id: str):
+    try:
+        response = await asyncio.to_thread(
+            requests.get,
+            f"{current_api}/getPlayerGameHistory",
+            params={'playerId': player_id},
+            headers=get_headers()
+        )
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except Exception as e:
+        logger.error(f"Error fetching game history: {e}")
+        return []
+
 async def fetch_action_log(player_id=None):
     if not player_id:
         player_id = player_id_input.value
@@ -111,23 +126,31 @@ async def fetch_action_log(player_id=None):
     # Update selected player and update highlighting
     global selected_player_id
     selected_player_id = player_id
-    update_player_cards_highlighting()  # Just update highlighting instead of reloading
+    update_player_cards_highlighting()
 
     # Show spinner next to the button
     fetch_spinner.visible = True
 
     try:
-        response = await asyncio.to_thread(
+        # Fetch both action log and game history in parallel
+        action_log_future = asyncio.create_task(asyncio.to_thread(
             requests.get,
             f"{current_api}/getActionLog",
             params={'playerId': player_id},
             headers=get_headers()
-        )
-        if response.status_code == 200:
+        ))
+        game_history_future = asyncio.create_task(fetch_game_history(player_id))
+        
+        # Wait for both requests to complete
+        action_log_response = await action_log_future
+        game_history = await game_history_future
+
+        if action_log_response.status_code == 200:
             actions.clear()
-            data = response.json()
+            data = action_log_response.json()
             
             with actions:
+                # Player Summary Card
                 with ui.card().classes('w-full mb-4'):
                     with ui.row().classes('items-center gap-2'):
                         ui.label(f'Player {player_id} Summary').classes('text-lg font-bold')
@@ -138,7 +161,48 @@ async def fetch_action_log(player_id=None):
                     ui.label(f"Join Date: {format_date(summary.get('joinDate', 'N/A'))}")
                     ui.label(f"Last Active: {format_date(summary.get('lastActiveDate', 'N/A'))}")
                 
-                ui.label('Action Log').classes('text-lg font-bold mt-4')
+                # Games Log Section
+                ui.label('Games Log').classes('text-lg font-bold mt-4')
+                with ui.card().classes('w-full mb-4'):
+                    if not game_history:
+                        ui.label('No games found').classes('text-gray-500 italic')
+                    else:
+                        for game in game_history:
+                            with ui.card().classes('w-full mb-2'):
+                                with ui.row().classes('items-center justify-between p-2'):
+                                    # Game info
+                                    start_date = format_date(game.get('startDate'))
+                                    game_id = game.get('gameId', 'Unknown ID')
+                                    
+                                    # Compute duration
+                                    if game.get('endDate'):
+                                        end_date = datetime.fromisoformat(game.get('endDate').replace('Z', '+00:00'))
+                                        duration = end_date - datetime.fromisoformat(game.get('startDate').replace('Z', '+00:00'))
+                                        duration_str = f"{duration.total_seconds() // 60} min"
+                                    else:
+                                        duration_str = "In progress"
+                                    
+                                    # Left side: game information
+                                    with ui.row().classes('items-center gap-2 flex-grow'):
+                                        ui.label(f"{start_date} - {game_id} - {duration_str} - {game.get('mode', 'Unknown')} - {game.get('league', 'Unknown')}") \
+                                            .classes('text-gray-700')
+                                        ui.label("Won" if game.get('playerWon') else "Lost").classes(
+                                            'font-bold text-green-600' if game.get('playerWon') else 'font-bold text-red-600'
+                                        )
+                                    
+                                    # Right side: replay button if available
+                                    if game.get('hasReplay'):
+                                        async def make_open_replay(specific_game_id):
+                                            async def open_replay():
+                                                await ui.run_javascript(f'window.open("https://www.play-legion.io/replay/{specific_game_id}", "_blank")')
+                                            return open_replay
+                                            
+                                        ui.button(icon='play_circle_outline', on_click=await make_open_replay(game.get('gameId'))) \
+                                            .props('flat dense padding="0 4px"') \
+                                            .classes('text-blue-500 hover:text-blue-700')
+                
+                # Action Log Section (existing code)
+                ui.label('Events Log').classes('text-lg font-bold mt-4')
                 
                 # First, create all the cards and store them in a list
                 cards = []
@@ -188,49 +252,11 @@ async def fetch_action_log(player_id=None):
                     action_type = action.get('actionType', 'N/A')
                     details = action.get('details', {})
                     
-                    # Check for game pageView and gameComplete to create game log cards
-                    if (action_type == 'pageView' and isinstance(details, dict) and 
-                        details.get('message', '').startswith('/game/')) or action_type == 'gameComplete':
-                        
-                        # Extract game ID
-                        game_id = (details.get('message', '').replace('/game/', '') 
-                                  if action_type == 'pageView' 
-                                  else details.get('gameId'))
-                        
-                        if game_id:
-                            logging.info(f"Game ID found: {game_id}")
-                            
-                            # Check cache first
-                            if game_id not in game_logs_cache:
-                                # Fetch game log if not in cache
-                                try:
-                                    game_log_response = requests.get(
-                                        f"{current_api}/getGameLog",
-                                        params={'gameId': game_id},
-                                        headers=get_headers()
-                                    )
-                                    if game_log_response.status_code == 200:
-                                        game_logs_cache[game_id] = game_log_response.json()
-                                    else:
-                                        game_logs_cache[game_id] = f"Error fetching game log: {game_log_response.status_code}"
-                                except Exception as e:
-                                    game_logs_cache[game_id] = f"Error fetching game log: {str(e)}"
-                            
-                            # Add the game log card
-                            cards.append({
-                                'timestamp_value': timestamp_value + 0.1,  # Slightly after the action
-                                'time_str': format_timestamp(timestamp),
-                                'content': f"Game Log for {game_id}",
-                                'type': 'game_log',
-                                'details': game_logs_cache[game_id],
-                                'is_mobile': isinstance(details, dict) and details.get('mobile')
-                            })
-                    
-                    # Handle other action types
+                    # Handle action types
                     if action_type == 'loadGame' and isinstance(details, dict) and details.get('message'):
                         content = f"loadGame - {details.get('message')}"
                     elif action_type == 'pageView' and isinstance(details, dict) and details.get('message'):
-                        logging.info(f"pageView - {details.get('message')}")
+                        # logging.info(f"pageView - {details.get('message')}")
                         content = f"pageView - {details.get('message')}"
                     elif action_type == 'gameStart' and isinstance(details, dict) and details.get('mode') is not None:
                         mode = PLAY_MODE.get(details.get('mode'), 'UNKNOWN')
@@ -261,34 +287,8 @@ async def fetch_action_log(player_id=None):
                             if 'is_mobile' in card and card['is_mobile'] is not None:
                                 ui.label('📱' if card['is_mobile'] else '💻').classes('text-xl')
                             
-                            if card['details']:
-                                if card['type'] == 'game_log':
-                                    # Create an expandable section for the game log
-                                    with ui.expansion().classes('w-full'):
-                                        # Extract game ID from the content
-                                        game_id = card['content'].replace('Game Log for ', '')
-                                        replay_url = f"https://www.play-legion.io/replay/{game_id}"
-                                        
-                                        # Create header with link
-                                        with ui.row().classes('items-center gap-2 w-full'):
-                                            ui.link(f'Game Log for {game_id}', replay_url, new_tab=True).classes('text-blue-600 hover:text-blue-800')
-                                        
-                                        if isinstance(card['details'], list):
-                                            # Display each log entry on its own line
-                                            for entry in card['details']:
-                                                timestamp, action_display, formatted_entry = format_game_log_entry(entry)
-                                                with ui.row().classes('items-start gap-2'):
-                                                    if timestamp:
-                                                        # Only show the time portion (last 8 characters: HH:MM:SS)
-                                                        ui.label(timestamp[-8:]).classes('font-mono text-gray-600 w-20')
-                                                    if action_display:
-                                                        ui.label(action_display).classes('font-mono text-blue-600 w-48')
-                                                    ui.label(formatted_entry).classes('text-sm font-mono whitespace-pre-wrap mb-1 flex-grow')
-                                        else:
-                                            # Fallback for non-list responses (like error messages)
-                                            ui.label(str(card['details'])).classes('text-sm font-mono whitespace-pre-wrap')
-                                else:
-                                    ui.label(f"Details: {card['details']}").classes('text-sm font-mono')
+                            if card['details'] and card['type'] != 'game_log':
+                                ui.label(f"Details: {card['details']}").classes('text-sm font-mono')
     except Exception as e:
         ui.notify(f'Error: {str(e)}', type='error')
     finally:
