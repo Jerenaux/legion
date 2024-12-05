@@ -22,6 +22,7 @@ interface AuthContextType {
     addSignInCallback: (callback: SignInCallback) => void;
     removeSignInCallback: (callback: SignInCallback) => void;
     logout: () => void;
+    setUtmSource: (utmSource: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -46,6 +47,9 @@ const AuthContext = createContext<AuthContextType>({
     },
     logout: () => {
         throw new Error('logout not implemented');
+    },
+    setUtmSource: () => {
+        throw new Error('setUtmSource not implemented');
     },
 });
 

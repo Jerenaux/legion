@@ -1191,3 +1191,26 @@ export const updateInactivePlayersStats = onSchedule("every day 00:00", async (e
     throw error;
   }
 });
+
+export const setUtmSource = onRequest((request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const utmSource = request.body.utmSource;
+      logger.info("Setting UTM source for player:", uid, "utmSource:", utmSource);
+
+      await db.collection("players").doc(uid).set({
+        acquisition: {
+          utmSource,
+        }
+      }, { merge: true });
+
+      response.send({ success: true });
+    } catch (error) {
+      console.error("setUtmSource error:", error);
+      response.status(500).send("Error");
+    }
+  });
+});

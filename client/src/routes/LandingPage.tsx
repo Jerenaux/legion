@@ -6,6 +6,10 @@ import axios from 'axios';
 import './LandingPage.style.css';
 import Modal from '../components/modal/Modal';
 
+interface LandingPageProps {
+  utm_source?: string;
+}
+
 interface LandingPageState {
   showLoginOptions: boolean;
   isVideoPlaying: boolean;
@@ -13,7 +17,7 @@ interface LandingPageState {
   modalContent: 'terms' | 'privacy' | null;
 }
 
-class LandingPage extends Component<{}, LandingPageState> {
+class LandingPage extends Component<LandingPageProps, LandingPageState> {
   static contextType = AuthContext;
 
   state: LandingPageState = {
@@ -38,6 +42,10 @@ class LandingPage extends Component<{}, LandingPageState> {
   componentDidMount(): void {
     if (!this.context.isAuthenticated) {
       this.warmUpServer();
+      
+      if (this.props.utm_source) {
+        this.context.setUtmSource(this.props.utm_source);
+      }
     }
   }
 

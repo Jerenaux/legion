@@ -5,12 +5,14 @@ import firebase from 'firebase/compat/app';
 import AuthUIService from '../services/AuthUIService';
 import { successToast, errorToast } from '../components/utils';
 import { SignInCallback } from '../contexts/AuthContext';
+import { apiFetch } from '../services/apiService';
 
 class AuthProvider extends Component {
     state = {
         user: null,
         isAuthenticated: false,
         isLoading: true,
+        utmSource: null,
     };
 
     unregisterAuthObserver: () => void;
@@ -39,6 +41,15 @@ class AuthProvider extends Component {
                 return firebaseAuth.currentUser;
             }
             const credentials = await firebaseAuth.signInAnonymously();
+            
+            if (this.state.utmSource && credentials.user) {
+                apiFetch('setUtmSource', {
+                    method: 'POST',
+                    body: {
+                        utmSource: this.state.utmSource
+                    }
+                });
+            }
             return credentials.user;
         } catch (error) {
             console.error("Error signing in as guest:", error);
@@ -51,6 +62,19 @@ class AuthProvider extends Component {
     };
 
     onSignInSuccess = async (authResult: any): Promise<void> => {
+        if (this.state.utmSource && authResult.user) {
+            try {
+                apiFetch('setUtmSource', {
+                    method: 'POST',
+                    body: {
+                        utmSource: this.state.utmSource
+                    }
+                });
+            } catch (error) {
+                console.error("Error saving UTM source:", error);
+            }
+        }
+        
         successToast("Sign-in successful!");
         this.notifySignInCallbacks();
     };
@@ -79,6 +103,23 @@ class AuthProvider extends Component {
         });
     }
 
+    setUtmSource = async (utmSource: string): Promise<void> => {
+        this.setState({ utmSource });
+        
+        if (this.state.user) {
+            try {
+                apiFetch('setUtmSource', {
+                    method: 'POST',
+                    body: {
+                        utmSource
+                    }
+                });
+            } catch (error) {
+                console.error("Error saving UTM source:", error);
+            }
+        }
+    };
+
     render({ children }) {
         return (
             <AuthContext.Provider value={{ 
@@ -90,6 +131,7 @@ class AuthProvider extends Component {
                 addSignInCallback: this.addSignInCallback,
                 removeSignInCallback: this.removeSignInCallback,
                 logout: this.logout,
+                setUtmSource: this.setUtmSource,
             }}>
                 {!this.state.isLoading && children}
             </AuthContext.Provider>
