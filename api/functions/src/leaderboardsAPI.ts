@@ -373,7 +373,11 @@ export const updateRanksOnEloChange = functions.firestore
 
       // Check if ELO has changed
       if (newValue.elo !== previousValue.elo || newValue.leagueStats.wins !== previousValue.leagueStats.wins) {
-          const league = newValue.league;
+          const league = newValue.league as League;
+          if (league === undefined) {
+              console.error("League is undefined for player", context.params.playerId);
+              return null;
+          }
           return updateRanks(league);
       }
       return null;
@@ -384,7 +388,10 @@ export const updateRanksOnPlayerCreation = functions.firestore
   .onCreate((snap, context) => {
       console.log("New player created, updating ranks");
       const newValue = snap.data();
-      const league = newValue.league;
+      let league = newValue.league as League;
+      if (league === undefined) {
+        league = League.BRONZE;
+      }
       return updateRanks(league);
 });
 
@@ -395,7 +402,12 @@ type RankingCriteria = {
   rankField: string;
 };
 
-async function updateRanks(league: League) {
+async function updateRanks(league: League | undefined) {
+  if (league === undefined) {
+    console.error("League parameter is undefined");
+    return;
+  }
+
   console.log(`Updating ranks for league ${league}`);
   const db = admin.firestore();
   const batch = db.batch();
@@ -427,15 +439,18 @@ async function updateRankingsForCriteria(
 ) {
   let query = db.collection('players');
 
+  if (criteria.whereClause) {
+    const [field, op, value] = criteria.whereClause;
+    if (value !== undefined) {  // Add this check
+      // @ts-ignore
+      query = query.where(field, op, value);
+    }
+  }
+
   criteria.orderByFields.forEach(({ field, direction }) => {
     // @ts-ignore
     query = query.orderBy(field, direction);
   });
-
-  if (criteria.whereClause) {
-    // @ts-ignore
-    query = query.where(...criteria.whereClause);
-  }
 
   const snapshot = await query.get();
   const players = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));

@@ -214,7 +214,7 @@ spells.push(new BaseSpell({
 
     size: 1,
     target: Target.SINGLE,
-    effects: [{stat: Stat.HP, value: 50, modifiers: SPBasedBoost}],
+    effects: [{stat: Stat.HP, value: 25, modifiers: SPBasedBoost}],
     effort: 4,
     cost: 15,
 
