@@ -18,7 +18,7 @@ import discordIcon from '@assets/queue/discord_btn.png';
 import xIcon from '@assets/queue/x_btn.png';
 import blueTriangle from '@assets/queue/blue_triangle.png';
 import matchFound from "@assets/sfx/match_found.wav";
-import { PlayModeLabels } from '@legion/shared/enums';
+import { PlayModeLabels, PlayMode } from '@legion/shared/enums';
 
 interface QPageProps {
     matches: {
@@ -61,8 +61,33 @@ class QueuePage extends Component<QPageProps, QpageState> {
     interval = null;
     intervalWaited = null;
 
+    validateMode() {
+        const validModes = [
+            PlayMode.PRACTICE,
+            PlayMode.CASUAL,
+            PlayMode.RANKED,
+            PlayMode.STAKED
+        ] as number[];
+        
+        const currentMode = Number(this.props.matches.mode);
+        
+        if (this.props.matches.id !== undefined) {
+            return true;
+        }
+
+        if (isNaN(currentMode) || !validModes.includes(currentMode)) {
+            silentErrorToast('Invalid play mode, please select a mode from the home page');
+            return false;
+        }
+        
+        return true;
+    }
+
     constructor(props: QPageProps) {
         super(props);
+        if (!this.validateMode()) {
+            return;
+        }
         this.state = {
             tipCount: 0,
             progress: 0,
@@ -84,6 +109,9 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     componentDidMount() {
+        if (!this.validateMode()) {
+            return;
+        }
         this.joinQueue();
         this.loadNews();
         let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
