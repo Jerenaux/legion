@@ -124,8 +124,14 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'public/favicon.ico', to: 'favicon.ico' }
-      ],
+        { from: 'public/favicon.ico', to: 'favicon.ico' },
+        { 
+          from: 'public',
+          globOptions: {
+            ignore: ['**/index.html'] // Ignore index.html since it's handled separately
+          }
+        }
+      ]
     }),
     sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,

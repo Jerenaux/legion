@@ -256,7 +256,7 @@ export const getPlayerData = onRequest((request, response) => {
 
         const AIwinRatio = 
           playerData.AIstats && playerData.AIstats.nbGames > 0 ?
-            playerData.AIstats.wins / (playerData.AIstats.nbGames + 1) :
+            playerData.AIstats.wins / (playerData.AIstats.nbGames + 2) :
             0;
 
         response.send({
