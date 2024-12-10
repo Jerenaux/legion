@@ -10,7 +10,8 @@ import {rosterData, characterData, postGameUpdate,
 import {createPlayer, getPlayerData, queuingData,
   saveGoldReward, claimChest, completeTour, fetchGuideTip, registerAddress,
   setPlayerOnSteroids, zombieData, withdrawSOL, recordPlayerAction, updateInactivePlayersStats,
-  setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames} from "./playerAPI";
+  setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames,
+  listFriends, addFriend} from "./playerAPI";
 import { createLobby, joinLobby, cancelLobby, listLobbies, getLobbyDetails, countLobbies } from "./lobbyAPI";
 import {createGame, gameData, completeGame, getRemoteConfig, addNews, getNews, saveReplay, getReplay} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
@@ -31,7 +32,7 @@ export {
   zombieData, withdrawSOL, getLobbyDetails, countLobbies, addNews, getNews, recordPlayerAction,
   listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats, saveReplay, getReplay,
   migrateEngagementMetrics, migrateMetricsToStats, updateInactivePlayersStats, getPlayerGameHistory,
-  setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames
+  setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames, listFriends, addFriend
 };
 
 export const helloWorld = onRequest({ secrets: ["API_KEY"] }, (request, response) => {

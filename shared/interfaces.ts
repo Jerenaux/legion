@@ -192,6 +192,7 @@ export interface DBPlayerData {
     xp: number;
     leagueStats: LeagueStats;
     allTimeStats: LeagueStats;
+    friends: string[];
 }
 
 interface LeagueStats {
@@ -367,6 +368,7 @@ export interface PlayerContextData {
     carrying_capacity: number;
     tokens: any;
     AIwinRatio?: number;
+    friends?: FriendData[];
   }
 
 export interface GameReplayMessage {
@@ -397,3 +399,9 @@ export interface APILeaderboardResponse {
     highlights: any[];
     ranking: LeaderboardRow[];
   }
+
+export interface FriendData {
+    id: string;
+    name: string;
+    avatar: string;
+}

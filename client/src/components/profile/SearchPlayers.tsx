@@ -2,6 +2,7 @@ import { h, Component } from 'preact';
 import { avatarContext } from '../utils';
 import debounce from 'lodash/debounce';
 import { apiFetch } from '../../services/apiService';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 interface PlayerSearchResult {
     id: string;
@@ -22,6 +23,7 @@ interface State {
 }
 
 class SearchPlayers extends Component<Props, State> {
+    static contextType = PlayerContext;
     searchCache: Map<string, PlayerSearchResult[]> = new Map();
     
     state: State = {
@@ -81,6 +83,10 @@ class SearchPlayers extends Component<Props, State> {
         }, 200);
     };
 
+    isAlreadyFriend = (playerId: string) => {
+        return this.context.friends.some(friend => friend.id === playerId);
+    };
+
     render() {
         const { searchTerm, results, isLoading, error, showResults } = this.state;
 
@@ -115,12 +121,18 @@ class SearchPlayers extends Component<Props, State> {
                                             />
                                             <span className="player-name">{player.name}</span>
                                         </div>
-                                        <button 
-                                            className="add-friend-btn"
-                                            onClick={() => this.props.onAddFriend(player.id)}
-                                        >
-                                            Add Friend
-                                        </button>
+                                        {this.isAlreadyFriend(player.id) ? (
+                                            <button className="add-friend-btn is-friend">
+                                                Already Friends
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                className="add-friend-btn"
+                                                onClick={() => this.props.onAddFriend(player.id)}
+                                            >
+                                                Add Friend
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>

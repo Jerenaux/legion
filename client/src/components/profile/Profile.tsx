@@ -1,8 +1,11 @@
 import { h, Component } from 'preact';
-import { avatarContext, getLeagueIcon } from '../utils';
+import { avatarContext, getLeagueIcon, successToast } from '../utils';
 import { LeaguesNames } from '@legion/shared/enums';
+import { PlayerContext } from '../../contexts/PlayerContext';
 import './profile.style.css';
 import SearchPlayers from './SearchPlayers';
+import { route } from 'preact-router';
+
 interface Props {
     id: string;
 }
@@ -15,6 +18,8 @@ interface State {
 }
 
 class Profile extends Component<Props, State> {
+    static contextType = PlayerContext;
+
     state: State = {
         profileData: null,
         isLoading: true,
@@ -75,8 +80,27 @@ class Profile extends Component<Props, State> {
         }).format(number);
     };
 
+    isOwnProfile = () => {
+        return this.props.id === this.context.player.uid;
+    };
+
+    handleAddFriend = async () => {
+        try {
+            await this.context.addFriend(this.props.id);
+            successToast('Friend added successfully!');
+        } catch (error) {
+            console.error('Error adding friend:', error);
+            // Error toast is handled by the API service
+        }
+    };
+
+    isAlreadyFriend = () => {
+        return this.context.friends.some(friend => friend.id === this.props.id);
+    };
+
     render() {
         const { profileData, isLoading, error, avatarUrl } = this.state;
+        const isOwnProfile = this.isOwnProfile();
 
         if (isLoading) {
             return <div className="profile-container loading">Loading profile...</div>;
@@ -105,6 +129,20 @@ class Profile extends Component<Props, State> {
                             <div className="profile-join-date">
                                 Member since {this.formatDate(profileData.joinDate)}
                             </div>
+                            {!isOwnProfile && (
+                                this.isAlreadyFriend() ? (
+                                    <button className="profile-add-friend is-friend">
+                                        Friend
+                                    </button>
+                                ) : (
+                                    <button 
+                                        className="profile-add-friend"
+                                        onClick={this.handleAddFriend}
+                                    >
+                                        Add Friend
+                                    </button>
+                                )
+                            )}
                         </div>
                     </div>
                 </div>
@@ -191,15 +229,43 @@ class Profile extends Component<Props, State> {
                     </div>
                 </div>
 
-                <div className="friends-section">
-                    <h2>Friends</h2>
-                    <SearchPlayers 
-                        onAddFriend={(playerId) => {
-                            console.log('Add friend:', playerId);
-                            // TODO: Implement friend addition
-                        }}
-                    />
-                </div>
+                {isOwnProfile && (
+                    <div className="friends-section">
+                        <h2>Friends</h2>
+                        <SearchPlayers 
+                            onAddFriend={async (playerId) => {
+                                try {
+                                    await this.context.addFriend(playerId);
+                                    successToast('Friend added successfully!');
+                                } catch (error) {
+                                    console.error('Error adding friend:', error);
+                                }
+                            }}
+                        />
+                        
+                        <div className="friends-mosaic">
+                            {this.context.friends.length > 0 ? (
+                                this.context.friends.map(friend => (
+                                    <div 
+                                        key={friend.id}
+                                        className="friend-tile"
+                                        onClick={() => route(`/profile/${friend.id}`)}
+                                    >
+                                        <div 
+                                            className="friend-avatar" 
+                                            style={{ 
+                                                backgroundImage: `url(${avatarContext(`./${friend.avatar}.png`)})` 
+                                            }}
+                                        />
+                                        <span className="friend-name">{friend.name}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="no-friends">No friends yet</div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }

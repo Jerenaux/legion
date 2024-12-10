@@ -83,6 +83,7 @@ function generateName() {
   return base.length > MAX_NICKNAME_LENGTH ? base.slice(0, MAX_NICKNAME_LENGTH) : base;
 }
 
+// Modify createPlayer to only store friend IDs
 export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().onCreate(async (user) => {
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
@@ -167,6 +168,7 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
     tokens: {
       [Token.SOL]: 0,
     },
+    friends: [] as string[],  // Just store the IDs
     // isGuest: user.providerData.length === 0,
   } as DBPlayerData;
 
@@ -1356,6 +1358,122 @@ export const migrateLowercaseNames = onRequest({ secrets: ["API_KEY"] }, (reques
         } catch (error) {
             console.error('Error in migration:', error);
             response.status(500).send('Error performing migration');
+        }
+    });
+});
+
+// Add new endpoint for listing friends
+export const listFriends = onRequest((request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const playerId = request.query.playerId as string;
+            if (!playerId) {
+                response.status(400).send('Player ID is required');
+                return;
+            }
+
+            const playerDoc = await db.collection('players').doc(playerId).get();
+            if (!playerDoc.exists) {
+                response.status(404).send('Player not found');
+                return;
+            }
+
+            const playerData = playerDoc.data();
+            if (!playerData) {
+                response.status(404).send('Player not found');
+                return;
+            }
+
+            const friendIds = playerData.friends || [] as string[];
+
+            // Fetch friend details in parallel
+            const friendDocs = await Promise.all(
+                friendIds.map((friendId: string) => 
+                    db.collection('players').doc(friendId).get()
+                )
+            );
+
+            const friends = friendDocs
+                .filter(doc => doc.exists)
+                .map(doc => ({
+                    id: doc.id,
+                    name: doc.data().name,
+                    avatar: doc.data().avatar
+                }));
+
+            response.send(friends);
+
+        } catch (error) {
+            console.error('Error listing friends:', error);
+            response.status(500).send('Error listing friends');
+        }
+    });
+});
+
+// Update addFriend endpoint to handle missing friends field
+export const addFriend = onRequest((request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const uid = await getUID(request);
+            const friendId = request.body.friendId;
+
+            if (!friendId) {
+                response.status(400).send('Friend ID is required');
+                return;
+            }
+
+            // Get both player documents
+            const [playerDoc, friendDoc] = await Promise.all([
+                db.collection('players').doc(uid).get(),
+                db.collection('players').doc(friendId).get()
+            ]);
+
+            if (!playerDoc.exists || !friendDoc.exists) {
+                response.status(404).send('Player or friend not found');
+                return;
+            }
+
+            const playerData = playerDoc.data();
+
+            if (!playerData) {
+                response.status(404).send('Player not found');
+                return;
+            }
+
+            // Check if already friends, safely handling the case where friends field might not exist
+            const currentFriends = playerData.friends || [];
+            if (currentFriends.includes(friendId)) {
+                response.status(400).send('Already friends');
+                return;
+            }
+
+            const friendData = friendDoc.data();
+            if (!friendData) {
+                response.status(404).send('Friend not found');
+                return;
+            }
+
+            // Add friend ID to player's friends list, creating the array if it doesn't exist
+            await db.collection('players').doc(uid).set({
+                friends: admin.firestore.FieldValue.arrayUnion(friendId)
+            }, { merge: true });  // Use merge: true to not overwrite other fields
+
+            response.send({
+                success: true,
+                friend: {
+                    id: friendId,
+                    name: friendData.name,
+                    avatar: friendData.avatar
+                }
+            });
+
+        } catch (error) {
+            console.error('Error adding friend:', error);
+            response.status(500).send('Error adding friend');
         }
     });
 });

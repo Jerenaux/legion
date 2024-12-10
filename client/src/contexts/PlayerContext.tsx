@@ -1,5 +1,5 @@
 import { createContext } from 'preact';
-import { PlayerContextData, APICharacterData } from '@legion/shared/interfaces';
+import { PlayerContextData, APICharacterData, FriendData } from '@legion/shared/interfaces';
 import { League, Stat, InventoryActionType, ShopTab } from "@legion/shared/enums";
 
 export interface PlayerContextState {
@@ -9,6 +9,7 @@ export interface PlayerContextState {
   characterSheetIsDirty: boolean;
   welcomeShown: boolean;
   lastHelp: number;
+  friends: FriendData[];
 }
 
 export const PlayerContext = createContext<{
@@ -30,6 +31,9 @@ export const PlayerContext = createContext<{
   markWelcomeShown: () => void;
   resetState: () => void;
   manageHelp: (page: string) => void;
+  friends: FriendData[];
+  addFriend: (friendId: string) => Promise<void>;
+  refreshFriends: () => Promise<void>;
 }>({
   player: {
     uid: '',
@@ -52,6 +56,7 @@ export const PlayerContext = createContext<{
     },
     carrying_capacity: 0,
     tokens: null,
+    friends: [],
   },
   characters: [],
   activeCharacterId: '',
@@ -70,4 +75,7 @@ export const PlayerContext = createContext<{
   markWelcomeShown: () => {},
   resetState: () => {},
   manageHelp: () => {},
+  friends: [],
+  addFriend: async () => {},
+  refreshFriends: async () => {},
 });

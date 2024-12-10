@@ -76,6 +76,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         characterSheetIsDirty: false,
         welcomeShown: false,
         lastHelp: 0,
+        friends: []
       };
     }
 
@@ -120,6 +121,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
       this.fetchPlayerData();
       this.fetchRosterData();
+      this.fetchFriends();
     }
     
     async fetchPlayerData() {
@@ -361,6 +363,33 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         }
       }
     }
+
+    addFriend = async (friendId: string) => {
+        try {
+            await apiFetch('addFriend', {
+                method: 'POST',
+                body: { friendId }
+            });
+            
+            // Refresh friends list after adding
+            await this.fetchFriends();
+        } catch (error) {
+            console.error('Error adding friend:', error);
+            throw error;
+        }
+    };
+
+    fetchFriends = async () => {
+      const user = firebaseAuth.currentUser;
+      if (!user) return;
+      try {
+          console.log(`Fetching friends for ${user.uid}`);
+          const friends = await apiFetch(`listFriends?playerId=${user.uid}`);
+          this.setState({ friends });
+      } catch (error) {
+          console.error('Error fetching friends:', error);
+      }
+    };
   
     render() {
       const { children } = this.props;
@@ -384,7 +413,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           updateActiveCharacter: this.updateActiveCharacter,
           markWelcomeShown: this.markShownWelcome,
           resetState: this.resetState,
-          manageHelp: this.manageHelp
+          manageHelp: this.manageHelp,
+          friends: this.state.friends,
+          addFriend: this.addFriend,
+          refreshFriends: this.fetchFriends
         }}>
           {children}
         </PlayerContext.Provider>
