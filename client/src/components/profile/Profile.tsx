@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 import { avatarContext, getLeagueIcon } from '../utils';
 import { LeaguesNames } from '@legion/shared/enums';
 import './profile.style.css';
-
+import SearchPlayers from './SearchPlayers';
 interface Props {
     id: string;
 }
@@ -189,6 +189,16 @@ class Profile extends Component<Props, State> {
                             </span>
                         </div>
                     </div>
+                </div>
+
+                <div className="friends-section">
+                    <h2>Friends</h2>
+                    <SearchPlayers 
+                        onAddFriend={(playerId) => {
+                            console.log('Add friend:', playerId);
+                            // TODO: Implement friend addition
+                        }}
+                    />
                 </div>
             </div>
         );

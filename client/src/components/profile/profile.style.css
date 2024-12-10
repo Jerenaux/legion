@@ -217,3 +217,116 @@
         justify-content: center;
     }
 } 
+
+/* Add these new styles */
+.search-players {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-players input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #49d7d8;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Kim', sans-serif;
+    font-size: 16px;
+}
+
+.search-players input:focus {
+    outline: none;
+    border-color: #49d7d8;
+    box-shadow: 0 0 10px rgba(73, 215, 216, 0.3);
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #49d7d8;
+    border-radius: 8px;
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.player-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid rgba(73, 215, 216, 0.2);
+}
+
+.player-result:last-child {
+    border-bottom: none;
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #49d7d8;
+}
+
+.player-name {
+    color: white;
+    font-size: 14px;
+}
+
+.add-friend-btn {
+    background: linear-gradient(135deg, #49d7d8, #2a7a7b);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: 'Kim', sans-serif;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.add-friend-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #5ae8e9, #3b8b8c);
+}
+
+.search-loading {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #49d7d8;
+    font-size: 14px;
+}
+
+.search-error {
+    color: #ff6b6b;
+    padding: 10px;
+    text-align: center;
+}
+
+.no-results {
+    color: #666;
+    padding: 10px;
+    text-align: center;
+} 

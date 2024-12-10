@@ -97,9 +97,11 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
     .count()
     .get();
 
+  const name = generateName();
   // Define the character data structure
   const playerData = {
-    name: generateName(),
+    name: name,
+    name_lower: name.toLowerCase(),
     avatar: selectRandomAvatar(),
     joinDate: today,
     lastActiveDate: today,
@@ -1274,6 +1276,86 @@ export const getProfileData = onRequest((request, response) => {
         } catch (error) {
             console.error('Error fetching profile data:', error);
             response.status(500).send('Error fetching profile data');
+        }
+    });
+});
+
+// Add this interface at the top with other interfaces
+interface PlayerSearchResult {
+    id: string;
+    name: string;
+    avatar: string;
+}
+
+// Update the searchPlayers endpoint to use name_lower field
+export const searchPlayers = onRequest((request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const searchTerm = request.query.search as string;
+            if (!searchTerm) {
+                response.status(400).send('Search term is required');
+                return;
+            }
+
+            const searchTermLower = searchTerm.toLowerCase();
+            const querySnapshot = await db.collection('players')
+                .where('name_lower', '>=', searchTermLower)
+                .where('name_lower', '<=', searchTermLower + '\uf8ff')
+                .limit(10)
+                .get();
+
+            const results: PlayerSearchResult[] = [];
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                results.push({
+                    id: doc.id,
+                    name: data.name,
+                    avatar: data.avatar
+                });
+            });
+
+            response.send(results);
+
+        } catch (error) {
+            console.error('Error searching players:', error);
+            response.status(500).send('Error searching players');
+        }
+    });
+});
+
+// Add migration endpoint to add name_lower field
+export const migrateLowercaseNames = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            if (!checkAPIKey(request)) {
+                response.status(401).send('Unauthorized');
+                return;
+            }
+
+            const snapshot = await db.collection('players').get();
+            const batch = db.batch();
+            let count = 0;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.name && !data.name_lower) {
+                    batch.update(doc.ref, {
+                        name_lower: data.name.toLowerCase()
+                    });
+                    count++;
+                }
+            });
+
+            await batch.commit();
+            response.send({ message: `Updated ${count} documents` });
+
+        } catch (error) {
+            console.error('Error in migration:', error);
+            response.status(500).send('Error performing migration');
         }
     });
 });
