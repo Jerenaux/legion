@@ -15,6 +15,7 @@ import { getChestContent, ChestReward } from "@legion/shared/chests";
 import {
   STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE, STARTING_GOLD_ADMIN,
   STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN, IMMEDIATE_LOOT, RPC, MIN_WITHDRAW,
+  MAX_NICKNAME_LENGTH
 } from "@legion/shared/config";
 import { logPlayerAction, updateDAU } from "./dashboardAPI";
 import { getEmptyLeagueStats } from "./leaderboardsAPI";
@@ -79,7 +80,7 @@ function generateName() {
   };
   // @ts-ignore
   const base = uniqueNamesGenerator(options);
-  return base.length > 16 ? base.slice(0, 16) : base;
+  return base.length > MAX_NICKNAME_LENGTH ? base.slice(0, MAX_NICKNAME_LENGTH) : base;
 }
 
 export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().onCreate(async (user) => {

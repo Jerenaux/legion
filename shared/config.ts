@@ -1,5 +1,8 @@
 const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
 
+// Profile
+export const MAX_NICKNAME_LENGTH = 18;
+
 // Gameplay
 export const MAX_CHARACTERS = 10;
 export const BASE_INVENTORY_SIZE = 20;

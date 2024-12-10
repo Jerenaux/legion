@@ -111,7 +111,7 @@ class Profile extends Component<Props, State> {
 
                 <div className="stats-grid">
                     <div className="stats-card all-time">
-                        <h2>All Time Stats</h2>
+                        <h2>All Time Ranked Stats</h2>
                         <div className="stat-row">
                             <span>Games Played</span>
                             <span className="value">{profileData.allTimeStats.nbGames}</span>
