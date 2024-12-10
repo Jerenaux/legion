@@ -15,6 +15,7 @@ interface State {
     isLoading: boolean;
     error: string | null;
     avatarUrl: string | null;
+    isAddingFriend: boolean;
 }
 
 class Profile extends Component<Props, State> {
@@ -24,7 +25,8 @@ class Profile extends Component<Props, State> {
         profileData: null,
         isLoading: true,
         error: null,
-        avatarUrl: null
+        avatarUrl: null,
+        isAddingFriend: false
     };
 
     async componentDidMount() {
@@ -85,12 +87,14 @@ class Profile extends Component<Props, State> {
     };
 
     handleAddFriend = async () => {
+        this.setState({ isAddingFriend: true });
         try {
             await this.context.addFriend(this.props.id);
             successToast('Friend added successfully!');
         } catch (error) {
             console.error('Error adding friend:', error);
-            // Error toast is handled by the API service
+        } finally {
+            this.setState({ isAddingFriend: false });
         }
     };
 
@@ -138,8 +142,13 @@ class Profile extends Component<Props, State> {
                                     <button 
                                         className="profile-add-friend"
                                         onClick={this.handleAddFriend}
+                                        disabled={this.state.isAddingFriend}
                                     >
-                                        Add Friend
+                                        {this.state.isAddingFriend ? (
+                                            <div className="button-spinner"></div>
+                                        ) : (
+                                            'Add Friend'
+                                        )}
                                     </button>
                                 )
                             )}

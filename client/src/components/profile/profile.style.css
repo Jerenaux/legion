@@ -39,6 +39,7 @@
 .profile-info {
     margin-left: 20px;
     padding-right: 120px;
+    min-height: 80px;
 }
 
 .profile-info h1 {
@@ -355,20 +356,34 @@
     font-family: 'Kim', sans-serif;
     font-size: 14px;
     transition: all 0.2s ease;
-    text-shadow: 
-        -1px -1px 0 #000,  
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    min-width: 100px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.button-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 .profile-add-friend:hover {
     transform: scale(1.05);
     background: linear-gradient(135deg, #ffe44d, #dea164);
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 } 
 
-/* Add this style for the "Already Friends" button */
 .profile-add-friend.is-friend {
     background: linear-gradient(135deg, #49d874, #2a7a4b);
     cursor: default;
