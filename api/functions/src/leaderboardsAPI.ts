@@ -18,6 +18,7 @@ interface APILeaderboardResponse {
 
 interface LeaderboardHighlight {
   name: string;
+  id: string;
   avatar: string;
   description: string;
   title: string
@@ -123,6 +124,7 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
       highlights.push({
         name: highestAvgGradePlayer.name,
         avatar: highestAvgGradePlayer.avatar,
+        id: highestAvgGradePlayer.id,
         title: "Ace Player",
         description: `Highest Game Grades`,
       });
@@ -132,6 +134,7 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
       highlights.push({
         name: highestAvgScorePlayer.name,
         avatar: highestAvgScorePlayer.avatar,
+        id: highestAvgScorePlayer.id,
         title: "Crowd Favorite",
         description: `Highest Audience Scores`,
       });
@@ -141,6 +144,7 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
       highlights.push({
         name: highestWinStreakPlayer.name,
         avatar: highestWinStreakPlayer.avatar,
+        id: highestWinStreakPlayer.id,
         title: "Unstoppable",
         description: `Longest Win Streak`,
       });
@@ -154,6 +158,7 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
         highlights.push({
           name: richestPlayer.name,
           avatar: richestPlayer.avatar,
+          id: richestPlayer.id,
           title: "Richest Player",
           description: `Player witht the most gold`,
         });
@@ -212,7 +217,7 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
       winsRatio: winsRatio + "%",
       avatar: player.avatar,
       isPlayer: player.id === uid,
-      playerId: rankingOnly ? player.id : null,
+      playerId: player.id,
       chestColor: chest,
       isFriend: false,
       isPromoted: isPromoted,

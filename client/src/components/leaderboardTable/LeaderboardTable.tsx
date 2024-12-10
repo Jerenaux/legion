@@ -4,6 +4,7 @@ import './LeaderboardTable.style.css';
 import { h, Component } from 'preact';
 import { loadAvatar } from '../utils';
 import Skeleton from 'react-loading-skeleton';
+import { route } from 'preact-router';
 
 // Import image assets
 import promoteIcon from '@assets/leaderboard/promote_icon.png';
@@ -94,6 +95,10 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
         this.setState({ hoveredRow: index });
     }
 
+    handleRowClick = (playerId: string) => {
+        route(`/profile/${playerId}`);
+    };
+
     getRowBG = (player: LeaderboardRow, index: number): React.CSSProperties => {
         if (player.isPlayer) {
             return { backgroundImage: `url(${leaderboardBgOwn})` };
@@ -156,10 +161,11 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                         {this.props.data ? this.state.tableData.map((item: LeaderboardRow, index: number) => (
                             <tr 
                                 key={index} 
-                                className={item.player === 'Me' ? 'highlighted-row' : ''} 
+                                className={`${item.player === 'Me' ? 'highlighted-row' : ''} clickable-row`}
                                 style={this.getRowBG(item, index)}
                                 onMouseEnter={() => this.handleRowHover(index)}
                                 onMouseLeave={() => this.handleRowHover(null)}
+                                onClick={() => this.handleRowClick(item.playerId)}
                             >
                                 <td className="rank-row">
                                     <div className="rank-row-number" style={rankRowNumberStyle(item.rank)}>{item.rank}</div>

@@ -75,3 +75,13 @@
     position: absolute;
     bottom: 16px; 
 }
+
+.award-player-container.clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.award-player-container.clickable:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+}
