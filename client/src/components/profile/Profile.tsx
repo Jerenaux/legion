@@ -26,6 +26,7 @@ interface State {
             gameId?: string;
         };
     };
+    socketReady: boolean;
 }
 
 class Profile extends Component<Props, State> {
@@ -41,6 +42,7 @@ class Profile extends Component<Props, State> {
         isAddingFriend: false,
         playerStatus: { status: 'offline' },
         friendStatuses: {},
+        socketReady: false,
     };
 
     async componentDidMount() {
@@ -48,10 +50,18 @@ class Profile extends Component<Props, State> {
         this.setupStatusTracking();
     }
 
-    async componentDidUpdate(prevProps: Props) {
+    async componentDidUpdate(prevProps: Props, prevState: State) {
         if (prevProps.id !== this.props.id) {
             await this.loadProfileData();
             this.setupStatusTracking();
+        }
+
+        const { socket } = this.context;
+        if (!prevState.socketReady && socket) {
+            this.setState({ socketReady: true }, () => {
+                console.log('Socket ready, setting up status tracking');
+                this.setupStatusTracking();
+            });
         }
     }
 
@@ -126,7 +136,10 @@ class Profile extends Component<Props, State> {
 
     setupStatusTracking = () => {
         const { socket } = this.context;
-        if (!socket) return;
+        if (!socket) {
+            console.log('Socket not ready, skipping status tracking setup');
+            return;
+        };
 
         // Clear existing interval if any
         if (this.statusInterval) {
@@ -141,6 +154,7 @@ class Profile extends Component<Props, State> {
                     socket.emit('getFriendsStatuses', { friendIds });
                 }
             } else {
+                console.log('Getting player status for', this.props.id);
                 // Get single player status
                 socket.emit('getPlayerStatus', { playerId: this.props.id });
             }
@@ -148,10 +162,12 @@ class Profile extends Component<Props, State> {
 
         // Set up socket listeners
         socket.off('playerStatus').on('playerStatus', (statusInfo) => {
+            console.log('Received status update:', statusInfo);
             this.setState({ playerStatus: statusInfo });
         });
 
         socket.off('friendsStatuses').on('friendsStatuses', (statuses) => {
+            console.log('Received friends statuses:', statuses);
             this.setState({ friendStatuses: statuses });
         });
 
@@ -159,7 +175,7 @@ class Profile extends Component<Props, State> {
         fetchStatuses();
 
         // Set up interval for periodic updates
-        this.statusInterval = setInterval(fetchStatuses, 10000); // Update every 10 seconds
+        this.statusInterval = setInterval(fetchStatuses, 5000);
     }
 
     renderPlayerStatus = (status: string, gameId?: string) => {
@@ -178,6 +194,52 @@ class Profile extends Component<Props, State> {
                     </div>
                 )} */}
             </>
+        );
+    }
+
+    renderStatusBox = () => {
+        if (this.isOwnProfile()) return null;
+
+        const status = this.state.playerStatus.status;
+        const gameId = this.state.playerStatus.gameId;
+        
+        let statusMessage = '';
+        let showChallengeButton = false;
+
+        switch(status) {
+            case 'online':
+                statusMessage = `${this.state.profileData.name} is ready to play!`;
+                showChallengeButton = true;
+                break;
+            case 'offline':
+                statusMessage = `${this.state.profileData.name} is currently offline`;
+                break;
+            case 'queuing':
+                statusMessage = `${this.state.profileData.name} is currently queuing`;
+                break;
+            case 'ingame':
+                statusMessage = `${this.state.profileData.name} is currently in a game`;
+                break;
+        }
+
+        return (
+            <div className={`player-status-box ${status}`}>
+                <div className="status-text">
+                    <div className={`status-dot ${status}`} />
+                    <span className="status-message">{statusMessage}</span>
+                </div>
+                {showChallengeButton && (
+                    <button 
+                        className="challenge-button"
+                        onClick={() => {
+                            // TODO: Implement challenge functionality
+                            console.log('Challenge clicked');
+                        }}
+                    >
+                        Challenge to a Duel
+                    </button>
+                )}
+            </div>
         );
     }
 
@@ -239,6 +301,8 @@ class Profile extends Component<Props, State> {
                         </div>
                     </div>
                 </div>
+
+                {this.renderStatusBox()}
 
                 <div className="stats-grid">
                     <div className="stats-card all-time">
