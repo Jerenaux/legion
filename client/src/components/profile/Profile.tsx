@@ -154,7 +154,7 @@ class Profile extends Component<Props, State> {
                     socket.emit('getFriendsStatuses', { friendIds });
                 }
             } else {
-                console.log('Getting player status for', this.props.id);
+                // console.log('Getting player status for', this.props.id);
                 // Get single player status
                 socket.emit('getPlayerStatus', { playerId: this.props.id });
             }
@@ -162,7 +162,7 @@ class Profile extends Component<Props, State> {
 
         // Set up socket listeners
         socket.off('playerStatus').on('playerStatus', (statusInfo) => {
-            console.log('Received status update:', statusInfo);
+            // console.log('Received status update:', statusInfo);
             this.setState({ playerStatus: statusInfo });
         });
 
@@ -208,14 +208,12 @@ class Profile extends Component<Props, State> {
 
         switch(status) {
             case 'online':
+            case 'queuing':
                 statusMessage = `${this.state.profileData.name} is ready to play!`;
                 showChallengeButton = true;
                 break;
             case 'offline':
                 statusMessage = `${this.state.profileData.name} is currently offline`;
-                break;
-            case 'queuing':
-                statusMessage = `${this.state.profileData.name} is currently queuing`;
                 break;
             case 'ingame':
                 statusMessage = `${this.state.profileData.name} is currently in a game`;
