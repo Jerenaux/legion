@@ -229,7 +229,18 @@ export const getPlayerData = onRequest((request, response) => {
 
   corsMiddleware(request, response, async () => {
     try {
-      const uid = await getUID(request);
+      // Little hack for graceful warmup
+      if (!request.headers.authorization) {
+        response.status(200).send({});
+        return;
+      }
+      // Get UID from auth token or query param
+      const uid = await getUID(request) || request.query.uid as string;
+      if (!uid) {
+        response.status(400).send("No player ID provided");
+        return;
+      }
+
       const docSnap = await db.collection('players').doc(uid).get();
 
       if (docSnap.exists) {
@@ -238,13 +249,12 @@ export const getPlayerData = onRequest((request, response) => {
           throw new Error("playerData is null");
         }
 
-        updateDAU(uid);
-        // Update the lastActiveDate field
         const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
         if (playerData.lastActiveDate !== today) {
           await db.collection("players").doc(uid).update({
             lastActiveDate: today,
           });
+          updateDAU(uid);
         }
 
         // Transform the chest field so that the `time` field becomes
@@ -289,7 +299,11 @@ export const getPlayerData = onRequest((request, response) => {
       }
     } catch (error) {
       console.error("playerData error:", error);
-      response.status(401).send("Unauthorized");
+      if (error instanceof Error && error.message === "No UID provided") {
+        response.status(400).send("No player ID provided");
+      } else {
+        response.status(401).send("Unauthorized");
+      }
     }
   });
 });

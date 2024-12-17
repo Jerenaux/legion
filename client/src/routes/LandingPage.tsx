@@ -5,6 +5,7 @@ import logoBig from '@assets/logobig.png';
 import axios from 'axios';
 import './LandingPage.style.css';
 import Modal from '../components/modal/Modal';
+import { apiFetch } from '../services/apiService';
 
 interface LandingPageProps {
   utm_source?: string;
@@ -29,19 +30,20 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
 
   private firebaseUIContainer: HTMLDivElement | null = null;
 
-  warmUpServer = (): void => {
-    axios.get(process.env.GAME_SERVER_URL)
-      .then(response => {
-        // console.log(`Server warmed up`);
-      })
-      .catch(error => {
-        // console.error(`Error warming up the server: ${error}`);
-      });
+  warmUpServer = async (): Promise<void> => {
+    try {
+      await axios.get(process.env.GAME_SERVER_URL);
+      await fetch(`${process.env.API_URL}/getPlayerData`);
+    } catch (error) {
+      // console.error("Error warming up server:", error);
+    }
   }
 
   componentDidMount(): void {
     if (!this.context.isAuthenticated) {
-      this.warmUpServer();
+      this.warmUpServer().catch(error => {
+        // console.error("Error in warmUpServer:", error);
+      });
       
       if (this.props.utm_source) {
         this.context.setUtmSource(this.props.utm_source);
