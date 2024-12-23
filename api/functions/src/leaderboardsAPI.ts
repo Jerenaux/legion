@@ -96,8 +96,13 @@ async function getLeagueLeaderboard(leagueID: number, rankingOnly: boolean, uid?
   console.log(`[getLeagueLeaderboard]Fetched ${players.length} players`);
 
   if (!isAllTime) {
-    promotionRank = Math.max(Math.ceil(players.length * PROMOTION_RATIO), 3);
-    demotionRank = leagueID == 0 ? 0 : players.length - Math.floor(players.length * DEMOTION_RATIO);
+    // Get the total number of unique ranks
+    const uniqueRanks = new Set(players.map(p => 
+      isAllTime ? p.allTimeStats.rank : p.leagueStats.rank
+    )).size;
+    
+    promotionRank = Math.max(Math.ceil(uniqueRanks * PROMOTION_RATIO), 3);
+    demotionRank = leagueID == 0 ? 0 : uniqueRanks - Math.floor(uniqueRanks * DEMOTION_RATIO);
   }
 
   const getHighlightPlayer = (metric: string) => {

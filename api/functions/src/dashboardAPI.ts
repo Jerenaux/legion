@@ -28,6 +28,7 @@ interface GamesPerModePerDay {
 }
 
 interface EngagementMetrics {
+    landingPageCvRate: number;
     totalPlayers: number;
     tutorialCompletionRate: number;
     playedOneGameRate: number;
@@ -431,7 +432,7 @@ export const listPlayerIDs = onRequest(async (request, response) => {
     });
 });
 
-export const getEngagementMetrics = onRequest(async (request, response) => {
+export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -448,8 +449,27 @@ export const getEngagementMetrics = onRequest(async (request, response) => {
                 .get();
 
             const totalPlayers = playersSnapshot.size;
+
+            // Get unique visitors since start date
+            const visitsSnapshot = await db.collection("dailyVisits")
+                .where(admin.firestore.FieldPath.documentId(), ">=", startDate)
+                .get();
+
+            // Count total unique visitors across all days
+            const uniqueVisitors = new Set();
+            visitsSnapshot.forEach(doc => {
+                const visitors = doc.data().visitors || [];
+                // @ts-ignore
+                visitors.forEach(visitor => uniqueVisitors.add(visitor));
+            });
+            const totalVisitors = uniqueVisitors.size;
+
+            // Calculate conversion rate (as a percentage)
+            const landingPageCvRate = totalVisitors > 0 ? (totalPlayers / totalVisitors) * 100 : 0;
+
             if (totalPlayers === 0) {
                 response.send({
+                    landingPageCvRate,
                     totalPlayers: 0,
                     tutorialCompletionRate: 0,
                     playedOneGameRate: 0,
@@ -482,6 +502,7 @@ export const getEngagementMetrics = onRequest(async (request, response) => {
             }
 
             const metrics: EngagementMetrics = {
+                landingPageCvRate,
                 totalPlayers,
                 tutorialCompletionRate: (completedTutorialCount / totalPlayers) * 100,
                 playedOneGameRate: (playedOneGame / totalPlayers) * 100,
