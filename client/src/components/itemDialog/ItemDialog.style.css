@@ -16,16 +16,19 @@
 
 .dialog-button-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 4px;
     width: 100%;
+    flex-wrap: wrap;
 }
 
 .dialog-button-container button {
+    flex: 0 1 auto;
+    min-width: 60px;
     background: transparent;
     border: 1px solid #244752;
     border-radius: 4px;
-    padding: 4px;
+    padding: 4px 8px;
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -306,9 +309,10 @@
 }
 
 .dialog-item-info-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 4px;
+    margin: 8px 0;
 }
 
 .dialog-spell-info {
@@ -391,7 +395,7 @@
     background-color: #1c1f25;
     border: 1px solid #3f6f7d;
     border-radius: 4px;
-    width: 118px;
+    width: 132px;
     padding: 6px 12px;
     display: flex;
     flex-direction: column;
@@ -470,6 +474,7 @@
     align-items: center;
     gap: 8px;
     padding: 2px 0;
+    width: 100%;
 }
 
 .dialog-item-info span {
@@ -477,9 +482,32 @@
 }
 
 .dialog-item-info .character-info-dialog-card {
-    min-width: 28px;
+    min-width: 42px;
 }
 
 .dialog-item-info .character-info-dialog-card span {
     font-size: 10px;
+}
+
+.dialog-sell {
+    background-color: #8B0000 !important;
+    border: none !important;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 8px !important;
+}
+
+.dialog-sell:hover {
+    background-color: #A52A2A !important;
+}
+
+.dialog-sell img {
+    width: 10px !important;
+    height: 10px !important;
 }

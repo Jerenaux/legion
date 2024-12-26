@@ -2,11 +2,10 @@
 import './ItemDialog.style.css';
 import Modal from 'react-modal';
 import { h, Component } from 'preact';
-import { SPSPendingData, STATS_BG_COLOR, STATS_NAMES, ItemDialogType } from './ItemDialogType';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat, Target, statFields } from '@legion/shared/enums';
+import { InventoryActionType, Stat, Target, statFields, SPSPendingData, STATS_BG_COLOR, STATS_NAMES, ItemDialogType } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast, mapFrameToCoordinates, classEnumToString, cropFrame } from '../utils';
 import { getSPIncrement } from '@legion/shared/levelling';
@@ -31,6 +30,11 @@ import mpIcon from '@assets/inventory/mp_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 import { APICharacterData } from '@legion/shared/interfaces';
+
+import { getConsumableById } from "@legion/shared/Items";
+import { getSpellById } from "@legion/shared/Spells";
+import { getEquipmentById } from "@legion/shared/Equipments";
+import { getSellPrice } from '@legion/shared/inventory';
 
 Modal.setAppElement('#root');
 interface DialogProps {
@@ -61,6 +65,7 @@ interface DialogState {
   croppedImages: {
     [key: string]: string | null;
   };
+  sellModalShow: boolean;
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
@@ -78,6 +83,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return {
       dialogSpellModalShow: false,
       dialogSPModalShow: false,
+      sellModalShow: false,
       dialogValue: 1,
       inventory: {
         consumables: [],
@@ -134,23 +140,27 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   AcceptAction = (type: ItemDialogType, index: number) => {
+    const { actionType } = this.props;
 
     const payload = {
       index,
       characterId: this.context.getActiveCharacter().id,
       inventoryType: type,
-      action: this.props.actionType
+      action: actionType === InventoryActionType.EQUIP && this.state.sellModalShow ? 
+        InventoryActionType.SELL : actionType
     };
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[ItemDialog] AcceptAction: type: ${type} action: ${this.props.actionType} index: ${index}`);
+      console.log(`[ItemDialog] AcceptAction: type: ${type} action: ${payload.action} index: ${index}`);
     }
 
-    this.context.updateInventory(type, this.props.actionType, index)
+    this.context.updateInventory(type, payload.action, index);
     this.props.handleClose();
 
-    if (type === ItemDialogType.SPELLS) {
+    if (type === ItemDialogType.SPELLS && actionType === InventoryActionType.EQUIP) {
       successToast('Spell learned!');
+    } else if (payload.action === InventoryActionType.SELL) {
+      successToast('Item sold!');
     }
 
     apiFetch('inventoryTransaction', {
@@ -186,13 +196,16 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   renderDialogButtons(acceptAction: () => void, isDisabled: boolean = false) {
-    const { actionType } = this.props;
+    const { actionType, dialogType } = this.props;
     let acceptLabel = actionType == InventoryActionType.UNEQUIP ? 'Remove' : 'Equip';
     if (this.props.dialogType === ItemDialogType.SPELLS) {
       acceptLabel = 'Learn';
     } else if (this.props.dialogType === ItemDialogType.SP) {
       acceptLabel = 'Spend';
     }
+
+    // Don't show sell button for SP dialog or equipped items
+    const showSellButton = dialogType !== ItemDialogType.SP && actionType === InventoryActionType.EQUIP;
 
     return (
       <div className="dialog-button-container">
@@ -205,6 +218,15 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           <img src={confirmIcon} alt="confirm" />
           {acceptLabel}
         </button>
+        {showSellButton && (
+          <button 
+            className="dialog-sell"
+            onClick={() => this.setState({ sellModalShow: true })}
+          >
+            <img src={cancelIcon} alt="sell" />
+            Sell
+          </button>
+        )}
         <button className="dialog-decline" onClick={this.handleClose}>
           <img src={cancelIcon} alt="decline" />
           Cancel
@@ -398,6 +420,39 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     );
   }
 
+  renderSellConfirmationModal() {
+    const { dialogType, index, dialogData } = this.props;
+    if (!dialogData || !('id' in dialogData)) return null;
+    
+    const sellPrice = getSellPrice(dialogData.id, dialogType);
+    return (
+      <div style={{ display: this.state.sellModalShow ? 'block' : 'none' }} className="dialog-spell-modal">
+        <div className="dialog-spell-modal-text">
+          Are you sure you want to sell this item for {sellPrice} gold?
+        </div>
+        <div className="dialog-button-container">
+          <button
+            className="dialog-accept"
+            onClick={() => {
+              this.AcceptAction(dialogType, index);
+              this.setState({ sellModalShow: false });
+            }}
+          >
+            <img src={confirmIcon} alt="confirm" />
+            Confirm
+          </button>
+          <button 
+            className="dialog-decline" 
+            onClick={() => this.setState({ sellModalShow: false })}
+          >
+            <img src={cancelIcon} alt="decline" />
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   renderDialogContent() {
     const { dialogType, dialogData } = this.props;
 
@@ -438,6 +493,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return (
       <Modal isOpen={dialogOpen} style={customStyles} onRequestClose={this.handleClose}>
         {this.renderDialogContent()}
+        {this.renderSellConfirmationModal()}
       </Modal>
     );
   }

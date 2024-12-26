@@ -1,14 +1,13 @@
 // ShopCharacterCard.tsx
 import './shopCharacterCard.style.css';
 import { h, Component } from 'preact';
-import { STATS_BG_COLOR, STATS_NAMES } from '../itemDialog/ItemDialogType';
 import { classEnumToString, getSpritePath } from '../utils';
 import { modalData } from '../shopContent/ShopContent';
 
 import goldIcon from '@assets/gold_icon.png';
 import { spells } from '@legion/shared/Spells';
 import { mapFrameToCoordinates } from '../utils';
-import { Target, RarityColor, statFields } from '@legion/shared/enums';
+import { Target, RarityColor, statFields, STATS_BG_COLOR, STATS_NAMES } from '@legion/shared/enums';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 
 import spellsSpritesheet from '@assets/spells.png';

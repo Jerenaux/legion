@@ -7,10 +7,11 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpellById } from '@legion/shared/Spells';
 import { getConsumableById } from '@legion/shared/Items';
-import { STATS_BG_COLOR, STATS_NAMES, ItemDialogType, SPSPendingData } from '../itemDialog/ItemDialogType';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFields } from '@legion/shared/enums';
+import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFields,
+    STATS_BG_COLOR, STATS_NAMES, ItemDialogType, SPSPendingData
+ } from '@legion/shared/enums';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
 import { equipmentSlotFields } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';

@@ -1,10 +1,9 @@
 import './HUD.style.css';
 import { h, Component } from 'preact';
-import { InventoryType } from '@legion/shared/enums';
+import { InventoryType, ItemDialogType } from '@legion/shared/enums';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { ItemDialogType } from '../itemDialog/ItemDialogType';
 import { mapFrameToCoordinates } from '../utils';
 import { cropFrame } from '../utils'; 
 import { events } from '../HUD/GameHUD';

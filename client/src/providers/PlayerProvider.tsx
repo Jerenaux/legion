@@ -3,9 +3,8 @@ import { PlayerContextState, PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
 import { successToast, errorToast, avatarContext, silentErrorToast } from '../components/utils';
 import { APICharacterData, PlayerContextData, PlayerInventory } from '@legion/shared/interfaces';
-import { League, Stat, StatFields, InventoryActionType, ShopTab
+import { League, Stat, StatFields, InventoryActionType, ShopTab, ItemDialogType
  } from "@legion/shared/enums";
- import { ItemDialogType } from '../components/itemDialog/ItemDialogType';
 import { firebaseAuth } from '../services/firebaseService'; 
 import { getSPIncrement } from '@legion/shared/levelling';
 import { playSoundEffect, fetchGuideTip } from '../components/utils';
@@ -28,6 +27,10 @@ import {
 } from '@legion/shared/inventory';
 
 import equipSfx from "@assets/sfx/equip.wav";
+import { getConsumableById } from "@legion/shared/Items";
+import { getSpellById } from "@legion/shared/Spells";
+import { getEquipmentById } from "@legion/shared/Equipments";
+
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private fetchAllDataTimeout: NodeJS.Timeout | null = null;
     private fetchAllDataDelay: number = 400; 
@@ -230,6 +233,44 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         let updatedCharacter = { ...activeCharacter };
   
         let result = null;
+  
+        // Handle sell action
+        if (action === InventoryActionType.SELL) {
+          let itemPrice = 0;
+          let inventoryField: keyof PlayerInventory;
+          
+          switch(type) {
+            case ItemDialogType.CONSUMABLES:
+              itemPrice = (getConsumableById(updatedInventory.consumables[index])?.price || 0) / 2;
+              inventoryField = 'consumables';
+              break;
+            case ItemDialogType.EQUIPMENTS:
+              itemPrice = (getEquipmentById(updatedInventory.equipment[index])?.price || 0) / 2;
+              inventoryField = 'equipment';
+              break;
+            case ItemDialogType.SPELLS:
+              itemPrice = (getSpellById(updatedInventory.spells[index])?.price || 0) / 2;
+              inventoryField = 'spells';
+              break;
+            default:
+              return prevState;
+          }
+
+          const updatedItems = [...updatedInventory[inventoryField]];
+          updatedItems.splice(index, 1);
+
+          return {
+            ...newState,
+            player: {
+              ...newState.player,
+              gold: newState.player.gold + itemPrice,
+              inventory: {
+                ...updatedInventory,
+                [inventoryField]: updatedItems
+              }
+            }
+          };
+        }
   
         switch(type) {
           case ItemDialogType.CONSUMABLES:

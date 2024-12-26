@@ -139,6 +139,15 @@ export enum InventoryType {
     UTILITIES = 'utilities'
 }
 
+
+export enum ItemDialogType {
+    CONSUMABLES = 'consumables',
+    EQUIPMENTS = 'equipment',
+    SPELLS = 'spells',
+    UTILITIES = 'utilities',
+    SP = 'sp'
+}
+
 export enum ShopTab {
     CONSUMABLES,
     EQUIPMENTS,
@@ -148,7 +157,8 @@ export enum ShopTab {
 
 export enum InventoryActionType {
     EQUIP,
-    UNEQUIP
+    UNEQUIP,
+    SELL
 }
 
 export const RarityColor = [
@@ -202,4 +212,29 @@ export enum AIAttackMode {
     IDLE,
     ATTACK_ONCE,
     UNLIMITED,
+}
+// TODO: remove this, redundant with statFields
+export enum STATS_NAMES {
+    hp = 'HP',
+    mp = 'MP',
+    atk = 'ATK',
+    def = 'DEF',
+    spatk = 'SP.ATK',
+    spdef = 'SP.DEF',
+}
+
+export enum STATS_BG_COLOR {
+    HP = '#628c27',
+    MP = '#1f659a',
+    ATK = '#9a1f3c',
+    DEF = '#cc872d',
+    'SP.ATK' = '#26846b',
+    'SP.DEF' = '#703fba',
+    'SPATK' = '#26846b',
+    'SPDEF' = '#703fba',
+}
+
+export type SPSPendingData = {
+    stat: Stat;
+    value: number;
 }

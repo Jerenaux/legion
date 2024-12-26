@@ -11,6 +11,7 @@ import {inventorySize} from "@legion/shared/utils";
 import {getChestContent} from "@legion/shared/chests";
 import {logPlayerAction} from "./dashboardAPI";
 import { numericalSort } from "@legion/shared/inventory";
+import { getSellPrice } from '@legion/shared/inventory';
 
 import {
   canEquipConsumable,
@@ -212,6 +213,39 @@ export const inventoryTransaction = onRequest({
             update = equipEquipment(playerData, characterData, index);
             break;
         }
+      } else if (action === InventoryActionType.SELL) {
+        let itemId: number;
+        let inventoryField: string;
+        
+        switch (inventoryType) {
+          case InventoryType.CONSUMABLES:
+            itemId = playerData.inventory.consumables[index];
+            inventoryField = 'consumables';
+            break;
+          case InventoryType.SPELLS:
+            itemId = playerData.inventory.spells[index];
+            inventoryField = 'spells';
+            break;
+          case InventoryType.EQUIPMENTS:
+            itemId = playerData.inventory.equipment[index];
+            inventoryField = 'equipment';
+            break;
+          default:
+            throw new Error('Invalid inventory type');
+        }
+
+        const itemPrice = getSellPrice(itemId, inventoryType);
+        const inventory = { ...playerData.inventory };
+        // @ts-ignore
+        inventory[inventoryField] = inventory[inventoryField].filter((_, i) => i !== index);
+
+        await playerRef.update({
+          inventory,
+          gold: admin.firestore.FieldValue.increment(itemPrice)
+        });
+
+        response.send({ status: 0 });
+        return;
       } else {
         switch (inventoryType) {
           case InventoryType.CONSUMABLES:

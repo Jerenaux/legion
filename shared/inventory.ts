@@ -1,5 +1,5 @@
 import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment } from './interfaces';
-import { EquipmentSlot, equipmentSlotFields, Class } from "./enums";
+import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType } from "./enums";
 import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
 import { inventorySize } from '@legion/shared/utils';
@@ -267,4 +267,17 @@ function applyEquipmentBonuses(equipped: Equipment) {
     }
   }
   return bonuses;
+}
+
+export function getSellPrice(itemId: number, type: ItemDialogType | InventoryType): number {
+  switch (type) {
+    case ItemDialogType.CONSUMABLES || InventoryType.CONSUMABLES:
+      return Math.floor((getConsumableById(itemId)?.price || 0) / 2);
+    case ItemDialogType.SPELLS || InventoryType.SPELLS:
+      return Math.floor((getSpellById(itemId)?.price || 0) / 2);
+    case ItemDialogType.EQUIPMENTS || InventoryType.EQUIPMENTS:
+      return Math.floor((getEquipmentById(itemId)?.price || 0) / 2);
+    default:
+      return 0;
+  }
 }
