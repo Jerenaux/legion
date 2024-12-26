@@ -51,7 +51,7 @@ export const PlayerContext = createContext<{
     challengerAvatar: string;
     lobbyId: string;
   };
-  handleChallengeAccept: () => Promise<void>;
+  handleChallengeAccept: () => void;
   handleChallengeDecline: () => void;
 }>({
   player: {
@@ -105,6 +105,6 @@ export const PlayerContext = createContext<{
     challengerAvatar: '',
     lobbyId: '',
   },
-  handleChallengeAccept: async () => {},
+  handleChallengeAccept: () => {},
   handleChallengeDecline: () => {},
 });

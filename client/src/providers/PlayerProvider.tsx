@@ -500,23 +500,27 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           playSoundEffect(matchFound, 0.5);
       });
 
-        socket.on('challengeDeclined', (data: { playerName: string }) => {
+      socket.on('challengeDeclined', (data: { playerName: string }) => {
           console.log(`[matchmaker:challengeDeclined] Challenge was declined`);
-          silentErrorToast(`Your challenge to ${data.playerName} was declined!`);
+          let playerName = data?.playerName;
+          if (!playerName) {
+            playerName = 'another player';
+          }
+          silentErrorToast(`Your challenge to ${playerName} was declined!`);
           route('/profile');
       });
 
-        socket.on('challengeCancelled', (data?: { challengerName: string }) => {
-          // Hide the challenge modal if it's showing
-          if (this.state.challengeModal.show) {
-              this.setState({
-                  challengeModal: {
-                      ...this.state.challengeModal,
-                      show: false
-                  }
-              });
-              silentErrorToast(`The challenge from ${data?.challengerName || 'Player'} was cancelled`);
-          }
+      socket.on('challengeCancelled', (data?: { challengerName: string }) => {
+        // Hide the challenge modal if it's showing
+        if (this.state.challengeModal.show) {
+            this.setState({
+                challengeModal: {
+                    ...this.state.challengeModal,
+                    show: false
+                }
+            });
+            silentErrorToast(`The challenge from ${data?.challengerName || 'Player'} was cancelled`);
+        }
       });
 
         this.setState({ socket });
@@ -534,22 +538,12 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       }, this.reconnectDelay);
     }
 
-    handleChallengeAccept = async () => {
+    handleChallengeAccept = () => {
         const { lobbyId } = this.state.challengeModal;
         
-        try {
-            // Join the lobby through the socket
-            const { socket } = this.state;
-            if (!socket) {
-                throw new Error("No socket connection available");
-            }
-
-            // Close modal and redirect
-            this.setState({ challengeModal: { ...this.state.challengeModal, show: false } });
-            route(`/lobby/${lobbyId}`);
-        } catch (error) {
-            errorToast('Failed to accept challenge: ' + error.message);
-        }
+        // Close modal and redirect
+        this.setState({ challengeModal: { ...this.state.challengeModal, show: false } });
+        route(`/lobby/${lobbyId}`);
     };
 
     handleChallengeDecline = () => {

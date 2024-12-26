@@ -19,6 +19,8 @@
   box-shadow: 
     0 0.1vw 0 #00ffff,
     0 0.2vw 0 #005f5f;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .tutorial-dialogue.visible {
@@ -54,6 +56,9 @@
 
 .tutorial-dialogue-content {
   flex: 1;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -196,3 +201,14 @@
     padding-right: 4vw;
   }
 }
+
+/* Make the next button more compact on mobile */
+@media screen and (max-width: 768px) {
+  .tutorial-dialogue {
+    padding: 10px; /* Reduce padding on mobile if needed */
+  }
+  
+  .tutorial-dialogue-next {
+    padding: 8px; /* Smaller padding for the button */
+  }
+} 

@@ -278,10 +278,12 @@ export const getPlayerData = onRequest({
 
         const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
 
+        // Ensure inventory fields exist and are arrays
+        const inventory = playerData.inventory || {};
         const sortedInventory: PlayerInventory = {
-          consumables: playerData.inventory.consumables.sort(numericalSort),
-          spells: playerData.inventory.spells.sort(numericalSort),
-          equipment: playerData.inventory.equipment.sort(numericalSort),
+          consumables: Array.isArray(inventory.consumables) ? inventory.consumables.sort(numericalSort) : [],
+          spells: Array.isArray(inventory.spells) ? inventory.spells.sort(numericalSort) : [],
+          equipment: Array.isArray(inventory.equipment) ? inventory.equipment.sort(numericalSort) : [],
         };
 
         const AIwinRatio = 
@@ -291,22 +293,22 @@ export const getPlayerData = onRequest({
 
         response.send({
           uid,
-          gold: playerData.gold,
-          elo: playerData.elo,
-          lvl: playerData.lvl,
-          name: playerData.name,
+          gold: playerData.gold || 0,
+          elo: playerData.elo || 100,
+          lvl: playerData.lvl || 1,
+          name: playerData.name || '',
           teamName: "teamName",
-          avatar: playerData.avatar,
-          league: playerData.league,
-          rank: playerData.leagueStats.rank,
-          wins: playerData.leagueStats.wins,
-          allTimeRank: playerData.allTimeStats.rank,
+          avatar: playerData.avatar || '1',
+          league: playerData.league || 0,
+          rank: playerData.leagueStats?.rank || 0,
+          wins: playerData.leagueStats?.wins || 0,
+          allTimeRank: playerData.allTimeStats?.rank || 0,
           dailyloot: playerData.dailyloot,
           tours,
           inventory: sortedInventory,
-          carrying_capacity: playerData.carrying_capacity,
+          carrying_capacity: playerData.carrying_capacity || BASE_INVENTORY_SIZE,
           isLoaded: false,
-          tokens: playerData.tokens,
+          tokens: playerData.tokens || { [Token.SOL]: 0 },
           AIwinRatio,
         } as PlayerContextData);
       } else {
