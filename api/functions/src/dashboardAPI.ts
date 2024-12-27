@@ -812,3 +812,29 @@ export const getPlayerGameHistory = onRequest(async (request, response) => {
     });
 });
 
+export const getActivePlayers = onRequest({ memory: '512MiB' }, async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            // Get all players with engagementStats.totalGames > 1
+            const playersSnapshot = await db.collection("players")
+                .where("engagementStats.completedGames", ">", 1)
+                .get();
+
+            // Map and sort players by total games
+            const players = playersSnapshot.docs.map(doc => ({
+                id: doc.id,
+                totalGames: doc.data().engagementStats?.completedGames || 0,
+                joinDate: doc.data().joinDate,
+                lastActiveDate: doc.data().lastActiveDate
+            })).sort((a, b) => b.totalGames - a.totalGames);
+
+            response.send(players);
+        } catch (error) {
+            console.error("getActivePlayers error:", error);
+            response.status(500).send("Error fetching active players");
+        }
+    });
+});
+

@@ -192,7 +192,7 @@ export const inventoryTransaction = onRequest({
           response.send({ status: 1 });
           return;
         }
-      } else {
+      } else if (action === InventoryActionType.UNEQUIP) {
         if (inventorySize(playerData.inventory) >= playerData.carrying_capacity) {
           logger.info("Player inventory full!");
           response.send({ status: 1 });
@@ -246,7 +246,7 @@ export const inventoryTransaction = onRequest({
 
         response.send({ status: 0 });
         return;
-      } else {
+      } else if (action === InventoryActionType.UNEQUIP) {
         switch (inventoryType) {
           case InventoryType.CONSUMABLES:
             update = unequipConsumable(playerData, characterData, index);

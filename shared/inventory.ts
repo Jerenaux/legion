@@ -16,6 +16,18 @@ export function roomInInventory(playerData: PlayerContextData | DBPlayerData): b
     return inventorySize(playerData.inventory) < playerData.carrying_capacity;
 }
 
+export function ownConsumable(playerData: PlayerContextData | DBPlayerData, itemId: number): boolean {
+  return playerData.inventory.consumables.includes(itemId);
+}
+
+export function ownSpell(playerData: PlayerContextData | DBPlayerData, itemId: number): boolean {
+  return playerData.inventory.spells.includes(itemId);
+}
+
+export function ownEquipment(playerData: PlayerContextData | DBPlayerData, itemId: number): boolean {
+  return playerData.inventory.equipment.includes(itemId);
+}
+
 export function canEquipConsumable(characterData: DBCharacterData | APICharacterData): boolean {
   return characterData.inventory.length <
     characterData.carrying_capacity + (characterData.carrying_capacity_bonus || 0);

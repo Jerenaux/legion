@@ -16,6 +16,7 @@ export const tips = [
     "You can revive characters during combat by using a Clover!",
     "The bar at the bottom of the game screen is the Audience bar. Impress the audience to earn extra rewards!",
     "Haste Potions cut your cooldowns in half, very useful before casting a powerful spell!",
+    "You can challenge any player to a game by visitting their profile page and clicking on the 'Challenge' button!",
 ];
 
 export const guide = [

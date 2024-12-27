@@ -38,7 +38,7 @@ export const INITIAL_COOLDOWN = 3; // sec
 
 // Matchmaking
 export const eloRangeIncreaseInterval = 20; // seconds
-export const eloRangeStart = 50;
+export const eloRangeStart = 600;
 export const eloRangeStep = 50; // Increase range by 50 points every interval
 export const goldRewardInterval = 15;
 export const goldReward = 1;

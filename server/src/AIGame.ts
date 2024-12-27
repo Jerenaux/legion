@@ -192,7 +192,8 @@ export class AIGame extends Game {
         const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI];
         if (AImodes.includes(this.mode)) {
             let winRatio = playerTeam.teamData.AIwinRatio;
-            if (this.mode === PlayMode.RANKED_VS_AI) winRatio += 0.1;
+            if (this.mode === PlayMode.RANKED_VS_AI) winRatio += 0.1 + (this.league * 0.1);
+        
             aiTeam.addWinRatio(winRatio);
             console.log(`[AIGame:populateTeams] AI team win ratio: ${winRatio}`);
 
