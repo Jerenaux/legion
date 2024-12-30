@@ -26,17 +26,6 @@ interface GamesPerModePerDay {
         [mode: string]: number;
     };
 }
-
-interface EngagementMetrics {
-    landingPageCvRate: number;
-    totalPlayers: number;
-    totalVisits: number;
-    tutorialCompletionRate: number;
-    playedOneGameRate: number;
-    playedMultipleGamesRate: number;
-    gameCompletionRate: number;
-}
-
 interface TutorialDropoffStats {
     totalPlayers: number;
     dropoffPoints: {
@@ -480,6 +469,10 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
                     totalPlayers: 0,
                     tutorialCompletionRate: 0,
                     playedOneGameRate: 0,
+                    playedOneGameRateNonMobile: 0,
+                    playedOneGameRateMobile: 0,
+                    playedOneGameRate_tutorialCompleted: 0,
+                    playedOneGameRate_tutorialNotCompleted: 0,
                     playedMultipleGamesRate: 0,
                     gameCompletionRate: 0
                 });
@@ -488,8 +481,14 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
 
             // Count players based on their metrics
             let playedOneGame = 0;
+            let playedOneGameNonMobile = 0;
+            let playedOneGameMobile = 0;
+            let totalNonMobilePlayers = 0;
+            let totalMobilePlayers = 0;
             let playedMultipleGames = 0;
             let completedTutorialCount = 0;
+            let playedOneGameAndCompletedTutorial = 0;
+            let playedOneGameAndNotCompletedTutorial = 0;
             let totalCompletedGames = 0;
             let totalGamesStarted = 0;
 
@@ -499,21 +498,51 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
                 const stats = playerData.engagementStats || {};
                 const playerTotalGames = stats.totalGames || 0;
                 const playerCompletedGames = stats.completedGames || 0;
+                const isMobile = playerData.isMobile || false;
+                const completedTutorial = stats.completedTutorial || false;
                 
-                if (playerTotalGames >= 1) playedOneGame++;
+                if (playerTotalGames >= 1) {
+                    playedOneGame++;
+                    if (!isMobile) {
+                        playedOneGameNonMobile++;
+                    } else {
+                        playedOneGameMobile++;
+                    }
+                    if (completedTutorial) {
+                        playedOneGameAndCompletedTutorial++;
+                    } else {
+                        playedOneGameAndNotCompletedTutorial++;
+                    }
+                }
+                if (!isMobile) {
+                    totalNonMobilePlayers++;
+                } else {
+                    totalMobilePlayers++;
+                }
                 if (playerTotalGames > 1) playedMultipleGames++;
-                if (stats.completedTutorial) completedTutorialCount++;
+                if (completedTutorial) {
+                    completedTutorialCount++;
+                }
 
                 totalCompletedGames += playerCompletedGames;
                 totalGamesStarted += playerTotalGames;
             }
 
-            const metrics: EngagementMetrics = {
-                landingPageCvRate,
-                totalPlayers,
+            const metrics = {
                 totalVisits: totalVisitors,
+                totalPlayers,
+                pctMobile: totalMobilePlayers > 0 ? (totalMobilePlayers / totalPlayers) * 100 : 0,
+                landingPageCvRate,
                 tutorialCompletionRate: (completedTutorialCount / totalPlayers) * 100,
                 playedOneGameRate: (playedOneGame / totalPlayers) * 100,
+                playedOneGameRateNonMobile: totalNonMobilePlayers > 0 ? 
+                    (playedOneGameNonMobile / totalNonMobilePlayers) * 100 : 0,
+                playedOneGameRateMobile: totalMobilePlayers > 0 ?
+                    (playedOneGameMobile / totalMobilePlayers) * 100 : 0,
+                playedOneGameRate_tutorialCompleted: completedTutorialCount > 0 ? 
+                    (playedOneGameAndCompletedTutorial / completedTutorialCount) * 100 : 0,
+                playedOneGameRate_tutorialNotCompleted: (totalPlayers - completedTutorialCount) > 0 ?
+                    (playedOneGameAndNotCompletedTutorial / (totalPlayers - completedTutorialCount)) * 100 : 0,
                 playedMultipleGamesRate: (playedMultipleGames / totalPlayers) * 100,
                 gameCompletionRate: totalGamesStarted > 0 ? (totalCompletedGames / totalGamesStarted) * 100 : 0
             };
@@ -842,6 +871,134 @@ export const getActivePlayers = onRequest({ memory: '512MiB' }, async (request, 
         } catch (error) {
             console.error("getActivePlayers error:", error);
             response.status(500).send("Error fetching active players");
+        }
+    });
+});
+
+export const migrateMobileFlag = onRequest({ memory: '512MiB' }, async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            // Get all players
+            const playersSnapshot = await db.collection("players").get();
+            
+            // Filter for documents that don't have the isMobile field
+            const docsToUpdate = playersSnapshot.docs.filter(doc => 
+                !doc.data().hasOwnProperty('isMobile')
+            );
+
+            console.log(`Found ${docsToUpdate.length} players without isMobile flag`);
+            
+            const results = {
+                totalPlayers: docsToUpdate.length,
+                updatedPlayers: 0,
+                mobileUsers: 0,
+                errors: [] as string[]
+            };
+
+            // Process each player
+            const updates = docsToUpdate.map(async (playerDoc) => {
+                try {
+                    // Check if any action has isMobile: true in details
+                    const actionsSnapshot = await playerDoc.ref
+                        .collection("actions")
+                        .where("details.isMobile", "==", true)
+                        .limit(1)
+                        .get();
+
+                    const isMobile = !actionsSnapshot.empty;
+
+                    // Update the player document
+                    await playerDoc.ref.update({
+                        isMobile: isMobile
+                    });
+
+                    results.updatedPlayers++;
+                    if (isMobile) {
+                        results.mobileUsers++;
+                    }
+                } catch (error) {
+                    results.errors.push(`Error updating player ${playerDoc.id}: ${error}`);
+                }
+            });
+
+            await Promise.all(updates);
+
+            response.send({
+                message: "Migration completed",
+                results
+            });
+
+        } catch (error) {
+            console.error("Migration error:", error);
+            response.status(500).send({
+                message: "Error during migration",
+                // @ts-ignore
+                error: error.toString()
+            });
+        }
+    });
+});
+
+export const getPlayerActionsReport = onRequest({ memory: '512MiB' }, async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const startDate = request.query.date;
+            if (!startDate) {
+                response.status(400).send("Bad Request: Missing date parameter");
+                return;
+            }
+
+            // Get all players who joined after the start date and haven't played any games
+            const playersSnapshot = await db.collection("players")
+                .where("joinDate", ">=", startDate)
+                .where("engagementStats.totalGames", "==", 0)
+                .get();
+
+            let textLog = `Actions log for players who joined since ${startDate} and haven't played any games\n`;
+            textLog += `Total players found: ${playersSnapshot.size}\n\n`;
+
+            // Process each player
+            for (const playerDoc of playersSnapshot.docs) {
+                const playerData = playerDoc.data();
+                textLog += `\n=== Player ${playerDoc.id} ===\n`;
+                textLog += `Joined: ${playerData.joinDate}\n`;
+                textLog += `Last active: ${playerData.lastActiveDate}\n`;
+
+                // Get all actions for this player
+                const actionsSnapshot = await playerDoc.ref
+                    .collection("actions")
+                    .orderBy("timestamp", "asc")
+                    .get();
+
+                if (actionsSnapshot.empty) {
+                    textLog += "No actions recorded\n";
+                    continue;
+                }
+
+                // Process each action
+                actionsSnapshot.docs.forEach(actionDoc => {
+                    const action = actionDoc.data();
+                    const timestamp = action.timestamp?.toDate?.() || 'unknown time';
+                    textLog += `\n ${action.actionType}\n`;
+                    if (action.details) {
+                        textLog += `Details: ${JSON.stringify(action.details, null, 2)}\n`;
+                    }
+                });
+
+                textLog += "\n---\n";
+            }
+
+            // Set content type to text/plain for better browser display
+            response.setHeader('Content-Type', 'text/plain');
+            response.send(textLog);
+
+        } catch (error) {
+            console.error("getPlayerActionsLog error:", error);
+            response.status(500).send("Error fetching player actions log");
         }
     });
 });

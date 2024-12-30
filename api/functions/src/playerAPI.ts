@@ -158,6 +158,7 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
       completedGames: 0, // Total games completed
       totalGames: 0, // Total games started
       completedTutorial: false,
+      engagedTutorial: false,
       everPurchased: false,
       everSpentSP: false,
       everOpenedDailyLoot: false,
@@ -1158,6 +1159,10 @@ export const recordPlayerAction = onRequest({
         await incrementCompletedTutorial(uid);
       }
 
+      if (actionType == 'tutorial' && details == 'summonEnemy') {
+        await incrementEngagedTutorial(uid);
+      }
+
       response.status(200).send({});
     } catch (error) {
       console.error('recordPlayerAction error:', error);
@@ -1170,6 +1175,13 @@ async function incrementCompletedTutorial(uid: string) {
   const db = admin.firestore();
   await db.collection('players').doc(uid).update({
     'engagementStats.completedTutorial': true,
+  });
+}
+
+async function incrementEngagedTutorial(uid: string) {
+  const db = admin.firestore();
+  await db.collection('players').doc(uid).update({
+    'engagementStats.engagedTutorial': true,
   });
 }
 
