@@ -87,7 +87,7 @@ export const remoteConfig = {
 }
 
 if (isDev) {
-    STARTING_BLACK_MAGE_SPELLS.push(2);
+    // STARTING_BLACK_MAGE_SPELLS.push(2);
 }
 
 if (!isDev) {

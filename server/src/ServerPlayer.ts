@@ -10,7 +10,7 @@ import { INITIAL_COOLDOWN, TIME_COEFFICIENT, INJURED_MODE } from "@legion/shared
 import { CooldownManager } from './CooldownManager';
 import { paralyzingStatuses } from '@legion/shared/utils';
 import { getEquipmentById } from '@legion/shared/Equipments';
-import { getSpells, setUpInventory } from '@legion/shared/NewCharacter';
+import { getSpells, lvlUp, setUpInventory } from '@legion/shared/NewCharacter';
 
 
 const terrainDot = {
@@ -67,6 +67,7 @@ export class ServerPlayer {
     inventoryCapacity: number = 3;
     inventory: Item[] = [];
     spells: Spell[] = [];
+    spell_slots: number = 0;
     equipment: Equipment;
     isCasting: boolean = false;
     damageDealt: number = 0;
@@ -424,6 +425,7 @@ export class ServerPlayer {
 
     setSpells(slots: number, spellsIds: number[]) {
         this.spells = spellsIds.map(id => new Spell(getSpellById(id)));
+        this.spell_slots = slots;
     }
 
     addSpell(spell: Spell) {
@@ -633,8 +635,21 @@ export class ServerPlayer {
     }
 
     setZombieSpells() {
-        const spells = getSpells(this.class, this.level, this.spells.length);
+        const spells = getSpells(this.class, this.level, this.spell_slots, true);
         this.spells = spells.map(id => new Spell(getSpellById(id)));
+        // console.log(`[ServerPlayer:setZombieSpells] Spells: ${this.spells.map(spell => spell.id).join(", ")}`);
+    }
+
+    zombieLevelUp(level: number) {
+        // console.log(`[ServerPlayer:zombieLevelUp] Zombie level up for player ${this.num} to ${level}`);
+        // console.log(`[ServerPlayer:zombieLevelUp] Stats before lvlUp: ${Object.values(this.stats).join(", ")}`);
+        this.level = level;
+        for (let i = 1; i < this.level; i++) {
+            lvlUp(this.class, this.stats);
+        }
+        this.setHP(this.getStat(Stat.HP));
+        this.setMP(this.getStat(Stat.MP));
+        // console.log(`[ServerPlayer:zombieLevelUp] Stats after lvlUp: ${Object.values(this.stats).join(", ")}`);
     }
 
     halveSpeed() {

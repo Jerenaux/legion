@@ -93,39 +93,14 @@ export class NewCharacter {
     };
 
     for (let i = 1; i < this.level; i++) {
-      this.lvlUp();
+      // console.log(`[NewCharacter:constructor] Stats before lvlUp: ${Object.values(this.stats).join(", ")}`);
+      lvlUp(this.characterClass, this.stats);
+      // console.log(`[NewCharacter:constructor] Stats after lvlUp: ${Object.values(this.stats).join(", ")}`);
     }
 
     if (isAI) {
       this.inventory = setUpInventory(this.characterClass, this.level, this.carrying_capacity);
       console.log(`[NewCharacter:constructor] AI inventory: ${this.inventory}`);
-    }
-  }
-
-  lvlUp(): void {
-    const NB_INCREASES = 2;
-    for (let i = 0; i < NB_INCREASES; i++) {
-      const stat = selectStatToLevelUp(this.characterClass);
-      switch (stat) {
-        case Stat.HP:
-          this.stats[Stat.HP] = increaseStat(stat, this.stats[Stat.HP], this.level, this.characterClass);
-          break;
-        case Stat.MP:
-          this.stats[Stat.MP] = increaseStat(stat, this.stats[Stat.MP], this.level, this.characterClass);
-          break;
-        case Stat.ATK:
-          this.stats[Stat.ATK] = increaseStat(stat, this.stats[Stat.ATK], this.level, this.characterClass);
-          break;
-        case Stat.DEF:
-          this.stats[Stat.DEF] = increaseStat(stat, this.stats[Stat.DEF], this.level, this.characterClass);
-          break;
-        case Stat.SPATK:
-          this.stats[Stat.SPATK] = increaseStat(stat, this.stats[Stat.SPATK], this.level, this.characterClass);
-          break;
-        case Stat.SPDEF:
-          this.stats[Stat.SPDEF] = increaseStat(stat, this.stats[Stat.SPDEF], this.level, this.characterClass);
-          break;
-      }
     }
   }
 
@@ -322,6 +297,7 @@ export class NewCharacter {
 
 export function getSpells(characterClass: Class, level: number, skill_slots: number, isAI = false): number[] {
   let spells = getSpellsUpToLevel(characterClass, level);
+  // console.log(`[getSpells] Candidate spells up to level ${level}: ${spells.join(", ")}`);
   switch (characterClass) {
     case Class.WARRIOR:
       return [];
@@ -367,4 +343,31 @@ export function setUpInventory(characterClass: Class, level: number, carrying_ca
     }
   }
   return inventory;
+}
+
+export function lvlUp(characterClass: Class, stats: CharacterStats): void {
+  const NB_INCREASES = 2;
+  for (let i = 0; i < NB_INCREASES; i++) {
+    const stat = selectStatToLevelUp(characterClass);
+    switch (stat) {
+      case Stat.HP:
+        stats[Stat.HP] = increaseStat(stat, stats[Stat.HP]);
+        break;
+      case Stat.MP:
+        stats[Stat.MP] = increaseStat(stat, stats[Stat.MP]);
+        break;
+      case Stat.ATK:
+        stats[Stat.ATK] = increaseStat(stat, stats[Stat.ATK]);
+        break;
+      case Stat.DEF:
+        stats[Stat.DEF] = increaseStat(stat, stats[Stat.DEF]);
+        break;
+      case Stat.SPATK:
+        stats[Stat.SPATK] = increaseStat(stat, stats[Stat.SPATK]);
+        break;
+      case Stat.SPDEF:
+        stats[Stat.SPDEF] = increaseStat(stat, stats[Stat.SPDEF]);
+        break;
+    }
+  }
 }

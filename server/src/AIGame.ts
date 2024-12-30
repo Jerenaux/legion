@@ -212,7 +212,9 @@ export class AIGame extends Game {
                 aiTeam.scaleStats(1.2);
             }
 
-            if (isVsZombie && winRatio > 0.5) {
+            if (isVsZombie && winRatio >= 0.5) {
+                const averageLevel = Math.ceil(aiTeam.getMembers().reduce((sum, player) => sum + player.level, 0) / aiTeam.getMembers().length);
+                aiTeam.zombieLevelUp(averageLevel);
                 aiTeam.setZombieInventories();
                 aiTeam.setZombieSpells();
             }

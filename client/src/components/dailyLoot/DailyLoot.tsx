@@ -78,7 +78,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
           chestContent: null,
           chestDailyLoot: null,
         });
-        errorToast(`Error: ${error}`);
+        console.error(`Error: ${error}`);
       }
     } 
 

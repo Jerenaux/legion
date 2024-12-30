@@ -167,7 +167,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       method: 'POST',
       body: payload
     })
-      .catch(error => errorToast(`Error: ${error}`));
+      .catch(error => console.error(`Error: ${error}`));
   }
 
   spendSP = async (stat: Stat, amount: number) => {  

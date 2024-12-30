@@ -315,6 +315,13 @@ export class Team {
         }
     }
 
+    zombieLevelUp(averageLevel: number) {
+        console.log(`[Team:zombieLevelUp] Zombie level up for team ${this.id} to ${averageLevel}`);
+        for (let i = 0; i < this.members.length; i++) {
+            this.members[i].zombieLevelUp(averageLevel);
+        }
+    }
+
     halveSpeed() {
         console.log(`[Team:halveSpeed] Halving speed for team ${this.id}`);
         for (let i = 0; i < this.members.length; i++) {

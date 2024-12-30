@@ -1,6 +1,5 @@
 import { h, Component } from 'preact';
 import { apiFetch } from '../services/apiService';
-import { errorToast } from './utils';
 import { DBCharacterData } from '@legion/shared/interfaces';
 import ShopContent from './shopContent/ShopContent';
 import { ShopTab } from '@legion/shared/enums';
@@ -48,7 +47,7 @@ class ShopPage extends Component<ShopPageProps, State> {
             characters: data
         });
     } catch (error) {
-        errorToast(`Error: ${error}`);
+        console.error(`Error: ${error}`);
     }
   }
 
