@@ -1,13 +1,13 @@
 // ShopCharacterCard.tsx
 import './shopCharacterCard.style.css';
 import { h, Component } from 'preact';
-import { classEnumToString, getSpritePath } from '../utils';
+import { classEnumToString, getSpritePath, getStatEnum } from '../utils';
 import { modalData } from '../shopContent/ShopContent';
 
 import goldIcon from '@assets/gold_icon.png';
 import { spells } from '@legion/shared/Spells';
 import { mapFrameToCoordinates } from '../utils';
-import { Target, RarityColor, statFields, STATS_BG_COLOR, STATS_NAMES } from '@legion/shared/enums';
+import { Target, RarityColor, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from '@legion/shared/enums';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 
 import spellsSpritesheet from '@assets/spells.png';
@@ -37,7 +37,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
     const statsArray = Object.entries(data.stats).map(([key, value]) => ({ key, value: value as number }));
     // Make the entires in statsArray follow the order in statsFields
-    statsArray.sort((a, b) => statFields.indexOf(a.key) - statFields.indexOf(b.key));
+    statsArray.sort((a, b) => statFieldsByIndex.indexOf(a.key) - statFieldsByIndex.indexOf(b.key));
 
     const portraitStyle = {
       backgroundImage: `url(${getSpritePath(data.portrait)})`,
@@ -45,7 +45,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
     const statColor = (stat: string) => {
       return {
-        backgroundColor: STATS_BG_COLOR[STATS_NAMES[stat]]
+        backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(stat)]]
       }
     }
 
@@ -154,7 +154,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
           {statsArray.map((stat, index) => (
             <div key={index} className="shop-character-card-effect">
               <div className="shop-character-card-effect-stat" style={statColor(stat.key)}>
-                <span>{STATS_NAMES[stat.key]}</span>
+                <span>{StatLabels[getStatEnum(stat.key)]}</span>
               </div>
               <div className="shop-character-card-effect-value">
                 <span>{stat.value}</span>

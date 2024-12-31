@@ -1,10 +1,12 @@
 import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment } from './interfaces';
-import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType } from "./enums";
+import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType, Stat, statFieldsByIndex } from "./enums";
 import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
 import { inventorySize } from '@legion/shared/utils';
 import { getConsumableById } from './Items';
 import { SKIP_LEVEL_RESTRICTIONS } from '@legion/shared/config';
+import { getMaxStatValue } from './levelling';
+import { getSPIncrement } from './levelling';
 
 const dev = process.env.NODE_ENV === "development";
 
@@ -68,6 +70,15 @@ export function canEquipEquipment(characterData: DBCharacterData | APICharacterD
     hasMinLevel(characterData, equipment.minLevel) &&
     hasRequiredClass(characterData, equipment.classes)
   );
+}
+
+export function canIncreaseStat(characterData: DBCharacterData | APICharacterData, index: number, amount: number): boolean {
+  const stat = statFieldsByIndex[index];
+  const currentValue = characterData.stats[stat] + characterData.sp_bonuses[stat];
+  const increment = getSPIncrement(index) * amount;
+  const newValue = currentValue + increment;
+  const max = getMaxStatValue(index as Stat);
+  return newValue <= max;
 }
 
 export function equipConsumable(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {

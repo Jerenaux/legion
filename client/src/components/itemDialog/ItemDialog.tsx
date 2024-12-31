@@ -5,10 +5,10 @@ import { h, Component } from 'preact';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat, Target, statFields, SPSPendingData, STATS_BG_COLOR, STATS_NAMES, ItemDialogType } from '@legion/shared/enums';
+import { InventoryActionType, Stat, Target, statFieldsByIndex, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast, mapFrameToCoordinates, classEnumToString, cropFrame } from '../utils';
-import { getSPIncrement } from '@legion/shared/levelling';
+import { getMaxStatValue, getSPIncrement } from '@legion/shared/levelling';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
 import {
@@ -17,7 +17,8 @@ import {
   canEquipEquipment,
   roomInInventory,
   hasMinLevel,
-  hasRequiredClass
+  hasRequiredClass,
+  canIncreaseStat
 } from '@legion/shared/inventory';
 
 import equipmentSpritesheet from '@assets/equipment.png';
@@ -177,11 +178,15 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       characterId: this.context.getActiveCharacter().id,
     };
 
+    if (!canIncreaseStat(this.context.getActiveCharacter(), stat, amount)) {
+      errorToast(`The maximum value of ${StatLabels[stat]} is ${getMaxStatValue(stat)}`);
+      return;
+    }
     this.context.updateCharacterStats(this.context.getActiveCharacter().id, stat, amount);
 
     this.props.updateCharacterData();
     this.props.handleClose();
-    successToast(`${statFields[stat].toUpperCase()} increased by ${getSPIncrement(stat)*amount}!`);
+    successToast(`${statFieldsByIndex[stat].toUpperCase()} increased by ${getSPIncrement(stat)*amount}!`);
 
     apiFetch('spendSP', {
       method: 'POST',
@@ -385,8 +390,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return (
       <div className="character-info-dialog-container">
         <div className="character-info-dialog-card-container">
-          <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[STATS_NAMES[dialogData.stat]] }}>
-            <span>{STATS_NAMES[dialogData.stat]}</span>
+          <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
+            <span>{StatLabels[dialogData.stat]}</span>
           </div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}

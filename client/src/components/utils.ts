@@ -1,4 +1,4 @@
-import {Class, Stat} from "@legion/shared/enums";
+import {Class, Stat, StatFields} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
 import { guide } from './tips';
 import { LeaguesNames } from "@legion/shared/enums";
@@ -254,4 +254,9 @@ export function isTabletDevice(): boolean {
       /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP))))/i.test(userAgent) ||
       (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform))
   );
+}
+
+// Convert stat key string to Stat enum value
+export const getStatEnum = (key: string): Stat => {
+  return Object.entries(StatFields).find(([_, value]) => value === key)?.[0] as unknown as Stat;
 }

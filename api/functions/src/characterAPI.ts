@@ -3,13 +3,15 @@ import {Transaction} from "firebase-admin/firestore";
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
-import {getSPIncrement} from "@legion/shared/levelling";
+import {getMaxStatValue, getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFields, PlayMode} from "@legion/shared/enums";
+import {Class, statFieldsByIndex, PlayMode, Stat} from "@legion/shared/enums";
 import {MAX_CHARACTERS} from "@legion/shared/config";
-import {OutcomeData, DailyLootAllDBData, CharacterUpdate} from "@legion/shared/interfaces";
+import {OutcomeData, DailyLootAllDBData, CharacterUpdate, DBCharacterData} from "@legion/shared/interfaces";
 import {ChestReward} from "@legion/shared/chests";
 import {logPlayerAction} from "./dashboardAPI";
+import {MAX_STAT_VALUES} from "@legion/shared/config";
+import { canIncreaseStat } from "@legion/shared/inventory";
 
 export const rosterData = onRequest({
   memory: '512MiB'
@@ -551,9 +553,9 @@ export const spendSP = onRequest({
       const amount = request.body.amount;
       const index = request.body.stat as number;
       let stat;
-      console.log(`[spendSP] Spending ${amount} SP on stat [${index} ] ${statFields[index]}`);
+      console.log(`[spendSP] Spending ${amount} SP on stat [${index} ] ${statFieldsByIndex[index]}`);
 
-      if (index < 0 || index >= statFields.length) {
+      if (index < 0 || index >= statFieldsByIndex.length) {
         throw new Error("Invalid stat index");
       }
 
@@ -569,15 +571,14 @@ export const spendSP = onRequest({
         }
 
         const playerData = playerDoc.data();
-        const characterData = characterDoc.data();
+        const characterData = characterDoc.data() as DBCharacterData;
 
         if (!playerData || !characterData) {
           throw new Error("Data does not exist");
         }
 
         // Check that character is owned by player
-        const characters =
-            playerData.characters as admin.firestore.DocumentReference[];
+        const characters = playerData.characters as admin.firestore.DocumentReference[];
         const characterIds = characters.map((character) => character.id);
         if (!characterIds.includes(characterId)) {
           throw new Error("Character not owned by player");
@@ -588,9 +589,12 @@ export const spendSP = onRequest({
           throw new Error("Character does not have enough skill points");
         }
 
-        stat = statFields[index];
+        // Check if new value would exceed maximum
+        if (!canIncreaseStat(characterData, index, amount)) {
+          throw new Error(`Cannot exceed maximum value of ${getMaxStatValue(index as Stat)} for ${statFieldsByIndex[index]}`);
+        }
         const spBonuses = characterData.sp_bonuses;
-        spBonuses[stat] += getSPIncrement(index) * amount;
+        spBonuses[statFieldsByIndex[index]] += getSPIncrement(index) * amount;
 
         transaction.update(characterRef, {
           sp: admin.firestore.FieldValue.increment(-amount),
@@ -607,7 +611,7 @@ export const spendSP = onRequest({
       response.send({status: 0});
     } catch (error) {
       console.error("Error spending skill points:", error);
-      response.status(401).send("Unauthorized");
+      response.status(500).send("Error");
     }
   });
 });

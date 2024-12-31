@@ -1,3 +1,5 @@
+import { Stat } from "./enums";
+
 const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
 
 // Profile
@@ -98,3 +100,14 @@ if (!isDev) {
     LOTSA_MP = false;
     ALLOW_SWITCHEROO_RANKED = true;
 }
+
+// Add these constants
+export const MAX_STAT_VALUES = {
+    [Stat.HP]: 1000,
+    [Stat.MP]: 500,
+    [Stat.ATK]: 200,
+    [Stat.DEF]: 200,
+    [Stat.SPATK]: 200,
+    [Stat.SPDEF]: 200,
+    [Stat.SPEED]: 200
+};

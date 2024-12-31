@@ -5,11 +5,10 @@ export enum Stat {
     DEF,
     SPATK,
     SPDEF,
+    SPEED,
     NONE
 }
 
-// TODO: do like ClassLabels below
-export const statFields = ["hp", "mp", "atk", "def", "spatk", "spdef"];
 
 export const StatFields = {
     [Stat.HP]: 'hp',
@@ -17,8 +16,11 @@ export const StatFields = {
     [Stat.ATK]: 'atk',
     [Stat.DEF]: 'def',
     [Stat.SPATK]: 'spatk',
-    [Stat.SPDEF]: 'spdef'
+    [Stat.SPDEF]: 'spdef',
+    [Stat.SPEED]: 'speed'
 }
+
+export const statFieldsByIndex = Object.values(StatFields);
 
 export const StatLabels = {
     [Stat.HP]: 'HP',
@@ -26,7 +28,18 @@ export const StatLabels = {
     [Stat.ATK]: 'ATK',
     [Stat.DEF]: 'DEF',
     [Stat.SPATK]: 'SP.ATK',
-    [Stat.SPDEF]: 'SP.DEF'
+    [Stat.SPDEF]: 'SP.DEF',
+    [Stat.SPEED]: 'SPEED'
+}
+
+export enum STATS_BG_COLOR {
+    HP = '#628c27',
+    MP = '#1f659a',
+    ATK = '#9a1f3c',
+    DEF = '#cc872d',
+    'SP.ATK' = '#26846b',
+    'SP.DEF' = '#703fba',
+    SPEED = '#c4317c',
 }
 
 export enum Target {
@@ -212,26 +225,6 @@ export enum AIAttackMode {
     IDLE,
     ATTACK_ONCE,
     UNLIMITED,
-}
-// TODO: remove this, redundant with statFields
-export enum STATS_NAMES {
-    hp = 'HP',
-    mp = 'MP',
-    atk = 'ATK',
-    def = 'DEF',
-    spatk = 'SP.ATK',
-    spdef = 'SP.DEF',
-}
-
-export enum STATS_BG_COLOR {
-    HP = '#628c27',
-    MP = '#1f659a',
-    ATK = '#9a1f3c',
-    DEF = '#cc872d',
-    'SP.ATK' = '#26846b',
-    'SP.DEF' = '#703fba',
-    'SPATK' = '#26846b',
-    'SPDEF' = '#703fba',
 }
 
 export type SPSPendingData = {

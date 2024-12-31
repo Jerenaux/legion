@@ -1,4 +1,4 @@
-import { Class, Stat, statFields } from "./enums";
+import { Class, Stat, statFieldsByIndex } from "./enums";
 import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
 import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
   from "./sprites";
@@ -74,6 +74,7 @@ export class NewCharacter {
       [Stat.DEF]: this.getDef() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
       [Stat.SPATK]: this.getSpatk() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
       [Stat.SPDEF]: this.getSpdef() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
+      [Stat.SPEED]: this.getSpeed() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
     };
     this.equipment_bonuses = {
       [Stat.HP]: 0,
@@ -82,6 +83,7 @@ export class NewCharacter {
       [Stat.DEF]: 0,
       [Stat.SPATK]: 0,
       [Stat.SPDEF]: 0,
+      [Stat.SPEED]: 0,
     };
     this.sp_bonuses = {
       [Stat.HP]: 0,
@@ -90,6 +92,7 @@ export class NewCharacter {
       [Stat.DEF]: 0,
       [Stat.SPATK]: 0,
       [Stat.SPDEF]: 0,
+      [Stat.SPEED]: 0,
     };
 
     for (let i = 1; i < this.level; i++) {
@@ -232,11 +235,24 @@ export class NewCharacter {
       case Class.WARRIOR:
         return this.getRandom(5, 8);
       case Class.WHITE_MAGE:
-        return this.getRandom(8, 12);
       case Class.BLACK_MAGE:
         return this.getRandom(8, 12);
       case Class.THIEF:
         return this.getRandom(5, 8);
+    }
+    return 5;
+  }
+
+  getSpeed(): number {
+    switch (this.characterClass) {
+      case Class.WARRIOR:
+        return this.getRandom(25, 35);
+      case Class.WHITE_MAGE:
+        return this.getRandom(20, 30);
+      case Class.BLACK_MAGE:
+        return this.getRandom(15, 25);
+      case Class.THIEF:
+        return this.getRandom(20, 30);
     }
     return 5;
   }
@@ -253,7 +269,7 @@ export class NewCharacter {
 
   getCharacterData(includePrice = false): DBCharacterData {
     // Convert stats from enum keys to string keys for DB storage
-    const validStats = statFields.filter(key => 
+    const validStats = statFieldsByIndex.filter(key => 
         Stat[key.toUpperCase() as keyof typeof Stat] !== Stat.NONE
     );
 
@@ -309,15 +325,9 @@ export function getSpells(characterClass: Class, level: number, skill_slots: num
       return STARTING_WHITE_MAGE_SPELLS.concat(spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_WHITE_MAGE_SPELLS.length ));
     case Class.BLACK_MAGE:
       if (!isAI) return STARTING_BLACK_MAGE_SPELLS;
-      // Remove spells that are already in STARTING_BLACK_MAGE_SPELLS
       spells = spells.filter(spell => !STARTING_BLACK_MAGE_SPELLS.includes(spell));
-      // console.log(`[getSpells] Black mage spells: ${spells.map(spell => `${getSpellById(spell)?.name} (${getSpellById(spell)?.minLevel})`).join(", ")}`);
-      // Select `skill_slots` random spells from spells
       const randomSpells = spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_BLACK_MAGE_SPELLS.length );
-      // console.log(`[getSpells] starting spells: ${STARTING_BLACK_MAGE_SPELLS.map(spell => `${getSpellById(spell)?.name} (${getSpellById(spell)?.minLevel})`).join(", ")}`);
-      // console.log(`[getSpells] Random spells: ${randomSpells.map(spell => `${getSpellById(spell)?.name} (${getSpellById(spell)?.minLevel})`).join(", ")}`);
       const result = STARTING_BLACK_MAGE_SPELLS.concat(randomSpells);
-      // console.log(`[getSpells] Result: ${result.map(spell => `${getSpellById(spell)?.name} (${getSpellById(spell)?.minLevel})`).join(", ")}`);
       return result;
     case Class.THIEF:
       return [];

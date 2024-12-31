@@ -52,10 +52,32 @@ export function getSPIncrement(stat: number) {
         case Stat.DEF:
         case Stat.SPATK:
         case Stat.SPDEF:
+        case Stat.SPEED:
             return 1;
         case Stat.HP:
         case Stat.MP:
             return 10;
+        default:
+            return 1;
+    }
+}
+
+export function getMaxStatValue(stat: Stat) {
+    switch (stat) {
+        case Stat.ATK:
+            return 1000;
+        case Stat.DEF:
+            return 1000;
+        case Stat.SPATK:
+            return 1000;
+        case Stat.SPDEF:
+            return 1000;
+        case Stat.SPEED:
+            return 195;
+        case Stat.HP:
+            return 10000;
+        case Stat.MP:
+            return 10000;
         default:
             return 1;
     }

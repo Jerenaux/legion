@@ -1003,3 +1003,65 @@ export const getPlayerActionsReport = onRequest({ memory: '512MiB' }, async (req
     });
 });
 
+function getRandomInt(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getSpeedForClass(classId: number): number {
+    switch (classId) {
+        case 0: return getRandomInt(25, 35);
+        case 1: return getRandomInt(20, 30);
+        case 2: return getRandomInt(15, 25);
+        default: return 20; // fallback value
+    }
+}
+
+export const migrateCharacterSpeed = onRequest({ memory: '512MiB' }, async (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+        try {
+            const charactersSnapshot = await db.collection("characters").get();
+            
+            const results = {
+                totalCharacters: charactersSnapshot.size,
+                updatedCharacters: 0,
+                errors: [] as string[]
+            };
+
+            const updates = charactersSnapshot.docs.map(async (doc) => {
+                try {
+                    const data = doc.data();
+                    const classId = data.class || 0;
+
+                    const update = {
+                        'equipment_bonuses.speed': 0,
+                        'sp_bonuses.speed': 0,
+                        'stats.speed': getSpeedForClass(classId)
+                    };
+
+                    await doc.ref.update(update);
+                    results.updatedCharacters++;
+                } catch (error) {
+                    results.errors.push(`Error updating character ${doc.id}: ${error}`);
+                }
+            });
+
+            await Promise.all(updates);
+
+            response.send({
+                message: "Character speed migration completed",
+                results
+            });
+
+        } catch (error) {
+            console.error("Migration error:", error);
+            response.status(500).send({
+                message: "Error during character speed migration",
+                // @ts-ignore
+                error: error.toString()
+            });
+        }
+    });
+});
+

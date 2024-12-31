@@ -1,14 +1,14 @@
 import { Component, h } from 'preact';
 import { PlayerContextState, PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
-import { successToast, errorToast, avatarContext, silentErrorToast } from '../components/utils';
+import { errorToast, avatarContext, silentErrorToast } from '../components/utils';
 import { APICharacterData, PlayerContextData, PlayerInventory } from '@legion/shared/interfaces';
 import { League, Stat, StatFields, InventoryActionType, ShopTab, ItemDialogType
  } from "@legion/shared/enums";
 import { firebaseAuth } from '../services/firebaseService'; 
 import { getSPIncrement } from '@legion/shared/levelling';
 import { playSoundEffect, fetchGuideTip } from '../components/utils';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
 import { route } from 'preact-router';
@@ -23,7 +23,8 @@ import {
   equipEquipment,
   unequipEquipment,
   roomInInventory,
-  numericalSort
+  numericalSort,
+  canIncreaseStat
 } from '@legion/shared/inventory';
 
 import equipSfx from "@assets/sfx/equip.wav";

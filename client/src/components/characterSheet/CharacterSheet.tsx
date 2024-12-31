@@ -1,6 +1,6 @@
 import { h, Component } from 'preact';
 import './CharacterSheet.style.css';
-import { classEnumToString, mapFrameToCoordinates, getSpritePath } from '../utils';
+import { classEnumToString, mapFrameToCoordinates, getSpritePath, getStatEnum } from '../utils';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -9,12 +9,13 @@ import { getSpellById } from '@legion/shared/Spells';
 import { getConsumableById } from '@legion/shared/Items';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFields,
-    STATS_BG_COLOR, STATS_NAMES, ItemDialogType, SPSPendingData
+import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFieldsByIndex,
+    STATS_BG_COLOR, ItemDialogType, SPSPendingData
  } from '@legion/shared/enums';
-import { APICharacterData, Effect } from '@legion/shared/interfaces';
+import { Effect } from '@legion/shared/interfaces';
 import { equipmentSlotFields } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
+import { StatLabels } from '@legion/shared/enums';
 
 import helmetIcon from '@assets/inventory/helmet_icon.png';
 import armorIcon from '@assets/inventory/armor_icon.png';
@@ -83,18 +84,18 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         const renderInfoBars = () => {
             if (!characterData) return;
             const characterStats = Object.entries(characterData.stats).map(([key, value]) => {
-                const equipmentBonus = characterData.equipment_bonuses[key] || 0; // Fallback to 0 if key is not present
-                const spBonus = characterData.sp_bonuses[key] || 0; // Fallback to 0 if key is not present
+                const equipmentBonus = characterData.equipment_bonuses[key] || 0;
+                const spBonus = characterData.sp_bonuses[key] || 0;
                 return {
                     key,
-                    value: value + equipmentBonus + spBonus // Sum the values from the three sources
+                    value: value + equipmentBonus + spBonus
                 };
             });
 
-            const rearrangedStats = statFields.map(key => characterStats.find(item => item.key === key));
+            const rearrangedStats = statFieldsByIndex.map(key => characterStats.find(item => item.key === key));
 
             const effectVal = (key: string): number => {
-                return this.props.itemEffects.filter(effect => statFields[effect.stat] === key)[0]?.value;
+                return this.props.itemEffects.filter(effect => statFieldsByIndex[effect.stat] === key)[0]?.value;
             }
 
             const totalStat = (baseValue: number, modifierKey: string) => {
@@ -103,24 +104,28 @@ class CharacterSheet extends Component<CharacterSheetProps> {
 
             return rearrangedStats.map((item, index) => (
                 <div className="character-info-bar" key={index}>
-                    <div className="info-class" style={{ backgroundColor: STATS_BG_COLOR[STATS_NAMES[item.key]] }}><span>{STATS_NAMES[item.key]}</span></div>
+                    <div className="info-class" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(item.key)]] }}>
+                        <span>{StatLabels[getStatEnum(item.key)]}</span>
+                    </div>
                     <div className="curr-info-container">
                         <p className="curr-info">
-                            <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : effectVal(item.key) < 0 ? { color: '#c95a74' } : {}}>{totalStat(item.value, item.key)}</span>
+                            <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : effectVal(item.key) < 0 ? { color: '#c95a74' } : {}}>
+                                {totalStat(item.value, item.key)}
+                            </span>
                         </p>
                     </div>
 
                     {characterData?.sp > 0 && <button className="info-bar-plus" onClick={
-                            (e) => this.handleOpenModal(
-                                e, 
-                                {
-                                    stat: index,
-                                    value: item.value,
-                                },
-                                ItemDialogType.SP,
-                                index
-                            )
-                        }></button>
+                        (e) => this.handleOpenModal(
+                            e, 
+                            {
+                                stat: index,
+                                value: item.value,
+                            },
+                            ItemDialogType.SP,
+                            index
+                        )
+                    }></button>
                     }
                 </div>
             ));
