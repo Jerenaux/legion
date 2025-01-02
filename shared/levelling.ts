@@ -73,7 +73,7 @@ export function getMaxStatValue(stat: Stat) {
         case Stat.SPDEF:
             return 1000;
         case Stat.SPEED:
-            return 195;
+            return 200;
         case Stat.HP:
             return 10000;
         case Stat.MP:

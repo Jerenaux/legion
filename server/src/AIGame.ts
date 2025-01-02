@@ -61,7 +61,6 @@ export class AIGame extends Game {
 
         const position = this.findFreeCellNear(data.x, data.y);
         const newCharacter = this.addAICharacter(aiTeam!, character, position);
-        newCharacter.setCooldown(3500);
         newCharacter.setAttackMode(data.attackMode);
 
         this.broadcast('addCharacter', {

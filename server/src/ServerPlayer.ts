@@ -1,34 +1,23 @@
 import { Team } from './Team';
 import { Item } from './Item';
 import { Spell } from './Spell';
-import { Stat, Terrain, StatusEffect, Class, EquipmentSlot } from "@legion/shared/enums";
+import { Stat, Terrain, StatusEffect, Class, SpeedClass } from "@legion/shared/enums";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { CharacterStats, Equipment, PlayerNetworkData, StatusEffects } from '@legion/shared/interfaces';
-import { INITIAL_COOLDOWN, TIME_COEFFICIENT, INJURED_MODE } from "@legion/shared/config";
-import { CooldownManager } from './CooldownManager';
-import { paralyzingStatuses } from '@legion/shared/utils';
+import { INITIAL_COOLDOWN, TIME_COEFFICIENT, INJURED_MODE, PARALYZED_DELAY } from "@legion/shared/config";
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpells, lvlUp, setUpInventory } from '@legion/shared/NewCharacter';
 
 
 const terrainDot = {
-    [Terrain.FIRE]: 10,
-}
-
-const terrainDoTInterval = {
-    [Terrain.FIRE]: 3000,
+    [Terrain.FIRE]: 20,
 }
 
 const statusDot = {
-    [StatusEffect.POISON]: 5,
-    [StatusEffect.BURN]: 10,
-}
-
-const statusDoTInterval = {
-    [StatusEffect.POISON]: 3000,
-    [StatusEffect.BURN]: 3000,
+    [StatusEffect.POISON]: 10,
+    [StatusEffect.BURN]: 20,
 }
 
 const statusSpeedModifiers = {
@@ -60,7 +49,6 @@ export class ServerPlayer {
     mp;
     speed = 1; // TODO: incorporate into stats one day
     distance;
-    cooldownManager: CooldownManager;
     terrainDoTTimer: NodeJS.Timeout | null = null;
     statusDoTTimer: NodeJS.Timeout | null = null;
     statusesTimer: NodeJS.Timeout | null = null;
@@ -74,6 +62,7 @@ export class ServerPlayer {
     entranceTime: number = 2.5;
     statuses: StatusEffects;
     interactedTargets: Set<ServerPlayer> = new Set();
+    activeTerrainDoT: Terrain | null = null;
     class: Class;
     isAI = false;
 
@@ -95,11 +84,6 @@ export class ServerPlayer {
             [StatusEffect.HASTE]: 0,
         };
 
-        this.cooldownManager = new CooldownManager();
-        
-        this.setCooldown(INITIAL_COOLDOWN * 1000);
-        this.setStatusesTimer();
-
         this.stats = {
             [Stat.HP]: 0,
             [Stat.MP]: 0,
@@ -107,6 +91,7 @@ export class ServerPlayer {
             [Stat.DEF]: 0,
             [Stat.SPATK]: 0,
             [Stat.SPDEF]: 0,
+            [Stat.SPEED]: 0,
         };
     }
 
@@ -126,7 +111,6 @@ export class ServerPlayer {
             data['mp'] = this.mp;
             data['maxMP'] = this.getStat(Stat.MP);
             data['distance'] = this.distance;
-            data['cooldown'] = this.getActiveCooldown();
             data['inventory'] = this.getNetworkInventory();
             data['spells'] = this.getNetworkSpells();
             data['xp'] = this.xp;
@@ -165,7 +149,7 @@ export class ServerPlayer {
     }
 
     canAct() {
-        return this.getActiveCooldown() == 0 && this.isAlive() && !this.isCasting && !this.isParalyzed();
+        return this.isAlive() && !this.isParalyzed();
     }
 
     canMoveTo(x: number, y: number) {
@@ -362,28 +346,6 @@ export class ServerPlayer {
         return this.stats[stat];
     }
 
-    // Return the cooldown that the player has to wait before being able to act again
-    getCooldownDurationMs(baseCooldown): number {
-        const speedModifier = 1;
-        return baseCooldown * speedModifier * TIME_COEFFICIENT * 1000;
-    }
-
-     // Returns current ongoing cooldown active on the player
-     getActiveCooldown() {
-        return this.cooldownManager.getCooldown();
-    }
-    
-    setCooldown(durationMs: number) {
-        if (this.team?.game.config.FAST_MODE) durationMs = this.team?.game.config.COOLDOWN_OVERRIDE;
-        this.cooldownManager.setCooldown(durationMs / this.speed);
-    }
-
-    setStatusesTimer() {
-        this.statusesTimer = setInterval(() => {
-            this.decrementStatuses();
-        }, 1000);
-    }
-
     setTeam(team: Team) {
         this.team = team;
     }
@@ -454,18 +416,12 @@ export class ServerPlayer {
         }
     }
 
-    applyDoT(damage: number) {
-        if (this.isDead()) return;
-        this.takeDamage(damage);
-        this.team!.game.getOtherTeam(this.team.id).increaseScoreFromDot();
-    }
-
     // Called when the terrain effect is applied for the first time
     setUpTerrainEffect(terrain: Terrain) {
         // console.log(`[ServerPlayer:setUpTerrainEffect] Terrain effect ${terrain}`);
 
         if (DoTTerrains.includes(terrain)) {
-            this.startTerrainDoT(terrain);
+            this.activeTerrainDoT = terrain;
         }
 
         if (terrain == Terrain.ICE) {
@@ -473,19 +429,8 @@ export class ServerPlayer {
         }
     }
 
-    startTerrainDoT(terrain: Terrain) {
-        if (this.terrainDoTTimer) {
-            clearTimeout(this.terrainDoTTimer);
-        }
-        this.terrainDoTTimer = setInterval(() => {
-            this.applyDoT(terrainDot[terrain]);
-        }, terrainDoTInterval[terrain]);
-    }
-
     removeTerrainEffect(terrain: Terrain) {
-        if (DoTTerrains.includes(terrain)) {
-            this.stopTerrainDoT();
-        }
+        this.activeTerrainDoT = null;
         if (terrain == Terrain.ICE) {
             this.removeStatusEffect(StatusEffect.FREEZE);
         }
@@ -494,23 +439,10 @@ export class ServerPlayer {
     addStatusEffect(status: StatusEffect, duration: number, chance: number = 1) {
         if (this.isDead()) return false;
         const r = Math.random();
-        console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} s, ${chance}, r = ${r} / ${chance}`);
+        console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
         if (r > chance) return false;
         // console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} seconds`);
         this.statuses[status] = duration;
-        
-        if (DoTStatuses.includes(status)) {
-            if (this.statusDoTTimer) {
-                clearTimeout(this.statusDoTTimer);
-            }
-            this.statusDoTTimer = setInterval(() => {
-                this.applyDoT(statusDot[status]);
-            }, statusDoTInterval[status]);
-        }
-
-        if (paralyzingStatuses.includes(status)) {
-            this.cooldownManager.pauseCooldown();
-        }
 
         if (statusSpeedModifiers[status]) {
             this.setSpeed(this.speed * statusSpeedModifiers[status]);
@@ -523,12 +455,6 @@ export class ServerPlayer {
     removeStatusEffect(status: StatusEffect) {
         // console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
         this.statuses[status] = 0;
-        
-        this.clearDoTSatus(status);
-
-        if (paralyzingStatuses.includes(status)) {
-            this.cooldownManager.resumeCooldown();
-        }
 
         if (statusSpeedModifiers[status]) {
             this.setSpeed(this.speed / statusSpeedModifiers[status]);
@@ -596,22 +522,6 @@ export class ServerPlayer {
         this.earnedStatsPoints += reward;
     }
 
-    clearAllTimers() {
-        // if (this.cooldownTimer) {
-        //     clearTimeout(this.cooldownTimer);
-        // }
-        this.cooldownManager.clearCooldown();
-        if (this.terrainDoTTimer) {
-            clearInterval(this.terrainDoTTimer);
-        }
-        if (this.statusesTimer) {
-            clearInterval(this.statusesTimer);
-        }
-        if (this.statusDoTTimer) {
-            clearInterval(this.statusDoTTimer);
-        }
-    }
-
     addInteractedTarget(target: ServerPlayer) {
         this.interactedTargets.add(target);
     }
@@ -666,6 +576,27 @@ export class ServerPlayer {
 
     getWeapon() {
         return getEquipmentById(this.equipment.weapon);
+    }
+
+    startTurn() {
+        if (this.activeTerrainDoT) {
+            this.applyTerrainEffect(this.activeTerrainDoT);
+        }
+
+        for (const status in DoTStatuses) {
+            if (this.statuses[status] > 0) {
+                this.takeDamage(statusDot[status as StatusEffect]);
+            }
+        }
+
+        this.decrementStatuses();
+
+        if (this.isParalyzed()) {
+            this.team!.game.turnSystem.processAction(this, SpeedClass.SLOW);
+            setTimeout(() => {
+                this.team!.game.processTurn();
+            }, PARALYZED_DELAY * 1000);
+        }
     }
 }
 

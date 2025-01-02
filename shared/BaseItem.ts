@@ -1,4 +1,4 @@
-import { Target, Rarity, StatusEffect } from "./enums";
+import { Target, Rarity, StatusEffect, SpeedClass } from "./enums";
 import { Effect, ConsumableData, StatusEffectData } from "./interfaces";
 import { getPrice, getRarity } from "./economy";
 import { TIME_COEFFICIENT } from "@legion/shared/config";
@@ -11,9 +11,9 @@ export class BaseItem {
     effects: Effect[] = [];
     statusRemovals: StatusEffect[] = [];
     target: Target = Target.SINGLE;
-    cooldown: number = 0;
     animation: string = '';
     sfx: string = '';
+    speedClass: SpeedClass = SpeedClass.NORMAL;
     size?: number = 1;
     price: number = 0;
     rarity: Rarity = Rarity.COMMON;
@@ -24,9 +24,5 @@ export class BaseItem {
         Object.assign(this, props);
         this.price = getPrice(props.effort);
         this.rarity = getRarity(props.effort);
-    }
-
-    getCooldown() {
-        return this.cooldown * TIME_COEFFICIENT;
     }
 }

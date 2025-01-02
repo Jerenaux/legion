@@ -1,6 +1,6 @@
 
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, Terrain, StatusEffect, Class } from "./enums";
+import { Stat, Target, EffectDirection, Terrain, StatusEffect, Class, SpeedClass } from "./enums";
 import { EffectModifier, EffectModifiers } from "./interfaces";
 
 export const spells:BaseSpell[] = [];
@@ -34,6 +34,7 @@ spells.push(new BaseSpell({
     score: 10,
     classes: [Class.BLACK_MAGE],
     minLevel: 1,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
@@ -55,6 +56,7 @@ spells.push(new BaseSpell({
     score: 20,
     classes: [Class.BLACK_MAGE],
     minLevel: 10,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
@@ -75,12 +77,13 @@ spells.push(new BaseSpell({
     score: 100,
     classes: [Class.BLACK_MAGE],
     minLevel: 20,
+    speedClass: SpeedClass.SLOW,
 }));
 
 spells.push(new BaseSpell({
     id: 3,
     name: "Thunder",
-    description: "Unleash a 1x1 thunder bolt and may paralyze the target for 60 seconds",
+    description: "Unleash a 1x1 thunder bolt and may paralyze the target for 5 turns, preventing them from acting",
     frame: 20,
     vfx: "thunder",
     sfx: "thunder",
@@ -89,18 +92,19 @@ spells.push(new BaseSpell({
     size: 1,
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
-    status: {effect: StatusEffect.PARALYZE, chance: 0.5, duration: 60},
+    status: {effect: StatusEffect.PARALYZE, chance: 0.5, duration: 5},
     effort: 4,
 
     score: 5,
     classes: [Class.BLACK_MAGE],
     minLevel: 1,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
     id: 4,
     name: "Thunder+",
-    description: "Unleash a 2x2 thunder bolt and may paralyze the target for 90 seconds",
+    description: "Unleash a 2x2 thunder bolt and may paralyze the target for 7 turns, preventing them from acting",
     frame: 21,
     vfx: "thunder+",
     sfx: "thunder",
@@ -110,18 +114,19 @@ spells.push(new BaseSpell({
     size: 2,
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -60, modifiers: SPBasedBoostDeboost}],
-    status: {effect: StatusEffect.PARALYZE, chance: 0.7, duration: 90},
+    status: {effect: StatusEffect.PARALYZE, chance: 0.7, duration: 7},
     effort: 15,
 
     score: 15,
     classes: [Class.BLACK_MAGE],
     minLevel: 10,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
     id: 5,
     name: "Thunder X",
-    description: "Unleash a 3x3 thunder bolt and may paralyze the target for 120 seconds",
+    description: "Unleash a 3x3 thunder bolt and may paralyze the target for 10 turns, preventing them from acting",
     frame: 22,
     vfx: "thunder",
     sfx: "thunder",
@@ -131,12 +136,13 @@ spells.push(new BaseSpell({
     size: 3,
     target: Target.AOE,
     effects: [{stat: Stat.HP, value: -20, modifiers: SPBasedBoostDeboost}],
-    status: {effect: StatusEffect.PARALYZE, chance: 0.9, duration: 120},
+    status: {effect: StatusEffect.PARALYZE, chance: 0.9, duration: 10},
     effort: 30,
 
     score: 50,
     classes: [Class.BLACK_MAGE],
     minLevel: 20,
+    speedClass: SpeedClass.SLOW,
 }));
 
 spells.push(new BaseSpell({
@@ -158,6 +164,7 @@ spells.push(new BaseSpell({
     effort: 5,
     classes: [Class.BLACK_MAGE],
     minLevel: 1,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
@@ -179,6 +186,7 @@ spells.push(new BaseSpell({
     effort: 25,
     classes: [Class.BLACK_MAGE],
     minLevel: 20,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
@@ -200,6 +208,7 @@ spells.push(new BaseSpell({
     effort: 35,
     classes: [Class.BLACK_MAGE],
     minLevel: 20,
+    speedClass: SpeedClass.SLOW,
 }));
 
 
@@ -221,12 +230,13 @@ spells.push(new BaseSpell({
     score: 5,
     classes: [Class.WHITE_MAGE],
     minLevel: 1,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
     id: 10,
     name: "Poison",
-    description: "Poison a single target for 3 minutes",
+    description: "Poison a single target for 10 turns, dealing damage every turn",
     frame: 3,
     vfx: "poison",
     sfx: "poison",
@@ -235,18 +245,19 @@ spells.push(new BaseSpell({
     size: 1,
     target: Target.AOE,
     effects: [],
-    status: {effect: StatusEffect.POISON, chance: 1, duration: 180},
+    status: {effect: StatusEffect.POISON, chance: 1, duration: 10},
     effort: 5,
 
     score: 10,
     classes: [Class.WHITE_MAGE],
     minLevel: 2,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 spells.push(new BaseSpell({
     id: 11,
     name: "Silence",
-    description: "Make the target mute, unable to cast spells for 3 minutes",
+    description: "Make the target mute, unable to cast spells for 5 turns",
     frame: 4,
     vfx: "mute",
     sfx: "mute",
@@ -256,12 +267,13 @@ spells.push(new BaseSpell({
     size: 1,
     target: Target.AOE,
     effects: [],
-    status: {effect: StatusEffect.MUTE, chance: 1, duration: 180},
+    status: {effect: StatusEffect.MUTE, chance: 1, duration: 5},
     effort: 4,
 
     score: 10,
     classes: [Class.WHITE_MAGE],
     minLevel: 2,
+    speedClass: SpeedClass.NORMAL,
 }));
 
 export function getStarterSpells(characterClass: Class):number[] {

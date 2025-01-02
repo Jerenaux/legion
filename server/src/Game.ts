@@ -5,12 +5,16 @@ import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
 import { apiFetch, getRemoteConfig } from './API';
-import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN, Stat } from '@legion/shared/enums';
-import { OutcomeData, TerrainUpdate, PlayerContextData, GameOutcomeReward, GameData, EndGameDataResults, GameReplayMessage } from '@legion/shared/interfaces';
+import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN,
+    Stat, SpeedClass } from '@legion/shared/enums';
+import { OutcomeData, TerrainUpdate, PlayerContextData, GameOutcomeReward, GameData,
+    EndGameDataResults, GameReplayMessage } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
-import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, MOVE_COOLDOWN, ATTACK_COOLDOWN,
-    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig, LEGION_CUT } from '@legion/shared/config';
+import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
+    PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
+    LEGION_CUT, TURN_DURATION } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
+import { TurnSystem } from './TurnSystem';
 
 enum GameAction {
     SPELL_USE,
@@ -30,11 +34,14 @@ export abstract class Game
     io: Server;
     sockets: Socket[] = [];
     socketMap = new Map<Socket, Team>();
+    turnSystem: TurnSystem;
+    turnee: ServerPlayer | null = null;
     startTime: number = Date.now();
     duration: number = 0;
     gameStarted: boolean = false;
     firstBlood: boolean = false;
     gameOver: boolean = false;
+    turnTimer: NodeJS.Timeout | null = null;
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
     config: any;
@@ -213,7 +220,13 @@ export abstract class Game
         console.log(`[Game:startGame]`)
         this.startTime = Date.now();
         this.gameStarted = true;
+
+        this.turnSystem = new TurnSystem();
+        const allCharacters = this.getTeam(1).concat(this.getTeam(2));
+        this.turnSystem.initializeTurnOrder(allCharacters);
+
         this.sockets.forEach(socket => this.sendGameStatus(socket));
+        this.resetTurnTimer();
         
         this.audienceTimer = setInterval(() => {
             this.teams.forEach(team => {
@@ -231,10 +244,22 @@ export abstract class Game
                 this.endGame(2);
             }, 5000);
         }
+    }
 
-        if (this.mode == PlayMode.TUTORIAL) {
-            this.broadcastGEN([GEN.TUTORIAL]);
-        }
+    resetTurnTimer() {
+        clearTimeout(this.turnTimer!);
+        this.turnTimer = setTimeout(this.processTurn.bind(this), TURN_DURATION * 1000);
+    }
+
+    processTurn() {
+        this.broadcastQueueData();
+        this.turnee = this.turnSystem.getNextActor();
+        this.broadcast('turnee', {
+            num: this.turnee.num,
+            team: this.turnee.team.id,
+        });
+        this.resetTurnTimer();
+        this.turnee.startTurn();
     }
 
     sendGameStatus(socket: Socket, reconnect: boolean = false) {
@@ -258,6 +283,11 @@ export abstract class Game
         }
         
         socket.emit('gameStatus', gameData);
+    }
+
+    broadcastQueueData() {
+        const queueData = this.turnSystem.getQueueData();
+        this.broadcast('queueData', queueData);
     }
 
     broadcast(event: string, data: any) {
@@ -360,6 +390,17 @@ export abstract class Game
             team = this.teams.get(2);
         }
 
+        const character = team.getMembers()[data.num - 1];
+        if (!character) {
+            console.log(`[Game:processAction] Invalid character number ${data.num}!`);
+            return;
+        }
+
+        if (character !== this.turnee) {
+            console.log(`[Game:processAction] Character ${data.num} is not the current turnee!`);
+            return;
+        }
+
         team!.incrementActions();
         team!.snapshotScore();
 
@@ -404,9 +445,7 @@ export abstract class Game
 
             clearTimeout(this.audienceTimer!);
             clearTimeout(this.checkEndTimer!);
-            this.teams.forEach(team => {
-                team.clearAllTimers();
-            }, this);
+            clearInterval(this.turnTimer!);
 
             const results = {};
             let winnerUID;
@@ -444,16 +483,9 @@ export abstract class Game
         }
     }
 
-    setCooldown(player: ServerPlayer, cooldownMs: number) {
-        if (this.mode == PlayMode.TUTORIAL && player.isAI) cooldownMs *= 1.5;
-        if (this.isTutorial() && this.tutorialSettings.shortCooldowns) cooldownMs = 500;
-        player.setCooldown(cooldownMs);
-    }
-
     processMove({tile, num}: {tile: Tile, num: number}, team: Team) {
         const player = team.getMembers()[num - 1];
         if (!player.canAct()) {
-            console.log(`[Game:processMove] Player ${num} cannot act: paralyzed = ${player.isParalyzed()}, cooldown = ${player.getActiveCooldown()}!`);
             return;
         }
         if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) {
@@ -473,18 +505,11 @@ export abstract class Game
         this.updatePlayerPosition(player, tile.x, tile.y);
         
         this.checkForStandingOnTerrain(player);
-
-        const cooldown = player.getCooldownDurationMs(MOVE_COOLDOWN);
-        this.setCooldown(player, cooldown);
         
         this.broadcastMove(team, num, tile);
 
-        team.socket?.emit('cooldown', {
-            num,
-            cooldown: player.getActiveCooldown(),
-        });
-
-        return 0;
+        this.turnSystem.processAction(player, SpeedClass.QUICK);
+        this.processTurn();
     }
 
     updatePlayerPosition(player: ServerPlayer, x: number, y: number) {
@@ -564,9 +589,6 @@ export abstract class Game
             this.broadcastTerrain(terrainUpdates);
             opponent.removeStatusEffect(StatusEffect.FREEZE);
         }
-        
-        const cooldown = player.getCooldownDurationMs(ATTACK_COOLDOWN);
-        this.setCooldown(player, cooldown);
 
         this.broadcast('attack', {
             team: team.id,
@@ -582,12 +604,8 @@ export abstract class Game
             this.broadcastGEN([GEN.ONE_SHOT]);
         }
 
-        team.socket?.emit('cooldown', {
-            num,
-            cooldown: player.getActiveCooldown(),
-        });
-
-        return 0;
+        this.turnSystem.processAction(player, SpeedClass.NORMAL);
+        this.processTurn();
     }
 
     processObstacleAttack({num, x, y}: {num: number, x: number, y: number}, team: Team) {
@@ -599,9 +617,6 @@ export abstract class Game
             !this.hasObstacle(x, y)
         ) return;
 
-        const cooldown = player.getCooldownDurationMs(ATTACK_COOLDOWN);
-        this.setCooldown(player, cooldown);
-
         const terrainUpdates = this.terrainManager.removeIce(x, y);
         this.broadcastTerrain(terrainUpdates);
 
@@ -611,12 +626,8 @@ export abstract class Game
             x, y,
         });
 
-        team.socket?.emit('cooldown', {
-            num,
-            cooldown: player.getActiveCooldown(),
-        });
-
-        return 0;
+        this.turnSystem.processAction(player, SpeedClass.NORMAL);
+        this.processTurn();
     }
 
     processUseItem({num, x, y, index, targetTeam, target}: {num: number, x: number, y: number, index: number,  targetTeam: number, target: number | null}, team: Team) {
@@ -660,9 +671,6 @@ export abstract class Game
             player.team!.increaseScoreFromRevive(deadTargets_ - deadTargets);
         }
 
-        const cooldown = player.getCooldownDurationMs(item.cooldown);
-        this.setCooldown(player, cooldown);
-
         player.removeItem(item);
 
         this.broadcast('useitem', {
@@ -682,17 +690,13 @@ export abstract class Game
             }
         });    
 
-        team.socket?.emit('cooldown', {
-            num,
-            cooldown: player.getActiveCooldown(),
-        });
-
         team.socket?.emit('inventory', {
             num,
             inventory: player.getNetworkInventory(),
         });
 
-        return 0;
+        this.turnSystem.processAction(player, item.speedClass);
+        this.processTurn();
     }
 
     applyMagic(spell: Spell, player: ServerPlayer, x: number, y: number, team: Team, targetPlayer: ServerPlayer | null) {
@@ -752,9 +756,6 @@ export abstract class Game
 
         const nbFrozen_ = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
         const nbBurning_ = this.terrainManager.getNbBurning();
-
-        const cooldown = player.getCooldownDurationMs(spell.cooldown);
-        this.setCooldown(player, cooldown);
         
         this.broadcast('localanimation', {
             x,
@@ -772,17 +773,15 @@ export abstract class Game
         if (nbHits > 1) GENs.push(GEN.MULTI_HIT);
         this.broadcastGEN(GENs); // Broadcast gen after localanimation
 
-        team.socket?.emit('cooldown', {
-            num: player.num,
-            cooldown: player.getActiveCooldown(),
-        });
-
         this.broadcast('endcast', {
             team: team.id,
             num: player.num
         });
         
         team.sendScore();
+
+        this.turnSystem.processAction(player, spell.speedClass);
+        this.processTurn();
     }
 
     broadcastGEN(GENs: GEN[]) {
@@ -845,7 +844,7 @@ export abstract class Game
         this.emitMPchange(team, num, mp);
         player.setCasting(true);
 
-        const delay = spell.castTime * 1000;
+        const delay = CAST_DELAY * 1000;
         setTimeout(this.applyMagic.bind(this, spell, player, x, y, team, targetPlayer), delay);
         return delay;
     }

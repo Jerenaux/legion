@@ -9,6 +9,9 @@ export const MAX_AVATAR_ID = 31;
 // Gameplay
 export const NB_START_CHARACTERS = 3;
 export const MAX_CHARACTERS = 10;
+export const TURN_DURATION = 5;
+export const CAST_DELAY = 1;
+export const PARALYZED_DELAY = 1.5;
 export const BASE_INVENTORY_SIZE = 20;
 export const BASE_CARRYING_CAPACITY = 3;
 export const STARTING_GOLD = 1000;
@@ -100,14 +103,3 @@ if (!isDev) {
     LOTSA_MP = false;
     ALLOW_SWITCHEROO_RANKED = true;
 }
-
-// Add these constants
-export const MAX_STAT_VALUES = {
-    [Stat.HP]: 1000,
-    [Stat.MP]: 500,
-    [Stat.ATK]: 200,
-    [Stat.DEF]: 200,
-    [Stat.SPATK]: 200,
-    [Stat.SPDEF]: 200,
-    [Stat.SPEED]: 200
-};

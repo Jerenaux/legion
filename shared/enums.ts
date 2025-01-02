@@ -231,3 +231,10 @@ export type SPSPendingData = {
     stat: Stat;
     value: number;
 }
+
+export enum SpeedClass {
+    PASS,
+    QUICK,
+    NORMAL,
+    SLOW,
+}

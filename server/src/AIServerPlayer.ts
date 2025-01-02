@@ -38,9 +38,6 @@ export class AIServerPlayer extends ServerPlayer {
         // Assign a random value between 1 and 10 to retargetCount
         this.retargetRate = Math.floor(Math.random() * 10) + 1;
         this.retargetCount = this.retargetRate;
-
-        let cooldown = Math.floor((INITIAL_COOLDOWN + 1) * 1000 * (1 + Math.random() * 0.7));
-        this.setCooldown(cooldown);
     }
 
     setAttackMode(attackMode: AIAttackMode) {
@@ -75,11 +72,6 @@ export class AIServerPlayer extends ServerPlayer {
                 this.AItype = AIType.Opportunist;
                 break;
         }
-    }
-
-    getCooldownDurationMs(action: ActionType) {
-        // Return a random number between 1 and 1.3 times the cooldown
-        return Math.floor(super.getCooldownDurationMs(action) * (1 + Math.random() * 0.3));
     }
 
     hasValidTarget() {

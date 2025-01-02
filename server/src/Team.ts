@@ -223,12 +223,6 @@ export class Team {
         }));
     }    
 
-    clearAllTimers() {
-        for (let i = 0; i < this.members.length; i++) {
-            this.members[i].clearAllTimers();
-        }
-    }
-
     incrementOffensiveActions() {
         this.offensiveActions++;
     }

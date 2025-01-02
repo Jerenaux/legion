@@ -3,7 +3,8 @@ import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
 import {
     Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
-    StatusEffect, Class, PlayMode, League
+    StatusEffect, Class, PlayMode, League,
+    SpeedClass
 } from "./enums";
 import { ChestReward } from "@legion/shared/chests";
 
@@ -44,7 +45,7 @@ export interface SpellData {
     frame: number;
     sfx: string;
     vfx: string;
-    cooldown?: number;
+    speedClass: SpeedClass;
     castTime?: number;
     cost?: number;
     target: Target;
@@ -68,7 +69,7 @@ export interface ConsumableData {
     frame: number;
     sfx: string;
     animation: string;
-    cooldown: number;
+    speedClass: SpeedClass;
     target: Target;
     size?: number;
     effects: Effect[];
