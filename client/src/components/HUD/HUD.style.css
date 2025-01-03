@@ -1624,3 +1624,44 @@
   right: 10px;
   transform: translateY(-50%);
 }
+
+.player_turn_banner {
+  position: fixed;
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  
+  /* Make the banner smaller */
+  background: linear-gradient(
+    90deg,
+    rgba(28, 31, 37, 0) 0%,
+    rgba(69, 131, 208, 0.3) 20%,
+    rgba(69, 131, 208, 0.4) 50%,
+    rgba(69, 131, 208, 0.3) 80%,
+    rgba(28, 31, 37, 0) 100%
+  );
+  padding: 8px 30px;
+  border-radius: 4px;
+  min-width: 200px;
+  
+  /* Smaller text */
+  font-family: 'Kim', sans-serif;
+  font-size: 18px;
+  color: #ffffff;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 
+    0 0 8px rgba(69, 131, 208, 0.8),
+    -1px -1px 0 #4583d0,
+    1px -1px 0 #4583d0,
+    -1px 1px 0 #4583d0,
+    1px 1px 0 #4583d0;
+}
+
+/* Adjust the decorative lines to be shorter */
+.player_turn_banner::before,
+.player_turn_banner::after {
+  width: 16px;
+  height: 2px;
+}

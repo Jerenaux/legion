@@ -213,12 +213,20 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
               Enemy Turn
             </div>
           )}
-          {showTopMenu && playerVisible && player ? (
-            <PlayerTab 
+           {showTopMenu && playerVisible && player ? (
+            <>
+              {player.pendingSpell == undefined && player.pendingItem == undefined && (
+                <div className="player_turn_banner">
+                  <div className="player_turn_banner_particles" />
+                  Your Turn!
+                </div>
+              )}
+              <PlayerTab 
                 player={player} 
                 eventEmitter={events} 
                 isTutorial={isTutorialMode} 
-            />
+              />
+            </>
           ) : null}
         </>
         <SpectatorFooter
