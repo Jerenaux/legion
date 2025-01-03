@@ -210,7 +210,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           )}
           {showEnemyTurnBanner && (
             <div className="enemy_turn_banner">
-              <div className="enemy_turn_banner_particles" />
               Enemy Turn
             </div>
           )}
