@@ -876,7 +876,7 @@ export class Arena extends Phaser.Scene
         const player = this.getPlayer(team, num);
         const spell = getSpellById(id);
         player.castAnimation(flag, spell?.name);
-        if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
+        // if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
     }
 
     processTerrain(updates: TerrainUpdate[]) {
@@ -1674,9 +1674,10 @@ export class Arena extends Phaser.Scene
             const yOffset = 20;
             const bgYPosition = (this.cameras.main.centerY / 2 + yOffset);
             const yPosition = this.cameras.main.centerY - 200 + yOffset;
+            const scale = 0.5;
 
             let genBg = this.add.image(this.cameras.main.centerX, bgYPosition, 'gen_bg');
-            genBg.setAlpha(0).setDepth(10);
+            genBg.setAlpha(0).setDepth(10).setScale(scale);
             this.tweens.add({
                 targets: genBg,
                 alpha: 0.7,
@@ -1686,12 +1687,12 @@ export class Arena extends Phaser.Scene
 
             // Setup GEN Texts
             const targets = [
-                this.add.image(-350, yPosition, text1).setDepth(10),
-                this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang').setDepth(10)
+                this.add.image(-350, yPosition, text1).setDepth(10).setScale(scale),
+                this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang').setDepth(10).setScale(scale)
             ];
             if (text2) {
                 targets.push(
-                    this.add.image(this.cameras.main.width + 100, yPosition, text2).setDepth(10)
+                    this.add.image(this.cameras.main.width + 100, yPosition, text2).setDepth(10).setScale(scale)
                 );
             }
 
