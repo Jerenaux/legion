@@ -21,7 +21,8 @@
   z-index: 2;
   margin-top: 0;
   margin-left: 0;
-  transition: all .2s;
+
+  /* animation: fadeInPlayerTab 0.3s ease-in forwards; */
 
   @media screen and (max-width: 1500px) and (orientation: landscape) {
     transform: scale(0.9) translateX(-50%);
@@ -40,6 +41,15 @@
     transform: scale(0.55) translateX(-50%);
   }
 }
+
+@keyframes fadeInPlayerTab {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
 .player_content_container {
   display: flex;
@@ -266,10 +276,6 @@
 .pass-turn-button:hover {
   border-color: #51fdff;
   box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
-}
-
-.pass-turn-button:hover:before {
-  opacity: 1;
 }
 
 .pass-turn-button:active {

@@ -53,7 +53,7 @@ class SpectatorFooter extends Component<SpectatorFooterProps, SpectatorFooterSta
     const sortedQueue = [...(queue || [])].sort((a, b) => a.position - b.position);
 
     // Inside the render method, calculate the required width
-    const timelineWidth = Math.max(400, sortedQueue.length * 72); // 72px per character
+    const timelineWidth = Math.max(100, sortedQueue.length * 72); // 72px per character
 
     return (
       <div className="spectator_footer_wrapper">

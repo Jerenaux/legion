@@ -1627,7 +1627,7 @@
 
 .player_turn_banner {
   position: fixed;
-  top: 18vh;
+  top: 19vh;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;

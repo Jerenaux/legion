@@ -1,5 +1,3 @@
-import { Stat } from "./enums";
-
 const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
 
 // Profile
@@ -9,7 +7,7 @@ export const MAX_AVATAR_ID = 31;
 // Gameplay
 export const NB_START_CHARACTERS = 3;
 export const MAX_CHARACTERS = 6;
-export const TURN_DURATION = 5;
+export const TURN_DURATION = 7;
 export const CAST_DELAY = 1;
 export const PARALYZED_DELAY = 1.5;
 export const BASE_INVENTORY_SIZE = 20;
