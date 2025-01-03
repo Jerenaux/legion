@@ -260,8 +260,13 @@ export abstract class Game
             team: this.turnee.team.id,
         });
         const turnLength = TURN_DURATION + (isKill ? KILL_CAM_DURATION : 0);
-        this.resetTurnTimer(turnLength);
+        // this.resetTurnTimer(turnLength);
         this.turnee.startTurn();
+    }
+
+    processPassTurn(team: Team) {
+        this.turnSystem.processAction(team.getMembers()[0], SpeedClass.PASS);
+        this.processTurn();
     }
 
     sendGameStatus(socket: Socket, reconnect: boolean = false) {
@@ -854,11 +859,6 @@ export abstract class Game
         const delay = CAST_DELAY * 1000;
         setTimeout(this.applyMagic.bind(this, spell, player, x, y, team, targetPlayer), delay);
         return delay;
-    }
-
-    processPassTurn(team: Team) {
-        this.turnSystem.processAction(team.getMembers()[0], SpeedClass.PASS);
-        this.processTurn();
     }
 
     broadcastScoreChange(team: Team) {

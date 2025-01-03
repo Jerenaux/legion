@@ -10,8 +10,8 @@ import './PlayerTab.style.css';
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
 
-import hpIcon from '@assets/shop/hp_icon.png';
-import mpIcon from '@assets/inventory/mp_icon.png';
+import hpIcon from '@assets/stats_icons/hp_icon.png';
+import mpIcon from '@assets/stats_icons/mp_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 

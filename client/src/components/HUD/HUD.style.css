@@ -658,20 +658,20 @@
   left: 0;
   right: 0;
   width: 100%;
-  height: 48px;
+  height: 64px;
   z-index: 10;
+  padding-bottom: 8px;
 }
 
 .spectator_footer_container {
   background-image: url("@assets/HUD/footer_ornament.png");
   background-size: 100% 100%;
-  /* height: 100%;
-  width: 100%; */
   height: 48px;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: .2s;
+  padding-bottom: 12px;
 
   @media screen and (max-width: 1500px) and (orientation: landscape) {
     transform: scale(0.9);
@@ -1465,5 +1465,182 @@
 
 .padding_bottom_16 {
   padding-bottom: 16px;
+}
+
+.turn_timeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  gap: 12px;
+  position: relative;
+}
+
+.timeline_character {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+
+.timeline_portrait_container {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  background-image: url('@assets/HUD/char_profile_idle.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+/* Active character styling */
+.timeline_character:first-child .timeline_portrait_container {
+  transform: scale(1.15);
+  box-shadow: 0 0 20px rgba(113, 222, 255, 0.5);
+  animation: pulsate 2s infinite;
+}
+
+.timeline_portrait {
+  width: 100%;
+  height: 100%;
+  background-position: -40px -40px;
+  background-repeat: no-repeat;
+  transform: scale(0.6);
+}
+
+.timeline_arrow {
+  display: none;
+}
+
+.timeline_arrow::after {
+  content: "→";
+  position: absolute;
+  color: #71deff;
+  font-size: 24px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-shadow: 0 0 8px rgba(113, 222, 255, 0.3);
+  animation: arrowPulse 1.5s infinite;
+}
+
+/* Progress line connecting portraits */
+.timeline_character::after {
+  content: "";
+  position: absolute;
+  left: calc(100% - 8px);
+  top: 50%;
+  height: 3px;
+  width: 40px;
+  background: linear-gradient(
+    90deg,
+    #71deff 0%,
+    rgba(113, 222, 255, 0.8) 50%,
+    rgba(113, 222, 255, 0.4) 100%
+  );
+  transform: translateY(-50%);
+  filter: drop-shadow(0 0 4px rgba(113, 222, 255, 0.3));
+  animation: flowingLine 2s linear infinite;
+}
+
+/* Add flowing line animation */
+@keyframes flowingLine {
+  0% {
+    background-position: 40px 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* Add a subtle particle effect over the line */
+.timeline_character::before {
+  content: "";
+  position: absolute;
+  left: calc(100% - 8px);
+  top: 50%;
+  height: 1px;
+  width: 40px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 4px,
+    rgba(113, 222, 255, 0.8) 4px,
+    transparent 8px
+  );
+  transform: translateY(-50%);
+  opacity: 0.5;
+  animation: sparkle 1.5s linear infinite;
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+/* Keep the last character from showing the line */
+.timeline_character:last-child::before,
+.timeline_character:last-child::after {
+  display: none;
+}
+
+/* Future turns get progressively dimmer */
+/* .timeline_character:nth-child(2) .timeline_portrait_container {
+  opacity: 0.8;
+}
+
+.timeline_character:nth-child(3) .timeline_portrait_container {
+  opacity: 0.6;
+}
+
+.timeline_character:nth-child(n+4) .timeline_portrait_container {
+  opacity: 0.4;
+} */
+
+/* Animations */
+@keyframes pulsate {
+  0% {
+    box-shadow: 0 0 20px rgba(113, 222, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(113, 222, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(113, 222, 255, 0.5);
+  }
+}
+
+@keyframes arrowPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Remove the arrow */
+.timeline_arrow {
+  display: none;
+}
+
+/* Remove the line styles */
+.timeline_character::after,
+.timeline_character::before {
+  display: none;
 }
 

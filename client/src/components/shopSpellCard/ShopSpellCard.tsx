@@ -13,7 +13,7 @@ import mageIcon from '@assets/shop/mage_icon.png';
 import itemCountIcon from '@assets/shop/item_count_icon.png';
 import whiteBoxBg from '@assets/shop/white_box_bg.png';
 import purpleBoxBg from '@assets/shop/purple_box_bg.png';
-import mpIcon from '@assets/inventory/mp_icon.png';
+import mpIcon from '@assets/stats_icons/mp_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 import goldIcon from '@assets/gold_icon.png';

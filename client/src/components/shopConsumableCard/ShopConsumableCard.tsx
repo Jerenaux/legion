@@ -9,12 +9,13 @@ import { Effect } from '@legion/shared/interfaces';
 import consumablesSpritesheet from '@assets/consumables.png';
 
 // Import stat icons
-import hpIcon from '@assets/shop/hp_icon.png';
-import mpIcon from '@assets/inventory/mp_icon.png';
-import attackIcon from '@assets/shop/attack_icon.png';
-import defIcon from '@assets/shop/def_icon.png';
-import satkIcon from '@assets/shop/satk_icon.png';
-import sdefIcon from '@assets/shop/sdef_icon.png';
+import hpIcon from '@assets/stats_icons/hp_icon.png';
+import mpIcon from '@assets/stats_icons/mp_icon.png';
+import attackIcon from '@assets/stats_icons/attack_icon.png';
+import defIcon from '@assets/stats_icons/def_icon.png';
+import satkIcon from '@assets/stats_icons/satk_icon.png';
+import sdefIcon from '@assets/stats_icons/sdef_icon.png';
+import speedIcon from '@assets/stats_icons/speed_icon.png';
 
 // Import other icons
 import itemCountIcon from '@assets/shop/item_count_icon.png';
@@ -29,6 +30,7 @@ export const StatIcons = [
   defIcon,
   satkIcon,
   sdefIcon,
+  speedIcon,
 ];
 
 interface modalData {

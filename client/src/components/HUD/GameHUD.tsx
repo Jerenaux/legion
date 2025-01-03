@@ -36,6 +36,8 @@ interface GameHUDState {
   isTutorialVisible: boolean;
   showTopMenu: boolean;
   showOverview: boolean;
+  queue: any[];
+  turnee: any;
 }
 
 const events = new EventEmitter();
@@ -64,7 +66,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     isTutorialVisible: true,
     showTopMenu: false,
     showOverview: false,
-  };
+    queue: [],
+    turnee: null,
+  } as GameHUDState;
 
   componentDidMount() {
     events.on('showPlayerBox', this.showPlayerBox);
@@ -125,7 +129,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     this.setState({ playerVisible: false, player: null });
   }
 
-  updateOverview = (team1: TeamOverview, team2: TeamOverview, general: any, initialized: boolean) => {
+  updateOverview = (
+    team1: TeamOverview, team2: TeamOverview, general: any, initialized: boolean, 
+    queue: any[], turnee: any
+  ) => {
     const _showTopMenu = this.state.showTopMenu;
     const _showOverview = this.state.showOverview;
     this.setState({ team1, team2 });
@@ -133,6 +140,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         isSpectator: general.isSpectator,
         mode: general.mode,
         gameInitialized: initialized,
+        queue,
+        turnee,
         showTopMenu: general.mode === PlayMode.TUTORIAL ? _showTopMenu : true,
         showOverview: general.mode === PlayMode.TUTORIAL ? _showOverview : true,
     })
@@ -210,6 +219,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           score={score}
           mode={mode}
           closeGame={this.closeGame}
+          queue={this.state.queue}
+          team1={team1}
+          team2={team2}
         />
         {this.state.gameOver && <Endgame
           members={members}

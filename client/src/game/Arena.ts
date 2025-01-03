@@ -104,7 +104,8 @@ export class Arena extends Phaser.Scene
     sfxVolume: number;
     inputLocked = false;
     handSprite: Phaser.GameObjects.Sprite;
-
+    queue: any[];
+    turnee: any;
     isReplay: boolean = false;
     replayData: any = null;
     replayTimer: Phaser.Time.TimerEvent = null;
@@ -676,9 +677,9 @@ export class Arena extends Phaser.Scene
     }
     
     refreshOverview() {
-        const { team1, team2, general, initialized } = this.getOverview();
+        const { team1, team2, general, initialized, queue, turnee } = this.getOverview();
         if (this.overviewReady) {
-            events.emit('updateOverview', team1, team2, general, initialized);
+            events.emit('updateOverview', team1, team2, general, initialized, queue, turnee);
         }
     }
 
@@ -1026,13 +1027,15 @@ export class Arena extends Phaser.Scene
     }
 
     processQueueData(data: any[]) {
-        // this.turnSystem.processQueueData(data.queue);
         console.log(`[Arena:processQueueData] ${JSON.stringify(data)}`);
+        this.queue = data;
+        this.emitEvent('overviewChange');
     }
 
     processTurnee(data: {num: number, team: number}) {
-        // this.turnSystem.processTurnee(data.turnee);
         console.log(`[Arena:processTurnee] ${JSON.stringify(data)}`);
+        this.turnee = data;
+        this.emitEvent('overviewChange');
     }
 
     updateMusicIntensity(ratio){
@@ -1725,8 +1728,18 @@ export class Arena extends Phaser.Scene
             team2: this.teamsMap.get(2).getOverview(),
             general: this.gameSettings,
             initialized: this.gameInitialized,
+            queue: this.getQueue(),
+            turnee: this.getTurnee(),
         };
         return overview;
+    }
+
+    getQueue() {
+        return this.queue;
+    }
+
+    getTurnee() {
+        return this.turnee;
     }
 
     killCam(x, y) {

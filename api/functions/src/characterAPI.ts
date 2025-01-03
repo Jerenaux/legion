@@ -10,7 +10,6 @@ import {MAX_CHARACTERS} from "@legion/shared/config";
 import {OutcomeData, DailyLootAllDBData, CharacterUpdate, DBCharacterData} from "@legion/shared/interfaces";
 import {ChestReward} from "@legion/shared/chests";
 import {logPlayerAction} from "./dashboardAPI";
-import {MAX_STAT_VALUES} from "@legion/shared/config";
 import { canIncreaseStat } from "@legion/shared/inventory";
 
 export const rosterData = onRequest({

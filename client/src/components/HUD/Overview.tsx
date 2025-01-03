@@ -63,7 +63,7 @@ class Overview extends Component<Props, State> {
     }
   }
 
-  render({ members, position, selectedPlayer, isSpectator }: Props, { blinking }: State) {
+  render({ members, position, isSpectator }: Props, { blinking }: State) {
     if (!members || !blinking.length) {
       return <div />;
     }
@@ -74,7 +74,6 @@ class Overview extends Component<Props, State> {
         <div className="member_container">
           {members.map((member, memberIndex) => {
             const isAlive = member.hp > 0;
-            const isParalyzed = member.statuses[StatusEffect.PARALYZE] != 0 || member.statuses[StatusEffect.FREEZE] != 0;
 
             const portraitStyle = {
               backgroundImage: `url(${getSpritePath(member.texture)})`,
