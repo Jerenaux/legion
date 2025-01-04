@@ -1,9 +1,11 @@
 // SpectatorFooter.tsx
 import { h, Fragment, Component } from 'preact';
-import { PlayMode } from '@legion/shared/enums';
+import { PlayMode, Class } from '@legion/shared/enums';
 import { TeamOverview } from "@legion/shared/interfaces";
 import { getSpritePath } from '../utils';
 import './SpectatorFooter.style.css';
+import warriorIcon from '@assets/shop/warrior_icon.png';
+import mageIcon from '@assets/shop/mage_icon.png';
 
 interface SpectatorFooterProps {
   isTutorial: boolean;
@@ -97,6 +99,12 @@ class SpectatorFooter extends Component<SpectatorFooterProps, SpectatorFooterSta
                         className="timeline_portrait" 
                         style={portraitStyle}
                       />
+                      {/* <div className="timeline_class_indicator">
+                        <img 
+                          src={character.class === Class.WARRIOR ? warriorIcon : mageIcon}
+                          className={`class-icon ${character.class === Class.WARRIOR ? 'warrior' : ''}`}
+                        />
+                      </div> */}
                     </div>
                   </div>
                 );

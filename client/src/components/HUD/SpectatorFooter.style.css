@@ -90,9 +90,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  /* overflow: hidden; */
   position: relative;
   transition: transform 0.3s ease;
+  margin: 3px;
 }
 
 .timeline_character:first-child .timeline_portrait_container {
@@ -185,4 +186,35 @@
   .turn_order_label {
     font-size: 10px;
   }
+}
+
+.timeline_class_indicator {
+  position: absolute;
+  top: -8px;
+  /* right: -6px; */
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(113, 222, 255, 0.3);
+}
+
+.timeline_class_indicator img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.timeline_class_indicator .warrior {
+  transform: scaleX(1.5);
+}
+
+/* Adjust the portrait container to accommodate the class indicator */
+.timeline_portrait_container {
+  position: relative;
+  margin: 3px;
 } 
