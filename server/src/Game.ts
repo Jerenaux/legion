@@ -262,10 +262,7 @@ export abstract class Game
         this.turnee.setHasActed(false);
     
         console.log(`[Game:processTurn] Turnee: ${this.turnee.num} from team ${this.turnee.team.id}`);
-        this.broadcast('turnee', {
-            num: this.turnee.num,
-            team: this.turnee.team.id,
-        });
+        this.broadcast('turnee', this.getTurneeData());
     
         const turnLength = TURN_DURATION + (isKill ? KILL_CAM_DURATION : 0);
         this.resetTurnTimer(turnLength);
@@ -321,6 +318,13 @@ export abstract class Game
         this.io.in(this.id).emit(event, data);
     }
 
+    getTurneeData() {
+        return {
+            num: this.turnee?.num,
+            team: this.turnee?.team.id,
+        }
+    }
+
     getGameData(playerTeamId: number, reconnect: boolean = false): GameData {
         const otherTeamId = this.getOtherTeam(playerTeamId).id;
         const team = this.teams.get(playerTeamId);
@@ -332,6 +336,7 @@ export abstract class Game
                 mode: this.mode,
             },
             queue: this.turnSystem.getQueueData(),
+            turnee: this.getTurneeData(),
             player: {
                 teamId: playerTeamId,
                 player: team.getPlayerData(),

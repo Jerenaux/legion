@@ -7,14 +7,14 @@ import guideIcon from '@assets/guide.png';
 import successIcon from '@assets/svg/success.svg';
 import errorIcon from '@assets/svg/error.svg';
 
-import freezeIcon from '@assets/HUD/freeze_icon.png';
-import muteIcon from '@assets/HUD/mute_icon.png';
-import paralyzeIcon from '@assets/HUD/paralyze_icon.png';
-import blindIcon from '@assets/HUD/blind_icon.png';
-import sleepIcon from '@assets/HUD/sleep_icon.png';
-import poisonIcon from '@assets/HUD/poison_icon.png';
-import burnIcon from '@assets/HUD/burn_icon.png';
-import hasteIcon from '@assets/HUD/haste_icon.png';
+import freezeIcon from '@assets/status_icons/freeze_icon.png';
+import muteIcon from '@assets/status_icons/mute_icon.png';
+import paralyzeIcon from '@assets/status_icons/paralyze_icon.png';
+import blindIcon from '@assets/status_icons/blind_icon.png';
+import sleepIcon from '@assets/status_icons/sleep_icon.png';
+import poisonIcon from '@assets/status_icons/poison_icon.png';
+import burnIcon from '@assets/status_icons/burn_icon.png';
+import hasteIcon from '@assets/status_icons/haste_icon.png';
 
 import Toastify from 'toastify-js'
 

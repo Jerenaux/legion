@@ -296,6 +296,10 @@ export interface GameData {
         mode: PlayMode;
     },
     queue: any[];
+    turnee: {
+        num: number;
+        team: number;
+    },
     player: GamePlayerData,
     opponent: GamePlayerData,
     terrain: TerrainUpdate[],

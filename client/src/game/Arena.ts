@@ -1480,6 +1480,7 @@ export class Arena extends Phaser.Scene
         this.gameSettings.spectator = data.general.spectator;
         this.gameSettings.mode = data.general.mode;
         this.queue = data.queue;
+        this.turnee = data.turnee;
 
         if (this.gameSettings.tutorial) {
             this.tutorialSettings.showHealthBars = false;
@@ -1502,6 +1503,7 @@ export class Arena extends Phaser.Scene
 
         if (isReconnect) {
             this.setGameInitialized();
+            this.selectTurnee();
         } else {
             const delay = 3000;
             setTimeout(this.updateOverview.bind(this), delay + 1000);
