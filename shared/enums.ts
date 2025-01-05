@@ -1,3 +1,4 @@
+// When adding stats, also update applyEquipmentBonuses()
 export enum Stat {
     HP,
     MP,

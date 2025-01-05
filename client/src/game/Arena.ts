@@ -855,6 +855,7 @@ export class Arena extends Phaser.Scene
     }
 
     processStatusChange({team, num, statuses}) {
+        console.log(`[Arena:processStatusChange] ${team} ${num} ${JSON.stringify(statuses)}`);
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player.setStatuses(statuses);

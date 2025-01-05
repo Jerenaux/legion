@@ -347,7 +347,7 @@ export class ServerPlayer {
 
     getStat(stat: Stat) {
         if (stat === Stat.NONE) return 0;
-        return this.stats[stat];
+        return this.stats[stat] || 0;
     }
 
     setTeam(team: Team) {
@@ -457,7 +457,7 @@ export class ServerPlayer {
     }
 
     removeStatusEffect(status: StatusEffect) {
-        // console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
+        console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
         this.statuses[status] = 0;
 
         if (statusSpeedModifiers[status]) {

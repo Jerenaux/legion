@@ -50,7 +50,7 @@ export function canLearnSpell(characterData: DBCharacterData | APICharacterData,
 }
 
 export function hasMinLevel(characterData: DBCharacterData | APICharacterData, level: number): boolean {
-  if (dev) console.log(`[hasMinLevel] level: ${level}, characterData.level: ${characterData.level}, SKIP_LEVEL_RESTRICTIONS: ${SKIP_LEVEL_RESTRICTIONS}`);
+  // if (dev) console.log(`[hasMinLevel] level: ${level}, characterData.level: ${characterData.level}, SKIP_LEVEL_RESTRICTIONS: ${SKIP_LEVEL_RESTRICTIONS}`);
     return SKIP_LEVEL_RESTRICTIONS || characterData.level >= level;
 }
 
@@ -268,6 +268,7 @@ function applyEquipmentBonuses(equipped: Equipment) {
     def: 0,
     spatk: 0,
     spdef: 0,
+    speed: 0,
   };
   for (const field of Object.values(equipmentSlotFields)) {
     const item = equipped[field as keyof Equipment];
@@ -285,6 +286,7 @@ function applyEquipmentBonuses(equipped: Equipment) {
           case 3: bonuses.def += effect.value; break;
           case 4: bonuses.spatk += effect.value; break;
           case 5: bonuses.spdef += effect.value; break;
+          case 6: bonuses.speed += effect.value; break;
         }
       });
     }

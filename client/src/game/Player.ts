@@ -501,7 +501,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onPointerOver() {
-        if (this.isTarget() && this.arena.selectedPlayer.pendingSpell == null) {
+        if (this.isTarget() && this.arena.selectedPlayer?.pendingSpell == null) {
             this.arena.emitEvent('hoverEnemyCharacter');
         } else if (this.isPlayer){
             this.arena.emitEvent('hoverCharacter');

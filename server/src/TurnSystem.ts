@@ -8,7 +8,7 @@ interface TurnQueueItem {
 }
 
 const ACTION_COOLDOWNS = {
-    [SpeedClass.PASS]: 50,      // Base cooldown for passing
+    [SpeedClass.PASS]: 60,      // Base cooldown for passing
     [SpeedClass.FAST]: 100,    
     [SpeedClass.NORMAL]: 150,   
     [SpeedClass.SLOW]: 250      
@@ -30,7 +30,6 @@ export class TurnSystem {
             nextActionTime: this.getInitialActionTime(char.getStat(Stat.SPEED)),
             passCount: 0
         }));
-        // Print the speed of all characters
         console.log(`[TurnSystem:initializeTurnOrder] ${this.turnQueue.map(item => item.character.getStat(Stat.SPEED)).join(', ')}`);
         
         // Sort by nextActionTime ascending
@@ -59,10 +58,9 @@ export class TurnSystem {
         // - Add small random factor to prevent perfect loops
         const speedMultiplier = 1 - (charSpeed * 0.002); // Speed reduces cooldown by 0.2% per point
         const randomVariation = Math.random() * 10 - 5; // ±5 variation
+        const timeIncrement = (baseCooldown * speedMultiplier) + randomVariation;
         
-        queueItem.nextActionTime = this.currentTime + 
-                            (baseCooldown * speedMultiplier) + 
-                            randomVariation;
+        queueItem.nextActionTime = this.currentTime + timeIncrement;
 
         // For PASS specifically, add an increasing penalty for consecutive passes
         // if (actionType === SpeedClass.PASS) {
