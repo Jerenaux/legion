@@ -1757,16 +1757,14 @@ export class Arena extends Phaser.Scene
 
     killCam(x, y) {
         this.killCamActive = true;
-        // Save the original zoom and time scale
+        // Save the original camera state
         const originalZoom = this.cameras.main.zoom;
         const originalTimeScale = this.localAnimationSprite.anims.timeScale;
         const originalSoundRate = this.sound.rate;
         const originalTweenRate = this.tweens.timeScale;
+        const originalScrollX = this.cameras.main.scrollX;
+        const originalScrollY = this.cameras.main.scrollY;
 
-        const screenWidth = this.cameras.main.width;
-        const screenHeight = this.cameras.main.height;
-    
-        // Define target zoom and slow-motion scale
         const targetZoom = 2; 
         const slowMotionScale = 0.2; 
 
@@ -1790,8 +1788,10 @@ export class Arena extends Phaser.Scene
         });
           
         this.time.delayedCall(secondDelay, () => {
-            // Return the camera to the original position and zoom level
-            this.cameras.main.pan(screenWidth / 2, screenHeight / 2, cameraSpeed, 'Power2');
+            // Return the camera to its original position and zoom level
+            const returnX = this.cameras.main.width / 2 + originalScrollX;
+            const returnY = this.cameras.main.height / 2 + originalScrollY;
+            this.cameras.main.pan(returnX, returnY, cameraSpeed, 'Power2');
             this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2');
             this.localAnimationSprite.anims.timeScale = originalTimeScale;
             this.sound.setRate(originalSoundRate);
@@ -2044,6 +2044,14 @@ export class Arena extends Phaser.Scene
         
         const player = this.getPlayer(this.turnee.team, this.turnee.num);
         if (!player) return;
+
+        // If killcam is active, wait for it to finish before highlighting turnee
+        if (this.killCamActive) {
+            this.time.delayedCall(KILL_CAM_DURATION * 1000, () => {
+                this.highlightTurnee();
+            });
+            return;
+        }
 
         // Get screen dimensions and target position
         const screenWidth = this.cameras.main.width;
