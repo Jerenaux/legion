@@ -6,7 +6,7 @@ import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getMaxStatValue, getXPThreshold } from '@legion/shared/levelling';
 import { CharacterStats, Equipment, PlayerNetworkData, StatusEffects } from '@legion/shared/interfaces';
-import { INITIAL_COOLDOWN, TIME_COEFFICIENT, INJURED_MODE, PARALYZED_DELAY } from "@legion/shared/config";
+import { INJURED_MODE, PARALYZED_DELAY } from "@legion/shared/config";
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpells, lvlUp, setUpInventory } from '@legion/shared/NewCharacter';
 
@@ -593,7 +593,7 @@ export class ServerPlayer {
     halveSpeed() {
         this.speed /= 2;
     }
-    
+
     isMage() {
         return this.class === Class.WHITE_MAGE || this.class === Class.BLACK_MAGE;
     }

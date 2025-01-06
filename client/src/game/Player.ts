@@ -434,27 +434,9 @@ export class Player extends Phaser.GameObjects.Container {
         this.glowFx.color = GlowColors.Selected;
         this.glowFx.setActive(true);
 
-        // Add floating arrow
-        // if (!this.selectionArrow) {
-        //     this.selectionArrow = this.scene.add.sprite(0, -60, 'arrow')
-        //         .setScale(0.2)
-        //         .setAngle(-90);  // Rotate 90 degrees counter-clockwise
-        //     this.add(this.selectionArrow);
-            
-        //     // Add floating animation
-        //     this.scene.tweens.add({
-        //         targets: this.selectionArrow,
-        //         y: '-=10',
-        //         duration: 1000,
-        //         yoyo: true,
-        //         repeat: -1,
-        //         ease: 'Sine.easeInOut'
-        //     });
-        // }
-        // this.selectionArrow.setVisible(true);
-
         if (this.isPlayer) {
             this.displayMovementRange();
+            this.decrementStatuses();
             this.selected = true;
 
             this.checkHeartbeat();
@@ -476,6 +458,14 @@ export class Player extends Phaser.GameObjects.Container {
 
     isSelected() {
         return this.selected;
+    }
+
+    decrementStatuses() {
+        for(const status in this.statuses) {
+            if (this.statuses[status] > 0) {
+                this.statuses[status]--;
+            }
+        }
     }
 
     displayMovementRange() {

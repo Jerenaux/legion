@@ -73,7 +73,6 @@ export class Arena extends Phaser.Scene
     gridMap: Map<string, Player> = new Map<string, Player>();
     teamsMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
-    highlight: Phaser.GameObjects.Graphics;
     cellsHighlight: CellsHighlight;
     localAnimationSprite: Phaser.GameObjects.Sprite;
     tileSize = 60;
@@ -523,8 +522,9 @@ export class Arena extends Phaser.Scene
 
          // Add a pointer move handler to highlight the hovered tile
          this.input.on('pointermove', function (pointer) {
-             const pointerX = pointer.x - startX;
-             const pointerY = pointer.y - startY;
+             // Account for camera scroll when calculating pointer position
+             const pointerX = pointer.x + this.cameras.main.scrollX - startX;
+             const pointerY = pointer.y + this.cameras.main.scrollY - startY;
  
              // Calculate the grid coordinates of the pointer
              const gridX = Math.floor(pointerX / this.tileSize);
@@ -771,6 +771,7 @@ export class Arena extends Phaser.Scene
         this.selectedPlayer = player;
         this.selectedPlayer.select();
 
+        console.log(`[selectPlayer] ${this.selectedPlayer.name} : ${this.selectedPlayer.isPlayer}`);
         if (this.selectedPlayer.isPlayer) {
             this.emitEvent('selectPlayer', {num: this.selectedPlayer.num})
             events.emit('selectPlayer', {num: this.selectedPlayer.num}); // TODO: consolidate
@@ -1351,30 +1352,32 @@ export class Arena extends Phaser.Scene
     }
 
     highlightCells(gridX, gridY, radius) {
-        // Create a new Graphics object to highlight the cells
-        if (!this.highlight) this.highlight = this.add.graphics().setDepth(1);
+        // Clear any existing highlights
         this.clearHighlight();
-        this.highlight.fillStyle(0xffd700, 0.8); // Use golden color
-    
+        
         // Iterate over each cell in the grid
         for (let y = -radius; y <= radius; y++) {
             for (let x = -radius; x <= radius; x++) {
                 // Check if the cell is within the circle
                 if (x * x + y * y <= radius * radius) {
                     if(!this.isValidCell(gridX, gridY, gridX + x, gridY + y)) continue;
-                    // Calculate the screen position of the cell
-                    const posX = this.gridCorners.startX + (gridX + x) * this.tileSize;
-                    const posY = this.gridCorners.startY + (gridY + y) * this.tileSize;
-    
-                    // Draw a rectangle around the cell
-                    this.highlight.fillRect(posX, posY, this.tileSize, this.tileSize);
+                    
+                    // Get the tile sprite at this position
+                    const tileSprite = this.tilesMap.get(serializeCoords(gridX + x, gridY + y));
+                    if (tileSprite) {
+                        // Apply cyan tint to the tile
+                        tileSprite.setTint(0x00ffff); // Bright cyan color
+                    }
                 }
             }
         }
     }
 
     clearHighlight() {
-        if (this.highlight) this.highlight.clear();
+        // Clear tint from all tiles
+        this.tilesMap.forEach(tileSprite => {
+            tileSprite.clearTint();
+        });
     }
     
     // PhaserCreate

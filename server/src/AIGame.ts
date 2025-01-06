@@ -197,7 +197,6 @@ export class AIGame extends Game {
             console.log(`[AIGame:populateTeams] AI team win ratio: ${winRatio}`);
 
             if (winRatio <= 0.1) aiTeam.scaleStats(0.5);
-            if (winRatio <= 0.2) aiTeam.setSpeed(0.7);
             if (winRatio <= 0.3) {
                 aiTeam.disableItems();
                 aiTeam.banSpells([3,4,5,6,7,8]);
@@ -205,7 +204,6 @@ export class AIGame extends Game {
             }
             if (winRatio <= 0.5) aiTeam.setHealRandomThreshold(0.4);
             if (winRatio <= 0.6) aiTeam.banSpells([6,7,8]);
-            if (winRatio > 0.8) aiTeam.setSpeed(1.2);
             if (winRatio > 0.9) {
                 if (!isVsZombie || (this.mode === PlayMode.RANKED_VS_AI && this.league >= League.GOLD)) this.addExtraTeamMember(aiTeam!);
                 aiTeam.scaleStats(1.2);

@@ -323,13 +323,6 @@ export class Team {
         }
     }
 
-    setSpeed(speed: number) {
-        console.log(`[Team:setSpeed] Setting speed for team ${this.id} to ${speed}`);
-        for (let i = 0; i < this.members.length; i++) {
-            this.members[i].setSpeed(speed);
-        }
-    }
-
     setHealRandomThreshold(threshold: number) {
         console.log(`[Team:setHealRandomThreshold] Setting heal random threshold for team ${this.id} to ${threshold}`);
         for (let i = 0; i < this.members.length; i++) {
