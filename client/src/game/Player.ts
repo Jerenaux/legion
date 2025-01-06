@@ -45,7 +45,6 @@ export class Player extends Phaser.GameObjects.Container {
     spells: BaseSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
     statusSprites: Map<StatusEffect, Phaser.GameObjects.Sprite>;
-    statusTimer: NodeJS.Timeout;
     pendingSpell: number | null = null;
     pendingItem: number | null = null;
     casting = false;
@@ -875,7 +874,6 @@ export class Player extends Phaser.GameObjects.Container {
             this.statuses[status] = duration;
             if (duration != 0) {
                 this.showStatusAnimation(status as keyof StatusEffects);
-                this.setStatusTimer();
             } else {
                 this.hideStatusAnimation(status as keyof StatusEffects);
             } 
@@ -886,29 +884,6 @@ export class Player extends Phaser.GameObjects.Container {
         this.toggleCharacterImmobilization(paralyzing);
 
         this.arena.emitEvent('statusesChange', {num: this.num})
-    }
-
-    setStatusTimer() {
-        if (this.statusTimer) return;
-        let change = false;
-        this.statusTimer = setInterval(() => {
-            Object.keys(this.statuses).forEach(status => {
-                if (this.statuses[status] > 0) {
-                    change = true;
-                    this.statuses[status] -= 1
-                };
-            });
-            if (change) {
-                this.arena.emitEvent('statusesChange', {num: this.num});
-            } else {
-                this.clearStatusTimer()
-            }
-        }, 1000);
-    }
-
-    clearStatusTimer() {
-        clearInterval(this.statusTimer);
-        this.statusTimer = null;
     }
 
     showStatusAnimation(status: StatusEffect) {
@@ -1003,8 +978,6 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     destroy() {
-        this.clearStatusTimer();
-
         // Stop all tweens related to this player
         if (this.scene?.tweens) {
             this.scene.tweens.killTweensOf(this);
