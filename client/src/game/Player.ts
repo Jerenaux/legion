@@ -564,6 +564,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onKey(keyIndex) {
+        this.arena.playSound('click');
         const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
         const itemsIndex = keyboardLayout.indexOf('Z');
         if (keyIndex >= itemsIndex) {
@@ -955,8 +956,8 @@ export class Player extends Phaser.GameObjects.Container {
             this.healthBar.setVisible(this.arena.tutorialSettings.showHealthBars);
             this.MPBar?.setVisible(this.arena.tutorialSettings.showMPBars);
         } else {
-            this.healthBar.setVisible(true);
-            this.MPBar?.setVisible(true);
+            this.healthBar.setVisible(this.isAlive());
+            this.MPBar?.setVisible(this.isAlive());
         }
     }
 

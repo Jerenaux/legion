@@ -60,6 +60,7 @@ import groundTilesImage from '@assets/tiles2.png';
 import groundTilesAtlas from '@assets/tiles2.json';
 import { errorToast, recordLoadingStep, silentErrorToast } from '../components/utils';
 import { Tutorial } from './Tutorial';
+import { BaseSpell } from '@legion/shared/BaseSpell';
 const LOCAL_ANIMATION_SCALE = 3;
 const DEPTH_OFFSET = 0.01;
 
@@ -638,29 +639,40 @@ export class Arena extends Phaser.Scene
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
         if (pendingSpell != null) {
-            // console.log(`Casting spell ${pendingSpell.name}`);
+            if (!this.validateTarget(gridX, gridY, pendingSpell)) {
+                this.playSound('nope', 0.2);
+                return;
+            }
             this.sendSpell(gridX, gridY, player);
         } else if (this.selectedPlayer?.pendingItem != null) {
-            // console.log(`Using item ${pendingItem.name}`)
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
         } else if ((!player || !player.isAlive()) && this.hasObstacle(gridX, gridY)) {
-            // console.log(`Clicked on obstacle at (${gridX}, ${gridY})`);
             this.sendObstacleAttack(gridX, gridY);
         } else if (this.selectedPlayer && !player) {
             console.log(`Moving to (${gridX}, ${gridY})`);
             this.handleMove(gridX, gridY);
         } else if (player){ 
-            // console.log(`Clicked on player ${player.num}`);
-            if (pendingSpell?.target === Target.SINGLE) {
-                this.sendSpell(gridX, gridY, player);
-            } if (pendingItem?.target === Target.SINGLE) {
-                this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
-            } else {
-                player.onClick();
-            }
+            player.onClick();
         } else {
             console.log(`Clicked on empty tile at (${gridX}, ${gridY})`);
         }
+    }
+
+    validateTarget(gridX, gridY, spell: BaseSpell) {
+        if (spell.target == Target.AOE && spell.size > 1) {
+            return true;
+        }
+        const character = this.gridMap.get(serializeCoords(gridX, gridY));
+        const isAlly = character?.team.id === this.playerTeamId;
+        console.log(`validateTarget: ${spell.name} ${spell.targetHighlight} ${isAlly}`);
+        if (spell.targetHighlight === TargetHighlight.ALLY && isAlly) {
+            return true;
+        } else if ((spell.targetHighlight == undefined || spell.targetHighlight === TargetHighlight.ENEMY) && !isAlly) {
+            return true;
+        } else if (spell.targetHighlight === TargetHighlight.DEAD && !character?.isAlive()) {
+            return true;
+        }
+        return false;
     }
 
     handleMove(gridX, gridY) {
@@ -1541,6 +1553,7 @@ export class Arena extends Phaser.Scene
         });
 
         events.on('passTurn', () => {
+            this.playSound('click');
             this.socket.emit('passTurn');
         });
 
@@ -2157,6 +2170,11 @@ export class Arena extends Phaser.Scene
                 }
             });
         });
+
+        // Restore movement range highlight if appropriate
+        if (this.selectedPlayer?.canAct() && !this.selectedPlayer?.pendingSpell && !this.selectedPlayer?.pendingItem) {
+            this.selectedPlayer.displayMovementRange();
+        }
     }
 
     // Add this method to determine which sprites should stay bright

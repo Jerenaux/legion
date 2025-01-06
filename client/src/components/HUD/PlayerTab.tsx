@@ -2,7 +2,7 @@ import { h, Component, Fragment } from 'preact';
 import ItemIcon from './ItemIcon';
 import { InventoryType, StatusEffect, Target } from '@legion/shared/enums';
 import TabBar from './TabBar';
-import { mapFrameToCoordinates, getSpritePath, cropFrame, statusIcons } from '../utils';
+import { mapFrameToCoordinates, getSpritePath, cropFrame, statusIcons, getSpeedClass } from '../utils';
 import { PlayerProps } from '@legion/shared/interfaces';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import './PlayerTab.style.css';
@@ -160,7 +160,7 @@ class PlayerTab extends Component<Props, State> {
             )}
             <div className="dialog-spell-info">
               <img src={cdIcon} alt="cd" className={type === 'spell' ? 'cd-icon' : ''} />
-              <span>{action.speedClass}</span>
+              <span>{getSpeedClass(action.speedClass)}</span>
             </div>
             <div className="dialog-spell-info">
               <img src={targetIcon} alt="target" />
