@@ -19,6 +19,7 @@ enum GlowColors {
 }
 
 const BASE_SQUARE_ALPHA = 0.5;
+const BASE_SQUARE_RADIUS = 8;
 
 export class Player extends Phaser.GameObjects.Container {
     sprite: Phaser.GameObjects.Sprite;
@@ -119,7 +120,7 @@ export class Player extends Phaser.GameObjects.Container {
         } 
 
         this.baseSquare.fillStyle(isPlayer ? 0x0000ff : 0xff0000); // Must be called before strokeRect
-        this.baseSquare.fillRect(-30, 10, 60, 60);  
+        this.baseSquare.fillRoundedRect(-30, 10, 60, 60, BASE_SQUARE_RADIUS);  
 
         if (gridX < this.arena.gridWidth/2) this.sprite.flipX = true;
 
@@ -212,7 +213,7 @@ export class Player extends Phaser.GameObjects.Container {
     setBaseSquareColor(color: number) {
         this.baseSquare.clear();
         this.baseSquare.fillStyle(color, 0.6);
-        this.baseSquare.fillRect(-30, 10, 60, 60);
+        this.baseSquare.fillRoundedRect(-30, 10, 60, 60, BASE_SQUARE_RADIUS);
     }
 
     hideBaseSquare() {
