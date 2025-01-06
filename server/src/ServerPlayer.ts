@@ -587,9 +587,11 @@ export class ServerPlayer {
             this.applyTerrainEffect(this.activeTerrainDoT);
         }
 
-        for (const status in DoTStatuses) {
+        console.log(`[ServerPlayer:startTurn] Checking statuses of ${this.name}`);
+        for (const status of DoTStatuses) {
+            console.log(`[ServerPlayer:startTurn] Status ${status} is ${this.statuses[status]}`);
             if (this.statuses[status] > 0) {
-                this.takeDamage(statusDot[status as StatusEffect]);
+                this.takeDamage(statusDot[status]);
             }
         }
 
