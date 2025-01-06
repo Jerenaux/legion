@@ -4,7 +4,7 @@ import { Spell } from './Spell';
 import { Stat, Terrain, StatusEffect, Class, SpeedClass } from "@legion/shared/enums";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
-import { getXPThreshold } from '@legion/shared/levelling';
+import { getMaxStatValue, getXPThreshold } from '@legion/shared/levelling';
 import { CharacterStats, Equipment, PlayerNetworkData, StatusEffects } from '@legion/shared/interfaces';
 import { INITIAL_COOLDOWN, TIME_COEFFICIENT, INJURED_MODE, PARALYZED_DELAY } from "@legion/shared/config";
 import { getEquipmentById } from '@legion/shared/Equipments';
@@ -20,9 +20,11 @@ const statusDot = {
     [StatusEffect.BURN]: 20,
 }
 
-const statusSpeedModifiers = {
-    [StatusEffect.HASTE]: 2,
-}
+const statsModifyingStatuses = {
+    [StatusEffect.HASTE]: {
+        [Stat.SPEED]: 1.5,
+    },
+};
 
 const DoTStatuses = [StatusEffect.POISON, StatusEffect.BURN];
 const DoTTerrains = [Terrain.FIRE];
@@ -45,6 +47,7 @@ export class ServerPlayer {
     _mp: number = 0;
     justDied: boolean = false;
     stats: CharacterStats;
+    stats_modifiers: CharacterStats;
     hp;
     mp;
     speed = 1; // TODO: incorporate into stats one day
@@ -93,6 +96,16 @@ export class ServerPlayer {
             [Stat.SPATK]: 0,
             [Stat.SPDEF]: 0,
             [Stat.SPEED]: 0,
+        };
+
+        this.stats_modifiers = {
+            [Stat.HP]: 1,
+            [Stat.MP]: 1,
+            [Stat.ATK]: 1,
+            [Stat.DEF]: 1,
+            [Stat.SPATK]: 1,
+            [Stat.SPDEF]: 1,
+            [Stat.SPEED]: 1,
         };
     }
 
@@ -345,9 +358,16 @@ export class ServerPlayer {
         this.stats[stat] = value;
     }
 
+    setStatsModifier(stat: Stat, value: number) {
+        if (stat === Stat.NONE) {
+            throw new Error('Cannot set NONE stat');
+        }
+        this.stats_modifiers[stat] = value;
+    }
+
     getStat(stat: Stat) {
         if (stat === Stat.NONE) return 0;
-        return this.stats[stat] || 0;
+        return Math.min(this.stats[stat] * this.stats_modifiers[stat], getMaxStatValue(stat)) || 0;
     }
 
     setTeam(team: Team) {
@@ -448,8 +468,10 @@ export class ServerPlayer {
         // console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} seconds`);
         this.statuses[status] = duration;
 
-        if (statusSpeedModifiers[status]) {
-            this.setSpeed(this.speed * statusSpeedModifiers[status]);
+        if (statsModifyingStatuses[status]) {
+            for (const stat in statsModifyingStatuses[status]) {
+                this.setStatsModifier(stat as unknown as Stat, statsModifyingStatuses[status][stat]);
+            }
         }
 
         this.broadcastStatusEffectChange();
@@ -460,8 +482,10 @@ export class ServerPlayer {
         console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
         this.statuses[status] = 0;
 
-        if (statusSpeedModifiers[status]) {
-            this.setSpeed(this.speed / statusSpeedModifiers[status]);
+        if (statsModifyingStatuses[status]) {
+            for (const stat in statsModifyingStatuses[status]) {
+                this.setStatsModifier(stat as unknown as Stat, 1);
+            }
         }
 
         this.broadcastStatusEffectChange();
@@ -569,11 +593,7 @@ export class ServerPlayer {
     halveSpeed() {
         this.speed /= 2;
     }
-
-    setSpeed(speed: number) {
-        this.speed = speed;
-    }
-
+    
     isMage() {
         return this.class === Class.WHITE_MAGE || this.class === Class.BLACK_MAGE;
     }
@@ -587,9 +607,7 @@ export class ServerPlayer {
             this.applyTerrainEffect(this.activeTerrainDoT);
         }
 
-        console.log(`[ServerPlayer:startTurn] Checking statuses of ${this.name}`);
         for (const status of DoTStatuses) {
-            console.log(`[ServerPlayer:startTurn] Status ${status} is ${this.statuses[status]}`);
             if (this.statuses[status] > 0) {
                 this.takeDamage(statusDot[status]);
             }

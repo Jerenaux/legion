@@ -123,6 +123,10 @@ export type CharacterStats = {
     [K in Exclude<Stat, Stat.NONE>]: number;
 }
 
+export type CharacterStatsModifiers = {
+    [K in Exclude<Stat, Stat.NONE>]: number[];
+}
+
 export type CharacterStringStats = {
     [key: string]: number;
 }

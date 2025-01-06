@@ -51,12 +51,13 @@ export class TurnSystem {
         const baseCooldown = ACTION_COOLDOWNS[actionType];
         
         const charSpeed = character.getStat(Stat.SPEED);
+        console.log(`[TurnSystem:processAction] ${character.name} speed: ${charSpeed}`);
         
         // Compute new action time:
         // - Start from current time
         // - Add cooldown modified by speed (faster characters recover faster)
         // - Add small random factor to prevent perfect loops
-        const speedMultiplier = 1 - (charSpeed * 0.002); // Speed reduces cooldown by 0.2% per point
+        const speedMultiplier = 1 - (charSpeed * 0.0045); // Speed reduces cooldown by 0.4% per point
         const randomVariation = Math.random() * 10 - 5; // ±5 variation
         const timeIncrement = (baseCooldown * speedMultiplier) + randomVariation;
         
