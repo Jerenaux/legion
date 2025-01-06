@@ -101,12 +101,18 @@ class SpectatorFooter extends Component<SpectatorFooterProps, SpectatorFooterSta
                         className="timeline_portrait" 
                         style={portraitStyle}
                       />
-                      {/* <div className="timeline_class_indicator">
+                      <div className={`timeline_class_indicator ${
+                        character.class === Class.WARRIOR 
+                          ? 'frame-warrior' 
+                          : character.class === Class.BLACK_MAGE 
+                          ? 'frame-black-mage'
+                          : 'frame-white-mage'
+                      }`}>
                         <img 
                           src={character.class === Class.WARRIOR ? warriorIcon : mageIcon}
                           className={`class-icon ${character.class === Class.WARRIOR ? 'warrior' : ''}`}
                         />
-                      </div> */}
+                      </div>
                     </div>
                   </div>
                 );
