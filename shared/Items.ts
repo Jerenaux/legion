@@ -1,5 +1,5 @@
 import { BaseItem } from "./BaseItem";
-import { Stat, StatusEffect, Target, SpeedClass } from ".";
+import { Stat, StatusEffect, Target, SpeedClass, TargetHighlight } from ".";
 
 export const items: BaseItem[] = [];
 
@@ -120,6 +120,7 @@ items[8] = new BaseItem({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 10, onKO: true}],
     effort: 1,
+    targetHighlight: TargetHighlight.DEAD,
 });
 
 items[9] = new BaseItem({

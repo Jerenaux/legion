@@ -8,7 +8,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { Target, Terrain, GEN, PlayMode, AIAttackMode } from "@legion/shared/enums";
+import { Target, Terrain, GEN, PlayMode, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE } from '@legion/shared/config';
 
@@ -63,6 +63,8 @@ import { Tutorial } from './Tutorial';
 const LOCAL_ANIMATION_SCALE = 3;
 const DEPTH_OFFSET = 0.01;
 
+export const DARKENING_INTENSITY = 0.9; // 0 = completely dark, 1 = no darkening
+
 export class Arena extends Phaser.Scene
 {
     gamehud;
@@ -111,6 +113,8 @@ export class Arena extends Phaser.Scene
     currentReplayIndex: number = 0;
 
     eventHandlers: Map<string, (data: any) => void>;
+
+    isDarkened: boolean = false;
 
     constructor() {
         super({ key: 'Arena' });
@@ -560,23 +564,29 @@ export class Arena extends Phaser.Scene
 
     toggleTargetMode(flag: boolean, size?: number) {
         if (flag) {
+            const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
             this.cellsHighlight.setTargetMode(size, true);
             this.clearHighlight();
             this.emitEvent('pendingSpell');
+            this.darkenScene(spell?.targetHighlight);
         } else {
             this.cellsHighlight.setNormalMode(true);
             this.emitEvent('clearPendingSpell');
+            this.brightenScene();
         }
     }
 
     toggleItemMode(flag: boolean) {
         if (flag) {
+            const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
             this.cellsHighlight.setItemMode(true);
             this.clearHighlight();
             this.emitEvent('pendingItem');
+            this.darkenScene(item?.targetHighlight);
         } else {
             this.cellsHighlight.setNormalMode(true);
             this.emitEvent('clearPendingItem');
+            this.brightenScene();
         }
     }
 
@@ -2077,5 +2087,91 @@ export class Arena extends Phaser.Scene
             1000,
             'Cubic.easeOut'
         );
+    }
+
+    // Add this method to darken the scene
+    darkenScene(targetHighlight: TargetHighlight = TargetHighlight.ENEMY) {
+        if (this.isDarkened) return;
+        this.isDarkened = true;
+
+        const tintColor = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
+
+        // Darken all tiles
+        this.tilesMap.forEach(tile => {
+            tile.setTint(tintColor);
+        });
+
+        // Darken all sprites
+        this.sprites.forEach(sprite => {
+            sprite.setTint(tintColor);
+        });
+
+        // Process all players
+        this.teamsMap.forEach(team => {
+            team.members.forEach(player => {
+                if (this.shouldStayBright(player, targetHighlight)) {
+                    player.sprite.clearTint();
+                    if (player.healthBar) {
+                        player.healthBar.brighten();
+                    }
+                    if (player.MPBar) {
+                        player.MPBar.brighten();
+                    }
+                } else {
+                    player.sprite.setTint(tintColor);
+                    if (player.healthBar) {
+                        player.healthBar.darken();
+                    }
+                    if (player.MPBar) {
+                        player.MPBar.darken();
+                    }
+                }
+            });
+        });
+    }
+
+    // Add this method to brighten the scene
+    brightenScene() {
+        if (!this.isDarkened) return;
+        this.isDarkened = false;
+
+        // Clear tint from all tiles
+        this.tilesMap.forEach(tile => {
+            tile.clearTint();
+        });
+
+        // Clear tint from all sprites
+        this.sprites.forEach(sprite => {
+            sprite.clearTint();
+        });
+
+        // Clear tint from all team sprites and their bars
+        this.teamsMap.forEach(team => {
+            team.members.forEach(player => {
+                player.sprite.clearTint();
+                if (player.healthBar) {
+                    player.healthBar.brighten();
+                }
+                if (player.MPBar) {
+                    player.MPBar.brighten();
+                }
+            });
+        });
+    }
+
+    // Add this method to determine which sprites should stay bright
+    private shouldStayBright(player: Player, targetHighlight: TargetHighlight = TargetHighlight.ENEMY): boolean {
+        const isPlayerTeam = player.team.id === this.playerTeamId;
+        
+        switch (targetHighlight) {
+            case TargetHighlight.ALLY:
+                return isPlayerTeam && player.isAlive();
+            case TargetHighlight.ENEMY:
+                return !isPlayerTeam && player.isAlive();
+            case TargetHighlight.DEAD:
+                return !player.isAlive();
+            default:
+                return !isPlayerTeam && player.isAlive();
+        }
     }
 }

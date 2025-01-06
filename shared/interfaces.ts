@@ -4,7 +4,8 @@ import { BaseSpell } from "./BaseSpell";
 import {
     Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
     StatusEffect, Class, PlayMode, League,
-    SpeedClass
+    SpeedClass,
+    TargetHighlight
 } from "./enums";
 import { ChestReward } from "@legion/shared/chests";
 
@@ -60,6 +61,7 @@ export interface SpellData {
     classes?: Class[];
     status?: StatusEffectData;
     effort: number;
+    targetHighlight?: TargetHighlight;
 }
 
 export interface ConsumableData {
@@ -76,6 +78,7 @@ export interface ConsumableData {
     statusRemovals?: StatusEffect[];
     status?: StatusEffectData;
     effort: number;
+    targetHighlight?: TargetHighlight;
 }
 
 export interface EquipmentData {

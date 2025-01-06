@@ -1,6 +1,6 @@
 
 import { BaseSpell } from "./BaseSpell";
-import { Stat, Target, EffectDirection, Terrain, StatusEffect, Class, SpeedClass } from "./enums";
+import { Stat, Target, EffectDirection, Terrain, StatusEffect, Class, SpeedClass, TargetHighlight } from "./enums";
 import { EffectModifier, EffectModifiers } from "./interfaces";
 
 export const spells:BaseSpell[] = [];
@@ -231,6 +231,7 @@ spells.push(new BaseSpell({
     classes: [Class.WHITE_MAGE],
     minLevel: 1,
     speedClass: SpeedClass.NORMAL,
+    targetHighlight: TargetHighlight.ALLY,
 }));
 
 spells.push(new BaseSpell({

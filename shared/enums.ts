@@ -239,3 +239,9 @@ export enum SpeedClass {
     NORMAL,
     SLOW,
 }
+
+export enum TargetHighlight {
+    ALLY,
+    ENEMY,
+    DEAD,
+}

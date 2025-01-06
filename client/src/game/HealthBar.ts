@@ -1,13 +1,19 @@
 import RoundRectangle from 'phaser3-rex-plugins/plugins/roundrectangle.js';
+import { DARKENING_INTENSITY } from './Arena';
 
 export class HealthBar extends Phaser.GameObjects.Container {
   private readonly barBackground: RoundRectangle;
   private readonly hpBar: RoundRectangle;
   private readonly barOutline: RoundRectangle;
   private hpValue: number;
+  private originalColor: number;
+  private originalBgColor: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, color: number) {
     super(scene, x, y);
+
+    this.originalColor = color;
+    this.originalBgColor = 0xa31720;
 
     const width = 50;
     const height = 8;
@@ -15,7 +21,7 @@ export class HealthBar extends Phaser.GameObjects.Container {
     const outlineWidth = 2;
 
     this.barBackground = new RoundRectangle(scene, {
-      color: 0xa31720,
+      color: this.originalBgColor,
       strokeColor: 0x000000,
       strokeWidth: 1,
       radius: radius,
@@ -42,8 +48,6 @@ export class HealthBar extends Phaser.GameObjects.Container {
       height: height,
       width: width,
     });
-
-
 
     this.hpValue = 0;
     this.hpBar.setOrigin(0);
@@ -79,5 +83,26 @@ export class HealthBar extends Phaser.GameObjects.Container {
       },
       duration: 66,
     });
+  }
+
+  darken(): void {
+    // Darken the main health bar
+    this.hpBar.setFillStyle(this.multiplyColor(this.originalColor, DARKENING_INTENSITY));
+    
+    // Darken the background
+    this.barBackground.setFillStyle(this.multiplyColor(this.originalBgColor, DARKENING_INTENSITY));
+  }
+
+  brighten(): void {
+    // Restore original colors
+    this.hpBar.setFillStyle(this.originalColor);
+    this.barBackground.setFillStyle(this.originalBgColor);
+  }
+
+  private multiplyColor(color: number, factor: number): number {
+    const r = ((color >> 16) & 0xFF) * factor;
+    const g = ((color >> 8) & 0xFF) * factor;
+    const b = (color & 0xFF) * factor;
+    return (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
   }
 }
