@@ -119,7 +119,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   showPlayerBox = (playerData: PlayerProps) => {
-    console.log(`[GameHUD:showPlayerBox] ${playerData.name}`);
     this.setState({ player: playerData });
   }
 

@@ -312,7 +312,7 @@ export class Player extends Phaser.GameObjects.Container {
                 // Revert to idle animation after a short delay
                 this.scene.time.delayedCall(300, () => {
                     this.playAnim('boast', true);
-                    if (this.arena.gameSettings.tutorial) this.arena.emitEvent('characterAdded');
+                    if (this.arena.gameSettings.tutorial) this.arena.relayEvent('characterAdded');
                 });
             }
         });
@@ -494,9 +494,9 @@ export class Player extends Phaser.GameObjects.Container {
 
     onPointerOver() {
         if (this.isTarget() && this.arena.selectedPlayer?.pendingSpell == null) {
-            this.arena.emitEvent('hoverEnemyCharacter');
+            this.arena.relayEvent('hoverEnemyCharacter');
         } else if (this.isPlayer){
-            this.arena.emitEvent('hoverCharacter');
+            this.arena.relayEvent('hoverCharacter');
         }
         /**
          * If `isPlayer` is false, glow in red
@@ -517,7 +517,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
     
     onPointerOut() {
-        this.arena.emitEvent('unhoverCharacter');
+        this.arena.relayEvent('unhoverCharacter');
         if (this.isSelected()) return;
         this.glowFx.setActive(false);
     }
@@ -604,7 +604,7 @@ export class Player extends Phaser.GameObjects.Container {
             } else {
                 this.pendingItem = index;
                 this.arena.toggleItemMode(true);
-                this.arena.emitEvent('pendingItemChange');
+                this.arena.refreshBox();
             }
         }
     }
@@ -632,14 +632,14 @@ export class Player extends Phaser.GameObjects.Container {
     cancelSkill() {
         this.pendingSpell = null;
         this.arena.toggleTargetMode(false);
-        this.arena.emitEvent('pendingSpellChange');
+        this.arena.refreshBox();
     }
 
     cancelItem() {
         this.pendingItem = null;
         this.arena.toggleTargetMode(false);
         this.arena.toggleItemMode(false);
-        this.arena.emitEvent('pendingItemChange');
+        this.arena.refreshBox();
     }
 
     useSkill(index) {
@@ -668,7 +668,7 @@ export class Player extends Phaser.GameObjects.Container {
         
         this.pendingSpell = index;
         this.arena.toggleTargetMode(true, spell.size);
-        this.arena.emitEvent('pendingSpellChange');
+        this.arena.refreshBox();
         this.arena.relayEvent(`selectedSpell_${spell.id}`);
     }
 
@@ -728,7 +728,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
 
         if(this.hp != _hp) {
-            this.arena.emitEvent('hpChange', {num: this.num})
+            this.arena.refreshUI(this.num);
             this.team.updateHP();
         }
     }
@@ -743,7 +743,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.MPBar.setHpValue(mp / this.maxMP);
 
         if(this.mp != _mp) {
-            this.arena.emitEvent('mpChange', {num: this.num})
+            this.arena.refreshUI(this.num);
         }
     }
 
@@ -769,7 +769,7 @@ export class Player extends Phaser.GameObjects.Container {
         const phrase = deathPhrases[Math.floor(Math.random() * deathPhrases.length)];
         // this.talk(phrase);
 
-        if (this.arena.gameSettings.tutorial) this.arena.emitEvent('characterKilled');
+        if (this.arena.gameSettings.tutorial) this.arena.relayEvent('characterKilled');
     }
 
     attack(targetX: number) {
@@ -877,7 +877,7 @@ export class Player extends Phaser.GameObjects.Container {
         const paralyzing = paralyzingStatuses.some(status => statuses[status] != null && statuses[status] != 0);
         this.toggleCharacterImmobilization(paralyzing);
 
-        this.arena.emitEvent('statusesChange', {num: this.num})
+        this.arena.refreshUI(this.num);
     }
 
     showStatusAnimation(status: StatusEffect) {

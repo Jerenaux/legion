@@ -232,12 +232,11 @@ export class Arena extends Phaser.Scene
         });
 
         this.load.on('progress', (value) => {
-            // console.log(`[Arena:progress] Progress: ${Math.floor(value * 100)}`);
-            this.emitEvent('progressUpdate', Math.floor(value * 100));
+            events.emit('progressUpdate', Math.floor(value * 100));
         });
 
         this.load.on('complete', () => {
-            this.emitEvent('progressUpdate', 100);
+            events.emit('progressUpdate', 100);
             // Remove listener
             this.load.off('progress');
             this.load.off('complete');
@@ -568,11 +567,11 @@ export class Arena extends Phaser.Scene
             const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
             this.cellsHighlight.setTargetMode(size, true);
             this.clearHighlight();
-            this.emitEvent('pendingSpell');
+            events.emit('pendingSpell');
             this.darkenScene(spell?.targetHighlight);
         } else {
             this.cellsHighlight.setNormalMode(true);
-            this.emitEvent('clearPendingSpell');
+            events.emit('clearPendingSpell');
             this.brightenScene();
         }
     }
@@ -582,11 +581,11 @@ export class Arena extends Phaser.Scene
             const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
             this.cellsHighlight.setItemMode(true);
             this.clearHighlight();
-            this.emitEvent('pendingItem');
+            events.emit('pendingItem');
             this.darkenScene(item?.targetHighlight);
         } else {
             this.cellsHighlight.setNormalMode(true);
-            this.emitEvent('clearPendingItem');
+            events.emit('clearPendingItem');
             this.brightenScene();
         }
     }
@@ -594,25 +593,13 @@ export class Arena extends Phaser.Scene
     handleKeyDown(event) {
         // Check if the pressed key is a number
         const isNumberKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NINE) || (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NUMPAD_NINE);
-        if (isNumberKey) {
-            // let number;
-            // if (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NINE) {
-            //     // Convert the key code to a number
-            //     number = event.keyCode - Phaser.Input.Keyboard.KeyCodes.ZERO;
-            // } else if (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NUMPAD_NINE) {
-            //     // Convert the key code to a number (for numpad keys)
-            //     number = event.keyCode - Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO;
-            // } 
-            // this.teamsMap.get(this.playerTeamId)?.getMember(number)?.onClick();
-        } else {
+        if (!isNumberKey) {
             const isLetterKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.A && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.Z);
             if (isLetterKey) {
                 // Get the letter corresponding to the keyCode
                 const letter = String.fromCharCode(event.keyCode);
                 this.selectedPlayer?.onLetterKey(letter);
-                // Play sound
                 this.sound.play('click');
-                this.emitEvent('letterKey', letter);
             }
         }
     }
@@ -712,72 +699,11 @@ export class Arena extends Phaser.Scene
         events.emit(event, data);
     }
 
-    emitEvent(event, data?) {
-        switch (event) {
-            case 'characterAdded':
-                if (this.gameSettings.tutorial) events.emit('characterAdded');
-                break;
-            case 'characterKilled':
-                if (this.gameSettings.tutorial) events.emit('characterKilled');
-                break;
-            case 'hpChange':
-                if (this.selectedPlayer && data.num === this.selectedPlayer.num) {
-                    this.refreshBox();
-                }
-                this.refreshOverview();
-                break;
-            case 'pendingSpellChange':
-            case 'pendingItemChange':
-            case 'selectPlayer':
-            case 'inventoryChange':
-                this.refreshBox();
-                break;
-            case 'deselectPlayer':
-                events.emit('hidePlayerBox');
-                break;
-            case 'mpChange':
-            case 'statusesChange':
-            case 'cooldownStarted':
-            case 'cooldownEnded':
-            case 'cooldownChange':
-                this.refreshBox();
-                this.refreshOverview();
-                break;
-            case 'letterKey':
-                if (this.selectedPlayer) {
-                    events.emit('keyPress', data);
-                }
-                break;
-            case 'gameEnd':
-                this.showEndgameScreen(data);
-                break;
-            case 'hoverCharacter':
-                events.emit('hoverCharacter');
-                break;
-            case 'unhoverCharacter':
-                events.emit('unhoverCharacter');
-                break;
-            case 'hoverEnemyCharacter':
-                events.emit('hoverEnemyCharacter');
-                break;
-            case 'pendingSpell':
-                events.emit('pendingSpell');
-                break;
-            case 'pendingItem':
-                events.emit('pendingItem');
-                break;
-            case 'clearPendingSpell':
-                events.emit('clearPendingSpell');
-                break;
-            case 'clearPendingItem':
-                events.emit('clearPendingItem');
-                break;
-            case 'progressUpdate':
-                events.emit('progressUpdate', data);
-                break;
-            default:
-                break;
+    refreshUI(num) {
+        if (this.selectedPlayer && num === this.selectedPlayer.num) {
+            this.refreshBox();
         }
+        this.refreshOverview();
     }
 
     selectTurnee() {
@@ -790,7 +716,6 @@ export class Arena extends Phaser.Scene
 
     selectPlayer(player: Player) {
         if (!this.gameInitialized) return;
-        console.log(`[Arena:selectPlayer] ${player.name}`);
         this.selectedPlayer = player;
         this.selectedPlayer.select();
         this.refreshBox();
@@ -858,7 +783,7 @@ export class Arena extends Phaser.Scene
         if (this.gameEnded) return;
         const player = this.getPlayer(this.playerTeamId, num);
         player.setInventory(inventory);
-        this.emitEvent('inventoryChange', {num});
+        this.refreshBox();
     }
 
     processHPChange({team, num, hp, damage}) {
@@ -873,7 +798,6 @@ export class Arena extends Phaser.Scene
     }
 
     processStatusChange({team, num, statuses}) {
-        console.log(`[Arena:processStatusChange] ${team} ${num} ${JSON.stringify(statuses)}`);
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player.setStatuses(statuses);
@@ -952,12 +876,12 @@ export class Arena extends Phaser.Scene
                 && this.selectedPlayer.canAct()
                 && this.selectedPlayer.pendingSpell == null
                 && this.selectedPlayer.pendingItem == null) {
-                this.emitEvent('hoverEnemyCharacter');
+                events.emit('hoverEnemyCharacter');
             } 
         });
         // Add pointerout event to sprite
         icesprite.on('pointerout', () => {
-            this.emitEvent('unhoverCharacter');
+            events.emit('unhoverCharacter');
         });
         icesprite.postFX.addShine(0.5, .2, 5);
         return icesprite;
@@ -1029,7 +953,7 @@ export class Arena extends Phaser.Scene
                 player.victoryDance();
             });
         }, 200);
-        this.emitEvent('gameEnd', data);
+        this.showEndgameScreen(data);
     }
 
     processScoreUpdate({score}) {
@@ -1037,7 +961,7 @@ export class Arena extends Phaser.Scene
         const team = this.teamsMap.get(this.playerTeamId);
         const _score = team.score;
         team.setScore(score);
-        this.emitEvent('overviewChange');
+        // this.refreshOverview(); // TODO: add if display score again
         if (score - _score > 50) this.playSound('cheer', 2);
     }
 
@@ -1047,13 +971,12 @@ export class Arena extends Phaser.Scene
     }
 
     processQueueData(data: any[]) {
-        // console.log(`[Arena:processQueueData] ${JSON.stringify(data)}`);
+        console.log(`[Arena:processQueueData] ${JSON.stringify(data)}`);
         this.queue = data;
-        this.emitEvent('overviewChange');
+        this.refreshOverview();
     }
 
     processTurnee(data: {num: number, team: number}) {
-        console.log(`[Arena:processTurnee] Selecting player ${data.num} from team ${data.team}`);
         this.turnee = data;
         this.selectTurnee();
         this.highlightTurnee();
