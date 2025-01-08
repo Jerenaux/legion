@@ -410,21 +410,21 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     manageHelp = (page: string) => {
-      const todoTours = this.state.player.tours;
-      if (todoTours.includes(page)) {
-        // startTour(page);
-        this.setState({
-          player: {
-            ...this.state.player,
-            tours: todoTours.filter(tour => tour !== page)
-          }
-        });
-        this.setState({ lastHelp: Date.now() });
-      } else {
-        if (Date.now() - this.state.lastHelp >= 3000) {
-          fetchGuideTip();
-        }
-      }
+      // const todoTours = this.state.player.tours;
+      // if (todoTours.includes(page)) {
+      //   // startTour(page);
+      //   this.setState({
+      //     player: {
+      //       ...this.state.player,
+      //       tours: todoTours.filter(tour => tour !== page)
+      //     }
+      //   });
+      //   this.setState({ lastHelp: Date.now() });
+      // } else {
+      //   if (Date.now() - this.state.lastHelp >= 3000) {
+      //     fetchGuideTip();
+      //   }
+      // }
     }
 
     addFriend = async (friendId: string) => {
