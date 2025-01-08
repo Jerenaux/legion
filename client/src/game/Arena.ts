@@ -724,6 +724,7 @@ export class Arena extends Phaser.Scene
         this.selectedPlayer = player;
         this.selectedPlayer.select();
         this.refreshBox();
+        this.refreshOverview();
     }
 
     deselectPlayer() {
@@ -976,12 +977,12 @@ export class Arena extends Phaser.Scene
     }
 
     processQueueData(data: any[]) {
-        console.log(`[Arena:processQueueData] ${JSON.stringify(data)}`);
         this.queue = data;
         this.refreshOverview();
     }
 
-    processTurnee(data: {num: number, team: number}) {
+    processTurnee(data: {num: number, team: number, turnLength: number, timeLeft: number}) {
+        console.log(`[Arena:processTurnee] ${JSON.stringify(data)}`);
         this.turnee = data;
         this.selectTurnee();
         this.highlightTurnee();
@@ -2014,7 +2015,6 @@ export class Arena extends Phaser.Scene
         );
     }
 
-    // Add this method to darken the scene
     darkenScene(targetHighlight: TargetHighlight = TargetHighlight.ENEMY) {
         if (this.isDarkened) return;
         this.isDarkened = true;
@@ -2055,7 +2055,6 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    // Add this method to brighten the scene
     brightenScene() {
         if (!this.isDarkened) return;
         this.isDarkened = false;

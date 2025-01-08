@@ -10,6 +10,8 @@ import SpectatorFooter from './SpectatorFooter';
 import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { recordCompletedGame } from '../utils';
 import TutorialDialogue from './TutorialDialogue';
+import { CircularTimer } from './CircularTimer';
+
 
 interface GameHUDProps {
   changeMainDivClass: (newClass: string) => void;
@@ -37,6 +39,9 @@ interface GameHUDState {
   showTopMenu: boolean;
   showOverview: boolean;
   queue: any[];
+  turnLength: number;
+  timeLeft: number;
+  turnNumber: number;
 }
 
 const events = new EventEmitter();
@@ -66,6 +71,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     showTopMenu: false,
     showOverview: false,
     queue: [],
+    timeLeft: 0,
+    turnNumber: 0,
   } as GameHUDState;
 
   componentDidMount() {
@@ -136,6 +143,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         queue,
         showTopMenu: general.mode === PlayMode.TUTORIAL ? _showTopMenu : true,
         showOverview: general.mode === PlayMode.TUTORIAL ? _showOverview : true,
+        turnLength: turnee.turnLength,
+        timeLeft: turnee.timeLeft,
+        turnNumber: turnee.turnNumber,
     })
   }
 
@@ -211,9 +221,17 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
            {showTopMenu && player?.isPlayer ? (
             <>
               {player.pendingSpell == undefined && player.pendingItem == undefined && (
-                <div className="player_turn_banner">
-                  <div className="player_turn_banner_particles" />
-                  Your Turn!
+                <div class="player_turn_banner_container">
+                  <div class="player_turn_banner">
+                    <div class="player_turn_banner_particles" />
+                    Your Turn!
+                  </div>
+                  <CircularTimer 
+                    turnLength={this.state.turnLength}
+                    timeLeft={this.state.timeLeft}
+                    turnNumber={this.state.turnNumber}
+                    key={`${player.team}-${player.number}`}
+                  />
                 </div>
               )}
               <PlayerTab 

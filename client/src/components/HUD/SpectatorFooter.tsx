@@ -6,7 +6,6 @@ import { getSpritePath } from '../utils';
 import './SpectatorFooter.style.css';
 import warriorIcon from '@assets/shop/warrior_icon.png';
 import mageIcon from '@assets/shop/mage_icon.png';
-import hourglassIcon from '@assets/HUD/hourglass.png';
 
 interface SpectatorFooterProps {
   isTutorial: boolean;
@@ -25,15 +24,11 @@ interface SpectatorFooterProps {
 
 interface SpectatorFooterState {
   positions: { [key: string]: number };
-  timerProgress: number;
-  timerInterval?: NodeJS.Timeout;
 }
 
 class SpectatorFooter extends Component<SpectatorFooterProps, SpectatorFooterState> {
   state = {
     positions: {},
-    timerProgress: 100,
-    timerInterval: undefined
   };
 
   componentDidUpdate(prevProps: SpectatorFooterProps) {
@@ -47,34 +42,6 @@ class SpectatorFooter extends Component<SpectatorFooterProps, SpectatorFooterSta
       
       this.setState({ positions: newPositions });
     }
-    // this.resetTimer();
-  }
-
-  componentWillUnmount() {
-    if (this.state.timerInterval) {
-      clearInterval(this.state.timerInterval);
-    }
-  }
-
-  private resetTimer() {
-    if (this.state.timerInterval) {
-      clearInterval(this.state.timerInterval);
-    }
-
-    this.setState({ timerProgress: 100 });
-    this.startTimer(7);
-  }
-
-  private startTimer(duration: number = 7) {
-    const decrementAmount = 100 / duration;
-    const interval = setInterval(() => {
-      this.setState(prevState => ({
-        timerProgress: Math.max(0, prevState.timerProgress - decrementAmount)
-      }));
-    }, 1000);
-
-    this.setState({ timerInterval: interval });
-    return () => clearInterval(interval);
   }
 
   render() {
@@ -93,45 +60,11 @@ class SpectatorFooter extends Component<SpectatorFooterProps, SpectatorFooterSta
     const portraitWidth = 72; // Width of each portrait
     const timelineWidth = Math.max(100, sortedQueue.length * portraitWidth);
     const startOffset = (timelineWidth - sortedQueue.length * portraitWidth) / 2;
-    const timerPosition = startOffset - 70; // Position timer just before the first portrait
-
-    const circumference = 2 * Math.PI * 27; // radius of 27 for the circle
-    const offset = circumference - (this.state.timerProgress / 100) * circumference;
+    const timerPosition = startOffset - 70 + 570; // Position timer just before the first portrait
 
     return (
       <div className="spectator_footer_wrapper">
         <div className="spectator_footer_container">
-          {this.props.isPlayer && (
-            <div className="turn_timer" style={{ left: `${timerPosition}px` }}>
-              <svg className="turn_timer_circle" width="60" height="60">
-                <defs>
-                  <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#8d7648" />
-                    <stop offset="100%" stopColor="#d9c380" />
-                  </linearGradient>
-                </defs>
-                <circle
-                  className="timer_background"
-                  cx="30"
-                  cy="30"
-                  r="27"
-                />
-                <circle
-                  className="timer_progress"
-                  cx="30"
-                  cy="30"
-                  r="27"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={offset}
-                />
-              </svg>
-              <img 
-                src={hourglassIcon} 
-                className="turn_timer_hourglass" 
-                alt="Turn timer"
-              />
-            </div>
-          )}
           <div className="turn_timeline_wrapper">
             <div className="turn_order_label">Turn Order</div>
             <div 

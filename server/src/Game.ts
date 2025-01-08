@@ -47,6 +47,9 @@ export abstract class Game
     config: any;
     tutorialSettings: any;
     GENhistory: Set<GEN> = new Set<GEN>();
+    turnStart: number = 0;
+    turnLength: number = 0;
+    turnNumber: number = 0;
 
     gridWidth: number = 20;
     gridHeight: number = 10;
@@ -248,6 +251,8 @@ export abstract class Game
 
     resetTurnTimer(turnLength: number = TURN_DURATION) {
         clearTimeout(this.turnTimer!);
+        this.turnStart = Date.now();
+        this.turnLength = turnLength;
         this.turnTimer = setTimeout(this.processTurn.bind(this), turnLength * 1000);
     }
 
@@ -262,10 +267,11 @@ export abstract class Game
         this.turnee.setHasActed(false);
     
         console.log(`[Game:processTurn] Turnee: ${this.turnee.num} from team ${this.turnee.team.id}`);
-        this.broadcast('turnee', this.getTurneeData());
     
+        this.turnNumber++;
         const turnLength = TURN_DURATION + (isKill ? KILL_CAM_DURATION : 0);
         this.resetTurnTimer(turnLength);
+        this.broadcast('turnee', this.getTurneeData());
         this.turnee.startTurn();
     }
 
@@ -322,6 +328,9 @@ export abstract class Game
         return {
             num: this.turnee?.num,
             team: this.turnee?.team.id,
+            turnLength: this.turnLength,
+            timeLeft: this.turnLength - (Date.now() - this.turnStart)/1000,
+            turnNumber: this.turnNumber,
         }
     }
 
