@@ -485,37 +485,46 @@ export class Arena extends Phaser.Scene
             }
         });
 
-        // Set up an interactive event
-        // tileSprite.setInteractive();
+        tileSprite.setInteractive();
 
-        // // Highlight on pointer over
-        // tileSprite.on('pointerover', function () {
-        //     // this.setTint(0xffff00);
-        //     this.setTint(0xff0000);
-        // });
-
-        // Clear tint on pointer out
-        // tileSprite.on('pointerout', function () {
-        //     this.clearTint();
-        // });
+        tileSprite.on('pointerover', function() {
+            if (this.isSkip(x, y)) {
+                return;
+            }
+            this.handleTileHover(x, y);
+        }, this);
+    
+        tileSprite.on('pointerout', function() {
+            if (this.isSkip(x, y)) return;
+            this.handleTileHover(x, y, false);
+        }, this);
 
         // @ts-ignore
         this.tilesMap.set(serializeCoords(x, y), tileSprite);
-
     }
 
-    setUpArena() {
-        // this.cameras.main.setZoom(1.5);
+    pointerToGrid(pointer) {
+        const {startX, startY} = this.getStartXY();
+        const pointerX = pointer.x + this.cameras.main.scrollX - startX;
+        const pointerY = pointer.y + this.cameras.main.scrollY - startY;
+        const gridX = Math.floor(pointerX / this.tileSize);
+        const gridY = Math.floor(pointerY / this.tileSize);
+        return {gridX, gridY};
+    }
 
+    getStartXY() {
         const totalWidth = this.tileSize * this.gridWidth;
         const totalHeight = this.tileSize * this.gridHeight;
-
         const gameWidth = this.scale.gameSize.width;
         const gameHeight = this.scale.gameSize.height;
-
         const verticalOffset = 80;
         const startX = (gameWidth - totalWidth) / 2;
         const startY = (gameHeight - totalHeight) / 2 + verticalOffset;
+        return {startX, startY};
+    }
+
+    setUpArena() {
+        const {startX, startY} = this.getStartXY();
 
         this.gridCorners = {
             startX,
@@ -525,39 +534,19 @@ export class Arena extends Phaser.Scene
         this.cellsHighlight = new CellsHighlight(this, this.gridWidth, this.gridHeight, this.tileSize, this.gridCorners).setDepth(1);
         this.cellsHighlight.setDepth(2);
 
-         // Add a pointer move handler to highlight the hovered tile
          this.input.on('pointermove', function (pointer) {
-             // Account for camera scroll when calculating pointer position
-             const pointerX = pointer.x + this.cameras.main.scrollX - startX;
-             const pointerY = pointer.y + this.cameras.main.scrollY - startY;
- 
-             // Calculate the grid coordinates of the pointer
-             const gridX = Math.floor(pointerX / this.tileSize);
-             const gridY = Math.floor(pointerY / this.tileSize);
- 
+             const {gridX, gridY} = this.pointerToGrid(pointer);
              if (this.gameInitialized) this.cellsHighlight.move(gridX, gridY);
          }, this);
 
-         // Add a pointer down handler to print the clicked tile coordinates
         this.input.on('pointerdown', function (pointer) {
             if (pointer.rightButtonDown()) {
                 this.selectedPlayer?.cancelSkill();
                 return;
             }
-
-            const pointerX = pointer.x + this.cameras.main.scrollX - startX;
-            const pointerY = pointer.y + this.cameras.main.scrollY - startY;
-
-            // Calculate the grid coordinates of the pointer
-            const gridX = Math.floor(pointerX / this.tileSize);
-            const gridY = Math.floor(pointerY / this.tileSize);
-
+            const {gridX, gridY} = this.pointerToGrid(pointer);
             if (this.isSkip(gridX, gridY)) return;
-
-            // Ensure the pointer is within the grid
-            if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
-                this.handleTileClick(gridX, gridY);
-            }
+            this.handleTileClick(gridX, gridY);
         }, this);
 
         this.input.keyboard.on('keydown', this.handleKeyDown, this);
@@ -651,6 +640,19 @@ export class Arena extends Phaser.Scene
         }
     }
 
+    handleTileHover(gridX, gridY, hover = true) {
+        const player = this.gridMap.get(serializeCoords(gridX, gridY));
+        if (player) {
+            if (hover) {
+                player.onPointerOver();
+            } else {
+                player.onPointerOut();
+            }
+        }
+    }
+
+    
+
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
         if (action.target == Target.AOE && action.size > 1) {
             return true;
@@ -669,12 +671,11 @@ export class Arena extends Phaser.Scene
     }
 
     handleMove(gridX, gridY) {
-        if (!this.selectedPlayer.canMoveTo(gridX, gridY)) {
-            console.log(`Cannot move to (${gridX}, ${gridY})`);
+        if (!this.selectedPlayer.canMoveTo(gridX, gridY) || !this.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) {
+            this.playSound('nope');
             return;
         }
         if (!this.isFree(gridX, gridY)) {
-            console.log(`Tile at (${gridX}, ${gridY}) is not free`);
             return
         };
         this.playSound('click');
@@ -983,7 +984,6 @@ export class Arena extends Phaser.Scene
     }
 
     processTurnee(data: {num: number, team: number, turnLength: number, timeLeft: number}) {
-        console.log(`[Arena:processTurnee] ${JSON.stringify(data)}`);
         this.turnee = data;
         this.selectTurnee();
         this.highlightTurnee();
@@ -1355,8 +1355,8 @@ export class Arena extends Phaser.Scene
         }
 
         this.tutorialSettings = {
-            showHealthBars: false,
-            showMPBars: false,
+            showHealthBars: true,
+            showMPBars: true,
             allowUseItem: false,
         }
 
@@ -1430,10 +1430,6 @@ export class Arena extends Phaser.Scene
         this.gameSettings.mode = data.general.mode;
         this.queue = data.queue;
         this.turnee = data.turnee;
-
-        if (this.gameSettings.tutorial) {
-            this.tutorialSettings.showHealthBars = false;
-        }
 
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));

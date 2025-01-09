@@ -28,7 +28,7 @@ export class AIGame extends Game {
 
     constructor(id: string, mode: PlayMode, league: League, io: Server) {
         super(id, mode, league, io);
-        if (mode === PlayMode.TUTORIAL) this.temporaryFrozen = true;
+        // if (mode === PlayMode.TUTORIAL) this.temporaryFrozen = true;
     }
 
     summonAlly(data: {x: number, y: number, className: Class}) {
@@ -62,11 +62,13 @@ export class AIGame extends Game {
         const position = this.findFreeCellNear(data.x, data.y);
         const newCharacter = this.addAICharacter(aiTeam!, character, position);
         newCharacter.setAttackMode(data.attackMode);
+        this.turnSystem.addCharacter(newCharacter);
 
         this.broadcast('addCharacter', {
             team: aiTeam!.id,
             character: newCharacter.getPlacementData(false),
         });
+        this.broadcastQueueData();
     }
 
     addAICharacter(team: Team, character: DBCharacterData, position?: {x: number, y: number}) {
@@ -187,8 +189,9 @@ export class AIGame extends Game {
             }
         }
 
-    
-        const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI];
+        const AImodes = [
+            PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI, PlayMode.TUTORIAL
+        ];
         if (AImodes.includes(this.mode)) {
             let winRatio = playerTeam.teamData.AIwinRatio;
             if (this.mode === PlayMode.RANKED_VS_AI) winRatio += 0.1 + (this.league * 0.1);

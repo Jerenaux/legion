@@ -135,10 +135,9 @@ export class Player extends Phaser.GameObjects.Container {
         this.updatePos(gridX, gridY);
 
         this.playAnim('idle');
-        this.sprite.setInteractive(new Phaser.Geom.Rectangle(35, 40, 70, 100), Phaser.Geom.Rectangle.Contains);
-
-        this.sprite.on('pointerover', this.onPointerOver, this);
-        this.sprite.on('pointerout', this.onPointerOut, this);
+        // this.sprite.setInteractive(new Phaser.Geom.Rectangle(35, 40, 70, 100), Phaser.Geom.Rectangle.Contains);
+        // this.sprite.on('pointerover', this.onPointerOver, this);
+        // this.sprite.on('pointerout', this.onPointerOut, this);
         // this.sprite.on('pointerdown', this.onPointerDown, this);
 
         this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, 'Hello!').setVisible(false);

@@ -122,11 +122,11 @@ class SpectatorFooter extends Component<SpectatorFooterProps, SpectatorFooterSta
             </div>
           </div>
         </div>
-        {isTutorial && (
+        {/* {isTutorial && (
           <div className="skip_tutorial" onClick={closeGame}>
             <span>Skip Tutorial</span>
           </div>
-        )}
+        )} */}
       </div>
     );
   }

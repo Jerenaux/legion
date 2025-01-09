@@ -30,7 +30,6 @@ export class TurnSystem {
             nextActionTime: this.getInitialActionTime(char.getStat(Stat.SPEED)),
             passCount: 0
         }));
-        console.log(`[TurnSystem:initializeTurnOrder] ${this.turnQueue.map(item => item.character.getStat(Stat.SPEED)).join(', ')}`);
         
         // Sort by nextActionTime ascending
         this.sortQueue();
@@ -61,25 +60,23 @@ export class TurnSystem {
         const randomVariation = Math.random() * 10 - 5; // ±5 variation
         let timeIncrement = (baseCooldown * speedMultiplier) + randomVariation;
         
-        // For PASS actions, ensure the time increment is at least enough to prevent consecutive turns
+        // Find the next fastest actor's time (for all actions)
+        const otherActors = this.turnQueue.filter(item => 
+            item.character !== character && 
+            item.character.isAlive()
+        );
+        
+        if (otherActors.length > 0) {
+            const nextFastestTime = Math.min(...otherActors.map(item => item.nextActionTime));
+            // Ensure we go after the next fastest actor
+            const minimumNextTime = nextFastestTime + 1;
+            const requiredIncrement = minimumNextTime - this.currentTime;
+            timeIncrement = Math.max(timeIncrement, requiredIncrement);
+        }
+        
+        // Handle pass count
         if (actionType === SpeedClass.PASS) {
             queueItem.passCount++;
-            // Find the next fastest actor's time
-            const otherActors = this.turnQueue.filter(item => 
-                item.character !== character && 
-                item.character.isAlive()
-            );
-            
-            if (otherActors.length > 0) {
-                const nextFastestTime = Math.min(...otherActors.map(item => item.nextActionTime));
-                // Ensure we go after the next fastest actor
-                const minimumNextTime = nextFastestTime + 1;
-                const requiredIncrement = minimumNextTime - this.currentTime;
-                timeIncrement = Math.max(timeIncrement, requiredIncrement);
-            }
-            
-            // Add increasing penalty for consecutive passes
-            // timeIncrement += (queueItem.passCount * 25); // Each consecutive pass adds 25 to cooldown
         } else {
             queueItem.passCount = 0;
         }
@@ -113,5 +110,14 @@ export class TurnSystem {
                 position: i,
             }
         });
+    }
+
+    addCharacter(character: ServerPlayer) {
+        this.turnQueue.push({
+            character: character,
+            nextActionTime: this.getInitialActionTime(character.getStat(Stat.SPEED)),
+            passCount: 0
+        });
+        this.sortQueue();
     }
 }

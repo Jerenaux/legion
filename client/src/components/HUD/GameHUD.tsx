@@ -193,8 +193,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       player, team1, team2, isSpectator, mode, gameInitialized, showTopMenu,
       showOverview
     } = this.state;
-    const ownMembers = team1?.members[0].isPlayer ? team1?.members : team2?.members;
-    const score = team1?.members[0].isPlayer ? team1?.score : team2?.score;
+    const ownMembers = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
+    const score = team1?.members[0]?.isPlayer ? team1?.score : team2?.score;
 
     if (!gameInitialized) {
       return null;

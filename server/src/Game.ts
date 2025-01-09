@@ -269,7 +269,8 @@ export abstract class Game
         console.log(`[Game:processTurn] Turnee: ${this.turnee.num} from team ${this.turnee.team.id}`);
     
         this.turnNumber++;
-        const turnLength = TURN_DURATION + (isKill ? KILL_CAM_DURATION : 0);
+        let turnLength = TURN_DURATION + (isKill ? KILL_CAM_DURATION : 0);
+        if (this.mode == PlayMode.TUTORIAL) turnLength = 60;
         this.resetTurnTimer(turnLength);
         this.broadcast('turnee', this.getTurneeData());
         this.turnee.startTurn();

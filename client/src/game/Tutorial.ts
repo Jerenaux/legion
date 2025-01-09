@@ -44,10 +44,7 @@ export class Tutorial {
         this.states = {
             initial: {
                 onEnter: () => {
-                    this.showMessages([
-                        "I'm the Taskmaster of the Arena! My job is to make sure you learn the ropes and know how to order your characters around!",
-                        "Let's start with a single character. Click on the warrior to select them.",
-                    ]);
+                    this.game.summonEnemy(15, 4);
                 },
                 transitions: {
                     nextMessage: 'pointToCharacter',

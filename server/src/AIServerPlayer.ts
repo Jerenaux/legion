@@ -1,6 +1,6 @@
-import { ServerPlayer, ActionType } from './ServerPlayer';
-import { AIAttackMode, PlayMode, StatusEffect, Target } from "@legion/shared/enums";
-import { FREEZE_AI, INITIAL_COOLDOWN } from "@legion/shared/config";
+import { ServerPlayer } from './ServerPlayer';
+import { AIAttackMode, StatusEffect, Target } from "@legion/shared/enums";
+import { FREEZE_AI } from "@legion/shared/config";
 
 
 type Comparator<T> = (a: T, b: T) => number;
@@ -81,16 +81,16 @@ export class AIServerPlayer extends ServerPlayer {
 
     takeAction(): number {
         // console.log(`[AIServerPlayer:takeAction] ${this.name} is taking action`);
-        if (this.team?.game.isTutorial()) {
-            if (this.attackMode === AIAttackMode.IDLE) {
-                // console.log(`[AIServerPlayer:takeAction] ${this.name} is idle`);
-                return 0;
-            }
-            if (this.actionCount > 0 && this.attackMode === AIAttackMode.ATTACK_ONCE) {
-                console.log(`[AIServerPlayer:takeAction] ${this.name} can act onlyonce`);
-                return 0;
-            }
-        }
+        // if (this.team?.game.isTutorial()) {
+        //     if (this.attackMode === AIAttackMode.IDLE) {
+        //         // console.log(`[AIServerPlayer:takeAction] ${this.name} is idle`);
+        //         return 0;
+        //     }
+        //     if (this.actionCount > 0 && this.attackMode === AIAttackMode.ATTACK_ONCE) {
+        //         console.log(`[AIServerPlayer:takeAction] ${this.name} can act onlyonce`);
+        //         return 0;
+        //     }
+        // }
 
         if (!this.canAct()) {
             // console.log(`[AIServerPlayer:takeAction] ${this.name} cannot act`);
@@ -154,11 +154,8 @@ export class AIServerPlayer extends ServerPlayer {
     }
 
     checkForItemUse() {
-        // console.log(`[AIServerPlayer:checkForItemUse] Checking for items among ${this.inventory.map(item => item.id)}`);
-        if (!this.canUseItems) {
-            // console.log(`[AIServerPlayer:checkForItemUse] ${this.name} cannot use items`);
-            return false;
-        }
+        if (!this.canUseItems) return false;
+        if (Math.random() < 0.4) return false;
         for (let i = 0; i < this.inventory.length; i++) {
             const item = this.getItemAtIndex(i);
             if (!item) continue;
@@ -421,6 +418,7 @@ export class AIServerPlayer extends ServerPlayer {
     }
 
     startTurn() {
+        console.log(`[AIServerPlayer:startTurn] ${this.name} is starting turn`);
         super.startTurn();
         if (FREEZE_AI) return;
         // If is zombie, take between 1 and 4 seconds to act, otherwise between 1 and 2
