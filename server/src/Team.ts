@@ -47,6 +47,7 @@ export class Team {
             rank: -1,
             dailyloot: null,
             AIwinRatio: 0,
+            completedGames: 0,
         };
     }   
 
@@ -160,6 +161,7 @@ export class Team {
         this.teamData.rank = playerData.rank; // league rank
         this.teamData.dailyloot = playerData.dailyloot;
         this.teamData.AIwinRatio = playerData.AIwinRatio;
+        this.teamData.completedGames = playerData.completedGames;
     }
 
     getPlayerData() {
@@ -170,6 +172,7 @@ export class Team {
             playerRank: this.teamData.rank,
             playerAvatar: this.teamData.avatar,
             playerLeague: this.teamData.league,
+            completedGames: this.teamData.completedGames,
         }
     }
     

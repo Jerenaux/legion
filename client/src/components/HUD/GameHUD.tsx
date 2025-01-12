@@ -39,7 +39,7 @@ interface GameHUDState {
   showTopMenu: boolean;
   showOverview: boolean;
   queue: any[];
-  turnLength: number;
+  turnDuration: number;
   timeLeft: number;
   turnNumber: number;
 }
@@ -143,7 +143,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         queue,
         showTopMenu: general.mode === PlayMode.TUTORIAL ? _showTopMenu : true,
         showOverview: general.mode === PlayMode.TUTORIAL ? _showOverview : true,
-        turnLength: turnee.turnLength,
+        turnDuration: turnee.turnDuration,
         timeLeft: turnee.timeLeft,
         turnNumber: turnee.turnNumber,
     })
@@ -227,7 +227,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
                     Your Turn!
                   </div>
                   <CircularTimer 
-                    turnLength={this.state.turnLength}
+                    turnDuration={this.state.turnDuration}
                     timeLeft={this.state.timeLeft}
                     turnNumber={this.state.turnNumber}
                     key={`${player.team}-${player.number}`}

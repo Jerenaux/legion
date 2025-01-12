@@ -298,12 +298,12 @@ export const getPlayerData = onRequest({
           wins: playerData.leagueStats?.wins || 0,
           allTimeRank: playerData.allTimeStats?.rank || 0,
           dailyloot: playerData.dailyloot,
-          tours,
           inventory: sortedInventory,
           carrying_capacity: playerData.carrying_capacity || BASE_INVENTORY_SIZE,
           isLoaded: false,
           tokens: playerData.tokens || { [Token.SOL]: 0 },
           AIwinRatio,
+          completedGames: playerData.engagementStats?.completedGames || 0,
         } as PlayerContextData);
       } else {
         response.status(404).send(`Player ID ${uid} not found`);

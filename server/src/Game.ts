@@ -48,7 +48,7 @@ export abstract class Game
     tutorialSettings: any;
     GENhistory: Set<GEN> = new Set<GEN>();
     turnStart: number = 0;
-    turnLength: number = 0;
+    turnDuration: number = 0;
     turnNumber: number = 0;
 
     gridWidth: number = 20;
@@ -61,6 +61,7 @@ export abstract class Game
         this.mode = mode;
         this.league = league;
         this.io = io;
+        this.turnDuration = TURN_DURATION;
 
         this.teams.set(1, new Team(1, this));
         this.teams.set(2, new Team(2, this));
@@ -249,11 +250,11 @@ export abstract class Game
         }
     }
 
-    resetTurnTimer(turnLength: number = TURN_DURATION) {
+    resetTurnTimer(turnDuration: number) {
         clearTimeout(this.turnTimer!);
         this.turnStart = Date.now();
-        this.turnLength = turnLength;
-        this.turnTimer = setTimeout(this.processTurn.bind(this), turnLength * 1000);
+        this.turnDuration = turnDuration;
+        this.turnTimer = setTimeout(this.processTurn.bind(this), turnDuration * 1000);
     }
 
     processTurn(isKill: boolean = false) {
@@ -269,9 +270,8 @@ export abstract class Game
         console.log(`[Game:processTurn] Turnee: ${this.turnee.num} from team ${this.turnee.team.id}`);
     
         this.turnNumber++;
-        let turnLength = TURN_DURATION + (isKill ? KILL_CAM_DURATION : 0);
-        if (this.mode == PlayMode.TUTORIAL) turnLength = 60;
-        this.resetTurnTimer(turnLength);
+        let turnDuration = this.turnDuration + (isKill ? KILL_CAM_DURATION : 0);
+        this.resetTurnTimer(turnDuration);
         this.broadcast('turnee', this.getTurneeData());
         this.turnee.startTurn();
     }
@@ -329,8 +329,8 @@ export abstract class Game
         return {
             num: this.turnee?.num,
             team: this.turnee?.team.id,
-            turnLength: this.turnLength,
-            timeLeft: this.turnLength - (Date.now() - this.turnStart)/1000,
+            turnDuration: this.turnDuration,
+            timeLeft: this.turnDuration - (Date.now() - this.turnStart)/1000,
             turnNumber: this.turnNumber,
         }
     }

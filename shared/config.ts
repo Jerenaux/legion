@@ -8,6 +8,7 @@ export const MAX_AVATAR_ID = 31;
 export const NB_START_CHARACTERS = 3;
 export const MAX_CHARACTERS = 6;
 export const TURN_DURATION = 7;
+export const GAME_0_TURN_DURATION = 60;
 export const CAST_DELAY = 1;
 export const PARALYZED_DELAY = 1.5;
 export const BASE_INVENTORY_SIZE = 20;

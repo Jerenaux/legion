@@ -107,7 +107,9 @@ io.on('connection', async (socket: any) => {
           headers: {
             'x-api-key': process.env.API_KEY,
           }
-        }
+        },
+        10,
+        500,
       );
   
       // Check if firebase UID is in gameData.players

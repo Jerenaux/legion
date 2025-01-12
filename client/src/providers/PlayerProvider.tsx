@@ -7,7 +7,7 @@ import { League, Stat, StatFields, InventoryActionType, ShopTab, ItemDialogType
  } from "@legion/shared/enums";
 import { firebaseAuth } from '../services/firebaseService'; 
 import { getSPIncrement } from '@legion/shared/levelling';
-import { playSoundEffect, fetchGuideTip } from '../components/utils';
+import { playSoundEffect } from '../components/utils';
 import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
@@ -24,7 +24,6 @@ import {
   unequipEquipment,
   roomInInventory,
   numericalSort,
-  canIncreaseStat
 } from '@legion/shared/inventory';
 
 import equipSfx from "@assets/sfx/equip.wav";
@@ -71,7 +70,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           allTimeRank: 0,
           dailyloot: null,
           league: League.BRONZE,
-          tours: [],
           isLoaded: false,
           inventory: {
             consumables: [],
@@ -168,7 +166,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   allTimeRank: data.allTimeRank,
                   dailyloot: data.dailyloot,
                   league: data.league,
-                  tours: data.tours,
                   isLoaded: true,
                   inventory: data.inventory,
                   carrying_capacity: data.carrying_capacity,

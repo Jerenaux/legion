@@ -8,16 +8,12 @@ import { Class, PlayMode, League, AIAttackMode, Stat } from "@legion/shared/enum
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
 import { DBCharacterData, PlayerContextData } from '@legion/shared/interfaces';
-import {FREEZE_AI} from "@legion/shared/config";
 import { Item } from './Item';
 import { getConsumableById } from '@legion/shared/Items';
+import { GAME_0_TURN_DURATION, TURN_DURATION } from '@legion/shared/config';
 
 
-const TICK = 100;
 const AI_VS_AI = false;
-const MIN_AI_DECISION_TIME = 500;  // Minimum time between ANY AI decisions
-const MAX_AI_DECISION_TIME = 2000; // Maximum time between ANY AI decisions
-const COMPETITIVE_MODES = [PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI];
 
 export class AIGame extends Game {
     nbExpectedPlayers = 1;
@@ -162,6 +158,11 @@ export class AIGame extends Game {
     async populateTeams() {
         const playerTeam = this.teams.get(1);
         const aiTeam = this.teams.get(2);
+
+        this.turnDuration = Math.max(
+            GAME_0_TURN_DURATION - (playerTeam.getPlayerData().completedGames * 20),
+            TURN_DURATION
+        );
 
         if (AI_VS_AI) {
             this.createAITeam(playerTeam!);

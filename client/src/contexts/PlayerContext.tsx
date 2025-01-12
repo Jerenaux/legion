@@ -66,7 +66,6 @@ export const PlayerContext = createContext<{
     allTimeRank: 0,
     dailyloot: null,
     league: League.BRONZE,
-    tours: [],
     isLoaded: false,
     inventory: {
       consumables: [],

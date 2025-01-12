@@ -231,6 +231,7 @@ export interface TeamData {
     rank: number;
     dailyloot: DailyLootAllAPIData;
     AIwinRatio: number;
+    completedGames: number;
 }
 
 export interface GameOutcomeReward {
@@ -288,6 +289,7 @@ export interface PlayerProfileData {
     playerRank: number;
     playerAvatar: string;
     playerLeague: number;
+    completedGames: number;
 }
 interface GamePlayerData {
     teamId: number;
@@ -379,13 +381,13 @@ export interface PlayerContextData {
     allTimeRank: number;
     dailyloot: DailyLootAllAPIData;
     league: League;
-    tours: string[];
     isLoaded: boolean;
     inventory: PlayerInventory;
     carrying_capacity: number;
     tokens: any;
     AIwinRatio?: number;
     friends?: FriendData[];
+    completedGames?: number;
   }
 
 export interface GameReplayMessage {

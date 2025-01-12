@@ -983,7 +983,7 @@ export class Arena extends Phaser.Scene
         this.refreshOverview();
     }
 
-    processTurnee(data: {num: number, team: number, turnLength: number, timeLeft: number}) {
+    processTurnee(data: {num: number, team: number, turnDuration: number, timeLeft: number}) {
         this.turnee = data;
         this.selectTurnee();
         this.highlightTurnee();
@@ -1360,6 +1360,7 @@ export class Arena extends Phaser.Scene
         this.gameSettings = {
             tutorial: false,
             spectator: false,
+            game0: false,
             mode: null,
         }
 
@@ -1439,6 +1440,9 @@ export class Arena extends Phaser.Scene
         this.gameSettings.mode = data.general.mode;
         this.queue = data.queue;
         this.turnee = data.turnee;
+        this.gameSettings.game0 = data.player.player.completedGames === 0;
+
+        console.log(`[Arena:initializeGame] Game 0: ${this.gameSettings.game0}`);
 
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));

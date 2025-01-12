@@ -16,6 +16,7 @@ export class Team {
     playerLevel: number;
     playerRank: number;
     playerLeague: number;
+    completedGames: number;
     score = 0;
 
     constructor(scene, number: number, isPlayerTeam: boolean, teamData: PlayerProfileData, score = 0) {
@@ -96,6 +97,7 @@ export class Team {
                 playerLevel: this.playerLevel,
                 playerRank: this.playerRank,
                 playerLeague: this.playerLeague,
+                completedGames: this.completedGames,
             },
             score: this.score,
             isPlayerTeam: this.isPlayerTeam

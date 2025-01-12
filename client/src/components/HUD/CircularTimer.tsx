@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 import cdIcon from '@assets/inventory/cd_icon.png';
 
 interface CircularTimerProps {
-  turnLength: number;  // Total turn duration in seconds
+  turnDuration: number;  // Total turn duration in seconds
   timeLeft: number;    // Time remaining in seconds
   turnNumber: number;
   size?: number;
@@ -44,7 +44,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
 
     // Always start with fresh values from props
     this.startTime = performance.now();
-    const initialProgress = (this.props.timeLeft / this.props.turnLength) * 100;
+    const initialProgress = (this.props.timeLeft / this.props.turnDuration) * 100;
     this.setState({ progress: initialProgress });
     this.animate();
   }
@@ -53,7 +53,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
     const currentTime = performance.now();
     const elapsed = currentTime - this.startTime;
     const remainingTime = Math.max(0, this.props.timeLeft - elapsed / 1000);
-    const progress = (remainingTime / this.props.turnLength) * 100;
+    const progress = (remainingTime / this.props.turnDuration) * 100;
 
     this.setState({ progress });
 
