@@ -2,12 +2,11 @@ import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions";
 import admin, { corsMiddleware, getUID, checkAPIKey, performLockedOperation } from "./APIsetup";
-import { fetchParsedTransactionWithRetry } from "./lobbyAPI";
 
 import { uniqueNamesGenerator }
   from "unique-names-generator";
 
-import { Class, ChestColor, League, Token } from "@legion/shared/enums";
+import { Class, ChestColor, League, Token, PlayMode } from "@legion/shared/enums";
 import { PlayerContextData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData,
   PlayerInventory } from "@legion/shared/interfaces";
 import { NewCharacter } from "@legion/shared/NewCharacter";
@@ -27,6 +26,7 @@ import { numericalSort } from "@legion/shared/inventory";
 // } from '@solana/web3.js';
 // import bs58 from 'bs58';
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { createGameDocument } from "./gameAPI";
 
 const chestsDelays = {
   [ChestColor.BRONZE]: 6 * 60 * 60,
@@ -108,7 +108,9 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
   const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const startLeague = League.BRONZE;
   const isAdmin = (process.env.ADMIN_MODE == 'true');
-  console.log(`[createPlayer] isAdmin: ${isAdmin}`);
+
+  // Game 0 has the same ID as the player
+  createGameDocument(user.uid, [user.uid], PlayMode.PRACTICE, League.BRONZE, 0);
 
   const bronzePlayersCount = await db.collection("players")
     .where("league", "==", startLeague)
@@ -146,14 +148,6 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
       nbGames: 0,
       wins: 0,
     },
-    tours: {
-      'play': false,
-      'team': false,
-      'rank': false,
-      'shop': false,
-      'queue': false,
-    },
-    guideTipsShown: [],
     engagementStats: {
       completedGames: 0, // Total games completed
       totalGames: 0, // Total games started
@@ -174,7 +168,6 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
       [Token.SOL]: 0,
     },
     friends: [] as string[],  // Just store the IDs
-    // isGuest: user.providerData.length === 0,
   } as DBPlayerData;
 
   // Start a batch to ensure atomicity

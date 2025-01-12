@@ -28,7 +28,7 @@ const withAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
             const { path, matches } = this.props;
 
             if (!isAuthenticated) {
-                if (path === '/game/:id' && matches?.id === 'tutorial') {
+                if (path === '/game/:id' && matches?.id === '0') {
                     if (!firebaseAuth.currentUser) {
                         // Allow guest access to tutorial
                         signInAsGuest().catch(
@@ -49,7 +49,7 @@ const withAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
             const { path, matches } = this.props;
 
 
-            if (!isAuthenticated && !(path === '/game/:id' && matches?.id === 'tutorial')) {
+            if (!isAuthenticated && !(path === '/game/:id' && matches?.id === '0')) {
                 route('/');
             }
         }
@@ -58,7 +58,7 @@ const withAuth = <P extends object>(WrappedComponent: ComponentType<P>) => {
             const { isAuthenticated } = this.context;
             const { path, matches } = this.props;
 
-            if (!isAuthenticated && (path !== '/game/:id' || matches?.id !== 'tutorial')) {
+            if (!isAuthenticated && (path !== '/game/:id' || matches?.id !== '0')) {
                 return null;
             }
 

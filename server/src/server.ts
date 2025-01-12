@@ -13,7 +13,7 @@ import { Game } from './Game';
 import { AIGame } from './AIGame';
 import { PvPGame } from './PvPGame';
 import firebaseConfig from '@legion/shared/firebaseConfig';
-import { PlayMode } from '@legion/shared/enums';
+import { League, PlayMode } from '@legion/shared/enums';
 
 dotenv.config();
 
@@ -66,7 +66,7 @@ io.on('connection', async (socket: any) => {
       let gameId = socket.handshake.auth.gameId;
       const isReplay = socket.handshake.auth.isReplay;
 
-      if (!gameId) {
+      if (gameId == undefined) {
         console.error('No game ID provided!');
         socket.disconnect();
         return;
@@ -95,29 +95,20 @@ io.on('connection', async (socket: any) => {
         return;
       }
 
-      const isTutorial = gameId === 'tutorial';
-      console.log(`[server:connection] User ${shortToken(socket.uid)} connecting to game ${gameId}, [isTutorial: ${isTutorial}]`);
+      console.log(`[server:connection] User ${shortToken(socket.uid)} connecting to game ${gameId}`);
 
-      let gameData;
-      if (isTutorial) {
-        gameId = uuidv4();
+      const isGame0 = gameId === '0';
+      if (isGame0) gameId = socket.uid;
 
-        gameData = {
-          players: [socket.uid],
-          mode: PlayMode.TUTORIAL,
-          league: 0,
-        };
-      } else {
-        gameData = await apiFetch(
-          `gameData?id=${gameId}`,
-          '',
-          {
-            headers: {
-              'x-api-key': process.env.API_KEY,
-            }
+      const gameData = await apiFetch(
+        `gameData?id=${gameId}`,
+        '',
+        {
+          headers: {
+            'x-api-key': process.env.API_KEY,
           }
-        );
-      }
+        }
+      );
   
       // Check if firebase UID is in gameData.players
       if (!gameData.players.includes(socket.uid)) {

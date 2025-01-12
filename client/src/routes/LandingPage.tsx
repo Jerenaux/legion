@@ -5,11 +5,10 @@ import logoBig from '@assets/logobig.png';
 import axios from 'axios';
 import './LandingPage.style.css';
 import Modal from '../components/modal/Modal';
-import { apiFetch, generateVisitorId } from '../services/apiService';
+import { generateVisitorId } from '../services/apiService';
 import warriorImg from '@assets/warrior.png';
 import blackMageImg from '@assets/blackmage.png';
 import whiteMageImg from '@assets/whitemage.png';
-import { useState, useEffect } from 'preact/hooks';
 import Spinner from '../components/spinner/Spinner';
 
 interface LandingPageProps {
@@ -45,6 +44,8 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
   };
 
   private firebaseUIContainer: HTMLDivElement | null = null;
+
+  playRoute: string = '/game/0';
 
   warmUpServer = async (): Promise<void> => {
     try {
@@ -131,7 +132,7 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
         <h2>Easy to learn, thrilling to master</h2>
         <h3>Turn-based PvP - Tactical - Free to play</h3>
         <p>Assemble a team of heroes and compete against other players to be the strongest of the arena!</p>
-        <button className="cta-button" onClick={() => route('/game/tutorial')} aria-label="Start playing Legion">Play Now</button>
+        <button className="cta-button" onClick={() => route(this.playRoute)} aria-label="Start playing Legion">Play Now</button>
       </div>
     </section>
   );
@@ -208,7 +209,7 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
           <p>Practice, Casual, Ranked or challenge a friend</p>
         </div>
       </div>
-      <button className="cta-button" onClick={() => route('/game/tutorial')}>Play Now</button>
+      <button className="cta-button" onClick={() => route(this.playRoute)}>Play Now</button>
     </section>
   );
 
@@ -232,7 +233,7 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
           <p>Support specialists who turn the tide of battle with powerful healing, buffs and debuffs</p>
         </div>
       </div>
-      <button className="cta-button" onClick={() => route('/game/tutorial')}>Play Now</button>
+      <button className="cta-button" onClick={() => route(this.playRoute)}>Play Now</button>
     </section>
   );
 
@@ -241,7 +242,7 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
       <img src={logoBig} alt="Logo" className="header-logo" />
       <div className="header-buttons">
         <button className="login-button" onClick={this.showLoginOptions}>Log in</button>
-        <button className="cta-button" onClick={() => route('/game/tutorial')}>Play Now</button>
+        <button className="cta-button" onClick={() => route(this.playRoute)}>Play Now</button>
       </div>
     </header>
   );
