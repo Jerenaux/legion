@@ -349,4 +349,8 @@ export class Team {
             member.bannedSpells = spells;
         }
     }
+
+    isGame0() {
+        return this.getPlayerData().completedGames === 0;
+    }
 }

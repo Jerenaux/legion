@@ -429,7 +429,8 @@ export class ServerPlayer {
     applyTerrainEffect(terrain: Terrain) {
         switch (terrain) {
             case Terrain.FIRE:
-                this.takeDamage(terrainDot[terrain]);
+                const damage = this.team?.isGame0() ? terrainDot[terrain] / 2 : terrainDot[terrain];
+                this.takeDamage(damage);
                 break;
             default:
                 break;
