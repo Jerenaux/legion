@@ -21,9 +21,6 @@ import { equipments } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
 import { Link } from 'preact-router';
 
-import tabActiveImage from '@assets/shop/tabs_active.png';
-import tabIdleImage from '@assets/shop/tabs_idle.png';
-
 import spellsIcon from '@assets/shop/spells_icon.png';
 import consumablesIcon from '@assets/shop/consumables_icon.png';
 import equipmentsIcon from '@assets/shop/helmet_icon.png';
@@ -52,6 +49,8 @@ function sortByRarityAndPrice(a: any, b: any) {
     }
     return a.rarity - b.rarity;
 }
+
+const TAB_LABELS = ['Consumables', 'Equipment', 'Spells', 'Characters'];
 
 class ShopContent extends Component<ShopContentProps> {
     static contextType = PlayerContext;
@@ -173,12 +172,6 @@ class ShopContent extends Component<ShopContentProps> {
 
         const { characters } = this.props;
 
-        const tabItemStyle = (index: number) => {
-            return {
-                backgroundImage: `url(${index === this.state.curr_tab ? tabActiveImage : tabIdleImage})`,
-            }
-        }
-
         const getItemAmount = (index: number, type: InventoryType) => {
             return this.context.player.inventory[type].filter((item: number) => item == index).length;
         }
@@ -241,9 +234,10 @@ class ShopContent extends Component<ShopContentProps> {
                                 }
                             }}
                             key={index}
-                            className='shop-tab-item'
-                            style={tabItemStyle(index)}>
+                            className={`shop-tab-item ${index === this.state.curr_tab ? 'active' : ''}`}
+                        >
                             <img src={icon} alt={`${ShopTab[index]} icon`} />
+                            <span className="shop-tab-label">{TAB_LABELS[index]}</span>
                         </Link>
                     )}
                 </div>

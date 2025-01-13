@@ -52,7 +52,6 @@ class ShopPage extends Component<ShopPageProps, State> {
   }
 
   render() {
-
     return (
         <div className="shop-container">
           <ShopContent
