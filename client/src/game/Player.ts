@@ -855,6 +855,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.spells = spellsIds.map(spellId => {
             return getSpellById(spellId);
         });   
+        this.displayBars();
     }
 
     victoryDance() {
@@ -952,14 +953,12 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     displayBars() {
-        const isTutorial = this.arena.isTutorial();
-        if (isTutorial) {
-            this.healthBar.setVisible(this.arena.tutorialSettings.showHealthBars);
-            this.MPBar?.setVisible(this.arena.tutorialSettings.showMPBars);
-        } else {
-            this.healthBar.setVisible(this.isAlive());
-            this.MPBar?.setVisible(this.isAlive());
-        }
+        this.healthBar.setVisible(this.isAlive());
+        this.MPBar?.setVisible(this.hasSpells() && this.isAlive());
+    }
+
+    hasSpells() {
+        return this.spells.length > 0;
     }
 
     revealHealthBar() {

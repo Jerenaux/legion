@@ -184,6 +184,8 @@ class PlayerTab extends Component<Props, State> {
     const isDead = player.hp <= 0;
     const canAct = !isDead && !player.casting && !player.isParalyzed;
     const isMuted = player.statuses[StatusEffect.MUTE] != 0;
+    const hasSpells = player.spells.length > 0;
+    const hasItems = player.items.length > 0;
 
     const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const itemsIndex = keyboardLayout.indexOf('Z');
@@ -212,12 +214,12 @@ class PlayerTab extends Component<Props, State> {
                   </div>
                   <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="char_stats_hp" />
                 </div>
-                <div className="player_content_stats_bar">
+                {hasSpells && <div className="player_content_stats_bar">
                   <div className="player_content_stats_icon">
                     <img src={mpIcon} alt="HP" />
                   </div>
-                  <TabBar title="HP" value={player.mp} maxValue={player.maxMp} barClass="char_stats_mp" />
-                </div>
+                  <TabBar title="MP" value={player.mp} maxValue={player.maxMp} barClass="char_stats_mp" />
+                </div>}
                 <div className="player_content_statuses">
                   {Object.keys(player.statuses).map((status: string) => player?.statuses[status] !== 0 && <div>
                     <img key={status} src={statusIcons[status]} alt="" />
@@ -229,9 +231,9 @@ class PlayerTab extends Component<Props, State> {
             </div>
           </div>
 
-          <div className="flex width_half justify_between padding_8 padding_top_16 gap_24 padding_right_16">
-            {this.state.itemsVisible && this.renderActionContainer("Items", player.items, canAct, isMuted, itemsIndex, InventoryType.CONSUMABLES)}
-            {this.renderActionContainer("Spells", player.spells, canAct, isMuted, 0, InventoryType.SPELLS)}
+          <div className="player_actions_container">
+            {hasItems && this.state.itemsVisible && this.renderActionContainer("Items", player.items, canAct, isMuted, itemsIndex, InventoryType.CONSUMABLES)}
+            {hasSpells && this.renderActionContainer("Spells", player.spells, canAct, isMuted, 0, InventoryType.SPELLS)}
           </div>
         </div>
         {player.pendingSpell !== null && this.renderTargetContainer('spell', player.pendingSpell)}
