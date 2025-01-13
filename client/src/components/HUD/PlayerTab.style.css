@@ -163,6 +163,17 @@
   background: linear-gradient(135deg, #2a3746 0%, #1c1f25 100%);
   border: 1px solid #3c616c;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 48px;
+}
+
+.player_content_stats_icon span {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  text-shadow: 0 0 4px rgba(81, 253, 255, 0.5);
 }
 
 .player_content_stats_icon img {

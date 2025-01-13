@@ -211,12 +211,14 @@ class PlayerTab extends Component<Props, State> {
                 <div className="player_content_stats_bar">
                   <div className="player_content_stats_icon">
                     <img src={hpIcon} alt="HP" />
+                    <span>HP</span>
                   </div>
                   <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="char_stats_hp" />
                 </div>
                 {hasSpells && <div className="player_content_stats_bar">
                   <div className="player_content_stats_icon">
-                    <img src={mpIcon} alt="HP" />
+                    <img src={mpIcon} alt="MP" />
+                    <span>MP</span>
                   </div>
                   <TabBar title="MP" value={player.mp} maxValue={player.maxMp} barClass="char_stats_mp" />
                 </div>}
