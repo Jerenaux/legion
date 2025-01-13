@@ -5,7 +5,7 @@ import Skeleton from 'react-loading-skeleton';
 import { h, Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
-import { InventoryType, ShopTab } from '@legion/shared/enums';
+import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural } from '@legion/shared/enums';
 import { MAX_CHARACTERS } from "@legion/shared/config";
 import { ShopItems, DBCharacterData } from '@legion/shared/interfaces';
 import { errorToast, successToast, playSoundEffect, silentErrorToast } from '../utils';
@@ -27,6 +27,7 @@ import equipmentsIcon from '@assets/shop/helmet_icon.png';
 import charactersIcon from '@assets/shop/char_icon.png';
 
 import purchaseSfx from '@assets/sfx/purchase.wav';
+import { BaseEquipment } from '@legion/shared/BaseEquipment';
 
 interface ShopContentProps {
     characters: DBCharacterData[];
@@ -51,6 +52,16 @@ function sortByRarityAndPrice(a: any, b: any) {
 }
 
 const TAB_LABELS = ['Consumables', 'Equipment', 'Spells', 'Characters'];
+
+const groupEquipmentByType = (equipment: BaseEquipment[]) => {
+    return equipment.reduce<Record<string, BaseEquipment[]>>((acc, item) => {
+        if (!acc[item.slot]) {
+            acc[item.slot] = [];
+        }
+        acc[item.slot].push(item);
+        return acc;
+    }, {});
+};
 
 class ShopContent extends Component<ShopContentProps> {
     static contextType = PlayerContext;
@@ -179,15 +190,43 @@ class ShopContent extends Component<ShopContentProps> {
         const renderItems = () => {
             switch (this.state.curr_tab) {
                 case ShopTab.SPELLS:
-                    return this.state.inventoryData.spells.map((item, index) => <ShopSpellCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
+                    return this.state.inventoryData.spells.map((item, index) => 
+                        <ShopSpellCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />
+                    );
                 case ShopTab.CONSUMABLES:
-                    return this.state.inventoryData.consumables.map((item, index) => <ShopConsumableCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
-                case ShopTab.EQUIPMENTS:
-                    return this.state.inventoryData.equipment.map((item, index) => <ShopEquipmentCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />)
+                    return this.state.inventoryData.consumables.map((item, index) => 
+                        <ShopConsumableCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />
+                    );
+                case ShopTab.EQUIPMENTS: {
+                    const groupedEquipment = groupEquipmentByType(this.state.inventoryData.equipment);
+                    return (
+                        <div className="equipment-sections">
+                            {Object.entries(groupedEquipment).map(([slot, items]) => (
+                                <div key={slot} className="equipment-section">
+                                    <h3 className="equipment-type-title">
+                                        {equipmentSlotLabelsPlural[slot as unknown as EquipmentSlot]}
+                                    </h3>
+                                    <div className="equipment-grid">
+                                        {items.map((item: BaseEquipment, index: number) => 
+                                            <ShopEquipmentCard 
+                                                key={index} 
+                                                data={item} 
+                                                getItemAmount={getItemAmount} 
+                                                handleOpenModal={this.handleOpenModal} 
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                }
                 case ShopTab.CHARACTERS:
                     return this.state.isLoadingCharacters ? 
                         renderSkeletons() :
-                        characters?.map((item, index) => <ShopCharacterCard key={index} data={item} handleOpenModal={this.handleOpenModal} />)
+                        characters?.map((item, index) => 
+                            <ShopCharacterCard key={index} data={item} handleOpenModal={this.handleOpenModal} />
+                        );
                 default:
                     return null;
             }

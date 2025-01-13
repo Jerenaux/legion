@@ -121,6 +121,17 @@ export const equipmentSlotLabels = {
     [EquipmentSlot.NECKLACE]: 'Necklace'
 }
 
+export const equipmentSlotLabelsPlural = {
+    [EquipmentSlot.WEAPON]: 'Weapons',
+    [EquipmentSlot.HELMET]: 'Helmets',
+    [EquipmentSlot.ARMOR]: 'Armors',
+    [EquipmentSlot.BELT]: 'Belts',
+    [EquipmentSlot.GLOVES]: 'Gloves',
+    [EquipmentSlot.BOOTS]: 'Boots',
+    [EquipmentSlot.LEFT_RING]: 'Rings',
+    [EquipmentSlot.NECKLACE]: 'Necklaces'
+}
+
 export const equipmentSlotFields = {
     [EquipmentSlot.WEAPON]: 'weapon',
     [EquipmentSlot.HELMET]: 'helmet',
