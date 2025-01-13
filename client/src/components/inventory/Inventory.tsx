@@ -1,4 +1,3 @@
-
 // Inventory.tsx
 import { h, Component } from 'preact';
 import './Inventory.style.css';
@@ -30,15 +29,10 @@ class Inventory extends Component<InventoryProps> {
   static contextType = PlayerContext; 
 
   state = {
-    actionType: InventoryType.CONSUMABLES,
     openModal: false
   }
 
   capacity = 50;
-
-  handleActionType = (actionType: string) => {
-    this.setState({ actionType: actionType });
-  }
 
   handleOpenModal = () => {
     this.setState({ openModal: true });
@@ -49,63 +43,50 @@ class Inventory extends Component<InventoryProps> {
   }
 
   render() {
-    const activeInventory = this.context.player.inventory[this.state.actionType];
-    const isCategoryEmpty = !activeInventory || !activeInventory?.length;
+    const renderInventorySection = (type: InventoryType, label: string) => {
+      const inventory = this.context.player.inventory[type];
+      if (!inventory?.length) return null;
 
-    const getItem = (itemID: number) => {
-      switch (this.state.actionType) {
-        case InventoryType.CONSUMABLES:
-          return getConsumableById(itemID);
-        case InventoryType.SPELLS:
-          return getSpellById(itemID);
-        case InventoryType.EQUIPMENTS:
-          return getEquipmentById(itemID);
-        default:
-          return null;
+      const getItem = (itemID: number) => {
+        switch (type) {
+          case InventoryType.CONSUMABLES:
+            return getConsumableById(itemID);
+          case InventoryType.SPELLS:
+            return getSpellById(itemID);
+          case InventoryType.EQUIPMENTS:
+            return getEquipmentById(itemID);
+          default:
+            return null;
+        }
       }
+
+      return (
+        <div className="inventory-section">
+          <h3 className="section-title">{label}</h3>
+          <div className="section-items">
+            {inventory.map((itemId: number, i: number) => {
+              const item = getItem(itemId);
+              const slotStyle = {
+                backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
+              }
+
+              return (
+                <div key={i} className="item" style={slotStyle}>
+                  <ItemIcon
+                    action={item}
+                    index={i}
+                    hideHotKey={true}
+                    actionType={type}
+                    handleItemEffect={this.props.handleItemEffect}
+                    handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
     }
-
-    const slots = activeInventory?.map((itemId: number, i: number) => {
-      const item = getItem(itemId);
-
-      const slotStyle = {
-        backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
-      }
-
-      return <div key={i} className="item" style={slotStyle}>
-        <ItemIcon
-          action={item}
-          index={i}
-          hideHotKey={true}
-          actionType={this.state.actionType}
-          handleItemEffect={this.props.handleItemEffect}
-          handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
-        />
-      </div>
-    });
-
-    const currCategoryStyle = {
-      backgroundColor: 'transparent',
-      border: '1px solid #a5670f',
-    }
-
-    const customStyles = {
-      content: {
-        top: '50%',
-        left: '50%',
-        right: 'auto',
-        bottom: 'auto',
-        marginRight: '-50%',
-        transform: 'translate(-50%, -50%)',
-        padding: 0,
-        border: 'none',
-        background: 'transparent'
-      },
-      overlay: {
-        zIndex: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-      }
-    };
 
     return (
       <div className="inventoryFullContainer">
@@ -114,39 +95,45 @@ class Inventory extends Component<InventoryProps> {
             <p className="inventoryLabel">INVENTORY</p>
             <div className="inventoryCategories">
               <Link href='/shop' className="categoryBtn" style={{ backgroundImage: `url(${shopIcon})` }}></Link>
-              <div className="inventoryCategory" style={this.state.actionType === InventoryType.CONSUMABLES && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.CONSUMABLES)}>CONSUMABLES</div>
-              <div className="inventoryCategory" style={this.state.actionType === InventoryType.EQUIPMENTS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.EQUIPMENTS)}>EQUIPMENT</div>
-              <div className="inventoryCategory" style={this.state.actionType === InventoryType.SPELLS && currCategoryStyle} onClick={() => this.handleActionType(InventoryType.SPELLS)}>SPELLS</div>
-              <div className="categoryCount"><span>{inventorySize(this.context.player.inventory)} </span>&nbsp;/&nbsp;{this.context.player.carrying_capacity}</div>
-              {/* <div className="categoryBtn" style={{ backgroundImage: `url(${helpIcon}` }} onClick={this.handleOpenModal}></div> */}
+              <div className="categoryCount">
+                <span>{inventorySize(this.context.player.inventory)} </span>
+                &nbsp;/&nbsp;{this.context.player.carrying_capacity}
+              </div>
             </div>
           </div>
           <div className="inventoryWrapper">
-            {
-              !this.context.player.isLoaded ?
-                <div style={{ position: "absolute", display: "flex", gap: '6px' }}>
-                  {[...Array(6)].map((_, index) => (
-                    <Skeleton
-                      key={index}
-                      height={48}
-                      highlightColor="#0000004d"
-                      baseColor="#0f1421"
-                      style={{
-                        width: '48px',
-                      }}
-                    />
-                  ))}
-                </div> :
-                isCategoryEmpty ?
+            {!this.context.player.isLoaded ? (
+              <div style={{ position: "absolute", display: "flex", gap: '6px' }}>
+                {[...Array(6)].map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    height={48}
+                    highlightColor="#0000004d"
+                    baseColor="#0f1421"
+                    style={{
+                      width: '48px',
+                    }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="inventory-sections">
+                {renderInventorySection(InventoryType.CONSUMABLES, "CONSUMABLES")}
+                {renderInventorySection(InventoryType.EQUIPMENTS, "EQUIPMENT")}
+                {renderInventorySection(InventoryType.SPELLS, "SPELLS")}
+                {!Object.values(InventoryType).some(type => 
+                  this.context.player.inventory[type]?.length > 0
+                ) && (
                   <div className='empty-slots-container'>
-                    <p>No items in this category, take a look at the shop!</p>
+                    <p>Your inventory is empty, take a look at the shop!</p>
                     <Link href='/shop'>Go to shop <img src={shopIcon} alt="shop" /></Link>
-                  </div> :
-                slots
-            }
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-        <Modal isOpen={this.state.openModal} style={customStyles} onRequestClose={this.handleCloseModal}>
+        <Modal isOpen={this.state.openModal}  onRequestClose={this.handleCloseModal}>
           <div className="hint-modal-container">
             <p className="hint-modal-heading">Hint Modal</p>
             <div className="hint-modal-button-container">

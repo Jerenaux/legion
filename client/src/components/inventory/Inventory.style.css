@@ -18,13 +18,11 @@
 }
 
 .inventoryWrapper {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(5, 1fr);
-    gap: 4px 6px;
     position: relative;
-    min-height: 240px;
-    min-width: 540px;
+    width: 540px;
+    height: 340px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .inventoryCategoryContainer {
@@ -172,4 +170,57 @@
 .empty-slots-container a img {
     width: 20px;
     height: 20px;
+}
+
+.inventory-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px;
+    height: 100%;
+}
+
+.inventory-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.section-title {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Kim';
+    letter-spacing: 0.6px;
+    background-color: #2f404d;
+    padding: 4px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 0;
+    border: 1px solid #71deff;
+}
+
+.section-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 520px;
+}
+
+.inventoryWrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+.inventoryWrapper::-webkit-scrollbar-track {
+    background: #1c1f25;
+    border-radius: 4px;
+}
+
+.inventoryWrapper::-webkit-scrollbar-thumb {
+    background: #2e3e4e;
+    border-radius: 4px;
+}
+
+.inventoryWrapper::-webkit-scrollbar-thumb:hover {
+    background: #3e4e5e;
 }

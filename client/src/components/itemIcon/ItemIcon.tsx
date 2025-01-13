@@ -93,10 +93,35 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
 
   handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, inventoryType: InventoryType) => {
     const elementRect = e.currentTarget.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    
+    // Get the height of the modal (approximately)
+    const estimatedModalHeight = 200; // Adjust this value based on your modal's actual height
+    
+    let top = elementRect.top + elementRect.height / 2;
+    let left = elementRect.left + elementRect.width / 2;
+    
+    // Check if the modal would extend below the viewport
+    if (top + estimatedModalHeight > viewportHeight) {
+        // Position the modal above the item instead
+        top = elementRect.top - estimatedModalHeight;
+    }
+    
+    // Ensure the modal stays within the left/right bounds of the viewport
+    const viewportWidth = window.innerWidth;
+    const estimatedModalWidth = 300; // Adjust based on your modal's width
+    
+    if (left + estimatedModalWidth > viewportWidth) {
+        left = viewportWidth - estimatedModalWidth - 10; // 10px padding from viewport edge
+    }
+    
+    if (left < 0) {
+        left = 10; // 10px padding from viewport edge
+    }
 
     const modalPosition = {
-      top: elementRect.top + elementRect.height / 2,
-      left: elementRect.left + elementRect.width / 2,
+        top: Math.max(10, top), // Ensure at least 10px from top of viewport
+        left,
     };
 
     const modalType = this.convertInventoryTypeToItemDialogType(inventoryType);
