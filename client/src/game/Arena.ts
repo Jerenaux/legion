@@ -654,6 +654,7 @@ export class Arena extends Phaser.Scene
     
 
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
+        return true;
         if (action.target == Target.AOE && action.size > 1) {
             return true;
         }
@@ -724,7 +725,7 @@ export class Arena extends Phaser.Scene
     selectPlayer(player: Player) {
         if (!this.gameInitialized) return;
         this.selectedPlayer = player;
-        this.selectedPlayer.select();
+        this.selectedPlayer?.select();
         this.refreshBox();
         this.refreshOverview();
     }

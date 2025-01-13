@@ -2,8 +2,10 @@
   background-image: none;
   background: linear-gradient(90deg, #334155 0%, #334155 45%, #1E293B 55%, #1E293B 100%);
   border: 1.5px solid #2DD4BF;
-  border-radius: 9px;
-  box-shadow: 0 0 15px rgba(45, 212, 191, 0.15);
+  outline: 1px solid rgba(45, 212, 191, 0.3);
+  outline-offset: -4px;
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(45, 212, 191, 0.15), inset 0 0 30px rgba(45, 212, 191, 0.05);
   width: fit-content;
   max-width: 800px;
   height: 158px;
@@ -37,6 +39,8 @@
   @media screen and (max-width: 980px) and (orientation: landscape) {
     transform: scale(0.55) translateX(-50%);
   }
+
+  animation: tabAppear 0.3s ease-out forwards;
 }
 
 @keyframes fadeInPlayerTab {
@@ -74,6 +78,27 @@
   z-index: 20;
   background-image: url("@assets/HUD/char_frame.png");
   background-size: 100% 100%;
+  position: relative;
+  box-shadow: 0 0 15px rgba(45, 212, 191, 0.2), inset 0 0 20px rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.6);
+  overflow: hidden;
+}
+
+.player_content_portrait::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(45, 212, 191, 0.2),
+    transparent
+  );
+  transform: skewX(-25deg);
+  animation: shimmer 3s infinite;
 }
 
 .character_portrait {
@@ -89,6 +114,7 @@
 .player_content_name {
   display: flex;
   align-items: center;
+  margin-bottom: 8px;
 }
 
 .player_content_flag {
@@ -97,29 +123,46 @@
   padding: 8px 10px;
   font-size: 14px;
   color: #ffffff;
+  min-width: 40px;
+  text-align: center;
 }
 
 .player_content_char_name {
   background-image: url("@assets/HUD/charname_bg.png");
   background-size: 100% 100%;
-  padding: 4px 8px;
+  padding: 6px 12px;
   width: 100%;
   text-transform: capitalize;
   font-size: 16px;
   font-weight: 600;
   color: #ffffff;
+  position: relative;
+  text-shadow: 0 0 10px rgba(81, 253, 255, 0.5);
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.player_content_char_name:hover {
+  border-color: #51fdff;
+  box-shadow: 0 0 10px rgba(81, 253, 255, 0.2);
 }
 
 .player_content_stats_bar {
   display: flex;
   align-items: center;
   gap: 4px;
+  position: relative;
+  overflow: hidden;
 }
 
 .player_content_stats_icon {
   background-image: url("@assets/HUD/small_box_btn_bg_active.png");
   background-size: 100% 100%;
   padding: 4px 4px 1px;
+  position: relative;
+  background: linear-gradient(135deg, #2a3746 0%, #1c1f25 100%);
+  border: 1px solid #3c616c;
+  transition: all 0.2s ease;
 }
 
 .player_content_stats_icon img {
@@ -129,10 +172,12 @@
 
 .player_content_statuses {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
-  padding-top: 4px;
+  padding-top: 8px;
   min-height: 34px;
+  flex-wrap: wrap;
+  max-width: 200px;
 }
 
 .player_content_statuses div {
@@ -142,6 +187,9 @@
   align-items: center;
   font-size: 10px;
   color: #ffffff;
+  background: rgba(28, 31, 37, 0.6);
+  padding: 2px 4px;
+  border-radius: 3px;
 }
 
 .player_content_statuses img {
@@ -150,6 +198,15 @@
   background-color: #1c1f25;
   padding: 2px;
   border-radius: 2px;
+  background: linear-gradient(135deg, #1c1f25 0%, #2a3746 100%);
+  border: 1px solid #3c616c;
+  transition: all 0.2s ease;
+}
+
+.player_content_statuses img:hover {
+  transform: scale(1.1);
+  border-color: #51fdff;
+  box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
 }
 
 .player_hud_skills {
@@ -177,6 +234,7 @@
   grid-template-rows: repeat(2, 48px);
   cursor: var(--game-pointer);
   width: fit-content;
+  gap: 6px;
 }
 
 .hud_actions_title {
@@ -185,6 +243,8 @@
   text-transform: uppercase;
   color: #ffffff;
   border-bottom: 1px solid #ffa600;
+  margin-bottom: 6px;
+  padding-bottom: 2px;
 }
 
 .spell_target_container {
@@ -239,12 +299,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  margin-right: 8px;
 }
 
 .pass-turn-button {
   width: 96px;
-  padding: 4px 0;
+  padding: 6px 0;
   font-family: 'Kim';
   font-size: 12px;
   text-transform: uppercase;
@@ -256,6 +317,7 @@
   position: relative;
   text-align: center;
   transition: all 0.2s ease;
+  margin-top: 4px;
 }
 
 .pass-turn-button:before {
@@ -286,8 +348,23 @@
   width: auto;
   flex-shrink: 0;
   justify-content: space-between;
-  padding: 8px 16px 8px 8px;
-  padding-top: 16px;
-  gap: 24px;
+  padding: 12px 16px 8px 8px;
+  gap: 32px;
 } 
+
+/* @keyframes tabAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) translateX(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+} */
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
 
