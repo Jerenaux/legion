@@ -156,11 +156,11 @@ export const postGameUpdate = onRequest({
       const uid = request.body.uid;
       const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score, tokens} =
         request.body.outcomes as OutcomeData;
+      const {spellsUsed, itemsUsed, movements, attacks, flames, ice, poison, silenced, paralyzed, lowMP} =
+        request.body.engagement as any;
       console.log(
-        `[postGameUpdate for player ${uid}] isWinner: ${isWinner}, xp: ${xp}, gold: ${gold}, elo: ${elo}, key: ${key}, 
-          rawGrade: ${rawGrade}, score: ${score}, tokens: ${tokens}`);
+        `[postGameUpdate] Spells used: ${spellsUsed}, Items used: ${itemsUsed}, Movements: ${movements}, Attacks: ${attacks}, Flames: ${flames}, Ice: ${ice}, Poison: ${poison}, Silenced: ${silenced}, Paralyzed: ${paralyzed}`);
       const mode = request.body.mode as PlayMode;
-      const spellsUsed = request.body.spellsUsed;
 
       if (!uid || typeof uid !== 'string' || uid.trim() === '') {
         throw new Error('Invalid or missing uid');
@@ -210,7 +210,61 @@ export const postGameUpdate = onRequest({
 
         if (spellsUsed) {
           transaction.update(playerRef, {
-            'engagementStats.everUsedSpells': true,
+            'engagementStats.everUsedSpell': true,
+          });
+        }
+
+        if (itemsUsed) {
+          transaction.update(playerRef, {
+            'engagementStats.everUsedItems': true,
+          });
+        }
+
+        if (movements) {
+          transaction.update(playerRef, {
+            'engagementStats.everMoved': true,
+          });
+        }
+
+        if (attacks) {
+          transaction.update(playerRef, {
+            'engagementStats.everAttacked': true,
+          });
+        }
+
+        if (flames) {
+          transaction.update(playerRef, {
+            'engagementStats.everSawFlames': true,
+          });
+        }
+
+        if (ice) {
+          transaction.update(playerRef, {
+            'engagementStats.everSawIce': true,
+          });
+        }
+
+        if (poison) {
+          transaction.update(playerRef, {
+            'engagementStats.everPoisoned': true,
+          });
+        }
+
+        if (silenced) {
+          transaction.update(playerRef, {
+            'engagementStats.everSilenced': true,
+          });
+        }
+
+        if (paralyzed) {
+          transaction.update(playerRef, {
+            'engagementStats.everParalyzed': true,
+          });
+        }
+
+        if (lowMP) {
+          transaction.update(playerRef, {
+            'engagementStats.everLowMP': true,
           });
         }
 

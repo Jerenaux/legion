@@ -8,7 +8,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { lineOfSight, serializeCoords } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { Target, Terrain, GEN, PlayMode, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
+import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE } from '@legion/shared/config';
 
@@ -59,13 +59,15 @@ import speechTail from '@assets/speech_tail.png';
 import groundTilesImage from '@assets/tiles2.png';
 import groundTilesAtlas from '@assets/tiles2.json';
 import { errorToast, recordLoadingStep, silentErrorToast } from '../components/utils';
-import { Tutorial } from './Tutorial';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseItem } from '@legion/shared/BaseItem';
 const LOCAL_ANIMATION_SCALE = 3;
 const DEPTH_OFFSET = 0.01;
 
 export const DARKENING_INTENSITY = 0.9; // 0 = completely dark, 1 = no darkening
+
+// Add to imports at the top
+import { TutorialManager } from './TutorialManager';
 
 export class Arena extends Phaser.Scene
 {
@@ -83,6 +85,7 @@ export class Arena extends Phaser.Scene
     tilesMap: Map<string, Phaser.GameObjects.Image> = new Map<string, Phaser.GameObjects.Image>();
     obstaclesMap: Map<string, boolean> = new Map<string, boolean>();
     terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
+    terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
     gridWidth = 20;
     gridHeight = 9;
     server;
@@ -93,7 +96,6 @@ export class Arena extends Phaser.Scene
     sprites: Phaser.GameObjects.Sprite[] = [];
     environmentalAudioSources;
     gameSettings;
-    tutorialSettings;
     killCamActive = false;
     pendingGEN: GEN;
     genQueue: GEN[] = [];
@@ -103,7 +105,6 @@ export class Arena extends Phaser.Scene
     sceneCreated = false;
     gameInitialized = false;
     gameEnded = false;
-    tutorial;
     sfxVolume: number;
     inputLocked = false;
     handSprite: Phaser.GameObjects.Sprite;
@@ -113,10 +114,9 @@ export class Arena extends Phaser.Scene
     replayData: any = null;
     replayTimer: Phaser.Time.TimerEvent = null;
     currentReplayIndex: number = 0;
-
     eventHandlers: Map<string, (data: any) => void>;
-
     isDarkened: boolean = false;
+    tutorialManager: TutorialManager;
 
     constructor() {
         super({ key: 'Arena' });
@@ -299,12 +299,7 @@ export class Arena extends Phaser.Scene
             if (reason != 'io client disconnect') {
                 // The disconnection was initiated by the server
                 console.error(`Server disconnect during game: ${reason}`);
-                const isTutorial = gameId === 'tutorial';
-                if (isTutorial) {
-                    silentErrorToast('Uh-oh, disconnected from the server! Please refresh the page!');
-                } else {
-                    silentErrorToast('Disconnected from server');
-                }
+                silentErrorToast('Disconnected from server');
                 events.emit('serverDisconnect');
                 this.destroy();
             } 
@@ -323,6 +318,8 @@ export class Arena extends Phaser.Scene
             tile: { x, y},
         };
         this.send('move', data);
+        events.emit('playerMoved');
+        events.emit('performAction');
     }
 
     sendAttack(player: Player) {
@@ -332,7 +329,8 @@ export class Arena extends Phaser.Scene
             sameTeam: player.team.id === this.selectedPlayer.team.id,
         };
         this.send('attack', data);
-        if (this.gameSettings.tutorial) events.emit('playerAttacked');
+        events.emit('playerAttacked');
+        events.emit('performAction');
     }
 
     sendObstacleAttack(x, y) {
@@ -359,7 +357,6 @@ export class Arena extends Phaser.Scene
     }
 
     sendUseItem(index: number, x: number, y: number, player: Player | null) {
-        if (this.gameSettings.tutorial && !this.tutorialSettings.allowUseItem) return;
         if (!this.selectedPlayer.canAct()) return;
         const data = {
             x,
@@ -372,7 +369,9 @@ export class Arena extends Phaser.Scene
         this.toggleItemMode(false);
         this.selectedPlayer.pendingItem = null;
         const item = this.selectedPlayer.inventory[index];
-        if (this.gameSettings.tutorial) events.emit(`playerUseItem_${item.id}`);
+        events.emit(`playerUseItem`);
+        events.emit(`playerUseItem_${item.id}`);
+        events.emit('performAction');
     }
 
     endTutorial() {
@@ -679,7 +678,6 @@ export class Arena extends Phaser.Scene
         this.playSound('click');
         this.sendMove(gridX, gridY);
         this.clearHighlight();
-        if (this.gameSettings.tutorial) events.emit('playerMoved');
     }
 
     refreshBox() {
@@ -701,6 +699,7 @@ export class Arena extends Phaser.Scene
     }
 
     relayEvent(event, data?) {
+        console.log(`[Arena:relayEvent] Emitting event: ${event}`);
         events.emit(event, data);
     }
 
@@ -797,10 +796,7 @@ export class Arena extends Phaser.Scene
         const player = this.getPlayer(team, num);
         player.setHP(hp);
         if (damage) player.displayDamage(damage);
-
-        if (this.gameSettings.tutorial) {
-            if (player.isPlayer) events.emit('hpChange', {num, hp});
-        }
+        if (player.isPlayer) events.emit('hpChange', {num, hp});
     }
 
     processStatusChange({team, num, statuses}) {
@@ -846,19 +842,22 @@ export class Arena extends Phaser.Scene
                     sprite.anims.play('ground_flame');
                     this.sprites.push(sprite);
                     this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
+                    this.terrainMap.set(serializeCoords(x, y), Terrain.FIRE);
+                    events.emit('flamesAppeared');
                     break;
                 case Terrain.ICE:
                     const icesprite = this.createIceBlock(x, y);
                     this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
-                    
+                    this.terrainMap.set(serializeCoords(x, y), Terrain.ICE);
                     const tile = this.tilesMap.get(serializeCoords(x, y));
                     // @ts-ignore
                     if (tile.tween) tile.tween.stop();
                     this.obstaclesMap.set(serializeCoords(x, y), true);
-                  
+                    events.emit('iceAppeared');
                     break;
                 case Terrain.NONE:
                     this.obstaclesMap.delete(serializeCoords(x, y));
+                    this.terrainMap.delete(serializeCoords(x, y));
                     const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
                     if (terrainsprite) {
                         this.flickerAndDestroy(terrainsprite, 5, 1000);
@@ -869,6 +868,15 @@ export class Arena extends Phaser.Scene
                     break;
             }
         });
+    }
+
+
+    hasFlame(x: number, y: number) {
+        return this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE;
+    }
+
+    hasIce(x: number, y: number) {
+        return this.terrainMap.get(serializeCoords(x, y)) === Terrain.ICE;
     }
 
     createIceBlock(x: number, y: number) {
@@ -947,8 +955,9 @@ export class Arena extends Phaser.Scene
             const intensity = 0.002;
             this.cameras.main.shake(duration, intensity);
          } 
-
-        if (this.gameSettings.tutorial) events.emit(`playerCastSpell_${spell.id}`);
+         events.emit(`playerCastSpell`);
+         events.emit(`playerCastSpell_${spell.id}`);
+         events.emit('performAction');
     }
 
     processGameEnd(data: OutcomeData) {
@@ -1287,7 +1296,7 @@ export class Arena extends Phaser.Scene
             // Stagger the entrance of each player with a random offset between -200 and +200 ms
             const randomOffset = Math.floor(Math.random() * 401) - 200; // Random number between -200 and 200
             const entranceDelay = 750 + randomOffset;
-            this.time.delayedCall(entranceDelay, player.makeAirEntrance, [this.gameSettings.tutorial], player);
+            this.time.delayedCall(entranceDelay, player.makeAirEntrance, [], player);
         }
 
         this.gridMap.set(serializeCoords(character.x, character.y), player);
@@ -1362,12 +1371,6 @@ export class Arena extends Phaser.Scene
             mode: null,
         }
 
-        this.tutorialSettings = {
-            showHealthBars: true,
-            showMPBars: true,
-            allowUseItem: false,
-        }
-
         // console.log(`[Arena:create] Scene created`);
         this.sceneCreated = true;
         this.emptyQueue();
@@ -1433,14 +1436,11 @@ export class Arena extends Phaser.Scene
             console.error('Player team id is undefined');
         }
 
-        this.gameSettings.tutorial = (data.general.mode == PlayMode.TUTORIAL);
         this.gameSettings.spectator = data.general.spectator;
         this.gameSettings.mode = data.general.mode;
         this.queue = data.queue;
         this.turnee = data.turnee;
         this.gameSettings.game0 = data.player.player.completedGames === 0;
-
-        console.log(`[Arena:initializeGame] Game 0: ${this.gameSettings.game0}`);
 
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
@@ -1460,7 +1460,7 @@ export class Arena extends Phaser.Scene
             const delay = 3000;
             setTimeout(this.refreshOverview.bind(this), delay + 1000);
             setTimeout(() => {
-                if (!this.gameSettings.tutorial) this.displayGEN(GEN.COMBAT_BEGINS);
+                this.displayGEN(GEN.COMBAT_BEGINS);
                 this.setGameInitialized();
                 this.selectTurnee();
             }, delay);
@@ -1484,12 +1484,12 @@ export class Arena extends Phaser.Scene
             console.log('Exit game event received');
             this.destroy();
         });
-
-        events.on('revealItems', () => {
-            this.tutorialSettings.allowUseItem = true;
-        });
         
         events.emit('gameInitialized');
+        
+        if (this.gameSettings.game0) {
+            this.tutorialManager = new TutorialManager(this);
+        }
     }
 
     sleep(duration: number): Promise<void> {
@@ -1807,6 +1807,11 @@ export class Arena extends Phaser.Scene
     
         // Stop the HUD and current scene
         this.scene.stop('HUD');
+
+        // In the destroy method, add:
+        if (this.tutorialManager) {
+            this.tutorialManager.destroy();
+        }
         this.scene.stop();
 
         // Clean up any other resources or listeners
@@ -1879,7 +1884,8 @@ export class Arena extends Phaser.Scene
     pointToCharacter(playerTeam: boolean, characterIdx: number) {
         const {x: gridX, y: gridY} = this.getCharacterPosition(playerTeam, characterIdx);
         const {x, y} = this.gridToPixelCoords(gridX, gridY);
-        const yOffset = this.tutorialSettings.showHealthBars ? 100 : 60;
+        // const yOffset = this.tutorialSettings.showHealthBars ? 100 : 60;
+        const yOffset = 60;
         this.showFloatingHand(x - 5, y - yOffset, 'down');
     }
 
@@ -1902,26 +1908,6 @@ export class Arena extends Phaser.Scene
 
     slowDownCooldowns() {
         this.send('tutorialEvent', {action: 'slowDownCooldowns'});
-    }
-
-    revealHealthBars() {
-        this.tutorialSettings.showHealthBars = true;
-        // Iterate over all team members and reveal their health bars
-        this.teamsMap.forEach((team) => {
-            team.members.forEach((player) => {
-                player.revealHealthBar();
-            });
-        });
-    }
-
-    revealMPBars() {
-        this.tutorialSettings.showMPBars = true;
-        // Iterate over all team members and reveal their MP bars
-        this.teamsMap.forEach((team) => {
-            team.members.forEach((player) => {
-                player.revealMPBar();
-            });
-        });
     }
 
     isCharacterSelected(index: number) {

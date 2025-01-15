@@ -466,7 +466,7 @@ export class ServerPlayer {
         const r = Math.random();
         console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
         if (r > chance) return false;
-        // console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} seconds`);
+
         this.statuses[status] = duration;
 
         if (statsModifyingStatuses[status]) {
@@ -476,11 +476,26 @@ export class ServerPlayer {
         }
 
         this.broadcastStatusEffectChange();
+
+        console.log(`[ServerPlayer:addStatusEffect] Incrementing team stats for status ${status}`);
+        switch (status) {
+            case StatusEffect.FREEZE:
+                this.team!.incrementIce();
+                break;
+            case StatusEffect.MUTE:
+                this.team!.incrementSilenced();
+                break;
+            case StatusEffect.PARALYZE:
+                this.team!.incrementParalyzed();
+                break;
+            case StatusEffect.POISON:
+                this.team!.incrementPoison();
+                break;
+        }
         return true;
     }
 
     removeStatusEffect(status: StatusEffect) {
-        console.log(`[ServerPlayer:removeStatusEffect] Removing status ${status}`);
         this.statuses[status] = 0;
 
         if (statsModifyingStatuses[status]) {
@@ -584,9 +599,22 @@ export class ServerPlayer {
         return getEquipmentById(this.equipment.weapon);
     }
 
+    hasSpells() {
+        return this.spells.length > 0;
+    }
+
     startTurn() {
         if (this.activeTerrainDoT) {
-            this.applyTerrainEffect(this.activeTerrainDoT);
+            this.applyTerrainEffect(this.activeTerrainDoT);  
+            
+            this.team!.incrementFlames();
+        }
+
+        if (this.hasSpells()) {
+            const cheapestSpell = this.spells.reduce((cheapest, spell) => spell.cost < cheapest.cost ? spell : cheapest, this.spells[0]);
+            if (this.mp < cheapestSpell.cost) {
+                this.team!.incrementLowMP();
+            }
         }
 
         for (const status of DoTStatuses) {

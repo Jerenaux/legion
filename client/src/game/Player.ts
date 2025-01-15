@@ -311,7 +311,7 @@ export class Player extends Phaser.GameObjects.Container {
                 // Revert to idle animation after a short delay
                 this.scene.time.delayedCall(300, () => {
                     this.playAnim('boast', true);
-                    if (this.arena.gameSettings.tutorial) this.arena.relayEvent('characterAdded');
+                    this.arena.relayEvent('characterAdded');
                 });
             }
         });
@@ -331,12 +331,6 @@ export class Player extends Phaser.GameObjects.Container {
           ];
         const callback = () => { 
             this.playAnim('boast', true);
-            // Say the phrase with a random delay
-            // if (this.isPlayer && !isTutorial) {
-            //     setTimeout(() => {
-            //         this.talk(combatStartPhrases[Math.floor(Math.random() * combatStartPhrases.length)]);
-            //     }, Math.random() * 600);
-            // }
         };
         this.walkTo(this.gridX, this.gridY, 2000, callback);
     }
@@ -442,7 +436,34 @@ export class Player extends Phaser.GameObjects.Container {
             this.selected = true;
 
             this.checkHeartbeat();
+            this.arena.relayEvent(`selectCharacter`);
             this.arena.relayEvent(`selectCharacter_${this.class}`);
+            if (this.hasItems()) {
+                this.arena.relayEvent(`selectCharacter_hasItems`);
+            }
+
+            // Iterate over statuses and emit events for each
+            Object.keys(this.statuses).forEach(status => {
+                if (this.statuses[status] > 0) {
+                    this.arena.relayEvent(`hasStatus_${status}`);
+                }
+            });
+
+            // Check if player on a flame
+            if (this.arena.hasFlame(this.gridX, this.gridY)) {
+                this.arena.relayEvent(`hasFlame`);
+            }
+
+            // Check if player on a ice
+            if (this.arena.hasIce(this.gridX, this.gridY)) {
+                this.arena.relayEvent(`hasIce`);
+            }
+
+            // Check if player has spells and if MP amount is too low for cheapest spell
+            const cheapestSpell = this.spells.reduce((cheapest, spell) => spell.cost < cheapest.cost ? spell : cheapest, this.spells[0]);
+            if (this.spells.length > 0 && this.mp < cheapestSpell.cost) {
+                this.arena.relayEvent(`hasLowMP`);
+            }
         }
     }
 
@@ -768,7 +789,7 @@ export class Player extends Phaser.GameObjects.Container {
         const phrase = deathPhrases[Math.floor(Math.random() * deathPhrases.length)];
         // this.talk(phrase);
 
-        if (this.arena.gameSettings.tutorial) this.arena.relayEvent('characterKilled');
+        this.arena.relayEvent('characterKilled');
     }
 
     attack(targetX: number) {
@@ -868,6 +889,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.statuses[status] = duration;
             if (duration != 0) {
                 this.showStatusAnimation(status as keyof StatusEffects);
+                this.arena.relayEvent(`statusGained_${status}`);
             } else {
                 this.hideStatusAnimation(status as keyof StatusEffects);
             } 
@@ -922,16 +944,6 @@ export class Player extends Phaser.GameObjects.Container {
         }   
     }
 
-    setPoisoned(duration) {
-        if (duration != 0) {
-            this.statuses[StatusEffect.POISON] = duration;
-            this.showStatusAnimation(StatusEffect.POISON);
-        } else {
-            this.statuses[StatusEffect.POISON] = 0;
-            this.hideStatusAnimation(StatusEffect.POISON);
-        }
-    }
-
     async talk(text: string, sticky = false) {
         if (!this.speechBubble) return;
         if (this.speechBubble.visible && this.speechBubble.getText() == text) return;
@@ -967,6 +979,10 @@ export class Player extends Phaser.GameObjects.Container {
 
     revealMPBar() {
         this.MPBar?.setVisible(true);
+    }
+
+    hasItems() {
+        return this.inventory.length > 0;
     }
 
     destroy() {

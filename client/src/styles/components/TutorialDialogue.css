@@ -1,15 +1,12 @@
 .tutorial-dialogue {
   position: fixed;
-  bottom: 2vh;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 20px;
   background-color: #242b37;
   color: #e0e0e0;
   padding: 1vh 2vw;
   border-radius: 0.5vw;
-  width: 50vw;
+  width: 30vw;
   max-width: 600px;
-  min-width: 300px;
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -25,7 +22,6 @@
 
 .tutorial-dialogue.visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
 }
 
 .tutorial-dialogue-avatar {
@@ -140,7 +136,7 @@
 
 @media (max-width: 768px) {
   .tutorial-dialogue {
-    width: 90vw;
+    width: 40vw;
     padding: 1.5vh 2vw;
   }
 
@@ -211,4 +207,14 @@
   .tutorial-dialogue-next {
     padding: 8px; /* Smaller padding for the button */
   }
+}
+
+.tutorial-dialogue.bottom {
+  bottom: 20px;
+}
+
+.tutorial-dialogue.top {
+  top: 20px;
+  left: auto;
+  right: 20px;
 } 

@@ -388,6 +388,7 @@ export interface PlayerContextData {
     AIwinRatio?: number;
     friends?: FriendData[];
     completedGames?: number;
+    engagementStats?: any;
   }
 
 export interface GameReplayMessage {
@@ -423,4 +424,30 @@ export interface FriendData {
     id: string;
     name: string;
     avatar: string;
+}
+
+export interface EngagementStats {
+    completedGames: number;
+    totalGames: number;
+    completedTutorial: boolean;
+    engagedTutorial: boolean;
+    everPurchased: boolean;
+    everSpentSP: boolean;
+    everOpenedDailyLoot: boolean;
+    everEquippedConsumable: boolean;
+    everEquippedEquipment: boolean;
+    everEquippedSpell: boolean;
+    everUsedSpell: boolean;
+    everUsedItem: boolean;
+    everPlayedPractice: boolean;
+    everPlayedCasual: boolean;
+    everPlayedRanked: boolean;
+    everMoved: boolean;
+    everAttacked: boolean;
+    everSawFlames: boolean;
+    everSawIce: boolean;
+    everPoisoned: boolean;
+    everSilenced: boolean;
+    everParalyzed: boolean;
+    everLowMP: boolean;
 }

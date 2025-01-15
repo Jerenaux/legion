@@ -43,6 +43,7 @@ interface GameHUDState {
   turnDuration: number;
   timeLeft: number;
   turnNumber: number;
+  tutorialPosition: 'top' | 'bottom';
 }
 
 const events = new EventEmitter();
@@ -76,6 +77,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     timeLeft: 0,
     turnNumber: 0,
     turnDuration: 0,
+    tutorialPosition: 'bottom',
   } as GameHUDState;
 
   componentDidMount() {
@@ -119,6 +121,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
     // Add a new event listener for tutorial messages
     events.on('showTutorialMessage', this.handleTutorialMessage);
+    events.on('hideTutorialMessage', this.hideTutorialMessage);
     // Add new event listener for revealing top menu
     events.on('revealTopMenu', this.revealTopMenu);
     events.on('revealOverview', this.revealOverview);
@@ -176,11 +179,16 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     route('/play');
   }
 
-  handleTutorialMessage = (messages: string[]) => {
+  handleTutorialMessage = (message: any) => {
     this.setState({
-      tutorialMessages: messages,
-      isTutorialVisible: true,
+        tutorialMessages: [message.content],
+        isTutorialVisible: true,
+        tutorialPosition: message.position || 'bottom'
     });
+  }
+
+  hideTutorialMessage = () => {
+    this.setState({ isTutorialVisible: false });
   }
 
   revealTopMenu = () => {
@@ -271,6 +279,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         {this.state.isTutorialVisible && this.state.tutorialMessages.length > 0 && (
           <TutorialDialogue
             messages={this.state.tutorialMessages}
+            position={this.state.tutorialPosition}
           />
         )}
       </div>

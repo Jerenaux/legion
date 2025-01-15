@@ -160,9 +160,17 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
       everEquippedEquipment: false,
       everEquippedSpell: false,
       everUsedSpell: false,
+      everUsedItem: false,
       everPlayedPractice: false,
       everPlayedCasual: false,
       everPlayedRanked: false,
+      everMoved: false,
+      everAttacked: false,
+      everSawFlames: false,
+      everSawIce: false,
+      everPoisoned: false,
+      everSilenced: false,
+      everParalyzed: false,
     },
     tokens: {
       [Token.SOL]: 0,
@@ -304,6 +312,7 @@ export const getPlayerData = onRequest({
           tokens: playerData.tokens || { [Token.SOL]: 0 },
           AIwinRatio,
           completedGames: playerData.engagementStats?.completedGames || 0,
+          engagementStats: playerData.engagementStats || {},
         } as PlayerContextData);
       } else {
         response.status(404).send(`Player ID ${uid} not found`);

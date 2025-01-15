@@ -78,6 +78,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           },
           carrying_capacity: 0,
           tokens: null,
+          engagementStats: {},
         },
         characters: [],
         activeCharacterId: '',

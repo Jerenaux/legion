@@ -497,7 +497,8 @@ export abstract class Game
                 const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID) as OutcomeData;
                 team.distributeXp(outcomes.xp);
                 outcomes.characters = team.getCharactersDBUpdates();
-                this.writeOutcomesToDb(team, outcomes);
+                const engagement = team.getEngagement();
+                this.writeOutcomesToDb(team, outcomes, engagement);
                 console.log(`[Game:endGame] Team ${team!.id} (UID: ${uid}) outcomes: ${JSON.stringify(outcomes)}`);
                 team.getSocket()?.emit('gameEnd', outcomes);
 
@@ -537,7 +538,7 @@ export abstract class Game
         }
 
         player.removeCurrentTerrainEffect();
-        
+        player.team.incrementMoved();
         // console.log(`Cells on the way: ${JSON.stringify(Array.from(listCellsOnTheWay(player.x, player.y, tile.x, tile.y)))}`);
         this.checkForTerrainEffects(player, listCellsOnTheWay(player.x, player.y, tile.x, tile.y));
 
@@ -725,6 +726,7 @@ export abstract class Game
         }
 
         player.removeItem(item);
+        player.team.incrementItemsUsed();
 
         this.broadcast('useitem', {
             team: player.team.id,
@@ -791,6 +793,7 @@ export abstract class Game
         if (spell.terrain) {
             const terrainUpdates = this.terrainManager.updateTerrainFromSpell(spell, x, y);
             this.broadcastTerrain(terrainUpdates);
+
             // If any terrain update is not NONE
             if (terrainUpdates.some(update => update.terrain !== Terrain.NONE)) {
                 team.increaseScoreFromTerrain();
@@ -1209,7 +1212,7 @@ export abstract class Game
         return Math.round(xp); // Round to nearest whole number
     }
 
-    async writeOutcomesToDb(team: Team, rewards: OutcomeData) {
+    async writeOutcomesToDb(team: Team, outcomes: OutcomeData, engagement: any) {
         // console.log(`[Game:writeOutcomesToDb] Writing outcomes to DB for team ${team.id}`);
         try {
             await apiFetch(
@@ -1219,20 +1222,9 @@ export abstract class Game
                     method: 'POST',
                     body: {
                         uid: team.teamData.playerUID,
-                        outcomes: {
-                            isWinner: rewards.isWinner,
-                            gold: rewards.gold,
-                            xp: rewards.xp,
-                            elo: rewards.elo,
-                            characters: rewards.characters,
-                            key: rewards.key,
-                            chests: rewards.chests,
-                            score: rewards.score,
-                            rawGrade: rewards.rawGrade,
-                            tokens: rewards.tokens,
-                        } as OutcomeData,
+                        outcomes,
                         mode: this.mode,
-                        spellsUsed: team.anySpellsUsed()
+                        engagement,
                     },
                     headers: {
                         'x-api-key': process.env.API_KEY,

@@ -30,6 +30,14 @@ export class Team {
     healedAmount: number = 0;
     offensiveActions: number = 0;
     spellCasts: number = 0;
+    itemsUsed: number = 0;
+    movements: number = 0;
+    flames: number = 0;
+    ice: number = 0;
+    poison: number = 0;
+    silenced: number = 0;
+    paralyzed: number = 0;
+    lowMP: number = 0;
     killStreak: number = 0;
     teamData: TeamData;
 
@@ -128,6 +136,10 @@ export class Team {
 
     incrementHealing(amount: number) {
         this.healedAmount += amount;
+    }
+
+    incrementLowMP() {
+        this.lowMP++;
     }
 
     incrementScore(amount: number) {
@@ -230,16 +242,65 @@ export class Team {
         }));
     }    
 
+    getEngagement() {
+        console.log(`[Team:getEngagement] Getting engagement for team ${this.id}`);
+        const engagement = {
+            spellsUsed: this.anySpellsUsed(),
+            itemsUsed: this.anyItemsUsed(),
+            movements: this.movements > 0,
+            attacks: this.offensiveActions > 0,
+            flames: this.flames > 0,
+            ice: this.ice > 0,
+            poison: this.poison > 0,
+            silenced: this.silenced > 0,
+            paralyzed: this.paralyzed > 0,
+            lowMP: this.lowMP > 0,
+        };
+        return engagement;
+    }
+
     incrementOffensiveActions() {
         this.offensiveActions++;
+    }
+
+    incrementFlames() {
+        this.flames++;
+    }
+
+    incrementIce() {
+        this.ice++;
+    }
+
+    incrementPoison() {
+        this.poison++;
+    }
+
+    incrementSilenced() {
+        this.silenced++;
+    }
+
+    incrementParalyzed() {
+        this.paralyzed++;
+    }
+
+    incrementMoved() {
+        this.movements++;
     }
 
     incrementSpellCasts() {
         this.spellCasts++;
     }
 
+    incrementItemsUsed() {
+        this.itemsUsed++;
+    }
+
     anySpellsUsed() {
         return this.spellCasts > 0;
+    }
+
+    anyItemsUsed() {
+        return this.itemsUsed > 0;
     }
 
     getTotalHP() {

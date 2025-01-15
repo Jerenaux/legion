@@ -7,6 +7,7 @@ const DEFAULT_SPEAKER_NAME = 'Taskmaster';
 
 interface TutorialDialogueProps {
   messages: string[];
+  position?: 'top' | 'bottom';
 }
 
 interface TutorialDialogueState {
@@ -92,13 +93,12 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
 
   render() {
     const { displayedMessage, isAvatarLoaded, messageIndex } = this.state;
-    const { messages } = this.props;
+    const { messages, position = 'bottom' } = this.props;
 
     if (displayedMessage.length === 0) return null;
 
-
     return (
-      <div className={`tutorial-dialogue ${isAvatarLoaded ? 'visible' : ''}`}>
+      <div className={`tutorial-dialogue ${position} ${isAvatarLoaded ? 'visible' : ''}`}>
         <img 
           src={avatarSrc} 
           alt="Character Avatar" 
