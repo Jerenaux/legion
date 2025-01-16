@@ -14,7 +14,7 @@ import hpIcon from '@assets/stats_icons/hp_icon.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
-
+import {ProgressBar} from "react-progressbar-fancy";
 
 interface Props {
   player: PlayerProps;
@@ -214,14 +214,18 @@ class PlayerTab extends Component<Props, State> {
                     <img src={hpIcon} alt="HP" />
                     <span>HP</span>
                   </div>
-                  <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="char_stats_hp" />
+                  <ProgressBar score={(player.hp / player.maxHp)*100} hideText={true} primaryColor={'#2E7D32'} secondaryColor={'#4CAF50'} />
+                  <p className="hud_bar_status"><span style={{color: '#71deff'}}>{player.hp}</span> / <span>{player.maxHp}</span></p>
+                  {/* <TabBar title="HP" value={player.hp} maxValue={player.maxHp} barClass="char_stats_hp" /> */}
                 </div>
                 {hasSpells && <div className="player_content_stats_bar">
                   <div className="player_content_stats_icon">
                     <img src={mpIcon} alt="MP" />
                     <span>MP</span>
                   </div>
-                  <TabBar title="MP" value={player.mp} maxValue={player.maxMp} barClass="char_stats_mp" />
+                  <ProgressBar score={(player.mp / player.maxMp)*100} hideText={true} primaryColor={'#1565C0'} secondaryColor={'#2196F3'} />
+                  <p className="hud_bar_status"><span style={{color: '#71deff'}}>{player.mp}</span> / <span>{player.maxMp}</span></p>
+                  {/* <TabBar title="MP" value={player.mp} maxValue={player.maxMp} barClass="char_stats_mp" /> */}
                 </div>}
                 <div className="player_content_statuses">
                   {Object.keys(player.statuses).map((status: string) => player?.statuses[status] !== 0 && <div>
