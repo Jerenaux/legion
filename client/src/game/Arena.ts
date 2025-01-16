@@ -827,6 +827,8 @@ export class Arena extends Phaser.Scene
         const player = this.getPlayer(team, num);
         const spell = getSpellById(id);
         player.castAnimation(flag, spell?.name);
+        const { x: pixelX, y: pixelY } = this.gridToPixelCoords(player.gridX, player.gridY);
+        // this.spellCam(pixelX, pixelY, false);
         // if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
     }
 
@@ -943,8 +945,11 @@ export class Arena extends Phaser.Scene
         let pixelY = pixelYInitial;
         if (spell.yoffset) pixelY += spell.yoffset;
 
-        if (isKill) this.killCam(pixelX, pixelY);
-
+        if (isKill) {
+            this.killCam(pixelX, pixelY);
+        } else {
+            this.spellCam(pixelX, pixelY);
+        }
         const scale = spell.scale > 1 ? spell.scale : LOCAL_ANIMATION_SCALE;
         this.localAnimationSprite.setPosition(pixelX, pixelY)
             .setVisible(true)
@@ -957,10 +962,69 @@ export class Arena extends Phaser.Scene
             const duration = isKill ? 2000 : 250;
             const intensity = 0.002;
             this.cameras.main.shake(duration, intensity);
-         } 
-        //  events.emit(`playerCastSpell`);
-        //  events.emit(`playerCastSpell_${spell.id}`);
-        //  events.emit('performAction');
+        } 
+    }
+
+    // Add this new method to handle camera movement
+    panCameraWithOffset(targetX: number, targetY: number, duration: number = 1000, easing: string = 'Cubic.easeOut') {
+        // Get screen dimensions and target position
+        const screenWidth = this.cameras.main.width;
+        const screenHeight = this.cameras.main.height;
+
+        // Calculate camera movement from center
+        const moveRatio = 0.4;
+        const screenCenterX = screenWidth/2;
+        const screenCenterY = screenHeight/2;
+        
+        const offsetX = (targetX - screenCenterX) * moveRatio;
+        const offsetY = (targetY - screenCenterY) * moveRatio;
+
+        // Pan camera smoothly from center
+        this.cameras.main.pan(
+            screenCenterX + offsetX,
+            screenCenterY + offsetY,
+            duration,
+            easing
+        );
+    }
+
+    // Update spellCam to use the new method
+    spellCam(pixelX: number, pixelY: number, revert = false) {
+        const originalScrollX = this.cameras.main.scrollX;
+        const originalScrollY = this.cameras.main.scrollY;
+        
+        this.panCameraWithOffset(pixelX, pixelY);
+
+        if (revert) {
+            // After animation duration, pan back to original position
+            setTimeout(() => {
+                this.cameras.main.pan(
+                    this.cameras.main.width/2 + originalScrollX,
+                    this.cameras.main.height/2 + originalScrollY,
+                    1000,
+                    'Power2'
+                );
+            }, 1000);
+        }
+    }
+
+    // Update highlightTurnee to use the new method
+    highlightTurnee() {
+        if (!this.turnee) return;
+        
+        const player = this.getPlayer(this.turnee.team, this.turnee.num);
+        if (!player) return;
+
+        // If killcam is active, wait for it to finish before highlighting turnee
+        if (this.killCamActive) {
+            this.time.delayedCall(KILL_CAM_DURATION * 1000, () => {
+                this.highlightTurnee();
+            });
+            return;
+        }
+
+        const {x, y} = this.gridToPixelCoords(player.gridX, player.gridY);
+        this.panCameraWithOffset(x, y);
     }
 
     processGameEnd(data: OutcomeData) {
@@ -1982,42 +2046,6 @@ export class Arena extends Phaser.Scene
         } else {
             console.warn(`No handler found for replay event: ${message.event}`);
         }
-    }
-
-    highlightTurnee() {
-        if (!this.turnee) return;
-        
-        const player = this.getPlayer(this.turnee.team, this.turnee.num);
-        if (!player) return;
-
-        // If killcam is active, wait for it to finish before highlighting turnee
-        if (this.killCamActive) {
-            this.time.delayedCall(KILL_CAM_DURATION * 1000, () => {
-                this.highlightTurnee();
-            });
-            return;
-        }
-
-        // Get screen dimensions and target position
-        const screenWidth = this.cameras.main.width;
-        const screenHeight = this.cameras.main.height;
-        const {x, y} = this.gridToPixelCoords(player.gridX, player.gridY);
-
-        // Calculate camera movement from center
-        const moveRatio = 0.4;
-        const screenCenterX = screenWidth/2;
-        const screenCenterY = screenHeight/2;
-        
-        const offsetX = (x - screenCenterX) * moveRatio;
-        const offsetY = (y - screenCenterY) * moveRatio;
-
-        // Pan camera smoothly from center
-        this.cameras.main.pan(
-            screenCenterX + offsetX,
-            screenCenterY + offsetY,
-            1000,
-            'Cubic.easeOut'
-        );
     }
 
     darkenScene(targetHighlight: TargetHighlight = TargetHighlight.ENEMY) {
