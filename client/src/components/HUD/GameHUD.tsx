@@ -43,7 +43,7 @@ interface GameHUDState {
   turnDuration: number;
   timeLeft: number;
   turnNumber: number;
-  tutorialPosition: 'top' | 'bottom';
+  tutorialPosition: 'bottom' | 'spells' | 'items';
 }
 
 const events = new EventEmitter();

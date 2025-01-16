@@ -4,11 +4,10 @@ import { EngagementStats } from '@legion/shared/interfaces';
 
 interface TutorialMessage {
     content: string;
-    position?: 'top' | 'bottom';
+    position?: 'bottom' | 'spells' | 'items';
 }
 
 export class TutorialManager {
-    private arena: Arena;
     private engagementStats: EngagementStats;
     private messageQueue: TutorialMessage[] = [];
     private isProcessingQueue = false;
@@ -25,11 +24,11 @@ export class TutorialManager {
         },
         howToCastSpell: {
             content: "Click on a spell icon to cast it!",
-            position: 'top'
+            position: 'spells'
         },
         howToUseItem: {
             content: "Click an item icon to use it!",
-            position: 'top'
+            position: 'items'
         },
         howToDealWithFlames: {
             content: "Move away from flames to avoid repeated damage!"
@@ -48,12 +47,11 @@ export class TutorialManager {
         },
         howToDealWithLowMP: {
             content: "You can't cast spells without enough MP!",
-            position: 'top'
+            position: 'spells'
         }
     };
 
     constructor(arena: Arena) {
-        this.arena = arena;
         // @ts-ignore
         this.engagementStats = {};
         
@@ -72,7 +70,7 @@ export class TutorialManager {
         events.on('performAction', () => {
             events.emit('hideTutorialMessage');
         });
-        events.on('enemyTurn', () => {
+        events.on('turnStarted', () => {
             events.emit('hideTutorialMessage');
         });
 
@@ -110,12 +108,12 @@ export class TutorialManager {
         }
 
         if (!this.engagementStats.everUsedItem) {
-            events.on('selectCharacter_hasItems', () => {
+            events.on('selectCharacter_hasItem', () => {
                 this.queueMessage('howToUseItem');
             });
             events.on('playerUseItem', () => {
                 this.engagementStats.everUsedItem = true;
-                events.removeAllListeners('selectCharacter_hasItems');
+                events.removeAllListeners('selectCharacter_hasItem');
             });
         }
 
@@ -213,10 +211,9 @@ export class TutorialManager {
     }
 
     destroy() {
-        // Add cleanup for the new event listener
         events.removeAllListeners('updateEngagementStats');
-        
-        // Clean up all event listeners
+        events.removeAllListeners('selectCharacter_hasItem');
+        events.removeAllListeners('selectCharacter_2');
         events.removeAllListeners('selectCharacter');
         events.removeAllListeners('hasEnemy');
         events.removeAllListeners('playerMoved');

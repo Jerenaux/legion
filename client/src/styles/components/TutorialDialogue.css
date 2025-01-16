@@ -14,10 +14,12 @@
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
   border: 0.1vw solid #00ffff;
   box-shadow: 
-    0 0.1vw 0 #00ffff,
-    0 0.2vw 0 #005f5f;
+    0 0 10px rgba(0, 255, 255, 0.3),
+    0 0 20px rgba(0, 255, 255, 0.2),
+    inset 0 0 8px rgba(0, 255, 255, 0.2);
   box-sizing: border-box;
   overflow-x: hidden;
+  animation: dialogueGlow 2s ease-in-out infinite;
 }
 
 .tutorial-dialogue.visible {
@@ -110,6 +112,8 @@
   font-size: 0.9vw;
   min-width: 60px;
   z-index: 1;
+  animation: buttonPulse 1.5s ease-in-out infinite;
+  background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.2));
 }
 
 .tutorial-dialogue-next:hover {
@@ -132,6 +136,7 @@
   border-left: 0.5vw solid currentColor;
   border-top: 0.3vw solid transparent;
   border-bottom: 0.3vw solid transparent;
+  animation: arrowBounce 1s ease-in-out infinite;
 }
 
 @media (max-width: 768px) {
@@ -174,6 +179,7 @@
   max-height: 15vh;
   overflow-y: auto;
   /* padding-right: 3vw; */
+  animation: textFadeIn 0.5s ease-out;
 }
 
 /* Add a custom scrollbar style for webkit browsers */
@@ -214,7 +220,64 @@
 }
 
 .tutorial-dialogue.top {
-  top: 20px;
-  left: auto;
-  right: 19vw;
-} 
+  position: fixed;
+  margin-left: 2vw;
+  margin-top: 4vw;
+}
+
+@keyframes dialogueGlow {
+  0% {
+    box-shadow: 
+      0 0 10px rgba(0, 255, 255, 0.3),
+      0 0 20px rgba(0, 255, 255, 0.2),
+      inset 0 0 8px rgba(0, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 15px rgba(0, 255, 255, 0.4),
+      0 0 30px rgba(0, 255, 255, 0.3),
+      inset 0 0 12px rgba(0, 255, 255, 0.3);
+  }
+  100% {
+    box-shadow: 
+      0 0 10px rgba(0, 255, 255, 0.3),
+      0 0 20px rgba(0, 255, 255, 0.2),
+      inset 0 0 8px rgba(0, 255, 255, 0.2);
+  }
+}
+
+@keyframes buttonPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  }
+}
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes arrowBounce {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+ 

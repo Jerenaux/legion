@@ -7,13 +7,14 @@ const DEFAULT_SPEAKER_NAME = 'Taskmaster';
 
 interface TutorialDialogueProps {
   messages: string[];
-  position?: 'top' | 'bottom';
+  position?: 'bottom' | 'spells' | 'items';
 }
 
 interface TutorialDialogueState {
   messageIndex: number;
   displayedMessage: string;
   isAvatarLoaded: boolean;
+  dialoguePosition: { top?: number; left?: number } | null;
 }
 
 class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogueState> {
@@ -24,11 +25,16 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
     messageIndex: 0,
     displayedMessage: '',
     isAvatarLoaded: false,
+    dialoguePosition: null
   };
 
   componentDidMount() {
     if (this.props.messages) {
       this.resetTyping();
+    }
+    if (this.props.position === 'spells' || this.props.position === 'items') {
+      this.updateDialoguePosition(this.props.position);
+      window.addEventListener('resize', this.updateDialoguePosition.bind(this, this.props.position));
     }
   }
 
@@ -43,6 +49,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
 
   componentWillUnmount() {
     this.clearTypingTimer();
+    window.removeEventListener('resize', this.updateDialoguePosition.bind(this, this.props.position));
   }
 
   resetTyping() {
@@ -91,15 +98,35 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
     );
   }
 
+  updateDialoguePosition = (position: 'spells' | 'items') => {
+    const anchor = position === 'spells' ? 'Spells' : 'Items';
+    const firstIcon = document.querySelector(`#player_hud_${anchor}`);
+    if (firstIcon) {
+      const rect = firstIcon.getBoundingClientRect();
+      this.setState({
+        dialoguePosition: {
+          top: rect.bottom - 10, 
+          left: rect.right + 10,
+        }
+      });
+    }
+  };
+
   render() {
-    const { displayedMessage, isAvatarLoaded, messageIndex } = this.state;
+    const { displayedMessage, isAvatarLoaded, messageIndex, dialoguePosition } = this.state;
     const { messages, position = 'bottom' } = this.props;
 
     if (displayedMessage.length === 0) return null;
 
+    const style = (position === 'spells' || position === 'items') && dialoguePosition
+      ? dialoguePosition
+      : undefined;
+
     return (
-      // <div className={`tutorial-dialogue ${position} ${isAvatarLoaded ? 'visible' : ''}`}>
-      <div className={`tutorial-dialogue ${position} visible`}>
+      <div 
+        className={`tutorial-dialogue ${position} visible`}
+        style={style}
+      >
         {/* <img 
           src={avatarSrc} 
           alt="Character Avatar" 

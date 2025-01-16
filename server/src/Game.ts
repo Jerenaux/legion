@@ -754,7 +754,7 @@ export abstract class Game
         });
 
         this.turnSystem.processAction(player, item.speedClass);
-        this.processTurn();
+        this.processTurn(ITEM_DELAY);
     }
 
     applyMagic(spell: Spell, player: ServerPlayer, x: number, y: number, team: Team, targetPlayer: ServerPlayer | null) {

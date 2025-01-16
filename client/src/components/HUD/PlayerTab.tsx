@@ -115,6 +115,7 @@ class PlayerTab extends Component<Props, State> {
         <div className="grid player_hud_action_container gap_4 padding_y_4">
           {Array.from({ length: 6 }, (_, idx) => (
             <div 
+              id={`player_hud_${title}`}
               className={`player_hud_skills flex items_center justify_center relative ${player[inventoryType === InventoryType.CONSUMABLES ? 'pendingItem' : 'pendingSpell'] === idx ? 'blinking-gradient' : ''}`}
               key={idx}
               style={{

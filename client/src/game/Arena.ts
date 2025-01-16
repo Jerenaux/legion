@@ -994,13 +994,15 @@ export class Arena extends Phaser.Scene
     }
 
     processTurnee(data: {num: number, team: number, turnDuration: number, timeLeft: number}) {
-        this.turnee = data;
-        this.selectTurnee();
-        this.highlightTurnee();
         // Determine if turnee is player
         if (data.team != this.playerTeamId) {
             events.emit('enemyTurn');
         }
+        events.emit('turnStarted');
+
+        this.turnee = data;
+        this.selectTurnee();
+        this.highlightTurnee();
     }
 
     updateMusicIntensity(ratio){

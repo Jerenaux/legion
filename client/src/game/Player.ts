@@ -5,7 +5,7 @@ import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
-import { Target, StatusEffect, Class } from "@legion/shared/enums";
+import { Target, StatusEffect, Class, Stat } from "@legion/shared/enums";
 import { Arena } from "./Arena";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
 import { paralyzingStatuses } from '@legion/shared/utils';
@@ -438,8 +438,8 @@ export class Player extends Phaser.GameObjects.Container {
             this.checkHeartbeat();
             this.arena.relayEvent(`selectCharacter`);
             this.arena.relayEvent(`selectCharacter_${this.class}`);
-            if (this.hasItems()) {
-                this.arena.relayEvent(`selectCharacter_hasItems`);
+            if (this.hasUsableItem()) {
+                this.arena.relayEvent(`selectCharacter_hasItem`);
             }
 
             // Iterate over statuses and emit events for each
@@ -988,6 +988,18 @@ export class Player extends Phaser.GameObjects.Container {
 
     hasItems() {
         return this.inventory.length > 0;
+    }
+
+    hasUsableItem() {
+        // Iterate over items, retun true if at least one replenishes HP and the character's
+        // HP is less than maxHP, same for MP
+        return this.inventory.some(item => {
+            return item.target == Target.SELF 
+            && (
+                item.effects.some(effect => effect.stat == Stat.HP && effect.value > 0 && this.hp < this.maxHP) 
+                || item.effects.some(effect => effect.stat == Stat.MP && effect.value > 0 && this.mp < this.maxMP)
+            );
+        });
     }
 
     destroy() {
