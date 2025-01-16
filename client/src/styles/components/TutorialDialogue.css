@@ -3,9 +3,9 @@
   left: 20px;
   background-color: #242b37;
   color: #e0e0e0;
-  padding: 1vh 2vw;
+  padding: 1vh 1vw;
   border-radius: 0.5vw;
-  width: 30vw;
+  width: 20vw;
   max-width: 600px;
   z-index: 1000;
   display: flex;
@@ -58,7 +58,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding-right: 1vw;
+  padding: 0.5vw;
 }
 
 .tutorial-dialogue-speaker {
@@ -173,7 +173,7 @@
   text-shadow: 0 0.03vw 0.03vw rgba(0, 0, 0, 0.1);
   max-height: 15vh;
   overflow-y: auto;
-  padding-right: 3vw;
+  /* padding-right: 3vw; */
 }
 
 /* Add a custom scrollbar style for webkit browsers */
@@ -216,5 +216,5 @@
 .tutorial-dialogue.top {
   top: 20px;
   left: auto;
-  right: 20px;
+  right: 19vw;
 } 

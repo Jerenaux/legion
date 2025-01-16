@@ -170,7 +170,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   isLoaded: true,
                   inventory: data.inventory,
                   carrying_capacity: data.carrying_capacity,
-                  tokens: data.tokens || {}
+                  tokens: data.tokens || {},
+                  engagementStats: data.engagementStats || {},
               }
           });
       } catch (error) {

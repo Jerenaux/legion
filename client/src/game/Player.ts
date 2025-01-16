@@ -464,6 +464,11 @@ export class Player extends Phaser.GameObjects.Container {
             if (this.spells.length > 0 && this.mp < cheapestSpell.cost) {
                 this.arena.relayEvent(`hasLowMP`);
             }
+
+            // Check if player is next to an enemy
+            if (this.arena.hasEnemyNextTo(this.gridX, this.gridY)) {
+                this.arena.relayEvent(`hasEnemy`);
+            }
         }
     }
 

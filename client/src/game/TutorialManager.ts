@@ -32,7 +32,7 @@ export class TutorialManager {
             position: 'top'
         },
         howToDealWithFlames: {
-            content: "Move away from flames to avoid repeated damage."
+            content: "Move away from flames to avoid repeated damage!"
         },
         howToBreakIce: {
             content: "Attack ice with another character to break it!"
@@ -47,7 +47,8 @@ export class TutorialManager {
             content: "Paralysis prevents you from acting for several turns!"
         },
         howToDealWithLowMP: {
-            content: "You can't cast spells without enough MP!"
+            content: "You can't cast spells without enough MP!",
+            position: 'top'
         }
     };
 
@@ -71,6 +72,9 @@ export class TutorialManager {
         events.on('performAction', () => {
             events.emit('hideTutorialMessage');
         });
+        events.on('enemyTurn', () => {
+            events.emit('hideTutorialMessage');
+        });
 
         if (!this.engagementStats.everMoved) {
             events.on('selectCharacter', () => {
@@ -81,10 +85,9 @@ export class TutorialManager {
                 events.removeAllListeners('selectCharacter');
 
                 if (!this.engagementStats.everAttacked) {
-                    console.log('Adding playerAttacked listener');
-                    events.on('selectCharacter', () => {
+                    events.on('hasEnemy', () => {
                         this.queueMessage('howToAttack');
-                        events.removeAllListeners('selectCharacter');
+                        events.removeAllListeners('hasEnemy');
                     });
                     events.on('playerAttacked', () => {
                         this.engagementStats.everAttacked = true;
@@ -128,6 +131,7 @@ export class TutorialManager {
 
         if (!this.engagementStats.everSawIce) {
             events.on('hasIce', () => {
+                console.log('Catching hasIce');
                 if (this.queueMessage('howToDealWithIce')) {
                     this.engagementStats.everSawIce = true;
                     events.removeAllListeners('hasIce');
@@ -135,36 +139,39 @@ export class TutorialManager {
             });
         }
 
-        // Status effects
         if (!this.engagementStats.everPoisoned) {
-            events.on('hasStatus_POISON', () => {
+            events.on('hasStatus_Poison', () => {
+                console.log('Catching hasStatus_Poison');
                 if (this.queueMessage('howToDealWithPoison')) {
                     this.engagementStats.everPoisoned = true;
-                    events.removeAllListeners('hasStatus_POISON');
+                    events.removeAllListeners('hasStatus_Poison');
                 }
             });
         }
 
         if (!this.engagementStats.everSilenced) {
-            events.on('hasStatus_MUTE', () => {
+            events.on('hasStatus_Mute', () => {
+                console.log('Catching hasStatus_Mute');
                 if (this.queueMessage('howToDealWithSilence')) {
                     this.engagementStats.everSilenced = true;
-                    events.removeAllListeners('hasStatus_MUTE');
+                    events.removeAllListeners('hasStatus_Mute');
                 }
             });
         }
 
         if (!this.engagementStats.everParalyzed) {
-            events.on('hasStatus_PARALYZE', () => {
+            events.on('hasStatus_Paralyze', () => {
+                console.log('Catching hasStatus_Paralyze');
                 if (this.queueMessage('howToDealWithParalysis')) {
                     this.engagementStats.everParalyzed = true;
-                    events.removeAllListeners('hasStatus_PARALYZE');
+                    events.removeAllListeners('hasStatus_Paralyze');
                 }
             });
         }
 
         if (!this.engagementStats.everLowMP) {
             events.on('hasLowMP', () => {
+                console.log('Catching hasLowMP');
                 if (this.queueMessage('howToDealWithLowMP')) {
                     this.engagementStats.everLowMP = true;
                     events.removeAllListeners('hasLowMP');
@@ -179,7 +186,7 @@ export class TutorialManager {
         
         // Check if enough time has passed since the last message
         if (now - this.lastMessageTime < this.MESSAGE_COOLDOWN) {
-            // console.log(`[TutorialManager:queueMessage] Skipping message: too soon after last message`);
+            console.log(`[TutorialManager:queueMessage] Skipping message: too soon after last message`);
             return false; // Return false to indicate message wasn't queued
         }
 
@@ -188,6 +195,7 @@ export class TutorialManager {
             this.messageQueue.push(message);
             this.lastMessageTime = now;
             this.processMessageQueue();
+            console.log(`[TutorialManager:queueMessage] Queued message: ${messageKey}`);
             return true; // Return true to indicate message was queued
         }
         return false;
@@ -210,6 +218,7 @@ export class TutorialManager {
         
         // Clean up all event listeners
         events.removeAllListeners('selectCharacter');
+        events.removeAllListeners('hasEnemy');
         events.removeAllListeners('playerMoved');
         events.removeAllListeners('playerAttacked');
         events.removeAllListeners('selectedSpell');

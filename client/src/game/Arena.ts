@@ -354,6 +354,9 @@ export class Arena extends Phaser.Scene
         this.send('spell', data);
         this.toggleTargetMode(false);
         this.selectedPlayer.pendingSpell = null;
+        events.emit(`playerCastSpell`);
+        events.emit(`playerCastSpell_${this.selectedPlayer.pendingSpell}`);
+        events.emit('performAction');
     }
 
     sendUseItem(index: number, x: number, y: number, player: Player | null) {
@@ -955,9 +958,9 @@ export class Arena extends Phaser.Scene
             const intensity = 0.002;
             this.cameras.main.shake(duration, intensity);
          } 
-         events.emit(`playerCastSpell`);
-         events.emit(`playerCastSpell_${spell.id}`);
-         events.emit('performAction');
+        //  events.emit(`playerCastSpell`);
+        //  events.emit(`playerCastSpell_${spell.id}`);
+        //  events.emit('performAction');
     }
 
     processGameEnd(data: OutcomeData) {
@@ -994,6 +997,10 @@ export class Arena extends Phaser.Scene
         this.turnee = data;
         this.selectTurnee();
         this.highlightTurnee();
+        // Determine if turnee is player
+        if (data.team != this.playerTeamId) {
+            events.emit('enemyTurn');
+        }
     }
 
     updateMusicIntensity(ratio){
@@ -1342,6 +1349,13 @@ export class Arena extends Phaser.Scene
             tileSprite.clearTint();
         });
     }
+
+    hasEnemyNextTo(gridX, gridY) {
+        const enemyTeam = this.teamsMap.get(this.getOtherTeam(this.playerTeamId))
+        return enemyTeam.getMembers().some(member => {
+            return Math.abs(member.gridX - gridX) <= 1 && Math.abs(member.gridY - gridY) <= 1;
+        });
+    }
     
     // PhaserCreate
     create()
@@ -1487,9 +1501,8 @@ export class Arena extends Phaser.Scene
         
         events.emit('gameInitialized');
         
-        if (this.gameSettings.game0) {
-            this.tutorialManager = new TutorialManager(this);
-        }
+    
+        this.tutorialManager = new TutorialManager(this);
     }
 
     sleep(duration: number): Promise<void> {

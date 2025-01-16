@@ -98,15 +98,16 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
     if (displayedMessage.length === 0) return null;
 
     return (
-      <div className={`tutorial-dialogue ${position} ${isAvatarLoaded ? 'visible' : ''}`}>
-        <img 
+      // <div className={`tutorial-dialogue ${position} ${isAvatarLoaded ? 'visible' : ''}`}>
+      <div className={`tutorial-dialogue ${position} visible`}>
+        {/* <img 
           src={avatarSrc} 
           alt="Character Avatar" 
           className="tutorial-dialogue-avatar" 
           onLoad={this.handleAvatarLoad}
-        />
+        /> */}
         <div className="tutorial-dialogue-content">
-          <div className="tutorial-dialogue-speaker">{DEFAULT_SPEAKER_NAME}</div>
+          {/* <div className="tutorial-dialogue-speaker">{DEFAULT_SPEAKER_NAME}</div> */}
           <p className="tutorial-dialogue-message">{displayedMessage}</p>
         </div>
         {messageIndex < messages.length - 1 && (
