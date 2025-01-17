@@ -5,7 +5,7 @@
   transform: translateX(-50%);
   width: 50%;
   min-width: 800px;
-  height: 80px;
+  height: 9vh;
   z-index: 9;
   transform-origin: bottom center;
 }
@@ -117,6 +117,7 @@
 @media screen and (max-width: 1500px) and (orientation: landscape) {
   .player_bar_container {
     width: 75%;
+    height: 20vh;
     transform: translateX(-50%) scale(0.9);
     transform-origin: bottom center;
   }
@@ -312,4 +313,19 @@
 
 .player_bar .circular_timer {
   transform: scale(0.8);
+}
+
+/* Default state - with animations */
+.progressBarFancyContainer .progressFill {
+  transition: all 0.3s ease-in-out;
+}
+
+.progressBarFancyContainer .particlesContainer {
+  transition: all 0.3s ease-in-out;
+}
+
+/* No animation state */
+.no-progress-animation .progressBarFancyContainer .progressFill,
+.no-progress-animation .progressBarFancyContainer .particlesContainer {
+  transition: none;
 } 

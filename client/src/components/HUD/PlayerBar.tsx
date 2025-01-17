@@ -20,11 +20,12 @@ interface PlayerBarProps {
   timeLeft?: number;
   turnNumber?: number;
   onPassTurn?: () => void;
+  animate?: boolean;
 }
 
 class PlayerBar extends Component<PlayerBarProps> {
   render({ hp, maxHp, mp, maxMp, hasSpells, statuses, isPlayerTurn, 
-          turnDuration, timeLeft, turnNumber, onPassTurn }: PlayerBarProps) {
+          turnDuration, timeLeft, turnNumber, onPassTurn, animate = true }: PlayerBarProps) {
      // Add mock values for each status effect (DO NOT REMOVE)
     statuses = {
       [StatusEffect.FREEZE]: 1,
@@ -36,7 +37,7 @@ class PlayerBar extends Component<PlayerBarProps> {
       [StatusEffect.HASTE]: 7,
     };
     return (
-      <div className="player_bar_container">
+      <div className={`player_bar_container ${animate ? '' : 'no-progress-animation'}`}>
         <div className="player_bar">
           {isPlayerTurn ? (
             <>

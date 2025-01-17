@@ -45,6 +45,7 @@ interface GameHUDState {
   timeLeft: number;
   turnNumber: number;
   tutorialPosition: 'bottom' | 'spells' | 'items';
+  animate: boolean;
 }
 
 const events = new EventEmitter();
@@ -79,7 +80,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     turnNumber: 0,
     turnDuration: 0,
     tutorialPosition: 'bottom',
+    animate: true,
   } as GameHUDState;
+
+  lastPlayerKey = null;
 
   componentDidMount() {
     events.on('showPlayerBox', this.showPlayerBox);
@@ -133,7 +137,14 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   showPlayerBox = (playerData: PlayerProps) => {
-    this.setState({ player: playerData });
+    const playerKey = `${playerData.team}-${playerData.number}`;
+    const isCharacterSwitch = this.lastPlayerKey !== playerKey;
+    this.lastPlayerKey = playerKey;
+    
+    this.setState({ 
+      player: playerData,
+      animate: !isCharacterSwitch
+    });
   }
 
   updateOverview = (
@@ -261,6 +272,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           timeLeft={this.state.timeLeft}
           turnNumber={this.state.turnNumber}
           onPassTurn={() => events.emit('passTurn')}
+          animate={this.state.animate}
         />
         <Timeline
           isTutorial={isTutorialMode}
