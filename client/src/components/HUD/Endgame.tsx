@@ -5,6 +5,8 @@ import { CharacterUpdate, GameOutcomeReward } from '@legion/shared/interfaces';
 import XPCountUp from './XPCountUp';
 import { ChestColor, PlayMode } from '@legion/shared/enums';
 import OpenedChest from '../dailyLoot/OpenedChest';
+import { route } from 'preact-router';
+import { events } from './GameHUD';
 
 // Asset imports
 import victoryBg from '@assets/game_end/victory_bg.png';
@@ -46,6 +48,7 @@ interface EndgameProps {
     chests: GameOutcomeReward[];
     chestKey: ChestColor;
     game0: boolean;
+    mode: PlayMode;
     eventEmitter: any;
     closeGame: () => void;
 }
@@ -93,7 +96,22 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         }, stepTime);
     }
 
-   
+    handlePlayAgain = () => {
+        const modesToQueueMap = {
+            [PlayMode.PRACTICE]: PlayMode.PRACTICE,
+            [PlayMode.CASUAL]: PlayMode.CASUAL,
+            [PlayMode.CASUAL_VS_AI]: PlayMode.CASUAL,
+            [PlayMode.RANKED]: PlayMode.RANKED,
+            [PlayMode.RANKED_VS_AI]: PlayMode.RANKED,
+        }
+        events.emit('exitGame');
+        // If mode not in map, redirect to /play
+        if (modesToQueueMap[this.props.mode]) {
+            route(`/queue/${modesToQueueMap[this.props.mode]}`);
+        } else {
+            route('/play');
+        }
+    }
 
     endGameTitleBg = () => {
         return {
@@ -130,6 +148,10 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         const isGame0 = this.props.game0;
         const grade = isGame0 ? 'A' : this.props.grade;
 
+        const showPlayAgain = !this.props.game0 && 
+            this.props.mode !== PlayMode.CASUAL_VS_FRIEND && 
+            this.props.mode !== PlayMode.STAKED;
+
         return (
             <div className="endgame">
                 <div className="defeat_title" style={this.endGameTitleBg()}>
@@ -159,18 +181,6 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     ))}
                 </div>
 
-                {/* {isTutorial && <div className="tutorial-end">
-                    You can keep playing without registering, but make sure to sign up if you don't want to lose your progress! 
-
-                    <div className="endgame_leave" onClick={this.closeGame}>
-                        <span>Continue without signing up</span>
-                    </div>
-
-                    <div className="endgame_leave" onClick={this.closeGame}>
-                        <span>Sign up</span>
-                    </div>
-                </div>} */}
-
                 {this.props.isWinner && this.props.chests.length > 0 && (
                     <div className="endgame_rewards_container">
                         <div className="endgame_rewards_heading_container">
@@ -191,8 +201,21 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     </div>
                 )}
 
-                <div className="endgame_leave" onClick={this.props.closeGame}>
-                    <span>Continue</span>
+                <div className="endgame_buttons">
+                    {showPlayAgain && (
+                        <div 
+                            className="endgame_button endgame_button_primary"
+                            onClick={this.handlePlayAgain}
+                        >
+                            <span>Play Again!</span>
+                        </div>
+                    )}
+                    <div 
+                        className="endgame_button endgame_button_secondary"
+                        onClick={this.props.closeGame}
+                    >
+                        <span>Main Menu</span>
+                    </div>
                 </div>
 
                 {!!this.state.selectedChest && <OpenedChest 

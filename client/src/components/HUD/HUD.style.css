@@ -1319,3 +1319,72 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+.endgame_buttons {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    width: 280px;
+}
+
+.endgame_button {
+    width: 100%;
+    height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-family: 'Kim';
+    font-size: 20px;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    position: relative;
+    border-radius: 4px;
+}
+
+.endgame_button_primary {
+    background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
+    color: #1c1f25;
+    border: 2px solid #ffd700;
+    box-shadow: 
+        0 0 20px rgba(255, 166, 0, 0.3),
+        inset 0 0 10px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.endgame_button_primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 0 30px rgba(255, 166, 0, 0.5),
+        inset 0 0 15px rgba(255, 255, 255, 0.7);
+}
+
+.endgame_button_primary:active {
+    transform: translateY(1px);
+}
+
+.endgame_button_secondary {
+    background: linear-gradient(180deg, #4583d0 0%, #274c57 100%);
+    color: white;
+    border: 2px solid #4583d0;
+    box-shadow: 
+        0 0 15px rgba(69, 131, 208, 0.3),
+        inset 0 0 8px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.endgame_button_secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 0 25px rgba(69, 131, 208, 0.5),
+        inset 0 0 12px rgba(255, 255, 255, 0.3);
+}
+
+.endgame_button_secondary:active {
+    transform: translateY(1px);
+}

@@ -702,7 +702,7 @@ export class Arena extends Phaser.Scene
     }
 
     relayEvent(event, data?) {
-        console.log(`[Arena:relayEvent] Emitting event: ${event}`);
+        // console.log(`[Arena:relayEvent] Emitting event: ${event}`);
         events.emit(event, data);
     }
 

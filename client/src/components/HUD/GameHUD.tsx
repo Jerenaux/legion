@@ -50,7 +50,7 @@ const events = new EventEmitter();
 
 class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
-  state = {
+  getInitialState = () => ({
     playerVisible: false,
     player: null,
     pendingSpell: false,
@@ -77,8 +77,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     timeLeft: 0,
     turnNumber: 0,
     turnDuration: 0,
-    tutorialPosition: 'bottom',
-  } as GameHUDState;
+    tutorialPosition: 'bottom' as const,
+  });
+
+  state = this.getInitialState();
 
   componentDidMount() {
     events.on('showPlayerBox', this.showPlayerBox);
@@ -215,6 +217,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
     const showEnemyTurnBanner = !player?.isPlayer && gameInitialized && !this.state.gameOver;
 
+
+    console.log(`MODE = ${mode}`);
     return (
       <div className="gamehud height_full flex flex_col justify_between padding_bottom_16">
         <>
@@ -273,6 +277,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           characters={this.state.characters}
           chestKey={ChestColor.SILVER}
           game0={this.state.game0}
+          mode={mode}
           closeGame={this.closeGame}
           eventEmitter={events}
         />}

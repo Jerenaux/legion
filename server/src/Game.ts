@@ -482,17 +482,15 @@ export abstract class Game
             this.duration = Date.now() - this.startTime;
             this.gameOver = true;
 
-            this.saveReplayToDb();
-
             clearTimeout(this.audienceTimer!);
             clearTimeout(this.checkEndTimer!);
             clearInterval(this.turnTimer!);
 
             const results = {};
-            let winnerUID;
-            if (!this.sockets.length) return;
+            let winnerUID = '';
             this.teams.forEach(team => {
                 const uid = team.teamData.playerUID;
+                // Skip AI players
                 if (!uid || typeof uid !== 'string' || uid.trim() === '') {
                     return;
                 }
@@ -520,6 +518,8 @@ export abstract class Game
                 }
             });
             this.updateGameInDB(winnerUID, results);
+            this.saveReplayToDb();
+
         } catch (error) {
             console.error(error);
         }
