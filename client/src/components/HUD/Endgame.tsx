@@ -7,6 +7,7 @@ import { ChestColor, PlayMode } from '@legion/shared/enums';
 import OpenedChest from '../dailyLoot/OpenedChest';
 import { route } from 'preact-router';
 import { events } from './GameHUD';
+import './Endgame.style.css';
 
 // Asset imports
 import victoryBg from '@assets/game_end/victory_bg.png';
