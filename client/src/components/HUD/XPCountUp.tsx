@@ -28,7 +28,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
     }
 
     componentDidMount(): void { 
-        const interval = Math.max(0.1, this.state.totalXP / 500);
+        const baseInterval = Math.max(0.1, this.state.totalXP / 500);
         this.timer = setInterval(() => {
             const maxXP = getXPThreshold(this.props.member.level); 
 
@@ -45,6 +45,8 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                 clearInterval(this.timer);
                 this.timer = null;
             } else {
+                const remainingXP = this.state.totalXP - this.state.xpCounter;
+                const interval = Math.min(baseInterval, remainingXP);
                 this.setState({ xpCounter: this.state.xpCounter + interval });
             }
         }, 10);
@@ -61,10 +63,11 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
         const maxXP = getXPThreshold(this.props.member.level); 
         const isReceivingXP = character.earnedXP > 0;
         const isResettingXP = this.state.xpCounter === 0;
+        const isLevelingUp = this.state.isLevelUp > 0;
 
         return (
-            <div className="endgame_character">
-                {this.state.isLevelUp > 0 && 
+            <div className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''}`}>
+                {isLevelingUp && 
                     <div className="endgame_character_lvlup">LEVEL UP!</div>
                 }
                 

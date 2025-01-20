@@ -149,11 +149,17 @@
     justify-content: center;
     align-items: center;
     gap: clamp(12px, 2vw, 24px);
-    padding: 0 24px;
+    padding: 24px;
     margin: 24px 0;
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.endgame_characters_grid::-webkit-scrollbar {
+    display: none;
 }
 
 .endgame_rewards_container {
@@ -251,29 +257,9 @@
     align-items: center;
     min-width: clamp(120px, 15vw, 180px);
     padding: clamp(8px, 1vh, 12px);
-    padding-top: clamp(16px, 2vh, 24px);
-}
-
-.endgame_character::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 140%;
-    transform: translateY(-50%);
-    background: linear-gradient(
-        180deg,
-        transparent 0%,
-        transparent 15%,
-        rgba(69, 131, 208, 0.15) 30%,
-        rgba(69, 131, 208, 0.3) 50%,
-        rgba(69, 131, 208, 0.15) 70%,
-        transparent 85%,
-        transparent 100%
-    );
-    z-index: -1;
-    border-radius: 12px;
+    padding-top: clamp(24px, 3vh, 32px);
+    margin: 12px 0;
+    isolation: isolate;
 }
 
 .endgame_character_level {
@@ -321,7 +307,7 @@
     height: 4px;
     background: rgba(28, 31, 37, 0.5);
     border-radius: 2px;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .endgame_character_xp_fill {
@@ -395,7 +381,7 @@
     background-color: #1c1f25;
     height: clamp(3px, 0.5vh, 4px);
     border-radius: 2px;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .endgame_meet_team_msg {
@@ -407,45 +393,108 @@
 
 .endgame_character_lvlup {
     position: absolute;
-    top: 0;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(90deg, #ffd700, #ffa600);
     color: #1c1f25;
-    font-size: clamp(10px, 1.2vh, 14px);
-    font-weight: 600;
-    padding: 4px 12px;
+    font-size: clamp(12px, 1.4vh, 16px);
+    font-weight: 700;
+    padding: 6px 16px;
     border-radius: 12px;
-    box-shadow: 0 0 15px rgba(255, 166, 0, 0.5);
-    animation: levelUpPulse 1s ease-in-out infinite;
+    box-shadow: 
+        0 0 20px rgba(255, 166, 0, 0.6),
+        0 0 40px rgba(255, 166, 0, 0.3);
+    animation: levelUpFloat 2s ease-in-out infinite;
+    z-index: 2;
+    pointer-events: none;
+    will-change: transform;
 }
 
-@keyframes levelUpPulse {
+.endgame_character.leveling-up::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    right: -20%;
+    bottom: -20%;
+    background: 
+        /* Delayed sparkles */
+        radial-gradient(circle at 50% 30%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
+        radial-gradient(circle at 25% 50%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
+        radial-gradient(circle at 75% 50%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
+        radial-gradient(circle at 50% 70%, rgba(255, 215, 0, 0.8) 0%, transparent 7%);
+    animation: sparkles 1.2s ease-out 0.15s forwards;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+.endgame_character.leveling-up::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    right: -20%;
+    bottom: -20%;
+    background: 
+        /* Inner sparkles - brighter and closer */
+        radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        radial-gradient(circle at 70% 45%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        radial-gradient(circle at 60% 55%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        /* Outer sparkles - softer and spread out */
+        radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        radial-gradient(circle at 80% 25%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        radial-gradient(circle at 15% 70%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        radial-gradient(circle at 85% 75%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        /* Background glow sparkles */
+        radial-gradient(circle at 40% 30%, rgba(255, 215, 0, 0.5) 0%, transparent 12%),
+        radial-gradient(circle at 60% 70%, rgba(255, 215, 0, 0.5) 0%, transparent 12%);
+    animation: sparkles 1.2s ease-out forwards;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+@keyframes levelUpFloat {
     0%, 100% {
-        transform: translateX(-50%) scale(1);
+        transform: translateX(-50%) translateY(0);
     }
     50% {
-        transform: translateX(-50%) scale(1.1);
+        transform: translateX(-50%) translateY(-4px);
+    }
+}
+
+@keyframes sparkles {
+    0% { 
+        opacity: 0; 
+        transform: scale(0.8) rotate(-5deg); 
+    }
+    15% {
+        opacity: 0.3;
+        transform: scale(0.9) rotate(-3deg);
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.1) rotate(2deg); 
+    }
+    75% {
+        opacity: 0.6;
+        transform: scale(1.15) rotate(4deg);
+    }
+    100% { 
+        opacity: 0; 
+        transform: scale(1.2) rotate(5deg); 
     }
 }
 
 @media (max-height: 600px) {
     .endgame_characters_grid {
-        margin: 16px 0;
+        padding: 16px;
+        margin: 12px 0;
     }
     
-    .endgame_character::before {
-        height: 120%;
-        background: linear-gradient(
-            180deg,
-            transparent 0%,
-            transparent 10%,
-            rgba(69, 131, 208, 0.15) 30%,
-            rgba(69, 131, 208, 0.3) 50%,
-            rgba(69, 131, 208, 0.15) 70%,
-            transparent 90%,
-            transparent 100%
-        );
+    .endgame_character {
+        margin: 8px 0;
     }
 }
 
