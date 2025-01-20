@@ -69,28 +69,55 @@
 
 .defeat_title {
     background-size: 100% 100%;
-    height: 54px;
-    width: 80%;
-    margin: 0 auto;
+    height: clamp(40px, 8vh, 54px);
+    width: clamp(280px, 80%, 800px);
+    margin: clamp(30px, 8vh, 50px) auto 30px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 116px;
-    margin-bottom: 30px;
     position: relative;
 }
 
 .defeat_title .defeat_title_bg {
-    height: 96px;
+    height: clamp(72px, 12vh, 96px);
+    width: auto;
+    object-fit: contain;
 }
 
 .defeat_title .defeat_title_effect {
     position: absolute;
-    top: -72px;
-    right: 32px;
-    width: 350px;
+    top: clamp(-54px, -10vh, -72px);
+    right: clamp(24px, 5%, 32px);
+    width: clamp(260px, 30%, 350px);
     animation: bounce 0.8s ease alternate;
     -webkit-animation: bounce 0.8s ease alternate;
+}
+
+@media screen and (max-height: 600px) {
+    .defeat_title {
+        margin-top: clamp(20px, 6vh, 30px);
+    }
+    
+    .defeat_title .defeat_title_effect {
+        width: clamp(200px, 25%, 260px);
+        top: clamp(-40px, -8vh, -54px);
+    }
+}
+
+@media screen and (max-height: 400px) {
+    .defeat_title {
+        margin-top: clamp(15px, 4vh, 20px);
+        height: clamp(30px, 6vh, 40px);
+    }
+    
+    .defeat_title .defeat_title_bg {
+        height: clamp(54px, 9vh, 72px);
+    }
+    
+    .defeat_title .defeat_title_effect {
+        width: clamp(160px, 20%, 200px);
+        top: clamp(-30px, -6vh, -40px);
+    }
 }
 
 .endgame_score_bg {
@@ -117,6 +144,12 @@
     color: #ffffff;
 }
 
+.endgame_characters_grid {
+    /* padding: 36px; */
+    min-height: 20vh;
+    align-items: flex-start;
+}
+
 .endgame_rewards_container {
     background-image: url("@assets/game_end/rewards_bg.png");
     background-size: 100% 100%;
@@ -128,7 +161,7 @@
     justify-content: center;
     align-items: center;
     position: absolute;
-    bottom: 94px;
+    bottom: 30vh;
     z-index: 0;
 }
 
@@ -208,112 +241,160 @@
   .endgame_character {
     background-image: url("@assets/HUD/player_info_bg.png");
     background-size: 100% 100%;
-    width: 274px;
-    height: 96px;
-    padding-right: 16px;
-  
+    width: clamp(220px, 25vw, 274px);
+    height: clamp(76px, 12vh, 96px);
+    padding-right: clamp(12px, 1.5vw, 16px);
     display: flex;
     align-items: center;
     flex-direction: row-reverse;
-    gap: 30px;
-  
+    gap: clamp(20px, 3vw, 30px);
     position: relative;
     font-family: "Kim";
-  }
-  
-  .endgame_character_lvl {
+}
+
+.endgame_character_lvl {
     background-image: url("@assets/HUD/player_lv_bg.png");
     background-size: 100% 100%;
-    width: 84px;
-    height: 84px;
-  
+    width: clamp(64px, 10vh, 84px);
+    height: clamp(64px, 10vh, 84px);
     position: absolute;
-    left: -20px;
-  
+    left: clamp(-16px, -2vw, -20px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-  }
-  
-  .endgame_character_lvl .lvl {
-    font-size: 8px;
+}
+
+.endgame_character_lvl .lvl {
+    font-size: clamp(6px, 1vh, 8px);
     font-weight: 400;
     color: #ffa600;
-  }
-  
-  .endgame_character_lvl span {
-    font-size: 16px;
+}
+
+.endgame_character_lvl span {
+    font-size: clamp(12px, 1.5vh, 16px);
     font-weight: 600;
     color: #ffffff;
-  }
-  
-  .endgame_character_info {
+}
+
+.endgame_character_info {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-width: 94px;
-  }
-  
-  .endgame_character_name {
-    font-size: 16px;
+    max-width: clamp(74px, 10vw, 94px);
+}
+
+.endgame_character_name {
+    font-size: clamp(12px, 1.5vh, 16px);
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     text-transform: capitalize;
     white-space: nowrap;
-  }
-  
-  .endgame_character_class {
-    font-size: 12px;
+}
+
+.endgame_character_class {
+    font-size: clamp(9px, 1.2vh, 12px);
     color: #ffa600;
     text-transform: uppercase;
-  }
-  
-  .endgame_character_exp {
-    font-size: 8px;
+}
+
+.endgame_character_exp {
+    font-size: clamp(6px, 0.8vh, 8px);
     color: #ffffff;
-  }
-  
-  .endgame_character_expVal {
-    font-size: 8px;
+}
+
+.endgame_character_expVal {
+    font-size: clamp(6px, 0.8vh, 8px);
     color: #71deff;
-  }
-  
-  .endgame_character_exp_bg {
+}
+
+.endgame_character_exp_bg {
     background-color: #1c1f25;
-    height: 4px;
+    height: clamp(3px, 0.5vh, 4px);
     border-radius: 2px;
     overflow: hidden;
-  }
-  
-  .endgame_character_exp_bg>div {
-    background-color: #71deff;
-    width: 80%;
+}
+
+.endgame_meet_team_msg {
+    font-size: 32px;
+    font-weight: 600;
+    color: #ffffff;
+    text-align: center;
+}
+
+.char_portrait {
+    width: 100%;
     height: 100%;
-  }
-  
-  .endgame_character_profile {
-    width: 64px;
-    height: 64px;
+    margin-left: 10px;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+    transform: scale(0.6);
+}
+
+.endgame_character_exp_bg>div {
+    background-color: #71deff;
+    height: 100%;
+    transition: width 0.1s linear;
+}
+
+.endgame_character_profile {
+    width: clamp(48px, 8vh, 64px);
+    height: clamp(48px, 8vh, 64px);
     background-color: #1c1f25;
-    border-radius: 8px;
-  }
-  
-  .endgame_character_lvlup {
+    border-radius: clamp(6px, 1vh, 8px);
+    overflow: hidden;
+}
+
+.endgame_character_lvlup {
     background-color: #ffa600;
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
-    padding: 2px 8px;
-  
-    font-size: 7px;
-  
+    padding: clamp(1px, 0.3vh, 2px) clamp(6px, 1vw, 8px);
+    font-size: clamp(5px, 0.8vh, 7px);
     position: absolute;
-    top: 6px;
-    left: 66px;
-  }
-  
-  .endgame_leave {
+    top: clamp(4px, 0.8vh, 6px);
+    right: clamp(20px, 2vw, 66px);
+}
+
+@media screen and (max-height: 600px) {
+    .endgame_character {
+        width: clamp(180px, 20vw, 220px);
+        height: clamp(60px, 10vh, 76px);
+        gap: clamp(16px, 2vw, 20px);
+    }
+
+    .endgame_character_lvl {
+        width: clamp(50px, 8vh, 64px);
+        height: clamp(50px, 8vh, 64px);
+    }
+
+    .endgame_character_profile {
+        width: clamp(40px, 6vh, 48px);
+        height: clamp(40px, 6vh, 48px);
+    }
+}
+
+@media screen and (max-height: 400px) {
+    .endgame_character {
+        width: clamp(160px, 18vw, 180px);
+        height: clamp(50px, 8vh, 60px);
+        gap: clamp(12px, 1.5vw, 16px);
+    }
+
+    .endgame_character_lvl {
+        width: clamp(40px, 6vh, 50px);
+        height: clamp(40px, 6vh, 50px);
+    }
+
+    .endgame_character_profile {
+        width: clamp(32px, 5vh, 40px);
+        height: clamp(32px, 5vh, 40px);
+    }
+}
+
+.endgame_leave {
     background-image: url("@assets/HUD/skip_btn_bg.png");
     background-size: 100% 100%;
     width: 156px;
@@ -332,9 +413,9 @@
   
     position: absolute;
     bottom: 36px;
-  }
+}
   
-  .endgame_leave:hover {
+.endgame_leave:hover {
     background-image: url("@assets/game_end/leave_btn_active.png");
-  }
+}
   

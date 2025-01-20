@@ -10,7 +10,7 @@ import {Team} from "./Team";
 import { DBCharacterData, PlayerContextData } from '@legion/shared/interfaces';
 import { Item } from './Item';
 import { getConsumableById } from '@legion/shared/Items';
-import { GAME_0_TURN_DURATION, TURN_DURATION } from '@legion/shared/config';
+import { GAME_0_TURN_DURATION, MAX_AI_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
 
 
 const AI_VS_AI = false;
@@ -170,7 +170,7 @@ export class AIGame extends Game {
             await this.createPlayerTeam(playerTeam);
         }
 
-        const nb = playerTeam.getMembers().length;
+        const nb = Math.min(playerTeam.getMembers().length, MAX_AI_CHARACTERS);
         const levels = playerTeam.getMembers().map(player => player.level);
         let isVsZombie = false;
         if (this.mode === PlayMode.CASUAL_VS_AI || this.mode === PlayMode.RANKED_VS_AI) {

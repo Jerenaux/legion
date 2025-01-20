@@ -69,15 +69,17 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                     <span>LVL UP!</span>
                 </div>}
                 <div className="endgame_character_profile">
-                    <div className="char_portrait" style={{
-                        backgroundImage: `url(${getSpritePath(member.texture)})`,
-                        marginLeft: 0,
-                    }} />
+                    <div 
+                        className="char_portrait" 
+                        style={{
+                            backgroundImage: `url(${getSpritePath(member.texture)})`,
+                        }} 
+                    />
                 </div>
                 <div className="endgame_character_info">
                     <p className="endgame_character_name">{member.name}</p>
                     <p className="endgame_character_class">{ClassLabels[member.class]}</p>
-                    <div className="flex flex_col gap_4 width_full padding_top_8">
+                    <div className="flex flex_col gap_4 width_full">
                         <div className="flex justify_between width_full">
                             <span className="endgame_character_exp">EXP</span>
                             <span className="endgame_character_expVal">

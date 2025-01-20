@@ -172,7 +172,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
 
                 {isGame0 && <div className="endgame_meet_team_msg">You earned your first 3 characters!</div>}
 
-                <div className="flex flex_wrap gap_16 justify_center items_center max_w_lg" style={{ padding: '36px 48px', minHeight: '400px', alignItems: 'flex-start' }}>
+                <div className="flex flex_wrap gap_16 justify_center items_center max_w_lg endgame_characters_grid">
                     {characters.map((character, idx) => (
                         <XPCountUp
                             member={members[character.num - 1]}
@@ -183,6 +183,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 </div>
 
                 {this.props.isWinner && this.props.chests.length > 0 && (
+                // {this.props.isWinner && (
                     <div className="endgame_rewards_container">
                         <div className="endgame_rewards_heading_container">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
@@ -202,7 +203,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     </div>
                 )}
 
-                <div className="endgame_buttons">
+                {/* <div className="endgame_buttons">
                     {showPlayAgain && (
                         <div 
                             className="endgame_button endgame_button_primary"
@@ -217,7 +218,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     >
                         <span>Main Menu</span>
                     </div>
-                </div>
+                </div> */}
 
                 {!!this.state.selectedChest && <OpenedChest 
                     width={width}
