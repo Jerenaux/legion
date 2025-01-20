@@ -172,12 +172,13 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
 
                 {isGame0 && <div className="endgame_meet_team_msg">You earned your first 3 characters!</div>}
 
-                <div className="flex flex_wrap gap_16 justify_center items_center max_w_lg endgame_characters_grid">
+                <div className="endgame_characters_grid">
                     {characters.map((character, idx) => (
                         <XPCountUp
                             member={members[character.num - 1]}
                             character={character as CharacterUpdate}
                             memberIdx={idx}
+                            isWinner={this.props.isWinner}
                         />
                     ))}
                 </div>

@@ -10,6 +10,7 @@ interface CountUpProps {
     member: any;
     character: CharacterUpdate;
     memberIdx: number;
+    isWinner: boolean;
 }
 
 interface CountUpState {
@@ -61,36 +62,33 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
 
         return (
             <div className="endgame_character">
-                <div className="endgame_character_lvl">
-                    <span className="lvl">Lvl</span>
-                    <span>{member.level + this.state.isLevelUp}</span>
+                {this.state.isLevelUp > 0 && 
+                    <div className="endgame_character_lvlup">LEVEL UP!</div>
+                }
+                
+                <div className="endgame_character_level_container">
+                    <div className="endgame_character_level">
+                        Level {member.level + this.state.isLevelUp}
+                    </div>
+                    <div className="endgame_character_xp_bar">
+                        <div 
+                            className="endgame_character_xp_fill"
+                            style={{ width: `${(this.state.xpCounter / maxXP) * 100}%` }}
+                        />
+                    </div>
                 </div>
-                {this.state.isLevelUp > 0 && <div className="endgame_character_lvlup">
-                    <span>LVL UP!</span>
-                </div>}
-                <div className="endgame_character_profile">
+
+                <div className="endgame_character_portrait">
                     <div 
-                        className="char_portrait" 
+                        className={`char_portrait ${this.props.isWinner ? 'victory-animation' : ''}`} 
                         style={{
                             backgroundImage: `url(${getSpritePath(member.texture)})`,
                         }} 
                     />
                 </div>
-                <div className="endgame_character_info">
-                    <p className="endgame_character_name">{member.name}</p>
-                    <p className="endgame_character_class">{ClassLabels[member.class]}</p>
-                    <div className="flex flex_col gap_4 width_full">
-                        <div className="flex justify_between width_full">
-                            <span className="endgame_character_exp">EXP</span>
-                            <span className="endgame_character_expVal">
-                                {Math.floor(this.props.character.earnedXP) > 0 ? `+${Math.floor(this.props.character.earnedXP)}`: ''}
-                            </span>
-                        </div>
-                        <div className="endgame_character_exp_bg">
-                            <div style={{ width: `${(this.state.xpCounter / maxXP) * 100}%` }}></div>
-                        </div>
-                    </div>
-                </div>
+
+                <div className="endgame_character_name">{member.name}</div>
+                <div className="endgame_character_class">{ClassLabels[member.class]}</div>
             </div>
         );
     }
