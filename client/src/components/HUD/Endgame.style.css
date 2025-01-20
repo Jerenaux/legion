@@ -336,6 +336,49 @@
     padding-top: clamp(24px, 3vh, 32px);
     margin: 12px 0;
     isolation: isolate;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(37, 43, 54, 0.05) 15%,
+        rgba(37, 43, 54, 0.95) 50%,
+        rgba(37, 43, 54, 0.05) 85%,
+        transparent 100%
+    );
+    border-radius: 8px;
+}
+
+.endgame_character::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.02) 20%,
+        rgba(81, 253, 255, 0.1) 50%,
+        rgba(81, 253, 255, 0.02) 80%,
+        transparent 100%
+    );
+    border-radius: 8px;
+    z-index: -1;
+}
+
+.endgame_character::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.1) 20%,
+        rgba(81, 253, 255, 0.3) 50%,
+        rgba(81, 253, 255, 0.1) 80%,
+        transparent 100%
+    );
+    opacity: 0.5;
 }
 
 .endgame_character_level {
@@ -412,7 +455,7 @@
     height: 100%;
     margin-left: 10px;
     background-repeat: no-repeat;
-    transform: scale(0.6);
+    transform: scale(1);
     animation: animate-sprite 0.7s steps(1) infinite;
 }
 
