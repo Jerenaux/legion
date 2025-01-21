@@ -442,6 +442,10 @@ export class Player extends Phaser.GameObjects.Container {
                 this.arena.relayEvent(`selectCharacter_hasItem`);
             }
 
+            if(this.hasSpells()) {
+                this.arena.relayEvent(`selectCharacter_hasSpells`);
+            }
+
             // Iterate over statuses and emit events for each
             Object.keys(this.statuses).forEach(status => {
                 if (this.statuses[status] > 0) {
@@ -596,7 +600,6 @@ export class Player extends Phaser.GameObjects.Container {
     onKey(keyIndex) {
         this.arena.playSound('click');
         const { spellsIndex } = this.getLayoutAndSpellsIndex();
-        console.log(`[Player:onKey] keyIndex: ${keyIndex}, spellsIndex: ${spellsIndex}`);
         if (keyIndex >= spellsIndex) {
             this.useSkill(keyIndex - spellsIndex);
         } else {

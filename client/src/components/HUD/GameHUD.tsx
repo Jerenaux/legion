@@ -231,8 +231,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   render() {
     const { 
-      player, team1, team2, isSpectator, mode, gameInitialized, showTopMenu,
-      showOverview, showTargetBanner
+      player, team1, team2, isSpectator, mode, gameInitialized,
+      showOverview,
     } = this.state;
     const ownMembers = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
     const score = team1?.members[0]?.isPlayer ? team1?.score : team2?.score;
@@ -242,8 +242,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
 
     const isTutorialMode = mode === PlayMode.TUTORIAL;
-
-    const showEnemyTurnBanner = !player?.isPlayer && gameInitialized && !this.state.gameOver;
 
     return (
       <div className="gamehud height_full flex flex_col justify_between padding_bottom_16">

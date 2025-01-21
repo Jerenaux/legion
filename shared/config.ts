@@ -75,7 +75,7 @@ export let INJURED_MODE = false;
 export let SKIP_LEVEL_RESTRICTIONS = true;
 export let IMMEDIATE_LOOT = false;
 export let LOTSA_MP = false;
-export let MAX_AI_CHARACTERS = 3;
+export let MAX_AI_CHARACTERS = 6;
 
 // Web3
 export let NETWORK = isDev ? 'devnet' : 'mainnet';

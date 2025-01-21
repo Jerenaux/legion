@@ -3,6 +3,7 @@ import { events } from './GameHUD';
 import '../../styles/components/TutorialDialogue.css';
 
 import avatarSrc from '@assets/avatars/default.png';
+import { InventoryType } from '@legion/shared/enums';
 const DEFAULT_SPEAKER_NAME = 'Taskmaster';
 
 interface TutorialDialogueProps {
@@ -99,13 +100,13 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   }
 
   updateDialoguePosition = (position: 'spells' | 'items') => {
-    const anchor = position === 'spells' ? 'Spells' : 'Items';
+    const anchor = position === 'spells' ? InventoryType.SPELLS : InventoryType.CONSUMABLES;
     const firstIcon = document.querySelector(`#player_hud_${anchor}`);
     if (firstIcon) {
       const rect = firstIcon.getBoundingClientRect();
       this.setState({
         dialoguePosition: {
-          top: rect.bottom - 10, 
+          top: rect.bottom - 120, 
           left: rect.right + 10,
         }
       });

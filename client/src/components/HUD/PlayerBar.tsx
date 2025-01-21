@@ -78,6 +78,7 @@ class PlayerBar extends Component<PlayerBarProps> {
         <div className="player_bar_actions">
           {actions.map((action, idx) => (
             <div 
+              id={`player_hud_${type}`}
               key={idx}
               className={`player_bar_action ${pending === idx ? 'pending-action' : ''}`}
               style={{
