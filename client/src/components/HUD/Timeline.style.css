@@ -32,9 +32,9 @@
     transform: scale(0.65);
   }
 
-  @media screen and (max-width: 980px) and (orientation: landscape) {
+  /* @media screen and (max-width: 980px) and (orientation: landscape) {
     transform: scale(0.55);
-  }
+  } */
 }
 
 .skip_tutorial {

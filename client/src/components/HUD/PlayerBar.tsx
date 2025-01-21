@@ -7,6 +7,9 @@ import { statusIcons } from '../utils';
 import { StatusEffect } from '@legion/shared/enums';
 import { StatusEffects } from '@legion/shared/interfaces';
 import { CircularTimer } from './CircularTimer';
+import ItemIcon from './NewItemIcon';
+import { InventoryType } from '@legion/shared/enums';
+import { EventEmitter } from '@solana/wallet-adapter-base';
 
 interface PlayerBarProps {
   hp: number;
@@ -21,11 +24,61 @@ interface PlayerBarProps {
   turnNumber?: number;
   onPassTurn?: () => void;
   animate?: boolean;
+  items?: any[];
+  spells?: any[];
+  pendingItem?: number | null;
+  pendingSpell?: number | null;
+  eventEmitter?: EventEmitter;
 }
 
 class PlayerBar extends Component<PlayerBarProps> {
+  events: EventEmitter;
+
+  constructor(props: PlayerBarProps) {
+    super(props);
+    this.events = props.eventEmitter;
+  }
+
+  handleActionClick = (event: Event, index: number) => {
+    event.stopPropagation();
+    this.events.emit('itemClick', index);
+  }
+
+  renderActionRow(actions: any[], startIndex: number, type: InventoryType) {
+    if (!actions?.length) return null;
+    
+    const goldenGradient = 'linear-gradient(to bottom right, #bf9b30, #1c1f25)';
+    const pending = type === InventoryType.CONSUMABLES ? this.props.pendingItem : this.props.pendingSpell;
+
+    return (
+      <div className="player_bar_action_row">
+        <div className="player_bar_actions">
+          {actions.map((action, idx) => (
+            <div 
+              key={idx}
+              className={`player_bar_action ${pending === idx ? 'pending-action' : ''}`}
+              style={{
+                background: 'initial',
+              }}
+              onClick={(event: Event) => this.handleActionClick(event, startIndex + idx)}
+            >
+              <ItemIcon
+                action={action}
+                index={idx}
+                canAct={type === InventoryType.CONSUMABLES || (action?.cost <= this.props.mp)}
+                actionType={type}
+              />
+              <span className="player_bar_action_name">{action.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   render({ hp, maxHp, mp, maxMp, hasSpells, statuses, isPlayerTurn, 
-          turnDuration, timeLeft, turnNumber, onPassTurn, animate = true }: PlayerBarProps) {
+          turnDuration, timeLeft, turnNumber, onPassTurn, animate = true,
+          items = [], spells = [] }: PlayerBarProps) {
      // Add mock values for each status effect (DO NOT REMOVE)
     statuses = {
       [StatusEffect.FREEZE]: 1,
@@ -33,9 +86,10 @@ class PlayerBar extends Component<PlayerBarProps> {
       [StatusEffect.POISON]: 3,
       [StatusEffect.SLEEP]: 4,
       [StatusEffect.PARALYZE]: 5,
-      [StatusEffect.MUTE]: 6,
+      [StatusEffect.MUTE]: 0,
       [StatusEffect.HASTE]: 7,
     };
+    const isMuted = statuses[StatusEffect.MUTE] > 0;
     return (
       <div className={`player_bar_container ${animate ? '' : 'no-progress-animation'}`}>
         <div className="player_bar">
@@ -107,6 +161,13 @@ class PlayerBar extends Component<PlayerBarProps> {
             </div>
           )}
         </div>
+        
+        {isPlayerTurn && (
+          <div className="player_bar_actions_container">
+            {this.renderActionRow(items, 26, InventoryType.CONSUMABLES)}
+            {hasSpells && (isMuted ? "Character is Silenced!" : this.renderActionRow(spells, 0, InventoryType.SPELLS))}
+          </div>
+        )}
       </div>
     );
   }
