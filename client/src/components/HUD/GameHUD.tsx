@@ -238,7 +238,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
               <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
             </div>
           )}
-           {showTopMenu && player?.isPlayer ? (
+           {/* {showTopMenu && player?.isPlayer ? (
             <>
               {player.pendingSpell == undefined && player.pendingItem == undefined && (
                 <div class="player_turn_banner_container">
@@ -260,7 +260,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
                 isTutorial={isTutorialMode} 
               />
             </>
-          ) : null}
+          ) : null} */}
         </>
         <PlayerBar 
           hp={player?.hp || 0}

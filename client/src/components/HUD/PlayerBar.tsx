@@ -78,7 +78,7 @@ class PlayerBar extends Component<PlayerBarProps> {
 
   render({ hp, maxHp, mp, maxMp, hasSpells, statuses, isPlayerTurn, 
           turnDuration, timeLeft, turnNumber, onPassTurn, animate = true,
-          items = [], spells = [] }: PlayerBarProps) {
+          items = [], spells = [], pendingSpell }: PlayerBarProps) {
      // Add mock values for each status effect (DO NOT REMOVE)
     statuses = {
       [StatusEffect.FREEZE]: 1,
@@ -90,6 +90,8 @@ class PlayerBar extends Component<PlayerBarProps> {
       [StatusEffect.HASTE]: 7,
     };
     const isMuted = statuses[StatusEffect.MUTE] > 0;
+    const pendingSpellCost = pendingSpell !== null ? spells[pendingSpell]?.cost : 0;
+
     return (
       <div className={`player_bar_container ${animate ? '' : 'no-progress-animation'}`}>
         <div className="player_bar">
@@ -149,7 +151,13 @@ class PlayerBar extends Component<PlayerBarProps> {
                       secondaryColor={'#2196F3'} 
                     />
                     <p className="player_bar_stat_value">
-                      <span style={{color: '#71deff'}}>{mp}</span> / <span>{maxMp}</span>
+                      <span style={{
+                        color: pendingSpellCost > 0 ? '#ff6b6b' : '#71deff'
+                      }}>
+                        {pendingSpellCost > 0 ? mp - pendingSpellCost : mp}
+                      </span>
+                      <span> / </span>
+                      <span>{maxMp}</span>
                     </p>
                   </div>
                 )}
