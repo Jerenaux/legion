@@ -255,14 +255,20 @@
     min-height: 20vh;
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: clamp(12px, 2vw, 24px);
-    padding: 24px;
-    margin: 24px 0;
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
+    margin-top: 3vh;
+    gap: 25px;
     scrollbar-width: none;
+}
+
+@media (max-height: 600px) {
+    .endgame_characters_grid {
+        gap: 0;
+        margin-top: -10vh;
+    }
+    
+    .endgame_character {
+        transform: scale(0.5);
+    }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -289,7 +295,9 @@
 @media screen and (max-width: 480px), 
        screen and (max-height: 600px) {
     .endgame_rewards_container {
-        display: none;
+        /* display: none; */
+        transform: scale(0.5);
+        bottom: 20vh;
     }
 }
 
@@ -374,7 +382,6 @@
     min-width: clamp(120px, 15vw, 180px);
     padding: clamp(8px, 1vh, 12px);
     padding-top: clamp(24px, 3vh, 32px);
-    margin: 12px 0;
     isolation: isolate;
     background: linear-gradient(
         135deg,
@@ -644,17 +651,6 @@
     100% { 
         opacity: 0; 
         transform: scale(1.2) rotate(5deg); 
-    }
-}
-
-@media (max-height: 600px) {
-    .endgame_characters_grid {
-        padding: 16px;
-        margin: 12px 0;
-    }
-    
-    .endgame_character {
-        margin: 8px 0;
     }
 }
 

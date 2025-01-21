@@ -13,7 +13,7 @@ export const tips = [
     "The order of your characters' turns is determined by their speed stat.",
     "Ice spells on empty tiles create path-blocking ice blocks",
     "HP and MP are fully restored after each combat.",
-    "Use Clovers to revive characters mid-combat.",
+    "Use Clovers to revive characters in combat.",
     // "The bar at the bottom of the game screen is the Audience bar. Impress the audience to earn extra rewards!",
     "Challenge players using the Challenge button on their profile page.",
     "Buy Antidotes to counter Poison.",
