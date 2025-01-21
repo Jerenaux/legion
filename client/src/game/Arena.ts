@@ -519,7 +519,7 @@ export class Arena extends Phaser.Scene
         const totalHeight = this.tileSize * this.gridHeight;
         const gameWidth = this.scale.gameSize.width;
         const gameHeight = this.scale.gameSize.height;
-        const verticalOffset = 80;
+        const verticalOffset = -50;
         const startX = (gameWidth - totalWidth) / 2;
         const startY = (gameHeight - totalHeight) / 2 + verticalOffset;
         return {startX, startY};

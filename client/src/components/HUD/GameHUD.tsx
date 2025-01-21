@@ -22,6 +22,7 @@ interface GameHUDState {
   player: PlayerProps;
   pendingSpell: boolean;
   pendingItem: boolean;
+  showTargetBanner: boolean;
   team1: TeamOverview;
   team2: TeamOverview;
   gameOver: boolean;
@@ -57,16 +58,17 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     player: null,
     pendingSpell: false,
     pendingItem: false,
+    showTargetBanner: false,
     team1: null,
     team2: null,
-    isWinner: false,
     gameOver: false,
-    isSpectator: false,
-    mode: null,
-    game0: false,
+    isWinner: false,
     xpReward: 0,
     goldReward: 0,
     characters: [],
+    isSpectator: false,
+    mode: null,
+    game0: false,
     grade: null,
     chests: [],
     key: null,
@@ -107,22 +109,36 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     });
 
     events.on('pendingSpell', () => {
-      this.setState({ pendingSpell: true, pendingItem: false });
+      this.setState({ 
+        pendingSpell: true, 
+        pendingItem: false,
+        showTargetBanner: true 
+      });
       this.handleCursorChange('spellCursor')
     });
 
     events.on('pendingItem', () => {
-      this.setState({ pendingSpell: false, pendingItem: true });
+      this.setState({ 
+        pendingSpell: false, 
+        pendingItem: true,
+        showTargetBanner: true 
+      });
       this.handleCursorChange('itemCursor')
     });
 
     events.on('clearPendingSpell', () => {
-      this.setState({ pendingSpell: false });
+      this.setState({ 
+        pendingSpell: false,
+        showTargetBanner: false 
+      });
       this.handleCursorChange('normalCursor')
     });
 
     events.on('clearPendingItem', () => {
-      this.setState({ pendingItem: false });
+      this.setState({ 
+        pendingItem: false,
+        showTargetBanner: false 
+      });
       this.handleCursorChange('normalCursor')
     });
 
@@ -216,7 +232,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   render() {
     const { 
       player, team1, team2, isSpectator, mode, gameInitialized, showTopMenu,
-      showOverview
+      showOverview, showTargetBanner
     } = this.state;
     const ownMembers = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
     const score = team1?.members[0]?.isPlayer ? team1?.score : team2?.score;
@@ -231,6 +247,11 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
     return (
       <div className="gamehud height_full flex flex_col justify_between padding_bottom_16">
+        {this.state.showTargetBanner && (
+          <div className="target_selection_banner">
+            Select a target
+          </div>
+        )}
         <>
           {showOverview && (
             <div className="hud-container">

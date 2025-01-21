@@ -55,7 +55,6 @@
   width: 100%;
   z-index: 2;
   padding: 10px;
-  pointer-events: none;
 }
 
 .justify_center {
@@ -124,7 +123,8 @@
 
 .overview {
   position: relative;
-  transition:  all .2s;
+  transition: all .2s;
+  pointer-events: none;
 
   @media screen and (max-width: 1500px) and (orientation: landscape) {
     transform: scale(0.9);
@@ -142,6 +142,14 @@
   @media screen and (max-width: 980px) and (orientation: landscape) {
     transform: scale(0.55);
   }
+}
+
+/* Re-enable pointer events only for the interactive elements */
+.char_profile_container,
+.char_portrait,
+.char_stats,
+.char_statuses {
+  pointer-events: auto;
 }
 
 .overview_right {
@@ -1032,4 +1040,53 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.target_selection_banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  
+  /* Container styling */
+  background: linear-gradient(
+    90deg,
+    rgba(28, 31, 37, 0) 0%,
+    rgba(45, 212, 191, 0.3) 20%,
+    rgba(45, 212, 191, 0.4) 50%,
+    rgba(45, 212, 191, 0.3) 80%,
+    rgba(28, 31, 37, 0) 100%
+  );
+  padding: 8px 30px;
+  border-radius: 4px;
+  
+  /* Text styling */
+  font-family: 'Kim', sans-serif;
+  font-size: 20px;
+  color: #ffffff;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 
+    0 0 10px rgba(45, 212, 191, 0.8),
+    -1px -1px 0 #2DD4BF,
+    1px -1px 0 #2DD4BF,
+    -1px 1px 0 #2DD4BF,
+    1px 1px 0 #2DD4BF;
+  
+  /* Animation */
+  animation: targetSelectionPulse 2s infinite;
+}
+
+@keyframes targetSelectionPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(45, 212, 191, 0.3),
+      inset 0 0 20px rgba(45, 212, 191, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(45, 212, 191, 0.5),
+      inset 0 0 30px rgba(45, 212, 191, 0.5);
+  }
 }
