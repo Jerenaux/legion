@@ -63,6 +63,7 @@ export class Player extends Phaser.GameObjects.Container {
     goldenColor: number = 0xDAA520;
     blinkTween: Phaser.Tweens.Tween | null = null;
     selectionArrow: Phaser.GameObjects.Sprite;
+    deathCheckTimer: Phaser.Time.TimerEvent;
 
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
@@ -144,6 +145,14 @@ export class Player extends Phaser.GameObjects.Container {
         this.add(this.speechBubble);
 
         this.displayBars();
+
+        // Add death check timer
+        this.deathCheckTimer = this.scene.time.addEvent({
+            delay: 500,
+            callback: this.checkDeathAnimation,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     setUpStatusEffects() {
@@ -1009,6 +1018,12 @@ export class Player extends Phaser.GameObjects.Container {
         });
     }
 
+    checkDeathAnimation() {
+        if (!this.isAlive() && (!this.sprite.anims.isPlaying || this.sprite.anims.currentAnim?.key !== `${this.texture}_anim_die`)) {
+            this.playAnim('die');
+        }
+    }
+
     destroy() {
         // Stop all tweens related to this player
         if (this.scene?.tweens) {
@@ -1027,6 +1042,11 @@ export class Player extends Phaser.GameObjects.Container {
     
         if (this.selectionArrow) {
             this.scene.tweens.killTweensOf(this.selectionArrow);
+        }
+
+        // Stop the death check timer
+        if (this.deathCheckTimer) {
+            this.deathCheckTimer.destroy();
         }
 
         // Call the parent class's destroy method
