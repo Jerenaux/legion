@@ -232,6 +232,7 @@ export abstract class Game
         const allCharacters = this.getTeam(1).concat(this.getTeam(2));
         this.turnSystem.initializeTurnOrder(allCharacters);
 
+        this.saveInitialStateToReplay();
         this.sockets.forEach(socket => {
             this.sendGameStatus(socket);
             this.incrementStartedGames(this.socketMap.get(socket)!);
@@ -254,6 +255,15 @@ export abstract class Game
                 this.endGame(2);
             }, 5000);
         }
+    }
+
+    saveInitialStateToReplay() {
+        const timestamp = Date.now() - this.startTime;
+        this.replayMessages.push({
+            timestamp,
+            event: 'gameStatus',
+            data: this.getGameData(1, true)
+        });
     }
 
     resetTurnTimer(turnDuration: number) {
@@ -306,16 +316,6 @@ export abstract class Game
         }
         const teamId = this.socketMap.get(socket)?.id!;
         const gameData = this.getGameData(teamId, reconnect);
-        
-        // Store the initial game state in replay messages
-        if (!reconnect) {
-            const timestamp = Date.now() - this.startTime;
-            this.replayMessages.push({
-                timestamp,
-                event: 'gameStatus',
-                data: gameData
-            });
-        }
         
         socket.emit('gameStatus', gameData);
     }

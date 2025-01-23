@@ -118,38 +118,62 @@ export class Arena extends Phaser.Scene
     isDarkened: boolean = false;
     tutorialManager: TutorialManager;
 
+    // Add at class level:
+    private static readonly GEN_CONFIGS = {
+        [GEN.COMBAT_BEGINS]: { text1: 'combat', text2: 'begins' },
+        [GEN.MULTI_KILL]: { text1: 'multi', text2: 'kill' },
+        [GEN.MULTI_HIT]: { text1: 'multi', text2: 'hit' },
+        [GEN.ONE_SHOT]: { text1: 'one', text2: 'shot' },
+        [GEN.FROZEN]: { text1: 'frozen', text2: null },
+        [GEN.BURNING]: { text1: 'stuff-is', text2: 'on-fire' },
+        [GEN.TUTORIAL]: { text1: 'tutorial', text2: null },
+    };
+
+    // Remove SOUND_CONFIG constant since all sounds have same config
+    private static readonly SOUND_NAMES = [
+        'click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball',
+        'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd',
+        'cheer', 'poison', 'mute', 'thud'
+    ];
+
     constructor() {
         super({ key: 'Arena' });
         this.sfxVolume = this.getSFXVolumeFromLocalStorage();
         
         // Initialize event handlers map
-        this.eventHandlers = new Map([
-            ['gameStatus', this.initializeGame.bind(this)],
-            ['move', this.processMove.bind(this)],
-            ['attack', this.processAttack.bind(this)],
-            ['obstacleattack', this.processObstacleAttack.bind(this)],
-            ['inventory', this.processInventory.bind(this)],
-            ['hpchange', this.processHPChange.bind(this)],
-            ['statuseffectchange', this.processStatusChange.bind(this)],
-            ['mpchange', this.processMPChange.bind(this)],
-            ['useitem', this.processUseItem.bind(this)],
-            ['cast', (data) => this.processCast(true, data)],
-            ['endcast', (data) => this.processCast(false, data)],
-            ['terrain', this.processTerrain.bind(this)],
-            ['gen', (data) => {
+        const handlers = {
+            gameStatus: this.initializeGame,
+            move: this.processMove,
+            attack: this.processAttack,
+            obstacleattack: this.processObstacleAttack,
+            inventory: this.processInventory,
+            hpchange: this.processHPChange,
+            statuseffectchange: this.processStatusChange,
+            mpchange: this.processMPChange,
+            useitem: this.processUseItem,
+            cast: (data) => this.processCast(true, data),
+            endcast: (data) => this.processCast(false, data),
+            terrain: this.processTerrain,
+            gen: (data) => {
                 if (Array.isArray(data)) {
                     data.forEach(g => this.enqueueGEN(g));
                 } else {
                     this.enqueueGEN(data.gen);
                 }
-            }],
-            ['localanimation', this.processLocalAnimation.bind(this)],
-            ['gameEnd', this.processGameEnd.bind(this)],
-            ['score', this.processScoreUpdate.bind(this)],
-            ['addCharacter', this.processAddCharacter.bind(this)],
-            ['queueData', this.processQueueData.bind(this)],
-            ['turnee', this.processTurnee.bind(this)],
-        ]);
+            },
+            localanimation: this.processLocalAnimation,
+            gameEnd: this.processGameEnd,
+            score: this.processScoreUpdate,
+            addCharacter: this.processAddCharacter,
+            queueData: this.processQueueData,
+            turnee: this.processTurnee,
+        };
+
+        this.eventHandlers = new Map(
+            Object.entries(handlers).map(([event, handler]) => 
+                [event, handler.bind(this)]
+            )
+        );
     }
 
     lockInput() {
@@ -828,46 +852,14 @@ export class Arena extends Phaser.Scene
     processTerrain(updates: TerrainUpdate[]) {
         if (this.gameEnded) return;
         updates.forEach(({x, y, terrain}) => {
-            const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
-            switch (terrain) {
-                case Terrain.FIRE:
-                    const sprite = this.add.sprite(pixelX, pixelY, '')
-                        .setDepth(this.yToZ(y)).setScale(2).setAlpha(0.9);
-                    this.addFlames();
-                    sprite.on('destroy', () => {
-                        this.removeFlames();
-                    });
-                    sprite.anims.play('ground_flame');
-                    this.sprites.push(sprite);
-                    this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
-                    this.terrainMap.set(serializeCoords(x, y), Terrain.FIRE);
-                    events.emit('flamesAppeared');
-                    break;
-                case Terrain.ICE:
-                    const icesprite = this.createIceBlock(x, y);
-                    this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
-                    this.terrainMap.set(serializeCoords(x, y), Terrain.ICE);
-                    const tile = this.tilesMap.get(serializeCoords(x, y));
-                    // @ts-ignore
-                    if (tile.tween) tile.tween.stop();
-                    this.obstaclesMap.set(serializeCoords(x, y), true);
-                    events.emit('iceAppeared');
-                    break;
-                case Terrain.NONE:
-                    this.obstaclesMap.delete(serializeCoords(x, y));
-                    this.terrainMap.delete(serializeCoords(x, y));
-                    const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
-                    if (terrainsprite) {
-                        this.flickerAndDestroy(terrainsprite, 5, 1000);
-                        this.terrainSpritesMap.delete(serializeCoords(x, y));
-                    }
-                    break;
-                default:
-                    break;
-            }
+            const handlers = {
+                [Terrain.FIRE]: () => this.handleFireTerrain(x, y),
+                [Terrain.ICE]: () => this.handleIceTerrain(x, y),
+                [Terrain.NONE]: () => this.handleClearTerrain(x, y)
+            };
+            handlers[terrain]?.();
         });
     }
-
 
     hasFlame(x: number, y: number) {
         return this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE;
@@ -1071,21 +1063,13 @@ export class Arena extends Phaser.Scene
     }
 
     createSounds() {
-        this.SFX = {};
-        const sounds = ['click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball','healing',
-            'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd', 'cheer', 'poison', 'mute', 'thud'];
-        
-        sounds.forEach((sound) => {
-            // Check if sound is already in the cache before adding
-            if (!this.sound.get(sound)) {
-                this.SFX[sound] = this.sound.add(sound);
-            } else {
-                // If sound exists in cache, use the cached version
-                this.SFX[sound] = this.sound.get(sound);
-            }
-        });
+        this.SFX = Object.fromEntries(
+            Arena.SOUND_NAMES.map(name => [
+                name,
+                this.sound.get(name) || this.sound.add(name)
+            ])
+        );
 
-        // Listen for settings changes
         events.on('settingsChanged', this.onSettingsChanged, this);
     }
 
@@ -1127,81 +1111,18 @@ export class Arena extends Phaser.Scene
     createAnims() {
         allSprites.forEach((asset) => {
             // Character postures
-            this.anims.create({
-                key: `${asset}_anim_idle`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 9, end: 11 }), 
-                frameRate: BASE_ANIM_FRAME_RATE, 
-                repeat: -1,
-                yoyo: true 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_idle_hurt`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 33, end: 35 }), 
-                frameRate: BASE_ANIM_FRAME_RATE, 
-                repeat: -1, // Loop indefinitely,
-                yoyo: true
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_walk`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 6, end: 8 }), 
-                frameRate: BASE_ANIM_FRAME_RATE, 
-                repeat: -1 // Loop indefinitely
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_attack`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 12, end: 14 }), 
-                frameRate: BASE_ANIM_FRAME_RATE * 2, 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_dodge`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 45, end: 47 }), 
-                frameRate: BASE_ANIM_FRAME_RATE * 2, 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_item`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 48, end: 50 }), 
-                frameRate: BASE_ANIM_FRAME_RATE, 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_hurt`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 42, end: 44 }), 
-                frameRate: BASE_ANIM_FRAME_RATE, 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_cast`, 
-                frames: this.anims.generateFrameNumbers(asset, { start: 39, end: 41 }), 
-                frameRate: BASE_ANIM_FRAME_RATE, 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_die`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [51, 52, 53] }), 
-                frameRate: BASE_ANIM_FRAME_RATE * 2, 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_victory`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [15, 16, 17] }), 
-                frameRate: BASE_ANIM_FRAME_RATE, 
-                repeat: -1,
-                yoyo: true 
-            });
-
-            this.anims.create({
-                key: `${asset}_anim_boast`, 
-                frames: this.anims.generateFrameNumbers(asset, { frames: [15, 16, 17] }), 
-                frameRate: BASE_ANIM_FRAME_RATE * 1.5, 
-                repeat: 2,
-                yoyo: true 
-            });
-        }, this);
+            this.createCharacterAnim(asset, 'idle', [9, 10, 11], { repeat: -1, yoyo: true });
+            this.createCharacterAnim(asset, 'idle_hurt', [33, 34, 35], { repeat: -1, yoyo: true });
+            this.createCharacterAnim(asset, 'walk', [6, 7, 8], { repeat: -1 });
+            this.createCharacterAnim(asset, 'attack', [12, 13, 14], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
+            this.createCharacterAnim(asset, 'dodge', [45, 46, 47], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
+            this.createCharacterAnim(asset, 'item', [48, 49, 50], { frameRate: BASE_ANIM_FRAME_RATE });
+            this.createCharacterAnim(asset, 'hurt', [42, 43, 44], { frameRate: BASE_ANIM_FRAME_RATE });
+            this.createCharacterAnim(asset, 'cast', [39, 40, 41], { frameRate: BASE_ANIM_FRAME_RATE });
+            this.createCharacterAnim(asset, 'die', [51, 52, 53], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
+            this.createCharacterAnim(asset, 'victory', [15, 16, 17], { repeat: -1, yoyo: true });
+            this.createCharacterAnim(asset, 'boast', [15, 16, 17], { frameRate: BASE_ANIM_FRAME_RATE * 1.5, repeat: 2, yoyo: true });
+        });
 
         this.anims.create({
             key: `cast`, 
@@ -1378,11 +1299,6 @@ export class Arena extends Phaser.Scene
         data.forEach(player => this.placeCharacter(player, team, isReconnect));
     }
   
-    isValidCell(fromX, fromY, toX, toY) {
-        return !this.isSkip(toX, toY)
-        && this.isFree(toX, toY)
-        && lineOfSight(fromX, fromY, toX, toY, this.isFree.bind(this));
-    }
 
     highlightCells(gridX, gridY, radius) {
         // Clear any existing highlights
@@ -1652,10 +1568,10 @@ export class Arena extends Phaser.Scene
     }
 
     displayGEN(gen: GEN): Promise<void> {
-        if (this.gameEnded) return;
+        if (this.gameEnded) return Promise.resolve();
+        
         return new Promise((resolve) => {
             if (this.killCamActive) {
-                // If kill cam is active, re-enqueue the GEN and resolve immediately
                 this.genQueue.unshift(gen);
                 resolve();
                 return;
@@ -1665,38 +1581,10 @@ export class Arena extends Phaser.Scene
                 return;
             }
 
-            let text1, text2;
-
-            switch (gen) {
-                case GEN.COMBAT_BEGINS:
-                    text1 = 'combat';
-                    text2 = 'begins';
-                    break;
-                case GEN.MULTI_KILL:
-                    text1 = 'multi';
-                    text2 = 'kill';
-                    break;
-                case GEN.MULTI_HIT:
-                    text1 = 'multi';
-                    text2 = 'hit';
-                    break;
-                case GEN.ONE_SHOT:
-                    text1 = 'one';
-                    text2 = 'shot';
-                    break;
-                case GEN.FROZEN:
-                    text1 = 'frozen';
-                    break;
-                case GEN.BURNING:
-                    text1 = 'stuff-is';
-                    text2 = 'on-fire';
-                    break;
-                case GEN.TUTORIAL:
-                    text1 = 'tutorial';
-                    break;
-                default:
-                    resolve();
-                    return;
+            const config = Arena.GEN_CONFIGS[gen];
+            if (!config) {
+                resolve();
+                return;
             }
 
             // Setup GEN Background
@@ -1724,7 +1612,7 @@ export class Arena extends Phaser.Scene
 
             // Setup GEN Texts
             const targets = [
-                this.add.image(-350, yPosition, text1)
+                this.add.image(-350, yPosition, config.text1)
                     .setScrollFactor(0) // Make it stick to camera
                     .setDepth(10)
                     .setScale(scale),
@@ -1734,9 +1622,9 @@ export class Arena extends Phaser.Scene
                     .setScale(scale)
             ];
             
-            if (text2) {
+            if (config.text2) {
                 targets.push(
-                    this.add.image(this.cameras.main.width + 100, yPosition, text2)
+                    this.add.image(this.cameras.main.width + 100, yPosition, config.text2)
                         .setScrollFactor(0) // Make it stick to camera
                         .setDepth(10)
                         .setScale(scale)
@@ -2065,36 +1953,18 @@ export class Arena extends Phaser.Scene
         this.isDarkened = true;
 
         const tintColor = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
+        this.getAllDarkenableObjects().forEach(obj => obj.setTint(tintColor));
 
-        // Darken all tiles
-        this.tilesMap.forEach(tile => {
-            tile.setTint(tintColor);
-        });
-
-        // Darken all sprites
-        this.sprites.forEach(sprite => {
-            sprite.setTint(tintColor);
-        });
-
-        // Process all players
+        // Process players separately for health bars
         this.teamsMap.forEach(team => {
             team.members.forEach(player => {
                 if (this.shouldStayBright(player, targetHighlight)) {
                     player.sprite.clearTint();
-                    if (player.healthBar) {
-                        player.healthBar.brighten();
-                    }
-                    if (player.MPBar) {
-                        player.MPBar.brighten();
-                    }
+                    player.healthBar?.brighten();
+                    player.MPBar?.brighten();
                 } else {
-                    player.sprite.setTint(tintColor);
-                    if (player.healthBar) {
-                        player.healthBar.darken();
-                    }
-                    if (player.MPBar) {
-                        player.MPBar.darken();
-                    }
+                    player.healthBar?.darken();
+                    player.MPBar?.darken();
                 }
             });
         });
@@ -2104,47 +1974,117 @@ export class Arena extends Phaser.Scene
         if (!this.isDarkened) return;
         this.isDarkened = false;
 
-        // Clear tint from all tiles
-        this.tilesMap.forEach(tile => {
-            tile.clearTint();
-        });
+        this.getAllDarkenableObjects().forEach(obj => obj.clearTint());
 
-        // Clear tint from all sprites
-        this.sprites.forEach(sprite => {
-            sprite.clearTint();
-        });
-
-        // Clear tint from all team sprites and their bars
+        // Brighten all bars
         this.teamsMap.forEach(team => {
             team.members.forEach(player => {
-                player.sprite.clearTint();
-                if (player.healthBar) {
-                    player.healthBar.brighten();
-                }
-                if (player.MPBar) {
-                    player.MPBar.brighten();
-                }
+                player.healthBar?.brighten();
+                player.MPBar?.brighten();
             });
         });
 
         // Restore movement range highlight if appropriate
-        if (this.selectedPlayer?.canAct() && !this.selectedPlayer?.pendingSpell && !this.selectedPlayer?.pendingItem) {
+        if (this.selectedPlayer?.canAct() && 
+            !this.selectedPlayer?.pendingSpell && 
+            !this.selectedPlayer?.pendingItem) {
             this.selectedPlayer.displayMovementRange();
         }
     }
 
     private shouldStayBright(player: Player, targetHighlight: TargetHighlight = TargetHighlight.ENEMY): boolean {
-        const isPlayerTeam = player.team.id === this.playerTeamId;
+        const isAlly = this.isAlly(player);
         
         switch (targetHighlight) {
             case TargetHighlight.ALLY:
-                return isPlayerTeam && player.isAlive();
+                return isAlly && player.isAlive();
             case TargetHighlight.ENEMY:
-                return !isPlayerTeam && player.isAlive();
+                return !isAlly && player.isAlive();
             case TargetHighlight.DEAD:
                 return !player.isAlive();
             default:
-                return !isPlayerTeam && player.isAlive();
+                return !isAlly && player.isAlive();
         }
+    }
+
+    // Add these new methods:
+    private handleFireTerrain(x: number, y: number) {
+        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        const sprite = this.add.sprite(pixelX, pixelY, '')
+            .setDepth(this.yToZ(y)).setScale(2).setAlpha(0.9);
+        this.addFlames();
+        sprite.on('destroy', () => {
+            this.removeFlames();
+        });
+        sprite.anims.play('ground_flame');
+        this.sprites.push(sprite);
+        this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
+        this.terrainMap.set(serializeCoords(x, y), Terrain.FIRE);
+        events.emit('flamesAppeared');
+    }
+
+    private handleIceTerrain(x: number, y: number) {
+        const icesprite = this.createIceBlock(x, y);
+        this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
+        this.terrainMap.set(serializeCoords(x, y), Terrain.ICE);
+        const tile = this.tilesMap.get(serializeCoords(x, y));
+        // @ts-ignore
+        if (tile.tween) tile.tween.stop();
+        this.obstaclesMap.set(serializeCoords(x, y), true);
+        events.emit('iceAppeared');
+    }
+
+    private handleClearTerrain(x: number, y: number) {
+        this.obstaclesMap.delete(serializeCoords(x, y));
+        this.terrainMap.delete(serializeCoords(x, y));
+        const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
+        if (terrainsprite) {
+            this.flickerAndDestroy(terrainsprite, 5, 1000);
+            this.terrainSpritesMap.delete(serializeCoords(x, y));
+        }
+    }
+
+    // Add helper method:
+    private createCharacterAnim(asset: string, key: string, frames: number[], config = {}) {
+        this.anims.create({
+            key: `${asset}_anim_${key}`,
+            frames: this.anims.generateFrameNumbers(asset, { frames }),
+            frameRate: BASE_ANIM_FRAME_RATE,
+            ...config
+        });
+    }
+
+    // Add helper methods:
+    private isValidGridPosition(x: number, y: number): boolean {
+        return x >= 0 && x < this.gridWidth && 
+               y >= 0 && y < this.gridHeight && 
+               !this.isSkip(x, y);
+    }
+
+    // Update isValidCell:
+    isValidCell(fromX: number, fromY: number, toX: number, toY: number) {
+        return this.isValidGridPosition(toX, toY) 
+            && this.isFree(toX, toY)
+            && lineOfSight(fromX, fromY, toX, toY, this.isFree.bind(this));
+    }
+
+    // Add helper method:
+    private getAllDarkenableObjects() {
+        return [
+            ...Array.from(this.tilesMap.values()),
+            ...this.sprites,
+            ...Array.from(this.teamsMap.values()).flatMap(team => 
+                team.members.map(player => player.sprite)
+            )
+        ];
+    }
+
+    // Add helper methods:
+    isPlayerTeam(teamId: number): boolean {
+        return teamId === this.playerTeamId;
+    }
+
+    isAlly(player: Player): boolean {
+        return this.isPlayerTeam(player.team.id);
     }
 }
