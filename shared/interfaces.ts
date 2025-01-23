@@ -238,14 +238,14 @@ export interface GameOutcomeReward {
     color: ChestColor;
     content: ChestReward[];
 }
-export interface DBCharacterData {
+
+export interface CharacterData {
     name: string;
     portrait: string;
     class: Class;
     level: number;
     xp: number;
     sp: number;
-    allTimeSP: number;
     stats: CharacterStringStats;
     carrying_capacity: number;
     carrying_capacity_bonus: number;
@@ -257,6 +257,9 @@ export interface DBCharacterData {
     skills: number[];
     onSale?: boolean;
     price?: number;
+}
+export interface DBCharacterData extends CharacterData {
+    allTimeSP: number;
 }
 
 export interface APICharacterData extends DBCharacterData {

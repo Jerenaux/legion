@@ -1,4 +1,5 @@
 import { Socket, Server } from 'socket.io';
+import * as admin from 'firebase-admin';
 
 import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
@@ -8,7 +9,7 @@ import { apiFetch, getRemoteConfig } from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN,
     Stat, SpeedClass } from '@legion/shared/enums';
 import { OutcomeData, TerrainUpdate, PlayerDataForGame, GameOutcomeReward, GameData,
-    EndGameDataResults, GameReplayMessage } from '@legion/shared/interfaces';
+    EndGameDataResults, GameReplayMessage, CharacterData } from '@legion/shared/interfaces';
 import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
@@ -16,6 +17,8 @@ import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     ITEM_DELAY, KILL_CAM_DELAY } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 import { TurnSystem } from './TurnSystem';
+import { withRetry } from './utils';
+
 
 enum GameAction {
     SPELL_USE,
@@ -1387,6 +1390,52 @@ export abstract class Game
         } catch (error) {
             console.error('Failed to save replay:', error);
         }
+    }
+
+    protected async getRosterData(token: string, retries = 10, delay = 500): Promise<{characters: CharacterData[]}> {
+        return withRetry(async () => {
+            const db = admin.firestore();
+            const decodedToken = await admin.auth().verifyIdToken(token);
+            const uid = decodedToken.uid;
+            
+            const docSnap = await db.collection("players").doc(uid).get();
+            if (!docSnap.exists) {
+                throw new Error('Player not found');
+            }
+
+            const characters = docSnap.data()?.characters as admin.firestore.DocumentReference[];
+            
+            // Batch get operation with field mask for optimization
+            const characterDocs = await db.getAll(...characters, {
+                fieldMask: [
+                    'name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats',
+                    'carrying_capacity', 'carrying_capacity_bonus', 'skill_slots', 'inventory',
+                    'equipment', 'equipment_bonuses', 'sp_bonuses', 'skills',
+                ],
+            });
+
+            const rosterData = characterDocs.map((characterDoc) => ({
+                id: characterDoc.id,
+                name: characterDoc.get('name'),
+                level: characterDoc.get('level'),
+                class: characterDoc.get('class'),
+                experience: characterDoc.get('experience'),
+                portrait: characterDoc.get('portrait'),
+                xp: characterDoc.get('xp'),
+                sp: characterDoc.get('sp'),
+                stats: characterDoc.get('stats'),
+                carrying_capacity: characterDoc.get('carrying_capacity'),
+                carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
+                skill_slots: characterDoc.get('skill_slots'),
+                inventory: characterDoc.get('inventory'),
+                equipment: characterDoc.get('equipment'),
+                equipment_bonuses: characterDoc.get('equipment_bonuses'),
+                sp_bonuses: characterDoc.get('sp_bonuses'),
+                skills: characterDoc.get('skills'),
+            }));
+
+            return { characters: rosterData };
+        }, retries, delay, 'getRosterData');
     }
 }
 

@@ -7,7 +7,7 @@ import {apiFetch} from './API';
 import { Class, PlayMode, League, AIAttackMode, Stat } from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
-import { DBCharacterData, PlayerContextData, PlayerDataForGame } from '@legion/shared/interfaces';
+import { DBCharacterData, PlayerDataForGame } from '@legion/shared/interfaces';
 import { Item } from './Item';
 import { getConsumableById } from '@legion/shared/Items';
 import { GAME_0_TURN_DURATION, MAX_AI_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
@@ -140,7 +140,7 @@ export class AIGame extends Game {
     }
 
     async createPlayerTeam(playerTeam: Team) {
-        const teamData = await apiFetch('rosterData', playerTeam.getFirebaseToken());
+        const teamData = await this.getRosterData(playerTeam.getFirebaseToken());
         let characters = [];
         teamData.characters.forEach((character: any, index) => {
             const position = this.getPosition(index, false);

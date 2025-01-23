@@ -1,7 +1,6 @@
 import { Socket, Server } from 'socket.io';
 
 import { Game } from './Game';
-import {apiFetch} from './API';
 import { ServerPlayer } from './ServerPlayer';
 import { PlayMode, League } from "@legion/shared/enums";
 import { PlayerDataForGame } from '@legion/shared/interfaces';
@@ -16,7 +15,7 @@ export class PvPGame extends Game {
 
     async populateTeams() {
         await Promise.all(Array.from(this.teams.values()).map(async (team) => {
-            const teamData = await apiFetch('rosterData', team.getFirebaseToken());
+            const teamData = await this.getRosterData(team.getFirebaseToken());
             console.log(`[PvPGame:populateTeams] Team index: ${team.id}`)
             teamData.characters.forEach((character: any, index) => {
                 const position = this.getPosition(index, team.id == 2);

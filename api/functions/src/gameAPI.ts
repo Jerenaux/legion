@@ -60,41 +60,6 @@ export const createGame = onRequest({
   });
 });
 
-export const gameData = onRequest({ 
-  secrets: ["API_KEY"],
-  memory: '512MiB'
-}, (request, response) => {
-  logger.info("Fetching gameData");
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
-      const gameId = request.query.id;
-      if (!gameId) {
-        response.status(400).send("Bad Request: Missing game ID");
-        return;
-      }
-      const querySnapshot = await db.collection("games")
-        .where("gameId", "==", gameId.toString()).get();
-
-      if (!querySnapshot.empty) {
-        const docData = querySnapshot.docs[0].data();
-        response.send(docData);
-      } else {
-        response.status(404).send("Game ID not found");
-      }
-    } catch (error) {
-      console.error("gameData error:", error);
-      response.status(500).send("Error fetching game data");
-    }
-  });
-});
-
-
 export const completeGame = onRequest({ 
   memory: '512MiB'
 }, (request, response) => {

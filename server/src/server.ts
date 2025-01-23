@@ -6,7 +6,6 @@ import { createServer } from 'http';
 import dotenv from 'dotenv';
 import * as admin from "firebase-admin";
 import cors from 'cors';
-import { ServiceAccount } from "firebase-admin";
 import { getFirestore } from 'firebase-admin/firestore';
 
 import { apiFetch } from './API';
@@ -14,9 +13,10 @@ import { Game } from './Game';
 import { AIGame } from './AIGame';
 import { PvPGame } from './PvPGame';
 import firebaseConfig from '@legion/shared/firebaseConfig';
-import { League, PlayMode } from '@legion/shared/enums';
+import { PlayMode } from '@legion/shared/enums';
 import { transformDailyLoot } from '@legion/shared/utils';
 import { PlayerDataForGame } from '@legion/shared/interfaces';
+import { withRetry } from './utils';
 
 dotenv.config();
 
@@ -71,8 +71,8 @@ function shortToken(token: string) {
 const socketMap = new Map<Socket, Game>();
 const gamesMap = new Map<string, Game>();
 
-async function getPlayerData(uid: string): Promise<PlayerDataForGame> {
-  try {
+async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<PlayerDataForGame> {
+  return withRetry(async () => {
     const db = admin.firestore();
     const playerDoc = await db.collection('players').doc(uid).get();
     
@@ -115,10 +115,22 @@ async function getPlayerData(uid: string): Promise<PlayerDataForGame> {
       completedGames: playerData.engagementStats?.completedGames || 0,
       engagementStats: playerData.engagementStats || {},
     };
-  } catch (error) {
-    console.error('Error getting player data:', error);
-    throw error;
-  }
+  }, retries, delay, 'getPlayerData');
+}
+
+async function getGameData(gameId: string, retries = 10, delay = 500) {
+  return withRetry(async () => {
+    const db = admin.firestore();
+    const querySnapshot = await db.collection("games")
+      .where("gameId", "==", gameId.toString())
+      .get();
+
+    if (querySnapshot.empty) {
+      throw new Error("Game ID not found");
+    }
+
+    return querySnapshot.docs[0].data();
+  }, retries, delay, 'getGameData');
 }
 
 io.on('connection', async (socket: any) => {
@@ -168,17 +180,7 @@ io.on('connection', async (socket: any) => {
       const isGame0 = gameId === '0';
       if (isGame0) gameId = socket.uid;
 
-      const gameData = await apiFetch(
-        `gameData?id=${gameId}`,
-        '',
-        {
-          headers: {
-            'x-api-key': process.env.API_KEY,
-          }
-        },
-        10,
-        500,
-      );
+      const gameData = await getGameData(gameId);
   
       // Check if firebase UID is in gameData.players
       if (!gameData.players.includes(socket.uid)) {
@@ -206,7 +208,6 @@ io.on('connection', async (socket: any) => {
       } else {
         console.log(`[server:connection] Fetching player data for ${socket.uid}`);
         const playerData = await getPlayerData(socket.uid);
-        console.log(`[server:connection] !Player data fetched for ${socket.uid}:`, playerData);
         game.addPlayer(socket, playerData);
       }
 

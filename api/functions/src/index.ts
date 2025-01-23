@@ -14,7 +14,7 @@ import {createPlayer, getPlayerData, queuingData,
   listFriends, addFriend, updatePlayerName, updatePlayerAvatar, incrementStartedGames,
   incrementCompletedGames} from "./playerAPI";
 import { createLobby, joinLobby, cancelLobby, listLobbies, getLobbyDetails, countLobbies } from "./lobbyAPI";
-import {createGame, gameData, completeGame, getRemoteConfig, addNews, getNews, saveReplay, getReplay} from "./gameAPI";
+import {createGame, completeGame, getRemoteConfig, addNews, getNews, saveReplay, getReplay} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats,
   migrateEngagementMetrics, migrateMetricsToStats, getPlayerGameHistory, getActivePlayers,
@@ -26,7 +26,7 @@ export {
   createPlayer, rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters, deleteOnSaleCharacters,
   purchaseCharacter, leaguesUpdate, getPlayerData, queuingData, createGame,
-  gameData, inventorySave, inventoryTransaction, saveGoldReward, spendSP,
+  inventorySave, inventoryTransaction, saveGoldReward, spendSP,
   getReward, claimChest, updateRanksOnEloChange, updateRanksOnPlayerCreation,
   completeGame, getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, completeTour, fetchGuideTip, manualLeaguesUpdate, getRemoteConfig,
