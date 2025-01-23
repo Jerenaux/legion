@@ -229,7 +229,10 @@ export abstract class Game
         const allCharacters = this.getTeam(1).concat(this.getTeam(2));
         this.turnSystem.initializeTurnOrder(allCharacters);
 
-        this.sockets.forEach(socket => this.sendGameStatus(socket));
+        this.sockets.forEach(socket => {
+            this.sendGameStatus(socket);
+            this.incrementStartedGames(this.socketMap.get(socket)!);
+        });
         setTimeout(this.processTurn.bind(this), 2000);
         
         this.audienceTimer = setInterval(() => {
@@ -515,6 +518,10 @@ export abstract class Game
                 }
                 if (team.id === winnerTeamID) {
                     winnerUID = team.teamData.playerUID;
+                }
+
+                if (!team.hasDisconnected()) {
+                    this.incrementCompletedGames(team);
                 }
             });
             this.updateGameInDB(winnerUID, results);
@@ -1258,6 +1265,41 @@ export abstract class Game
             console.error(error);
         }
     }
+
+    async incrementStartedGames(team: Team) {
+        try {
+            await apiFetch(
+                'incrementStartedGames',
+                '',
+                {
+                    method: 'POST',
+                    body: {
+                        uid: team.teamData.playerUID,
+                    },
+                }
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async incrementCompletedGames(team: Team) {
+        try {
+            await apiFetch(
+                'incrementCompletedGames',
+                '',
+                {
+                    method: 'POST',
+                    body: {
+                        uid: team.teamData.playerUID,
+                    },
+                }
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
 
     async saveInventoryToDb(token: string, characterId: string, inventory: number[]) {
         console.log(`[Game:saveInventoryToDb] Saving inventory to DB for character ${characterId}`);

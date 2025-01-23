@@ -3,8 +3,7 @@ import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions";
 import admin, { corsMiddleware, getUID, checkAPIKey, performLockedOperation } from "./APIsetup";
 
-import { uniqueNamesGenerator }
-  from "unique-names-generator";
+import { uniqueNamesGenerator } from "unique-names-generator";
 
 import { Class, ChestColor, League, Token, PlayMode } from "@legion/shared/enums";
 import { PlayerContextData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData,
@@ -1148,23 +1147,6 @@ export const recordPlayerAction = onRequest({
       const details = request.body.details;
       logPlayerAction(uid, actionType, details);
 
-      // Check if action type is pageView and if the message.details are in format "/game/:gameid"
-      if (actionType == 'pageView' && details.message.includes('/game/')) {
-        await incrementStartedGames(uid);
-      }
-
-      if (actionType == 'completedGame') {
-        await incrementCompletedGame(uid);
-      }
-
-      if (actionType == 'tutorial' && details == 'coda') {
-        await incrementCompletedTutorial(uid);
-      }
-
-      if (actionType == 'tutorial' && details == 'summonEnemy') {
-        await incrementEngagedTutorial(uid);
-      }
-
       response.status(200).send({});
     } catch (error) {
       console.error('recordPlayerAction error:', error);
@@ -1173,37 +1155,45 @@ export const recordPlayerAction = onRequest({
   });
 });
 
-async function incrementCompletedTutorial(uid: string) {
-  const db = admin.firestore();
-  await db.collection('players').doc(uid).update({
-    'engagementStats.completedTutorial': true,
-  });
-}
+export const incrementStartedGames = onRequest({ memory: '512MiB' }, async (request, response) => {
+    const db = admin.firestore();
 
-async function incrementEngagedTutorial(uid: string) {
-  const db = admin.firestore();
-  await db.collection('players').doc(uid).update({
-    'engagementStats.engagedTutorial': true,
-  });
-}
+    corsMiddleware(request, response, async () => {
+        try {
+            const uid = request.body.uid;
+            await db.collection('players').doc(uid).set({
+                engagementStats: {
+                    totalGames: admin.firestore.FieldValue.increment(1)
+                }
+            }, { merge: true });
+            
+            response.send({ success: true });
+        } catch (error) {
+            console.error('incrementStartedGames error:', error);
+            response.status(500).send('Error incrementing started games');
+        }
+    });
+});
 
-async function incrementStartedGames(uid: string) {
-  const db = admin.firestore();
-  await db.collection('players').doc(uid).set({
-    engagementStats: {
-      totalGames: admin.firestore.FieldValue.increment(1)
-    }
-  }, { merge: true });
-}
+export const incrementCompletedGames = onRequest({ memory: '512MiB' }, async (request, response) => {
+    const db = admin.firestore();
 
-async function incrementCompletedGame(uid: string) {
-  const db = admin.firestore();
-  await db.collection('players').doc(uid).set({
-    engagementStats: {
-      completedGames: admin.firestore.FieldValue.increment(1)
-    }
-  }, { merge: true });
-}
+    corsMiddleware(request, response, async () => {
+        try {
+            const uid = request.body.uid;
+            await db.collection('players').doc(uid).set({
+                engagementStats: {
+                    completedGames: admin.firestore.FieldValue.increment(1)
+                }
+            }, { merge: true });
+            
+            response.send({ success: true });
+        } catch (error) {
+            console.error('incrementCompletedGames error:', error);
+            response.status(500).send('Error incrementing completed games');
+        }
+    });
+});
 
 export const updateInactivePlayersStats = onSchedule(
   {

@@ -439,15 +439,26 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
                 return;
             }
 
-            // Get players who either joined or were active after the start date
-            const playersSnapshot = await db.collection("players")
-                .where(admin.firestore.Filter.or(
-                    admin.firestore.Filter.where("joinDate", ">=", startDate),
-                    admin.firestore.Filter.where("lastActiveDate", ">=", startDate)
-                ))
-                .get();
+            // Get new players who joined after the start date
+            const [newPlayersSnapshot, activePlayersSnapshot] = await Promise.all([
+                db.collection("players")
+                    .where("joinDate", ">=", startDate)
+                    .get(),
+                db.collection("players")
+                    .where("lastActiveDate", ">=", startDate)
+                    .where("joinDate", "<", startDate) // Only get players who joined before startDate
+                    .get()
+            ]);
 
-            const totalPlayers = playersSnapshot.size;
+            const newPlayers = newPlayersSnapshot.docs;
+            const activePlayers = activePlayersSnapshot.docs;
+            
+            // Use only new players for conversion rate
+            const newPlayersCount = newPlayers.length;
+            
+            // Combine players for other metrics, removing duplicates
+            const allPlayerDocs = [...newPlayers, ...activePlayers];
+            const totalPlayers = allPlayerDocs.length;
 
             // Get unique visitors since start date
             const visitsSnapshot = await db.collection("dailyVisits")
@@ -463,8 +474,8 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
             });
             const totalVisitors = uniqueVisitors.size;
 
-            // Calculate conversion rate (as a percentage)
-            const landingPageCvRate = totalVisitors > 0 ? (totalPlayers / totalVisitors) * 100 : 0;
+            // Calculate conversion rate using only new players
+            const landingPageCvRate = totalVisitors > 0 ? (newPlayersCount / totalVisitors) * 100 : 0;
 
             if (totalPlayers === 0) {
                 response.send({
@@ -476,7 +487,8 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
                     playedMultipleGamesRate: 0,
                     gameCompletionRate: 0,
                     abandonedFirstGameRateMobile: 0,
-                    abandonedFirstGameRateNonMobile: 0
+                    abandonedFirstGameRateNonMobile: 0,
+                    totalFirstGameAbandonmentRate: 0
                 });
                 return;
             }
@@ -494,7 +506,7 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
             let abandonedFirstGameNonMobile = 0;
 
             // Process each player
-            for (const playerDoc of playersSnapshot.docs) {
+            for (const playerDoc of allPlayerDocs) {
                 const playerData = playerDoc.data();
                 const stats = playerData.engagementStats || {};
                 const playerTotalGames = stats.totalGames || 0;
@@ -502,7 +514,7 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
                 const isMobile = playerData.isMobile || false;
                 
                 const nbGamesThershold = 2; // Tutorial game + one more
-                if (playerTotalGames >= nbGamesThershold) {
+                if (playerCompletedGames >= nbGamesThershold) {
                     playedOneGame++;
                     if (!isMobile) {
                         playedOneGameNonMobile++;
@@ -523,7 +535,7 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
                 } else {
                     totalMobilePlayers++;
                 }
-                if (playerTotalGames > nbGamesThershold) playedMultipleGames++;
+                if (playerCompletedGames > nbGamesThershold) playedMultipleGames++;
 
                 totalCompletedGames += playerCompletedGames;
                 totalGamesStarted += playerTotalGames;
@@ -544,7 +556,9 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
                 abandonedFirstGameRateMobile: totalMobilePlayers > 0 ?
                     (abandonedFirstGameMobile / totalMobilePlayers) * 100 : 0,
                 abandonedFirstGameRateNonMobile: totalNonMobilePlayers > 0 ?
-                    (abandonedFirstGameNonMobile / totalNonMobilePlayers) * 100 : 0
+                    (abandonedFirstGameNonMobile / totalNonMobilePlayers) * 100 : 0,
+                totalFirstGameAbandonmentRate: totalPlayers > 0 ?
+                    ((abandonedFirstGameMobile + abandonedFirstGameNonMobile) / totalPlayers) * 100 : 0
             };
 
             response.send(metrics);

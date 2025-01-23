@@ -462,10 +462,6 @@ def fetch_engagement_metrics():
                         ui.label(str(data['totalPlayers'])).classes('text-2xl mt-2')
                     
                     with ui.card().classes('flex-1 p-4'):
-                        ui.label('Tutorial Completion').classes('text-lg font-bold')
-                        ui.label(f"{data['tutorialCompletionRate']:.1f}%").classes('text-2xl mt-2')
-                    
-                    with ui.card().classes('flex-1 p-4'):
                         ui.label('Played At Least 1 Game').classes('text-lg font-bold')
                         ui.label(f"{data['playedOneGameRate']:.1f}%").classes('text-2xl mt-2')
                     

@@ -347,6 +347,10 @@ export class Team {
         this.socket = null;
     }
 
+    hasDisconnected() {
+        return this.socket === null;
+    }
+
     getTeamSize() {
         return this.members.length;
     }
