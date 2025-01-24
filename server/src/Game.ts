@@ -5,7 +5,7 @@ import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
 import { Spell } from './Spell';
 import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
-import { apiFetch, getRemoteConfig } from './API';
+import { apiFetch } from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN,
     Stat, SpeedClass } from '@legion/shared/enums';
 import { OutcomeData, TerrainUpdate, PlayerDataForGame, GameOutcomeReward, GameData,
@@ -103,6 +103,9 @@ export abstract class Game
         disconnectingTeam.unsetSocket();
         // Slice the player from the game
         this.sockets = this.sockets.filter(s => s !== socket);
+        if (this.sockets.length === 0) {
+            this.saveReplayToDb();
+        }
     }
 
     reconnectPlayer(socket: Socket) {
@@ -132,8 +135,27 @@ export abstract class Game
 
     async getRemoteConfig() {
         const isDev = process.env.NODE_ENV === 'development';
-        this.config = isDev ? remoteConfig : await getRemoteConfig();
+        this.config = isDev ? remoteConfig : await this.getRemoteConfigFromRemoteConfig();
         // console.log(`[Game:getRemoteConfig] [isDev: ${isDev}] ${JSON.stringify(this.config)}`);
+    }
+
+    protected async getRemoteConfigFromRemoteConfig(retries = 10, delay = 500) {
+        return withRetry(async () => {
+            const remoteConfig = admin.remoteConfig();
+            const template = await remoteConfig.getTemplate();
+
+            // Extract parameter values from the template
+            const configValues: { [key: string]: any } = {};
+            for (const [key, parameter] of Object.entries(template.parameters)) {
+                // @ts-ignore
+                let value = parameter.defaultValue?.value;
+                if (value === "true") value = true;
+                if (value === "false") value = false;
+                configValues[key] = value;
+            }
+
+            return configValues;
+        }, retries, delay, 'getRemoteConfig');
     }
 
     getPosition(index, flip) {
@@ -885,7 +907,7 @@ export abstract class Game
 
         const spell: Spell | null = player.getSpellAtIndex(index);
         if (!spell) return;
-        console.log(`[Game:processMagic] Casting spell [${spell.id}] ${spell.name}`);
+        // console.log(`[Game:processMagic] Casting spell [${spell.id}] ${spell.name}`);
 
         if (spell.cost > player.getMP()) {
             console.log(`[Game:processMagic] Not enough MP, ${spell.cost} > ${player.getMP()}!`);
@@ -1370,6 +1392,7 @@ export abstract class Game
     }
 
     async saveReplayToDb() {
+        console.log(`[Game:saveReplayToDb] Saving replay to DB for game ${this.id}`);
         try {
             await apiFetch(
                 'saveReplay',

@@ -1481,7 +1481,7 @@ export class Arena extends Phaser.Scene
         events.emit('gameInitialized');
         
     
-        this.tutorialManager = new TutorialManager(this);
+        this.tutorialManager = new TutorialManager(this, data.player.player.engagementStats);
     }
 
     sleep(duration: number): Promise<void> {

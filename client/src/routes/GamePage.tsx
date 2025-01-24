@@ -69,10 +69,6 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.on('gameInitialized', this.handleGameInitialized);
     events.on('serverDisconnect', this.handleServerDisconnect);
 
-    events.on('requestEngagementStats', () => {
-      events.emit('updateEngagementStats', this.context.player?.engagementStats);
-    });
-
     this.checkOrientation();
     window.addEventListener('resize', this.checkOrientation);
     window.addEventListener('orientationchange', this.checkOrientation);

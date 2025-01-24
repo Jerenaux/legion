@@ -123,41 +123,6 @@ export const completeGame = onRequest({
   });
 });
 
-export const getRemoteConfig = onRequest({ 
-  secrets: ["API_KEY"],
-  memory: '512MiB'
-}, (request, response) => {
-  const remoteConfig = admin.remoteConfig();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
-       // Fetch the Remote Config template
-      const template = await remoteConfig.getTemplate();
-
-      // Extract parameter values from the template
-      const configValues: { [key: string]: any } = {};
-      for (const [key, parameter] of Object.entries(template.parameters)) {
-        console.log(`Parameter ${key}: ${JSON.stringify(parameter)}`);
-        // @ts-ignore
-        let value = parameter.defaultValue?.value;
-        if (value == "true") value = true;
-        if (value == "false") value = false;
-        configValues[key] = value;
-      }
-
-      // Send the config values as the response
-      response.status(200).json(configValues);
-    } catch (error) {
-      console.error("getRemoteConfig error:", error);
-      response.status(500).send("Error fetching remote config");
-    }
-  });
-});
-
 export const getNews = onRequest({ 
   memory: '512MiB' 
 },(request, response) => {

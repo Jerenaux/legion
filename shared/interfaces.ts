@@ -232,6 +232,7 @@ export interface TeamData {
     dailyloot: DailyLootAllAPIData;
     AIwinRatio: number;
     completedGames: number;
+    engagementStats: any;
 }
 
 export interface GameOutcomeReward {
@@ -293,6 +294,7 @@ export interface PlayerProfileData {
     playerAvatar: string;
     playerLeague: number;
     completedGames: number;
+    engagementStats?: EngagementStats;
 }
 interface GamePlayerData {
     teamId: number;

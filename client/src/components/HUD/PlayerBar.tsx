@@ -114,7 +114,7 @@ class PlayerBar extends Component<PlayerBarProps> {
     //   [StatusEffect.MUTE]: 0,
     //   [StatusEffect.HASTE]: 7,
     // };
-    const isMuted = statuses[StatusEffect.MUTE] > 0;
+    const isMuted = statuses?.[StatusEffect.MUTE] > 0;
     const pendingSpellCost = pendingSpell !== null ? spells[pendingSpell]?.cost : 0;
 
     const keyboardLayout = this.state.keyboardLayout === 0 ? 'AZERTYUIOPQSDFGHJKLMWXCVBN' : 'QWERTYUIOPASDFGHJKLZXCVBNM';

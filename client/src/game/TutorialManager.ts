@@ -52,19 +52,10 @@ export class TutorialManager {
         }
     };
 
-    constructor(arena: Arena) {
+    constructor(arena: Arena, engagementStats: EngagementStats) {
         // @ts-ignore
-        this.engagementStats = {};
-        
-        // Listen for engagement stats updates
-        events.on('updateEngagementStats', (stats: EngagementStats) => {
-            // @ts-ignore
-            this.engagementStats = stats || {};
-            this.setupEventListeners();
-        });
-        
-        // Request engagement stats
-        events.emit('requestEngagementStats');
+        this.engagementStats = engagementStats || {};
+        this.setupEventListeners();
     }
 
     private setupEventListeners() {
