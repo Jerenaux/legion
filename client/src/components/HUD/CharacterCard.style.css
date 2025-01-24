@@ -1,0 +1,363 @@
+.endgame_character {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: clamp(120px, 15vw, 180px);
+    height: clamp(120px, 15vw, 180px);
+    padding: clamp(8px, 1vh, 12px);
+    padding-top: clamp(24px, 3vh, 32px);
+    isolation: isolate;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(37, 43, 54, 0.05) 15%,
+        rgba(37, 43, 54, 0.95) 50%,
+        rgba(37, 43, 54, 0.05) 85%,
+        transparent 100%
+    );
+    border-radius: 8px;
+}
+
+.endgame_character::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.02) 20%,
+        rgba(81, 253, 255, 0.1) 50%,
+        rgba(81, 253, 255, 0.02) 80%,
+        transparent 100%
+    );
+    border-radius: 8px;
+    z-index: -1;
+}
+
+.endgame_character::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.1) 20%,
+        rgba(81, 253, 255, 0.3) 50%,
+        rgba(81, 253, 255, 0.1) 80%,
+        transparent 100%
+    );
+    opacity: 0.5;
+}
+
+.endgame_character_level {
+    position: absolute;
+    top: clamp(4px, 0.8vh, 8px);
+    right: clamp(8px, 1vw, 12px);
+    font-size: clamp(12px, 1.5vh, 16px);
+    font-weight: 600;
+    color: #ffa600;
+    text-shadow: 0 0 8px rgba(255, 166, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.endgame_character_level span {
+    color: #ffffff;
+}
+
+.endgame_character_level_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.endgame_character_xp_container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.endgame_character_xp_label {
+    font-size: clamp(8px, 1vh, 10px);
+    color: #71deff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 1px;
+}
+
+.endgame_character_xp_bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(28, 31, 37, 0.5);
+    border-radius: 2px;
+    /* overflow: hidden; */
+}
+
+.endgame_character_xp_fill {
+    height: 100%;
+    background: #71deff;
+    box-shadow: 0 0 8px rgba(113, 222, 255, 0.5);
+    transition: width 0.1s linear;
+}
+
+.endgame_character_xp_fill.reset {
+    transition: none;
+}
+
+.endgame_character_portrait {
+    width: clamp(80px, 10vh, 120px);
+    height: clamp(80px, 10vh, 120px);
+    position: relative;
+    margin: 8px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.endgame_character_portrait .char_portrait {
+    width: 100%;
+    height: 100%;
+    margin-left: 10px;
+    background-repeat: no-repeat;
+    transform: scale(1);
+    animation: animate-sprite 0.7s steps(1) infinite;
+}
+
+.endgame_character_portrait .char_portrait.victory-animation {
+    animation: animate-sprite-victory 0.7s steps(1) infinite;
+}
+
+@keyframes animate-sprite-victory {
+    0% { background-position: -900px -190px; }
+    50% { background-position: -1045px -190px; }
+    100% { background-position: -1190px -190px; }
+}
+
+.endgame_character_name {
+    font-size: clamp(12px, 1.5vh, 16px);
+    font-weight: 600;
+    color: #ffffff;
+    text-align: center;
+    margin-top: 8px;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.endgame_character_class {
+    font-size: clamp(10px, 1.2vh, 14px);
+    color: #71deff;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 4px;
+}
+
+.endgame_character_exp {
+    font-size: clamp(6px, 0.8vh, 8px);
+    color: #ffffff;
+}
+
+.endgame_character_expVal {
+    font-size: clamp(6px, 0.8vh, 8px);
+    color: #71deff;
+}
+
+.endgame_character_exp_bg {
+    background-color: #1c1f25;
+    height: clamp(3px, 0.5vh, 4px);
+    border-radius: 2px;
+    /* overflow: hidden; */
+}
+
+.endgame_character_lvlup {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, #ffd700, #ffa600);
+    color: #1c1f25;
+    font-size: clamp(10px, 2.5vw, 12px);
+    font-weight: 700;
+    padding: clamp(4px, 1vh, 6px) clamp(12px, 2vw, 16px);
+    border-radius: 12px;
+    white-space: nowrap;
+    box-shadow: 
+        0 0 20px rgba(255, 166, 0, 0.6),
+        0 0 40px rgba(255, 166, 0, 0.3);
+    animation: levelUpFloat 2s ease-in-out infinite;
+    z-index: 2;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.endgame_character.leveling-up::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    right: -20%;
+    bottom: -20%;
+    background: 
+        /* Delayed sparkles */
+        radial-gradient(circle at 50% 30%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
+        radial-gradient(circle at 25% 50%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
+        radial-gradient(circle at 75% 50%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
+        radial-gradient(circle at 50% 70%, rgba(255, 215, 0, 0.8) 0%, transparent 7%);
+    animation: sparkles 1.2s ease-out 0.15s forwards;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+.endgame_character.leveling-up::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    right: -20%;
+    bottom: -20%;
+    background: 
+        /* Inner sparkles - brighter and closer */
+        radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        radial-gradient(circle at 70% 45%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        radial-gradient(circle at 40% 60%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        radial-gradient(circle at 60% 55%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
+        /* Outer sparkles - softer and spread out */
+        radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        radial-gradient(circle at 80% 25%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        radial-gradient(circle at 15% 70%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        radial-gradient(circle at 85% 75%, rgba(255, 215, 0, 0.7) 0%, transparent 8%),
+        /* Background glow sparkles */
+        radial-gradient(circle at 40% 30%, rgba(255, 215, 0, 0.5) 0%, transparent 12%),
+        radial-gradient(circle at 60% 70%, rgba(255, 215, 0, 0.5) 0%, transparent 12%);
+    animation: sparkles 1.2s ease-out forwards;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+@keyframes levelUpFloat {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-4px);
+    }
+}
+
+@keyframes sparkles {
+    0% { 
+        opacity: 0; 
+        transform: scale(0.8) rotate(-5deg); 
+    }
+    15% {
+        opacity: 0.3;
+        transform: scale(0.9) rotate(-3deg);
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.1) rotate(2deg); 
+    }
+    75% {
+        opacity: 0.6;
+        transform: scale(1.15) rotate(4deg);
+    }
+    100% { 
+        opacity: 0; 
+        transform: scale(1.2) rotate(5deg); 
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .endgame_character_lvlup {
+        top: -8px;
+        padding: 3px 10px;
+        border-radius: 8px;
+    }
+}
+
+.endgame_character.question-mark-mode {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    width: clamp(120px, 15vw, 180px);
+    height: clamp(120px, 15vw, 180px);
+    padding: clamp(8px, 1vh, 12px);
+    padding-top: clamp(24px, 3vh, 32px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(37, 43, 54, 0.05) 15%,
+        rgba(37, 43, 54, 0.95) 50%,
+        rgba(37, 43, 54, 0.05) 85%,
+        transparent 100%
+    );
+    border-radius: 8px;
+}
+
+.endgame_character.question-mark-mode::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.02) 20%,
+        rgba(81, 253, 255, 0.1) 50%,
+        rgba(81, 253, 255, 0.02) 80%,
+        transparent 100%
+    );
+    border-radius: 8px;
+    z-index: -1;
+}
+
+.endgame_character.question-mark-mode .endgame_character_portrait {
+    width: clamp(80px, 10vh, 120px);
+    height: clamp(80px, 10vh, 120px);
+    margin: 8px 0;
+}
+
+.endgame_character.question-mark-mode .question-mark {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Kim';
+    font-size: clamp(48px, 8vw, 72px);
+    color: #3c616c;
+    text-shadow: 0 0 20px rgba(81, 253, 255, 0.2);
+}
+
+.endgame_character.question-mark-mode:hover {
+    transform: translateY(-5px);
+    border-color: #51fdff;
+    box-shadow: 0 0 20px rgba(81, 253, 255, 0.2);
+}
+
+@media screen and (max-width: 480px) {
+    .endgame_character,
+    .endgame_character.question-mark-mode {
+        width: clamp(100px, 12vw, 160px);
+        height: clamp(100px, 12vw, 160px);
+        padding: clamp(6px, 0.8vh, 10px);
+        padding-top: clamp(20px, 2.5vh, 28px);
+    }
+
+    .endgame_character.question-mark-mode .endgame_character_portrait {
+        width: clamp(60px, 8vh, 100px);
+        height: clamp(60px, 8vh, 100px);
+        margin: 6px 0;
+    }
+
+    .endgame_character.question-mark-mode .question-mark {
+        font-size: clamp(36px, 6vw, 54px);
+    }
+}

@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
 import { CharacterUpdate, GameOutcomeReward } from '@legion/shared/interfaces';
-import XPCountUp from './XPCountUp';
+import CharacterCard from './XPCountUp';
 import { ChestColor, PlayMode } from '@legion/shared/enums';
 import OpenedChest from '../dailyLoot/OpenedChest';
 import { route } from 'preact-router';
@@ -174,7 +174,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
 
                 <div className="endgame_characters_grid">
                     {characters.map((character, idx) => (
-                        <XPCountUp
+                        <CharacterCard
                             member={members[character.num - 1]}
                             character={character as CharacterUpdate}
                             memberIdx={idx}

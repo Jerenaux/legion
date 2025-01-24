@@ -1,16 +1,18 @@
-// XPCountUp.tsx
 import { h, Component } from 'preact';
 
 import { ClassLabels } from '@legion/shared/enums';
 import { CharacterUpdate } from '@legion/shared/interfaces';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { getSpritePath } from '../utils';
+import './CharacterCard.style.css';
 
 interface CountUpProps {
     member: any;
-    character: CharacterUpdate;
-    memberIdx: number;
-    isWinner: boolean;
+    character?: CharacterUpdate;
+    memberIdx?: number;        
+    isWinner?: boolean;        
+    hideXP?: boolean;
+    isQuestionMark?: boolean;
 }
 
 interface CountUpState {
@@ -23,33 +25,35 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
     private timer: NodeJS.Timeout | null = null;
     state: CountUpState = {
         isLevelUp: 0,
-        xpCounter: this.props.member.xp, // How much XP before starting the count up
-        totalXP: this.props.character.earnedXP + this.props.member.xp,
+        xpCounter: this.props.member.xp,
+        totalXP: (this.props.character?.earnedXP || 0) + this.props.member.xp,
     }
 
     componentDidMount(): void { 
-        const baseInterval = Math.max(0.1, this.state.totalXP / 500);
-        this.timer = setInterval(() => {
-            const maxXP = getXPThreshold(this.props.member.level); 
+        if (!this.props.hideXP && !this.props.isQuestionMark) {
+            const baseInterval = Math.max(0.1, this.state.totalXP / 500);
+            this.timer = setInterval(() => {
+                const maxXP = getXPThreshold(this.props.member.level); 
 
-            if (this.state.totalXP > maxXP && this.state.xpCounter >= maxXP) {
-                this.setState(prevState => ({ 
-                    isLevelUp: prevState.isLevelUp + 1, 
-                    xpCounter: 0, 
-                    totalXP: prevState.totalXP - maxXP 
-                })); 
-                return;
-            }
+                if (this.state.totalXP > maxXP && this.state.xpCounter >= maxXP) {
+                    this.setState(prevState => ({ 
+                        isLevelUp: prevState.isLevelUp + 1, 
+                        xpCounter: 0, 
+                        totalXP: prevState.totalXP - maxXP 
+                    })); 
+                    return;
+                }
 
-            if (this.state.xpCounter >= this.state.totalXP) {
-                clearInterval(this.timer);
-                this.timer = null;
-            } else {
-                const remainingXP = this.state.totalXP - this.state.xpCounter;
-                const interval = Math.min(baseInterval, remainingXP);
-                this.setState({ xpCounter: this.state.xpCounter + interval });
-            }
-        }, 10);
+                if (this.state.xpCounter >= this.state.totalXP) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                } else {
+                    const remainingXP = this.state.totalXP - this.state.xpCounter;
+                    const interval = Math.min(baseInterval, remainingXP);
+                    this.setState({ xpCounter: this.state.xpCounter + interval });
+                }
+            }, 10);
+        }
     }
 
     componentWillUnmount(): void {
@@ -59,11 +63,21 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
     }
 
     render() {
-        const { character, member, memberIdx } = this.props;
+        const { character, member, memberIdx, hideXP, isQuestionMark } = this.props;
         const maxXP = getXPThreshold(this.props.member.level); 
-        const isReceivingXP = character.earnedXP > 0;
+        const isReceivingXP = character?.earnedXP > 0;
         const isResettingXP = this.state.xpCounter === 0;
         const isLevelingUp = this.state.isLevelUp > 0;
+
+        if (isQuestionMark) {
+            return (
+                <div className="endgame_character question-mark-mode">
+                    <div className="endgame_character_portrait">
+                        <div className="question-mark">?</div>
+                    </div>
+                </div>
+            );
+        }
 
         return (
             <div className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''}`}>
@@ -75,19 +89,21 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                     <span>Lvl</span> {member.level + this.state.isLevelUp}
                 </div>
                 
-                <div className="endgame_character_level_container">
-                    {isReceivingXP && (
-                        <div className="endgame_character_xp_container">
-                            <div className="endgame_character_xp_label">XP</div>
-                            <div className="endgame_character_xp_bar">
-                                <div 
-                                    className={`endgame_character_xp_fill ${isResettingXP ? 'reset' : ''}`}
-                                    style={{ width: `${(this.state.xpCounter / maxXP) * 100}%` }}
-                                />
+                {!hideXP && (
+                    <div className="endgame_character_level_container">
+                        {isReceivingXP && (
+                            <div className="endgame_character_xp_container">
+                                <div className="endgame_character_xp_label">XP</div>
+                                <div className="endgame_character_xp_bar">
+                                    <div 
+                                        className={`endgame_character_xp_fill ${isResettingXP ? 'reset' : ''}`}
+                                        style={{ width: `${(this.state.xpCounter / maxXP) * 100}%` }}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
 
                 <div className="endgame_character_portrait">
                     <div 

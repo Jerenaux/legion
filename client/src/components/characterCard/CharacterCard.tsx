@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 import { route } from 'preact-router';
 import { classEnumToString, getSpritePath } from '../utils';
 import { APICharacterData } from '@legion/shared/interfaces';
-import './ChracterCard.style.css';
+import './CharacterCard.style.css';
 
 const bgContext = require.context('@assets', false, /team_Bg_.*\.png$/);
 

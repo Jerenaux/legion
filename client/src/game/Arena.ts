@@ -816,6 +816,7 @@ export class Arena extends Phaser.Scene
     processHPChange({team, num, hp, damage}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
+        if (!player) return;
         player.setHP(hp);
         if (damage) player.displayDamage(damage);
         if (player.isPlayer) events.emit('hpChange', {num, hp});
@@ -848,8 +849,8 @@ export class Arena extends Phaser.Scene
         // console.log(`Processing cast: ${flag} ${team} ${num} ${id} ${location}`);
         const player = this.getPlayer(team, num);
         const spell = getSpellById(id);
-        player.castAnimation(flag, spell?.name);
-        const { x: pixelX, y: pixelY } = this.gridToPixelCoords(player.gridX, player.gridY);
+        player?.castAnimation(flag, spell?.name);
+        // const { x: pixelX, y: pixelY } = this.gridToPixelCoords(player.gridX, player.gridY);
         // this.spellCam(pixelX, pixelY, false);
         // if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
         if (player.isPlayer) {
@@ -1443,9 +1444,44 @@ export class Arena extends Phaser.Scene
         this.turnee = data.turnee;
         this.gameSettings.game0 = data.player.player.completedGames === 0;
 
+        this.tutorialManager = new TutorialManager(this, data.player.player.engagementStats);
+
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
 
+        // Events from the HUD
+        events.on('itemClick', (keyIndex) => {
+            this.selectedPlayer?.onKey(keyIndex);
+        });
+
+        events.on('passTurn', () => {
+            this.playSound('click');
+            this.socket.emit('passTurn');
+        });
+
+        events.on('abandonGame', () => {
+            this.abandonGame();
+        });
+
+        events.on('exitGame', () => {
+            console.log('Exit game event received');
+            this.destroy();
+        });   
+        
+        events.on('teamRevealed', () => {
+            this.displayGame(data, isReconnect);
+        });
+
+        events.emit('gameInitialized', {game0: this.gameSettings.game0});
+        
+        if (this.gameSettings.game0) {
+            events.emit('revealTeam', data.player.team);
+        } else {
+            this.displayGame(data, isReconnect);
+        }
+    }
+
+    displayGame(data: GameData, isReconnect: boolean) {
         this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
 
@@ -1466,38 +1502,8 @@ export class Arena extends Phaser.Scene
                 this.selectTurnee();
             }, delay);
         }
-
-        // Events from the HUD
-        events.on('itemClick', (keyIndex) => {
-            this.selectedPlayer?.onKey(keyIndex);
-        });
-
-        events.on('passTurn', () => {
-            this.playSound('click');
-            this.socket.emit('passTurn');
-        });
-
-        events.on('abandonGame', () => {
-            this.abandonGame();
-        });
-
-        events.on('exitGame', () => {
-            console.log('Exit game event received');
-            this.destroy();
-        });
-        
-        events.emit('gameInitialized');
-        
-    
-        this.tutorialManager = new TutorialManager(this, data.player.player.engagementStats);
     }
 
-    sleep(duration: number): Promise<void> {
-        return new Promise(resolve => {
-            this.time.delayedCall(duration, resolve, [], this);
-        });
-    }
-    
     setGameInitialized() {
         this.gameInitialized = true;
         this.refreshOverview();

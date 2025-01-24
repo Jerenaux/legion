@@ -6,6 +6,8 @@ import { startGame } from '../game/game';
 import './GamePage.style.css';
 import { recordLoadingStep } from '../components/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
+import { PlayerNetworkData } from '@legion/shared/interfaces';
+import { TeamReveal } from '../components/teamReveal/TeamReveal';
 
 interface GamePageProps {
   matches: {
@@ -22,6 +24,9 @@ interface GamePageState {
   key: number;
   waitingStartTime: number | null;
   currentMessageIndex: number;
+  revealedTeam: PlayerNetworkData[] | null;
+  revealedIndices: boolean[];
+  allRevealed: boolean;
 }
 
 const WAITING_MESSAGES = [
@@ -46,6 +51,9 @@ class GamePage extends Component<GamePageProps, GamePageState> {
       key: 0,
       waitingStartTime: null,
       currentMessageIndex: 0,
+      revealedTeam: null,
+      revealedIndices: [false, false, false],
+      allRevealed: false,
     };
   }
 
@@ -68,7 +76,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.on('progressUpdate', this.updateProgress);
     events.on('gameInitialized', this.handleGameInitialized);
     events.on('serverDisconnect', this.handleServerDisconnect);
-
+    events.on('revealTeam', this.handleRevealTeam);
     this.checkOrientation();
     window.addEventListener('resize', this.checkOrientation);
     window.addEventListener('orientationchange', this.checkOrientation);
@@ -78,6 +86,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.off('progressUpdate', this.updateProgress);
     events.off('gameInitialized', this.handleGameInitialized);
     events.off('serverDisconnect', this.handleServerDisconnect);
+    events.off('revealTeam', this.handleRevealTeam);
     window.removeEventListener('resize', this.checkOrientation);
     window.removeEventListener('orientationchange', this.checkOrientation);
     if (this.waitingTimer) {
@@ -106,11 +115,21 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     });
   };
 
-  handleGameInitialized = () => {
+  handleGameInitialized = ({game0}) => {
     this.setState({ initialized: true });
     if (this.waitingTimer) {
       clearTimeout(this.waitingTimer);
     }
+  };
+
+  handleRevealTeam = (team: PlayerNetworkData[]) => {
+    console.log(`[GamePage:handleRevealTeam] Team: ${team}`);
+    this.setState({ revealedTeam: team });
+  };
+
+  endReveal = () => {
+    events.emit('teamRevealed');
+    this.setState({ revealedTeam: null });
   };
 
   handleServerDisconnect = () => {
@@ -158,6 +177,12 @@ class GamePage extends Component<GamePageProps, GamePageState> {
               <div className='waiting-div'>{WAITING_MESSAGES[this.state.currentMessageIndex]}</div>
               <QueueTips />
             </div>
+          )}
+          {this.state.revealedTeam && (
+            <TeamReveal 
+              team={this.state.revealedTeam} 
+              onComplete={this.endReveal}
+            />
           )}
         </div>
         {this.state.isPortraitMode && <OrientationOverlay />}
