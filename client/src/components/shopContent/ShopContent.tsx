@@ -53,12 +53,35 @@ function sortByRarityAndPrice(a: any, b: any) {
 
 const TAB_LABELS = ['Consumables', 'Equipment', 'Spells', 'Characters'];
 
-const groupEquipmentByType = (equipment: BaseEquipment[]) => {
+const EQUIP_CATEGORIES_GROUPPING = {
+    [EquipmentSlot.WEAPON]: 'Weapons',
+    [EquipmentSlot.HELMET]: 'Protection',
+    [EquipmentSlot.ARMOR]: 'Protection',
+    [EquipmentSlot.BELT]: 'Accessories',
+    [EquipmentSlot.GLOVES]: 'Protection',
+    [EquipmentSlot.BOOTS]: 'Protection',
+    [EquipmentSlot.LEFT_RING]: 'Accessories',
+    [EquipmentSlot.RIGHT_RING]: 'Accessories',
+    [EquipmentSlot.NECKLACE]: 'Accessories',
+}
+
+const groupEquipmentByType = (equipment: BaseEquipment[], useCategories: boolean) => {
+    if (!useCategories) {
+        return equipment.reduce<Record<string, BaseEquipment[]>>((acc, item) => {
+            if (!acc[item.slot]) {
+                acc[item.slot] = [];
+            }
+            acc[item.slot].push(item);
+            return acc;
+        }, {});
+    }
+
     return equipment.reduce<Record<string, BaseEquipment[]>>((acc, item) => {
-        if (!acc[item.slot]) {
-            acc[item.slot] = [];
+        const category = EQUIP_CATEGORIES_GROUPPING[item.slot];
+        if (!acc[category]) {
+            acc[category] = [];
         }
-        acc[item.slot].push(item);
+        acc[category].push(item);
         return acc;
     }, {});
 };
@@ -277,14 +300,17 @@ class ShopContent extends Component<ShopContentProps> {
                         return !batch || this.context.canAccessFeature(batch);
                     });
 
-                    const groupedEquipment = groupEquipmentByType(unlockedEquipment);
+                    const useDetailedCategories = this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2);
+                    const groupedEquipment = groupEquipmentByType(unlockedEquipment, !useDetailedCategories);
                     
                     return (
                         <div className="equipment-sections">
-                            {Object.entries(groupedEquipment).map(([slot, items]) => (
-                                <div key={slot} className="equipment-section">
+                            {Object.entries(groupedEquipment).map(([category, items]) => (
+                                <div key={category} className="equipment-section">
                                     <h3 className="equipment-type-title">
-                                        {equipmentSlotLabelsPlural[slot as unknown as EquipmentSlot]}
+                                        {useDetailedCategories 
+                                            ? equipmentSlotLabelsPlural[category as unknown as EquipmentSlot]
+                                            : category}
                                     </h3>
                                     <div className="equipment-grid">
                                         {items.map((item: BaseEquipment, index: number) => 
