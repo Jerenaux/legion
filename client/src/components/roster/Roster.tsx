@@ -7,7 +7,7 @@ import CharacterCard from '../characterCard/CharacterCard';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import { route } from 'preact-router';
 import PlusIcon from '@assets/plus.svg';
-import { ShopTab } from '@legion/shared/enums';
+import { LockedFeatures, ShopTab } from '@legion/shared/enums';
 import Skeleton from 'react-loading-skeleton';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { MAX_CHARACTERS } from "@legion/shared/config";
@@ -31,7 +31,10 @@ class Roster extends Component {
             {characters.map(character => (
               <CharacterCard {...character} key={character.id} />
             ))}
-            {this.context.characters.length < MAX_CHARACTERS && <div className="addCardContainer">
+            {
+            this.context.characters.length < MAX_CHARACTERS 
+            && this.context.canAccessFeature(LockedFeatures.CHARACTER_PURCHASES)
+            && <div className="addCardContainer">
               <div className="addCard" onClick={this.handleCardClick}>
                 <img src={PlusIcon} alt="Plus" />
               </div>

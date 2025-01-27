@@ -138,3 +138,9 @@
 .shop-items-container.equipment-view {
     display: block;
 }
+
+.shop-tab-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: all;
+}

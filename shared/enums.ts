@@ -256,3 +256,8 @@ export enum TargetHighlight {
     ENEMY,
     DEAD,
 }
+
+export enum LockedFeatures {
+    CHARACTER_PURCHASES,
+  }
+  

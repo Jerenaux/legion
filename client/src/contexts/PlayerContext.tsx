@@ -1,6 +1,6 @@
 import { createContext } from 'preact';
 import { PlayerContextData, APICharacterData, FriendData } from '@legion/shared/interfaces';
-import { League, Stat, InventoryActionType, ShopTab } from "@legion/shared/enums";
+import { League, Stat, InventoryActionType, ShopTab, LockedFeatures } from "@legion/shared/enums";
 import { Socket } from 'socket.io-client';
 
 export interface PlayerContextState {
@@ -53,6 +53,7 @@ export const PlayerContext = createContext<{
   };
   handleChallengeAccept: () => void;
   handleChallengeDecline: () => void;
+  canAccessFeature: (feature: LockedFeatures) => boolean;
 }>({
   player: {
     uid: '',
@@ -106,4 +107,5 @@ export const PlayerContext = createContext<{
   },
   handleChallengeAccept: () => {},
   handleChallengeDecline: () => {},
+  canAccessFeature: () => false,
 });

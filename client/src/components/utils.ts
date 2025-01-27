@@ -16,6 +16,8 @@ import poisonIcon from '@assets/status_icons/poison_icon.png';
 import burnIcon from '@assets/status_icons/burn_icon.png';
 import hasteIcon from '@assets/status_icons/haste_icon.png';
 
+import _lockIcon from '@assets/lock.png';
+
 import Toastify from 'toastify-js'
 
 const spriteContext = require.context('@assets/sprites', false, /\.(png|jpe?g|svg)$/);
@@ -264,3 +266,5 @@ export const getStatEnum = (key: string): Stat => {
 export const getSpeedClass = (speedClass: SpeedClass): string => {
   return SpeedClass[speedClass];
 }
+
+export const lockIcon = _lockIcon;

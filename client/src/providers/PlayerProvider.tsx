@@ -3,7 +3,7 @@ import { PlayerContextState, PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
 import { errorToast, avatarContext, silentErrorToast } from '../components/utils';
 import { APICharacterData, PlayerContextData, PlayerInventory } from '@legion/shared/interfaces';
-import { League, Stat, StatFields, InventoryActionType, ShopTab, ItemDialogType
+import { League, Stat, StatFields, InventoryActionType, ShopTab, ItemDialogType, LockedFeatures
  } from "@legion/shared/enums";
 import { firebaseAuth } from '../services/firebaseService'; 
 import { getSPIncrement } from '@legion/shared/levelling';
@@ -30,6 +30,7 @@ import equipSfx from "@assets/sfx/equip.wav";
 import { getConsumableById } from "@legion/shared/Items";
 import { getSpellById } from "@legion/shared/Spells";
 import { getEquipmentById } from "@legion/shared/Equipments";
+import { LOCKED_FEATURES } from '@legion/shared/config';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private fetchAllDataTimeout: NodeJS.Timeout | null = null;
@@ -601,6 +602,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         this.setState({ challengeModal: { ...this.state.challengeModal, show: false } });
     };
 
+    canAccessFeature = (feature: LockedFeatures) => {
+      return this.state.player.engagementStats.completedGames >= LOCKED_FEATURES[feature];
+    }
+
     render() {
       const { children } = this.props;
   
@@ -631,6 +636,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           challengeModal: this.state.challengeModal,
           handleChallengeAccept: this.handleChallengeAccept,
           handleChallengeDecline: this.handleChallengeDecline,
+          canAccessFeature: this.canAccessFeature,
         }}>
           {children}
           

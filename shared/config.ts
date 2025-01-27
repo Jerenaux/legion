@@ -1,3 +1,5 @@
+import { LockedFeatures } from "./enums";
+
 const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
 
 // Profile
@@ -89,6 +91,11 @@ export const LEGION_CUT = 0.02;
 // Social
 export const DISCORD_LINK = 'https://discord.gg/s2XZhYCK2m';
 export const X_LINK = 'https://x.com/iolegion';
+
+// Locked features
+export const LOCKED_FEATURES = {
+    [LockedFeatures.CHARACTER_PURCHASES]: 12,
+}
 
 export const remoteConfig = {
     AUTO_DEFEAT: false,

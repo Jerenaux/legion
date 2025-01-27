@@ -5,10 +5,10 @@ import Skeleton from 'react-loading-skeleton';
 import { h, Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
-import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural } from '@legion/shared/enums';
+import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, LockedFeatures } from '@legion/shared/enums';
 import { MAX_CHARACTERS } from "@legion/shared/config";
 import { ShopItems, DBCharacterData } from '@legion/shared/interfaces';
-import { errorToast, successToast, playSoundEffect, silentErrorToast } from '../utils';
+import { errorToast, successToast, playSoundEffect, silentErrorToast, lockIcon } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
 import ShopEquipmentCard from '../shopEquipmentCard/ShopEquipmentCard';
@@ -263,22 +263,31 @@ class ShopContent extends Component<ShopContentProps> {
                     handleInventory={this.handleInventory} />
 
                 <div className='shop-tabs-container'>
-                    {this.state.inventoryData && shopTabIcons.map((icon, index) =>
-                        <Link
-                            href={`/shop/${ShopTab[index].toLowerCase()}`}
-                            onClick={() => {
-                                this.setState({ curr_tab: index });
-                                if (index === ShopTab.CHARACTERS) {
-                                    this.loadCharacters();
-                                }
-                            }}
-                            key={index}
-                            className={`shop-tab-item ${index === this.state.curr_tab ? 'active' : ''}`}
-                        >
-                            <img src={icon} alt={`${ShopTab[index]} icon`} />
-                            <span className="shop-tab-label">{TAB_LABELS[index]}</span>
-                        </Link>
-                    )}
+                    {this.state.inventoryData && shopTabIcons.map((icon, index) => {
+                        const isCharacterTab = index === ShopTab.CHARACTERS;
+                        const isDisabled = isCharacterTab && !this.context.canAccessFeature(LockedFeatures.CHARACTER_PURCHASES);
+
+                        return (
+                            <Link
+                                href={!isDisabled ? `/shop/${ShopTab[index].toLowerCase()}` : '#'}
+                                onClick={(e) => {
+                                    if (isDisabled) {
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                    this.setState({ curr_tab: index });
+                                    if (isCharacterTab) {
+                                        this.loadCharacters();
+                                    }
+                                }}
+                                key={index}
+                                className={`shop-tab-item ${index === this.state.curr_tab ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
+                            >
+                                <img src={isDisabled ? lockIcon : icon} alt={`${ShopTab[index]} icon`} />
+                                <span className="shop-tab-label">{TAB_LABELS[index]}</span>
+                            </Link>
+                        );
+                    })}
                 </div>
                 <div className='shop-items-container'>{renderItems()}</div>
                 <PurchaseDialog
