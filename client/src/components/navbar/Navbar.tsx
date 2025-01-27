@@ -7,9 +7,11 @@ import { Link, useRouter } from 'preact-router';
 import firebase from 'firebase/compat/app'
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
-import { successToast, avatarContext } from '../utils';
+import { successToast, avatarContext, lockIcon } from '../utils';
 import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
 import { SettingsModal } from '../settingsModal/SettingsModal';
+import { PlayerContext } from '../../contexts/PlayerContext';
+import { LockedFeatures } from "@legion/shared/enums";
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -61,6 +63,7 @@ interface State {
 }
 
 class Navbar extends Component<Props, State> {
+    static contextType = PlayerContext;
     
     state: State = {
         hovered: '',
@@ -183,9 +186,30 @@ class Navbar extends Component<Props, State> {
                             <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} alt="Team" />
                         </div>
                     </Link>
-                    <Link href="/shop" onMouseOver={() => this.setState({ hovered: MenuItems.SHOP })} onMouseLeave={() => this.setState({ hovered: '' })}>
-                        <div className={`menuItemContainer ${currentPage(Routes.SHOP) ? 'activeFlag' : ''}`}>
-                            <img className="menuItem" src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon} alt="Shop" />
+                    <Link 
+                        href={this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) ? "/shop" : "#"}
+                        onClick={(e) => {
+                            if (!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1)) {
+                                e.preventDefault();
+                                return;
+                            }
+                        }}
+                        onMouseOver={() => this.setState({ hovered: MenuItems.SHOP })} 
+                        onMouseLeave={() => this.setState({ hovered: '' })}
+                    >
+                        <div className={`menuItemContainer ${currentPage(Routes.SHOP) ? 'activeFlag' : ''} ${!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) ? 'disabled' : ''}`}>
+                            <img 
+                                className="menuItem" 
+                                src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon} 
+                                alt="Shop" 
+                            />
+                            {!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) && (
+                                <img 
+                                    className="lock-overlay"
+                                    src={lockIcon} 
+                                    alt="Locked" 
+                                />
+                            )}
                         </div>
                     </Link>
                     <Link href="/rank" onMouseOver={() => this.setState({ hovered: MenuItems.RANK })} onMouseLeave={() => this.setState({ hovered: '' })}>

@@ -1,5 +1,5 @@
 import { BaseItem } from "./BaseItem";
-import { Stat, StatusEffect, Target, SpeedClass, TargetHighlight } from ".";
+import { Stat, StatusEffect, Target, SpeedClass, TargetHighlight, LockedFeatures } from ".";
 
 export const items: BaseItem[] = [];
 
@@ -13,7 +13,8 @@ items[0] = new BaseItem({
     speedClass: SpeedClass.FAST,
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 50}],
-    effort: 0.15    ,
+    effort: 0.15,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_1,
 });
 
 items[1] = new BaseItem({
@@ -27,6 +28,7 @@ items[1] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 20}],
     effort: 0.3,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_1,
 });
 
 items[2] = new BaseItem({
@@ -40,6 +42,7 @@ items[2] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}],
     effort: 1,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[3] = new BaseItem({
@@ -53,6 +56,7 @@ items[3] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 100}],
     effort: 2,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[4] = new BaseItem({
@@ -66,6 +70,7 @@ items[4] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 1000}],
     effort: 5.5,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[5] = new BaseItem({
@@ -79,6 +84,7 @@ items[5] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 300}],
     effort: 8,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[6] = new BaseItem({
@@ -92,7 +98,7 @@ items[6] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 100}],
     effort: 4,
-
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[7] = new BaseItem({
@@ -106,6 +112,7 @@ items[7] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 1000}, {stat: Stat.MP, value: 300}],
     effort: 18,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[8] = new BaseItem({
@@ -120,6 +127,7 @@ items[8] = new BaseItem({
     target: Target.SINGLE,
     effects: [{stat: Stat.HP, value: 50, onKO: true}],
     effort: 1,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_1,
     targetHighlight: TargetHighlight.DEAD,
 });
 
@@ -134,6 +142,7 @@ items[9] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: -1}, {stat: Stat.MP, value: -1}],
     effort: 20,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[10] = new BaseItem({
@@ -148,6 +157,7 @@ items[10] = new BaseItem({
     effects: [],
     statusRemovals: [StatusEffect.POISON],
     effort: 0.5,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_2,
 });
 
 items[11] = new BaseItem({
@@ -162,6 +172,7 @@ items[11] = new BaseItem({
     effects: [],
     statusRemovals: [StatusEffect.POISON, StatusEffect.PARALYZE, StatusEffect.SLEEP, StatusEffect.BURN],
     effort: 3.5,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_3,
 });
 
 items[12] = new BaseItem({
@@ -176,6 +187,7 @@ items[12] = new BaseItem({
     effects: [],
     statusRemovals: [StatusEffect.MUTE],
     effort: 0.5,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_2,
 });
 
 items[13] = new BaseItem({
@@ -190,6 +202,7 @@ items[13] = new BaseItem({
     effects: [],
     status: {effect: StatusEffect.HASTE, chance: 1, duration: 5},
     effort: 6,
+    unlock: LockedFeatures.CONSUMABLES_BATCH_2,
 });
 
 export function getConsumableById(id: number): BaseItem | undefined {

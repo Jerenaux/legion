@@ -81,6 +81,7 @@ export interface ConsumableData {
     status?: StatusEffectData;
     effort: number;
     targetHighlight?: TargetHighlight;
+    unlock?: LockedFeatures;
 }
 
 export interface EquipmentData {

@@ -2,11 +2,11 @@ import './ShopContent.style.css';
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import Skeleton from 'react-loading-skeleton';
-import { h, Component, render } from 'preact';
+import { h, Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
 import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, LockedFeatures } from '@legion/shared/enums';
-import { EQUIPMENT_BATCH_GOLD, LOCKED_FEATURES, MAX_CHARACTERS } from "@legion/shared/config";
+import { EQUIPMENT_BATCH_GOLD, MAX_CHARACTERS } from "@legion/shared/config";
 import { ShopItems, DBCharacterData } from '@legion/shared/interfaces';
 import { errorToast, successToast, playSoundEffect, silentErrorToast, lockIcon } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
@@ -223,11 +223,11 @@ class ShopContent extends Component<ShopContentProps> {
                                     <h3>More Spells Await!</h3>
                                     <p>
                                         {!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_2)} more games to unlock the next batch of spells!`
+                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_2)} more games to unlock more powerful spells!`
                                         )}
                                         {this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) && 
                                          !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_3) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_3)} more games to unlock the final batch of spells!`
+                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_3)} more games to unlock more powerful spells!`
                                         )}
                                     </p>
                                 </div>
@@ -235,10 +235,42 @@ class ShopContent extends Component<ShopContentProps> {
                         </div>
                     );
                 }
-                case ShopTab.CONSUMABLES:
-                    return this.state.inventoryData.consumables.map((item, index) => 
-                        <ShopConsumableCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />
+                case ShopTab.CONSUMABLES: {
+                    const unlockedConsumables = this.state.inventoryData.consumables.filter(
+                        consumable => this.context.canAccessFeature(consumable.unlock)
                     );
+                    
+                    return (
+                        <div className="consumables-container">
+                            <div className="consumables-grid">
+                                {unlockedConsumables.map((item, index) => 
+                                    <ShopConsumableCard 
+                                        key={index} 
+                                        data={item} 
+                                        getItemAmount={getItemAmount} 
+                                        handleOpenModal={this.handleOpenModal} 
+                                    />
+                                )}
+                            </div>
+                            {(!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) || 
+                              !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_3)) && (
+                                <div className="locked-spells-notice">
+                                    <img src={lockIcon} alt="Locked content" />
+                                    <h3>More Consumables Await!</h3>
+                                    <p>
+                                        {!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) && (
+                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_2)} more games to unlock better consumables!`
+                                        )}
+                                        {this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) && 
+                                         !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_3) && (
+                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_3)} more games to unlock the final consumables tier!`
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
                 case ShopTab.EQUIPMENTS: {
                     const unlockedEquipment = this.state.inventoryData.equipment.filter(equipment => {
                         const batch = this.getEquipmentBatch(equipment.price);
@@ -331,9 +363,11 @@ class ShopContent extends Component<ShopContentProps> {
                         const isCharacterTab = index === ShopTab.CHARACTERS;
                         const isSpellsTab = index === ShopTab.SPELLS;
                         const isEquipmentTab = index === ShopTab.EQUIPMENTS;
+                        const isConsumablesTab = index === ShopTab.CONSUMABLES;
                         const isDisabled = (isCharacterTab && !this.context.canAccessFeature(LockedFeatures.CHARACTER_PURCHASES)) ||
                                          (isSpellsTab && !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_1)) ||
-                                         (isEquipmentTab && !this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_1));
+                                         (isEquipmentTab && !this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_1)) ||
+                                         (isConsumablesTab && !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1));
 
                         return (
                             <Link

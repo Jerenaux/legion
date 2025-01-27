@@ -1,4 +1,4 @@
-import { Target, Rarity, StatusEffect, SpeedClass, TargetHighlight } from "./enums";
+import { Target, Rarity, StatusEffect, SpeedClass, TargetHighlight, LockedFeatures } from "./enums";
 import { Effect, ConsumableData, StatusEffectData } from "./interfaces";
 import { getPrice, getRarity } from "./economy";
 
@@ -19,6 +19,7 @@ export class BaseItem {
     effort: number = 0;
     status?: StatusEffectData;
     targetHighlight?: TargetHighlight;
+    unlock?: LockedFeatures;
 
     constructor(props: ConsumableData) {
         Object.assign(this, props);

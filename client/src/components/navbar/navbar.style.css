@@ -166,10 +166,22 @@
 .menuItemContainer {
   width: 72px;
   height: 84px;
+  position: relative;
 }
 
 .menuItemContainer img {
   width: 100%;
+}
+
+.menuItemContainer .lock-overlay {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  filter: brightness(1.2);
 }
 
 .activeFlag {
@@ -244,4 +256,17 @@ login-buttons {
 .avatarContainerLink:hover .avatarContainer {
     opacity: 0.8;
     cursor: pointer;
+}
+
+.menuItemContainer.disabled {
+    cursor: not-allowed;
+    pointer-events: all;
+}
+
+.menuItemContainer.disabled:hover {
+    transform: none;
+}
+
+.menuItemContainer.disabled .menuItem {
+    filter: grayscale(100%);
 }
