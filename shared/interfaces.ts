@@ -5,7 +5,8 @@ import {
     Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
     StatusEffect, Class, PlayMode, League,
     SpeedClass,
-    TargetHighlight
+    TargetHighlight,
+    LockedFeatures
 } from "./enums";
 import { ChestReward } from "@legion/shared/chests";
 
@@ -62,6 +63,7 @@ export interface SpellData {
     status?: StatusEffectData;
     effort: number;
     targetHighlight?: TargetHighlight;
+    unlock?: LockedFeatures;
 }
 
 export interface ConsumableData {

@@ -1,4 +1,4 @@
-import { Target, Terrain, Rarity, Class, SpeedClass, TargetHighlight } from "./enums";
+import { Target, Terrain, Rarity, Class, SpeedClass, TargetHighlight, LockedFeatures } from "./enums";
 import { Effect, SpellData, StatusEffectData } from "./interfaces";
 import { getPrice, getRarity } from "./economy";
 import { TIME_COEFFICIENT } from "@legion/shared/config";
@@ -27,6 +27,7 @@ export class BaseSpell {
     status?: StatusEffectData;
     effort: number = 0;
     targetHighlight?: TargetHighlight;
+    unlock?: LockedFeatures;
     
     constructor(props: SpellData) {
         Object.assign(this, props);

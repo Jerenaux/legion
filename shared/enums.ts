@@ -259,5 +259,8 @@ export enum TargetHighlight {
 
 export enum LockedFeatures {
     CHARACTER_PURCHASES,
+    SPELLS_BATCH_1,
+    SPELLS_BATCH_2,
+    SPELLS_BATCH_3,
   }
   

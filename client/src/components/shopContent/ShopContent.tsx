@@ -6,7 +6,7 @@ import { h, Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
 import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, LockedFeatures } from '@legion/shared/enums';
-import { MAX_CHARACTERS } from "@legion/shared/config";
+import { LOCKED_FEATURES, MAX_CHARACTERS } from "@legion/shared/config";
 import { ShopItems, DBCharacterData } from '@legion/shared/interfaces';
 import { errorToast, successToast, playSoundEffect, silentErrorToast, lockIcon } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
@@ -189,10 +189,42 @@ class ShopContent extends Component<ShopContentProps> {
 
         const renderItems = () => {
             switch (this.state.curr_tab) {
-                case ShopTab.SPELLS:
-                    return this.state.inventoryData.spells.map((item, index) => 
-                        <ShopSpellCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />
+                case ShopTab.SPELLS: {
+                    const unlockedSpells = this.state.inventoryData.spells.filter(
+                        spell => this.context.canAccessFeature(spell.unlock)
                     );
+                    
+                    return (
+                        <div className="spells-container">
+                            <div className="spells-grid">
+                                {unlockedSpells.map((item, index) => 
+                                    <ShopSpellCard 
+                                        key={index} 
+                                        data={item} 
+                                        getItemAmount={getItemAmount} 
+                                        handleOpenModal={this.handleOpenModal} 
+                                    />
+                                )}
+                            </div>
+                            {(!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) || 
+                              !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_3)) && (
+                                <div className="locked-spells-notice">
+                                    <img src={lockIcon} alt="Locked content" />
+                                    <h3>More Spells Await!</h3>
+                                    <p>
+                                        {!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) && (
+                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_2)} more games to unlock the next batch of spells!`
+                                        )}
+                                        {this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) && 
+                                         !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_3) && (
+                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_3)} more games to unlock the final batch of spells!`
+                                        )}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
                 case ShopTab.CONSUMABLES:
                     return this.state.inventoryData.consumables.map((item, index) => 
                         <ShopConsumableCard key={index} data={item} getItemAmount={getItemAmount} handleOpenModal={this.handleOpenModal} />
@@ -265,7 +297,9 @@ class ShopContent extends Component<ShopContentProps> {
                 <div className='shop-tabs-container'>
                     {this.state.inventoryData && shopTabIcons.map((icon, index) => {
                         const isCharacterTab = index === ShopTab.CHARACTERS;
-                        const isDisabled = isCharacterTab && !this.context.canAccessFeature(LockedFeatures.CHARACTER_PURCHASES);
+                        const isSpellsTab = index === ShopTab.SPELLS;
+                        const isDisabled = (isCharacterTab && !this.context.canAccessFeature(LockedFeatures.CHARACTER_PURCHASES)) ||
+                                         (isSpellsTab && !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_1));
 
                         return (
                             <Link
@@ -289,7 +323,9 @@ class ShopContent extends Component<ShopContentProps> {
                         );
                     })}
                 </div>
-                <div className='shop-items-container'>{renderItems()}</div>
+                <div className={`shop-items-container ${this.state.curr_tab === ShopTab.EQUIPMENTS ? 'equipment-view' : ''}`}>
+                    {renderItems()}
+                </div>
                 <PurchaseDialog
                     position={this.state.position}
                     dialogOpen={this.state.openModal}

@@ -606,6 +606,12 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       return this.state.player.engagementStats.completedGames >= LOCKED_FEATURES[feature];
     }
 
+    getGamesUntilFeature = (feature: LockedFeatures): number => {
+        const completedGames = this.state.player.engagementStats.completedGames || 0;
+        const requiredGames = LOCKED_FEATURES[feature];
+        return Math.max(0, requiredGames - completedGames);
+    }
+
     render() {
       const { children } = this.props;
   
@@ -637,6 +643,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           handleChallengeAccept: this.handleChallengeAccept,
           handleChallengeDecline: this.handleChallengeDecline,
           canAccessFeature: this.canAccessFeature,
+          getGamesUntilFeature: this.getGamesUntilFeature,
         }}>
           {children}
           

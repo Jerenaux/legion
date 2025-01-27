@@ -94,6 +94,9 @@ export const X_LINK = 'https://x.com/iolegion';
 
 // Locked features
 export const LOCKED_FEATURES = {
+    [LockedFeatures.SPELLS_BATCH_1]: 2,
+    [LockedFeatures.SPELLS_BATCH_2]: 6,
+    [LockedFeatures.SPELLS_BATCH_3]: 11,
     [LockedFeatures.CHARACTER_PURCHASES]: 12,
 }
 
