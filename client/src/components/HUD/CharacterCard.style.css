@@ -154,7 +154,7 @@
 
 .endgame_character_class {
     font-family: 'Kim';
-    font-size: clamp(10px, 1.2vh, 14px);
+    font-size: clamp(10px, 2vh, 14px);
     color: #71deff;
     text-transform: uppercase;
     text-align: center;

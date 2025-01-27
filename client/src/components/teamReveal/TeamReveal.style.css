@@ -20,13 +20,15 @@
   text-align: center;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
   animation: fadeInDown 0.6s ease-out;
+  position: absolute;
+  top: 15vh;
 }
 
 .team-reveal-grid {
   min-height: 20vh;
   display: flex;
   justify-content: center;
-  margin-top: 3vh;
+  margin-top: 0;
   gap: 25px;
   scrollbar-width: none;
 }
@@ -38,12 +40,12 @@
 
 @media (max-height: 600px) {
   .team-reveal-grid {
-    gap: 0;
-    margin-top: -10vh;
+    gap: 2vw;
+    margin-top: 0;
   }
   
   .team-reveal-wrapper .endgame_character {
-    transform: scale(0.5);
+    transform: scale(1);
   }
 
   .team-reveal-wrapper {
@@ -66,6 +68,14 @@
       transform: scale(0.5) translateY(0);
       filter: blur(0) brightness(1);
     }
+  }
+
+  .team-reveal-title {
+    top: 5vh;
+  }
+
+  .team-reveal-play-button {
+    bottom: 5vh;
   }
 }
 
@@ -180,6 +190,8 @@
   box-shadow: 
     0 0 20px rgba(255, 166, 0, 0.3),
     inset 0 0 10px rgba(255, 255, 255, 0.5);
+  position: absolute;
+  bottom: 15vh;
 }
 
 .team-reveal-play-button:hover {
