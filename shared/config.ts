@@ -16,6 +16,7 @@ export const MOVE_DELAY = 0.5;
 export const ITEM_DELAY = 1;
 export const KILL_CAM_DELAY = 0.5;
 export const PARALYZED_DELAY = 1.5;
+export const FIRST_TURN_DELAY = 2;
 export const BASE_INVENTORY_SIZE = 20;
 export const BASE_CARRYING_CAPACITY = 3;
 export const STARTING_GOLD = 1000;

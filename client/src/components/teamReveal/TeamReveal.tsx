@@ -62,7 +62,7 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
             className="team-reveal-play-button"
             onClick={this.props.onComplete}
           >
-            PLAY
+            PLAY!
           </button>
         )}
       </div>

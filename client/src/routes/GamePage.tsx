@@ -62,10 +62,6 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   }
 
   componentWillUnmount() {
-    const { socket } = this.context;
-    if (socket) {
-      socket.emit('leaveGame', { gameId: this.props.matches.id });
-    }
     this.cleanup();
   }
 

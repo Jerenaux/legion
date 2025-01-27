@@ -1469,6 +1469,7 @@ export class Arena extends Phaser.Scene
         });   
         
         events.on('teamRevealed', () => {
+            this.socket.emit('teamRevealed');
             this.displayGame(data, isReconnect);
         });
 

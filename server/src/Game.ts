@@ -14,7 +14,7 @@ import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
     LEGION_CUT, TURN_DURATION, KILL_CAM_DURATION, MOVE_DELAY, ATTACK_DELAY, SPELL_DELAY,
-    ITEM_DELAY, KILL_CAM_DELAY } from '@legion/shared/config';
+    ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 import { TurnSystem } from './TurnSystem';
 import { withRetry } from './utils';
@@ -259,7 +259,10 @@ export abstract class Game
             this.sendGameStatus(socket);
             this.incrementStartedGames(this.socketMap.get(socket)!);
         });
-        setTimeout(this.processTurn.bind(this), 2000);
+
+        if (!this.isGame0()) {
+            setTimeout(this.processTurn.bind(this), FIRST_TURN_DELAY);
+        }
         
         this.audienceTimer = setInterval(() => {
             this.teams.forEach(team => {
@@ -277,6 +280,10 @@ export abstract class Game
                 this.endGame(2);
             }, 5000);
         }
+    }
+
+    isGame0() {
+        return this.teams.get(1)!.isGame0();
     }
 
     saveInitialStateToReplay() {
@@ -1381,6 +1388,10 @@ export abstract class Game
         const team = this.socketMap.get(socket);
         const otherTeam = this.getOtherTeam(team.id);
         this.endGame(otherTeam.id);
+    }
+
+    handleTeamRevealed() {
+        this.processTurn(FIRST_TURN_DELAY);
     }
 
     setStake(stake: number) {
