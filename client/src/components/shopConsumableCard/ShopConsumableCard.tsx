@@ -84,7 +84,12 @@ class ShopConsumableCard extends Component<ShopCardProps> {
     }
 
     return (
-      <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
+      <div 
+        className="shop-card-container" 
+        key={this.props.key} 
+        onClick={(e) => this.props.handleOpenModal(e, modalData)}
+        data-shop-item={`consumable-${data.id}`}
+      >
         <div className="shop-card-title" style={titleStyle}>
           <span>{data.name}</span>
           <div className="consumable-card-info-box">

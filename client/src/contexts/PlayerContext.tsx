@@ -57,6 +57,7 @@ export const PlayerContext = createContext<{
   canAccessFeature: (feature: LockedFeatures) => boolean;
   getGamesUntilFeature: (feature: LockedFeatures) => number;
   getCompletedGames: () => number;
+  checkEngagementFlag: (flag: string) => boolean;
 }>({
   player: {
     uid: '',
@@ -113,5 +114,6 @@ export const PlayerContext = createContext<{
   handleChallengeDecline: () => {},
   canAccessFeature: () => false,
   getCompletedGames: () => 0,
+  checkEngagementFlag: () => false,
   getGamesUntilFeature: () => 0,
 });

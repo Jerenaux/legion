@@ -182,7 +182,10 @@ class Navbar extends Component<Props, State> {
                         </div>
                     </Link>
                     <Link href="/team" onMouseOver={() => this.setState({ hovered: MenuItems.TEAM })} onMouseLeave={() => this.setState({ hovered: '' })}>
-                        <div className={`menuItemContainer ${currentPage(Routes.TEAM) ? 'activeFlag' : ''}`}>
+                        <div 
+                            className={`menuItemContainer ${currentPage(Routes.TEAM) ? 'activeFlag' : ''}`}
+                            data-team-page
+                        >
                             <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} alt="Team" />
                         </div>
                     </Link>

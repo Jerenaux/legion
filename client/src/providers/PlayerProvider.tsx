@@ -381,15 +381,14 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           inventory: {
             ...inventory,
             [inventoryField]: updatedInventoryField.sort(numericalSort)
+          },
+          engagementStats: {
+            ...this.state.player.engagementStats,
+            everPurchased: true
           }
         }
       });
     }
-
-    // addChestContentToInventory = (content: ChestReward[]) => {
-    //   const { inventory } = this.state.player;
-      
-    // }
 
     getCharacter = (characterId: string): APICharacterData | undefined => {
       return this.state.characters.find(char => char.id === characterId);
@@ -610,6 +609,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       return this.state.player.engagementStats?.completedGames || 0;
     }
 
+    checkEngagementFlag = (flag: string): boolean => {
+      return this.state.player.engagementStats[flag] || false;
+    }
+
     getGamesUntilFeature = (feature: LockedFeatures): number => {
         const completedGames = this.getCompletedGames();
         const requiredGames = LOCKED_FEATURES[feature];
@@ -650,6 +653,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           canAccessFeature: this.canAccessFeature,
           getGamesUntilFeature: this.getGamesUntilFeature,
           getCompletedGames: this.getCompletedGames,
+          checkEngagementFlag: this.checkEngagementFlag,
         }}>
           {children}
           

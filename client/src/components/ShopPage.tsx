@@ -1,9 +1,10 @@
-import { h, Component } from 'preact';
+import { h, Component, createRef } from 'preact';
 import { apiFetch } from '../services/apiService';
 import { DBCharacterData } from '@legion/shared/interfaces';
 import ShopContent from './shopContent/ShopContent';
 import { ShopTab } from '@legion/shared/enums';
 import { PlayerContext } from '../contexts/PlayerContext';
+import PopupManager, { Popup } from './popups/PopupManager';
 
 enum DialogType {
   ITEM_PURCHASE,
@@ -33,10 +34,21 @@ class ShopPage extends Component<ShopPageProps, State> {
     quantity: 1,
   };
 
+  popupManagerRef = createRef();
+
   async componentDidMount() {
     this.fetchCharactersOnSale();
-    this.context.manageHelp('shop');
+    
+    if (!this.context.checkEngagementFlag('everPurchased')) {
+      this.popupManagerRef.current?.enqueuePopup(Popup.BuySomething);
+    } else if (!this.context.checkEngagementFlag('everEquippedConsumable')) {
+      this.popupManagerRef.current?.enqueuePopup(Popup.GoTeamPage);
+    }
   }
+
+  handlePopupResolved = (popup: Popup) => {
+    
+  };
 
   async fetchCharactersOnSale() { 
     // await new Promise(resolve => setTimeout(resolve, 2000)); 
@@ -54,6 +66,10 @@ class ShopPage extends Component<ShopPageProps, State> {
   render() {
     return (
         <div className="shop-container">
+          <PopupManager 
+            ref={this.popupManagerRef}
+            onPopupResolved={this.handlePopupResolved}
+          />
           <ShopContent
             characters={this.state.characters} 
             requiredTab={ShopTab[this.props.matches.id?.toUpperCase()]}
