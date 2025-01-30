@@ -1,4 +1,4 @@
-import { LockedFeatures } from "./enums";
+import { LockedFeatures, RewardType } from "./enums";
 
 const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
 
@@ -76,7 +76,7 @@ export const STARTING_SPELLS_ADMIN = [2];
 export const STARTING_EQUIPMENT_ADMIN = [2];
 export let INJURED_MODE = false;
 export let SKIP_LEVEL_RESTRICTIONS = true;
-export let IMMEDIATE_LOOT = false;
+export let IMMEDIATE_LOOT = true;
 export let LOTSA_MP = false;
 export let MAX_AI_CHARACTERS = 6;
 
@@ -112,6 +112,54 @@ export const EQUIPMENT_BATCH_GOLD = {
     [LockedFeatures.EQUIPMENT_BATCH_1]: 500,
     [LockedFeatures.EQUIPMENT_BATCH_2]: 1000,
     [LockedFeatures.EQUIPMENT_BATCH_3]: 1000000,
+}
+
+export const UNLOCK_REWARDS = {
+    [LockedFeatures.CONSUMABLES_BATCH_1]: [
+        { type: RewardType.CONSUMABLES, id: 0, amount: 5 },
+        { type: RewardType.GOLD, id: -1, amount: 100 },
+    ],
+    [LockedFeatures.SPELLS_BATCH_1]: [
+        { type: RewardType.CONSUMABLES, id: 1, amount: 5 },
+        { type: RewardType.GOLD, id: -1, amount: 500 },
+    ],
+    [LockedFeatures.EQUIPMENT_BATCH_1]: [
+        { type: RewardType.EQUIPMENT, id: 17, amount: 1 },
+        { type: RewardType.GOLD, id: -1, amount: 1000 },
+    ],
+    [LockedFeatures.RANKED_MODE]: [
+        { type: RewardType.CONSUMABLES, id: 8, amount: 2 },
+        { type: RewardType.GOLD, id: -1, amount: 200 },
+    ],
+    [LockedFeatures.CONSUMABLES_BATCH_2]: [
+        { type: RewardType.CONSUMABLES, id: 10, amount: 2 },
+        { type: RewardType.CONSUMABLES, id: 12, amount: 2 },
+        { type: RewardType.GOLD, id: -1, amount: 200 },
+    ],
+    [LockedFeatures.SPELLS_BATCH_2]: [
+        { type: RewardType.SPELL, id: 1, amount: 3 },
+        { type: RewardType.GOLD, id: -1, amount: 200 },
+    ],
+    [LockedFeatures.EQUIPMENT_BATCH_2]: [
+        { type: RewardType.EQUIPMENT, id: 16, amount: 1 },
+        { type: RewardType.GOLD, id: -1, amount: 200 },
+    ],
+    [LockedFeatures.DAILY_LOOT]: [
+        { type: RewardType.GOLD, id: -1, amount: 200 },
+    ],
+    [LockedFeatures.CONSUMABLES_BATCH_3]: [
+        { type: RewardType.CONSUMABLES, id: 11, amount: 1 },
+        { type: RewardType.GOLD, id: -1, amount: 200 },
+    ],
+    [LockedFeatures.EQUIPMENT_BATCH_3]: [
+        { type: RewardType.GOLD, id: -1, amount: 500 },
+    ],
+    [LockedFeatures.SPELLS_BATCH_3]: [
+        { type: RewardType.GOLD, id: -1, amount: 500 },
+    ],
+    [LockedFeatures.CHARACTER_PURCHASES]: [
+        { type: RewardType.GOLD, id: -1, amount: 500 },
+    ],
 }
 
 export const remoteConfig = {

@@ -40,7 +40,6 @@ export const PlayerContext = createContext<{
   refreshAllData: () => void;
   markWelcomeShown: () => void;
   resetState: () => void;
-  manageHelp: (page: string) => void;
   friends: FriendData[];
   addFriend: (friendId: string) => Promise<void>;
   refreshFriends: () => Promise<void>;
@@ -58,6 +57,7 @@ export const PlayerContext = createContext<{
   getGamesUntilFeature: (feature: LockedFeatures) => number;
   getCompletedGames: () => number;
   checkEngagementFlag: (flag: string) => boolean;
+  hasConsumable: () => boolean;
 }>({
   player: {
     uid: '',
@@ -98,7 +98,6 @@ export const PlayerContext = createContext<{
   refreshAllData: () => {},
   markWelcomeShown: () => {},
   resetState: () => {},
-  manageHelp: () => {},
   friends: [],
   addFriend: async () => {},
   refreshFriends: async () => {},
@@ -116,4 +115,5 @@ export const PlayerContext = createContext<{
   getCompletedGames: () => 0,
   checkEngagementFlag: () => false,
   getGamesUntilFeature: () => 0,
+  hasConsumable: () => false,
 });

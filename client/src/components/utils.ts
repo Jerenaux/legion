@@ -1,7 +1,7 @@
 import {Class, SpeedClass, Stat, StatFields} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
 import { guide } from './tips';
-import { LeaguesNames } from "@legion/shared/enums";
+import { LeaguesNames, RewardType } from "@legion/shared/enums";
 
 import guideIcon from '@assets/guide.png';
 import successIcon from '@assets/svg/success.svg';
@@ -16,9 +16,18 @@ import poisonIcon from '@assets/status_icons/poison_icon.png';
 import burnIcon from '@assets/status_icons/burn_icon.png';
 import hasteIcon from '@assets/status_icons/haste_icon.png';
 
+import equipmentSpritesheet from '@assets/equipment.png';
+import consumablesSpritesheet from '@assets/consumables.png';
+import spellsSpritesheet from '@assets/spells.png';
+import goldIcon from '@assets/gold_icon.png';
+
 import _lockIcon from '@assets/lock.png';
 
 import Toastify from 'toastify-js'
+import { getConsumableById } from "@legion/shared/Items";
+import { getSpellById } from "@legion/shared/Spells";
+import { getEquipmentById } from "@legion/shared/Equipments";
+import { ChestReward } from "@legion/shared/interfaces";
 
 const spriteContext = require.context('@assets/sprites', false, /\.(png|jpe?g|svg)$/);
 export const avatarContext = require.context('@assets/avatars', false, /\.(png|jpe?g|svg)$/);
@@ -49,7 +58,7 @@ function showToast(text: string, duration: number = 3000, avatar: string) {
     duration,
     close: true,
     gravity: "bottom", // `top` or `bottom`
-    position: "center", // `left`, `center` or `right`
+    position: "left", // `left`, `center` or `right`
     stopOnFocus: true, // Prevents dismissing of toast on hover
     className: "toast",
     avatar,
@@ -267,4 +276,27 @@ export const getSpeedClass = (speedClass: SpeedClass): string => {
   return SpeedClass[speedClass];
 }
 
+export function getRewardObject(type: RewardType, id: number) {
+  switch (type) {
+    case RewardType.EQUIPMENT:
+      return getEquipmentById(id);
+    case RewardType.SPELL:
+      return getSpellById(id);
+    case RewardType.CONSUMABLES:
+      return getConsumableById(id);
+  }
+}
+
+export function getRewardBgImage(rewardType: RewardType) {
+  switch (rewardType) {
+      case RewardType.EQUIPMENT:
+          return equipmentSpritesheet;
+      case RewardType.SPELL:
+          return spellsSpritesheet;
+      case RewardType.CONSUMABLES:
+          return consumablesSpritesheet;
+      case RewardType.GOLD:
+          return goldIcon;
+  }
+} 
 export const lockIcon = _lockIcon;

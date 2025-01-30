@@ -54,7 +54,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.updateActiveCharacter = this.updateActiveCharacter.bind(this);
       this.fetchAllData = this.fetchAllData.bind(this);
       this.markShownWelcome = this.markShownWelcome.bind(this);
-      this.manageHelp = this.manageHelp.bind(this);
     }
 
     getInitialState(): PlayerContextState {
@@ -272,6 +271,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
             }
           };
         }
+        // ### END OF SELL ACTION ###
   
         switch(type) {
           case ItemDialogType.CONSUMABLES:
@@ -330,7 +330,11 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           ...newState,
           inventory: result.playerUpdate.inventory,
           characters: updatedCharacters,
-          characterSheetIsDirty: true
+          characterSheetIsDirty: true,
+          player: {
+            ...newState.player,
+            engagementStats: result.playerUpdate.engagementStats
+          }
         };
       });
     }
@@ -406,24 +410,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     markShownWelcome = () => {
       this.setState({ welcomeShown: true });
-    }
-
-    manageHelp = (page: string) => {
-      // const todoTours = this.state.player.tours;
-      // if (todoTours.includes(page)) {
-      //   // startTour(page);
-      //   this.setState({
-      //     player: {
-      //       ...this.state.player,
-      //       tours: todoTours.filter(tour => tour !== page)
-      //     }
-      //   });
-      //   this.setState({ lastHelp: Date.now() });
-      // } else {
-      //   if (Date.now() - this.state.lastHelp >= 3000) {
-      //     fetchGuideTip();
-      //   }
-      // }
     }
 
     addFriend = async (friendId: string) => {
@@ -602,7 +588,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     };
 
     canAccessFeature = (feature: LockedFeatures) => {
-      return this.state.player.engagementStats.completedGames >= LOCKED_FEATURES[feature];
+      return this.state.player.engagementStats?.completedGames >= LOCKED_FEATURES[feature];
     }
 
     getCompletedGames = (): number => {
@@ -610,7 +596,14 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     checkEngagementFlag = (flag: string): boolean => {
+      if (!this.state.player.engagementStats) {
+        return false;
+      }
       return this.state.player.engagementStats[flag] || false;
+    }
+
+    hasConsumable = (): boolean => {
+      return this.state.player.inventory.consumables.length > 0;
     }
 
     getGamesUntilFeature = (feature: LockedFeatures): number => {
@@ -642,7 +635,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           updateActiveCharacter: this.updateActiveCharacter,
           markWelcomeShown: this.markShownWelcome,
           resetState: this.resetState,
-          manageHelp: this.manageHelp,
           friends: this.state.friends,
           addFriend: this.addFriend,
           refreshFriends: this.fetchFriends,
@@ -654,6 +646,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           getGamesUntilFeature: this.getGamesUntilFeature,
           getCompletedGames: this.getCompletedGames,
           checkEngagementFlag: this.checkEngagementFlag,
+          hasConsumable: this.hasConsumable,
         }}>
           {children}
           

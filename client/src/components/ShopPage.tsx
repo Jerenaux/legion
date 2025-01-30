@@ -38,17 +38,17 @@ class ShopPage extends Component<ShopPageProps, State> {
 
   async componentDidMount() {
     this.fetchCharactersOnSale();
-    
-    if (!this.context.checkEngagementFlag('everPurchased')) {
-      this.popupManagerRef.current?.enqueuePopup(Popup.BuySomething);
-    } else if (!this.context.checkEngagementFlag('everEquippedConsumable')) {
-      this.popupManagerRef.current?.enqueuePopup(Popup.GoTeamPage);
-    }
   }
 
-  handlePopupResolved = (popup: Popup) => {
-    
-  };
+  componentDidUpdate() {
+    if (this.context.player.isLoaded) {
+      if (!this.context.checkEngagementFlag('everPurchased')) {
+        this.popupManagerRef.current?.enqueuePopup(Popup.BuySomething);
+      } else if (!this.context.checkEngagementFlag('everEquippedConsumable') && this.context.hasConsumable()) {
+        this.popupManagerRef.current?.enqueuePopup(Popup.GoTeamPage);
+      }
+    }
+  }
 
   async fetchCharactersOnSale() { 
     // await new Promise(resolve => setTimeout(resolve, 2000)); 
@@ -68,7 +68,7 @@ class ShopPage extends Component<ShopPageProps, State> {
         <div className="shop-container">
           <PopupManager 
             ref={this.popupManagerRef}
-            onPopupResolved={this.handlePopupResolved}
+            onPopupResolved={() => {}}
           />
           <ShopContent
             characters={this.state.characters} 

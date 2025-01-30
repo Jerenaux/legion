@@ -97,7 +97,13 @@ export function equipConsumable(playerData: PlayerContextData | DBPlayerData, ch
 
   playerInventory.consumables = consumables.sort(numericalSort);
   return {
-    playerUpdate: { inventory: playerInventory },
+    playerUpdate: { 
+      inventory: playerInventory,
+      engagementStats: {
+        ...playerData.engagementStats,
+        everEquippedConsumable: true
+      }
+    },
     characterUpdate: { inventory },
   };
 }

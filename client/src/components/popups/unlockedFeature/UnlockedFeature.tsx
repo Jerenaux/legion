@@ -1,12 +1,10 @@
 import { h, Fragment, Component } from 'preact';
 import { route } from 'preact-router';
-import { ChestReward, RewardType } from "@legion/shared/chests";
+import { ChestReward } from "@legion/shared/interfaces";
+import { RewardType } from "@legion/shared/enums";
 import { mapFrameToCoordinates } from '../../utils';
-import equipmentSpritesheet from '@assets/equipment.png';
-import consumablesSpritesheet from '@assets/consumables.png';
-import spellsSpritesheet from '@assets/spells.png';
-import goldIcon from '@assets/gold_icon.png';
 import './UnlockedFeature.style.css';
+import { getRewardBgImage, getRewardObject } from '../../utils';
 
 interface Props {
   name: string;
@@ -17,23 +15,12 @@ interface Props {
 }
 
 export class UnlockedFeature extends Component<Props> {
-  getBgImageUrl(rewardType: RewardType) {
-    switch (rewardType) {
-      case RewardType.EQUIPMENT:
-        return equipmentSpritesheet;
-      case RewardType.SPELL:
-        return spellsSpritesheet;
-      case RewardType.CONSUMABLES:
-        return consumablesSpritesheet;
-      case RewardType.GOLD:
-        return goldIcon;
-    }
-  }
 
   renderRewards() {
     return this.props.rewards.map((reward, idx) => {
-      const coordinates = mapFrameToCoordinates(reward?.frame);
-      const backgroundImageUrl = this.getBgImageUrl(reward?.type);
+      const rewardObject = getRewardObject(reward.type, reward.id);
+      const coordinates = rewardObject ? mapFrameToCoordinates(rewardObject.frame) : { x: 0, y: 0 };
+      const backgroundImageUrl = getRewardBgImage(reward.type);
       return (
         <div key={idx} className="unlocked-reward-item">
           <div className="unlocked-reward-icon" style={{

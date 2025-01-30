@@ -6,12 +6,11 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
 import { useWindowSize } from '@react-hook/window-size';
-import { ChestReward } from '@legion/shared/chests';
 
 import { apiFetch } from '../../services/apiService';
 import { errorToast, silentErrorToast, successToast } from '../utils';
 import { ChestColor } from "@legion/shared/enums";
-import { DailyLootAllAPIData } from "@legion/shared/interfaces";
+import { DailyLootAllAPIData, ChestReward } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
 import { PlayerContext } from '../../contexts/PlayerContext';
 import OpenedChest from '../dailyLoot/OpenedChest';
@@ -91,7 +90,6 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
         chestContent: null, 
         chestDailyLoot: null, 
       });
-      successToast("Chest claimed successfully!"); 
     }
 
     const [width, height] = useWindowSize()

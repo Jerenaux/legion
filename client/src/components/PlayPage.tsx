@@ -33,11 +33,12 @@ class PlayPage extends Component {
   componentDidUpdate() {
     if (!this.context.player.isLoaded) return;
 
-    console.log(this.context.getCompletedGames());
     if (this.context.getCompletedGames() < 1) {
       this.popupManagerRef.current?.enqueuePopup(Popup.PlayOneGame);
     } else if (this.context.getCompletedGames() < 2) {
       this.popupManagerRef.current?.enqueuePopup(Popup.UnlockedShop);
+    } else if (this.context.getCompletedGames() < 3) {
+      // this.popupManagerRef.current?.enqueuePopup(Popup.UnlockedSpells);
     }
   }
 

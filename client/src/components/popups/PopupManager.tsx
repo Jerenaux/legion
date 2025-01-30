@@ -2,17 +2,19 @@ import { h, Component } from 'preact';
 import Welcome from './welcome/Welcome';
 import { PlayOneGameNotification } from './gameNotification/PlayOneGameNotification';
 import { UnlockedFeature } from './unlockedFeature/UnlockedFeature';
-import { ChestReward, RewardType } from "@legion/shared/chests";
-import { Rarity } from '@legion/shared/enums';
-import { BuySomething } from './buySomething/buySomething';
+import { ChestReward } from "@legion/shared/interfaces";
+import { LockedFeatures } from "@legion/shared/enums";
 import { SimplePopup } from './simplePopup/SimplePopup';
+import { UNLOCK_REWARDS } from '@legion/shared/config';
 
 export enum Popup {
-  Guest = 'GUEST',
-  PlayOneGame = 'PLAY_ONE_GAME',
-  UnlockedShop = 'UNLOCKED_SHOP',
-  BuySomething = 'BUY_SOMETHING',
-  GoTeamPage = 'GO_TEAM_PAGE'
+  Guest,
+  PlayOneGame,
+  UnlockedShop,
+  BuySomething,
+  GoTeamPage,
+  EquipConsumable,
+//   UnlockedSpells
 }
 
 interface UnlockedFeatureConfig {
@@ -23,6 +25,7 @@ interface UnlockedFeatureConfig {
 }
 
 interface SimplePopupConfig {
+  header?: string;
   text: string;
 }
 
@@ -52,26 +55,47 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     props: {
       name: 'The Shop',
       description: 'There you can spend gold to buy consumables that your characters can use in combat! Here is some gold and some potions to get you started!',
-      rewards: [
-        { type: RewardType.CONSUMABLES, rarity: Rarity.COMMON, id: 1, frame: 1, amount: 5, name: 'Potion' },
-        { type: RewardType.GOLD, amount: 100, name: 'Gold', rarity: Rarity.COMMON, id: 1, frame: 1 },
-      ],
+      rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_1],
       route: '/shop'
     }
   },
   [Popup.BuySomething]: {
-    component: BuySomething,
+    component: SimplePopup,
     priority: 3,
-    highlightSelectors: ['[data-shop-item="consumable-0"]']
+    highlightSelectors: ['[data-shop-item="consumable-0"]'],
+    props: {
+      header: 'Your first purchase',
+      text: 'Click on the <span class="highlight-text">Potion</span> to buy one!',
+    }
   },
   [Popup.GoTeamPage]: {
     component: SimplePopup,
     priority: 4,
     highlightSelectors: ['[data-team-page]'],
     props: {
-      text: 'Go to the Team Page to equip consumables!',
+      text: 'Go to the <span class="highlight-text">Team Page</span> to equip consumables!',
     }
-  }
+  },
+  [Popup.EquipConsumable]: {
+    component: SimplePopup,
+    priority: 5,
+    highlightSelectors: ['[data-item-icon="consumables-0"]'],
+    props: {
+      text: 'Click on a <span class="highlight-text">Potion</span> to equip it on the current character so they can use it in combat!',
+    }
+  },
+//   [Popup.UnlockedSpells]: {
+//     component: UnlockedFeature,
+//     priority: 6,
+//     props: {
+//       name: 'Buying Spells',
+//       description: 'You can now buy spells for your mages from the shop!',
+//       rewards: [
+//         { type: RewardType.SPELL, rarity: Rarity.COMMON, id: 1, frame: 1, amount: 1, name: 'Fireball' },
+//       ],
+//       route: '/spells'
+//     }
+//   }
 };
 
 interface Props {
@@ -122,6 +146,7 @@ export class PopupManager extends Component<Props, State> {
   }
 
   removeHighlights(popup: Popup) {
+    if (!popup) return;
     const config = POPUP_CONFIGS[popup];
     if (config.highlightSelectors) {
       config.highlightSelectors.forEach(selector => {
@@ -163,6 +188,11 @@ export class PopupManager extends Component<Props, State> {
       this.props.onPopupResolved(activePopup);
       this.setState({ queuedPopups }, this.resolvePopup);
     }
+  };
+
+  hidePopup = () => {
+    this.removeHighlights(this.state.activePopup);
+    this.setState({ activePopup: null });
   };
 
   render() {

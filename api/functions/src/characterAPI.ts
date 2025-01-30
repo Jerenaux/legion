@@ -7,8 +7,7 @@ import {getMaxStatValue, getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFieldsByIndex, PlayMode, Stat} from "@legion/shared/enums";
 import {MAX_CHARACTERS} from "@legion/shared/config";
-import {OutcomeData, DailyLootAllDBData, CharacterUpdate, DBCharacterData} from "@legion/shared/interfaces";
-import {ChestReward} from "@legion/shared/chests";
+import {OutcomeData, DailyLootAllDBData, CharacterUpdate, DBCharacterData, ChestReward} from "@legion/shared/interfaces";
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
 

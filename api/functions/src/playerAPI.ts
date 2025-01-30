@@ -6,10 +6,10 @@ import admin, { corsMiddleware, getUID, checkAPIKey, performLockedOperation } fr
 import { uniqueNamesGenerator } from "unique-names-generator";
 
 import { Class, ChestColor, League, Token, PlayMode } from "@legion/shared/enums";
-import { PlayerContextData, DailyLootAllDBData, DailyLootAllAPIData, DBPlayerData,
-  PlayerInventory } from "@legion/shared/interfaces";
+import { PlayerContextData, DailyLootAllDBData, DBPlayerData,
+  PlayerInventory, ChestReward } from "@legion/shared/interfaces";
 import { NewCharacter } from "@legion/shared/NewCharacter";
-import { getChestContent, ChestReward } from "@legion/shared/chests";
+import { getChestContent } from "@legion/shared/chests";
 import {
   STARTING_CONSUMABLES, STARTING_GOLD, BASE_INVENTORY_SIZE, STARTING_GOLD_ADMIN,
   STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN, IMMEDIATE_LOOT, RPC, MIN_WITHDRAW,
@@ -151,8 +151,6 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
     engagementStats: {
       completedGames: 0, // Total games completed
       totalGames: 0, // Total games started
-      completedTutorial: false,
-      engagedTutorial: false,
       everPurchased: false,
       everSpentSP: false,
       everOpenedDailyLoot: false,
@@ -171,6 +169,7 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
       everPoisoned: false,
       everSilenced: false,
       everParalyzed: false,
+      everLowMP: false,
     },
     tokens: {
       [Token.SOL]: 0,

@@ -763,7 +763,6 @@ export class Arena extends Phaser.Scene
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         if (!player) {
-            console.error(`[processMove] Player ${num} not found`);
             return;
         }
 

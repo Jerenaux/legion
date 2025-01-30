@@ -6,9 +6,9 @@ import {
     StatusEffect, Class, PlayMode, League,
     SpeedClass,
     TargetHighlight,
-    LockedFeatures
+    LockedFeatures,
+    RewardType
 } from "./enums";
-import { ChestReward } from "@legion/shared/chests";
 
 export class EffectModifier {
     stat;
@@ -210,6 +210,7 @@ export interface DBPlayerData {
     leagueStats: LeagueStats;
     allTimeStats: LeagueStats;
     friends: string[];
+    engagementStats?: EngagementStats;
 }
 
 interface LeagueStats {
@@ -452,8 +453,6 @@ export interface FriendData {
 export interface EngagementStats {
     completedGames: number;
     totalGames: number;
-    completedTutorial: boolean;
-    engagedTutorial: boolean;
     everPurchased: boolean;
     everSpentSP: boolean;
     everOpenedDailyLoot: boolean;
@@ -474,3 +473,5 @@ export interface EngagementStats {
     everParalyzed: boolean;
     everLowMP: boolean;
 }
+
+export type ChestReward = { type: RewardType, id: number, amount: number };

@@ -1,19 +1,15 @@
 import { h, Component } from 'preact';
 import Confetti from 'react-confetti';
 
-import { ChestReward, RewardType } from "@legion/shared/chests";
-import { ChestColor } from "@legion/shared/enums";
+import { ChestReward } from "@legion/shared/interfaces";
+import { RewardType, ChestColor } from "@legion/shared/enums";
 import { mapFrameToCoordinates } from '../utils';
-
-import equipmentSpritesheet from '@assets/equipment.png';
-import consumablesSpritesheet from '@assets/consumables.png';
-import spellsSpritesheet from '@assets/spells.png';
-import goldIcon from '@assets/gold_icon.png';
 
 import bronzeChest from '@assets/shop/bronze_chest.png';
 import silverChest from '@assets/shop/silver_chest.png';
 import goldChest from '@assets/shop/gold_chest.png';
 import shineBg from '@assets/game_end/shine_bg.png';
+import { getRewardBgImage, getRewardObject } from '../utils';
 
 interface OpenedChestProps {
     width: number;
@@ -26,19 +22,6 @@ interface OpenedChestProps {
 class OpenedChest extends Component<OpenedChestProps> {
   constructor(props) {
     super(props);
-  }
-
-  getBgImageUrl(rewardType: RewardType) {
-    switch (rewardType) {
-        case RewardType.EQUIPMENT:
-            return equipmentSpritesheet;
-        case RewardType.SPELL:
-            return spellsSpritesheet;
-        case RewardType.CONSUMABLES:
-            return consumablesSpritesheet;
-        case RewardType.GOLD:
-            return goldIcon;
-    }
   }
 
   getChestImage(color: ChestColor) {
@@ -59,9 +42,10 @@ class OpenedChest extends Component<OpenedChestProps> {
       );
     }
 
-    return this.props.content.map((reward, idx) => {
-      const coordinates = mapFrameToCoordinates(reward?.frame);
-      const backgroundImageUrl = this.getBgImageUrl(reward?.type);
+    return this.props.content.map((reward: ChestReward, idx: number) => {
+      const rewardObject = getRewardObject(reward.type, reward.id);
+      const coordinates = rewardObject ? mapFrameToCoordinates(rewardObject.frame) : { x: 0, y: 0 };
+      const backgroundImageUrl = getRewardBgImage(reward.type);
       return (
         <div key={idx} className="streak_gold_list">
           <div style={{

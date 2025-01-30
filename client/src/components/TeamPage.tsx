@@ -1,7 +1,7 @@
 // PlayPage.tsx
 import 'react-loading-skeleton/dist/skeleton.css'
 
-import { h, Component } from 'preact';
+import { h, Component, createRef } from 'preact';
 
 import Roster from './roster/Roster';
 import Inventory from './inventory/Inventory';
@@ -12,6 +12,7 @@ import { APICharacterData, Effect } from '@legion/shared/interfaces';
 import { EquipmentSlot, InventoryActionType } from '@legion/shared/enums';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { PlayerContext } from '../contexts/PlayerContext';
+import PopupManager, { Popup } from './popups/PopupManager';
 
 interface TeamPageState {
   carrying_capacity: number;
@@ -51,17 +52,26 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
     this.setState({ selectedEquipmentSlot: newValue }); 
   }
 
+  popupManagerRef = createRef();
+
   async componentDidMount() {
     if (this.context.characters.length === 0) {
       await this.context.fetchRosterData();
     }
     await this.updateCharacterData();
-    this.context.manageHelp('team');
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.matches.id !== this.props.matches.id || this.context.characterSheetIsDirty) {
       this.updateCharacterData();
+    }
+
+    if (this.context.player.isLoaded) {
+      if (!this.context.checkEngagementFlag('everEquippedConsumable') && this.context.hasConsumable()) {
+        this.popupManagerRef.current?.enqueuePopup(Popup.EquipConsumable);
+      } else {
+        this.popupManagerRef.current?.hidePopup();
+      }
     }
   }
 
@@ -115,6 +125,10 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
     return (
         <div className="team-content">
+          <PopupManager 
+            ref={this.popupManagerRef}
+            onPopupResolved={() => {}}
+          />
           <Roster/>
           <div className="character-inventory-container">
             {this.context.player.isLoaded ? <CharacterSheet 

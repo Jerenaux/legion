@@ -272,3 +272,9 @@ export enum LockedFeatures {
     RANKED_MODE,
   }
   
+  export enum RewardType {
+    CONSUMABLES = 'consumable',
+    SPELL = 'spell',
+    EQUIPMENT = 'equipment',
+    GOLD = 'gold',
+}

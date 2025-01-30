@@ -1,10 +1,10 @@
 import { h, Component } from 'preact';
 import goldChestImage from '@assets/shop/gold_chest.png';
-import goldIcon from '@assets/gold_icon.png';
 import './SimplePopup.style.css';
 
 interface Props {
   text: string;
+  header?: string;
 }
 
 export class SimplePopup extends Component<Props> {
@@ -18,9 +18,11 @@ export class SimplePopup extends Component<Props> {
             className="game-notification-icon"
           />
           <div className="game-notification-text-container">
-            <p className="game-notification-text">
-              {this.props.text}
-            </p>
+            {this.props.header && <h3 className="game-notification-header">{this.props.header}</h3>}
+            <p 
+              className="game-notification-text"
+              dangerouslySetInnerHTML={{ __html: this.props.text }}
+            />
           </div>
         </div>
       </div>

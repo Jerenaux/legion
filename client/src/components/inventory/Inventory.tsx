@@ -71,7 +71,12 @@ class Inventory extends Component<InventoryProps> {
               }
 
               return (
-                <div key={i} className="item" style={slotStyle}>
+                <div 
+                  key={i} 
+                  className="item" 
+                  style={slotStyle}
+                  data-item-icon={`${type}-${item?.id}`}
+                >
                   <ItemIcon
                     action={item}
                     index={i}
