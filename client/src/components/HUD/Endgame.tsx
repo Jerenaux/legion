@@ -8,6 +8,8 @@ import OpenedChest from '../dailyLoot/OpenedChest';
 import { route } from 'preact-router';
 import { events } from './GameHUD';
 import './Endgame.style.css';
+import _lockIcon from '@assets/lock.png';
+import { PlayerContext } from '../../contexts/PlayerContext';
 
 // Asset imports
 import victoryBg from '@assets/game_end/victory_bg.png';
@@ -56,6 +58,7 @@ interface EndgameProps {
 
 export class Endgame extends Component<EndgameProps, EndgameState> {
     events: any;
+    static contextType = PlayerContext; 
 
     constructor(props) {
         super(props);
@@ -204,12 +207,19 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
 
                 <div className="endgame_buttons">
                     {showPlayAgain && (
-                        <div 
-                            className="endgame_button endgame_button_primary"
-                            onClick={this.handlePlayAgain}
-                        >
-                            <span>Play Again!</span>
-                        </div>
+                        this.context.getCompletedGames() > 11 ? (
+                            <div 
+                                className="endgame_button endgame_button_primary"
+                                onClick={this.handlePlayAgain}
+                            >
+                                <span>Play Again!</span>
+                            </div>
+                        ) : (
+                            <div className="endgame_unlock_message">
+                                <img src={_lockIcon} className="shaking-lock" alt="Lock icon" />
+                                <span>You unlocked something new in the main menu!</span>
+                            </div>
+                        )
                     )}
                     <div 
                         className="endgame_button endgame_button_secondary"

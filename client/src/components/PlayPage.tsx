@@ -38,7 +38,6 @@ class PlayPage extends Component {
     if (!this.context.player.isLoaded) return;
 
     const completedGames = this.context.getCompletedGames();
-    console.log(`Completed games: ${completedGames}`);
     
     switch(completedGames) {
       case 0:

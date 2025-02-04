@@ -27,7 +27,6 @@ import Toastify from 'toastify-js'
 import { getConsumableById } from "@legion/shared/Items";
 import { getSpellById } from "@legion/shared/Spells";
 import { getEquipmentById } from "@legion/shared/Equipments";
-import { ChestReward } from "@legion/shared/interfaces";
 
 const spriteContext = require.context('@assets/sprites', false, /\.(png|jpe?g|svg)$/);
 export const avatarContext = require.context('@assets/avatars', false, /\.(png|jpe?g|svg)$/);
