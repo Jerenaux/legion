@@ -42,6 +42,7 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
     return (
       <div className="team-reveal-overlay">
         <h2 className="team-reveal-title">Click to discover your champions!</h2>
+        <p className="team-reveal-subtitle">They will form your starting team of characters than you can use in the arena!</p>
         <div className="team-reveal-grid">
           {team.map((character, index) => (
             <div 

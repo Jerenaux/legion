@@ -117,12 +117,12 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
 
   renderHeroSection = (): h.JSX.Element => (
     <section className="hero-section">
-      <h1 className="visually-hidden">Legion - Free to Play Tactical PvP Game</h1>
+      <h1 className="visually-hidden">Legion - Free to Play Tactical Multiplayer Game</h1>
       <div className="video-container" aria-label="Game trailer video">
         <iframe 
           className="trailer-video"
           src="https://www.youtube.com/embed/VM6cGO-e2hY?si=NWHUWMMpdEFMaaki" 
-          title="Legion - Free to Play Tactical PvP Game" 
+          title="Legion - Free to Play Tactical Multiplayer Game" 
           frameBorder="0" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
           allowFullScreen
@@ -130,7 +130,7 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
       </div>
       <div className="hero-content">
         <h2>Easy to learn, thrilling to master</h2>
-        <h3>Turn-based PvP - Tactical - Free to play</h3>
+        <h3>Turn-based Multiplayer - Tactical - Free to play</h3>
         <p>Assemble a team of heroes and compete against other players to be the strongest of the arena!</p>
         <button className="cta-button" onClick={() => route(this.playRoute)} aria-label="Start playing Legion">Play Now</button>
       </div>
