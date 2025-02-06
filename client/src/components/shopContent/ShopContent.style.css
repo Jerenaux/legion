@@ -139,9 +139,10 @@
     width: 100%;
 }
 
-.shop-items-container {
+.shop-items-container.equipment-view {
     display: block;
 }
+
 
 .shop-tab-item.disabled {
     opacity: 0.5;
