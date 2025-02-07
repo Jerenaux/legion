@@ -17,6 +17,7 @@
         transparent 100%
     );
     border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .endgame_character::before {
@@ -368,4 +369,102 @@
     .endgame_character.question-mark-mode .question-mark {
         font-size: clamp(36px, 6vw, 54px);
     }
+}
+
+/* Add hover effect for non-question-mark cards */
+.endgame_character:not(.question-mark-mode):hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 
+        0 5px 15px rgba(81, 253, 255, 0.1),
+        0 0 30px rgba(81, 253, 255, 0.05);
+}
+
+.endgame_character:not(.question-mark-mode):hover::before {
+    opacity: 1;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.04) 15%,
+        rgba(81, 253, 255, 0.15) 50%,
+        rgba(81, 253, 255, 0.04) 85%,
+        transparent 100%
+    );
+}
+
+.endgame_character:not(.question-mark-mode):hover .endgame_character_name {
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+.endgame_character:not(.question-mark-mode):hover .endgame_character_class {
+    color: #9ee5ff;
+    text-shadow: 0 0 8px rgba(113, 222, 255, 0.5);
+}
+
+.endgame_character.clickable {
+    cursor: pointer;
+}
+
+/* Enhance hover effect for clickable cards */
+.endgame_character.clickable:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 
+        0 5px 15px rgba(81, 253, 255, 0.1),
+        0 0 30px rgba(81, 253, 255, 0.05);
+}
+
+.endgame_character.clickable:hover::before {
+    opacity: 1;
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.04) 15%,
+        rgba(81, 253, 255, 0.15) 50%,
+        rgba(81, 253, 255, 0.04) 85%,
+        transparent 100%
+    );
+}
+
+.endgame_character.clickable:hover .endgame_character_name {
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+.endgame_character.clickable:hover .endgame_character_class {
+    color: #9ee5ff;
+    text-shadow: 0 0 8px rgba(113, 222, 255, 0.5);
+}
+
+.endgame_character.selected {
+    box-shadow: 
+        0 0 0 2px #51fdff,
+        0 0 15px rgba(81, 253, 255, 0.3);
+}
+
+.endgame_character.selected::before {
+    background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(81, 253, 255, 0.04) 15%,
+        rgba(81, 253, 255, 0.15) 50%,
+        rgba(81, 253, 255, 0.04) 85%,
+        transparent 100%
+    );
+    opacity: 1;
+}
+
+.endgame_character.selected .endgame_character_name {
+    color: #9ee5ff;
+    text-shadow: 0 0 12px rgba(113, 222, 255, 0.5);
+}
+
+.endgame_character.selected .endgame_character_class {
+    color: #51fdff;
+    text-shadow: 0 0 8px rgba(81, 253, 255, 0.5);
+}
+
+/* Combine hover and selected states */
+.endgame_character.selected:hover {
+    box-shadow: 
+        0 0 0 2px #51fdff,
+        0 0 20px rgba(81, 253, 255, 0.4),
+        0 5px 15px rgba(81, 253, 255, 0.2);
 }

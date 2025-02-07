@@ -80,7 +80,7 @@ class Overview extends Component<Props, State> {
             const isAlive = member.hp > 0;
 
             const portraitStyle = {
-              backgroundImage: `url(${getSpritePath(member.texture)})`,
+              backgroundImage: `url(${getSpritePath(member.portrait)})`,
             };
 
             const charProfileStyle = (idx: number) => {

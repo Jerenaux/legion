@@ -33,18 +33,12 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
   };
 
   render() {
-    // For each character, rename the frame field into texture
-    const team = this.props.team.map(character => ({
-      ...character,
-      texture: character.frame
-    }));
-
     return (
       <div className="team-reveal-overlay">
         <h2 className="team-reveal-title">Click to discover your champions!</h2>
         <p className="team-reveal-subtitle">They will form your starting team of characters than you can use in the arena!</p>
         <div className="team-reveal-grid">
-          {team.map((character, index) => (
+          {this.props.team.map((character, index) => (
             <div 
               key={index}
               className={`team-reveal-wrapper ${this.state.revealedIndices[index] ? 'revealed' : ''}`}

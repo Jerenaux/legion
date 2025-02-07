@@ -108,7 +108,7 @@ export class ServerPlayer {
     getPlacementData(includePersonal = false): PlayerNetworkData {
         const data: PlayerNetworkData = {
             name: this.name,
-            frame: this.frame,
+            portrait: this.frame,
             x: this.x,
             y: this.y,
             hp: this.hp,

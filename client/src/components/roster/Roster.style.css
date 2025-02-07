@@ -6,9 +6,8 @@
 .rosters {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-around;
-    gap: 8px;
-    width: 100%;
+    justify-content: center;
+    gap: 50px;
 }
 
 .addCardContainer {

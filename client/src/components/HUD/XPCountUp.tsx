@@ -1,18 +1,22 @@
 import { h, Component } from 'preact';
+import { route, getCurrentUrl } from 'preact-router';
 
 import { ClassLabels } from '@legion/shared/enums';
-import { CharacterUpdate } from '@legion/shared/interfaces';
+import { APICharacterData, CharacterUpdate, PlayerNetworkData, TeamMember } from '@legion/shared/interfaces';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { getSpritePath } from '../utils';
 import './CharacterCard.style.css';
 
 interface CountUpProps {
-    member: any;
-    character?: CharacterUpdate;
-    memberIdx?: number;        
+    member: TeamMember | PlayerNetworkData | APICharacterData;
+    // Endgame props
+    update?: CharacterUpdate;
     isWinner?: boolean;        
+    // Team reveal props
     hideXP?: boolean;
     isQuestionMark?: boolean;
+    // Roser prop
+    isClickable?: boolean;
 }
 
 interface CountUpState {
@@ -26,7 +30,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
     state: CountUpState = {
         isLevelUp: 0,
         xpCounter: this.props.member.xp,
-        totalXP: (this.props.character?.earnedXP || 0) + this.props.member.xp,
+        totalXP: (this.props.update?.earnedXP || 0) + this.props.member.xp,
     }
 
     componentDidMount(): void { 
@@ -62,10 +66,25 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
         }
     }
 
+    handleClick = () => {
+        if (this.props.isClickable && 'id' in this.props.member) {
+            route(`/team/${this.props.member.id}`);
+        }
+    };
+
+    isSelected = () => {
+        const currentPath = getCurrentUrl();
+        const match = /^\/team\/([^/]+)/.exec(currentPath);
+        if (!match) return false;
+        
+        const characterId = match[1];
+        return 'id' in this.props.member && this.props.member.id === characterId;
+    };
+
     render() {
-        const { character, member, memberIdx, hideXP, isQuestionMark } = this.props;
+        const { update, member, hideXP, isQuestionMark, isClickable } = this.props;
         const maxXP = getXPThreshold(this.props.member.level); 
-        const isReceivingXP = character?.earnedXP > 0;
+        const isReceivingXP = update?.earnedXP > 0;
         const isResettingXP = this.state.xpCounter === 0;
         const isLevelingUp = this.state.isLevelUp > 0;
 
@@ -80,7 +99,10 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
         }
 
         return (
-            <div className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''}`}>
+            <div 
+                className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''} ${isClickable ? 'clickable' : ''} ${this.isSelected() ? 'selected' : ''}`}
+                onClick={this.handleClick}
+            >
                 {isLevelingUp && 
                     <div className="endgame_character_lvlup">LVL UP!</div>
                 }
@@ -109,7 +131,7 @@ class XPCountUp extends Component<CountUpProps, CountUpState> {
                     <div 
                         className={`char_portrait ${this.props.isWinner ? 'victory-animation' : ''}`} 
                         style={{
-                            backgroundImage: `url(${getSpritePath(member.texture)})`,
+                            backgroundImage: `url(${getSpritePath(member.portrait)})`,
                         }} 
                     />
                 </div>

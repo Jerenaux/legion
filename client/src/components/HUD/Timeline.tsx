@@ -79,7 +79,7 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                 if (!character) return null;
 
                 const portraitStyle = {
-                  backgroundImage: `url(${getSpritePath(character.texture)})`,
+                  backgroundImage: `url(${getSpritePath(character.portrait)})`,
                 };
 
                 const characterKey = `${queueItem.team}-${queueItem.num}`;

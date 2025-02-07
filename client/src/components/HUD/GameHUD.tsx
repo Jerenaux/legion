@@ -5,7 +5,7 @@ import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
-import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamOverview } from "@legion/shared/interfaces";
+import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamMember, TeamOverview } from "@legion/shared/interfaces";
 import Timeline from './Timeline';
 import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { recordCompletedGame } from '../utils';
@@ -234,7 +234,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       player, team1, team2, isSpectator, mode, gameInitialized,
       showOverview,
     } = this.state;
-    const ownMembers = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
+    const ownMembers: TeamMember[] = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
     const score = team1?.members[0]?.isPlayer ? team1?.score : team2?.score;
 
     if (!gameInitialized) {

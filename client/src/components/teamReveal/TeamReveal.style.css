@@ -95,11 +95,13 @@
 
 .team-reveal-wrapper {
   cursor: pointer;
-  transition: transform 0.3s ease;
-  perspective: 1000px;
-  transform-style: preserve-3d;
+  transition: all 0.3s ease;
   animation: fadeReveal 0.8s ease-out backwards;
   position: relative;
+  z-index: 1;
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
 }
 
 /* Add different delays for each card */
@@ -129,6 +131,7 @@
   animation: glowEffect 1.2s ease-out backwards;
   animation-delay: inherit;
   pointer-events: none;
+  z-index: -1;
 }
 
 /* Add sparkle effects */
@@ -145,15 +148,17 @@
   animation: sparkleEffect 1.5s ease-out backwards;
   animation-delay: inherit;
   pointer-events: none;
+  z-index: -1;
 }
 
 .team-reveal-wrapper:hover {
   transform: translateY(-5px);
+  z-index: 2;
 }
 
 .team-reveal-wrapper.revealed {
   cursor: default;
-  animation: revealCard 0.6s ease-out forwards;
+  animation: revealCardNew 0.6s ease-out forwards;
 }
 
 /* Add reveal particle effects */
@@ -220,17 +225,17 @@
   background: linear-gradient(180deg, #ffa600 0%, #ffd700 100%);
 }
 
-@keyframes revealCard {
+@keyframes revealCardNew {
   0% {
-    transform: rotateY(0deg) scale(1);
+    transform: scale(1);
     filter: brightness(1);
   }
   50% {
-    transform: rotateY(180deg) scale(1.1);
+    transform: scale(1.1);
     filter: brightness(1.5);
   }
   100% {
-    transform: rotateY(360deg) scale(1);
+    transform: scale(1);
     filter: brightness(1);
   }
 }

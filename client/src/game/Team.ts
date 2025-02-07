@@ -73,7 +73,7 @@ export class Team {
         const members = [];
         this.members.forEach(member => {
             members.push({
-                texture: member.texture,
+                portrait: member.texture,
                 name: member.name,
                 hp: member.hp,
                 maxHP: member.maxHP,

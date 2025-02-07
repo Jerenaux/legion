@@ -1,7 +1,7 @@
 import { h, Component } from 'preact';
 import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
-import { CharacterUpdate, GameOutcomeReward } from '@legion/shared/interfaces';
+import { CharacterUpdate, GameOutcomeReward, TeamMember } from '@legion/shared/interfaces';
 import CharacterCard from './XPCountUp';
 import { ChestColor, PlayMode } from '@legion/shared/enums';
 import OpenedChest from '../dailyLoot/OpenedChest';
@@ -46,7 +46,7 @@ interface EndgameProps {
     goldReward: number;
     isWinner: boolean;
     characters: CharacterUpdate[];
-    members: any[];
+    members: TeamMember[];
     grade: string;
     chests: GameOutcomeReward[];
     chestKey: ChestColor;
@@ -177,8 +177,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     {characters.map((character, idx) => (
                         <CharacterCard
                             member={members[character.num - 1]}
-                            character={character as CharacterUpdate}
-                            memberIdx={idx}
+                            update={character as CharacterUpdate}
                             isWinner={this.props.isWinner}
                         />
                     ))}

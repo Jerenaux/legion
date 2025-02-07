@@ -272,7 +272,7 @@ export interface APICharacterData extends DBCharacterData {
 }
 
 export interface PlayerNetworkData {
-    frame: string;
+    portrait: string;
     name: string;
     x: number;
     y: number;
@@ -347,7 +347,7 @@ export type StatusEffects = {
 }
 
 export interface TeamMember {
-    texture: string;
+    portrait: string;
     name: string;
     hp: number;
     maxHP: number;
@@ -357,6 +357,8 @@ export interface TeamMember {
     isPlayer: boolean;
     class: Class;
     statuses: StatusEffects;
+    xp?: number;
+    level?: number;
 }
 
 export interface TeamOverview {
