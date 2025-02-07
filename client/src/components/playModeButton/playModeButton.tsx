@@ -11,6 +11,9 @@ import middlePlayActive from '@assets/middle_play_active.png';
 import middlePlayIdle from '@assets/middle_play_idle.png';
 import { PlayMode } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
+import xpIcon from '@assets/game_end/XP_icon.png';
+import goldIcon from '@assets/gold_icon.png';
+import goldChest from '@assets/shop/gold_chest.png';
 
 interface Props {
     label: string;
@@ -21,6 +24,40 @@ interface Props {
     lockIcon?: string;
     'data-playmode'?: string;
 }
+
+interface ModeInfo {
+    vsAI: boolean;
+    xpRewards: 'low' | 'medium' | 'high';
+    goldRewards: 'low' | 'medium' | 'high';
+    itemRewards: boolean;
+}
+
+const modeInfoMap: Partial<Record<PlayMode, ModeInfo>> = {
+    [PlayMode.PRACTICE]: {
+        vsAI: true,
+        xpRewards: 'low',
+        goldRewards: 'low',
+        itemRewards: false
+    },
+    [PlayMode.CASUAL]: {
+        vsAI: false,
+        xpRewards: 'medium',
+        goldRewards: 'medium',
+        itemRewards: true
+    },
+    [PlayMode.RANKED]: {
+        vsAI: false,
+        xpRewards: 'high',
+        goldRewards: 'high',
+        itemRewards: true
+    },
+    [PlayMode.STAKED]: {
+        vsAI: false,
+        xpRewards: 'high',
+        goldRewards: 'high',
+        itemRewards: true
+    }
+};
 
 class PlayModeButton extends Component<Props> {
     state = {
@@ -55,13 +92,7 @@ class PlayModeButton extends Component<Props> {
     render() {
         const { label, players, mode, isLobbies, disabled, lockIcon, ...otherProps } = this.props;
         const { active, lobbiesCount } = this.state;
-
-        const btnBg = {
-            backgroundImage: `url(${label === 'ranked'  || label === 'elysium'
-                ? (active ? specialBtnBgActive : specialBtnBgIdle)
-                : (active ? middlePlayActive : middlePlayIdle)
-                })`
-        };
+        const modeInfo = modeInfoMap[mode];
 
         const playerSpanStyle = {
             color: `${active ? '#4ff4f6' : '#ffb653'}`
@@ -78,16 +109,14 @@ class PlayModeButton extends Component<Props> {
 
         return (
             <div 
-                className={`buttonContainer ${disabled ? 'disabled' : ''}`} 
-                style={btnBg} 
-                onMouseEnter={() => !disabled && this.setState({active: true})} 
-                onMouseLeave={() => !disabled && this.setState({active: false})} 
+                className={`buttonContainer ${disabled ? 'disabled' : ''} ${label === 'ranked' ? 'ranked' : ''}`}
                 onClick={handleClick}
                 {...otherProps}
             >
                 <img 
                     src={btnIcons[label]} 
-                    alt={label} 
+                    alt={label}
+                    className="mode-icon"
                 />
                 {lockIcon && (
                     <img 
@@ -98,10 +127,27 @@ class PlayModeButton extends Component<Props> {
                 )}
                 <div className="labelContainer">
                     <span className="label">{label}</span>
-                    {!disabled && isLobbies 
-                        ? (lobbiesCount > 0 && <span className="player"><span style={playerSpanStyle}>{lobbiesCount}</span> {lobbiesCount === 1 ? 'Opponent' : 'Opponents'} Waiting</span>)
-                        : (!disabled && players && <span className="player"><span style={playerSpanStyle}>{players}</span> {players === 1 ? 'Player' : 'Players'} Queuing</span>)
-                    }
+                    {!disabled && (
+                        mode === PlayMode.PRACTICE 
+                            ? <span className="player">vs AI</span>
+                            : (isLobbies 
+                                ? (lobbiesCount > 0 && <span className="player"><span className="count">{lobbiesCount}</span> {lobbiesCount === 1 ? 'Opponent' : 'Opponents'} Waiting</span>)
+                                : (players && <span className="player"><span className="count">{players}</span> {players === 1 ? 'Player' : 'Players'} Queuing</span>))
+                    )}
+                    <div className="info-container">
+                        <div className="info-row">
+                            <span className="info-label"><img src={xpIcon} alt="XP" className="reward-icon" />XP:</span>
+                            <span className={`info-value ${modeInfo?.xpRewards}`}>{modeInfo?.xpRewards?.charAt(0).toUpperCase() + modeInfo?.xpRewards?.slice(1)}</span>
+                        </div>
+                        <div className="info-row">
+                            <span className="info-label"><img src={goldIcon} alt="Gold" className="reward-icon" />Gold:</span>
+                            <span className={`info-value ${modeInfo?.goldRewards}`}>{modeInfo?.goldRewards?.charAt(0).toUpperCase() + modeInfo?.goldRewards?.slice(1)}</span>
+                        </div>
+                        <div className="info-row">
+                            <span className="info-label"><img src={goldChest} alt="Items" className="reward-icon" />Items:</span>
+                            <span className={`info-value ${modeInfo?.itemRewards ? 'high' : 'low'}`}>{modeInfo?.itemRewards ? 'Yes' : 'No'}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         );

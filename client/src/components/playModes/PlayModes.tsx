@@ -5,6 +5,7 @@ import { PlayMode, LockedFeatures } from '@legion/shared/enums';
 import { ENABLE_ELYSIUM } from '@legion/shared/config';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { lockIcon } from '../utils';
+import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 
 enum MiddleBtns {
   PRACTICE = 'practice',
@@ -37,32 +38,35 @@ class PlayModes extends Component {
     
     return (
       <div className="barContainer">
-        <PlayModeButton 
-          label={MiddleBtns.PRACTICE} 
-          mode={PlayMode.PRACTICE}
-          data-playmode="practice"
-        />
-        <PlayModeButton 
-          label={MiddleBtns.CASUAL} 
-          mode={PlayMode.CASUAL}
-          players={Math.floor(Math.random() * 4) + 1} 
-          data-playmode="casual"
-        />
-        <PlayModeButton 
-          label={MiddleBtns.RANKED} 
-          players={Math.floor(Math.random() * 2) + 1} 
-          mode={PlayMode.RANKED}
-          disabled={!isRankedUnlocked}
-          lockIcon={!isRankedUnlocked ? lockIcon : undefined}
-        />
-        {ENABLE_ELYSIUM && isSolanaWalletPresent && (
+        <BottomBorderDivider label="PLAY MODES" />
+        <div className="playModesRow">
           <PlayModeButton 
-            label={MiddleBtns.ELYSIUM} 
-            players={1} 
-            mode={PlayMode.STAKED} 
-            isLobbies={true}
+            label={MiddleBtns.PRACTICE} 
+            mode={PlayMode.PRACTICE}
+            data-playmode="practice"
           />
-        )}
+          <PlayModeButton 
+            label={MiddleBtns.CASUAL} 
+            mode={PlayMode.CASUAL}
+            players={Math.floor(Math.random() * 4) + 1} 
+            data-playmode="casual"
+          />
+          <PlayModeButton 
+            label={MiddleBtns.RANKED} 
+            players={Math.floor(Math.random() * 2) + 1} 
+            mode={PlayMode.RANKED}
+            disabled={!isRankedUnlocked}
+            lockIcon={!isRankedUnlocked ? lockIcon : undefined}
+          />
+          {ENABLE_ELYSIUM && isSolanaWalletPresent && (
+            <PlayModeButton 
+              label={MiddleBtns.ELYSIUM} 
+              players={1} 
+              mode={PlayMode.STAKED} 
+              isLobbies={true}
+            />
+          )}
+        </div>
       </div>
     );
   }

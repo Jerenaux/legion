@@ -1,16 +1,28 @@
 .buttonContainer {
-    background-size: 100% 100%;
-    width: 240px;
-    height: 78px;
+    background-color: #1A1A1A;
+    width: 200px;
+    height: 280px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     position: relative;
     cursor: pointer;
+    border: 2px solid #00FFFF;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+.buttonContainer:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
 }
 
 .buttonContainer.disabled {
     cursor: not-allowed;
     filter: grayscale(100%);
+    opacity: 0.7;
 }
 
 .buttonContainer.disabled:hover {
@@ -21,30 +33,122 @@
     filter: none; /* Keep the lock icon colorful */
 }
 
-.buttonContainer img {
-    width: 48px;
-    position: absolute;
-    left: 12px;
+.buttonContainer img.mode-icon {
+    width: auto;
+    height: auto;
+    max-width: 80px;
+    margin-top: -48px;
+    padding: 8px;
+}
+
+.buttonContainer.ranked img.mode-icon {
+    margin-top: -90px;
 }
 
 .labelContainer {
     display: flex;
     flex-direction: column;
-    position: absolute;
-    left: 72px;
+    align-items: center;
+    margin-top: 0px;
+    width: 100%;
+}
+
+.buttonContainer.ranked .labelContainer {
+    margin-top: -5px;
+}
+
+.buttonContainer[data-playmode="practice"] .labelContainer {
+    margin-top: 15px;
+}
+
+.buttonContainer[data-playmode="casual"] .labelContainer {
+    margin-top: 10px;
 }
 
 .labelContainer .label {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 700;
     color: #FFFFFF;
     text-transform: uppercase;
     font-family: "Kim";
+    margin-bottom: 16px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    letter-spacing: 2px;
+}
+
+.buttonContainer.ranked .labelContainer .label {
+    color: #FFB000;
 }
 
 .labelContainer .player {
-    font-size: 11px;
+    font-size: 14px;
+    color: #4ff4f6;
+    margin-bottom: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.labelContainer .player .count {
+    color: #FFB653;
+}
+
+.info-container {
+    width: 100%;
+    margin-top: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 4px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #999999;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.info-label .reward-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.info-value {
     color: #FFFFFF;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.info-value.high {
+    color: #00FF66;
+    text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+}
+
+.info-value.medium {
+    color: #FFE666;
+    text-shadow: 0 0 8px rgba(255, 230, 102, 0.3);
+}
+
+.info-value.low {
+    color: #FF9966;
+    text-shadow: 0 0 8px rgba(255, 153, 102, 0.3);
 }
 
 .playModeButton.disabled {
@@ -65,8 +169,16 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 32px;
-    height: 32px;
+    width: 48px;
+    height: 48px;
     pointer-events: none;
-    filter: brightness(1.2);
+}
+
+.buttonContainer.ranked {
+    border-color: #FFB000;
+    box-shadow: 0 0 15px rgba(255, 176, 0, 0.1);
+}
+
+.buttonContainer.ranked:hover {
+    box-shadow: 0 0 25px rgba(255, 176, 0, 0.2);
 }

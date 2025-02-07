@@ -6,12 +6,10 @@ import { h, Component } from 'preact';
 import CharacterCard from '../HUD/XPCountUp';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import { route } from 'preact-router';
-import PlusIcon from '@assets/plus.svg';
-import { LockedFeatures, ShopTab } from '@legion/shared/enums';
+import { ShopTab } from '@legion/shared/enums';
 import { APICharacterData } from '@legion/shared/interfaces';
 import Skeleton from 'react-loading-skeleton';
 import { PlayerContext } from '../../contexts/PlayerContext';
-import { MAX_CHARACTERS } from "@legion/shared/config";
 
 
 class Roster extends Component {
