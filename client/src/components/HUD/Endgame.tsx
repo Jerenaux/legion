@@ -160,17 +160,6 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
             <div className="endgame">
                 <div className="defeat_title" style={this.endGameTitleBg()}>
                     <img className="defeat_title_bg" src={this.props.isWinner ? victoryTitle : defeatTitle} alt="End Title" />
-                    {/* {this.props.isWinner && <img className="defeat_title_effect" src={this.getGradeImage(grade)} alt="" />} */}
-                </div>
-                <div className="endgame_score_bg">
-                    <div className="flex items_center gap_4">
-                        <img src={xpIcon} alt="XP" />
-                        <span><CountUp end={this.state.finalXp} duration={Math.min(this.state.finalXp / 100, 2)} /></span>
-                    </div>
-                    <div className="flex items_center gap_4">
-                        <img src={goldIcon} alt="Gold" />
-                        <span><CountUp end={this.state.finalGold} duration={Math.min(this.state.finalGold / 100, 2)} /></span>
-                    </div>
                 </div>
 
                 <div className="endgame_characters_grid">
@@ -183,26 +172,32 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     ))}
                 </div>
 
-                {/* {this.props.isWinner && this.props.chests.length > 0 && ( */}
-                {this.props.isWinner && (
-                    <div className="endgame_rewards_container">
-                        <div className="endgame_rewards_heading_container">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
-                            <p className="endgame_rewards_heading">Rewards</p>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
-                        </div>
-                        <div className="flex items_center justify_center gap_4 endgame_rewards_items">
-                            {this.props.chests.map((chest, idx) => (
-                                <div key={idx} className="streak_gold_list" onClick={() => this.setState({ selectedChest: chest })}>
-                                    <img src={this.getChestImage(chest.color)} alt="" />
-                                </div>
-                            ))}
-                            {/* {this.props.chestKey && <div className="streak_gold_list">
-                                <img src={silverKeyIcon} alt="" />
-                            </div>} */}
-                        </div>
+                <div className="endgame_rewards_container">
+                    <div className="endgame_rewards_heading_container">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
+                        <p className="endgame_rewards_heading">Rewards</p>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                     </div>
-                )}
+                    <div className="flex items_center justify_center gap_4 endgame_rewards_items">
+                        <div className="streak_gold_list">
+                            <div style={{ backgroundImage: `url(${xpIcon})`, backgroundSize: '100% 100%' }}></div>
+                            <div className="streak_gold_list_amount">
+                                <CountUp end={this.state.finalXp} duration={Math.min(this.state.finalXp / 100, 2)} />
+                            </div>
+                        </div>
+                        <div className="streak_gold_list">
+                            <div style={{ backgroundImage: `url(${goldIcon})`, backgroundSize: '100% 100%' }}></div>
+                            <div className="streak_gold_list_amount">
+                                <CountUp end={this.state.finalGold} duration={Math.min(this.state.finalGold / 100, 2)} />
+                            </div>
+                        </div>
+                        {this.props.chests.map((chest, idx) => (
+                            <div key={idx} className="streak_gold_list" onClick={() => this.setState({ selectedChest: chest })}>
+                                <img src={this.getChestImage(chest.color)} alt="" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
                 <div className="endgame_buttons">
                     {showPlayAgain && (

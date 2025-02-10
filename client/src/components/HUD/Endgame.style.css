@@ -156,127 +156,6 @@
     }
 }
 
-.endgame_score_bg {
-    position: relative;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(37, 43, 54, 0.05) 5%,
-        rgba(37, 43, 54, 0.95) 50%,
-        rgba(37, 43, 54, 0.05) 95%,
-        transparent 100%
-    );
-    border-radius: 4px;
-    padding: clamp(4px, 1vh, 8px) clamp(24px, 4vw, 48px);
-    width: min(400px, 95%);
-    height: clamp(40px, 8vh, 46px);
-    margin: -16px auto 0;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.endgame_score_bg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 2%;
-    right: 2%;
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(81, 253, 255, 0.1) 10%,
-        rgba(81, 253, 255, 0.4) 50%,
-        rgba(81, 253, 255, 0.1) 90%,
-        transparent 100%
-    );
-    box-shadow: 0 0 8px rgba(81, 253, 255, 0.2);
-    opacity: 0.5;
-}
-
-.endgame_score_bg::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 2%;
-    right: 2%;
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(81, 253, 255, 0.1) 10%,
-        rgba(81, 253, 255, 0.4) 50%,
-        rgba(81, 253, 255, 0.1) 90%,
-        transparent 100%
-    );
-    box-shadow: 0 0 8px rgba(81, 253, 255, 0.2);
-    opacity: 0.5;
-}
-
-.endgame_score_bg img {
-    width: clamp(24px, 5vw, 32px);
-    height: clamp(24px, 5vw, 32px);
-    filter: drop-shadow(0 0 8px rgba(81, 253, 255, 0.3));
-}
-
-.endgame_score_bg div span {
-    font-size: clamp(18px, 4vw, 24px);
-    font-weight: 600;
-    color: #ffffff;
-    text-shadow: 
-        0 0 12px rgba(81, 253, 255, 0.3),
-        0 0 24px rgba(81, 253, 255, 0.2);
-}
-
-@media screen and (max-width: 480px) {
-    .endgame_score_bg {
-        margin-top: -8px;
-        gap: 8px;
-        padding: clamp(4px, 1vh, 8px) clamp(16px, 3vw, 32px);
-        background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(37, 43, 54, 0.05) 2%,
-            rgba(37, 43, 54, 0.95) 50%,
-            rgba(37, 43, 54, 0.05) 98%,
-            transparent 100%
-        );
-    }
-    
-    .endgame_score_bg div {
-        display: flex;
-        align-items: center;
-        gap: clamp(4px, 1vw, 8px);
-    }
-}
-
-.endgame_characters_grid {
-    min-height: 20vh;
-    display: flex;
-    justify-content: center;
-    margin-top: 3vh;
-    gap: 25px;
-    scrollbar-width: none;
-}
-
-@media (max-height: 600px) {
-    .endgame_characters_grid {
-        gap: 0;
-        margin-top: -10vh;
-        /* transform: scale(0.5); */
-    }
-    
-    /* .endgame_character {
-        transform: scale(0.5);
-    } */
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.endgame_characters_grid::-webkit-scrollbar {
-    display: none;
-}
-
 .endgame_rewards_container {
     background-image: url("@assets/game_end/rewards_bg.png");
     background-size: 100% 100%;
@@ -292,14 +171,65 @@
     z-index: 0;
 }
 
-/* Hide rewards on small screens; TODO; remove */
+/* Update media query for small screens */
 @media screen and (max-width: 480px), 
        screen and (max-height: 600px) {
     .endgame_rewards_container {
-        /* display: none; */
-        transform: scale(0.5);
-        bottom: 20vh;
+        transform: scale(0.8);
+        bottom: 25vh;
     }
+}
+
+.endgame_rewards_items {
+    position: absolute;
+    bottom: 18px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+.streak_gold_list {
+    width: 68px;
+    height: 68px;
+    background-color: #1c1f25;
+    border: 1px solid #147fa6;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.streak_gold_list:hover {
+    transform: scale(1.05);
+    border-color: #51fdff;
+    box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
+}
+
+.streak_gold_list > div:first-child {
+    width: 42px;
+    height: 42px;
+    background-repeat: no-repeat;
+}
+
+.streak_gold_list img {
+    width: 64px;
+    height: 58px;
+    margin-left: 6px;
+}
+
+.streak_gold_list_amount {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .endgame_rewards_heading_container {
@@ -316,23 +246,6 @@
     font-weight: 600;
     color: #ffffff;
     text-transform: uppercase;
-}
-
-.endgame_rewards_items {
-    position: absolute;
-    bottom: 18px;
-}
-
-@keyframes bounce {
-    50% {
-        transform: scale(1.2);
-    }
-}
-
-@-webkit-keyframes bounce {
-    50% {
-        transform: scale(1.2);
-    }
 }
 
 .victory_title_effect {
@@ -464,5 +377,37 @@
     40% { transform: rotate(10deg); }
     60% { transform: rotate(-10deg); }
     80% { transform: rotate(10deg); }
+}
+
+.endgame_characters_grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3vh;
+    min-height: 20vh;
+    padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+    .endgame_characters_grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .endgame_characters_grid {
+        grid-template-columns: repeat(1, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-height: 600px) {
+    .endgame_characters_grid {
+        margin-top: -1vh;
+        transform: scale(0.8);
+    }
 }
   
