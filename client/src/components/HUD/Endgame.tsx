@@ -3,7 +3,7 @@ import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
 import { CharacterUpdate, GameOutcomeReward, TeamMember } from '@legion/shared/interfaces';
 import CharacterCard from './XPCountUp';
-import { ChestColor, PlayMode } from '@legion/shared/enums';
+import { ChestColor, PlayMode, RewardType } from '@legion/shared/enums';
 import OpenedChest from '../dailyLoot/OpenedChest';
 import { route } from 'preact-router';
 import { events } from './GameHUD';
@@ -26,10 +26,10 @@ import gradeS from '@assets/game_end/S.png';
 import gradeSp from '@assets/game_end/S+.png';
 import xpIcon from '@assets/game_end/XP_icon.png';
 import goldIcon from '@assets/gold_icon.png';
-import bronzeChest from '@assets/shop/bronze_chest.png';
-import silverChest from '@assets/shop/silver_chest.png';
-import goldChest from '@assets/shop/gold_chest.png';
 import silverKeyIcon from '@assets/shop/silver_key_icon.png';
+import { mapFrameToCoordinates } from '../utils';
+import { getRewardObject } from '../utils';
+import { getRewardBgImage } from '../utils';
 
 /* eslint-disable react/prefer-stateless-function */
 interface EndgameState {
@@ -54,6 +54,14 @@ interface EndgameProps {
     mode: PlayMode;
     eventEmitter: any;
     closeGame: () => void;
+}
+
+interface Reward {
+    type: string;
+    amount: number;
+    icon: string;
+    backgroundImage?: string;
+    coordinates?: { x: number; y: number };
 }
 
 export class Endgame extends Component<EndgameProps, EndgameState> {
@@ -137,13 +145,32 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         }
     }
 
-    getChestImage = (color: ChestColor) => {
-        switch (color) {
-            case ChestColor.BRONZE: return bronzeChest;
-            case ChestColor.SILVER: return silverChest;
-            case ChestColor.GOLD: return goldChest;
-            default: return '';
+    getRewardsList() {
+        // Start with XP and gold rewards
+        const rewards: Reward[] = [
+            { type: 'XP', amount: this.state.finalXp, icon: xpIcon },
+            { type: 'GOLD', amount: this.state.finalGold, icon: goldIcon }
+        ];
+
+        // Add flattened chest contents if player won
+        if (this.props.isWinner && this.props.chests) {
+            this.props.chests.forEach(chest => {
+                if (chest.content) {
+                    chest.content.forEach(reward => {
+                        const rewardObject = getRewardObject(reward.type, reward.id);
+                        const backgroundImageUrl = getRewardBgImage(reward.type);
+                        rewards.push({
+                            type: reward.type,
+                            amount: reward.amount,
+                            icon: backgroundImageUrl,
+                            coordinates: rewardObject ? mapFrameToCoordinates(rewardObject.frame) : { x: 0, y: 0 }
+                        });
+                    });
+                }
+            });
         }
+
+        return rewards;
     }
 
     render() {
@@ -179,21 +206,24 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                     </div>
                     <div className="flex items_center justify_center gap_4 endgame_rewards_items">
-                        <div className="streak_gold_list">
-                            <div style={{ backgroundImage: `url(${xpIcon})`, backgroundSize: '100% 100%' }}></div>
-                            <div className="streak_gold_list_amount">
-                                <CountUp end={this.state.finalXp} duration={Math.min(this.state.finalXp / 100, 2)} />
-                            </div>
-                        </div>
-                        <div className="streak_gold_list">
-                            <div style={{ backgroundImage: `url(${goldIcon})`, backgroundSize: '100% 100%' }}></div>
-                            <div className="streak_gold_list_amount">
-                                <CountUp end={this.state.finalGold} duration={Math.min(this.state.finalGold / 100, 2)} />
-                            </div>
-                        </div>
-                        {this.props.chests.map((chest, idx) => (
-                            <div key={idx} className="streak_gold_list" onClick={() => this.setState({ selectedChest: chest })}>
-                                <img src={this.getChestImage(chest.color)} alt="" />
+                        {this.getRewardsList().map((reward, idx) => (
+                            <div key={idx} className="streak_gold_list">
+                                {reward.type === 'XP' || reward.type === 'GOLD' ? (
+                                    <div style={{ backgroundImage: `url(${reward.icon})`, backgroundSize: '100% 100%' }}></div>
+                                ) : (
+                                    <div style={{
+                                        backgroundImage: `url(${reward.icon})`,
+                                        backgroundPosition: `-${reward.coordinates.x}px -${reward.coordinates.y}px`,
+                                        backgroundSize: reward.type === RewardType.GOLD ? '84% 100%' : ''
+                                    }}></div>
+                                )}
+                                <div className="streak_gold_list_amount">
+                                    {reward.type === 'XP' || reward.type === 'GOLD' ? (
+                                        <CountUp end={reward.amount} duration={Math.min(reward.amount / 100, 2)} />
+                                    ) : (
+                                        reward.amount
+                                    )}
+                                </div>
                             </div>
                         ))}
                     </div>

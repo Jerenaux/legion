@@ -178,6 +178,25 @@
         transform: scale(0.8);
         bottom: 25vh;
     }
+    
+    .endgame_rewards_items {
+        gap: 8px;
+        max-width: 90%;
+    }
+    
+    .streak_gold_list {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .streak_gold_list > div:first-child {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .streak_gold_list_amount {
+        font-size: 12px;
+    }
 }
 
 .endgame_rewards_items {
@@ -187,6 +206,9 @@
     gap: 12px;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
+    max-width: 80%;
+    padding: 0 20px;
 }
 
 .streak_gold_list {
