@@ -51,7 +51,8 @@ export function canLearnSpell(characterData: DBCharacterData | APICharacterData,
 
 export function hasMinLevel(characterData: DBCharacterData | APICharacterData, level: number): boolean {
   // if (dev) console.log(`[hasMinLevel] level: ${level}, characterData.level: ${characterData.level}, SKIP_LEVEL_RESTRICTIONS: ${SKIP_LEVEL_RESTRICTIONS}`);
-    return SKIP_LEVEL_RESTRICTIONS || characterData.level >= level;
+  return true;
+  return SKIP_LEVEL_RESTRICTIONS || characterData.level >= level;
 }
 
 export function hasRequiredClass(characterData: DBCharacterData | APICharacterData, classes: Class[]): boolean {

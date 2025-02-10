@@ -253,9 +253,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           backgroundSize: 'cover',
         }} />
         <p className="equip-dialog-name">{dialogData.name}</p>
-        <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
+        {/* <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
           Lvl <span>{dialogData.minLevel}</span>
-        </div>
+        </div> */}
         <div className="equip-dialog-class-container">
           {dialogData.classes?.map((item) => (
             <div style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}} className="equip-dialog-class">
@@ -351,9 +351,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             <span>{Target[dialogData.target]}</span>
           </div>
         </div>
-        <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
+        {/* <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
           Lvl <span>{dialogData.minLevel}</span>
-        </div> 
+        </div>  */}
         <div className="equip-dialog-class-container">
           {dialogData.classes?.map((item) => (
             <div style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}} className="equip-dialog-class">
