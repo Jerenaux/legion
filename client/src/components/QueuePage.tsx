@@ -64,6 +64,10 @@ class QueuePage extends Component<QPageProps, QpageState> {
     static contextType = PlayerContext;
     interval = null;
     intervalWaited = null;
+    socketRetryTimeout = null;
+    socketRetryCount = 0;
+    maxSocketRetries = 10;
+    socketRetryDelay = 1000;
 
     validateMode() {
         const validModes = [
@@ -113,21 +117,10 @@ class QueuePage extends Component<QPageProps, QpageState> {
         };
     }
 
-    componentDidMount() {
-        if (!this.validateMode()) {
-            return;
-        }
-
-        this.loadNews();
-
-        const { socket } = this.context;
-        if (!socket) {
-            errorToast('Not connected to matchmaker, please reload the page');
-            return;
-        }
-
+    setupSocketListeners = (socket) => {
         // Setup all game-related socket listeners
         socket.on('matchFound', ({ gameId }) => {
+            console.log('matchFound', gameId);
             playSoundEffect(matchFound, 0.5);
             route(`/game/${gameId}`);
         });
@@ -154,6 +147,15 @@ class QueuePage extends Component<QPageProps, QpageState> {
             });
         });
 
+        socket.on('lobbyJoined', (data) => {
+            this.setState({
+                lobbyDetails: {
+                    type: data.type,
+                    opponentName: data.opponentName
+                }
+            });
+        });
+
         // Join queue or lobby
         const isLobbyMode = this.props.matches.id !== undefined;
         if (isLobbyMode) {
@@ -161,6 +163,33 @@ class QueuePage extends Component<QPageProps, QpageState> {
         } else {
             socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });
         }
+    }
+
+    waitForSocket = () => {
+        const { socket } = this.context;
+        if (socket) {
+            this.setupSocketListeners(socket);
+            return;
+        }
+
+        if (this.socketRetryCount >= this.maxSocketRetries) {
+            errorToast('Could not connect to matchmaker after multiple attempts. Please reload the page.');
+            return;
+        }
+
+        this.socketRetryCount++;
+        this.socketRetryTimeout = setTimeout(() => {
+            this.waitForSocket();
+        }, this.socketRetryDelay);
+    }
+
+    componentDidMount() {
+        if (!this.validateMode()) {
+            return;
+        }
+
+        this.loadNews();
+        this.waitForSocket();
 
         // Setup other timers
         let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
@@ -179,16 +208,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
                 waited: prevState.waited + 1,
             }))
         }, 1000);
-
-        // Update the lobbyJoined handler
-        socket.on('lobbyJoined', (data) => {
-            this.setState({
-                lobbyDetails: {
-                    type: data.type,
-                    opponentName: data.opponentName
-                }
-            });
-        });
     }
 
     componentWillUnmount() {
@@ -202,9 +221,13 @@ class QueuePage extends Component<QPageProps, QpageState> {
             socket.off('updateGold');
             socket.off('queueData');
             socket.off('queueCount');
+            socket.off('lobbyJoined');
         }
         clearInterval(this.interval);
         clearInterval(this.intervalWaited);
+        if (this.socketRetryTimeout) {
+            clearTimeout(this.socketRetryTimeout);
+        }
     }
 
     loadNews = async () => {
