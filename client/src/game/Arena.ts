@@ -1463,7 +1463,6 @@ export class Arena extends Phaser.Scene
         });
 
         events.on('exitGame', () => {
-            console.log('Exit game event received');
             this.destroy();
         });   
         
@@ -1769,6 +1768,7 @@ export class Arena extends Phaser.Scene
     }
 
     destroy() {
+        events.emit('notifyMatchmakerLeave');
         this.socket.disconnect();
 
         this.teamsMap.forEach((team) => {

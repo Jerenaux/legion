@@ -524,6 +524,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         errorToast(e);
       });
 
+      socket.on('gameError', (data: { message: string }) => {
+        console.error(data.message);
+      });
+
       socket.on('challengeReceived', (data: { 
         challengerId: string,
         challengerName: string,
@@ -691,6 +695,12 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         return Math.max(0, requiredGames - completedGames);
     }
 
+    notifyLeaveGame = (gameId: string) => {
+      if (this.state.socket) {
+        this.state.socket.emit('leaveGame', { gameId });
+      }
+    }
+
     render() {
       const { children } = this.props;
   
@@ -736,7 +746,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           getCharacterThatCanEquipSpells: this.getCharacterThatCanEquipSpells,
           hasAnyCharacterSpendableSP: this.hasAnyCharacterSpendableSP,
           hasCurrentCharacterSpendableSP: this.hasCurrentCharacterSpendableSP,
-          getCharacterThatCanSpendSP: this.getCharacterThatCanSpendSP,
+          notifyLeaveGame: this.notifyLeaveGame,
+          getCharacterThatCanSpendSP: this.getCharacterThatCanSpendSP
         }}>
           {children}
           

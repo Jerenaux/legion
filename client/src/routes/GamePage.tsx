@@ -73,6 +73,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.on('gameInitialized', this.handleGameInitialized);
     events.on('serverDisconnect', this.handleServerDisconnect);
     events.on('revealTeam', this.handleRevealTeam);
+    events.on('notifyMatchmakerLeave', this.handleMatchmakerLeave);
     this.checkOrientation();
     window.addEventListener('resize', this.checkOrientation);
     window.addEventListener('orientationchange', this.checkOrientation);
@@ -83,6 +84,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.off('gameInitialized', this.handleGameInitialized);
     events.off('serverDisconnect', this.handleServerDisconnect);
     events.off('revealTeam', this.handleRevealTeam);
+    events.off('notifyMatchmakerLeave', this.handleMatchmakerLeave);
     window.removeEventListener('resize', this.checkOrientation);
     window.removeEventListener('orientationchange', this.checkOrientation);
     if (this.waitingTimer) {
@@ -132,6 +134,11 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     
     if (process.env.NODE_ENV === 'development') return;
     route('/');
+  };
+
+  handleMatchmakerLeave = () => {
+    const gameId = this.props.matches.id;
+    this.context.notifyLeaveGame(gameId);
   };
 
   startWaitingTimer = () => {

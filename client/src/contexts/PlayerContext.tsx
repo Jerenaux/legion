@@ -69,6 +69,7 @@ export const PlayerContext = createContext<{
   hasAnyCharacterSpendableSP: () => boolean;
   hasCurrentCharacterSpendableSP: () => boolean;
   getCharacterThatCanSpendSP: () => APICharacterData;
+  notifyLeaveGame: (gameId: string) => void;
 }>({
   player: {
     uid: '',
@@ -138,4 +139,5 @@ export const PlayerContext = createContext<{
   hasAnyCharacterSpendableSP: () => false,
   hasCurrentCharacterSpendableSP: () => false,
   getCharacterThatCanSpendSP: () => undefined,
+  notifyLeaveGame: () => {},
 });

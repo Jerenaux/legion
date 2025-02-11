@@ -239,11 +239,17 @@ function canBeMatched(player1: QueuingPlayer, player2: QueuingPlayer): boolean {
 async function createGame(
     player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null, stake: number = 0
 ) {
+    console.log(`[matchmaker:createGame] Creating game with mode ${mode} and league ${league}`);
     try {
         // Check if players can join game
-        if (!(await tryJoinGame(player1))) return false;
+        if (!(await tryJoinGame(player1))) {
+            console.log(`[matchmaker:createGame] Failed to join game for player1`);
+            return false;
+        }
         if (player2 && !(await tryJoinGame(player2))) {
+            console.log(`[matchmaker:createGame] Failed to join game for player2`);
             // Reset player1's status if player2 can't join
+            console.log(`[matchmaker:createGame] Resetting player1's status to ONLINE after failed player2 join`);
             // @ts-ignore
             updatePlayerStatus(player1.uid, PlayerStatus.ONLINE);
             return false;
@@ -524,6 +530,7 @@ export async function processLeaveQueue(socket) {
     const uid = socket.uid;
     const status = getPlayerStatus(uid);
     
+    console.log(`[matchmaker:processLeaveQueue] Player ${uid} leaving queue in status ${status}`);
     if (status === PlayerStatus.QUEUING) {
         updatePlayerStatus(uid, PlayerStatus.ONLINE);
     }
@@ -767,6 +774,7 @@ export function processLeaveGame(socket: Socket, data: { gameId: string }) {
     const uid = socket.uid;
     const status = getPlayerStatus(uid);
     
+    console.log(`[matchmaker:processLeaveGame] Player ${uid} leaving game ${data.gameId}`);
     if (status === PlayerStatus.INGAME) {
         // Only update if they're leaving the game they're actually in
         const player = connectedPlayers[uid];
