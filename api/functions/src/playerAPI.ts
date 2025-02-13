@@ -102,8 +102,10 @@ function generateName() {
   return base.length > MAX_NICKNAME_LENGTH ? base.slice(0, MAX_NICKNAME_LENGTH) : base;
 }
 
-// Modify createPlayer to only store friend IDs
-export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().onCreate(async (user) => {
+export const createPlayer = functions.runWith({ 
+  memory: '512MB',
+  minInstances: 1 // This keeps at least one instance always warm
+}).auth.user().onCreate(async (user) => {
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
   const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -202,15 +204,9 @@ export const createPlayer = functions.runWith({ memory: '512MB' }).auth.user().o
   });
 
   // Commit the batch
-  return batch.commit()
-    .then(() => {
-      logger.info("New player and characters created for user:", user.uid);
-    })
-    .catch((error) => {
-      logger.info("Error creating player and characters:", error);
-    });
+  await batch.commit();
+  logger.info("New player and characters created for user:", user.uid);
 });
-
 
 export const getPlayerData = onRequest({
   memory: '512MiB'

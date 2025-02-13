@@ -71,23 +71,43 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
     handleSort(column: string, index: number) {
         if (index != 0 && (index < 2 || index > 5)) return;
 
-        const sortedData = this.state.tableData.sort((a, b) => {
-            if (isNaN(a[column])) {
-                const aTemp = parseFloat(a[column].match(/\d+(\.\d+)?/)[0]);
-                const bTemp = parseFloat(b[column].match(/\d+(\.\d+)?/)[0]);
-
-                return this.state.isAscending[index] ? aTemp - bTemp : bTemp - aTemp;
-            } else {
-                return this.state.isAscending[index] ? a[column] - b[column] : b[column] - a[column];
+        const sortedData = [...this.state.tableData].sort((a, b) => {
+            // Handle cases where the column value might be undefined or null
+            const aValue = a[column];
+            const bValue = b[column];
+            
+            // If either value is undefined/null, sort it to the end
+            if (!aValue && aValue !== 0) return 1;
+            if (!bValue && bValue !== 0) return -1;
+            
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                // Handle percentage strings or other number-containing strings
+                const aMatch = aValue.match(/\d+(\.\d+)?/);
+                const bMatch = bValue.match(/\d+(\.\d+)?/);
+                
+                if (aMatch && bMatch) {
+                    const aTemp = parseFloat(aMatch[0]);
+                    const bTemp = parseFloat(bMatch[0]);
+                    return this.state.isAscending[index] ? aTemp - bTemp : bTemp - aTemp;
+                }
+                // If not number strings, do regular string comparison
+                return this.state.isAscending[index] 
+                    ? aValue.localeCompare(bValue) 
+                    : bValue.localeCompare(aValue);
             }
-        })
+            
+            // Handle numeric values
+            return this.state.isAscending[index] 
+                ? Number(aValue) - Number(bValue) 
+                : Number(bValue) - Number(aValue);
+        });
 
-        let ascendingTemp = this.state.isAscending;
+        const ascendingTemp = [...this.state.isAscending];
         ascendingTemp[index] = !this.state.isAscending[index];
 
         this.setState({
             tableData: sortedData,
-            isAscending: [...ascendingTemp]
+            isAscending: ascendingTemp
         });
     }
 

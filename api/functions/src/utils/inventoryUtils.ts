@@ -1,5 +1,5 @@
-import { admin } from "../APIsetup";
-import { InventoryType, RewardType } from "@legion/shared/enums";
+import admin from "../APIsetup";
+import { RewardType } from "@legion/shared/enums";
 import { numericalSort } from "@legion/shared/inventory";
 import { DBPlayerData } from "@legion/shared/interfaces";
 

@@ -20,6 +20,7 @@ export async function createGameDocument(
     stake,
   };
   await db.collection("games").add(gameData);
+  console.log(`[createGameDocument] Game ${gameId} created`);
 }
 
 export const createGame = onRequest({ 
