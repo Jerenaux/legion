@@ -141,7 +141,7 @@ export class Player extends Phaser.GameObjects.Container {
         // this.sprite.on('pointerout', this.onPointerOut, this);
         // this.sprite.on('pointerdown', this.onPointerDown, this);
 
-        this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, 'Hello!').setVisible(false);
+        this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, '').setVisible(false);
         this.add(this.speechBubble);
 
         this.displayBars();

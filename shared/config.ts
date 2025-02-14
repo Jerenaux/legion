@@ -16,6 +16,7 @@ export const ATTACK_DELAY = 0.5;
 export const SPELL_DELAY = 1;
 export const MOVE_DELAY = 0.5;
 export const ITEM_DELAY = 1;
+export const KILL_CAM_DURATION = 3;
 export const KILL_CAM_DELAY = 0.5;
 export const PARALYZED_DELAY = 1.5;
 export const FIRST_TURN_DELAY = 2;
@@ -31,7 +32,6 @@ export const MAX_AUDIENCE_SCORE = 1500;
 export const PROMOTION_RATIO = 0.4;
 export const DEMOTION_RATIO = 0.3;
 export const SEASON_END_CRON = '0 19 * * 5' // UTC
-export const KILL_CAM_DURATION = 3;
 export const BASE_ANIM_FRAME_RATE = 5;
 
 

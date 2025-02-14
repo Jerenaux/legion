@@ -14,13 +14,10 @@ import withNoAuth from './components/withNoAuth';
 import * as Sentry from "@sentry/react";
 import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
-
-import LogRocket from 'logrocket';
+import LogRocket from './logrocketSetup';
 
 // Only initialize Sentry if not in development mode
 if (process.env.NODE_ENV !== 'development') {
-  LogRocket.init('bpfssp/legion');
-
   Sentry.init({
     environment: process.env.NODE_ENV,
     dsn: "https://c3c72f4dedb26b85b58c0eb82feea9c1@o4508024644567040.ingest.de.sentry.io/4508024650268752",

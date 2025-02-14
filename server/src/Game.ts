@@ -305,8 +305,11 @@ export abstract class Game
     }
 
     processTurn(delay: number = 0) {
+        clearTimeout(this.turnTimer!); // To avoid race condition between that timeout and the one below
         if (this.gameOver) return;
         setTimeout(() => {
+            // const time = `${new Date().toTimeString().split(' ')[0]}.${String(new Date().getMilliseconds()).padStart(3, '0')}`;
+            // console.log(`[${time}] [Game:processTurn] Actual turn`);
             // Check if the previous turnee has acted
             if (this.turnee && !this.turnee.hasActed) {
                 this.turnSystem.processAction(this.turnee, SpeedClass.NORMAL);
@@ -879,6 +882,7 @@ export abstract class Game
         
         team.sendScore();
 
+        console.log(`[Game:processMagic] Processed spell, isKill: ${isKill}`);
         this.turnSystem.processAction(player, spell.speedClass);
         this.processTurn(isKill ? KILL_CAM_DURATION + KILL_CAM_DELAY : SPELL_DELAY);
     }
