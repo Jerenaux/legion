@@ -1,7 +1,6 @@
 // GameHUD.tsx
 import { h, Fragment, Component } from 'preact';
 import { route } from 'preact-router';
-import PlayerTab from './PlayerTab';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
@@ -10,7 +9,6 @@ import Timeline from './Timeline';
 import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { recordCompletedGame } from '../utils';
 import TutorialDialogue from './TutorialDialogue';
-import { CircularTimer } from './CircularTimer';
 import PlayerBar from './PlayerBar';
 
 
@@ -88,6 +86,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   state = this.getInitialState();
 
   lastPlayerKey = null;
+  private lastPassTurnClick = 0;
 
   componentDidMount() {
     events.on('showPlayerBox', this.showPlayerBox);
@@ -229,6 +228,24 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     this.setState({ showOverview: true });
   }
 
+  handlePassTurn = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const now = Date.now();
+    if (now - this.lastPassTurnClick < 200) {
+      return;
+    }
+    this.lastPassTurnClick = now;
+    
+    if (this.state.pendingSpell || this.state.pendingItem) {
+      return;
+    }
+    
+    console.log('Clicked pass turn');
+    events.emit('passTurn');
+  }
+
   render() {
     const { 
       player, team1, team2, isSpectator, mode, gameInitialized,
@@ -292,7 +309,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           turnDuration={this.state.turnDuration}
           timeLeft={this.state.timeLeft}
           turnNumber={this.state.turnNumber}
-          onPassTurn={() => events.emit('passTurn')}
+          onPassTurn={this.handlePassTurn}
           animate={this.state.animate}
           pendingItem={player?.pendingItem}
           pendingSpell={player?.pendingSpell}

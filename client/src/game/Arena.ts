@@ -1054,7 +1054,6 @@ export class Arena extends Phaser.Scene
     }
 
     processTurnee(data: {num: number, team: number, turnDuration: number, timeLeft: number}) {
-        console.log(`[Arena:processTurnee] Processing turnee: ${JSON.stringify(data)}`);
         if (this.gameEnded) return;
         // Determine if turnee is player
         if (data.team != this.playerTeamId) {

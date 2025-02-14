@@ -22,7 +22,7 @@ interface PlayerBarProps {
   turnDuration?: number;
   timeLeft?: number;
   turnNumber?: number;
-  onPassTurn?: () => void;
+  onPassTurn?: (e: MouseEvent) => void;
   animate?: boolean;
   items?: any[];
   spells?: any[];
@@ -101,9 +101,13 @@ class PlayerBar extends Component<PlayerBarProps> {
     );
   }
 
+  hasPendingAction = () => {
+    return this.props.pendingSpell != null || this.props.pendingItem != null;
+  }
+
   render({ hp, maxHp, mp, maxMp, hasSpells, statuses, isPlayerTurn, 
           turnDuration, timeLeft, turnNumber, onPassTurn, animate = true,
-          items = [], spells = [], pendingSpell }: PlayerBarProps) {
+          items = [], spells = [], pendingSpell, pendingItem }: PlayerBarProps) {
      // Add mock values for each status effect (DO NOT REMOVE)
     // statuses = {
     //   [StatusEffect.FREEZE]: 1,
@@ -134,7 +138,12 @@ class PlayerBar extends Component<PlayerBarProps> {
                     timeLeft={timeLeft}
                     turnNumber={turnNumber}
                   />
-                  <button className="player_bar_pass_turn" onClick={onPassTurn}>
+                  <button 
+                    className="player_bar_pass_turn" 
+                    onClick={onPassTurn}
+                    disabled={this.hasPendingAction()}
+                    style={{ pointerEvents: this.hasPendingAction() ? 'none' : 'auto' }}
+                  >
                     <span>Pass</span>
                     <span>Turn</span>
                   </button>
