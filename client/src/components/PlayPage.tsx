@@ -28,6 +28,8 @@ class PlayPage extends Component {
     if (user?.isAnonymous && !this.context.welcomeShown && this.context.player.isLoaded) {
       this.popupManagerRef.current?.enqueuePopup(Popup.Guest);
     }
+
+    this.popupManagerRef.current?.enqueuePopup(Popup.FeatureReveal);
   }
 
   enqueuePopup = (popup: Popup) => {

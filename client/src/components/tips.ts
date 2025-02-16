@@ -19,6 +19,7 @@ export const tips = [
     "Buy Antidotes to counter Poison.",
     "Buy Boccas to counter Silence.",
     "The Silence spell prevents a character from casting spells for several turns.",
+    "The Revive spell can be used to revive a single target.",
 ];
 
 export const guide = [

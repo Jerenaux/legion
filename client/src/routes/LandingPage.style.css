@@ -664,10 +664,6 @@ time {
   border: 0;
 }
 
-.feature-icon {
-  display: none;
-}
-
 .news-loading {
   display: flex;
   justify-content: center;
