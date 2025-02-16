@@ -124,7 +124,7 @@ class App extends Component<{}, AppState> {
                                     <Route path="/replay/:id" component={AuthenticatedGamePage} />
                                     <Route path="/play" component={AuthenticatedHomePage} />
                                     <Route path="/team/:id?" component={AuthenticatedHomePage} />
-                                    <Route path="/shop/:id?" component={AuthenticatedHomePage} />
+                                    <Route path="/shop/:category?/:id?" component={AuthenticatedHomePage} />
                                     <Route path="/rank" component={AuthenticatedHomePage} />
                                     <Route path="/queue/:mode" component={AuthenticatedHomePage} />
                                     <Route path="/lobby/:id" component={AuthenticatedHomePage} />

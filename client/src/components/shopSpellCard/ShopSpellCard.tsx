@@ -1,6 +1,6 @@
 // ShopSpellCard.tsx
 import './ShopSpellCard.style.css'
-import { h, Component } from 'preact';
+import { h, Component, createRef } from 'preact';
 import { Class, InventoryType, RarityColor, Target } from "@legion/shared/enums";
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { getSpeedClass, mapFrameToCoordinates } from '../utils';
@@ -31,9 +31,30 @@ interface ShopCardProps {
   data: BaseSpell;
   getItemAmount: (index: number, type: InventoryType) => number;
   handleOpenModal: (e: any, modalData: modalData) => void;
+  isHighlighted?: boolean;
 }
 
 class ShopSpellCard extends Component<ShopCardProps> {
+  private cardRef = createRef();
+
+  componentDidMount() {
+    if (this.props.isHighlighted && this.cardRef.current) {
+      this.cardRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center'
+      });
+    }
+  }
+
+  componentDidUpdate(prevProps: ShopCardProps) {
+    if (!prevProps.isHighlighted && this.props.isHighlighted && this.cardRef.current) {
+      this.cardRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center'
+      });
+    }
+  }
+
   render() {
     const getRarityValue = (effort) => {
       if(effort < 10) {
@@ -70,7 +91,12 @@ class ShopSpellCard extends Component<ShopCardProps> {
     const coordinates = mapFrameToCoordinates(data.frame);
 
     return (
-      <div className="spell-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
+      <div 
+        ref={this.cardRef}
+        className={`spell-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`} 
+        key={this.props.key} 
+        onClick={(e) => this.props.handleOpenModal(e, modalData)}
+      >
         <div className="spell-card-title" style={titleStyle}>
           <span>{data.name}</span>
           <div className="spell-card-info-container">

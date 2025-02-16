@@ -21,6 +21,7 @@ interface State {
 
 interface ShopPageProps {
   matches: {
+    category?: string;
     id?: string;
   };
 }
@@ -43,8 +44,7 @@ class ShopPage extends Component<ShopPageProps, State> {
   componentDidUpdate() {
     if (this.context.player.isLoaded) {
       if (!this.context.checkEngagementFlag('everPurchased')) {
-        console.log(this.props.matches.id);
-        if (!this.props.matches.id || this.props.matches.id == 'consumables') {
+        if (!this.props.matches.category || this.props.matches.category == 'consumables') {
           this.popupManagerRef.current?.enqueuePopup(Popup.BuySomething);
         }
       } else if (!this.context.checkEngagementFlag('everEquippedConsumable') && this.context.hasConsumable()) {
@@ -77,6 +77,9 @@ class ShopPage extends Component<ShopPageProps, State> {
   }
 
   render() {
+    // Consider a parameter as present only if it exists and isn't empty
+    const hasValidId = 'id' in this.props.matches && this.props.matches.id !== '';
+
     return (
         <div className="shop-container">
           <PopupManager 
@@ -85,7 +88,8 @@ class ShopPage extends Component<ShopPageProps, State> {
           />
           <ShopContent
             characters={this.state.characters} 
-            requiredTab={ShopTab[this.props.matches.id?.toUpperCase()]}
+            requiredTab={ShopTab[this.props.matches.category?.toUpperCase()]}
+            highlightedItemId={hasValidId ? this.props.matches.id : undefined}
             fetchCharactersOnSale={this.fetchCharactersOnSale.bind(this)}
           />
       </div>

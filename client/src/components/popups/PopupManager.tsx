@@ -454,7 +454,7 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
       description: 'The Revive spell is now available in the shop! Use it to revive a character in combat!',
       contentCategory: InventoryType.SPELLS,
       frame: 33,
-      route: '/shop/spells',
+      route: '/shop/spells/12',
     }
   },
 };

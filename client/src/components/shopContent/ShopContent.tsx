@@ -34,6 +34,7 @@ import { BaseSpell } from '@legion/shared/BaseSpell';
 interface ShopContentProps {
     characters: DBCharacterData[];
     requiredTab: number;
+    highlightedItemId?: string;
     fetchCharactersOnSale: () => void;
 }
 
@@ -266,7 +267,8 @@ class ShopContent extends Component<ShopContentProps> {
                                                 key={index} 
                                                 data={spell} 
                                                 getItemAmount={getItemAmount} 
-                                                handleOpenModal={this.handleOpenModal} 
+                                                handleOpenModal={this.handleOpenModal}
+                                                isHighlighted={this.props.highlightedItemId !== undefined && spell.id === Number(this.props.highlightedItemId)}
                                             />
                                         )}
                                     </div>
@@ -311,7 +313,8 @@ class ShopContent extends Component<ShopContentProps> {
                                                 key={index} 
                                                 data={item} 
                                                 getItemAmount={getItemAmount} 
-                                                handleOpenModal={this.handleOpenModal} 
+                                                handleOpenModal={this.handleOpenModal}
+                                                isHighlighted={this.props.highlightedItemId !== undefined && item.id === Number(this.props.highlightedItemId)}
                                             />
                                         )}
                                     </div>
@@ -360,7 +363,8 @@ class ShopContent extends Component<ShopContentProps> {
                                                 key={index} 
                                                 data={item} 
                                                 getItemAmount={getItemAmount} 
-                                                handleOpenModal={this.handleOpenModal} 
+                                                handleOpenModal={this.handleOpenModal}
+                                                isHighlighted={this.props.highlightedItemId !== undefined && item.id === Number(this.props.highlightedItemId)}
                                             />
                                         )}
                                     </div>
@@ -389,7 +393,11 @@ class ShopContent extends Component<ShopContentProps> {
                     return this.state.isLoadingCharacters ? 
                         renderSkeletons() :
                         characters?.map((item, index) => 
-                            <ShopCharacterCard key={index} data={item} handleOpenModal={this.handleOpenModal} />
+                            <ShopCharacterCard 
+                                key={index} 
+                                data={item} 
+                                handleOpenModal={this.handleOpenModal}
+                            />
                         );
                 default:
                     return null;

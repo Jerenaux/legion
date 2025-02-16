@@ -30,6 +30,7 @@ interface ShopCardProps {
   data: BaseEquipment;
   getItemAmount: (index: number, type: InventoryType) => number;
   handleOpenModal: (e: any, modalData: modalData) => void;
+  isHighlighted?: boolean;
 }
 
 class ShopEquipmentCard extends Component<ShopCardProps> {
@@ -73,7 +74,11 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
     }
 
     return (
-      <div className="shop-card-container" key={this.props.key} onClick={(e) => this.props.handleOpenModal(e, modalData)}>
+      <div 
+        className={`shop-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`} 
+        key={this.props.key} 
+        onClick={(e) => this.props.handleOpenModal(e, modalData)}
+      >
         <div className="shop-card-title" style={titleStyle}>
           <span className="shop-card-title-name">{data.name}</span>
           <div className="equipment-card-info-container">

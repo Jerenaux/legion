@@ -60,7 +60,7 @@ class HomePage extends Component<{}, HomePageState> {
                   <Route path="/queue/:mode" component={QueuePage} />
                   <Route path="/lobby/:id" component={QueuePage} />
                   <Route path="/team/:id?" component={TeamPage} />
-                  <Route path="/shop/:id?" component={ShopPage} />
+                  <Route path="/shop/:category?/:id?" component={ShopPage} />
                   <Route path="/rank" component={RankPage} />
                   <Route path="/profile/:id?" component={Profile} />
                   <Route path="/elysium" component={ElysiumPage} />
