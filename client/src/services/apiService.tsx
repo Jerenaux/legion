@@ -142,7 +142,22 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
 
 export { apiFetch };
 
-export function generateVisitorId(): string {
+export function generateVisitorId(): string | undefined {
+  // Check for common bot/crawler signatures
+  const userAgent = navigator.userAgent.toLowerCase();
+  const botPatterns = [
+    'bot', 'crawler', 'spider', 'slurp', 'baiduspider',
+    'yandexbot', 'facebookexternalhit', 'linkedinbot',
+    'twitterbot', 'slackbot', 'telegrambot', 'whatsapp',
+    'semrushbot', 'ahrefsbot', 'mj12bot', 'bingbot',
+    'googlebot', 'headless','facebook'
+  ];
+
+  // Return undefined if it's a bot
+  if (botPatterns.some(pattern => userAgent.includes(pattern))) {
+    return undefined;
+  }
+
   // Try to get existing visitor ID from localStorage
   const existingId = localStorage.getItem('visitorId');
   if (existingId) {
