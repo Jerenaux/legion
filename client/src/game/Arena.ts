@@ -10,7 +10,7 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
-import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE } from '@legion/shared/config';
+import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA } from '@legion/shared/config';
 
 import killzoneImage from '@assets/killzone.png';
 import iceblockImage from '@assets/iceblock.png';
@@ -965,6 +965,7 @@ export class Arena extends Phaser.Scene
 
     // Add this new method to handle camera movement
     panCameraWithOffset(targetX: number, targetY: number, duration: number = 1000, easing: string = 'Cubic.easeOut') {
+        if (FREEZE_CAMERA) return;
         // Get screen dimensions and target position
         const screenWidth = this.cameras.main.width;
         const screenHeight = this.cameras.main.height;

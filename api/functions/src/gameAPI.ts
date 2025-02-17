@@ -183,6 +183,47 @@ export const getNews = onRequest({
   });
 });
 
+async function handleNewsImageUpload(
+  imageBuffer: Buffer | null, 
+  imageType: string | null, 
+  oldImageUrl?: string | null
+): Promise<string | null> {
+  if (!imageBuffer || isDevelopment) {
+    return null;
+  }
+
+  const ext = imageType?.split('/')[1] || 'jpg';
+  const filename = `news-images/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+  const bucket = storage.bucket('legion-32c6d.firebasestorage.app');
+
+  try {
+    const file = bucket.file(filename);
+    await file.save(imageBuffer, {
+      metadata: {
+        contentType: imageType,
+      }
+    });
+    await file.makePublic();
+    const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media`;
+
+    // Delete old image if it exists
+    if (oldImageUrl) {
+      const oldFilename = decodeURIComponent(oldImageUrl.split('/o/')[1].split('?')[0]);
+      try {
+        await bucket.file(oldFilename).delete();
+      } catch (error) {
+        console.warn('[handleNewsImageUpload] Error deleting old image:', error);
+      }
+    }
+
+    return imageUrl;
+  } catch (error) {
+    console.error('[handleNewsImageUpload] Storage error:', error);
+    // @ts-ignore
+    throw new Error(`Storage error: ${error.message}`);
+  }
+}
+
 export const addNews = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB'
@@ -239,32 +280,7 @@ export const addNews = onRequest({
               return;
             }
 
-            let imageUrl = null;
-
-            // Handle image upload if present and not in development
-            if (imageBuffer && !isDevelopment) {
-              const ext = imageType?.split('/')[1] || 'jpg';
-              const filename = `news-images/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-              
-              console.log(`[addNews] Uploading image to ${filename} ...`);
-              const bucket = storage.bucket('legion-32c6d.firebasestorage.app');
-              console.log(`[addNews] Bucket name: ${bucket.name}`);
-              
-              try {
-                const file = bucket.file(filename);
-                await file.save(imageBuffer, {
-                  metadata: {
-                    contentType: imageType,
-                  }
-                });
-                await file.makePublic();
-                imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media`;
-              } catch (error) {
-                console.error('[addNews] Storage error:', error);
-                // @ts-ignore
-                throw new Error(`Storage error: ${error.message}`);
-              }
-            }
+            const imageUrl = await handleNewsImageUpload(imageBuffer, imageType);
 
             const newsData = {
               title: fields.title,
@@ -312,6 +328,103 @@ export const addNews = onRequest({
     }
   });
 });
+
+export const updateNewsThumbnail = onRequest({
+  secrets: ["API_KEY"],
+  memory: '512MiB'
+}, (request, response) => {
+  const db = admin.firestore();
+
+  corsMiddleware(request, response, async () => {
+    try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send('Unauthorized');
+        return;
+      }
+
+      const newsId = request.query.id;
+      if (!newsId) {
+        response.status(400).send('Missing news ID');
+        return;
+      }
+
+      console.log(`[updateNewsThumbnail] Processing thumbnail update for news ${newsId}...`);
+
+      const busboy = Busboy({ headers: request.headers });
+      let imageBuffer: Buffer | null = null;
+      let imageType: string | null = null;
+
+      // Handle file upload - skip in development
+      if (!isDevelopment) {
+        busboy.on('file', (_fieldname: string, file: any, { mimeType }: { mimeType: string }) => {
+          console.log(`[updateNewsThumbnail] Processing file upload...`);
+          const chunks: Buffer[] = [];
+          imageType = mimeType;
+
+          file.on('data', (data: Buffer) => {
+            chunks.push(data);
+          });
+
+          file.on('end', () => {
+            if (chunks.length) {
+              imageBuffer = Buffer.concat(chunks);
+            }
+          });
+        });
+      }
+
+      // Process the upload when everything is done
+      const result = await new Promise((resolve, reject) => {
+        busboy.on('finish', async () => {
+          try {
+            // Get the news document
+            const newsDoc = await db.collection("news").doc(newsId as string).get();
+            if (!newsDoc.exists) {
+              reject(new Error("News item not found"));
+              return;
+            }
+
+            const oldImageUrl = newsDoc.data()?.imageUrl;
+            const imageUrl = await handleNewsImageUpload(imageBuffer, imageType, oldImageUrl);
+
+            // Update the news document with the new image URL
+            await newsDoc.ref.update({
+              imageUrl: isDevelopment ? null : imageUrl,
+              updatedAt: new Date()
+            });
+
+            resolve({ 
+              status: "success", 
+              message: "Thumbnail updated successfully",
+              imageUrl 
+            });
+          } catch (error) {
+            reject(error);
+          }
+        });
+
+        busboy.on('error', reject);
+        
+        if (request.rawBody) {
+          busboy.end(request.rawBody);
+        } else {
+          request.pipe(busboy);
+        }
+      });
+
+      response.status(200).json(result);
+    } catch (error) {
+      console.error("[updateNewsThumbnail] Error:", error);
+      // @ts-ignore
+      if (error.message === "News item not found") {
+        response.status(404).send("News item not found");
+      } else {
+        response.status(500).send("Error updating thumbnail");
+      }
+    }
+  });
+});
+
 
 export const saveReplay = onRequest({ 
   secrets: ["API_KEY"],
@@ -399,3 +512,4 @@ export const getReplay = onRequest({
     }
   });
 });
+

@@ -1,5 +1,5 @@
 import { ServerPlayer } from './ServerPlayer';
-import { AIAttackMode, StatusEffect, Target } from "@legion/shared/enums";
+import { AIAttackMode, SpeedClass, StatusEffect, Target } from "@legion/shared/enums";
 import { FREEZE_AI } from "@legion/shared/config";
 
 
@@ -403,7 +403,11 @@ export class AIServerPlayer extends ServerPlayer {
     startTurn() {
         // console.log(`[AIServerPlayer:startTurn] ${this.name} is starting turn`);
         super.startTurn();
-        if (FREEZE_AI) return;
+        if (FREEZE_AI) {
+            this.team!.game.turnSystem.processAction(this, SpeedClass.SLOW);
+            this.team!.game.processTurn();
+            return;
+        }
         // If is zombie, take between 1 and 4 seconds to act, otherwise between 1 and 2
         const delay = this.isZombie ? Math.floor(Math.random() * 3000) + 1000 : Math.floor(Math.random() * 1000) + 1000;
         setTimeout(() => {

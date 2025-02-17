@@ -14,7 +14,7 @@ import {createPlayer, getPlayerData, queuingData,
   listFriends, addFriend, updatePlayerName, updatePlayerAvatar, incrementStartedGames,
   incrementCompletedGames} from "./playerAPI";
 import { createLobby, joinLobby, cancelLobby, listLobbies, getLobbyDetails, countLobbies } from "./lobbyAPI";
-import {createGame, completeGame, addNews, getNews, saveReplay, getReplay} from "./gameAPI";
+import {createGame, completeGame, addNews, getNews, saveReplay, getReplay, updateNewsThumbnail} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats,
   migrateEngagementMetrics, migrateMetricsToStats, getPlayerGameHistory, getActivePlayers,
@@ -36,7 +36,8 @@ export {
   migrateEngagementMetrics, migrateMetricsToStats, updateInactivePlayersStats, getPlayerGameHistory,
   setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames, listFriends, addFriend,
   updatePlayerName, updatePlayerAvatar, getActivePlayers, migrateMobileFlag, getPlayerActionsReport,
-  migrateCharacterSpeed, incrementStartedGames, incrementCompletedGames, markPlayerExcluded, markPlayerContacted
+  migrateCharacterSpeed, incrementStartedGames, incrementCompletedGames, markPlayerExcluded, markPlayerContacted,
+  updateNewsThumbnail
 };
 
 export const helloWorld = onRequest({ secrets: ["API_KEY"] }, (request, response) => {

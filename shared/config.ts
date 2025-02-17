@@ -70,7 +70,7 @@ export const ENABLE_SETTINGS = true;
 export const ENABLE_ELYSIUM = false;
 
 // Admin
-export let FREEZE_AI = false;
+export let FREEZE_AI = true;
 export const STARTING_GOLD_ADMIN = 100000;
 export const STARTING_SPELLS_ADMIN = [2];
 export const STARTING_EQUIPMENT_ADMIN = [2];
@@ -82,6 +82,7 @@ export let MAX_AI_CHARACTERS = 6;
 export let KILLALL_BM = true;
 export let KILLALL_WM = false;
 export let KILLALL_W = true;
+export let FREEZE_CAMERA = false;
 
 // Web3
 export let NETWORK = isDev ? 'devnet' : 'mainnet';
@@ -187,4 +188,5 @@ if (!isDev) {
     KILLALL_BM = false;
     KILLALL_WM = false;
     KILLALL_W = false;
+    FREEZE_CAMERA = false;
 }
