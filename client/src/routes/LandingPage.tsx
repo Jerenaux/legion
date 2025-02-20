@@ -98,7 +98,11 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
   showLoginOptions = (): void => {
     this.setState({ showLoginOptions: true }, () => {
       if (this.firebaseUIContainer) {
-        this.context.initFirebaseUI(this.firebaseUIContainer);
+        this.context.initFirebaseUI(
+          this.firebaseUIContainer, 
+          (authResult) => this.context.handleAuthSuccess(authResult),
+          true
+        );
       }
     });
   };

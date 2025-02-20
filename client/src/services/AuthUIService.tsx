@@ -19,7 +19,7 @@ class AuthUIService {
     return this.firebaseUI;
   }
 
-  initFirebaseUI(container: HTMLElement, onSignInSuccess: (authResult: any) => void): void {
+  initFirebaseUI(container: HTMLElement, onSignInSuccess: (authResult: any) => void, isSignInOnly: boolean = false): void {
     const uiConfig: firebaseui.auth.Config = {
       autoUpgradeAnonymousUsers: true,
       signInFlow: 'popup',
@@ -27,8 +27,12 @@ class AuthUIService {
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         {
-            provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-            requireDisplayName: false
+          provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
+          requireDisplayName: false,
+          // For sign-in only mode, disable the sign-up page
+          disableSignUp: {
+            status: isSignInOnly
+          }
         },
       ],
       callbacks: {

@@ -273,3 +273,29 @@ login-buttons {
 .menuItemContainer.disabled .menuItem {
     filter: grayscale(100%);
 }
+
+.login-container {
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login-header {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.back-button {
+    margin-top: 20px;
+    padding: 8px 16px;
+    background-color: #666;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    width: 100%;
+}
+
+.back-button:hover {
+    background-color: #777;
+}
