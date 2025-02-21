@@ -68,7 +68,11 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
 
     if (this.context.player.isLoaded) {
       this.popupManagerRef.current?.hidePopup();
-      if (!this.context.checkEngagementFlag('everEquippedConsumable') && this.context.hasConsumable()) {
+      if (
+          !this.context.checkEngagementFlag('everEquippedConsumable') 
+          && this.context.hasConsumable()
+          && this.context.getCompletedGames() < 5
+        ) {
         this.popupManagerRef.current?.enqueuePopup(Popup.EquipConsumable);
       } else if (
         !this.context.checkEngagementFlag('everEquippedEquipment') && 
