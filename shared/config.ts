@@ -19,7 +19,7 @@ export const ITEM_DELAY = 1;
 export const KILL_CAM_DURATION = 3;
 export const KILL_CAM_DELAY = 0.5;
 export const PARALYZED_DELAY = 1.5;
-export const FIRST_TURN_DELAY = 2;
+export const FIRST_TURN_DELAY = 2.5;
 export const BASE_INVENTORY_SIZE = 20;
 export const BASE_CARRYING_CAPACITY = 3;
 export const STARTING_GOLD = 50;
@@ -79,9 +79,9 @@ export let SKIP_LEVEL_RESTRICTIONS = false;
 export let IMMEDIATE_LOOT = true;
 export let LOTSA_MP = false;
 export let MAX_AI_CHARACTERS = 6;
-export let KILLALL_BM = true;
+export let KILLALL_BM = false;
 export let KILLALL_WM = false;
-export let KILLALL_W = true;
+export let KILLALL_W = false;
 export let FREEZE_CAMERA = false;
 
 // Web3

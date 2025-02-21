@@ -58,6 +58,7 @@ export abstract class Game
     gridHeight: number = 10;
 
     replayMessages: GameReplayMessage[] = [];
+    gameOutcomes: Map<number, OutcomeData> = new Map();
 
     constructor(id: string, mode: PlayMode, league: League, io: Server) {
         this.id = id;
@@ -115,7 +116,14 @@ export abstract class Game
         const team = this.teams.get(1).socket ? this.teams.get(2) : this.teams.get(1);
         this.socketMap.set(socket, team);
         team?.setSocket(socket);
+        
         this.sendGameStatus(socket, true);
+
+        // If game is over, re-emit the game end event
+        if (this.gameOver && this.gameOutcomes.has(team.id)) {
+            const outcomes = this.gameOutcomes.get(team.id);
+            socket.emit('gameEnd', outcomes);
+        }
     }
 
     abstract populateTeams(): void;
@@ -562,6 +570,10 @@ export abstract class Game
                 }
                 const otherTeam = this.getOtherTeam(team!.id);
                 const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID) as OutcomeData;
+                
+                // Store outcomes for reconnecting players
+                this.gameOutcomes.set(team.id, outcomes);
+
                 team.distributeXp(outcomes.xp);
                 outcomes.characters = team.getCharactersDBUpdates();
                 const engagement = team.getEngagement();

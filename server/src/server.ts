@@ -45,8 +45,18 @@ const PORT = process.env.PORT || 3123;
 // Create a new express application instance
 const app: express.Application = express();
 
+const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com', 'https://play-legion.io'];
+
 const corsSettings = {
-  origin: process.env.CLIENT_ORIGIN || "http://localhost:8080", // Adjust as needed
+  origin: (origin, callback) => {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.indexOf('*') !== -1) {
+        // console.log("Successful connection from origin:", origin);
+        callback(null, true);
+      } else {
+        console.log("Origin not allowed:", origin);
+        callback(new Error('CORS not allowed'));
+      }
+  },
   methods: ["GET", "POST"],
   credentials: true
 };
