@@ -107,7 +107,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
       this.setState({
         dialoguePosition: {
           top: rect.bottom - 120, 
-          left: rect.right + 10,
+          left: rect.right - 50,
         }
       });
     }

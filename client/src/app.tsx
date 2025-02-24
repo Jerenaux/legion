@@ -16,13 +16,13 @@ import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import LogRocket from './logrocketSetup';
 import Hotjar from '@hotjar/browser';
-
-const siteId = 5312432;
-const hotjarVersion = 6;
-
-Hotjar.init(siteId, hotjarVersion);
 // Only initialize Sentry if not in development mode
 if (process.env.NODE_ENV !== 'development') {
+  const siteId = 5312432; 
+  const hotjarVersion = 6;
+
+  Hotjar.init(siteId, hotjarVersion); // Initialize Hotjar
+
   Sentry.init({
     environment: process.env.NODE_ENV,
     dsn: "https://c3c72f4dedb26b85b58c0eb82feea9c1@o4508024644567040.ingest.de.sentry.io/4508024650268752",

@@ -322,6 +322,7 @@ spells.push(new BaseSpell({
     targetHighlight: TargetHighlight.DEAD,
     cost: 50,
     category: SpellShopCategory.HEALING,
+    minLevel: 20, // For AI
 }));
 
 export function getStarterSpells(characterClass: Class):number[] {

@@ -65,7 +65,7 @@ export class NewCharacter {
     };
     this.skills = getSpells(this.characterClass, this.level, this.skill_slots, isAI);
     // console.log("========================");
-    console.log(`[NewCharacter:constructor] AI spells: ${this.skills.map(spell => getSpellById(spell)?.name).join(", ")}`);
+    // console.log(`[NewCharacter:constructor] AI spells: ${this.skills.map(spell => getSpellById(spell)?.name).join(", ")}`);
     // console.log("========================");
     this.stats = {
       [Stat.HP]: this.getHP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),

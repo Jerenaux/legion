@@ -973,7 +973,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
         
         // @ts-ignore
-        await this.scene.sleep(10);
+        await this.scene?.sleep(10);
         this.speechBubble.setText(text);
         this.speechBubble.setVisible(true);
         const duration = this.speechBubble.setDuration(sticky);
