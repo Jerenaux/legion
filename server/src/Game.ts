@@ -59,6 +59,7 @@ export abstract class Game
 
     replayMessages: GameReplayMessage[] = [];
     gameOutcomes: Map<number, OutcomeData> = new Map();
+    processedUIDs: Set<string> | null = null;
 
     constructor(id: string, mode: PlayMode, league: League, io: Server) {
         this.id = id;
@@ -287,6 +288,11 @@ export abstract class Game
             setTimeout(() => {
                 this.endGame(2);
             }, 5000);
+        }
+        if (this.config.AUTO_WIN) {
+            setTimeout(() => {
+                this.endGame(1);
+            }, 2000);
         }
 
         if (KILLALL_BM) {
@@ -593,10 +599,6 @@ export abstract class Game
                 }
                 if (team.id === winnerTeamID) {
                     winnerUID = team.teamData.playerUID;
-                }
-
-                if (!team.hasDisconnected()) {
-                    this.incrementCompletedGames(team);
                 }
             });
             this.updateGameInDB(winnerUID, results);
@@ -1305,16 +1307,35 @@ export abstract class Game
     async writeOutcomesToDb(team: Team, outcomes: OutcomeData, engagement: any) {
         // console.log(`[Game:writeOutcomesToDb] Writing outcomes to DB for team ${team.id}`);
         try {
+            const uid = team.teamData.playerUID;
+            // Skip AI players or invalid UIDs
+            if (!uid || typeof uid !== 'string' || uid.trim() === '') {
+                return;
+            }
+            
+            // Check if this UID has already been processed in this game
+            if (this.processedUIDs && this.processedUIDs.has(uid)) {
+                console.log(`[Game:writeOutcomesToDb] UID ${uid} already processed, skipping`);
+                return;
+            }
+            
+            // Add UID to processed set
+            if (!this.processedUIDs) {
+                this.processedUIDs = new Set<string>();
+            }
+            this.processedUIDs.add(uid);
+            
             await apiFetch(
                 'postGameUpdate',
                 '',
                 {
                     method: 'POST',
                     body: {
-                        uid: team.teamData.playerUID,
+                        uid,
                         outcomes,
                         mode: this.mode,
                         engagement,
+                        stayedUntilTheEnd: !team.hasDisconnected(),
                     },
                     headers: {
                         'x-api-key': process.env.API_KEY,
@@ -1361,24 +1382,6 @@ export abstract class Game
             console.error(error);
         }
     }
-
-    async incrementCompletedGames(team: Team) {
-        try {
-            await apiFetch(
-                'incrementCompletedGames',
-                '',
-                {
-                    method: 'POST',
-                    body: {
-                        uid: team.teamData.playerUID,
-                    },
-                }
-            );
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
 
     async saveInventoryToDb(token: string, characterId: string, inventory: number[]) {
         console.log(`[Game:saveInventoryToDb] Saving inventory to DB for character ${characterId}`);

@@ -12,7 +12,7 @@ import {createPlayer, getPlayerData, queuingData,
   setPlayerOnSteroids, zombieData, recordPlayerAction, updateInactivePlayersStats,
   setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames,
   listFriends, addFriend, updatePlayerName, updatePlayerAvatar, incrementStartedGames,
-  incrementCompletedGames} from "./playerAPI";
+} from "./playerAPI";
 import { createLobby, joinLobby, cancelLobby, listLobbies, getLobbyDetails, countLobbies } from "./lobbyAPI";
 import {createGame, completeGame, addNews, getNews, saveReplay, getReplay, updateNewsThumbnail} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
@@ -36,7 +36,7 @@ export {
   migrateEngagementMetrics, migrateMetricsToStats, updateInactivePlayersStats, getPlayerGameHistory,
   setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames, listFriends, addFriend,
   updatePlayerName, updatePlayerAvatar, getActivePlayers, migrateMobileFlag, getPlayerActionsReport,
-  migrateCharacterSpeed, incrementStartedGames, incrementCompletedGames, markPlayerExcluded, markPlayerContacted,
+  migrateCharacterSpeed, incrementStartedGames, markPlayerExcluded, markPlayerContacted,
   updateNewsThumbnail
 };
 

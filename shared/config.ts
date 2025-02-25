@@ -168,6 +168,7 @@ export const UNLOCK_REWARDS = {
 
 export const remoteConfig = {
     AUTO_DEFEAT: false,
+    AUTO_WIN: true,
     HIGH_DAMAGE: false,
     FAST_MODE: true,
     COOLDOWN_OVERRIDE: 500,

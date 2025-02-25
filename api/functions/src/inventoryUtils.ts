@@ -10,7 +10,6 @@ export interface InventoryUpdate {
     spells?: number[];
     equipment?: number[];
   };
-  gold?: admin.firestore.FieldValue;
 }
 
 export function addItemsToInventory(
@@ -41,10 +40,6 @@ export function addItemsToInventory(
         ...playerData.inventory.equipment,
         ...Array(quantity).fill(itemId)
       ].sort(numericalSort);
-      break;
-    case RewardType.GOLD:
-      update.gold = admin.firestore.FieldValue.increment(quantity);
-      delete update.inventory;
       break;
   }
 

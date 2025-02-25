@@ -5,11 +5,12 @@ import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
 import {getMaxStatValue, getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFieldsByIndex, PlayMode, Stat} from "@legion/shared/enums";
+import {Class, statFieldsByIndex, PlayMode, Stat, RewardType} from "@legion/shared/enums";
 import {MAX_CHARACTERS} from "@legion/shared/config";
-import {OutcomeData, DailyLootAllDBData, CharacterUpdate, DBCharacterData, ChestReward} from "@legion/shared/interfaces";
+import {OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
+import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
 
 export const rosterData = onRequest({
   memory: '512MiB'
@@ -155,9 +156,12 @@ export const postGameUpdate = onRequest({
       const uid = request.body.uid;
       const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score, tokens} =
         request.body.outcomes as OutcomeData;
+      console.log(`[postGameUpdate] [${uid}] Outcomes: ${JSON.stringify(request.body.outcomes, null, 2)}`);
       const {spellsUsed, itemsUsed, movements, attacks, flames, ice, poison, silenced, paralyzed, lowMP} =
-        request.body.engagement as any;
+        request.body.engagement;
       const mode = request.body.mode as PlayMode;
+      const stayedUntilTheEnd = request.body.stayedUntilTheEnd;
+      console.log(`[postGameUpdate] [${uid}] Stayed until the end: ${stayedUntilTheEnd}`);
 
       if (!uid || typeof uid !== 'string' || uid.trim() === '') {
         throw new Error('Invalid or missing uid');
@@ -192,180 +196,167 @@ export const postGameUpdate = onRequest({
         const contents = chests.map((chest) => chest.content).flat();
         await processChestRewards(transaction, playerRef, contents, consumables, spells, equipment);
 
-        transaction.update(playerRef, {
+        // Base updates
+        const updates: any = {
           xp: admin.firestore.FieldValue.increment(xp || 0),
-          gold: admin.firestore.FieldValue.increment(gold || 0),
           elo: admin.firestore.FieldValue.increment(elo || 0),
           dailyloot: dailyLoot,
-        });
+        };
+        let goldReward = gold || 0;
+        let currentCompletedGames = 0;
+
+        // Add completed games increment if player hasn't disconnected
+        if (stayedUntilTheEnd) {
+          currentCompletedGames = playerData.engagementStats?.completedGames || 0;
+          
+          // Check for feature unlock at the CURRENT count (before increment)
+          const unlockedFeature = checkFeatureUnlock(currentCompletedGames);
+          const rewards = getUnlockRewards(unlockedFeature);
+
+          // Merge rewards by type
+          const mergedRewards: Record<RewardType, {id: number, amount: number}[]> = {
+            [RewardType.CONSUMABLES]: [],
+            [RewardType.SPELL]: [],
+            [RewardType.EQUIPMENT]: [],
+            [RewardType.GOLD]: []
+          };
+          let goldAmount = 0;
+
+          // Combine all rewards
+          for (const reward of rewards) {
+            if (reward.type === RewardType.GOLD) {
+              goldAmount += reward.amount;
+            } else {
+              mergedRewards[reward.type].push({id: reward.id, amount: reward.amount});
+            }
+          }
+
+          // Apply merged rewards
+          for (const type of [RewardType.CONSUMABLES, RewardType.SPELL, RewardType.EQUIPMENT]) {
+            for (const reward of mergedRewards[type]) {
+              const rewardUpdate = addItemsToInventory(
+                playerData as DBPlayerData,
+                type,
+                reward.id,
+                reward.amount
+              ) as InventoryUpdate;
+
+              if (rewardUpdate.inventory) {
+                console.log(`[postGameUpdate] Updating inventory update`);
+                updates.inventory = {
+                  ...updates.inventory,
+                  ...rewardUpdate.inventory
+                };
+              }
+            }
+          }
+          
+          if (goldAmount > 0) {
+            goldReward += goldAmount;
+          }
+        }
+
+        if (goldReward > 0) {
+          updates.gold = admin.firestore.FieldValue.increment(goldReward);
+        }
 
         if (tokens) {
-          transaction.update(playerRef, {
-            'tokens.SOL': admin.firestore.FieldValue.increment(tokens || 0),
-          });
+          updates['tokens.SOL'] = admin.firestore.FieldValue.increment(tokens || 0);
         }
 
-        if (spellsUsed) {
-          transaction.update(playerRef, {
-            'engagementStats.everUsedSpell': true,
-          });
-        }
+        // Update engagement stats
+        if (spellsUsed) updates['engagementStats.everUsedSpell'] = true;
+        if (itemsUsed) updates['engagementStats.everUsedItems'] = true;
+        if (movements) updates['engagementStats.everMoved'] = true;
+        if (attacks) updates['engagementStats.everAttacked'] = true;
+        if (flames) updates['engagementStats.everSawFlames'] = true;
+        if (ice) updates['engagementStats.everSawIce'] = true;
+        if (poison) updates['engagementStats.everPoisoned'] = true;
+        if (silenced) updates['engagementStats.everSilenced'] = true;
+        if (paralyzed) updates['engagementStats.everParalyzed'] = true;
+        if (lowMP) updates['engagementStats.everLowMP'] = true;
 
-        if (itemsUsed) {
-          transaction.update(playerRef, {
-            'engagementStats.everUsedItems': true,
-          });
-        }
-
-        if (movements) {
-          transaction.update(playerRef, {
-            'engagementStats.everMoved': true,
-          });
-        }
-
-        if (attacks) {
-          transaction.update(playerRef, {
-            'engagementStats.everAttacked': true,
-          });
-        }
-
-        if (flames) {
-          transaction.update(playerRef, {
-            'engagementStats.everSawFlames': true,
-          });
-        }
-
-        if (ice) {
-          transaction.update(playerRef, {
-            'engagementStats.everSawIce': true,
-          });
-        }
-
-        if (poison) {
-          transaction.update(playerRef, {
-            'engagementStats.everPoisoned': true,
-          });
-        }
-
-        if (silenced) {
-          transaction.update(playerRef, {
-            'engagementStats.everSilenced': true,
-          });
-        }
-
-        if (paralyzed) {
-          transaction.update(playerRef, {
-            'engagementStats.everParalyzed': true,
-          });
-        }
-
-        if (lowMP) {
-          transaction.update(playerRef, {
-            'engagementStats.everLowMP': true,
-          });
-        }
-
+        // Update mode-specific stats
         if (mode == PlayMode.PRACTICE) {
-          transaction.update(playerRef, {
-            'engagementStats.everPlayedPractice': true,
-          });
+          updates['engagementStats.everPlayedPractice'] = true;
         } else if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
-          transaction.update(playerRef, {
-            'engagementStats.everPlayedCasual': true,
-          });
+          updates['engagementStats.everPlayedCasual'] = true;
         } else if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
-          transaction.update(playerRef, {
-            'engagementStats.everPlayedRanked': true,
-          });
+          updates['engagementStats.everPlayedRanked'] = true;
         }
 
+        if (stayedUntilTheEnd) {
+          updates['engagementStats.completedGames'] = admin.firestore.FieldValue.increment(1);
+        }
+
+        // Update win/loss stats
         if (mode != PlayMode.PRACTICE) {
           if (isWinner) {
-              transaction.update(playerRef, {
-                lossesStreak: 0,
-              });
+            updates.lossesStreak = 0;
           } else {
-              transaction.update(playerRef, {
-                lossesStreak: admin.firestore.FieldValue.increment(1),
-              });
+            updates.lossesStreak = admin.firestore.FieldValue.increment(1);
           }
 
           if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
-            transaction.update(playerRef, {
-              'casualStats.nbGames': admin.firestore.FieldValue.increment(1),
-            });
+            updates['casualStats.nbGames'] = admin.firestore.FieldValue.increment(1);
             if (isWinner) {
-              transaction.update(playerRef, {
-                'casualStats.wins': admin.firestore.FieldValue.increment(1),
-              });
+              updates['casualStats.wins'] = admin.firestore.FieldValue.increment(1);
             }
           }
 
           if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
-            console.log(`[postGameUpdate for player ${uid}] Updating ranked stats`);
             if (isWinner) {
-              console.log(`[postGameUpdate for player ${uid}] Updating ranked stats: wins`);
-              transaction.update(playerRef, {
-                'leagueStats.wins': admin.firestore.FieldValue.increment(1),
-                'allTimeStats.wins': admin.firestore.FieldValue.increment(1),
-                'leagueStats.winStreak': admin.firestore.FieldValue.increment(1),
-                'allTimeStats.winStreak': admin.firestore.FieldValue.increment(1),
-                'leagueStats.lossesStreak': 0,
-                'allTimeStats.lossesStreak': 0,
-              });
+              updates['leagueStats.wins'] = admin.firestore.FieldValue.increment(1);
+              updates['allTimeStats.wins'] = admin.firestore.FieldValue.increment(1);
+              updates['leagueStats.winStreak'] = admin.firestore.FieldValue.increment(1);
+              updates['allTimeStats.winStreak'] = admin.firestore.FieldValue.increment(1);
+              updates['leagueStats.lossesStreak'] = 0;
+              updates['allTimeStats.lossesStreak'] = 0;
             } else {
-              console.log(`[postGameUpdate for player ${uid}] Updating ranked stats: losses`);
-              transaction.update(playerRef, {
-                'leagueStats.losses': admin.firestore.FieldValue.increment(1),
-                'allTimeStats.losses': admin.firestore.FieldValue.increment(1),
-                'leagueStats.winStreak': 0,
-                'allTimeStats.winStreak': 0,
-                'leagueStats.lossesStreak': admin.firestore.FieldValue.increment(1),
-                'allTimeStats.lossesStreak': admin.firestore.FieldValue.increment(1),
-              });
+              updates['leagueStats.losses'] = admin.firestore.FieldValue.increment(1);
+              updates['allTimeStats.losses'] = admin.firestore.FieldValue.increment(1);
+              updates['leagueStats.winStreak'] = 0;
+              updates['allTimeStats.winStreak'] = 0;
+              updates['leagueStats.lossesStreak'] = admin.firestore.FieldValue.increment(1);
+              updates['allTimeStats.lossesStreak'] = admin.firestore.FieldValue.increment(1);
             }
+
             let leagueAvgAudienceScore = playerData.leagueStats?.avgAudienceScore || 0;
             let allTimeAvgAudienceScore = playerData.allTimeStats?.avgAudienceScore || 0;
             let leagueAvgGrade = playerData.leagueStats?.avgGrade || 0;
             let allTimeAvgGrade = playerData.allTimeStats?.avgGrade || 0;
             const leagueNbGames = playerData.leagueStats?.nbGames || 0;
             const allTimeNbGames = playerData.allTimeStats?.nbGames || 0;
+
             leagueAvgAudienceScore = (leagueAvgAudienceScore * leagueNbGames + score) / (leagueNbGames + 1);
             allTimeAvgAudienceScore = (allTimeAvgAudienceScore * allTimeNbGames + score) / (allTimeNbGames + 1);
             leagueAvgGrade = (leagueAvgGrade * leagueNbGames + rawGrade) / (leagueNbGames + 1);
             allTimeAvgGrade = (allTimeAvgGrade * allTimeNbGames + rawGrade) / (allTimeNbGames + 1);
-            transaction.update(playerRef, {
-              'leagueStats.nbGames': admin.firestore.FieldValue.increment(1),
-              'allTimeStats.nbGames': admin.firestore.FieldValue.increment(1),
-              'leagueStats.avgAudienceScore': leagueAvgAudienceScore,
-              'allTimeStats.avgAudienceScore': allTimeAvgAudienceScore,
-              'leagueStats.avgGrade': leagueAvgGrade,
-              'allTimeStats.avgGrade': allTimeAvgGrade,
-            });
+
+            updates['leagueStats.nbGames'] = admin.firestore.FieldValue.increment(1);
+            updates['allTimeStats.nbGames'] = admin.firestore.FieldValue.increment(1);
+            updates['leagueStats.avgAudienceScore'] = leagueAvgAudienceScore;
+            updates['allTimeStats.avgAudienceScore'] = allTimeAvgAudienceScore;
+            updates['leagueStats.avgGrade'] = leagueAvgGrade;
+            updates['allTimeStats.avgGrade'] = allTimeAvgGrade;
           }
         }
 
         if (mode == PlayMode.PRACTICE || mode == PlayMode.CASUAL_VS_AI || mode == PlayMode.RANKED_VS_AI) {
-          // First ensure AIstats exists with default values if needed
           const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
-          
-          // Then perform the updates
-          transaction.update(playerRef, {
-            AIstats: {
-              nbGames: currentAIStats.nbGames + 1,
-              wins: currentAIStats.wins + (isWinner ? 1 : 0)
-            }
-          });
+          updates.AIstats = {
+            nbGames: currentAIStats.nbGames + 1,
+            wins: currentAIStats.wins + (isWinner ? 1 : 0)
+          };
         }
 
-        // Iterate over the player's characters and increase their XP
-        // Update XP for each character directly using their references
+        transaction.update(playerRef, updates);
+
+        // Update XP for each character
         if (playerData.characters && Array.isArray(playerData.characters) && characters) {
           for (const characterRef of playerData.characters) {
             if (characterRef instanceof admin.firestore.DocumentReference) {
-              // Find the corresponding CharacterRewards object
-              const characterRewards =
-                characters.find((c: CharacterUpdate) => c.id === characterRef.id);
+              const characterRewards = characters.find((c) => c.id === characterRef.id);
 
               if (characterRewards) {
                 const sp = characterRewards.points;
@@ -375,11 +366,7 @@ export const postGameUpdate = onRequest({
                   sp: admin.firestore.FieldValue.increment(sp),
                   allTimeSP: admin.firestore.FieldValue.increment(sp),
                 });
-              } else {
-                console.error(`No matching CharacterRewards found for ${characterRef.id}`);
               }
-            } else {
-              console.error(`Invalid character reference ${characterRef}`);
             }
           }
         }
