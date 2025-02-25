@@ -41,7 +41,7 @@ import cooldownSFX from '@assets/sfx/cooldown.wav';
 import shatterSFX from '@assets/sfx/shatter.wav';
 import flamesSFX from '@assets/sfx/flame.wav';
 import crowdSFX from '@assets/sfx/crowd.wav';
-import cheerSFX from '@assets/sfx/cheer.wav';
+// import cheerSFX from '@assets/sfx/cheer.wav';
 import castSoundSFX from '@assets/sfx/spells/cast.wav';
 import fireballSFX from '@assets/sfx/spells/fire_3.wav';
 import thunderSoundSFX from '@assets/sfx/spells/thunder.wav';
@@ -135,7 +135,7 @@ export class Arena extends Phaser.Scene
     private static readonly SOUND_NAMES = [
         'click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball',
         'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd',
-        'cheer', 'poison', 'mute', 'thud', 'revive'
+        'poison', 'mute', 'thud', 'revive'
     ];
 
     constructor() {
@@ -234,7 +234,7 @@ export class Arena extends Phaser.Scene
         this.load.audio('shatter', shatterSFX);
         this.load.audio('flames', flamesSFX);
         this.load.audio('crowd', crowdSFX);
-        this.load.audio('cheer', cheerSFX);
+        // this.load.audio('cheer', cheerSFX);
         this.load.audio('thud', thudSFX);
 
 
@@ -1046,7 +1046,7 @@ export class Arena extends Phaser.Scene
         const _score = team.score;
         team.setScore(score);
         // this.refreshOverview(); // TODO: add if display score again
-        if (score - _score > 50) this.playSound('cheer', 2);
+        // if (score - _score > 50) this.playSound('cheer', 2);
     }
 
     processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
