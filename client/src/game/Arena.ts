@@ -77,8 +77,9 @@ import { TutorialManager } from './TutorialManager';
 const HEX_WIDTH = 87; // Width of hexagon
 const HEX_HEIGHT = 100; // Height of hexagon
 // Use formulas to automatically calculate spacing based on hexagon dimensions
+const PERSPECTIVE_SCALE = 0.8;
 const HEX_HORIZ_SPACING = HEX_WIDTH; 
-const HEX_VERT_SPACING = HEX_HEIGHT * 0.75; 
+const HEX_VERT_SPACING = HEX_HEIGHT * 0.75 * PERSPECTIVE_SCALE; 
 
 // Add in the existing imports section if not already present
 import hexTileImage from '@assets/tile.png';
@@ -572,15 +573,6 @@ export class Arena extends Phaser.Scene
         this.cellsHighlight = new CellsHighlight(this, this.gridWidth, this.gridHeight, this.tileSize, this.gridCorners).setDepth(1);
         this.cellsHighlight.setDepth(2);
 
-        //  this.input.on('pointermove', function (pointer) {
-        //      const {gridX, gridY} = this.pointerToHexGrid(pointer);
-        //      const tile = this.tilesMap.get(serializeCoords(gridX, gridY));
-        //      console.log(gridX, gridY, tile);
-        //      if (tile) {
-        //         tile.setTint(0x00ff00);
-        //      }
-        //  }, this);
-
         this.input.on('pointerdown', function (pointer) {
             if (pointer.rightButtonDown()) {
                 this.selectedPlayer?.cancelSkill();
@@ -687,9 +679,12 @@ export class Arena extends Phaser.Scene
         const tile = this.tilesMap.get(serializeCoords(gridX, gridY));
         if (tile) {
             if (hover) {
+                // @ts-ignore
+                tile.previousTint = tile.tint;
                 tile.setTint(0x00ff00);
             } else {
-                tile.setTint(0xffffff);
+                // @ts-ignore
+                tile.setTint(tile.previousTint);
             }
         }
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
@@ -720,6 +715,7 @@ export class Arena extends Phaser.Scene
     }
 
     handleMove(gridX, gridY) {
+        console.log(`[Arena:handleMove] canMoveTo: ${this.selectedPlayer.canMoveTo(gridX, gridY)}, isValidCell: ${this.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)}`);
         if (!this.selectedPlayer.canMoveTo(gridX, gridY) || !this.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) {
             this.playSound('nope');
             return;
@@ -793,12 +789,12 @@ export class Arena extends Phaser.Scene
 
     processMove({team, tile, num}) {
         if (this.gameEnded) return;
+        // console.log(`[Arena:processMove] Player ${num} moving to (${tile.x}, ${tile.y})`);
         const player = this.getPlayer(team, num);
         if (!player) {
             return;
         }
 
-        // this.gridMap.set(serializeCoords(player.gridX, player.gridY), null);
         this.gridMap.delete(serializeCoords(player.gridX, player.gridY));
         this.gridMap.set(serializeCoords(tile.x, tile.y), player);
 
@@ -1315,10 +1311,9 @@ export class Arena extends Phaser.Scene
         // console.log(`[Arena:placeCharacter] Placing character ${character.name} with data ${JSON.stringify(character)}`);
         const isPlayer = team.id === this.playerTeamId;
         const {x, y} = this.hexGridToPixelCoords(character.x, character.y);
-        const centerTileYOffset = 50;
 
         const player = new Player(
-            this, this, team, character.name, character.x, character.y, x, y - centerTileYOffset,
+            this, this, team, character.name, character.x, character.y, x, y,
             team.getMembers().length + 1, character.portrait, isPlayer, character.class,
             character.hp, character.maxHP, character.mp, character.maxMP,
             character.level, character.xp,
@@ -1350,7 +1345,6 @@ export class Arena extends Phaser.Scene
   
 
     highlightCells(gridX, gridY, radius) {
-        console.log(gridX, gridY, radius);
         // Clear any existing highlights
         this.clearHighlight();
         
@@ -2296,7 +2290,11 @@ export class Arena extends Phaser.Scene
         )
         .setDepth(1)
         .setOrigin(0.5, 0.5)
-        .setAlpha(0.5);
+        .setAlpha(0.5)
+        .setScale(1, PERSPECTIVE_SCALE);
+
+        // @ts-ignore
+        tileSprite.previousTint = null;
 
         // Make tile interactive for mouse events
         tileSprite.setInteractive();
@@ -2318,6 +2316,8 @@ export class Arena extends Phaser.Scene
     }
 
     hexGridToPixelCoords(gridX, gridY) {
+        // Specifically called to compute PLAYER positions
+        const centerTileYOffset = 50;
         const {startX, startY} = this.getStartXY();
         const offsetX = startX + HEX_WIDTH / 2;
         const offsetY = startY + HEX_HEIGHT / 2;
@@ -2327,7 +2327,7 @@ export class Arena extends Phaser.Scene
         
         return {
             x: offsetX + gridX * HEX_HORIZ_SPACING + rowOffset,
-            y: offsetY + gridY * HEX_VERT_SPACING
+            y: offsetY + gridY * HEX_VERT_SPACING - centerTileYOffset
         };
     }
 

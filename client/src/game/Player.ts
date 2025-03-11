@@ -11,6 +11,7 @@ import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
 import { paralyzingStatuses } from '@legion/shared/utils';
 import { SpeechBubble } from "./SpeechBubble";
 import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE } from '@legion/shared/config';
+import { hexDistance } from '@legion/shared/utils';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -520,8 +521,11 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     canMoveTo(x: number, y: number) {
-        // Check if (x, y) is within a circle of radius `this.distance` from (this.gridX, this.gridY)
-        return this.canAct() && Math.pow(x - this.gridX, 2) + Math.pow(y - this.gridY, 2) <= Math.pow(this.distance, 2);
+        if (!this.canAct()) return false;
+        
+        const distance = hexDistance(this.gridX, this.gridY, x, y);
+        console.log(`[Player:canMoveTo] distance: ${distance}, distance: ${this.distance}`);
+        return distance <= this.distance + 1;
     }
 
     updatePos(x, y) {
@@ -729,7 +733,8 @@ export class Player extends Phaser.GameObjects.Container {
         this.updatePos(gridX, gridY);
         this.playAnim('walk');
 
-        const {x, y} = this.arena.gridToPixelCoords(gridX, gridY);
+        const {x, y} = this.arena.hexGridToPixelCoords(gridX, gridY);
+        // console.log(`[Player:walkTo] walking to (${x}, ${y})`);
         this.scene.tweens.add({
             targets: this,
             props: {

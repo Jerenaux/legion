@@ -97,3 +97,31 @@ export const transformDailyLoot = (dailyloot: DailyLootAllDBData): DailyLootAllA
     }
     return transformedChests;
   };
+
+/**
+ * Calculate the distance between two points on a pointy hex grid
+ * using cube coordinates
+ * 
+ * @param x1 First point x coordinate
+ * @param y1 First point y coordinate
+ * @param x2 Second point x coordinate
+ * @param y2 Second point y coordinate
+ * @returns The hex distance between the two points
+ */
+export function hexDistance(x1: number, y1: number, x2: number, y2: number): number {
+    // Convert to cube coordinates (x,y,z)
+    const q1 = x1;
+    const r1 = y1;
+    const s1 = -q1 - r1;
+    
+    const q2 = x2;
+    const r2 = y2;
+    const s2 = -q2 - r2;
+    
+    // Calculate hex distance using maximum of the absolute differences
+    return Math.max(
+        Math.abs(q1 - q2),
+        Math.abs(r1 - r2),
+        Math.abs(s1 - s2)
+    );
+}

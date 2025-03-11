@@ -9,6 +9,7 @@ import { CharacterStats, Equipment, PlayerNetworkData, StatusEffects } from '@le
 import { INJURED_MODE, MOVEMENT_RANGE, PARALYZED_DELAY } from "@legion/shared/config";
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpells, lvlUp, setUpInventory } from '@legion/shared/NewCharacter';
+import { hexDistance } from '@legion/shared/utils';
 
 
 const terrainDot = {
@@ -163,8 +164,10 @@ export class ServerPlayer {
     }
 
     canMoveTo(x: number, y: number) {
-        // Check if (x, y) is within a circle of radius `this.distance` from (this.gridX, this.gridY)
-        return Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2) <= Math.pow(this.distance, 2);
+        if (!this.canAct()) return false;
+        
+        const distance = hexDistance(this.x, this.y, x, y);
+        return distance <= this.distance + 1;
     }
 
     isNextTo(x: number, y: number) {
