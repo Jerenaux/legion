@@ -5,7 +5,7 @@ import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { CellsHighlight } from './CellsHighlight';
 import { getSpellById } from '@legion/shared/Spells';
-import { lineOfSight, serializeCoords, cubeToOffset, hexDistance, offsetToCube } from '@legion/shared/utils';
+import { lineOfSight, serializeCoords, cubeToOffset, hexDistance, offsetToCube, listCellsOnTheWay } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
@@ -67,6 +67,8 @@ import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseItem } from '@legion/shared/BaseItem';
 const LOCAL_ANIMATION_SCALE = 3;
 const DEPTH_OFFSET = 0.01;
+
+const DEBUG_OFFSET = [0, 50];
 
 export const DARKENING_INTENSITY = 0.9; // 0 = completely dark, 1 = no darkening
 
@@ -132,6 +134,10 @@ export class Arena extends Phaser.Scene
     eventHandlers: Map<string, (data: any) => void>;
     isDarkened: boolean = false;
     tutorialManager: TutorialManager;
+
+    // Add these new properties
+    private showCoordinates: boolean = false;
+    private coordinateTexts: Map<string, Phaser.GameObjects.Text> = new Map<string, Phaser.GameObjects.Text>();
 
     // Add at class level:
     private static readonly GEN_CONFIGS = {
@@ -540,6 +546,29 @@ export class Arena extends Phaser.Scene
 
         // @ts-ignore
         this.tilesMap.set(serializeCoords(x, y), tileSprite);
+
+        // After creating the tile, add coordinate text
+        const tileX = startX + x * this.tileSize;
+        const tileY = startY + y * this.tileSize;
+        
+        const coordText = this.add.text(
+            tileX + this.tileSize/2, 
+            tileY + this.tileSize/2, 
+            `${x},${y}`,
+            { 
+                fontFamily: 'Arial', 
+                fontSize: '16px',
+                color: '#FFFFFF',
+                stroke: '#000000',
+                strokeThickness: 3
+            }
+        )
+        .setDepth(10)
+        .setOrigin(0.5, 0.5)
+        .setVisible(this.showCoordinates);
+        
+        // Store coordinate text reference in the map
+        this.coordinateTexts.set(serializeCoords(x, y), coordText);
     }
 
     pointerToGrid(pointer) {
@@ -675,7 +704,7 @@ export class Arena extends Phaser.Scene
     }
 
     handleTileHover(gridX, gridY, hover = true) {
-        console.log(`(${gridX}, ${gridY})`);
+        // Remove the console.log statement
         const tile = this.tilesMap.get(serializeCoords(gridX, gridY));
         if (tile) {
             if (hover) {
@@ -1345,6 +1374,17 @@ export class Arena extends Phaser.Scene
   
 
     highlightCells(gridX, gridY, radius) {
+        const startX = 2;
+        const startY = 4;
+        const endX = 3;
+        const endY = 5;
+        const cellsOnTheWay = listCellsOnTheWay(startX, startY, endX, endY);
+        console.log(`[Arena:highlightCells] Path between ${startX},${startY} and ${endX},${endY}: ${JSON.stringify(Array.from(cellsOnTheWay))}`);
+        cellsOnTheWay.forEach(cell => {
+            const coords = cell.split(',');
+            console.log(`[Arena:highlightCells] IsFree ${coords[0]},${coords[1]}: ${this.isFree(coords[0], coords[1])}`);
+        });
+        console.log(`[Arena:highlightCells] Line of sight between ${startX},${startY} and ${endX},${endY}: ${lineOfSight(startX, startY, endX, endY, this.isFree.bind(this))}`);
         // Clear any existing highlights
         this.clearHighlight();
         
@@ -1522,6 +1562,11 @@ export class Arena extends Phaser.Scene
         // console.log(`[Arena:create] Scene created`);
         this.sceneCreated = true;
         this.emptyQueue();
+
+        // Add keyboard shortcut for coordinate toggle (using 'C' key)
+        this.input.keyboard.on('keydown-C', () => {
+            this.toggleCoordinateDisplay();
+        });
     }
 
     emptyQueue(){ // Process the events that have been queued during initialization
@@ -1959,6 +2004,10 @@ export class Arena extends Phaser.Scene
         // Clean up any other resources or listeners
         events.removeAllListeners();
         events.off('settingsChanged', this.onSettingsChanged, this);
+
+        // Clean up coordinate texts
+        this.coordinateTexts.forEach(text => text.destroy());
+        this.coordinateTexts.clear();
     }
 
     // update (time, delta)
@@ -2309,6 +2358,26 @@ export class Arena extends Phaser.Scene
         // Store tile reference in the map
         this.tilesMap.set(serializeCoords(x, y), tileSprite);
         
+        // Create coordinate text that's initially hidden
+        const coordText = this.add.text(
+            hexX, 
+            hexY, 
+            `${x},${y}`,
+            { 
+                fontFamily: 'Arial', 
+                fontSize: '16px',
+                color: '#FFFFFF',
+                stroke: '#000000',
+                strokeThickness: 3
+            }
+        )
+        .setDepth(10)
+        .setOrigin(0.5, 0.5)
+        .setVisible(this.showCoordinates);
+        
+        // Store coordinate text reference in the map
+        this.coordinateTexts.set(serializeCoords(x, y), coordText);
+        
         return tileSprite;
     }
 
@@ -2366,4 +2435,16 @@ export class Arena extends Phaser.Scene
         return { gridX: estimatedCol, gridY: estimatedRow };
     }
     
+    // Add this method to toggle coordinate display
+    toggleCoordinateDisplay() {
+        this.showCoordinates = !this.showCoordinates;
+        this.updateCoordinateVisibility();
+    }
+
+    // Helper method to update visibility of all coordinate texts
+    private updateCoordinateVisibility() {
+        this.coordinateTexts.forEach(text => {
+            text.setVisible(this.showCoordinates);
+        });
+    }
 }

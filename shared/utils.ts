@@ -66,44 +66,41 @@ function roundCube(cube: { x: number, y: number, z: number }) {
 }
 
 export function lineOfSight(startX: number, startY: number, endX: number, endY: number, isFree: Function): boolean {
-    // Convert to cube coordinates
-    const startCube = offsetToCube(startX, startY);
-    const endCube = offsetToCube(endX, endY);
-    
-    // Calculate the cube distance
-    const distance = Math.max(
-        Math.abs(endCube.x - startCube.x),
-        Math.abs(endCube.y - startCube.y),
-        Math.abs(endCube.z - startCube.z)
-    );
-
-    // Calculate the number of steps to check
-    const steps = Math.max(1, distance);
-
-    // Check each point along the line
-    for (let i = 1; i < steps; i++) {
-        // Interpolate in cube coordinates
-        const t = i / steps;
-        const interpolated = cubeLinearInterpolation(startCube, endCube, t);
-        const rounded = roundCube(interpolated);
-        
-        // Convert back to offset coordinates
-        const { col, row } = cubeToOffset(rounded.x, rounded.y, rounded.z, startY);
-        
-        // Skip the starting point
-        if (col === startX && row === startY) continue;
-        
-        // Check if this position is free
-        if (!isFree(col, row)) {
+    // Same cell check
+    if (startX === endX && startY === endY) {
+        return true;
+    }
+    const cells = listCellsOnTheWay(startX, startY, endX, endY);
+    console.log(`[lineOfSight] cells on the way: ${JSON.stringify(Array.from(cells))}`);
+    for (const cell of cells) {
+        // Split the cell string into x and y coordinates
+        const [x, y] = cell.split(',').map(Number);
+        console.log(`[lineOfSight] cell ${cell} is free: ${isFree(x, y)}`);
+        if (!isFree(x, y)) {
             return false;
         }
     }
-
-    // If all positions are free, return true
     return true;
 }
 
 export function listCellsOnTheWay(startX: number, startY: number, endX: number, endY: number): Set<string> {
+    function offsetToCube(col: number, row: number): { x: number, y: number, z: number } {
+        // For even-r offset system (pointy-top hexes)
+        const x = col - Math.floor(row / 2);
+        const z = row;
+        const y = -x - z;
+        return { x, y, z };
+    }
+    
+    // Convert cube coordinates back to offset coordinates
+    function cubeToOffset(x, y, z, centerRow) {
+        const row = z;
+        const col = centerRow % 2 === 0 
+            ? x + Math.floor(z / 2)
+            : x + Math.floor((z + 1) / 2);
+        return { col, row };
+    }
+    
     // Convert to cube coordinates
     const startCube = offsetToCube(startX, startY);
     const endCube = offsetToCube(endX, endY);
@@ -119,7 +116,7 @@ export function listCellsOnTheWay(startX: number, startY: number, endX: number, 
     const steps = Math.max(1, distance);
     
     const cells = new Set<string>();
-    cells.add(serializeCoords(startX, startY));
+    // cells.add(serializeCoords(startX, startY));
     
     // Track each point along the line
     for (let i = 1; i <= steps; i++) {
@@ -129,7 +126,7 @@ export function listCellsOnTheWay(startX: number, startY: number, endX: number, 
         const rounded = roundCube(interpolated);
         
         // Convert back to offset coordinates
-        const { col, row } = cubeToOffset(rounded.x, rounded.y, rounded.z, startY);
+        const { col, row } = cubeToOffset(rounded.x, rounded.y, rounded.z, rounded.z);
         
         // Add this position to the list
         cells.add(serializeCoords(col, row));
