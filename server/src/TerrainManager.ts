@@ -2,6 +2,7 @@ import { Game } from "./Game";
 import { Spell } from "./Spell";
 import { TerrainUpdate } from '@legion/shared/interfaces';
 import { Terrain } from '@legion/shared/enums';
+import { getTilesInHexRadius } from '@legion/shared/utils';
 
 class TerrainIncompatibility {
     private incompatibilities: Map<Terrain, Terrain[]>;
@@ -46,16 +47,16 @@ export class TerrainManager {
 
     updateTerrainFromSpell(spell: Spell, x: number, y: number) {
         this.updates = [];
-        const leftOffset = spell.size % 2 === 0 ? (spell.size / 2) - 1 : Math.floor(spell.size / 2);
-        const rightOffset = Math.floor(spell.size / 2);
-        for (let i = x - leftOffset; i <= x + rightOffset; i++) {
-            for (let j = y - leftOffset; j <= y + rightOffset; j++) {
-                if (this.game.isSkip(i, j)) continue;
-
-                this.determineTerrain(spell.terrain, i, j);
-                this.postProcessing(i, j);
-            }
+        
+        const tilesInRadius = getTilesInHexRadius(x, y, spell.size - 1);
+        
+        for (const tile of tilesInRadius) {
+            if (this.game.isSkip(tile.x, tile.y)) continue;
+            
+            this.determineTerrain(spell.terrain, tile.x, tile.y);
+            this.postProcessing(tile.x, tile.y);
         }
+        
         return this.updates;
     }
 

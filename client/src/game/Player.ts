@@ -1,5 +1,4 @@
 import { HealthBar } from "./HealthBar";
-import { CircularProgress } from "./CircularProgress";
 import { Team } from './Team';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
@@ -10,7 +9,7 @@ import { Arena } from "./Arena";
 import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
 import { paralyzingStatuses } from '@legion/shared/utils';
 import { SpeechBubble } from "./SpeechBubble";
-import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE } from '@legion/shared/config';
+import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE, GRID_WIDTH } from '@legion/shared/config';
 import { hexDistance } from '@legion/shared/utils';
 
 enum GlowColors {
@@ -124,7 +123,7 @@ export class Player extends Phaser.GameObjects.Container {
         // this.baseSquare.fillStyle(isPlayer ? 0x0000ff : 0xff0000); // Must be called before strokeRect
         // this.baseSquare.fillRoundedRect(-30, 10, 60, 60, BASE_SQUARE_RADIUS);  
 
-        if (gridX < this.arena.gridWidth/2) this.sprite.flipX = true;
+        if (gridX < GRID_WIDTH/2) this.sprite.flipX = true;
 
         // @ts-ignore
         this.scene.sprites.push(this.sprite);
@@ -221,44 +220,9 @@ export class Player extends Phaser.GameObjects.Container {
           }
     }
 
-    // setBaseSquareColor(color: number) {
-    //     this.baseSquare.clear();
-    //     this.baseSquare.fillStyle(color, 0.6);
-    //     this.baseSquare.fillRoundedRect(-30, 10, 60, 60, BASE_SQUARE_RADIUS);
-    // }
-
-    // hideBaseSquare() {
-    //     this.baseSquare.setVisible(false);
-    // }
-
-    // showBaseSquare() {
-    //     this.baseSquare.setVisible(true);
-    //     this.baseSquare.setAlpha(BASE_SQUARE_ALPHA);
-    // }
-
-    // startBlinkingBaseSquare() {
-    //     this.setBaseSquareColor(this.goldenColor);
-    //     this.blinkTween = this.scene.tweens.add({
-    //         targets: this.baseSquare,
-    //         alpha: { from: 1, to: 0 },
-    //         duration: 150,
-    //         yoyo: true,
-    //         repeat: -1
-    //     });
-    // }
-
-    // stopBlinkingBaseSquare() {
-    //     if (this.blinkTween) {
-    //         this.blinkTween.stop();
-    //         this.blinkTween = null;
-    //     }
-    //     this.setBaseSquareColor(this.normalColor);
-    //     this.baseSquare.setAlpha(1);
-    // }
-
     makeAirEntrance() {
         // this.baseSquare.setVisible(false);
-        const {x: targetX, y: targetY} = this.arena.gridToPixelCoords(this.gridX, this.gridY);
+        const {x: targetX, y: targetY} = this.arena.hexGridToPixelCoords(this.gridX, this.gridY);
 
         // Create a trail effect
         const trailSprites: Phaser.GameObjects.Sprite[] = [];
@@ -682,7 +646,6 @@ export class Player extends Phaser.GameObjects.Container {
 
     cancelItem() {
         this.pendingItem = null;
-        this.arena.toggleTargetMode(false);
         this.arena.toggleItemMode(false);
         this.arena.refreshBox();
     }
@@ -713,7 +676,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
         
         this.pendingSpell = index;
-        this.arena.toggleTargetMode(true, spell.size);
+        this.arena.toggleTargetMode(true);
         this.arena.refreshBox();
         this.arena.relayEvent(`selectedSpell_${spell.id}`);
     }

@@ -3,14 +3,13 @@ import { Player } from './Player';
 import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
-import { CellsHighlight } from './CellsHighlight';
 import { getSpellById } from '@legion/shared/Spells';
-import { lineOfSight, serializeCoords, cubeToOffset, hexDistance, offsetToCube, listCellsOnTheWay } from '@legion/shared/utils';
+import { lineOfSight, serializeCoords, cubeToOffset, getTilesInHexRadius } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
-import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA } from '@legion/shared/config';
+import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT } from '@legion/shared/config';
 
 import killzoneImage from '@assets/killzone.png';
 import iceblockImage from '@assets/iceblock.png';
@@ -94,15 +93,11 @@ export class Arena extends Phaser.Scene
     gridMap: Map<string, Player> = new Map<string, Player>();
     teamsMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
-    cellsHighlight: CellsHighlight;
     localAnimationSprite: Phaser.GameObjects.Sprite;
-    tileSize = 60;
     tilesMap: Map<string, Phaser.GameObjects.Image> = new Map<string, Phaser.GameObjects.Image>();
     obstaclesMap: Map<string, boolean> = new Map<string, boolean>();
     terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
     terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
-    gridWidth = 18;
-    gridHeight = 9;
     server;
     animationScales;
     SFX;
@@ -154,6 +149,10 @@ export class Arena extends Phaser.Scene
         'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd',
         'poison', 'mute', 'thud', 'revive'
     ];
+
+    private isInTargetMode: boolean = false;
+    private targetModeSize: number = 1;
+    private targetModeListener: any;
 
     constructor() {
         super({ key: 'Arena' });
@@ -431,159 +430,19 @@ export class Arena extends Phaser.Scene
     }
 
     isSkip(x, y) {
-        if (x < 0 || y < 0 || x >= this.gridWidth || y >= this.gridHeight) return true;
+        if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) return true;
         const v = 3;
-        const skip = y < this.gridHeight/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (this.gridHeight - v));
+        const skip = y < GRID_HEIGHT/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (GRID_HEIGHT - v));
         // Skip drawing the corners to create an oval shape
-        return (x < skip || x >= this.gridWidth - skip);
-    }
-
-    floatTiles(duration) {
-        const startX = this.gridCorners.startX;
-        const startY = this.gridCorners.startY;
-        // Loop over each row
-        for (let y = 0; y < this.gridHeight; y++) {
-            // In each row, loop over each column
-            for (let x = 0; x < this.gridWidth; x++) {
-                
-                if (this.isSkip(x, y)) continue;
-                this.floatOneTile(x, y, startX, startY, duration);
-            }
-        }
-
-        // Tiles for the "paths" on both sides of the arena
-        // if (duration > 0) {
-        //     for (let x = -5; x < 1; x++) {
-        //         for (let y = 1; y < 8; y++) {
-        //             this.floatOneTile(x, y, startX, startY, duration, true);
-        //         }
-        //     }
-
-        //     for (let x = 19; x < 26; x++) {
-        //         for (let y = 1; y < 8; y++) {
-        //             this.floatOneTile(x, y, startX, startY, duration, true);
-        //         }
-        //     }
-        // }
-    }
-
-    floatOneTile(x, y, startX, startY, duration, yoyo = false) {
-        const tileWeights = {
-            1: 15,
-            2: 1,
-            3: 1,
-            4: 1,
-            5: 1,
-            6: 1,
-            7: 1,
-            8: 1,
-        };
-        const tiles = [];
-        for (const tile in tileWeights) {
-            for (let i = 0; i < tileWeights[tile]; i++) {
-                tiles.push(parseInt(tile));
-            }
-        }
-
-        const tile = tiles[Math.floor(Math.random() * tiles.length)];
-        const tileSprite = this.add.image(startX + x * this.tileSize, startY + y * this.tileSize + this.scale.gameSize.height, 'groundTiles', `tile_${tile}`)
-            .setDepth(1)
-            .setOrigin(0); 
-
-        // 50% chance of horizontal flip
-        if (Math.random() > 0.5) {
-            tileSprite.setFlipX(true);
-        }
-    
-        const delay = duration > 0 ? Math.random() * 500 : 0;
-        // Tween the tile to its intended position
-        this.tweens.add({
-            targets: tileSprite,
-            y: startY + y * this.tileSize,
-            duration,
-            ease: 'Power2', // easing function to make the movement smooth
-            delay,
-            yoyo, // Enable yoyo to make the tween reverse after completing
-            hold: yoyo ? 2000 : 0, // Holds the end position before reversing (optional, adjust as needed)
-            repeat: 0, // No repeats, just go there and back again
-            onComplete: () => {
-                // Add a random delay before starting the wobble effect to desynchronize tiles
-                this.time.addEvent({
-                    delay: Phaser.Math.Between(0, 500), // random delay
-                    callback: () => {
-                        // Wobble effect tween
-                        // @ts-ignore
-                        tileSprite.tween = this.tweens.add({
-                            targets: tileSprite,
-                            y: `+=2`, // change the tile position by 10 pixels
-                            duration: 1000, // duration of the tween in milliseconds
-                            ease: 'Sine.easeInOut', // easing function to make the movement smooth
-                            repeat: -1, // repeat the tween indefinitely
-                            yoyo: true, // reverse the tween at the end
-                        });
-                    },
-                    callbackScope: this,
-                    loop: false
-                });
-            }
-        });
-
-        tileSprite.setInteractive();
-
-        tileSprite.on('pointerover', function() {
-            if (this.isSkip(x, y)) {
-                return;
-            }
-            this.handleTileHover(x, y);
-        }, this);
-    
-        tileSprite.on('pointerout', function() {
-            if (this.isSkip(x, y)) return;
-            this.handleTileHover(x, y, false);
-        }, this);
-
-        // @ts-ignore
-        this.tilesMap.set(serializeCoords(x, y), tileSprite);
-
-        // After creating the tile, add coordinate text
-        const tileX = startX + x * this.tileSize;
-        const tileY = startY + y * this.tileSize;
-        
-        const coordText = this.add.text(
-            tileX + this.tileSize/2, 
-            tileY + this.tileSize/2, 
-            `${x},${y}`,
-            { 
-                fontFamily: 'Arial', 
-                fontSize: '16px',
-                color: '#FFFFFF',
-                stroke: '#000000',
-                strokeThickness: 3
-            }
-        )
-        .setDepth(10)
-        .setOrigin(0.5, 0.5)
-        .setVisible(this.showCoordinates);
-        
-        // Store coordinate text reference in the map
-        this.coordinateTexts.set(serializeCoords(x, y), coordText);
-    }
-
-    pointerToGrid(pointer) {
-        const {startX, startY} = this.getStartXY();
-        const pointerX = pointer.x + this.cameras.main.scrollX - startX;
-        const pointerY = pointer.y + this.cameras.main.scrollY - startY;
-        const gridX = Math.floor(pointerX / this.tileSize);
-        const gridY = Math.floor(pointerY / this.tileSize);
-        return {gridX, gridY};
+        return (x < skip || x >= GRID_WIDTH - skip);
     }
 
     getStartXY() {
-        const totalWidth = this.tileSize * this.gridWidth;
-        const totalHeight = this.tileSize * this.gridHeight;
+        const totalWidth = HEX_WIDTH * GRID_WIDTH;
+        const totalHeight = HEX_HEIGHT * GRID_HEIGHT;
         const gameWidth = this.scale.gameSize.width;
         const gameHeight = this.scale.gameSize.height;
-        const verticalOffset = 150;
+        const verticalOffset = 200;
         const startX = (gameWidth - totalWidth) / 2;
         const startY = (gameHeight - totalHeight) / 2 + verticalOffset;
         return {startX, startY};
@@ -596,9 +455,6 @@ export class Arena extends Phaser.Scene
             startX,
             startY,
         };
-
-        this.cellsHighlight = new CellsHighlight(this, this.gridWidth, this.gridHeight, this.tileSize, this.gridCorners).setDepth(1);
-        this.cellsHighlight.setDepth(2);
 
         this.input.on('pointerdown', function (pointer) {
             if (pointer.rightButtonDown()) {
@@ -613,16 +469,43 @@ export class Arena extends Phaser.Scene
         this.input.keyboard.on('keydown', this.handleKeyDown, this);
     }
 
-    toggleTargetMode(flag: boolean, size?: number) {
+    toggleTargetMode(flag: boolean) {
         if (flag) {
             const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
-            this.cellsHighlight.setTargetMode(size, true);
-            this.clearHighlight();
+            
+            if (spell.target == Target.AOE) {
+                this.isInTargetMode = true;
+                this.targetModeSize = spell?.size - 1|| 0;
+                
+                // Add pointer move listener to highlight tiles in radius as cursor moves
+                if (!this.targetModeListener) {
+                    this.targetModeListener = this.input.on('pointermove', (pointer) => {
+                        if (this.isInTargetMode) {
+                            this.updateTargetHighlight(pointer);
+                        }
+                    });
+                }
+                
+                // Clear any existing highlights
+                this.clearHighlight();
+            }
             events.emit('pendingSpell');
             this.brightenScene();
             this.darkenScene(spell?.targetHighlight);
         } else {
-            this.cellsHighlight.setNormalMode(true);
+            // Exit target mode
+            this.isInTargetMode = false;
+            this.targetModeSize = 1;
+            
+            // Clear all highlighted tiles
+            this.clearHighlight();
+            
+            // Remove the pointer move listener
+            if (this.targetModeListener) {
+                this.input.off('pointermove', this.targetModeListener);
+                this.targetModeListener = null;
+            }
+            
             events.emit('clearPendingSpell');
             this.brightenScene();
         }
@@ -631,12 +514,10 @@ export class Arena extends Phaser.Scene
     toggleItemMode(flag: boolean) {
         if (flag) {
             const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
-            this.cellsHighlight.setItemMode(true);
             this.clearHighlight();
             events.emit('pendingItem');
             this.darkenScene(item?.targetHighlight);
         } else {
-            this.cellsHighlight.setNormalMode(true);
             events.emit('clearPendingItem');
             this.brightenScene();
         }
@@ -838,7 +719,7 @@ export class Arena extends Phaser.Scene
         const otherTeam = sameTeam ? team : this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
 
-        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
         if (isKill) this.killCam(pixelX, pixelY);
         
         this.playSound('slash');
@@ -904,9 +785,8 @@ export class Arena extends Phaser.Scene
         const player = this.getPlayer(team, num);
         const spell = getSpellById(id);
         player?.castAnimation(flag, spell?.name);
-        // const { x: pixelX, y: pixelY } = this.gridToPixelCoords(player.gridX, player.gridY);
+        // const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(player.gridX, player.gridY);
         // this.spellCam(pixelX, pixelY, false);
-        // if (flag) this.displaySpellArea(location, spell.size, spell.castTime);
         if (player.isPlayer) {
             events.emit(`playerCastSpell`);
         }
@@ -933,7 +813,7 @@ export class Arena extends Phaser.Scene
     }
 
     createIceBlock(x: number, y: number) {
-        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
         const depth = this.yToZ(y) + DEPTH_OFFSET;
         const icesprite = this.add.sprite(pixelX, pixelY, 'iceblock')
             .setDepth(depth).setAlpha(0.9).setOrigin(0.5, 0.35).setInteractive();
@@ -971,7 +851,7 @@ export class Arena extends Phaser.Scene
     }    
 
     displayAttackImpact(gridX, gridY) {
-        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(gridX, gridY);
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(gridX, gridY);
         this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
             .setVisible(true)
             .setDepth(this.yToZ(gridY) + DEPTH_OFFSET)
@@ -989,14 +869,14 @@ export class Arena extends Phaser.Scene
             x += 0.5;
             y += 0.5;
         }
-        const {x: pixelX, y: pixelYInitial} = this.gridToPixelCoords(x, y);
+        const {x: pixelX, y: pixelYInitial} = this.hexGridToPixelCoords(x, y);
         let pixelY = pixelYInitial;
         if (spell.yoffset) pixelY += spell.yoffset;
 
         if (isKill) {
             this.killCam(pixelX, pixelY);
         } else {
-            this.spellCam(pixelX, pixelY);
+            // this.spellCam(pixelX, pixelY);
         }
         const scale = spell.scale > 1 ? spell.scale : LOCAL_ANIMATION_SCALE;
         console.log(`Playing ${spell.vfx}`)
@@ -1073,7 +953,7 @@ export class Arena extends Phaser.Scene
             return;
         }
 
-        const {x, y} = this.gridToPixelCoords(player.gridX, player.gridY);
+        const {x, y} = this.hexGridToPixelCoords(player.gridX, player.gridY);
         // this.panCameraWithOffset(x, y);
     }
 
@@ -1327,13 +1207,6 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    gridToPixelCoords(gridX, gridY) {
-        return {
-            x: gridX * this.tileSize + this.gridCorners.startX + 30,
-            y: gridY * this.tileSize + this.gridCorners.startY - 10,
-        };
-    }
-
     placeCharacter(character: PlayerNetworkData, team: Team, isReconnect = false) {
         // console.log(`[Arena:placeCharacter] Placing character ${character.name} with data ${JSON.stringify(character)}`);
         const isPlayer = team.id === this.playerTeamId;
@@ -1371,42 +1244,56 @@ export class Arena extends Phaser.Scene
     }
   
 
-    highlightCells(gridX, gridY, radius) {
-        // Clear any existing highlights
-        this.clearHighlight();
+    highlightTilesInRadius(gridX: number, gridY: number, radius: number, color: number = 0x00ffff, shouldHighlight?: (x: number, y: number) => boolean) {
+        // Use the shared utility function to get all tiles in radius
+        const tilesInRadius = getTilesInHexRadius(gridX, gridY, radius);
         
-        // For hexagonal grids, we need to use hex coordinates to calculate distances properly
-        for (let q = -radius; q <= radius; q++) {
-            // In a hex grid, the range of the second coordinate depends on the first
-            // This ensures we scan a proper hexagonal area
-            const r1 = Math.max(-radius, -q - radius);
-            const r2 = Math.min(radius, -q + radius);
+        // Process each tile
+        for (const tile of tilesInRadius) {
+            // Skip invalid cells
+            if (!this.isValidGridPosition(tile.x, tile.y)) continue;
             
-            for (let r = r1; r <= r2; r++) {
-                const {col, row} = cubeToOffset(q, r, -q-r, gridY);
-                
-                const targetX = gridX + col;
-                const targetY = gridY + row;
-                
-                // Skip invalid cells
-                if (!this.isValidGridPosition(targetX, targetY)) continue;
-                if (!this.isValidCell(gridX, gridY, targetX, targetY)) continue;
-                
-                // Get the tile sprite at this position
-                const tileSprite = this.tilesMap.get(serializeCoords(targetX, targetY));
-                if (tileSprite) {
-                    // Apply cyan tint to the tile
-                    tileSprite.setTint(0x00ffff); // Bright cyan color
-                }
+            // Apply additional validation if provided
+            if (shouldHighlight && !shouldHighlight(tile.x, tile.y)) continue;
+            
+            // Get the tile sprite at this position
+            const tileSprite = this.tilesMap.get(serializeCoords(tile.x, tile.y));
+            if (tileSprite) {
+                tileSprite.setTint(color);
             }
         }
     }
 
+    highlightCells(gridX, gridY, radius) {
+        // Clear any existing highlights
+        this.clearHighlight();
+        
+        // Use the common helper with custom validation for movement
+        this.highlightTilesInRadius(
+            gridX, 
+            gridY, 
+            radius, 
+            0x00ffff, // Cyan
+            (targetX, targetY) => this.isValidCell(gridX, gridY, targetX, targetY)
+        );
+    }
+
     clearHighlight() {
-        // Clear tint from all tiles
-        this.tilesMap.forEach(tileSprite => {
-            tileSprite.clearTint();
-        });
+        // If we're in target mode and the scene is darkened, we need special handling
+        if (this.isInTargetMode && this.isDarkened) {
+            // Calculate the darkening tint color
+            const tintColor = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
+            
+            // Re-apply the darkening tint to all tiles instead of clearing entirely
+            this.tilesMap.forEach(tileSprite => {
+                tileSprite.setTint(tintColor);
+            });
+        } else {
+            // Regular clear - remove all tinting
+            this.tilesMap.forEach(tileSprite => {
+                tileSprite.clearTint();
+            });
+        }
     }
 
     hasEnemyNextTo(gridX, gridY) {
@@ -1573,36 +1460,6 @@ export class Arena extends Phaser.Scene
         // Start the loader
         this.load.start();
     }
-    
-
-    displaySpellArea(location, size, duration) {
-        if (size % 2 === 0) {
-            location.x += 0.5;
-            location.y += 0.5;
-        }
-        const {x, y} = this.gridToPixelCoords(location.x, location.y);
-        const spellAreaImage = this.add.image(x + 2, y + 42, 'killzone')
-            .setDepth(1)
-            .setDisplaySize(size * this.tileSize, size * this.tileSize)
-            .setOrigin(0.5)
-            .setAlpha(0.5);
-            // .setTint(0xff0000);
-
-        const blinkDuration = 100;
-        const totalDuration = duration * 1000; // Convert to milliseconds
-        const repeatCount = Math.floor(totalDuration / blinkDuration / 2);
-    
-        this.tweens.add({
-            targets: spellAreaImage,
-            alpha: { from: 1, to: 0.5 }, // From fully visible to invisible
-            duration: blinkDuration,    // Duration for each blink
-            yoyo: true,                 // Go back and forth between visible and invisible
-            repeat: repeatCount - 1,    // Number of blinks (or -1 for infinite)
-            onComplete: () => {
-                spellAreaImage.destroy(); // Destroy the image at the end
-            }
-        });
-    }
 
     initializeGame(data: GameData): void {
         recordLoadingStep('finish');
@@ -1663,7 +1520,6 @@ export class Arena extends Phaser.Scene
         this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
 
         const tilesDelay = isReconnect ? 0 : 1000;
-        // this.floatTiles(tilesDelay);
 
         this.floatHexTiles(tilesDelay);
 
@@ -2060,14 +1916,14 @@ export class Arena extends Phaser.Scene
 
     pointToCharacter(playerTeam: boolean, characterIdx: number) {
         const {x: gridX, y: gridY} = this.getCharacterPosition(playerTeam, characterIdx);
-        const {x, y} = this.gridToPixelCoords(gridX, gridY);
+        const {x, y} = this.hexGridToPixelCoords(gridX, gridY);
         // const yOffset = this.tutorialSettings.showHealthBars ? 100 : 60;
         const yOffset = 60;
         this.showFloatingHand(x - 5, y - yOffset, 'down');
     }
 
     pointToTile(tileX: number, tileY: number) {
-        const {x, y} = this.gridToPixelCoords(tileX, tileY);
+        const {x, y} = this.hexGridToPixelCoords(tileX, tileY);
         this.showFloatingHand(x - 5, y, 'down');
     }
 
@@ -2207,7 +2063,7 @@ export class Arena extends Phaser.Scene
 
     // Add these new methods:
     private handleFireTerrain(x: number, y: number) {
-        const {x: pixelX, y: pixelY} = this.gridToPixelCoords(x, y);
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
         const sprite = this.add.sprite(pixelX, pixelY, '')
             .setDepth(this.yToZ(y)).setScale(2).setAlpha(0.9);
         this.addFlames();
@@ -2254,8 +2110,8 @@ export class Arena extends Phaser.Scene
 
     // Add helper methods:
     private isValidGridPosition(x: number, y: number): boolean {
-        return x >= 0 && x < this.gridWidth && 
-               y >= 0 && y < this.gridHeight && 
+        return x >= 0 && x < GRID_WIDTH && 
+               y >= 0 && y < GRID_HEIGHT && 
                !this.isSkip(x, y);
     }
 
@@ -2292,12 +2148,12 @@ export class Arena extends Phaser.Scene
         const offsetY = startY + HEX_HEIGHT / 2;
         
         // Loop over each row
-        for (let y = 0; y < this.gridHeight; y++) {
+        for (let y = 0; y < GRID_HEIGHT; y++) {
             // Calculate row offset (even rows are shifted right)
             const rowOffset = (y % 2 === 0) ? (HEX_WIDTH / 2) : 0;
             
             // In each row, loop over each column
-            for (let x = 0; x < this.gridWidth; x++) {
+            for (let x = 0; x < GRID_WIDTH; x++) {
                 if (this.isSkip(x, y)) continue;
                 
                 // Calculate hex position
@@ -2432,5 +2288,25 @@ export class Arena extends Phaser.Scene
         this.coordinateTexts.forEach(text => {
             text.setVisible(this.showCoordinates);
         });
+    }
+
+    // Update the target highlight method to use the common helper
+    updateTargetHighlight(pointer) {
+        // Clear previous highlights while preserving darkening
+        this.clearHighlight();
+        
+        // Convert pointer position to grid coordinates
+        const {gridX, gridY} = this.pointerToHexGrid(pointer);
+        
+        // Skip if outside valid grid area
+        if (this.isSkip(gridX, gridY)) return;
+        
+        // Apply highlight to tiles in radius
+        this.highlightTilesInRadius(
+            gridX, 
+            gridY, 
+            this.targetModeSize, 
+            0xff0000 // Red
+        );
     }
 }

@@ -195,3 +195,35 @@ export function hexDistance(x1: number, y1: number, x2: number, y2: number): num
         Math.abs(startCube.z - endCube.z)
     );
 }
+
+/**
+ * Gets all hex tiles within a specified radius of a center point
+ * 
+ * @param centerX Center point x coordinate
+ * @param centerY Center point y coordinate
+ * @param radius Radius in hex grid units
+ * @returns Array of coordinates for all tiles within the radius
+ */
+export function getTilesInHexRadius(centerX: number, centerY: number, radius: number): Array<{x: number, y: number}> {
+    const results: Array<{x: number, y: number}> = [];
+    
+    // For hexagonal grids, enumerate tiles using cube coordinates
+    for (let q = -radius; q <= radius; q++) {
+        // In a hex grid, the range of the second coordinate depends on the first
+        // This ensures we scan a proper hexagonal area
+        const r1 = Math.max(-radius, -q - radius);
+        const r2 = Math.min(radius, -q + radius);
+        
+        for (let r = r1; r <= r2; r++) {
+            const {col, row} = cubeToOffset(q, r, -q-r, centerY);
+            
+            // Add offset from center point
+            const targetX = centerX + col;
+            const targetY = centerY + row;
+            
+            results.push({ x: targetX, y: targetY });
+        }
+    }
+    
+    return results;
+}

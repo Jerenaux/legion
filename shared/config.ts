@@ -7,6 +7,8 @@ export const MAX_NICKNAME_LENGTH = 18;
 export const MAX_AVATAR_ID = 31;
 
 // Gameplay
+export const GRID_WIDTH = 16;
+export const GRID_HEIGHT = 11;
 export const NB_START_CHARACTERS = 3;
 export const MAX_CHARACTERS = 6;
 export const TURN_DURATION = 7;

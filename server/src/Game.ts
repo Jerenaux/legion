@@ -14,7 +14,7 @@ import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
     LEGION_CUT, TURN_DURATION, KILL_CAM_DURATION, MOVE_DELAY, ATTACK_DELAY, SPELL_DELAY,
-    ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY, KILLALL_BM, KILLALL_WM, KILLALL_W } from '@legion/shared/config';
+    ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY, KILLALL_BM, KILLALL_WM, KILLALL_W, GRID_WIDTH, GRID_HEIGHT } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 import { TurnSystem } from './TurnSystem';
 import { withRetry } from './utils';
@@ -54,8 +54,6 @@ export abstract class Game
     turnStart: number = 0;
     turnDuration: number = 0;
     turnNumber: number = 0;
-    gridWidth: number = 20;
-    gridHeight: number = 10;
 
     replayMessages: GameReplayMessage[] = [];
     gameOutcomes: Map<number, OutcomeData> = new Map();
@@ -1075,11 +1073,11 @@ export abstract class Game
     }
 
     isSkip(x: number, y: number) {
-        if (x < 0 || y < 0 || x >= this.gridWidth || y >= this.gridHeight) return true;
+        if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) return true;
         const v = 3;
-        const skip = y < this.gridHeight/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (this.gridHeight - v));
+        const skip = y < GRID_HEIGHT/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (GRID_HEIGHT - v));
         // Skip drawing the corners to create an oval shape
-        return (x < skip || x >= this.gridWidth - skip);
+        return (x < skip || x >= GRID_WIDTH - skip);
     }
 
     isValidCell(fromX: number, fromY: number, toX: number, toY: number) {
@@ -1119,8 +1117,8 @@ export abstract class Game
     scanGridForAoE(player: ServerPlayer, radius: number, minScore: number = 0) {
         let bestScore = -Infinity;
         let bestTile = {x: 0, y: 0};
-        for(let x = 0; x < this.gridWidth; x++) {
-            for(let y = 0; y < this.gridHeight; y++) {
+        for(let x = 0; x < GRID_WIDTH; x++) {
+            for(let y = 0; y < GRID_HEIGHT; y++) {
                 if (this.isSkip(x, y)) continue;
                 const otherTeam = this.getOtherTeam(player.team!.id);
                 const nbEnemies = this.nbPlayersInArea(otherTeam, x, y, radius);
