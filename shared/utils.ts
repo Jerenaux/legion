@@ -1,5 +1,6 @@
 import { DailyLootAllAPIData, DailyLootAllDBData, PlayerInventory } from "./interfaces";
 import { ChestColor, StatusEffect } from "./enums";
+import { GRID_HEIGHT, GRID_WIDTH } from "./config";
 
 function specialRound(num: number): number {
     if (num >= 0) {
@@ -226,4 +227,20 @@ export function getTilesInHexRadius(centerX: number, centerY: number, radius: nu
     }
     
     return results;
+}
+
+
+export function isSkip(x: number, y: number) {
+    if (
+        x < 0 || 
+        y < 0 || 
+        x >= GRID_WIDTH || 
+        y >= GRID_HEIGHT ||
+        y % 2 === 0 && x >= GRID_WIDTH - 1
+    ) return true;
+    return false;
+    // const v = 3;
+    // const skip = y < GRID_HEIGHT/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (GRID_HEIGHT - v));
+    // // Skip drawing the corners to create an oval shape
+    // return (x < skip || x >= GRID_WIDTH - skip);
 }

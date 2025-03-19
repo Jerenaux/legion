@@ -175,10 +175,8 @@ export class ServerPlayer {
     }
 
     isInArea(x: number, y: number, radius: number) {
-        // Radius is the not-divided-by-2 size of the spell/item
-        const leftOffset = radius % 2 === 0 ? (radius / 2) - 1 : Math.floor(radius / 2);
-        const rightOffset = Math.floor(radius / 2);
-        return this.x >= x - leftOffset && this.x <= x + rightOffset && this.y >= y - leftOffset && this.y <= y + rightOffset;
+        // Use the proper hex distance calculation
+        return hexDistance(this.x, this.y, x, y) <= radius;
     }
 
     isAlive() {

@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
 import { Spell } from './Spell';
-import { lineOfSight, listCellsOnTheWay } from '@legion/shared/utils';
+import { lineOfSight, listCellsOnTheWay, getTilesInHexRadius, isSkip } from '@legion/shared/utils';
 import { apiFetch } from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN,
     Stat, SpeedClass, Class } from '@legion/shared/enums';
@@ -167,21 +167,16 @@ export abstract class Game
 
     getPosition(index, flip) {
         const positions = [
-            {x: 2, y: 0},
-            // {x: 4, y: 3},
             {x: 4, y: 5},
-            {x: 2, y: 4},
             {x: 2, y: 2},
-            {x: 2, y: 6},
-            {x: 4, y: 1},
-            {x: 4, y: 7},
+            {x: 2, y: 8},
+            {x: 2, y: 5},
             {x: 0, y: 2},
-            {x: 0, y: 4},
-            {x: 0, y: 6},
+            {x: 0, y: 8},
         ]
         const position = positions[index];
         if (flip) {
-            position.x = 19 - position.x;
+            position.x = GRID_WIDTH - position.x - 1 - (position.y % 2 === 0 ? 1 : 0);
         }
         return position;
     }
@@ -235,7 +230,7 @@ export abstract class Game
             }
             const neighbors = this.listCellsAround(x, y);
             neighbors.forEach(neighbor => {
-                if (!visited.has(neighbor) && !this.isSkip(neighbor.x, neighbor.y)) {
+                if (!visited.has(neighbor) && !isSkip(neighbor.x, neighbor.y)) {
                     queue.push(neighbor);
                     visited.add(neighbor);
                 }
@@ -1072,36 +1067,25 @@ export abstract class Game
         }
     }
 
-    isSkip(x: number, y: number) {
-        if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) return true;
-        const v = 3;
-        const skip = y < GRID_HEIGHT/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (GRID_HEIGHT - v));
-        // Skip drawing the corners to create an oval shape
-        return (x < skip || x >= GRID_WIDTH - skip);
-    }
-
     isValidCell(fromX: number, fromY: number, toX: number, toY: number) {
-        return !this.isSkip(toX, toY)
+        return !isSkip(toX, toY)
         && this.isFree(toX, toY)
         && !this.hasObstacle(toX, toY)
         && lineOfSight(fromX, fromY, toX, toY, this.isFree.bind(this));
     }
 
     listCellsInRange(gridX: number, gridY: number, radius: number): Tile[] {
-        const tiles: Tile[] = [];
-        for (let y = -radius; y <= radius; y++) {
-            for (let x = -radius; x <= radius; x++) {
-                // Check if the cell is within the circle
-                if (x * x + y * y <= radius * radius) {
-                    if(!this.isValidCell(gridX, gridY, gridX + x, gridY + y)) continue;
-                    tiles.push({
-                        x: gridX + x,
-                        y: gridY + y,
-                    });
-                }
-            }
-        }
-        return tiles;
+        // Get all tiles within hex radius
+        const hexTiles = getTilesInHexRadius(gridX, gridY, radius);
+        
+        // Filter for valid cells only
+        return hexTiles
+            .filter(tile => !isSkip(tile.x, tile.y) && 
+                            this.isValidCell(gridX, gridY, tile.x, tile.y))
+            .map(tile => ({
+                x: tile.x,
+                y: tile.y
+            }));
     }
 
     nbPlayersInArea(team: Team, gridX: number, gridY: number, radius: number) {
@@ -1119,7 +1103,7 @@ export abstract class Game
         let bestTile = {x: 0, y: 0};
         for(let x = 0; x < GRID_WIDTH; x++) {
             for(let y = 0; y < GRID_HEIGHT; y++) {
-                if (this.isSkip(x, y)) continue;
+                if (isSkip(x, y)) continue;
                 const otherTeam = this.getOtherTeam(player.team!.id);
                 const nbEnemies = this.nbPlayersInArea(otherTeam, x, y, radius);
                 const nbAllies = this.nbPlayersInArea(player.team!, x, y, radius);

@@ -4,7 +4,7 @@ import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { getSpellById } from '@legion/shared/Spells';
-import { lineOfSight, serializeCoords, cubeToOffset, getTilesInHexRadius } from '@legion/shared/utils';
+import { lineOfSight, serializeCoords, cubeToOffset, getTilesInHexRadius, isSkip } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
@@ -429,14 +429,6 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    isSkip(x, y) {
-        if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) return true;
-        const v = 3;
-        const skip = y < GRID_HEIGHT/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (GRID_HEIGHT - v));
-        // Skip drawing the corners to create an oval shape
-        return (x < skip || x >= GRID_WIDTH - skip);
-    }
-
     getStartXY() {
         const totalWidth = HEX_WIDTH * GRID_WIDTH;
         const totalHeight = HEX_HEIGHT * GRID_HEIGHT;
@@ -462,7 +454,7 @@ export class Arena extends Phaser.Scene
                 return;
             }
             const {gridX, gridY} = this.pointerToHexGrid(pointer);
-            if (this.isSkip(gridX, gridY)) return;
+            if (isSkip(gridX, gridY)) return;
             this.handleTileClick(gridX, gridY);
         }, this);
 
@@ -2112,7 +2104,7 @@ export class Arena extends Phaser.Scene
     private isValidGridPosition(x: number, y: number): boolean {
         return x >= 0 && x < GRID_WIDTH && 
                y >= 0 && y < GRID_HEIGHT && 
-               !this.isSkip(x, y);
+               !isSkip(x, y);
     }
 
     // Update isValidCell:
@@ -2154,7 +2146,7 @@ export class Arena extends Phaser.Scene
             
             // In each row, loop over each column
             for (let x = 0; x < GRID_WIDTH; x++) {
-                if (this.isSkip(x, y)) continue;
+                if (isSkip(x, y)) continue;
                 
                 // Calculate hex position
                 const hexX = offsetX + x * HEX_HORIZ_SPACING + rowOffset;
@@ -2188,12 +2180,12 @@ export class Arena extends Phaser.Scene
         tileSprite.setInteractive();
         
         tileSprite.on('pointerover', function() {
-            if (this.isSkip(x, y)) return;
+            if (isSkip(x, y)) return;
             this.handleTileHover(x, y);
         }, this);
 
         tileSprite.on('pointerout', function() {
-            if (this.isSkip(x, y)) return;
+            if (isSkip(x, y)) return;
             this.handleTileHover(x, y, false);
         }, this);
 
@@ -2299,7 +2291,7 @@ export class Arena extends Phaser.Scene
         const {gridX, gridY} = this.pointerToHexGrid(pointer);
         
         // Skip if outside valid grid area
-        if (this.isSkip(gridX, gridY)) return;
+        if (isSkip(gridX, gridY)) return;
         
         // Apply highlight to tiles in radius
         this.highlightTilesInRadius(
