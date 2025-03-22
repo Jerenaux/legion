@@ -4,7 +4,7 @@ import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { getSpellById } from '@legion/shared/Spells';
-import { lineOfSight, serializeCoords, cubeToOffset, getTilesInHexRadius, isSkip, hexDistance } from '@legion/shared/utils';
+import { serializeCoords, hexDistance } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
@@ -40,7 +40,6 @@ import cooldownSFX from '@assets/sfx/cooldown.wav';
 import shatterSFX from '@assets/sfx/shatter.wav';
 import flamesSFX from '@assets/sfx/flame.wav';
 import crowdSFX from '@assets/sfx/crowd.wav';
-// import cheerSFX from '@assets/sfx/cheer.wav';
 import castSoundSFX from '@assets/sfx/spells/cast.wav';
 import fireballSFX from '@assets/sfx/spells/fire_3.wav';
 import thunderSoundSFX from '@assets/sfx/spells/thunder.wav';
@@ -58,29 +57,20 @@ import speechTail from '@assets/speech_tail.png';
 
 import arenaBg from '@assets/arenabg.png';
 
-// Static imports for tile atlas
 import groundTilesImage from '@assets/tiles2.png';
 import groundTilesAtlas from '@assets/tiles2.json';
 import { errorToast, recordLoadingStep, silentErrorToast } from '../components/utils';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseItem } from '@legion/shared/BaseItem';
-const LOCAL_ANIMATION_SCALE = 3;
-const DEPTH_OFFSET = 0.01;
 
-export const DARKENING_INTENSITY = 0.9; // 0 = completely dark, 1 = no darkening
-
-// Add to imports at the top
+import { HexGridManager } from './HexGridManager';
 import { TutorialManager } from './TutorialManager';
 
-// Add these constants at the class level
-const HEX_WIDTH = 87; // Width of hexagon
-const HEX_HEIGHT = 100; // Height of hexagon
-// Use formulas to automatically calculate spacing based on hexagon dimensions
-const PERSPECTIVE_SCALE = 0.8;
-const HEX_HORIZ_SPACING = HEX_WIDTH; 
-const HEX_VERT_SPACING = HEX_HEIGHT * 0.75 * PERSPECTIVE_SCALE; 
+const LOCAL_ANIMATION_SCALE = 3;
+const DEPTH_OFFSET = 0.01;
+export const DARKENING_INTENSITY = 0.9;
+const TINT_COLOR = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
 
-// Add in the existing imports section if not already present
 import hexTileImage from '@assets/tile.png';
 
 export class Arena extends Phaser.Scene
@@ -94,7 +84,6 @@ export class Arena extends Phaser.Scene
     teamsMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
     localAnimationSprite: Phaser.GameObjects.Sprite;
-    tilesMap: Map<string, Phaser.GameObjects.Image> = new Map<string, Phaser.GameObjects.Image>();
     obstaclesMap: Map<string, boolean> = new Map<string, boolean>();
     terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
     terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
@@ -127,12 +116,8 @@ export class Arena extends Phaser.Scene
     eventHandlers: Map<string, (data: any) => void>;
     isDarkened: boolean = false;
     tutorialManager: TutorialManager;
+    hexGridManager: HexGridManager;
 
-    // Add these new properties
-    private showCoordinates: boolean = false;
-    private coordinateTexts: Map<string, Phaser.GameObjects.Text> = new Map<string, Phaser.GameObjects.Text>();
-
-    // Add at class level:
     private static readonly GEN_CONFIGS = {
         [GEN.COMBAT_BEGINS]: { text1: 'combat', text2: 'begins' },
         [GEN.MULTI_KILL]: { text1: 'multi', text2: 'kill' },
@@ -143,7 +128,6 @@ export class Arena extends Phaser.Scene
         [GEN.TUTORIAL]: { text1: 'tutorial', text2: null },
     };
 
-    // Remove SOUND_CONFIG constant since all sounds have same config
     private static readonly SOUND_NAMES = [
         'click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball',
         'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd',
@@ -430,8 +414,8 @@ export class Arena extends Phaser.Scene
     }
 
     getStartXY() {
-        const totalWidth = HEX_WIDTH * GRID_WIDTH;
-        const totalHeight = HEX_HEIGHT * GRID_HEIGHT;
+        const totalWidth = HexGridManager.HEX_WIDTH * GRID_WIDTH;
+        const totalHeight = HexGridManager.HEX_HEIGHT * GRID_HEIGHT;
         const gameWidth = this.scale.gameSize.width;
         const gameHeight = this.scale.gameSize.height;
         const verticalOffset = 200;
@@ -469,7 +453,7 @@ export class Arena extends Phaser.Scene
                 }
                 
                 // Clear any existing highlights
-                this.clearHighlight();
+                this.hexGridManager.clearHighlight();
             }
             events.emit('pendingSpell');
             this.brightenScene();
@@ -480,7 +464,7 @@ export class Arena extends Phaser.Scene
             this.targetModeSize = 1;
             
             // Clear all highlighted tiles
-            this.clearHighlight();
+            this.hexGridManager.clearHighlight();
             
             // Remove the pointer move listener
             if (this.targetModeListener) {
@@ -496,7 +480,7 @@ export class Arena extends Phaser.Scene
     toggleItemMode(flag: boolean) {
         if (flag) {
             const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
-            this.clearHighlight();
+            this.hexGridManager.clearHighlight();
             events.emit('pendingItem');
             this.darkenScene(item?.targetHighlight);
         } else {
@@ -527,16 +511,12 @@ export class Arena extends Phaser.Scene
         return this.gridMap.has(serializeCoords(gridX, gridY));
     }
 
-    hasObstacle(gridX, gridY) {
-        return this.obstaclesMap.has(serializeCoords(gridX, gridY));
-    }
-
     handleTileClick(gridX, gridY) {
         if (this.inputLocked) {
             this.unlockInput();
             return;
         }
-        console.log(`Clicked tile at grid coordinates (${gridX}, ${gridY})`);
+        
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
@@ -552,31 +532,16 @@ export class Arena extends Phaser.Scene
                 return;
             }
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
-        } else if ((!player || !player.isAlive()) && this.hasObstacle(gridX, gridY)) {
+        } else if ((!player || !player.isAlive()) && this.hexGridManager.hasObstacle(gridX, gridY)) {
             this.sendObstacleAttack(gridX, gridY);
         } else if (this.selectedPlayer && !player && this.selectedPlayer.canMoveTo(gridX, gridY)) {
-            console.log(`Moving to (${gridX}, ${gridY})`);
             this.handleMove(gridX, gridY);
         } else if (player){ 
             player.onClick();
-        } else {
-            console.log(`Clicked on empty tile at (${gridX}, ${gridY})`);
         }
     }
 
     handleTileHover(gridX, gridY, hover = true) {
-        // Remove the console.log statement
-        const tile = this.tilesMap.get(serializeCoords(gridX, gridY));
-        if (tile) {
-            if (hover) {
-                // @ts-ignore
-                tile.previousTint = tile.tint;
-                tile.setTint(0x00ff00);
-            } else {
-                // @ts-ignore
-                tile.setTint(tile.previousTint);
-            }
-        }
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         if (player) {
             if (hover) {
@@ -605,17 +570,13 @@ export class Arena extends Phaser.Scene
     }
 
     handleMove(gridX, gridY) {
-        console.log(`[Arena:handleMove] canMoveTo: ${this.selectedPlayer.canMoveTo(gridX, gridY)}, isValidCell: ${this.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)}`);
-        if (!this.selectedPlayer.canMoveTo(gridX, gridY) || !this.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) {
+        if (!this.selectedPlayer.canMoveTo(gridX, gridY) || !this.hexGridManager.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY, this.isFree.bind(this))) {
             this.playSound('nope');
             return;
         }
-        if (!this.isFree(gridX, gridY)) {
-            return
-        };
         this.playSound('click');
         this.sendMove(gridX, gridY);
-        this.clearHighlight();
+        this.hexGridManager.clearHighlight();
     }
 
     refreshBox() {
@@ -665,7 +626,7 @@ export class Arena extends Phaser.Scene
             this.selectedPlayer.deselect();
             this.selectedPlayer.cancelSkill();
             this.selectedPlayer = null;
-            this.clearHighlight();
+            this.hexGridManager.clearHighlight();
         }
     }
 
@@ -679,7 +640,7 @@ export class Arena extends Phaser.Scene
 
     processMove({team, tile, num}) {
         if (this.gameEnded) return;
-        // console.log(`[Arena:processMove] Player ${num} moving to (${tile.x}, ${tile.y})`);
+        
         const player = this.getPlayer(team, num);
         if (!player) {
             return;
@@ -1190,7 +1151,6 @@ export class Arena extends Phaser.Scene
     }
 
     placeCharacter(character: PlayerNetworkData, team: Team, isReconnect = false) {
-        // console.log(`[Arena:placeCharacter] Placing character ${character.name} with data ${JSON.stringify(character)}`);
         const isPlayer = team.id === this.playerTeamId;
         const {x, y} = this.hexGridToPixelCoords(character.x, character.y);
 
@@ -1224,58 +1184,19 @@ export class Arena extends Phaser.Scene
     placeCharacters(data: PlayerNetworkData[], team: Team, isReconnect = false) {
         data.forEach(player => this.placeCharacter(player, team, isReconnect));
     }
-  
-
-    highlightTilesInRadius(gridX: number, gridY: number, radius: number, color: number = 0x00ffff, shouldHighlight?: (x: number, y: number) => boolean) {
-        // Use the shared utility function to get all tiles in radius
-        const tilesInRadius = getTilesInHexRadius(gridX, gridY, radius);
-        
-        // Process each tile
-        for (const tile of tilesInRadius) {
-            // Skip invalid cells
-            if (!this.isValidGridPosition(tile.x, tile.y)) continue;
-            
-            // Apply additional validation if provided
-            if (shouldHighlight && !shouldHighlight(tile.x, tile.y)) continue;
-            
-            // Get the tile sprite at this position
-            const tileSprite = this.tilesMap.get(serializeCoords(tile.x, tile.y));
-            if (tileSprite) {
-                tileSprite.setTint(color);
-            }
-        }
-    }
 
     highlightCells(gridX, gridY, radius) {
         // Clear any existing highlights
-        this.clearHighlight();
+        this.hexGridManager.clearHighlight();
         
         // Use the common helper with custom validation for movement
-        this.highlightTilesInRadius(
+        this.hexGridManager.highlightTilesInRadius(
             gridX, 
             gridY, 
             radius, 
             0x00ffff, // Cyan
-            (targetX, targetY) => this.isValidCell(gridX, gridY, targetX, targetY)
+            (targetX, targetY) => this.hexGridManager.isValidCell(gridX, gridY, targetX, targetY, this.isFree.bind(this))
         );
-    }
-
-    clearHighlight() {
-        // If we're in target mode and the scene is darkened, we need special handling
-        if (this.isInTargetMode && this.isDarkened) {
-            // Calculate the darkening tint color
-            const tintColor = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
-            
-            // Re-apply the darkening tint to all tiles instead of clearing entirely
-            this.tilesMap.forEach(tileSprite => {
-                tileSprite.setTint(tintColor);
-            });
-        } else {
-            // Regular clear - remove all tinting
-            this.tilesMap.forEach(tileSprite => {
-                tileSprite.clearTint();
-            });
-        }
     }
 
     hasEnemyNextTo(gridX, gridY) {
@@ -1285,7 +1206,6 @@ export class Arena extends Phaser.Scene
         });
     }
     
-    // PhaserCreate
     create()
     {
         // Add the background image first so it's behind everything else
@@ -1320,76 +1240,6 @@ export class Arena extends Phaser.Scene
             bg.setPosition(centerX, centerY);
         });
         
-        // Create sunbeam effects
-        const createSunbeams = () => {
-            // Create container at fixed screen position
-            const beamsContainer = this.add.container(
-                this.cameras.main.width / 2, 
-                this.cameras.main.height / 2
-            )
-            .setDepth(0.5)
-            .setScrollFactor(0); // Fix the beams in place relative to the camera
-            
-            // Choose a consistent angle for all beams (45 degrees diagonal)
-            const beamAngle = -45; // Negative for top-right to bottom-left direction
-            
-            // Create multiple beams with different scales and opacities
-            for (let i = 0; i < 8; i++) {
-                // Create a light beam - using a rectangle with gradient
-                const beam = this.add.graphics();
-                
-                // Only vary the size and position, not the angle
-                const width = Phaser.Math.Between(800, 1500);
-                const height = Phaser.Math.Between(100, 200);
-                
-                // Adjust the position to create an evenly distributed pattern
-                // This spreads the beams across the screen in the same direction
-                const offsetX = Phaser.Math.Between(-500, 500);
-                const offsetY = Phaser.Math.Between(-400, 400);
-                
-                // Create a gradient fill with warm colors
-                // Use golden/amber/orange colors instead of white
-                const color1 = 0xFFD700; // Golden yellow
-                const color2 = 0xFFA500; // Light orange
-                
-                beam.fillGradientStyle(
-                    color1, color1, color2, color2,
-                    0.07 + Math.random() * 0.15, 0.07 + Math.random() * 0.15, 0, 0
-                );
-                
-                // Draw the beam
-                beam.fillRect(-width/2, -height/2, width, height);
-                
-                // Position and rotate the beam
-                beam.setPosition(offsetX, offsetY);
-                beam.setRotation(Phaser.Math.DegToRad(beamAngle));
-                
-                // Add to container
-                beamsContainer.add(beam);
-                
-                // Animate the beam - slow pulsing
-                this.tweens.add({
-                    targets: beam,
-                    alpha: { from: beam.alpha, to: beam.alpha * 0.6 },
-                    duration: Phaser.Math.Between(8000, 15000),
-                    ease: 'Sine.easeInOut',
-                    yoyo: true,
-                    repeat: -1
-                });
-            }
-            
-            return beamsContainer;
-        };
-        
-        // Create the sunbeams
-        // const sunbeams = createSunbeams();
-        
-        // // Update sunbeams position on window resize
-        // this.scale.on('resize', (gameSize) => {
-        //     // Reposition the sunbeams container to center of screen
-        //     sunbeams.setPosition(gameSize.width / 2, gameSize.height / 2);
-        // });
-        
         this.loadBackgroundMusic();
         this.setUpArena();
         this.createAnims();
@@ -1415,12 +1265,15 @@ export class Arena extends Phaser.Scene
             mode: null,
         }
 
-        // console.log(`[Arena:create] Scene created`);
+        this.hexGridManager = new HexGridManager(this);
+
         this.sceneCreated = true;
         this.emptyQueue();
-
+        
+        this.setUpArena();
+        
         this.input.keyboard.on('keydown-D', () => {
-            this.toggleCoordinateDisplay();
+            this.hexGridManager.toggleCoordinateDisplay();
         });
     }
 
@@ -1503,7 +1356,11 @@ export class Arena extends Phaser.Scene
 
         const tilesDelay = isReconnect ? 0 : 1000;
 
-        this.floatHexTiles(tilesDelay);
+        this.hexGridManager.floatHexTiles(
+            tilesDelay,
+            this.handleTileClick.bind(this),
+            this.handleTileHover.bind(this)
+        );
 
         this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
@@ -1829,9 +1686,10 @@ export class Arena extends Phaser.Scene
         events.removeAllListeners();
         events.off('settingsChanged', this.onSettingsChanged, this);
 
-        // Clean up coordinate texts
-        this.coordinateTexts.forEach(text => text.destroy());
-        this.coordinateTexts.clear();
+        // Add cleanup for hexGridManager
+        if (this.hexGridManager) {
+            this.hexGridManager.destroy();
+        }
     }
 
     // update (time, delta)
@@ -1988,8 +1846,8 @@ export class Arena extends Phaser.Scene
         if (this.isDarkened) return;
         this.isDarkened = true;
 
-        const tintColor = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
-        this.getAllDarkenableObjects().forEach(obj => obj.setTint(tintColor));
+        this.getAllDarkenableObjects().forEach(obj => obj.setTint(TINT_COLOR));
+        this.hexGridManager.darkenAllTiles(TINT_COLOR);
 
         // Process players separately for health bars
         this.teamsMap.forEach(team => {
@@ -2011,6 +1869,7 @@ export class Arena extends Phaser.Scene
         this.isDarkened = false;
 
         this.getAllDarkenableObjects().forEach(obj => obj.clearTint());
+        this.hexGridManager.brightenAllTiles();
 
         // Brighten all bars
         this.teamsMap.forEach(team => {
@@ -2063,7 +1922,7 @@ export class Arena extends Phaser.Scene
         const icesprite = this.createIceBlock(x, y);
         this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
         this.terrainMap.set(serializeCoords(x, y), Terrain.ICE);
-        const tile = this.tilesMap.get(serializeCoords(x, y));
+        const tile = this.hexGridManager.getTile(x, y);
         // @ts-ignore
         if (tile.tween) tile.tween.stop();
         this.obstaclesMap.set(serializeCoords(x, y), true);
@@ -2080,7 +1939,6 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    // Add helper method:
     private createCharacterAnim(asset: string, key: string, frames: number[], config = {}) {
         this.anims.create({
             key: `${asset}_anim_${key}`,
@@ -2090,24 +1948,8 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    // Add helper methods:
-    private isValidGridPosition(x: number, y: number): boolean {
-        return x >= 0 && x < GRID_WIDTH && 
-               y >= 0 && y < GRID_HEIGHT && 
-               !isSkip(x, y);
-    }
-
-    // Update isValidCell:
-    isValidCell(fromX: number, fromY: number, toX: number, toY: number) {
-        return this.isValidGridPosition(toX, toY) 
-            && this.isFree(toX, toY)
-            && lineOfSight(fromX, fromY, toX, toY, this.isFree.bind(this));
-    }
-
-    // Add helper method:
     private getAllDarkenableObjects() {
         return [
-            ...Array.from(this.tilesMap.values()),
             ...this.sprites,
             ...Array.from(this.teamsMap.values()).flatMap(team => 
                 team.members.map(player => player.sprite)
@@ -2124,179 +1966,30 @@ export class Arena extends Phaser.Scene
         return this.isPlayerTeam(player.team.id);
     }
 
-    floatHexTiles(duration) {
-        const {startX, startY} = this.getStartXY();
-        const offsetX = startX + HEX_WIDTH / 2;
-        const offsetY = startY + HEX_HEIGHT / 2;
-        
-        // Loop over each row
-        for (let y = 0; y < GRID_HEIGHT; y++) {
-            // Calculate row offset (even rows are shifted right)
-            const rowOffset = (y % 2 === 0) ? (HEX_WIDTH / 2) : 0;
-            
-            // In each row, loop over each column
-            for (let x = 0; x < GRID_WIDTH; x++) {
-                if (isSkip(x, y)) continue;
-                
-                // Calculate hex position
-                const hexX = offsetX + x * HEX_HORIZ_SPACING + rowOffset;
-                const hexY = offsetY + y * HEX_VERT_SPACING;
-                
-                this.floatOneHexTile(x, y, hexX, hexY, duration);
-            }
-        }
-    }
-
-    floatOneHexTile(x, y, hexX, hexY, duration, yoyo = false) {
-        // Randomly select different hexagon tiles for variety
-        const tiles = ['hexTile']; // You can add more hex tile variations here
-        const tileKey = tiles[Math.floor(Math.random() * tiles.length)];
-        
-        // Create tile with initial position below the screen
-        const tileSprite = this.add.image(
-            hexX, 
-            hexY,
-            tileKey
-        )
-        .setDepth(1)
-        .setOrigin(0.5, 0.5)
-        .setAlpha(0.5)
-        .setScale(1, PERSPECTIVE_SCALE);
-
-        // @ts-ignore
-        tileSprite.previousTint = null;
-
-        // Make tile interactive for mouse events
-        tileSprite.setInteractive();
-        
-        tileSprite.on('pointerover', function() {
-            if (isSkip(x, y)) return;
-            this.handleTileHover(x, y);
-        }, this);
-
-        tileSprite.on('pointerout', function() {
-            if (isSkip(x, y)) return;
-            this.handleTileHover(x, y, false);
-        }, this);
-
-        tileSprite.on('pointerdown', function(pointer) {
-            if (pointer.rightButtonDown()) {
-                this.selectedPlayer?.cancelSkill();
-                return;
-            }
-            this.handleTileClick(x, y);
-        }, this);
-
-        // Store tile reference in the map
-        this.tilesMap.set(serializeCoords(x, y), tileSprite);
-        
-        // Create coordinate text that's initially hidden
-        const coordText = this.add.text(
-            hexX, 
-            hexY, 
-            `${x},${y}`,
-            { 
-                fontFamily: 'Arial', 
-                fontSize: '16px',
-                color: '#FFFFFF',
-                stroke: '#000000',
-                strokeThickness: 3
-            }
-        )
-        .setDepth(10)
-        .setOrigin(0.5, 0.5)
-        .setVisible(this.showCoordinates);
-        
-        // Store coordinate text reference in the map
-        this.coordinateTexts.set(serializeCoords(x, y), coordText);
-        
-        return tileSprite;
-    }
-
     hexGridToPixelCoords(gridX, gridY) {
-        // Specifically called to compute PLAYER positions
-        const centerTileYOffset = 40;
-        const {startX, startY} = this.getStartXY();
-        const offsetX = startX + HEX_WIDTH / 2;
-        const offsetY = startY + HEX_HEIGHT / 2;
-        
-        // Calculate row offset (even rows are shifted right)
-        const rowOffset = (gridY % 2 === 0) ? HEX_WIDTH / 2 : 0;
-        
-        return {
-            x: offsetX + gridX * HEX_HORIZ_SPACING + rowOffset,
-            y: offsetY + gridY * HEX_VERT_SPACING - centerTileYOffset
-        };
+        return this.hexGridManager.hexGridToPixelCoords(gridX, gridY);
     }
 
-    pointerToHexGrid(pointer) {
-        const {startX, startY} = this.getStartXY();
-        const offsetX = startX + HEX_WIDTH / 2;
-        const offsetY = 0; 
-        
-        const pointerX = pointer.x + this.cameras.main.scrollX - startX;
-        const pointerY = pointer.y + this.cameras.main.scrollY - startY;
-        
-        // Estimate the row first based on Y position
-        const estimatedRow = Math.floor((pointerY - offsetY) / HEX_VERT_SPACING);
-        
-        // Determine the column offset for this row
-        const rowOffset = (estimatedRow % 2 === 0) ? HEX_WIDTH / 2 : 0;
-        
-        // Estimate the column based on X position and row offset
-        const estimatedCol = Math.floor((pointerX - rowOffset) / HEX_HORIZ_SPACING);
-        
-        // Find the center of the estimated hex
-        const hexCenterX = offsetX + estimatedCol * HEX_HORIZ_SPACING + rowOffset;
-        const hexCenterY = offsetY + estimatedRow * HEX_VERT_SPACING;
-        
-        // Final check - is the pointer within the hexagon?
-        // This uses a simplified distance check - for a proper hex check, 
-        // you would need to check if the point is inside the hexagon boundaries
-        const dx = pointerX - hexCenterX;
-        const dy = pointerY - hexCenterY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // If the distance is too large, adjust to the nearest valid hex
-        if (distance > HEX_WIDTH / 2) {
-            // Find closest hex (simplified)
-            // For a more accurate approach, you'd need to check surrounding hexes
-            return { gridX: estimatedCol, gridY: estimatedRow };
-        }
-        
-        return { gridX: estimatedCol, gridY: estimatedRow };
-    }
-    
-    // Add this method to toggle coordinate display
-    toggleCoordinateDisplay() {
-        this.showCoordinates = !this.showCoordinates;
-        this.updateCoordinateVisibility();
-    }
-
-    // Helper method to update visibility of all coordinate texts
-    private updateCoordinateVisibility() {
-        this.coordinateTexts.forEach(text => {
-            text.setVisible(this.showCoordinates);
-        });
-    }
-
-    // Update the target highlight method to use the common helper
     updateTargetHighlight(pointer) {
-        // Clear previous highlights while preserving darkening
-        this.clearHighlight();
+        this.hexGridManager.clearHighlight();
         
-        // Convert pointer position to grid coordinates
-        const {gridX, gridY} = this.pointerToHexGrid(pointer);
+        const {gridX, gridY} = this.hexGridManager.pointerToHexGrid(pointer);
         
-        // Skip if outside valid grid area
-        if (isSkip(gridX, gridY)) return;
-        
-        // Apply highlight to tiles in radius
-        this.highlightTilesInRadius(
-            gridX, 
-            gridY, 
-            this.targetModeSize, 
-            0xff0000 // Red
-        );
+        if (this.hexGridManager.isValidGridPosition(gridX, gridY)) {
+            this.hexGridManager.highlightTilesInRadius(
+                gridX, 
+                gridY, 
+                this.targetModeSize, 
+                0xff0000
+            );
+        }
+    }
+
+    clearHighlight() {
+        this.hexGridManager.clearHighlight();
+    }
+
+    hasObstacle(gridX: number, gridY: number) {
+        return this.hexGridManager.hasObstacle(gridX, gridY);
     }
 }
