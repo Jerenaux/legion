@@ -63,7 +63,7 @@ import { errorToast, recordLoadingStep, silentErrorToast } from '../components/u
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseItem } from '@legion/shared/BaseItem';
 
-import { HexGridManager } from './HexGridManager';
+import { HexGridManager, HighlightType } from './HexGridManager';
 import { TutorialManager } from './TutorialManager';
 
 const LOCAL_ANIMATION_SCALE = 3;
@@ -454,10 +454,19 @@ export class Arena extends Phaser.Scene
                 
                 // Clear any existing highlights
                 this.hexGridManager.clearHighlight();
+                
+                // Highlight target range
+                if (this.selectedPlayer) {
+                    this.hexGridManager.highlightTargetRange(
+                        this.selectedPlayer.gridX,
+                        this.selectedPlayer.gridY,
+                        this.selectedPlayer.distance
+                    );
+                }
             }
             events.emit('pendingSpell');
-            this.brightenScene();
-            this.darkenScene(spell?.targetHighlight);
+            // this.brightenScene();
+            // this.darkenScene(spell?.targetHighlight);
         } else {
             // Exit target mode
             this.isInTargetMode = false;
@@ -481,11 +490,21 @@ export class Arena extends Phaser.Scene
         if (flag) {
             const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
             this.hexGridManager.clearHighlight();
+            
+            // Highlight target range if there's a selected player
+            if (this.selectedPlayer) {
+                this.hexGridManager.highlightTargetRange(
+                    this.selectedPlayer.gridX,
+                    this.selectedPlayer.gridY,
+                    this.selectedPlayer.distance
+                );
+            }
+            
             events.emit('pendingItem');
-            this.darkenScene(item?.targetHighlight);
+            // this.darkenScene(item?.targetHighlight);
         } else {
             events.emit('clearPendingItem');
-            this.brightenScene();
+            // this.brightenScene();
         }
     }
 
@@ -1275,6 +1294,24 @@ export class Arena extends Phaser.Scene
         this.input.keyboard.on('keydown-D', () => {
             this.hexGridManager.toggleCoordinateDisplay();
         });
+
+        // Add character glow effect listener
+        window.addEventListener('characterInSpellRadius', (e: CustomEvent) => {
+            const { x, y, isAlly } = e.detail;
+            const player = this.gridMap.get(serializeCoords(x, y));
+            if (player) {
+                player.sprite.setTint(isAlly ? 0x00ff00 : 0xff0000);
+                player.sprite.postFX.addGlow(isAlly ? 0x00ff00 : 0xff0000, 4, 0, false, 0.5);
+                
+                // Reset glow after a short delay
+                this.time.delayedCall(100, () => {
+                    if (player.sprite) {
+                        player.sprite.clearTint();
+                        player.sprite.postFX.clear();
+                    }
+                });
+            }
+        });
     }
 
     emptyQueue(){ // Process the events that have been queued during initialization
@@ -1353,7 +1390,7 @@ export class Arena extends Phaser.Scene
     displayGame(data: GameData, isReconnect: boolean) {
         this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
-
+        
         const tilesDelay = isReconnect ? 0 : 1000;
 
         this.hexGridManager.floatHexTiles(
@@ -1361,6 +1398,9 @@ export class Arena extends Phaser.Scene
             this.handleTileClick.bind(this),
             this.handleTileHover.bind(this)
         );
+        
+        // Move this line AFTER floatHexTiles so the tiles exist
+        this.hexGridManager.setCharacterTiles(this.gridMap);
 
         this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
@@ -1971,22 +2011,44 @@ export class Arena extends Phaser.Scene
     }
 
     updateTargetHighlight(pointer) {
-        this.hexGridManager.clearHighlight();
+        if (!this.isInTargetMode || !this.selectedPlayer) return;
         
         const {gridX, gridY} = this.hexGridManager.pointerToHexGrid(pointer);
         
-        if (this.hexGridManager.isValidGridPosition(gridX, gridY)) {
-            this.hexGridManager.highlightTilesInRadius(
+        // Calculate distance from player to highlight center
+        const playerX = this.selectedPlayer.gridX;
+        const playerY = this.selectedPlayer.gridY;
+        const distance = hexDistance(playerX, playerY, gridX, gridY);
+        
+        // Check if the target is within range (player's distance + 2)
+        if (this.hexGridManager.isValidGridPosition(gridX, gridY) && distance <= this.selectedPlayer.distance + 2) {
+            // Clear previous spell highlights but keep target range
+            this.hexGridManager.clearHighlightOfType(HighlightType.SPELL);
+            
+            // Highlight spell area with direct gridMap reference
+            this.hexGridManager.highlightSpellRadius(
                 gridX, 
                 gridY, 
-                this.targetModeSize, 
-                0xff0000
+                this.targetModeSize,
+                this.gridMap,
+                player => this.isAlly(player)
             );
         }
     }
 
-    clearHighlight() {
-        this.hexGridManager.clearHighlight();
+    clearSpellHighlights() {
+        // Restore the target range highlights
+        if (this.selectedPlayer) {
+            // First clear all highlights
+            this.hexGridManager.clearHighlight();
+            
+            // Then reapply the target range
+            this.hexGridManager.highlightTargetRange(
+                this.selectedPlayer.gridX,
+                this.selectedPlayer.gridY,
+                this.selectedPlayer.distance
+            );
+        }
     }
 
     hasObstacle(gridX: number, gridY: number) {

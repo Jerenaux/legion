@@ -481,7 +481,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     hideMovementRange() {
-        this.arena.clearHighlight();
+        this.arena.hexGridManager.clearHighlight();
     }
 
     canMoveTo(x: number, y: number) {
@@ -692,12 +692,23 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     walkTo(gridX: number, gridY: number, duration = 300, callback?: () => void) {
+        // Store old position
         const oldGridX = this.gridX;
+        const oldGridY = this.gridY;
+        
+        // Update grid position - this changes the character's logical position
         this.updatePos(gridX, gridY);
+        
+        // Start walking animation
         this.playAnim('walk');
 
+        // Get the pixel coordinates for the movement
         const {x, y} = this.arena.hexGridToPixelCoords(gridX, gridY);
-        // console.log(`[Player:walkTo] walking to (${x}, ${y})`);
+        
+        // Update grid tile at old position (remove character from old tile)
+        this.arena.hexGridManager.updateTileOnCharacterExit(oldGridX, oldGridY);
+        
+        // Animate the character to the new position
         this.scene.tweens.add({
             targets: this,
             props: {
@@ -706,6 +717,10 @@ export class Player extends Phaser.GameObjects.Container {
             },
             duration,
             onComplete: () => {
+                // Update grid tile at new position (add character to new tile)
+                this.arena.hexGridManager.updateTileOnCharacterEnter(gridX, gridY, this.isPlayer);
+                
+                // Execute callback or return to idle animation
                 if (callback) {
                     callback();
                 } else {
@@ -714,6 +729,7 @@ export class Player extends Phaser.GameObjects.Container {
             },
         });
 
+        // Flip sprite if moving horizontally
         if (oldGridX != this.gridX) this.sprite.flipX = this.gridX > oldGridX;
     }
 
