@@ -6,11 +6,11 @@ import { Player } from './Player';
 export enum TileColors {
     NORMAL = 0xffffff,
     HOVER = 0x00ff00,
-    PLAYER_TEAM = 0x000080, // Dark blue
-    ENEMY_TEAM = 0x800000,  // Dark red
+    PLAYER_TEAM = 0x0000ff, // Dark blue
+    ENEMY_TEAM = 0xff0000,  // Dark red
     MOVEMENT_RANGE = 0x00ffff, // Cyan
     TARGET_RANGE = 0xffaaaa, // Light red
-    SPELL_RADIUS = 0xff0000, // Bright red
+    SPELL_RADIUS = 0xff5555, // Bright red
     TARGET_ALLY = 0x00cc00,  // Green for allies in target range
     TARGET_ENEMY = 0xff3333, // Red for enemies in target range
     DARKENED = 0x666666     // Darkened tiles
@@ -44,11 +44,12 @@ export class HexGridManager {
         baseColor: number, 
         highlights: Map<HighlightType, number> 
     }> = new Map();
+    private isInTargetMode: boolean = false;
     
     // Grid dimensions and position
     private gridCorners: { startX: number, startY: number };
-
     private holePositions: Set<string> = new Set<string>();
+    private highlightedCharacters: Set<string> = new Set<string>(); // Track highlighted characters
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -249,8 +250,7 @@ export class HexGridManager {
     // Now update the onTileHover method to use this system
     private onTileHover(gridX: number, gridY: number, hover: boolean) {
         // Check if tile in target mode
-        const isInTargetMode = this.tileStates.get(serializeCoords(gridX, gridY))?.highlights.has(HighlightType.TARGET);
-        if (isInTargetMode) return;
+        if (this.isInTargetMode) return;
         if (hover) {
             this.applyHighlight(gridX, gridY, TileColors.HOVER, HighlightType.HOVER);
         } else {
@@ -364,12 +364,13 @@ export class HexGridManager {
 
     // Highlight target range (current position + 2)
     highlightTargetRange(gridX: number, gridY: number, radius: number) {
-        this.highlightTilesInRadius(gridX, gridY, radius + 2, TileColors.TARGET_RANGE);
+        this.highlightTilesInRadius(gridX, gridY, radius + 2, TileColors.TARGET_RANGE, undefined, HighlightType.TARGET);
     }
 
     // Highlight spell effects and add glow to characters
     highlightSpellRadius(gridX: number, gridY: number, radius: number, gridMap: Map<string, Player>, isAllyCallback: (player: Player) => boolean) {
         const tilesInRadius = this.getTilesInRadius(gridX, gridY, radius);
+        const charactersInRadius = new Set<string>();
         
         for (const tile of tilesInRadius) {
             if (!this.isValidGridPosition(tile.x, tile.y)) continue;
@@ -378,25 +379,52 @@ export class HexGridManager {
             const tileSprite = this.tilesMap.get(key);
             
             if (tileSprite) {
-                // Apply spell radius color using the highlight system
-                this.applyHighlight(tile.x, tile.y, TileColors.SPELL_RADIUS, HighlightType.SPELL);
+                // Only apply spell radius color if the tile is in target range
+                const state = this.tileStates.get(key);
+                const isInTargetRange = state?.highlights.has(HighlightType.TARGET);
                 
-                // If there's a character on this tile, make it glow
-                const player = gridMap.get(key);
-                if (player) {
-                    const isAlly = isAllyCallback(player);
-                    // Signal Arena to make the character glow
-                    const event = new CustomEvent('characterInSpellRadius', {
-                        detail: {
-                            x: tile.x,
-                            y: tile.y,
-                            isAlly
-                        }
-                    });
-                    window.dispatchEvent(event);
+                if (isInTargetRange) {
+                    // Apply spell radius color using the highlight system
+                    this.applyHighlight(tile.x, tile.y, TileColors.SPELL_RADIUS, HighlightType.SPELL);
+                    
+                    // If there's a character on this tile, make it glow
+                    const player = gridMap.get(key);
+                    if (player) {
+                        const isAlly = isAllyCallback(player);
+                        // Signal Arena to make the character glow
+                        const event = new CustomEvent('characterInSpellRadius', {
+                            detail: {
+                                x: tile.x,
+                                y: tile.y,
+                                isAlly
+                            }
+                        });
+                        window.dispatchEvent(event);
+                        
+                        // Add to current radius set
+                        charactersInRadius.add(key);
+                    }
                 }
             }
         }
+        
+        // Unhighlight characters that are no longer in the radius
+        this.highlightedCharacters.forEach(charKey => {
+            if (!charactersInRadius.has(charKey)) {
+                // Character is no longer in spell radius
+                const coords = charKey.split(',').map(Number);
+                const event = new CustomEvent('characterOutOfSpellRadius', {
+                    detail: {
+                        x: coords[0],
+                        y: coords[1]
+                    }
+                });
+                window.dispatchEvent(event);
+            }
+        });
+        
+        // Update our set of highlighted characters
+        this.highlightedCharacters = charactersInRadius;
     }
 
     // Clear all highlighted tiles of a specific type
@@ -569,5 +597,30 @@ export class HexGridManager {
     
     isHole(x: number, y: number): boolean {
         return this.holePositions.has(serializeCoords(x, y));
+    }
+
+    // Update toggleTargetMode to handle character highlights
+    toggleTargetMode(flag: boolean) {
+        this.isInTargetMode = flag;
+        
+        // Clear character highlights when leaving target mode
+        if (!flag) {
+            this.clearHighlightedCharacters();
+        }
+    }
+
+    // Clear highlighted characters when leaving target mode
+    clearHighlightedCharacters() {
+        this.highlightedCharacters.forEach(charKey => {
+            const coords = charKey.split(',').map(Number);
+            const event = new CustomEvent('characterOutOfSpellRadius', {
+                detail: {
+                    x: coords[0],
+                    y: coords[1]
+                }
+            });
+            window.dispatchEvent(event);
+        });
+        this.highlightedCharacters.clear();
     }
 } 

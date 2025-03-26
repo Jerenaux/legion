@@ -70,6 +70,8 @@ const LOCAL_ANIMATION_SCALE = 3;
 const DEPTH_OFFSET = 0.01;
 export const DARKENING_INTENSITY = 0.9;
 const TINT_COLOR = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
+const AIR_ENTRANCE_DELAY = 750;
+const AIR_ENTRANCE_DELAY_VARIANCE = 200;
 
 import hexTileImage from '@assets/tile.png';
 
@@ -432,6 +434,14 @@ export class Arena extends Phaser.Scene
             startY,
         };
 
+       this.input.on('pointerdown', function (pointer) {
+           if (pointer.rightButtonDown()) {
+               this.selectedPlayer?.cancelSkill();
+               this.selectedPlayer?.displayMovementRange();
+               return;
+           }
+       }, this);
+
         this.input.keyboard.on('keydown', this.handleKeyDown, this);
     }
 
@@ -442,6 +452,7 @@ export class Arena extends Phaser.Scene
             if (spell.target == Target.AOE) {
                 this.isInTargetMode = true;
                 this.targetModeSize = spell?.size - 1|| 0;
+                this.hexGridManager.toggleTargetMode(true);
                 
                 // Add pointer move listener to highlight tiles in radius as cursor moves
                 if (!this.targetModeListener) {
@@ -471,6 +482,7 @@ export class Arena extends Phaser.Scene
             // Exit target mode
             this.isInTargetMode = false;
             this.targetModeSize = 1;
+            this.hexGridManager.toggleTargetMode(false);
             
             // Clear all highlighted tiles
             this.hexGridManager.clearHighlight();
@@ -1192,8 +1204,8 @@ export class Arena extends Phaser.Scene
         if (!isReconnect) {
             player.y -= 1000;
             // Stagger the entrance of each player with a random offset between -200 and +200 ms
-            const randomOffset = Math.floor(Math.random() * 401) - 200; // Random number between -200 and 200
-            const entranceDelay = 750 + randomOffset;
+            const randomOffset = Math.floor(Math.random() * (AIR_ENTRANCE_DELAY_VARIANCE * 2 + 1)) - AIR_ENTRANCE_DELAY_VARIANCE; // Random number between -AIR_ENTRANCE_DELAY_VARIANCE and AIR_ENTRANCE_DELAY_VARIANCE
+            const entranceDelay = AIR_ENTRANCE_DELAY + randomOffset;
             this.time.delayedCall(entranceDelay, player.makeAirEntrance, [], player);
         }
 
@@ -1302,16 +1314,16 @@ export class Arena extends Phaser.Scene
             const { x, y, isAlly } = e.detail;
             const player = this.gridMap.get(serializeCoords(x, y));
             if (player) {
-                player.sprite.setTint(isAlly ? 0x00ff00 : 0xff0000);
-                player.sprite.postFX.addGlow(isAlly ? 0x00ff00 : 0xff0000, 4, 0, false, 0.5);
-                
-                // Reset glow after a short delay
-                this.time.delayedCall(100, () => {
-                    if (player.sprite) {
-                        player.sprite.clearTint();
-                        player.sprite.postFX.clear();
-                    }
-                });
+                player.onPointerOver();
+            }
+        });
+
+        // Add character un-highlight effect listener
+        window.addEventListener('characterOutOfSpellRadius', (e: CustomEvent) => {
+            const { x, y } = e.detail;
+            const player = this.gridMap.get(serializeCoords(x, y));
+            if (player) {
+                player.onPointerOut();
             }
         });
     }
@@ -1406,8 +1418,10 @@ export class Arena extends Phaser.Scene
             this.handleTileHover.bind(this)
         );
         
-        // Move this line AFTER floatHexTiles so the tiles exist
-        this.hexGridManager.setCharacterTiles(this.gridMap);
+        setTimeout(() => {
+            // Move this AFTER floatHexTiles so the tiles exist
+            this.hexGridManager.setCharacterTiles(this.gridMap);
+        }, isReconnect ? 0 : AIR_ENTRANCE_DELAY + AIR_ENTRANCE_DELAY_VARIANCE * 2);
 
         this.processTerrain(data.terrain); // Put after floatTiles() to allow for tilesMap to be intialized
 
