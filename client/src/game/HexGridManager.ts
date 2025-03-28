@@ -1,5 +1,5 @@
 import { lineOfSight, serializeCoords, isSkip, getTilesInHexRadius } from '@legion/shared/utils';
-import { GRID_WIDTH, GRID_HEIGHT } from '@legion/shared/config';
+import { GRID_WIDTH, GRID_HEIGHT, SPELL_RANGE } from '@legion/shared/config';
 import { Player } from './Player';
 
 // Add tile color constants
@@ -10,7 +10,9 @@ export enum TileColors {
     ENEMY_TEAM = 0xff0000,  // Dark red
     MOVEMENT_RANGE = 0x00ffff, // Cyan
     TARGET_RANGE = 0xffaaaa, // Light red
+    TARGET_RANGE_ALLY = 0xaaffaa, // Light green for ally target range
     SPELL_RADIUS = 0xff5555, // Bright red
+    SPELL_RADIUS_ALLY = 0x55ff55, // Bright green for ally-targeting spell radius
     TARGET_ALLY = 0x00cc00,  // Green for allies in target range
     TARGET_ENEMY = 0xff3333, // Red for enemies in target range
     DARKENED = 0x666666     // Darkened tiles
@@ -362,15 +364,19 @@ export class HexGridManager {
         }
     }
 
-    // Highlight target range (current position + 2)
-    highlightTargetRange(gridX: number, gridY: number, radius: number) {
-        this.highlightTilesInRadius(gridX, gridY, radius + 2, TileColors.TARGET_RANGE, undefined, HighlightType.TARGET);
+    // Highlight target range (current position + SPELL_RANGE)
+    highlightTargetRange(gridX: number, gridY: number, radius: number, isAllyTargetingSpell: boolean = false) {
+        const rangeColor = isAllyTargetingSpell ? TileColors.TARGET_RANGE_ALLY : TileColors.TARGET_RANGE;
+        this.highlightTilesInRadius(gridX, gridY, radius + SPELL_RANGE, rangeColor, undefined, HighlightType.TARGET);
     }
 
     // Highlight spell effects and add glow to characters
-    highlightSpellRadius(gridX: number, gridY: number, radius: number, gridMap: Map<string, Player>, isAllyCallback: (player: Player) => boolean) {
+    highlightSpellRadius(gridX: number, gridY: number, radius: number, gridMap: Map<string, Player>, isAllyCallback: (player: Player) => boolean, isAllyTargetingSpell: boolean = false) {
         const tilesInRadius = this.getTilesInRadius(gridX, gridY, radius);
         const charactersInRadius = new Set<string>();
+        
+        // Use ally targeting color if specified
+        const spellRadiusColor = isAllyTargetingSpell ? TileColors.SPELL_RADIUS_ALLY : TileColors.SPELL_RADIUS;
         
         for (const tile of tilesInRadius) {
             if (!this.isValidGridPosition(tile.x, tile.y)) continue;
@@ -385,7 +391,7 @@ export class HexGridManager {
                 
                 if (isInTargetRange) {
                     // Apply spell radius color using the highlight system
-                    this.applyHighlight(tile.x, tile.y, TileColors.SPELL_RADIUS, HighlightType.SPELL);
+                    this.applyHighlight(tile.x, tile.y, spellRadiusColor, HighlightType.SPELL);
                     
                     // If there's a character on this tile, make it glow
                     const player = gridMap.get(key);

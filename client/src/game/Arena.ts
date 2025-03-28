@@ -9,7 +9,7 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
-import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT } from '@legion/shared/config';
+import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT, SPELL_RANGE, MOVEMENT_RANGE } from '@legion/shared/config';
 
 import killzoneImage from '@assets/killzone.png';
 import iceblockImage from '@assets/iceblock.png';
@@ -448,36 +448,34 @@ export class Arena extends Phaser.Scene
     toggleTargetMode(flag: boolean) {
         if (flag) {
             const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
+            const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
             
-            if (spell.target == Target.AOE) {
-                this.isInTargetMode = true;
-                this.targetModeSize = spell?.size - 1|| 0;
-                this.hexGridManager.toggleTargetMode(true);
-                
-                // Add pointer move listener to highlight tiles in radius as cursor moves
-                if (!this.targetModeListener) {
-                    this.targetModeListener = this.input.on('pointermove', (pointer) => {
-                        if (this.isInTargetMode) {
-                            this.updateTargetHighlight(pointer);
-                        }
-                    });
-                }
-                
-                // Clear any existing highlights
-                this.hexGridManager.clearHighlight();
-                
-                // Highlight target range
-                if (this.selectedPlayer) {
-                    this.hexGridManager.highlightTargetRange(
-                        this.selectedPlayer.gridX,
-                        this.selectedPlayer.gridY,
-                        this.selectedPlayer.distance
-                    );
-                }
+            this.isInTargetMode = true;
+            this.targetModeSize = spell?.size - 1|| 0;
+            this.hexGridManager.toggleTargetMode(true);
+            
+            // Add pointer move listener to highlight tiles in radius as cursor moves
+            if (!this.targetModeListener) {
+                this.targetModeListener = this.input.on('pointermove', (pointer) => {
+                    if (this.isInTargetMode) {
+                        this.updateTargetHighlight(pointer);
+                    }
+                });
+            }
+            
+            // Clear any existing highlights
+            this.hexGridManager.clearHighlight();
+            
+            // Highlight target range
+            if (this.selectedPlayer) {
+                this.hexGridManager.highlightTargetRange(
+                    this.selectedPlayer.gridX,
+                    this.selectedPlayer.gridY,
+                    this.selectedPlayer.distance,
+                    isAllyTargetingSpell
+                );
             }
             events.emit('pendingSpell');
-            // this.brightenScene();
-            // this.darkenScene(spell?.targetHighlight);
         } else {
             // Exit target mode
             this.isInTargetMode = false;
@@ -586,6 +584,8 @@ export class Arena extends Phaser.Scene
     }
 
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
+        const distance = hexDistance(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY);
+        if (distance > MOVEMENT_RANGE + SPELL_RANGE) return false;
         if (action.target == Target.AOE && action.size > 1) {
             return true;
         }
@@ -2041,8 +2041,12 @@ export class Arena extends Phaser.Scene
         const playerY = this.selectedPlayer.gridY;
         const distance = hexDistance(playerX, playerY, gridX, gridY);
         
-        // Check if the target is within range (player's distance + 2)
-        if (this.hexGridManager.isValidGridPosition(gridX, gridY) && distance <= this.selectedPlayer.distance + 2) {
+        // Get the current spell
+        const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
+        const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
+        console.log('isAllyTargetingSpell', isAllyTargetingSpell);
+        // Check if the target is within range (player's distance + SPELL_RANGE)
+        if (this.hexGridManager.isValidGridPosition(gridX, gridY) && distance <= this.selectedPlayer.distance + SPELL_RANGE) {
             // Clear previous spell highlights but keep target range
             this.hexGridManager.clearHighlightOfType(HighlightType.SPELL);
             
@@ -2052,22 +2056,8 @@ export class Arena extends Phaser.Scene
                 gridY, 
                 this.targetModeSize,
                 this.gridMap,
-                player => this.isAlly(player)
-            );
-        }
-    }
-
-    clearSpellHighlights() {
-        // Restore the target range highlights
-        if (this.selectedPlayer) {
-            // First clear all highlights
-            this.hexGridManager.clearHighlight();
-            
-            // Then reapply the target range
-            this.hexGridManager.highlightTargetRange(
-                this.selectedPlayer.gridX,
-                this.selectedPlayer.gridY,
-                this.selectedPlayer.distance
+                player => this.isAlly(player),
+                isAllyTargetingSpell
             );
         }
     }

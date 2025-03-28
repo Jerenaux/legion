@@ -14,7 +14,8 @@ import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
     LEGION_CUT, TURN_DURATION, KILL_CAM_DURATION, MOVE_DELAY, ATTACK_DELAY, SPELL_DELAY,
-    ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY, KILLALL_BM, KILLALL_WM, KILLALL_W, GRID_WIDTH, GRID_HEIGHT } from '@legion/shared/config';
+    ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY, KILLALL_BM, KILLALL_WM, KILLALL_W,
+    GRID_WIDTH, GRID_HEIGHT, MOVEMENT_RANGE, SPELL_RANGE } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 import { TurnSystem } from './TurnSystem';
 import { withRetry } from './utils';
@@ -965,6 +966,9 @@ export abstract class Game
         }
 
         if (player.isMuted()) return;
+
+        const distance = hexDistance(player.x, player.y, x, y);
+        if (distance > MOVEMENT_RANGE + SPELL_RANGE) return;
 
         const spell: Spell | null = player.getSpellAtIndex(index);
         if (!spell) return;
