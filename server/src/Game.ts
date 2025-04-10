@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
 import { Spell } from './Spell';
-import { lineOfSight, listCellsOnTheWay, getTilesInHexRadius, isSkip, hexDistance } from '@legion/shared/utils';
+import { lineOfSight, listCellsOnTheWay, getTilesInHexRadius, isSkip, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { apiFetch } from './API';
 import { Terrain, PlayMode, Target, StatusEffect, ChestColor, League, GEN,
     Stat, SpeedClass, Class } from '@legion/shared/enums';
@@ -1078,9 +1078,17 @@ export abstract class Game
         return oppositeTeam.getMembers().filter(enemy => enemy.isAlive());
     }
 
+    listAllEnemiesInRange(player: ServerPlayer): ServerPlayer[] {
+        return this.listAllEnemies(player).filter(enemy => isInSpellRange(player.x, player.y, enemy.x, enemy.y));
+    }
+
     listAllAllies(player: ServerPlayer): ServerPlayer[] {
         // Filter for alive allies
         return player.team!.getMembers().filter(ally => ally.isAlive());
+    }
+
+    listAllAlliesInRange(player: ServerPlayer): ServerPlayer[] {
+        return this.listAllAllies(player).filter(ally => isInSpellRange(player.x, player.y, ally.x, ally.y));
     }
 
     specialRound(num: number) {
@@ -1128,6 +1136,7 @@ export abstract class Game
         for(let x = 0; x < GRID_WIDTH; x++) {
             for(let y = 0; y < GRID_HEIGHT; y++) {
                 if (isSkip(x, y)) continue;
+                if (!isInSpellRange(player.x, player.y, x, y)) continue;
                 const otherTeam = this.getOtherTeam(player.team!.id);
                 const nbEnemies = this.nbPlayersInArea(otherTeam, x, y, radius);
                 const nbAllies = this.nbPlayersInArea(player.team!, x, y, radius);

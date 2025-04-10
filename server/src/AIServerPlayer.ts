@@ -211,7 +211,7 @@ export class AIServerPlayer extends ServerPlayer {
         if (!spell.isHealingSpell()) return false;
         if (Math.random() > this.healRandomThreshold) return false;
 
-        const allies = this.team?.game.listAllAllies(this);
+        const allies = this.team?.game.listAllAlliesInRange(this);
         if (!allies || allies.length === 0) return false;
         const ally = this.getOptimalTarget(allies!, lowestHpComparator);
         if (!ally) return false;
@@ -257,7 +257,7 @@ export class AIServerPlayer extends ServerPlayer {
         const spell = this.spells[index];
         console.log(`[AIServerPlayer:checkForStatusEffectUse] Checking for status effect use: ${spell.status.effect}`);
 
-        let targets = this.team?.game.listAllEnemies(this);
+        let targets = this.team?.game.listAllEnemiesInRange(this);
         if (spell.status.effect === StatusEffect.MUTE) {
             // Filter to keep only mages
             targets = targets.filter(target => target.isMage());

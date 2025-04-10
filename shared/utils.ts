@@ -1,6 +1,6 @@
 import { DailyLootAllAPIData, DailyLootAllDBData, PlayerInventory } from "./interfaces";
 import { ChestColor, StatusEffect } from "./enums";
-import { GRID_HEIGHT, GRID_WIDTH } from "./config";
+import { GRID_HEIGHT, GRID_WIDTH, MOVEMENT_RANGE, SPELL_RANGE } from "./config";
 
 function specialRound(num: number): number {
     if (num >= 0) {
@@ -243,4 +243,8 @@ export function isSkip(x: number, y: number) {
     // const skip = y < GRID_HEIGHT/2 ? Math.max(0, v - y - 1) : Math.max(0, y - (GRID_HEIGHT - v));
     // // Skip drawing the corners to create an oval shape
     // return (x < skip || x >= GRID_WIDTH - skip);
+}
+
+export function isInSpellRange(x1: number, y1: number, x2: number, y2: number) {
+    return hexDistance(x1, y1, x2, y2) <= MOVEMENT_RANGE + SPELL_RANGE;
 }

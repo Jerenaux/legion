@@ -4,7 +4,7 @@ import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import { getSpellById } from '@legion/shared/Spells';
-import { serializeCoords, hexDistance } from '@legion/shared/utils';
+import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
@@ -16,17 +16,11 @@ import iceblockImage from '@assets/iceblock.png';
 import meltdownImage from '@assets/meltdown.png';
 
 import potionHealImage from '@assets/vfx/potion_heal.png';
-import smokeImage from '@assets/vfx/smoke.png';
-import thunderImage from '@assets/vfx/thunder.png';
 import castImage from '@assets/vfx/cast.png';
 import slashImage from '@assets/vfx/slash.png';
-import boltsImage from '@assets/vfx/bolts.png';
-import iceImage from '@assets/vfx/ice.png';
-import ice2Image from '@assets/vfx/ice2.png';
 import impactImage from '@assets/vfx/sword_impact.png';
 import poisonImage from '@assets/vfx/poison.png';
 import muteImage from '@assets/vfx/mute.png';
-import handImage from '@assets/hand.png';
 import reviveImage from '@assets/vfx/revive.png';
 
 import statusesImage from '@assets/States.png';
@@ -212,11 +206,10 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('meltdown',  meltdownImage, { frameWidth: 150, frameHeight: 150});
         this.load.image('speech_bubble', speechBubble);
         this.load.image('speech_tail', speechTail);
-        this.load.image('hand', handImage);
-        const frameConfig = { frameWidth: 144, frameHeight: 144};
+
         // Iterate over assetsMap and load spritesheets
         allSprites.forEach((sprite) => {
-            this.load.spritesheet(sprite, require(`@assets/sprites/${sprite}.png`), frameConfig);
+            this.load.spritesheet(sprite, require(`@assets/sprites/${sprite}.png`), { frameWidth: 144, frameHeight: 144});
         });
         this.load.spritesheet('potion_heal', potionHealImage, { frameWidth: 48, frameHeight: 64});
 
@@ -246,13 +239,8 @@ export class Arena extends Phaser.Scene
             this.load.spritesheet(`heal_${level}`, require(`@assets/vfx/heal_${level}.png`), { frameWidth: 512, frameHeight: 512});
         });
 
-        this.load.spritesheet('thunder2', thunderImage, { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('smoke', smokeImage, { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('cast', castImage, { frameWidth: 48, frameHeight: 64});
         this.load.spritesheet('slash', slashImage, { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('thunder', boltsImage, { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('ice', iceImage, { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('ice2', ice2Image, { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('impact', impactImage, { frameWidth: 291, frameHeight: 291});
         this.load.spritesheet('poison', poisonImage, { frameWidth: 64, frameHeight: 64});
         this.load.spritesheet('mute', muteImage, { frameWidth: 64, frameHeight: 64});
@@ -627,8 +615,7 @@ export class Arena extends Phaser.Scene
     }
 
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
-        const distance = hexDistance(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY);
-        if (distance > MOVEMENT_RANGE + SPELL_RANGE) return false;
+        if (!isInSpellRange(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) return false;
         if (action.target == Target.AOE && action.radius > 1) {
             return true;
         }
@@ -1313,36 +1300,6 @@ export class Arena extends Phaser.Scene
         });
 
         this.anims.create({
-            key: `thunder`, 
-            frames: this.anims.generateFrameNumbers('thunder', { start: 36, end: 47 }), 
-            frameRate: 15, 
-        });
-
-        this.anims.create({
-            key: `thunder+`, 
-            frames: this.anims.generateFrameNumbers('thunder2', { start: 15, end: 29 }), 
-            frameRate: 15, 
-        });
-
-        this.anims.create({
-            key: `ice`, 
-            frames: this.anims.generateFrameNumbers('ice', { start: 54, end: 67 }), 
-            frameRate: 15,
-        });
-
-        this.anims.create({
-            key: `ice+`, 
-            frames: this.anims.generateFrameNumbers('ice', { start: 36, end: 48 }), 
-            frameRate: 15,
-        });
-
-        this.anims.create({
-            key: `iceX`, 
-            frames: this.anims.generateFrameNumbers('ice2', {frames: [128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171]}), 
-            frameRate: 15,
-        });
-
-        this.anims.create({
             key: `poison`, 
             frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 16 }), 
             frameRate: 15,
@@ -1974,75 +1931,10 @@ export class Arena extends Phaser.Scene
     // {
     // }
 
-    showFloatingHand(x: number, y: number, orientation: 'up' | 'down' | 'left' | 'right' = 'up') {
-        // console.log(`[showFloatingHand] @ x: ${x}, y: ${y}`);
-        const scale = 0.3;
-
-        if (!this.handSprite) {
-            this.handSprite = this.add.sprite(x, y, 'hand').setDepth(1000).setScale(scale);
-            // Add white glow effect
-            this.handSprite.preFX.addGlow(0xffffff, 4, 0, false, 0.1, 16);
-        } else {
-            // Stop existing tweens
-            this.tweens.killTweensOf(this.handSprite);
-            
-            // Move the hand to the new position
-            this.handSprite.setPosition(x, y);
-        }
-
-        // Add a floating animation
-        this.tweens.add({
-            targets: this.handSprite,
-            y: y - 10,
-            duration: 300,
-            ease: 'Sine.easeInOut',
-            yoyo: true,
-            repeat: -1
-        });
-
-        // Set the appropriate angle based on orientation
-        switch (orientation) {
-            case 'down':
-                this.handSprite.setAngle(180);
-                break;
-            case 'left':
-                this.handSprite.setAngle(-90);
-                break;
-            case 'right':
-                this.handSprite.setAngle(90);
-                break;
-            default: // 'up'
-                this.handSprite.setAngle(0);
-        }
-
-        return this.handSprite;
-    }
-
-    hideFloatingHand() {
-        if (this.handSprite) {
-            this.tweens.killTweensOf(this.handSprite);
-            this.handSprite.destroy();
-            this.handSprite = null;
-        }
-    }
-
     getCharacterPosition(playerTeam: boolean, characterIdx: number) {
         const teamId = playerTeam ? this.playerTeamId : 2;
         const character = this.teamsMap.get(teamId).members[characterIdx];
         return {x: character.gridX, y: character.gridY};
-    }
-
-    pointToCharacter(playerTeam: boolean, characterIdx: number) {
-        const {x: gridX, y: gridY} = this.getCharacterPosition(playerTeam, characterIdx);
-        const {x, y} = this.hexGridToPixelCoords(gridX, gridY);
-        // const yOffset = this.tutorialSettings.showHealthBars ? 100 : 60;
-        const yOffset = 60;
-        this.showFloatingHand(x - 5, y - yOffset, 'down');
-    }
-
-    pointToTile(tileX: number, tileY: number) {
-        const {x, y} = this.hexGridToPixelCoords(tileX, tileY);
-        this.showFloatingHand(x - 5, y, 'down');
     }
 
     summonEnemy(x: number, y: number, attackMode: AIAttackMode = AIAttackMode.IDLE) {
