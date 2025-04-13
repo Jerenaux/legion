@@ -662,9 +662,13 @@ export abstract class Game
     // Called when traversing cells with terrain effects
     checkForTerrainEffects(player: ServerPlayer, cells: Set<string>) {
         cells.forEach(cell => {
+            const [x, y] = cell.split(',').map(Number);
             const terrain = this.terrainManager.terrainMap.get(cell);
             if (terrain) {
-                player.applyTerrainEffect(terrain);
+                const distance = hexDistance(player.x, player.y, x, y);
+                setTimeout(() => {
+                    player.applyTerrainEffect(terrain);
+                }, distance * 100);
             }
         });
     }
