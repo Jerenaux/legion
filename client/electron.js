@@ -53,12 +53,47 @@ function createWindow() {
     });
   } else {
     // In production, load the built files
-    mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+    let indexPath;
+    if (app.isPackaged) {
+      // When packaged, files are in app.asar.unpacked/dist/
+      indexPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'index.html');
+    } else {
+      // When not packaged (npm run build + electron .)
+      indexPath = path.join(__dirname, 'dist', 'index.html');
+    }
+    
+    console.log('Loading from:', indexPath);
+    console.log('isDev:', isDev);
+    console.log('isPackaged:', app.isPackaged);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('resourcesPath:', process.resourcesPath);
+    
+    // Temporarily open DevTools for debugging
+    // mainWindow.webContents.openDevTools();
+    
+    mainWindow.loadFile(indexPath).catch(err => {
+      console.error('Failed to load file:', err);
+    });
   }
 
   // Log any console messages from the renderer process
   mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
     console.log('Renderer Console:', message);
+  });
+
+  // Handle page load failures
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.error('Page failed to load:', errorCode, errorDescription, validatedURL);
+  });
+
+  // Log when page finishes loading
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Page finished loading successfully');
+  });
+
+  // Log when DOM is ready
+  mainWindow.webContents.on('dom-ready', () => {
+    console.log('DOM is ready');
   });
 }
 

@@ -5,7 +5,24 @@
     <title>Legion | Free to Play Tactical PvP Game</title>
     <meta name="description" content="Play Legion, a free-to-play tactical PvP game. Build your team with unique characters, compete in ranked matches, and master strategic gameplay. Easy to learn, thrilling to master!" />
     <meta name="keywords" content="Legion, PvP game, turn-based game, tactical game, free to play game, multiplayer strategy game, ranked gaming" />
-    <base href="/" />
+    <script>
+      if (navigator.userAgent.toLowerCase().indexOf('electron') > -1) {
+        // We're in Electron
+        console.log('We are in Electron');
+        document.write('<base href="./" />');
+      } else {
+        // We're in browser
+        console.log('We are in browser');
+        document.write('<base href="/" />');
+      }
+      console.log('HTML inline script executed - JavaScript is working');
+      console.log('Location:', window.location);
+      
+      // Check root element after DOM loads
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded - Root element exists:', !!document.getElementById('root'));
+      });
+    </script>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <!-- Open Graph / Facebook -->

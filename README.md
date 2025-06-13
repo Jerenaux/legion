@@ -55,4 +55,4 @@ To test the Electron app, run `npm run electron:test`. This will create a `relea
 
 The Steam build is done by running `npm run electron:build` and then uploading the `mac-arm64/Legion.app` file to Steam.
 
-Test with `open release/mac-arm64/Legion.app`
+Test with `open release/mac-arm64/Legion.app` or `release/mac-arm64/Legion.app/Contents/MacOS/Legion` in a terminal.

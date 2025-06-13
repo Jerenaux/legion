@@ -8,8 +8,8 @@
     "build": "NODE_ENV=production webpack --mode production",
     "test": "jest",
     "electron:dev": "concurrently \"npm run start\" \"electron electron.js\"",
-    "electron:build": "npm run build && electron-builder",
-    "electron:test": "electron-builder --dir"
+    "electron:build": "BUILD_TARGET=electron npm run build && electron-builder",
+    "electron:test": "BUILD_TARGET=electron npm run build && electron-builder --dir"
   },
   "keywords": [],
   "author": "",
@@ -93,6 +93,9 @@
     "extraMetadata": {
       "main": "electron.js"
     },
+    "asarUnpack": [
+      "dist/**/*"
+    ],
     "mac": {
       "category": "public.app-category.games",
       "icon": "public/icon.png"

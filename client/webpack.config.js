@@ -10,6 +10,9 @@ const Dotenv = require('dotenv-webpack');
 
 const isDocker = process.env.IS_DOCKER;
 const isProduction = process.env.NODE_ENV === 'production';
+const isElectron = process.env.BUILD_TARGET === 'electron';
+console.log('BUILD_TARGET:', process.env.BUILD_TARGET);
+console.log('isElectron:', isElectron);
 
 const sharedPrefix = isDocker ? '' : '../';
 
@@ -114,12 +117,13 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    publicPath: isElectron ? './' : '/',
   },
 
   plugins: [
     new HtmlWebpackPlugin({
       template: 'src/index.html',
-      hash: true,
+      hash: !isElectron,
     }),
     new Dotenv({
       path: isDocker ? false : path.resolve(__dirname, isProduction ? '.production.env' : '.env'),
