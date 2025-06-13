@@ -7,7 +7,7 @@ import cors from 'cors';
 dotenv.config();
 import { setupMatchmaking, processJoinQueue, processJoinLobby, processDisconnect, processConnection, processLeaveQueue, processLeaveGame, processGetPlayerStatus, processGetFriendsStatuses, processSendChallenge, processChallengeDeclined } from './matchmaking';
 
-const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com', 'https://play-legion.io'];
+const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com', 'https://play-legion.io', 'http://localhost:3000'];
 console.log(`Allowed client origins: ${allowedOrigins}`);
 
 const corsSettings = {

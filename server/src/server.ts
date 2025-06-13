@@ -45,7 +45,7 @@ const PORT = process.env.PORT || 3123;
 // Create a new express application instance
 const app: express.Application = express();
 
-const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com', 'https://play-legion.io'];
+const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com', 'https://play-legion.io', 'http://localhost:3000'];
 
 const corsSettings = {
   origin: (origin, callback) => {
