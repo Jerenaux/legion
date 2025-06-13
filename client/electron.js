@@ -9,6 +9,42 @@ app.commandLine.appendSwitch('disable-site-isolation-trials');
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
 app.commandLine.appendSwitch('enable-local-storage');
 
+// Add http server for production builds
+let server = null;
+
+function startProductionServer() {
+  const express = require('express');
+  const expressApp = express();
+  const port = 3000; // Use port 3000 which is commonly pre-authorized
+  
+  let staticPath;
+  if (app.isPackaged) {
+    staticPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'dist');
+  } else {
+    staticPath = path.join(__dirname, 'dist');
+  }
+  
+  console.log('Serving static files from:', staticPath);
+  
+  expressApp.use(express.static(staticPath));
+  
+  // Handle SPA routing - serve index.html for all routes
+  expressApp.get('*', (req, res) => {
+    res.sendFile(path.join(staticPath, 'index.html'));
+  });
+  
+  return new Promise((resolve, reject) => {
+    server = expressApp.listen(port, 'localhost', (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        console.log(`Production server running on http://localhost:${port}`);
+        resolve(`http://localhost:${port}`);
+      }
+    });
+  });
+}
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1280,
@@ -52,28 +88,25 @@ function createWindow() {
       }
     });
   } else {
-    // In production, load the built files
-    let indexPath;
-    if (app.isPackaged) {
-      // When packaged, files are in app.asar.unpacked/dist/
-      indexPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'index.html');
-    } else {
-      // When not packaged (npm run build + electron .)
-      indexPath = path.join(__dirname, 'dist', 'index.html');
-    }
-    
-    console.log('Loading from:', indexPath);
-    console.log('isDev:', isDev);
-    console.log('isPackaged:', app.isPackaged);
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('resourcesPath:', process.resourcesPath);
-    
-    // Temporarily open DevTools for debugging
-    // mainWindow.webContents.openDevTools();
-    
-    mainWindow.loadFile(indexPath).catch(err => {
-      console.error('Failed to load file:', err);
-    });
+    // In production, serve files from local HTTP server
+    startProductionServer()
+      .then((serverUrl) => {
+        console.log('Loading from server:', serverUrl);
+        console.log('isDev:', isDev);
+        console.log('isPackaged:', app.isPackaged);
+        console.log('NODE_ENV:', process.env.NODE_ENV);
+        
+        // Temporarily open DevTools for debugging
+        // mainWindow.webContents.openDevTools();
+        
+        mainWindow.loadURL(serverUrl).catch(err => {
+          console.error('Failed to load URL:', err);
+        });
+      })
+      .catch(err => {
+        console.error('Failed to start production server:', err);
+        app.quit();
+      });
   }
 
   // Log any console messages from the renderer process
@@ -124,6 +157,10 @@ if (isDev) {
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
+  // Close the server when quitting
+  if (server) {
+    server.close();
+  }
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -132,5 +169,12 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+// Ensure server is closed when app quits
+app.on('before-quit', () => {
+  if (server) {
+    server.close();
   }
 }); 
