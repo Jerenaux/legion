@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = process.env.NODE_ENV !== 'production' && !app.isPackaged;
 
 // Enable proper storage for Firebase Auth
 app.commandLine.appendSwitch('enable-features', 'ElectronCookies');
@@ -64,20 +64,25 @@ function createWindow() {
 
 // Wait for webpack dev server to be ready
 if (isDev) {
-  const waitOn = require('wait-on');
-  const opts = {
-    resources: ['http://localhost:8080'],
-    timeout: 30000,
-  };
+  try {
+    const waitOn = require('wait-on');
+    const opts = {
+      resources: ['http://localhost:8080'],
+      timeout: 30000,
+    };
 
-  waitOn(opts)
-    .then(() => {
-      createWindow();
-    })
-    .catch((err) => {
-      console.error('Error waiting for webpack dev server:', err);
-      app.quit();
-    });
+    waitOn(opts)
+      .then(() => {
+        createWindow();
+      })
+      .catch((err) => {
+        console.error('Error waiting for webpack dev server:', err);
+        app.quit();
+      });
+  } catch (err) {
+    console.log('wait-on not available in production, starting app directly');
+    app.whenReady().then(createWindow);
+  }
 } else {
   app.whenReady().then(createWindow);
 }

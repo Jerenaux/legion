@@ -12,3 +12,4 @@ serviceAccountKey.json
 /*.log
 dashboardv2/.env
 service-account.json
+release

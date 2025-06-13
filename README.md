@@ -42,3 +42,17 @@ For Firebase Functions:  `firebase functions:secrets:set SECRET_NAME`, you'll th
 To access it in Firebase Functions, don't forget to add `{ secrets: ["<secret_name>"] }` to the function declaration.
 
 To access it in one of the Cloud Run services, go to the Google Cloud Console, select the project, then click on the service and edit to create a new revision. In the secrets tab you can add a secret referring to the one set in Firebase.
+
+# Electron
+
+To build the Electron app, run `npm run electron:build`. This will create a `release` folder with the app.
+
+To run the Electron app, run `npm run electron:dev`. This will start the app in development mode.
+
+To test the Electron app, run `npm run electron:test`. This will create a `release` folder with the app and run it.
+
+## Steam
+
+The Steam build is done by running `npm run electron:build` and then uploading the `mac-arm64/Legion.app` file to Steam.
+
+Test with `open release/mac-arm64/Legion.app`

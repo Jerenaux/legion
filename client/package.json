@@ -9,7 +9,7 @@
     "test": "jest",
     "electron:dev": "concurrently \"npm run start\" \"electron electron.js\"",
     "electron:build": "npm run build && electron-builder",
-    "electron:pack": "electron-builder --dir"
+    "electron:test": "electron-builder --dir"
   },
   "keywords": [],
   "author": "",
@@ -90,14 +90,20 @@
       "buildResources": "public",
       "output": "release"
     },
+    "extraMetadata": {
+      "main": "electron.js"
+    },
     "mac": {
-      "category": "public.app-category.games"
+      "category": "public.app-category.games",
+      "icon": "public/icon.png"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "public/icon.png"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "public/icon.png"
     }
   }
 }
