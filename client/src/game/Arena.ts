@@ -1508,7 +1508,7 @@ export class Arena extends Phaser.Scene
 
         this.musicManager = new MusicManager(this, 1, 12, [5, 6, 11]);
         this.musicManager.playBeginning();
-        this.playSound('crowd', 0.5, true);
+        // this.playSound('crowd', 0.5, true);
 
         this.environmentalAudioSources = {
             flames: 0,

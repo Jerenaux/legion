@@ -210,7 +210,10 @@ export class AIGame extends Game {
             if (winRatio <= 0.5) aiTeam.setHealRandomThreshold(0.4);
             if (winRatio <= 0.6) aiTeam.banSpells([6,7,8]);
             if (winRatio > 0.9) {
-                if (!isVsZombie || (this.mode === PlayMode.RANKED_VS_AI && this.league >= League.GOLD)) this.addExtraTeamMember(aiTeam!);
+                if (
+                    !isVsZombie || 
+                    (this.mode === PlayMode.RANKED_VS_AI && this.league >= League.GOLD)
+                ) this.addExtraTeamMember(aiTeam!);
                 aiTeam.scaleStats(1.2);
             }
 
