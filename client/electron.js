@@ -5,6 +5,9 @@ const isDev = process.env.NODE_ENV !== 'production';
 // Enable proper storage for Firebase Auth
 app.commandLine.appendSwitch('enable-features', 'ElectronCookies');
 app.commandLine.appendSwitch('disable-site-isolation-trials');
+// Additional switches for Firebase Auth persistence
+app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+app.commandLine.appendSwitch('enable-local-storage');
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -19,7 +22,11 @@ function createWindow() {
       // Enable cookies and storage
       partition: 'persist:main',
       // Additional settings for Firebase Auth
-      sandbox: false
+      sandbox: false,
+      // Enable DOM storage and indexedDB for Firebase persistence
+      enableRemoteModule: false,
+      // Ensure storage APIs are available
+      experimentalFeatures: true
     },
     // Remove menu bar in production
     autoHideMenuBar: !isDev
