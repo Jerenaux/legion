@@ -83,9 +83,17 @@
   "build": {
     "appId": "com.legion.game",
     "productName": "Legion",
+    "extraFiles": [
+      {
+        "from": "preload.js",
+        "to": "preload.js"
+      }
+    ],
     "files": [
       "dist/**/*",
-      "electron.js"
+      "electron.js",
+      "preload.js",
+      "node_modules/**/*"
     ],
     "directories": {
       "buildResources": "public",

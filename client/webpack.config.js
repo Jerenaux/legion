@@ -137,7 +137,8 @@ module.exports = {
           globOptions: {
             ignore: ['**/index.html'] // Ignore index.html since it's handled separately
           }
-        }
+        },
+        ...(isElectron ? [{ from: 'preload.js', to: 'preload.js' }] : [])
       ]
     }),
     sentryWebpackPlugin({

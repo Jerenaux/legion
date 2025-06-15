@@ -82,20 +82,15 @@ function startProductionServer() {
 function createWindow() {
   console.log('Electron: Creating window');
   
-  const preloadPath = path.join(__dirname, 'preload.js');
-  console.log('Electron: Preload script path:', preloadPath);
-  
-  // Check if preload file exists
-  const fs = require('fs');
-  try {
-    if (fs.existsSync(preloadPath)) {
-      console.log('Electron: Preload script exists');
-    } else {
-      console.error('Electron: Preload script does NOT exist at:', preloadPath);
-    }
-  } catch (error) {
-    console.error('Electron: Error checking preload script:', error);
+  // Simplified preload path - it should always be in dist after webpack build
+  let preloadPath;
+  if (app.isPackaged) {
+    preloadPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'preload.js');
+  } else {
+    preloadPath = path.join(__dirname, 'dist', 'preload.js');
   }
+  
+  console.log('Electron: Preload script path:', preloadPath);
   
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -104,6 +99,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: preloadPath,
+      devTools: true, // !app.isPackaged,
       // Enable proper storage for Firebase Auth
       webSecurity: true,
       allowRunningInsecureContent: false,
