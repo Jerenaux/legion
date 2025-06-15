@@ -2,6 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
 import firebaseConfig from '@legion/shared/firebaseConfig';
+import { isElectron } from '../utils/electronUtils';
 
 // Initialize Firebase only if it hasn't been initialized yet
 if (!firebase.apps.length) {
@@ -15,11 +16,7 @@ const firebaseAuth = firebase.auth();
 const configureFirebaseAuth = async () => {
   try {
     // Check if we're in Electron environment
-    const isElectron = typeof window !== 'undefined' && 
-                      ((window as any).process?.type === 'renderer' || 
-                       navigator.userAgent.toLowerCase().indexOf(' electron/') > -1);
-    
-    if (isElectron) {
+    if (isElectron()) {
       // For Electron, try persistence types in order of preference
       const persistenceTypes = [
         firebase.auth.Auth.Persistence.LOCAL,
