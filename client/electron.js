@@ -99,7 +99,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: preloadPath,
-      devTools: true, // !app.isPackaged,
+      devTools: !app.isPackaged,
       // Enable proper storage for Firebase Auth
       webSecurity: true,
       allowRunningInsecureContent: false,

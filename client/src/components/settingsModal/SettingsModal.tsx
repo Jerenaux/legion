@@ -208,9 +208,9 @@ export class SettingsModal extends Component<SettingsModalProps> {
             </div>
             
             {showElectronSettings && (
-              <div className="setting_dialog_fullscreen_container">
-                <div className="setting_dialog_fullscreen_label">Display mode:</div>
-                <div className="setting_dialog_fullscreen_checkbox_container flex items_center gap_2">
+              <div className="setting_dialog_fullscreen_container padding_top_16 padding_bottom_16">
+                <div className="setting_dialog_fullscreen_label padding_y_4">Display mode:</div>
+                <div className="setting_dialog_fullscreen_checkbox_container flex items_center gap_4 padding_4">
                   <input 
                     type="checkbox" 
                     id="fullscreen-toggle"
