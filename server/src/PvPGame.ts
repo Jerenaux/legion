@@ -18,7 +18,7 @@ export class PvPGame extends Game {
             const teamData = await this.getRosterData(team.getFirebaseToken());
             console.log(`[PvPGame:populateTeams] Team index: ${team.id}`)
             teamData.characters.forEach((character: any, index) => {
-                const position = this.getPosition(index, team.id == 2);
+                const position = this.getPosition(index, team.id == 2, character.class);
                 const newPlayer = new ServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
                 newPlayer.setTeam(team);
                 newPlayer.setUpCharacter(character);

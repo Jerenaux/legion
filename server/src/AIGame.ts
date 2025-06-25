@@ -68,7 +68,7 @@ export class AIGame extends Game {
     }
 
     addAICharacter(team: Team, character: DBCharacterData, position?: {x: number, y: number}) {
-        if (!position) position = this.getPosition(team.getMembers().length, true);
+        if (!position) position = this.getPosition(team.getMembers().length, true, character.class);
         const newCharacter = new AIServerPlayer(team.getMembers().length + 1, character.name, character.portrait, position.x, position.y);
         newCharacter.setTeam(team);
         newCharacter.setUpCharacter(character, true);
@@ -144,7 +144,7 @@ export class AIGame extends Game {
         const teamData = await this.getRosterData(playerTeam.getFirebaseToken());
         let characters = [];
         teamData.characters.forEach((character: any, index) => {
-            const position = this.getPosition(index, false);
+            const position = this.getPosition(index, false, character.class);
             const newCharacter = new ServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
             newCharacter.setTeam(playerTeam!);
             newCharacter.setUpCharacter(character, false);
@@ -248,7 +248,7 @@ export class AIGame extends Game {
         console.log('[AIGame:putInFormation] Putting in formation...');
         // Iterate over the player team and set their formation to the default one
         this.teams.get(1)?.getMembers().forEach(player => {
-            const newPosition = this.getPosition(player.num - 1, false);
+            const newPosition = this.getPosition(player.num - 1, false, player.class);
             this.updatePlayerPosition(player, newPosition.x, newPosition.y);
             this.broadcastMove(this.teams.get(1)!, player.num, newPosition);
         });
@@ -258,7 +258,7 @@ export class AIGame extends Game {
         });
         // Summon 3 enemies in the mirror positions, one of each class
         [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].forEach((className, index) => {
-            const newPosition = this.getPosition(index, true);
+            const newPosition = this.getPosition(index, true, className);
             this.summonEnemy({x: newPosition.x, y: newPosition.y, attackMode: AIAttackMode.UNLIMITED, className, full: true});
         });
     }

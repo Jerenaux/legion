@@ -168,7 +168,7 @@ export abstract class Game
         }, retries, delay, 'getRemoteConfig');
     }
 
-    getPosition(index, flip) {
+    getPosition(index, flip, characterClass: Class) {
         // const positions = [
         //     {x: 5, y: 6},
         //     {x: 5, y: 3},
@@ -184,16 +184,44 @@ export abstract class Game
             : Array.from({ length: halfWidth }, (_, i) => i);
     
         // Find all available positions on that side.
-        const availablePositions: { x: number; y: number }[] = [];
+        let availablePositions: { x: number; y: number }[] = [];
+        
+        // Calculate thirds based on the ENTIRE battlefield width
+        const oneThirdWidth = Math.floor(GRID_WIDTH / 3);
+        const twoThirdsWidth = Math.floor(2 * GRID_WIDTH / 3);
+
         for (const x of xRange) {
             for (let y = 0; y < GRID_HEIGHT; y++) {
                 if (this.isFree(x, y) && !isSkip(x, y)) {
-                    availablePositions.push({ x, y });
+                    // Apply class-based restrictions along the x-axis based on the entire battlefield
+                    if (characterClass === Class.WARRIOR) {
+                        if (x >= oneThirdWidth && x < twoThirdsWidth) { // Middle third of the battlefield
+                            availablePositions.push({ x, y });
+                        }
+                    } else if (characterClass === Class.BLACK_MAGE || characterClass === Class.WHITE_MAGE) {
+                        if (x < oneThirdWidth || x >= twoThirdsWidth) { // Outer thirds of the battlefield
+                            availablePositions.push({ x, y });
+                        }
+                    } else { // No restriction for other classes
+                        availablePositions.push({ x, y });
+                    }
                 }
             }
         }
     
-        // If there are no available positions, log an error and return a fallback.
+        // If there are no available positions with restrictions, try without them.
+        if (availablePositions.length === 0) {
+            console.warn(`[Game:getPosition] No available position found for class ${characterClass}. Falling back to any valid position.`);
+            for (const x of xRange) {
+                for (let y = 0; y < GRID_HEIGHT; y++) {
+                    if (this.isFree(x, y) && !isSkip(x, y)) {
+                        availablePositions.push({ x, y });
+                    }
+                }
+            }
+        }
+
+        // If there are still no available positions, log an error and return a fallback.
         if (availablePositions.length === 0) {
             console.error(`[Game:getPosition] No available position found for index ${index} and flip ${flip}`);
             const x = xRange[Math.floor(Math.random() * xRange.length)];
@@ -204,9 +232,6 @@ export abstract class Game
         // Return a random position from the available ones.
         const randomIndex = Math.floor(Math.random() * availablePositions.length);
         const position = availablePositions[randomIndex];
-        console.log(`[Game:getPosition] Position: ${position.x},${position.y}`);
-
-
     
         return position;
     }
