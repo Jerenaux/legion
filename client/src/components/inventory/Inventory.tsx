@@ -18,6 +18,8 @@ import { Effect } from '@legion/shared/interfaces';
 import shopIcon from '@assets/inventory/shop_btn.png';
 import { LockedFeatures } from '@legion/shared/enums';
 
+import { INVENTORY_SLOT_PRICE } from '@legion/shared/config';
+
 
 Modal.setAppElement('#root');
 interface InventoryProps {
@@ -106,6 +108,11 @@ class Inventory extends Component<InventoryProps> {
                     <span>{inventorySize(this.context.player.inventory)} </span>
                     &nbsp;/&nbsp;{this.context.player.carrying_capacity}
                   </div>
+                  <button 
+                    className="info-bar-plus"
+                    onClick={() => this.context.buyInventorySlots(1)}
+                    disabled={this.context.player.gold < INVENTORY_SLOT_PRICE}
+                  ></button>
                 </>
               )}
             </div>

@@ -65,6 +65,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.hasCurrentCharacterSpendableSP = this.hasCurrentCharacterSpendableSP.bind(this);
       this.getCharacterThatCanSpendSP = this.getCharacterThatCanSpendSP.bind(this);
       this.hasAnyCharacterSpendableSP = this.hasAnyCharacterSpendableSP.bind(this);
+      this.buyInventorySlots = this.buyInventorySlots.bind(this);
     }
 
     getInitialState(): PlayerContextState {
@@ -701,6 +702,19 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       }
     }
 
+    buyInventorySlots = async (slots: number) => {
+      try {
+        await apiFetch('buyInventorySlots', {
+            method: 'POST',
+            body: { slots },
+        });
+        this.fetchPlayerData();
+      } catch (error) {
+          console.error('Error buying inventory slots:', error);
+          throw error;
+      }
+    };
+
     render() {
       const { children } = this.props;
   
@@ -747,7 +761,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           hasAnyCharacterSpendableSP: this.hasAnyCharacterSpendableSP,
           hasCurrentCharacterSpendableSP: this.hasCurrentCharacterSpendableSP,
           notifyLeaveGame: this.notifyLeaveGame,
-          getCharacterThatCanSpendSP: this.getCharacterThatCanSpendSP
+          getCharacterThatCanSpendSP: this.getCharacterThatCanSpendSP,
+          buyInventorySlots: this.buyInventorySlots,
         }}>
           {children}
           
