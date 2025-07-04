@@ -197,6 +197,7 @@ export const createPlayer = functions.runWith({
       equipment: isAdmin ? STARTING_EQUIPMENT_ADMIN : [],
       spells: isAdmin ? STARTING_SPELLS_ADMIN : [],
     },
+    purchasedInventorySlots: 0,
     characters: [],
     elo: STARTING_ELO,
     league: startLeague,
@@ -1309,7 +1310,7 @@ export const updateInactivePlayersStats = onSchedule(
       const winRateDeviation = winRatio - 0.45; // Deviation from expected 0.45
       const eloAdjustment = Math.round(winRateDeviation * 100); // Scale factor of 50
       
-      const currentElo = doc.data()?.elo || 100;
+      const currentElo = doc.data()?.elo || STARTING_ELO;
       const newElo = currentElo + eloAdjustment;
       
       batch.update(doc.ref, {

@@ -203,6 +203,7 @@ export interface DBPlayerData {
     gold: number;
     carrying_capacity: number;
     inventory: PlayerInventory;
+    purchasedInventorySlots: number;
     characters: any[];
     elo: number;
     league: number;
