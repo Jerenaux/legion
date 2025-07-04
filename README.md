@@ -57,7 +57,9 @@ The Steam build is done by running `npm run electron:build:<platform>`.
 
 Test with `open release/mac-arm64/Legion.app` or `release/mac-arm64/Legion.app/Contents/MacOS/Legion` in a terminal.
 
-Files to upload to Steam:
-- Mac: `release/mac-arm64/Legion.app`
-- Windows: `release/win-unpacked`
-- Linux: 
+### Steampipe
+
+Have a vdf file created for the platform you want to build for.
+
+Then `cd /Users/jerome/Code/Steam_sdk/tools/ContentBuilder/builder_osx`
+and run `bash ./steamcmd.sh +login jerorx <password> +run_app_build /Users/jerome/Code/legion/legion_mac_build.vdf +quit`
