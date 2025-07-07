@@ -266,3 +266,200 @@
     cursor: not-allowed;
     opacity: 0.5;
 }
+
+.info-bar-plus-loading {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1c1f25;
+    border: 1px solid #71deff;
+    border-radius: 3px;
+}
+
+.info-bar-plus-loading .spinner {
+    width: 16px;
+    height: 16px;
+}
+
+/* Purchase Dialog Styles */
+
+.purchase-dialog-container {
+    background-color: #1c1f25;
+    border: 1px solid #71deff;
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 320px;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.purchase-dialog-heading {
+    color: #71deff;
+    font-size: 18px;
+    font-family: 'Kim';
+    margin: 0 0 16px 0;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.purchase-dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.quantity-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quantity-selector label {
+    color: #ffffff;
+    font-size: 14px;
+    font-family: 'Kim';
+    font-weight: 500;
+}
+
+.quantity-input {
+    background-color: #2f404d;
+    border: 1px solid #71deff;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #ffffff;
+    font-size: 14px;
+    font-family: 'Kim';
+    width: 80px;
+}
+
+.quantity-input:focus {
+    outline: none;
+    border-color: #8be0f9;
+    background-color: #3a4f5f;
+}
+
+.quantity-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.price-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: #2f404d;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #46899e;
+}
+
+.price-breakdown,
+.price-total,
+.remaining-gold {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #ffffff;
+    font-family: 'Kim';
+}
+
+.price-total {
+    font-weight: bold;
+    padding-top: 4px;
+    border-top: 1px solid #46899e;
+}
+
+.price-value {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #71deff;
+}
+
+.price-value.total {
+    color: #8be0f9;
+    font-size: 16px;
+}
+
+.price-value.insufficient {
+    color: #ff6b6b;
+}
+
+.gold-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.purchase-dialog-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.purchase-dialog-cancel,
+.purchase-dialog-confirm {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: 'Kim';
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.purchase-dialog-cancel {
+    background-color: transparent;
+    border: 1px solid #666;
+    color: #ffffff;
+}
+
+.purchase-dialog-cancel:hover {
+    border-color: #888;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.purchase-dialog-confirm {
+    background-color: #46899e;
+    border: 1px solid #71deff;
+    color: #ffffff;
+}
+
+.purchase-dialog-confirm:hover:not(:disabled) {
+    background-color: #5a9fb5;
+    border-color: #8be0f9;
+}
+
+.purchase-dialog-confirm:disabled {
+    background-color: #2a2a2a;
+    border-color: #555;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.purchase-dialog-cancel img,
+.purchase-dialog-confirm img {
+    width: 16px;
+    height: 16px;
+}
+
+.purchase-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #71deff;
+    font-family: 'Kim';
+    justify-content: center;
+    width: 100%;
+}
+
+.purchase-loading .spinner {
+    width: 20px;
+    height: 20px;
+}
