@@ -1,0 +1,33 @@
+"AppBuild"
+{
+	"AppID" "{{APP_ID}}" // your AppID
+	"Desc" "Legion build script for macOS and Windows - {{BUILD_TYPE}}" // internal description for this build
+	"verbose" "0" // spew more build details in console
+	"preview" "0" // make this a preview build only, nothing is uploaded
+
+	"ContentRoot" "client/release" // root content folder, relative to location of this file
+	"BuildOutput" "client/release/steam_build" // build output folder for build logs and build cache files
+
+	"Depots"
+	{
+		"{{DEPOT_ID_MAC}}" // macOS DepotID
+		{
+			"FileMapping"
+			{
+				"LocalPath" "mac-arm64/*" // macOS files
+				"DepotPath" "." // mapped into the root of the depot
+				"recursive" "1" // include all subfolders
+			}
+		}
+		
+		"{{DEPOT_ID_WIN}}" // Windows DepotID 
+		{
+			"FileMapping"
+			{
+				"LocalPath" "win-unpacked/*" // Windows files
+				"DepotPath" "." // mapped into the root of the depot
+				"recursive" "1" // include all subfolders
+			}
+		}
+	}
+} 

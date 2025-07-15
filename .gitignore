@@ -13,3 +13,5 @@ serviceAccountKey.json
 dashboardv2/.env
 service-account.json
 release
+# Steam build files (generated dynamically)
+legion_steam_build_*.vdf

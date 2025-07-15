@@ -57,9 +57,51 @@ The Steam build is done by running `npm run electron:build:<platform>`.
 
 Test with `open release/mac-arm64/Legion.app` or `release/mac-arm64/Legion.app/Contents/MacOS/Legion` in a terminal.
 
-### Steampipe
+### Steam Deployment
 
-Have a vdf file created for the platform you want to build for.
+Partner ID: 325618
 
-Then `cd /Users/jerome/Code/Steam_sdk/tools/ContentBuilder/builder_osx`
-and run `bash ./steamcmd.sh +login jerorx <password> +run_app_build /Users/jerome/Code/legion/legion_mac_build.vdf +quit`
+**Production App**
+- App id: 3729580
+- macOS Depot: 3729581  
+- Windows Depot: 3729582
+
+**Playtest App**  
+- App id: 3870830
+- macOS Depot: 3870831
+- Windows Depot: 3870832
+
+#### Deployment Commands
+
+Deploy to production:
+```bash
+./deploy_steam.sh production
+```
+
+Deploy to playtest:
+```bash
+./deploy_steam.sh playtest
+```
+
+The script will automatically:
+1. Generate the appropriate VDF file from template
+2. Upload to Steam using steamcmd
+3. Clean up temporary files
+
+#### Manual Setup (one-time)
+
+For both apps, make sure to:
+- Create depots per OS in Steam Partner portal
+- List all depots in the store package
+- Configure launch options  
+- Verify packages include the correct depots
+
+**Production App Links:**
+- Depots: https://partner.steamgames.com/apps/depots/3729580
+- Store Package: https://partner.steamgames.com/store/packagelanding/1312865  
+- Launch Options: https://partner.steamgames.com/apps/config/3729580
+- Packages: https://partner.steamgames.com/pub/packageadmin/325618
+
+**Playtest App Links:**
+- Management: https://partner.steamgames.com/apps/associated/3729580
+- Launch Options: https://partner.steamgames.com/apps/config/3870830
