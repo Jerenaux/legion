@@ -10,24 +10,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.7.5",
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "firebase-admin": "^12.0.0",
+    "axios": "^1.13.2",
+    "discord.js": "^14.25.1",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "firebase-admin": "^12.7.0",
     "node-fetch": "^2.7.0",
-    "socket.io": "^4.7.4",
+    "socket.io": "^4.8.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.19.25",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.2",
-    "tsc-alias": "1.8.10",
+    "tsc-alias": "1.8.16",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.3.3"
-  },
-  "resolutions": {
-    "discord.js": "github:discordjs/discord.js#8dd69cf2811d86ed8da2a7b1e9a6a94022554e96"
+    "typescript": "^5.9.3"
   }
 }
