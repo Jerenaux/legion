@@ -15,3 +15,8 @@ service-account.json
 release
 # Steam build files (generated dynamically)
 legion_steam_build_*.vdf
+
+# Test coverage
+coverage
+**/coverage
+*.lcov
