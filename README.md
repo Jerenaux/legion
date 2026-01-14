@@ -1,169 +1,324 @@
-# Repository structure
+# Legion
 
-This repository contains all the different Typescript apps that are part of the project. The apps are:
-- `api`: A serverless Firebase API that provides the interface between the frontend or game server and the game database (Firestore).
-- `client`: A Preact frontend app that provides the user interface for the game.
-- `server`: A Node.js server that provides the game server for the game.
-- `matchmaker`: A Node.js server that provides the matchmaker for the game.
-- `shared`: Shared code between the different apps.
+A real-time multiplayer game built with a modern microservices architecture, featuring automated CI/CD, comprehensive testing, and scalable cloud infrastructure.
 
-## Local development
+## Architecture Overview
 
-Regardless of the method you use below, the apps will be available at the following URLs:
-- Client: http://localhost:8080
-- Firebase emulators: http://localhost:4000 (useful to modify data in the database for testing)
+This project implements a distributed system with five core services working together to deliver a seamless multiplayer gaming experience:
 
-### Using Docker
-
-Run `docker-compose up --build` at the root of the repository to launch all the apps locally.
-Running `npm install` in `client`, `server` and `matchmaker` might still be necessary for your IDE to resolve the dependencies correctly.
-
-### Bare-metal
-
-Alternatively run each service separately bare-metal:
 ```
-    cd client && npm run start
-    cd server && npm run start 
-    cd matchmaker && npm run start
-    cd api/functions && npm run emulators:start
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+│   Client    │─────▶│  Matchmaker  │─────▶│   Server    │
+│  (Preact)   │      │  (Cloud Run) │      │ (WebSocket) │
+└──────┬──────┘      └──────┬───────┘      └──────┬──────┘
+       │                    │                      │
+       │                    ▼                      │
+       │             ┌─────────────┐               │
+       └────────────▶│   Firebase  │◀──────────────┘
+                     │  Functions  │
+                     └─────────────┘
+```
+
+### Services
+
+- **`client/`** - Preact-based web application with Phaser game engine
+  - Progressive web app with offline support
+  - Real-time game rendering and user interface
+  - Electron wrapper for desktop distribution (Steam)
+  
+- **`server/`** - Node.js game server with WebSocket communication
+  - Authoritative game state management
+  - Real-time multiplayer synchronization via Socket.io
+  - Game logic validation and anti-cheat measures
+
+- **`api/`** - Firebase Cloud Functions (serverless)
+  - RESTful API for game data operations
+  - Authentication and authorization
+  - Integration with Firestore database
+
+- **`matchmaker/`** - Cloud Run service for player matchmaking
+  - Queue management and skill-based matching
+  - Lobby creation and player coordination
+  - Auto-scaling based on player demand
+
+- **`shared/`** - Shared TypeScript types and utilities
+  - Type-safe communication between services
+  - Reusable game logic and constants
+  - Single source of truth for data models
+
+- **`dashboardv2/`** - Analytics dashboard (Python/Dash)
+  - Real-time game metrics and monitoring
+  - Player statistics and insights
+
+## Tech Stack
+
+### Frontend
+- **Preact** - Lightweight React alternative (3KB)
+- **Phaser 3** - HTML5 game engine
+- **TypeScript** - Type-safe development
+- **Webpack** - Module bundling and optimization
+- **Electron** - Desktop application wrapper
+
+### Backend
+- **Node.js** - Runtime environment
+- **Socket.io** - Real-time bidirectional communication
+- **Express** - HTTP server framework
+- **Firebase Admin SDK** - Backend Firebase integration
+
+### Infrastructure
+- **Firebase Hosting** - Static site hosting with global CDN
+- **Firebase Functions** - Serverless API deployment
+- **Google Cloud Run** - Containerized service deployment
+- **Firestore** - NoSQL document database
+- **Docker** - Containerization and local development
+
+### DevOps
+- **GitHub Actions** - CI/CD automation
+- **Jest** - Testing framework with coverage reporting
+- **ESLint** - Code quality and consistency
+- **Sentry** - Error tracking and monitoring
+
+## CI/CD Pipeline
+
+The project features a comprehensive automated deployment pipeline:
+
+### Continuous Integration
+- **Automated Testing** - All pushes trigger test suites
+  - Server tests with Jest and coverage reporting
+  - Client build verification
+  - API linting and compilation checks
+  - Matchmaker build validation
+
+- **Parallel Execution** - All services tested concurrently
+- **Coverage Reporting** - Codecov integration for visibility
+
+### Continuous Deployment
+- **Path-based Deployment** - Smart detection of changed services
+  - Only deploys affected components
+  - Reduces deployment time and costs
+  - Minimizes production risk
+
+- **Preview Environments** - Automatic staging for pull requests
+  - Temporary Firebase Hosting URLs
+  - 7-day expiration for cost control
+  - Automated comment with preview link
+
+- **Production Deployment** - Automated on merge to `main`
+  - Client → Firebase Hosting
+  - API → Firebase Functions
+  - Matchmaker → Google Cloud Run
+  - Server → Google Cloud Run
+
+- **Manual Triggers** - All workflows support manual execution via GitHub Actions UI
+
+### Workflow Files
+- `.github/workflows/ci.yml` - Test and build validation
+- `.github/workflows/deploy-preview.yml` - PR preview environments
+- `.github/workflows/deploy-client.yml` - Client production deployment
+- `.github/workflows/deploy-matchmaker.yml` - Matchmaker deployment
+
+## Development
+
+### Prerequisites
+- Node.js 20+
+- Docker & Docker Compose (for containerized development)
+- Firebase CLI (for emulator and deployment)
+- npm or yarn
+
+### Local Development with Docker (Recommended)
+
+The easiest way to run the entire stack locally:
+
+```bash
+docker-compose up --build
+```
+
+This starts all services with hot-reloading enabled:
+- **Client**: http://localhost:8080
+- **Firebase Emulators UI**: http://localhost:4000
+- **Game Server**: http://localhost:3123
+- **Matchmaker**: http://localhost:3000
+- **Dashboard**: http://localhost:8050
+
+**Note:** You may need to run `npm install` in `client`, `server`, and `matchmaker` directories for IDE IntelliSense to work properly.
+
+### Bare-Metal Development
+
+Run each service independently:
+
+```bash
+# Terminal 1 - API & Firebase Emulators
+cd api/functions && npm run emulators:start
+
+# Terminal 2 - Client
+cd client && npm run start
+
+# Terminal 3 - Game Server
+cd server && npm run start
+
+# Terminal 4 - Matchmaker
+cd matchmaker && npm run start
+```
+
+### Running Tests
+
+```bash
+# Server tests with coverage
+cd server && npm test
+
+# Watch mode for development
+cd server && npm run test:watch
+
+# Coverage report
+cd server && npm run test:coverage
 ```
 
 ## Deployment
 
-### CI/CD Pipeline (Recommended)
+### Automated Deployment (Primary Method)
 
-The project uses GitHub Actions for automated deployment. See `.github/CI_CD_SUMMARY.md` for a complete overview.
+1. **Develop** - Create a feature branch and make changes
+2. **Test** - Open a PR to trigger automated tests and preview deployment
+3. **Review** - Use the preview URL to verify changes
+4. **Merge** - Merge to `main` to automatically deploy to production
 
-**Quick Start:**
-1. Push to `main` branch
-2. GitHub Actions automatically detects changed services
-3. Runs tests and deploys only what changed
-4. Monitor progress in the Actions tab
-
-**Setup:** See `.github/SETUP.md` for detailed instructions.
-
-**Features:**
-- ✅ Automated testing before deployment
-- ✅ Smart path-based deployment (only deploys changed services)
-- ✅ Preview environments for PRs
-- ✅ Manual deployment option
+The CI/CD pipeline handles everything automatically, including:
+- Running test suites
+- Building optimized bundles
+- Deploying only changed services
+- Updating live environments
 
 ### Manual Deployment (Legacy)
 
-Alternatively, use the bash scripts:
-- API deployment: `bash deploy_api.sh`
-- Client deployment: `bash deploy_client.sh`
-- Server deployment: `bash deploy_server.sh`
-- Matchmaker deployment: `bash deploy_matchmaker.sh`
+For situations where manual deployment is needed:
 
-**Note:** The API has its own `firebase.json` file used for local development with the Firebase emulators. The `firebase.json` at the root of the repository is the one used for deployment to prod.
+```bash
+# Located in tools/legacy_deployment/
+bash tools/legacy_deployment/deploy_client.sh
+bash tools/legacy_deployment/deploy_api.sh
+bash tools/legacy_deployment/deploy_server.sh
+bash tools/legacy_deployment/deploy_matchmaker.sh
+```
 
-### Setting up secrets
+**Note:** The root `firebase.json` is used for production deployment. The `api/functions/firebase.json` is for local emulator development.
 
-For Firebase Functions:  `firebase functions:secrets:set SECRET_NAME`, you'll then be prompted to enter the secret value. It can then be accessed in the code with `process.env.SECRET_NAME`. 
+## Configuration
 
-To access it in Firebase Functions, don't forget to add `{ secrets: ["<secret_name>"] }` to the function declaration.
+### Environment Variables
 
-To access it in one of the Cloud Run services, go to the Google Cloud Console, select the project, then click on the service and edit to create a new revision. In the secrets tab you can add a secret referring to the one set in Firebase.
+Each service uses environment variables for configuration:
 
-# Electron
+**Client** (`.env` or Docker environment):
+```bash
+API_URL=http://localhost:5001/legion-32c6d/us-central1
+GAME_SERVER_URL=http://localhost:3123
+MATCHMAKER_URL=http://localhost:3000
+USE_FIREBASE_EMULATOR=true
+```
 
-To build the Electron app, run `npm run electron:build`. This will create a `release` folder with the app.
+**Server** (Docker or `.env`):
+```bash
+API_URL=http://api:5001/legion-32c6d/us-central1
+CLIENT_ORIGIN=*
+NODE_ENV=development
+```
 
-To run the Electron app, run `npm run electron:dev`. This will start the app in development mode.
+### Managing Secrets
 
-To test the Electron app, run `npm run electron:test`. This will create a `release` folder with the app and run it.
+**Firebase Functions:**
+```bash
+firebase functions:secrets:set SECRET_NAME
+```
 
-## Steam
+Access in code:
+```typescript
+process.env.SECRET_NAME  // Add { secrets: ["SECRET_NAME"] } to function declaration
+```
 
-The Steam build is done by running `npm run electron:build:<platform>`.
+**Cloud Run Services:**
+1. Set secret in Firebase Functions first
+2. Navigate to Google Cloud Console → Cloud Run
+3. Edit service → Create new revision → Add secret reference
 
-Test with `open release/mac-arm64/Legion.app` or `release/mac-arm64/Legion.app/Contents/MacOS/Legion` in a terminal.
+## Desktop Distribution
+
+The client can be packaged as an Electron desktop application for cross-platform distribution.
+
+### Building Desktop Apps
+
+```bash
+cd client
+
+# Development mode
+npm run electron:dev
+
+# Production builds
+npm run electron:build          # macOS + Windows
+npm run electron:build:mac      # macOS only
+npm run electron:build:win      # Windows only
+npm run electron:build:linux    # Linux only
+```
 
 ### Steam Deployment
 
-Partner ID: 325618
+For Steam-specific deployment instructions, see [STEAM_DEPLOYMENT.md](./STEAM_DEPLOYMENT.md).
 
-**Production App**
-- App id: 3729580
-- macOS Depot: 3729581  
-- Windows Depot: 3729582
+## Project Structure
 
-**Playtest App**  
-- App id: 3870830
-- macOS Depot: 3870831
-- Windows Depot: 3870832
-
-#### Deployment Commands
-
-Deploy to production:
-```bash
-./deploy_steam.sh production
+```
+legion/
+├── .github/
+│   └── workflows/              # CI/CD pipeline definitions
+├── api/
+│   └── functions/              # Firebase Cloud Functions
+│       └── src/                # API endpoints
+├── client/
+│   ├── src/                    # Preact components and game code
+│   ├── public/                 # Static assets
+│   └── electron.js             # Electron main process
+├── server/
+│   └── src/                    # Game server logic
+├── matchmaker/
+│   └── src/                    # Matchmaking service
+├── shared/                     # Shared TypeScript definitions
+├── dashboardv2/                # Analytics dashboard
+├── tools/
+│   └── legacy_deployment/      # Manual deployment scripts
+├── docker-compose.yml          # Local development orchestration
+└── firebase.json               # Firebase configuration
 ```
 
-Deploy to playtest:
-```bash
-./deploy_steam.sh playtest
-```
+## Code Quality Practices
 
-The script will automatically:
-1. Generate the appropriate VDF file from template
-2. Upload to Steam using steamcmd
-3. Clean up temporary files
+- **TypeScript Everywhere** - Type safety across all services
+- **Shared Types** - Common definitions prevent API contract drift
+- **Automated Testing** - Server tests with >XX% coverage
+- **Linting** - ESLint enforces code consistency
+- **Code Reviews** - All changes reviewed via pull requests
+- **Preview Environments** - Test changes before production
+- **Error Tracking** - Sentry integration for production monitoring
+- **Performance Monitoring** - Real-time metrics and alerts
 
-#### Manual Setup (one-time)
+## Contributing
 
-For both apps, make sure to:
-- Create depots per OS in Steam Partner portal
-- List all depots in the store package
-- Configure launch options  
-- Verify packages include the correct depots
+1. Create a feature branch from `main`
+2. Make your changes with descriptive commits
+3. Open a pull request
+4. Automated tests will run and create a preview environment
+5. Address review feedback
+6. Merge to `main` for automatic deployment
 
-**Production App Links:**
-- Depots: https://partner.steamgames.com/apps/depots/3729580
-- Builds: https://partner.steamgames.com/apps/builds/3729580
-- Store Package: https://partner.steamgames.com/store/packagelanding/1312865  
-- Launch Options: https://partner.steamgames.com/apps/config/3729580
-- Packages: https://partner.steamgames.com/pub/packageadmin/325618
+## License
 
-**Playtest App Links:**
-- Depots: https://partner.steamgames.com/apps/depots/3870830
-- Builds: https://partner.steamgames.com/apps/builds/3870830
-- Store Package: https://partner.steamgames.com/store/packagelanding/1312865  
-- Launch Options: https://partner.steamgames.com/apps/config/3870830
-- All Packages: https://partner.steamgames.com/pub/packageadmin/325618
-- Manage Playtest: https://partner.steamgames.com/apps/playtest/3870830
+**Proprietary - Source Available for Review Only**
 
-### Steps
+Copyright © 2026 Jerome Renaux
 
-- Make a change
-- `npm run electron:build`
-- `bash deploy_steam.sh playtest`
-- On the Build page, set new build as default; no need to hit "Publish"
-- `bash deploy_steam.sh production`
+This repository is made available for:
+- Portfolio review
+- Educational reference
+- Demonstration purposes
 
-### Checklist
+The source code is **not licensed** for use, modification, or distribution. All rights reserved.
 
-Please ensure that you have:
-- at least one depot set to [All Languages]
-- that you have uploaded the build to that depot
-- that you have added the depot containing your app's files to both the Developer Comp and Free packages AND to the red ones as well
-- that you have set that build live on the "default" branch
-- and that you have correctly configured your launch options
-
-### Troubleshooting
-
-A download size of 0 Mb is probably a sign that the build is not being uploaded to the depot.
-
-If error about "Platform Support Matches", go to Steamworks admin (https://partner.steamgames.com/apps/view/3996730) and tick the right boxes in "Supported Operating Systems".
-
-Try manual upload at: https://partner.steamgames.com/apps/depotuploads/3870830
-
-
-Successfully added child app to publisher 325618
-Added app payment reporting to publisher 325618
-Created package "Legion Demo Developer Comp" with ID 1402723
-Created package "Legion Demo for Beta Testing" with ID 1402724
-Created package "Legion Demo" with ID 1402725
-Successfully added autogrant package 1402723 to publisher 325618
-Created store item '967207'
+If you wish to use any part of this code, please contact me directly.
