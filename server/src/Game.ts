@@ -13,7 +13,7 @@ import { OutcomeData, TerrainUpdate, PlayerDataForGame, GameOutcomeReward, GameD
 import { getChestContent } from '@legion/shared/chests';
 import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
-    LEGION_CUT, TURN_DURATION, KILL_CAM_DURATION, MOVE_DELAY, ATTACK_DELAY, SPELL_DELAY,
+    TURN_DURATION, KILL_CAM_DURATION, MOVE_DELAY, ATTACK_DELAY, SPELL_DELAY,
     ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY, KILLALL_BM, KILLALL_WM, KILLALL_W,
     GRID_WIDTH, GRID_HEIGHT, MOVEMENT_RANGE, SPELL_RANGE, PROJECTILE_DURATION } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
@@ -1246,7 +1246,8 @@ export abstract class Game
     }
 
     computeStakeRewards() {
-        return this.stake * 2 * (1 - LEGION_CUT);
+        // return this.stake * 2 * (1 - LEGION_CUT);
+        return this.stake * 2;
     }
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
