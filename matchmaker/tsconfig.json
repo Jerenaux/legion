@@ -1,9 +1,14 @@
 {
   "compilerOptions": {
+    "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": "./", 
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "outDir": "dist",
+    "target": "es2022",
+    "baseUrl": "./",
     "paths": {
-      "@legion/shared/*": ["../shared/*"] 
+      "@legion/shared/*": ["../shared/*"]
     }
-  },
+  }
 }
