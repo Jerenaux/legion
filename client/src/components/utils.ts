@@ -7,9 +7,9 @@ import guideIcon from '@assets/guide.png';
 import successIcon from '@assets/svg/success.svg';
 import errorIcon from '@assets/svg/error.svg';
 
-import freezeIcon from '@assets/status_icons/freeze_icon.png';
+import freezeIcon from '@assets/status_icons/freeze-icon.png';
 import muteIcon from '@assets/status_icons/mute_icon.png';
-import paralyzeIcon from '@assets/status_icons/paralyze_icon.png';
+import paralyzeIcon from '@assets/status_icons/paralyze-icon.png';
 import blindIcon from '@assets/status_icons/blind_icon.png';
 import sleepIcon from '@assets/status_icons/sleep_icon.png';
 import poisonIcon from '@assets/status_icons/poison_icon.png';

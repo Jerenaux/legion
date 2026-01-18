@@ -51,17 +51,17 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            
+
             const botComment = comments.find(comment => {
               return comment.user.type === 'Bot' && comment.body.includes('Preview deployed');
             });
-            
+
             const output = `## 🚀 Preview deployed!
-            
+
             Your preview environment is ready for review.
-            
+
             **Note:** Preview URLs expire after 7 days.`;
-            
+
             if (botComment) {
               github.rest.issues.updateComment({
                 owner: context.repo.owner,
