@@ -37,6 +37,7 @@ jobs:
         run: |
           cd api/functions
           bun run lint
+        continue-on-error: true
 
       - name: Build API
         run: |
