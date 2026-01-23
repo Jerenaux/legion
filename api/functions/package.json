@@ -6,11 +6,11 @@
     "build": "webpack",
     "build:watch": "webpack --watch",
     "emulators:start": "firebase emulators:start --import ./exports/firestore-emulator-data --export-on-exit ./exports/firestore-emulator-data",
-    "serve:functions": "nodemon --watch 'src/**/*.ts' --exec 'npm run build'",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
+    "serve:functions": "nodemon --watch 'src/**/*.ts' --exec 'bun run build'",
+    "shell": "bun run build && firebase functions:shell",
+    "start": "bun run shell",
     "deploy": "firebase deploy --only functions",
-    "docker:start": "NODE_ENV=docker npm run build && npm run emulators:start & npm run serve:functions"
+    "docker:start": "NODE_ENV=docker bun run build && bun run emulators:start & bun run serve:functions"
   },
   "main": "lib/index.js",
   "dependencies": {

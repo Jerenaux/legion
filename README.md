@@ -6,7 +6,7 @@ A real-time multiplayer game built with a modern microservices architecture, fea
 
 This project implements a distributed system with five core services working together to deliver a seamless multiplayer gaming experience:
 
-```
+```text
 ┌─────────────┐      ┌──────────────┐       ┌─────────────┐
 │   Client    │─────▶│  Matchmaker  │─────▶│   Server    │
 │  (Preact)   │      │  (Cloud Run) │       │ (WebSocket) │
@@ -25,7 +25,6 @@ This project implements a distributed system with five core services working tog
   - Progressive web app with offline support
   - Real-time game rendering and user interface
   - Electron wrapper for desktop distribution (Steam)
-  
 - **`server/`** - Node.js game server with WebSocket communication
   - Authoritative game state management
   - Real-time multiplayer synchronization via Socket.io
@@ -53,6 +52,7 @@ This project implements a distributed system with five core services working tog
 ## Tech Stack
 
 ### Frontend
+
 - **Preact** - Lightweight React alternative (3KB)
 - **Phaser 3** - HTML5 game engine
 - **TypeScript** - Type-safe development
@@ -60,12 +60,14 @@ This project implements a distributed system with five core services working tog
 - **Electron** - Desktop application wrapper
 
 ### Backend
+
 - **Node.js** - Runtime environment
 - **Socket.io** - Real-time bidirectional communication
 - **Express** - HTTP server framework
 - **Firebase Admin SDK** - Backend Firebase integration
 
 ### Infrastructure
+
 - **Firebase Hosting** - Static site hosting with global CDN
 - **Firebase Functions** - Serverless API deployment
 - **Google Cloud Run** - Containerized service deployment
@@ -73,6 +75,7 @@ This project implements a distributed system with five core services working tog
 - **Docker** - Containerization and local development
 
 ### DevOps
+
 - **GitHub Actions** - CI/CD automation
 - **Jest** - Testing framework with coverage reporting
 - **ESLint** - Code quality and consistency
@@ -83,6 +86,7 @@ This project implements a distributed system with five core services working tog
 The project features a comprehensive automated deployment pipeline:
 
 ### Continuous Integration
+
 - **Automated Testing** - All pushes trigger test suites
   - Server tests with Jest and coverage reporting
   - Client build verification
@@ -93,6 +97,7 @@ The project features a comprehensive automated deployment pipeline:
 - **Coverage Reporting** - Codecov integration for visibility
 
 ### Continuous Deployment
+
 - **Path-based Deployment** - Smart detection of changed services
   - Only deploys affected components
   - Reduces deployment time and costs
@@ -112,6 +117,7 @@ The project features a comprehensive automated deployment pipeline:
 - **Manual Triggers** - All workflows support manual execution via GitHub Actions UI
 
 ### Workflow Files
+
 - `.github/workflows/ci.yml` - Test and build validation
 - `.github/workflows/deploy-preview.yml` - PR preview environments
 - `.github/workflows/deploy-client.yml` - Client production deployment
@@ -120,10 +126,11 @@ The project features a comprehensive automated deployment pipeline:
 ## Development
 
 ### Prerequisites
+
+- Bun 1.3+
 - Node.js 20+
 - Docker & Docker Compose (for containerized development)
 - Firebase CLI (for emulator and deployment)
-- Bun
 
 ### Local Development with Docker (Recommended)
 
@@ -134,11 +141,12 @@ docker-compose up --build
 ```
 
 This starts all services with hot-reloading enabled:
-- **Client**: http://localhost:8080
-- **Firebase Emulators UI**: http://localhost:4000
-- **Game Server**: http://localhost:3123
-- **Matchmaker**: http://localhost:3000
-- **Dashboard**: http://localhost:8050
+
+- **Client**: <http://localhost:8080>
+- **Firebase Emulators UI**: <http://localhost:4000>
+- **Game Server**: <http://localhost:3123>
+- **Matchmaker**: <http://localhost:3000>
+- **Dashboard**: <http://localhost:8050>
 
 **Note:** You may need to run `bun install` in `client`, `server`, and `matchmaker` directories for IDE IntelliSense to work properly.
 
@@ -183,6 +191,7 @@ cd server && bun run test:coverage
 4. **Merge** - Merge to `main` to automatically deploy to production
 
 The CI/CD pipeline handles everything automatically, including:
+
 - Running test suites
 - Building optimized bundles
 - Deploying only changed services
@@ -209,6 +218,7 @@ bash tools/legacy_deployment/deploy_matchmaker.sh
 Each service uses environment variables for configuration:
 
 **Client** (`.env` or Docker environment):
+
 ```bash
 API_URL=http://localhost:5001/legion-32c6d/us-central1
 GAME_SERVER_URL=http://localhost:3123
@@ -217,6 +227,7 @@ USE_FIREBASE_EMULATOR=true
 ```
 
 **Server** (Docker or `.env`):
+
 ```bash
 API_URL=http://api:5001/legion-32c6d/us-central1
 CLIENT_ORIGIN=*
@@ -226,16 +237,19 @@ NODE_ENV=development
 ### Managing Secrets
 
 **Firebase Functions:**
+
 ```bash
 firebase functions:secrets:set SECRET_NAME
 ```
 
 Access in code:
+
 ```typescript
-process.env.SECRET_NAME  // Add { secrets: ["SECRET_NAME"] } to function declaration
+process.env.SECRET_NAME; // Add { secrets: ["SECRET_NAME"] } to function declaration
 ```
 
 **Cloud Run Services:**
+
 1. Set secret in Firebase Functions first
 2. Navigate to Google Cloud Console → Cloud Run
 3. Edit service → Create new revision → Add secret reference
@@ -265,7 +279,7 @@ For Steam-specific deployment instructions, see [STEAM_DEPLOYMENT.md](./STEAM_DE
 
 ## Project Structure
 
-```
+```text
 legion/
 ├── .github/
 │   └── workflows/              # CI/CD pipeline definitions
@@ -315,6 +329,7 @@ legion/
 Copyright © 2026 Jerome Renaux
 
 This repository is made available for:
+
 - Portfolio review
 - Educational reference
 - Demonstration purposes
