@@ -7,14 +7,14 @@ A real-time multiplayer game built with a modern microservices architecture, fea
 This project implements a distributed system with five core services working together to deliver a seamless multiplayer gaming experience:
 
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+┌─────────────┐      ┌──────────────┐       ┌─────────────┐
 │   Client    │─────▶│  Matchmaker  │─────▶│   Server    │
-│  (Preact)   │      │  (Cloud Run) │      │ (WebSocket) │
-└──────┬──────┘      └──────┬───────┘      └──────┬──────┘
+│  (Preact)   │      │  (Cloud Run) │       │ (WebSocket) │
+└──────┬──────┘      └──────┬───────┘       └──────┬──────┘
        │                    │                      │
        │                    ▼                      │
        │             ┌─────────────┐               │
-       └────────────▶│   Firebase  │◀──────────────┘
+       └────────────▶│   Firebase  │◀─────────────┘
                      │  Functions  │
                      └─────────────┘
 ```

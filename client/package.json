@@ -12,8 +12,6 @@
     "electron:build:linux": "BUILD_TARGET=electron bun run build && electron-builder --linux",
     "electron:test": "BUILD_TARGET=electron bun run build && electron-builder --dir"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "@hotjar/browser": "^1.0.9",

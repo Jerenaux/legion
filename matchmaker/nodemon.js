@@ -6,7 +6,7 @@ const tsConfigFile = process.env.IS_DOCKER ? 'tsconfig.docker.json' : 'tsconfig.
 nodemon({
   watch: ["src", "shared"],
   ext: "ts",
-  exec: `TS_NODE_PROJECT=${tsConfigFile} npx ts-node -r tsconfig-paths/register ./src/matchmaker.ts`,
+  exec: `TS_NODE_PROJECT=${tsConfigFile} bun run -r tsconfig-paths/register ./src/matchmaker.ts`,
   ignore: ["src/**/*.spec.ts"]
 });
 

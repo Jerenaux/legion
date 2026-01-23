@@ -15,7 +15,7 @@ COPY server/src/ ./src/
 
 RUN bun run build
 
-FROM node:20-slim
+FROM oven/bun:1.3.6-slim
 
 WORKDIR /usr/src/app
 
@@ -27,4 +27,4 @@ COPY server/.production.env ./.env
 
 EXPOSE 3123
 
-CMD ["npm", "run", "start"]
+CMD ["bun", "run", "start"]
