@@ -5,7 +5,8 @@ WORKDIR /usr/src/app
 COPY client/package.json ./
 COPY client/bun.lock ./
 
-RUN bun ci
+# Use --ignore-scripts to skip native compilation of optional packages (bufferutil, utf-8-validate)
+RUN bun install --ignore-scripts
 
 COPY client/electron.js ./
 COPY client/preload.js ./
