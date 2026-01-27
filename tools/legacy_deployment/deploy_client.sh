@@ -1,5 +1,5 @@
 #!/bin/bash
 cd client
-npm run build
+bun run build
 cd ../
 firebase deploy --only hosting

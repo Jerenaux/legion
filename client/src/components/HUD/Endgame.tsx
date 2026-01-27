@@ -14,7 +14,7 @@ import { PlayerContext } from '../../contexts/PlayerContext';
 // Asset imports
 import victoryBg from '@assets/game_end/victory_bg.png';
 import defeatBg from '@assets/game_end/defeat_bg.png';
-import victoryTitle from '@assets/game_end/Victory.png';
+import victoryTitle from '@assets/game_end/victory.png';
 import defeatTitle from '@assets/game_end/defeat.png';
 import gradeA from '@assets/game_end/A.png';
 import gradeB from '@assets/game_end/B.png';
@@ -26,7 +26,6 @@ import gradeS from '@assets/game_end/S.png';
 import gradeSp from '@assets/game_end/S+.png';
 import xpIcon from '@assets/game_end/XP_icon.png';
 import goldIcon from '@assets/gold_icon.png';
-import silverKeyIcon from '@assets/shop/silver_key_icon.png';
 import { mapFrameToCoordinates } from '../utils';
 import { getRewardObject } from '../utils';
 import { getRewardBgImage } from '../utils';

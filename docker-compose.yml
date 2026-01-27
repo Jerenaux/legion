@@ -80,4 +80,3 @@ services:
       - ./dashboardv2:/usr/src/app
     depends_on:
       - api
-

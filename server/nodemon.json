@@ -1,3 +1,3 @@
 {
-    "exec": "node nodemon.js"
+  "exec": "bun nodemon.js"
 }

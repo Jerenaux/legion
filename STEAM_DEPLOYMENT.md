@@ -28,11 +28,11 @@ Before deploying to Steam, you must build the Electron application:
 cd client
 
 # Build for specific platform
-npm run electron:build:mac      # macOS build
-npm run electron:build:win      # Windows build
+bun run electron:build:mac      # macOS build
+bun run electron:build:win      # Windows build
 
 # Build both platforms
-npm run electron:build
+bun run electron:build
 ```
 
 Builds are output to `client/release/`.
@@ -114,7 +114,7 @@ Recommended workflow for releasing updates:
 
 1. **Build** - Create the Electron app locally
    ```bash
-   cd client && npm run electron:build
+   cd client && bun run electron:build
    ```
 
 2. **Deploy to Playtest** - Test with a limited audience

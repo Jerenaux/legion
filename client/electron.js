@@ -42,23 +42,23 @@ function startProductionServer() {
   const express = require('express');
   const expressApp = express();
   const port = 3000; // Use port 3000 which is commonly pre-authorized
-  
+
   let staticPath;
   if (app.isPackaged) {
     staticPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'dist');
   } else {
     staticPath = path.join(__dirname, 'dist');
   }
-  
+
   console.log('Serving static files from:', staticPath);
-  
+
   expressApp.use(express.static(staticPath));
-  
+
   // Handle SPA routing - serve index.html for all routes
   expressApp.get('*', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
   });
-  
+
   return new Promise((resolve, reject) => {
     server = expressApp.listen(port, 'localhost', (err) => {
       if (err) {
@@ -73,7 +73,7 @@ function startProductionServer() {
 
 function createWindow() {
   console.log('Electron: Creating window');
-  
+
   // Fixed preload path for proper resolution in packaged apps
   let preloadPath;
   if (app.isPackaged) {
@@ -90,9 +90,9 @@ function createWindow() {
       preloadPath = rootPreloadPath;
     }
   }
-  
+
   console.log('Electron: Preload script path:', preloadPath);
-  
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
@@ -127,7 +127,7 @@ function createWindow() {
     // In development, load from webpack dev server
     // The webpack dev server is configured to proxy requests to the Docker services
     mainWindow.loadURL('http://localhost:8080');
-    
+
     // Open DevTools in development
     mainWindow.webContents.openDevTools();
 
@@ -149,10 +149,10 @@ function createWindow() {
         console.log('isDev:', isDev);
         console.log('isPackaged:', app.isPackaged);
         console.log('NODE_ENV:', process.env.NODE_ENV);
-        
+ 
         // Temporarily open DevTools for debugging
         // mainWindow.webContents.openDevTools();
-        
+ 
         mainWindow.loadURL(serverUrl).catch(err => {
           console.error('Failed to load URL:', err);
         });
@@ -187,7 +187,7 @@ function createWindow() {
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (ALLOW_CONSOLE && input.type === 'keyDown') {
       // Cmd+Shift+I on macOS, Ctrl+Shift+I on Windows/Linux
-      if ((input.meta && process.platform === 'darwin' || input.control && process.platform !== 'darwin') && 
+      if ((input.meta && process.platform === 'darwin' || input.control && process.platform !== 'darwin') &&
           input.shift && input.key.toLowerCase() === 'i') {
         mainWindow.webContents.toggleDevTools();
       }
@@ -247,4 +247,4 @@ app.on('before-quit', () => {
   if (server) {
     server.close();
   }
-}); 
+});

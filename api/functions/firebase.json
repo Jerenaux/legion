@@ -1,6 +1,5 @@
 {
-  "functions": 
-  {
+  "functions": {
     "source": ".",
     "runtime": "nodejs20",
     "codebase": "default",
@@ -15,7 +14,7 @@
     "auth": {
       "port": 9099,
       "host": "0.0.0.0",
-      "cors": ["matchmaker:3000",  "server:3123"]
+      "cors": ["matchmaker:3000", "server:3123"]
     },
     "functions": {
       "port": 5001,

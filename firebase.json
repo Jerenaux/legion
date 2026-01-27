@@ -10,7 +10,7 @@
       "firebase-debug.*.log"
     ],
     "predeploy": [
-      "npm --prefix ./api/functions run build"
+      "bun run --cwd ./api/functions build"
     ]
   },
   "hosting": {

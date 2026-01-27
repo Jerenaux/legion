@@ -1,54 +1,29 @@
-# Build stage
-FROM node:20 AS builder
+FROM oven/bun:1.3.6 AS builder
 
 WORKDIR /usr/src/app
 
-COPY matchmaker/package*.json ./
+COPY matchmaker/package.json ./
+COPY matchmaker/bun.lock ./
 
-# Install all dependencies (including dev dependencies)
-RUN npm install
+RUN bun ci
 
-# Copy shared directory content
 COPY shared/ ./shared
 
-# Copy matchmaker source code and TypeScript config
 COPY matchmaker/tsconfig.docker.json ./tsconfig.json
 COPY matchmaker/src/ ./src/
 
-# Build the TypeScript code
-RUN npm run build
+RUN bun run build
 
-# Production stage
-FROM node:20-slim
+FROM oven/bun:1.3.6-slim
 
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
-COPY matchmaker/package*.json ./
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 
-# Install only production dependencies
-RUN npm install --omit=dev
-
-# Copy built JavaScript files from the builder stage
 COPY --from=builder /usr/src/app/dist ./dist
 
-# Copy .production.env file and rename it to .env
 COPY matchmaker/.production.env ./.env
-
-# RUN set -x && \
-#     echo "Contents of /usr/src/app:" && \
-#     ls /usr/src/app && \
-#     echo "Contents of /usr/src/app/dist:" && \
-#     ls /usr/src/app/dist && \
-#     echo "Contents of /usr/src/app/dist/shared:" && \
-#     ls /usr/src/app/dist/shared && \
-#     echo "Contents of tsconfig.json:" && \
-#     cat /usr/src/app/tsconfig.json && \
-#     echo "Contents of /usr/src/app/dist/src/matchmaker.js:" && \
-#     cat /usr/src/app/dist/src/matchmaker.js
-
-# ENV NODE_DEBUG=module
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["bun", "run", "start"]

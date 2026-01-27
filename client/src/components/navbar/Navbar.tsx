@@ -24,7 +24,7 @@ import rankIcon from '@assets/rank_btn_idle.png';
 import playActiveIcon from '@assets/play_btn_active.png';
 import teamActiveIcon from '@assets/team_btn_active.png';
 import shopActiveIcon from '@assets/shop_btn_active.png';
-import rankActiveIcon from '@assets/rank_btn_active.png';
+import rankActiveIcon from '@assets/rank-btn-active.png';
 import expandBtn from '@assets/expand_btn.png';
 import helpIcon from '@assets/svg/help.svg';
 import xIcon from '@assets/svg/x.svg';

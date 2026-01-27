@@ -1,12 +1,17 @@
-FROM node:20
+FROM oven/bun:1.3.6
 
 WORKDIR /usr/src/app
 
-COPY server/*.json ./
-COPY server/*.js ./
+COPY server/package.json ./
+COPY server/bun.lock ./
+
+COPY server/nodemon.json ./
+COPY server/nodemon.js ./
+
 COPY server/*.env ./
 
-RUN npm install
+RUN bun install
 
 EXPOSE 3123
-CMD ["npm", "run", "dev"]
+
+CMD ["bun", "run", "dev"]

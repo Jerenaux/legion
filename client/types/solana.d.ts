@@ -1,4 +1,4 @@
-import * as solanaWeb3 from '@solana/web3.js';
+import * as solanaWeb3 from "@solana/web3.js";
 
 declare global {
   interface Window {

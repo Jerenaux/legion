@@ -1,17 +1,15 @@
 {
   "name": "legion-game-server",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
-    "start": "node dist/src/server.js",
+    "start": "bun dist/src/server.js",
     "dev": "nodemon",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org dynetis-games --project legion-server ./dist && sentry-cli sourcemaps upload --org dynetis-games --project legion-server ./dist"
   },
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "@sentry/cli": "^2.36.3",

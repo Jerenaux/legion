@@ -1,14 +1,17 @@
-FROM node:20
+FROM oven/bun:1.3.6
 
 WORKDIR /usr/src/app
 
-COPY matchmaker/*.json ./
-COPY matchmaker/*.js ./
-COPY matchmaker/*.env ./
+COPY matchmaker/package.json ./
+COPY matchmaker/bun.lock ./
 
-RUN npm install
+COPY server/nodemon.json ./
+COPY server/nodemon.js ./
 
-COPY shared/ ./ 
+COPY server/*.env ./
 
-CMD ["npm", "run", "dev"]
-# CMD ["tail", "-f", "/dev/null"]
+RUN bun ci
+
+COPY shared/ ./
+
+CMD ["bun", "run", "dev"]

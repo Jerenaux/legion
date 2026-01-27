@@ -7,9 +7,9 @@
     "rootDir": ".",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": ".", 
+    "baseUrl": ".",
     "paths": {
-      "@legion/shared/*": ["shared/*"] 
+      "@legion/shared/*": ["shared/*"]
     }
   },
   "include": ["src/**/*", "shared/**/*"],
