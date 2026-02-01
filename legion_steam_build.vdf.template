@@ -19,8 +19,8 @@
 				"recursive" "1" // include all subfolders
 			}
 		}
-		
-		"{{DEPOT_ID_WIN}}" // Windows DepotID 
+
+		"{{DEPOT_ID_WIN}}" // Windows DepotID
 		{
 			"FileMapping"
 			{
@@ -30,4 +30,4 @@
 			}
 		}
 	}
-} 
+}

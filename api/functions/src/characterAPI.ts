@@ -652,4 +652,3 @@ export const spendSP = onRequest({
     }
   });
 });
-

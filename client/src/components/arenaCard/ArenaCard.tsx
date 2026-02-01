@@ -1,7 +1,6 @@
 // ArenaCard.tsx
 import './ArenaCard.style.css'
 import { h, Component } from 'preact';
-import { route } from 'preact-router';
 
 type Team = {
   name: string;

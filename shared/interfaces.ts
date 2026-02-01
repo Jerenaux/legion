@@ -1,16 +1,24 @@
-import { BaseEquipment } from "./BaseEquipment";
-import { BaseItem } from "./BaseItem";
-import { BaseSpell } from "./BaseSpell";
+import { BaseEquipment } from './BaseEquipment';
+import { BaseItem } from './BaseItem';
+import { BaseSpell } from './BaseSpell';
 import {
-    Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
-    StatusEffect, Class, PlayMode, League,
+    Stat,
+    Target,
+    EffectDirection,
+    EquipmentSlot,
+    Terrain,
+    ChestColor,
+    StatusEffect,
+    Class,
+    PlayMode,
+    League,
     SpeedClass,
     TargetHighlight,
     LockedFeatures,
     RewardType,
     ConsumableShopCategory,
-    SpellShopCategory
-} from "./enums";
+    SpellShopCategory,
+} from './enums';
 
 export class EffectModifier {
     stat;
@@ -40,7 +48,6 @@ export interface Effect {
     modifiers?: EffectModifiers;
     onKO?: boolean;
 }
-
 
 export interface SpellData {
     id: number;
@@ -93,7 +100,7 @@ export interface EquipmentData {
     frame: number;
     effects: Effect[];
     statusEffects?: WeaponStatusEffect[];
-    slot: EquipmentSlot,
+    slot: EquipmentSlot;
     minLevel?: number;
     classes?: Class[];
     beltSize?: number;
@@ -129,16 +136,15 @@ export interface OutcomeData {
 
 export type CharacterStats = {
     [K in Exclude<Stat, Stat.NONE>]: number;
-}
+};
 
 export type CharacterStatsModifiers = {
     [K in Exclude<Stat, Stat.NONE>]: number[];
-}
+};
 
 export type CharacterStringStats = {
     [key: string]: number;
-}
-
+};
 
 export interface Equipment {
     weapon: number;
@@ -317,16 +323,16 @@ export interface GameData {
         reconnect: boolean;
         spectator: boolean;
         mode: PlayMode;
-    },
+    };
     queue: any[];
     turnee: {
         num: number;
         team: number;
-    },
-    player: GamePlayerData,
-    opponent: GamePlayerData,
-    terrain: TerrainUpdate[],
-    holes: {x: number, y: number}[];
+    };
+    player: GamePlayerData;
+    opponent: GamePlayerData;
+    terrain: TerrainUpdate[];
+    holes: { x: number; y: number }[];
 }
 
 export interface PlayerProps {
@@ -350,7 +356,7 @@ export interface PlayerProps {
 
 export type StatusEffects = {
     [key in StatusEffect]: number;
-}
+};
 
 export interface TeamMember {
     portrait: string;
@@ -380,12 +386,12 @@ export interface EndGameDataResults {
     [key: string]: {
         audience: number;
         score: number;
-    }
+    };
 }
 
 export interface EndGameData {
-    winner: string,
-    results: EndGameDataResults,
+    winner: string;
+    results: EndGameDataResults;
 }
 
 export interface PlayerContextData {
@@ -426,9 +432,9 @@ export interface PlayerDataForGame {
 }
 
 export interface GameReplayMessage {
-    timestamp: number;  // Milliseconds since game start
-    event: string;     // Socket event name
-    data: any;         // Event data
+    timestamp: number; // Milliseconds since game start
+    event: string; // Socket event name
+    data: any; // Event data
 }
 
 export interface LeaderboardRow {
@@ -452,7 +458,7 @@ export interface APILeaderboardResponse {
     seasonEnd: number;
     highlights: any[];
     ranking: LeaderboardRow[];
-  }
+}
 
 export interface FriendData {
     id: string;
@@ -484,4 +490,4 @@ export interface EngagementStats {
     everLowMP: boolean;
 }
 
-export type ChestReward = { type: RewardType, id: number, amount: number };
+export type ChestReward = { type: RewardType; id: number; amount: number };

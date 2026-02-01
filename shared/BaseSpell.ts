@@ -1,6 +1,15 @@
-import { Target, Terrain, Rarity, Class, SpeedClass, TargetHighlight, LockedFeatures, SpellShopCategory } from "./enums";
-import { Effect, SpellData, StatusEffectData } from "./interfaces";
-import { getPrice, getRarity } from "./economy";
+import {
+    Target,
+    Terrain,
+    Rarity,
+    Class,
+    SpeedClass,
+    TargetHighlight,
+    LockedFeatures,
+    SpellShopCategory,
+} from './enums';
+import { Effect, SpellData, StatusEffectData } from './interfaces';
+import { getPrice, getRarity } from './economy';
 
 export class BaseSpell {
     id: number = -1;
@@ -16,7 +25,7 @@ export class BaseSpell {
     charge?: string;
     speedClass: SpeedClass = SpeedClass.NORMAL;
     sfx: string = '';
-    score: number= 0;
+    score: number = 0;
     terrain: Terrain = Terrain.NONE;
     rarity: Rarity = Rarity.COMMON;
     price: number = 0;
@@ -27,7 +36,7 @@ export class BaseSpell {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: SpellShopCategory;
-    
+
     constructor(props: SpellData) {
         Object.assign(this, props);
         this.price = getPrice(props.effort);
@@ -47,13 +56,13 @@ export class BaseSpell {
             this.cost = Math.round(this.cost * 3);
             // this.castTime = Math.round(this.castTime * 3);
         }
-    
+
         if (props.status) {
             this.cost = Math.round(this.cost * 2);
             // this.castTime = Math.round(this.castTime * 2);
         }
         // Round cost to a multiple of 5
-        this.cost = Math.ceil(this.cost/5)*5;
+        this.cost = Math.ceil(this.cost / 5) * 5;
         // this.castTime = Math.round(this.castTime);
 
         // Overrides

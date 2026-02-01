@@ -40,7 +40,7 @@ class TitleScreen extends Component<{}, { showLoginOptions: boolean }> {
       <div className="login-header">
         <p>Choose your sign in/up method</p>
       </div>
-      <div ref={el => (this.firebaseUIContainer = el)} id="firebaseui-auth-container"></div>
+      <div ref={el => {(this.firebaseUIContainer = el)}} id="firebaseui-auth-container"></div>
       <button className="back-button" onClick={this.clearFirebaseUI}>Back</button>
     </div>
   );

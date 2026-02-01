@@ -1,18 +1,18 @@
-import { BaseItem } from "./BaseItem";
-import { Stat, StatusEffect, Target, SpeedClass, TargetHighlight, LockedFeatures, ConsumableShopCategory } from ".";
+import { BaseItem } from './BaseItem';
+import { Stat, StatusEffect, Target, SpeedClass, TargetHighlight, LockedFeatures, ConsumableShopCategory } from '.';
 
 export const items: BaseItem[] = [];
 
 items[0] = new BaseItem({
     id: 0,
-    name: "Potion",
-    description: "Restores 50 HP",
+    name: 'Potion',
+    description: 'Restores 50 HP',
     frame: 0,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.FAST,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: 50}],
+    effects: [{ stat: Stat.HP, value: 50 }],
     effort: 0.15,
     unlock: LockedFeatures.CONSUMABLES_BATCH_1,
     category: ConsumableShopCategory.HEALING,
@@ -20,14 +20,14 @@ items[0] = new BaseItem({
 
 items[1] = new BaseItem({
     id: 1,
-    name: "Ether",
-    description: "Restores 20 MP",
+    name: 'Ether',
+    description: 'Restores 20 MP',
     frame: 3,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.FAST,
     target: Target.SELF,
-    effects: [{stat: Stat.MP, value: 20}],
+    effects: [{ stat: Stat.MP, value: 20 }],
     effort: 0.3,
     unlock: LockedFeatures.CONSUMABLES_BATCH_1,
     category: ConsumableShopCategory.HEALING,
@@ -35,14 +35,14 @@ items[1] = new BaseItem({
 
 items[2] = new BaseItem({
     id: 2,
-    name: "Hi-Potion",
-    description: "Restores 250 HP",
+    name: 'Hi-Potion',
+    description: 'Restores 250 HP',
     frame: 1,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.NORMAL,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: 250}],
+    effects: [{ stat: Stat.HP, value: 250 }],
     effort: 1,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
@@ -50,14 +50,14 @@ items[2] = new BaseItem({
 
 items[3] = new BaseItem({
     id: 3,
-    name: "Hi-Ether",
-    description: "Restores 100 MP",
+    name: 'Hi-Ether',
+    description: 'Restores 100 MP',
     frame: 4,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.NORMAL,
     target: Target.SELF,
-    effects: [{stat: Stat.MP, value: 100}],
+    effects: [{ stat: Stat.MP, value: 100 }],
     effort: 2,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
@@ -65,14 +65,14 @@ items[3] = new BaseItem({
 
 items[4] = new BaseItem({
     id: 4,
-    name: "X-Potion",
-    description: "Restores 1000 HP",
+    name: 'X-Potion',
+    description: 'Restores 1000 HP',
     frame: 2,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.SLOW,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: 1000}],
+    effects: [{ stat: Stat.HP, value: 1000 }],
     effort: 5.5,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
@@ -80,14 +80,14 @@ items[4] = new BaseItem({
 
 items[5] = new BaseItem({
     id: 5,
-    name: "X-Ether",
-    description: "Restores 300 MP",
+    name: 'X-Ether',
+    description: 'Restores 300 MP',
     frame: 5,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.SLOW,
     target: Target.SELF,
-    effects: [{stat: Stat.MP, value: 300}],
+    effects: [{ stat: Stat.MP, value: 300 }],
     effort: 8,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
@@ -95,14 +95,17 @@ items[5] = new BaseItem({
 
 items[6] = new BaseItem({
     id: 6,
-    name: "Elixir",
-    description: "Restores 250 HP and 100 MP",
+    name: 'Elixir',
+    description: 'Restores 250 HP and 100 MP',
     frame: 6,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.NORMAL,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: 250}, {stat: Stat.MP, value: 100}],
+    effects: [
+        { stat: Stat.HP, value: 250 },
+        { stat: Stat.MP, value: 100 },
+    ],
     effort: 4,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
@@ -110,14 +113,17 @@ items[6] = new BaseItem({
 
 items[7] = new BaseItem({
     id: 7,
-    name: "X-Elixir",
-    description: "Restores 1000 HP and 300 MP",
-    frame: 7, 
-    animation: "potion_heal",
-    sfx: "healing",
+    name: 'X-Elixir',
+    description: 'Restores 1000 HP and 300 MP',
+    frame: 7,
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.SLOW,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: 1000}, {stat: Stat.MP, value: 300}],
+    effects: [
+        { stat: Stat.HP, value: 1000 },
+        { stat: Stat.MP, value: 300 },
+    ],
     effort: 18,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
@@ -125,15 +131,15 @@ items[7] = new BaseItem({
 
 items[8] = new BaseItem({
     id: 8,
-    name: "Clover",
-    description: "Revives a character with 10 HP",
+    name: 'Clover',
+    description: 'Revives a character with 10 HP',
     frame: 9,
-    animation: "potion_heal",
+    animation: 'potion_heal',
     radius: 1,
-    sfx: "healing",
+    sfx: 'healing',
     speedClass: SpeedClass.NORMAL,
     target: Target.SINGLE,
-    effects: [{stat: Stat.HP, value: 50, onKO: true}],
+    effects: [{ stat: Stat.HP, value: 50, onKO: true }],
     effort: 1,
     unlock: LockedFeatures.CONSUMABLES_BATCH_1,
     targetHighlight: TargetHighlight.DEAD,
@@ -142,14 +148,17 @@ items[8] = new BaseItem({
 
 items[9] = new BaseItem({
     id: 9,
-    name: "Concoction",
-    description: "Fully restores HP and MP",
+    name: 'Concoction',
+    description: 'Fully restores HP and MP',
     frame: 8,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.SLOW,
     target: Target.SELF,
-    effects: [{stat: Stat.HP, value: -1}, {stat: Stat.MP, value: -1}],
+    effects: [
+        { stat: Stat.HP, value: -1 },
+        { stat: Stat.MP, value: -1 },
+    ],
     effort: 20,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
@@ -157,11 +166,11 @@ items[9] = new BaseItem({
 
 items[10] = new BaseItem({
     id: 10,
-    name: "Antidote",
-    description: "Cures poison",
+    name: 'Antidote',
+    description: 'Cures poison',
     frame: 10,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.FAST,
     target: Target.SELF,
     effects: [],
@@ -173,11 +182,11 @@ items[10] = new BaseItem({
 
 items[11] = new BaseItem({
     id: 11,
-    name: "Remedy",
-    description: "Cures all status effects",
+    name: 'Remedy',
+    description: 'Cures all status effects',
     frame: 11,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.NORMAL,
     target: Target.SELF,
     effects: [],
@@ -189,11 +198,11 @@ items[11] = new BaseItem({
 
 items[12] = new BaseItem({
     id: 12,
-    name: "Bocca",
-    description: "Cures silence",
+    name: 'Bocca',
+    description: 'Cures silence',
     frame: 12,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.FAST,
     target: Target.SELF,
     effects: [],
@@ -205,31 +214,31 @@ items[12] = new BaseItem({
 
 items[13] = new BaseItem({
     id: 13,
-    name: "Haste potion",
-    description: "Hastes a character for 5 turns, making them get new turns faster",
+    name: 'Haste potion',
+    description: 'Hastes a character for 5 turns, making them get new turns faster',
     frame: 13,
-    animation: "potion_heal",
-    sfx: "healing",
+    animation: 'potion_heal',
+    sfx: 'healing',
     speedClass: SpeedClass.FAST,
     target: Target.SELF,
     effects: [],
-    status: {effect: StatusEffect.HASTE, chance: 1, duration: 5},
+    status: { effect: StatusEffect.HASTE, chance: 1, duration: 5 },
     effort: 6,
     unlock: LockedFeatures.CONSUMABLES_BATCH_2,
     category: ConsumableShopCategory.BOOSTS,
 });
 
 export function getConsumableById(id: number): BaseItem | undefined {
-    return items.find(item => item.id === id);
+    return items.find((item) => item.id === id);
 }
 
 export function getRandomConsumableByRarity(rarity: number): BaseItem {
-    const filtered = items.filter(item => item.rarity === rarity);
+    const filtered = items.filter((item) => item.rarity === rarity);
     return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
-export function getStarterConsumables(effort: number):number[] {
-    return items.filter(item => item.effort <= effort).map(item => item.id);
+export function getStarterConsumables(effort: number): number[] {
+    return items.filter((item) => item.effort <= effort).map((item) => item.id);
 }
 
 export const MAGE_SPECIFIC_ITEMS = [1, 3, 5, 12];

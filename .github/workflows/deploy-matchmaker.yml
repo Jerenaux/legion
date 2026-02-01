@@ -5,19 +5,19 @@ on:
     branches:
       - main
     paths:
-      - 'matchmaker/**'
-      - 'shared/**'
-      - '.github/workflows/deploy-matchmaker.yml'
-  workflow_dispatch:  # Allow manual trigger
+      - "matchmaker/**"
+      - "shared/**"
+      - ".github/workflows/deploy-matchmaker.yml"
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   deploy:
     name: Deploy Matchmaker
     runs-on: ubuntu-latest
-    
+
     # Only run on main branch pushes (skip PRs)
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

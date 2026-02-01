@@ -1,5 +1,5 @@
-import { Rarity } from "./enums";
-import { AVERAGE_GOLD_REWARD_PER_GAME } from "./config";
+import { Rarity } from './enums';
+import { AVERAGE_GOLD_REWARD_PER_GAME } from './config';
 
 export function getPrice(effort: number): number {
     return Math.floor(effort * AVERAGE_GOLD_REWARD_PER_GAME);

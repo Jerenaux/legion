@@ -1,41 +1,44 @@
-import { BaseEquipment } from "./BaseEquipment";
-import { Stat, EquipmentSlot, Rarity, Class, StatusEffect } from ".";
-import { getPrice } from "./economy";
+import { BaseEquipment } from './BaseEquipment';
+import { Stat, EquipmentSlot, Class, StatusEffect } from '.';
 
-export const equipments:BaseEquipment[] = [];
+export const equipments: BaseEquipment[] = [];
 
 equipments[0] = new BaseEquipment({
     id: 0,
-    name: "Jagged Sword",
-    description: "",
+    name: 'Jagged Sword',
+    description: '',
     frame: 0,
-    effects: [{stat: Stat.ATK, value: 100}, {stat: Stat.DEF, value: 15}],
+    effects: [
+        { stat: Stat.ATK, value: 100 },
+        { stat: Stat.DEF, value: 15 },
+    ],
     slot: EquipmentSlot.WEAPON,
     effort: 45,
     minLevel: 15,
     classes: [Class.WARRIOR],
 });
 
-
 equipments[1] = new BaseEquipment({
     id: 1,
-    name: "Basic staff",
-    description: "",
+    name: 'Basic staff',
+    description: '',
     frame: 20,
-    effects: [{stat: Stat.SPATK, value: 5}, {stat: Stat.MP, value: 10}],
+    effects: [
+        { stat: Stat.SPATK, value: 5 },
+        { stat: Stat.MP, value: 10 },
+    ],
     slot: EquipmentSlot.WEAPON,
     effort: 4,
     minLevel: 1,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
-
 equipments[2] = new BaseEquipment({
     id: 2,
-    name: "Ring of the Soul",
-    description: "",
+    name: 'Ring of the Soul',
+    description: '',
     frame: 40,
-    effects: [{stat: Stat.MP, value: 150}],
+    effects: [{ stat: Stat.MP, value: 150 }],
     slot: EquipmentSlot.LEFT_RING,
     effort: 50,
     minLevel: 1,
@@ -44,8 +47,8 @@ equipments[2] = new BaseEquipment({
 
 equipments[3] = new BaseEquipment({
     id: 3,
-    name: "Basic belt",
-    description: "Increases item slots by 1",
+    name: 'Basic belt',
+    description: 'Increases item slots by 1',
     frame: 60,
     effects: [],
     slot: EquipmentSlot.BELT,
@@ -56,8 +59,8 @@ equipments[3] = new BaseEquipment({
 
 equipments[4] = new BaseEquipment({
     id: 4,
-    name: "Large belt",
-    description: "Increases item slots by 2",
+    name: 'Large belt',
+    description: 'Increases item slots by 2',
     frame: 61,
     effects: [],
     slot: EquipmentSlot.BELT,
@@ -68,10 +71,10 @@ equipments[4] = new BaseEquipment({
 
 equipments[5] = new BaseEquipment({
     id: 5,
-    name: "Dagger",
-    description: "",
+    name: 'Dagger',
+    description: '',
     frame: 1,
-    effects: [{stat: Stat.ATK, value: 10}],
+    effects: [{ stat: Stat.ATK, value: 10 }],
     slot: EquipmentSlot.WEAPON,
     effort: 3,
     minLevel: 1,
@@ -81,9 +84,9 @@ equipments[5] = new BaseEquipment({
 equipments[6] = new BaseEquipment({
     id: 6,
     name: "Traveler's hat",
-    description: "",
+    description: '',
     frame: 70,
-    effects: [{stat: Stat.DEF, value: 10}],
+    effects: [{ stat: Stat.DEF, value: 10 }],
     slot: EquipmentSlot.HELMET,
     effort: 3,
     minLevel: 1,
@@ -91,10 +94,10 @@ equipments[6] = new BaseEquipment({
 
 equipments[7] = new BaseEquipment({
     id: 7,
-    name: "Cloth tunic",
-    description: "",
+    name: 'Cloth tunic',
+    description: '',
     frame: 90,
-    effects: [{stat: Stat.DEF, value: 10}],
+    effects: [{ stat: Stat.DEF, value: 10 }],
     slot: EquipmentSlot.ARMOR,
     effort: 4,
     minLevel: 1,
@@ -102,10 +105,13 @@ equipments[7] = new BaseEquipment({
 
 equipments[8] = new BaseEquipment({
     id: 8,
-    name: "Hardened gloves",
-    description: "",
+    name: 'Hardened gloves',
+    description: '',
     frame: 110,
-    effects: [{stat: Stat.DEF, value: 20}, {stat: Stat.SPDEF, value: 10}],
+    effects: [
+        { stat: Stat.DEF, value: 20 },
+        { stat: Stat.SPDEF, value: 10 },
+    ],
     slot: EquipmentSlot.GLOVES,
     effort: 10,
     minLevel: 5,
@@ -113,10 +119,16 @@ equipments[8] = new BaseEquipment({
 
 equipments[9] = new BaseEquipment({
     id: 9,
-    name: "Whispering Boots",
-    description: "",
+    name: 'Whispering Boots',
+    description: '',
     frame: 130,
-    effects: [{stat: Stat.SPEED, value: 10}, {stat: Stat.MP, value: 15}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [
+        { stat: Stat.SPEED, value: 10 },
+        { stat: Stat.MP, value: 15 },
+        { stat: Stat.DEF, value: 5 },
+        { stat: Stat.SPATK, value: 5 },
+        { stat: Stat.SPDEF, value: 5 },
+    ],
     slot: EquipmentSlot.BOOTS,
     effort: 9,
     minLevel: 1,
@@ -125,10 +137,10 @@ equipments[9] = new BaseEquipment({
 
 equipments[10] = new BaseEquipment({
     id: 10,
-    name: "Golden necklace",
-    description: "",
+    name: 'Golden necklace',
+    description: '',
     frame: 50,
-    effects: [{stat: Stat.HP, value: 40}],
+    effects: [{ stat: Stat.HP, value: 40 }],
     slot: EquipmentSlot.NECKLACE,
     effort: 12,
     minLevel: 1,
@@ -136,10 +148,13 @@ equipments[10] = new BaseEquipment({
 
 equipments[11] = new BaseEquipment({
     id: 11,
-    name: "Helmet",
-    description: "",
+    name: 'Helmet',
+    description: '',
     frame: 71,
-    effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 5}],
+    effects: [
+        { stat: Stat.DEF, value: 30 },
+        { stat: Stat.SPDEF, value: 5 },
+    ],
     slot: EquipmentSlot.HELMET,
     effort: 11,
     minLevel: 5,
@@ -148,10 +163,13 @@ equipments[11] = new BaseEquipment({
 
 equipments[12] = new BaseEquipment({
     id: 12,
-    name: "Leather armor",
-    description: "",
+    name: 'Leather armor',
+    description: '',
     frame: 91,
-    effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 10}],
+    effects: [
+        { stat: Stat.DEF, value: 30 },
+        { stat: Stat.SPDEF, value: 10 },
+    ],
     slot: EquipmentSlot.ARMOR,
     effort: 12,
     minLevel: 5,
@@ -160,10 +178,13 @@ equipments[12] = new BaseEquipment({
 
 equipments[13] = new BaseEquipment({
     id: 13,
-    name: "Armored gloves",
-    description: "",
+    name: 'Armored gloves',
+    description: '',
     frame: 111,
-    effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.ATK, value: 10}],
+    effects: [
+        { stat: Stat.DEF, value: 50 },
+        { stat: Stat.ATK, value: 10 },
+    ],
     slot: EquipmentSlot.GLOVES,
     effort: 19,
     minLevel: 10,
@@ -172,10 +193,14 @@ equipments[13] = new BaseEquipment({
 
 equipments[14] = new BaseEquipment({
     id: 14,
-    name: "Armored boots",
-    description: "",
+    name: 'Armored boots',
+    description: '',
     frame: 131,
-    effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 20}, {stat: Stat.SPEED, value: 15}],
+    effects: [
+        { stat: Stat.DEF, value: 30 },
+        { stat: Stat.SPDEF, value: 20 },
+        { stat: Stat.SPEED, value: 15 },
+    ],
     slot: EquipmentSlot.BOOTS,
     effort: 15,
     minLevel: 10,
@@ -184,10 +209,10 @@ equipments[14] = new BaseEquipment({
 
 equipments[15] = new BaseEquipment({
     id: 15,
-    name: "Light gloves",
-    description: "",
+    name: 'Light gloves',
+    description: '',
     frame: 112,
-    effects: [{stat: Stat.DEF, value: 10}],
+    effects: [{ stat: Stat.DEF, value: 10 }],
     slot: EquipmentSlot.GLOVES,
     effort: 3,
     minLevel: 1,
@@ -195,10 +220,10 @@ equipments[15] = new BaseEquipment({
 
 equipments[16] = new BaseEquipment({
     id: 16,
-    name: "Jade necklace",
-    description: "",
+    name: 'Jade necklace',
+    description: '',
     frame: 51,
-    effects: [{stat: Stat.MP, value: 20}],
+    effects: [{ stat: Stat.MP, value: 20 }],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
     minLevel: 1,
@@ -207,10 +232,10 @@ equipments[16] = new BaseEquipment({
 
 equipments[17] = new BaseEquipment({
     id: 17,
-    name: "Golden ring",
-    description: "",
+    name: 'Golden ring',
+    description: '',
     frame: 41,
-    effects: [{stat: Stat.HP, value: 20}],
+    effects: [{ stat: Stat.HP, value: 20 }],
     slot: EquipmentSlot.LEFT_RING,
     effort: 4,
     minLevel: 1,
@@ -219,9 +244,12 @@ equipments[17] = new BaseEquipment({
 equipments[18] = new BaseEquipment({
     id: 18,
     name: "Knight's helmet",
-    description: "",
+    description: '',
     frame: 72,
-    effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.SPDEF, value: 20}],
+    effects: [
+        { stat: Stat.DEF, value: 50 },
+        { stat: Stat.SPDEF, value: 20 },
+    ],
     slot: EquipmentSlot.HELMET,
     effort: 21,
     minLevel: 10,
@@ -231,9 +259,12 @@ equipments[18] = new BaseEquipment({
 equipments[19] = new BaseEquipment({
     id: 19,
     name: "Knight's armor",
-    description: "",
+    description: '',
     frame: 92,
-    effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.SPDEF, value: 25}],
+    effects: [
+        { stat: Stat.DEF, value: 50 },
+        { stat: Stat.SPDEF, value: 25 },
+    ],
     slot: EquipmentSlot.ARMOR,
     effort: 23,
     minLevel: 10,
@@ -242,10 +273,14 @@ equipments[19] = new BaseEquipment({
 
 equipments[20] = new BaseEquipment({
     id: 20,
-    name: "Light boots",
-    description: "",
+    name: 'Light boots',
+    description: '',
     frame: 132,
-    effects: [{stat: Stat.DEF, value: 10}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPEED, value: 5}],
+    effects: [
+        { stat: Stat.DEF, value: 10 },
+        { stat: Stat.DEF, value: 10 },
+        { stat: Stat.SPEED, value: 5 },
+    ],
     slot: EquipmentSlot.BOOTS,
     effort: 6,
     minLevel: 1,
@@ -253,10 +288,14 @@ equipments[20] = new BaseEquipment({
 
 equipments[21] = new BaseEquipment({
     id: 21,
-    name: "Ruby ring",
-    description: "",
+    name: 'Ruby ring',
+    description: '',
     frame: 42,
-    effects: [{stat: Stat.HP, value: 10}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}],
+    effects: [
+        { stat: Stat.HP, value: 10 },
+        { stat: Stat.ATK, value: 5 },
+        { stat: Stat.DEF, value: 5 },
+    ],
     slot: EquipmentSlot.LEFT_RING,
     effort: 6,
     minLevel: 5,
@@ -264,10 +303,10 @@ equipments[21] = new BaseEquipment({
 
 equipments[22] = new BaseEquipment({
     id: 22,
-    name: "Teardrop necklace",
-    description: "",
+    name: 'Teardrop necklace',
+    description: '',
     frame: 52,
-    effects: [{stat: Stat.HP, value: 20}],
+    effects: [{ stat: Stat.HP, value: 20 }],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
     minLevel: 1,
@@ -275,10 +314,16 @@ equipments[22] = new BaseEquipment({
 
 equipments[23] = new BaseEquipment({
     id: 23,
-    name: "Astral Scepter",
-    description: "",
+    name: 'Astral Scepter',
+    description: '',
     frame: 21,
-    effects: [{stat: Stat.HP, value: 15}, {stat: Stat.MP, value: 30}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 40}, {stat: Stat.SPDEF, value: 30}],
+    effects: [
+        { stat: Stat.HP, value: 15 },
+        { stat: Stat.MP, value: 30 },
+        { stat: Stat.DEF, value: 5 },
+        { stat: Stat.SPATK, value: 40 },
+        { stat: Stat.SPDEF, value: 30 },
+    ],
     slot: EquipmentSlot.WEAPON,
     effort: 35,
     minLevel: 10,
@@ -288,9 +333,15 @@ equipments[23] = new BaseEquipment({
 equipments[24] = new BaseEquipment({
     id: 24,
     name: "Sorcerer's Cowl",
-    description: "",
+    description: '',
     frame: 73,
-    effects: [{stat: Stat.HP, value: 15}, {stat: Stat.MP, value: 50}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPATK, value: 25}, {stat: Stat.SPDEF, value: 30}],
+    effects: [
+        { stat: Stat.HP, value: 15 },
+        { stat: Stat.MP, value: 50 },
+        { stat: Stat.DEF, value: 10 },
+        { stat: Stat.SPATK, value: 25 },
+        { stat: Stat.SPDEF, value: 30 },
+    ],
     slot: EquipmentSlot.HELMET,
     effort: 40,
     minLevel: 20,
@@ -300,9 +351,14 @@ equipments[24] = new BaseEquipment({
 equipments[25] = new BaseEquipment({
     id: 25,
     name: "Novice Wizard's Hat",
-    description: "",
+    description: '',
     frame: 74,
-    effects: [{stat: Stat.MP, value: 15}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [
+        { stat: Stat.MP, value: 15 },
+        { stat: Stat.DEF, value: 5 },
+        { stat: Stat.SPATK, value: 5 },
+        { stat: Stat.SPDEF, value: 5 },
+    ],
     slot: EquipmentSlot.HELMET,
     effort: 9,
     minLevel: 1,
@@ -312,9 +368,14 @@ equipments[25] = new BaseEquipment({
 equipments[26] = new BaseEquipment({
     id: 26,
     name: "Acolyte's Tunic",
-    description: "",
+    description: '',
     frame: 93,
-    effects: [{stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 10}, {stat: Stat.SPATK, value: 5}, {stat: Stat.MP, value: 10}],
+    effects: [
+        { stat: Stat.DEF, value: 5 },
+        { stat: Stat.SPDEF, value: 10 },
+        { stat: Stat.SPATK, value: 5 },
+        { stat: Stat.MP, value: 10 },
+    ],
     slot: EquipmentSlot.ARMOR,
     effort: 9,
     minLevel: 1,
@@ -324,9 +385,14 @@ equipments[26] = new BaseEquipment({
 equipments[27] = new BaseEquipment({
     id: 27,
     name: "Traveler's gloves",
-    description: "",
+    description: '',
     frame: 113,
-    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.ATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [
+        { stat: Stat.HP, value: 5 },
+        { stat: Stat.DEF, value: 5 },
+        { stat: Stat.ATK, value: 5 },
+        { stat: Stat.SPDEF, value: 5 },
+    ],
     slot: EquipmentSlot.GLOVES,
     effort: 8,
     minLevel: 1,
@@ -335,9 +401,14 @@ equipments[27] = new BaseEquipment({
 equipments[28] = new BaseEquipment({
     id: 28,
     name: "Sentinel's Greaves",
-    description: "",
+    description: '',
     frame: 133,
-    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPDEF, value: 5}, {stat: Stat.SPEED, value: 10}],
+    effects: [
+        { stat: Stat.HP, value: 5 },
+        { stat: Stat.DEF, value: 10 },
+        { stat: Stat.SPDEF, value: 5 },
+        { stat: Stat.SPEED, value: 10 },
+    ],
     slot: EquipmentSlot.BOOTS,
     effort: 10,
     minLevel: 5,
@@ -346,10 +417,16 @@ equipments[28] = new BaseEquipment({
 
 equipments[29] = new BaseEquipment({
     id: 29,
-    name: "Ruby signet",
-    description: "",
+    name: 'Ruby signet',
+    description: '',
     frame: 43,
-    effects: [{stat: Stat.HP, value: 10}, {stat: Stat.MP, value: 15}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [
+        { stat: Stat.HP, value: 10 },
+        { stat: Stat.MP, value: 15 },
+        { stat: Stat.ATK, value: 5 },
+        { stat: Stat.DEF, value: 5 },
+        { stat: Stat.SPDEF, value: 5 },
+    ],
     slot: EquipmentSlot.LEFT_RING,
     effort: 12,
     minLevel: 8,
@@ -358,9 +435,12 @@ equipments[29] = new BaseEquipment({
 equipments[30] = new BaseEquipment({
     id: 30,
     name: "Wayfarer's cord",
-    description: "",
+    description: '',
     frame: 53,
-    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.MP, value: 5}],
+    effects: [
+        { stat: Stat.HP, value: 5 },
+        { stat: Stat.MP, value: 5 },
+    ],
     slot: EquipmentSlot.NECKLACE,
     effort: 3,
     minLevel: 1,
@@ -368,12 +448,12 @@ equipments[30] = new BaseEquipment({
 
 equipments[31] = new BaseEquipment({
     id: 31,
-    name: "Sturdy Iron Sword",
-    description: "",
+    name: 'Sturdy Iron Sword',
+    description: '',
     frame: 2,
     effects: [
-        {stat: Stat.ATK, value: 25},
-        {stat: Stat.DEF, value: 5}
+        { stat: Stat.ATK, value: 25 },
+        { stat: Stat.DEF, value: 5 },
     ],
     slot: EquipmentSlot.WEAPON,
     effort: 6,
@@ -384,17 +464,17 @@ equipments[31] = new BaseEquipment({
 equipments[32] = new BaseEquipment({
     id: 32,
     name: "Serpent's Fang",
-    description: "80% chance to poison enemy on melee attacks.",
+    description: '80% chance to poison enemy on melee attacks.',
     frame: 22,
     effects: [
-        {stat: Stat.ATK, value: 35},
-        {stat: Stat.MP, value: 35},
+        { stat: Stat.ATK, value: 35 },
+        { stat: Stat.MP, value: 35 },
     ],
     statusEffects: [
         {
             effect: StatusEffect.POISON,
             chance: 0.8,
-        }
+        },
     ],
     slot: EquipmentSlot.WEAPON,
     effort: 25,
@@ -404,17 +484,15 @@ equipments[32] = new BaseEquipment({
 
 equipments[33] = new BaseEquipment({
     id: 33,
-    name: "Viridian Striker",
-    description: "30% chance to poison enemy on melee attacks.",
-    frame: 3, 
-    effects: [
-        {stat: Stat.ATK, value: 40},
-    ],
+    name: 'Viridian Striker',
+    description: '30% chance to poison enemy on melee attacks.',
+    frame: 3,
+    effects: [{ stat: Stat.ATK, value: 40 }],
     statusEffects: [
         {
             effect: StatusEffect.POISON,
             chance: 0.3,
-        }
+        },
     ],
     slot: EquipmentSlot.WEAPON,
     effort: 20,
@@ -422,11 +500,11 @@ equipments[33] = new BaseEquipment({
     classes: [Class.WARRIOR],
 });
 
-export function getEquipmentById(id:number): BaseEquipment | undefined {
-    return equipments.find(e => e.id === id);
+export function getEquipmentById(id: number): BaseEquipment | undefined {
+    return equipments.find((e) => e.id === id);
 }
 
 export function getRandomEquipmentByRarity(rarity: number): BaseEquipment {
-    const filtered = equipments.filter(item => item.rarity === rarity);
+    const filtered = equipments.filter((item) => item.rarity === rarity);
     return filtered[Math.floor(Math.random() * filtered.length)];
 }

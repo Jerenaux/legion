@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, jest } from 'bun:test';
+
 import { ServerPlayer } from '../ServerPlayer';
 import { Team } from '../Team';
 import { Stat, StatusEffect } from '@legion/shared/enums';
@@ -57,7 +59,7 @@ describe('ServerPlayer', () => {
       };
       mockTeam = new Team(1, mockGame);
       player.setTeam(mockTeam);
-      
+
       player.hp = 100;
       player._hp = 100;
       player.stats = {
@@ -89,7 +91,7 @@ describe('ServerPlayer', () => {
 
     it('should calculate HP ratio correctly', () => {
       expect(player.getHPratio()).toBeCloseTo(100 / 150, 2);
-      
+
       player.hp = 75;
       expect(player.getHPratio()).toBeCloseTo(0.5, 2);
     });
@@ -298,7 +300,7 @@ describe('ServerPlayer', () => {
     it('should set team correctly', () => {
       const mockGame = {} as any;
       const team = new Team(1, mockGame);
-      
+
       player.setTeam(team);
       expect(player.team).toBe(team);
     });
@@ -307,7 +309,7 @@ describe('ServerPlayer', () => {
       const mockGame = {} as any;
       const team = new Team(1, mockGame);
       player.setTeam(team);
-      
+
       expect(player.team).toBe(team);
     });
   });

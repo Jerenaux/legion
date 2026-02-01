@@ -1,9 +1,9 @@
-import { Rarity, ChestColor, RewardType } from "./enums";
-import { items } from "./Items";
-import { spells } from "./Spells";
-import { equipments } from "./Equipments";
-import { AVERAGE_GOLD_REWARD_PER_GAME } from "./config";
-import { ChestReward } from "./interfaces";
+import { Rarity, ChestColor, RewardType } from './enums';
+import { items } from './Items';
+import { spells } from './Spells';
+import { equipments } from './Equipments';
+import { AVERAGE_GOLD_REWARD_PER_GAME } from './config';
+import type { ChestReward } from './interfaces';
 
 function getRandomType(distribution: { [key: string]: number }): RewardType {
     const typeRoll = Math.random() * 100;
@@ -24,7 +24,7 @@ function getRandomItem(
     rewardTypeDistribution: { [key in RewardType]: number },
     goldChance: number,
     goldAmount: number,
-    allowGold: boolean
+    allowGold: boolean,
 ): ChestReward {
     const rarityRoll = Math.random() * 100;
     let cumulativeProbability = 0;
@@ -33,7 +33,7 @@ function getRandomItem(
     if (allowGold && Math.random() < goldChance) {
         // Make the amount vary between 0.5*goldAmoutn and 1.5*goldAmount
         goldAmount = Math.floor(goldAmount * (0.5 + Math.random()));
-        return { type: RewardType.GOLD, id: -1, amount: goldAmount};
+        return { type: RewardType.GOLD, id: -1, amount: goldAmount };
     }
 
     for (const rarity in rarityDistribution) {
@@ -53,7 +53,7 @@ function getRandomItem(
     const rewardType = getRandomType(rewardTypeDistribution);
 
     let rewardPool;
-    
+
     switch (rewardType) {
         case 'consumable':
             rewardPool = items;
@@ -69,7 +69,7 @@ function getRandomItem(
     }
 
     // @ts-ignore
-    const filteredPool = rewardPool.filter(item => item.rarity == chosenRarity);
+    const filteredPool = rewardPool.filter((item) => item.rarity == chosenRarity);
     if (filteredPool.length === 0) {
         console.log(`No items found for type ${rewardType} with rarity ${chosenRarity}, retrying...`);
         return getRandomItem(rarityDistribution, rewardTypeDistribution, goldChance, goldAmount, allowGold);
@@ -140,8 +140,14 @@ export function getChestContent(type: ChestColor): ChestReward[] {
     }
 
     return Array.from({ length: numberOfItems }, () => {
-        const item = getRandomItem(rarityDistribution, rewardTypeDistribution, 0.1, AVERAGE_GOLD_REWARD_PER_GAME * goldCoefficient, allowGold);
-        if (item.type == RewardType.GOLD) {
+        const item = getRandomItem(
+            rarityDistribution,
+            rewardTypeDistribution,
+            0.1,
+            AVERAGE_GOLD_REWARD_PER_GAME * goldCoefficient,
+            allowGold,
+        );
+        if (item.type === RewardType.GOLD) {
             allowGold = false;
         }
         return item;

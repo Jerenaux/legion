@@ -1,11 +1,10 @@
 import '../style/QueuePage.style.css';
 import { h, Component } from 'preact';
-import { io } from 'socket.io-client';
 import { route } from 'preact-router';
-import { Link, useRouter } from 'preact-router';
+import { Link } from 'preact-router';
 import Skeleton from 'react-loading-skeleton';
 
-import { apiFetch, getFirebaseIdToken } from '../services/apiService';
+import { apiFetch } from '../services/apiService';
 import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS, DISCORD_LINK, X_LINK } from '@legion/shared/config';
 import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';

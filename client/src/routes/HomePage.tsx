@@ -81,7 +81,7 @@ class HomePage extends Component<{}, HomePageState> {
                     <div className="login-header">
                       Choose your sign up method
                     </div>
-                    <div ref={(ref) => this.firebaseUIContainer = ref} id="firebaseui-auth-container"></div>
+                    <div ref={(ref) => {this.firebaseUIContainer = ref}} id="firebaseui-auth-container"></div>
                     <button className="back-button" onClick={() => this.setState({ showLoginOptions: false })}>Close</button>
                   </div>
                 </div>

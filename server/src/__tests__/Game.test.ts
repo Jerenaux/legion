@@ -1,5 +1,6 @@
+import { describe, it, expect, beforeEach, jest } from 'bun:test';
+
 import { Game } from '../Game';
-import { Server } from 'socket.io';
 import { PlayMode, League, Terrain, Class } from '@legion/shared/enums';
 import { GRID_WIDTH, GRID_HEIGHT } from '@legion/shared/config';
 
@@ -12,14 +13,14 @@ class TestGame extends Game {
 
 describe('Game', () => {
   let game: TestGame;
-  let mockIo: jest.Mocked<Server>;
+  let mockIo: any; // jest.Mocked<Server>;
 
   beforeEach(() => {
     mockIo = {
       to: jest.fn().mockReturnThis(),
       emit: jest.fn(),
     } as any;
-    
+
     game = new TestGame('test-game-id', PlayMode.PRACTICE, League.GOLD, mockIo);
   });
 
@@ -77,7 +78,7 @@ describe('Game', () => {
     it('should free a cell', () => {
       const mockPlayer: any = { x: 5, y: 5 };
       game.gridMap.set('5,5', mockPlayer);
-      
+
       game.freeCell(5, 5);
       expect(game.gridMap.has('5,5')).toBe(false);
     });
@@ -96,31 +97,27 @@ describe('Game', () => {
     it('should place team 1 on left side of grid', () => {
       const position = game.getPosition(0, false, Class.WARRIOR);
       const halfWidth = Math.floor(GRID_WIDTH / 2);
-      
+
       expect(position.x).toBeLessThan(halfWidth);
     });
 
     it('should place team 2 on right side of grid', () => {
       const position = game.getPosition(0, true, Class.WARRIOR);
       const halfWidth = Math.floor(GRID_WIDTH / 2);
-      
+
       expect(position.x).toBeGreaterThanOrEqual(halfWidth);
     });
 
     it('should respect class-based position restrictions for warriors', () => {
       // Warriors should spawn in middle third
       const oneThird = Math.floor(GRID_WIDTH / 3);
-      const twoThirds = Math.floor(2 * GRID_WIDTH / 3);
-      
+      const twoThirds = Math.floor((2 * GRID_WIDTH) / 3);
+
       // Test multiple times to account for randomness
-      const positions = Array.from({ length: 20 }, () => 
-        game.getPosition(0, false, Class.WARRIOR)
-      );
-      
+      const positions = Array.from({ length: 20 }, () => game.getPosition(0, false, Class.WARRIOR));
+
       // At least some positions should be in the middle third
-      const hasMiddlePositions = positions.some(pos => 
-        pos.x >= oneThird && pos.x < twoThirds
-      );
+      const hasMiddlePositions = positions.some((pos) => pos.x >= oneThird && pos.x < twoThirds);
       expect(hasMiddlePositions).toBe(true);
     });
 
@@ -135,7 +132,7 @@ describe('Game', () => {
       }
 
       const position = game.getPosition(0, false, Class.WARRIOR);
-      
+
       // Should return a position (may fallback to occupied if no free spots)
       expect(position).toHaveProperty('x');
       expect(position).toHaveProperty('y');
@@ -145,14 +142,14 @@ describe('Game', () => {
   describe('hole generation', () => {
     it('should generate holes on the grid', () => {
       game.generateHoles();
-      
+
       // Should have created some holes (exact number depends on implementation)
       expect(game.holePositions.size).toBeGreaterThanOrEqual(0);
     });
 
     it('should check if position is a hole', () => {
       game.holePositions.add('4,4');
-      
+
       expect(game.isHole(4, 4)).toBe(true);
       expect(game.isHole(4, 5)).toBe(false);
     });

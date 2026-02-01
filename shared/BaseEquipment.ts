@@ -1,7 +1,6 @@
-import { Effect, EquipmentData, WeaponStatusEffect } from "./interfaces";
-import { EquipmentSlot, Rarity, Class } from "./enums";
-import { getPrice, getRarity } from "./economy";
-
+import { Effect, EquipmentData, WeaponStatusEffect } from './interfaces';
+import { EquipmentSlot, Rarity, Class } from './enums';
+import { getPrice, getRarity } from './economy';
 
 export class BaseEquipment {
     id: number = -1;
@@ -11,7 +10,7 @@ export class BaseEquipment {
     slot: EquipmentSlot = EquipmentSlot.WEAPON;
     effects: Effect[] = [];
     statusEffects: WeaponStatusEffect[] = [];
-    price: number = 0; 
+    price: number = 0;
     effort: number = 0;
     rarity: Rarity = Rarity.COMMON;
     minLevel: number = 0;

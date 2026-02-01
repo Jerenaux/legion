@@ -345,7 +345,7 @@ class Navbar extends Component<Props, State> {
                                                 <div className="login-header">
                                                 Choose your sign up method
                                                 </div>
-                                                <div ref={(ref) => this.firebaseUIContainer = ref} id="firebaseui-auth-container"></div>
+                                                <div ref={(ref) => {this.firebaseUIContainer = ref}} id="firebaseui-auth-container"></div>
                                                 <button className="back-button" onClick={this.clearLoginOptions}>Close</button>
                                             </div>
                                             </div>

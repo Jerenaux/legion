@@ -46,11 +46,6 @@ export const statStrings: string[] = Object.keys(Stat)
   .filter(key => key !== 'NONE')
   .map(key => key.toLowerCase());
 
-interface ExtraStyle {
-  background?: string;
-  backgroundSize?: string;
-}
-
 function showToast(text: string, duration: number = 3000, avatar: string) {
   Toastify({
     text,
@@ -207,11 +202,6 @@ export const statusIcons = {
   'Burn': burnIcon,
   'Haste': hasteIcon,
 };
-
-interface ActionDetails {
-  message: string;
-  isMobile: boolean;
-}
 
 async function recordPlayerAction(actionType: string, details: string) {
   try {

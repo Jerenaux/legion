@@ -59,4 +59,4 @@ export function checkFeatureUnlock(completedGames: number): LockedFeatures | nul
 export function getUnlockRewards(feature: LockedFeatures | null): { type: RewardType; id: number; amount: number }[] {
   if (feature === null) return [];
   return UNLOCK_REWARDS[feature];
-} 
+}

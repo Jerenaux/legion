@@ -7,9 +7,8 @@ export enum Stat {
     SPATK,
     SPDEF,
     SPEED,
-    NONE
+    NONE,
 }
-
 
 export const StatFields = {
     [Stat.HP]: 'hp',
@@ -18,8 +17,8 @@ export const StatFields = {
     [Stat.DEF]: 'def',
     [Stat.SPATK]: 'spatk',
     [Stat.SPDEF]: 'spdef',
-    [Stat.SPEED]: 'speed'
-}
+    [Stat.SPEED]: 'speed',
+};
 
 export const statFieldsByIndex = Object.values(StatFields);
 
@@ -30,8 +29,8 @@ export const StatLabels = {
     [Stat.DEF]: 'DEF',
     [Stat.SPATK]: 'SP.ATK',
     [Stat.SPDEF]: 'SP.DEF',
-    [Stat.SPEED]: 'SPEED'
-}
+    [Stat.SPEED]: 'SPEED',
+};
 
 export enum STATS_BG_COLOR {
     HP = '#628c27',
@@ -46,7 +45,7 @@ export enum STATS_BG_COLOR {
 export enum Target {
     SELF,
     AOE,
-    SINGLE
+    SINGLE,
 }
 
 export enum EffectDirection {
@@ -59,7 +58,7 @@ export enum Class {
     WHITE_MAGE,
     BLACK_MAGE,
     THIEF,
-    RANDOM
+    RANDOM,
 }
 
 export const ClassLabels = {
@@ -67,13 +66,13 @@ export const ClassLabels = {
     [Class.WHITE_MAGE]: 'White Mage',
     [Class.BLACK_MAGE]: 'Black Mage',
     [Class.THIEF]: 'Thief',
-    [Class.RANDOM]: 'Random'
+    [Class.RANDOM]: 'Random',
 };
 
 export enum Terrain {
     NONE,
     FIRE,
-    ICE
+    ICE,
 }
 
 export enum PlayMode {
@@ -95,7 +94,7 @@ export const PlayModeLabels = {
     [PlayMode.RANKED]: 'Ranked',
     [PlayMode.RANKED_VS_AI]: 'Ranked vs AI',
     [PlayMode.STAKED]: 'Staked',
-}
+};
 
 export enum EquipmentSlot {
     WEAPON,
@@ -106,7 +105,7 @@ export enum EquipmentSlot {
     BOOTS,
     LEFT_RING,
     RIGHT_RING,
-    NECKLACE
+    NECKLACE,
 }
 
 export const equipmentSlotLabels = {
@@ -118,8 +117,8 @@ export const equipmentSlotLabels = {
     [EquipmentSlot.BOOTS]: 'Boots',
     [EquipmentSlot.LEFT_RING]: 'Left Ring',
     [EquipmentSlot.RIGHT_RING]: 'Right Ring',
-    [EquipmentSlot.NECKLACE]: 'Necklace'
-}
+    [EquipmentSlot.NECKLACE]: 'Necklace',
+};
 
 export const equipmentSlotLabelsPlural = {
     [EquipmentSlot.WEAPON]: 'Weapons',
@@ -129,8 +128,8 @@ export const equipmentSlotLabelsPlural = {
     [EquipmentSlot.GLOVES]: 'Gloves',
     [EquipmentSlot.BOOTS]: 'Boots',
     [EquipmentSlot.LEFT_RING]: 'Rings',
-    [EquipmentSlot.NECKLACE]: 'Necklaces'
-}
+    [EquipmentSlot.NECKLACE]: 'Necklaces',
+};
 
 export const equipmentSlotFields = {
     [EquipmentSlot.WEAPON]: 'weapon',
@@ -141,66 +140,60 @@ export const equipmentSlotFields = {
     [EquipmentSlot.BOOTS]: 'boots',
     [EquipmentSlot.LEFT_RING]: 'left_ring',
     [EquipmentSlot.RIGHT_RING]: 'right_ring',
-    [EquipmentSlot.NECKLACE]: 'necklace'
-}
+    [EquipmentSlot.NECKLACE]: 'necklace',
+};
 
 export enum Rarity {
     COMMON,
     RARE,
     EPIC,
-    LEGENDARY
+    LEGENDARY,
 }
 
 export enum ChestColor {
-    BRONZE = "bronze",
-    SILVER = "silver",
-    GOLD = "gold"
+    BRONZE = 'bronze',
+    SILVER = 'silver',
+    GOLD = 'gold',
 }
 
 export enum InventoryType {
     CONSUMABLES = 'consumables',
     EQUIPMENTS = 'equipment',
     SPELLS = 'spells',
-    UTILITIES = 'utilities'
+    UTILITIES = 'utilities',
 }
-
 
 export enum ItemDialogType {
     CONSUMABLES = 'consumables',
     EQUIPMENTS = 'equipment',
     SPELLS = 'spells',
     UTILITIES = 'utilities',
-    SP = 'sp'
+    SP = 'sp',
 }
 
 export enum ShopTab {
     CONSUMABLES,
     EQUIPMENTS,
     SPELLS,
-    CHARACTERS
+    CHARACTERS,
 }
 
 export enum InventoryActionType {
     EQUIP,
     UNEQUIP,
-    SELL
+    SELL,
 }
 
-export const RarityColor = [
-    '#FFFFFF',
-    '#2962A9',
-    '#8F2841',
-    '#C1770D'
-]
+export const RarityColor = ['#FFFFFF', '#2962A9', '#8F2841', '#C1770D'];
 
 export enum StatusEffect {
-    FREEZE = "Freeze",
-    BURN = "Burn",
-    POISON = "Poison",
-    SLEEP = "Sleep",
-    PARALYZE = "Paralyze",
-    MUTE = "Mute",
-    HASTE = "Haste",
+    FREEZE = 'Freeze',
+    BURN = 'Burn',
+    POISON = 'Poison',
+    SLEEP = 'Sleep',
+    PARALYZE = 'Paralyze',
+    MUTE = 'Mute',
+    HASTE = 'Haste',
 }
 
 export enum League {
@@ -230,7 +223,7 @@ export enum GEN {
 }
 
 export enum Token {
-    SOL = "SOL",
+    SOL = 'SOL',
 }
 
 export enum AIAttackMode {
@@ -242,7 +235,7 @@ export enum AIAttackMode {
 export type SPSPendingData = {
     stat: Stat;
     value: number;
-}
+};
 
 export enum SpeedClass {
     PASS,

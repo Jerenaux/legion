@@ -1,6 +1,14 @@
-import { Target, Rarity, StatusEffect, SpeedClass, TargetHighlight, LockedFeatures, ConsumableShopCategory } from "./enums";
-import { Effect, ConsumableData, StatusEffectData } from "./interfaces";
-import { getPrice, getRarity } from "./economy";
+import {
+    Target,
+    Rarity,
+    StatusEffect,
+    SpeedClass,
+    TargetHighlight,
+    LockedFeatures,
+    ConsumableShopCategory,
+} from './enums';
+import { Effect, ConsumableData, StatusEffectData } from './interfaces';
+import { getPrice, getRarity } from './economy';
 
 export class BaseItem {
     id: number = -1;

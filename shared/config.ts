@@ -1,4 +1,4 @@
-import { LockedFeatures, RewardType } from "./enums";
+import { LockedFeatures, RewardType } from './enums';
 
 const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
 
@@ -35,11 +35,11 @@ export const STARTING_CONSUMABLES = [];
 export const STARTING_WHITE_MAGE_SPELLS = [9];
 export const STARTING_BLACK_MAGE_SPELLS = [0];
 export const XP_PER_LEVEL = 50;
-export const AVERAGE_GOLD_REWARD_PER_GAME = 100; 
+export const AVERAGE_GOLD_REWARD_PER_GAME = 100;
 export const MAX_AUDIENCE_SCORE = 1500;
 export const PROMOTION_RATIO = 0.4;
 export const DEMOTION_RATIO = 0.3;
-export const SEASON_END_CRON = '0 19 * * 5' // UTC
+export const SEASON_END_CRON = '0 19 * * 5'; // UTC
 export const BASE_ANIM_FRAME_RATE = 5;
 export const MOVEMENT_RANGE = 2;
 export const SPELL_RANGE = 5;
@@ -100,8 +100,14 @@ export const CAST_ZOOM = false;
 // Web3
 export let NETWORK = isDev ? 'devnet' : 'mainnet';
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-export const RPC = NETWORK === 'devnet' ? `https://solana-${NETWORK}.g.alchemy.com/v2/${ALCHEMY_API_KEY}` : 'https://snowy-lively-tree.solana-mainnet.quiknode.pro/06a13c157e50528707e63ef977c12ef76163056f';
-export const GAME_WALLET = NETWORK === 'devnet' ? '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY' : '3An5UbyPzsoaHHCiqfou7SX88V9JJM1x1XzN77JyYWNh';
+export const RPC =
+    NETWORK === 'devnet'
+        ? `https://solana-${NETWORK}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+        : 'https://snowy-lively-tree.solana-mainnet.quiknode.pro/06a13c157e50528707e63ef977c12ef76163056f';
+export const GAME_WALLET =
+    NETWORK === 'devnet'
+        ? '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY'
+        : '3An5UbyPzsoaHHCiqfou7SX88V9JJM1x1XzN77JyYWNh';
 export const MIN_WITHDRAW = 0.01;
 export const LEGION_CUT = 0.02;
 
@@ -123,13 +129,13 @@ export const LOCKED_FEATURES = {
     [LockedFeatures.EQUIPMENT_BATCH_3]: 10,
     [LockedFeatures.SPELLS_BATCH_3]: 11,
     [LockedFeatures.CHARACTER_PURCHASES]: 12,
-}
+};
 
 export const EQUIPMENT_BATCH_GOLD = {
     [LockedFeatures.EQUIPMENT_BATCH_1]: 500,
     [LockedFeatures.EQUIPMENT_BATCH_2]: 1000,
     [LockedFeatures.EQUIPMENT_BATCH_3]: 1000000,
-}
+};
 
 export const UNLOCK_REWARDS = {
     [LockedFeatures.CONSUMABLES_BATCH_1]: [
@@ -161,23 +167,15 @@ export const UNLOCK_REWARDS = {
         { type: RewardType.EQUIPMENT, id: 16, amount: 1 },
         { type: RewardType.GOLD, id: -1, amount: 200 },
     ],
-    [LockedFeatures.DAILY_LOOT]: [
-        { type: RewardType.GOLD, id: -1, amount: 200 },
-    ],
+    [LockedFeatures.DAILY_LOOT]: [{ type: RewardType.GOLD, id: -1, amount: 200 }],
     [LockedFeatures.CONSUMABLES_BATCH_3]: [
         { type: RewardType.CONSUMABLES, id: 11, amount: 1 },
         { type: RewardType.GOLD, id: -1, amount: 200 },
     ],
-    [LockedFeatures.EQUIPMENT_BATCH_3]: [
-        { type: RewardType.GOLD, id: -1, amount: 500 },
-    ],
-    [LockedFeatures.SPELLS_BATCH_3]: [
-        { type: RewardType.GOLD, id: -1, amount: 500 },
-    ],
-    [LockedFeatures.CHARACTER_PURCHASES]: [
-        { type: RewardType.GOLD, id: -1, amount: 500 },
-    ],
-}
+    [LockedFeatures.EQUIPMENT_BATCH_3]: [{ type: RewardType.GOLD, id: -1, amount: 500 }],
+    [LockedFeatures.SPELLS_BATCH_3]: [{ type: RewardType.GOLD, id: -1, amount: 500 }],
+    [LockedFeatures.CHARACTER_PURCHASES]: [{ type: RewardType.GOLD, id: -1, amount: 500 }],
+};
 
 export const remoteConfig = {
     AUTO_DEFEAT: false,
@@ -185,7 +183,7 @@ export const remoteConfig = {
     HIGH_DAMAGE: false,
     FAST_MODE: true,
     COOLDOWN_OVERRIDE: 500,
-}
+};
 
 if (isDev) {
     // STARTING_BLACK_MAGE_SPELLS.push(2);

@@ -1,8 +1,9 @@
+import { describe, it, expect, beforeEach, jest } from 'bun:test';
+
 import { Team } from '../Team';
 import { ServerPlayer } from '../ServerPlayer';
 import { Game } from '../Game';
-import { Server } from 'socket.io';
-import { PlayMode, League, Class, StatusEffect, Stat } from '@legion/shared/enums';
+import { PlayMode, League, Stat } from '@legion/shared/enums';
 
 // Create a concrete test implementation of the abstract Game class
 class TestGame extends Game {
@@ -14,10 +15,10 @@ class TestGame extends Game {
 describe('Team', () => {
   let team: Team;
   let mockGame: TestGame;
-  let mockIo: jest.Mocked<Server>;
+  let mockIo: any; // jest.Mocked<Server>;
 
   beforeEach(() => {
-    mockIo = {} as jest.Mocked<Server>;
+    mockIo = {} as any; // jest.Mocked<Server>;
     mockGame = new TestGame('test-game-id', PlayMode.PRACTICE, League.BRONZE, mockIo);
     mockGame.emitScoreChange = jest.fn();
     team = new Team(1, mockGame);
@@ -72,7 +73,7 @@ describe('Team', () => {
     it('should return false when at least one member is alive', () => {
       const player1 = new ServerPlayer(1, 'Player1', 'frame1', 0, 0);
       const player2 = new ServerPlayer(2, 'Player2', 'frame2', 1, 1);
-      
+
       player1.hp = 100;
       player2.hp = 0;
 
@@ -85,7 +86,7 @@ describe('Team', () => {
     it('should return true when all members are dead', () => {
       const player1 = new ServerPlayer(1, 'Player1', 'frame1', 0, 0);
       const player2 = new ServerPlayer(2, 'Player2', 'frame2', 1, 1);
-      
+
       player1.hp = 0;
       player2.hp = 0;
 
@@ -120,7 +121,7 @@ describe('Team', () => {
       const initialScore = team.score;
       team.increaseScoreFromMultiHits(3);
       expect(team.score).toBeGreaterThan(initialScore);
-      
+
       // Multi-hit formula: Math.pow(6, amount)
       expect(team.score).toBe(Math.pow(6, 3));
     });
@@ -140,9 +141,9 @@ describe('Team', () => {
         [Stat.DEF]: 5,
         [Stat.SPATK]: 8,
         [Stat.SPDEF]: 4,
-        [Stat.SPEED]: 6
+        [Stat.SPEED]: 6,
       };
-      
+
       const initialScore = team.score;
       team.increaseScoreFromKill(player);
       expect(team.score).toBeGreaterThan(initialScore);
@@ -168,15 +169,15 @@ describe('Team', () => {
     it('should distribute XP based on interaction ratio', () => {
       const player1 = new ServerPlayer(1, 'Player1', 'frame1', 0, 0);
       const player2 = new ServerPlayer(2, 'Player2', 'frame2', 1, 1);
-      
+
       // Initialize players with some stats for XP gain
       player1.level = 1;
       player1.xp = 0;
       player2.level = 1;
       player2.xp = 0;
-      
+
       const enemy = new ServerPlayer(3, 'Enemy', 'frame3', 2, 2);
-      
+
       player1.interactedTargets.add(enemy);
       player1.interactedTargets.add(enemy); // Doesn't matter, Set only stores unique
       player2.interactedTargets.add(enemy);
@@ -196,7 +197,7 @@ describe('Team', () => {
     it('should give no XP to players who did not interact', () => {
       const player1 = new ServerPlayer(1, 'Player1', 'frame1', 0, 0);
       const player2 = new ServerPlayer(2, 'Player2', 'frame2', 1, 1);
-      
+
       const enemy = new ServerPlayer(3, 'Enemy', 'frame3', 2, 2);
       player1.interactedTargets.add(enemy);
 
@@ -270,7 +271,7 @@ describe('Team', () => {
     it('should calculate total HP correctly', () => {
       const player1 = new ServerPlayer(1, 'Player1', 'frame1', 0, 0);
       const player2 = new ServerPlayer(2, 'Player2', 'frame2', 1, 1);
-      
+
       player1.hp = 100;
       player2.hp = 150;
 
@@ -283,7 +284,7 @@ describe('Team', () => {
     it('should calculate HP left correctly', () => {
       const player1 = new ServerPlayer(1, 'Player1', 'frame1', 0, 0);
       const player2 = new ServerPlayer(2, 'Player2', 'frame2', 1, 1);
-      
+
       player1.hp = 50;
       player2.hp = 75;
 
@@ -296,7 +297,7 @@ describe('Team', () => {
     it('should track healing', () => {
       team.incrementHealing(50);
       expect(team.getHealedAmount()).toBe(50);
-      
+
       team.incrementHealing(30);
       expect(team.getHealedAmount()).toBe(80);
     });
@@ -315,7 +316,7 @@ describe('Team', () => {
       team.incrementKillStreak();
       team.incrementKillStreak();
       expect(team.killStreak).toBe(2);
-      
+
       team.resetKillStreak();
       expect(team.killStreak).toBe(0);
     });

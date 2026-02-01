@@ -307,7 +307,7 @@ class LandingPage extends Component<LandingPageProps, LandingPageState> {
       <div className="login-header">
         <p>Choose your sign in/up method</p>
       </div>
-      <div ref={(ref) => this.firebaseUIContainer = ref} id="firebaseui-auth-container"></div>
+      <div ref={(ref) => {this.firebaseUIContainer = ref}} id="firebaseui-auth-container"></div>
       <button className="back-button" onClick={this.clearFirebaseUI}>Back</button>
     </div>
   );
