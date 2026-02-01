@@ -1,6 +1,6 @@
 import { ServerPlayer } from '../ServerPlayer';
 import { Team } from '../Team';
-import { Class, Stat, StatusEffect, Terrain } from '@legion/shared/enums';
+import { Stat, StatusEffect } from '@legion/shared/enums';
 import { MOVEMENT_RANGE } from '@legion/shared/config';
 
 describe('ServerPlayer', () => {

@@ -1,14 +1,13 @@
 import { Class, Stat, statFieldsByIndex } from "./enums";
 import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
-import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
-  from "./sprites";
+import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites } from "./sprites";
 import { male_names, female_names } from "./names";
-import { selectStatToLevelUp, increaseStat, getSPIncrement } from "./levelling";
+import { selectStatToLevelUp, increaseStat } from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
-import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "@legion/shared/config";
-import { getSpellById, getSpellsUpToLevel } from "./Spells";
+import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
+import { getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
   M,
