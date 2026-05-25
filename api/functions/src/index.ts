@@ -1,6 +1,6 @@
 import {onRequest} from "firebase-functions/v2/https";
 
-import {fetchLeaderboard, leaguesUpdate, updateRanksOnEloChange,
+import {fetchLeaderboard, updateRanksOnEloChange,
   updateRanksOnPlayerCreation, manualLeaguesUpdate} from "./leaderboardsAPI";
 import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getReward}
   from "./inventoryAPI";
@@ -26,7 +26,7 @@ export {
   fetchLeaderboard, inventoryData, purchaseItem,
   createPlayer, rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters, deleteOnSaleCharacters,
-  purchaseCharacter, leaguesUpdate, getPlayerData, queuingData, createGame,
+  purchaseCharacter, getPlayerData, queuingData, createGame,
   inventorySave, inventoryTransaction, saveGoldReward, spendSP,
   getReward, claimChest, updateRanksOnEloChange, updateRanksOnPlayerCreation,
   completeGame, getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
