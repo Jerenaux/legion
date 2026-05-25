@@ -164,9 +164,10 @@ function generateName() {
   return base.length > MAX_NICKNAME_LENGTH ? base.slice(0, MAX_NICKNAME_LENGTH) : base;
 }
 
-export const createPlayer = functions.runWith({ 
+export const createPlayer = functions.runWith({
   memory: '512MB',
-  minInstances: 1 // This keeps at least one instance always warm
+  minInstances: 0,
+  maxInstances: 10,
 }).auth.user().onCreate(async (user) => {
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);

@@ -1,0 +1,31 @@
+[
+  {
+    "name": "delete-untagged-after-7d",
+    "action": {
+      "type": "Delete"
+    },
+    "condition": {
+      "tagState": "untagged",
+      "olderThan": "7d"
+    }
+  },
+  {
+    "name": "delete-old-versions-after-30d",
+    "action": {
+      "type": "Delete"
+    },
+    "condition": {
+      "tagState": "any",
+      "olderThan": "30d"
+    }
+  },
+  {
+    "name": "keep-two-most-recent-per-package",
+    "action": {
+      "type": "Keep"
+    },
+    "mostRecentVersions": {
+      "keepCount": 2
+    }
+  }
+]

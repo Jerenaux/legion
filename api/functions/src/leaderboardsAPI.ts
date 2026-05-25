@@ -393,7 +393,10 @@ export const leaguesUpdate = onSchedule(
     }
 });
 
-export const updateRanksOnEloChange = functions.runWith({ memory: '512MB' }).firestore
+export const updateRanksOnEloChange = functions.runWith({
+  memory: '512MB',
+  maxInstances: 10,
+}).firestore
   .document("players/{playerId}")
   .onUpdate((change, context) => {
       const newValue = change.after.data();
@@ -417,7 +420,10 @@ export const updateRanksOnEloChange = functions.runWith({ memory: '512MB' }).fir
       return null;
 });
 
-export const updateRanksOnPlayerCreation = functions.firestore
+export const updateRanksOnPlayerCreation = functions.runWith({
+  memory: '256MB',
+  maxInstances: 10,
+}).firestore
   .document("players/{playerId}")
   .onCreate((snap, context) => {
       console.log("New player created, updating ranks");

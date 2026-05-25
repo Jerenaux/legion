@@ -1,5 +1,3 @@
-import {onRequest} from "firebase-functions/v2/https";
-
 import {fetchLeaderboard, updateRanksOnEloChange,
   updateRanksOnPlayerCreation, manualLeaguesUpdate} from "./leaderboardsAPI";
 import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getReward}
@@ -10,17 +8,16 @@ import {rosterData, characterData, postGameUpdate,
 import {createPlayer, getPlayerData, queuingData,
   saveGoldReward, claimChest, completeTour, fetchGuideTip, registerAddress,
   setPlayerOnSteroids, zombieData, recordPlayerAction, updateInactivePlayersStats,
-  setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames,
-  listFriends, addFriend, updatePlayerName, updatePlayerAvatar, incrementStartedGames,
-  setUserAttributes, buyInventorySlots
+  setUtmSource, getProfileData, searchPlayers, listFriends, addFriend,
+  updatePlayerName, updatePlayerAvatar, incrementStartedGames,
+  setUserAttributes, buyInventorySlots,
 } from "./playerAPI";
 import { createLobby, joinLobby, cancelLobby, listLobbies, getLobbyDetails, countLobbies } from "./lobbyAPI";
 import {createGame, completeGame, addNews, getNews, saveReplay, getReplay, updateNewsThumbnail} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats,
-  migrateEngagementMetrics, migrateMetricsToStats, getPlayerGameHistory, getActivePlayers,
-  migrateMobileFlag, getPlayerActionsReport, migrateCharacterSpeed, markPlayerExcluded, markPlayerContacted} from "./dashboardAPI";
-import { checkAPIKey, isDevelopment } from "./APIsetup";
+  getPlayerGameHistory, getActivePlayers, getPlayerActionsReport,
+  markPlayerExcluded, markPlayerContacted} from "./dashboardAPI";
 
 export {
   fetchLeaderboard, inventoryData, purchaseItem,
@@ -34,18 +31,9 @@ export {
   registerAddress, createLobby, joinLobby, cancelLobby, listLobbies, setPlayerOnSteroids,
   zombieData, getLobbyDetails, countLobbies, addNews, getNews, recordPlayerAction,
   listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats, saveReplay, getReplay,
-  migrateEngagementMetrics, migrateMetricsToStats, updateInactivePlayersStats, getPlayerGameHistory,
-  setUtmSource, getProfileData, searchPlayers, migrateLowercaseNames, listFriends, addFriend,
-  updatePlayerName, updatePlayerAvatar, getActivePlayers, migrateMobileFlag, getPlayerActionsReport,
-  migrateCharacterSpeed, incrementStartedGames, markPlayerExcluded, markPlayerContacted,
-  updateNewsThumbnail, setUserAttributes, buyInventorySlots
+  updateInactivePlayersStats, getPlayerGameHistory,
+  setUtmSource, getProfileData, searchPlayers, listFriends, addFriend,
+  updatePlayerName, updatePlayerAvatar, getActivePlayers, getPlayerActionsReport,
+  incrementStartedGames, markPlayerExcluded, markPlayerContacted,
+  updateNewsThumbnail, setUserAttributes, buyInventorySlots,
 };
-
-export const helloWorld = onRequest({ secrets: ["API_KEY"] }, (request, response) => {
-  response.send(`
-    API online - 
-    [isDevelopment: ${isDevelopment}] - 
-    [NODE_ENV: ${process.env.NODE_ENV}] - 
-    [API KEY check: ${checkAPIKey(request)}]
-    ${request.headers["x-api-key"]}`);
-});
