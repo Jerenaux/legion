@@ -1,8 +1,6 @@
-const {
-  sentryWebpackPlugin
-} = require("@sentry/webpack-plugin");
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 
-const path = require('path');
+const path = require('node:path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
@@ -97,9 +95,11 @@ module.exports = {
         type: 'asset/resource'
       },
       {
-        test: /\.json$/i,
-        type: 'json'
-      }
+        test: /\.m?js/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
     ]
   },
 

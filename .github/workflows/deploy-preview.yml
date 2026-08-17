@@ -4,14 +4,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'client/**'
-      - 'shared/**'
+      - "client/**"
+      - "shared/**"
 
 jobs:
   deploy-preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -22,14 +22,10 @@ jobs:
           bun-version: 1.3.14
 
       - name: Install client dependencies
-        run: |
-          cd client
-          bun ci
+        run: bun ci --filter "./client"
 
       - name: Build client
-        run: |
-          cd client
-          bun run build
+        run: bun run --cwd client build
         env:
           NODE_ENV: production
 

@@ -1,5 +1,4 @@
 import { Server, Socket } from "socket.io";
-import { v4 as uuidv4 } from "uuid";
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import jwt, { JwtPayload } from 'jsonwebtoken';
@@ -262,7 +261,7 @@ async function createGame(
         // @ts-ignore
         if (player2) declinePendingChallenge(player2.uid);
 
-        const gameId = uuidv4();
+        const gameId = crypto.randomUUID();
         await apiFetch(
             'createGame',
             '',

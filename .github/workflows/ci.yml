@@ -11,11 +11,11 @@ on:
       - develop
 
 jobs:
-  # Run tests for server
+  # Test and Build Server
   test-server:
-    name: Test Server
+    name: Test and Build Server
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -26,14 +26,10 @@ jobs:
           bun-version: 1.3.14
 
       - name: Install server dependencies
-        run: |
-          cd server
-          bun ci
+        run: bun ci --filter "./server"
 
       - name: Run server tests
-        run: |
-          cd server
-          bun run test
+        run: bun run --cwd server test
 
       - name: Upload server coverage
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
@@ -44,11 +40,16 @@ jobs:
           name: server-coverage
         continue-on-error: true
 
-  # Lint and build client
+      - name: Build server
+        run: bun run --cwd server build
+        env:
+          NODE_ENV: production
+
+  # Build client
   build-client:
     name: Build Client
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -59,22 +60,18 @@ jobs:
           bun-version: 1.3.14
 
       - name: Install client dependencies
-        run: |
-          cd client
-          bun ci
+        run: bun ci --filter "./client"
 
       - name: Build client
-        run: |
-          cd client
-          bun run build
+        run: bun run --cwd client build
         env:
           NODE_ENV: production
 
-  # Build and lint API
+  # Build API
   build-api:
     name: Build API
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,20 +82,10 @@ jobs:
           bun-version: 1.3.14
 
       - name: Install API dependencies
-        run: |
-          cd api/functions
-          bun ci
-
-      - name: Lint API
-        run: |
-          cd api/functions
-          bun run lint
-        continue-on-error: true
+        run: bun ci --filter "./api/functions"
 
       - name: Build API
-        run: |
-          cd api/functions
-          bun run build
+        run: bun run --cwd "api/functions" build
         env:
           DEPLOY: true
 
@@ -106,7 +93,7 @@ jobs:
   build-matchmaker:
     name: Build Matchmaker
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -117,11 +104,7 @@ jobs:
           bun-version: 1.3.14
 
       - name: Install matchmaker dependencies
-        run: |
-          cd matchmaker
-          bun ci
+        run: bun ci --filter "./matchmaker"
 
       - name: Build matchmaker
-        run: |
-          cd matchmaker
-          bun run build
+        run: bun run --cwd matchmaker build

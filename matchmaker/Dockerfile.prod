@@ -1,27 +1,34 @@
-FROM oven/bun:1.3.14 AS builder
+FROM oven/bun:1.3.8
 
 WORKDIR /usr/src/app
 
-COPY matchmaker/package.json ./
-COPY matchmaker/bun.lock ./
+# Copy root package.json and lockfile
+COPY package.json bun.lock ./
+# Copy all package.json to their correct directory paths
+COPY api/functions/package.json ./api/functions/
+COPY client/package.json ./client/
+COPY matchmaker/package.json ./matchmaker/
+COPY server/package.json ./server/
+COPY shared/package.json ./shared/
 
-RUN bun ci
+# Install dependencies
+RUN bun ci --filter "./matchmaker"
 
-COPY shared/ ./shared
+# Copy source files
+COPY shared/ ./shared/
+COPY matchmaker/tsconfig.docker.json ./matchmaker/tsconfig.json
+COPY matchmaker/src/ ./matchmaker/src/
 
-COPY matchmaker/tsconfig.docker.json ./tsconfig.json
-COPY matchmaker/src/ ./src/
+WORKDIR /usr/src/app/matchmaker
 
 RUN bun run build
 
-FROM oven/bun:1.3.14-slim
+FROM oven/bun:1.3.8-slim
 
 WORKDIR /usr/src/app
 
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-
-COPY --from=builder /usr/src/app/dist ./dist
-
+COPY --from=builder /usr/src/app/matchmaker/node_modules ./node_modules
+COPY --from=builder /usr/src/app/matchmaker/dist ./dist
 COPY matchmaker/.production.env ./.env
 
 EXPOSE 3000

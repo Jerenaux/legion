@@ -2,13 +2,20 @@ FROM oven/bun:1.3.14 AS builder
 
 WORKDIR /usr/src/app
 
-COPY api/functions/package.json ./
-COPY api/functions/bun.lock ./
+# Copy root package.json and lockfile
+COPY package.json bun.lock ./
+# Copy all package.json to their correct directory paths
+COPY api/functions/package.json ./api/functions/
+COPY client/package.json ./client/
+COPY matchmaker/package.json ./matchmaker/
+COPY server/package.json ./server/
+COPY shared/package.json ./shared/
 
-RUN bun ci
+# Install dependencies
+RUN bun ci --ignore-scripts --filter "./api/functions"
 
-COPY api/functions/ ./
-
+# Copy source to correct path
+COPY api/functions/ ./api/functions/
 
 # Install Node, required for firebase emulators
 FROM node:20-slim
@@ -23,7 +30,7 @@ RUN apt-get update && \
 WORKDIR /usr/src/app
 
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app ./
+COPY --from=builder /usr/src/app/api/functions ./
 
 COPY .firebaserc ./
 

@@ -2,17 +2,25 @@ FROM oven/bun:1.3.14
 
 WORKDIR /usr/src/app
 
-COPY client/package.json ./
-COPY client/bun.lock ./
+# Copy root package.json and lockfile
+COPY package.json bun.lock ./
+# Copy all package.json to their correct directory paths
+COPY api/functions/package.json ./api/functions/
+COPY client/package.json ./client/
+COPY matchmaker/package.json ./matchmaker/
+COPY server/package.json ./server/
+COPY shared/package.json ./shared/
 
-# Use --ignore-scripts to skip native compilation of optional packages (bufferutil, utf-8-validate)
-RUN bun install --ignore-scripts
+# Install dependencies
+RUN bun ci --ignore-scripts --filter "./client"
 
-# Copy all config files (webpack, tsconfig, etc.)
-COPY client/*.json ./
-COPY client/*.js ./
-COPY client/*.env ./
-COPY client/.babelrc ./
+# Copy all config files
+COPY client/*.json ./client/
+COPY client/*.js ./client/
+COPY client/*.env ./client/
+COPY client/.babelrc ./client/
+
+WORKDIR /usr/src/app/client
 
 EXPOSE 8080
 

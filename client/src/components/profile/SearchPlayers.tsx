@@ -1,6 +1,6 @@
 import { h, Component } from 'preact';
 import { avatarContext } from '../utils';
-import debounce from 'lodash/debounce';
+import debounce from 'lodash.debounce';
 import { apiFetch } from '../../services/apiService';
 import { PlayerContext } from '../../contexts/PlayerContext';
 

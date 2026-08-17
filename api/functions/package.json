@@ -1,8 +1,7 @@
 {
-  "name": "legion-api",
+  "name": "@legion-game/api",
   "private": true,
   "scripts": {
-    "lint": "eslint --ext .js,.ts .",
     "build": "webpack",
     "build:watch": "webpack --watch",
     "emulators:start": "firebase emulators:start --import ./exports/firestore-emulator-data --export-on-exit ./exports/firestore-emulator-data",
@@ -23,19 +22,14 @@
     "dotenv-webpack": "^8.0.1",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^5.0.1",
-    "firebase-tools": "^13.13.0",
+    "firebase-tools": "^15.17.0",
     "obscenity": "^0.4.1",
     "unique-names-generator": "^4.7.1"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.4",
+    "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
-    "@typescript-eslint/eslint-plugin": "^5.12.0",
-    "@typescript-eslint/parser": "^5.12.0",
-    "eslint": "^8.9.0",
-    "eslint-config-google": "^0.14.0",
-    "eslint-plugin-import": "^2.25.4",
-    "firebase-functions-test": "^3.1.0",
     "nodemon": "^3.0.2",
     "ts-loader": "^9.5.1",
     "typescript": "^4.9.0",

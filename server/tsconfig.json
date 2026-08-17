@@ -3,6 +3,9 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "baseUrl": "./",
+    "moduleResolution": "node16",
+    "module": "node16",
+    "outDir": "./dist",
 
     "paths": {
       "@legion/shared/*": ["../shared/*"]

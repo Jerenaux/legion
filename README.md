@@ -156,29 +156,29 @@ Run each service independently:
 
 ```bash
 # Terminal 1 - API & Firebase Emulators
-cd api/functions && bun run emulators:start
+bun run --cwd api/functions emulators:start
 
 # Terminal 2 - Client
-cd client && bun run start
+bun run --cwd client start
 
 # Terminal 3 - Game Server
-cd server && bun run start
+bun run --cwd server start
 
 # Terminal 4 - Matchmaker
-cd matchmaker && bun run start
+bun run --cwd matchmaker start
 ```
 
 ### Running Tests
 
 ```bash
 # Server tests with coverage
-cd server && bun run test
+bun run --cwd server test
 
 # Watch mode for development
-cd server && bun run test:watch
+bun run --cwd server test:watch
 
 # Coverage report
-cd server && bun run test:coverage
+bun run --cwd server test:coverage
 ```
 
 ## Deployment
@@ -261,16 +261,14 @@ The client can be packaged as an Electron desktop application for cross-platform
 ### Building Desktop Apps
 
 ```bash
-cd client
-
 # Development mode
-bun run electron:dev
+bun run --cwd client electron:dev
 
 # Production builds
-bun run electron:build          # macOS + Windows
-bun run electron:build:mac      # macOS only
-bun run electron:build:win      # Windows only
-bun run electron:build:linux    # Linux only
+bun run --cwd client electron:build         # macOS + Windows
+bun run --cwd client electron:build:mac     # macOS only
+bun run --cwd client electron:build:win     # Windows only
+bun run --cwd client electron:build:linux   # Linux only
 ```
 
 ### Steam Deployment

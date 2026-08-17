@@ -1,5 +1,5 @@
 // apiService.js
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import { firebaseAuth } from './firebaseService'; 
 import { errorToast, silentErrorToast } from '../components/utils';
 
