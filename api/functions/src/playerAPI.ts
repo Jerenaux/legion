@@ -18,12 +18,11 @@ import {
   NB_START_CHARACTERS, INVENTORY_SIZE_PER_CHARACTER,
   BASE_INVENTORY_SIZE,
   INVENTORY_SLOT_PRICE, MAX_PURCHASABLE_SLOTS,
-  RPC, MIN_WITHDRAW,
   MAX_NICKNAME_LENGTH,
   MAX_AVATAR_ID,
 } from "@legion/shared/config";
 import { logPlayerAction, updateDAU } from "./dashboardAPI";
-import { getEmptyLeagueStats } from "./leaderboardsAPI";
+import {currentSeasonId, getEmptyLeagueStats, getLeagueForElo} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
 // import {
 //   Connection, LAMPORTS_PER_SOL, Keypair, Transaction, SystemProgram, PublicKey,
@@ -178,11 +177,6 @@ export const createPlayer = functions.runWith({
   // Game 0 has the same ID as the player
   createGameDocument(user.uid, [user.uid], PlayMode.PRACTICE, League.BRONZE, 0);
 
-  const bronzePlayersCount = await db.collection("players")
-    .where("league", "==", startLeague)
-    .count()
-    .get();
-
   const name = generateName();
   // Define the character data structure
   const playerData = {
@@ -205,8 +199,8 @@ export const createPlayer = functions.runWith({
     xp: 0,
     lvl: 1,
     dailyloot: getDefaultDailyLoot(),
-    leagueStats: getEmptyLeagueStats(bronzePlayersCount.data().count + 1),
-    allTimeStats: getEmptyLeagueStats(-1),
+    leagueStats: getEmptyLeagueStats(0, currentSeasonId()),
+    allTimeStats: getEmptyLeagueStats(),
     casualStats: {
       nbGames: 0,
       wins: 0,
@@ -1312,7 +1306,9 @@ export const updateInactivePlayersStats = onSchedule(
         'leagueStats.wins': wins,
         'leagueStats.losses': losses,
         'leagueStats.nbGames': cappedGames,
-        elo: newElo
+        'leagueStats.seasonId': currentSeasonId(),
+        elo: newElo,
+        league: getLeagueForElo(newElo),
       });
       
       updatedCount++;

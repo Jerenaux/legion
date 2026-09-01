@@ -17,7 +17,7 @@ interface SeasonCardProps {
     seasonEnd: number;
     currTab: string;
     playerRanking: {
-        rank: number;
+        rank: number | string;
         metric: number;
     };
     rankRowNumberStyle: (index: number) => {};
@@ -67,7 +67,7 @@ class SeasonCard extends Component<SeasonCardProps> {
         }
     }
 
-    shareOnTwitter = async (rank: number, tab: string) => {
+    shareOnTwitter = async (rank: number | string, tab: string) => {
         const leagueName = tab === 'alltime' ? 'All Time' : tab.charAt(0).toUpperCase() + tab.slice(1);
         const tweetText = `I'm ranked #${rank} in the ${leagueName} league in #Legion! Can you beat me? https://www.play-legion.io ! #PvP`
         const twitterUrl = `https://x.com/intent/post?text=${encodeURIComponent(tweetText)}`;
@@ -122,7 +122,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                         <div className="season-recap">
                             <p className="season-recap-title">CURRENT</p>
                             <p className="season-recap-label">RANK</p>
-                            <div className="season-recap-img" style={this.props.rankRowNumberStyle(this.props.playerRanking.rank)}>
+                            <div className="season-recap-img" style={this.props.rankRowNumberStyle(Number(this.props.playerRanking.rank) || 0)}>
                                 <span>{this.props.playerRanking.rank}</span>
                             </div>
                         </div>

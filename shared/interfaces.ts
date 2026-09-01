@@ -225,6 +225,7 @@ interface LeagueStats {
     nbGames: number;
     avgAudienceScore: number;
     avgGrade: number;
+    seasonId?: string;
 }
 
 export interface TeamData {
@@ -452,6 +453,7 @@ export interface APILeaderboardResponse {
     seasonEnd: number;
     highlights: any[];
     ranking: LeaderboardRow[];
+    playerRank?: number | null;
   }
 
 export interface FriendData {

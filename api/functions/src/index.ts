@@ -1,5 +1,4 @@
-import {fetchLeaderboard, updateRanksOnEloChange,
-  updateRanksOnPlayerCreation, manualLeaguesUpdate} from "./leaderboardsAPI";
+import {fetchLeaderboard} from "./leaderboardsAPI";
 import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getReward}
   from "./inventoryAPI";
 import {rosterData, characterData, postGameUpdate,
@@ -25,9 +24,9 @@ export {
   generateOnSaleCharacters, listOnSaleCharacters, deleteOnSaleCharacters,
   purchaseCharacter, getPlayerData, queuingData, createGame,
   inventorySave, inventoryTransaction, saveGoldReward, spendSP,
-  getReward, claimChest, updateRanksOnEloChange, updateRanksOnPlayerCreation,
+  getReward, claimChest,
   completeGame, getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
-  getGameLog, completeTour, fetchGuideTip, manualLeaguesUpdate,
+  getGameLog, completeTour, fetchGuideTip,
   registerAddress, createLobby, joinLobby, cancelLobby, listLobbies, setPlayerOnSteroids,
   zombieData, getLobbyDetails, countLobbies, addNews, getNews, recordPlayerAction,
   listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats, saveReplay, getReplay,

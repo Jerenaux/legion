@@ -11,6 +11,7 @@ import {OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerD
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
+import {applyRankedResult, currentSeasonId, getLeagueForElo} from "./ranking";
 
 export const rosterData = onRequest({
   memory: '512MiB'
@@ -305,40 +306,24 @@ export const postGameUpdate = onRequest({
           }
 
           if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
-            if (isWinner) {
-              updates['leagueStats.wins'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.wins'] = admin.firestore.FieldValue.increment(1);
-              updates['leagueStats.winStreak'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.winStreak'] = admin.firestore.FieldValue.increment(1);
-              updates['leagueStats.lossesStreak'] = 0;
-              updates['allTimeStats.lossesStreak'] = 0;
-            } else {
-              updates['leagueStats.losses'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.losses'] = admin.firestore.FieldValue.increment(1);
-              updates['leagueStats.winStreak'] = 0;
-              updates['allTimeStats.winStreak'] = 0;
-              updates['leagueStats.lossesStreak'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.lossesStreak'] = admin.firestore.FieldValue.increment(1);
-            }
-
-            let leagueAvgAudienceScore = playerData.leagueStats?.avgAudienceScore || 0;
-            let allTimeAvgAudienceScore = playerData.allTimeStats?.avgAudienceScore || 0;
-            let leagueAvgGrade = playerData.leagueStats?.avgGrade || 0;
-            let allTimeAvgGrade = playerData.allTimeStats?.avgGrade || 0;
-            const leagueNbGames = playerData.leagueStats?.nbGames || 0;
-            const allTimeNbGames = playerData.allTimeStats?.nbGames || 0;
-
-            leagueAvgAudienceScore = (leagueAvgAudienceScore * leagueNbGames + score) / (leagueNbGames + 1);
-            allTimeAvgAudienceScore = (allTimeAvgAudienceScore * allTimeNbGames + score) / (allTimeNbGames + 1);
-            leagueAvgGrade = (leagueAvgGrade * leagueNbGames + rawGrade) / (leagueNbGames + 1);
-            allTimeAvgGrade = (allTimeAvgGrade * allTimeNbGames + rawGrade) / (allTimeNbGames + 1);
-
-            updates['leagueStats.nbGames'] = admin.firestore.FieldValue.increment(1);
-            updates['allTimeStats.nbGames'] = admin.firestore.FieldValue.increment(1);
-            updates['leagueStats.avgAudienceScore'] = leagueAvgAudienceScore;
-            updates['allTimeStats.avgAudienceScore'] = allTimeAvgAudienceScore;
-            updates['leagueStats.avgGrade'] = leagueAvgGrade;
-            updates['allTimeStats.avgGrade'] = allTimeAvgGrade;
+            const seasonId = currentSeasonId();
+            updates.leagueStats = applyRankedResult(
+              playerData.leagueStats,
+              isWinner,
+              score || 0,
+              rawGrade || 0,
+              seasonId,
+              true,
+            );
+            updates.allTimeStats = applyRankedResult(
+              playerData.allTimeStats,
+              isWinner,
+              score || 0,
+              rawGrade || 0,
+              seasonId,
+              false,
+            );
+            updates.league = getLeagueForElo((playerData.elo || 0) + (elo || 0));
           }
         }
 
@@ -652,4 +637,3 @@ export const spendSP = onRequest({
     }
   });
 });
-
