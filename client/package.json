@@ -13,7 +13,8 @@
     "electron:build:mac": "BUILD_TARGET=electron bun run build && electron-builder --mac",
     "electron:build:win": "BUILD_TARGET=electron bun run build && electron-builder --win",
     "electron:build:linux": "BUILD_TARGET=electron bun run build && electron-builder --linux",
-    "electron:test": "BUILD_TARGET=electron bun run build && electron-builder --dir"
+    "electron:test": "BUILD_TARGET=electron bun run build && electron-builder --dir",
+    "release:validate": "../tools/validate_desktop_release.sh"
   },
   "license": "ISC",
   "dependencies": {
@@ -100,7 +101,9 @@
     },
     "mac": {
       "category": "public.app-category.games",
-      "icon": "public/logo.png"
+      "icon": "public/logo.png",
+      "hardenedRuntime": true,
+      "notarize": true
     },
     "win": {
       "target": [

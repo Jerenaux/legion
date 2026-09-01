@@ -1,0 +1,17 @@
+[[actions]]
+name = "play"
+path = "Legion.exe"
+platform = "windows"
+scope = "profile:me"
+
+[[actions]]
+name = "play"
+path = "Legion.app"
+platform = "osx"
+scope = "profile:me"
+
+[[actions]]
+name = "play"
+path = "legion"
+platform = "linux"
+scope = "profile:me"
