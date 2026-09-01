@@ -27,4 +27,4 @@ COPY server/.production.env ./.env
 
 EXPOSE 3123
 
-CMD ["bun", "run", "start"]
+CMD ["bun", "dist/src/server.js"]
