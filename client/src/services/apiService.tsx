@@ -1,51 +1,19 @@
 // apiService.js
-import firebase from 'firebase/compat/app';
 import { firebaseAuth } from './firebaseService'; 
-import { errorToast, silentErrorToast } from '../components/utils';
+import { errorToast } from '../components/utils';
+import {getTokenWithRetry} from "./firebaseToken";
 
 const apiBaseUrl = process.env.API_URL;
 
 const TIMEOUT_DURATION = 10000;
 
-const getTokenWithRetry = async (user: firebase.User, maxAttempts = 3, delay = 100) => {
-    let lastError;
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        try {
-            return await user.getIdToken(true);
-        } catch (error) {
-            lastError = error;
-            if (attempt === maxAttempts - 1) {
-                console.error(`Failed to get ID token: ${lastError.message}`);
-                silentErrorToast('Failed to get ID token, please refresh the page');
-                throw lastError;
-            }
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-    }
-};
-
-async function getUserWithRetry(maxRetries, interval) {
-    for (let i = 0; i < maxRetries; i++) {
-        // console.log(`Attempt ${i + 1}/${maxRetries} (${interval}ms): Getting current user...`);
-        const user = firebaseAuth.currentUser;
-        if (user) {
-            return user;
-        }
-        if (i < maxRetries - 1) {
-            await new Promise(resolve => setTimeout(resolve, interval));
-        }
-    }
-    return null;
-}
-
-export async function getFirebaseIdToken() {
+export async function getFirebaseIdToken(forceRefresh = false) {
     try {
-        const user = await getUserWithRetry(35, 200);
+        const user = firebaseAuth.currentUser;
         if (!user) {
-            errorToast('Cannot get ID token, please refresh the page');
-            return;
+            throw new Error("No authenticated desktop session");
         }
-        return await getTokenWithRetry(user);
+        return await getTokenWithRetry(user, forceRefresh);
     } catch (error) {
         throw error;
     }
@@ -81,30 +49,38 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const idToken = await getFirebaseIdToken();
+            let idToken = await getFirebaseIdToken();
             const headers = new Headers(options.headers || {});
 
             if (options.body && !headers.has('Content-Type')) {
                 headers.append('Content-Type', 'application/json');
-                options.body = JSON.stringify(options.body);
             } 
 
-            headers.append("Authorization", `Bearer ${idToken}`);
+            headers.set("Authorization", `Bearer ${idToken}`);
+            const body = options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body;
 
             const fullEndpoint = `${apiBaseUrl}/${endpoint}`;
             if (process.env.NODE_ENV === 'development') {
                 // console.log(`Attempt ${attempt + 1} of ${maxRetries}: Calling ${fullEndpoint}`);
             }
             
-            const fetchPromise = fetch(fullEndpoint, {
+            let fetchPromise = fetch(fullEndpoint, {
                 ...options,
+                body,
                 headers,
             });
 
-            const response = await Promise.race([
+            let response = await Promise.race([
                 fetchPromise,
                 timeoutPromise(TIMEOUT_DURATION)
             ]) as Response;
+
+            if (response.status === 401) {
+                idToken = await getFirebaseIdToken(true);
+                headers.set("Authorization", `Bearer ${idToken}`);
+                fetchPromise = fetch(fullEndpoint, {...options, body, headers});
+                response = await Promise.race([fetchPromise, timeoutPromise(TIMEOUT_DURATION)]) as Response;
+            }
 
             if (!response.ok) {
                 const errorBody = await response.text();

@@ -17,6 +17,7 @@ import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats,
   getPlayerGameHistory, getActivePlayers, getPlayerActionsReport,
   markPlayerExcluded, markPlayerContacted} from "./dashboardAPI";
+import {createPlatformSession, linkPlatformIdentity} from "./sessionAPI";
 
 export {
   fetchLeaderboard, inventoryData, purchaseItem,
@@ -35,4 +36,5 @@ export {
   updatePlayerName, updatePlayerAvatar, getActivePlayers, getPlayerActionsReport,
   incrementStartedGames, markPlayerExcluded, markPlayerContacted,
   updateNewsThumbnail, setUserAttributes, buyInventorySlots,
+  createPlatformSession, linkPlatformIdentity,
 };

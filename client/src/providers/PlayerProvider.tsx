@@ -116,6 +116,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.setState(this.getInitialState());
     }
 
+    componentDidMount() {
+      if (firebaseAuth.currentUser) {
+        this.debouncedFetchAllData();
+        this.setupSocket();
+      }
+    }
+
     componentDidUpdate() {
       const user = firebaseAuth.currentUser;
       if (!user && this.state.player.isLoaded) {
@@ -224,7 +231,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           }
           return character;
         });
-  
+
         return { 
             characterSheetIsDirty: true,
             characters: updatedCharacters,
@@ -808,6 +815,5 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       );
     }
   }
-  
+
   export default PlayerProvider;
-  

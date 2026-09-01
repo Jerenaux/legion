@@ -5,12 +5,10 @@ import { isElectron, getElectronAPI } from './utils/electronUtils';
 
 import AuthProvider from './providers/AuthProvider';
 import PlayerProvider from './providers/PlayerProvider';
-import WalletContextProvider from './providers/WalletContextProvider';
 import HomePage from './routes/HomePage';
 import GamePage from './routes/GamePage';
 import Root from './routes/Root';
 import withAuth from './components/withAuth';
-import withNoAuth from './components/withNoAuth';
 
 import * as Sentry from "@sentry/react";
 import { recordPageView } from './components/utils';
@@ -163,9 +161,8 @@ class App extends Component<{}, AppState> {
                 <PlayerProvider>
                     <PlayerContext.Consumer>
                         {({ refreshAllData, updateActiveCharacter }) => (
-                            <WalletContextProvider>
                                 <Router onChange={(e: RouterOnChangeArgs) => this.handleRoute(e, refreshAllData, updateActiveCharacter)}>
-                                    <Route path="/" component={withNoAuth(Root)} />
+                                    <Route path="/" component={Root} />
                                     <Route path="/game/:id" component={AuthenticatedGamePage} />
                                     <Route path="/replay/:id" component={AuthenticatedGamePage} />
                                     <Route path="/play" component={AuthenticatedHomePage} />
@@ -174,11 +171,9 @@ class App extends Component<{}, AppState> {
                                     <Route path="/rank" component={AuthenticatedHomePage} />
                                     <Route path="/queue/:mode" component={AuthenticatedHomePage} />
                                     <Route path="/lobby/:id" component={AuthenticatedHomePage} />
-                                    <Route path="/elysium" component={AuthenticatedHomePage} />
                                     <Route path="/profile/:id?" component={AuthenticatedHomePage} />
                                     <Route default component={AuthenticatedHomePage} />
                                 </Router>
-                            </WalletContextProvider>
                         )}
                     </PlayerContext.Consumer>
                 </PlayerProvider>

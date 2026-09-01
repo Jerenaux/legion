@@ -32,6 +32,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { createGameDocument } from "./gameAPI";
 import { transformDailyLoot } from "@legion/shared/utils";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards } from "./inventoryUtils";
+import {starterCharacterId} from "./playerProvisioning";
 
 export const buyInventorySlots = onRequest({
   memory: '512MiB'
@@ -163,19 +164,13 @@ function generateName() {
   return base.length > MAX_NICKNAME_LENGTH ? base.slice(0, MAX_NICKNAME_LENGTH) : base;
 }
 
-export const createPlayer = functions.runWith({
-  memory: '512MB',
-  minInstances: 0,
-  maxInstances: 10,
-}).auth.user().onCreate(async (user) => {
+export async function ensurePlayer(uid: string): Promise<void> {
+  const user = {uid};
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
   const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const startLeague = League.BRONZE;
   const isAdmin = (process.env.ADMIN_MODE == 'true');
-
-  // Game 0 has the same ID as the player
-  createGameDocument(user.uid, [user.uid], PlayMode.PRACTICE, League.BRONZE, 0);
 
   const name = generateName();
   // Define the character data structure
@@ -238,33 +233,31 @@ export const createPlayer = functions.runWith({
     friends: [] as string[],  // Just store the IDs
   } as DBPlayerData;
 
-  // Start a batch to ensure atomicity
   const batch = db.batch();
-
-  // Add player document to batch
-  batch.set(playerRef, playerData);
-
   const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
-  const characterDataArray = [];
-
   for (let i = 0; i < NB_START_CHARACTERS; i++) {
-    characterDataArray.push(
-      new NewCharacter(
-        classes[i]
-      ).getCharacterData()
-    );
-  }
-
-  characterDataArray.forEach((characterData) => {
-    const characterRef = db.collection("characters").doc();
-    batch.set(characterRef, characterData);
+    const characterRef = db.collection("characters").doc(starterCharacterId(uid, i));
     playerData.characters.push(characterRef);
-  });
+    batch.create(characterRef, new NewCharacter(classes[i]).getCharacterData());
+  }
+  batch.create(playerRef, playerData);
 
-  // Commit the batch
-  await batch.commit();
+  try {
+    await batch.commit();
+  } catch (error) {
+    const code = (error as any)?.code;
+    if (code === 6 || code === "already-exists") return;
+    throw error;
+  }
+  await createGameDocument(user.uid, [user.uid], PlayMode.PRACTICE, League.BRONZE, 0);
   logger.info("New player and characters created for user:", user.uid);
-});
+}
+
+export const createPlayer = functions.runWith({
+  memory: '512MB',
+  minInstances: 0,
+  maxInstances: 10,
+}).auth.user().onCreate(user => ensurePlayer(user.uid));
 
 export const getPlayerData = onRequest({
   memory: '512MiB'
