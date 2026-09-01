@@ -57,7 +57,8 @@ jobs:
             --allow-unauthenticated \
             --memory 512Mi \
             --cpu 1 \
-            --max-instances 10
+            --max-instances 1 \
+            --min-instances 0
 
       - name: Deployment summary
         run: |
