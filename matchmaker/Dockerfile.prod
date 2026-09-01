@@ -26,4 +26,4 @@ COPY matchmaker/.production.env ./.env
 
 EXPOSE 3000
 
-CMD ["bun", "run", "start"]
+CMD ["bun", "dist/src/matchmaker.js"]

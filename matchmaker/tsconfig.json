@@ -10,5 +10,6 @@
     "paths": {
       "@legion/shared/*": ["../shared/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "test"]
 }

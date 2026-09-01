@@ -79,6 +79,7 @@ const lobbies: Map<string, Lobby> = new Map();
 
 const playersQueue: QueuingPlayer[] = [];
 const RND = true;
+let matchmakingInProgress = false;
 
 async function notifyAdmin(uid1: string, uid2:string, mode: PlayMode, action: string) {
     if (!discordEnabled) return;
@@ -102,14 +103,22 @@ export function setupMatchmaking(ioInstance: Server) {
 
     setInterval(() => {
         queueTimeUpdate();
-        (async () => {
-            try {
-                await tryMatchPlayers();
-            } catch (error) {
-                console.error('Error in tryMatchPlayers:', error);
-            }
-        })();
+        runMatchmakingPass().catch((error) => {
+            console.error('Error in tryMatchPlayers:', error);
+        });
     }, 1000);
+}
+
+export async function runMatchmakingPass(matchPlayers: () => Promise<void> = tryMatchPlayers): Promise<boolean> {
+    if (matchmakingInProgress) return false;
+
+    matchmakingInProgress = true;
+    try {
+        await matchPlayers();
+        return true;
+    } finally {
+        matchmakingInProgress = false;
+    }
 }
 
 function emitQueueCount() {
@@ -175,33 +184,37 @@ function switcherooCheck(player: QueuingPlayer) {
     return false;
 }
 
-async function tryMatchPlayers() {
+export async function tryMatchPlayers(
+    queue: QueuingPlayer[] = playersQueue,
+    createMatch: typeof createGame = createGame,
+    removePlayer: (player: QueuingPlayer) => void = removePlayerFromQ,
+) {
     let i = 0;
-    if (playersQueue.length > 0) {
-        console.log(`[matchmaker:tryMatchPlayers] ${playersQueue.length} players in Q: ${playersQueue.map(p => p.socket.id)}`);
+    if (queue.length > 0) {
+        console.log(`[matchmaker:tryMatchPlayers] ${queue.length} players in Q: ${queue.map(p => p.socket.id)}`);
     }
-    while (i < playersQueue.length) {
-        let player1 = playersQueue[i];
+    while (i < queue.length) {
+        let player1 = queue[i];
         let matchFound = false;
 
         if (switcherooCheck(player1)) return;
 
-        for (let j = i + 1; j < playersQueue.length; j++) {
-            let player2 = playersQueue[j];
+        for (let j = i + 1; j < queue.length; j++) {
+            let player2 = queue[j];
             console.log(`[matchmaker:tryMatchPlayers] Considering ${player1.socket.id} with ${player2.socket.id} ...`);
             if (player1.mode == player2.mode && canBeMatched(player1, player2)) {
                 console.log(`Match found between ${player1.socket.id} and ${player2.socket.id}`);
                 // Start a game for these two players
-                const success = await createGame(player1.socket, player2.socket, player1.mode, player1.league);
+                const success = await createMatch(player1.socket, player2.socket, player1.mode, player1.league);
                 if (success) {
-                    console.log(`[matchmaker:tryMatchPlayers] Queue: ${playersQueue.map(p => p.socket.id)}`);
+                    console.log(`[matchmaker:tryMatchPlayers] Queue: ${queue.map(p => p.socket.id)}`);
                     console.log(`[matchmaker:tryMatchPlayers] Removing ${player2.socket.id} from queue`);
-                    removePlayerFromQ(player2.socket); // Remove player2 first since it's later in the array
-                    console.log(`[matchmaker:tryMatchPlayers] Queue: ${playersQueue.map(p => p.socket.id)}`);
+                    removePlayer(player2); // Remove player2 first since it's later in the array
+                    console.log(`[matchmaker:tryMatchPlayers] Queue: ${queue.map(p => p.socket.id)}`);
                     console.log(`[matchmaker:tryMatchPlayers] Removing ${player1.socket.id} from queue`);
-                    removePlayerFromQ(player1.socket);
+                    removePlayer(player1);
+                    matchFound = true;
                 }
-                matchFound = true;
                 break;
             } else {
                 if (player1.mode == player2.mode) {
