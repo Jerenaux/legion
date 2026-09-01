@@ -33,7 +33,6 @@ export abstract class Game
 {
     id: string;
     mode: PlayMode;
-    stake: number = 0;
     league: League;
     teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
@@ -1228,7 +1227,6 @@ export abstract class Game
                 key: (this.mode == PlayMode.PRACTICE || this.mode == PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
                 chests: this.computeChests(team.score, this.mode),
                 score: team.score,
-                tokens: isWinner ? this.computeStakeRewards() : 0,
             }
         } catch (error) {
             console.error(error);
@@ -1242,14 +1240,8 @@ export abstract class Game
                 key: null,
                 chests: [],
                 score: 0,
-                tokens: 0,
             }
         }
-    }
-
-    computeStakeRewards() {
-        // return this.stake * 2 * (1 - LEGION_CUT);
-        return this.stake * 2;
     }
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
@@ -1516,10 +1508,6 @@ export abstract class Game
         this.processTurn(FIRST_TURN_DELAY);
     }
 
-    setStake(stake: number) {
-        this.stake = stake;
-    } 
-
     isTutorial() {
         return this.mode === PlayMode.TUTORIAL;
     }
@@ -1664,4 +1652,3 @@ interface Tile {
     x: number;
     y: number;
 }
-

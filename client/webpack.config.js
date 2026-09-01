@@ -6,7 +6,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const Dotenv = require('dotenv-webpack');
+const webpack = require('webpack');
 
 const isDocker = process.env.IS_DOCKER;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -125,29 +125,22 @@ module.exports = {
       template: 'src/index.html',
       hash: !isElectron,
     }),
-    new Dotenv({
-      path: isDocker ? false : path.resolve(__dirname, isProduction ? '.production.env' : '.env'),
-      systemvars: isDocker // Set systemvars to true when in Docker mode to get vars from docker-compose.ym;
-    }),
+    new webpack.DefinePlugin(Object.fromEntries([
+      'API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL',
+      'USE_FIREBASE_EMULATOR', 'FIREBASE_AUTH_EMULATOR_HOST',
+    ].map(key => [`process.env.${key}`, JSON.stringify(process.env[key] || '')]))),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'public/favicon.ico', to: 'favicon.ico' },
-        { 
-          from: 'public',
-          globOptions: {
-            ignore: ['**/index.html'] // Ignore index.html since it's handled separately
-          }
-        },
-        ...(isElectron ? [{ from: 'preload.js', to: 'preload.js' }] : [])
       ]
     }),
-    sentryWebpackPlugin({
+    ...(process.env.SENTRY_AUTH_TOKEN ? [sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: "dynetis-games",
       project: "javascript-react"
-    }),
+    })] : []),
     new NodePolyfillPlugin(),
   ],
 
-  devtool: "source-map"
+  devtool: isProduction ? "hidden-source-map" : "source-map"
 };

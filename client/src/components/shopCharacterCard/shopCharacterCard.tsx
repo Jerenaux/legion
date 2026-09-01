@@ -11,6 +11,10 @@ import { Target, RarityColor, statFieldsByIndex, STATS_BG_COLOR, StatLabels } fr
 import { BaseSpell } from '@legion/shared/BaseSpell';
 
 import spellsSpritesheet from '@assets/spells.png';
+import mpIcon from '@assets/stats_icons/mp_icon.png';
+import cooldownIcon from '@assets/inventory/cd_icon.png';
+import targetIcon from '@assets/inventory/target_icon.png';
+import cancelIcon from '@assets/inventory/cancel_icon.png';
 
 interface ShopCharacteCardProps {
   key: number;
@@ -130,20 +134,20 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
               <p className="shop-character-card-dialog-desc">{this.state.curItem?.description}</p>
               <div className="shop-character-card-dialog-info-container">
                 <div className="shop-character-card-dialog-info">
-                  <img src={'/inventory/mp_icon.png'} alt="mp" />
+                  <img src={mpIcon} alt="mp" />
                   <span>{this.state.curItem?.cost}</span>
                 </div>
                 <div className="shop-character-card-dialog-info">
-                  <img src={'/inventory/cd_icon.png'} alt="cd" />
+                  <img src={cooldownIcon} alt="cd" />
                   <span>{getSpeedClass(this.state.curItem?.speedClass)}</span>
                 </div>
                 <div className="shop-character-card-dialog-info">
-                  <img src={'/inventory/target_icon.png'} alt="target" />
+                  <img src={targetIcon} alt="target" />
                   <span>{Target[this.state.curItem?.target]}</span>
                 </div>
               </div>
               <div className="dialog-button-container">
-                <button className="dialog-decline" onClick={() => this.setState({ shopCharacterCardDialogShow: false })}><img src="/inventory/cancel_icon.png" alt="decline" />Cancel</button>
+                <button className="dialog-decline" onClick={() => this.setState({ shopCharacterCardDialogShow: false })}><img src={cancelIcon} alt="decline" />Cancel</button>
               </div>
             </div>
           </div>

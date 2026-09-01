@@ -5,13 +5,13 @@ import {rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters,
   deleteOnSaleCharacters, purchaseCharacter, spendSP} from "./characterAPI";
 import {createPlayer, getPlayerData, queuingData,
-  saveGoldReward, claimChest, completeTour, fetchGuideTip, registerAddress,
+  saveGoldReward, claimChest, completeTour, fetchGuideTip,
   setPlayerOnSteroids, zombieData, recordPlayerAction, updateInactivePlayersStats,
-  setUtmSource, getProfileData, searchPlayers, listFriends, addFriend,
+  getProfileData, searchPlayers, listFriends, addFriend,
   updatePlayerName, updatePlayerAvatar, incrementStartedGames,
   setUserAttributes, buyInventorySlots,
 } from "./playerAPI";
-import { createLobby, joinLobby, cancelLobby, listLobbies, getLobbyDetails, countLobbies } from "./lobbyAPI";
+import {createLobby, cancelLobby, getLobbyDetails} from "./lobbyAPI";
 import {createGame, completeGame, addNews, getNews, saveReplay, getReplay, updateNewsThumbnail} from "./gameAPI";
 import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats,
@@ -28,11 +28,11 @@ export {
   getReward, claimChest,
   completeGame, getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, completeTour, fetchGuideTip,
-  registerAddress, createLobby, joinLobby, cancelLobby, listLobbies, setPlayerOnSteroids,
-  zombieData, getLobbyDetails, countLobbies, addNews, getNews, recordPlayerAction,
+  createLobby, cancelLobby, setPlayerOnSteroids,
+  zombieData, getLobbyDetails, addNews, getNews, recordPlayerAction,
   listPlayerIDs, getEngagementMetrics, getTutorialDropoffStats, saveReplay, getReplay,
   updateInactivePlayersStats, getPlayerGameHistory,
-  setUtmSource, getProfileData, searchPlayers, listFriends, addFriend,
+  getProfileData, searchPlayers, listFriends, addFriend,
   updatePlayerName, updatePlayerAvatar, getActivePlayers, getPlayerActionsReport,
   incrementStartedGames, markPlayerExcluded, markPlayerContacted,
   updateNewsThumbnail, setUserAttributes, buyInventorySlots,

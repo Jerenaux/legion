@@ -74,7 +74,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
             PlayMode.PRACTICE,
             PlayMode.CASUAL,
             PlayMode.RANKED,
-            PlayMode.STAKED
         ] as number[];
         
         const currentMode = Number(this.props.matches.mode);

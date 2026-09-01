@@ -119,7 +119,6 @@ export interface OutcomeData {
     grade: string;
     xp: number;
     gold: number;
-    tokens: number;
     characters?: CharacterUpdate[];
     elo: number;
     key: ChestColor;
@@ -404,7 +403,6 @@ export interface PlayerContextData {
     isLoaded: boolean;
     inventory: PlayerInventory;
     carrying_capacity: number;
-    tokens: any;
     AIwinRatio?: number;
     friends?: FriendData[];
     completedGames?: number;

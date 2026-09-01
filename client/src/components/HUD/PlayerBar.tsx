@@ -9,7 +9,7 @@ import { StatusEffects } from '@legion/shared/interfaces';
 import { CircularTimer } from './CircularTimer';
 import ItemIcon from './NewItemIcon';
 import { InventoryType } from '@legion/shared/enums';
-import { EventEmitter } from '@solana/wallet-adapter-base';
+type EventEmitter = {on: Function; off: Function; emit: Function};
 
 interface PlayerBarProps {
   hp: number;
@@ -223,4 +223,4 @@ class PlayerBar extends Component<PlayerBarProps> {
   }
 }
 
-export default PlayerBar; 
+export default PlayerBar;

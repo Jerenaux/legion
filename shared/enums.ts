@@ -84,7 +84,6 @@ export enum PlayMode {
     CASUAL_VS_FRIEND,
     RANKED,
     RANKED_VS_AI,
-    STAKED,
 }
 
 export const PlayModeLabels = {
@@ -94,7 +93,6 @@ export const PlayModeLabels = {
     [PlayMode.CASUAL_VS_AI]: 'Casual vs AI',
     [PlayMode.RANKED]: 'Ranked',
     [PlayMode.RANKED_VS_AI]: 'Ranked vs AI',
-    [PlayMode.STAKED]: 'Staked',
 }
 
 export enum EquipmentSlot {
@@ -227,10 +225,6 @@ export enum GEN {
     BURNING,
     KILL_STREAK,
     TUTORIAL,
-}
-
-export enum Token {
-    SOL = "SOL",
 }
 
 export enum AIAttackMode {

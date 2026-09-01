@@ -2,6 +2,8 @@
 import './ArenaCard.style.css'
 import { h, Component } from 'preact';
 import { route } from 'preact-router';
+import vsActive from '@assets/vs_bg_active.png';
+import vsIdle from '@assets/vs_bg_idle.png';
 
 type Team = {
   name: string;
@@ -43,7 +45,7 @@ class ArenaCard extends Component<CardProps> {
   render() {
     const data = this.props.gameData;
     const bgStyle = {
-        backgroundImage: `url(/vs_bg_${this.state.active ? 'active' : 'idle'}.png)`,
+        backgroundImage: `url(${this.state.active ? vsActive : vsIdle})`,
         cursor: 'pointer'
     }
 

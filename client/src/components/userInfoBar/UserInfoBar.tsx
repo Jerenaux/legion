@@ -1,7 +1,6 @@
 import { h, Component } from 'preact';
 import './UserInfoBar.style.css';
 import GoldIcon from '@assets/gold_icon.png';
-import SolanaIcon from '@assets/solana.png';
 import {League} from "@legion/shared/enums";
 import {getLeagueIcon} from "../utils";
 
@@ -23,7 +22,6 @@ const leagueMap = new Map([
 
 const iconsMap = {
     'gold': GoldIcon,
-    'solana': SolanaIcon
 };
 
 class UserInfoBar extends Component<BarProps> {

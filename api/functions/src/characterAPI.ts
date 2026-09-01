@@ -155,7 +155,7 @@ export const postGameUpdate = onRequest({
         return;
       }
       const uid = request.body.uid;
-      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score, tokens} =
+      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
         request.body.outcomes as OutcomeData;
       console.log(`[postGameUpdate] [${uid}] Outcomes: ${JSON.stringify(request.body.outcomes, null, 2)}`);
       const {spellsUsed, itemsUsed, movements, attacks, flames, ice, poison, silenced, paralyzed, lowMP} =
@@ -259,10 +259,6 @@ export const postGameUpdate = onRequest({
 
         if (goldReward > 0) {
           updates.gold = admin.firestore.FieldValue.increment(goldReward);
-        }
-
-        if (tokens) {
-          updates['tokens.SOL'] = admin.firestore.FieldValue.increment(tokens || 0);
         }
 
         // Update engagement stats

@@ -77,8 +77,6 @@ export const ENABLE_Q_NEWS = true;
 export const ENABLE_QUESTS = false;
 export const ENABLE_SPECTATOR_MODE = false;
 export const ENABLE_SETTINGS = true;
-export const ENABLE_ELYSIUM = false;
-
 // Admin
 export let FREEZE_AI = false;
 export const STARTING_GOLD_ADMIN = 100000;
@@ -96,14 +94,6 @@ export let KILLALL_W = false;
 export let FREEZE_CAMERA = false;
 export let VALIDATE_TARGETS = false;
 export const CAST_ZOOM = false;
-
-// Web3
-export let NETWORK = isDev ? 'devnet' : 'mainnet';
-const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-export const RPC = NETWORK === 'devnet' ? `https://solana-${NETWORK}.g.alchemy.com/v2/${ALCHEMY_API_KEY}` : 'https://snowy-lively-tree.solana-mainnet.quiknode.pro/06a13c157e50528707e63ef977c12ef76163056f';
-export const GAME_WALLET = NETWORK === 'devnet' ? '5sbSbXRifoT3TyZn98Vt2k9pXE59PbcKBewfVYco6HUY' : '3An5UbyPzsoaHHCiqfou7SX88V9JJM1x1XzN77JyYWNh';
-export const MIN_WITHDRAW = 0.01;
-export const LEGION_CUT = 0.02;
 
 // Social
 export const DISCORD_LINK = 'https://discord.gg/s2XZhYCK2m';

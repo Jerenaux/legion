@@ -178,9 +178,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         const isGame0 = this.props.game0;
         const grade = isGame0 ? 'A' : this.props.grade;
 
-        const showPlayAgain = !this.props.game0 && 
-            this.props.mode !== PlayMode.CASUAL_VS_FRIEND && 
-            this.props.mode !== PlayMode.STAKED;
+        const showPlayAgain = !this.props.game0 && this.props.mode !== PlayMode.CASUAL_VS_FRIEND;
 
         return (
             <div className="endgame">

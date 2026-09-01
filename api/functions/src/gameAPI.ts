@@ -3,11 +3,11 @@ import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, storage, isDevelopment} from "./APIsetup";
 import {EndGameData, GameReplayMessage} from "@legion/shared/interfaces";
 import {GameStatus, League, PlayMode} from "@legion/shared/enums";
-import {logPlayerAction, updateDailyVisits} from "./dashboardAPI";
+import {logPlayerAction} from "./dashboardAPI";
 import Busboy from 'busboy';
 
 export async function createGameDocument(
-  gameId: string, players: string[], mode: PlayMode, league: League, stake: number
+  gameId: string, players: string[], mode: PlayMode, league: League
 ) {
   const db = admin.firestore();
   const gameData = {
@@ -17,7 +17,6 @@ export async function createGameDocument(
     mode,
     league,
     status: GameStatus.ONGOING,
-    stake,
   };
   await db.collection("games").doc(gameId).set(gameData);
   console.log(`[createGameDocument] Game ${gameId} created`);
@@ -40,16 +39,13 @@ export const createGame = onRequest({
       const players = request.body.players;
       const mode = request.body.mode;
       const league = request.body.league;
-      const stake = request.body.stake;
-
-      await createGameDocument(gameId, players, mode, league, stake);
+      await createGameDocument(gameId, players, mode, league);
 
       for (const player of players) {
         logPlayerAction(player, "gameStart", {
           gameId,
           league,
           mode,
-          stake,
         });
       }
 
@@ -136,16 +132,6 @@ export const getNews = onRequest({
     try {
       const limit = parseInt(request.query.limit as string) || 3;
       const isFrontPage = request.query.isFrontPage === 'true';
-      
-      // Get visitor tracking parameters
-      const visitorId = request.query.visitorId as string;
-      const referrer = request.query.referrer as string;
-      const isMobile = request.query.isMobile === 'true';
-      
-      // Track visitor if this is a front page visit
-      if (isFrontPage && visitorId) {
-        await updateDailyVisits(visitorId, referrer, isMobile);
-      }
       
       // Get all news
       const newsCollection = db.collection("news");

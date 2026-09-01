@@ -42,14 +42,12 @@ class Lobby {
     opponentId: string | null;
     creatorSocket: Socket;
     opponentSocket: Socket;
-    stake: number;
-    constructor(id: string, creatorId: string, opponentId: string | null = null, stake: number = 0) {
+    constructor(id: string, creatorId: string, opponentId: string | null = null) {
         this.id = id;
         this.creatorId = creatorId;
         this.opponentId = opponentId;
         this.creatorSocket = null;
         this.opponentSocket = null;
-        this.stake = stake;
     }
 
     addPlayer(socket: any): boolean {
@@ -251,7 +249,7 @@ function canBeMatched(player1: QueuingPlayer, player2: QueuingPlayer): boolean {
 }
 
 async function createGame(
-    player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null, stake: number = 0
+    player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null
 ) {
     console.log(`[matchmaker:createGame] Creating game with mode ${mode} and league ${league}`);
     try {
@@ -287,7 +285,6 @@ async function createGame(
                     players: [player1.uid, player2?.uid],
                     mode,
                     league,
-                    stake,
                 },
                 headers: {
                     'x-api-key': process.env.API_KEY,
@@ -465,9 +462,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
         }
 
         // Determine play mode based on lobby type
-        const mode = lobbyDetails.type === 'friend' ? 
-            PlayMode.CASUAL_VS_FRIEND : 
-            PlayMode.STAKED;
+        if (lobbyDetails.type !== 'friend') throw new Error('Unsupported lobby type');
+        const mode = PlayMode.CASUAL_VS_FRIEND;
 
         const lobby = lobbies.get(data.lobbyId);
         if (!lobby) {
@@ -475,8 +471,7 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
             const newLobby = new Lobby(
                 data.lobbyId, 
                 lobbyDetails.creatorId,
-                lobbyDetails.opponentId, 
-                lobbyDetails.stake
+                lobbyDetails.opponentId,
             );
             lobbies.set(data.lobbyId, newLobby);
             
@@ -522,9 +517,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
             await createGame(
                 lobby.creatorSocket,
                 lobby.opponentSocket,
-                mode,  // Use the determined mode
-                null,  // No league for friend lobbies
-                lobby.stake
+                mode,
+                null,
             );
             lobbies.delete(data.lobbyId);
         }

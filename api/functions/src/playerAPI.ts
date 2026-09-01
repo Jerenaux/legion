@@ -5,7 +5,7 @@ import admin, { corsMiddleware, getUID, checkAPIKey, performLockedOperation } fr
 
 import { uniqueNamesGenerator } from "unique-names-generator";
 
-import { Class, ChestColor, League, Token, PlayMode } from "@legion/shared/enums";
+import { Class, ChestColor, League, PlayMode } from "@legion/shared/enums";
 import { PlayerContextData, DailyLootAllDBData, DBPlayerData,
   PlayerInventory, ChestReward } from "@legion/shared/interfaces";
 import { NewCharacter } from "@legion/shared/NewCharacter";
@@ -24,10 +24,6 @@ import {
 import { logPlayerAction, updateDAU } from "./dashboardAPI";
 import {currentSeasonId, getEmptyLeagueStats, getLeagueForElo} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
-// import {
-//   Connection, LAMPORTS_PER_SOL, Keypair, Transaction, SystemProgram, PublicKey,
-// } from '@solana/web3.js';
-// import bs58 from 'bs58';
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { createGameDocument } from "./gameAPI";
 import { transformDailyLoot } from "@legion/shared/utils";
@@ -227,9 +223,6 @@ export async function ensurePlayer(uid: string): Promise<void> {
       everParalyzed: false,
       everLowMP: false,
     },
-    tokens: {
-      [Token.SOL]: 0,
-    },
     friends: [] as string[],  // Just store the IDs
   } as DBPlayerData;
 
@@ -249,7 +242,7 @@ export async function ensurePlayer(uid: string): Promise<void> {
     if (code === 6 || code === "already-exists") return;
     throw error;
   }
-  await createGameDocument(user.uid, [user.uid], PlayMode.PRACTICE, League.BRONZE, 0);
+  await createGameDocument(user.uid, [user.uid], PlayMode.PRACTICE, League.BRONZE);
   logger.info("New player and characters created for user:", user.uid);
 }
 
@@ -328,7 +321,6 @@ export const getPlayerData = onRequest({
           inventory: sortedInventory,
           carrying_capacity: inventorySize,
           isLoaded: false,
-          tokens: playerData.tokens || { [Token.SOL]: 0 },
           AIwinRatio,
           completedGames: playerData.engagementStats?.completedGames || 0,
           engagementStats: playerData.engagementStats || {},
@@ -763,29 +755,6 @@ export const fetchGuideTip = onRequest({
   });
 });
 
-export const registerAddress = onRequest({
-  memory: '512MiB'
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const address = request.body.address;
-      logger.info("Registering address for player:", uid, "address:", address);
-
-      await db.collection("players").doc(uid).update({
-        address,
-      });
-
-      response.send({});
-    } catch (error) {
-      console.error("registerAddress error:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
-
 export const setPlayerOnSteroids = onRequest({ 
   secrets: ["API_KEY"],
   memory: '512MiB'
@@ -1097,107 +1066,6 @@ export const zombieData = onRequest(
   }
 });
 
-// export const withdrawSOL = onRequest({ secrets: ["GAME_WALLET_PRIVATE_KEY"] }, async (request, response) => {
-//   const db = admin.firestore();
-
-//   return corsMiddleware(request, response, async () => {
-//     try {
-//       const uid = await getUID(request);
-//       const amount = parseFloat(request.body.amount);
-//       console.log(`[withdrawSOL] Withdrawing ${amount} SOL for ${uid} on ${RPC}`);
-
-//       if (isNaN(amount) || amount < MIN_WITHDRAW) {
-//         return response.status(400).send({ error: `Invalid withdrawal amount. Minimum is ${MIN_WITHDRAW} SOL.` });
-//       }
-
-//       const result = await performLockedOperation(uid, async () => {
-//         return db.runTransaction(async (transaction) => {
-          
-//           const playerDocRef = db.collection('players').doc(uid);
-//           const playerDoc = await transaction.get(playerDocRef);
-
-//           if (!playerDoc.exists) {
-//             throw new Error('Player not found.');
-//           }
-
-//           const playerData = playerDoc.data();
-//           if (!playerData) {
-//             throw new Error('Player data is null.');
-//           }
-
-//           const playerAddress = playerData.address;
-//           const inGameBalance = playerData.tokens?.[Token.SOL] || 0;
-
-//           if (!playerAddress) {
-//             throw new Error('Player wallet address not registered.');
-//           }
-
-//           // Check if the player has enough balance
-//           if (amount > inGameBalance) {
-//             throw new Error('Insufficient in-game balance.');
-//           }
-
-//           // Load the game wallet keypair from the environment variable
-//           const secretKeyString = process.env.GAME_WALLET_PRIVATE_KEY;
-//           if (!secretKeyString) {
-//             throw new Error('Game wallet private key not set in environment variables.');
-//           }
-
-//           const secretKey = bs58.decode(secretKeyString);
-//           const gameWalletKeypair = Keypair.fromSecretKey(secretKey);
-
-//           // Create a connection to the Solana cluster
-//           const connection = new Connection(RPC, 'confirmed');
-
-//           // Create a transaction to send SOL from the game wallet to the player
-//           const withdrawTransaction = new Transaction().add(
-//             SystemProgram.transfer({
-//               fromPubkey: gameWalletKeypair.publicKey,
-//               toPubkey: new PublicKey(playerAddress),
-//               lamports: Math.round(amount * LAMPORTS_PER_SOL),
-//             })
-//           );
-
-//           // Sign and send the transaction
-//           const signature = await connection.sendTransaction(withdrawTransaction, [gameWalletKeypair]);
-//           console.log(`Withdrawal transaction signature: ${signature}`);
-
-//           // Wait for transaction confirmation
-//           const confirmedTransaction = await fetchParsedTransactionWithRetry(signature, connection);
-
-//           if (!confirmedTransaction) {
-//             throw new Error('Transaction could not be confirmed after retries.');
-//           }
-
-//           // Update the player's in-game balance
-//           transaction.update(playerDocRef, {
-//             [`tokens.${Token.SOL}`]: admin.firestore.FieldValue.increment(-amount),
-//           });
-
-//           // Record the withdrawal transaction
-//           const withdrawalRef = db.collection('withdrawals').doc();
-//           transaction.set(withdrawalRef, {
-//             uid: uid,
-//             amount: amount,
-//             signature: signature,
-//             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-//           });
-
-//           return { success: true, signature: signature };
-//         });
-//       });
-
-//       return response.status(200).send(result);
-//     } catch (error) {
-//       console.error('withdrawSOL error:', error);
-//       if (error instanceof Error && error.message === 'Failed to acquire lock. Resource is busy.') {
-//         return response.status(423).send({ error: "Resource is locked. Please try again later." });
-//       }
-//       return response.status(500).send({ error: 'An error occurred during withdrawal: ' + (error instanceof Error ? error.message : String(error)) });
-//     }
-//   });
-// });
-
 export const recordPlayerAction = onRequest({
   memory: '512MiB'
 }, (request, response) => {
@@ -1317,31 +1185,6 @@ export const updateInactivePlayersStats = onSchedule(
     logger.error("Error updating inactive players:", error);
     throw error;
   }
-});
-
-export const setUtmSource = onRequest({
-  memory: '512MiB'
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const utmSource = request.body.utmSource;
-      logger.info("Setting UTM source for player:", uid, "utmSource:", utmSource);
-
-      await db.collection("players").doc(uid).set({
-        acquisition: {
-          utmSource,
-        }
-      }, { merge: true });
-
-      response.send({ success: true });
-    } catch (error) {
-      console.error("setUtmSource error:", error);
-      response.status(500).send("Error");
-    }
-  });
 });
 
 // Update the getProfileData function to include name and avatar in the response

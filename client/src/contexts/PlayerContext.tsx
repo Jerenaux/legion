@@ -91,7 +91,6 @@ export const PlayerContext = createContext<{
       spells: [],
     },
     carrying_capacity: 0,
-    tokens: null,
     friends: [],
   },
   loaded: false,
