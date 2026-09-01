@@ -78,7 +78,7 @@ let io: Server;
 const lobbies: Map<string, Lobby> = new Map();
 
 const playersQueue: QueuingPlayer[] = [];
-const RND = true;
+export const FAKE_QUEUE_NUMBERS_ENABLED = true;
 let matchmakingInProgress = false;
 
 async function notifyAdmin(uid1: string, uid2:string, mode: PlayMode, action: string) {
@@ -123,7 +123,7 @@ export async function runMatchmakingPass(matchPlayers: () => Promise<void> = try
 
 function emitQueueCount() {
     let count = playersQueue.length;
-    if (RND) {
+    if (FAKE_QUEUE_NUMBERS_ENABLED) {
         count = Math.floor(Math.random() * 4) + 2;
     }
     io.emit('queueCount', { count }); 
@@ -236,7 +236,7 @@ function countQueuingPlayers(mode: PlayMode, league: League): number {
     if (mode == PlayMode.RANKED) {
         return playersInMode.filter(player => player.league === league).length;
     }
-    if (RND) {
+    if (FAKE_QUEUE_NUMBERS_ENABLED) {
         return Math.floor(Math.random() * 4) + 2;
     } else {
         return playersInMode.length;
