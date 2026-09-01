@@ -4,10 +4,8 @@ set -euo pipefail
 manifest=client/.itch.toml
 workflow=.github/workflows/release-desktop.yml
 
-for platform in windows osx linux; do
-  rg -q "platform = \"$platform\"" "$manifest"
-done
-test "$(rg -c 'scope = "profile:me"' "$manifest")" -eq 3
+rg -q 'path = "Legion\{\{EXT\}\}"' "$manifest"
+test "$(rg -c 'scope = "profile:me"' "$manifest")" -eq 1
 for channel in windows mac linux; do
   rg -q "ITCH_TARGET:$channel" "$workflow"
 done

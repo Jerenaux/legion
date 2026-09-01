@@ -22,9 +22,9 @@ export async function createGameDocument(
   console.log(`[createGameDocument] Game ${gameId} created`);
 }
 
-export const createGame = onRequest({ 
+export const createGame = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Creating game");
   const db = admin.firestore();
@@ -57,9 +57,9 @@ export const createGame = onRequest({
   });
 });
 
-export const completeGame = onRequest({ 
+export const completeGame = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -125,44 +125,44 @@ export const completeGame = onRequest({
 });
 
 export const getNews = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
   corsMiddleware(request, response, async () => {
     try {
       const limit = parseInt(request.query.limit as string) || 3;
       const isFrontPage = request.query.isFrontPage === 'true';
-      
+
       // Get all news
       const newsCollection = db.collection("news");
       const allNewsSnapshot = await newsCollection.get();
-      const allNews = allNewsSnapshot.docs.map(doc => ({
+      const allNews = allNewsSnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
-      
+
       // Sort by date (newest first)
       const sortByDateDesc = (a: any, b: any) => {
         const dateA = a.date || '0000-00-00';
         const dateB = b.date || '0000-00-00';
         return dateB.localeCompare(dateA);
       };
-      
+
       if (!isFrontPage) {
         // Separate pinned and unpinned news
         const pinnedNews = allNews.filter((news: any) => news.pinned);
         const unpinnedNews = allNews.filter((news: any) => !news.pinned);
-        
+
         // Sort unpinned news by date
         const sortedUnpinnedNews = unpinnedNews.sort(sortByDateDesc);
-        
+
         // Take only what we need from unpinned news, considering we'll add pinned ones
         const unpinnedToKeep = Math.max(0, limit - pinnedNews.length);
         const result = [
           ...sortedUnpinnedNews.slice(0, unpinnedToKeep),
-          ...pinnedNews
+          ...pinnedNews,
         ];
-        
+
         response.status(200).json(result);
       } else {
         // Regular sorting by date only
@@ -177,15 +177,15 @@ export const getNews = onRequest({
 });
 
 async function handleNewsMediaUpload(
-  buffer: Buffer | null, 
-  mimeType: string | null, 
+  buffer: Buffer | null,
+  mimeType: string | null,
   oldUrl?: string | null
 ): Promise<string | null> {
   if (!buffer || isDevelopment) {
     return null;
   }
 
-  const isVideo = mimeType?.toLowerCase().startsWith('video/') || 
+  const isVideo = mimeType?.toLowerCase().startsWith('video/') ||
                   mimeType?.toLowerCase() === 'application/quicktime';
   const ext = mimeType?.split('/')[1]?.toLowerCase() || (isVideo ? 'mov' : 'jpg');
   const folder = isVideo ? 'news-videos' : 'news-images';
@@ -197,7 +197,7 @@ async function handleNewsMediaUpload(
     await file.save(buffer, {
       metadata: {
         contentType: mimeType,
-      }
+      },
     });
     await file.makePublic();
     const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media`;
@@ -222,7 +222,7 @@ async function handleNewsMediaUpload(
 
 export const addNews = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -235,6 +235,7 @@ export const addNews = onRequest({
       console.log(`[addNews] Processing news upload...`);
 
       // Handle multipart form data
+      // eslint-disable-next-line new-cap
       const busboy = Busboy({ headers: request.headers });
       const fields: any = {};
       let imageBuffer: Buffer | null = null;
@@ -287,15 +288,15 @@ export const addNews = onRequest({
               category: fields.category || 'general',
               imageUrl: isDevelopment ? (fields.imageUrl || null) : mediaUrl,
               isVideo: !isDevelopment && imageType?.startsWith('video/') || false,
-              createdAt: new Date()
+              createdAt: new Date(),
             };
 
             const docRef = await db.collection("news").add(newsData);
-            resolve({ 
-              status: "success", 
+            resolve({
+              status: "success",
               message: "News added successfully",
               id: docRef.id,
-              imageUrl: newsData.imageUrl 
+              imageUrl: newsData.imageUrl,
             });
           } catch (error) {
             reject(error);
@@ -303,7 +304,7 @@ export const addNews = onRequest({
         });
 
         busboy.on('error', reject);
-        
+
         // Feed the request data into busboy
         if (request.rawBody) {
           busboy.end(request.rawBody);
@@ -328,7 +329,7 @@ export const addNews = onRequest({
 
 export const updateNewsThumbnail = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -347,6 +348,7 @@ export const updateNewsThumbnail = onRequest({
 
       console.log(`[updateNewsThumbnail] Processing thumbnail update for news ${newsId}...`);
 
+      // eslint-disable-next-line new-cap
       const busboy = Busboy({ headers: request.headers });
       let imageBuffer: Buffer | null = null;
       let imageType: string | null = null;
@@ -387,13 +389,13 @@ export const updateNewsThumbnail = onRequest({
             // Update the news document with the new image URL
             await newsDoc.ref.update({
               imageUrl: isDevelopment ? null : mediaUrl,
-              updatedAt: new Date()
+              updatedAt: new Date(),
             });
 
-            resolve({ 
-              status: "success", 
+            resolve({
+              status: "success",
               message: "Thumbnail updated successfully",
-              imageUrl: mediaUrl 
+              imageUrl: mediaUrl,
             });
           } catch (error) {
             reject(error);
@@ -401,7 +403,7 @@ export const updateNewsThumbnail = onRequest({
         });
 
         busboy.on('error', reject);
-        
+
         if (request.rawBody) {
           busboy.end(request.rawBody);
         } else {
@@ -423,9 +425,9 @@ export const updateNewsThumbnail = onRequest({
 });
 
 
-export const saveReplay = onRequest({ 
+export const saveReplay = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -474,7 +476,7 @@ export const saveReplay = onRequest({
 });
 
 export const getReplay = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 

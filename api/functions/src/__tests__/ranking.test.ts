@@ -36,7 +36,7 @@ describe("indexed ranking helpers", () => {
       player("third", 4, 0, 900),
     ], false, "real");
 
-    expect(rows.map(row => [row.playerId, row.rank])).toEqual([
+    expect(rows.map((row) => [row.playerId, row.rank])).toEqual([
       ["real", 1],
       ["synthetic", 1],
       ["third", 3],

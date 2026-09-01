@@ -14,7 +14,7 @@ export const createLobby = onRequest({memory: "512MiB"}, (request, response) =>
         return;
       }
 
-      const result = await performLockedOperation(uid, () => db.runTransaction(async transaction => {
+      const result = await performLockedOperation(uid, () => db.runTransaction(async (transaction) => {
         const [playerDoc, opponentDoc] = await Promise.all([
           transaction.get(db.collection("players").doc(uid)),
           transaction.get(db.collection("players").doc(opponentUID)),
@@ -51,7 +51,7 @@ export const cancelLobby = onRequest({memory: "512MiB"}, (request, response) =>
     try {
       const uid = await getUID(request);
       const lobby = db.collection("lobbies").doc(request.body.lobbyId);
-      await db.runTransaction(async transaction => {
+      await db.runTransaction(async (transaction) => {
         const snapshot = await transaction.get(lobby);
         const data = snapshot.data();
         if (!snapshot.exists) throw new Error("Lobby not found");

@@ -33,7 +33,7 @@ async function resolveUID(
   const key = identityKey(provider, externalId);
   const identityRef = db.collection("platformIdentities").doc(key);
 
-  return db.runTransaction(async transaction => {
+  return db.runTransaction(async (transaction) => {
     const existing = await transaction.get(identityRef);
     if (existing.exists) {
       const uid = existing.data()?.uid as string;

@@ -10,7 +10,7 @@ admin.initializeApp(firebaseConfig);
 
 export const storage = getStorage();
 
-const LOCK_TIMEOUT = 10000; 
+const LOCK_TIMEOUT = 10000;
 
 const corsOptions = {
   origin: true,
@@ -18,7 +18,7 @@ const corsOptions = {
 export const corsMiddleware = cors(corsOptions);
 
 export async function getUID(request: Request): Promise<string> {
-  return verifyUID(request.headers.authorization, token => admin.auth().verifyIdToken(token));
+  return verifyUID(request.headers.authorization, (token) => admin.auth().verifyIdToken(token));
 }
 
 export const isDevelopment = process.env.NODE_ENV != "production";

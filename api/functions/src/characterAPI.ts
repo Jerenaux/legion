@@ -15,7 +15,7 @@ import {applyRankedResult, currentSeasonId, getLeagueForElo} from "./ranking";
 import {gameResultReceiptId} from "./gameResults";
 
 export const rosterData = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, async (request, response) => {
   const db = admin.firestore();
   corsMiddleware(request, response, async () => {
@@ -70,7 +70,7 @@ export const rosterData = onRequest({
 });
 
 export const characterData = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Fetching characterData");
   const db = admin.firestore();
@@ -143,9 +143,9 @@ export async function processChestRewards(
   });
 }
 
-export const postGameUpdate = onRequest({ 
+export const postGameUpdate = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -216,7 +216,7 @@ export const postGameUpdate = onRequest({
         // Add completed games increment if player hasn't disconnected
         if (stayedUntilTheEnd) {
           currentCompletedGames = playerData.engagementStats?.completedGames || 0;
-          
+
           // Check for feature unlock at the CURRENT count (before increment)
           const unlockedFeature = checkFeatureUnlock(currentCompletedGames);
           const rewards = getUnlockRewards(unlockedFeature);
@@ -226,7 +226,7 @@ export const postGameUpdate = onRequest({
             [RewardType.CONSUMABLES]: [],
             [RewardType.SPELL]: [],
             [RewardType.EQUIPMENT]: [],
-            [RewardType.GOLD]: []
+            [RewardType.GOLD]: [],
           };
           let goldAmount = 0;
 
@@ -253,12 +253,12 @@ export const postGameUpdate = onRequest({
                 console.log(`[postGameUpdate] Updating inventory update`);
                 updates.inventory = {
                   ...updates.inventory,
-                  ...rewardUpdate.inventory
+                  ...rewardUpdate.inventory,
                 };
               }
             }
           }
-          
+
           if (goldAmount > 0) {
             goldReward += goldAmount;
           }
@@ -334,7 +334,7 @@ export const postGameUpdate = onRequest({
           const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
           updates.AIstats = {
             nbGames: currentAIStats.nbGames + 1,
-            wins: currentAIStats.wins + (isWinner ? 1 : 0)
+            wins: currentAIStats.wins + (isWinner ? 1 : 0),
           };
         }
 
@@ -414,7 +414,7 @@ async function monitorCharactersOnSale(db: FirebaseFirestore.Firestore) {
 }
 
 export const generateOnSaleCharacters = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Generating on sale characters");
   const db = admin.firestore();
@@ -434,7 +434,7 @@ export const generateOnSaleCharacters = onRequest({
 });
 
 export const listOnSaleCharacters = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Listing on sale characters");
   const db = admin.firestore();
@@ -472,7 +472,7 @@ export const listOnSaleCharacters = onRequest({
 });
 
 export const deleteOnSaleCharacters = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Deleting on sale characters");
   const db = admin.firestore();
@@ -494,7 +494,7 @@ export const deleteOnSaleCharacters = onRequest({
 });
 
 export const purchaseCharacter = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Purchasing character");
   const db = admin.firestore();
@@ -574,7 +574,7 @@ export const purchaseCharacter = onRequest({
 });
 
 export const spendSP = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 

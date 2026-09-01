@@ -103,7 +103,8 @@
       "category": "public.app-category.games",
       "icon": "public/logo.png",
       "hardenedRuntime": true,
-      "notarize": true
+      "notarize": true,
+      "x64ArchFiles": "Contents/Resources/steamworks.js/dist/osx/**"
     },
     "win": {
       "target": [
@@ -128,7 +129,8 @@
     },
     "linux": {
       "target": "AppImage",
-      "icon": "public/logo.png"
+      "icon": "public/logo.png",
+      "executableName": "Legion"
     }
   }
 }

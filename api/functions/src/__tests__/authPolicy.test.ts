@@ -16,7 +16,7 @@ describe("API authentication policy", () => {
   });
 
   test("returns only a verified non-empty uid", async () => {
-    await expect(verifyUID("Bearer good", async token => ({ uid: token }))).resolves.toBe("good");
+    await expect(verifyUID("Bearer good", async (token) => ({ uid: token }))).resolves.toBe("good");
     await expect(verifyUID("Bearer bad", async () => ({ uid: "" }))).rejects.toThrow("Verified token has no uid");
   });
 

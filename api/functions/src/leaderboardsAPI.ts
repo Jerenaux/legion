@@ -100,7 +100,7 @@ async function getLeaderboard(leagueID: number, uid: string) {
     query.limit(LEADERBOARD_LIMIT).get(),
     getPersonalRank(leagueID, uid),
   ]);
-  const players = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()})) as RankedPlayer[];
+  const players = snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()})) as RankedPlayer[];
 
   return {
     league: leagueID,

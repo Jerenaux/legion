@@ -31,7 +31,7 @@ import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards } from "./inv
 import {starterCharacterId} from "./playerProvisioning";
 
 export const buyInventorySlots = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -71,15 +71,14 @@ export const buyInventorySlots = onRequest({
 
       await playerRef.update({
         gold: admin.firestore.FieldValue.increment(-totalCost),
-        purchasedInventorySlots: admin.firestore.FieldValue.increment(slotsToBuy)
+        purchasedInventorySlots: admin.firestore.FieldValue.increment(slotsToBuy),
       });
 
       response.send({
         success: true,
         newGold: playerData.gold - totalCost,
-        newSlots: purchasedSlots + slotsToBuy
+        newSlots: purchasedSlots + slotsToBuy,
       });
-
     } catch (error) {
       console.error("buyInventorySlots error:", error);
       response.status(500).send("Error");
@@ -223,7 +222,7 @@ export async function ensurePlayer(uid: string): Promise<void> {
       everParalyzed: false,
       everLowMP: false,
     },
-    friends: [] as string[],  // Just store the IDs
+    friends: [] as string[], // Just store the IDs
   } as DBPlayerData;
 
   const batch = db.batch();
@@ -250,10 +249,10 @@ export const createPlayer = functions.runWith({
   memory: '512MB',
   minInstances: 0,
   maxInstances: 10,
-}).auth.user().onCreate(user => ensurePlayer(user.uid));
+}).auth.user().onCreate((user) => ensurePlayer(user.uid));
 
 export const getPlayerData = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -300,7 +299,7 @@ export const getPlayerData = onRequest({
 
         const inventorySize = (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER + (playerData.purchasedInventorySlots || 0);
 
-        const AIwinRatio = 
+        const AIwinRatio =
           playerData.AIstats && playerData.AIstats.nbGames > 0 ?
             (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
             0;
@@ -340,7 +339,7 @@ export const getPlayerData = onRequest({
 });
 
 export const queuingData = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -369,9 +368,9 @@ export const queuingData = onRequest({
   });
 });
 
-export const saveGoldReward = onRequest({ 
+export const saveGoldReward = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Saving gold reward");
   const db = admin.firestore();
@@ -476,7 +475,7 @@ export async function awardChestContent(
 }
 
 export const claimChest = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -549,7 +548,7 @@ export const claimChest = onRequest({
 });
 
 export const completeTour = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -715,7 +714,7 @@ const figureOutConbatTip = (playerData: any) => {
 };
 
 export const fetchGuideTip = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -755,9 +754,9 @@ export const fetchGuideTip = onRequest({
   });
 });
 
-export const setPlayerOnSteroids = onRequest({ 
+export const setPlayerOnSteroids = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -898,8 +897,8 @@ export const setPlayerOnSteroids = onRequest({
           engagementStats: completeEngagementStats,
           AIstats: {
             nbGames: 10,
-            wins: 20
-          }
+            wins: 20,
+          },
         });
       });
 
@@ -912,10 +911,10 @@ export const setPlayerOnSteroids = onRequest({
 });
 
 export const zombieData = onRequest(
-  { 
-    secrets: ["API_KEY"], 
-    memory: '512MiB' 
-  }, 
+  {
+    secrets: ["API_KEY"],
+    memory: '512MiB',
+  },
   async (req, res) => {
   try {
     if (!checkAPIKey(req)) {
@@ -945,7 +944,7 @@ export const zombieData = onRequest(
     // Prepare the query
     let playersQuery = db.collection('players')
       .where('lastActiveDate', '<', cutoffDate);
-    
+
     if (league !== -1) {
       playersQuery = playersQuery.where('league', '==', league);
     }
@@ -991,8 +990,8 @@ export const zombieData = onRequest(
       // Get character data
       const characterRefs = playerData.characters || [];
       const characterDocs = await db.getAll(...characterRefs, {
-        fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 
-          'carrying_capacity', 'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 
+        fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats',
+          'carrying_capacity', 'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment',
           'equipment_bonuses', 'sp_bonuses', 'skills',
         ],
       });
@@ -1067,7 +1066,7 @@ export const zombieData = onRequest(
 });
 
 export const recordPlayerAction = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   return corsMiddleware(request, response, async () => {
     try {
@@ -1097,10 +1096,10 @@ export const incrementStartedGames = onRequest({ secrets: ["API_KEY"], memory: '
             const uid = request.body.uid;
             await db.collection('players').doc(uid).set({
                 engagementStats: {
-                    totalGames: admin.firestore.FieldValue.increment(1)
-                }
+                    totalGames: admin.firestore.FieldValue.increment(1),
+                },
             }, { merge: true });
-            
+
             response.send({ success: true });
         } catch (error) {
             console.error('incrementStartedGames error:', error);
@@ -1113,11 +1112,11 @@ export const updateInactivePlayersStats = onSchedule(
   {
     schedule: "every day 00:00",
     memory: "512MiB",
-  }, 
+  },
   async (event) => {
   const db = admin.firestore();
   const now = new Date();
-  
+
   // Calculate the timestamp for 48 hours ago
   const cutoffDate = new Date(now.getTime() - (48 * 60 * 60 * 1000));
   const cutoffDateString = cutoffDate.toISOString().replace('T', ' ').slice(0, 19);
@@ -1133,45 +1132,45 @@ export const updateInactivePlayersStats = onSchedule(
     const batch = db.batch();
     let updatedCount = 0;
 
-    snapshot.forEach(doc => {
+    snapshot.forEach((doc) => {
       // Generate total games using exponential distribution for more variation
       const lambda = 0.1; // Parameter for exponential distribution
       const randomGames = Math.round(-Math.log(1 - Math.random()) / lambda);
       const cappedGames = Math.min(Math.max(randomGames, 1), 50); // Cap between 1 and 50 games
-      
+
       // Generate win ratio using beta distribution for more natural variation
       // Beta distribution parameters (can be adjusted)
       const alpha = 2;
       const beta = 2;
-      
+
       // Approximate beta distribution using normal distribution
-      let u1 = Math.random();
-      let u2 = Math.random();
-      let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-      
+      const u1 = Math.random();
+      const u2 = Math.random();
+      const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+
       // Transform to beta-like distribution centered around 0.45
       let winRatio = 0.45 + (z0 * 0.15); // Standard deviation of 0.15
       winRatio = Math.max(0.1, Math.min(0.8, winRatio)); // Clamp between 0.1 and 0.8
-      
+
       const wins = Math.round(cappedGames * winRatio);
       const losses = cappedGames - wins;
-      
+
       // More dramatic ELO adjustments based on performance
       const winRateDeviation = winRatio - 0.45; // Deviation from expected 0.45
       const eloAdjustment = Math.round(winRateDeviation * 100); // Scale factor of 50
-      
+
       const currentElo = doc.data()?.elo || STARTING_ELO;
       const newElo = currentElo + eloAdjustment;
-      
+
       batch.update(doc.ref, {
         'leagueStats.wins': wins,
         'leagueStats.losses': losses,
         'leagueStats.nbGames': cappedGames,
         'leagueStats.seasonId': currentSeasonId(),
-        elo: newElo,
-        league: getLeagueForElo(newElo),
+        "elo": newElo,
+        "league": getLeagueForElo(newElo),
       });
-      
+
       updatedCount++;
     });
 
@@ -1189,7 +1188,7 @@ export const updateInactivePlayersStats = onSchedule(
 
 // Update the getProfileData function to include name and avatar in the response
 export const getProfileData = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
     const db = admin.firestore();
 
@@ -1202,7 +1201,7 @@ export const getProfileData = onRequest({
             }
 
             const playerDoc = await db.collection('players').doc(playerId).get();
-            
+
             if (!playerDoc.exists) {
                 response.status(404).send('Player not found');
                 return;
@@ -1226,7 +1225,7 @@ export const getProfileData = onRequest({
                 },
                 casualStats: {
                     gamesPlayed: casualStats?.nbGames || 0,
-                    wins: casualStats?.wins || 0
+                    wins: casualStats?.wins || 0,
                 },
                 elo: playerData?.elo || 1000,
                 joinDate: playerData?.joinDate || '',
@@ -1239,11 +1238,10 @@ export const getProfileData = onRequest({
                     winStreak: leagueStats?.winStreak || 0,
                     rank: leagueStats?.rank || 0,
                     league: playerData?.league || 0,
-                }
+                },
             };
 
             response.send(profileData);
-
         } catch (error) {
             console.error('Error fetching profile data:', error);
             response.status(500).send('Error fetching profile data');
@@ -1260,7 +1258,7 @@ interface PlayerSearchResult {
 
 // Update the searchPlayers endpoint to use name_lower field
 export const searchPlayers = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
     const db = admin.firestore();
 
@@ -1280,17 +1278,16 @@ export const searchPlayers = onRequest({
                 .get();
 
             const results: PlayerSearchResult[] = [];
-            querySnapshot.forEach(doc => {
+            querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 results.push({
                     id: doc.id,
                     name: data.name,
-                    avatar: data.avatar
+                    avatar: data.avatar,
                 });
             });
 
             response.send(results);
-
         } catch (error) {
             console.error('Error searching players:', error);
             response.status(500).send('Error searching players');
@@ -1299,9 +1296,9 @@ export const searchPlayers = onRequest({
 });
 
 // Add migration endpoint to add name_lower field
-export const migrateLowercaseNames = onRequest({ 
+export const migrateLowercaseNames = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
     const db = admin.firestore();
 
@@ -1316,11 +1313,11 @@ export const migrateLowercaseNames = onRequest({
             const batch = db.batch();
             let count = 0;
 
-            snapshot.forEach(doc => {
+            snapshot.forEach((doc) => {
                 const data = doc.data();
                 if (data.name && !data.name_lower) {
                     batch.update(doc.ref, {
-                        name_lower: data.name.toLowerCase()
+                        name_lower: data.name.toLowerCase(),
                     });
                     count++;
                 }
@@ -1328,7 +1325,6 @@ export const migrateLowercaseNames = onRequest({
 
             await batch.commit();
             response.send({ message: `Updated ${count} documents` });
-
         } catch (error) {
             console.error('Error in migration:', error);
             response.status(500).send('Error performing migration');
@@ -1338,7 +1334,7 @@ export const migrateLowercaseNames = onRequest({
 
 // Add new endpoint for listing friends
 export const listFriends = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
     const db = admin.firestore();
 
@@ -1366,21 +1362,20 @@ export const listFriends = onRequest({
 
             // Fetch friend details in parallel
             const friendDocs = await Promise.all(
-                friendIds.map((friendId: string) => 
+                friendIds.map((friendId: string) =>
                     db.collection('players').doc(friendId).get()
                 )
             );
 
             const friends = friendDocs
-                .filter(doc => doc.exists)
-                .map(doc => ({
+                .filter((doc) => doc.exists)
+                .map((doc) => ({
                     id: doc.id,
                     name: doc.data().name,
-                    avatar: doc.data().avatar
+                    avatar: doc.data().avatar,
                 }));
 
             response.send(friends);
-
         } catch (error) {
             console.error('Error listing friends:', error);
             response.status(500).send('Error listing friends');
@@ -1390,7 +1385,7 @@ export const listFriends = onRequest({
 
 // Update addFriend endpoint to handle missing friends field
 export const addFriend = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
     const db = admin.firestore();
 
@@ -1413,7 +1408,7 @@ export const addFriend = onRequest({
             // Get both player documents
             const [playerDoc, friendDoc] = await Promise.all([
                 db.collection('players').doc(uid).get(),
-                db.collection('players').doc(friendId).get()
+                db.collection('players').doc(friendId).get(),
             ]);
 
             if (!playerDoc.exists || !friendDoc.exists) {
@@ -1443,18 +1438,17 @@ export const addFriend = onRequest({
 
             // Add friend ID to player's friends list, creating the array if it doesn't exist
             await db.collection('players').doc(uid).set({
-                friends: admin.firestore.FieldValue.arrayUnion(friendId)
-            }, { merge: true });  // Use merge: true to not overwrite other fields
+                friends: admin.firestore.FieldValue.arrayUnion(friendId),
+            }, { merge: true }); // Use merge: true to not overwrite other fields
 
             response.send({
                 success: true,
                 friend: {
                     id: friendId,
                     name: friendData.name,
-                    avatar: friendData.avatar
-                }
+                    avatar: friendData.avatar,
+                },
             });
-
         } catch (error) {
             console.error('Error adding friend:', error);
             response.status(500).send('Error adding friend');
@@ -1463,15 +1457,15 @@ export const addFriend = onRequest({
 });
 
 // Update the function declaration to include memory configuration
-export const updatePlayerName = onRequest({ 
-  memory: '512MiB' 
+export const updatePlayerName = onRequest({
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      let newName = request.body.name;
+      const newName = request.body.name;
 
       // Validate name
       if (!newName || typeof newName !== 'string') {
@@ -1502,14 +1496,13 @@ export const updatePlayerName = onRequest({
       // Update both name and name_lower
       await db.collection('players').doc(uid).update({
         name: newName,
-        name_lower: newName.toLowerCase()
+        name_lower: newName.toLowerCase(),
       });
 
       response.send({
         success: true,
-        name: newName
+        name: newName,
       });
-
     } catch (error) {
       console.error('Error updating player name:', error);
       response.status(500).send('Error updating player name');
@@ -1518,7 +1511,7 @@ export const updatePlayerName = onRequest({
 });
 
 export const updatePlayerAvatar = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -1535,8 +1528,8 @@ export const updatePlayerAvatar = onRequest({
 
       // Convert to number and validate range
       const numericAvatarId = parseInt(avatarId, 10);
-      if (isNaN(numericAvatarId) || 
-          numericAvatarId < 1 || 
+      if (isNaN(numericAvatarId) ||
+          numericAvatarId < 1 ||
           numericAvatarId > MAX_AVATAR_ID) {
         response.status(400).send(`Avatar ID must be between 1 and ${MAX_AVATAR_ID}`);
         return;
@@ -1544,14 +1537,13 @@ export const updatePlayerAvatar = onRequest({
 
       // Update avatar
       await db.collection('players').doc(uid).update({
-        avatar: avatarId
+        avatar: avatarId,
       });
 
       response.send({
         success: true,
-        avatar: avatarId
+        avatar: avatarId,
       });
-
     } catch (error) {
       console.error('Error updating player avatar:', error);
       response.status(500).send('Error updating player avatar');
@@ -1560,14 +1552,14 @@ export const updatePlayerAvatar = onRequest({
 });
 
 export const setUserAttributes = onRequest({
-    memory: '512MiB'
+    memory: '512MiB',
 }, (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
         try {
             const uid = await getUID(request);
-            
+
             // Parse the request body if it's a string or use it directly if it's already an object
             let attributes = request.body || {};
             if (typeof attributes === 'string') {
@@ -1577,19 +1569,19 @@ export const setUserAttributes = onRequest({
                     logger.error("Error parsing request body:", e);
                 }
             }
-            
+
             logger.info(`Setting user attributes for player: ${uid} attributes: ${JSON.stringify(attributes)}`);
 
             const updateData: any = {};
-            
+
             if (attributes.utmSource) {
                 updateData['acquisition.utmSource'] = attributes.utmSource;
             }
-            
+
             if ('isMobile' in attributes) {
                 updateData.isMobile = !!attributes.isMobile;
             }
-            
+
             if ('referrer' in attributes && attributes.referrer) {
                 updateData.is_developer = attributes.referrer.includes('phaser.io');
                 updateData.referrer = attributes.referrer;

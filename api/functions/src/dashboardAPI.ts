@@ -94,7 +94,7 @@ export async function updateDAU(userId: string) {
 
 export async function updateDailyVisits(visitorId?: string, referrer?: string, isMobile?: boolean) {
     if (!visitorId) return;
-    
+
     const db = admin.firestore();
     const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
     const docRef = db.collection("dailyVisits").doc(today);
@@ -107,23 +107,23 @@ export async function updateDailyVisits(visitorId?: string, referrer?: string, i
                     id: visitorId,
                     referrer: referrer || null,
                     isMobile: !!isMobile,
-                    isDeveloper: referrer?.includes('phaser.io') || false
-                }]
+                    isDeveloper: referrer?.includes('phaser.io') || false,
+                }],
             });
         } else {
             const docData = doc.data();
             const visitors = docData && docData.visitors ? docData.visitors : [];
-            
+
             // Check if visitor already exists by ID
             const visitorIndex = visitors.findIndex((v: any) => v.id === visitorId);
-            
+
             if (visitorIndex === -1) {
                 // Add new visitor
                 visitors.push({
                     id: visitorId,
                     referrer: referrer || null,
                     isMobile: !!isMobile,
-                    isDeveloper: referrer?.includes('phaser.io') || false
+                    isDeveloper: referrer?.includes('phaser.io') || false,
                 });
                 transaction.update(docRef, { visitors: visitors });
             }
@@ -477,13 +477,13 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
             const startDate = request.query.date;
             const playedGamesCutoff = request.query.playedGamesCutoff || startDate;
             const playedMultipleGamesCutoff = request.query.playedMultipleGamesCutoff || playedGamesCutoff;
-            
+
             // Mobile filtering: 0 = all, -1 = non-mobile only, 1 = mobile only
             const mobileFilter = parseInt(request.query.mobile as string || '0');
-            
+
             // Developer filtering: 0 = all, -1 = non-dev only, 1 = dev only
             const devFilter = parseInt(request.query.dev as string || '0');
-            
+
             if (!startDate) {
                 response.status(400).send("Bad Request: Missing date parameter");
                 return;
@@ -492,33 +492,33 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
             // Build the base query for new players
             let newPlayersQuery = db.collection("players")
                 .where("joinDate", ">=", startDate);
-                
+
             // Add mobile filter if specified
             if (mobileFilter === 1) {
                 newPlayersQuery = newPlayersQuery.where("isMobile", "==", true);
             } else if (mobileFilter === -1) {
                 newPlayersQuery = newPlayersQuery.where("isMobile", "==", false);
             }
-            
+
             // Add developer filter if specified
             if (devFilter === 1) {
                 newPlayersQuery = newPlayersQuery.where("is_developer", "==", true);
             } else if (devFilter === -1) {
                 newPlayersQuery = newPlayersQuery.where("is_developer", "==", false);
             }
-            
+
             // Build the active players query with the same filters
             let activePlayersQuery = db.collection("players")
                 .where("lastActiveDate", ">=", startDate)
                 .where("joinDate", "<", startDate);
-                
+
             // Apply the same filters
             if (mobileFilter === 1) {
                 activePlayersQuery = activePlayersQuery.where("isMobile", "==", true);
             } else if (mobileFilter === -1) {
                 activePlayersQuery = activePlayersQuery.where("isMobile", "==", false);
             }
-            
+
             if (devFilter === 1) {
                 activePlayersQuery = activePlayersQuery.where("is_developer", "==", true);
             } else if (devFilter === -1) {
@@ -528,45 +528,45 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
             // Execute queries
             const [newPlayersSnapshot, activePlayersSnapshot] = await Promise.all([
                 newPlayersQuery.get(),
-                activePlayersQuery.get()
+                activePlayersQuery.get(),
             ]);
 
             // Filter out excluded players and map to docs
             const newPlayers = newPlayersSnapshot.docs
-                .filter(doc => !doc.data().is_excluded);
+                .filter((doc) => !doc.data().is_excluded);
             const activePlayers = activePlayersSnapshot.docs
-                .filter(doc => !doc.data().is_excluded);
+                .filter((doc) => !doc.data().is_excluded);
 
             // Extract player IDs
-            const newPlayerIds = newPlayers.map(doc => doc.id);
-            const activePlayerIds = activePlayers.map(doc => doc.id);
-            
+            const newPlayerIds = newPlayers.map((doc) => doc.id);
+            const activePlayerIds = activePlayers.map((doc) => doc.id);
+
             // Use only new players for conversion rate
             const newPlayersCount = newPlayers.length;
-            
+
             // Combine players for other metrics, removing duplicates
             const allPlayerDocs = [...newPlayers, ...activePlayers];
             const totalPlayers = allPlayerDocs.length;
 
             // Get visitors with the appropriate filters
-            let visitsQuery = db.collection("dailyVisits")
+            const visitsQuery = db.collection("dailyVisits")
                 .where(admin.firestore.FieldPath.documentId(), ">=", startDate);
-                
+
             const visitsSnapshot = await visitsQuery.get();
 
             // Count unique visitors based on filters
             const uniqueVisitors = new Set();
-            visitsSnapshot.forEach(doc => {
+            visitsSnapshot.forEach((doc) => {
                 const visitors = doc.data().visitors || [];
                 visitors.forEach((visitor: any) => {
                     // Apply mobile filter if needed
                     if (mobileFilter === 1 && !visitor.isMobile) return;
                     if (mobileFilter === -1 && visitor.isMobile) return;
-                    
+
                     // Apply developer filter if needed
                     if (devFilter === 1 && !visitor.isDeveloper) return;
                     if (devFilter === -1 && visitor.isDeveloper) return;
-                    
+
                     uniqueVisitors.add(visitor.id);
                 });
             });
@@ -582,7 +582,7 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
                     playedOneGameRate: 0,
                     playedMultipleGamesRate: 0,
                     gameCompletionRate: 0,
-                    totalFirstGameAbandonmentRate: 0
+                    totalFirstGameAbandonmentRate: 0,
                 });
                 return;
             }
@@ -590,10 +590,10 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
             // Build queries for different cutoff dates
             let playedGamesQuery = db.collection("players")
                 .where("joinDate", ">=", playedGamesCutoff);
-                
+
             let playedMultipleGamesQuery = db.collection("players")
                 .where("joinDate", ">=", playedMultipleGamesCutoff);
-                
+
             // Apply the same filters to these queries
             if (mobileFilter === 1) {
                 playedGamesQuery = playedGamesQuery.where("isMobile", "==", true);
@@ -602,7 +602,7 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
                 playedGamesQuery = playedGamesQuery.where("isMobile", "==", false);
                 playedMultipleGamesQuery = playedMultipleGamesQuery.where("isMobile", "==", false);
             }
-            
+
             if (devFilter === 1) {
                 playedGamesQuery = playedGamesQuery.where("is_developer", "==", true);
                 playedMultipleGamesQuery = playedMultipleGamesQuery.where("is_developer", "==", true);
@@ -614,14 +614,14 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
             // Execute queries for different cutoffs
             const [playedGamesSnapshot, playedMultipleGamesSnapshot] = await Promise.all([
                 playedGamesQuery.get(),
-                playedMultipleGamesQuery.get()
+                playedMultipleGamesQuery.get(),
             ]);
 
             // Filter out excluded players
             const playedGamesDocs = playedGamesSnapshot.docs
-                .filter(doc => !doc.data().is_excluded);
+                .filter((doc) => !doc.data().is_excluded);
             const playedMultipleGamesDocs = playedMultipleGamesSnapshot.docs
-                .filter(doc => !doc.data().is_excluded);
+                .filter((doc) => !doc.data().is_excluded);
 
             // Count metrics for different stages
             let playedOneGame = 0;
@@ -637,7 +637,7 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
                 const stats = playerData.engagementStats || {};
                 const playerTotalGames = stats.totalGames || 0;
                 const playerCompletedGames = stats.completedGames || 0;
-                
+
                 if (playerCompletedGames >= nbGamesThershold) {
                     playedOneGame++;
                 } else if (playerTotalGames === 1 && playerCompletedGames === 0) {
@@ -652,11 +652,11 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
                 const stats = playerData.engagementStats || {};
                 const playerCompletedGames = stats.completedGames || 0;
                 const playerTotalGames = stats.totalGames || 0;
-                
+
                 if (playerCompletedGames > nbGamesThershold) {
                     playedMultipleGames++;
                 }
-                
+
                 totalCompletedGames += playerCompletedGames;
                 totalGamesStarted += playerTotalGames;
             }
@@ -667,14 +667,14 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
                 totalVisits: totalVisitors,
                 totalPlayers,
                 landingPageCvRate,
-                playedOneGameRate: playedGamesDocs.length > 0 ? 
+                playedOneGameRate: playedGamesDocs.length > 0 ?
                     (playedOneGame / playedGamesDocs.length) * 100 : 0,
-                playedMultipleGamesRate: playedMultipleGamesDocs.length > 0 ? 
+                playedMultipleGamesRate: playedMultipleGamesDocs.length > 0 ?
                     (playedMultipleGames / playedMultipleGamesDocs.length) * 100 : 0,
-                gameCompletionRate: totalGamesStarted > 0 ? 
+                gameCompletionRate: totalGamesStarted > 0 ?
                     (totalCompletedGames / totalGamesStarted) * 100 : 0,
                 totalFirstGameAbandonmentRate: playedGamesDocs.length > 0 ?
-                    (abandonedFirstGame / playedGamesDocs.length) * 100 : 0
+                    (abandonedFirstGame / playedGamesDocs.length) * 100 : 0,
             };
 
             response.send(metrics);
@@ -706,7 +706,7 @@ export const getTutorialDropoffStats = adminOnRequest(async (request, response) 
                 response.send({
                     totalPlayers: 0,
                     dropoffPoints: {},
-                    averageLastStep: "none"
+                    averageLastStep: "none",
                 });
                 return;
             }
@@ -728,13 +728,13 @@ export const getTutorialDropoffStats = adminOnRequest(async (request, response) 
                 if (!tutorialActions.empty) {
                     const lastAction = tutorialActions.docs[0].data();
                     const lastStep = lastAction.details;
-                    
+
                     if (typeof lastStep === 'string') {
                         // Add step to order list if it's new
                         if (!stepOrder.includes(lastStep)) {
                             stepOrder.push(lastStep);
                         }
-                        
+
                         // Increment count for this step
                         dropoffPoints[lastStep] = (dropoffPoints[lastStep] || 0) + 1;
                     }
@@ -745,7 +745,7 @@ export const getTutorialDropoffStats = adminOnRequest(async (request, response) 
             const stats: TutorialDropoffStats = {
                 totalPlayers,
                 dropoffPoints: {},
-                averageLastStep: "none"
+                averageLastStep: "none",
             };
 
             // Calculate weighted average to find average last step
@@ -754,14 +754,14 @@ export const getTutorialDropoffStats = adminOnRequest(async (request, response) 
                 const count = dropoffPoints[step] || 0;
                 stats.dropoffPoints[step] = {
                     count,
-                    percentage: (count / totalPlayers) * 100
+                    percentage: (count / totalPlayers) * 100,
                 };
                 weightedSum += index * count;
             });
 
-            const averageStepIndex = stepOrder.length > 0 ? 
+            const averageStepIndex = stepOrder.length > 0 ?
                 Math.round(weightedSum / totalPlayers) : -1;
-            stats.averageLastStep = averageStepIndex >= 0 ? 
+            stats.averageLastStep = averageStepIndex >= 0 ?
                 stepOrder[averageStepIndex] : "none";
 
             response.send(stats);
@@ -779,13 +779,13 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
         try {
             // Get all players
             const playersSnapshot = await db.collection("players").get();
-            const playerIds = playersSnapshot.docs.map(doc => doc.id);
-            
+            const playerIds = playersSnapshot.docs.map((doc) => doc.id);
+
             console.log(`Starting migration for ${playerIds.length} players`);
             const results = {
                 totalPlayers: playerIds.length,
                 updatedPlayers: 0,
-                errors: [] as string[]
+                errors: [] as string[],
             };
 
             // Process players in batches
@@ -795,9 +795,9 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
             // Process each player
             for (let i = 0; i < playerIds.length; i += tutorialBatchSize) {
                 const batchPlayerIds = playerIds.slice(i, i + tutorialBatchSize);
-                
+
                 // Create parallel promises for tutorial completion check
-                const tutorialQueries = batchPlayerIds.map(playerId =>
+                const tutorialQueries = batchPlayerIds.map((playerId) =>
                     db.collection("players").doc(playerId)
                         .collection("actions")
                         .where("actionType", "==", "tutorial")
@@ -809,13 +809,13 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
                 // Get tutorial completion results
                 const tutorialResults = await Promise.all(tutorialQueries);
                 const completedTutorials = new Map(
-                    tutorialResults.map((result, index) => 
+                    tutorialResults.map((result, index) =>
                         [batchPlayerIds[index], !result.empty])
                 );
 
                 // Count games per player
                 const gamesPerPlayer = new Map<string, number>();
-                
+
                 // Process games in sub-batches due to array-contains-any limit
                 for (let j = 0; j < batchPlayerIds.length; j += gameBatchSize) {
                     const gamesBatchPlayerIds = batchPlayerIds.slice(j, j + gameBatchSize);
@@ -824,7 +824,7 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
                         .get();
 
                     // Count games per player
-                    gamesQuery.docs.forEach(gameDoc => {
+                    gamesQuery.docs.forEach((gameDoc) => {
                         const players = gameDoc.data().players || [];
                         players.forEach((playerId: string) => {
                             if (gamesBatchPlayerIds.includes(playerId)) {
@@ -842,7 +842,7 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
 
                         await db.collection("players").doc(playerId).update({
                             'engagementStats.totalGames': totalGames,
-                            'engagementStats.completedTutorial': completedTutorial
+                            'engagementStats.completedTutorial': completedTutorial,
                         });
 
                         results.updatedPlayers++;
@@ -852,22 +852,21 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
                 });
 
                 await Promise.all(updates);
-                
+
                 // Log progress
                 console.log(`Processed ${Math.min(i + tutorialBatchSize, playerIds.length)} out of ${playerIds.length} players`);
             }
 
             response.send({
                 message: "Migration completed",
-                results
+                results,
             });
-
         } catch (error) {
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during migration",
                 // @ts-ignore
-                error: error.toString()
+                error: error.toString(),
             });
         }
     });
@@ -882,12 +881,12 @@ export const migrateMetricsToStats = adminOnRequest(async (request, response) =>
             const playersSnapshot = await db.collection("players")
                 .where("engagementMetrics", "!=", null)
                 .get();
-            
+
             console.log(`Found ${playersSnapshot.size} players with engagementMetrics`);
             const results = {
                 totalPlayers: playersSnapshot.size,
                 updatedPlayers: 0,
-                errors: [] as string[]
+                errors: [] as string[],
             };
 
             // Update each player
@@ -897,7 +896,7 @@ export const migrateMetricsToStats = adminOnRequest(async (request, response) =>
                     if (data.engagementMetrics) {
                         await doc.ref.update({
                             'engagementStats': data.engagementMetrics,
-                            'engagementMetrics': admin.firestore.FieldValue.delete()
+                            'engagementMetrics': admin.firestore.FieldValue.delete(),
                         });
                         results.updatedPlayers++;
                     }
@@ -910,15 +909,14 @@ export const migrateMetricsToStats = adminOnRequest(async (request, response) =>
 
             response.send({
                 message: "Migration completed",
-                results
+                results,
             });
-
         } catch (error) {
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during migration",
                 // @ts-ignore
-                error: error.toString()
+                error: error.toString(),
             });
         }
     });
@@ -948,13 +946,13 @@ export const getPlayerGameHistory = adminOnRequest(
             // Process each game
             for (const gameDoc of gamesSnapshot.docs) {
                 const gameData = gameDoc.data();
-                
+
                 // Get actions for this game
                 const actionsSnapshot = await gameDoc.ref.collection("actions")
                     .orderBy("timestamp", "asc")
                     .get();
-                
-                const actions = actionsSnapshot.docs.map(doc => ({
+
+                const actions = actionsSnapshot.docs.map((doc) => ({
                     ...doc.data(),
                     id: doc.id,
                 }));
@@ -997,12 +995,12 @@ export const getActivePlayers = adminOnRequest({ memory: '512MiB' }, async (requ
 
             // Filter out contacted players in memory
             const players = playersSnapshot.docs
-                .filter(doc => !doc.data().is_contacted) // This will filter out docs where is_contacted is true
-                .map(doc => ({
+                .filter((doc) => !doc.data().is_contacted) // This will filter out docs where is_contacted is true
+                .map((doc) => ({
                     id: doc.id,
                     totalGames: doc.data().engagementStats?.completedGames || 0,
                     joinDate: doc.data().joinDate,
-                    lastActiveDate: doc.data().lastActiveDate
+                    lastActiveDate: doc.data().lastActiveDate,
                 }))
                 .sort((a, b) => b.totalGames - a.totalGames);
 
@@ -1021,19 +1019,19 @@ export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (req
         try {
             // Get all players
             const playersSnapshot = await db.collection("players").get();
-            
+
             // Filter for documents that don't have the isMobile field
-            const docsToUpdate = playersSnapshot.docs.filter(doc => 
-                !doc.data().hasOwnProperty('isMobile')
+            const docsToUpdate = playersSnapshot.docs.filter((doc) =>
+                !Object.prototype.hasOwnProperty.call(doc.data(), 'isMobile')
             );
 
             console.log(`Found ${docsToUpdate.length} players without isMobile flag`);
-            
+
             const results = {
                 totalPlayers: docsToUpdate.length,
                 updatedPlayers: 0,
                 mobileUsers: 0,
-                errors: [] as string[]
+                errors: [] as string[],
             };
 
             // Process each player
@@ -1050,7 +1048,7 @@ export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (req
 
                     // Update the player document
                     await playerDoc.ref.update({
-                        isMobile: isMobile
+                        isMobile: isMobile,
                     });
 
                     results.updatedPlayers++;
@@ -1066,15 +1064,14 @@ export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (req
 
             response.send({
                 message: "Migration completed",
-                results
+                results,
             });
-
         } catch (error) {
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during migration",
                 // @ts-ignore
-                error: error.toString()
+                error: error.toString(),
             });
         }
     });
@@ -1119,7 +1116,7 @@ export const getPlayerActionsReport = adminOnRequest({ memory: '512MiB' }, async
                 }
 
                 // Process each action
-                actionsSnapshot.docs.forEach(actionDoc => {
+                actionsSnapshot.docs.forEach((actionDoc) => {
                     const action = actionDoc.data();
                     const timestamp = action.timestamp?.toDate?.() || 'unknown time';
                     textLog += `\n ${action.actionType}\n`;
@@ -1134,7 +1131,6 @@ export const getPlayerActionsReport = adminOnRequest({ memory: '512MiB' }, async
             // Set content type to text/plain for better browser display
             response.setHeader('Content-Type', 'text/plain');
             response.send(textLog);
-
         } catch (error) {
             console.error("getPlayerActionsLog error:", error);
             response.status(500).send("Error fetching player actions log");
@@ -1161,11 +1157,11 @@ export const migrateCharacterSpeed = adminOnRequest({ memory: '512MiB' }, async 
     corsMiddleware(request, response, async () => {
         try {
             const charactersSnapshot = await db.collection("characters").get();
-            
+
             const results = {
                 totalCharacters: charactersSnapshot.size,
                 updatedCharacters: 0,
-                errors: [] as string[]
+                errors: [] as string[],
             };
 
             const updates = charactersSnapshot.docs.map(async (doc) => {
@@ -1176,7 +1172,7 @@ export const migrateCharacterSpeed = adminOnRequest({ memory: '512MiB' }, async 
                     const update = {
                         'equipment_bonuses.speed': 0,
                         'sp_bonuses.speed': 0,
-                        'stats.speed': getSpeedForClass(classId)
+                        'stats.speed': getSpeedForClass(classId),
                     };
 
                     await doc.ref.update(update);
@@ -1190,15 +1186,14 @@ export const migrateCharacterSpeed = adminOnRequest({ memory: '512MiB' }, async 
 
             response.send({
                 message: "Character speed migration completed",
-                results
+                results,
             });
-
         } catch (error) {
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during character speed migration",
                 // @ts-ignore
-                error: error.toString()
+                error: error.toString(),
             });
         }
     });
@@ -1216,7 +1211,7 @@ export const markPlayerContacted = adminOnRequest({ memory: '512MiB' }, async (r
             }
 
             await db.collection("players").doc(playerId.toString()).update({
-                is_contacted: true
+                is_contacted: true,
             });
 
             response.send({ status: "success" });
@@ -1239,7 +1234,7 @@ export const markPlayerExcluded = adminOnRequest({ memory: '512MiB' }, async (re
             }
 
             await db.collection("players").doc(playerId.toString()).update({
-                is_excluded: true
+                is_excluded: true,
             });
 
             response.send({ status: "success" });

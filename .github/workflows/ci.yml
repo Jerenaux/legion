@@ -11,7 +11,6 @@ on:
       - develop
 
 jobs:
-  # Run tests for server
   test-server:
     name: Test Server
     runs-on: ubuntu-latest
@@ -33,7 +32,12 @@ jobs:
       - name: Run server tests
         run: |
           cd server
-          bun run test
+          bun run test --runInBand
+
+      - name: Build server
+        run: |
+          cd server
+          bun run build
 
       - name: Upload server coverage
         uses: codecov/codecov-action@v4
@@ -44,7 +48,6 @@ jobs:
           name: server-coverage
         continue-on-error: true
 
-  # Lint and build client
   build-client:
     name: Build Client
     runs-on: ubuntu-latest
@@ -63,14 +66,25 @@ jobs:
           cd client
           bun ci
 
-      - name: Build client
+      - name: Test and typecheck client
         run: |
           cd client
-          bun run build
+          bun run test --runInBand
+          bunx tsc --noEmit
+
+      - name: Build and package Electron client
+        run: |
+          cd client
+          BUILD_TARGET=electron bun run build
+          bunx electron-builder --dir --linux
+          if bunx asar list release/linux-unpacked/resources/app.asar | rg '\.map$'; then
+            echo "Source maps found in packaged application" >&2
+            exit 1
+          fi
+          ../tools/validate_desktop_release.sh
         env:
           NODE_ENV: production
 
-  # Build and lint API
   build-api:
     name: Build API
     runs-on: ubuntu-latest
@@ -93,7 +107,11 @@ jobs:
         run: |
           cd api/functions
           bun run lint
-        continue-on-error: true
+
+      - name: Test API
+        run: |
+          cd api/functions
+          bun run test
 
       - name: Build API
         run: |
@@ -102,7 +120,6 @@ jobs:
         env:
           DEPLOY: true
 
-  # Build matchmaker
   build-matchmaker:
     name: Build Matchmaker
     runs-on: ubuntu-latest
@@ -125,3 +142,8 @@ jobs:
         run: |
           cd matchmaker
           bun run build
+
+      - name: Test matchmaker
+        run: |
+          cd matchmaker
+          bun run test

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test": "bun test src/__tests__",
-    "lint": "eslint --ext .js,.ts .",
+    "lint": "eslint --ext .ts src",
     "build": "webpack",
     "build:watch": "webpack --watch",
     "emulators:start": "firebase emulators:start --import ./exports/firestore-emulator-data --export-on-exit ./exports/firestore-emulator-data",
