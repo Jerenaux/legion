@@ -43,16 +43,16 @@
   position: relative;
   width: 100%;
   height: 100%;
+  padding: var(--desktop-safe-block) var(--desktop-safe-inline);
 }
 
 .hud-container {
   display: flex;
   justify-content: space-between;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
+  top: var(--desktop-safe-block);
+  left: var(--desktop-safe-inline);
+  right: var(--desktop-safe-inline);
   z-index: 2;
   padding: 10px;
 }
@@ -611,6 +611,8 @@
   color: #ffffff;
 
   cursor: pointer;
+  border: 0;
+  font: inherit;
 }
 
 .setting_menu_btn:hover {
@@ -660,6 +662,7 @@
   /* background-color: #f1f1f1; */
   /* border: 1px solid #ccc; */
   padding: 0 6px;
+  accent-color: #51fdff;
 }
 
 .setting_dialog_control_line {
@@ -724,6 +727,7 @@
   background-size: 100% 100%;
   padding: 4px;
   cursor: var(--game-pointer);
+  border: 0;
 }
 
 .spectator:hover {

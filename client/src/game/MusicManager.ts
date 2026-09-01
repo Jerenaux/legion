@@ -1,4 +1,5 @@
 import { events } from '../components/HUD/GameHUD';
+import {loadGameSettings} from '../settings';
 
 export class MusicManager {
     scene: Phaser.Scene;
@@ -28,12 +29,7 @@ export class MusicManager {
     }
 
     getMusicVolumeFromLocalStorage(): number {
-        const settingsString = localStorage.getItem('gameSettings');
-        if (settingsString) {
-            const settings = JSON.parse(settingsString);
-            return settings.musicVolume / 100; // Convert percentage to decimal
-        }
-        return 0.3; // Default to 30% volume if setting is not found
+        return loadGameSettings().musicVolume / 100;
     }
 
     onSettingsChanged = () => {

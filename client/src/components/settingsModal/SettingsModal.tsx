@@ -1,17 +1,13 @@
-import { h, Component, createRef } from 'preact';
+import { h, Component } from 'preact';
 import { events } from '../HUD/GameHUD';
 import { isElectron, getElectronAPI } from '../../utils/electronUtils';
+import {loadGameSettings} from '../../settings';
 
 interface SettingsModalProps {
   onClose: () => void;
 }
 
 export class SettingsModal extends Component<SettingsModalProps> {
-    musicControlLineRef = createRef();
-    musicControlThumbRef = createRef();
-    sfxControlLineRef = createRef();
-    sfxControlThumbRef = createRef();
-  
     state = {
       musicCurrentValue: 50,
       musicMinValue: 0,
@@ -24,20 +20,14 @@ export class SettingsModal extends Component<SettingsModalProps> {
     }
   
     componentDidMount() {
-      console.log('SettingsModal: componentDidMount');
-      console.log('SettingsModal: isElectron =', isElectron());
-      
-      this.detectKeyboardLayout();
-      this.loadSettings();
-      this.updateMusicControlThumb();
-      this.updateSFXControlThumb();
-      
-      if (isElectron()) {
-        console.log('SettingsModal: Running in Electron, checking fullscreen status');
-        this.checkFullscreenStatus();
-      } else {
-        console.log('SettingsModal: Not running in Electron');
-      }
+      const settings = loadGameSettings();
+      this.setState({
+        musicCurrentValue: settings.musicVolume,
+        sfxCurrentValue: settings.sfxVolume,
+        selectedKeyboardLayout: localStorage.getItem('gameSettings') ? settings.keyboardLayout : this.detectKeyboardLayout(),
+        isFullscreen: settings.isFullscreen,
+      });
+      if (isElectron()) this.checkFullscreenStatus();
     }
   
     detectKeyboardLayout = () => {
@@ -46,23 +36,14 @@ export class SettingsModal extends Component<SettingsModalProps> {
                        navigator.language.startsWith('be') || 
                        navigator.language.startsWith('dz');
       
-      const detectedLayout = isAZERTY ? 0 : 1; // 0 for AZERTY, 1 for QWERTY
-
-      // Only set the detected layout if there's no saved setting
-      const savedSettings = localStorage.getItem('gameSettings');
-      if (!savedSettings) {
-        this.setState({ selectedKeyboardLayout: detectedLayout });
-        this.saveSettings();
-      }
+      return isAZERTY ? 0 : 1; // 0 for AZERTY, 1 for QWERTY
     }
   
     componentDidUpdate(prevProps, prevState) {
       if (prevState.musicCurrentValue !== this.state.musicCurrentValue) {
-        this.updateMusicControlThumb();
         this.saveSettings();
       }
       if (prevState.sfxCurrentValue !== this.state.sfxCurrentValue) {
-        this.updateSFXControlThumb();
         this.saveSettings();
       }
       if (prevState.selectedKeyboardLayout !== this.state.selectedKeyboardLayout) {
@@ -70,19 +51,6 @@ export class SettingsModal extends Component<SettingsModalProps> {
       }
       if (prevState.isFullscreen !== this.state.isFullscreen) {
         this.saveSettings();
-      }
-    }
-  
-    loadSettings = () => {
-      const savedSettings = localStorage.getItem('gameSettings');
-      if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        this.setState({
-          musicCurrentValue: settings.musicVolume,
-          sfxCurrentValue: settings.sfxVolume,
-          selectedKeyboardLayout: settings.keyboardLayout,
-          isFullscreen: settings.isFullscreen || false,
-        });
       }
     }
   
@@ -97,104 +65,32 @@ export class SettingsModal extends Component<SettingsModalProps> {
       events.emit('settingsChanged', settings);  // Emit the settingsChanged event
     }
   
-    updateMusicControlThumb = () => {
-      if (this.musicControlLineRef.current && this.musicControlThumbRef.current) {
-        const musicControlLineRect = this.musicControlLineRef.current.getBoundingClientRect();
-        const musicThumbPosition = ((this.state.musicCurrentValue - this.state.musicMinValue) / (this.state.musicMaxValue - this.state.musicMinValue)) * musicControlLineRect.width;
-        this.musicControlThumbRef.current.style.left = `${musicThumbPosition}px`;
-      }
-    }
-  
-    handleMusicThumbDrag = (event) => {
-      event.preventDefault();
-  
-      const musicControlLineRect = this.musicControlLineRef.current.getBoundingClientRect();
-  
-      const handleMusicMouseMove = (e) => {
-        const newPosition = e.clientX - musicControlLineRect.left;
-        const newValue = ((newPosition / musicControlLineRect.width) * (this.state.musicMaxValue - this.state.musicMinValue)) + this.state.musicMinValue;
-        this.setState({ musicCurrentValue: Math.max(this.state.musicMinValue, Math.min(this.state.musicMaxValue, newValue)) });
-      };
-  
-      const handleMusicMouseUp = () => {
-        document.removeEventListener('mousemove', handleMusicMouseMove);
-        document.removeEventListener('mouseup', handleMusicMouseUp);
-      };
-  
-      document.addEventListener('mousemove', handleMusicMouseMove);
-      document.addEventListener('mouseup', handleMusicMouseUp);
-    };
-  
-    updateSFXControlThumb = () => {
-      if (this.sfxControlLineRef.current && this.sfxControlThumbRef.current) {
-        const sfxControlLineRect = this.sfxControlLineRef.current.getBoundingClientRect();
-        const sfxThumbPosition = ((this.state.sfxCurrentValue - this.state.sfxMinValue) / (this.state.sfxMaxValue - this.state.sfxMinValue)) * sfxControlLineRect.width;
-        this.sfxControlThumbRef.current.style.left = `${sfxThumbPosition}px`;
-      }
-    }
-  
-    handleSFXThumbDrag = (event) => {
-      event.preventDefault();
-  
-      const sfxControlLineRect = this.sfxControlLineRef.current.getBoundingClientRect();
-  
-      const handleSFXMouseMove = (e) => {
-        const newPosition = e.clientX - sfxControlLineRect.left;
-        const newValue = ((newPosition / sfxControlLineRect.width) * (this.state.sfxMaxValue - this.state.sfxMinValue)) + this.state.sfxMinValue;
-        this.setState({ sfxCurrentValue: Math.max(this.state.sfxMinValue, Math.min(this.state.sfxMaxValue, newValue)) });
-      };
-  
-      const handleSFXMouseUp = () => {
-        document.removeEventListener('mousemove', handleSFXMouseMove);
-        document.removeEventListener('mouseup', handleSFXMouseUp);
-      };
-  
-      document.addEventListener('mousemove', handleSFXMouseMove);
-      document.addEventListener('mouseup', handleSFXMouseUp);
-    };
-  
     checkFullscreenStatus = async () => {
-      console.log('SettingsModal: checkFullscreenStatus called');
       const electronAPI = getElectronAPI();
-      console.log('SettingsModal: electronAPI =', electronAPI);
-      
       if (electronAPI && electronAPI.isFullscreen) {
-        console.log('SettingsModal: electronAPI.isFullscreen found, calling it');
         try {
           const fullscreenStatus = await electronAPI.isFullscreen();
-          console.log('SettingsModal: fullscreen status =', fullscreenStatus);
           this.setState({ isFullscreen: fullscreenStatus });
         } catch (error) {
           console.error('SettingsModal: Error checking fullscreen status:', error);
         }
-      } else {
-        console.log('SettingsModal: electronAPI.isFullscreen not available');
       }
     }
 
     toggleFullscreen = async () => {
-      console.log('SettingsModal: toggleFullscreen called');
       const electronAPI = getElectronAPI();
-      console.log('SettingsModal: electronAPI =', electronAPI);
-      
       if (electronAPI && electronAPI.toggleFullscreen) {
-        console.log('SettingsModal: electronAPI.toggleFullscreen found, calling it');
         try {
           const newFullscreenState = await electronAPI.toggleFullscreen();
-          console.log('SettingsModal: new fullscreen state =', newFullscreenState);
           this.setState({ isFullscreen: newFullscreenState });
-          this.saveSettings();
         } catch (error) {
           console.error('SettingsModal: Error toggling fullscreen:', error);
         }
-      } else {
-        console.log('SettingsModal: electronAPI.toggleFullscreen not available');
       }
     }
   
     render() {
       const showElectronSettings = isElectron();
-      console.log('SettingsModal: render - showElectronSettings =', showElectronSettings);
       
       return (
         <div className="setting_menu flex flex_col gap_4">
@@ -203,8 +99,8 @@ export class SettingsModal extends Component<SettingsModalProps> {
               Keyboard layout:
             </div>
             <div className="setting_dialog_keyboard_btn_container flex justify_center gap_4">
-              <div className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>Azerty</div>
-              <div className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>Qwerty</div>
+              <button className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>Azerty</button>
+              <button className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>Qwerty</button>
             </div>
             
             {showElectronSettings && (
@@ -228,26 +124,18 @@ export class SettingsModal extends Component<SettingsModalProps> {
             <div className="setting_dialog_control_bar_container">
               <div className="setting_dialog_control_name">Music volume: </div>
               <div className="setting_dialog_contol_lable_start">{this.state.musicMinValue}</div>
-              <div className="setting_dialog_control_bar">
-                <div className="setting_dialog_control_line" ref={this.musicControlLineRef}>
-                  <div className="setting_dialog_control_thumb" ref={this.musicControlThumbRef} onMouseDown={this.handleMusicThumbDrag}></div>
-                </div>
-              </div>
+              <input className="setting_dialog_control_bar" type="range" aria-label="Music volume" min={this.state.musicMinValue} max={this.state.musicMaxValue} value={this.state.musicCurrentValue} onInput={(event) => this.setState({musicCurrentValue: Number((event.target as HTMLInputElement).value)})} />
               <div className="setting_dialog_control_label_end">{this.state.musicMaxValue}</div>
             </div>
             <div className="setting_dialog_control_bar_container">
               <div className="setting_dialog_control_name">SFX volume: </div>
               <div className="setting_dialog_contol_lable_start">{this.state.sfxMinValue}</div>
-              <div className="setting_dialog_control_bar">
-                <div className="setting_dialog_control_line" ref={this.sfxControlLineRef}>
-                  <div className="setting_dialog_control_thumb" ref={this.sfxControlThumbRef} onMouseDown={this.handleSFXThumbDrag}></div>
-                </div>
-              </div>
+              <input className="setting_dialog_control_bar" type="range" aria-label="SFX volume" min={this.state.sfxMinValue} max={this.state.sfxMaxValue} value={this.state.sfxCurrentValue} onInput={(event) => this.setState({sfxCurrentValue: Number((event.target as HTMLInputElement).value)})} />
               <div className="setting_dialog_contol_lable_end">{this.state.sfxMaxValue}</div>
             </div>
           </div>
           <div className="justify_center flex gap_4">
-            <div className="setting_menu_btn" onClick={this.props.onClose}>Exit</div>
+            <button className="setting_menu_btn" data-desktop-cancel onClick={this.props.onClose}>Exit</button>
           </div>
         </div>
       );

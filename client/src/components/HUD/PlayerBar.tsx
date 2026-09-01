@@ -9,6 +9,7 @@ import { StatusEffects } from '@legion/shared/interfaces';
 import { CircularTimer } from './CircularTimer';
 import ItemIcon from './NewItemIcon';
 import { InventoryType } from '@legion/shared/enums';
+import {loadGameSettings} from '../../settings';
 type EventEmitter = {on: Function; off: Function; emit: Function};
 
 interface PlayerBarProps {
@@ -56,11 +57,7 @@ class PlayerBar extends Component<PlayerBarProps> {
   }
 
   loadKeyboardLayout = () => {
-    const settingsString = localStorage.getItem('gameSettings');
-    if (settingsString) {
-      const settings = JSON.parse(settingsString);
-      this.setState({ keyboardLayout: settings.keyboardLayout });
-    }
+    this.setState({ keyboardLayout: loadGameSettings().keyboardLayout });
   }
 
   handleActionClick = (event: Event, index: number) => {

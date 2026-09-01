@@ -75,9 +75,11 @@ class PlayModeButton extends Component<Props> {
         const handleClick = disabled ? undefined : this.handleCardClick;
 
         return (
-            <div 
+            <button
+                type="button"
                 className={`buttonContainer ${disabled ? 'disabled' : ''} ${label === 'ranked' ? 'ranked' : ''}`}
                 onClick={handleClick}
+                disabled={disabled}
                 {...otherProps}
             >
                 <img 
@@ -124,7 +126,7 @@ class PlayModeButton extends Component<Props> {
                         )}
                     </div>
                 </div>
-            </div>
+            </button>
         );
     }
 }

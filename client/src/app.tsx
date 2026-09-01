@@ -14,6 +14,8 @@ import * as Sentry from "@sentry/react";
 import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import LogRocket from './logrocketSetup';
+import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
+import {startGamepadInput} from './input/gamepad';
 // Only initialize Sentry if not in development mode
 if (process.env.NODE_ENV !== 'development') {
   Sentry.init({
@@ -49,46 +51,79 @@ interface AppState {
 }
 
 class App extends Component<{}, AppState> {
+    stopGamepadInput = () => undefined;
     state: AppState = {
         currentUrl: '/',
         currentMainRoute: '/'
     };
 
     componentDidMount() {
-        
-        if (isElectron()) {
-            document.addEventListener('keydown', this.handleKeyDown);
-        }
+        document.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+        this.stopGamepadInput = startGamepadInput(action => dispatchDesktopAction(action, 'gamepad'));
     }
 
     componentWillUnmount() {
-        if (isElectron()) {
-            document.removeEventListener('keydown', this.handleKeyDown);
-        }
+        document.removeEventListener('keydown', this.handleKeyDown);
+        window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+        this.stopGamepadInput();
     }
 
-    handleKeyDown = async (event: KeyboardEvent) => {
-    //   console.log('App: Key pressed:', {
-    //     key: event.key,
-    //     keyCode: event.keyCode,
-    //     code: event.code,
-    //     target: (event.target as HTMLElement)?.tagName || 'unknown'
-    //   });
-      
-      // Check if ESC key was pressed
-      if (event.key === 'Escape' || event.keyCode === 27) {
-        
-        const electronAPI = getElectronAPI();
-        
-        if (electronAPI && electronAPI.isFullscreen && electronAPI.toggleFullscreen) {
+    handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      const typing = target?.matches?.('input, textarea, select, [contenteditable="true"]');
+      const action = actionFromKeyboard(event);
+      if (!action || (typing && action !== 'cancel') || (event.code === 'Tab' && this.state.currentMainRoute !== 'game')) return;
+      event.preventDefault();
+      dispatchDesktopAction(action, 'keyboard');
+    };
+
+    focusMenu = (direction: -1 | 1) => {
+      const elements = Array.from(document.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(element => element.getClientRects().length > 0);
+      if (!elements.length) return;
+      const current = elements.indexOf(document.activeElement as HTMLElement);
+      elements[(current + direction + elements.length) % elements.length].focus();
+    };
+
+    showGamepadKeyboard = async (input: HTMLInputElement | HTMLTextAreaElement) => {
+      const value = await getElectronAPI()?.showGamepadTextInput?.({
+        description: input.getAttribute('aria-label') || input.placeholder || 'Enter text',
+        maxCharacters: input.maxLength > 0 ? input.maxLength : 256,
+        existingText: input.value,
+        password: input instanceof HTMLInputElement && input.type === 'password',
+        multiline: input instanceof HTMLTextAreaElement,
+      });
+      if (typeof value === 'string') {
+        input.value = value;
+        input.dispatchEvent(new Event('input', {bubbles: true}));
+      }
+    };
+
+    handleDesktopAction = async (event: CustomEvent<{action: DesktopAction; source: string}>) => {
+      const {action, source} = event.detail;
+      if (action === 'menu-up' || action === 'menu-left') return this.focusMenu(-1);
+      if (action === 'menu-down' || action === 'menu-right') return this.focusMenu(1);
+      if (action === 'end-turn') return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();
+      if (action === 'pause') return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
+      if (action === 'confirm') {
+        const active = document.activeElement as HTMLElement;
+        if (source === 'gamepad' && active?.matches('input:not([type="range"]):not([type="checkbox"]), textarea')) {
+          return this.showGamepadKeyboard(active as HTMLInputElement | HTMLTextAreaElement);
+        }
+        return active?.click();
+      }
+      if (action === 'cancel') {
+        const cancel = Array.from(document.querySelectorAll<HTMLElement>('[data-desktop-cancel]'))
+          .find(element => element.getClientRects().length > 0);
+        if (cancel) return cancel.click();
+        if (isElectron()) {
+          const electronAPI = getElectronAPI();
           try {
-            const isCurrentlyFullscreen = await electronAPI.isFullscreen();
-            
-            if (isCurrentlyFullscreen) {
-              await electronAPI.toggleFullscreen();
-            }
+            if (await electronAPI?.isFullscreen?.()) await electronAPI.toggleFullscreen();
           } catch (error) {
-            console.error('App: Error handling ESC key:', error);
+            console.error('App: Error leaving fullscreen:', error);
           }
         }
       }

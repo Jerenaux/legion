@@ -242,15 +242,15 @@ class Navbar extends Component<Props, State> {
                                                 league={this.props.playerData?.league} 
                                             />
                                         )}
-                                        <div className="expand_btn" style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
+                                        <div className="expand_btn" role="button" tabIndex={0} aria-label="More options" style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
                                             <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
-                                                <div onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
+                                                <div role="button" tabIndex={0} onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
                                                     <img src={helpIcon} alt="How to play" /> How to play
                                                 </div>
-                                                <div onClick={this.copyIDtoClipboard}>
+                                                <div role="button" tabIndex={0} onClick={this.copyIDtoClipboard}>
                                                     <img src={copyIcon} alt="Copy" /> Player ID
                                                 </div>
-                                                <div onClick={this.toggleSettingsModal}>
+                                                <div role="button" tabIndex={0} onClick={this.toggleSettingsModal}>
                                                     <img src={cogIcon} alt="Settings" /> Settings
                                                 </div>
                                             </div>

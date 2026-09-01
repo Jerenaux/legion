@@ -3,12 +3,14 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {pathToFileURL} = require("node:url");
 
-const {getPlatformAuth, shutdownPlatform} = require("./electron/platform");
+const {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
 const {resolveAppPath} = require("./electron/protocol");
 const {isSafeExternalURL, isTrustedSender} = require("./electron/security");
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) app.quit();
 
 protocol.registerSchemesAsPrivileged([{
   scheme: "app",
@@ -30,6 +32,14 @@ function registerIPC() {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
     const modulePath = app.isPackaged ? path.join(process.resourcesPath, "steamworks.js") : "steamworks.js";
     return getPlatformAuth(process.env, () => require(modulePath));
+  });
+  ipcMain.handle("show-gamepad-text-input", (event, options) => {
+    if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
+    return showGamepadTextInput(options);
+  });
+  ipcMain.handle("get-controller-type", event => {
+    if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
+    return getControllerType();
   });
 }
 
@@ -79,7 +89,7 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(async () => {
+if (hasSingleInstanceLock) app.whenReady().then(async () => {
   registerIPC();
   registerAppProtocol();
   if (!isDev) {
@@ -99,6 +109,12 @@ app.whenReady().then(async () => {
     }
   }
   createWindow();
+});
+
+app.on("second-instance", () => {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.focus();
 });
 
 app.on("window-all-closed", () => {

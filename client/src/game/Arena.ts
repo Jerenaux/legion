@@ -66,6 +66,8 @@ import hexTileImage from '@assets/tile.png';
 import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels, 
     chargedIceLevels, chargedThunderLevels, iceLevels, thunderLevels,
     healLevels } from './VFXconfig';
+import {loadGameSettings} from '../settings';
+import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 
 const LOCAL_ANIMATION_SCALE = 2;
 const DEPTH_OFFSET = 0.01;
@@ -192,12 +194,7 @@ export class Arena extends Phaser.Scene
     }
 
     getSFXVolumeFromLocalStorage(): number {
-        const settingsString = localStorage.getItem('gameSettings');
-        if (settingsString) {
-            const settings = JSON.parse(settingsString);
-            return settings.sfxVolume / 100; // Convert percentage to decimal
-        }
-        return 0.5; // Default to 50% volume if setting is not found
+        return loadGameSettings().sfxVolume / 100;
     }
 
     preload()
@@ -583,6 +580,28 @@ export class Arena extends Phaser.Scene
                 this.selectedPlayer?.onLetterKey(letter);
             }
         }
+    }
+
+    handleDesktopAction = (event: CustomEvent<{action: DesktopAction}>) => {
+        if (this.inputLocked || !this.gameInitialized) return;
+        const {action} = event.detail;
+        const members = this.teamsMap.get(this.playerTeamId)?.members.filter(player => player.isAlive()) || [];
+        if (action.startsWith('select-unit-')) {
+            this.selectOwnUnit(members[Number(action.at(-1)) - 1]);
+        } else if ((action === 'next-unit' || action === 'previous-unit') && members.length) {
+            const current = members.indexOf(this.selectedPlayer);
+            const direction = action === 'next-unit' ? 1 : -1;
+            this.selectOwnUnit(members[(current + direction + members.length) % members.length]);
+        } else if (action === 'cancel') {
+            this.selectedPlayer?.cancelSkill();
+            this.deselectPlayer();
+        }
+    };
+
+    selectOwnUnit(player?: Player) {
+        if (!player) return;
+        this.deselectPlayer();
+        this.selectPlayer(player);
     }
 
     isFree(gridX, gridY) {
@@ -1516,6 +1535,7 @@ export class Arena extends Phaser.Scene
             bg.setPosition(centerX, centerY);
         });
         
+        window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         this.loadBackgroundMusic();
         this.setUpArena();
         this.createAnims();
@@ -1947,6 +1967,7 @@ export class Arena extends Phaser.Scene
     }
 
     destroy() {
+        window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         events.emit('notifyMatchmakerLeave');
         this.socket.disconnect();
 
