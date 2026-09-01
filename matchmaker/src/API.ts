@@ -1,5 +1,3 @@
-import fetch, { Headers } from 'node-fetch';
-
 interface ApiFetchOptions {
     method?: string;
     headers?: Record<string, string>;
@@ -25,19 +23,33 @@ function timeoutPromise(duration) {
     });
 }
 
+export function createApiHeaders(
+    initialHeaders: Record<string, string>,
+    idToken: string,
+    apiKey: string | undefined,
+): Headers {
+    const headers = new Headers(initialHeaders);
+    if (idToken) {
+        headers.set("Authorization", `Bearer ${idToken}`);
+    } else if (apiKey) {
+        headers.set("x-api-key", apiKey);
+    }
+    return headers;
+}
+
 export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {}, timeoutDuration = 10000) {
     try {
-        const headers = new Headers(options.headers || {});
+        const headers = createApiHeaders(options.headers || {}, idToken, process.env.API_KEY);
 
         if (options.body && !headers.has('Content-Type')) {
             headers.append('Content-Type', 'application/json');
-            options.body = JSON.stringify(options.body);
         }
 
-        headers.append("Authorization", `Bearer ${idToken}`);
+        const body = options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body;
 
         const fetchPromise = fetch(`${process.env.API_URL}/${endpoint}`, {
             ...options,
+            body,
             headers,
         });
 

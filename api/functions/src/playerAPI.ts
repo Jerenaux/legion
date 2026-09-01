@@ -279,17 +279,7 @@ export const getPlayerData = onRequest({
 
   corsMiddleware(request, response, async () => {
     try {
-      // Little hack for graceful warmup
-      if (!request.headers.authorization) {
-        response.status(200).send({});
-        return;
-      }
-      // Get UID from auth token or query param
-      const uid = await getUID(request) || request.query.uid as string;
-      if (!uid) {
-        response.status(400).send("No player ID provided");
-        return;
-      }
+      const uid = await getUID(request);
 
       const docSnap = await db.collection('players').doc(uid).get();
 
@@ -1240,11 +1230,15 @@ export const recordPlayerAction = onRequest({
   });
 });
 
-export const incrementStartedGames = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const incrementStartedGames = onRequest({ secrets: ["API_KEY"], memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
         try {
+            if (!checkAPIKey(request)) {
+                response.status(401).send("Unauthorized");
+                return;
+            }
             const uid = request.body.uid;
             await db.collection('players').doc(uid).set({
                 engagementStats: {

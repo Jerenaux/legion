@@ -7,7 +7,6 @@ COPY server/bun.lock ./
 
 # Copy config files (tsconfig, etc.)
 COPY server/tsconfig*.json ./
-COPY server/*.env ./
 
 RUN bun install
 

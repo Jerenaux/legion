@@ -1,6 +1,29 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
+import {Request, Response} from "express";
+
+type DashboardHandler = (request: Request, response: Response) => void | Promise<void>;
+
+const adminHandler = (handler: DashboardHandler) => async (request: Request, response: Response) => {
+    if (!checkAPIKey(request)) {
+        response.status(401).send("Unauthorized");
+        return;
+    }
+    return handler(request, response);
+};
+
+function adminOnRequest(handler: DashboardHandler): any;
+function adminOnRequest(options: any, handler: DashboardHandler): any;
+function adminOnRequest(optionsOrHandler: any, maybeHandler?: DashboardHandler): any {
+    if (typeof optionsOrHandler === "function") {
+        return onRequest({secrets: ["API_KEY"]}, adminHandler(optionsOrHandler));
+    }
+    return onRequest(
+        {...optionsOrHandler, secrets: ["API_KEY"]},
+        adminHandler(maybeHandler!),
+    );
+}
 
 interface RetentionData {
     returningPlayers: number;
@@ -144,7 +167,7 @@ export async function logGameAction(gameId: string, playerId: string, actionType
     });
 }
 
-export const logQueuingActivity = onRequest({ secrets: ["API_KEY"] }, async (request, response) => {
+export const logQueuingActivity = adminOnRequest({ secrets: ["API_KEY"] }, async (request, response) => {
     if (!checkAPIKey(request)) {
         response.status(401).send('Unauthorized');
         return;
@@ -154,14 +177,14 @@ export const logQueuingActivity = onRequest({ secrets: ["API_KEY"] }, async (req
     response.send({status: 0});
 });
 
-export const insertGameAction = onRequest({memory: '512MiB'}, async (request, response) => {
+export const insertGameAction = adminOnRequest({memory: '512MiB'}, async (request, response) => {
     const { gameId, playerId, actionType, details } = request.body;
     await logGameAction(gameId, playerId, actionType, details);
     response.send({status: 0});
 });
 
 
-export const getDashboardData = onRequest(
+export const getDashboardData = adminOnRequest(
     { memory: '512MiB' },
     async (request, response) => {
     const db = admin.firestore();
@@ -302,7 +325,7 @@ export const getDashboardData = onRequest(
     });
 });
 
-export const getActionLog = onRequest(
+export const getActionLog = adminOnRequest(
     { memory: '512MiB' },
     async (request, response) => {
     const db = admin.firestore();
@@ -390,7 +413,7 @@ export const getActionLog = onRequest(
     });
 });
 
-export const getGameLog = onRequest(async (request, response) => {
+export const getGameLog = adminOnRequest(async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -426,7 +449,7 @@ export const getGameLog = onRequest(async (request, response) => {
     });
 });
 
-export const listPlayerIDs = onRequest(
+export const listPlayerIDs = adminOnRequest(
     { memory: '512MiB' },
     async (request, response) => {
     const db = admin.firestore();
@@ -445,7 +468,7 @@ export const listPlayerIDs = onRequest(
     });
 });
 
-export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -662,7 +685,7 @@ export const getEngagementMetrics = onRequest({ memory: '512MiB' }, async (reque
     });
 });
 
-export const getTutorialDropoffStats = onRequest(async (request, response) => {
+export const getTutorialDropoffStats = adminOnRequest(async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -749,7 +772,7 @@ export const getTutorialDropoffStats = onRequest(async (request, response) => {
     });
 });
 
-export const migrateEngagementMetrics = onRequest(async (request, response) => {
+export const migrateEngagementMetrics = adminOnRequest(async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -850,7 +873,7 @@ export const migrateEngagementMetrics = onRequest(async (request, response) => {
     });
 });
 
-export const migrateMetricsToStats = onRequest(async (request, response) => {
+export const migrateMetricsToStats = adminOnRequest(async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -901,7 +924,7 @@ export const migrateMetricsToStats = onRequest(async (request, response) => {
     });
 });
 
-export const getPlayerGameHistory = onRequest(
+export const getPlayerGameHistory = adminOnRequest(
     { memory: '512MiB' },
     async (request, response) => {
     const db = admin.firestore();
@@ -956,7 +979,7 @@ export const getPlayerGameHistory = onRequest(
     });
 });
 
-export const getActivePlayers = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const getActivePlayers = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -991,7 +1014,7 @@ export const getActivePlayers = onRequest({ memory: '512MiB' }, async (request, 
     });
 });
 
-export const migrateMobileFlag = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -1057,7 +1080,7 @@ export const migrateMobileFlag = onRequest({ memory: '512MiB' }, async (request,
     });
 });
 
-export const getPlayerActionsReport = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const getPlayerActionsReport = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -1132,7 +1155,7 @@ function getSpeedForClass(classId: number): number {
     }
 }
 
-export const migrateCharacterSpeed = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const migrateCharacterSpeed = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -1181,7 +1204,7 @@ export const migrateCharacterSpeed = onRequest({ memory: '512MiB' }, async (requ
     });
 });
 
-export const markPlayerContacted = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const markPlayerContacted = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -1204,7 +1227,7 @@ export const markPlayerContacted = onRequest({ memory: '512MiB' }, async (reques
     });
 });
 
-export const markPlayerExcluded = onRequest({ memory: '512MiB' }, async (request, response) => {
+export const markPlayerExcluded = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
@@ -1226,4 +1249,3 @@ export const markPlayerExcluded = onRequest({ memory: '512MiB' }, async (request
         }
     });
 });
-

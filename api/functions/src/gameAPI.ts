@@ -19,7 +19,7 @@ export async function createGameDocument(
     status: GameStatus.ONGOING,
     stake,
   };
-  await db.collection("games").add(gameData);
+  await db.collection("games").doc(gameId).set(gameData);
   console.log(`[createGameDocument] Game ${gameId} created`);
 }
 
@@ -62,12 +62,17 @@ export const createGame = onRequest({
 });
 
 export const completeGame = onRequest({ 
+  secrets: ["API_KEY"],
   memory: '512MiB'
 }, (request, response) => {
   const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
+      if (!checkAPIKey(request)) {
+        response.status(401).send("Unauthorized");
+        return;
+      }
       const gameId = request.body.gameId;
       const winnerUID = request.body.winnerUID || -1; // -1 for AI
       const rawResults: EndGameData = request.body.results;
@@ -78,14 +83,13 @@ export const completeGame = onRequest({
       );
       console.log(`[completeGame] Filtered results: ${JSON.stringify(results)}`);
 
-      const gameRef = await db.collection("games").where("gameId", "==", gameId).limit(1).get();
-      if (gameRef.empty) { // Most likely a tutorial ending
+      const gameDoc = await db.collection("games").doc(gameId).get();
+      if (!gameDoc.exists) { // Most likely a tutorial ending
         // throw new Error("Invalid game ID");
         response.status(200).send({status: 0});
         return; // Exit the function early
       }
 
-      const gameDoc = gameRef.docs[0];
       const gameData = gameDoc.data();
       if (!gameData) {
         throw new Error("gameData is null");
@@ -519,4 +523,3 @@ export const getReplay = onRequest({
     }
   });
 });
-

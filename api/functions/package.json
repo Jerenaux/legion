@@ -2,6 +2,7 @@
   "name": "legion-api",
   "private": true,
   "scripts": {
+    "test": "bun test src/__tests__",
     "lint": "eslint --ext .js,.ts .",
     "build": "webpack",
     "build:watch": "webpack --watch",
@@ -20,7 +21,6 @@
     "busboy": "^1.6.0",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
-    "dotenv-webpack": "^8.0.1",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^5.0.1",
     "firebase-tools": "^13.13.0",

@@ -7,7 +7,6 @@ COPY matchmaker/bun.lock ./
 
 # Copy config files (tsconfig, etc.)
 COPY matchmaker/tsconfig*.json ./
-COPY matchmaker/*.env ./
 
 RUN bun install
 
