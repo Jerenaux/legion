@@ -57,8 +57,11 @@ jobs:
             --allow-unauthenticated \
             --memory 512Mi \
             --cpu 1 \
+            --timeout 3600 \
             --max-instances 1 \
-            --min-instances 0
+            --min-instances 0 \
+            --set-env-vars NODE_ENV=production,API_URL=${{ vars.API_URL }},GAME_SERVER_URL=${{ vars.GAME_SERVER_URL }},CLIENT_ORIGIN=app://legion \
+            --set-secrets API_KEY=API_KEY:latest
 
       - name: Deployment summary
         run: |

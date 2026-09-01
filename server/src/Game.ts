@@ -47,6 +47,7 @@ export abstract class Game
     gameStarted: boolean = false;
     firstBlood: boolean = false;
     gameOver: boolean = false;
+    endedAt: number | null = null;
     turnTimer: NodeJS.Timeout | null = null;
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
@@ -103,7 +104,8 @@ export abstract class Game
 
     handleDisconnect(socket: Socket) {
         const disconnectingTeam = this.socketMap.get(socket);
-        disconnectingTeam.unsetSocket();
+        disconnectingTeam?.unsetSocket();
+        this.socketMap.delete(socket);
         // Slice the player from the game
         this.sockets = this.sockets.filter(s => s !== socket);
         if (this.sockets.length === 0) {
@@ -113,11 +115,11 @@ export abstract class Game
 
     reconnectPlayer(socket: Socket) {
         console.log(`Reconnecting player to game ${this.id} ...`)
+        const team = Array.from(this.teams.values()).find(candidate => candidate.teamData.playerUID === (socket as any).uid);
+        if (!team) throw new Error('Player team not found');
         this.addSocket(socket);
-        // Find which team has socket set to null
-        const team = this.teams.get(1).socket ? this.teams.get(2) : this.teams.get(1);
         this.socketMap.set(socket, team);
-        team?.setSocket(socket);
+        team.setSocket(socket);
         
         this.sendGameStatus(socket, true);
 
@@ -613,10 +615,12 @@ export abstract class Game
     }
 
     endGame(winnerTeamID: number) {
+        if (this.gameOver) return;
         try {
             console.log(`[Game:endGame] Game ${this.id} ended, mode = ${this.mode}`);
             this.duration = Date.now() - this.startTime;
             this.gameOver = true;
+            this.endedAt = Date.now();
 
             clearTimeout(this.audienceTimer!);
             clearTimeout(this.checkEndTimer!);
@@ -1396,6 +1400,7 @@ export abstract class Game
                     method: 'POST',
                     body: {
                         uid,
+                        resultId: `${this.id}:${this.startTime}`,
                         outcomes,
                         mode: this.mode,
                         engagement,

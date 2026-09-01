@@ -9,6 +9,7 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
+import {shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
      SPELL_RANGE, PROJECTILE_DURATION, VALIDATE_TARGETS, CAST_ZOOM } from '@legion/shared/config';
 
@@ -317,6 +318,7 @@ export class Arena extends Phaser.Scene
         this.socket = io(
             process.env.GAME_SERVER_URL,
             {
+                ...socketReconnectOptions,
                 auth: {
                     token: await getFirebaseIdToken(),
                     gameId,
@@ -346,17 +348,35 @@ export class Arena extends Phaser.Scene
         this.socket.on('connect', () => {
             // console.log('Connected to the server');
         });
+
+        this.socket.io.on('reconnect_attempt', async () => {
+            try {
+                this.socket.auth = {token: await getFirebaseIdToken(true), gameId, isReplay};
+            } catch (error) {
+                console.error('Could not refresh game authentication:', error);
+            }
+        });
         
         this.socket.on('disconnect', (reason) => {
-            // console.log(`Disconnected from the server, ${reason}`);
-            if (reason != 'io client disconnect') {
-                // The disconnection was initiated by the server
+            if (shouldAbandonGame(reason)) {
                 console.error(`Server disconnect during game: ${reason}`);
                 silentErrorToast('Disconnected from server');
                 events.emit('serverDisconnect');
                 this.destroy();
-            } 
-        }); 
+            }
+        });
+
+        this.socket.io.on('reconnect_failed', () => {
+            silentErrorToast('Could not reconnect to server');
+            events.emit('serverDisconnect');
+            this.destroy();
+        });
+
+        this.socket.on('joinError', (error) => {
+            console.error('Could not join game:', error);
+            events.emit('serverDisconnect');
+            this.destroy();
+        });
 
         this.socket.on('error', (error) => {
             console.error('Error:', error);

@@ -12,6 +12,7 @@ import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
 import { route } from 'preact-router';
+import {socketReconnectOptions} from '../services/socketPolicy';
 
 import {
   canEquipConsumable,
@@ -35,8 +36,6 @@ import { LOCKED_FEATURES } from '@legion/shared/config';
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private fetchAllDataTimeout: NodeJS.Timeout | null = null;
     private fetchAllDataDelay: number = 400; 
-    private reconnectTimeout: NodeJS.Timeout | null = null;
-    private reconnectDelay: number = 500;
 
     constructor(props: {}) {
       super(props);
@@ -136,9 +135,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.resetState();
       if (this.fetchAllDataTimeout !== null) {
         clearTimeout(this.fetchAllDataTimeout);
-      }
-      if (this.reconnectTimeout !== null) {
-        clearTimeout(this.reconnectTimeout);
       }
       if (this.state.socket) {
         this.state.socket.disconnect();
@@ -476,11 +472,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       const token = await getFirebaseIdToken();
       if (!token) {
         console.error('Could not obtain authentication token');
-        // Clear any existing reconnect timeout
-        if (this.reconnectTimeout) {
-          clearTimeout(this.reconnectTimeout);
-          this.reconnectTimeout = null;
-        }
         errorToast('Connection error - Please reload the page');
         return;
       }
@@ -489,41 +480,30 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         auth: {
           token
         },
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: this.reconnectDelay,
-        reconnectionDelayMax: 5000,
+        ...socketReconnectOptions,
       });
 
       socket.on('connect', () => {
         // console.log('Connected to matchmaker');
-        // Clear any pending reconnect timeout
-        if (this.reconnectTimeout) {
-          clearTimeout(this.reconnectTimeout);
-          this.reconnectTimeout = null;
+      });
+
+      socket.io.on('reconnect_attempt', async () => {
+        try {
+          socket.auth = {token: await getFirebaseIdToken(true)};
+        } catch (error) {
+          console.error('Could not refresh matchmaker authentication:', error);
         }
       });
 
       socket.on('disconnect', (reason) => {
         console.log(`Disconnected from matchmaker: ${reason}`);
         
-        // Don't attempt to reconnect if the disconnection was intentional
-        if (reason === 'io client disconnect') {
-          return;
-        }
-
-        // For other disconnections, attempt to reconnect
-        this.setState({ socket: null }, () => {
-          this.scheduleReconnect();
-        });
       });
 
       socket.on('connect_error', (error) => {
         console.error('Connection error:', error);
         // errorToast('Connection error, attempting to reconnect...');
         
-        // Schedule reconnect on connection error
-        this.scheduleReconnect();
       });
 
       socket.on('error', (e) => {
@@ -579,18 +559,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       });
 
         this.setState({ socket });
-    }
-
-    private scheduleReconnect = () => {
-      // Clear any existing reconnect timeout
-      if (this.reconnectTimeout) {
-        clearTimeout(this.reconnectTimeout);
-      }
-
-      this.reconnectTimeout = setTimeout(() => {
-        console.log('Attempting to reconnect...');
-        this.setupSocket();
-      }, this.reconnectDelay);
     }
 
     handleChallengeAccept = () => {

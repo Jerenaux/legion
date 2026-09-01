@@ -12,6 +12,7 @@ import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
 import {applyRankedResult, currentSeasonId, getLeagueForElo} from "./ranking";
+import {gameResultReceiptId} from "./gameResults";
 
 export const rosterData = onRequest({
   memory: '512MiB'
@@ -155,6 +156,7 @@ export const postGameUpdate = onRequest({
         return;
       }
       const uid = request.body.uid;
+      const resultId = request.body.resultId;
       const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
         request.body.outcomes as OutcomeData;
       console.log(`[postGameUpdate] [${uid}] Outcomes: ${JSON.stringify(request.body.outcomes, null, 2)}`);
@@ -164,15 +166,20 @@ export const postGameUpdate = onRequest({
       const stayedUntilTheEnd = request.body.stayedUntilTheEnd;
       console.log(`[postGameUpdate] [${uid}] Stayed until the end: ${stayedUntilTheEnd}`);
 
-      if (!uid || typeof uid !== 'string' || uid.trim() === '') {
-        throw new Error('Invalid or missing uid');
+      if (!uid || typeof uid !== 'string' || uid.trim() === '' ||
+          !resultId || typeof resultId !== 'string' || resultId.length > 256) {
+        throw new Error('Invalid game result identity');
       }
 
-      logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
-
-      await db.runTransaction(async (transaction) => {
+      const applied = await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
-        const playerDoc = await transaction.get(playerRef);
+        const receiptRef = db.collection("processedGameResults").doc(gameResultReceiptId(resultId, uid));
+        const [playerDoc, receiptDoc] = await Promise.all([
+          transaction.get(playerRef),
+          transaction.get(receiptRef),
+        ]);
+
+        if (receiptDoc.exists) return false;
 
         if (!playerDoc.exists) {
           throw new Error("Player document does not exist");
@@ -351,7 +358,14 @@ export const postGameUpdate = onRequest({
             }
           }
         }
+        transaction.create(receiptRef, {
+          resultId,
+          uid,
+          processedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return true;
       });
+      if (applied) logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
       response.send({status: 0});
     } catch (error) {
       console.error("Error processing reward:", error);

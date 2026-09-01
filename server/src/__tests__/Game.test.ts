@@ -202,6 +202,17 @@ describe('Game', () => {
 
       expect(game.sockets.length).toBe(2);
     });
+
+    it('reconnects a player to their own team', () => {
+      const socket: any = { uid: 'player-two', join: jest.fn(), emit: jest.fn() };
+      game.teams.get(1)!.teamData.playerUID = 'player-one';
+      game.teams.get(2)!.teamData.playerUID = 'player-two';
+      jest.spyOn(game, 'sendGameStatus').mockImplementation(() => undefined);
+
+      game.reconnectPlayer(socket);
+
+      expect(game.socketMap.get(socket)).toBe(game.teams.get(2));
+    });
   });
 
   describe('turn system', () => {
@@ -223,6 +234,13 @@ describe('Game', () => {
 
     it('should initialize with null processed UIDs', () => {
       expect(game.processedUIDs).toBeNull();
+    });
+
+    it('does not complete the same game twice', () => {
+      game.gameOver = true;
+      game.endedAt = 123;
+      game.endGame(1);
+      expect(game.endedAt).toBe(123);
     });
   });
 
