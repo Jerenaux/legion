@@ -9,7 +9,7 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
-import {shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
+import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
      SPELL_RANGE, PROJECTILE_DURATION, VALIDATE_TARGETS, CAST_ZOOM } from '@legion/shared/config';
 
@@ -316,11 +316,10 @@ export class Arena extends Phaser.Scene
             process.env.GAME_SERVER_URL,
             {
                 ...socketReconnectOptions,
-                auth: {
-                    token: await getFirebaseIdToken(),
-                    gameId,
-                    isReplay,
-                },
+                auth: createRefreshingSocketAuth(
+                    () => getFirebaseIdToken(true),
+                    {gameId, isReplay},
+                ),
             }
         );
 
@@ -346,14 +345,6 @@ export class Arena extends Phaser.Scene
             // console.log('Connected to the server');
         });
 
-        this.socket.io.on('reconnect_attempt', async () => {
-            try {
-                this.socket.auth = {token: await getFirebaseIdToken(true), gameId, isReplay};
-            } catch (error) {
-                console.error('Could not refresh game authentication:', error);
-            }
-        });
-        
         this.socket.on('disconnect', (reason) => {
             if (shouldAbandonGame(reason)) {
                 console.error(`Server disconnect during game: ${reason}`);

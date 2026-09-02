@@ -76,6 +76,11 @@ export const FAKE_QUEUE_NUMBERS_ENABLED = true;
 export function isQueueMode(value: unknown): value is PlayMode {
     return [PlayMode.PRACTICE, PlayMode.CASUAL, PlayMode.RANKED].includes(value as PlayMode);
 }
+
+export function parseQueueMode(value: unknown): PlayMode | null {
+    const mode = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+    return isQueueMode(mode) ? mode : null;
+}
 let matchmakingInProgress = false;
 
 async function notifyAdmin(uid1: string, uid2:string, mode: PlayMode, action: string) {
@@ -172,7 +177,7 @@ function switcherooCheck(player: QueuingPlayer) {
         if (Math.random() < redirectionProbability) {
             console.log(`Redirecting ${player.socket.id} to a CASUAL_VS_AI game due to long wait.`);
             const mode = player.mode == PlayMode.CASUAL ? PlayMode.CASUAL_VS_AI : PlayMode.RANKED_VS_AI;
-            const league = player.mode = PlayMode.RANKED ? player.league : null;
+            const league = player.mode == PlayMode.RANKED ? player.league : null;
             createGame(player.socket, null, mode, league);
             removePlayerFromQ(player);
             return true;
@@ -401,19 +406,20 @@ async function logQueuingActivity(playerId: string, actionType: string, details:
     }
 }
 
-export async function processJoinQueue(socket, data: { mode: PlayMode }) {
+export async function processJoinQueue(socket, data: { mode: unknown }) {
     try {
-        if (!isQueueMode(data?.mode)) {
+        const mode = parseQueueMode(data?.mode);
+        if (mode === null) {
             socket.emit('queueError', {message: 'Unsupported queue mode'});
             return;
         }
         if (process.env.GAME_SERVER_URL) {
             fetch(process.env.GAME_SERVER_URL).catch(error => console.warn('Game server warmup failed:', error));
         }
-        console.log(`[matchmaker:processJoinQueue] Player ${socket.id} joining queue in mode ${data.mode} ...`);
+        console.log(`[matchmaker:processJoinQueue] Player ${socket.id} joining queue in mode ${mode} ...`);
 
-        if (data.mode == PlayMode.PRACTICE) {
-            notifyAdmin(socket.uid, null, data.mode, 'joined');
+        if (mode == PlayMode.PRACTICE) {
+            notifyAdmin(socket.uid, null, mode, 'joined');
             createGame(socket, null, PlayMode.PRACTICE);
             return;
         }
@@ -423,9 +429,9 @@ export async function processJoinQueue(socket, data: { mode: PlayMode }) {
             return;
         }
 
-        notifyAdmin(socket.uid, null, data.mode, 'joined');
-        addToQueue(socket, data.mode);
-        logQueuingActivity(socket.uid, 'joinQueue', data.mode);
+        notifyAdmin(socket.uid, null, mode, 'joined');
+        addToQueue(socket, mode);
+        logQueuingActivity(socket.uid, 'joinQueue', mode);
     } catch (error) {
         if (error.code === 'auth/id-token-revoked') {
             console.log('The Firebase ID token has been revoked.');

@@ -270,6 +270,10 @@
     text-align: center;
     color: white;
   }
+
+  .queue-text-error {
+    color: oklch(0.74 0.16 25);
+  }
   
   .queue-news {
     width: 100vw;
@@ -375,4 +379,10 @@
   
   .cancel-game-link {
     text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .queue-spinner-loader {
+      animation: none;
+    }
   }

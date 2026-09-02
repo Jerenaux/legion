@@ -5,6 +5,7 @@ let activeSteamClient;
 
 async function getPlatformAuth(env = process.env, loadSteamworks = () => require("steamworks.js")) {
   if (env.ITCHIO_API_KEY) return {provider: "itch", credential: env.ITCHIO_API_KEY};
+  if (env.USE_DIRECT_AUTH === "true") return null;
 
   try {
     const steamworks = loadSteamworks();

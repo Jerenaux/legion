@@ -12,7 +12,7 @@ import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
 import { route } from 'preact-router';
-import {socketReconnectOptions} from '../services/socketPolicy';
+import {createRefreshingSocketAuth, socketReconnectOptions} from '../services/socketPolicy';
 
 import {
   canEquipConsumable,
@@ -168,6 +168,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
+          const startTutorial = !this.state.player.isLoaded && data.completedGames === 0;
           this.setState({ 
               player: {
                   uid: user.uid,
@@ -186,6 +187,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   carrying_capacity: data.carrying_capacity,
                   engagementStats: data.engagementStats || {},
               }
+          }, () => {
+              if (startTutorial) route('/game/0');
           });
       } catch (error) {
           errorToast(`Error: ${error}`);
@@ -469,30 +472,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
       // console.log(`Connecting to ${process.env.MATCHMAKER_URL} ...`);
       
-      const token = await getFirebaseIdToken();
-      if (!token) {
-        console.error('Could not obtain authentication token');
-        errorToast('Connection error - Please reload the page');
-        return;
-      }
-
       const socket = io(process.env.MATCHMAKER_URL, {
-        auth: {
-          token
-        },
+        auth: createRefreshingSocketAuth(() => getFirebaseIdToken(true)),
         ...socketReconnectOptions,
       });
 
       socket.on('connect', () => {
         // console.log('Connected to matchmaker');
-      });
-
-      socket.io.on('reconnect_attempt', async () => {
-        try {
-          socket.auth = {token: await getFirebaseIdToken(true)};
-        } catch (error) {
-          console.error('Could not refresh matchmaker authentication:', error);
-        }
       });
 
       socket.on('disconnect', (reason) => {

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import {isQueueMode, runMatchmakingPass, tryMatchPlayers} from "../src/matchmaking";
+import {isQueueMode, parseQueueMode, runMatchmakingPass, tryMatchPlayers} from "../src/matchmaking";
 
 const player = (id: string) => ({
     socket: { id, uid: id },
@@ -50,4 +50,7 @@ test("accepts only supported public queue modes", () => {
     expect(isQueueMode(5)).toBe(true);
     expect(isQueueMode(7)).toBe(false);
     expect(isQueueMode("2")).toBe(false);
+    expect(parseQueueMode("2")).toBe(2);
+    expect(parseQueueMode("7")).toBeNull();
+    expect(parseQueueMode(5)).toBe(5);
 });

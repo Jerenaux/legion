@@ -9,7 +9,7 @@ import { apiFetch, getFirebaseIdToken } from '../services/apiService';
 import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS, DISCORD_LINK, X_LINK } from '@legion/shared/config';
 import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';
-import { errorToast, playSoundEffect, silentErrorToast } from './utils';
+import { playSoundEffect, silentErrorToast } from './utils';
 import { QueueTips } from './queueTips/QueueTips';
 
 import goldIcon from '@assets/gold_icon.png';
@@ -52,6 +52,8 @@ interface QpageState {
     queueDataLoaded: boolean;
     news: NewsItem[];
     newsLoaded: boolean;
+    statusMessage: string;
+    statusIsError: boolean;
     lobbyDetails: {
         type: string;
         opponentName: string | null;
@@ -112,8 +114,69 @@ class QueuePage extends Component<QPageProps, QpageState> {
             queueDataLoaded: false,
             news: [], // Add this line
             newsLoaded: false, // Add this line
+            statusMessage: this.getPendingMessage(),
+            statusIsError: false,
             lobbyDetails: null,
         };
+    }
+
+    getPendingMessage = () => {
+        if (this.props.matches.id !== undefined) return 'Connecting to lobby…';
+        if (Number(this.props.matches.mode) === PlayMode.PRACTICE) return 'Preparing your practice match…';
+        return 'Connecting to matchmaking…';
+    }
+
+    startProgressTimer = (estimatedWaitingTime: number) => {
+        clearInterval(this.interval);
+        this.setState({ progress: 0 });
+        if (!Number.isFinite(estimatedWaitingTime) || estimatedWaitingTime <= 0) return;
+
+        this.interval = setInterval(() => {
+            this.setState((prevState) => {
+                const progress = Math.min(prevState.progress + 1, 100);
+                if (progress === 100) clearInterval(this.interval);
+                return { progress };
+            });
+        }, estimatedWaitingTime * 10);
+    }
+
+    joinMatchmaking = () => {
+        const { socket } = this.context;
+        if (!socket?.connected) return;
+
+        this.setState({ statusMessage: this.getPendingMessage(), statusIsError: false });
+        if (this.props.matches.id !== undefined) {
+            socket.emit('joinLobby', { lobbyId: this.props.matches.id });
+        } else {
+            socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });
+        }
+    }
+
+    handleDisconnect = () => {
+        clearInterval(this.interval);
+        this.setState({
+            progress: 0,
+            queueDataLoaded: false,
+            statusMessage: 'Connection lost. Reconnecting…',
+            statusIsError: false,
+        });
+    }
+
+    handleConnectError = (error?: Error) => {
+        const sessionExpired = error?.message === 'Authentication failed';
+        this.setState({
+            queueDataLoaded: false,
+            statusMessage: sessionExpired ? 'Your session expired. Restart Legion to reconnect.' : 'Could not connect. Retrying…',
+            statusIsError: true,
+        });
+    }
+
+    handleQueueError = (data?: { message?: string }) => {
+        this.setState({
+            queueDataLoaded: false,
+            statusMessage: data?.message || 'Matchmaking is unavailable. Please try again.',
+            statusIsError: true,
+        });
     }
 
     setupSocketListeners = (socket) => {
@@ -125,15 +188,20 @@ class QueuePage extends Component<QPageProps, QpageState> {
         });
 
         socket.on('updateGold', ({ gold }) => {
-            this.context.setPlayerInfo({ 
-                gold: this.context.player.gold + 1 
+            const earnedGold = Number(gold) || 0;
+            const gainedGold = Math.max(0, earnedGold - this.state.earnedGold);
+            this.setState({ earnedGold });
+            this.context.setPlayerInfo({
+                gold: this.context.player.gold + gainedGold
             });
         });
 
         socket.on('queueData', (data) => {
+            this.startProgressTimer(data.estimatedWaitingTime);
             this.setState({
                 queueDataLoaded: true,
-                queueData: { ...data }
+                queueData: { ...data },
+                statusIsError: false,
             });
         });
 
@@ -148,6 +216,10 @@ class QueuePage extends Component<QPageProps, QpageState> {
 
         socket.on('lobbyJoined', (data) => {
             this.setState({
+                statusMessage: data.type === 'friend'
+                    ? `Waiting for ${data.opponentName} to join…`
+                    : 'Waiting for another player to join…',
+                statusIsError: false,
                 lobbyDetails: {
                     type: data.type,
                     opponentName: data.opponentName
@@ -155,13 +227,13 @@ class QueuePage extends Component<QPageProps, QpageState> {
             });
         });
 
-        // Join queue or lobby
-        const isLobbyMode = this.props.matches.id !== undefined;
-        if (isLobbyMode) {
-            socket.emit('joinLobby', { lobbyId: this.props.matches.id });
-        } else {
-            socket.emit('joinQueue', { mode: this.props.matches.mode || 0 });
-        }
+        socket.on('connect', this.joinMatchmaking);
+        socket.on('disconnect', this.handleDisconnect);
+        socket.on('connect_error', this.handleConnectError);
+        socket.on('queueError', this.handleQueueError);
+        socket.on('authError', this.handleQueueError);
+
+        this.joinMatchmaking();
     }
 
     waitForSocket = () => {
@@ -172,7 +244,10 @@ class QueuePage extends Component<QPageProps, QpageState> {
         }
 
         if (this.socketRetryCount >= this.maxSocketRetries) {
-            errorToast('Could not connect to matchmaker after multiple attempts. Please reload the page.');
+            this.setState({
+                statusMessage: 'Could not connect to matchmaking. Return to Play and try again.',
+                statusIsError: true,
+            });
             return;
         }
 
@@ -190,18 +265,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
         this.loadNews();
         this.waitForSocket();
 
-        // Setup other timers
-        let timeInterval = this.state.queueData.estimatedWaitingTime * 10;
-        if (this.state.queueData.estimatedWaitingTime != -1) {
-            this.interval = setInterval(() => {
-                this.setState((prevState) => ({
-                    progress: prevState.progress + 1,
-                }));
-                if (this.state.progress == 100) {
-                    clearInterval(this.interval);
-                }
-            }, timeInterval);
-        }
         this.intervalWaited = setInterval(() => {
             this.setState((prevState) => ({
                 waited: prevState.waited + 1,
@@ -221,6 +284,11 @@ class QueuePage extends Component<QPageProps, QpageState> {
             socket.off('queueData');
             socket.off('queueCount');
             socket.off('lobbyJoined');
+            socket.off('connect', this.joinMatchmaking);
+            socket.off('disconnect', this.handleDisconnect);
+            socket.off('connect_error', this.handleConnectError);
+            socket.off('queueError', this.handleQueueError);
+            socket.off('authError', this.handleQueueError);
         }
         clearInterval(this.interval);
         clearInterval(this.intervalWaited);
@@ -260,6 +328,31 @@ class QueuePage extends Component<QPageProps, QpageState> {
         this.setState({ findState: 'accurate' });
     }
 
+    renderPendingState = (isLobbyMode: boolean) => (
+        <div className="queue-info lobby-mode">
+            <div className="queue-spinner-centered" aria-hidden="true">
+                <div className="queue-spinner-loader"></div>
+            </div>
+            <div
+                className={`queue-text${this.state.statusIsError ? ' queue-text-error' : ''}`}
+                role="status"
+                aria-live="polite"
+            >
+                {this.state.statusMessage}
+            </div>
+            <Link href="/play" className="cancel-game-link">
+                <div className="queue-detail-footer centered">
+                    <div className="queue-footer-exit">
+                        <img src={exitIcon} alt="Exit" />
+                    </div>
+                    <div className="queue-footer-text">
+                        {isLobbyMode ? 'CANCEL GAME' : 'BACK TO PLAY'}
+                    </div>
+                </div>
+            </Link>
+        </div>
+    )
+
     render() {
         const { progress, queueData, news, newsLoaded } = this.state;
         const isLobbyMode = this.props.matches.id !== undefined;
@@ -268,136 +361,108 @@ class QueuePage extends Component<QPageProps, QpageState> {
             <div className="queue-container">
                 <div className="queue-body">
                     {this.state.queueDataLoaded || isLobbyMode ? (
-                        isLobbyMode ? (
-                            <div className="queue-info lobby-mode">
-                                <div className="queue-spinner-centered">
-                                    <div className="queue-spinner-loader"></div>
-                                </div>
-                                {this.state.lobbyDetails && (
-                                    <div className="queue-text">
-                                        {this.state.lobbyDetails.type === 'friend' ? (
-                                            `Waiting for ${this.state.lobbyDetails.opponentName} to join...`
-                                        ) : (
-                                            'Waiting for another player to join...'
-                                        )}
-                                    </div>
-                                )}
-                                <Link href="/play" className="cancel-game-link">
-                                    <div className="queue-detail-footer centered">
-                                        <div className="queue-footer-exit">
-                                            <img src={exitIcon} alt="Exit" />
-                                        </div>
-                                        <div className="queue-footer-text">
-                                            CANCEL GAME
-                                        </div>
-                                    </div>
-                                </Link>
+                        isLobbyMode ? this.renderPendingState(isLobbyMode) : (
+                        // Render queue mode UI
+                        <div className="queue-info">
+                            <div className="queue-spinner" aria-hidden="true">
+                                <div className="queue-spinner-loader"></div>
                             </div>
-                        ) : (
-                            // Render queue mode UI (existing code)
-                            <div className="queue-info">
-                                <div className="queue-spinner">
-                                    <div className="queue-spinner-loader"></div>
-                                </div>
-                                <div className="queue-count">
-                                    <div role="progressbar" style={`--value: ${progress}`}>
-                                        <div>
-                                            <div className="queue-count-number">
-                                                {queueData.nbInQueue}
-                                            </div>
-                                            <div className="queue-count-text">
-                                                Queueing
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="queue-detail">
+                            <div className="queue-count">
+                                <div
+                                    role="progressbar"
+                                    aria-label="Estimated matchmaking wait progress"
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-valuenow={progress}
+                                    style={`--value: ${progress}`}
+                                >
                                     <div>
-                                        {ENABLE_MM_TOGGLE && (
-                                            <div className="queue-detail-header">
-                                                <div
-                                                    className={this.state.findState === 'quick' ? 'queue-detail-btn active' : 'queue-detail-btn'}
-                                                    onClickCapture={this.handleQuickFind}
-                                                >
-                                                    Quick find
-                                                </div>
-                                                <div
-                                                    className={this.state.findState === 'accurate' ? 'queue-detail-btn active' : 'queue-detail-btn'}
-                                                    onClick={this.handleAccurateFind}
-                                                >
-                                                    Accurate find
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className="queue-detail-body">
-                                            <div>
-                                                <div>EARNINGS</div>
-                                                <div>
-                                                    <div><img src={goldIcon} /></div>
-                                                    <div>
-                                                        <span style={{ color: 'coral' }}>{queueData.goldReward}</span>/
-                                                        <span style={{ color: 'deepskyblue' }}>{queueData.goldRewardInterval}</span>&nbsp;Sec
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div>EARNED</div>
-                                                <div>
-                                                    <div><img src={goldIcon} /></div>
-                                                    <div><span style={{ color: 'coral' }}>{this.state.earnedGold}</span></div>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div>WAITED</div>
-                                                <div>
-                                                    <span style={{ color: 'deepskyblue' }}>{this.state.waited}</span>&nbsp;Secs
-                                                </div>
-                                            </div>
-                                            {ENABLE_APPROX_WT && (
-                                                <div>
-                                                    <div>APPROX WAITING TIME</div>
-                                                    <div>
-                                                        <span style={{ color: 'deepskyblue' }}>
-                                                            {this.state.queueData.estimatedWaitingTime === -1 ? '?' : this.state.queueData.estimatedWaitingTime}
-                                                        </span>&nbsp;
-                                                        {this.state.queueData.estimatedWaitingTime === -1 ? '' : 'Secs'}
-                                                    </div>
-                                                </div>
-                                            )}
+                                        <div className="queue-count-number">
+                                            {queueData.nbInQueue}
                                         </div>
-
-                                        <Link href="/play">
-                                            <div className="queue-detail-footer">
-                                                <div className="queue-footer-exit">
-                                                    <img src={exitIcon} />
-                                                </div>
-                                                <div className="queue-footer-text">
-                                                    LEAVE QUEUE
-                                                </div>
-                                            </div>
-                                        </Link>
-                                        <div className="queue-detail-arrow">
-                                            <img src={blueTriangle} />
+                                        <div className="queue-count-text">
+                                            Queueing
                                         </div>
                                     </div>
                                 </div>
-                                <div className="queue-number"></div>
-                                <div className="queue-text">
-                                    Looking for a worthy opponent in {PlayModeLabels[this.props.matches.mode]} mode…
+                            </div>
+                            <div className="queue-detail">
+                                <div>
+                                    {ENABLE_MM_TOGGLE && (
+                                        <div className="queue-detail-header">
+                                            <div
+                                                className={this.state.findState === 'quick' ? 'queue-detail-btn active' : 'queue-detail-btn'}
+                                                onClickCapture={this.handleQuickFind}
+                                            >
+                                                Quick find
+                                            </div>
+                                            <div
+                                                className={this.state.findState === 'accurate' ? 'queue-detail-btn active' : 'queue-detail-btn'}
+                                                onClick={this.handleAccurateFind}
+                                            >
+                                                Accurate find
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="queue-detail-body">
+                                        <div>
+                                            <div>EARNINGS</div>
+                                            <div>
+                                                <div><img src={goldIcon} alt="" /></div>
+                                                <div>
+                                                    <span style={{ color: 'coral' }}>{queueData.goldReward}</span>/
+                                                    <span style={{ color: 'deepskyblue' }}>{queueData.goldRewardInterval}</span>&nbsp;Sec
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div>EARNED</div>
+                                            <div>
+                                                <div><img src={goldIcon} alt="" /></div>
+                                                <div><span style={{ color: 'coral' }}>{this.state.earnedGold}</span></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div>WAITED</div>
+                                            <div>
+                                                <span style={{ color: 'deepskyblue' }}>{this.state.waited}</span>&nbsp;Secs
+                                            </div>
+                                        </div>
+                                        {ENABLE_APPROX_WT && (
+                                            <div>
+                                                <div>APPROX WAITING TIME</div>
+                                                <div>
+                                                    <span style={{ color: 'deepskyblue' }}>
+                                                        {this.state.queueData.estimatedWaitingTime === -1 ? '?' : this.state.queueData.estimatedWaitingTime}
+                                                    </span>&nbsp;
+                                                    {this.state.queueData.estimatedWaitingTime === -1 ? '' : 'Secs'}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <Link href="/play">
+                                        <div className="queue-detail-footer">
+                                            <div className="queue-footer-exit">
+                                                <img src={exitIcon} alt="" />
+                                            </div>
+                                            <div className="queue-footer-text">
+                                                LEAVE QUEUE
+                                            </div>
+                                        </div>
+                                    </Link>
+                                    <div className="queue-detail-arrow">
+                                        <img src={blueTriangle} alt="" />
+                                    </div>
                                 </div>
                             </div>
+                            <div className="queue-number"></div>
+                            <div className="queue-text" role="status">
+                                Looking for a worthy opponent in {PlayModeLabels[this.props.matches.mode]} mode…
+                            </div>
+                        </div>
                         )
-                    ) : (
-                        // Skeleton loader
-                        <Skeleton
-                            height={350}
-                            width={350}
-                            count={1}
-                            highlightColor="#0000004d"
-                            baseColor="#0f1421"
-                            circle={true}
-                        />
-                    )}
+                    ) : this.renderPendingState(isLobbyMode)}
                 </div>
 
                 {ENABLE_Q_NEWS && (

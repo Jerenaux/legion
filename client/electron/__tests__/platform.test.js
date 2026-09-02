@@ -23,6 +23,11 @@ test("falls back to a direct session outside store launchers", async () => {
   await expect(getPlatformAuth({}, () => { throw new Error("Steam is not running"); })).resolves.toBeNull();
 });
 
+test("can force a direct session for local development", async () => {
+  await expect(getPlatformAuth({USE_DIRECT_AUTH: "true"}, () => { throw new Error("unused"); }))
+    .resolves.toBeNull();
+});
+
 test("uses Steam's native gamepad keyboard and controller type when available", async () => {
   const show = jest.fn(async () => "Legionary");
   const controller = {getType: () => "SteamDeckController"};
