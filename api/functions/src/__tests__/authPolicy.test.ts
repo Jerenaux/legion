@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { extractBearerToken, hasValidAPIKey, verifyUID } from "../authPolicy";
+import { extractBearerToken, hasValidAPIKey, isDevelopmentEnvironment, verifyUID } from "../authPolicy";
 
 describe("API authentication policy", () => {
   test("rejects a missing or malformed bearer token", () => {
@@ -26,5 +26,13 @@ describe("API authentication policy", () => {
     expect(hasValidAPIKey(undefined, "secret", false)).toBe(false);
     expect(hasValidAPIKey("secret", undefined, false)).toBe(false);
     expect(hasValidAPIKey(undefined, undefined, true)).toBe(true);
+  });
+
+  test("fails closed when NODE_ENV is missing or unknown", () => {
+    expect(isDevelopmentEnvironment(undefined)).toBe(false);
+    expect(isDevelopmentEnvironment("test")).toBe(false);
+    expect(isDevelopmentEnvironment("production")).toBe(false);
+    expect(isDevelopmentEnvironment("development")).toBe(true);
+    expect(isDevelopmentEnvironment("docker")).toBe(true);
   });
 });

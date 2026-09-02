@@ -3,7 +3,7 @@
 }
 
 :root {
-  --game-pointer: url('/public/pointers/hand_pointer.png'), auto;
+  --game-pointer: url('@assets/pointers/hand_pointer.png'), auto;
   --desktop-safe-inline: max(env(safe-area-inset-left), calc((100vw - 100vh * 16 / 9) / 2), 0px);
   --desktop-safe-block: max(env(safe-area-inset-top), calc((100vh - 100vw * 9 / 16) / 2), 0px);
 }
@@ -77,7 +77,7 @@ canvas {
 @font-face {
   font-family: 'Kim';
   /* src: url('../../public/kim.otf') format('opentype'); */
-  src: url('/public/kim.otf') format('opentype');
+  src: url('@assets/kim.otf') format('opentype');
 }
 
 .player-main {

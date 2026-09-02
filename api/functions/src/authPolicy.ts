@@ -1,5 +1,8 @@
 export type TokenVerifier = (token: string) => Promise<{ uid?: string }>;
 
+export const isDevelopmentEnvironment = (nodeEnv: string | undefined): boolean =>
+  nodeEnv === "development" || nodeEnv === "docker";
+
 export function extractBearerToken(authorization: string | undefined): string {
   const match = authorization?.match(/^Bearer\s+(.+)$/);
   if (!match?.[1]) throw new Error("Bearer token required");

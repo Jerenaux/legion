@@ -4,7 +4,7 @@ import cors from "cors";
 import {Request} from "express";
 import firebaseConfig from '@legion/shared/firebaseConfig';
 import { getStorage } from 'firebase-admin/storage';
-import {hasValidAPIKey, verifyUID} from "./authPolicy";
+import {hasValidAPIKey, isDevelopmentEnvironment, verifyUID} from "./authPolicy";
 
 admin.initializeApp(firebaseConfig);
 
@@ -21,7 +21,7 @@ export async function getUID(request: Request): Promise<string> {
   return verifyUID(request.headers.authorization, (token) => admin.auth().verifyIdToken(token));
 }
 
-export const isDevelopment = process.env.NODE_ENV != "production";
+export const isDevelopment = isDevelopmentEnvironment(process.env.NODE_ENV);
 
 export const checkAPIKey = (request: Request): boolean => {
   return hasValidAPIKey(request.headers["x-api-key"], process.env.API_KEY, isDevelopment);

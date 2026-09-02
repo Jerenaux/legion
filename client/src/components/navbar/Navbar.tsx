@@ -242,17 +242,18 @@ class Navbar extends Component<Props, State> {
                                                 league={this.props.playerData?.league} 
                                             />
                                         )}
-                                        <div className="expand_btn" role="button" tabIndex={0} aria-label="More options" style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
+                                        <div className="expand_btn" onMouseEnter={() => this.setState({ openDropdown: true })}>
+                                            <button type="button" className="expand_btn_trigger" aria-label="More options" aria-expanded={this.state.openDropdown} style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} />
                                             <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
-                                                <div role="button" tabIndex={0} onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
+                                                <button type="button" onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
                                                     <img src={helpIcon} alt="How to play" /> How to play
-                                                </div>
-                                                <div role="button" tabIndex={0} onClick={this.copyIDtoClipboard}>
+                                                </button>
+                                                <button type="button" onClick={this.copyIDtoClipboard}>
                                                     <img src={copyIcon} alt="Copy" /> Player ID
-                                                </div>
-                                                <div role="button" tabIndex={0} onClick={this.toggleSettingsModal}>
+                                                </button>
+                                                <button type="button" onClick={this.toggleSettingsModal}>
                                                     <img src={cogIcon} alt="Settings" /> Settings
-                                                </div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
