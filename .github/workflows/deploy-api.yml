@@ -52,7 +52,7 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Deploy to Firebase Functions
-        run: bun api/functions/node_modules/firebase-tools/lib/bin/firebase.js deploy --only functions --project legion-32c6d --non-interactive
+        run: node api/functions/node_modules/firebase-tools/lib/bin/firebase.js deploy --only functions --project legion-32c6d --non-interactive
         env:
           DEPLOY: true
 
