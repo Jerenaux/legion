@@ -23,6 +23,7 @@
     "@sentry/webpack-plugin": "^2.22.4",
     "@types/react-tooltip": "^4.2.4",
     "copy-webpack-plugin": "^12.0.2",
+    "firebase": "^10.14.1",
     "logrocket": "^9.0.2",
     "phaser": "^3.70.0",
     "phaser3-rex-plugins": "^1.60.9",

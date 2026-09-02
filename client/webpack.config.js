@@ -11,6 +11,13 @@ const webpack = require('webpack');
 const isDocker = process.env.IS_DOCKER;
 const isProduction = process.env.NODE_ENV === 'production';
 const isElectron = process.env.BUILD_TARGET === 'electron';
+const requiredElectronUrls = ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL'];
+
+if (isProduction && isElectron) {
+  const missingUrls = requiredElectronUrls.filter(key => !process.env[key]);
+  if (missingUrls.length) throw new Error(`Missing Electron build variables: ${missingUrls.join(', ')}`);
+}
+
 console.log('BUILD_TARGET:', process.env.BUILD_TARGET);
 console.log('isElectron:', isElectron);
 
@@ -126,7 +133,7 @@ module.exports = {
       hash: !isElectron,
     }),
     new webpack.DefinePlugin(Object.fromEntries([
-      'API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL',
+      ...requiredElectronUrls,
       'USE_FIREBASE_EMULATOR', 'FIREBASE_AUTH_EMULATOR_HOST',
     ].map(key => [`process.env.${key}`, JSON.stringify(process.env[key] || '')]))),
     new CopyWebpackPlugin({
