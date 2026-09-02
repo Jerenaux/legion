@@ -65,7 +65,7 @@ async function ensureAuthUser(uid: string): Promise<void> {
   }
 }
 
-// ponytail: bind Steam secrets here once production Steam credentials are provisioned.
+// TODO: ponytail: bind Steam secrets here once production Steam credentials are provisioned.
 const sessionOptions = {
   memory: "512MiB" as const,
 };
