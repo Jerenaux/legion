@@ -23,8 +23,6 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 
 COPY --from=builder /usr/src/app/dist ./dist
 
-COPY server/.production.env ./.env
-
 EXPOSE 3123
 
 CMD ["bun", "dist/src/server.js"]

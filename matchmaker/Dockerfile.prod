@@ -22,8 +22,6 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 
 COPY --from=builder /usr/src/app/dist ./dist
 
-COPY matchmaker/.production.env ./.env
-
 EXPOSE 3000
 
 CMD ["bun", "dist/src/matchmaker.js"]
