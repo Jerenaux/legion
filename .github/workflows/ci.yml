@@ -77,7 +77,7 @@ jobs:
           cd client
           BUILD_TARGET=electron bun run build
           bunx electron-builder --dir --linux
-          if bunx asar list release/linux-unpacked/resources/app.asar | rg '\.map$'; then
+          if bunx asar list release/linux-unpacked/resources/app.asar | grep -Eq '\.map$'; then
             echo "Source maps found in packaged application" >&2
             exit 1
           fi
