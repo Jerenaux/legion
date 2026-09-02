@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-manifest=client/.itch.toml
-workflow=.github/workflows/release-desktop.yml
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+manifest="$repo_root/client/.itch.toml"
+workflow="$repo_root/.github/workflows/release-desktop.yml"
 
 grep -Eq 'path = "Legion\{\{EXT\}\}"' "$manifest"
 test "$(grep -Fc 'scope = "profile:me"' "$manifest")" -eq 1
