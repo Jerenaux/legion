@@ -1,9 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import { initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import axios from 'axios';
 import {
     Client,
     GatewayIntentBits,
@@ -22,9 +19,7 @@ if (discordEnabled) {
     discordClient.login(process.env.DISCORD_TOKEN);
 }
 
-if (process.env.NODE_ENV === 'development') {
-    initializeApp(firebaseConfig);
-} 
+initializeApp({projectId: firebaseConfig.projectId});
 
 interface QueuingPlayer {
     socket: any,
@@ -42,14 +37,12 @@ class Lobby {
     opponentId: string | null;
     creatorSocket: Socket;
     opponentSocket: Socket;
-    stake: number;
-    constructor(id: string, creatorId: string, opponentId: string | null = null, stake: number = 0) {
+    constructor(id: string, creatorId: string, opponentId: string | null = null) {
         this.id = id;
         this.creatorId = creatorId;
         this.opponentId = opponentId;
         this.creatorSocket = null;
         this.opponentSocket = null;
-        this.stake = stake;
     }
 
     addPlayer(socket: any): boolean {
@@ -78,7 +71,16 @@ let io: Server;
 const lobbies: Map<string, Lobby> = new Map();
 
 const playersQueue: QueuingPlayer[] = [];
-const RND = true;
+export const FAKE_QUEUE_NUMBERS_ENABLED = true;
+
+export function isQueueMode(value: unknown): value is PlayMode {
+    return [PlayMode.PRACTICE, PlayMode.CASUAL, PlayMode.RANKED].includes(value as PlayMode);
+}
+
+export function parseQueueMode(value: unknown): PlayMode | null {
+    const mode = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+    return isQueueMode(mode) ? mode : null;
+}
 let matchmakingInProgress = false;
 
 async function notifyAdmin(uid1: string, uid2:string, mode: PlayMode, action: string) {
@@ -123,7 +125,7 @@ export async function runMatchmakingPass(matchPlayers: () => Promise<void> = try
 
 function emitQueueCount() {
     let count = playersQueue.length;
-    if (RND) {
+    if (FAKE_QUEUE_NUMBERS_ENABLED) {
         count = Math.floor(Math.random() * 4) + 2;
     }
     io.emit('queueCount', { count }); 
@@ -175,7 +177,7 @@ function switcherooCheck(player: QueuingPlayer) {
         if (Math.random() < redirectionProbability) {
             console.log(`Redirecting ${player.socket.id} to a CASUAL_VS_AI game due to long wait.`);
             const mode = player.mode == PlayMode.CASUAL ? PlayMode.CASUAL_VS_AI : PlayMode.RANKED_VS_AI;
-            const league = player.mode = PlayMode.RANKED ? player.league : null;
+            const league = player.mode == PlayMode.RANKED ? player.league : null;
             createGame(player.socket, null, mode, league);
             removePlayerFromQ(player);
             return true;
@@ -236,7 +238,7 @@ function countQueuingPlayers(mode: PlayMode, league: League): number {
     if (mode == PlayMode.RANKED) {
         return playersInMode.filter(player => player.league === league).length;
     }
-    if (RND) {
+    if (FAKE_QUEUE_NUMBERS_ENABLED) {
         return Math.floor(Math.random() * 4) + 2;
     } else {
         return playersInMode.length;
@@ -251,7 +253,7 @@ function canBeMatched(player1: QueuingPlayer, player2: QueuingPlayer): boolean {
 }
 
 async function createGame(
-    player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null, stake: number = 0
+    player1: Socket, player2?: Socket, mode: PlayMode = PlayMode.PRACTICE, league: League | null = null
 ) {
     console.log(`[matchmaker:createGame] Creating game with mode ${mode} and league ${league}`);
     try {
@@ -287,7 +289,6 @@ async function createGame(
                     players: [player1.uid, player2?.uid],
                     mode,
                     league,
-                    stake,
                 },
                 headers: {
                     'x-api-key': process.env.API_KEY,
@@ -405,20 +406,20 @@ async function logQueuingActivity(playerId: string, actionType: string, details:
     }
 }
 
-async function getUID(IDToken) {
-    if (process.env.NODE_ENV === 'development') {
-        return (await getAuth().verifyIdToken(IDToken)).uid;
-    } else {
-        return await validateFirebaseIdToken(IDToken, firebaseConfig.projectId);
-    }
-}
-
-export async function processJoinQueue(socket, data: { mode: PlayMode }) {
+export async function processJoinQueue(socket, data: { mode: unknown }) {
     try {
-        console.log(`[matchmaker:processJoinQueue] Player ${socket.id} joining queue in mode ${data.mode} ...`);
+        const mode = parseQueueMode(data?.mode);
+        if (mode === null) {
+            socket.emit('queueError', {message: 'Unsupported queue mode'});
+            return;
+        }
+        if (process.env.GAME_SERVER_URL) {
+            fetch(process.env.GAME_SERVER_URL).catch(error => console.warn('Game server warmup failed:', error));
+        }
+        console.log(`[matchmaker:processJoinQueue] Player ${socket.id} joining queue in mode ${mode} ...`);
 
-        if (data.mode == PlayMode.PRACTICE) {
-            notifyAdmin(socket.uid, null, data.mode, 'joined');
+        if (mode == PlayMode.PRACTICE) {
+            notifyAdmin(socket.uid, null, mode, 'joined');
             createGame(socket, null, PlayMode.PRACTICE);
             return;
         }
@@ -428,9 +429,9 @@ export async function processJoinQueue(socket, data: { mode: PlayMode }) {
             return;
         }
 
-        notifyAdmin(socket.uid, null, data.mode, 'joined');
-        addToQueue(socket, data.mode);
-        logQueuingActivity(socket.uid, 'joinQueue', data.mode);
+        notifyAdmin(socket.uid, null, mode, 'joined');
+        addToQueue(socket, mode);
+        logQueuingActivity(socket.uid, 'joinQueue', mode);
     } catch (error) {
         if (error.code === 'auth/id-token-revoked') {
             console.log('The Firebase ID token has been revoked.');
@@ -465,9 +466,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
         }
 
         // Determine play mode based on lobby type
-        const mode = lobbyDetails.type === 'friend' ? 
-            PlayMode.CASUAL_VS_FRIEND : 
-            PlayMode.STAKED;
+        if (lobbyDetails.type !== 'friend') throw new Error('Unsupported lobby type');
+        const mode = PlayMode.CASUAL_VS_FRIEND;
 
         const lobby = lobbies.get(data.lobbyId);
         if (!lobby) {
@@ -475,8 +475,7 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
             const newLobby = new Lobby(
                 data.lobbyId, 
                 lobbyDetails.creatorId,
-                lobbyDetails.opponentId, 
-                lobbyDetails.stake
+                lobbyDetails.opponentId,
             );
             lobbies.set(data.lobbyId, newLobby);
             
@@ -522,9 +521,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
             await createGame(
                 lobby.creatorSocket,
                 lobby.opponentSocket,
-                mode,  // Use the determined mode
-                null,  // No league for friend lobbies
-                lobby.stake
+                mode,
+                null,
             );
             lobbies.delete(data.lobbyId);
         }
@@ -568,11 +566,8 @@ export async function processLeaveQueue(socket) {
   
 export async function processDisconnect(socket) {
     console.log(`Player ${socket.id} disconnected`);
-    // Update player status to offline
-    // @ts-ignore
-    updatePlayerStatus(socket.uid, PlayerStatus.OFFLINE);
-    // Check if the player is in a queue
-    leaveQueueOrLobby(socket);
+    await leaveQueueOrLobby(socket);
+    if (connectedPlayers[socket.uid]?.socket.id === socket.id) delete connectedPlayers[socket.uid];
 }
 
 async function leaveQueueOrLobby(socket) {
@@ -619,114 +614,6 @@ function findLobbyBySocketId(socketId: string): Lobby | undefined {
     );
 }
 
-interface FirebasePublicKeys {
-  [key: string]: string;
-}
-
-interface FirebaseTokenHeader {
-    alg: string;
-    kid: string;
-  }
-  
-interface FirebaseTokenPayload extends JwtPayload {
-aud: string;
-iss: string;
-sub: string;
-auth_time: number;
-}
-
-const FIREBASE_PUBLIC_KEYS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
-
-function isFirebaseTokenHeader(header: any): header is FirebaseTokenHeader {
-    return typeof header === 'object' && header !== null &&
-           typeof header.alg === 'string' &&
-           typeof header.kid === 'string';
-  }
-  
-  function isFirebaseTokenPayload(payload: any): payload is FirebaseTokenPayload {
-    return typeof payload === 'object' && payload !== null &&
-           typeof payload.exp === 'number' &&
-           typeof payload.iat === 'number' &&
-           typeof payload.aud === 'string' &&
-           typeof payload.iss === 'string' &&
-           typeof payload.sub === 'string' &&
-           typeof payload.auth_time === 'number';
-  }
-  
-  async function validateFirebaseIdToken(idToken: string, projectId: string): Promise<string> {
-    // Fetch Firebase public keys
-    const { data: publicKeys, headers } = await axios.get<FirebasePublicKeys>(FIREBASE_PUBLIC_KEYS_URL);
-    
-    // Get max-age from Cache-Control header
-    const cacheControl = headers['cache-control'];
-    const maxAge = parseInt(cacheControl.split('max-age=')[1]) || 3600;
-  
-    // Decode the token without verifying to get the header and payload
-    const decodedToken = jwt.decode(idToken, { complete: true });
-    // console.log(`Decoded token: ${JSON.stringify(decodedToken)}`);
-  
-    if (!decodedToken || typeof decodedToken !== 'object') {
-      throw new Error('Invalid token format');
-    }
-  
-    if (!isFirebaseTokenHeader(decodedToken.header)) {
-      throw new Error('Invalid token header');
-    }
-  
-    if (!isFirebaseTokenPayload(decodedToken.payload)) {
-      throw new Error('Invalid token payload');
-    }
-  
-    const { header, payload } = decodedToken;
-  
-    // Verify header claims
-    if (header.alg !== 'RS256') {
-      throw new Error(`Invalid algorithm ${header.alg}`);
-    }
-  
-    const kid = header.kid;
-    if (!publicKeys[kid]) {
-      throw new Error('Invalid key ID');
-    }
-  
-    // Verify signature and decode payload
-    const publicKey = publicKeys[kid];
-    try {
-      jwt.verify(idToken, publicKey, { algorithms: ['RS256'] });
-    } catch (error) {
-      throw new Error('Invalid token signature');
-    }
-  
-    // Verify payload claims
-    const now = Math.floor(Date.now() / 1000);
-  
-    if (payload.exp <= now) {
-      throw new Error('Token has expired');
-    }
-  
-    if (payload.iat > now) {
-      throw new Error('Invalid issued-at time');
-    }
-  
-    if (payload.aud !== projectId) {
-      throw new Error('Invalid audience');
-    }
-  
-    if (payload.iss !== `https://securetoken.google.com/${projectId}`) {
-      throw new Error('Invalid issuer');
-    }
-  
-    if (!payload.sub || typeof payload.sub !== 'string') {
-      throw new Error('Invalid subject');
-    }
-  
-    if (payload.auth_time > now) {
-      throw new Error('Invalid auth time');
-    }
-  
-    return payload.sub;
-  }
-  
 enum PlayerStatus {
   ONLINE = 'online',
   QUEUING = 'queuing',
@@ -763,24 +650,15 @@ function getPlayerStatus(uid: string): PlayerStatus {
   return connectedPlayers[uid]?.status || PlayerStatus.OFFLINE;
 }
 
-export async function processConnection(socket) {
-  try {
-    const uid = await getUID(socket.firebaseToken);
-    socket.uid = uid;
-
-    // Register the player
-    connectedPlayers[uid] = {
+export function processConnection(socket) {
+    const previous = connectedPlayers[socket.uid]?.socket;
+    if (previous && previous.id !== socket.id) previous.disconnect(true);
+    connectedPlayers[socket.uid] = {
       socket,
       status: PlayerStatus.ONLINE
     };
-    
-    console.log(`Player ${uid} connected (total: ${Object.keys(connectedPlayers).length})`);
-    // @ts-ignore
+    console.log(`Player ${socket.uid} connected (total: ${Object.keys(connectedPlayers).length})`);
     updatePlayerStatus(socket.uid, PlayerStatus.ONLINE);
-  } catch (error) {
-    console.error('Error processing connection:', error);
-    socket.disconnect();
-  }
 }
 
 export function processLeaveGame(socket: Socket, data: { gameId: string }) {

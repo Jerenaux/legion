@@ -5,41 +5,30 @@ import { isElectron, getElectronAPI } from './utils/electronUtils';
 
 import AuthProvider from './providers/AuthProvider';
 import PlayerProvider from './providers/PlayerProvider';
-import WalletContextProvider from './providers/WalletContextProvider';
 import HomePage from './routes/HomePage';
 import GamePage from './routes/GamePage';
 import Root from './routes/Root';
 import withAuth from './components/withAuth';
-import withNoAuth from './components/withNoAuth';
 
 import * as Sentry from "@sentry/react";
 import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import LogRocket from './logrocketSetup';
-import Hotjar from '@hotjar/browser';
+import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
+import {startGamepadInput} from './input/gamepad';
 // Only initialize Sentry if not in development mode
 if (process.env.NODE_ENV !== 'development') {
-  const siteId = 5312432; 
-  const hotjarVersion = 6;
-
-  Hotjar.init(siteId, hotjarVersion); // Initialize Hotjar
-
   Sentry.init({
     environment: process.env.NODE_ENV,
     dsn: "https://c3c72f4dedb26b85b58c0eb82feea9c1@o4508024644567040.ingest.de.sentry.io/4508024650268752",
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
       Sentry.captureConsoleIntegration({
         levels: ['error']
       })
     ],
     // Tracing
-    tracesSampleRate: 1.0,
-    tracePropagationTargets: ["localhost", /^https:\/\/www\.play-legion\.io\//],
-    // Session Replay
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
+    tracesSampleRate: 0.1,
   });
 
   // Set up auth state listener to update Sentry user info
@@ -62,46 +51,79 @@ interface AppState {
 }
 
 class App extends Component<{}, AppState> {
+    stopGamepadInput = () => undefined;
     state: AppState = {
         currentUrl: '/',
         currentMainRoute: '/'
     };
 
     componentDidMount() {
-        
-        if (isElectron()) {
-            document.addEventListener('keydown', this.handleKeyDown);
-        }
+        document.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+        this.stopGamepadInput = startGamepadInput(action => dispatchDesktopAction(action, 'gamepad'));
     }
 
     componentWillUnmount() {
-        if (isElectron()) {
-            document.removeEventListener('keydown', this.handleKeyDown);
-        }
+        document.removeEventListener('keydown', this.handleKeyDown);
+        window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+        this.stopGamepadInput();
     }
 
-    handleKeyDown = async (event: KeyboardEvent) => {
-    //   console.log('App: Key pressed:', {
-    //     key: event.key,
-    //     keyCode: event.keyCode,
-    //     code: event.code,
-    //     target: (event.target as HTMLElement)?.tagName || 'unknown'
-    //   });
-      
-      // Check if ESC key was pressed
-      if (event.key === 'Escape' || event.keyCode === 27) {
-        
-        const electronAPI = getElectronAPI();
-        
-        if (electronAPI && electronAPI.isFullscreen && electronAPI.toggleFullscreen) {
+    handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      const typing = target?.matches?.('input, textarea, select, [contenteditable="true"]');
+      const action = actionFromKeyboard(event);
+      if (!action || (typing && action !== 'cancel') || (event.code === 'Tab' && this.state.currentMainRoute !== 'game')) return;
+      event.preventDefault();
+      dispatchDesktopAction(action, 'keyboard');
+    };
+
+    focusMenu = (direction: -1 | 1) => {
+      const elements = Array.from(document.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(element => element.getClientRects().length > 0);
+      if (!elements.length) return;
+      const current = elements.indexOf(document.activeElement as HTMLElement);
+      elements[(current + direction + elements.length) % elements.length].focus();
+    };
+
+    showGamepadKeyboard = async (input: HTMLInputElement | HTMLTextAreaElement) => {
+      const value = await getElectronAPI()?.showGamepadTextInput?.({
+        description: input.getAttribute('aria-label') || input.placeholder || 'Enter text',
+        maxCharacters: input.maxLength > 0 ? input.maxLength : 256,
+        existingText: input.value,
+        password: input instanceof HTMLInputElement && input.type === 'password',
+        multiline: input instanceof HTMLTextAreaElement,
+      });
+      if (typeof value === 'string') {
+        input.value = value;
+        input.dispatchEvent(new Event('input', {bubbles: true}));
+      }
+    };
+
+    handleDesktopAction = async (event: CustomEvent<{action: DesktopAction; source: string}>) => {
+      const {action, source} = event.detail;
+      if (action === 'menu-up' || action === 'menu-left') return this.focusMenu(-1);
+      if (action === 'menu-down' || action === 'menu-right') return this.focusMenu(1);
+      if (action === 'end-turn') return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();
+      if (action === 'pause') return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
+      if (action === 'confirm') {
+        const active = document.activeElement as HTMLElement;
+        if (source === 'gamepad' && active?.matches('input:not([type="range"]):not([type="checkbox"]), textarea')) {
+          return this.showGamepadKeyboard(active as HTMLInputElement | HTMLTextAreaElement);
+        }
+        return active?.click();
+      }
+      if (action === 'cancel') {
+        const cancel = Array.from(document.querySelectorAll<HTMLElement>('[data-desktop-cancel]'))
+          .find(element => element.getClientRects().length > 0);
+        if (cancel) return cancel.click();
+        if (isElectron()) {
+          const electronAPI = getElectronAPI();
           try {
-            const isCurrentlyFullscreen = await electronAPI.isFullscreen();
-            
-            if (isCurrentlyFullscreen) {
-              await electronAPI.toggleFullscreen();
-            }
+            if (await electronAPI?.isFullscreen?.()) await electronAPI.toggleFullscreen();
           } catch (error) {
-            console.error('App: Error handling ESC key:', error);
+            console.error('App: Error leaving fullscreen:', error);
           }
         }
       }
@@ -163,9 +185,8 @@ class App extends Component<{}, AppState> {
                 <PlayerProvider>
                     <PlayerContext.Consumer>
                         {({ refreshAllData, updateActiveCharacter }) => (
-                            <WalletContextProvider>
                                 <Router onChange={(e: RouterOnChangeArgs) => this.handleRoute(e, refreshAllData, updateActiveCharacter)}>
-                                    <Route path="/" component={withNoAuth(Root)} />
+                                    <Route path="/" component={Root} />
                                     <Route path="/game/:id" component={AuthenticatedGamePage} />
                                     <Route path="/replay/:id" component={AuthenticatedGamePage} />
                                     <Route path="/play" component={AuthenticatedHomePage} />
@@ -174,11 +195,9 @@ class App extends Component<{}, AppState> {
                                     <Route path="/rank" component={AuthenticatedHomePage} />
                                     <Route path="/queue/:mode" component={AuthenticatedHomePage} />
                                     <Route path="/lobby/:id" component={AuthenticatedHomePage} />
-                                    <Route path="/elysium" component={AuthenticatedHomePage} />
                                     <Route path="/profile/:id?" component={AuthenticatedHomePage} />
                                     <Route default component={AuthenticatedHomePage} />
                                 </Router>
-                            </WalletContextProvider>
                         )}
                     </PlayerContext.Consumer>
                 </PlayerProvider>

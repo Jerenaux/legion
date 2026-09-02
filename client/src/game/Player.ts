@@ -11,6 +11,7 @@ import { paralyzingStatuses } from '@legion/shared/utils';
 import { SpeechBubble } from "./SpeechBubble";
 import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE, GRID_WIDTH } from '@legion/shared/config';
 import { hexDistance } from '@legion/shared/utils';
+import {loadGameSettings} from '../settings';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -559,8 +560,7 @@ export class Player extends Phaser.GameObjects.Container {
     getLayoutAndSpellsIndex() {
         const qwertyLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
         const azertyLayout = 'AZERTYUIOPQSDFGHJKLMWXCVBN';
-        const settingsString = localStorage.getItem('gameSettings');
-        const settings = settingsString ? JSON.parse(settingsString) : { keyboardLayout: 1 }; // Default to QWERTY (1) if no settings
+        const settings = loadGameSettings();
         const layout = settings.keyboardLayout === 0 ? azertyLayout : qwertyLayout;
         const spellsIndex = settings.keyboardLayout === 0 ? layout.indexOf('W') : layout.indexOf('Z');
         return { layout, spellsIndex };
@@ -1071,4 +1071,3 @@ export class Player extends Phaser.GameObjects.Container {
         super.destroy();
       }
 }
-

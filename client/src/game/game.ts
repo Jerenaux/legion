@@ -11,7 +11,7 @@ gameHeight = 1080;
 const config = {
     type: Phaser.WEBGL,
     scale: {
-        mode: Phaser.Scale.ENVELOP,
+        mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: Math.ceil(gameWidth),
         height: Math.ceil(gameHeight),
@@ -37,5 +37,4 @@ const config = {
 export function startGame() {
     new Phaser.Game(config);
 }
-
 

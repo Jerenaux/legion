@@ -136,26 +136,26 @@ class PlayerInfo extends Component<Props, State> {
               <img src={donateIcon} alt="" />
             </div>
           </div>}
-          <div className="spectator" onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
+          <button className="spectator" data-game-menu aria-label="Game menu" onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
             <img src={settingsIcon} alt="" />
-          </div>
+          </button>
         </div>}
         <Modal isOpen={this.state.isMenuModalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
           <div>
-            {ENABLE_SETTINGS && <div className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
+            {ENABLE_SETTINGS && <button className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
               <p>Settings</p>
-            </div>}
-            <div className="exit_game_label" onClick={(e) => this.handleOpenModal(e, "exit_modal")}>
+            </button>}
+            <button className="exit_game_label" onClick={(e) => this.handleOpenModal(e, "exit_modal")}>
               <p>Abandon Game!</p>
-            </div>
+            </button>
           </div>
         </Modal>
         <Modal isOpen={this.state.isExitModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1}>
           <div className="exit_game_menu flex flex_col gap_4">
             <div className="game_leave_dialog">Are you sure you want to abandon the game? This will count as a loss.</div>
             <div className="flex gap_4">
-              <div className="game_leave_btn" onClick={this.handleExit}>Leave</div>
-              <div className="game_leave_btn" onClick={this.handleCloseModal}>Cancel</div>
+              <button className="game_leave_btn" onClick={this.handleExit}>Leave</button>
+              <button className="game_leave_btn" data-desktop-cancel onClick={this.handleCloseModal}>Cancel</button>
             </div>
           </div>
         </Modal>

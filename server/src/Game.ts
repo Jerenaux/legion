@@ -33,7 +33,6 @@ export abstract class Game
 {
     id: string;
     mode: PlayMode;
-    stake: number = 0;
     league: League;
     teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
@@ -48,6 +47,7 @@ export abstract class Game
     gameStarted: boolean = false;
     firstBlood: boolean = false;
     gameOver: boolean = false;
+    endedAt: number | null = null;
     turnTimer: NodeJS.Timeout | null = null;
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
@@ -104,7 +104,8 @@ export abstract class Game
 
     handleDisconnect(socket: Socket) {
         const disconnectingTeam = this.socketMap.get(socket);
-        disconnectingTeam.unsetSocket();
+        disconnectingTeam?.unsetSocket();
+        this.socketMap.delete(socket);
         // Slice the player from the game
         this.sockets = this.sockets.filter(s => s !== socket);
         if (this.sockets.length === 0) {
@@ -114,11 +115,11 @@ export abstract class Game
 
     reconnectPlayer(socket: Socket) {
         console.log(`Reconnecting player to game ${this.id} ...`)
+        const team = Array.from(this.teams.values()).find(candidate => candidate.teamData.playerUID === (socket as any).uid);
+        if (!team) throw new Error('Player team not found');
         this.addSocket(socket);
-        // Find which team has socket set to null
-        const team = this.teams.get(1).socket ? this.teams.get(2) : this.teams.get(1);
         this.socketMap.set(socket, team);
-        team?.setSocket(socket);
+        team.setSocket(socket);
         
         this.sendGameStatus(socket, true);
 
@@ -614,10 +615,12 @@ export abstract class Game
     }
 
     endGame(winnerTeamID: number) {
+        if (this.gameOver) return;
         try {
             console.log(`[Game:endGame] Game ${this.id} ended, mode = ${this.mode}`);
             this.duration = Date.now() - this.startTime;
             this.gameOver = true;
+            this.endedAt = Date.now();
 
             clearTimeout(this.audienceTimer!);
             clearTimeout(this.checkEndTimer!);
@@ -1228,7 +1231,6 @@ export abstract class Game
                 key: (this.mode == PlayMode.PRACTICE || this.mode == PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
                 chests: this.computeChests(team.score, this.mode),
                 score: team.score,
-                tokens: isWinner ? this.computeStakeRewards() : 0,
             }
         } catch (error) {
             console.error(error);
@@ -1242,14 +1244,8 @@ export abstract class Game
                 key: null,
                 chests: [],
                 score: 0,
-                tokens: 0,
             }
         }
-    }
-
-    computeStakeRewards() {
-        // return this.stake * 2 * (1 - LEGION_CUT);
-        return this.stake * 2;
     }
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
@@ -1404,6 +1400,7 @@ export abstract class Game
                     method: 'POST',
                     body: {
                         uid,
+                        resultId: `${this.id}:${this.startTime}`,
                         outcomes,
                         mode: this.mode,
                         engagement,
@@ -1515,10 +1512,6 @@ export abstract class Game
     handleTeamRevealed() {
         this.processTurn(FIRST_TURN_DELAY);
     }
-
-    setStake(stake: number) {
-        this.stake = stake;
-    } 
 
     isTutorial() {
         return this.mode === PlayMode.TUTORIAL;
@@ -1664,4 +1657,3 @@ interface Tile {
     x: number;
     y: number;
 }
-

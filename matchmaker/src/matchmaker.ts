@@ -6,8 +6,10 @@ import cors from 'cors';
 
 dotenv.config();
 import { setupMatchmaking, processJoinQueue, processJoinLobby, processDisconnect, processConnection, processLeaveQueue, processLeaveGame, processGetPlayerStatus, processGetFriendsStatuses, processSendChallenge, processChallengeDeclined } from './matchmaking';
+import {getAuth} from 'firebase-admin/auth';
+import {authenticateSocket} from '@legion/shared/socketAuth';
 
-const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com', 'https://play-legion.io', 'http://localhost:3000'];
+const allowedOrigins = [process.env.CLIENT_ORIGIN, 'app://legion', 'http://localhost:8080'];
 console.log(`Allowed client origins: ${allowedOrigins}`);
 
 const corsSettings = {
@@ -44,10 +46,18 @@ httpServer.listen(port, () => {
 });
 
 
+io.use(async (socket: any, next) => {
+    try {
+        await authenticateSocket(socket, token => getAuth().verifyIdToken(token));
+        next();
+    } catch (error) {
+        console.warn('Rejected unauthenticated matchmaker socket');
+        next(new Error('Authentication failed'));
+    }
+});
+
 io.on("connection", (socket: any) => {
     console.log(`Socket connected`);
-    socket.firebaseToken = socket.handshake.auth.token;
-
     processConnection(socket);
 
     socket.on("joinQueue", (data) => processJoinQueue(socket, data));

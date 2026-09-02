@@ -11,19 +11,18 @@ on:
       - develop
 
 jobs:
-  # Run tests for server
   test-server:
     name: Test Server
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@b7a1c7ccf290d58743029c4f6903da283811b979 # v2.1.0
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.3.6
+          bun-version: 1.4.0
 
       - name: Install server dependencies
         run: |
@@ -33,10 +32,15 @@ jobs:
       - name: Run server tests
         run: |
           cd server
-          bun run test
+          bun run test --runInBand
+
+      - name: Build server
+        run: |
+          cd server
+          bun run build
 
       - name: Upload server coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         if: always()
         with:
           files: ./server/coverage/lcov.info
@@ -44,45 +48,58 @@ jobs:
           name: server-coverage
         continue-on-error: true
 
-  # Lint and build client
   build-client:
     name: Build Client
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@b7a1c7ccf290d58743029c4f6903da283811b979 # v2.1.0
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.3.6
+          bun-version: 1.4.0
 
       - name: Install client dependencies
         run: |
           cd client
           bun ci
 
-      - name: Build client
+      - name: Test and typecheck client
         run: |
           cd client
-          bun run build
+          bun run test --runInBand
+          bunx tsc --noEmit
+
+      - name: Build and package Electron client
+        run: |
+          cd client
+          BUILD_TARGET=electron bun run build
+          bunx electron-builder --dir --linux
+          if bunx asar list release/linux-unpacked/resources/app.asar | grep -Eq '\.map$'; then
+            echo "Source maps found in packaged application" >&2
+            exit 1
+          fi
+          ../tools/validate_desktop_release.sh
         env:
           NODE_ENV: production
+          API_URL: ${{ vars.API_URL }}
+          GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
+          MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
 
-  # Build and lint API
   build-api:
     name: Build API
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@b7a1c7ccf290d58743029c4f6903da283811b979 # v2.1.0
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.3.6
+          bun-version: 1.4.0
 
       - name: Install API dependencies
         run: |
@@ -93,7 +110,11 @@ jobs:
         run: |
           cd api/functions
           bun run lint
-        continue-on-error: true
+
+      - name: Test API
+        run: |
+          cd api/functions
+          bun run test
 
       - name: Build API
         run: |
@@ -102,19 +123,18 @@ jobs:
         env:
           DEPLOY: true
 
-  # Build matchmaker
   build-matchmaker:
     name: Build Matchmaker
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@b7a1c7ccf290d58743029c4f6903da283811b979 # v2.1.0
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.3.6
+          bun-version: 1.4.0
 
       - name: Install matchmaker dependencies
         run: |
@@ -125,3 +145,8 @@ jobs:
         run: |
           cd matchmaker
           bun run build
+
+      - name: Test matchmaker
+        run: |
+          cd matchmaker
+          bun run test

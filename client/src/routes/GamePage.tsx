@@ -39,6 +39,7 @@ const WAITING_MESSAGES = [
 class GamePage extends Component<GamePageProps, GamePageState> {
   static contextType = PlayerContext;
   private waitingTimer: number | null = null;
+  private messageTimer: number | null = null;
 
   constructor(props: GamePageProps) {
     super(props);
@@ -90,10 +91,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     if (this.waitingTimer) {
       clearTimeout(this.waitingTimer);
     }
-    const highestId = window.setInterval(() => {}, 0);
-    for (let i = 0; i <= highestId; i++) {
-      window.clearInterval(i);
-    }
+    if (this.messageTimer) clearInterval(this.messageTimer);
   }
 
   checkOrientation = () => {
@@ -153,7 +151,8 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   startMessageRotation = () => {
-    setInterval(() => {
+    if (this.messageTimer) clearInterval(this.messageTimer);
+    this.messageTimer = window.setInterval(() => {
       this.setState(prevState => ({
         currentMessageIndex: (prevState.currentMessageIndex + 1) % WAITING_MESSAGES.length
       }));

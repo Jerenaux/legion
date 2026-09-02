@@ -3,7 +3,9 @@
 }
 
 :root {
-  --game-pointer: url('/public/pointers/hand_pointer.png'), auto;
+  --game-pointer: url('@assets/pointers/hand_pointer.png'), auto;
+  --desktop-safe-inline: max(env(safe-area-inset-left), calc((100vw - 100vh * 16 / 9) / 2), 0px);
+  --desktop-safe-block: max(env(safe-area-inset-top), calc((100vh - 100vw * 9 / 16) / 2), 0px);
 }
 
 html,
@@ -18,6 +20,11 @@ body {
 canvas {
   display: block;
   margin: 0 auto;
+}
+
+:focus-visible {
+  outline: 3px solid #51fdff;
+  outline-offset: 3px;
 }
 
 #root,
@@ -69,8 +76,7 @@ canvas {
 
 @font-face {
   font-family: 'Kim';
-  /* src: url('../../public/kim.otf') format('opentype'); */
-  src: url('/public/kim.otf') format('opentype');
+  src: url('@assets/kim.otf') format('opentype');
 }
 
 .player-main {
@@ -402,6 +408,8 @@ canvas {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  padding-inline: var(--desktop-safe-inline);
+  box-sizing: border-box;
 }
 
 .content {
@@ -1566,7 +1574,7 @@ a:-webkit-any-link {
 }
 
 .normalCursor {
-  cursor: url('../../public/pointers/general_pointer.png'), auto;
+  cursor: url('@assets/pointers/general_pointer.png'), auto;
 }
 
 .pointerCursor {
@@ -1574,15 +1582,15 @@ a:-webkit-any-link {
 }
 
 .swordCursor {
-  cursor: url('../../public/pointers/attack_pointer.png'), auto;
+  cursor: url('@assets/pointers/attack_pointer.png'), auto;
 }
 
 .spellCursor {
-  cursor: url('../../public/pointers/spell_pointer.png'), auto;
+  cursor: url('@assets/pointers/spell_pointer.png'), auto;
 }
 
 .itemCursor {
-  cursor: url('../../public/pointers/item_cursor.png'), auto;
+  cursor: url('@assets/pointers/item_cursor.png'), auto;
 }
 
 .firebaseui-container {

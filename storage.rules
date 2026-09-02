@@ -2,8 +2,12 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /news-images/{imageId} {
-      allow read: if true;  // Public read access
-      allow write: if request.auth != null;  // Only authenticated writes
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
-} 
+}

@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.6
+FROM oven/bun:1.4.0
 
 WORKDIR /usr/src/app
 
@@ -7,7 +7,6 @@ COPY matchmaker/bun.lock ./
 
 # Copy config files (tsconfig, etc.)
 COPY matchmaker/tsconfig*.json ./
-COPY matchmaker/*.env ./
 
 RUN bun install
 

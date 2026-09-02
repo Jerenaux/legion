@@ -4,12 +4,13 @@ import cors from "cors";
 import {Request} from "express";
 import firebaseConfig from '@legion/shared/firebaseConfig';
 import { getStorage } from 'firebase-admin/storage';
+import {hasValidAPIKey, isDevelopmentEnvironment, verifyUID} from "./authPolicy";
 
 admin.initializeApp(firebaseConfig);
 
 export const storage = getStorage();
 
-const LOCK_TIMEOUT = 10000; 
+const LOCK_TIMEOUT = 10000;
 
 const corsOptions = {
   origin: true,
@@ -17,31 +18,13 @@ const corsOptions = {
 export const corsMiddleware = cors(corsOptions);
 
 export async function getUID(request: Request): Promise<string> {
-  const authToken = request.headers.authorization?.split("Bearer ")[1];
-  if (!authToken) {
-    throw new Error("Auth token not provided or invalid format");
-  }
-
-  try {
-    // console.log(`Auth token: ${authToken}`);
-    const decodedToken = await admin.auth().verifyIdToken(authToken);
-    // console.log(`Decoded UID ${decodedToken.uid}`);
-    return decodedToken.uid;
-  } catch (error) {
-    return "";
-  }
+  return verifyUID(request.headers.authorization, (token) => admin.auth().verifyIdToken(token));
 }
 
-export const isDevelopment = process.env.NODE_ENV != "production";
+export const isDevelopment = isDevelopmentEnvironment(process.env.NODE_ENV);
 
 export const checkAPIKey = (request: Request): boolean => {
-  if (isDevelopment) return true;
-  const apiKey = request.headers["x-api-key"];
-  if (!apiKey) {
-    return false;
-  }
-
-  return apiKey === process.env.API_KEY;
+  return hasValidAPIKey(request.headers["x-api-key"], process.env.API_KEY, isDevelopment);
 };
 
 async function acquireLock(uid: string) {

@@ -1,11 +1,11 @@
-FROM oven/bun:1.3.6 AS builder
+FROM oven/bun:1.4.0 AS builder
 
 WORKDIR /usr/src/app
 
 COPY api/functions/package.json ./
 COPY api/functions/bun.lock ./
 
-RUN bun ci
+RUN bun ci --ignore-scripts
 
 COPY api/functions/ ./
 

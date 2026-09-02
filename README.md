@@ -68,7 +68,7 @@ This project implements a distributed system with five core services working tog
 
 ### Infrastructure
 
-- **Firebase Hosting** - Static site hosting with global CDN
+- **Steam and Itch.io** - Native desktop distribution
 - **Firebase Functions** - Serverless API deployment
 - **Google Cloud Run** - Containerized service deployment
 - **Firestore** - NoSQL document database
@@ -103,13 +103,8 @@ The project features a comprehensive automated deployment pipeline:
   - Reduces deployment time and costs
   - Minimizes production risk
 
-- **Preview Environments** - Automatic staging for pull requests
-  - Temporary Firebase Hosting URLs
-  - 7-day expiration for cost control
-  - Automated comment with preview link
-
 - **Production Deployment** - Automated on merge to `main`
-  - Client → Firebase Hosting
+  - Desktop client → signed release artifacts for Steam and Itch.io
   - API → Firebase Functions
   - Matchmaker → Google Cloud Run
   - Server → Google Cloud Run
@@ -119,8 +114,7 @@ The project features a comprehensive automated deployment pipeline:
 ### Workflow Files
 
 - `.github/workflows/ci.yml` - Test and build validation
-- `.github/workflows/deploy-preview.yml` - PR preview environments
-- `.github/workflows/deploy-client.yml` - Client production deployment
+- `.github/workflows/release-desktop.yml` - Desktop builds and store uploads
 - `.github/workflows/deploy-matchmaker.yml` - Matchmaker deployment
 
 ## Development

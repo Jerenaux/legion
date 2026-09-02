@@ -119,7 +119,6 @@ export interface OutcomeData {
     grade: string;
     xp: number;
     gold: number;
-    tokens: number;
     characters?: CharacterUpdate[];
     elo: number;
     key: ChestColor;
@@ -225,6 +224,7 @@ interface LeagueStats {
     nbGames: number;
     avgAudienceScore: number;
     avgGrade: number;
+    seasonId?: string;
 }
 
 export interface TeamData {
@@ -403,7 +403,6 @@ export interface PlayerContextData {
     isLoaded: boolean;
     inventory: PlayerInventory;
     carrying_capacity: number;
-    tokens: any;
     AIwinRatio?: number;
     friends?: FriendData[];
     completedGames?: number;
@@ -452,6 +451,7 @@ export interface APILeaderboardResponse {
     seasonEnd: number;
     highlights: any[];
     ranking: LeaderboardRow[];
+    playerRank?: number | null;
   }
 
 export interface FriendData {

@@ -1,4 +1,11 @@
 {
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "functions": {
     "source": "./api/functions",
     "runtime": "nodejs20",
@@ -11,20 +18,6 @@
     ],
     "predeploy": [
       "bun run --cwd ./api/functions build"
-    ]
-  },
-  "hosting": {
-    "public": "client/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
     ]
   }
 }

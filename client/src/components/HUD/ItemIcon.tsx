@@ -7,6 +7,7 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { mapFrameToCoordinates } from '../utils';
 import { cropFrame } from '../utils'; 
 import { events } from '../HUD/GameHUD';
+import {loadGameSettings} from '../../settings';
 
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -65,13 +66,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
   }
 
   loadKeyboardLayout = () => {
-    const settingsString = localStorage.getItem('gameSettings');
-    if (settingsString) {
-      const settings = JSON.parse(settingsString);
-      this.setState({ keyboardLayout: settings.keyboardLayout });
-    } else {
-      this.setState({ keyboardLayout: 1 });
-    }
+    this.setState({ keyboardLayout: loadGameSettings().keyboardLayout });
   }
 
   cropSpritesheet = async () => {

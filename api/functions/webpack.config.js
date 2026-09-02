@@ -1,8 +1,6 @@
 const path = require('path');
-const Dotenv = require('dotenv-webpack');
 
 const isDocker = process.env.NODE_ENV === 'docker';
-const sharedPrefix = process.env.DEPLOY ? '../../' : '';
 
 module.exports = {
   mode: 'development', 
@@ -30,7 +28,7 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
-        '@legion/shared': path.resolve(__dirname, `${sharedPrefix}shared`),
+        '@legion/shared': path.resolve(__dirname, isDocker ? 'shared' : '../../shared'),
       },
   },
   output: {
@@ -38,14 +36,6 @@ module.exports = {
     filename: 'index.js', // Output file name
     libraryTarget: 'commonjs', // !! Important for Firebase functions
   },
-  plugins: [
-    // new Dotenv({
-    //   path: path.resolve(__dirname, '.production.env'),
-    // })
-    new Dotenv({
-      path: isDocker ? false : path.resolve(__dirname, '.production.env'),
-      systemvars: isDocker // Set systemvars to true when in Docker mode to get vars from docker-compose.yml
-    })
-  ],
+  plugins: [],
   devtool: 'inline-source-map', // For development mode
 };

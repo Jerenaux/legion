@@ -11,9 +11,11 @@ import {OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerD
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
+import {applyRankedResult, currentSeasonId, getLeagueForElo} from "./ranking";
+import {gameResultReceiptId} from "./gameResults";
 
 export const rosterData = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, async (request, response) => {
   const db = admin.firestore();
   corsMiddleware(request, response, async () => {
@@ -68,7 +70,7 @@ export const rosterData = onRequest({
 });
 
 export const characterData = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Fetching characterData");
   const db = admin.firestore();
@@ -141,9 +143,9 @@ export async function processChestRewards(
   });
 }
 
-export const postGameUpdate = onRequest({ 
+export const postGameUpdate = onRequest({
   secrets: ["API_KEY"],
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -154,7 +156,8 @@ export const postGameUpdate = onRequest({
         return;
       }
       const uid = request.body.uid;
-      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score, tokens} =
+      const resultId = request.body.resultId;
+      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
         request.body.outcomes as OutcomeData;
       console.log(`[postGameUpdate] [${uid}] Outcomes: ${JSON.stringify(request.body.outcomes, null, 2)}`);
       const {spellsUsed, itemsUsed, movements, attacks, flames, ice, poison, silenced, paralyzed, lowMP} =
@@ -163,15 +166,20 @@ export const postGameUpdate = onRequest({
       const stayedUntilTheEnd = request.body.stayedUntilTheEnd;
       console.log(`[postGameUpdate] [${uid}] Stayed until the end: ${stayedUntilTheEnd}`);
 
-      if (!uid || typeof uid !== 'string' || uid.trim() === '') {
-        throw new Error('Invalid or missing uid');
+      if (!uid || typeof uid !== 'string' || uid.trim() === '' ||
+          !resultId || typeof resultId !== 'string' || resultId.length > 256) {
+        throw new Error('Invalid game result identity');
       }
 
-      logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
-
-      await db.runTransaction(async (transaction) => {
+      const applied = await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
-        const playerDoc = await transaction.get(playerRef);
+        const receiptRef = db.collection("processedGameResults").doc(gameResultReceiptId(resultId, uid));
+        const [playerDoc, receiptDoc] = await Promise.all([
+          transaction.get(playerRef),
+          transaction.get(receiptRef),
+        ]);
+
+        if (receiptDoc.exists) return false;
 
         if (!playerDoc.exists) {
           throw new Error("Player document does not exist");
@@ -208,7 +216,7 @@ export const postGameUpdate = onRequest({
         // Add completed games increment if player hasn't disconnected
         if (stayedUntilTheEnd) {
           currentCompletedGames = playerData.engagementStats?.completedGames || 0;
-          
+
           // Check for feature unlock at the CURRENT count (before increment)
           const unlockedFeature = checkFeatureUnlock(currentCompletedGames);
           const rewards = getUnlockRewards(unlockedFeature);
@@ -218,7 +226,7 @@ export const postGameUpdate = onRequest({
             [RewardType.CONSUMABLES]: [],
             [RewardType.SPELL]: [],
             [RewardType.EQUIPMENT]: [],
-            [RewardType.GOLD]: []
+            [RewardType.GOLD]: [],
           };
           let goldAmount = 0;
 
@@ -245,12 +253,12 @@ export const postGameUpdate = onRequest({
                 console.log(`[postGameUpdate] Updating inventory update`);
                 updates.inventory = {
                   ...updates.inventory,
-                  ...rewardUpdate.inventory
+                  ...rewardUpdate.inventory,
                 };
               }
             }
           }
-          
+
           if (goldAmount > 0) {
             goldReward += goldAmount;
           }
@@ -258,10 +266,6 @@ export const postGameUpdate = onRequest({
 
         if (goldReward > 0) {
           updates.gold = admin.firestore.FieldValue.increment(goldReward);
-        }
-
-        if (tokens) {
-          updates['tokens.SOL'] = admin.firestore.FieldValue.increment(tokens || 0);
         }
 
         // Update engagement stats
@@ -305,40 +309,24 @@ export const postGameUpdate = onRequest({
           }
 
           if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
-            if (isWinner) {
-              updates['leagueStats.wins'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.wins'] = admin.firestore.FieldValue.increment(1);
-              updates['leagueStats.winStreak'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.winStreak'] = admin.firestore.FieldValue.increment(1);
-              updates['leagueStats.lossesStreak'] = 0;
-              updates['allTimeStats.lossesStreak'] = 0;
-            } else {
-              updates['leagueStats.losses'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.losses'] = admin.firestore.FieldValue.increment(1);
-              updates['leagueStats.winStreak'] = 0;
-              updates['allTimeStats.winStreak'] = 0;
-              updates['leagueStats.lossesStreak'] = admin.firestore.FieldValue.increment(1);
-              updates['allTimeStats.lossesStreak'] = admin.firestore.FieldValue.increment(1);
-            }
-
-            let leagueAvgAudienceScore = playerData.leagueStats?.avgAudienceScore || 0;
-            let allTimeAvgAudienceScore = playerData.allTimeStats?.avgAudienceScore || 0;
-            let leagueAvgGrade = playerData.leagueStats?.avgGrade || 0;
-            let allTimeAvgGrade = playerData.allTimeStats?.avgGrade || 0;
-            const leagueNbGames = playerData.leagueStats?.nbGames || 0;
-            const allTimeNbGames = playerData.allTimeStats?.nbGames || 0;
-
-            leagueAvgAudienceScore = (leagueAvgAudienceScore * leagueNbGames + score) / (leagueNbGames + 1);
-            allTimeAvgAudienceScore = (allTimeAvgAudienceScore * allTimeNbGames + score) / (allTimeNbGames + 1);
-            leagueAvgGrade = (leagueAvgGrade * leagueNbGames + rawGrade) / (leagueNbGames + 1);
-            allTimeAvgGrade = (allTimeAvgGrade * allTimeNbGames + rawGrade) / (allTimeNbGames + 1);
-
-            updates['leagueStats.nbGames'] = admin.firestore.FieldValue.increment(1);
-            updates['allTimeStats.nbGames'] = admin.firestore.FieldValue.increment(1);
-            updates['leagueStats.avgAudienceScore'] = leagueAvgAudienceScore;
-            updates['allTimeStats.avgAudienceScore'] = allTimeAvgAudienceScore;
-            updates['leagueStats.avgGrade'] = leagueAvgGrade;
-            updates['allTimeStats.avgGrade'] = allTimeAvgGrade;
+            const seasonId = currentSeasonId();
+            updates.leagueStats = applyRankedResult(
+              playerData.leagueStats,
+              isWinner,
+              score || 0,
+              rawGrade || 0,
+              seasonId,
+              true,
+            );
+            updates.allTimeStats = applyRankedResult(
+              playerData.allTimeStats,
+              isWinner,
+              score || 0,
+              rawGrade || 0,
+              seasonId,
+              false,
+            );
+            updates.league = getLeagueForElo((playerData.elo || 0) + (elo || 0));
           }
         }
 
@@ -346,7 +334,7 @@ export const postGameUpdate = onRequest({
           const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
           updates.AIstats = {
             nbGames: currentAIStats.nbGames + 1,
-            wins: currentAIStats.wins + (isWinner ? 1 : 0)
+            wins: currentAIStats.wins + (isWinner ? 1 : 0),
           };
         }
 
@@ -370,7 +358,14 @@ export const postGameUpdate = onRequest({
             }
           }
         }
+        transaction.create(receiptRef, {
+          resultId,
+          uid,
+          processedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return true;
       });
+      if (applied) logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
       response.send({status: 0});
     } catch (error) {
       console.error("Error processing reward:", error);
@@ -419,7 +414,7 @@ async function monitorCharactersOnSale(db: FirebaseFirestore.Firestore) {
 }
 
 export const generateOnSaleCharacters = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Generating on sale characters");
   const db = admin.firestore();
@@ -439,7 +434,7 @@ export const generateOnSaleCharacters = onRequest({
 });
 
 export const listOnSaleCharacters = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Listing on sale characters");
   const db = admin.firestore();
@@ -477,7 +472,7 @@ export const listOnSaleCharacters = onRequest({
 });
 
 export const deleteOnSaleCharacters = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Deleting on sale characters");
   const db = admin.firestore();
@@ -499,7 +494,7 @@ export const deleteOnSaleCharacters = onRequest({
 });
 
 export const purchaseCharacter = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   logger.info("Purchasing character");
   const db = admin.firestore();
@@ -579,7 +574,7 @@ export const purchaseCharacter = onRequest({
 });
 
 export const spendSP = onRequest({
-  memory: '512MiB'
+  memory: '512MiB',
 }, (request, response) => {
   const db = admin.firestore();
 
@@ -652,4 +647,3 @@ export const spendSP = onRequest({
     }
   });
 });
-

@@ -19,26 +19,26 @@ export function addItemsToInventory(
   quantity: number
 ): InventoryUpdate {
   const update: InventoryUpdate = {
-    inventory: { ...playerData.inventory }
+    inventory: { ...playerData.inventory },
   };
 
   switch (itemType) {
     case RewardType.CONSUMABLES:
       update.inventory!.consumables = [
         ...playerData.inventory.consumables,
-        ...Array(quantity).fill(itemId)
+        ...Array(quantity).fill(itemId),
       ].sort(numericalSort);
       break;
     case RewardType.SPELL:
       update.inventory!.spells = [
         ...playerData.inventory.spells,
-        ...Array(quantity).fill(itemId)
+        ...Array(quantity).fill(itemId),
       ].sort(numericalSort);
       break;
     case RewardType.EQUIPMENT:
       update.inventory!.equipment = [
         ...playerData.inventory.equipment,
-        ...Array(quantity).fill(itemId)
+        ...Array(quantity).fill(itemId),
       ].sort(numericalSort);
       break;
   }
@@ -59,4 +59,4 @@ export function checkFeatureUnlock(completedGames: number): LockedFeatures | nul
 export function getUnlockRewards(feature: LockedFeatures | null): { type: RewardType; id: number; amount: number }[] {
   if (feature === null) return [];
   return UNLOCK_REWARDS[feature];
-} 
+}

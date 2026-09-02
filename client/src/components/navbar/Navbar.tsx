@@ -2,19 +2,15 @@
 
 import './navbar.style.css';
 import './SettingsModalWrapper.css';
-import { h, Fragment, Component } from 'preact';
+import { h, Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
-import firebase from 'firebase/compat/app'
-import { firebaseAuth } from '../../services/firebaseService';
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, avatarContext, lockIcon } from '../utils';
-import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
+import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
 import { SettingsModal } from '../settingsModal/SettingsModal';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { LockedFeatures } from "@legion/shared/enums";
-import AuthContext from '../../contexts/AuthContext';
-import { isElectron } from '../../utils/electronUtils';
 
 import legionLogo from '@assets/logo.png';
 import playIcon from '@assets/play_btn_idle.png';
@@ -27,10 +23,7 @@ import shopActiveIcon from '@assets/shop_btn_active.png';
 import rankActiveIcon from '@assets/rank-btn-active.png';
 import expandBtn from '@assets/expand_btn.png';
 import helpIcon from '@assets/svg/help.svg';
-import xIcon from '@assets/svg/x.svg';
-import discordIcon from '@assets/svg/discord.svg';
 import copyIcon from '@assets/svg/copy.svg';
-import logoutIcon from '@assets/svg/logout.svg';
 import cogIcon from '@assets/svg/cog.svg';
 
 enum MenuItems {
@@ -49,8 +42,6 @@ enum Routes {
 }
 
 interface Props {
-    logout: () => void;
-    user: firebase.User | null;
     playerData: PlayerContextData;
 }
 
@@ -59,27 +50,16 @@ interface State {
     openDropdown: boolean;
     avatarUrl: string | null;
     isLoading: boolean;
-    isSolanaWalletPresent: boolean;
-    isSolanaWalletConnected: boolean;
-    solanaBalance: number | null;
     isSettingsModalOpen: boolean;
-    showLoginOptions: boolean;
 }
 
 class Navbar extends Component<Props, State> {
-    private firebaseUIContainer: HTMLDivElement | null = null;
-    private authContext: any = null;
-    
     state: State = {
         hovered: '',
         openDropdown: false,
         avatarUrl: null,
         isLoading: true,
-        isSolanaWalletPresent: false,
-        isSolanaWalletConnected: false,
-        solanaBalance: null,
         isSettingsModalOpen: false,
-        showLoginOptions: false,
     }
 
     constructor(props: Props) {
@@ -88,20 +68,11 @@ class Navbar extends Component<Props, State> {
 
     componentDidMount() {
         this.loadAvatar();
-        if (this.authContext) {
-            this.authContext.addSignInCallback(this.handleSignInSuccess);
-        }
     }
 
     componentDidUpdate(prevProps: Readonly<Props>) {
         if (prevProps.playerData?.avatar !== this.props.playerData?.avatar) {
             this.loadAvatar();
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.authContext) {
-            this.authContext.removeSignInCallback(this.handleSignInSuccess);
         }
     }
 
@@ -140,27 +111,6 @@ class Navbar extends Component<Props, State> {
         this.setState(prevState => ({ isSettingsModalOpen: !prevState.isSettingsModalOpen }));
     };
 
-    handleSignInSuccess = () => {
-        this.clearLoginOptions();
-    };
-
-    showLoginOptions = (): void => {
-        this.setState({ showLoginOptions: true, openDropdown: false }, () => {
-            if (this.firebaseUIContainer && this.authContext) {
-                this.authContext.initFirebaseUI(this.firebaseUIContainer);
-                this.authContext.addSignInCallback(this.handleSignInSuccess);
-            }
-        });
-    };
-
-    clearLoginOptions = (): void => {
-        if (this.authContext) {
-            this.authContext.resetUI();
-            this.authContext.removeSignInCallback(this.handleSignInSuccess);
-        }
-        this.setState({ showLoginOptions: false });
-    };
-
     render() {
         const route = useRouter();
         const dropdownContentStyle = {
@@ -177,11 +127,6 @@ class Navbar extends Component<Props, State> {
         return (
             <PlayerContext.Consumer>
                 {playerContext => (
-                    <AuthContext.Consumer>
-                        {authContext => {
-                            this.authContext = authContext;
-                            
-                            return (
                                 <div className="menu">
                                     <div className="flexContainer">
                                         <div className="logoContainer">
@@ -297,35 +242,18 @@ class Navbar extends Component<Props, State> {
                                                 league={this.props.playerData?.league} 
                                             />
                                         )}
-                                        <div className="expand_btn" style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} onMouseEnter={() => this.setState({ openDropdown: true })}>
+                                        <div className="expand_btn" onMouseEnter={() => this.setState({ openDropdown: true })}>
+                                            <button type="button" className="expand_btn_trigger" aria-label="More options" aria-expanded={this.state.openDropdown} style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} />
                                             <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
-                                                {firebaseAuth.currentUser?.isAnonymous && (
-                                                    <div onClick={this.showLoginOptions}>
-                                                        <img src={logoutIcon} alt="Sign Up" /> Sign Up
-                                                    </div>
-                                                )}
-                                                <div onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
+                                                <button type="button" onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
                                                     <img src={helpIcon} alt="How to play" /> How to play
-                                                </div>
-                                                {!isElectron() && (
-                                                    <>
-                                                        <div onClick={() => window.open(X_LINK, '_blank')}>
-                                                            <img src={xIcon} alt="X.com" /> X.com
-                                                        </div>
-                                                        <div onClick={() => window.open(DISCORD_LINK, '_blank')}>
-                                                            <img src={discordIcon} alt="Discord" /> Discord
-                                                        </div>
-                                                    </>
-                                                )}
-                                                <div onClick={this.copyIDtoClipboard}>
+                                                </button>
+                                                <button type="button" onClick={this.copyIDtoClipboard}>
                                                     <img src={copyIcon} alt="Copy" /> Player ID
-                                                </div>
-                                                <div onClick={this.toggleSettingsModal}>
+                                                </button>
+                                                <button type="button" onClick={this.toggleSettingsModal}>
                                                     <img src={cogIcon} alt="Settings" /> Settings
-                                                </div>
-                                                <div onClick={this.props.logout}>
-                                                    <img src={logoutIcon} alt="Logout" /> Log out
-                                                </div>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -337,24 +265,7 @@ class Navbar extends Component<Props, State> {
                                             </div>
                                         </div>
                                     )}
-                                    {this.state.showLoginOptions && (
-                                        <div className="login-modal-overlay">
-                                            <div className="login-modal-dialog">
-                                            <div className="dialog-content">
-                                                <h2>Sign Up</h2>
-                                                <div className="login-header">
-                                                Choose your sign up method
-                                                </div>
-                                                <div ref={(ref) => this.firebaseUIContainer = ref} id="firebaseui-auth-container"></div>
-                                                <button className="back-button" onClick={this.clearLoginOptions}>Close</button>
-                                            </div>
-                                            </div>
-                                        </div>
-                                        )}
                                 </div>
-                            );
-                        }}
-                    </AuthContext.Consumer>
                 )}
             </PlayerContext.Consumer>
         );

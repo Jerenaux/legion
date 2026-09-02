@@ -1,167 +1,75 @@
-import { h, Component } from 'preact';
-import AuthContext from '../contexts/AuthContext';
-import { firebaseAuth } from '../services/firebaseService';
-import firebase from 'firebase/compat/app';
-import AuthUIService from '../services/AuthUIService';
-import { successToast, errorToast } from '../components/utils';
-import { SignInCallback } from '../contexts/AuthContext';
-import { apiFetch } from '../services/apiService';
+import {Component, ComponentChildren, h} from "preact";
+import firebase from "firebase/compat/app";
 
-class AuthProvider extends Component {
-    state = {
-        user: null,
-        isAuthenticated: false,
-        isLoading: true,
-        utmSource: null,
-    };
+import AuthContext from "../contexts/AuthContext";
+import {firebaseAuth} from "../services/firebaseService";
+import {exchangePlatformCredential, getPlatformCredential} from "../services/platformSession";
+import {getElectronAPI} from "../utils/electronUtils";
 
-    unregisterAuthObserver: () => void;
-    signInCallbacks: Set<SignInCallback> = new Set();
-
-    componentDidMount() {
-        this.unregisterAuthObserver = firebaseAuth.onAuthStateChanged(
-            (user) => {
-                const isAuthenticated = !!user;
-                if (this.state.isAuthenticated !== isAuthenticated || 
-                    this.state.isLoading || 
-                    this.state.user !== user) {
-                    this.setState({
-                        user,
-                        isAuthenticated,
-                        isLoading: false,
-                    });
-                }
-            }
-        );
-    }
-
-    componentWillUnmount() {
-        this.unregisterAuthObserver();
-    }
-
-    signInAsGuest = async (): Promise<firebase.User | null> => {
-        try {
-            if (firebaseAuth.currentUser && firebaseAuth.currentUser.isAnonymous) {
-                return firebaseAuth.currentUser;
-            }
-            const credentials = await firebaseAuth.signInAnonymously();
-            
-            // Check for UTM source and/or mobile device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            if (credentials.user) {
-                const params: any = {};
-                
-                if (this.state.utmSource) {
-                    params.utmSource = this.state.utmSource;
-                }
-                
-                if (isMobile !== undefined) {
-                    params.isMobile = isMobile;
-                }
-
-                if (document.referrer) {
-                    params.referrer = document.referrer;
-                }
-                                
-                if (Object.keys(params).length > 0) {
-                    apiFetch('setUserAttributes', {
-                        method: 'POST',
-                        body: params
-                    });
-                }
-            }
-            return credentials.user;
-        } catch (error) {
-            console.error("Error signing in as guest:", error);
-            throw error;
-        }
-    };
-
-    initFirebaseUI = (container: HTMLElement): void => {
-        AuthUIService.initFirebaseUI(container, this.onSignInSuccess);
-    };
-
-    onSignInSuccess = async (authResult: any): Promise<void> => {
-        if (this.state.utmSource && authResult.user) {
-            try {
-                apiFetch('setUtmSource', {
-                    method: 'POST',
-                    body: {
-                        utmSource: this.state.utmSource
-                    }
-                });
-            } catch (error) {
-                console.error("Error saving UTM source:", error);
-            }
-        }
-        
-        successToast("Sign-in successful!");
-        this.notifySignInCallbacks();
-    };
-
-    resetUI = (): void => {
-        AuthUIService.resetUI();
-    };
-
-    addSignInCallback = (callback: SignInCallback): void => {
-        this.signInCallbacks.add(callback);
-    };
-
-    removeSignInCallback = (callback: SignInCallback): void => {
-        this.signInCallbacks.delete(callback);
-    };
-
-    notifySignInCallbacks = (): void => {
-        this.signInCallbacks.forEach(callback => callback());
-    };
-
-    logout = () => {
-        firebaseAuth.signOut().then(() => {
-            AuthUIService.destroyUI();
-        }).catch((error) => {
-            console.error('Error signing out: ', error);
-        });
-    }
-
-    setUtmSource = async (utmSource: string): Promise<void> => {
-        this.setState({ utmSource });
-        
-        if (this.state.user) {
-            try {
-                apiFetch('setUtmSource', {
-                    method: 'POST',
-                    body: {
-                        utmSource
-                    }
-                });
-            } catch (error) {
-                console.error("Error saving UTM source:", error);
-            }
-        }
-    };
-
-    render({ children }) {
-        if (this.state.isLoading) {
-           return null;
-        }
-        
-        return (
-            <AuthContext.Provider value={{ 
-                ...this.state, 
-                firebaseAuth,
-                signInAsGuest: this.signInAsGuest,
-                initFirebaseUI: this.initFirebaseUI,
-                resetUI: this.resetUI,
-                addSignInCallback: this.addSignInCallback,
-                removeSignInCallback: this.removeSignInCallback,
-                logout: this.logout,
-                setUtmSource: this.setUtmSource,
-            }}>
-                {!this.state.isLoading && children}
-            </AuthContext.Provider>
-        );
-    }
+interface Props {
+  children: ComponentChildren;
 }
 
-export default AuthProvider;
+interface State {
+  user: firebase.User | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export default class AuthProvider extends Component<Props, State> {
+  state: State = {user: null, isLoading: true, error: null};
+  private unsubscribe?: firebase.Unsubscribe;
+  private authenticating = false;
+
+  componentDidMount() {
+    this.unsubscribe = firebaseAuth.onAuthStateChanged(user => {
+      this.setState({user});
+      if (user) this.setState({isLoading: false, error: null});
+      else this.startSession();
+    });
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe?.();
+  }
+
+  startSession = async () => {
+    if (this.authenticating) return;
+    this.authenticating = true;
+    this.setState({isLoading: true, error: null});
+    try {
+      if (!process.env.API_URL) throw new Error("API_URL is not configured");
+      const credential = await getPlatformCredential(
+        getElectronAPI(),
+        localStorage,
+        () => globalThis.crypto.randomUUID(),
+      );
+      const customToken = await exchangePlatformCredential(process.env.API_URL, credential);
+      await firebaseAuth.signInWithCustomToken(customToken);
+    } catch (error) {
+      console.error("Desktop session failed:", error);
+      this.setState({isLoading: false, error: "Could not start your Legion session."});
+    } finally {
+      this.authenticating = false;
+    }
+  };
+
+  render() {
+    const {user, isLoading, error} = this.state;
+    if (isLoading) return <main className="session-screen">Starting Legion…</main>;
+    if (error || !user) {
+      return (
+        <main className="session-screen">
+          <p>{error || "No active Legion session."}</p>
+          <button onClick={this.startSession}>Retry</button>
+        </main>
+      );
+    }
+
+    return (
+      <AuthContext.Provider value={{user, isAuthenticated: true, isLoading: false, retrySession: this.startSession}}>
+        {this.props.children}
+      </AuthContext.Provider>
+    );
+  }
+}

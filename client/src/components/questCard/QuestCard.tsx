@@ -2,6 +2,9 @@
 import CountUp from 'react-countup';
 import './QuestCard.style.css';
 import { h, Component } from 'preact';
+import questActive from '@assets/quest_bg_active.png';
+import questIdle from '@assets/quest_bg_idle.png';
+import completionMarker from '@assets/completion_marker.png';
 
 type Reward = {
     gold: number,
@@ -26,7 +29,7 @@ class QuestCard extends Component<CardProps> {
         const data = this.props.quest;
 
         const bgStyle = {
-            backgroundImage: `url(/quest_bg_${this.state.active ? 'active' : 'idle'}.png)`,
+            backgroundImage: `url(${this.state.active ? questActive : questIdle})`,
             cursor: 'pointer'
         }
 
@@ -37,7 +40,7 @@ class QuestCard extends Component<CardProps> {
                     <span>Rewards</span>
                     <p><span className="questGold">{data.rewards.gold}</span> GOLD | <span className="questExp">{data.rewards.xp}</span> EXP</p>
                 </div>
-                {data.completion === 1 ? <div className="completion" style={{backgroundImage: 'url("/completion_marker.png")'}}></div> : <div className="chartContainer">
+                {data.completion === 1 ? <div className="completion" style={{backgroundImage: `url(${completionMarker})`}}></div> : <div className="chartContainer">
                     <svg viewBox="0 0 63.6619772368 63.6619772368">
                         <style>
                             {`

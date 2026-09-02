@@ -11,6 +11,9 @@ serviceAccountKey.json
 /build
 /*.log
 dashboardv2/.env
+**/.env
+**/.production.env
+!**/.env.example
 service-account.json
 release
 # Steam build files (generated dynamically)

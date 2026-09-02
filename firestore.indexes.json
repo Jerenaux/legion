@@ -1,0 +1,35 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "league", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.seasonId", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.wins", "order": "DESCENDING"},
+        {"fieldPath": "leagueStats.losses", "order": "ASCENDING"},
+        {"fieldPath": "elo", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "league", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.seasonId", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.wins", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "league", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.seasonId", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.wins", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.losses", "order": "ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

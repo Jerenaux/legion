@@ -18,6 +18,8 @@ import { PlayMode } from '@legion/shared/enums';
 import { transformDailyLoot } from '@legion/shared/utils';
 import { PlayerDataForGame } from '@legion/shared/interfaces';
 import { withRetry } from './utils';
+import {authenticateSocket} from '@legion/shared/socketAuth';
+import {shouldRetireGame} from './gameLifecycle';
 
 dotenv.config();
 
@@ -46,7 +48,7 @@ const PORT = process.env.PORT || 3123;
 // Create a new express application instance
 const app: express.Application = express();
 
-const allowedOrigins = [process.env.CLIENT_ORIGIN, 'https://legion-32c6d.firebaseapp.com', 'https://play-legion.io', 'http://localhost:3000'];
+const allowedOrigins = [process.env.CLIENT_ORIGIN, 'app://legion', 'http://localhost:8080'];
 
 const corsSettings = {
   origin: (origin, callback) => {
@@ -132,8 +134,11 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<Pl
 async function getGameData(gameId: string, retries = 10, delay = 500) {
   return withRetry(async () => {
     const db = getFirestore();
+    const direct = await db.collection("games").doc(gameId).get();
+    if (direct.exists) return direct.data();
     const querySnapshot = await db.collection("games")
       .where("gameId", "==", gameId.toString())
+      .limit(1)
       .get();
 
     if (querySnapshot.empty) {
@@ -144,16 +149,18 @@ async function getGameData(gameId: string, retries = 10, delay = 500) {
   }, retries, delay, 'getGameData');
 }
 
+io.use(async (socket: any, next) => {
+  try {
+    await authenticateSocket(socket, token => getAuth().verifyIdToken(token));
+    next();
+  } catch (error) {
+    console.warn('Rejected unauthenticated game socket');
+    next(new Error('Authentication failed'));
+  }
+});
+
 io.on('connection', async (socket: any) => {
     try {
-      // Throw an exception if the token is not provided
-      if (!socket.handshake.auth.token) {
-        throw new Error('No token provided');
-      }
-      socket.firebaseToken = socket.handshake.auth.token.toString();
-      const decodedToken = await getAuth().verifyIdToken(socket.firebaseToken);
-      socket.uid = decodedToken.uid;
-      
       let gameId = socket.handshake.auth.gameId;
       const isReplay = socket.handshake.auth.isReplay;
 
@@ -206,9 +213,6 @@ io.on('connection', async (socket: any) => {
         const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI, PlayMode.TUTORIAL];
         const gameType = AImodes.includes(gameData.mode) ? AIGame : PvPGame;
         game = new gameType(gameId, gameData.mode, gameData.league, io);
-        if (gameData.mode === PlayMode.STAKED) {
-          game.setStake(gameData.stake);
-        }
         gamesMap.set(gameId, game);
       }
       game = gamesMap.get(gameId)!;
@@ -271,8 +275,17 @@ io.on('connection', async (socket: any) => {
       });
     } catch (error) {
         console.error(`[server:connection] Error joining game server: ${error}`);
+        socket.emit('joinError', {message: 'Unable to join game'});
+        socket.disconnect(true);
     }
 });
+
+const gameCleanupTimer = setInterval(() => {
+  for (const [gameId, game] of gamesMap) {
+    if (shouldRetireGame(game)) gamesMap.delete(gameId);
+  }
+}, 60_000);
+gameCleanupTimer.unref();
 
 // Basic HTTP endpoint for health checks
 app.get('/', (req, res) => {

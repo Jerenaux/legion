@@ -1,0 +1,172 @@
+name: Build desktop releases
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      publish_itch:
+        description: Upload validated builds to Itch.io
+        type: boolean
+        default: false
+      upload_steam:
+        description: Upload depots to a private Steam branch
+        type: boolean
+        default: false
+      steam_branch:
+        description: Existing private Steam beta branch
+        type: string
+        default: playtest
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+            builder_args: --win --x64
+            unpacked: win-unpacked
+            executable: Legion.exe
+          - platform: mac
+            os: macos-latest
+            builder_args: --mac --universal
+            unpacked: mac-universal
+            executable: Legion.app/Contents/MacOS/Legion
+          - platform: linux
+            os: ubuntu-latest
+            builder_args: --linux --x64
+            unpacked: linux-unpacked
+            executable: Legion
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.0
+      - name: Install client dependencies
+        working-directory: client
+        run: bun ci
+      - name: Test client and Electron shell
+        working-directory: client
+        run: |
+          bun run test --runInBand
+          bunx tsc --noEmit
+      - name: Build and sign native package
+        working-directory: client
+        shell: bash
+        env:
+          API_URL: ${{ vars.API_URL }}
+          GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
+          MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
+          CSC_LINK: ${{ matrix.platform == 'mac' && secrets.MAC_CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.MAC_CSC_KEY_PASSWORD || '' }}
+          APPLE_API_KEY: ${{ matrix.platform == 'mac' && secrets.APPLE_API_KEY || '' }}
+          APPLE_API_KEY_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_API_KEY_ID || '' }}
+          APPLE_API_ISSUER: ${{ matrix.platform == 'mac' && secrets.APPLE_API_ISSUER || '' }}
+          WIN_CSC_LINK: ${{ matrix.platform == 'windows' && secrets.WIN_CSC_LINK || '' }}
+          WIN_CSC_KEY_PASSWORD: ${{ matrix.platform == 'windows' && secrets.WIN_CSC_KEY_PASSWORD || '' }}
+        run: |
+          BUILD_TARGET=electron bun run build
+          bunx electron-builder ${{ matrix.builder_args }} -c.forceCodeSigning=${{ startsWith(github.ref, 'refs/tags/') }}
+      - name: Prepare store directory
+        working-directory: client
+        shell: bash
+        run: |
+          mkdir -p release/store-${{ matrix.platform }}
+          cp -R release/${{ matrix.unpacked }}/. release/store-${{ matrix.platform }}/
+          cp .itch.toml release/store-${{ matrix.platform }}/.itch.toml
+      - name: Smoke-test packaged executable
+        working-directory: client
+        shell: bash
+        run: |
+          executable="release/store-${{ matrix.platform }}/${{ matrix.executable }}"
+          "$executable" > release/smoke-${{ matrix.platform }}.log 2>&1 &
+          pid=$!
+          sleep 10
+          if ! kill -0 "$pid" 2>/dev/null; then
+            cat release/smoke-${{ matrix.platform }}.log
+            wait "$pid"
+            exit 1
+          fi
+          kill "$pid"
+      - name: Archive store directory
+        working-directory: client
+        shell: bash
+        run: tar -czf release/Legion-${{ matrix.platform }}.tar.gz -C release/store-${{ matrix.platform }} .
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Legion-${{ matrix.platform }}
+          path: |
+            client/release/Legion-${{ matrix.platform }}.tar.gz
+            client/release/*.dmg
+            client/release/*.zip
+            client/release/*.exe
+            client/release/*.AppImage
+          if-no-files-found: error
+
+  publish-itch:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_itch
+    needs: build
+    runs-on: ubuntu-latest
+    environment: desktop-release
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Install official Butler CLI
+        run: |
+          version=$(curl -fsSL https://broth.itch.zone/butler/linux-amd64/LATEST)
+          curl -fsSL "https://broth.itch.zone/butler/linux-amd64/${version}/archive/default" -o butler.zip
+          unzip -q butler.zip -d "$RUNNER_TEMP/butler"
+          echo "$RUNNER_TEMP/butler" >> "$GITHUB_PATH"
+      - name: Validate and upload platform channels
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_TARGET: ${{ vars.ITCH_TARGET }}
+        run: |
+          for platform in windows mac linux; do
+            mkdir -p "store-$platform"
+            tar -xzf "artifacts/Legion-$platform.tar.gz" -C "store-$platform"
+          done
+          butler validate --platform windows --arch amd64 store-windows
+          butler validate --platform osx --arch amd64 store-mac
+          butler validate --platform linux --arch amd64 store-linux
+          butler push store-windows "$ITCH_TARGET:windows"
+          butler push store-mac "$ITCH_TARGET:mac"
+          butler push store-linux "$ITCH_TARGET:linux"
+
+  upload-steam-private:
+    if: github.event_name == 'workflow_dispatch' && inputs.upload_steam
+    needs: build
+    runs-on: ubuntu-latest
+    environment: desktop-release
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Extract Steam depots
+        run: |
+          for platform in windows mac linux; do
+            mkdir -p "steam-content/$platform"
+            tar -xzf "artifacts/Legion-$platform.tar.gz" -C "steam-content/$platform"
+          done
+      - name: Upload private Steam build
+        uses: game-ci/steam-deploy@50f6b29fc64922e19a16d202a88fe199d394b536 # v3.2.1
+        with:
+          username: ${{ secrets.STEAM_USERNAME }}
+          configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
+          appId: 3729580
+          firstDepotIdOverride: ${{ vars.STEAM_FIRST_DEPOT_ID }}
+          buildDescription: ${{ github.ref_name }}-${{ github.sha }}
+          rootPath: steam-content
+          depot1Path: windows
+          depot2Path: linux
+          depot3Path: mac
+          releaseBranch: ${{ inputs.steam_branch }}

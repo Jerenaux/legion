@@ -12,6 +12,7 @@ import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
 import { route } from 'preact-router';
+import {createRefreshingSocketAuth, socketReconnectOptions} from '../services/socketPolicy';
 
 import {
   canEquipConsumable,
@@ -35,8 +36,6 @@ import { LOCKED_FEATURES } from '@legion/shared/config';
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private fetchAllDataTimeout: NodeJS.Timeout | null = null;
     private fetchAllDataDelay: number = 400; 
-    private reconnectTimeout: NodeJS.Timeout | null = null;
-    private reconnectDelay: number = 500;
 
     constructor(props: {}) {
       super(props);
@@ -89,7 +88,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
             spells: [],
           },
           carrying_capacity: 0,
-          tokens: null,
           engagementStats: {},
         },
         characters: [],
@@ -116,6 +114,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.setState(this.getInitialState());
     }
 
+    componentDidMount() {
+      if (firebaseAuth.currentUser) {
+        this.debouncedFetchAllData();
+        this.setupSocket();
+      }
+    }
+
     componentDidUpdate() {
       const user = firebaseAuth.currentUser;
       if (!user && this.state.player.isLoaded) {
@@ -130,9 +135,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.resetState();
       if (this.fetchAllDataTimeout !== null) {
         clearTimeout(this.fetchAllDataTimeout);
-      }
-      if (this.reconnectTimeout !== null) {
-        clearTimeout(this.reconnectTimeout);
       }
       if (this.state.socket) {
         this.state.socket.disconnect();
@@ -166,6 +168,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
+          const startTutorial = !this.state.player.isLoaded && data.completedGames === 0;
           this.setState({ 
               player: {
                   uid: user.uid,
@@ -182,9 +185,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   isLoaded: true,
                   inventory: data.inventory,
                   carrying_capacity: data.carrying_capacity,
-                  tokens: data.tokens || {},
                   engagementStats: data.engagementStats || {},
               }
+          }, () => {
+              if (startTutorial) route('/game/0');
           });
       } catch (error) {
           errorToast(`Error: ${error}`);
@@ -224,7 +228,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           }
           return character;
         });
-  
+
         return { 
             characterSheetIsDirty: true,
             characters: updatedCharacters,
@@ -468,57 +472,24 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
       // console.log(`Connecting to ${process.env.MATCHMAKER_URL} ...`);
       
-      const token = await getFirebaseIdToken();
-      if (!token) {
-        console.error('Could not obtain authentication token');
-        // Clear any existing reconnect timeout
-        if (this.reconnectTimeout) {
-          clearTimeout(this.reconnectTimeout);
-          this.reconnectTimeout = null;
-        }
-        errorToast('Connection error - Please reload the page');
-        return;
-      }
-
       const socket = io(process.env.MATCHMAKER_URL, {
-        auth: {
-          token
-        },
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: this.reconnectDelay,
-        reconnectionDelayMax: 5000,
+        auth: createRefreshingSocketAuth(() => getFirebaseIdToken(true)),
+        ...socketReconnectOptions,
       });
 
       socket.on('connect', () => {
         // console.log('Connected to matchmaker');
-        // Clear any pending reconnect timeout
-        if (this.reconnectTimeout) {
-          clearTimeout(this.reconnectTimeout);
-          this.reconnectTimeout = null;
-        }
       });
 
       socket.on('disconnect', (reason) => {
         console.log(`Disconnected from matchmaker: ${reason}`);
         
-        // Don't attempt to reconnect if the disconnection was intentional
-        if (reason === 'io client disconnect') {
-          return;
-        }
-
-        // For other disconnections, attempt to reconnect
-        this.setState({ socket: null }, () => {
-          this.scheduleReconnect();
-        });
       });
 
       socket.on('connect_error', (error) => {
         console.error('Connection error:', error);
         // errorToast('Connection error, attempting to reconnect...');
         
-        // Schedule reconnect on connection error
-        this.scheduleReconnect();
       });
 
       socket.on('error', (e) => {
@@ -574,18 +545,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       });
 
         this.setState({ socket });
-    }
-
-    private scheduleReconnect = () => {
-      // Clear any existing reconnect timeout
-      if (this.reconnectTimeout) {
-        clearTimeout(this.reconnectTimeout);
-      }
-
-      this.reconnectTimeout = setTimeout(() => {
-        console.log('Attempting to reconnect...');
-        this.setupSocket();
-      }, this.reconnectDelay);
     }
 
     handleChallengeAccept = () => {
@@ -808,6 +767,5 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       );
     }
   }
-  
+
   export default PlayerProvider;
-  

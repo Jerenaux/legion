@@ -2,7 +2,8 @@
   "name": "legion-api",
   "private": true,
   "scripts": {
-    "lint": "eslint --ext .js,.ts .",
+    "test": "bun test src/__tests__",
+    "lint": "eslint --ext .ts src",
     "build": "webpack",
     "build:watch": "webpack --watch",
     "emulators:start": "firebase emulators:start --import ./exports/firestore-emulator-data --export-on-exit ./exports/firestore-emulator-data",
@@ -15,12 +16,9 @@
   "main": "lib/index.js",
   "dependencies": {
     "@firebase/firestore-compat": "^0.3.23",
-    "@solana/web3.js": "^1.95.3",
-    "bs58": "^6.0.0",
     "busboy": "^1.6.0",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
-    "dotenv-webpack": "^8.0.1",
     "firebase-admin": "^11.11.1",
     "firebase-functions": "^5.0.1",
     "firebase-tools": "^13.13.0",
