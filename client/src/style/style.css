@@ -76,7 +76,6 @@ canvas {
 
 @font-face {
   font-family: 'Kim';
-  /* src: url('../../public/kim.otf') format('opentype'); */
   src: url('@assets/kim.otf') format('opentype');
 }
 
@@ -1575,7 +1574,7 @@ a:-webkit-any-link {
 }
 
 .normalCursor {
-  cursor: url('../../public/pointers/general_pointer.png'), auto;
+  cursor: url('@assets/pointers/general_pointer.png'), auto;
 }
 
 .pointerCursor {
@@ -1583,15 +1582,15 @@ a:-webkit-any-link {
 }
 
 .swordCursor {
-  cursor: url('../../public/pointers/attack_pointer.png'), auto;
+  cursor: url('@assets/pointers/attack_pointer.png'), auto;
 }
 
 .spellCursor {
-  cursor: url('../../public/pointers/spell_pointer.png'), auto;
+  cursor: url('@assets/pointers/spell_pointer.png'), auto;
 }
 
 .itemCursor {
-  cursor: url('../../public/pointers/item_cursor.png'), auto;
+  cursor: url('@assets/pointers/item_cursor.png'), auto;
 }
 
 .firebaseui-container {

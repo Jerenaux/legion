@@ -11,6 +11,8 @@ import {
 } from "./platformIdentity";
 import {ensurePlayer} from "./playerAPI";
 
+class PlatformIdentityConflictError extends Error {}
+
 const steamConfig = () => ({
   appId: process.env.STEAM_APP_ID || "",
   apiKey: process.env.STEAM_WEB_API_KEY || "",
@@ -37,7 +39,9 @@ async function resolveUID(
     const existing = await transaction.get(identityRef);
     if (existing.exists) {
       const uid = existing.data()?.uid as string;
-      if (linkToUID && uid !== linkToUID) throw new Error("Platform identity is already linked");
+      if (linkToUID && uid !== linkToUID) {
+        throw new PlatformIdentityConflictError("Platform identity is already linked");
+      }
       return uid;
     }
 
@@ -87,18 +91,48 @@ export const createPlatformSession = onRequest(sessionOptions, (request, respons
 export const linkPlatformIdentity = onRequest(sessionOptions, (request, response) => {
   corsMiddleware(request, response, async () => {
     try {
-      const uid = await getUID(request);
-      const provider = request.body?.provider as PlatformProvider;
+      let uid: string;
+      try {
+        uid = await getUID(request);
+      } catch (error) {
+        console.warn("linkPlatformIdentity authentication failed:", error);
+        response.status(401).send("Authentication required");
+        return;
+      }
+
+      const provider = request.body?.provider;
+      const credential = request.body?.credential;
       if (provider === "direct") {
         response.status(400).send("Direct device accounts cannot be linked");
         return;
       }
-      const externalId = await validateProvider(provider, request.body?.credential);
-      await resolveUID(provider, externalId, uid);
+      if ((provider !== "steam" && provider !== "itch") || typeof credential !== "string" || !credential) {
+        response.status(400).send("Valid platform credentials are required");
+        return;
+      }
+
+      let externalId: string;
+      try {
+        externalId = await validateProvider(provider, credential);
+      } catch (error) {
+        console.warn("linkPlatformIdentity platform authentication failed:", error);
+        response.status(401).send("Platform authentication failed");
+        return;
+      }
+
+      try {
+        await resolveUID(provider, externalId, uid);
+      } catch (error) {
+        if (error instanceof PlatformIdentityConflictError) {
+          response.status(409).send(error.message);
+          return;
+        }
+        throw error;
+      }
       response.send({provider, uid});
     } catch (error) {
       console.error("linkPlatformIdentity error:", error);
-      response.status(409).send("Unable to link platform identity");
+      response.status(500).send("Unable to link platform identity");
     }
   });
 });
