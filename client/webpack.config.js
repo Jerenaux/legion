@@ -5,7 +5,6 @@ const {
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const webpack = require('webpack');
 
 const isDocker = process.env.IS_DOCKER;
@@ -146,7 +145,6 @@ module.exports = {
       org: "dynetis-games",
       project: "javascript-react"
     })] : []),
-    new NodePolyfillPlugin(),
   ],
 
   devtool: isProduction ? "hidden-source-map" : "source-map"

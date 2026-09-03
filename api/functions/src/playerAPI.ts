@@ -1,6 +1,6 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import * as functions from "firebase-functions";
+import * as functions from "firebase-functions/v1";
 import admin, { corsMiddleware, getUID, checkAPIKey, performLockedOperation } from "./APIsetup";
 
 import { uniqueNamesGenerator } from "unique-names-generator";
