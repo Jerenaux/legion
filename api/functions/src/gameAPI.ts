@@ -196,7 +196,7 @@ async function handleNewsMediaUpload(
     const file = bucket.file(filename);
     await file.save(buffer, {
       metadata: {
-        contentType: mimeType,
+        contentType: mimeType || undefined,
       },
     });
     await file.makePublic();

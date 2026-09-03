@@ -7,30 +7,29 @@
     "dev": "bun --watch src/server.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org dynetis-games --project legion-server ./dist && sentry-cli sourcemaps upload --org dynetis-games --project legion-server ./dist"
+    "test:coverage": "jest --coverage"
   },
   "license": "ISC",
   "dependencies": {
-    "@sentry/cli": "^2.36.3",
-    "@sentry/node": "^8.32.0",
-    "@sentry/profiling-node": "^8.32.0",
-    "@types/node": "^20.2.3",
+    "@types/node": "^20.19.43",
     "@types/socket.io": "^3.0.2",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "firebase-admin": "^12.0.0",
-    "socket.io": "^4.6.1",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.0.4",
-    "uuidv4": "^6.2.13"
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.10.0",
+    "socket.io": "^4.8.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/express": "^4.17.17",
-    "@types/jest": "^29.5.12",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
+    "ts-jest": "^29.4.12",
     "tsc-alias": "1.8.10",
     "tsconfig-paths": "^4.2.0"
+  },
+  "overrides": {
+    "qs": "^6.16.0",
+    "uuid": "^11.1.1"
   }
 }
