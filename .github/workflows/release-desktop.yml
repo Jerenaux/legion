@@ -71,6 +71,9 @@ jobs:
           WIN_CSC_LINK: ${{ matrix.platform == 'windows' && secrets.WIN_CSC_LINK || '' }}
           WIN_CSC_KEY_PASSWORD: ${{ matrix.platform == 'windows' && secrets.WIN_CSC_KEY_PASSWORD || '' }}
         run: |
+          for variable in CSC_LINK CSC_KEY_PASSWORD APPLE_API_KEY APPLE_API_KEY_ID APPLE_API_ISSUER WIN_CSC_LINK WIN_CSC_KEY_PASSWORD; do
+            [[ -n "${!variable}" ]] || unset "$variable"
+          done
           BUILD_TARGET=electron bun run build
           bunx electron-builder ${{ matrix.builder_args }} -c.forceCodeSigning=${{ startsWith(github.ref, 'refs/tags/') }}
       - name: Prepare store directory
@@ -85,7 +88,12 @@ jobs:
         shell: bash
         run: |
           executable="release/store-${{ matrix.platform }}/${{ matrix.executable }}"
-          "$executable" > release/smoke-${{ matrix.platform }}.log 2>&1 &
+          if [[ "${{ matrix.platform }}" == "linux" ]]; then
+            command=(xvfb-run -a "$executable" --no-sandbox)
+          else
+            command=("$executable")
+          fi
+          "${command[@]}" > release/smoke-${{ matrix.platform }}.log 2>&1 &
           pid=$!
           sleep 10
           if ! kill -0 "$pid" 2>/dev/null; then
