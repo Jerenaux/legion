@@ -7,7 +7,7 @@ import { selectStatToLevelUp, increaseStat, getSPIncrement } from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
-import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "@legion/shared/config";
+import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
 import { getSpellById, getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
