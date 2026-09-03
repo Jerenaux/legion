@@ -16,6 +16,7 @@
   "main": "lib/index.js",
   "dependencies": {
     "@firebase/firestore-compat": "^0.3.23",
+    "@google-cloud/functions-framework": "^5.0.5",
     "busboy": "^1.6.0",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
