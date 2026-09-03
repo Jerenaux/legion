@@ -21,6 +21,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "@types/bun": "1.4.0",
     "@types/express": "^5.0.6",
     "tsc-alias": "1.8.10",
     "tsconfig-paths": "^4.2.0"
