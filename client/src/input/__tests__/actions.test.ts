@@ -1,3 +1,4 @@
+import { test, expect } from 'bun:test';
 import {actionFromKeyboard} from "../actions";
 import {gamepadActions, pollGamepads} from "../gamepad";
 
