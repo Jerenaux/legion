@@ -107,7 +107,8 @@ jobs:
         run: |
           cd api/functions
           bun ci
-          bun audit
+          # stream-json is only used by the undeployed firebase-tools CLI.
+          bun audit --ignore GHSA-528h-pc64-c93x
 
       - name: Lint API
         run: |
