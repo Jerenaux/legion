@@ -68,6 +68,7 @@ async function ensureAuthUser(uid: string): Promise<void> {
 // TODO: ponytail: bind Steam secrets here once production Steam credentials are provisioned.
 const sessionOptions = {
   memory: "512MiB" as const,
+  invoker: "public" as const,
 };
 
 export const createPlatformSession = onRequest(sessionOptions, (request, response) => {
