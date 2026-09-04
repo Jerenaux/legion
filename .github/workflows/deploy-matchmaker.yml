@@ -7,6 +7,7 @@ on:
     paths:
       - 'matchmaker/**'
       - 'shared/**'
+      - '.bun-version'
       - '.github/workflows/deploy-matchmaker.yml'
   workflow_dispatch:  # Allow manual trigger
 
@@ -38,6 +39,7 @@ jobs:
         run: |
           docker build \
             -f matchmaker/Dockerfile.prod \
+            --build-arg BUN_VERSION="$(<.bun-version)" \
             -t gcr.io/legion-32c6d/matchmaker2:${{ github.sha }} \
             -t gcr.io/legion-32c6d/matchmaker2:latest \
             --platform linux/amd64 \

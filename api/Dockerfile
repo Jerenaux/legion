@@ -1,4 +1,5 @@
-FROM oven/bun:1.4.0 AS builder
+ARG BUN_VERSION=must-be-set
+FROM oven/bun:${BUN_VERSION} AS builder
 
 WORKDIR /usr/src/app
 

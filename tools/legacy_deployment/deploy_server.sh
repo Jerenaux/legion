@@ -6,7 +6,7 @@ TAG="latest"
 REGION="us-central1"
 DEBUG_FLAGS="--no-cache --progress=plain"
 
-docker build -f server/Dockerfile.prod -t $IMAGE --platform linux/amd64 .
+docker build --build-arg BUN_VERSION="$(<.bun-version)" -f server/Dockerfile.prod -t $IMAGE --platform linux/amd64 .
 
 docker push $IMAGE
 

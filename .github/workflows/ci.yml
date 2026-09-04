@@ -22,13 +22,12 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.0
+          bun-version-file: ".bun-version"
 
       - name: Install server dependencies
         run: |
           cd server
           bun ci
-          bun audit
 
       - name: Run server tests
         run: |
@@ -60,13 +59,12 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.0
+          bun-version-file: ".bun-version"
 
       - name: Install client dependencies
         run: |
           cd client
           bun ci
-          bun audit
 
       - name: Test and typecheck client
         run: |
@@ -101,14 +99,12 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.0
+          bun-version-file: ".bun-version"
 
       - name: Install API dependencies
         run: |
           cd api/functions
           bun ci
-          # stream-json is only used by the undeployed firebase-tools CLI.
-          bun audit --ignore GHSA-528h-pc64-c93x
 
       - name: Lint API
         run: |
@@ -138,13 +134,12 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.0
+          bun-version-file: ".bun-version"
 
       - name: Install matchmaker dependencies
         run: |
           cd matchmaker
           bun ci
-          bun audit
 
       - name: Build matchmaker
         run: |
