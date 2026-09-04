@@ -111,19 +111,19 @@
 
 .title-screen-actions {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   width: min(300px, 72vw);
 }
 
 .title-screen-button {
   align-items: center;
-  border-radius: 8px;
+  border-radius: 10px;
   box-sizing: border-box;
   cursor: pointer;
   display: flex;
   font-family: Kim, sans-serif;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   gap: 12px;
   justify-content: center;
   letter-spacing: 0.5px;
@@ -131,40 +131,55 @@
   min-height: 58px;
   padding: 0.75rem 2rem;
   text-decoration: none;
-  transition: background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, transform 180ms ease-out;
+  transform: translateY(0);
+  transition: background 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
   width: 100%;
 }
 
-.title-screen-button:hover {
+.title-screen-button:hover,
+.title-screen-button:focus-visible {
   transform: translateY(-2px);
 }
 
 .title-screen-button:active {
-  transform: translateY(0);
+  transform: translateY(3px);
 }
 
 .title-screen-button--play {
-  background-color: #ffcc00;
-  border: 2px solid #ffcc00;
-  color: #f8f4e8;
-  text-shadow: -1px 0 #080a0c, 0 1px #080a0c, 1px 0 #080a0c, 0 -1px #080a0c;
+  background: #f4b900;
+  border: 2px solid #ffe58a;
+  box-shadow: 0 6px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #171007;
 }
 
-.title-screen-button--play:hover {
-  background-color: #ffaa00;
-  border-color: #ffaa00;
+.title-screen-button--play:hover,
+.title-screen-button--play:focus-visible {
+  background: #ffcc00;
+  border-color: #fff0a8;
+  box-shadow: 0 8px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.title-screen-button--play:active {
+  box-shadow: 0 2px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .title-screen-button--steam {
-  background: linear-gradient(135deg, #2a475e, #171a21);
+  background: linear-gradient(180deg, #2a475e, #1b2838);
   border: 2px solid #66c0f4;
+  box-shadow: 0 6px 0 #0b141d, inset 0 1px 0 rgba(199, 213, 224, 0.3);
   color: #c7d5e0;
 }
 
-.title-screen-button--steam:hover {
-  background: #66c0f4;
-  border-color: #66c0f4;
-  color: #171a21;
+.title-screen-button--steam:hover,
+.title-screen-button--steam:focus-visible {
+  background: linear-gradient(180deg, #75c7f0, #4a9bc5);
+  border-color: #a5ddfa;
+  box-shadow: 0 8px 0 #1d668c, inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #101820;
+}
+
+.title-screen-button--steam:active {
+  box-shadow: 0 2px 0 #1d668c, inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .steam-logo {
