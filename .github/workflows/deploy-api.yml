@@ -8,6 +8,7 @@ on:
       - 'api/**'
       - 'shared/**'
       - 'firebase.json'
+      - '.bun-version'
       - '.github/workflows/deploy-api.yml'
   workflow_dispatch:  # Allow manual trigger
 
@@ -26,7 +27,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: 1.4.0
+          bun-version-file: ".bun-version"
 
       - name: Install API dependencies
         run: |

@@ -121,7 +121,7 @@ The project features a comprehensive automated deployment pipeline:
 
 ### Prerequisites
 
-- Bun 1.3+
+- Bun (version specified in `.bun-version`)
 - Node.js 20+
 - Docker & Docker Compose (for containerized development)
 - Firebase CLI (for emulator and deployment)
@@ -131,7 +131,7 @@ The project features a comprehensive automated deployment pipeline:
 The easiest way to run the entire stack locally:
 
 ```bash
-docker-compose up --build
+BUN_VERSION="$(<.bun-version)" docker compose up --build
 ```
 
 This starts all services with hot-reloading enabled:
