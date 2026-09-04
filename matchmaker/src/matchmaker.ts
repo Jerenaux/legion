@@ -1,10 +1,8 @@
 import express from 'express';
 import { Socket, Server } from "socket.io";
 import { createServer } from "http";
-import dotenv from 'dotenv';
 import cors from 'cors';
 
-dotenv.config();
 import { setupMatchmaking, processJoinQueue, processJoinLobby, processDisconnect, processConnection, processLeaveQueue, processLeaveGame, processGetPlayerStatus, processGetFriendsStatuses, processSendChallenge, processChallengeDeclined } from './matchmaking';
 import {getAuth} from 'firebase-admin/auth';
 import {authenticateSocket} from '@legion/shared/socketAuth';
