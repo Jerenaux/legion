@@ -159,6 +159,10 @@
   box-shadow: 0 8px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
+.title-screen-button--play:focus-visible {
+  outline: none;
+}
+
 .title-screen-button--play:active {
   box-shadow: 0 2px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
