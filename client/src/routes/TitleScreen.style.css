@@ -136,8 +136,7 @@
   width: 100%;
 }
 
-.title-screen-button:hover,
-.title-screen-button:focus-visible {
+.title-screen-button:hover {
   transform: translateY(-2px);
 }
 
@@ -149,22 +148,26 @@
   background: #f4b900;
   border: 2px solid #ffe58a;
   box-shadow: 0 6px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  color: #171007;
-}
-
-.title-screen-button--play:hover,
-.title-screen-button--play:focus-visible {
-  background: #ffcc00;
-  border-color: #fff0a8;
-  box-shadow: 0 8px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  color: #f8f4e8;
+  font-size: 1.625rem;
+  -webkit-text-stroke: 1px #171007;
 }
 
 .title-screen-button--play:focus-visible {
+  box-shadow: 0 6px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 2px rgba(255, 229, 138, 0.45);
   outline: none;
+}
+
+.title-screen-button--play:hover {
+  background: #ffd633;
+  border-color: #fff4ba;
+  box-shadow: 0 9px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 0 18px rgba(255, 204, 0, 0.5);
+  transform: translateY(-3px) scale(1.02);
 }
 
 .title-screen-button--play:active {
   box-shadow: 0 2px 0 #9c6500, inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transform: translateY(3px) scale(0.99);
 }
 
 .title-screen-button--steam {
