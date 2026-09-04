@@ -8,6 +8,7 @@ on:
       - 'api/**'
       - 'shared/**'
       - 'firebase.json'
+      - '.bun-version'
       - '.github/workflows/deploy-api.yml'
   workflow_dispatch:  # Allow manual trigger
 

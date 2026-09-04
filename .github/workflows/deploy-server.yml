@@ -7,6 +7,7 @@ on:
     paths:
       - 'server/**'
       - 'shared/**'
+      - '.bun-version'
       - '.github/workflows/deploy-server.yml'
   workflow_dispatch:  # Allow manual trigger
 
@@ -53,6 +54,7 @@ jobs:
         run: |
           docker build \
             -f server/Dockerfile.prod \
+            --build-arg BUN_VERSION="$(<.bun-version)" \
             -t gcr.io/legion-32c6d/server:${{ github.sha }} \
             -t gcr.io/legion-32c6d/server:latest \
             --platform linux/amd64 \
