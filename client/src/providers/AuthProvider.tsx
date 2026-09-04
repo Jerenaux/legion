@@ -5,6 +5,8 @@ import AuthContext from "../contexts/AuthContext";
 import {firebaseAuth} from "../services/firebaseService";
 import {exchangePlatformCredential, getPlatformCredential} from "../services/platformSession";
 import {getElectronAPI} from "../utils/electronUtils";
+import logo from "@assets/logo.png";
+import "./AuthProvider.style.css";
 
 interface Props {
   children: ComponentChildren;
@@ -48,7 +50,10 @@ export default class AuthProvider extends Component<Props, State> {
       await firebaseAuth.signInWithCustomToken(customToken);
     } catch (error) {
       console.error("Desktop session failed:", error);
-      this.setState({isLoading: false, error: "Could not start your Legion session."});
+      this.setState({
+        isLoading: false,
+        error: "We couldn't reach Legion's services. Check your connection, then try again.",
+      });
     } finally {
       this.authenticating = false;
     }
@@ -56,12 +61,33 @@ export default class AuthProvider extends Component<Props, State> {
 
   render() {
     const {user, isLoading, error} = this.state;
-    if (isLoading) return <main className="session-screen">Starting Legion…</main>;
-    if (error || !user) {
+    if (isLoading) {
       return (
         <main className="session-screen">
-          <p>{error || "No active Legion session."}</p>
-          <button onClick={this.startSession}>Retry</button>
+          <section className="session-status" aria-live="polite" aria-busy="true">
+            <img className="session-status__logo" src={logo} alt="Legion" />
+            <p className="session-status__eyebrow">Connecting</p>
+            <h1>Preparing your arena</h1>
+            <p className="session-status__message">Securing your session…</p>
+            <div className="session-status__progress" aria-hidden="true"><span /></div>
+          </section>
+        </main>
+      );
+    }
+    if (error || !user) {
+      return (
+        <main className="session-screen session-screen--error">
+          <section className="session-status" role="alert">
+            <img className="session-status__logo" src={logo} alt="Legion" />
+            <div className="session-status__error-mark" aria-hidden="true">!</div>
+            <p className="session-status__eyebrow">Connection interrupted</p>
+            <h1>The arena is out of reach</h1>
+            <p className="session-status__message">{error || "Your Legion session could not be started."}</p>
+            <button className="session-status__retry" type="button" autoFocus onClick={this.startSession}>
+              Try again
+            </button>
+            <p className="session-status__hint">Press Enter or controller A to retry</p>
+          </section>
         </main>
       );
     }

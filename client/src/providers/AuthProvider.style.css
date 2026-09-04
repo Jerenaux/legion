@@ -1,0 +1,165 @@
+.session-screen {
+  --session-gold: oklch(78% 0.16 85);
+  --session-gold-active: oklch(69% 0.15 73);
+  --session-ink: oklch(16% 0.02 245);
+  align-items: center;
+  background-color: oklch(15% 0.025 245);
+  background-image:
+    linear-gradient(oklch(8% 0.025 245 / 0.62), oklch(8% 0.025 245 / 0.82)),
+    url('@assets/title/title.png');
+  background-position: center;
+  background-size: cover;
+  box-sizing: border-box;
+  color: oklch(96% 0.01 85);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: clamp(1.5rem, 5vh, 4rem);
+  text-align: center;
+}
+
+.session-status {
+  align-items: center;
+  background: oklch(13% 0.025 245 / 0.92);
+  border: 1px solid oklch(78% 0.16 85 / 0.48);
+  border-radius: 0.75rem;
+  box-shadow: 0 1.5rem 4rem oklch(5% 0.02 245 / 0.72);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-width: 34rem;
+  padding: clamp(1.75rem, 5vh, 3rem) clamp(1.5rem, 4vw, 3.5rem);
+  width: 100%;
+}
+
+.session-status__logo {
+  height: auto;
+  margin-bottom: clamp(1rem, 3vh, 1.75rem);
+  max-width: 15rem;
+  width: 52%;
+}
+
+.session-status__eyebrow {
+  color: var(--session-gold);
+  font-family: Kim, Arial, sans-serif;
+  font-size: 0.875rem;
+  letter-spacing: 0.18em;
+  margin: 0 0 0.55rem;
+  text-transform: uppercase;
+}
+
+.session-status h1 {
+  font-family: Kim, Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.session-status__message {
+  color: oklch(83% 0.015 245);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 1rem 0 0;
+  max-width: 30rem;
+}
+
+.session-status__progress {
+  background: oklch(35% 0.035 245);
+  border-radius: 999px;
+  height: 0.25rem;
+  margin-top: 1.75rem;
+  overflow: hidden;
+  width: min(14rem, 70%);
+}
+
+.session-status__progress span {
+  animation: session-progress 1.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  background: var(--session-gold);
+  display: block;
+  height: 100%;
+  transform: translateX(-100%);
+  width: 58%;
+}
+
+.session-status__error-mark {
+  align-items: center;
+  background: oklch(59% 0.19 34);
+  border: 2px solid oklch(83% 0.09 62);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.35rem oklch(59% 0.19 34 / 0.18);
+  color: oklch(96% 0.01 85);
+  display: flex;
+  font-family: Kim, Arial, sans-serif;
+  font-size: 1.5rem;
+  height: 2.65rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  width: 2.65rem;
+}
+
+.session-status__retry {
+  background: var(--session-gold);
+  border: 2px solid oklch(91% 0.1 91);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.3rem 0 var(--session-gold-active);
+  color: var(--session-ink);
+  cursor: pointer;
+  font-family: Kim, Arial, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 1.6rem;
+  min-width: 11rem;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.session-status__retry:hover,
+.session-status__retry:focus-visible {
+  background: oklch(84% 0.15 88);
+  transform: translateY(-2px);
+  box-shadow: 0 0.42rem 0 var(--session-gold-active);
+}
+
+.session-status__retry:active {
+  box-shadow: 0 0.12rem 0 var(--session-gold-active);
+  transform: translateY(2px);
+}
+
+.session-status__retry:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.session-status__hint {
+  color: oklch(70% 0.02 245);
+  font-size: 0.75rem;
+  margin: 1.1rem 0 0;
+}
+
+@keyframes session-progress {
+  to { transform: translateX(272%); }
+}
+
+@media (max-height: 600px) {
+  .session-status {
+    padding-bottom: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .session-status__logo {
+    max-width: 10rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-status__progress span {
+    animation: none;
+    transform: translateX(35%);
+  }
+
+  .session-status__retry {
+    transition: none;
+  }
+}
