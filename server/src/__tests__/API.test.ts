@@ -1,4 +1,3 @@
-import { describe, test, expect } from 'bun:test';
 import { createApiHeaders } from "../API";
 
 describe("internal API headers", () => {

@@ -1,4 +1,3 @@
-import { test, expect } from 'bun:test';
 import {shouldRetireGame} from "../gameLifecycle";
 
 test("retires completed games only after the reconnect window", () => {
