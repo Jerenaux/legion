@@ -168,7 +168,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
-          const startTutorial = !this.state.player.isLoaded && data.completedGames === 0;
           this.setState({ 
               player: {
                   uid: user.uid,
@@ -187,8 +186,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   carrying_capacity: data.carrying_capacity,
                   engagementStats: data.engagementStats || {},
               }
-          }, () => {
-              if (startTutorial) route('/game/0');
           });
       } catch (error) {
           errorToast(`Error: ${error}`);
