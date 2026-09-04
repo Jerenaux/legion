@@ -3,7 +3,6 @@
 import express from 'express';
 import { Socket, Server } from 'socket.io';
 import { createServer } from 'http';
-import dotenv from 'dotenv';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
@@ -20,8 +19,6 @@ import { PlayerDataForGame } from '@legion/shared/interfaces';
 import { withRetry } from './utils';
 import {authenticateSocket} from '@legion/shared/socketAuth';
 import {shouldRetireGame} from './gameLifecycle';
-
-dotenv.config();
 
 if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     // We're running locally with emulators
