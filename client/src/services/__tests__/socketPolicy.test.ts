@@ -1,3 +1,4 @@
+import { test, expect } from 'bun:test';
 import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from "../socketPolicy";
 
 test("keeps retrying transient realtime disconnects", () => {

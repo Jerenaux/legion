@@ -1,3 +1,4 @@
+import { test, expect } from 'bun:test';
 import {defaultGameSettings, parseGameSettings} from "../../settings";
 
 test("falls back safely when desktop settings are corrupt", () => {
