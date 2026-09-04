@@ -109,26 +109,67 @@
   text-shadow: none;
 }
 
-.cta-button-title-screen {
-  display: inline-block;
-  min-width: 200px;
-  max-width: 300px;
-  background-color: #ffcc00;
-  color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: Kim, sans-serif;
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
-  font-size: 1.5rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
-  line-height: 1.2;
+.title-screen-actions {
+  display: grid;
+  gap: 12px;
+  width: min(300px, 72vw);
 }
 
-.cta-button-title-screen:hover {
+.title-screen-button {
+  align-items: center;
+  border-radius: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  font-family: Kim, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  gap: 12px;
+  justify-content: center;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  min-height: 58px;
+  padding: 0.75rem 2rem;
+  text-decoration: none;
+  transition: background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, transform 180ms ease-out;
+  width: 100%;
+}
+
+.title-screen-button:hover {
   transform: translateY(-2px);
+}
+
+.title-screen-button:active {
+  transform: translateY(0);
+}
+
+.title-screen-button--play {
+  background-color: #ffcc00;
+  border: 2px solid #ffcc00;
+  color: #f8f4e8;
+  text-shadow: -1px 0 #080a0c, 0 1px #080a0c, 1px 0 #080a0c, 0 -1px #080a0c;
+}
+
+.title-screen-button--play:hover {
   background-color: #ffaa00;
+  border-color: #ffaa00;
+}
+
+.title-screen-button--steam {
+  background: linear-gradient(135deg, #2a475e, #171a21);
+  border: 2px solid #66c0f4;
+  color: #c7d5e0;
+}
+
+.title-screen-button--steam:hover {
+  background: #66c0f4;
+  border-color: #66c0f4;
+  color: #171a21;
+}
+
+.steam-logo {
+  fill: currentColor;
+  flex: 0 0 auto;
+  height: 28px;
+  width: 28px;
 }
