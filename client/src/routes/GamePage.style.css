@@ -97,7 +97,7 @@
 }
 
 #scene {
-  background: linear-gradient(to bottom, #242529, #325268);
+  background: #242529 url('@assets/arenabg.png') center / cover no-repeat;
   margin: 0;
   padding: 0; 
   height: 100vh;
