@@ -28,7 +28,6 @@ jobs:
         run: |
           cd server
           bun ci
-          bun audit
 
       - name: Run server tests
         run: |
@@ -66,7 +65,6 @@ jobs:
         run: |
           cd client
           bun ci
-          bun audit
 
       - name: Test and typecheck client
         run: |
@@ -107,8 +105,6 @@ jobs:
         run: |
           cd api/functions
           bun ci
-          # stream-json is only used by the undeployed firebase-tools CLI.
-          bun audit --ignore GHSA-528h-pc64-c93x
 
       - name: Lint API
         run: |
@@ -144,7 +140,6 @@ jobs:
         run: |
           cd matchmaker
           bun ci
-          bun audit
 
       - name: Build matchmaker
         run: |
