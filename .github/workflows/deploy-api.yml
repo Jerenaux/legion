@@ -34,12 +34,6 @@ jobs:
           cd api/functions
           bun ci
 
-      - name: Lint API
-        run: |
-          cd api/functions
-          bun run lint
-        continue-on-error: true
-
       - name: Build API
         run: |
           cd api/functions

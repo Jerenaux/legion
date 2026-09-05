@@ -106,11 +106,6 @@ jobs:
           cd api/functions
           bun ci
 
-      # - name: Lint API
-      #   run: |
-      #     cd api/functions
-      #     bun run lint
-
       - name: Test API
         run: |
           cd api/functions
