@@ -7,5 +7,5 @@ test("starts newcomers in the tutorial after Play", () => {
 });
 
 test("links to Legion's Steam store page", () => {
-  expect(STEAM_STORE_URL).toBe("https://store.steampowered.com/app/3729580/Legion/");
+  expect(STEAM_STORE_URL).toBe("https://store.steampowered.com/app/3729580/Legion/?utm_source=itch");
 });
