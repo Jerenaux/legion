@@ -1,15 +1,24 @@
 // ItemDialog.tsx
-import './ItemDialog.style.css';
-import Modal from 'react-modal';
-import { h, Component } from 'preact';
-import { BaseItem } from '@legion/shared/BaseItem';
-import { BaseSpell } from '@legion/shared/BaseSpell';
-import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat, Target, statFieldsByIndex, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
-import { apiFetch } from '../../services/apiService';
-import { errorToast, successToast, mapFrameToCoordinates, classEnumToString, cropFrame, getSpeedClass } from '../utils';
-import { getMaxStatValue, getSPIncrement } from '@legion/shared/levelling';
-import { PlayerContext } from '../../contexts/PlayerContext';
+import "./ItemDialog.style.css";
+import Modal from "react-modal";
+import { h, Component } from "preact";
+import { BaseItem } from "@legion/shared/BaseItem";
+import { BaseSpell } from "@legion/shared/BaseSpell";
+import { BaseEquipment } from "@legion/shared/BaseEquipment";
+import {
+  InventoryActionType,
+  Stat,
+  Target,
+  statFieldsByIndex,
+  SPSPendingData,
+  STATS_BG_COLOR,
+  ItemDialogType,
+  StatLabels,
+} from "@legion/shared/enums";
+import { apiFetch } from "../../services/apiService";
+import { errorToast, successToast, mapFrameToCoordinates, classEnumToString, cropFrame, getSpeedClass } from "../utils";
+import { getMaxStatValue, getSPIncrement } from "@legion/shared/levelling";
+import { PlayerContext } from "../../contexts/PlayerContext";
 
 import {
   canEquipConsumable,
@@ -18,43 +27,42 @@ import {
   roomInInventory,
   hasMinLevel,
   hasRequiredClass,
-  canIncreaseStat
-} from '@legion/shared/inventory';
+  canIncreaseStat,
+} from "@legion/shared/inventory";
 
-import equipmentSpritesheet from '@assets/equipment.png';
-import consumablesSpritesheet from '@assets/consumables.png';
-import spellsSpritesheet from '@assets/spells.png';
+import equipmentSpritesheet from "@assets/equipment.png";
+import consumablesSpritesheet from "@assets/consumables.png";
+import spellsSpritesheet from "@assets/spells.png";
 
-import confirmIcon from '@assets/inventory/confirm_icon.png';
-import cancelIcon from '@assets/inventory/cancel_icon.png';
-import mpIcon from '@assets/stats_icons/mp_icon.png';
-import cdIcon from '@assets/inventory/cd_icon.png';
-import targetIcon from '@assets/inventory/target_icon.png';
-import { APICharacterData } from '@legion/shared/interfaces';
+import confirmIcon from "@assets/inventory/confirm_icon.png";
+import cancelIcon from "@assets/inventory/cancel_icon.png";
+import mpIcon from "@assets/stats_icons/mp_icon.png";
+import cdIcon from "@assets/inventory/cd_icon.png";
+import targetIcon from "@assets/inventory/target_icon.png";
+import { APICharacterData } from "@legion/shared/interfaces";
 
+import { getSellPrice } from "@legion/shared/inventory";
 
-import { getSellPrice } from '@legion/shared/inventory';
-
-Modal.setAppElement('#root');
+Modal.setAppElement("#root");
 interface DialogProps {
   index?: number;
   isEquipped?: boolean;
   actionType: InventoryActionType;
-  dialogType: ItemDialogType; 
+  dialogType: ItemDialogType;
   dialogOpen: boolean;
   dialogData: BaseItem | BaseSpell | BaseEquipment | SPSPendingData | null;
   position: {
-    top: number,
-    left: number
+    top: number;
+    left: number;
   };
   handleClose: () => void;
-  handleSelectedEquipmentSlot: (newValue: number) => void; 
+  handleSelectedEquipmentSlot: (newValue: number) => void;
   updateCharacterData?: () => void;
 }
 
 interface DialogState {
-  dialogSpellModalShow: boolean; 
-  dialogSPModalShow: boolean; 
+  dialogSpellModalShow: boolean;
+  dialogSPModalShow: boolean;
   dialogValue: number;
   inventory: {
     consumables: number[];
@@ -68,7 +76,7 @@ interface DialogState {
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
-  static contextType = PlayerContext; 
+  static contextType = PlayerContext;
 
   constructor(props: DialogProps) {
     super(props);
@@ -78,7 +86,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
   }
 
-  getInitialState(): Omit<DialogState, 'croppedImages'> {
+  getInitialState(): Omit<DialogState, "croppedImages"> {
     return {
       dialogSpellModalShow: false,
       dialogSPModalShow: false,
@@ -105,7 +113,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   cropSprites = async () => {
     const { dialogType, dialogData } = this.props;
-    if (!dialogData || !('frame' in dialogData) ) return;
+    if (!dialogData || !("frame" in dialogData)) return;
 
     const spriteSheetsMap = {
       [ItemDialogType.EQUIPMENTS]: equipmentSpritesheet,
@@ -119,24 +127,24 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     const { x, y } = mapFrameToCoordinates(dialogData.frame);
     try {
       const croppedImageUrl = await cropFrame(spritesheet, x, y, 32, 32); // Assuming 32x32 sprite size
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         croppedImages: {
           ...prevState.croppedImages,
-          [dialogType]: croppedImageUrl
-        }
+          [dialogType]: croppedImageUrl,
+        },
       }));
     } catch (error) {
-      console.error('Error cropping spritesheet:', error);
+      console.error("Error cropping spritesheet:", error);
     }
-  }
+  };
 
   handleClose = () => {
-    this.setState({ 
+    this.setState({
       dialogSPModalShow: false,
-      dialogValue: 1  // Reset dialogValue when closing
+      dialogValue: 1, // Reset dialogValue when closing
     });
     this.props.handleClose();
-  }
+  };
 
   AcceptAction = (type: ItemDialogType, index: number) => {
     const { actionType } = this.props;
@@ -145,11 +153,11 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       index,
       characterId: this.context.getActiveCharacter().id,
       inventoryType: type,
-      action: actionType === InventoryActionType.EQUIP && this.state.sellModalShow ? 
-        InventoryActionType.SELL : actionType
+      action:
+        actionType === InventoryActionType.EQUIP && this.state.sellModalShow ? InventoryActionType.SELL : actionType,
     };
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       console.log(`[ItemDialog] AcceptAction: type: ${type} action: ${payload.action} index: ${index}`);
     }
 
@@ -157,19 +165,18 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     this.props.handleClose();
 
     if (type === ItemDialogType.SPELLS && actionType === InventoryActionType.EQUIP) {
-      successToast('Spell learned!');
+      successToast("Spell learned!");
     } else if (payload.action === InventoryActionType.SELL) {
-      successToast('Item sold!');
+      successToast("Item sold!");
     }
 
-    apiFetch('inventoryTransaction', {
-      method: 'POST',
-      body: payload
-    })
-      .catch(error => console.error(`Error: ${error}`));
-  }
+    apiFetch("inventoryTransaction", {
+      method: "POST",
+      body: payload,
+    }).catch((error) => console.error(`Error: ${error}`));
+  };
 
-  spendSP = async (stat: Stat, amount: number) => {  
+  spendSP = async (stat: Stat, amount: number) => {
     const payload = {
       stat,
       amount,
@@ -184,14 +191,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     this.props.updateCharacterData();
     this.props.handleClose();
-    successToast(`${statFieldsByIndex[stat].toUpperCase()} increased by ${getSPIncrement(stat)*amount}!`);
+    successToast(`${statFieldsByIndex[stat].toUpperCase()} increased by ${getSPIncrement(stat) * amount}!`);
 
-    apiFetch('spendSP', {
-      method: 'POST',
-      body: payload
-    })
-      .catch(error => errorToast(`Error: ${error}`));
-  }
+    apiFetch("spendSP", {
+      method: "POST",
+      body: payload,
+    }).catch((error) => errorToast(`Error: ${error}`));
+  };
 
   getSpritePosition(frame: number) {
     const coordinates = mapFrameToCoordinates(frame);
@@ -200,11 +206,11 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   renderDialogButtons(acceptAction: () => void, isDisabled: boolean = false) {
     const { actionType, dialogType } = this.props;
-    let acceptLabel = actionType == InventoryActionType.UNEQUIP ? 'Remove' : 'Equip';
+    let acceptLabel = actionType == InventoryActionType.UNEQUIP ? "Remove" : "Equip";
     if (this.props.dialogType === ItemDialogType.SPELLS) {
-      acceptLabel = 'Learn';
+      acceptLabel = "Learn";
     } else if (this.props.dialogType === ItemDialogType.SP) {
-      acceptLabel = 'Spend';
+      acceptLabel = "Spend";
     }
 
     // Don't show sell button for SP dialog or equipped items
@@ -222,10 +228,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           {acceptLabel}
         </button>
         {showSellButton && (
-          <button 
-            className="dialog-sell"
-            onClick={() => this.setState({ sellModalShow: true })}
-          >
+          <button className="dialog-sell" onClick={() => this.setState({ sellModalShow: true })}>
             <img src={cancelIcon} alt="sell" />
             Sell
           </button>
@@ -244,21 +247,28 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     const backgroundPosition = this.getSpritePosition(dialogData.frame);
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
     if (!activeCharacter) return null;
-    const isDisabled = this.props.actionType == InventoryActionType.EQUIP && !canEquipEquipment(activeCharacter, dialogData.id);
+    const isDisabled =
+      this.props.actionType == InventoryActionType.EQUIP && !canEquipEquipment(activeCharacter, dialogData.id);
 
     return (
       <div className="equip-dialog-container">
-        <div className="equip-dialog-image" style={{
-          backgroundImage: `url(${this.state.croppedImages[ItemDialogType.EQUIPMENTS] || ''})`,
-          backgroundSize: 'cover',
-        }} />
+        <div
+          className="equip-dialog-image"
+          style={{
+            backgroundImage: `url(${this.state.croppedImages[ItemDialogType.EQUIPMENTS] || ""})`,
+            backgroundSize: "cover",
+          }}
+        />
         <p className="equip-dialog-name">{dialogData.name}</p>
         {/* <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
           Lvl <span>{dialogData.minLevel}</span>
         </div> */}
         <div className="equip-dialog-class-container">
           {dialogData.classes?.map((item) => (
-            <div style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}} className="equip-dialog-class">
+            <div
+              style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}}
+              className="equip-dialog-class"
+            >
               {classEnumToString(item)}
             </div>
           ))}
@@ -274,19 +284,22 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     const backgroundPosition = this.getSpritePosition(dialogData.frame);
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
 
-    const actionAllowed = 
-      this.props.actionType === InventoryActionType.EQUIP ?
-      canEquipConsumable(activeCharacter) :
-      roomInInventory(this.context.player);
+    const actionAllowed =
+      this.props.actionType === InventoryActionType.EQUIP
+        ? canEquipConsumable(activeCharacter)
+        : roomInInventory(this.context.player);
 
     return (
       <div className="dialog-item-container">
         <div className="dialog-item-heading-bg"></div>
         <div className="dialog-item-heading">
-        <div className="dialog-item-heading-image" style={{ 
-            backgroundImage: `url(${this.state.croppedImages[ItemDialogType.CONSUMABLES] || ''})`,
-            backgroundSize: 'cover',
-          }} />
+          <div
+            className="dialog-item-heading-image"
+            style={{
+              backgroundImage: `url(${this.state.croppedImages[ItemDialogType.CONSUMABLES] || ""})`,
+              backgroundSize: "cover",
+            }}
+          />
           <div className="dialog-item-title">
             <span>{dialogData.name}</span>
             <span className="dialog-item-title-info">Self</span>
@@ -304,19 +317,21 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           </div>
         </div>
         <div className="dialog-item-info-container">
-          {dialogData.effects.map(effect => (
+          {dialogData.effects.map((effect) => (
             <div className="dialog-item-info">
-              <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[Stat[effect.stat]] }}><span>{Stat[effect.stat]}</span></div>
-              <span style={{ color: effect.value > 0 || effect.value == -1 ? '#9ed94c' : '#c95a74' }}>
-                {effect.value > 0 ? `+${effect.value}` : (effect.value == -1 ? '∞' : effect.value)}
+              <div
+                className="character-info-dialog-card"
+                style={{ backgroundColor: STATS_BG_COLOR[Stat[effect.stat]] }}
+              >
+                <span>{Stat[effect.stat]}</span>
+              </div>
+              <span style={{ color: effect.value > 0 || effect.value == -1 ? "#9ed94c" : "#c95a74" }}>
+                {effect.value > 0 ? `+${effect.value}` : effect.value == -1 ? "∞" : effect.value}
               </span>
             </div>
           ))}
         </div>
-        {this.renderDialogButtons(
-            () => this.AcceptAction(ItemDialogType.CONSUMABLES, index),
-            !actionAllowed
-          )}
+        {this.renderDialogButtons(() => this.AcceptAction(ItemDialogType.CONSUMABLES, index), !actionAllowed)}
       </div>
     );
   }
@@ -330,10 +345,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return (
       <div className="dialog-spell-container">
         <div className="spell-wrapper">
-        <div className="dialog-spell-container-image" style={{ 
-            backgroundImage: `url(${this.state.croppedImages[ItemDialogType.SPELLS] || ''})`,
-            backgroundSize: 'cover',
-          }} />
+          <div
+            className="dialog-spell-container-image"
+            style={{
+              backgroundImage: `url(${this.state.croppedImages[ItemDialogType.SPELLS] || ""})`,
+              backgroundSize: "cover",
+            }}
+          />
         </div>
         <p className="dialog-spell-name">{dialogData.name}</p>
         <p className="dialog-spell-desc">{dialogData.description}</p>
@@ -356,7 +374,10 @@ class ItemDialog extends Component<DialogProps, DialogState> {
         </div>  */}
         <div className="equip-dialog-class-container">
           {dialogData.classes?.map((item) => (
-            <div style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}} className="equip-dialog-class">
+            <div
+              style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}}
+              className="equip-dialog-class"
+            >
               {classEnumToString(item)}
             </div>
           ))}
@@ -369,7 +390,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   renderSpellConfirmationModal(dialogData: BaseSpell, characterName: string) {
     return (
-      <div style={{ display: this.state.dialogSpellModalShow ? 'block' : 'none' }} className="dialog-spell-modal">
+      <div style={{ display: this.state.dialogSpellModalShow ? "block" : "none" }} className="dialog-spell-modal">
         <div className="dialog-spell-modal-text">
           Are you sure you want to teach {dialogData.name} to {characterName}?
         </div>
@@ -388,20 +409,35 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return (
       <div className="character-info-dialog-container">
         <div className="character-info-dialog-card-container">
-          <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
+          <div
+            className="character-info-dialog-card"
+            style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}
+          >
             <span>{StatLabels[dialogData.stat]}</span>
           </div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}
-            <span className='character-info-addition' style={{ color: '#9ed94c' }}>
+            <span className="character-info-addition" style={{ color: "#9ed94c" }}>
               &nbsp; + {getSPIncrement(dialogData.stat) * dialogValue}
             </span>
           </div>
         </div>
         <div className="character-info-dialog-control">
-          <div className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))}>-</div>
+          <div
+            className="character-info-dialog-control-btn"
+            onClick={() => this.setState((prevState) => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))}
+          >
+            -
+          </div>
           <div className="character-info-dialog-control-val">{dialogValue}</div>
-          <div className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, prevState.dialogValue + 1) }))}>+</div>
+          <div
+            className="character-info-dialog-control-btn"
+            onClick={() =>
+              this.setState((prevState) => ({ dialogValue: Math.min(activeCharacter.sp, prevState.dialogValue + 1) }))
+            }
+          >
+            +
+          </div>
         </div>
         {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }))}
         {this.renderSPConfirmationModal(dialogData)}
@@ -411,10 +447,11 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   renderSPConfirmationModal(dialogData: SPSPendingData) {
     return (
-      <div style={{ display: this.state.dialogSPModalShow ? 'block' : 'none' }} className="dialog-spell-modal dialog-SP-modal">
-        <div className="dialog-spell-modal-text">
-          Are you sure you want to spend {this.state.dialogValue} SP?
-        </div>
+      <div
+        style={{ display: this.state.dialogSPModalShow ? "block" : "none" }}
+        className="dialog-spell-modal dialog-SP-modal"
+      >
+        <div className="dialog-spell-modal-text">Are you sure you want to spend {this.state.dialogValue} SP?</div>
         {this.renderDialogButtons(() => {
           this.spendSP(dialogData.stat, this.state.dialogValue);
           this.setState({ dialogSPModalShow: false });
@@ -425,14 +462,12 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   renderSellConfirmationModal() {
     const { dialogType, index, dialogData } = this.props;
-    if (!dialogData || !('id' in dialogData)) return null;
-    
+    if (!dialogData || !("id" in dialogData)) return null;
+
     const sellPrice = getSellPrice(dialogData.id, dialogType);
     return (
-      <div style={{ display: this.state.sellModalShow ? 'block' : 'none' }} className="dialog-spell-modal">
-        <div className="dialog-spell-modal-text">
-          Are you sure you want to sell this item for {sellPrice} gold?
-        </div>
+      <div style={{ display: this.state.sellModalShow ? "block" : "none" }} className="dialog-spell-modal">
+        <div className="dialog-spell-modal-text">Are you sure you want to sell this item for {sellPrice} gold?</div>
         <div className="dialog-button-container">
           <button
             className="dialog-accept"
@@ -444,10 +479,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             <img src={confirmIcon} alt="confirm" />
             Confirm
           </button>
-          <button 
-            className="dialog-decline" 
-            onClick={() => this.setState({ sellModalShow: false })}
-          >
+          <button className="dialog-decline" onClick={() => this.setState({ sellModalShow: false })}>
             <img src={cancelIcon} alt="decline" />
             Cancel
           </button>
@@ -480,17 +512,17 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       content: {
         top: position.top,
         left: position.left,
-        right: 'auto',
-        bottom: 'auto',
+        right: "auto",
+        bottom: "auto",
         padding: 0,
-        border: 'none',
-        background: 'transparent',
-        overflow: 'visible'
+        border: "none",
+        background: "transparent",
+        overflow: "visible",
       },
       overlay: {
         zIndex: 10,
-        backgroundColor: 'transparent',
-      }
+        backgroundColor: "transparent",
+      },
     };
 
     return (

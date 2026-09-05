@@ -1,21 +1,29 @@
-import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment } from './interfaces';
-import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType, Stat, statFieldsByIndex } from "./enums";
+import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment } from "./interfaces";
+import {
+  EquipmentSlot,
+  equipmentSlotFields,
+  Class,
+  ItemDialogType,
+  InventoryType,
+  Stat,
+  statFieldsByIndex,
+} from "./enums";
 import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
-import { inventorySize } from '@legion/shared/utils';
-import { getConsumableById } from './Items';
-import { SKIP_LEVEL_RESTRICTIONS } from '@legion/shared/config';
-import { getMaxStatValue } from './levelling';
-import { getSPIncrement } from './levelling';
+import { inventorySize } from "@legion/shared/utils";
+import { getConsumableById } from "./Items";
+import { SKIP_LEVEL_RESTRICTIONS } from "@legion/shared/config";
+import { getMaxStatValue } from "./levelling";
+import { getSPIncrement } from "./levelling";
 
 const dev = process.env.NODE_ENV === "development";
 
 export function numericalSort(a: number, b: number): number {
-    return a - b;
+  return a - b;
 }
 
 export function roomInInventory(playerData: PlayerContextData | DBPlayerData): boolean {
-    return inventorySize(playerData.inventory) < playerData.carrying_capacity;
+  return inventorySize(playerData.inventory) < playerData.carrying_capacity;
 }
 
 export function ownConsumable(playerData: PlayerContextData | DBPlayerData, itemId: number): boolean {
@@ -31,8 +39,9 @@ export function ownEquipment(playerData: PlayerContextData | DBPlayerData, itemI
 }
 
 export function canEquipConsumable(characterData: DBCharacterData | APICharacterData): boolean {
-  return characterData.inventory.length <
-    characterData.carrying_capacity + (characterData.carrying_capacity_bonus || 0);
+  return (
+    characterData.inventory.length < characterData.carrying_capacity + (characterData.carrying_capacity_bonus || 0)
+  );
 }
 
 export function canLearnSpell(characterData: DBCharacterData | APICharacterData, spellId: number): boolean {
@@ -41,7 +50,10 @@ export function canLearnSpell(characterData: DBCharacterData | APICharacterData,
     console.error("Invalid spell ID");
     return false;
   }
-  if (dev) console.log(`[canLearnSpell] spellId: ${spellId}, spell: ${spell.name}, minLevel: ${spell.minLevel}, hasMinlevel: ${hasMinLevel(characterData, spell.minLevel)}, classes: ${spell.classes}, ${hasRequiredClass(characterData, spell.classes)}`);
+  if (dev)
+    console.log(
+      `[canLearnSpell] spellId: ${spellId}, spell: ${spell.name}, minLevel: ${spell.minLevel}, hasMinlevel: ${hasMinLevel(characterData, spell.minLevel)}, classes: ${spell.classes}, ${hasRequiredClass(characterData, spell.classes)}`,
+    );
   return (
     hasMinLevel(characterData, spell.minLevel) &&
     hasRequiredClass(characterData, spell.classes) &&
@@ -56,7 +68,7 @@ export function hasMinLevel(characterData: DBCharacterData | APICharacterData, l
 }
 
 export function hasRequiredClass(characterData: DBCharacterData | APICharacterData, classes: Class[]): boolean {
-    return !classes.length || classes.includes(characterData.class);
+  return !classes.length || classes.includes(characterData.class);
 }
 
 export function canEquipEquipment(characterData: DBCharacterData | APICharacterData, equipmentId: number): boolean {
@@ -67,13 +79,14 @@ export function canEquipEquipment(characterData: DBCharacterData | APICharacterD
   }
   // if (dev) console.log(`[canEquipEquipment] equipmentId: ${equipmentId}, equipment: ${equipment.name}`);
 
-  return (
-    hasMinLevel(characterData, equipment.minLevel) &&
-    hasRequiredClass(characterData, equipment.classes)
-  );
+  return hasMinLevel(characterData, equipment.minLevel) && hasRequiredClass(characterData, equipment.classes);
 }
 
-export function canIncreaseStat(characterData: DBCharacterData | APICharacterData, index: number, amount: number): boolean {
+export function canIncreaseStat(
+  characterData: DBCharacterData | APICharacterData,
+  index: number,
+  amount: number,
+): boolean {
   const stat = statFieldsByIndex[index];
   const currentValue = characterData.stats[stat] + characterData.sp_bonuses[stat];
   const increment = getSPIncrement(index) * amount;
@@ -82,7 +95,11 @@ export function canIncreaseStat(characterData: DBCharacterData | APICharacterDat
   return newValue <= max;
 }
 
-export function equipConsumable(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function equipConsumable(
+  playerData: PlayerContextData | DBPlayerData,
+  characterData: DBCharacterData | APICharacterData,
+  index: number,
+) {
   const playerInventory = playerData.inventory;
   const consumables = playerInventory.consumables.sort(numericalSort);
   const inventory = characterData.inventory as number[];
@@ -98,18 +115,22 @@ export function equipConsumable(playerData: PlayerContextData | DBPlayerData, ch
 
   playerInventory.consumables = consumables.sort(numericalSort);
   return {
-    playerUpdate: { 
+    playerUpdate: {
       inventory: playerInventory,
       engagementStats: {
         ...playerData.engagementStats,
-        everEquippedConsumable: true
-      }
+        everEquippedConsumable: true,
+      },
     },
     characterUpdate: { inventory },
   };
 }
 
-export function unequipConsumable(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function unequipConsumable(
+  playerData: PlayerContextData | DBPlayerData,
+  characterData: DBCharacterData | APICharacterData,
+  index: number,
+) {
   const playerInventory = playerData.inventory;
   const consumables = playerInventory.consumables.sort(numericalSort);
   const inventory = characterData.inventory as number[];
@@ -129,7 +150,11 @@ export function unequipConsumable(playerData: PlayerContextData | DBPlayerData, 
   };
 }
 
-export function learnSpell(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function learnSpell(
+  playerData: PlayerContextData | DBPlayerData,
+  characterData: DBCharacterData | APICharacterData,
+  index: number,
+) {
   const playerInventory = playerData.inventory;
   const spells = playerInventory.spells.sort(numericalSort);
   const skills = characterData.skills as number[];
@@ -148,12 +173,12 @@ export function learnSpell(playerData: PlayerContextData | DBPlayerData, charact
 
   playerInventory.spells = spells.sort(numericalSort);
   return {
-    playerUpdate: { 
+    playerUpdate: {
       inventory: playerInventory,
       engagementStats: {
         ...playerData.engagementStats,
-        everEquippedSpell: true
-      }
+        everEquippedSpell: true,
+      },
     },
     characterUpdate: { skills },
   };
@@ -161,9 +186,9 @@ export function learnSpell(playerData: PlayerContextData | DBPlayerData, charact
 
 function handleInventoryCapacityChange(
   characterData: DBCharacterData | APICharacterData,
-  playerInventory: PlayerContextData['inventory'] | DBPlayerData['inventory'],
-  newCapacity: number
-): { characterInventory: number[], playerConsumables: number[] } {
+  playerInventory: PlayerContextData["inventory"] | DBPlayerData["inventory"],
+  newCapacity: number,
+): { characterInventory: number[]; playerConsumables: number[] } {
   const characterInventory = [...characterData.inventory] as number[];
   const playerConsumables = [...playerInventory.consumables].sort(numericalSort);
 
@@ -175,7 +200,11 @@ function handleInventoryCapacityChange(
   return { characterInventory, playerConsumables };
 }
 
-export function equipEquipment(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function equipEquipment(
+  playerData: PlayerContextData | DBPlayerData,
+  characterData: DBCharacterData | APICharacterData,
+  index: number,
+) {
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort(numericalSort);
   const equipped = characterData.equipment as Equipment;
@@ -212,7 +241,7 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
     const { characterInventory, playerConsumables } = handleInventoryCapacityChange(
       characterData,
       playerInventory,
-      newCapacity
+      newCapacity,
     );
     playerInventory.consumables = playerConsumables;
     characterData.inventory = characterInventory;
@@ -220,12 +249,12 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
 
   playerInventory.equipment = equipment.sort(numericalSort);
   return {
-    playerUpdate: { 
+    playerUpdate: {
       inventory: playerInventory,
       engagementStats: {
         ...playerData.engagementStats,
-        everEquippedEquipment: true
-      }
+        everEquippedEquipment: true,
+      },
     },
     characterUpdate: {
       equipment: equipped,
@@ -236,14 +265,21 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
   };
 }
 
-export function unequipEquipment(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function unequipEquipment(
+  playerData: PlayerContextData | DBPlayerData,
+  characterData: DBCharacterData | APICharacterData,
+  index: number,
+) {
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort(numericalSort);
   const equipped = characterData.equipment as Equipment;
   let carrying_capacity_bonus = characterData.carrying_capacity_bonus;
 
   if (index < 0 || index >= Object.keys(equipmentSlotFields).length) {
-    if (dev) console.log(`[unequipEquipment] invalid index: ${index} not in range 0-${Object.keys(equipmentSlotFields).length}`);
+    if (dev)
+      console.log(
+        `[unequipEquipment] invalid index: ${index} not in range 0-${Object.keys(equipmentSlotFields).length}`,
+      );
     return null;
   }
 
@@ -258,7 +294,7 @@ export function unequipEquipment(playerData: PlayerContextData | DBPlayerData, c
       const { characterInventory, playerConsumables } = handleInventoryCapacityChange(
         characterData,
         playerInventory,
-        newCapacity
+        newCapacity,
       );
       playerInventory.consumables = playerConsumables;
       characterData.inventory = characterInventory;
@@ -274,7 +310,7 @@ export function unequipEquipment(playerData: PlayerContextData | DBPlayerData, c
       equipment: equipped,
       equipment_bonuses: applyEquipmentBonuses(equipped),
       inventory: characterData.inventory,
-      carrying_capacity_bonus
+      carrying_capacity_bonus,
     },
   };
 }
@@ -299,13 +335,27 @@ function applyEquipmentBonuses(equipped: Equipment) {
       }
       data.effects.forEach((effect) => {
         switch (effect.stat) {
-          case 0: bonuses.hp += effect.value; break;
-          case 1: bonuses.mp += effect.value; break;
-          case 2: bonuses.atk += effect.value; break;
-          case 3: bonuses.def += effect.value; break;
-          case 4: bonuses.spatk += effect.value; break;
-          case 5: bonuses.spdef += effect.value; break;
-          case 6: bonuses.speed += effect.value; break;
+          case 0:
+            bonuses.hp += effect.value;
+            break;
+          case 1:
+            bonuses.mp += effect.value;
+            break;
+          case 2:
+            bonuses.atk += effect.value;
+            break;
+          case 3:
+            bonuses.def += effect.value;
+            break;
+          case 4:
+            bonuses.spatk += effect.value;
+            break;
+          case 5:
+            bonuses.spdef += effect.value;
+            break;
+          case 6:
+            bonuses.speed += effect.value;
+            break;
         }
       });
     }

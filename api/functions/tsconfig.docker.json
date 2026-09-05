@@ -9,16 +9,12 @@
     "strict": true,
     "target": "es2017",
     "baseUrl": "./",
-		"paths": {
-			"@legion/shared/*": ["shared/*"]
-		},
-    "skipLibCheck": true,
+    "paths": {
+      "@legion/shared/*": ["shared/*"]
+    },
+    "skipLibCheck": true
   },
   "compileOnSave": true,
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "src/__tests__"
-  ]
+  "include": ["src"],
+  "exclude": ["src/__tests__"]
 }

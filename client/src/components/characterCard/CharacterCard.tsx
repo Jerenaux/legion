@@ -1,30 +1,30 @@
-import { h, Component } from 'preact';
-import { route } from 'preact-router';
-import { classEnumToString, getSpritePath } from '../utils';
-import { APICharacterData } from '@legion/shared/interfaces';
-import './CharacterCard.style.css';
+import { h, Component } from "preact";
+import { route } from "preact-router";
+import { classEnumToString, getSpritePath } from "../utils";
+import { APICharacterData } from "@legion/shared/interfaces";
+import "./CharacterCard.style.css";
 
-const bgContext = require.context('@assets', false, /team_Bg_.*\.png$/);
+const bgContext = require.context("@assets", false, /team_Bg_.*\.png$/);
 
 class CharacterCard extends Component<APICharacterData> {
   state = {
-    active: false
-  }
+    active: false,
+  };
 
   handleCardClick = () => {
     const { id } = this.props;
     route(`/team/${id}`);
-  }
+  };
 
   getBgImagePath = (active: boolean) => {
-    const fileName = `team_Bg_${active ? 'active' : 'idle'}.png`;
+    const fileName = `team_Bg_${active ? "active" : "idle"}.png`;
     try {
       return bgContext(`./${fileName}`);
     } catch (error) {
       console.error(`Failed to load background: ${fileName}`, error);
-      return '';
+      return "";
     }
-  }
+  };
 
   render() {
     const { portrait, name, class: characterClass, level } = this.props;
@@ -34,15 +34,15 @@ class CharacterCard extends Component<APICharacterData> {
 
     const bgStyle = {
       backgroundImage: `url(${this.getBgImagePath(this.state.active)})`,
-      cursor: 'pointer'
-    }
+      cursor: "pointer",
+    };
 
     return (
-      <div 
-        className="cardContainer" 
-        style={bgStyle} 
-        onClick={this.handleCardClick} 
-        onMouseEnter={() => this.setState({ active: true })} 
+      <div
+        className="cardContainer"
+        style={bgStyle}
+        onClick={this.handleCardClick}
+        onMouseEnter={() => this.setState({ active: true })}
         onMouseLeave={() => this.setState({ active: false })}
         data-character-id={this.props.id}
       >
@@ -57,11 +57,7 @@ class CharacterCard extends Component<APICharacterData> {
         <div className="portraitContainer">
           <div className="portrait" style={portraitStyle} />
         </div>
-        {this.props?.sp > 0 && (
-          <div className="characterSp">
-            SP
-          </div>
-        )}
+        {this.props?.sp > 0 && <div className="characterSp">SP</div>}
       </div>
     );
   }

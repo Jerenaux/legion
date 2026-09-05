@@ -1,4 +1,5 @@
-.loading-div, .waiting-container {
+.loading-div,
+.waiting-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -36,12 +37,16 @@
   transform: translate(-50%, -50%);
   font-size: 36px;
   color: white;
-  font-family: 'Kim';
+  font-family: "Kim";
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .orientation-overlay {
@@ -65,7 +70,7 @@
 .orientation-overlay__text {
   font-size: 1.5em;
   margin-top: 20px;
-  font-family: 'Kim';
+  font-family: "Kim";
 }
 
 .waiting-container {
@@ -76,30 +81,40 @@
 }
 
 .waiting-div {
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: 24px;
   margin-bottom: 20px;
 }
 
 @keyframes ellipsis {
-  0% { content: ''; }
-  25% { content: '.'; }
-  50% { content: '..'; }
-  75% { content: '...'; }
-  100% { content: ''; }
+  0% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+  100% {
+    content: "";
+  }
 }
 
 .waiting-div::after {
-  content: '';
+  content: "";
   display: inline-block;
   width: 12px;
   animation: ellipsis 2s infinite steps(1);
 }
 
 #scene {
-  background: #242529 url('@assets/arenabg.png') center / cover no-repeat;
+  background: #242529 url("@assets/arenabg.png") center / cover no-repeat;
   margin: 0;
-  padding: 0; 
+  padding: 0;
   height: 100vh;
   width: 100vw;
   overflow: hidden;

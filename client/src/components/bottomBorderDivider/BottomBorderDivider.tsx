@@ -1,13 +1,12 @@
 // Button.tsx
-import { h, Component } from 'preact';
-import './BottomBorderDivider.style.css';
+import { h, Component } from "preact";
+import "./BottomBorderDivider.style.css";
 
 interface DividerProps {
-    label: string;
-  }
+  label: string;
+}
 
 class BottomBorderDivider extends Component<DividerProps> {
-
   render() {
     return (
       <div className="dividerContainer">

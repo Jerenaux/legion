@@ -6,85 +6,98 @@ import admin, { corsMiddleware, getUID, checkAPIKey, performLockedOperation } fr
 import { uniqueNamesGenerator } from "unique-names-generator";
 
 import { Class, ChestColor, League, PlayMode } from "@legion/shared/enums";
-import { PlayerContextData, DailyLootAllDBData, DBPlayerData,
-  PlayerInventory, ChestReward } from "@legion/shared/interfaces";
+import {
+  PlayerContextData,
+  DailyLootAllDBData,
+  DBPlayerData,
+  PlayerInventory,
+  ChestReward,
+} from "@legion/shared/interfaces";
 import { NewCharacter } from "@legion/shared/NewCharacter";
 import { getChestContent } from "@legion/shared/chests";
 import {
-  STARTING_GOLD, STARTING_GOLD_ADMIN,
+  STARTING_GOLD,
+  STARTING_GOLD_ADMIN,
   STARTING_ELO,
-  STARTING_CONSUMABLES, STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN,
+  STARTING_CONSUMABLES,
+  STARTING_SPELLS_ADMIN,
+  STARTING_EQUIPMENT_ADMIN,
   IMMEDIATE_LOOT,
-  NB_START_CHARACTERS, INVENTORY_SIZE_PER_CHARACTER,
+  NB_START_CHARACTERS,
+  INVENTORY_SIZE_PER_CHARACTER,
   BASE_INVENTORY_SIZE,
-  INVENTORY_SLOT_PRICE, MAX_PURCHASABLE_SLOTS,
+  INVENTORY_SLOT_PRICE,
+  MAX_PURCHASABLE_SLOTS,
   MAX_NICKNAME_LENGTH,
   MAX_AVATAR_ID,
 } from "@legion/shared/config";
 import { logPlayerAction, updateDAU } from "./dashboardAPI";
-import {currentSeasonId, getEmptyLeagueStats, getLeagueForElo} from "./ranking";
+import { currentSeasonId, getEmptyLeagueStats, getLeagueForElo } from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { createGameDocument } from "./gameAPI";
 import { transformDailyLoot } from "@legion/shared/utils";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards } from "./inventoryUtils";
-import {starterCharacterId} from "./playerProvisioning";
+import { starterCharacterId } from "./playerProvisioning";
 
-export const buyInventorySlots = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const buyInventorySlots = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const slotsToBuy = parseInt(request.body.slots, 10);
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const slotsToBuy = parseInt(request.body.slots, 10);
 
-      if (isNaN(slotsToBuy) || slotsToBuy <= 0) {
-        response.status(400).send("Invalid number of slots");
-        return;
+        if (isNaN(slotsToBuy) || slotsToBuy <= 0) {
+          response.status(400).send("Invalid number of slots");
+          return;
+        }
+
+        const playerRef = db.collection("players").doc(uid);
+        const playerDoc = await playerRef.get();
+
+        if (!playerDoc.exists) {
+          throw new Error("Invalid player ID");
+        }
+
+        const playerData = playerDoc.data() as DBPlayerData;
+        if (!playerData) {
+          throw new Error("playerData is null");
+        }
+
+        const purchasedSlots = playerData.purchasedInventorySlots || 0;
+        if (purchasedSlots + slotsToBuy > MAX_PURCHASABLE_SLOTS) {
+          response.status(400).send("Cannot purchase more slots than the maximum allowed");
+          return;
+        }
+
+        const totalCost = slotsToBuy * INVENTORY_SLOT_PRICE;
+        if (playerData.gold < totalCost) {
+          response.status(400).send("Not enough gold");
+          return;
+        }
+
+        await playerRef.update({
+          gold: admin.firestore.FieldValue.increment(-totalCost),
+          purchasedInventorySlots: admin.firestore.FieldValue.increment(slotsToBuy),
+        });
+
+        response.send({
+          success: true,
+          newGold: playerData.gold - totalCost,
+          newSlots: purchasedSlots + slotsToBuy,
+        });
+      } catch (error) {
+        console.error("buyInventorySlots error:", error);
+        response.status(500).send("Error");
       }
-
-      const playerRef = db.collection("players").doc(uid);
-      const playerDoc = await playerRef.get();
-
-      if (!playerDoc.exists) {
-        throw new Error("Invalid player ID");
-      }
-
-      const playerData = playerDoc.data() as DBPlayerData;
-      if (!playerData) {
-        throw new Error("playerData is null");
-      }
-
-      const purchasedSlots = playerData.purchasedInventorySlots || 0;
-      if (purchasedSlots + slotsToBuy > MAX_PURCHASABLE_SLOTS) {
-        response.status(400).send("Cannot purchase more slots than the maximum allowed");
-        return;
-      }
-
-      const totalCost = slotsToBuy * INVENTORY_SLOT_PRICE;
-      if (playerData.gold < totalCost) {
-        response.status(400).send("Not enough gold");
-        return;
-      }
-
-      await playerRef.update({
-        gold: admin.firestore.FieldValue.increment(-totalCost),
-        purchasedInventorySlots: admin.firestore.FieldValue.increment(slotsToBuy),
-      });
-
-      response.send({
-        success: true,
-        newGold: playerData.gold - totalCost,
-        newSlots: purchasedSlots + slotsToBuy,
-      });
-    } catch (error) {
-      console.error("buyInventorySlots error:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
+    });
+  },
+);
 
 const chestsDelays = {
   [ChestColor.BRONZE]: 6 * 60 * 60,
@@ -116,36 +129,129 @@ function selectRandomAvatar(): string {
 }
 
 const coolAdjectives: string[] = [
-  "Fearless", "Mystic", "Swift", "Shadowed", "Blazing",
-  "Ancient", "Vengeful", "Arcane", "Radiant", "Savage",
-  "Infernal", "Silent", "Crimson", "Lunar", "Stormy",
-  "Valiant", "Cunning", "Divine", "Phantom", "Celestial",
-  "Feral", "Venomous", "Majestic", "Abyssal", "Noble",
-  "Frosty", "Ethereal", "Vigilant", "Obsidian", "Dreadful",
-  "Mighty", "Ruthless", "Brave", "Glimmering", "Spectral",
-  "Merciless", "Burning", "Thunderous", "Enigmatic",
-  "Grim", "Titanic", "Raging", "Wicked", "Radiant",
-  "Elusive", "Mystical", "Frozen", "Unyielding", "Temporal",
-  "Unseen", "Furious", "Shimmering", "Howling", "Galactic",
-  "Daring", "Void", "Zealous", "Ironclad", "Sinister",
-  "Tempestuous", "Aegis",
+  "Fearless",
+  "Mystic",
+  "Swift",
+  "Shadowed",
+  "Blazing",
+  "Ancient",
+  "Vengeful",
+  "Arcane",
+  "Radiant",
+  "Savage",
+  "Infernal",
+  "Silent",
+  "Crimson",
+  "Lunar",
+  "Stormy",
+  "Valiant",
+  "Cunning",
+  "Divine",
+  "Phantom",
+  "Celestial",
+  "Feral",
+  "Venomous",
+  "Majestic",
+  "Abyssal",
+  "Noble",
+  "Frosty",
+  "Ethereal",
+  "Vigilant",
+  "Obsidian",
+  "Dreadful",
+  "Mighty",
+  "Ruthless",
+  "Brave",
+  "Glimmering",
+  "Spectral",
+  "Merciless",
+  "Burning",
+  "Thunderous",
+  "Enigmatic",
+  "Grim",
+  "Titanic",
+  "Raging",
+  "Wicked",
+  "Radiant",
+  "Elusive",
+  "Mystical",
+  "Frozen",
+  "Unyielding",
+  "Temporal",
+  "Unseen",
+  "Furious",
+  "Shimmering",
+  "Howling",
+  "Galactic",
+  "Daring",
+  "Void",
+  "Zealous",
+  "Ironclad",
+  "Sinister",
+  "Tempestuous",
+  "Aegis",
 ];
 
 const coolNouns: string[] = [
-  "Warrior", "Hunter", "Sorcerer", "Knight", "Rogue",
-  "Phoenix", "Dragon", "Wolf", "Shadow", "Reaper",
-  "Wraith", "Titan", "Guardian", "Berserker", "Valkyrie",
-  "Sage", "Beast", "Paladin", "Ranger", "Assassin",
-  "Seer", "Giant", "Mystic", "Viper", "Lion",
-  "Storm", "Demon", "Specter", "Falcon", "Raven",
-  "Blade", "Champion", "Samurai", "Wanderer", "Invoker",
-  "Druid", "Ember", "Oracle", "Sentinel",
-  "Invoker", "Spellbinder", "Gladiator", "Warlord", "Avenger",
-  "Shade", "Thorn", "Predator", "Harbinger",
-  "Vanguard", "Nomad", "Crusader", "Stalker", "Enigma",
-  "Harpy", "Tempest", "Prophet", "Fury", "Juggernaut",
+  "Warrior",
+  "Hunter",
+  "Sorcerer",
+  "Knight",
+  "Rogue",
+  "Phoenix",
+  "Dragon",
+  "Wolf",
+  "Shadow",
+  "Reaper",
+  "Wraith",
+  "Titan",
+  "Guardian",
+  "Berserker",
+  "Valkyrie",
+  "Sage",
+  "Beast",
+  "Paladin",
+  "Ranger",
+  "Assassin",
+  "Seer",
+  "Giant",
+  "Mystic",
+  "Viper",
+  "Lion",
+  "Storm",
+  "Demon",
+  "Specter",
+  "Falcon",
+  "Raven",
+  "Blade",
+  "Champion",
+  "Samurai",
+  "Wanderer",
+  "Invoker",
+  "Druid",
+  "Ember",
+  "Oracle",
+  "Sentinel",
+  "Invoker",
+  "Spellbinder",
+  "Gladiator",
+  "Warlord",
+  "Avenger",
+  "Shade",
+  "Thorn",
+  "Predator",
+  "Harbinger",
+  "Vanguard",
+  "Nomad",
+  "Crusader",
+  "Stalker",
+  "Enigma",
+  "Harpy",
+  "Tempest",
+  "Prophet",
+  "Fury",
+  "Juggernaut",
 ];
-
 
 function generateName() {
   const options = {
@@ -160,12 +266,12 @@ function generateName() {
 }
 
 export async function ensurePlayer(uid: string): Promise<void> {
-  const user = {uid};
+  const user = { uid };
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
-  const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const today = new Date().toISOString().replace("T", " ").slice(0, 19);
   const startLeague = League.BRONZE;
-  const isAdmin = (process.env.ADMIN_MODE == 'true');
+  const isAdmin = process.env.ADMIN_MODE == "true";
 
   const name = generateName();
   // Define the character data structure
@@ -245,177 +351,188 @@ export async function ensurePlayer(uid: string): Promise<void> {
   logger.info("New player and characters created for user:", user.uid);
 }
 
-export const createPlayer = functions.runWith({
-  memory: '512MB',
-  minInstances: 0,
-  maxInstances: 10,
-}).auth.user().onCreate((user) => ensurePlayer(user.uid));
+export const createPlayer = functions
+  .runWith({
+    memory: "512MB",
+    minInstances: 0,
+    maxInstances: 10,
+  })
+  .auth.user()
+  .onCreate((user) => ensurePlayer(user.uid));
 
-export const getPlayerData = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const getPlayerData = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
 
-      const docSnap = await db.collection('players').doc(uid).get();
+        const docSnap = await db.collection("players").doc(uid).get();
 
-      if (docSnap.exists) {
-        const playerData = docSnap.data();
-        if (!playerData) {
-          throw new Error("playerData is null");
+        if (docSnap.exists) {
+          const playerData = docSnap.data();
+          if (!playerData) {
+            throw new Error("playerData is null");
+          }
+
+          const today = new Date().toISOString().replace("T", " ").slice(0, 19);
+          if (playerData.lastActiveDate !== today) {
+            db.collection("players").doc(uid).update({
+              lastActiveDate: today,
+            });
+            updateDAU(uid);
+          }
+
+          // Check if dailyloot exists, if not create it
+          if (!playerData.dailyloot) {
+            const defaultDailyLoot = getDefaultDailyLoot();
+            await db.collection("players").doc(uid).update({
+              dailyloot: defaultDailyLoot,
+            });
+            playerData.dailyloot = defaultDailyLoot;
+          }
+
+          // Transform the chest field so that the `time` field becomes
+          // a `countdown` field
+          playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
+
+          // Ensure inventory fields exist and are arrays
+          const inventory = playerData.inventory || {};
+          const sortedInventory: PlayerInventory = {
+            consumables: Array.isArray(inventory.consumables) ? inventory.consumables.sort(numericalSort) : [],
+            spells: Array.isArray(inventory.spells) ? inventory.spells.sort(numericalSort) : [],
+            equipment: Array.isArray(inventory.equipment) ? inventory.equipment.sort(numericalSort) : [],
+          };
+
+          const inventorySize =
+            (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER +
+            (playerData.purchasedInventorySlots || 0);
+
+          const AIwinRatio =
+            playerData.AIstats && playerData.AIstats.nbGames > 0
+              ? (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2)
+              : 0;
+
+          response.send({
+            uid,
+            gold: playerData.gold || 0,
+            elo: playerData.elo || STARTING_ELO,
+            lvl: playerData.lvl || 1,
+            name: playerData.name || "",
+            teamName: "teamName",
+            avatar: playerData.avatar || "1",
+            league: playerData.league || 0,
+            rank: playerData.leagueStats?.rank || 0,
+            wins: playerData.leagueStats?.wins || 0,
+            allTimeRank: playerData.allTimeStats?.rank || 0,
+            dailyloot: playerData.dailyloot,
+            inventory: sortedInventory,
+            carrying_capacity: inventorySize,
+            isLoaded: false,
+            AIwinRatio,
+            completedGames: playerData.engagementStats?.completedGames || 0,
+            engagementStats: playerData.engagementStats || {},
+          } as PlayerContextData);
+        } else {
+          response.status(404).send(`Player ID ${uid} not found`);
         }
-
-        const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
-        if (playerData.lastActiveDate !== today) {
-          db.collection("players").doc(uid).update({
-            lastActiveDate: today,
-          });
-          updateDAU(uid);
+      } catch (error) {
+        console.error("playerData error:", error);
+        if (error instanceof Error && error.message === "No UID provided") {
+          response.status(400).send("No player ID provided");
+        } else {
+          response.status(401).send("Unauthorized");
         }
-
-        // Check if dailyloot exists, if not create it
-        if (!playerData.dailyloot) {
-          const defaultDailyLoot = getDefaultDailyLoot();
-          await db.collection("players").doc(uid).update({
-            dailyloot: defaultDailyLoot,
-          });
-          playerData.dailyloot = defaultDailyLoot;
-        }
-
-        // Transform the chest field so that the `time` field becomes
-        // a `countdown` field
-        playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
-
-        // Ensure inventory fields exist and are arrays
-        const inventory = playerData.inventory || {};
-        const sortedInventory: PlayerInventory = {
-          consumables: Array.isArray(inventory.consumables) ? inventory.consumables.sort(numericalSort) : [],
-          spells: Array.isArray(inventory.spells) ? inventory.spells.sort(numericalSort) : [],
-          equipment: Array.isArray(inventory.equipment) ? inventory.equipment.sort(numericalSort) : [],
-        };
-
-        const inventorySize = (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER + (playerData.purchasedInventorySlots || 0);
-
-        const AIwinRatio =
-          playerData.AIstats && playerData.AIstats.nbGames > 0 ?
-            (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
-            0;
-
-        response.send({
-          uid,
-          gold: playerData.gold || 0,
-          elo: playerData.elo || STARTING_ELO,
-          lvl: playerData.lvl || 1,
-          name: playerData.name || '',
-          teamName: "teamName",
-          avatar: playerData.avatar || '1',
-          league: playerData.league || 0,
-          rank: playerData.leagueStats?.rank || 0,
-          wins: playerData.leagueStats?.wins || 0,
-          allTimeRank: playerData.allTimeStats?.rank || 0,
-          dailyloot: playerData.dailyloot,
-          inventory: sortedInventory,
-          carrying_capacity: inventorySize,
-          isLoaded: false,
-          AIwinRatio,
-          completedGames: playerData.engagementStats?.completedGames || 0,
-          engagementStats: playerData.engagementStats || {},
-        } as PlayerContextData);
-      } else {
-        response.status(404).send(`Player ID ${uid} not found`);
       }
-    } catch (error) {
-      console.error("playerData error:", error);
-      if (error instanceof Error && error.message === "No UID provided") {
-        response.status(400).send("No player ID provided");
-      } else {
+    });
+  },
+);
+
+export const queuingData = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const docSnap = await db.collection("players").doc(uid).get();
+
+        if (docSnap.exists) {
+          const playerData = docSnap.data();
+          if (!playerData) {
+            throw new Error("playerData is null");
+          }
+
+          response.send({
+            elo: playerData.elo,
+            league: playerData.league,
+          });
+        } else {
+          response.status(404).send("Not Found: Invalid player ID");
+        }
+      } catch (error) {
+        console.error("queuingData error:", error);
         response.status(401).send("Unauthorized");
       }
-    }
-  });
-});
+    });
+  },
+);
 
-export const queuingData = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const saveGoldReward = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    logger.info("Saving gold reward");
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const docSnap = await db.collection("players").doc(uid).get();
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
+        const uid = request.body.uid;
+        const gold = request.body.gold;
 
-      if (docSnap.exists) {
-        const playerData = docSnap.data();
+        const playerRef = db.collection("players").doc(uid);
+        const playerDoc = await playerRef.get();
+
+        if (!playerDoc.exists) {
+          throw new Error("Invalid player ID");
+        }
+
+        const playerData = playerDoc.data();
         if (!playerData) {
           throw new Error("playerData is null");
         }
 
-        response.send({
-          elo: playerData.elo,
-          league: playerData.league,
+        const newGold = playerData.gold + gold;
+
+        await playerRef.update({
+          gold: newGold,
         });
-      } else {
-        response.status(404).send("Not Found: Invalid player ID");
+
+        response.send({
+          gold: newGold,
+        });
+      } catch (error) {
+        console.error("saveGoldReward error:", error);
+        response.status(500).send("Error");
       }
-    } catch (error) {
-      console.error("queuingData error:", error);
-      response.status(401).send("Unauthorized");
-    }
-  });
-});
+    });
+  },
+);
 
-export const saveGoldReward = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Saving gold reward");
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
-      const uid = request.body.uid;
-      const gold = request.body.gold;
-
-      const playerRef = db.collection("players").doc(uid);
-      const playerDoc = await playerRef.get();
-
-      if (!playerDoc.exists) {
-        throw new Error("Invalid player ID");
-      }
-
-      const playerData = playerDoc.data();
-      if (!playerData) {
-        throw new Error("playerData is null");
-      }
-
-      const newGold = playerData.gold + gold;
-
-      await playerRef.update({
-        gold: newGold,
-      });
-
-      response.send({
-        gold: newGold,
-      });
-    } catch (error) {
-      console.error("saveGoldReward error:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
-
-export async function awardChestContent(
-  playerRef: admin.firestore.DocumentReference,
-  chestColor: ChestColor,
-) {
+export async function awardChestContent(playerRef: admin.firestore.DocumentReference, chestColor: ChestColor) {
   const content: ChestReward[] = getChestContent(chestColor);
   logger.info(`[awardChestContent] Chest content: ${JSON.stringify(content)}`);
 
@@ -423,7 +540,7 @@ export async function awardChestContent(
     // First, get the current player data
     const playerDoc = await playerRef.get();
     if (!playerDoc.exists) {
-      throw new Error('Player document does not exist');
+      throw new Error("Player document does not exist");
     }
     const playerData = playerDoc.data() as DBPlayerData;
 
@@ -434,7 +551,7 @@ export async function awardChestContent(
     for (const reward of content) {
       switch (reward.type) {
         case "gold":
-          goldIncrement += (reward.amount || 0);
+          goldIncrement += reward.amount || 0;
           break;
         case "consumable":
           if (!updates["inventory.consumables"]) {
@@ -474,93 +591,21 @@ export async function awardChestContent(
   }
 }
 
-export const claimChest = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const claimChest = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const chestType = request.query.chestType as keyof DailyLootAllDBData;
-      logger.info("Claiming chest for player:", uid, "chestType:", chestType);
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const chestType = request.query.chestType as keyof DailyLootAllDBData;
+        logger.info("Claiming chest for player:", uid, "chestType:", chestType);
 
-      const playerRef = db.collection("players").doc(uid);
-      const playerDoc = await playerRef.get();
-
-      if (!playerDoc.exists) {
-        throw new Error("Invalid player ID");
-      }
-
-      const playerData = playerDoc.data();
-      if (!playerData) {
-        throw new Error("playerData is null");
-      }
-
-      const chest = playerData.dailyloot[chestType];
-      if (!chest) {
-        throw new Error("Invalid chest type");
-      }
-
-      const now = Date.now() / 1000;
-      if (!chest.hasKey && !IMMEDIATE_LOOT) {
-        response.status(400).send("Key for chest not owned!");
-        return;
-      }
-      if (chest.time > now && !IMMEDIATE_LOOT) {
-        response.status(400).send("Chest is still locked!");
-        return;
-      }
-
-      const batch = db.batch();
-
-      // Update dailyloot
-      playerData.dailyloot[chestType] = {
-        time: now + chestsDelays[chestType],
-        hasKey: false,
-      };
-      batch.update(playerRef, {
-        dailyloot: playerData.dailyloot,
-      });
-
-      // Update utilization stats
-      batch.update(playerRef, {
-        'engagementStats.everOpenedDailyLoot': true,
-      });
-
-      // Commit the batch
-      await batch.commit();
-
-      // Award chest content
-      const content = await awardChestContent(playerRef, chestType as ChestColor);
-
-      const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
-      logPlayerAction(uid, "claimChest", { chestType });
-      response.send({
-        content,
-        dailyloot: dailyLootResponse,
-      });
-    } catch (error) {
-      console.error("claimChest error:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
-
-export const completeTour = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const tour = request.body.page;
-      logger.info("Completing tour for player:", uid, "tour:", tour);
-
-      await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
-        const playerDoc = await transaction.get(playerRef);
+        const playerDoc = await playerRef.get();
 
         if (!playerDoc.exists) {
           throw new Error("Invalid player ID");
@@ -571,20 +616,98 @@ export const completeTour = onRequest({
           throw new Error("playerData is null");
         }
 
-        playerData.tours[tour as keyof typeof playerData.tours] = true;
+        const chest = playerData.dailyloot[chestType];
+        if (!chest) {
+          throw new Error("Invalid chest type");
+        }
 
-        transaction.update(playerRef, {
-          tours: playerData.tours,
+        const now = Date.now() / 1000;
+        if (!chest.hasKey && !IMMEDIATE_LOOT) {
+          response.status(400).send("Key for chest not owned!");
+          return;
+        }
+        if (chest.time > now && !IMMEDIATE_LOOT) {
+          response.status(400).send("Chest is still locked!");
+          return;
+        }
+
+        const batch = db.batch();
+
+        // Update dailyloot
+        playerData.dailyloot[chestType] = {
+          time: now + chestsDelays[chestType],
+          hasKey: false,
+        };
+        batch.update(playerRef, {
+          dailyloot: playerData.dailyloot,
         });
 
-        response.send({});
-      });
-    } catch (error) {
-      console.error("completeTour error:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
+        // Update utilization stats
+        batch.update(playerRef, {
+          "engagementStats.everOpenedDailyLoot": true,
+        });
+
+        // Commit the batch
+        await batch.commit();
+
+        // Award chest content
+        const content = await awardChestContent(playerRef, chestType as ChestColor);
+
+        const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
+        logPlayerAction(uid, "claimChest", { chestType });
+        response.send({
+          content,
+          dailyloot: dailyLootResponse,
+        });
+      } catch (error) {
+        console.error("claimChest error:", error);
+        response.status(500).send("Error");
+      }
+    });
+  },
+);
+
+export const completeTour = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const tour = request.body.page;
+        logger.info("Completing tour for player:", uid, "tour:", tour);
+
+        await db.runTransaction(async (transaction) => {
+          const playerRef = db.collection("players").doc(uid);
+          const playerDoc = await transaction.get(playerRef);
+
+          if (!playerDoc.exists) {
+            throw new Error("Invalid player ID");
+          }
+
+          const playerData = playerDoc.data();
+          if (!playerData) {
+            throw new Error("playerData is null");
+          }
+
+          playerData.tours[tour as keyof typeof playerData.tours] = true;
+
+          transaction.update(playerRef, {
+            tours: playerData.tours,
+          });
+
+          response.send({});
+        });
+      } catch (error) {
+        console.error("completeTour error:", error);
+        response.status(500).send("Error");
+      }
+    });
+  },
+);
 
 const figureOutGuideTip = (playerData: any) => {
   const joinedSince = (new Date().getTime() - new Date(playerData.joinDate).getTime()) / 1000;
@@ -596,9 +719,11 @@ const figureOutGuideTip = (playerData: any) => {
     };
   }
 
-  if (!playerData.guideTipsShown.includes(0) &&
+  if (
+    !playerData.guideTipsShown.includes(0) &&
     playerData.gold >= STARTING_GOLD * 3 &&
-    !playerData.engagementStats.everPurchased) {
+    !playerData.engagementStats.everPurchased
+  ) {
     return {
       guideId: 0,
       route: "/shop",
@@ -631,9 +756,11 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // You have unused equipment pieces in your inventory! Click here to go to the team page and equip them!
-  if (!playerData.guideTipsShown.includes(3) &&
+  if (
+    !playerData.guideTipsShown.includes(3) &&
     playerData.inventory.equipment.length > 0 &&
-    !playerData.engagementStats.everEquippedEquipment) {
+    !playerData.engagementStats.everEquippedEquipment
+  ) {
     return {
       guideId: 3,
       route: "/team",
@@ -641,9 +768,11 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "You have unused consumables in your inventory! Click here to go to the team page and equip them on your characters!",
-  if (!playerData.guideTipsShown.includes(4) &&
+  if (
+    !playerData.guideTipsShown.includes(4) &&
     playerData.inventory.consumables.length > 3 &&
-    !playerData.engagementStats.everEquippedConsumable) {
+    !playerData.engagementStats.everEquippedConsumable
+  ) {
     return {
       guideId: 4,
       route: "/team",
@@ -651,9 +780,11 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "You have unused spells in your inventory! Click here to go to the team page and teach them to your characters!",
-  if (!playerData.guideTipsShown.includes(5) &&
+  if (
+    !playerData.guideTipsShown.includes(5) &&
     playerData.inventory.spells.length > 0 &&
-    !playerData.engagementStats.everEquippedSpell) {
+    !playerData.engagementStats.everEquippedSpell
+  ) {
     return {
       guideId: 5,
       route: "/team",
@@ -661,8 +792,7 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "Not sure what to do? Just click here to start a Practice game and try out your characters and spells!",
-  if (!playerData.guideTipsShown.includes(6) &&
-    !playerData.engagementStats.everPlayedPractice) {
+  if (!playerData.guideTipsShown.includes(6) && !playerData.engagementStats.everPlayedPractice) {
     return {
       guideId: 6,
       route: "/queue/0",
@@ -670,9 +800,11 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "Now that you know the game a bit more, click here to play against another player in Casual mode!",
-  if (!playerData.guideTipsShown.includes(7) &&
+  if (
+    !playerData.guideTipsShown.includes(7) &&
     playerData.engagementStats.everPlayedPractice &&
-    !playerData.engagementStats.everPlayedCasual) {
+    !playerData.engagementStats.everPlayedCasual
+  ) {
     return {
       guideId: 7,
       route: "/queue/1",
@@ -680,15 +812,16 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "You've had a few victories now, why don't you try your luck in Ranked mode and climb the ladder? Click here to start!",
-  if (!playerData.guideTipsShown.includes(8) &&
+  if (
+    !playerData.guideTipsShown.includes(8) &&
     playerData.casualStats.wins >= 2 &&
-    !playerData.engagementStats.everPlayedRanked) {
+    !playerData.engagementStats.everPlayedRanked
+  ) {
     return {
       guideId: 8,
       route: "/queue/2",
     };
   }
-
 
   return {
     guideId: -1,
@@ -698,9 +831,13 @@ const figureOutGuideTip = (playerData: any) => {
 
 const figureOutConbatTip = (playerData: any) => {
   // "Your characters know cool spells, this time why don't you give them a try in combat?",
-  if (!playerData.guideTipsShown.includes(9) &&
-    (playerData.engagementStats.everPlayedPractice || playerData.engagementStats.everPlayedCasual || playerData.engagementStats.everPlayedRanked) &&
-    !playerData.engagementStats.everUsedSpell) {
+  if (
+    !playerData.guideTipsShown.includes(9) &&
+    (playerData.engagementStats.everPlayedPractice ||
+      playerData.engagementStats.everPlayedCasual ||
+      playerData.engagementStats.everPlayedRanked) &&
+    !playerData.engagementStats.everUsedSpell
+  ) {
     return {
       guideId: 9,
       route: "",
@@ -713,66 +850,20 @@ const figureOutConbatTip = (playerData: any) => {
   };
 };
 
-export const fetchGuideTip = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const fetchGuideTip = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const combatTip = request.query.combatTip;
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const combatTip = request.query.combatTip;
 
-      const playerRef = db.collection("players").doc(uid);
-      const playerDoc = await playerRef.get();
-
-      if (!playerDoc.exists) {
-        throw new Error("Invalid player ID");
-      }
-
-      const playerData = playerDoc.data();
-      if (!playerData) {
-        throw new Error("playerData is null");
-      }
-
-      const { guideId, route } = combatTip ? figureOutConbatTip(playerData) : figureOutGuideTip(playerData);
-      // Update the player document to add the guideId to the list of shown tips
-      if (guideId !== -1) {
-        await playerRef.update({
-          guideTipsShown: admin.firestore.FieldValue.arrayUnion(guideId),
-        });
-      }
-
-      response.send({
-        guideId,
-        route,
-      });
-    } catch (error) {
-      console.error("fetchGuideTip error:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
-
-export const setPlayerOnSteroids = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
-
-      const { uid } = request.body;
-
-      // Start a new transaction
-      await db.runTransaction(async (transaction) => {
         const playerRef = db.collection("players").doc(uid);
-        const playerDoc = await transaction.get(playerRef);
+        const playerDoc = await playerRef.get();
 
         if (!playerDoc.exists) {
           throw new Error("Invalid player ID");
@@ -783,330 +874,412 @@ export const setPlayerOnSteroids = onRequest({
           throw new Error("playerData is null");
         }
 
-        // Delete existing characters
-        for (const characterRef of playerData.characters) {
-          transaction.delete(characterRef);
-        }
-
-        // Create new characters
-        const levelBase = 10;
-        const newCharacters = [
-          new NewCharacter(Class.WARRIOR, Math.floor(Math.random() * 20) + levelBase),
-          new NewCharacter(Class.WHITE_MAGE, Math.floor(Math.random() * 20) + levelBase),
-          new NewCharacter(Class.WHITE_MAGE, Math.floor(Math.random() * 20) + levelBase),
-          new NewCharacter(Class.BLACK_MAGE, Math.floor(Math.random() * 20) + levelBase),
-          new NewCharacter(Class.BLACK_MAGE, Math.floor(Math.random() * 20) + levelBase),
-        ];
-
-        const newCharacterRefs = [];
-        for (const character of newCharacters) {
-          const characterRef = db.collection("characters").doc();
-          const characterData = character.getCharacterData();
-
-          // Add some SP
-          characterData.sp = Math.floor(Math.random() * 10) + 1;
-          characterData.allTimeSP = characterData.sp;
-
-          // Adjust spells for white mage and black mages
-          if (character.characterClass === Class.WHITE_MAGE) {
-            characterData.skill_slots = 4;
-            characterData.skills = []; // Start with empty skills array for white mages
-          } else if (character.characterClass === Class.BLACK_MAGE) {
-            characterData.skill_slots = 5;
-            characterData.skills = [];
-          }
-
-          transaction.set(characterRef, characterData);
-          newCharacterRefs.push(characterRef);
-        }
-
-        // Distribute spells 9 to 12 among white mages
-        const whiteMageRefs = newCharacterRefs.filter((_, index) => index === 1 || index === 2);
-        const whiteSpells = [9, 10, 11, 12];
-        for (const spell of whiteSpells) {
-          const randomWhiteMage = whiteMageRefs[Math.floor(Math.random() * whiteMageRefs.length)];
-          transaction.update(randomWhiteMage, {
-            skills: admin.firestore.FieldValue.arrayUnion(spell),
+        const { guideId, route } = combatTip ? figureOutConbatTip(playerData) : figureOutGuideTip(playerData);
+        // Update the player document to add the guideId to the list of shown tips
+        if (guideId !== -1) {
+          await playerRef.update({
+            guideTipsShown: admin.firestore.FieldValue.arrayUnion(guideId),
           });
         }
 
-        // Distribute spells 1-8 among black mages
-        const blackMageRefs = newCharacterRefs.filter((_, index) => index === 3 || index === 4);
-        const spells = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-        for (const spell of spells) {
-          const randomBlackMage = blackMageRefs[Math.floor(Math.random() * blackMageRefs.length)];
-          transaction.update(randomBlackMage, {
-            skills: admin.firestore.FieldValue.arrayUnion(spell),
-          });
-        }
-
-        // Update player data
-        const newInventory = {
-          consumables: [],
-          equipment: [],
-          spells: [],
-        };
-
-        // Add random amounts of consumables
-        for (let i = 0; i <= 12; i++) {
-          const amount = Math.floor(Math.random() * 3) + 1;
-          for (let j = 0; j < amount; j++) {
-            // @ts-ignore
-            newInventory.consumables.push(i);
-          }
-        }
-
-        // Add random amounts of equipment
-        for (let i = 0; i <= 31; i++) {
-          const amount = Math.floor(Math.random() * 2) + 1;
-          for (let j = 0; j < amount; j++) {
-            // @ts-ignore
-            newInventory.equipment.push(i);
-          }
-        }
-
-        // Set all engagement stats to true to simulate a player who has done everything
-        const completeEngagementStats = {
-          completedGames: 15,
-          totalGames: 25,
-          everPurchased: true,
-          everSpentSP: true,
-          everOpenedDailyLoot: true,
-          everEquippedConsumable: true,
-          everEquippedEquipment: true,
-          everEquippedSpell: true,
-          everUsedSpell: true,
-          everUsedItem: true,
-          everPlayedPractice: true,
-          everPlayedCasual: true,
-          everPlayedRanked: true,
-          everMoved: true,
-          everAttacked: true,
-          everSawFlames: true,
-          everSawIce: true,
-          everPoisoned: true,
-          everSilenced: true,
-          everParalyzed: true,
-          everLowMP: true,
-        };
-
-        transaction.update(playerRef, {
-          characters: newCharacterRefs,
-          gold: 35000,
-          inventory: newInventory,
-          engagementStats: completeEngagementStats,
-          AIstats: {
-            nbGames: 10,
-            wins: 20,
-          },
+        response.send({
+          guideId,
+          route,
         });
-      });
+      } catch (error) {
+        console.error("fetchGuideTip error:", error);
+        response.status(500).send("Error");
+      }
+    });
+  },
+);
 
-      response.send({ message: "Player reset successfully" });
-    } catch (error) {
-      console.error("resetPlayer error:", error);
-      response.status(500).send(`Error resetting player: ${error}`);
-    }
-  });
-});
+export const setPlayerOnSteroids = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
+
+        const { uid } = request.body;
+
+        // Start a new transaction
+        await db.runTransaction(async (transaction) => {
+          const playerRef = db.collection("players").doc(uid);
+          const playerDoc = await transaction.get(playerRef);
+
+          if (!playerDoc.exists) {
+            throw new Error("Invalid player ID");
+          }
+
+          const playerData = playerDoc.data();
+          if (!playerData) {
+            throw new Error("playerData is null");
+          }
+
+          // Delete existing characters
+          for (const characterRef of playerData.characters) {
+            transaction.delete(characterRef);
+          }
+
+          // Create new characters
+          const levelBase = 10;
+          const newCharacters = [
+            new NewCharacter(Class.WARRIOR, Math.floor(Math.random() * 20) + levelBase),
+            new NewCharacter(Class.WHITE_MAGE, Math.floor(Math.random() * 20) + levelBase),
+            new NewCharacter(Class.WHITE_MAGE, Math.floor(Math.random() * 20) + levelBase),
+            new NewCharacter(Class.BLACK_MAGE, Math.floor(Math.random() * 20) + levelBase),
+            new NewCharacter(Class.BLACK_MAGE, Math.floor(Math.random() * 20) + levelBase),
+          ];
+
+          const newCharacterRefs = [];
+          for (const character of newCharacters) {
+            const characterRef = db.collection("characters").doc();
+            const characterData = character.getCharacterData();
+
+            // Add some SP
+            characterData.sp = Math.floor(Math.random() * 10) + 1;
+            characterData.allTimeSP = characterData.sp;
+
+            // Adjust spells for white mage and black mages
+            if (character.characterClass === Class.WHITE_MAGE) {
+              characterData.skill_slots = 4;
+              characterData.skills = []; // Start with empty skills array for white mages
+            } else if (character.characterClass === Class.BLACK_MAGE) {
+              characterData.skill_slots = 5;
+              characterData.skills = [];
+            }
+
+            transaction.set(characterRef, characterData);
+            newCharacterRefs.push(characterRef);
+          }
+
+          // Distribute spells 9 to 12 among white mages
+          const whiteMageRefs = newCharacterRefs.filter((_, index) => index === 1 || index === 2);
+          const whiteSpells = [9, 10, 11, 12];
+          for (const spell of whiteSpells) {
+            const randomWhiteMage = whiteMageRefs[Math.floor(Math.random() * whiteMageRefs.length)];
+            transaction.update(randomWhiteMage, {
+              skills: admin.firestore.FieldValue.arrayUnion(spell),
+            });
+          }
+
+          // Distribute spells 1-8 among black mages
+          const blackMageRefs = newCharacterRefs.filter((_, index) => index === 3 || index === 4);
+          const spells = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+          for (const spell of spells) {
+            const randomBlackMage = blackMageRefs[Math.floor(Math.random() * blackMageRefs.length)];
+            transaction.update(randomBlackMage, {
+              skills: admin.firestore.FieldValue.arrayUnion(spell),
+            });
+          }
+
+          // Update player data
+          const newInventory = {
+            consumables: [],
+            equipment: [],
+            spells: [],
+          };
+
+          // Add random amounts of consumables
+          for (let i = 0; i <= 12; i++) {
+            const amount = Math.floor(Math.random() * 3) + 1;
+            for (let j = 0; j < amount; j++) {
+              // @ts-ignore
+              newInventory.consumables.push(i);
+            }
+          }
+
+          // Add random amounts of equipment
+          for (let i = 0; i <= 31; i++) {
+            const amount = Math.floor(Math.random() * 2) + 1;
+            for (let j = 0; j < amount; j++) {
+              // @ts-ignore
+              newInventory.equipment.push(i);
+            }
+          }
+
+          // Set all engagement stats to true to simulate a player who has done everything
+          const completeEngagementStats = {
+            completedGames: 15,
+            totalGames: 25,
+            everPurchased: true,
+            everSpentSP: true,
+            everOpenedDailyLoot: true,
+            everEquippedConsumable: true,
+            everEquippedEquipment: true,
+            everEquippedSpell: true,
+            everUsedSpell: true,
+            everUsedItem: true,
+            everPlayedPractice: true,
+            everPlayedCasual: true,
+            everPlayedRanked: true,
+            everMoved: true,
+            everAttacked: true,
+            everSawFlames: true,
+            everSawIce: true,
+            everPoisoned: true,
+            everSilenced: true,
+            everParalyzed: true,
+            everLowMP: true,
+          };
+
+          transaction.update(playerRef, {
+            characters: newCharacterRefs,
+            gold: 35000,
+            inventory: newInventory,
+            engagementStats: completeEngagementStats,
+            AIstats: {
+              nbGames: 10,
+              wins: 20,
+            },
+          });
+        });
+
+        response.send({ message: "Player reset successfully" });
+      } catch (error) {
+        console.error("resetPlayer error:", error);
+        response.status(500).send(`Error resetting player: ${error}`);
+      }
+    });
+  },
+);
 
 export const zombieData = onRequest(
   {
     secrets: ["API_KEY"],
-    memory: '512MiB',
+    memory: "512MiB",
   },
   async (req, res) => {
-  try {
-    if (!checkAPIKey(req)) {
-      res.status(401).send('Unauthorized');
-      return;
-    }
+    try {
+      if (!checkAPIKey(req)) {
+        res.status(401).send("Unauthorized");
+        return;
+      }
 
-    const db = admin.firestore();
+      const db = admin.firestore();
 
-    // Get the league and elo parameters from the request
-    const league = parseInt(req.query.league as string, 10);
-    const targetElo = parseInt(req.query.elo as string, 10);
+      // Get the league and elo parameters from the request
+      const league = parseInt(req.query.league as string, 10);
+      const targetElo = parseInt(req.query.elo as string, 10);
 
-    console.log(`[zombieData] Fetching zombie data for elo: ${targetElo} and league: ${league}`);
+      console.log(`[zombieData] Fetching zombie data for elo: ${targetElo} and league: ${league}`);
 
-    if (isNaN(league) || isNaN(targetElo)) {
-      res.status(400).json({ error: 'Valid league and elo parameters are required' });
-      console.log(`[zombieData] Invalid league or elo parameters: ${league} ${targetElo}`);
-      return;
-    }
+      if (isNaN(league) || isNaN(targetElo)) {
+        res.status(400).json({ error: "Valid league and elo parameters are required" });
+        console.log(`[zombieData] Invalid league or elo parameters: ${league} ${targetElo}`);
+        return;
+      }
 
-    // Calculate date 7 days ago
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const cutoffDate = oneWeekAgo.toISOString().replace('T', ' ').slice(0, 19);
+      // Calculate date 7 days ago
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const cutoffDate = oneWeekAgo.toISOString().replace("T", " ").slice(0, 19);
 
-    // Prepare the query
-    let playersQuery = db.collection('players')
-      .where('lastActiveDate', '<', cutoffDate);
+      // Prepare the query
+      let playersQuery = db.collection("players").where("lastActiveDate", "<", cutoffDate);
 
-    if (league !== -1) {
-      playersQuery = playersQuery.where('league', '==', league);
-    }
+      if (league !== -1) {
+        playersQuery = playersQuery.where("league", "==", league);
+      }
 
-    // Get all matching player documents
-    const playersSnapshot = await playersQuery.get();
-    const playerDocs = playersSnapshot.docs;
+      // Get all matching player documents
+      const playersSnapshot = await playersQuery.get();
+      const playerDocs = playersSnapshot.docs;
 
-    console.log(`[zombieData] Found ${playerDocs.length} inactive players`);
+      console.log(`[zombieData] Found ${playerDocs.length} inactive players`);
 
-    if (playerDocs.length === 0) {
-      res.json({});
-      return;
-    }
+      if (playerDocs.length === 0) {
+        res.json({});
+        return;
+      }
 
-    // Shuffle the array of player documents
-    for (let i = playerDocs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [playerDocs[i], playerDocs[j]] = [playerDocs[j], playerDocs[i]];
-    }
+      // Shuffle the array of player documents
+      for (let i = playerDocs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [playerDocs[i], playerDocs[j]] = [playerDocs[j], playerDocs[i]];
+      }
 
-    // Select up to 10 random players
-    const selectedPlayers = playerDocs.slice(0, 10);
+      // Select up to 10 random players
+      const selectedPlayers = playerDocs.slice(0, 10);
 
-    // Find the player with the closest ELO
-    let closestPlayer = null;
-    let closestEloDiff = Infinity;
+      // Find the player with the closest ELO
+      let closestPlayer = null;
+      let closestEloDiff = Infinity;
 
-    for (const playerDoc of selectedPlayers) {
-      const playerData = playerDoc.data();
-      if (playerData) {
-        const eloDiff = Math.abs(playerData.elo - targetElo);
-        if (eloDiff < closestEloDiff) {
-          closestEloDiff = eloDiff;
-          closestPlayer = { id: playerDoc.id, data: playerData };
+      for (const playerDoc of selectedPlayers) {
+        const playerData = playerDoc.data();
+        if (playerData) {
+          const eloDiff = Math.abs(playerData.elo - targetElo);
+          if (eloDiff < closestEloDiff) {
+            closestEloDiff = eloDiff;
+            closestPlayer = { id: playerDoc.id, data: playerData };
+          }
         }
       }
-    }
 
-    if (closestPlayer) {
-      const { id: playerId, data: playerData } = closestPlayer;
+      if (closestPlayer) {
+        const { id: playerId, data: playerData } = closestPlayer;
 
-      // Get character data
-      const characterRefs = playerData.characters || [];
-      const characterDocs = await db.getAll(...characterRefs, {
-        fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats',
-          'carrying_capacity', 'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment',
-          'equipment_bonuses', 'sp_bonuses', 'skills',
-        ],
-      });
+        // Get character data
+        const characterRefs = playerData.characters || [];
+        const characterDocs = await db.getAll(...characterRefs, {
+          fieldMask: [
+            "name",
+            "portrait",
+            "level",
+            "class",
+            "experience",
+            "xp",
+            "sp",
+            "stats",
+            "carrying_capacity",
+            "carrying_capacity_bonus",
+            "skill_slots",
+            "inventory",
+            "equipment",
+            "equipment_bonuses",
+            "sp_bonuses",
+            "skills",
+          ],
+        });
 
-      const rosterData = characterDocs.map((characterDoc) => ({
-        id: characterDoc.id,
-        name: characterDoc.get('name'),
-        level: characterDoc.get('level'),
-        class: characterDoc.get('class'),
-        experience: characterDoc.get('experience'),
-        portrait: characterDoc.get('portrait'),
-        xp: characterDoc.get('xp'),
-        sp: characterDoc.get('sp'),
-        stats: characterDoc.get('stats'),
-        carrying_capacity: characterDoc.get('carrying_capacity'),
-        carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
-        skill_slots: characterDoc.get('skill_slots'),
-        inventory: characterDoc.get('inventory'),
-        equipment: characterDoc.get('equipment'),
-        equipment_bonuses: characterDoc.get('equipment_bonuses'),
-        sp_bonuses: characterDoc.get('sp_bonuses'),
-        skills: characterDoc.get('skills'),
-      }));
+        const rosterData = characterDocs.map((characterDoc) => ({
+          id: characterDoc.id,
+          name: characterDoc.get("name"),
+          level: characterDoc.get("level"),
+          class: characterDoc.get("class"),
+          experience: characterDoc.get("experience"),
+          portrait: characterDoc.get("portrait"),
+          xp: characterDoc.get("xp"),
+          sp: characterDoc.get("sp"),
+          stats: characterDoc.get("stats"),
+          carrying_capacity: characterDoc.get("carrying_capacity"),
+          carrying_capacity_bonus: characterDoc.get("carrying_capacity_bonus"),
+          skill_slots: characterDoc.get("skill_slots"),
+          inventory: characterDoc.get("inventory"),
+          equipment: characterDoc.get("equipment"),
+          equipment_bonuses: characterDoc.get("equipment_bonuses"),
+          sp_bonuses: characterDoc.get("sp_bonuses"),
+          skills: characterDoc.get("skills"),
+        }));
 
-      // Transform dailyloot
-      const transformedDailyLoot = transformDailyLoot(playerData.dailyloot);
+        // Transform dailyloot
+        const transformedDailyLoot = transformDailyLoot(playerData.dailyloot);
 
-      // Prepare tours data
-      const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
+        // Prepare tours data
+        const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
 
-      // Sort inventory
-      const sortedInventory = {
-        consumables: playerData.inventory.consumables.sort(numericalSort),
-        spells: playerData.inventory.spells.sort(numericalSort),
-        equipment: playerData.inventory.equipment.sort(numericalSort),
-      };
+        // Sort inventory
+        const sortedInventory = {
+          consumables: playerData.inventory.consumables.sort(numericalSort),
+          spells: playerData.inventory.spells.sort(numericalSort),
+          equipment: playerData.inventory.equipment.sort(numericalSort),
+        };
 
-      // Prepare the response object
-      const responseData = {
-        playerData: {
-          uid: playerId,
-          gold: playerData.gold,
-          elo: playerData.elo,
-          lvl: playerData.lvl,
-          name: playerData.name,
-          teamName: "teamName",
-          avatar: playerData.avatar,
-          league: playerData.league,
-          rank: playerData.leagueStats.rank,
-          wins: playerData.leagueStats.wins,
-          allTimeRank: playerData.allTimeStats.rank,
-          dailyloot: transformedDailyLoot,
-          tours,
-          inventory: sortedInventory,
-          carrying_capacity: playerData.carrying_capacity,
-          isLoaded: false,
-        },
-        rosterData: {
-          characters: rosterData,
-        },
-      };
+        // Prepare the response object
+        const responseData = {
+          playerData: {
+            uid: playerId,
+            gold: playerData.gold,
+            elo: playerData.elo,
+            lvl: playerData.lvl,
+            name: playerData.name,
+            teamName: "teamName",
+            avatar: playerData.avatar,
+            league: playerData.league,
+            rank: playerData.leagueStats.rank,
+            wins: playerData.leagueStats.wins,
+            allTimeRank: playerData.allTimeStats.rank,
+            dailyloot: transformedDailyLoot,
+            tours,
+            inventory: sortedInventory,
+            carrying_capacity: playerData.carrying_capacity,
+            isLoaded: false,
+          },
+          rosterData: {
+            characters: rosterData,
+          },
+        };
 
-      res.json(responseData);
-    } else {
-      console.log(`[zombieData] No suitable inactive players found${league !== -1 ? ` in league ${league}` : ''}`);
-      res.json({});
-    }
-  } catch (error) {
-    console.error('Error in zombieData:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-export const recordPlayerAction = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  return corsMiddleware(request, response, async () => {
-    try {
-      console.log(`[recordPlayerAction] ${JSON.stringify(request.body)}`);
-      const uid = await getUID(request);
-      const actionType = request.body.actionType;
-      const details = request.body.details;
-      logPlayerAction(uid, actionType, details);
-
-      response.status(200).send({});
+        res.json(responseData);
+      } else {
+        console.log(`[zombieData] No suitable inactive players found${league !== -1 ? ` in league ${league}` : ""}`);
+        res.json({});
+      }
     } catch (error) {
-      console.error('recordPlayerAction error:', error);
-      response.status(500).send('An error occurred during recordPlayerAction: ' + (error instanceof Error ? error.message : String(error)));
+      console.error("Error in zombieData:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
-  });
-});
+  },
+);
 
-export const incrementStartedGames = onRequest({ secrets: ["API_KEY"], memory: '512MiB' }, async (request, response) => {
+export const recordPlayerAction = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    return corsMiddleware(request, response, async () => {
+      try {
+        console.log(`[recordPlayerAction] ${JSON.stringify(request.body)}`);
+        const uid = await getUID(request);
+        const actionType = request.body.actionType;
+        const details = request.body.details;
+        logPlayerAction(uid, actionType, details);
+
+        response.status(200).send({});
+      } catch (error) {
+        console.error("recordPlayerAction error:", error);
+        response
+          .status(500)
+          .send(
+            "An error occurred during recordPlayerAction: " + (error instanceof Error ? error.message : String(error)),
+          );
+      }
+    });
+  },
+);
+
+export const incrementStartedGames = onRequest(
+  { secrets: ["API_KEY"], memory: "512MiB" },
+  async (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
-        try {
-            if (!checkAPIKey(request)) {
-                response.status(401).send("Unauthorized");
-                return;
-            }
-            const uid = request.body.uid;
-            await db.collection('players').doc(uid).set({
-                engagementStats: {
-                    totalGames: admin.firestore.FieldValue.increment(1),
-                },
-            }, { merge: true });
-
-            response.send({ success: true });
-        } catch (error) {
-            console.error('incrementStartedGames error:', error);
-            response.status(500).send('Error incrementing started games');
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
         }
+        const uid = request.body.uid;
+        await db
+          .collection("players")
+          .doc(uid)
+          .set(
+            {
+              engagementStats: {
+                totalGames: admin.firestore.FieldValue.increment(1),
+              },
+            },
+            { merge: true },
+          );
+
+        response.send({ success: true });
+      } catch (error) {
+        console.error("incrementStartedGames error:", error);
+        response.status(500).send("Error incrementing started games");
+      }
     });
-});
+  },
+);
 
 export const updateInactivePlayersStats = onSchedule(
   {
@@ -1114,485 +1287,514 @@ export const updateInactivePlayersStats = onSchedule(
     memory: "512MiB",
   },
   async (event) => {
-  const db = admin.firestore();
-  const now = new Date();
+    const db = admin.firestore();
+    const now = new Date();
 
-  // Calculate the timestamp for 48 hours ago
-  const cutoffDate = new Date(now.getTime() - (48 * 60 * 60 * 1000));
-  const cutoffDateString = cutoffDate.toISOString().replace('T', ' ').slice(0, 19);
+    // Calculate the timestamp for 48 hours ago
+    const cutoffDate = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+    const cutoffDateString = cutoffDate.toISOString().replace("T", " ").slice(0, 19);
 
-  try {
-    const snapshot = await db.collection("players")
-      .where("lastActiveDate", "<", cutoffDateString)
-      .where("leagueStats.wins", "==", 0)
-      .where("leagueStats.losses", "==", 0)
-      .where("engagementStats.completedGames", "<", 2)
-      .get();
+    try {
+      const snapshot = await db
+        .collection("players")
+        .where("lastActiveDate", "<", cutoffDateString)
+        .where("leagueStats.wins", "==", 0)
+        .where("leagueStats.losses", "==", 0)
+        .where("engagementStats.completedGames", "<", 2)
+        .get();
 
-    const batch = db.batch();
-    let updatedCount = 0;
+      const batch = db.batch();
+      let updatedCount = 0;
 
-    snapshot.forEach((doc) => {
-      // Generate total games using exponential distribution for more variation
-      const lambda = 0.1; // Parameter for exponential distribution
-      const randomGames = Math.round(-Math.log(1 - Math.random()) / lambda);
-      const cappedGames = Math.min(Math.max(randomGames, 1), 50); // Cap between 1 and 50 games
+      snapshot.forEach((doc) => {
+        // Generate total games using exponential distribution for more variation
+        const lambda = 0.1; // Parameter for exponential distribution
+        const randomGames = Math.round(-Math.log(1 - Math.random()) / lambda);
+        const cappedGames = Math.min(Math.max(randomGames, 1), 50); // Cap between 1 and 50 games
 
-      // Generate win ratio using beta distribution for more natural variation
-      // Beta distribution parameters (can be adjusted)
-      const alpha = 2;
-      const beta = 2;
+        // Generate win ratio using beta distribution for more natural variation
+        // Beta distribution parameters (can be adjusted)
+        const alpha = 2;
+        const beta = 2;
 
-      // Approximate beta distribution using normal distribution
-      const u1 = Math.random();
-      const u2 = Math.random();
-      const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+        // Approximate beta distribution using normal distribution
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
 
-      // Transform to beta-like distribution centered around 0.45
-      let winRatio = 0.45 + (z0 * 0.15); // Standard deviation of 0.15
-      winRatio = Math.max(0.1, Math.min(0.8, winRatio)); // Clamp between 0.1 and 0.8
+        // Transform to beta-like distribution centered around 0.45
+        let winRatio = 0.45 + z0 * 0.15; // Standard deviation of 0.15
+        winRatio = Math.max(0.1, Math.min(0.8, winRatio)); // Clamp between 0.1 and 0.8
 
-      const wins = Math.round(cappedGames * winRatio);
-      const losses = cappedGames - wins;
+        const wins = Math.round(cappedGames * winRatio);
+        const losses = cappedGames - wins;
 
-      // More dramatic ELO adjustments based on performance
-      const winRateDeviation = winRatio - 0.45; // Deviation from expected 0.45
-      const eloAdjustment = Math.round(winRateDeviation * 100); // Scale factor of 50
+        // More dramatic ELO adjustments based on performance
+        const winRateDeviation = winRatio - 0.45; // Deviation from expected 0.45
+        const eloAdjustment = Math.round(winRateDeviation * 100); // Scale factor of 50
 
-      const currentElo = doc.data()?.elo || STARTING_ELO;
-      const newElo = currentElo + eloAdjustment;
+        const currentElo = doc.data()?.elo || STARTING_ELO;
+        const newElo = currentElo + eloAdjustment;
 
-      batch.update(doc.ref, {
-        'leagueStats.wins': wins,
-        'leagueStats.losses': losses,
-        'leagueStats.nbGames': cappedGames,
-        'leagueStats.seasonId': currentSeasonId(),
-        "elo": newElo,
-        "league": getLeagueForElo(newElo),
+        batch.update(doc.ref, {
+          "leagueStats.wins": wins,
+          "leagueStats.losses": losses,
+          "leagueStats.nbGames": cappedGames,
+          "leagueStats.seasonId": currentSeasonId(),
+          elo: newElo,
+          league: getLeagueForElo(newElo),
+        });
+
+        updatedCount++;
       });
 
-      updatedCount++;
-    });
-
-    if (updatedCount > 0) {
-      await batch.commit();
-      logger.info(`Updated ${updatedCount} inactive players' stats with synthetic games`);
-    } else {
-      logger.info("No inactive players found needing updates");
+      if (updatedCount > 0) {
+        await batch.commit();
+        logger.info(`Updated ${updatedCount} inactive players' stats with synthetic games`);
+      } else {
+        logger.info("No inactive players found needing updates");
+      }
+    } catch (error) {
+      logger.error("Error updating inactive players:", error);
+      throw error;
     }
-  } catch (error) {
-    logger.error("Error updating inactive players:", error);
-    throw error;
-  }
-});
+  },
+);
 
 // Update the getProfileData function to include name and avatar in the response
-export const getProfileData = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
+export const getProfileData = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
-        try {
-            const playerId = request.query.playerId as string;
-            if (!playerId) {
-                response.status(400).send('Player ID is required');
-                return;
-            }
-
-            const playerDoc = await db.collection('players').doc(playerId).get();
-
-            if (!playerDoc.exists) {
-                response.status(404).send('Player not found');
-                return;
-            }
-
-            const playerData = playerDoc.data();
-            const allTimeStats = playerData?.allTimeStats;
-            const casualStats = playerData?.casualStats;
-            const leagueStats = playerData?.leagueStats;
-
-            const profileData = {
-                name: playerData?.name || '',
-                avatar: playerData?.avatar || '',
-                allTimeStats: {
-                    losses: allTimeStats?.losses || 0,
-                    lossStreak: allTimeStats?.lossesStreak || 0,
-                    wins: allTimeStats?.wins || 0,
-                    winStreak: allTimeStats?.winStreak || 0,
-                    nbGames: allTimeStats?.nbGames || 0,
-                    rank: allTimeStats?.rank || 0,
-                },
-                casualStats: {
-                    gamesPlayed: casualStats?.nbGames || 0,
-                    wins: casualStats?.wins || 0,
-                },
-                elo: playerData?.elo || 1000,
-                joinDate: playerData?.joinDate || '',
-                league: playerData?.league || 0,
-                leagueStats: {
-                    gamesPlayed: leagueStats?.nbGames || 0,
-                    wins: leagueStats?.wins || 0,
-                    losses: leagueStats?.losses || 0,
-                    lossStreak: leagueStats?.lossesStreak || 0,
-                    winStreak: leagueStats?.winStreak || 0,
-                    rank: leagueStats?.rank || 0,
-                    league: playerData?.league || 0,
-                },
-            };
-
-            response.send(profileData);
-        } catch (error) {
-            console.error('Error fetching profile data:', error);
-            response.status(500).send('Error fetching profile data');
+      try {
+        const playerId = request.query.playerId as string;
+        if (!playerId) {
+          response.status(400).send("Player ID is required");
+          return;
         }
+
+        const playerDoc = await db.collection("players").doc(playerId).get();
+
+        if (!playerDoc.exists) {
+          response.status(404).send("Player not found");
+          return;
+        }
+
+        const playerData = playerDoc.data();
+        const allTimeStats = playerData?.allTimeStats;
+        const casualStats = playerData?.casualStats;
+        const leagueStats = playerData?.leagueStats;
+
+        const profileData = {
+          name: playerData?.name || "",
+          avatar: playerData?.avatar || "",
+          allTimeStats: {
+            losses: allTimeStats?.losses || 0,
+            lossStreak: allTimeStats?.lossesStreak || 0,
+            wins: allTimeStats?.wins || 0,
+            winStreak: allTimeStats?.winStreak || 0,
+            nbGames: allTimeStats?.nbGames || 0,
+            rank: allTimeStats?.rank || 0,
+          },
+          casualStats: {
+            gamesPlayed: casualStats?.nbGames || 0,
+            wins: casualStats?.wins || 0,
+          },
+          elo: playerData?.elo || 1000,
+          joinDate: playerData?.joinDate || "",
+          league: playerData?.league || 0,
+          leagueStats: {
+            gamesPlayed: leagueStats?.nbGames || 0,
+            wins: leagueStats?.wins || 0,
+            losses: leagueStats?.losses || 0,
+            lossStreak: leagueStats?.lossesStreak || 0,
+            winStreak: leagueStats?.winStreak || 0,
+            rank: leagueStats?.rank || 0,
+            league: playerData?.league || 0,
+          },
+        };
+
+        response.send(profileData);
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+        response.status(500).send("Error fetching profile data");
+      }
     });
-});
+  },
+);
 
 // Add this interface at the top with other interfaces
 interface PlayerSearchResult {
-    id: string;
-    name: string;
-    avatar: string;
+  id: string;
+  name: string;
+  avatar: string;
 }
 
 // Update the searchPlayers endpoint to use name_lower field
-export const searchPlayers = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
+export const searchPlayers = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
-        try {
-            const searchTerm = request.query.search as string;
-            if (!searchTerm) {
-                response.status(400).send('Search term is required');
-                return;
-            }
-
-            const searchTermLower = searchTerm.toLowerCase();
-            const querySnapshot = await db.collection('players')
-                .where('name_lower', '>=', searchTermLower)
-                .where('name_lower', '<=', searchTermLower + '\uf8ff')
-                .limit(10)
-                .get();
-
-            const results: PlayerSearchResult[] = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                results.push({
-                    id: doc.id,
-                    name: data.name,
-                    avatar: data.avatar,
-                });
-            });
-
-            response.send(results);
-        } catch (error) {
-            console.error('Error searching players:', error);
-            response.status(500).send('Error searching players');
+      try {
+        const searchTerm = request.query.search as string;
+        if (!searchTerm) {
+          response.status(400).send("Search term is required");
+          return;
         }
+
+        const searchTermLower = searchTerm.toLowerCase();
+        const querySnapshot = await db
+          .collection("players")
+          .where("name_lower", ">=", searchTermLower)
+          .where("name_lower", "<=", searchTermLower + "\uf8ff")
+          .limit(10)
+          .get();
+
+        const results: PlayerSearchResult[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          results.push({
+            id: doc.id,
+            name: data.name,
+            avatar: data.avatar,
+          });
+        });
+
+        response.send(results);
+      } catch (error) {
+        console.error("Error searching players:", error);
+        response.status(500).send("Error searching players");
+      }
     });
-});
+  },
+);
 
 // Add migration endpoint to add name_lower field
-export const migrateLowercaseNames = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
+export const migrateLowercaseNames = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
-        try {
-            if (!checkAPIKey(request)) {
-                response.status(401).send('Unauthorized');
-                return;
-            }
-
-            const snapshot = await db.collection('players').get();
-            const batch = db.batch();
-            let count = 0;
-
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.name && !data.name_lower) {
-                    batch.update(doc.ref, {
-                        name_lower: data.name.toLowerCase(),
-                    });
-                    count++;
-                }
-            });
-
-            await batch.commit();
-            response.send({ message: `Updated ${count} documents` });
-        } catch (error) {
-            console.error('Error in migration:', error);
-            response.status(500).send('Error performing migration');
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
         }
+
+        const snapshot = await db.collection("players").get();
+        const batch = db.batch();
+        let count = 0;
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.name && !data.name_lower) {
+            batch.update(doc.ref, {
+              name_lower: data.name.toLowerCase(),
+            });
+            count++;
+          }
+        });
+
+        await batch.commit();
+        response.send({ message: `Updated ${count} documents` });
+      } catch (error) {
+        console.error("Error in migration:", error);
+        response.status(500).send("Error performing migration");
+      }
     });
-});
+  },
+);
 
 // Add new endpoint for listing friends
-export const listFriends = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
+export const listFriends = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
-        try {
-            const playerId = request.query.playerId as string;
-            if (!playerId) {
-                response.status(400).send('Player ID is required');
-                return;
-            }
-
-            const playerDoc = await db.collection('players').doc(playerId).get();
-            if (!playerDoc.exists) {
-                response.status(404).send('Player not found');
-                return;
-            }
-
-            const playerData = playerDoc.data();
-            if (!playerData) {
-                response.status(404).send('Player not found');
-                return;
-            }
-
-            const friendIds = playerData.friends || [] as string[];
-
-            // Fetch friend details in parallel
-            const friendDocs = await Promise.all(
-                friendIds.map((friendId: string) =>
-                    db.collection('players').doc(friendId).get()
-                )
-            );
-
-            const friends = friendDocs
-                .filter((doc) => doc.exists)
-                .map((doc) => ({
-                    id: doc.id,
-                    name: doc.data().name,
-                    avatar: doc.data().avatar,
-                }));
-
-            response.send(friends);
-        } catch (error) {
-            console.error('Error listing friends:', error);
-            response.status(500).send('Error listing friends');
+      try {
+        const playerId = request.query.playerId as string;
+        if (!playerId) {
+          response.status(400).send("Player ID is required");
+          return;
         }
+
+        const playerDoc = await db.collection("players").doc(playerId).get();
+        if (!playerDoc.exists) {
+          response.status(404).send("Player not found");
+          return;
+        }
+
+        const playerData = playerDoc.data();
+        if (!playerData) {
+          response.status(404).send("Player not found");
+          return;
+        }
+
+        const friendIds = playerData.friends || ([] as string[]);
+
+        // Fetch friend details in parallel
+        const friendDocs = await Promise.all(
+          friendIds.map((friendId: string) => db.collection("players").doc(friendId).get()),
+        );
+
+        const friends = friendDocs
+          .filter((doc) => doc.exists)
+          .map((doc) => ({
+            id: doc.id,
+            name: doc.data().name,
+            avatar: doc.data().avatar,
+          }));
+
+        response.send(friends);
+      } catch (error) {
+        console.error("Error listing friends:", error);
+        response.status(500).send("Error listing friends");
+      }
     });
-});
+  },
+);
 
 // Update addFriend endpoint to handle missing friends field
-export const addFriend = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
+export const addFriend = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
-        try {
-            const uid = await getUID(request);
-            const friendId = request.body.friendId;
+      try {
+        const uid = await getUID(request);
+        const friendId = request.body.friendId;
 
-            if (!friendId) {
-                response.status(400).send('Friend ID is required');
-                return;
-            }
-
-            // Prevent adding self as friend
-            if (uid === friendId) {
-                response.status(400).send('Cannot add yourself as a friend');
-                return;
-            }
-
-            // Get both player documents
-            const [playerDoc, friendDoc] = await Promise.all([
-                db.collection('players').doc(uid).get(),
-                db.collection('players').doc(friendId).get(),
-            ]);
-
-            if (!playerDoc.exists || !friendDoc.exists) {
-                response.status(404).send('Player or friend not found');
-                return;
-            }
-
-            const playerData = playerDoc.data();
-
-            if (!playerData) {
-                response.status(404).send('Player not found');
-                return;
-            }
-
-            // Check if already friends, safely handling the case where friends field might not exist
-            const currentFriends = playerData.friends || [];
-            if (currentFriends.includes(friendId)) {
-                response.status(400).send('Already friends');
-                return;
-            }
-
-            const friendData = friendDoc.data();
-            if (!friendData) {
-                response.status(404).send('Friend not found');
-                return;
-            }
-
-            // Add friend ID to player's friends list, creating the array if it doesn't exist
-            await db.collection('players').doc(uid).set({
-                friends: admin.firestore.FieldValue.arrayUnion(friendId),
-            }, { merge: true }); // Use merge: true to not overwrite other fields
-
-            response.send({
-                success: true,
-                friend: {
-                    id: friendId,
-                    name: friendData.name,
-                    avatar: friendData.avatar,
-                },
-            });
-        } catch (error) {
-            console.error('Error adding friend:', error);
-            response.status(500).send('Error adding friend');
+        if (!friendId) {
+          response.status(400).send("Friend ID is required");
+          return;
         }
+
+        // Prevent adding self as friend
+        if (uid === friendId) {
+          response.status(400).send("Cannot add yourself as a friend");
+          return;
+        }
+
+        // Get both player documents
+        const [playerDoc, friendDoc] = await Promise.all([
+          db.collection("players").doc(uid).get(),
+          db.collection("players").doc(friendId).get(),
+        ]);
+
+        if (!playerDoc.exists || !friendDoc.exists) {
+          response.status(404).send("Player or friend not found");
+          return;
+        }
+
+        const playerData = playerDoc.data();
+
+        if (!playerData) {
+          response.status(404).send("Player not found");
+          return;
+        }
+
+        // Check if already friends, safely handling the case where friends field might not exist
+        const currentFriends = playerData.friends || [];
+        if (currentFriends.includes(friendId)) {
+          response.status(400).send("Already friends");
+          return;
+        }
+
+        const friendData = friendDoc.data();
+        if (!friendData) {
+          response.status(404).send("Friend not found");
+          return;
+        }
+
+        // Add friend ID to player's friends list, creating the array if it doesn't exist
+        await db
+          .collection("players")
+          .doc(uid)
+          .set(
+            {
+              friends: admin.firestore.FieldValue.arrayUnion(friendId),
+            },
+            { merge: true },
+          ); // Use merge: true to not overwrite other fields
+
+        response.send({
+          success: true,
+          friend: {
+            id: friendId,
+            name: friendData.name,
+            avatar: friendData.avatar,
+          },
+        });
+      } catch (error) {
+        console.error("Error adding friend:", error);
+        response.status(500).send("Error adding friend");
+      }
     });
-});
+  },
+);
 
 // Update the function declaration to include memory configuration
-export const updatePlayerName = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const newName = request.body.name;
-
-      // Validate name
-      if (!newName || typeof newName !== 'string') {
-        response.status(400).send('Valid name is required');
-        return;
-      }
-
-      if (newName.length > MAX_NICKNAME_LENGTH) {
-        response.status(400).send(`Name must be ${MAX_NICKNAME_LENGTH} characters or less`);
-        return;
-      }
-
-      // Dynamically import the profanity filter
-      const { RegExpMatcher } = await import('obscenity');
-      const { englishDataset } = await import('obscenity');
-      const { englishRecommendedTransformers } = await import('obscenity');
-
-      const matcher = new RegExpMatcher({
-        ...englishDataset.build(),
-        ...englishRecommendedTransformers,
-      });
-      const matches = matcher.getAllMatches(newName);
-      if (matches.length > 0) {
-        response.status(400).send('Name contains profane words');
-        return;
-      }
-
-      // Update both name and name_lower
-      await db.collection('players').doc(uid).update({
-        name: newName,
-        name_lower: newName.toLowerCase(),
-      });
-
-      response.send({
-        success: true,
-        name: newName,
-      });
-    } catch (error) {
-      console.error('Error updating player name:', error);
-      response.status(500).send('Error updating player name');
-    }
-  });
-});
-
-export const updatePlayerAvatar = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const avatarId = request.body.avatarId;
-
-      // Validate avatar ID
-      if (!avatarId) {
-        response.status(400).send('Valid avatar ID is required');
-        return;
-      }
-
-      // Convert to number and validate range
-      const numericAvatarId = parseInt(avatarId, 10);
-      if (isNaN(numericAvatarId) ||
-          numericAvatarId < 1 ||
-          numericAvatarId > MAX_AVATAR_ID) {
-        response.status(400).send(`Avatar ID must be between 1 and ${MAX_AVATAR_ID}`);
-        return;
-      }
-
-      // Update avatar
-      await db.collection('players').doc(uid).update({
-        avatar: avatarId,
-      });
-
-      response.send({
-        success: true,
-        avatar: avatarId,
-      });
-    } catch (error) {
-      console.error('Error updating player avatar:', error);
-      response.status(500).send('Error updating player avatar');
-    }
-  });
-});
-
-export const setUserAttributes = onRequest({
-    memory: '512MiB',
-}, (request, response) => {
+export const updatePlayerName = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
     const db = admin.firestore();
 
     corsMiddleware(request, response, async () => {
-        try {
-            const uid = await getUID(request);
+      try {
+        const uid = await getUID(request);
+        const newName = request.body.name;
 
-            // Parse the request body if it's a string or use it directly if it's already an object
-            let attributes = request.body || {};
-            if (typeof attributes === 'string') {
-                try {
-                    attributes = JSON.parse(attributes);
-                } catch (e) {
-                    logger.error("Error parsing request body:", e);
-                }
-            }
-
-            logger.info(`Setting user attributes for player: ${uid} attributes: ${JSON.stringify(attributes)}`);
-
-            const updateData: any = {};
-
-            if (attributes.utmSource) {
-                updateData['acquisition.utmSource'] = attributes.utmSource;
-            }
-
-            if ('isMobile' in attributes) {
-                updateData.isMobile = !!attributes.isMobile;
-            }
-
-            if ('referrer' in attributes && attributes.referrer) {
-                updateData.is_developer = attributes.referrer.includes('phaser.io');
-                updateData.referrer = attributes.referrer;
-            }
-
-            await db.collection("players").doc(uid).set(updateData, { merge: true });
-
-            response.send({ success: true });
-        } catch (error) {
-            console.error("setUserAttributes error:", error);
-            response.status(500).send("Error");
+        // Validate name
+        if (!newName || typeof newName !== "string") {
+          response.status(400).send("Valid name is required");
+          return;
         }
+
+        if (newName.length > MAX_NICKNAME_LENGTH) {
+          response.status(400).send(`Name must be ${MAX_NICKNAME_LENGTH} characters or less`);
+          return;
+        }
+
+        // Dynamically import the profanity filter
+        const { RegExpMatcher } = await import("obscenity");
+        const { englishDataset } = await import("obscenity");
+        const { englishRecommendedTransformers } = await import("obscenity");
+
+        const matcher = new RegExpMatcher({
+          ...englishDataset.build(),
+          ...englishRecommendedTransformers,
+        });
+        const matches = matcher.getAllMatches(newName);
+        if (matches.length > 0) {
+          response.status(400).send("Name contains profane words");
+          return;
+        }
+
+        // Update both name and name_lower
+        await db.collection("players").doc(uid).update({
+          name: newName,
+          name_lower: newName.toLowerCase(),
+        });
+
+        response.send({
+          success: true,
+          name: newName,
+        });
+      } catch (error) {
+        console.error("Error updating player name:", error);
+        response.status(500).send("Error updating player name");
+      }
     });
-});
+  },
+);
+
+export const updatePlayerAvatar = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const avatarId = request.body.avatarId;
+
+        // Validate avatar ID
+        if (!avatarId) {
+          response.status(400).send("Valid avatar ID is required");
+          return;
+        }
+
+        // Convert to number and validate range
+        const numericAvatarId = parseInt(avatarId, 10);
+        if (isNaN(numericAvatarId) || numericAvatarId < 1 || numericAvatarId > MAX_AVATAR_ID) {
+          response.status(400).send(`Avatar ID must be between 1 and ${MAX_AVATAR_ID}`);
+          return;
+        }
+
+        // Update avatar
+        await db.collection("players").doc(uid).update({
+          avatar: avatarId,
+        });
+
+        response.send({
+          success: true,
+          avatar: avatarId,
+        });
+      } catch (error) {
+        console.error("Error updating player avatar:", error);
+        response.status(500).send("Error updating player avatar");
+      }
+    });
+  },
+);
+
+export const setUserAttributes = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+
+        // Parse the request body if it's a string or use it directly if it's already an object
+        let attributes = request.body || {};
+        if (typeof attributes === "string") {
+          try {
+            attributes = JSON.parse(attributes);
+          } catch (e) {
+            logger.error("Error parsing request body:", e);
+          }
+        }
+
+        logger.info(`Setting user attributes for player: ${uid} attributes: ${JSON.stringify(attributes)}`);
+
+        const updateData: any = {};
+
+        if (attributes.utmSource) {
+          updateData["acquisition.utmSource"] = attributes.utmSource;
+        }
+
+        if ("isMobile" in attributes) {
+          updateData.isMobile = !!attributes.isMobile;
+        }
+
+        if ("referrer" in attributes && attributes.referrer) {
+          updateData.is_developer = attributes.referrer.includes("phaser.io");
+          updateData.referrer = attributes.referrer;
+        }
+
+        await db.collection("players").doc(uid).set(updateData, { merge: true });
+
+        response.send({ success: true });
+      } catch (error) {
+        console.error("setUserAttributes error:", error);
+        response.status(500).send("Error");
+      }
+    });
+  },
+);

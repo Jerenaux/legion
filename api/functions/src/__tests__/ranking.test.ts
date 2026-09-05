@@ -1,27 +1,31 @@
 import { describe, expect, test } from "bun:test";
 
-import {
-  LEADERBOARD_LIMIT,
-  applyRankedResult,
-  currentSeasonId,
-  getLeagueForElo,
-  rankPlayers,
-} from "../ranking";
+import { LEADERBOARD_LIMIT, applyRankedResult, currentSeasonId, getLeagueForElo, rankPlayers } from "../ranking";
 
-const player = (
-  id: string,
-  wins: number,
-  losses: number,
-  elo: number,
-  isSynthetic = false,
-) => ({
+const player = (id: string, wins: number, losses: number, elo: number, isSynthetic = false) => ({
   id,
   name: id,
   avatar: "1",
   elo,
   isSynthetic,
-  leagueStats: {wins, losses, winStreak: 0, lossesStreak: 0, nbGames: wins + losses, avgAudienceScore: 0, avgGrade: 0},
-  allTimeStats: {wins, losses, winStreak: 0, lossesStreak: 0, nbGames: wins + losses, avgAudienceScore: 0, avgGrade: 0},
+  leagueStats: {
+    wins,
+    losses,
+    winStreak: 0,
+    lossesStreak: 0,
+    nbGames: wins + losses,
+    avgAudienceScore: 0,
+    avgGrade: 0,
+  },
+  allTimeStats: {
+    wins,
+    losses,
+    winStreak: 0,
+    lossesStreak: 0,
+    nbGames: wins + losses,
+    avgAudienceScore: 0,
+    avgGrade: 0,
+  },
 });
 
 describe("indexed ranking helpers", () => {
@@ -30,11 +34,11 @@ describe("indexed ranking helpers", () => {
   });
 
   test("assigns competition ranks and keeps synthetic players", () => {
-    const rows = rankPlayers([
-      player("real", 5, 1, 400),
-      player("synthetic", 5, 1, 350, true),
-      player("third", 4, 0, 900),
-    ], false, "real");
+    const rows = rankPlayers(
+      [player("real", 5, 1, 400), player("synthetic", 5, 1, 350, true), player("third", 4, 0, 900)],
+      false,
+      "real",
+    );
 
     expect(rows.map((row) => [row.playerId, row.rank])).toEqual([
       ["real", 1],
@@ -58,11 +62,11 @@ describe("indexed ranking helpers", () => {
   });
 
   test("resets stale seasonal stats lazily and retains all-time stats", () => {
-    const stale = {...player("p", 8, 2, 500).leagueStats, seasonId: "2026-08-21"};
+    const stale = { ...player("p", 8, 2, 500).leagueStats, seasonId: "2026-08-21" };
     const season = applyRankedResult(stale, true, 100, 4, "2026-08-28", true);
-    expect(season).toMatchObject({wins: 1, losses: 0, nbGames: 1, seasonId: "2026-08-28"});
+    expect(season).toMatchObject({ wins: 1, losses: 0, nbGames: 1, seasonId: "2026-08-28" });
 
     const allTime = applyRankedResult(stale, false, 50, 2, "2026-08-28", false);
-    expect(allTime).toMatchObject({wins: 8, losses: 3, nbGames: 11});
+    expect(allTime).toMatchObject({ wins: 8, losses: 3, nbGames: 11 });
   });
 });

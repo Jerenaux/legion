@@ -1,45 +1,49 @@
 .queue-tips {
-    width: 100%;
-    height: 6vw;
-    background-image: url('@assets/queue/tips_bg.png');
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    color: white;
-    font-family: 'Kim';
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    position: relative;
-    display: flex;
-    justify-content: center;
-  }
-  .queue-tips-container {
-    width: 40vw;
-    text-align: center;
-    font-size: 14px;
-  }
-  .queue-tips-container > div:first-child {
-    margin-top: 0.2vw;
-    margin-bottom: 0.4vw;
-  }
-  .queue-tips-container > div:last-child{
-    height: 2.8vw;
-  }
-  .queue-tips-arrow {
-    position: absolute;
-    top: 2vw;
-    color: coral;
-    font-size: 1.5vw;
-    cursor: pointer;
-  }
-  .prev {
-    left: 25vw;
-  }
-  .next {
-    right: 25vw;
-  }
-  .queue-tips-text {
-    font-size: 1.2vw;
-    font-family: 'Kim';
-    text-align: center;
-    color: cyan;
-  }
+  width: 100%;
+  height: 6vw;
+  background-image: url("@assets/queue/tips_bg.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.queue-tips-container {
+  width: 40vw;
+  text-align: center;
+  font-size: 14px;
+}
+.queue-tips-container > div:first-child {
+  margin-top: 0.2vw;
+  margin-bottom: 0.4vw;
+}
+.queue-tips-container > div:last-child {
+  height: 2.8vw;
+}
+.queue-tips-arrow {
+  position: absolute;
+  top: 2vw;
+  color: coral;
+  font-size: 1.5vw;
+  cursor: pointer;
+}
+.prev {
+  left: 25vw;
+}
+.next {
+  right: 25vw;
+}
+.queue-tips-text {
+  font-size: 1.2vw;
+  font-family: "Kim";
+  text-align: center;
+  color: cyan;
+}

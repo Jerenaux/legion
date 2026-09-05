@@ -1,30 +1,38 @@
-import { Target, Rarity, StatusEffect, SpeedClass, TargetHighlight, LockedFeatures, ConsumableShopCategory } from "./enums";
+import {
+  Target,
+  Rarity,
+  StatusEffect,
+  SpeedClass,
+  TargetHighlight,
+  LockedFeatures,
+  ConsumableShopCategory,
+} from "./enums";
 import { Effect, ConsumableData, StatusEffectData } from "./interfaces";
 import { getPrice, getRarity } from "./economy";
 
 export class BaseItem {
-    id: number = -1;
-    name: string = '';
-    description: string = '';
-    frame: number = 0;
-    effects: Effect[] = [];
-    statusRemovals: StatusEffect[] = [];
-    target: Target = Target.SINGLE;
-    animation: string = '';
-    sfx: string = '';
-    speedClass: SpeedClass = SpeedClass.NORMAL;
-    radius?: number = 1;
-    price: number = 0;
-    rarity: Rarity = Rarity.COMMON;
-    effort: number = 0;
-    status?: StatusEffectData;
-    targetHighlight?: TargetHighlight;
-    unlock?: LockedFeatures;
-    category?: ConsumableShopCategory;
+  id: number = -1;
+  name: string = "";
+  description: string = "";
+  frame: number = 0;
+  effects: Effect[] = [];
+  statusRemovals: StatusEffect[] = [];
+  target: Target = Target.SINGLE;
+  animation: string = "";
+  sfx: string = "";
+  speedClass: SpeedClass = SpeedClass.NORMAL;
+  radius?: number = 1;
+  price: number = 0;
+  rarity: Rarity = Rarity.COMMON;
+  effort: number = 0;
+  status?: StatusEffectData;
+  targetHighlight?: TargetHighlight;
+  unlock?: LockedFeatures;
+  category?: ConsumableShopCategory;
 
-    constructor(props: ConsumableData) {
-        Object.assign(this, props);
-        this.price = getPrice(props.effort);
-        this.rarity = getRarity(props.effort);
-    }
+  constructor(props: ConsumableData) {
+    Object.assign(this, props);
+    this.price = getPrice(props.effort);
+    this.rarity = getRarity(props.effort);
+  }
 }

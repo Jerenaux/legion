@@ -1,114 +1,134 @@
-import {Transaction} from "firebase-admin/firestore";
+import { Transaction } from "firebase-admin/firestore";
 
-import {onRequest} from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
-import {getMaxStatValue, getSPIncrement} from "@legion/shared/levelling";
-import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFieldsByIndex, PlayMode, Stat, RewardType} from "@legion/shared/enums";
-import {MAX_CHARACTERS} from "@legion/shared/config";
-import {OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
-import {logPlayerAction} from "./dashboardAPI";
+import admin, { checkAPIKey, corsMiddleware, getUID } from "./APIsetup";
+import { getMaxStatValue, getSPIncrement } from "@legion/shared/levelling";
+import { NewCharacter } from "@legion/shared/NewCharacter";
+import { Class, statFieldsByIndex, PlayMode, Stat, RewardType } from "@legion/shared/enums";
+import { MAX_CHARACTERS } from "@legion/shared/config";
+import { OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerData } from "@legion/shared/interfaces";
+import { logPlayerAction } from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
-import {applyRankedResult, currentSeasonId, getLeagueForElo} from "./ranking";
-import {gameResultReceiptId} from "./gameResults";
+import { applyRankedResult, currentSeasonId, getLeagueForElo } from "./ranking";
+import { gameResultReceiptId } from "./gameResults";
 
-export const rosterData = onRequest({
-  memory: '512MiB',
-}, async (request, response) => {
-  const db = admin.firestore();
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const docSnap = await db.collection("players").doc(uid).get();
+export const rosterData = onRequest(
+  {
+    memory: "512MiB",
+  },
+  async (request, response) => {
+    const db = admin.firestore();
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const docSnap = await db.collection("players").doc(uid).get();
 
-      if (docSnap.exists) {
-        const characters = docSnap.data()?.characters as admin.firestore.DocumentReference[];
+        if (docSnap.exists) {
+          const characters = docSnap.data()?.characters as admin.firestore.DocumentReference[];
 
-        // Batch get operation
-        const characterDocs = await db.getAll(...characters, {
-          fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
-            'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
-            'skills',
-          ],
-        });
+          // Batch get operation
+          const characterDocs = await db.getAll(...characters, {
+            fieldMask: [
+              "name",
+              "portrait",
+              "level",
+              "class",
+              "experience",
+              "xp",
+              "sp",
+              "stats",
+              "carrying_capacity",
+              "carrying_capacity_bonus",
+              "skill_slots",
+              "inventory",
+              "equipment",
+              "equipment_bonuses",
+              "sp_bonuses",
+              "skills",
+            ],
+          });
 
-        const rosterData = characterDocs.map((characterDoc) => {
-          return {
-            id: characterDoc.id,
-            name: characterDoc.get('name'),
-            level: characterDoc.get('level'),
-            class: characterDoc.get('class'),
-            experience: characterDoc.get('experience'),
-            portrait: characterDoc.get('portrait'),
-            xp: characterDoc.get('xp'),
-            sp: characterDoc.get('sp'),
-            stats: characterDoc.get('stats'),
-            carrying_capacity: characterDoc.get('carrying_capacity'),
-            carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
-            skill_slots: characterDoc.get('skill_slots'),
-            inventory: characterDoc.get('inventory'),
-            equipment: characterDoc.get('equipment'),
-            equipment_bonuses: characterDoc.get('equipment_bonuses'),
-            sp_bonuses: characterDoc.get('sp_bonuses'),
-            skills: characterDoc.get('skills'),
-          };
-        });
+          const rosterData = characterDocs.map((characterDoc) => {
+            return {
+              id: characterDoc.id,
+              name: characterDoc.get("name"),
+              level: characterDoc.get("level"),
+              class: characterDoc.get("class"),
+              experience: characterDoc.get("experience"),
+              portrait: characterDoc.get("portrait"),
+              xp: characterDoc.get("xp"),
+              sp: characterDoc.get("sp"),
+              stats: characterDoc.get("stats"),
+              carrying_capacity: characterDoc.get("carrying_capacity"),
+              carrying_capacity_bonus: characterDoc.get("carrying_capacity_bonus"),
+              skill_slots: characterDoc.get("skill_slots"),
+              inventory: characterDoc.get("inventory"),
+              equipment: characterDoc.get("equipment"),
+              equipment_bonuses: characterDoc.get("equipment_bonuses"),
+              sp_bonuses: characterDoc.get("sp_bonuses"),
+              skills: characterDoc.get("skills"),
+            };
+          });
 
-        response.send({
-          characters: rosterData,
-        });
-      } else {
-        response.status(404).send("Not Found: Invalid player ID");
+          response.send({
+            characters: rosterData,
+          });
+        } else {
+          response.status(404).send("Not Found: Invalid player ID");
+        }
+      } catch (error) {
+        console.error("rosterData error:", error);
+        response.status(500).send(error);
       }
-    } catch (error) {
-      console.error("rosterData error:", error);
-      response.status(500).send(error);
-    }
-  });
-});
+    });
+  },
+);
 
-export const characterData = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Fetching characterData");
-  const db = admin.firestore();
+export const characterData = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    logger.info("Fetching characterData");
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
 
-      // Check that character is owned by player
-      const playerDoc = await db.collection("players").doc(uid).get();
-      const characters =
-          playerDoc.data()?.characters as admin.firestore.DocumentReference[];
-      const characterIds = characters.map((character) => character.id);
-      if (!characterIds.includes(request.query.id as string)) {
-        response.status(404).send("Not Found: character not owned by player");
+        // Check that character is owned by player
+        const playerDoc = await db.collection("players").doc(uid).get();
+        const characters = playerDoc.data()?.characters as admin.firestore.DocumentReference[];
+        const characterIds = characters.map((character) => character.id);
+        if (!characterIds.includes(request.query.id as string)) {
+          response.status(404).send("Not Found: character not owned by player");
+        }
+
+        if (!request.query.id) {
+          response.status(404).send("Not Found: Invalid character ID");
+        }
+        const docSnap = await db
+          .collection("characters")
+          .doc(request.query.id as string)
+          .get();
+
+        if (docSnap.exists) {
+          const characterData = docSnap.data();
+          response.send({
+            ...characterData,
+          });
+        } else {
+          response.status(404).send("Not Found: Invalid character ID");
+        }
+      } catch (error) {
+        console.error("characterData error:", error);
+        response.status(401).send("Unauthorized");
       }
-
-      if (!request.query.id) {
-        response.status(404).send("Not Found: Invalid character ID");
-      }
-      const docSnap =
-          await db.collection("characters")
-            .doc(request.query.id as string).get();
-
-      if (docSnap.exists) {
-        const characterData = docSnap.data();
-        response.send({
-          ...characterData,
-        });
-      } else {
-        response.status(404).send("Not Found: Invalid character ID");
-      }
-    } catch (error) {
-      console.error("characterData error:", error);
-      response.status(401).send("Unauthorized");
-    }
-  });
-});
+    });
+  },
+);
 
 export async function processChestRewards(
   transaction: Transaction,
@@ -116,7 +136,7 @@ export async function processChestRewards(
   content: ChestReward[],
   consumables: number[],
   spells: number[],
-  equipment: number[]
+  equipment: number[],
 ) {
   // logger.info(`Processing chest rewards for player ${playerRef.id}: ${JSON.stringify(content)}`);
   content.forEach((reward: ChestReward) => {
@@ -143,241 +163,244 @@ export async function processChestRewards(
   });
 }
 
-export const postGameUpdate = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const postGameUpdate = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
-      const uid = request.body.uid;
-      const resultId = request.body.resultId;
-      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
-        request.body.outcomes as OutcomeData;
-      console.log(`[postGameUpdate] [${uid}] Outcomes: ${JSON.stringify(request.body.outcomes, null, 2)}`);
-      const {spellsUsed, itemsUsed, movements, attacks, flames, ice, poison, silenced, paralyzed, lowMP} =
-        request.body.engagement;
-      const mode = request.body.mode as PlayMode;
-      const stayedUntilTheEnd = request.body.stayedUntilTheEnd;
-      console.log(`[postGameUpdate] [${uid}] Stayed until the end: ${stayedUntilTheEnd}`);
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
+        const uid = request.body.uid;
+        const resultId = request.body.resultId;
+        const { isWinner, xp, gold, characters, elo, key, chests, rawGrade, score } = request.body
+          .outcomes as OutcomeData;
+        console.log(`[postGameUpdate] [${uid}] Outcomes: ${JSON.stringify(request.body.outcomes, null, 2)}`);
+        const { spellsUsed, itemsUsed, movements, attacks, flames, ice, poison, silenced, paralyzed, lowMP } =
+          request.body.engagement;
+        const mode = request.body.mode as PlayMode;
+        const stayedUntilTheEnd = request.body.stayedUntilTheEnd;
+        console.log(`[postGameUpdate] [${uid}] Stayed until the end: ${stayedUntilTheEnd}`);
 
-      if (!uid || typeof uid !== 'string' || uid.trim() === '' ||
-          !resultId || typeof resultId !== 'string' || resultId.length > 256) {
-        throw new Error('Invalid game result identity');
-      }
-
-      const applied = await db.runTransaction(async (transaction) => {
-        const playerRef = db.collection("players").doc(uid);
-        const receiptRef = db.collection("processedGameResults").doc(gameResultReceiptId(resultId, uid));
-        const [playerDoc, receiptDoc] = await Promise.all([
-          transaction.get(playerRef),
-          transaction.get(receiptRef),
-        ]);
-
-        if (receiptDoc.exists) return false;
-
-        if (!playerDoc.exists) {
-          throw new Error("Player document does not exist");
+        if (
+          !uid ||
+          typeof uid !== "string" ||
+          uid.trim() === "" ||
+          !resultId ||
+          typeof resultId !== "string" ||
+          resultId.length > 256
+        ) {
+          throw new Error("Invalid game result identity");
         }
 
-        const playerData = playerDoc.data();
+        const applied = await db.runTransaction(async (transaction) => {
+          const playerRef = db.collection("players").doc(uid);
+          const receiptRef = db.collection("processedGameResults").doc(gameResultReceiptId(resultId, uid));
+          const [playerDoc, receiptDoc] = await Promise.all([transaction.get(playerRef), transaction.get(receiptRef)]);
 
-        if (!playerData) {
-          throw new Error("Player data does not exist");
-        }
+          if (receiptDoc.exists) return false;
 
-        const dailyLoot = playerData.dailyloot as DailyLootAllDBData;
-        if (key) {
-          dailyLoot[key].hasKey = true;
-        }
-
-        const inventory = playerData.inventory || {};
-        const consumables = inventory.consumables || [];
-        const spells = inventory.spells || [];
-        const equipment = inventory.equipment || [];
-
-        const contents = chests.map((chest) => chest.content).flat();
-        await processChestRewards(transaction, playerRef, contents, consumables, spells, equipment);
-
-        // Base updates
-        const updates: any = {
-          xp: admin.firestore.FieldValue.increment(xp || 0),
-          elo: admin.firestore.FieldValue.increment(elo || 0),
-          dailyloot: dailyLoot,
-        };
-        let goldReward = gold || 0;
-        let currentCompletedGames = 0;
-
-        // Add completed games increment if player hasn't disconnected
-        if (stayedUntilTheEnd) {
-          currentCompletedGames = playerData.engagementStats?.completedGames || 0;
-
-          // Check for feature unlock at the CURRENT count (before increment)
-          const unlockedFeature = checkFeatureUnlock(currentCompletedGames);
-          const rewards = getUnlockRewards(unlockedFeature);
-
-          // Merge rewards by type
-          const mergedRewards: Record<RewardType, {id: number, amount: number}[]> = {
-            [RewardType.CONSUMABLES]: [],
-            [RewardType.SPELL]: [],
-            [RewardType.EQUIPMENT]: [],
-            [RewardType.GOLD]: [],
-          };
-          let goldAmount = 0;
-
-          // Combine all rewards
-          for (const reward of rewards) {
-            if (reward.type === RewardType.GOLD) {
-              goldAmount += reward.amount;
-            } else {
-              mergedRewards[reward.type].push({id: reward.id, amount: reward.amount});
-            }
+          if (!playerDoc.exists) {
+            throw new Error("Player document does not exist");
           }
 
-          // Apply merged rewards
-          for (const type of [RewardType.CONSUMABLES, RewardType.SPELL, RewardType.EQUIPMENT]) {
-            for (const reward of mergedRewards[type]) {
-              const rewardUpdate = addItemsToInventory(
-                playerData as DBPlayerData,
-                type,
-                reward.id,
-                reward.amount
-              ) as InventoryUpdate;
+          const playerData = playerDoc.data();
 
-              if (rewardUpdate.inventory) {
-                console.log(`[postGameUpdate] Updating inventory update`);
-                updates.inventory = {
-                  ...updates.inventory,
-                  ...rewardUpdate.inventory,
-                };
+          if (!playerData) {
+            throw new Error("Player data does not exist");
+          }
+
+          const dailyLoot = playerData.dailyloot as DailyLootAllDBData;
+          if (key) {
+            dailyLoot[key].hasKey = true;
+          }
+
+          const inventory = playerData.inventory || {};
+          const consumables = inventory.consumables || [];
+          const spells = inventory.spells || [];
+          const equipment = inventory.equipment || [];
+
+          const contents = chests.map((chest) => chest.content).flat();
+          await processChestRewards(transaction, playerRef, contents, consumables, spells, equipment);
+
+          // Base updates
+          const updates: any = {
+            xp: admin.firestore.FieldValue.increment(xp || 0),
+            elo: admin.firestore.FieldValue.increment(elo || 0),
+            dailyloot: dailyLoot,
+          };
+          let goldReward = gold || 0;
+          let currentCompletedGames = 0;
+
+          // Add completed games increment if player hasn't disconnected
+          if (stayedUntilTheEnd) {
+            currentCompletedGames = playerData.engagementStats?.completedGames || 0;
+
+            // Check for feature unlock at the CURRENT count (before increment)
+            const unlockedFeature = checkFeatureUnlock(currentCompletedGames);
+            const rewards = getUnlockRewards(unlockedFeature);
+
+            // Merge rewards by type
+            const mergedRewards: Record<RewardType, { id: number; amount: number }[]> = {
+              [RewardType.CONSUMABLES]: [],
+              [RewardType.SPELL]: [],
+              [RewardType.EQUIPMENT]: [],
+              [RewardType.GOLD]: [],
+            };
+            let goldAmount = 0;
+
+            // Combine all rewards
+            for (const reward of rewards) {
+              if (reward.type === RewardType.GOLD) {
+                goldAmount += reward.amount;
+              } else {
+                mergedRewards[reward.type].push({ id: reward.id, amount: reward.amount });
               }
             }
+
+            // Apply merged rewards
+            for (const type of [RewardType.CONSUMABLES, RewardType.SPELL, RewardType.EQUIPMENT]) {
+              for (const reward of mergedRewards[type]) {
+                const rewardUpdate = addItemsToInventory(
+                  playerData as DBPlayerData,
+                  type,
+                  reward.id,
+                  reward.amount,
+                ) as InventoryUpdate;
+
+                if (rewardUpdate.inventory) {
+                  console.log(`[postGameUpdate] Updating inventory update`);
+                  updates.inventory = {
+                    ...updates.inventory,
+                    ...rewardUpdate.inventory,
+                  };
+                }
+              }
+            }
+
+            if (goldAmount > 0) {
+              goldReward += goldAmount;
+            }
           }
 
-          if (goldAmount > 0) {
-            goldReward += goldAmount;
-          }
-        }
-
-        if (goldReward > 0) {
-          updates.gold = admin.firestore.FieldValue.increment(goldReward);
-        }
-
-        // Update engagement stats
-        if (spellsUsed) updates['engagementStats.everUsedSpell'] = true;
-        if (itemsUsed) updates['engagementStats.everUsedItems'] = true;
-        if (movements) updates['engagementStats.everMoved'] = true;
-        if (attacks) updates['engagementStats.everAttacked'] = true;
-        if (flames) updates['engagementStats.everSawFlames'] = true;
-        if (ice) updates['engagementStats.everSawIce'] = true;
-        if (poison) updates['engagementStats.everPoisoned'] = true;
-        if (silenced) updates['engagementStats.everSilenced'] = true;
-        if (paralyzed) updates['engagementStats.everParalyzed'] = true;
-        if (lowMP) updates['engagementStats.everLowMP'] = true;
-
-        // Update mode-specific stats
-        if (mode == PlayMode.PRACTICE) {
-          updates['engagementStats.everPlayedPractice'] = true;
-        } else if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
-          updates['engagementStats.everPlayedCasual'] = true;
-        } else if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
-          updates['engagementStats.everPlayedRanked'] = true;
-        }
-
-        if (stayedUntilTheEnd) {
-          updates['engagementStats.completedGames'] = admin.firestore.FieldValue.increment(1);
-        }
-
-        // Update win/loss stats
-        if (mode != PlayMode.PRACTICE) {
-          if (isWinner) {
-            updates.lossesStreak = 0;
-          } else {
-            updates.lossesStreak = admin.firestore.FieldValue.increment(1);
+          if (goldReward > 0) {
+            updates.gold = admin.firestore.FieldValue.increment(goldReward);
           }
 
-          if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
-            updates['casualStats.nbGames'] = admin.firestore.FieldValue.increment(1);
+          // Update engagement stats
+          if (spellsUsed) updates["engagementStats.everUsedSpell"] = true;
+          if (itemsUsed) updates["engagementStats.everUsedItems"] = true;
+          if (movements) updates["engagementStats.everMoved"] = true;
+          if (attacks) updates["engagementStats.everAttacked"] = true;
+          if (flames) updates["engagementStats.everSawFlames"] = true;
+          if (ice) updates["engagementStats.everSawIce"] = true;
+          if (poison) updates["engagementStats.everPoisoned"] = true;
+          if (silenced) updates["engagementStats.everSilenced"] = true;
+          if (paralyzed) updates["engagementStats.everParalyzed"] = true;
+          if (lowMP) updates["engagementStats.everLowMP"] = true;
+
+          // Update mode-specific stats
+          if (mode == PlayMode.PRACTICE) {
+            updates["engagementStats.everPlayedPractice"] = true;
+          } else if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
+            updates["engagementStats.everPlayedCasual"] = true;
+          } else if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
+            updates["engagementStats.everPlayedRanked"] = true;
+          }
+
+          if (stayedUntilTheEnd) {
+            updates["engagementStats.completedGames"] = admin.firestore.FieldValue.increment(1);
+          }
+
+          // Update win/loss stats
+          if (mode != PlayMode.PRACTICE) {
             if (isWinner) {
-              updates['casualStats.wins'] = admin.firestore.FieldValue.increment(1);
+              updates.lossesStreak = 0;
+            } else {
+              updates.lossesStreak = admin.firestore.FieldValue.increment(1);
+            }
+
+            if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
+              updates["casualStats.nbGames"] = admin.firestore.FieldValue.increment(1);
+              if (isWinner) {
+                updates["casualStats.wins"] = admin.firestore.FieldValue.increment(1);
+              }
+            }
+
+            if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
+              const seasonId = currentSeasonId();
+              updates.leagueStats = applyRankedResult(
+                playerData.leagueStats,
+                isWinner,
+                score || 0,
+                rawGrade || 0,
+                seasonId,
+                true,
+              );
+              updates.allTimeStats = applyRankedResult(
+                playerData.allTimeStats,
+                isWinner,
+                score || 0,
+                rawGrade || 0,
+                seasonId,
+                false,
+              );
+              updates.league = getLeagueForElo((playerData.elo || 0) + (elo || 0));
             }
           }
 
-          if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
-            const seasonId = currentSeasonId();
-            updates.leagueStats = applyRankedResult(
-              playerData.leagueStats,
-              isWinner,
-              score || 0,
-              rawGrade || 0,
-              seasonId,
-              true,
-            );
-            updates.allTimeStats = applyRankedResult(
-              playerData.allTimeStats,
-              isWinner,
-              score || 0,
-              rawGrade || 0,
-              seasonId,
-              false,
-            );
-            updates.league = getLeagueForElo((playerData.elo || 0) + (elo || 0));
+          if (mode == PlayMode.PRACTICE || mode == PlayMode.CASUAL_VS_AI || mode == PlayMode.RANKED_VS_AI) {
+            const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
+            updates.AIstats = {
+              nbGames: currentAIStats.nbGames + 1,
+              wins: currentAIStats.wins + (isWinner ? 1 : 0),
+            };
           }
-        }
 
-        if (mode == PlayMode.PRACTICE || mode == PlayMode.CASUAL_VS_AI || mode == PlayMode.RANKED_VS_AI) {
-          const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
-          updates.AIstats = {
-            nbGames: currentAIStats.nbGames + 1,
-            wins: currentAIStats.wins + (isWinner ? 1 : 0),
-          };
-        }
+          transaction.update(playerRef, updates);
 
-        transaction.update(playerRef, updates);
+          // Update XP for each character
+          if (playerData.characters && Array.isArray(playerData.characters) && characters) {
+            for (const characterRef of playerData.characters) {
+              if (characterRef instanceof admin.firestore.DocumentReference) {
+                const characterRewards = characters.find((c) => c.id === characterRef.id);
 
-        // Update XP for each character
-        if (playerData.characters && Array.isArray(playerData.characters) && characters) {
-          for (const characterRef of playerData.characters) {
-            if (characterRef instanceof admin.firestore.DocumentReference) {
-              const characterRewards = characters.find((c) => c.id === characterRef.id);
-
-              if (characterRewards) {
-                const sp = characterRewards.points;
-                transaction.update(characterRef, {
-                  xp: characterRewards.xp,
-                  level: admin.firestore.FieldValue.increment(characterRewards.level),
-                  sp: admin.firestore.FieldValue.increment(sp),
-                  allTimeSP: admin.firestore.FieldValue.increment(sp),
-                });
+                if (characterRewards) {
+                  const sp = characterRewards.points;
+                  transaction.update(characterRef, {
+                    xp: characterRewards.xp,
+                    level: admin.firestore.FieldValue.increment(characterRewards.level),
+                    sp: admin.firestore.FieldValue.increment(sp),
+                    allTimeSP: admin.firestore.FieldValue.increment(sp),
+                  });
+                }
               }
             }
           }
-        }
-        transaction.create(receiptRef, {
-          resultId,
-          uid,
-          processedAt: admin.firestore.FieldValue.serverTimestamp(),
+          transaction.create(receiptRef, {
+            resultId,
+            uid,
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return true;
         });
-        return true;
-      });
-      if (applied) logPlayerAction(uid, "reward", {xp, gold, key, chests, elo});
-      response.send({status: 0});
-    } catch (error) {
-      console.error("Error processing reward:", error);
-      response.status(500).send("Error: " + (error instanceof Error ? error.message : "Unknown error"));
-    }
-  });
-});
+        if (applied) logPlayerAction(uid, "reward", { xp, gold, key, chests, elo });
+        response.send({ status: 0 });
+      } catch (error) {
+        console.error("Error processing reward:", error);
+        response.status(500).send("Error: " + (error instanceof Error ? error.message : "Unknown error"));
+      }
+    });
+  },
+);
 
-async function createCharacterForSale(
-  db: FirebaseFirestore.Firestore,
-  classType: Class = Class.RANDOM
-) {
+async function createCharacterForSale(db: FirebaseFirestore.Firestore, classType: Class = Class.RANDOM) {
   // const level = 1; // Math.floor(Math.random() * 100);
   const character = new NewCharacter(classType, 1, true).getCharacterData(true);
   character.onSale = true;
@@ -386,9 +409,7 @@ async function createCharacterForSale(
 }
 
 async function monitorCharactersOnSale(db: FirebaseFirestore.Firestore) {
-  const querySnapshot = await db.collection("characters")
-    .where("onSale", "==", true)
-    .get();
+  const querySnapshot = await db.collection("characters").where("onSale", "==", true).get();
   let onSaleCount = querySnapshot.size;
   const TARGET_COUNT = 10 + Math.floor(Math.random() * 4) - 2;
   // Check that the list of on sale characters contains at least one
@@ -413,237 +434,245 @@ async function monitorCharactersOnSale(db: FirebaseFirestore.Firestore) {
   }
 }
 
-export const generateOnSaleCharacters = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Generating on sale characters");
-  const db = admin.firestore();
+export const generateOnSaleCharacters = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    logger.info("Generating on sale characters");
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      // Count how many characters have the `onSale` flag set to true
-      // in the collection
-      const delta = 0;
-      monitorCharactersOnSale(db);
-      response.send({delta});
-    } catch (error) {
-      console.error("Error generating on sale characters:", error);
-      response.status(500).send("Errir");
-    }
-  });
-});
-
-export const listOnSaleCharacters = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Listing on sale characters");
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      let querySnapshot = await db.collection("characters")
-        .where("onSale", "==", true)
-        .get();
-
-      // If there are no on sale characters, populate the database with on sale characters
-      if (querySnapshot.empty) {
-        await monitorCharactersOnSale(db);
-
-        // Fetch the updated list of on sale characters
-        querySnapshot = await db.collection("characters")
-          .where("onSale", "==", true)
-          .get();
+    corsMiddleware(request, response, async () => {
+      try {
+        // Count how many characters have the `onSale` flag set to true
+        // in the collection
+        const delta = 0;
+        monitorCharactersOnSale(db);
+        response.send({ delta });
+      } catch (error) {
+        console.error("Error generating on sale characters:", error);
+        response.status(500).send("Errir");
       }
+    });
+  },
+);
 
-      const characters = querySnapshot.docs.map((doc) => {
-        const characterData = doc.data();
-        return {
-          id: doc.id, // Include the document ID
-          ...characterData,
-        };
-      });
+export const listOnSaleCharacters = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    logger.info("Listing on sale characters");
+    const db = admin.firestore();
 
-      response.send(characters);
-    } catch (error) {
-      console.error("Error listing on sale characters:", error);
-      response.status(401).send("Unauthorized");
-    }
-  });
-});
+    corsMiddleware(request, response, async () => {
+      try {
+        let querySnapshot = await db.collection("characters").where("onSale", "==", true).get();
 
-export const deleteOnSaleCharacters = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Deleting on sale characters");
-  const db = admin.firestore();
+        // If there are no on sale characters, populate the database with on sale characters
+        if (querySnapshot.empty) {
+          await monitorCharactersOnSale(db);
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const querySnapshot = await db.collection("characters")
-        .where("onSale", "==", true)
-        .get();
-      const batch = db.batch();
-      querySnapshot.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-      response.send({status: 0});
-    } catch (error) {
-      console.error("Error deleting on sale characters:", error);
-      response.status(401).send("Unauthorized");
-    }
-  });
-});
-
-export const purchaseCharacter = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Purchasing character");
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const characterId = request.body.articleId;
-
-      if (!characterId) {
-        throw new Error("Character ID is not provided or is invalid.");
-      }
-
-      // Fetch the price of the character
-      const characterDoc = await db.collection("characters")
-        .doc(characterId).get();
-      const characterData = characterDoc.data();
-      if (!characterData) {
-        throw new Error("Character does not exist");
-      }
-      if (!characterData.onSale) {
-        throw new Error("Character is not on sale");
-      }
-      const price = characterData.price;
-
-      await db.runTransaction(async (transaction) => {
-        const playerRef = db.collection("players").doc(uid);
-        const playerDoc = await transaction.get(playerRef);
-
-        if (!playerDoc.exists) {
-          throw new Error("Documents do not exist");
+          // Fetch the updated list of on sale characters
+          querySnapshot = await db.collection("characters").where("onSale", "==", true).get();
         }
 
-        const playerData = playerDoc.data();
-
-        if (!playerData) {
-          throw new Error("Data does not exist");
-        }
-
-        // Check that player has enough gold to purchase character
-        if (playerData.gold < price) {
-          throw new Error("Player does not have enough gold");
-        }
-
-        // Check if player has less than MAX_CHARACTERS characters
-        if (playerData.characters.length >= MAX_CHARACTERS) {
-          throw new Error("Player has too many characters");
-        }
-
-        // Subtract gold from player
-        transaction.update(playerRef, {
-          gold: admin.firestore.FieldValue.increment(-price),
+        const characters = querySnapshot.docs.map((doc) => {
+          const characterData = doc.data();
+          return {
+            id: doc.id, // Include the document ID
+            ...characterData,
+          };
         });
 
-        // Add character to player's roster
-        transaction.update(playerRef, {
-          characters: admin.firestore.FieldValue.arrayUnion(
-            db.collection("characters").doc(characterId)
-          ),
-        });
-
-        transaction.update(db.collection("characters").doc(characterId), {
-          onSale: false,
-          price: 0,
-        });
-      });
-      console.log("Transaction successfully committed!");
-      logPlayerAction(uid, "purchaseCharacter", {characterId, price});
-      monitorCharactersOnSale(db);
-
-      response.send({status: 0});
-    } catch (error) {
-      console.error("Error purchasing character:", error);
-      response.status(401).send("Unauthorized");
-    }
-  });
-});
-
-export const spendSP = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const characterId = request.body.characterId as string;
-      const amount = request.body.amount;
-      const index = request.body.stat as number;
-      let stat;
-      console.log(`[spendSP] Spending ${amount} SP on stat [${index} ] ${statFieldsByIndex[index]}`);
-
-      if (index < 0 || index >= statFieldsByIndex.length) {
-        throw new Error("Invalid stat index");
+        response.send(characters);
+      } catch (error) {
+        console.error("Error listing on sale characters:", error);
+        response.status(401).send("Unauthorized");
       }
+    });
+  },
+);
 
-      await db.runTransaction(async (transaction) => {
-        const playerRef = db.collection("players").doc(uid);
-        const characterRef = db.collection("characters").doc(characterId);
+export const deleteOnSaleCharacters = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    logger.info("Deleting on sale characters");
+    const db = admin.firestore();
 
-        const playerDoc = await transaction.get(playerRef);
-        const characterDoc = await transaction.get(characterRef);
+    corsMiddleware(request, response, async () => {
+      try {
+        const querySnapshot = await db.collection("characters").where("onSale", "==", true).get();
+        const batch = db.batch();
+        querySnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+        response.send({ status: 0 });
+      } catch (error) {
+        console.error("Error deleting on sale characters:", error);
+        response.status(401).send("Unauthorized");
+      }
+    });
+  },
+);
 
-        if (!playerDoc.exists || !characterDoc.exists) {
-          throw new Error("Documents do not exist");
+export const purchaseCharacter = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    logger.info("Purchasing character");
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const characterId = request.body.articleId;
+
+        if (!characterId) {
+          throw new Error("Character ID is not provided or is invalid.");
         }
 
-        const playerData = playerDoc.data();
-        const characterData = characterDoc.data() as DBCharacterData;
+        // Fetch the price of the character
+        const characterDoc = await db.collection("characters").doc(characterId).get();
+        const characterData = characterDoc.data();
+        if (!characterData) {
+          throw new Error("Character does not exist");
+        }
+        if (!characterData.onSale) {
+          throw new Error("Character is not on sale");
+        }
+        const price = characterData.price;
 
-        if (!playerData || !characterData) {
-          throw new Error("Data does not exist");
+        await db.runTransaction(async (transaction) => {
+          const playerRef = db.collection("players").doc(uid);
+          const playerDoc = await transaction.get(playerRef);
+
+          if (!playerDoc.exists) {
+            throw new Error("Documents do not exist");
+          }
+
+          const playerData = playerDoc.data();
+
+          if (!playerData) {
+            throw new Error("Data does not exist");
+          }
+
+          // Check that player has enough gold to purchase character
+          if (playerData.gold < price) {
+            throw new Error("Player does not have enough gold");
+          }
+
+          // Check if player has less than MAX_CHARACTERS characters
+          if (playerData.characters.length >= MAX_CHARACTERS) {
+            throw new Error("Player has too many characters");
+          }
+
+          // Subtract gold from player
+          transaction.update(playerRef, {
+            gold: admin.firestore.FieldValue.increment(-price),
+          });
+
+          // Add character to player's roster
+          transaction.update(playerRef, {
+            characters: admin.firestore.FieldValue.arrayUnion(db.collection("characters").doc(characterId)),
+          });
+
+          transaction.update(db.collection("characters").doc(characterId), {
+            onSale: false,
+            price: 0,
+          });
+        });
+        console.log("Transaction successfully committed!");
+        logPlayerAction(uid, "purchaseCharacter", { characterId, price });
+        monitorCharactersOnSale(db);
+
+        response.send({ status: 0 });
+      } catch (error) {
+        console.error("Error purchasing character:", error);
+        response.status(401).send("Unauthorized");
+      }
+    });
+  },
+);
+
+export const spendSP = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
+
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const characterId = request.body.characterId as string;
+        const amount = request.body.amount;
+        const index = request.body.stat as number;
+        let stat;
+        console.log(`[spendSP] Spending ${amount} SP on stat [${index} ] ${statFieldsByIndex[index]}`);
+
+        if (index < 0 || index >= statFieldsByIndex.length) {
+          throw new Error("Invalid stat index");
         }
 
-        // Check that character is owned by player
-        const characters = playerData.characters as admin.firestore.DocumentReference[];
-        const characterIds = characters.map((character) => character.id);
-        if (!characterIds.includes(characterId)) {
-          throw new Error("Character not owned by player");
-        }
+        await db.runTransaction(async (transaction) => {
+          const playerRef = db.collection("players").doc(uid);
+          const characterRef = db.collection("characters").doc(characterId);
 
-        // Check that character has enough skill points
-        if (characterData.sp < amount) {
-          throw new Error("Character does not have enough skill points");
-        }
+          const playerDoc = await transaction.get(playerRef);
+          const characterDoc = await transaction.get(characterRef);
 
-        // Check if new value would exceed maximum
-        if (!canIncreaseStat(characterData, index, amount)) {
-          throw new Error(`Cannot exceed maximum value of ${getMaxStatValue(index as Stat)} for ${statFieldsByIndex[index]}`);
-        }
-        const spBonuses = characterData.sp_bonuses;
-        spBonuses[statFieldsByIndex[index]] += getSPIncrement(index) * amount;
+          if (!playerDoc.exists || !characterDoc.exists) {
+            throw new Error("Documents do not exist");
+          }
 
-        transaction.update(characterRef, {
-          sp: admin.firestore.FieldValue.increment(-amount),
-          sp_bonuses: spBonuses,
+          const playerData = playerDoc.data();
+          const characterData = characterDoc.data() as DBCharacterData;
+
+          if (!playerData || !characterData) {
+            throw new Error("Data does not exist");
+          }
+
+          // Check that character is owned by player
+          const characters = playerData.characters as admin.firestore.DocumentReference[];
+          const characterIds = characters.map((character) => character.id);
+          if (!characterIds.includes(characterId)) {
+            throw new Error("Character not owned by player");
+          }
+
+          // Check that character has enough skill points
+          if (characterData.sp < amount) {
+            throw new Error("Character does not have enough skill points");
+          }
+
+          // Check if new value would exceed maximum
+          if (!canIncreaseStat(characterData, index, amount)) {
+            throw new Error(
+              `Cannot exceed maximum value of ${getMaxStatValue(index as Stat)} for ${statFieldsByIndex[index]}`,
+            );
+          }
+          const spBonuses = characterData.sp_bonuses;
+          spBonuses[statFieldsByIndex[index]] += getSPIncrement(index) * amount;
+
+          transaction.update(characterRef, {
+            sp: admin.firestore.FieldValue.increment(-amount),
+            sp_bonuses: spBonuses,
+          });
+
+          transaction.update(playerRef, {
+            "engagementStats.everSpentSP": true,
+          });
         });
 
-        transaction.update(playerRef, {
-          'engagementStats.everSpentSP': true,
-        });
-      });
+        logPlayerAction(uid, "spendSP", { characterId, amount, stat });
 
-      logPlayerAction(uid, "spendSP", {characterId, amount, stat});
-
-      response.send({status: 0});
-    } catch (error) {
-      console.error("Error spending skill points:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
+        response.send({ status: 0 });
+      } catch (error) {
+        console.error("Error spending skill points:", error);
+        response.status(500).send("Error");
+      }
+    });
+  },
+);

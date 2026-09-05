@@ -1,11 +1,11 @@
 // SpectatorFooter.tsx
-import { h, Fragment, Component } from 'preact';
-import { PlayMode, Class } from '@legion/shared/enums';
+import { h, Fragment, Component } from "preact";
+import { PlayMode, Class } from "@legion/shared/enums";
 import { TeamOverview } from "@legion/shared/interfaces";
-import { getSpritePath } from '../utils';
-import './Timeline.style.css';
-import warriorIcon from '@assets/shop/warrior_icon.png';
-import mageIcon from '@assets/shop/mage_icon.png';
+import { getSpritePath } from "../utils";
+import "./Timeline.style.css";
+import warriorIcon from "@assets/shop/warrior_icon.png";
+import mageIcon from "@assets/shop/mage_icon.png";
 
 interface TimelineProps {
   isTutorial: boolean;
@@ -39,7 +39,7 @@ class Timeline extends Component<TimelineProps, TimelineState> {
         const key = `${item.team}-${item.num}`;
         newPositions[key] = index;
       });
-      
+
       this.setState({ positions: newPositions });
     }
   }
@@ -67,11 +67,11 @@ class Timeline extends Component<TimelineProps, TimelineState> {
         <div className="spectator_footer_container">
           <div className="turn_timeline_wrapper">
             <div className="turn_order_label">Turn Order</div>
-            <div 
+            <div
               className="turn_timeline"
-              style={{ 
+              style={{
                 width: `${timelineWidth}px`,
-                position: 'relative'
+                position: "relative",
               }}
             >
               {sortedQueue.map((queueItem, index) => {
@@ -86,33 +86,32 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                 const position = positions[characterKey] || index;
 
                 const style = {
-                  transform: `translateX(${startOffset + (position * portraitWidth)}px)`,
-                  zIndex: sortedQueue.length - position
+                  transform: `translateX(${startOffset + position * portraitWidth}px)`,
+                  zIndex: sortedQueue.length - position,
                 };
 
                 return (
-                  <div 
+                  <div
                     key={characterKey}
-                    className={`timeline_character ${queueItem.team === 1 ? 'timeline_ally' : 'timeline_enemy'}`}
+                    className={`timeline_character ${queueItem.team === 1 ? "timeline_ally" : "timeline_enemy"}`}
                     style={style}
                   >
-                    <div 
-                      className={`timeline_portrait_container ${queueItem.team === 1 ? 'ally_portrait' : 'enemy_portrait'}`}
+                    <div
+                      className={`timeline_portrait_container ${queueItem.team === 1 ? "ally_portrait" : "enemy_portrait"}`}
                     >
-                      <div 
-                        className="timeline_portrait" 
-                        style={portraitStyle}
-                      />
-                      <div className={`timeline_class_indicator ${
-                        character.class === Class.WARRIOR 
-                          ? 'frame-warrior' 
-                          : character.class === Class.BLACK_MAGE 
-                          ? 'frame-black-mage'
-                          : 'frame-white-mage'
-                      }`}>
-                        <img 
+                      <div className="timeline_portrait" style={portraitStyle} />
+                      <div
+                        className={`timeline_class_indicator ${
+                          character.class === Class.WARRIOR
+                            ? "frame-warrior"
+                            : character.class === Class.BLACK_MAGE
+                              ? "frame-black-mage"
+                              : "frame-white-mage"
+                        }`}
+                      >
+                        <img
                           src={character.class === Class.WARRIOR ? warriorIcon : mageIcon}
-                          className={`class-icon ${character.class === Class.WARRIOR ? 'warrior' : ''}`}
+                          className={`class-icon ${character.class === Class.WARRIOR ? "warrior" : ""}`}
                         />
                       </div>
                     </div>

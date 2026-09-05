@@ -1,49 +1,60 @@
 // QuestCard.tsx
-import CountUp from 'react-countup';
-import './QuestCard.style.css';
-import { h, Component } from 'preact';
-import questActive from '@assets/quest_bg_active.png';
-import questIdle from '@assets/quest_bg_idle.png';
-import completionMarker from '@assets/completion_marker.png';
+import CountUp from "react-countup";
+import "./QuestCard.style.css";
+import { h, Component } from "preact";
+import questActive from "@assets/quest_bg_active.png";
+import questIdle from "@assets/quest_bg_idle.png";
+import completionMarker from "@assets/completion_marker.png";
 
 type Reward = {
-    gold: number,
-    xp: number
-}
+  gold: number;
+  xp: number;
+};
 
 type Quest = {
-    name: string,
-    rewards: Reward,
-    completion: number
-}
+  name: string;
+  rewards: Reward;
+  completion: number;
+};
 
 interface CardProps {
-    quest: Quest;
+  quest: Quest;
 }
 
 class QuestCard extends Component<CardProps> {
-    state = {
-        active: false
-    }
-    render() {
-        const data = this.props.quest;
+  state = {
+    active: false,
+  };
+  render() {
+    const data = this.props.quest;
 
-        const bgStyle = {
-            backgroundImage: `url(${this.state.active ? questActive : questIdle})`,
-            cursor: 'pointer'
-        }
+    const bgStyle = {
+      backgroundImage: `url(${this.state.active ? questActive : questIdle})`,
+      cursor: "pointer",
+    };
 
-        return (
-            <div className="questCardContainer" style={bgStyle} onMouseEnter={() => this.setState({ active: true })} onMouseLeave={() => this.setState({ active: false })}>
-                <div className="questInfoContainer">
-                    <span className="fireSpells">{data.name}</span>
-                    <span>Rewards</span>
-                    <p><span className="questGold">{data.rewards.gold}</span> GOLD | <span className="questExp">{data.rewards.xp}</span> EXP</p>
-                </div>
-                {data.completion === 1 ? <div className="completion" style={{backgroundImage: `url(${completionMarker})`}}></div> : <div className="chartContainer">
-                    <svg viewBox="0 0 63.6619772368 63.6619772368">
-                        <style>
-                            {`
+    return (
+      <div
+        className="questCardContainer"
+        style={bgStyle}
+        onMouseEnter={() => this.setState({ active: true })}
+        onMouseLeave={() => this.setState({ active: false })}
+      >
+        <div className="questInfoContainer">
+          <span className="fireSpells">{data.name}</span>
+          <span>Rewards</span>
+          <p>
+            <span className="questGold">{data.rewards.gold}</span> GOLD |{" "}
+            <span className="questExp">{data.rewards.xp}</span> EXP
+          </p>
+        </div>
+        {data.completion === 1 ? (
+          <div className="completion" style={{ backgroundImage: `url(${completionMarker})` }}></div>
+        ) : (
+          <div className="chartContainer">
+            <svg viewBox="0 0 63.6619772368 63.6619772368">
+              <style>
+                {`
                                 @keyframes pie-chart {
                                     50%,
                                     100% {
@@ -51,14 +62,19 @@ class QuestCard extends Component<CardProps> {
                                     }
                                 }
                             `}
-                        </style>
-                        <circle className="pie-chart" cx="31.8309886184" cy="31.8309886184" r="15.9154943092" />
-                    </svg>
-                    <div className="chartVal"><span><CountUp duration={3} end={data.completion * 100} />%</span></div>
-                </div>}
+              </style>
+              <circle className="pie-chart" cx="31.8309886184" cy="31.8309886184" r="15.9154943092" />
+            </svg>
+            <div className="chartVal">
+              <span>
+                <CountUp duration={3} end={data.completion * 100} />%
+              </span>
             </div>
-        );
-    }
+          </div>
+        )}
+      </div>
+    );
+  }
 }
 
 export default QuestCard;

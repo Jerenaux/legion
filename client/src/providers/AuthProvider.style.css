@@ -5,8 +5,7 @@
   align-items: center;
   background-color: oklch(15% 0.025 245);
   background-image:
-    linear-gradient(oklch(8% 0.025 245 / 0.62), oklch(8% 0.025 245 / 0.82)),
-    url('@assets/title/title.png');
+    linear-gradient(oklch(8% 0.025 245 / 0.62), oklch(8% 0.025 245 / 0.82)), url("@assets/title/title.png");
   background-position: center;
   background-size: cover;
   box-sizing: border-box;
@@ -112,7 +111,10 @@
   margin-top: 1.6rem;
   min-width: 11rem;
   padding: 0.75rem 1.5rem;
-  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .session-status__retry:hover,
@@ -139,7 +141,9 @@
 }
 
 @keyframes session-progress {
-  to { transform: translateX(272%); }
+  to {
+    transform: translateX(272%);
+  }
 }
 
 @media (max-height: 600px) {

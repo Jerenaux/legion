@@ -1,435 +1,444 @@
 .endgame_buttons {
-    position: absolute;
-    bottom: clamp(24px, 5vh, 36px);
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-    width: min(280px, 90vw);
+  position: absolute;
+  bottom: clamp(24px, 5vh, 36px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: min(280px, 90vw);
 }
 
 .endgame_button {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    font-family: 'Kim';
-    text-transform: uppercase;
-    transition: all 0.2s ease;
-    position: relative;
-    border-radius: 4px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-family: "Kim";
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  position: relative;
+  border-radius: 4px;
 }
 
 .endgame_button_primary {
-    height: clamp(44px, 8vh, 56px);
-    font-size: clamp(16px, 3vw, 20px);
-    background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
-    color: #1c1f25;
-    border: 2px solid #ffd700;
-    box-shadow: 
-        0 0 20px rgba(255, 166, 0, 0.3),
-        inset 0 0 10px rgba(255, 255, 255, 0.5);
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  height: clamp(44px, 8vh, 56px);
+  font-size: clamp(16px, 3vw, 20px);
+  background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
+  color: #1c1f25;
+  border: 2px solid #ffd700;
+  box-shadow:
+    0 0 20px rgba(255, 166, 0, 0.3),
+    inset 0 0 10px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .endgame_button_primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-        0 0 30px rgba(255, 166, 0, 0.5),
-        inset 0 0 15px rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 30px rgba(255, 166, 0, 0.5),
+    inset 0 0 15px rgba(255, 255, 255, 0.7);
 }
 
 .endgame_button_primary:active {
-    transform: translateY(1px);
-    background: linear-gradient(180deg, #ffa600 0%, #ffd700 100%);
+  transform: translateY(1px);
+  background: linear-gradient(180deg, #ffa600 0%, #ffd700 100%);
 }
 
 .endgame_button_secondary {
-    height: clamp(36px, 7vh, 48px);
-    width: 90%;
-    font-size: clamp(14px, 2.5vw, 16px);
-    background: linear-gradient(to bottom, #2a3746 0%, #1c1f25 100%);
-    color: #ffffff;
-    border: 1px solid #3c616c;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  height: clamp(36px, 7vh, 48px);
+  width: 90%;
+  font-size: clamp(14px, 2.5vw, 16px);
+  background: linear-gradient(to bottom, #2a3746 0%, #1c1f25 100%);
+  color: #ffffff;
+  border: 1px solid #3c616c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .endgame_button_secondary:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 3px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .endgame_button_secondary:hover {
-    border-color: #51fdff;
-    box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
+  border-color: #51fdff;
+  box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
 }
 
 .endgame_button_secondary:active {
-    transform: scale(0.98);
-    background: linear-gradient(to bottom, #1c1f25 0%, #2a3746 100%);
+  transform: scale(0.98);
+  background: linear-gradient(to bottom, #1c1f25 0%, #2a3746 100%);
 }
 
 .defeat_title {
-    background-size: 100% 100%;
-    height: clamp(24px, 5vh, 54px);
-    width: min(800px, 90%);
-    margin: clamp(16px, 5vh, 50px) auto clamp(12px, 3vh, 30px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+  background-size: 100% 100%;
+  height: clamp(24px, 5vh, 54px);
+  width: min(800px, 90%);
+  margin: clamp(16px, 5vh, 50px) auto clamp(12px, 3vh, 30px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
 .defeat_title .defeat_title_bg {
-    height: clamp(48px, 8vh, 96px);
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-    animation: titleBounce 1s cubic-bezier(0.36, 0, 0.66, 1.5) forwards;
-    transform-origin: center;
+  height: clamp(48px, 8vh, 96px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  animation: titleBounce 1s cubic-bezier(0.36, 0, 0.66, 1.5) forwards;
+  transform-origin: center;
 }
 
 .defeat_title .defeat_title_effect {
-    position: absolute;
-    top: clamp(-32px, -6vh, -72px);
-    right: 1vw;
-    width: 30vh;
-    animation: bounce 0.8s ease alternate;
-    -webkit-animation: bounce 0.8s ease alternate;
-    transform-origin: center;
+  position: absolute;
+  top: clamp(-32px, -6vh, -72px);
+  right: 1vw;
+  width: 30vh;
+  animation: bounce 0.8s ease alternate;
+  -webkit-animation: bounce 0.8s ease alternate;
+  transform-origin: center;
 }
 
 @media screen and (max-width: 480px) {
-    .defeat_title {
-        width: 95%;
-        height: clamp(20px, 4vh, 24px);
-        margin: clamp(12px, 3vh, 16px) auto clamp(8px, 2vh, 12px);
-    }
-    
-    .defeat_title .defeat_title_bg {
-        height: clamp(36px, 6vh, 48px);
-    }
-    
-    .defeat_title .defeat_title_effect {
-        width: 50vh;
-        top: clamp(-24px, -4vh, -28px);
-    }
+  .defeat_title {
+    width: 95%;
+    height: clamp(20px, 4vh, 24px);
+    margin: clamp(12px, 3vh, 16px) auto clamp(8px, 2vh, 12px);
+  }
 
-    @keyframes bounce {
-        50% {
-            transform: scale(1.15);
-        }
-    }
+  .defeat_title .defeat_title_bg {
+    height: clamp(36px, 6vh, 48px);
+  }
 
-    @-webkit-keyframes bounce {
-        50% {
-            transform: scale(1.15);
-        }
+  .defeat_title .defeat_title_effect {
+    width: 50vh;
+    top: clamp(-24px, -4vh, -28px);
+  }
+
+  @keyframes bounce {
+    50% {
+      transform: scale(1.15);
     }
+  }
+
+  @-webkit-keyframes bounce {
+    50% {
+      transform: scale(1.15);
+    }
+  }
 }
 
 @keyframes titleBounce {
-    0% { 
-        transform: scale(0.5); 
-        opacity: 0;
-    }
-    50% { 
-        transform: scale(1.2);
-        opacity: 1;
-    }
-    75% { 
-        transform: scale(0.9);
-    }
-    100% { 
-        transform: scale(1);
-    }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .endgame_rewards_container {
-    background-image: url("@assets/game_end/rewards_bg.png");
-    background-size: 100% 100%;
-    background-position: -18px;
-    width: 100%;
-    height: 156px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    bottom: 30vh;
-    z-index: 0;
+  background-image: url("@assets/game_end/rewards_bg.png");
+  background-size: 100% 100%;
+  background-position: -18px;
+  width: 100%;
+  height: 156px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: 30vh;
+  z-index: 0;
 }
 
 /* Update media query for small screens */
-@media screen and (max-width: 480px), 
-       screen and (max-height: 600px) {
-    .endgame_rewards_container {
-        transform: scale(0.8);
-        bottom: 25vh;
-    }
-    
-    .endgame_rewards_items {
-        gap: 8px;
-        max-width: 90%;
-    }
-    
-    .streak_gold_list {
-        width: 56px;
-        height: 56px;
-    }
-    
-    .streak_gold_list > div:first-child {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .streak_gold_list_amount {
-        font-size: 12px;
-    }
+@media screen and (max-width: 480px), screen and (max-height: 600px) {
+  .endgame_rewards_container {
+    transform: scale(0.8);
+    bottom: 25vh;
+  }
+
+  .endgame_rewards_items {
+    gap: 8px;
+    max-width: 90%;
+  }
+
+  .streak_gold_list {
+    width: 56px;
+    height: 56px;
+  }
+
+  .streak_gold_list > div:first-child {
+    width: 36px;
+    height: 36px;
+  }
+
+  .streak_gold_list_amount {
+    font-size: 12px;
+  }
 }
 
 .endgame_rewards_items {
-    position: absolute;
-    bottom: 18px;
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    max-width: 80%;
-    padding: 0 20px;
+  position: absolute;
+  bottom: 18px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 80%;
+  padding: 0 20px;
 }
 
 .streak_gold_list {
-    width: 68px;
-    height: 68px;
-    background-color: #1c1f25;
-    border: 1px solid #147fa6;
-    border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 10;
-    position: relative;
-    transition: transform 0.2s ease;
+  width: 68px;
+  height: 68px;
+  background-color: #1c1f25;
+  border: 1px solid #147fa6;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  position: relative;
+  transition: transform 0.2s ease;
 }
 
 .streak_gold_list:hover {
-    transform: scale(1.05);
-    border-color: #51fdff;
-    box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
+  transform: scale(1.05);
+  border-color: #51fdff;
+  box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
 }
 
 .streak_gold_list > div:first-child {
-    width: 42px;
-    height: 42px;
-    background-repeat: no-repeat;
+  width: 42px;
+  height: 42px;
+  background-repeat: no-repeat;
 }
 
 .streak_gold_list img {
-    width: 64px;
-    height: 58px;
-    margin-left: 6px;
+  width: 64px;
+  height: 58px;
+  margin-left: 6px;
 }
 
 .streak_gold_list_amount {
-    position: absolute;
-    bottom: 6px;
-    right: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .endgame_rewards_heading_container {
-    position: absolute;
-    top: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+  position: absolute;
+  top: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .endgame_rewards_heading {
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffffff;
-    text-transform: uppercase;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
 }
 
 .victory_title_effect {
-    position: absolute;
-    top: -46px;
-    left: calc(50% + 234px);
-    font-size: 172px;
-    font-weight: bolder;
-    color: #ffffff;
-    text-shadow: #afafaf 0px 4px;
-  }
+  position: absolute;
+  top: -46px;
+  left: calc(50% + 234px);
+  font-size: 172px;
+  font-weight: bolder;
+  color: #ffffff;
+  text-shadow: #afafaf 0px 4px;
+}
 
-  .game_leave_dialog {
-    background-image: url("@assets/leaderboard/recap_bg.png");
-    background-size: 100% 100%;
-    width: 350px;
-    height: 140px;
-    padding: 15px;
-    display: flex;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    color: #ffffff;
-  }
-  
-  .game_leave_btn {
-    background-image: url("@assets/HUD/button_bg_idle.png");
-    background-size: 100% 100%;
-    width: 50%;
-    height: 52px;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    color: #ffffff;
-  }
-  
-  .game_leave_btn:hover {
-    background-image: url("@assets/HUD/button_bg_active.png");
-  }
+.game_leave_dialog {
+  background-image: url("@assets/leaderboard/recap_bg.png");
+  background-size: 100% 100%;
+  width: 350px;
+  height: 140px;
+  padding: 15px;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+}
+
+.game_leave_btn {
+  background-image: url("@assets/HUD/button_bg_idle.png");
+  background-size: 100% 100%;
+  width: 50%;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+}
+
+.game_leave_btn:hover {
+  background-image: url("@assets/HUD/button_bg_active.png");
+}
 
 .endgame_meet_team_msg {
-    font-size: 32px;
-    font-weight: 600;
-    color: #ffffff;
-    text-align: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
 }
 
 .endgame_leave {
-    background-image: url("@assets/HUD/skip_btn_bg.png");
-    background-size: 100% 100%;
-    width: 156px;
-    height: 56px;
-  
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffffff;
-  
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  
-    padding-right: 8px;
-    cursor: pointer;
-  
-    position: absolute;
-    bottom: 36px;
+  background-image: url("@assets/HUD/skip_btn_bg.png");
+  background-size: 100% 100%;
+  width: 156px;
+  height: 56px;
+
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding-right: 8px;
+  cursor: pointer;
+
+  position: absolute;
+  bottom: 36px;
 }
-  
+
 .endgame_leave:hover {
-    background-image: url("@assets/game_end/leave_btn_active.png");
+  background-image: url("@assets/game_end/leave_btn_active.png");
 }
 
 /* For very small screens */
 @media screen and (max-width: 360px) {
-    .endgame_buttons {
-        bottom: 16px;
-        gap: 6px;
-    }
+  .endgame_buttons {
+    bottom: 16px;
+    gap: 6px;
+  }
 
-    .endgame_button_primary {
-        height: 40px;
-    }
+  .endgame_button_primary {
+    height: 40px;
+  }
 
-    .endgame_button_secondary {
-        height: 32px;
-    }
+  .endgame_button_secondary {
+    height: 32px;
+  }
 }
 
 /* For landscape orientation */
 @media screen and (max-height: 600px) and (orientation: landscape) {
-    .endgame_buttons {
-        bottom: 16px;
-        gap: 8px;
-    }
+  .endgame_buttons {
+    bottom: 16px;
+    gap: 8px;
+  }
 
-    .endgame_button_primary {
-        height: 44px;
-        font-size: 16px;
-    }
+  .endgame_button_primary {
+    height: 44px;
+    font-size: 16px;
+  }
 
-    .endgame_button_secondary {
-        height: 36px;
-        font-size: 14px;
-    }
+  .endgame_button_secondary {
+    height: 36px;
+    font-size: 14px;
+  }
 }
 
 .endgame_unlock_message {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 12px 24px;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
 }
 
 .shaking-lock {
-    width: 24px;
-    height: 24px;
-    animation: shake 2.5s ease-in-out infinite;
+  width: 24px;
+  height: 24px;
+  animation: shake 2.5s ease-in-out infinite;
 }
 
 @keyframes shake {
-    0%, 100% { transform: rotate(0deg); }
-    20% { transform: rotate(-10deg); }
-    40% { transform: rotate(10deg); }
-    60% { transform: rotate(-10deg); }
-    80% { transform: rotate(10deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-10deg);
+  }
+  40% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(-10deg);
+  }
+  80% {
+    transform: rotate(10deg);
+  }
 }
 
 .endgame_characters_grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-    justify-content: center;
-    align-items: center;
-    margin-top: 3vh;
-    min-height: 20vh;
-    padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 3vh;
+  min-height: 20vh;
+  padding: 0 20px;
 }
 
 @media (max-width: 768px) {
-    .endgame_characters_grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
+  .endgame_characters_grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
 }
 
 @media (max-width: 480px) {
-    .endgame_characters_grid {
-        grid-template-columns: repeat(1, 1fr);
-        gap: 10px;
-    }
+  .endgame_characters_grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+  }
 }
 
 @media (max-height: 600px) {
-    .endgame_characters_grid {
-        margin-top: -1vh;
-        transform: scale(0.8);
-    }
+  .endgame_characters_grid {
+    margin-top: -1vh;
+    transform: scale(0.8);
+  }
 }
-  

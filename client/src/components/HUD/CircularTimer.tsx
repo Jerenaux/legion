@@ -1,9 +1,9 @@
-import { h, Component } from 'preact';
-import cdIcon from '@assets/inventory/cd_icon.png';
+import { h, Component } from "preact";
+import cdIcon from "@assets/inventory/cd_icon.png";
 
 interface CircularTimerProps {
-  turnDuration: number;  // Total turn duration in seconds
-  timeLeft: number;    // Time remaining in seconds
+  turnDuration: number; // Total turn duration in seconds
+  timeLeft: number; // Time remaining in seconds
   turnNumber: number;
   size?: number;
   strokeWidth?: number;
@@ -18,7 +18,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
   private startTime: number;
 
   state = {
-    progress: 100
+    progress: 100,
   };
 
   componentDidMount() {
@@ -47,7 +47,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
     const initialProgress = (this.props.timeLeft / this.props.turnDuration) * 100;
     this.setState({ progress: initialProgress });
     this.animate();
-  }
+  };
 
   animate = () => {
     const currentTime = performance.now();
@@ -95,4 +95,4 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
       </div>
     );
   }
-} 
+}

@@ -3,7 +3,7 @@
 }
 
 :root {
-  --game-pointer: url('@assets/pointers/hand_pointer.png'), auto;
+  --game-pointer: url("@assets/pointers/hand_pointer.png"), auto;
   --desktop-safe-inline: max(env(safe-area-inset-left), calc((100vw - 100vh * 16 / 9) / 2), 0px);
   --desktop-safe-block: max(env(safe-area-inset-top), calc((100vh - 100vw * 9 / 16) / 2), 0px);
 }
@@ -35,7 +35,6 @@ canvas {
   width: 100%;
   height: 100%;
 }
-
 
 #root {
   position: absolute;
@@ -75,8 +74,8 @@ canvas {
 }
 
 @font-face {
-  font-family: 'Kim';
-  src: url('@assets/kim.otf') format('opentype');
+  font-family: "Kim";
+  src: url("@assets/kim.otf") format("opentype");
 }
 
 .player-main {
@@ -99,7 +98,7 @@ canvas {
   margin-bottom: 5px;
   margin-left: 1px;
   font-weight: bold;
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: 20px;
 }
 
@@ -117,7 +116,6 @@ canvas {
   background-repeat: no-repeat;
 }
 
-
 .badge {
   border: 2px solid black;
   border-radius: 5px;
@@ -127,9 +125,13 @@ canvas {
   background-color: #4a4947;
   font-weight: bold;
   width: 100px;
-  font-family: 'Kim';
+  font-family: "Kim";
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .badge-label {
@@ -145,11 +147,11 @@ canvas {
 }
 
 .hp {
-  background-color: #32CD32;
+  background-color: #32cd32;
 }
 
 .dmg {
-  background-color: #FF0000;
+  background-color: #ff0000;
 }
 
 .mp {
@@ -157,23 +159,23 @@ canvas {
 }
 
 .atk {
-  background-color: #CD5C5C;
+  background-color: #cd5c5c;
 }
 
 .def {
-  background-color: #FFA07A;
+  background-color: #ffa07a;
 }
 
 .spatk {
-  background-color: #9370DB;
+  background-color: #9370db;
 }
 
 .spdef {
-  background-color: #20B2AA;
+  background-color: #20b2aa;
 }
 
 .target {
-  background-color: #FAD7A0;
+  background-color: #fad7a0;
 }
 
 .hp,
@@ -244,7 +246,7 @@ canvas {
 }
 
 .slots-header {
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   border-top: 2px solid white;
   border-bottom: 2px solid white;
   background: linear-gradient(to right, rgba(0, 0, 139, 0.553), rgba(173, 216, 230, 0.498), transparent);
@@ -252,7 +254,11 @@ canvas {
   padding: 1px 0;
   padding-left: 3px;
   margin-bottom: 5px;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .item-icon {
@@ -271,13 +277,17 @@ canvas {
 }
 
 .key-binding {
-    position: absolute;
-    bottom: 0px;
-    right: 4px;
-    color: white;   
-    font-size: 14px; 
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    font-family: 'Kim';
+  position: absolute;
+  bottom: 0px;
+  right: 4px;
+  color: white;
+  font-size: 14px;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
+  font-family: "Kim";
 }
 
 .item-qty {
@@ -298,7 +308,9 @@ canvas {
   left: 10px;
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0s, opacity 0.2s linear;
+  transition:
+    visibility 0s,
+    opacity 0.2s linear;
   /* Fade in/out */
   z-index: 1;
 }
@@ -343,13 +355,9 @@ canvas {
   animation: flash 0.2s ease infinite;
 }
 
-
-
 .flex-grow {
   flex-grow: 1;
 }
-
-
 
 .member-portrait {
   position: relative;
@@ -374,15 +382,13 @@ canvas {
   border-radius: 10px;
 }
 
-
 .hp-fill {
   height: 100%;
-  background-color: #32CD32;
+  background-color: #32cd32;
   /* green color for the filled part */
   border-radius: 5px;
   /* makes the bar rounded */
 }
-
 
 .mp-fill {
   height: 100%;
@@ -390,7 +396,6 @@ canvas {
   border-radius: 5px;
   /* makes the bar rounded */
 }
-
 
 .cooldown-fill {
   height: 100%;
@@ -474,7 +479,11 @@ canvas {
   /* Adjust as needed */
   font-family: Kim;
   color: white;
-  text-shadow: -5px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -5px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .gold-container {
@@ -485,10 +494,14 @@ canvas {
   border-radius: 50px;
   padding: 10px 20px;
   font-weight: bold;
-  border: 1px solid #CD853F;
+  border: 1px solid #cd853f;
   font-size: 30px;
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   font-family: Kim;
 }
 
@@ -562,14 +575,14 @@ canvas {
   width: 200px;
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #B3B3B3;
+  border: 1px solid #b3b3b3;
   background-color: white;
   color: black;
 }
 
 .notificationItem {
   padding: 10px;
-  border-bottom: 1px solid #B3B3B3;
+  border-bottom: 1px solid #b3b3b3;
 }
 
 .notificationItem:last-child {
@@ -624,26 +637,28 @@ canvas {
   cursor: pointer;
   margin-bottom: 10px;
   margin-right: 20px;
-  border: 2px solid #CD853F;
+  border: 2px solid #cd853f;
   align-items: flex-start;
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .character-card.warrior {
   /* background: linear-gradient(to right, #FFC600, #FF8000); */
-  background: linear-gradient(to right, #B22222, #FF6347);
-
+  background: linear-gradient(to right, #b22222, #ff6347);
 }
 
 .character-card.thief {
   /* background: linear-gradient(to right, #4B0082, #8A2BE2); */
-  background: linear-gradient(to right, #006400, #32CD32);
-
+  background: linear-gradient(to right, #006400, #32cd32);
 }
 
 .character-card.white-mage {
-  background: linear-gradient(to right, #FFFFFF, #A9A9A9);
+  background: linear-gradient(to right, #ffffff, #a9a9a9);
 }
 
 .character-card.black-mage {
@@ -683,11 +698,16 @@ canvas {
   font-weight: bold;
   font-family: Kim;
   flex-direction: column;
-  box-shadow: 0 0 0 5px #070507, 0 0 0 7px #CD853F;
+  box-shadow:
+    0 0 0 5px #070507,
+    0 0 0 7px #cd853f;
   /* Creates a 10px transparent gap and a 2px border */
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
-
 
 .level-badge .level-number {
   font-size: 1.2em;
@@ -737,7 +757,11 @@ canvas {
   overflow: hidden;
   width: 100%;
   margin: auto;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .leaderboard-table thead tr {
@@ -745,7 +769,7 @@ canvas {
 }
 
 .leaderboard-table th {
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   color: white;
   cursor: pointer;
 }
@@ -760,9 +784,13 @@ canvas {
 
 .leaderboard-table td {
   text-align: center;
-  font-family: 'Kim';
+  font-family: "Kim";
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   padding-right: 15px;
 }
 
@@ -808,11 +836,17 @@ canvas {
   padding: 10px 20px;
   /* Adjust for size */
   font-weight: bold;
-  box-shadow: 0 0 0 10px #070507, 0 0 0 12px #CD853F;
+  box-shadow:
+    0 0 0 10px #070507,
+    0 0 0 12px #cd853f;
   /* Creates a 10px transparent gap and a 2px border */
   font-size: 30px;
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   font-family: Kim;
 }
 
@@ -858,7 +892,7 @@ canvas {
   /* max-width: 350px; */
   align-self: start;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  background-color: #F9F6EE;
+  background-color: #f9f6ee;
   border-radius: 15px;
 }
 
@@ -872,7 +906,7 @@ canvas {
   margin-left: 10px;
   position: relative;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  background-color: #F9F6EE;
+  background-color: #f9f6ee;
   border-radius: 15px;
   width: 500px;
 }
@@ -899,7 +933,6 @@ canvas {
   padding-left: 15px;
   overflow: hidden;
   text-shadow: 2px 2px 4px black;
-
 }
 
 .character-header-name {
@@ -910,7 +943,6 @@ canvas {
   /* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */
   top: 0;
   text-shadow: 2px 2px 4px black;
-
 }
 
 .character-header-name-shadow {
@@ -930,10 +962,13 @@ canvas {
   font-family: Kim;
   color: white;
   font-size: 15px;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   font-style: italic;
 }
-
 
 .character-full-content {
   display: flex;
@@ -941,7 +976,11 @@ canvas {
   padding: 10px;
   font-family: Kim;
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .character-full-level {
@@ -990,7 +1029,6 @@ canvas {
   border-radius: 50px;
 }
 
-
 .cooldown-bar {
   background: gold;
 }
@@ -1021,7 +1059,7 @@ canvas {
 .shop-item-card {
   position: relative;
   border: 1px solid #ccc;
-  background-color: #F9F6EE;
+  background-color: #f9f6ee;
   border-radius: 15px;
   cursor: pointer;
 }
@@ -1061,8 +1099,11 @@ canvas {
   top: 0;
   font-size: 20px;
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .shop-item-card-name-shadow {
@@ -1173,7 +1214,7 @@ canvas {
   transform: translate(-50%, -50%);
   z-index: 1000;
   border: 2px solid #ccc;
-  background-color: #F9F6EE;
+  background-color: #f9f6ee;
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   font-family: Kim;
@@ -1183,7 +1224,6 @@ canvas {
 /* .login-dialog {
   width: 300px;
 } */
-
 
 .closebtn {
   cursor: pointer;
@@ -1214,7 +1254,6 @@ canvas {
   cursor: pointer;
 }
 
-
 .qty-button,
 .shop-qty {
   display: flex;
@@ -1234,9 +1273,10 @@ canvas {
   height: 30px;
   padding: 5px;
   font-size: 25px;
-  box-shadow: 0 0 0 5px #070507, 0 0 0 6px #CD853F;
+  box-shadow:
+    0 0 0 5px #070507,
+    0 0 0 6px #cd853f;
   /* Creates a 10px transparent gap and a 2px border */
-
 }
 
 .inventory-full {
@@ -1244,7 +1284,7 @@ canvas {
   margin-left: 10px;
   position: relative;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  background-color: #F9F6EE;
+  background-color: #f9f6ee;
   border-radius: 15px;
   width: 60%;
 }
@@ -1265,7 +1305,11 @@ canvas {
   font-family: Kim;
   color: white;
   font-size: 45px;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   top: 0;
   padding-left: 100px;
   display: flex;
@@ -1298,11 +1342,14 @@ canvas {
   padding: 10px;
   font-family: Kim;
   color: white;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
   grid-gap: 5px;
-
 }
 
 .character-inventory-container {
@@ -1341,7 +1388,6 @@ canvas {
   margin-left: 5px;
 }
 
-
 .purchase-quantity-selector input.quantity {
   text-align: center;
   border-top: 1px solid #000;
@@ -1363,8 +1409,12 @@ canvas {
   background-color: gold;
   color: #fff;
   cursor: pointer;
-  font-family: 'Kim';
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   font-size: 20px;
   border-radius: 5px;
 }
@@ -1405,11 +1455,11 @@ canvas {
   justify-content: center;
   color: white;
   font-size: 30px;
-  font-family: 'Kim';
+  font-family: "Kim";
 }
 
 .endgame-title {
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: 50px;
   color: white;
   font-style: italic;
@@ -1461,7 +1511,7 @@ canvas {
 ::-webkit-scrollbar {
   width: 8px;
   /* Adjust the width of the scrollbar */
-  background: url('@assets/shop/slider_bar.png');
+  background: url("@assets/shop/slider_bar.png");
   /* Add your image */
 }
 
@@ -1469,13 +1519,12 @@ canvas {
 ::-webkit-scrollbar-thumb {
   background-color: #888;
   border-radius: 8px;
-  background-image: url('@assets/shop/slider_handle.png');
+  background-image: url("@assets/shop/slider_handle.png");
   /* Replace with your image path */
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-size: cover;
 }
-
 
 .toast {
   border: 2px solid #ffbf00;
@@ -1490,8 +1539,12 @@ canvas {
 
 .shepherd-button {
   background-color: #ffbf00;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: 'Kim';
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
+  font-family: "Kim";
   color: white;
 }
 
@@ -1520,26 +1573,26 @@ canvas {
 }
 
 /* Top arrow */
-.shepherd-element[data-popper-placement^=bottom]>.shepherd-arrow:before {
+.shepherd-element[data-popper-placement^="bottom"] > .shepherd-arrow:before {
   border-top: 2px solid #ffbf00;
   border-left: 2px solid #ffbf00;
 }
 
 /* Bottom arrow */
-.shepherd-element[data-popper-placement^=top]>.shepherd-arrow:before {
+.shepherd-element[data-popper-placement^="top"] > .shepherd-arrow:before {
   border-bottom: 2px solid #ffbf00;
   border-right: 2px solid #ffbf00;
 }
 
 /* Left arrow */
-.shepherd-element[data-popper-placement^=right]>.shepherd-arrow:before {
+.shepherd-element[data-popper-placement^="right"] > .shepherd-arrow:before {
   border-left: 2px solid #ffbf00;
   border-bottom: 2px solid #ffbf00;
   left: 0px;
 }
 
 /* Right arrow */
-.shepherd-element[data-popper-placement^=left]>.shepherd-arrow:before {
+.shepherd-element[data-popper-placement^="left"] > .shepherd-arrow:before {
   border-top: 2px solid #ffbf00;
   border-right: 2px solid #ffbf00;
   right: 0px;
@@ -1560,8 +1613,12 @@ canvas {
   text-align: center;
   cursor: pointer;
   z-index: 1;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: 'Kim';
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
+  font-family: "Kim";
 }
 
 .shepherd-cancel-icon:hover {
@@ -1574,7 +1631,7 @@ a:-webkit-any-link {
 }
 
 .normalCursor {
-  cursor: url('@assets/pointers/general_pointer.png'), auto;
+  cursor: url("@assets/pointers/general_pointer.png"), auto;
 }
 
 .pointerCursor {
@@ -1582,15 +1639,15 @@ a:-webkit-any-link {
 }
 
 .swordCursor {
-  cursor: url('@assets/pointers/attack_pointer.png'), auto;
+  cursor: url("@assets/pointers/attack_pointer.png"), auto;
 }
 
 .spellCursor {
-  cursor: url('@assets/pointers/spell_pointer.png'), auto;
+  cursor: url("@assets/pointers/spell_pointer.png"), auto;
 }
 
 .itemCursor {
-  cursor: url('@assets/pointers/item_cursor.png'), auto;
+  cursor: url("@assets/pointers/item_cursor.png"), auto;
 }
 
 .firebaseui-container {
@@ -1613,7 +1670,11 @@ a:-webkit-any-link {
   padding: 10px;
   width: 400px;
   font-family: Kim;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   color: white;
 }
 
@@ -1629,7 +1690,11 @@ a:-webkit-any-link {
   transition: all 0.3s ease;
   /* Smooth hover and active transition */
   font-family: Kim;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   background-color: #ffcc00;
   /* Golden color */
   border: 2px solid #ffaa00;
@@ -1655,7 +1720,6 @@ a:-webkit-any-link {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   /* Less shadow on press */
 }
-
 
 .login-modal-overlay {
   position: fixed;
@@ -1688,10 +1752,13 @@ a:-webkit-any-link {
   padding: 10px;
   width: 400px;
   font-family: Kim;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   color: white;
 }
-
 
 .dialog-content h2 {
   margin-bottom: 20px;
@@ -1705,7 +1772,6 @@ a:-webkit-any-link {
 #firebaseui-auth-container {
   width: 100%;
 }
-
 
 .popup-highlight {
   animation: highlight-pulse 1s ease-in-out infinite;
@@ -1764,7 +1830,7 @@ a:-webkit-any-link {
   .team-page {
     padding: 0 8px;
   }
-  
+
   .character-inventory-container {
     gap: 16px;
   }

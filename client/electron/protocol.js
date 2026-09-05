@@ -14,4 +14,4 @@ function resolveAppPath(distPath, requestUrl) {
   return resolved;
 }
 
-module.exports = {resolveAppPath};
+module.exports = { resolveAppPath };

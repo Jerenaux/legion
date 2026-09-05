@@ -1,13 +1,13 @@
-import { h, Component, Fragment } from 'preact';
-import { route } from 'preact-router';
-import { GameHUD, events } from '../components/HUD/GameHUD';
-import { QueueTips } from '../components/queueTips/QueueTips';
-import { startGame } from '../game/game';
-import './GamePage.style.css';
-import { recordLoadingStep } from '../components/utils';
-import { PlayerContext } from '../contexts/PlayerContext';
-import { PlayerNetworkData } from '@legion/shared/interfaces';
-import { TeamReveal } from '../components/teamReveal/TeamReveal';
+import { h, Component, Fragment } from "preact";
+import { route } from "preact-router";
+import { GameHUD, events } from "../components/HUD/GameHUD";
+import { QueueTips } from "../components/queueTips/QueueTips";
+import { startGame } from "../game/game";
+import "./GamePage.style.css";
+import { recordLoadingStep } from "../components/utils";
+import { PlayerContext } from "../contexts/PlayerContext";
+import { PlayerNetworkData } from "@legion/shared/interfaces";
+import { TeamReveal } from "../components/teamReveal/TeamReveal";
 
 interface GamePageProps {
   matches: {
@@ -44,7 +44,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   constructor(props: GamePageProps) {
     super(props);
     this.state = {
-      mainDivClass: 'normalCursor',
+      mainDivClass: "normalCursor",
       progress: 0,
       loading: true,
       initialized: false,
@@ -67,35 +67,35 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   }
 
   initializeGame = () => {
-    recordLoadingStep('start');
+    recordLoadingStep("start");
     startGame();
 
-    events.on('progressUpdate', this.updateProgress);
-    events.on('gameInitialized', this.handleGameInitialized);
-    events.on('serverDisconnect', this.handleServerDisconnect);
-    events.on('revealTeam', this.handleRevealTeam);
-    events.on('notifyMatchmakerLeave', this.handleMatchmakerLeave);
+    events.on("progressUpdate", this.updateProgress);
+    events.on("gameInitialized", this.handleGameInitialized);
+    events.on("serverDisconnect", this.handleServerDisconnect);
+    events.on("revealTeam", this.handleRevealTeam);
+    events.on("notifyMatchmakerLeave", this.handleMatchmakerLeave);
     this.checkOrientation();
-    window.addEventListener('resize', this.checkOrientation);
-    window.addEventListener('orientationchange', this.checkOrientation);
-  }
+    window.addEventListener("resize", this.checkOrientation);
+    window.addEventListener("orientationchange", this.checkOrientation);
+  };
 
   cleanup = () => {
-    events.off('progressUpdate', this.updateProgress);
-    events.off('gameInitialized', this.handleGameInitialized);
-    events.off('serverDisconnect', this.handleServerDisconnect);
-    events.off('revealTeam', this.handleRevealTeam);
-    events.off('notifyMatchmakerLeave', this.handleMatchmakerLeave);
-    window.removeEventListener('resize', this.checkOrientation);
-    window.removeEventListener('orientationchange', this.checkOrientation);
+    events.off("progressUpdate", this.updateProgress);
+    events.off("gameInitialized", this.handleGameInitialized);
+    events.off("serverDisconnect", this.handleServerDisconnect);
+    events.off("revealTeam", this.handleRevealTeam);
+    events.off("notifyMatchmakerLeave", this.handleMatchmakerLeave);
+    window.removeEventListener("resize", this.checkOrientation);
+    window.removeEventListener("orientationchange", this.checkOrientation);
     if (this.waitingTimer) {
       clearTimeout(this.waitingTimer);
     }
     if (this.messageTimer) clearInterval(this.messageTimer);
-  }
+  };
 
   checkOrientation = () => {
-    this.setState({ isPortraitMode: window.matchMedia('(orientation: portrait)').matches });
+    this.setState({ isPortraitMode: window.matchMedia("(orientation: portrait)").matches });
   };
 
   changeMainDivClass = (newClass: string) => {
@@ -111,7 +111,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     });
   };
 
-  handleGameInitialized = ({game0}) => {
+  handleGameInitialized = ({ game0 }) => {
     this.setState({ initialized: true });
     if (this.waitingTimer) {
       clearTimeout(this.waitingTimer);
@@ -123,15 +123,15 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   endReveal = () => {
-    events.emit('teamRevealed');
+    events.emit("teamRevealed");
     this.setState({ revealedTeam: null });
   };
 
   handleServerDisconnect = () => {
     console.log(`[GamePage:serverDisconnect] Server disconnected`);
-    
-    if (process.env.NODE_ENV === 'development') return;
-    route('/');
+
+    if (process.env.NODE_ENV === "development") return;
+    route("/");
   };
 
   handleMatchmakerLeave = () => {
@@ -145,7 +145,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     this.waitingTimer = window.setTimeout(() => {
       const waitingDuration = Date.now() - (this.state.waitingStartTime || 0);
       if (waitingDuration >= 30000) {
-        console.error('Error: Server connection timeout - Waiting for server exceeded 30 seconds');
+        console.error("Error: Server connection timeout - Waiting for server exceeded 30 seconds");
       }
     }, 30000);
   };
@@ -153,8 +153,8 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   startMessageRotation = () => {
     if (this.messageTimer) clearInterval(this.messageTimer);
     this.messageTimer = window.setInterval(() => {
-      this.setState(prevState => ({
-        currentMessageIndex: (prevState.currentMessageIndex + 1) % WAITING_MESSAGES.length
+      this.setState((prevState) => ({
+        currentMessageIndex: (prevState.currentMessageIndex + 1) % WAITING_MESSAGES.length,
       }));
     }, 3000);
   };
@@ -174,17 +174,12 @@ class GamePage extends Component<GamePageProps, GamePageState> {
             </div>
           )}
           {!this.state.loading && !this.state.initialized && (
-            <div className='waiting-container'>
-              <div className='waiting-div'>{WAITING_MESSAGES[this.state.currentMessageIndex]}</div>
+            <div className="waiting-container">
+              <div className="waiting-div">{WAITING_MESSAGES[this.state.currentMessageIndex]}</div>
               <QueueTips />
             </div>
           )}
-          {this.state.revealedTeam && (
-            <TeamReveal 
-              team={this.state.revealedTeam} 
-              onComplete={this.endReveal}
-            />
-          )}
+          {this.state.revealedTeam && <TeamReveal team={this.state.revealedTeam} onComplete={this.endReveal} />}
         </div>
         {this.state.isPortraitMode && <OrientationOverlay />}
       </Fragment>

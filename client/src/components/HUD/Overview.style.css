@@ -9,7 +9,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 6px;
-  transition: all .2s;
+  transition: all 0.2s;
 }
 
 /* Position the left overview */
@@ -25,7 +25,7 @@
 
 .overview_playerteam {
   cursor: var(--game-pointer);
-  transition: all .2s;
+  transition: all 0.2s;
 }
 
 /* Update the media queries for scaling */
@@ -34,12 +34,12 @@
     transform: scale(0.9);
     transform-origin: top left;
   }
-  
+
   .overview.overview_right {
     transform: scale(0.9);
     transform-origin: top right;
   }
-  
+
   .overview_playerteam {
     transform: scale(0.9);
     transform-origin: top right;
@@ -50,11 +50,11 @@
   .overview:not(.overview_right) {
     transform: scale(0.75);
   }
-  
+
   .overview.overview_right {
     transform: scale(0.75);
   }
-  
+
   .overview_playerteam {
     transform: scale(0.75);
   }
@@ -64,11 +64,11 @@
   .overview:not(.overview_right) {
     transform: scale(0.65);
   }
-  
+
   .overview.overview_right {
     transform: scale(0.65);
   }
-  
+
   .overview_playerteam {
     transform: scale(0.65);
   }
@@ -78,11 +78,11 @@
   .overview:not(.overview_right) {
     transform: scale(0.55);
   }
-  
+
   .overview.overview_right {
     transform: scale(0.55);
   }
-  
+
   .overview_playerteam {
     transform: scale(0.55);
   }
@@ -93,8 +93,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: 'Kim', sans-serif;
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: "Kim", sans-serif;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
   color: white;
 }
 
@@ -238,7 +242,7 @@
 
 /* Add new team label styles */
 .team_label {
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
@@ -269,12 +273,7 @@
   top: 50%;
   width: 15px;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(113, 222, 255, 0.4),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(113, 222, 255, 0.4), transparent);
 }
 
 .team_label::before {
@@ -295,4 +294,4 @@
   .team_label {
     font-size: 10px;
   }
-} 
+}

@@ -15,7 +15,7 @@
 
 .team-reveal-title {
   color: #ffffff;
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: clamp(24px, 4vw, 36px);
   text-align: center;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
@@ -31,7 +31,7 @@
   margin-bottom: 30px;
   font-size: 0.95rem;
   opacity: 0.75;
-  font-family: 'Kim';
+  font-family: "Kim";
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
   animation: fadeInDown 0.6s ease-out 0.2s backwards;
   position: absolute;
@@ -57,7 +57,7 @@
     gap: 2vw;
     margin-top: 0;
   }
-  
+
   .team-reveal-wrapper .endgame_character {
     transform: scale(1);
   }
@@ -119,10 +119,10 @@
 
 /* Add particle effects */
 .team-reveal-wrapper::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -50%;
-  background: 
+  background:
     radial-gradient(circle at 30% 20%, rgba(81, 253, 255, 0.1) 0%, transparent 30%),
     radial-gradient(circle at 70% 60%, rgba(81, 253, 255, 0.1) 0%, transparent 30%),
     radial-gradient(circle at 50% 50%, rgba(81, 253, 255, 0.1) 0%, transparent 50%);
@@ -136,10 +136,10 @@
 
 /* Add sparkle effects */
 .team-reveal-wrapper::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -20px;
-  background: 
+  background:
     radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
     radial-gradient(2px 2px at 40% 70%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
     radial-gradient(2px 2px at 60% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
@@ -163,10 +163,10 @@
 
 /* Add reveal particle effects */
 .team-reveal-wrapper.revealed::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -50%;
-  background: 
+  background:
     radial-gradient(circle at 30% 20%, rgba(81, 253, 255, 0.3) 0%, transparent 30%),
     radial-gradient(circle at 70% 60%, rgba(81, 253, 255, 0.3) 0%, transparent 30%),
     radial-gradient(circle at 50% 50%, rgba(81, 253, 255, 0.3) 0%, transparent 50%);
@@ -179,10 +179,10 @@
 
 /* Add reveal sparkles */
 .team-reveal-wrapper.revealed::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -20px;
-  background: 
+  background:
     radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
     radial-gradient(2px 2px at 40% 70%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
     radial-gradient(2px 2px at 60% 20%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
@@ -196,7 +196,7 @@
 .team-reveal-play-button {
   background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
   color: #1c1f25;
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: clamp(18px, 3vw, 24px);
   padding: clamp(12px, 2vh, 16px) clamp(32px, 4vw, 48px);
   border: none;
@@ -206,7 +206,7 @@
   animation: fadeInUp 0.6s ease-out;
   text-transform: uppercase;
   font-weight: bold;
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(255, 166, 0, 0.3),
     inset 0 0 10px rgba(255, 255, 255, 0.5);
   position: absolute;
@@ -215,7 +215,7 @@
 
 .team-reveal-play-button:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 0 30px rgba(255, 166, 0, 0.5),
     inset 0 0 15px rgba(255, 255, 255, 0.7);
 }
@@ -346,9 +346,9 @@
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .team-reveal-wrapper {
     width: clamp(160px, 40vw, 200px);
     height: clamp(120px, 30vw, 160px);
   }
-} 
+}

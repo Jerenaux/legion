@@ -1,37 +1,29 @@
-import './ShopConsumableCard.style.css';
-import { h, Component } from 'preact';
+import "./ShopConsumableCard.style.css";
+import { h, Component } from "preact";
 import { InventoryType, RarityColor, Target } from "@legion/shared/enums";
-import { BaseItem } from '@legion/shared/BaseItem';
-import { getSpeedClass, mapFrameToCoordinates } from '../utils';
+import { BaseItem } from "@legion/shared/BaseItem";
+import { getSpeedClass, mapFrameToCoordinates } from "../utils";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { Effect } from '@legion/shared/interfaces';
+import { Effect } from "@legion/shared/interfaces";
 
-import consumablesSpritesheet from '@assets/consumables.png';
+import consumablesSpritesheet from "@assets/consumables.png";
 
 // Import stat icons
-import hpIcon from '@assets/stats_icons/hp_icon.png';
-import mpIcon from '@assets/stats_icons/mp_icon.png';
-import attackIcon from '@assets/stats_icons/attack_icon.png';
-import defIcon from '@assets/stats_icons/def_icon.png';
-import satkIcon from '@assets/stats_icons/satk_icon.png';
-import sdefIcon from '@assets/stats_icons/sdef_icon.png';
-import speedIcon from '@assets/stats_icons/speed_icon.png';
+import hpIcon from "@assets/stats_icons/hp_icon.png";
+import mpIcon from "@assets/stats_icons/mp_icon.png";
+import attackIcon from "@assets/stats_icons/attack_icon.png";
+import defIcon from "@assets/stats_icons/def_icon.png";
+import satkIcon from "@assets/stats_icons/satk_icon.png";
+import sdefIcon from "@assets/stats_icons/sdef_icon.png";
+import speedIcon from "@assets/stats_icons/speed_icon.png";
 
 // Import other icons
-import itemCountIcon from '@assets/shop/item_count_icon.png';
-import cdIcon from '@assets/inventory/cd_icon.png';
-import targetIcon from '@assets/inventory/target_icon.png';
-import goldIcon from '@assets/gold_icon.png';
+import itemCountIcon from "@assets/shop/item_count_icon.png";
+import cdIcon from "@assets/inventory/cd_icon.png";
+import targetIcon from "@assets/inventory/target_icon.png";
+import goldIcon from "@assets/gold_icon.png";
 
-export const StatIcons = [
-  hpIcon,
-  mpIcon,
-  attackIcon,
-  defIcon,
-  satkIcon,
-  sdefIcon,
-  speedIcon,
-];
+export const StatIcons = [hpIcon, mpIcon, attackIcon, defIcon, satkIcon, sdefIcon, speedIcon];
 
 interface modalData {
   id: string | number;
@@ -52,16 +44,16 @@ interface ShopCardProps {
 class ShopConsumableCard extends Component<ShopCardProps> {
   render() {
     const getRarityValue = (effort) => {
-      if(effort < 10) {
-        return {val: "Common", clr: "cyan"};
-      } else if(effort < 25) {
-        return {val: "Rare", clr: "tomato"};
-      } else if(effort < 50) {
-        return {val: "Epic", clr: "red"};
+      if (effort < 10) {
+        return { val: "Common", clr: "cyan" };
+      } else if (effort < 25) {
+        return { val: "Rare", clr: "tomato" };
+      } else if (effort < 50) {
+        return { val: "Epic", clr: "red" };
       } else {
-        return {val: "Legendary", clr: "orange"};
+        return { val: "Legendary", clr: "orange" };
       }
-    }
+    };
 
     const { data } = this.props;
 
@@ -70,24 +62,24 @@ class ShopConsumableCard extends Component<ShopCardProps> {
       name: data.name,
       url: consumablesSpritesheet,
       frame: data.frame,
-      price: data.price
-    }
+      price: data.price,
+    };
 
     const titleStyle = {
-      borderRadius: '4px',
-    }
-    
+      borderRadius: "4px",
+    };
+
     const coordinates = mapFrameToCoordinates(data.frame);
 
     const getEffectValue = (effect: Effect) => {
-      if(effect.value === -1) return '∞';
+      if (effect.value === -1) return "∞";
       return `+${effect.value}`;
-    }
+    };
 
     return (
-      <div 
-        className={`shop-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`}
-        key={this.props.key} 
+      <div
+        className={`shop-card-container ${this.props.isHighlighted ? "feature-highlight" : ""}`}
+        key={this.props.key}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
         data-shop-item={`consumable-${data.id}`}
       >
@@ -99,25 +91,26 @@ class ShopConsumableCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="consumable-card-content">
-          <div className="shop-portrait" style={{ 
+          <div
+            className="shop-portrait"
+            style={{
               backgroundImage: `url(${consumablesSpritesheet})`,
               backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
-          }} />
+            }}
+          />
         </div>
-        <p data-tooltip-id={`consumable-desc-tooltip-${data.id}`} className="consumable-card-description">{data.description}</p>
+        <p data-tooltip-id={`consumable-desc-tooltip-${data.id}`} className="consumable-card-description">
+          {data.description}
+        </p>
         <div className="consumable-card-effect-container">
           {data.effects.map((effect, index) => (
             <div key={index} className="consumable-card-effect">
-              <img 
-                src={StatIcons[effect.stat]} 
-                style={effect.stat === 1 ? {transform: 'scaleX(0.8)'} : {}} 
-                alt="" 
-              />
+              <img src={StatIcons[effect.stat]} style={effect.stat === 1 ? { transform: "scaleX(0.8)" } : {}} alt="" />
               <span>{getEffectValue(effect)}</span>
             </div>
           ))}
           <div className="consumable-card-effect">
-            <img src={cdIcon} style={{transform: 'scaleX(0.8)'}} alt="cooldown" />
+            <img src={cdIcon} style={{ transform: "scaleX(0.8)" }} alt="cooldown" />
             <span>{getSpeedClass(data.speedClass)}</span>
           </div>
           <div className="consumable-card-effect">
@@ -125,8 +118,8 @@ class ShopConsumableCard extends Component<ShopCardProps> {
             <span>{Target[data.target]}</span>
           </div>
         </div>
-        <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '11px', fontFamily: 'Kim'}}>
+        <div style={{ lineHeight: "0.5" }}>
+          <span style={{ color: `${getRarityValue(data.effort).clr}`, fontSize: "11px", fontFamily: "Kim" }}>
             {getRarityValue(data.effort).val}
           </span>
         </div>
@@ -140,7 +133,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
           place="top-start"
           variant="light"
           content={data.description}
-          style={{maxWidth: '120px'}}
+          style={{ maxWidth: "120px" }}
         />
       </div>
     );

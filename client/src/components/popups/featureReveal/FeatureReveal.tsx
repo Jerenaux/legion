@@ -1,12 +1,12 @@
-import { h, Fragment, Component } from 'preact';
-import { route } from 'preact-router';
+import { h, Fragment, Component } from "preact";
+import { route } from "preact-router";
 import { InventoryType } from "@legion/shared/enums";
-import { mapFrameToCoordinates, cropFrame } from '../../utils';
-import './FeatureReveal.style.css';
+import { mapFrameToCoordinates, cropFrame } from "../../utils";
+import "./FeatureReveal.style.css";
 
-import consumablesSpritesheet from '@assets/consumables.png';
-import equipmentSpritesheet from '@assets/equipment.png';
-import spellsSpritesheet from '@assets/spells.png';
+import consumablesSpritesheet from "@assets/consumables.png";
+import equipmentSpritesheet from "@assets/equipment.png";
+import spellsSpritesheet from "@assets/spells.png";
 
 interface Props {
   title: string;
@@ -23,7 +23,7 @@ interface State {
 
 export class FeatureReveal extends Component<Props, State> {
   state: State = {
-    croppedImageUrl: null
+    croppedImageUrl: null,
   };
 
   componentDidMount() {
@@ -42,13 +42,15 @@ export class FeatureReveal extends Component<Props, State> {
 
     const { x, y } = mapFrameToCoordinates(frame);
     try {
-      console.log(`[FeatureReveal:cropSpritesheet] contentCategory: ${contentCategory}, frame: ${frame}, x: ${x}, y: ${y}, spritesheet: ${spritesheet}`);
+      console.log(
+        `[FeatureReveal:cropSpritesheet] contentCategory: ${contentCategory}, frame: ${frame}, x: ${x}, y: ${y}, spritesheet: ${spritesheet}`,
+      );
       const croppedImageUrl = await cropFrame(spritesheet, x, y, 32, 32);
       this.setState({ croppedImageUrl });
     } catch (error) {
-      console.error('Error cropping spritesheet:', error);
+      console.error("Error cropping spritesheet:", error);
     }
-  }
+  };
 
   handleCheckout = () => {
     if (this.props.route) {
@@ -64,16 +66,14 @@ export class FeatureReveal extends Component<Props, State> {
     return (
       <div className="feature-reveal">
         <div className="feature-reveal-content">
-          <h2 className="feature-reveal-header">
-            {title}
-          </h2>
-          
+          <h2 className="feature-reveal-header">{title}</h2>
+
           <div className="feature-reveal-icon">
-            <div 
-                className="feature-icon"
-                style={{
-                    backgroundImage: `url(${croppedImageUrl})`,
-            }}
+            <div
+              className="feature-icon"
+              style={{
+                backgroundImage: `url(${croppedImageUrl})`,
+              }}
             />
           </div>
 
@@ -82,24 +82,15 @@ export class FeatureReveal extends Component<Props, State> {
           <div className="feature-reveal-buttons">
             {route ? (
               <>
-                <button 
-                  className="feature-reveal-button primary" 
-                  onClick={this.handleCheckout}
-                >
+                <button className="feature-reveal-button primary" onClick={this.handleCheckout}>
                   Check it out
                 </button>
-                <button 
-                  className="feature-reveal-button secondary" 
-                  onClick={this.props.onHide}
-                >
+                <button className="feature-reveal-button secondary" onClick={this.props.onHide}>
                   Dismiss
                 </button>
               </>
             ) : (
-              <button 
-                className="feature-reveal-button primary" 
-                onClick={this.props.onHide}
-              >
+              <button className="feature-reveal-button primary" onClick={this.props.onHide}>
                 Continue
               </button>
             )}
@@ -108,4 +99,4 @@ export class FeatureReveal extends Component<Props, State> {
       </div>
     );
   }
-} 
+}

@@ -1,390 +1,401 @@
 .team-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
 }
 
 .team-content-card-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Kim';
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Kim";
 }
 
 .team-equip-container {
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-image: url('@assets/inventory/equip_panel_bg.png');
-    background-size: 100% 100%;
-    padding: 8px;
-    gap: 6px;;
-    margin-left: -4px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-image: url("@assets/inventory/equip_panel_bg.png");
+  background-size: 100% 100%;
+  padding: 8px;
+  gap: 6px;
+  margin-left: -4px;
 }
 
 .team-content-container {
-    display: flex;
-    flex-direction: column;
-    background-image: url('@assets/inventory/charinfo_bg.png');
-    background-size: 100% 100%;
-    width: 382px;
-    height: 400px;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  background-image: url("@assets/inventory/charinfo_bg.png");
+  background-size: 100% 100%;
+  width: 382px;
+  height: 400px;
+  position: relative;
 }
 
 .equip-item {
-    background-image: url('@assets/inventory/box_btn_idle.png');
-    background-size: 100% 100%;
-    padding: 8px;
-    display: flex;
-    align-items: center;
+  background-image: url("@assets/inventory/box_btn_idle.png");
+  background-size: 100% 100%;
+  padding: 8px;
+  display: flex;
+  align-items: center;
 }
 
 .sheet-item {
-    box-sizing: border-box;
-    width: 43px;
-    height: 43px;
-    background-color: #1c1f25;
-    border-radius: 6px;
-    border: 1px solid #274c57;
-    padding: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  box-sizing: border-box;
+  width: 43px;
+  height: 43px;
+  background-color: #1c1f25;
+  border-radius: 6px;
+  border: 1px solid #274c57;
+  padding: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .sheet-item:hover {
-    cursor: pointer;
-    border: 1px solid #71deff;
+  cursor: pointer;
+  border: 1px solid #71deff;
 }
 
 .sheet-item img {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .special-equip {
-    width: 32px;
-    height: 32px;
+  width: 32px;
+  height: 32px;
 }
 
 .equip-item:hover {
-    cursor: pointer;
-    background-image: url('@assets/inventory/box_btn_active.png');
+  cursor: pointer;
+  background-image: url("@assets/inventory/box_btn_active.png");
 }
 
 .equip-item img {
-    width: 24px;
-    height: 28px;
+  width: 24px;
+  height: 28px;
 }
 
 .team-level {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 18px;
-    left: -30px;
-    background-image: url('@assets/lv_bg.png');
-    background-size: 100% 100%;
-    width: 64px;
-    height: 64px;
-    font-family: 'Kim';
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 18px;
+  left: -30px;
+  background-image: url("@assets/lv_bg.png");
+  background-size: 100% 100%;
+  width: 64px;
+  height: 64px;
+  font-family: "Kim";
 }
 
 .team-level span {
-    font-size: 10px;
-    color: #ffa600;
+  font-size: 10px;
+  color: #ffa600;
 }
 
 .team-level .level-span {
-    font-size: 16px;
-    color: #ffffff;
-    font-weight: 600;
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .team-info-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 92px;
-    padding: 0 16px 0 52px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 92px;
+  padding: 0 16px 0 52px;
 }
 
 .team-sp-container {
-    cursor: pointer;
-    background-image: url('@assets/inventory/sp_bg_active.png');  
-    background-size: 100% 100%;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding-top: 2px;
+  cursor: pointer;
+  background-image: url("@assets/inventory/sp_bg_active.png");
+  background-size: 100% 100%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 2px;
 }
 
 .team-sp-container span {
-    font-size: 12px;
-    color: #ffffff;
+  font-size: 12px;
+  color: #ffffff;
 }
 
 .team-sp-container .sp-span {
-    font-size: 16px;
-    font-weight: 600;
-    color: #71deff;
+  font-size: 16px;
+  font-weight: 600;
+  color: #71deff;
 }
 
 .team-character-name {
-    max-width: 170px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 16px;
-    font-weight: 500;
-    color: #ffffff;
-    text-transform: capitalize;
-    font-family: 'Kim';
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  text-transform: capitalize;
+  font-family: "Kim";
 }
 
 .team-character-class {
-    max-width: 114px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 10px;
-    font-weight: 500;
-    color: #ffa600;
-    text-transform: uppercase;
+  max-width: 114px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 500;
+  color: #ffa600;
+  text-transform: uppercase;
 }
 
 .team-exp-info span {
-    font-size: 14px;
-    font-weight: 600;
-    color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .team-exp-info span .team-curr-exp {
-    font-weight: 400;
-    color: #71deff;
+  font-weight: 400;
+  color: #71deff;
 }
 
 .team-exp-info span .team-total-exp {
-    font-weight: 400;
+  font-weight: 400;
 }
 
 .team-exp-slider-container {
-    width: 214px;
-    height: 6px;
-    background-color: #1c1f25;
-    border-radius: 2px;
-    margin-top: 8px;
-    position: relative;
+  width: 214px;
+  height: 6px;
+  background-color: #1c1f25;
+  border-radius: 2px;
+  margin-top: 8px;
+  position: relative;
 }
 
 .team-curr-exp-slider {
-    background-color: #71deff;
-    border-radius: 2px;
-    height: 100%;
-    width: 74%;
-    position: absolute;
-    top: 0;
-    left: 0;
+  background-color: #71deff;
+  border-radius: 2px;
+  height: 100%;
+  width: 74%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .team-character-info-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-    padding: 24px 0 8px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 0 8px 0;
 }
 
 .team-character-container {
-    width: 64px;
-    height: 102px;
-    position: relative;
+  width: 64px;
+  height: 102px;
+  position: relative;
 }
 
 .team-character {
-    width: 100%;
-    height: 100%;
-    background-position: -40px -40px;
-    background-repeat: no-repeat;
-    animation: animate-sprite 0.7s steps(1) infinite;
-    transform: scale(.6);
+  width: 100%;
+  height: 100%;
+  background-position: -40px -40px;
+  background-repeat: no-repeat;
+  animation: animate-sprite 0.7s steps(1) infinite;
+  transform: scale(0.6);
 }
 
 .team-character-overlay {
-    width: 48px; 
-    height: 64px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-repeat: no-repeat;
-    display: block;
+  width: 48px;
+  height: 64px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-repeat: no-repeat;
+  display: block;
 }
 
 /* Additional animation keyframes for power-up */
 @keyframes power-up-animation {
-    from { background-position: 0px 0; }
-    to { background-position: -816px 0; } 
-  }  
+  from {
+    background-position: 0px 0;
+  }
+  to {
+    background-position: -816px 0;
+  }
+}
 
 .team-character-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 4px 6px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px 6px;
 }
 
 .character-info-bar {
-    width: 108px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    background-color: #1c1f25;
-    border-radius: 4px;
-    padding: 4px;
-    position: relative;
-    cursor: pointer;
+  width: 108px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  background-color: #1c1f25;
+  border-radius: 4px;
+  padding: 4px;
+  position: relative;
+  cursor: pointer;
 }
 
 .character-info-bar .info-class {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 46px;
-    height: 100%;
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Kim';
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 100%;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .character-info-bar .info-class span {
-    font-size: 12px;
-    font-weight: 500;
-    color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
 }
 
 .character-info-bar .curr-info-container {
-    width: 60px;
-    display: flex;
-    justify-content: center;
-    font-family: 'Kim';
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .character-info-bar .curr-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    font-weight: 500;
-    color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
 }
 
 .character-info-bar .info-bar-plus {
-    position: absolute;
-    right: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    background-image: url('@assets/inventory/add_stat_btn.png');
-    background-size: 100% 100%;
-    border: none;
-    cursor: pointer;
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background-image: url("@assets/inventory/add_stat_btn.png");
+  background-size: 100% 100%;
+  border: none;
+  cursor: pointer;
 }
 
 .character-info-bar .info-bar-plus:hover {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 
 .team-items-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .character-icon-container {
-    padding-top: 16px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    max-width: 96px;
+  padding-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 96px;
 }
 
 .character-icon {
-    box-sizing: border-box;
-    width: 43px;
-    height: 43px;
-    background-color: #1c1f25;
-    border-radius: 6px;
-    border: 1px solid #274c57;
-    padding: 8px 6px;
+  box-sizing: border-box;
+  width: 43px;
+  height: 43px;
+  background-color: #1c1f25;
+  border-radius: 6px;
+  border: 1px solid #274c57;
+  padding: 8px 6px;
 }
 
 .character-icon:hover {
-    cursor: pointer;
-    border: 1px solid #71deff;
+  cursor: pointer;
+  border: 1px solid #71deff;
 }
 
 .character-icon img {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 .team-item-container {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 92px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 92px;
 }
 
 .team-item-container .team-item-heading {
-    width: 100%;
-    border-bottom: 1px solid #ffa600;
+  width: 100%;
+  border-bottom: 1px solid #ffa600;
 }
 
 .team-items {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 4px 6px; 
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px 6px;
 }
 
 .team-items .team-item {
-    box-sizing: border-box;
-    width: 43px;
-    height: 43px;
-    background-color: #1c1f25;
-    border-radius: 6px;
-    border: 1px solid #274c57;
-    padding: 4px;
+  box-sizing: border-box;
+  width: 43px;
+  height: 43px;
+  background-color: #1c1f25;
+  border-radius: 6px;
+  border: 1px solid #274c57;
+  padding: 4px;
 }
 
 .team-items .team-item img {
-    width: 100%;
-    height: 100%;
-    border-radius: 4px;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
 }
 
 .team-items .team-item:hover {
-    cursor: pointer;
-    border: 1px solid #71deff;
+  cursor: pointer;
+  border: 1px solid #71deff;
 }
-

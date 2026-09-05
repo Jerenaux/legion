@@ -15,18 +15,15 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #334155 0%, #334155 45%, #1E293B 55%, #1E293B 100%);
-  border: 1.5px solid #2DD4BF;
+  background: linear-gradient(90deg, #334155 0%, #334155 45%, #1e293b 55%, #1e293b 100%);
+  border: 1.5px solid #2dd4bf;
   outline: 1px solid rgba(45, 212, 191, 0.3);
   outline-offset: -4px;
   border-radius: 4px;
-  box-shadow: 0 0 15px rgba(45, 212, 191, 0.15), inset 0 0 30px rgba(45, 212, 191, 0.05);
-  clip-path: polygon(
-    30px 0,
-    calc(100% - 30px) 0,
-    100% 100%,
-    0 100%
-  );
+  box-shadow:
+    0 0 15px rgba(45, 212, 191, 0.15),
+    inset 0 0 30px rgba(45, 212, 191, 0.05);
+  clip-path: polygon(30px 0, calc(100% - 30px) 0, 100% 100%, 0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,18 +32,13 @@
 }
 
 .player_bar::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -150%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(45, 212, 191, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.2), transparent);
   transform: skewX(-25deg);
   animation: shimmer 4s infinite;
 }
@@ -104,11 +96,11 @@
   font-size: 16px;
   font-weight: 500;
   text-shadow: 0 0 4px rgba(81, 253, 255, 0.5);
-  font-family: 'Kim';
+  font-family: "Kim";
 }
 
 .player_bar_stat_value {
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: 16px;
   color: #ffffff;
   min-width: 70px;
@@ -128,7 +120,7 @@
     width: 75%;
     transform: translateX(-50%) scale(0.85);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.85) translateX(5%);
   }
@@ -139,16 +131,16 @@
     width: 80%;
     transform: translateX(-50%) scale(0.8);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.8) translateX(8%);
     top: -35px;
   }
-  
+
   .player_bar_stats {
     max-width: 350px;
   }
-  
+
   .player_bar_turn_info {
     left: 60px;
   }
@@ -159,7 +151,7 @@
     width: 90%;
     transform: translateX(-50%) scale(0.75);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.75) translateX(12%);
   }
@@ -170,7 +162,7 @@
     width: 95%;
     transform: translateX(-50%) scale(0.65);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.65) translateX(15%) translateY(-15%);
   }
@@ -193,7 +185,7 @@
   justify-content: center;
   align-items: center;
   font-size: 14px;
-  font-family: 'Kim';
+  font-family: "Kim";
   color: #ffffff;
   background: rgba(28, 31, 37, 0.6);
   padding: 2px 4px;
@@ -225,7 +217,7 @@
   min-width: 300px;
   padding: 12px 40px;
   z-index: 1;
-  
+
   /* Container styling */
   background: linear-gradient(
     90deg,
@@ -236,32 +228,33 @@
     rgba(28, 31, 37, 0) 100%
   );
   border-radius: 4px;
-  
+
   /* Text styling */
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   font-size: 24px;
   color: #ffffff;
   text-align: center;
   text-transform: uppercase;
-  text-shadow: 
+  text-shadow:
     0 0 10px rgba(202, 48, 77, 0.8),
     -1px -1px 0 #ca304d,
     1px -1px 0 #ca304d,
     -1px 1px 0 #ca304d,
     1px 1px 0 #ca304d;
-  
+
   /* Animation */
   animation: enemyTurnPulse 2s infinite;
 }
 
 @keyframes enemyTurnPulse {
-  0%, 100% {
-    box-shadow: 
+  0%,
+  100% {
+    box-shadow:
       0 0 20px rgba(202, 48, 77, 0.3),
       inset 0 0 20px rgba(202, 48, 77, 0.3);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 30px rgba(202, 48, 77, 0.5),
       inset 0 0 30px rgba(202, 48, 77, 0.5);
   }
@@ -287,11 +280,11 @@
   );
   padding: 4px 16px;
   border-radius: 4px;
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   font-size: 18px;
   color: #ffffff;
   text-transform: uppercase;
-  text-shadow: 
+  text-shadow:
     0 0 8px rgba(69, 131, 208, 0.8),
     -1px -1px 0 #4583d0,
     1px -1px 0 #4583d0,
@@ -309,7 +302,7 @@
   width: 64px;
   height: 64px;
   padding: 8px 0;
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: 16px;
   text-transform: uppercase;
   color: #ffffff;
@@ -343,7 +336,7 @@
 }
 
 .player_bar_pass_turn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -5px;
   left: -5px;
@@ -425,10 +418,10 @@
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  font-family: 'Kim';
+  font-family: "Kim";
   font-size: 12px;
   color: #ffffff;
-  text-shadow: 
+  text-shadow:
     -1px -1px 0 #000,
     1px -1px 0 #000,
     -1px 1px 0 #000,
@@ -477,10 +470,14 @@
   position: absolute;
   bottom: 0px;
   right: 4px;
-  color: white;   
-  font-size: 14px; 
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: 'Kim';
+  color: white;
+  font-size: 14px;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
+  font-family: "Kim";
   pointer-events: none;
   z-index: 1;
 }
@@ -515,10 +512,10 @@
     rgba(28, 31, 37, 0) 100%
   );
   border-radius: 4px;
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   font-size: 16px;
   color: #ffffff;
-  text-shadow: 
+  text-shadow:
     0 0 8px rgba(202, 48, 77, 0.8),
     -1px -1px 0 #ca304d,
     1px -1px 0 #ca304d,
@@ -528,13 +525,14 @@
 }
 
 @keyframes silencedPulse {
-  0%, 100% {
-    box-shadow: 
+  0%,
+  100% {
+    box-shadow:
       0 0 15px rgba(202, 48, 77, 0.2),
       inset 0 0 15px rgba(202, 48, 77, 0.2);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(202, 48, 77, 0.4),
       inset 0 0 20px rgba(202, 48, 77, 0.4);
   }
@@ -551,7 +549,7 @@
   .player_bar_container {
     height: 12vh;
   }
-  
+
   .player_bar_actions_container {
     top: -30px;
   }

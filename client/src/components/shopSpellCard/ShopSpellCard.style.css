@@ -1,100 +1,100 @@
 .spell-card-container {
-    background-image: url('@assets/shop/daily_bg_idle.png');
-    background-size: 100% 100%;
-    padding: 14px;
-    min-width: 196px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
+  background-image: url("@assets/shop/daily_bg_idle.png");
+  background-size: 100% 100%;
+  padding: 14px;
+  min-width: 196px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
 }
 
 .spell-card-container:hover {
-    background-image: url('@assets/shop/daily_bg_active.png');
+  background-image: url("@assets/shop/daily_bg_active.png");
 }
 
 .spell-card-title {
-    padding: 4px 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-size: 100% 100%;
-    background-image: url('@assets/shop/daily_title_bar.png');
-    width: 94%;
-    margin: 0 8px;
+  padding: 4px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-size: 100% 100%;
+  background-image: url("@assets/shop/daily_title_bar.png");
+  width: 94%;
+  margin: 0 8px;
 }
 
 .spell-card-info-container {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
 }
 
 .spell-card-info-box {
-    background-image: url('@assets/shop/black_info_bg.png');
-    background-size: 100% 100%;
-    padding: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
+  background-image: url("@assets/shop/black_info_bg.png");
+  background-size: 100% 100%;
+  padding: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
 }
 
 .spell-card-title span {
-    font-size: 14px;
-    font-weight: 600;
-    color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .spell-card-info-box span {
-    font-size: 12px;
-    color: #71deff;
+  font-size: 12px;
+  color: #71deff;
 }
 
 .spell-card-info-box .spell-card-info-lv {
-    color: #FFFFFF;
+  color: #ffffff;
 }
 
 .spell-card-info-box img {
-    width: 12px;
-    height: 12px;
+  width: 12px;
+  height: 12px;
 }
 
 .spell-card-content {
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    width: 100%;
-    padding: 0 4px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 0 4px;
 }
 
 .spell-card-content .shop-portrait {
-    margin-left: 65px;
+  margin-left: 65px;
 }
 
 .spell-card-class {
-    width: 20px;
-    height: 20px;
-    padding: 4px;
-    background-size: 100% 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 4px;
+  background-size: 100% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .spell-card-class img {
-    width: 12px;
-    height: 16px;
+  width: 12px;
+  height: 16px;
 }
 
 .spell-card-description {
-    text-align: center;
-    font-size: 14px;
-    max-width: 174px;
-    /* height: 18px;
+  text-align: center;
+  font-size: 14px;
+  max-width: 174px;
+  /* height: 18px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
@@ -103,47 +103,47 @@
 }
 
 .spell-card-effect-container {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
 }
 
 .spell-card-effect {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background-color: #303540;
-    padding: 4px 8px;
-    border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background-color: #303540;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .spell-card-effect img {
-    width: 14px;
-    height: 16px;
+  width: 14px;
+  height: 16px;
 }
 
 .spell-card-effect span {
-    color: #FFFFFF;
-    font-size: 10px;
+  color: #ffffff;
+  font-size: 10px;
 }
 
 .spell-card-price {
-    background-image: url('@assets/shop/daily_button.png');
-    background-size: 100% 100%;
-    padding: 8px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    color: #FFFFFF;
-    font-size: 14px;
-    width: 100%;
-    margin-bottom: 4px;
+  background-image: url("@assets/shop/daily_button.png");
+  background-size: 100% 100%;
+  padding: 8px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+  font-size: 14px;
+  width: 100%;
+  margin-bottom: 4px;
 }
 
 .spell-card-price img {
-    width: 14px;
-    height: 14px;
+  width: 14px;
+  height: 14px;
 }

@@ -1,6 +1,6 @@
 export async function authenticateSocket(
   socket: any,
-  verifyToken: (token: string) => Promise<{uid?: string}>,
+  verifyToken: (token: string) => Promise<{ uid?: string }>,
 ): Promise<void> {
   const token = socket.handshake?.auth?.token;
   if (typeof token !== "string" || !token) throw new Error("Missing authentication token");

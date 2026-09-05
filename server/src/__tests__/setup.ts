@@ -1,7 +1,7 @@
 // Test setup file
 // Set environment variables for testing
-process.env.NODE_ENV = 'test';
-process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
+process.env.NODE_ENV = "test";
+process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
 
 // Suppress console logs during tests (optional)
 // global.console = {

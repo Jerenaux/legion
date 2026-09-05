@@ -1,11 +1,11 @@
-import { test, expect } from 'bun:test';
-import {actionFromKeyboard} from "../actions";
-import {gamepadActions, pollGamepads} from "../gamepad";
+import { test, expect } from "bun:test";
+import { actionFromKeyboard } from "../actions";
+import { gamepadActions, pollGamepads } from "../gamepad";
 
-const keyboard = (code: string, shiftKey = false) => ({code, key: code, shiftKey});
+const keyboard = (code: string, shiftKey = false) => ({ code, key: code, shiftKey });
 const gamepad = (pressed: number[] = [], axes = [0, 0]) => ({
   index: 0,
-  buttons: Array.from({length: 16}, (_, index) => ({pressed: pressed.includes(index)})) as GamepadButton[],
+  buttons: Array.from({ length: 16 }, (_, index) => ({ pressed: pressed.includes(index) })) as GamepadButton[],
   axes,
 });
 

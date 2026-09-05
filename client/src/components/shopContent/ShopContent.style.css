@@ -1,283 +1,282 @@
 .shop-container {
-    display: flex;
-    flex-direction: column;
-    gap: 48px;
-    max-width: 1024px;
-    margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  max-width: 1024px;
+  margin: 0 auto;
 }
 
 .shop-content {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    width: 100%;
-    align-items: center;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  align-items: center;
+  position: relative;
 }
 
 .shop-tabs-container {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    justify-content: center;
-    width: 100%;
-    margin-bottom: 16px;
-    padding: 0 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 0 16px;
 }
 
 .shop-tab-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-sizing: border-box;
-    padding: 8px 16px;
-    cursor: pointer;
-    text-decoration: none;
-    color: #add8e6;
-    transition: all 0.2s ease;
-    border-radius: 4px;
-    background: rgba(173, 216, 230, 0.1);
-    border: 1px solid transparent;
-    font-family: 'Kim', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 8px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #add8e6;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  background: rgba(173, 216, 230, 0.1);
+  border: 1px solid transparent;
+  font-family: "Kim", sans-serif;
 }
 
 .shop-tab-item:hover {
-    transform: translateY(-2px);
-    color: #e0f2ff;
-    background: rgba(173, 216, 230, 0.2);
+  transform: translateY(-2px);
+  color: #e0f2ff;
+  background: rgba(173, 216, 230, 0.2);
 }
 
 .shop-tab-item.active {
-    color: #e0f2ff;
-    background: rgba(173, 216, 230, 0.2);
-    border-color: rgba(173, 216, 230, 0.5);
-    box-shadow: 0 0 12px rgba(173, 216, 230, 0.3);
+  color: #e0f2ff;
+  background: rgba(173, 216, 230, 0.2);
+  border-color: rgba(173, 216, 230, 0.5);
+  box-shadow: 0 0 12px rgba(173, 216, 230, 0.3);
 }
 
 .shop-tab-item img {
-    width: 24px;
-    height: 24px;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
+  width: 24px;
+  height: 24px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
 
 .shop-tab-item:hover img,
 .shop-tab-item.active img {
-    opacity: 1;
+  opacity: 1;
 }
 
 .shop-tab-label {
-    font-size: 14px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .shop-items-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    max-width: 1024px;
-    width: 100%;
-    overflow-y: auto;
-    margin: 0 auto;
-    padding: 0 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  max-width: 1024px;
+  width: 100%;
+  overflow-y: auto;
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
 .shop-portrait {
-    width: 32px;
-    height: 32px;
-    margin: 10px;
+  width: 32px;
+  height: 32px;
+  margin: 10px;
 }
 
 .equipment-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    width: 100%;
-    max-width: 1024px;
-    margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
 }
 
 .equipment-section {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 0 16px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px;
+  width: 100%;
 }
 
 .equipment-type-title {
-    color: #e0f2ff;
-    font-size: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 8px 16px;
-    margin-bottom: 8px;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
-    border-left: 4px solid #add8e6;
-    text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
-    letter-spacing: 1px;
-    position: relative;
-    font-family: 'Kim', sans-serif;
+  color: #e0f2ff;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
+  border-left: 4px solid #add8e6;
+  text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
+  letter-spacing: 1px;
+  position: relative;
+  font-family: "Kim", sans-serif;
 }
 
 .equipment-type-title::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    width: 60%;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  width: 60%;
+  background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
 }
 
 .equipment-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
 }
 
 .shop-items-container.equipment-view {
-    display: block;
+  display: block;
 }
 
-
 .shop-tab-item.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: all;
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: all;
 }
 
 .spells-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-    max-width: 1024px;
-    margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
 }
 
 .spells-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
 }
 
 .spells-section {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 0 16px;
-    width: 100%;
-    margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px;
+  width: 100%;
+  margin-bottom: 32px;
 }
 
 .spells-type-title {
-    color: #e0f2ff;
-    font-size: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 8px 16px;
-    margin-bottom: 8px;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
-    border-left: 4px solid #add8e6;
-    text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
-    letter-spacing: 1px;
-    position: relative;
-    font-family: 'Kim', sans-serif;
+  color: #e0f2ff;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
+  border-left: 4px solid #add8e6;
+  text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
+  letter-spacing: 1px;
+  position: relative;
+  font-family: "Kim", sans-serif;
 }
 
 .spells-type-title::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    width: 60%;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  width: 60%;
+  background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
 }
 
 .locked-spells-notice {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 24px;
-    background: rgba(173, 216, 230, 0.1);
-    border: 1px solid rgba(173, 216, 230, 0.2);
-    border-radius: 8px;
-    margin-top: 16px;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(173, 216, 230, 0.1);
+  border: 1px solid rgba(173, 216, 230, 0.2);
+  border-radius: 8px;
+  margin-top: 16px;
+  text-align: center;
 }
 
 .locked-spells-notice img {
-    width: 32px;
-    height: 32px;
-    opacity: 0.7;
+  width: 32px;
+  height: 32px;
+  opacity: 0.7;
 }
 
 .locked-spells-notice h3 {
-    color: #e0f2ff;
-    font-size: 18px;
-    margin: 0;
+  color: #e0f2ff;
+  font-size: 18px;
+  margin: 0;
 }
 
 .locked-spells-notice p {
-    color: #add8e6;
-    font-size: 20px;
-    margin: 0;
-    line-height: 1.5;
+  color: #add8e6;
+  font-size: 20px;
+  margin: 0;
+  line-height: 1.5;
 }
 
 .consumables-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-    max-width: 1024px;
-    margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
 }
 
 .consumables-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
 }
 
 .consumables-section {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 0 16px;
-    width: 100%;
-    margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px;
+  width: 100%;
+  margin-bottom: 32px;
 }
 
 .consumables-type-title {
-    color: #e0f2ff;
-    font-size: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 8px 16px;
-    margin-bottom: 8px;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
-    border-left: 4px solid #add8e6;
-    text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
-    letter-spacing: 1px;
-    position: relative;
-    font-family: 'Kim', sans-serif;
+  color: #e0f2ff;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
+  border-left: 4px solid #add8e6;
+  text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
+  letter-spacing: 1px;
+  position: relative;
+  font-family: "Kim", sans-serif;
 }
 
 .consumables-type-title::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    width: 60%;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  width: 60%;
+  background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
 }

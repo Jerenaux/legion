@@ -1,5 +1,5 @@
-import {describe, expect, test} from "bun:test";
-import {gameResultReceiptId} from "../gameResults";
+import { describe, expect, test } from "bun:test";
+import { gameResultReceiptId } from "../gameResults";
 
 describe("game result receipts", () => {
   test("uses both the game run and player without exposing either in a document id", () => {

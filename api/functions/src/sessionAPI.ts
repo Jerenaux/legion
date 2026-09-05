@@ -1,6 +1,6 @@
-import {onRequest} from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, { corsMiddleware, getUID } from "./APIsetup";
 import {
   PlatformProvider,
   canonicalUID,
@@ -9,7 +9,7 @@ import {
   validateItchKey,
   validateSteamTicket,
 } from "./platformIdentity";
-import {ensurePlayer} from "./playerAPI";
+import { ensurePlayer } from "./playerAPI";
 
 class PlatformIdentityConflictError extends Error {}
 
@@ -26,11 +26,7 @@ async function validateProvider(provider: PlatformProvider, credential: string):
   throw new Error("Unsupported platform provider");
 }
 
-async function resolveUID(
-  provider: PlatformProvider,
-  externalId: string,
-  linkToUID?: string,
-): Promise<string> {
+async function resolveUID(provider: PlatformProvider, externalId: string, linkToUID?: string): Promise<string> {
   const db = admin.firestore();
   const key = identityKey(provider, externalId);
   const identityRef = db.collection("platformIdentities").doc(key);
@@ -61,7 +57,7 @@ async function ensureAuthUser(uid: string): Promise<void> {
     await admin.auth().getUser(uid);
   } catch (error) {
     if ((error as any)?.code !== "auth/user-not-found") throw error;
-    await admin.auth().createUser({uid});
+    await admin.auth().createUser({ uid });
   }
 }
 
@@ -80,8 +76,8 @@ export const createPlatformSession = onRequest(sessionOptions, (request, respons
       const uid = await resolveUID(provider, externalId);
       await ensureAuthUser(uid);
       await ensurePlayer(uid);
-      const customToken = await admin.auth().createCustomToken(uid, {platform: provider});
-      response.send({customToken, provider, uid});
+      const customToken = await admin.auth().createCustomToken(uid, { platform: provider });
+      response.send({ customToken, provider, uid });
     } catch (error) {
       console.error("createPlatformSession error:", error);
       response.status(401).send("Platform authentication failed");
@@ -130,7 +126,7 @@ export const linkPlatformIdentity = onRequest(sessionOptions, (request, response
         }
         throw error;
       }
-      response.send({provider, uid});
+      response.send({ provider, uid });
     } catch (error) {
       console.error("linkPlatformIdentity error:", error);
       response.status(500).send("Unable to link platform identity");

@@ -1,16 +1,16 @@
-import './ItemIcon.style.css';
-import { h, Component } from 'preact';
-import { InventoryActionType, InventoryType, ItemDialogType } from '@legion/shared/enums';
+import "./ItemIcon.style.css";
+import { h, Component } from "preact";
+import { InventoryActionType, InventoryType, ItemDialogType } from "@legion/shared/enums";
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
-import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import ItemDialog from '../itemDialog/ItemDialog';
-import { Effect } from '@legion/shared/interfaces';
-import { mapFrameToCoordinates, cropFrame } from '../utils';
+import { BaseEquipment } from "@legion/shared/BaseEquipment";
+import ItemDialog from "../itemDialog/ItemDialog";
+import { Effect } from "@legion/shared/interfaces";
+import { mapFrameToCoordinates, cropFrame } from "../utils";
 
-import equipmentSpritesheet from '@assets/equipment.png';
-import consumablesSpritesheet from '@assets/consumables.png';
-import spellsSpritesheet from '@assets/spells.png';
+import equipmentSpritesheet from "@assets/equipment.png";
+import consumablesSpritesheet from "@assets/consumables.png";
+import spellsSpritesheet from "@assets/spells.png";
 
 interface ItemIconProps {
   action: BaseItem | BaseSpell | BaseEquipment | null;
@@ -19,8 +19,8 @@ interface ItemIconProps {
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
   handleItemEffect?: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  onActionClick?: (type: string, letter: string, index: number) => void; 
-  handleSelectedEquipmentSlot: (newValue: number) => void; 
+  onActionClick?: (type: string, letter: string, index: number) => void;
+  handleSelectedEquipmentSlot: (newValue: number) => void;
 }
 
 interface ItemIconState {
@@ -41,10 +41,10 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     modalData: null,
     modalPosition: {
       top: 0,
-      left: 0
+      left: 0,
     },
-    croppedImageUrl: null
-  }
+    croppedImageUrl: null,
+  };
 
   componentDidMount() {
     this.cropSpritesheet();
@@ -72,9 +72,9 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
       const croppedImageUrl = await cropFrame(spritesheet, x, y, 32, 32); // Assuming 32x32 sprite size
       this.setState({ croppedImageUrl });
     } catch (error) {
-      console.error('Error cropping spritesheet:', error);
+      console.error("Error cropping spritesheet:", error);
     }
-  }
+  };
 
   convertInventoryTypeToItemDialogType = (inventoryType: InventoryType): ItemDialogType => {
     switch (inventoryType) {
@@ -89,41 +89,41 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
       default:
         throw new Error(`Unsupported InventoryType: ${inventoryType}`);
     }
-  }
+  };
 
   handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, inventoryType: InventoryType) => {
     const elementRect = e.currentTarget.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    
+
     // Estimate modal dimensions based on content type
     let estimatedModalHeight = 200; // Default height
-    let estimatedModalWidth = 150;  // Default width
-    
+    let estimatedModalWidth = 150; // Default width
+
     // Adjust estimated height based on content type
     if (modalData.description) {
-        estimatedModalHeight += 50; // Add more height for items with description
+      estimatedModalHeight += 50; // Add more height for items with description
     }
-    if ('effects' in modalData && modalData.effects?.length > 0) {
-        estimatedModalHeight += modalData.effects.length * 25; // Add height for each effect
+    if ("effects" in modalData && modalData.effects?.length > 0) {
+      estimatedModalHeight += modalData.effects.length * 25; // Add height for each effect
     }
-    
+
     // Calculate initial position
     let top = elementRect.top;
     let left = elementRect.left + elementRect.width;
-    
+
     // Check if modal would extend below viewport
     if (top + estimatedModalHeight > viewportHeight) {
-        // Position modal above the click point
-        top = Math.max(10, viewportHeight - estimatedModalHeight - 10);
+      // Position modal above the click point
+      top = Math.max(10, viewportHeight - estimatedModalHeight - 10);
     }
-    
+
     // Check if modal would extend beyond right edge
     if (left + estimatedModalWidth > viewportWidth) {
-        // Position modal to the left of the click point
-        left = Math.max(10, elementRect.left - estimatedModalWidth);
+      // Position modal to the left of the click point
+      left = Math.max(10, elementRect.left - estimatedModalWidth);
     }
-    
+
     // Ensure minimum margins from viewport edges
     top = Math.max(10, Math.min(top, viewportHeight - estimatedModalHeight - 10));
     left = Math.max(10, Math.min(left, viewportWidth - estimatedModalWidth - 10));
@@ -132,41 +132,41 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     const modalType = this.convertInventoryTypeToItemDialogType(inventoryType);
 
     this.setState({ openModal: true, modalType, modalPosition, modalData });
-  }
+  };
 
-  handleCloseModal = () => { 
-    this.props.handleSelectedEquipmentSlot(-1); 
+  handleCloseModal = () => {
+    this.props.handleSelectedEquipmentSlot(-1);
 
     this.setState({ openModal: false });
 
     if (this.props.handleItemEffect) {
       this.props.handleItemEffect([], InventoryActionType.EQUIP);
     }
-  }
+  };
 
   render() {
     const { action, index, actionType, hideHotKey } = this.props;
     const { croppedImageUrl } = this.state;
 
-    const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
+    const keyboardLayout = "QWERTYUIOPASDFGHJKLZXCVBNM";
+    const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? "Z" : "Q");
     const keyBinding = keyboardLayout.charAt(startPosition + index);
 
     const handleOnClickAction = (e: any) => {
-      const pathArray = window.location.pathname.split('/');
+      const pathArray = window.location.pathname.split("/");
 
-      if (pathArray[1] === 'game') return;
+      if (pathArray[1] === "game") return;
 
       if (actionType === InventoryType.EQUIPMENTS) {
         this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP, (action as BaseEquipment).slot);
-      } 
+      }
 
-      if(actionType === InventoryType.EQUIPMENTS) {
-        this.props.handleSelectedEquipmentSlot((action as BaseEquipment).slot); 
+      if (actionType === InventoryType.EQUIPMENTS) {
+        this.props.handleSelectedEquipmentSlot((action as BaseEquipment).slot);
       }
 
       this.handleOpenModal(e, action, actionType);
-    }
+    };
 
     if (!action) {
       return <div className={`${actionType}`} />;
@@ -176,11 +176,11 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
       <div onClick={handleOnClickAction}>
         {action.id > -1 && (
           <div
-            className='item-icon'
+            className="item-icon"
             style={{
-              backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : 'none',
-              backgroundSize: 'cover',
-              cursor: 'pointer',
+              backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : "none",
+              backgroundSize: "cover",
+              cursor: "pointer",
             }}
           />
         )}
@@ -195,7 +195,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
           position={this.state.modalPosition}
           dialogData={this.state.modalData}
           handleClose={this.handleCloseModal}
-          handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot} 
+          handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
         />
       </div>
     );

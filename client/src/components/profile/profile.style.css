@@ -1,1073 +1,1103 @@
 .profile-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    color: #fff;
-    font-family: 'Kim', sans-serif;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  color: #fff;
+  font-family: "Kim", sans-serif;
 }
 
 .profile-container.loading,
 .profile-container.error {
-    text-align: center;
-    padding: 40px;
-    font-size: 18px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
 }
 
 .profile-header {
-    display: flex;
-    align-items: flex-start;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
-    border: 2px solid #cd853f;
-    margin-bottom: 20px;
-    position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  border: 2px solid #cd853f;
+  margin-bottom: 20px;
+  position: relative;
 }
 
 .profile-avatar {
-    width: 128px;
-    height: 128px;
-    border-radius: 8px;
-    background-size: cover;
-    background-position: center;
-    border: 2px solid #cd853f;
-    box-shadow: 0 0 15px rgba(205, 133, 63, 0.3);
-    position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #cd853f;
+  box-shadow: 0 0 15px rgba(205, 133, 63, 0.3);
+  position: relative;
 }
 
 .profile-info {
-    margin-left: 20px;
-    padding-right: 120px;
-    min-height: 80px;
+  margin-left: 20px;
+  padding-right: 120px;
+  min-height: 80px;
 }
 
 .profile-info h1 {
-    margin: 0;
-    font-size: 32px;
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  font-size: 32px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .profile-join-date {
-    color: #aaa;
-    font-size: 14px;
-    margin-top: 5px;
+  color: #aaa;
+  font-size: 14px;
+  margin-top: 5px;
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .stats-card {
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #49d7d8;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #49d7d8;
 }
 
 /* All Time Stats card - blue gradient */
 .stats-card.all-time {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(73, 215, 216, 0.1));
-    border: 2px solid #49d7d8;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(73, 215, 216, 0.1));
+  border: 2px solid #49d7d8;
 }
 
 /* Current Season Stats card - gold/orange gradient */
 .stats-card.season {
-    position: relative;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(205, 133, 63, 0.1));
-    border: 2px solid #cd853f;
+  position: relative;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(205, 133, 63, 0.1));
+  border: 2px solid #cd853f;
 }
 
 .league-icon {
-    position: absolute;
-    top: -15px;
-    left: -15px;
-    width: 48px;
-    height: 48px;
-    z-index: 1;
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  width: 48px;
+  height: 48px;
+  z-index: 1;
 }
 
 .league-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* Casual Mode Stats card - green gradient */
 .stats-card.casual {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(73, 216, 116, 0.1));
-    border: 2px solid #49d874;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(73, 216, 116, 0.1));
+  border: 2px solid #49d874;
 }
 
 /* Update the h2 color for each card to match its border */
 .stats-card.season h2 {
-    position: relative;
-    z-index: 0;
-    color: #cd853f;
+  position: relative;
+  z-index: 0;
+  color: #cd853f;
 }
 
 .stats-card.casual h2 {
-    color: #49d874;
+  color: #49d874;
 }
 
 /* Update the value color for each card to match its theme */
 .stats-card.season .value {
-    color: #cd853f;
+  color: #cd853f;
 }
 
 .stats-card.casual .value {
-    color: #49d874;
+  color: #49d874;
 }
 
 .stats-card h2 {
-    margin: 0 0 20px 0;
-    color: #49d7d8;
-    font-size: 24px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  margin: 0 0 20px 0;
+  color: #49d7d8;
+  font-size: 24px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(73, 215, 216, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(73, 215, 216, 0.2);
 }
 
 .stat-row:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .stat-row .value {
-    font-weight: bold;
-    color: #49d7d8;
+  font-weight: bold;
+  color: #49d7d8;
 }
 
 .profile-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
 }
 
 .elo-rating {
-    color: #49d7d8;
-    font-size: 16px;
-    font-weight: bold;
+  color: #49d7d8;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 /* Tablet breakpoint */
 @media (max-width: 1024px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    /* Make the all-time stats card span full width at the top */
-    .stats-card.all-time {
-        grid-column: 1 / -1;
-    }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Make the all-time stats card span full width at the top */
+  .stats-card.all-time {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Mobile breakpoint */
 @media (max-width: 768px) {
-    .profile-container {
-        padding: 10px;
-    }
+  .profile-container {
+    padding: 10px;
+  }
 
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-    }
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
 
-    .profile-info {
-        margin-left: 0;
-        margin-top: 15px;
-    }
+  .profile-info {
+    margin-left: 0;
+    margin-top: 15px;
+  }
 
-    .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    /* Reset the all-time stats card span */
-    .stats-card.all-time {
-        grid-column: auto;
-    }
-} 
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Reset the all-time stats card span */
+  .stats-card.all-time {
+    grid-column: auto;
+  }
+}
 
 .player-stats {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .rank-divider {
-    color: #666;
+  color: #666;
 }
 
 .all-time-rank {
-    color: #cd853f;
-    font-size: 16px;
-    font-weight: bold;
+  color: #cd853f;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 /* Update mobile styles */
 @media (max-width: 768px) {
-    .player-stats {
-        justify-content: center;
-    }
-} 
+  .player-stats {
+    justify-content: center;
+  }
+}
 
 /* Add these new styles */
 .search-players {
-    position: relative;
-    width: 100%;
-    margin-bottom: 20px;
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .search-container {
-    position: relative;
-    width: 100%;
+  position: relative;
+  width: 100%;
 }
 
 .search-players input {
-    width: 100%;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid #49d7d8;
-    border-radius: 8px;
-    color: white;
-    font-family: 'Kim', sans-serif;
-    font-size: 16px;
+  width: 100%;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid #49d7d8;
+  border-radius: 8px;
+  color: white;
+  font-family: "Kim", sans-serif;
+  font-size: 16px;
 }
 
 .search-players input:focus {
-    outline: none;
-    border-color: #49d7d8;
-    box-shadow: 0 0 10px rgba(73, 215, 216, 0.3);
+  outline: none;
+  border-color: #49d7d8;
+  box-shadow: 0 0 10px rgba(73, 215, 216, 0.3);
 }
 
 .search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.9);
-    border: 2px solid #49d7d8;
-    border-radius: 8px;
-    margin-top: 5px;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 1000;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid #49d7d8;
+  border-radius: 8px;
+  margin-top: 5px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
 }
 
 .player-result {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid rgba(73, 215, 216, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid rgba(73, 215, 216, 0.2);
 }
 
 .player-result:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .player-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .player-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    background-size: cover;
-    background-position: center;
-    border: 1px solid #49d7d8;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid #49d7d8;
 }
 
 .player-name {
-    color: white;
-    font-size: 14px;
-    word-wrap: break-word;
-    white-space: normal;
-    line-height: 1.2;
-    flex: 1;
-    padding-right: 10px;
+  color: white;
+  font-size: 14px;
+  word-wrap: break-word;
+  white-space: normal;
+  line-height: 1.2;
+  flex: 1;
+  padding-right: 10px;
 }
 
 .add-friend-btn {
-    background: linear-gradient(135deg, #ffd700, #cd853f);
-    border: none;
-    border-radius: 4px;
-    color: white;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-family: 'Kim', sans-serif;
-    font-size: 12px;
-    transition: all 0.2s ease;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  background: linear-gradient(135deg, #ffd700, #cd853f);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: "Kim", sans-serif;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 .add-friend-btn:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #ffe44d, #dea164);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #ffe44d, #dea164);
 }
 
 .search-loading {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #49d7d8;
-    font-size: 14px;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #49d7d8;
+  font-size: 14px;
 }
 
 .search-error {
-    color: #ff6b6b;
-    padding: 10px;
-    text-align: center;
+  color: #ff6b6b;
+  padding: 10px;
+  text-align: center;
 }
 
 .no-results {
-    color: #666;
-    padding: 10px;
-    text-align: center;
-} 
+  color: #666;
+  padding: 10px;
+  text-align: center;
+}
 
 /* Add these new styles */
 .profile-add-friend {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-    background: linear-gradient(135deg, #ffd700, #cd853f);
-    border: none;
-    border-radius: 4px;
-    color: white;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-family: 'Kim', sans-serif;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-    min-width: 100px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background: linear-gradient(135deg, #ffd700, #cd853f);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: "Kim", sans-serif;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+  min-width: 100px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .profile-add-friend:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #ffe44d, #dea164);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-} 
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #ffe44d, #dea164);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
 
 .profile-add-friend.is-friend {
-    background: linear-gradient(135deg, #49d874, #2a7a4b);
-    cursor: default;
-    opacity: 0.9;
+  background: linear-gradient(135deg, #49d874, #2a7a4b);
+  cursor: default;
+  opacity: 0.9;
 }
 
 .profile-add-friend.is-friend:hover {
-    transform: none;
-    box-shadow: none;
-    background: linear-gradient(135deg, #49d874, #2a7a4b);
-} 
+  transform: none;
+  box-shadow: none;
+  background: linear-gradient(135deg, #49d874, #2a7a4b);
+}
 
 /* Add these new styles */
 .friends-mosaic {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
 }
 
 .friend-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 10px;
-    border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .friend-tile:hover {
-    transform: scale(1.1);
-    background: rgba(73, 215, 216, 0.1);
+  transform: scale(1.1);
+  background: rgba(73, 215, 216, 0.1);
 }
 
 .friend-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 8px;
-    background-size: cover;
-    background-position: center;
-    border: 2px solid #49d7d8;
-    box-shadow: 0 0 10px rgba(73, 215, 216, 0.3);
-    transition: all 0.3s ease;
-    position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #49d7d8;
+  box-shadow: 0 0 10px rgba(73, 215, 216, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .friend-tile:hover .friend-avatar {
-    border-color: #5ae8e9;
-    box-shadow: 0 0 15px rgba(73, 215, 216, 0.5);
+  border-color: #5ae8e9;
+  box-shadow: 0 0 15px rgba(73, 215, 216, 0.5);
 }
 
 .friend-name {
-    color: white;
-    font-size: 14px;
-    text-align: center;
-    max-width: 90px;
-    word-wrap: break-word;
-    white-space: normal;
-    line-height: 1.2;
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  max-width: 90px;
+  word-wrap: break-word;
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .no-friends {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: #666;
-    padding: 20px;
-    font-size: 16px;
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-size: 16px;
 }
 
 /* Update existing styles */
 .friends-section {
-    margin-top: 30px;
+  margin-top: 30px;
 }
 
 .friends-section h2 {
-    margin-bottom: 20px;
-    color: #49d7d8;
-    font-size: 24px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-} 
+  margin-bottom: 20px;
+  color: #49d7d8;
+  font-size: 24px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
 
 /* Update the add friend button styles in search results */
 .add-friend-btn {
-    background: linear-gradient(135deg, #ffd700, #cd853f);
-    border: none;
-    border-radius: 4px;
-    color: white;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-family: 'Kim', sans-serif;
-    font-size: 12px;
-    transition: all 0.2s ease;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  background: linear-gradient(135deg, #ffd700, #cd853f);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: "Kim", sans-serif;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 .add-friend-btn:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #ffe44d, #dea164);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #ffe44d, #dea164);
 }
 
 /* Style for when already friends - remove hover effects and use green gradient */
 .add-friend-btn.is-friend {
-    background: linear-gradient(135deg, #49d874, #2a7a4b);
-    cursor: default;
-    opacity: 0.9;
-    transform: none;
-    transition: none;
+  background: linear-gradient(135deg, #49d874, #2a7a4b);
+  cursor: default;
+  opacity: 0.9;
+  transform: none;
+  transition: none;
 }
 
 .add-friend-btn.is-friend:hover {
-    transform: none;
-    background: linear-gradient(135deg, #49d874, #2a7a4b);
-} 
+  transform: none;
+  background: linear-gradient(135deg, #49d874, #2a7a4b);
+}
 
 .player-status {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  margin-top: 4px;
 }
 
 .status-online {
-    background-color: #4CAF50;
-    color: white;
+  background-color: #4caf50;
+  color: white;
 }
 
 .status-offline {
-    background-color: #9e9e9e;
-    color: white;
+  background-color: #9e9e9e;
+  color: white;
 }
 
 .status-ingame {
-    background-color: #2196F3;
-    color: white;
+  background-color: #2196f3;
+  color: white;
 }
 
 .status-queuing {
-    background-color: #FF9800;
-    color: white;
+  background-color: #ff9800;
+  color: white;
 }
 
 .player-status a {
-    color: white;
-    text-decoration: underline;
-    margin-left: 4px;
+  color: white;
+  text-decoration: underline;
+  margin-left: 4px;
 }
 
 .friend-tile .player-status {
-    font-size: 0.8em;
-    margin-top: 2px;
-} 
+  font-size: 0.8em;
+  margin-top: 2px;
+}
 
 /* Replace the existing player-status styles with these */
 .status-dot {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid #1a1a1a;
-    right: 3px;
-    top: 3px;
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #1a1a1a;
+  right: 3px;
+  top: 3px;
 }
 
 .status-dot.online {
-    background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 .status-dot.offline {
-    background-color: #9e9e9e;
+  background-color: #9e9e9e;
 }
 
 .status-dot.queuing {
-    background-color: #2196F3;
+  background-color: #2196f3;
 }
 
 .status-dot.ingame {
-    background-color: #f44336;
+  background-color: #f44336;
 }
 
 /* Add spectate badge for in-game status */
 .spectate-badge {
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    white-space: nowrap;
-    cursor: pointer;
-    border: 1px solid #f44336;
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #f44336;
 }
 
 .spectate-badge:hover {
-    background: #f44336;
-} 
+  background: #f44336;
+}
 
 /* Add these new styles */
 .player-status-box {
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
-    padding: 15px 20px;
-    margin: 20px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 2px solid;
-    transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid;
+  transition: all 0.3s ease;
 }
 
 .player-status-box.online {
-    border-color: #4CAF50;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(76, 175, 80, 0.1));
+  border-color: #4caf50;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(76, 175, 80, 0.1));
 }
 
 .player-status-box.offline {
-    border-color: #9e9e9e;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(158, 158, 158, 0.1));
+  border-color: #9e9e9e;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(158, 158, 158, 0.1));
 }
 
 .player-status-box.queuing {
-    border-color: #2196F3;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(33, 150, 243, 0.1));
+  border-color: #2196f3;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(33, 150, 243, 0.1));
 }
 
 .player-status-box.ingame {
-    border-color: #f44336;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(244, 67, 54, 0.1));
+  border-color: #f44336;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(244, 67, 54, 0.1));
 }
 
 .status-text {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
 }
 
 .status-text .status-dot {
-    position: static;
-    margin-right: 5px;
+  position: static;
+  margin-right: 5px;
 }
 
 .challenge-button {
-    background: linear-gradient(135deg, #ffd700, #cd853f);
-    border: none;
-    border-radius: 4px;
-    color: white;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-family: 'Kim', sans-serif;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  background: linear-gradient(135deg, #ffd700, #cd853f);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: "Kim", sans-serif;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 .challenge-button:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #ffe44d, #dea164);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #ffe44d, #dea164);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .status-message {
-    color: #fff;
-} 
+  color: #fff;
+}
 
 /* Challenge Modal Styles */
 .challenge-modal {
-    position: relative;
-    padding-top: 30px !important;
+  position: relative;
+  padding-top: 30px !important;
 }
 
 .challenge-modal .challenger-avatar {
-    position: absolute;
-    top: -30px;
-    left: -30px;
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
-    background-size: cover;
-    background-position: center;
-    border: 4px solid #ffd700;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    animation: glowPulse 2s infinite;
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 4px solid #ffd700;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: glowPulse 2s infinite;
 }
 
 /* Add the pulsating glow animation */
 @keyframes glowPulse {
-    0% {
-        box-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 15px #ffd700;
-    }
-    50% {
-        box-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #ffd700;
-    }
-    100% {
-        box-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700, 0 0 15px #ffd700;
-    }
+  0% {
+    box-shadow:
+      0 0 5px #ffd700,
+      0 0 10px #ffd700,
+      0 0 15px #ffd700;
+  }
+  50% {
+    box-shadow:
+      0 0 10px #ffd700,
+      0 0 20px #ffd700,
+      0 0 30px #ffd700;
+  }
+  100% {
+    box-shadow:
+      0 0 5px #ffd700,
+      0 0 10px #ffd700,
+      0 0 15px #ffd700;
+  }
 }
 
 .challenge-modal .challenge-description {
-    text-align: center;
-    margin: 30px 0;
-    color: white;
-    font-size: 24px;
-    line-height: 1.4;
+  text-align: center;
+  margin: 30px 0;
+  color: white;
+  font-size: 24px;
+  line-height: 1.4;
 }
 
 .challenge-modal .highlight-name {
-    color: #f9d400;
-    font-weight: bold;
-    font-size: 26px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  color: #f9d400;
+  font-weight: bold;
+  font-size: 26px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Add emphasis to the second paragraph */
 .challenge-modal .challenge-description p:last-child {
-    font-size: 20px;
-    opacity: 0.8;
-    margin-top: 20px;
+  font-size: 20px;
+  opacity: 0.8;
+  margin-top: 20px;
 }
 
 /* Update modal buttons to use gradients */
 .challenge-modal .cancel-btn {
-    background: linear-gradient(135deg, #666, #444);
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    transition: all 0.3s ease;
+  background: linear-gradient(135deg, #666, #444);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
 .challenge-modal .cancel-btn:hover {
-    background: linear-gradient(135deg, #777, #555);
-    transform: scale(1.05);
+  background: linear-gradient(135deg, #777, #555);
+  transform: scale(1.05);
 }
 
 .challenge-modal .confirm-btn {
-    background: linear-gradient(135deg, #ffd700, #daa520);
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
 .challenge-modal .confirm-btn:hover {
-    background: linear-gradient(135deg, #fff700, #ffd700);
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-} 
+  background: linear-gradient(135deg, #fff700, #ffd700);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
 
 /* Challenge Response Modal Styles */
 .challenge-response-modal {
-    position: relative;
-    padding-top: 30px !important;
+  position: relative;
+  padding-top: 30px !important;
 }
 
 .challenge-response-modal .challenger-avatar {
-    position: absolute;
-    top: -30px;
-    left: -30px;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-size: cover;
-    background-position: center;
-    border: 4px solid #cd853f;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 4px solid #cd853f;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
 }
 
 .challenge-response-modal h3 {
-    position: absolute;
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--background-color);
-    padding: 0 20px;
-    margin: 0;
-    color: white;
-    font-size: 32px;
-    text-transform: uppercase;
-    text-shadow: -2px -2px 0 #000,  
-                  2px -2px 0 #000,
-                 -2px  2px 0 #000,
-                  2px  2px 0 #000;
-    z-index: 2;
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--background-color);
+  padding: 0 20px;
+  margin: 0;
+  color: white;
+  font-size: 32px;
+  text-transform: uppercase;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000;
+  z-index: 2;
 }
 
 .challenge-response-modal::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 4px;
-    background: var(--background-color);
-    z-index: 1;
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 4px;
+  background: var(--background-color);
+  z-index: 1;
 }
 
 .challenge-response-modal .challenge-description {
-    text-align: center;
-    margin: 30px 0;
-    color: var(--text-color-secondary);
-    font-size: 24px;
-    line-height: 1.4;
+  text-align: center;
+  margin: 30px 0;
+  color: var(--text-color-secondary);
+  font-size: 24px;
+  line-height: 1.4;
 }
 
 .challenge-response-modal .highlight-name {
-    color: #ffd700;
-    font-weight: bold;
-    font-size: 26px;
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 26px;
 }
 
 .challenge-response-modal .button-container {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
 }
 
 .challenge-response-modal .accept-btn {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    border: none;
-    padding: 10px 30px;
-    font-size: 16px;
-    transition: all 0.3s ease;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  border: none;
+  padding: 10px 30px;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
 .challenge-response-modal .accept-btn:hover {
-    background: linear-gradient(135deg, #45a049, #4CAF50);
-    transform: scale(1.05);
+  background: linear-gradient(135deg, #45a049, #4caf50);
+  transform: scale(1.05);
 }
 
 .challenge-response-modal .decline-btn {
-    background: linear-gradient(135deg, #f44336, #d32f2f);
-    border: none;
-    padding: 10px 30px;
-    font-size: 16px;
-    transition: all 0.3s ease;
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  border: none;
+  padding: 10px 30px;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
 .challenge-response-modal .decline-btn:hover {
-    background: linear-gradient(135deg, #d32f2f, #f44336);
-    transform: scale(1.05);
-} 
-
+  background: linear-gradient(135deg, #d32f2f, #f44336);
+  transform: scale(1.05);
+}
 
 .challenge-modal h3 {
-    position: absolute;
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--background-color);
-    padding: 0 20px;
-    margin: 0;
-    color: white;
-    font-size: 32px;
-    text-transform: uppercase;
-    text-shadow: -2px -2px 0 #000,  
-                  2px -2px 0 #000,
-                 -2px  2px 0 #000,
-                  2px  2px 0 #000;
-    z-index: 2;
-}   
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--background-color);
+  padding: 0 20px;
+  margin: 0;
+  color: white;
+  font-size: 32px;
+  text-transform: uppercase;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000;
+  z-index: 2;
+}
 
 /* Add these styles */
 .profile-name-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .edit-name-icon {
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    padding: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  padding: 4px;
 }
 
 .edit-name-icon:hover {
-    opacity: 1;
+  opacity: 1;
 }
 
 .name-edit-form {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .name-edit-input {
-    font-size: 24px;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.1);
-    color: inherit;
+  font-size: 24px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  color: inherit;
 }
 
 .name-edit-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid transparent;
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-left: 8px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}   
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .name-edit-form button {
-    border: none;
-    border-radius: 4px;
-    color: white;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-family: 'Kim', sans-serif;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: "Kim", sans-serif;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 .name-edit-form button[type="submit"] {
-    background: linear-gradient(135deg, #ffd700, #cd853f);
+  background: linear-gradient(135deg, #ffd700, #cd853f);
 }
 
 .name-edit-form button[type="submit"]:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #ffe44d, #dea164);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #ffe44d, #dea164);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .name-edit-form button[type="button"] {
-    background: linear-gradient(135deg, #666, #444);
+  background: linear-gradient(135deg, #666, #444);
 }
 
 .name-edit-form button[type="button"]:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #777, #555);
-}   
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #777, #555);
+}
 
 /* Add these styles */
 .profile-avatar {
-    position: relative;
+  position: relative;
 }
 
 .profile-avatar:hover .edit-avatar-icon {
-    opacity: 1;
+  opacity: 1;
 }
 
 .edit-avatar-icon {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    width: 32px;
-    height: 32px;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 8px;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 8px;
 }
 
 .edit-avatar-icon svg {
-    stroke: #ffffff;
-    opacity: 0.9;
-    width: 100%;
-    height: 100%;
+  stroke: #ffffff;
+  opacity: 0.9;
+  width: 100%;
+  height: 100%;
 }
 
 .edit-avatar-icon:hover {
-    background: rgba(0, 0, 0, 0.9);
-    border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.6);
 }
 
 .edit-avatar-icon:hover svg {
-    opacity: 1;
+  opacity: 1;
 }
 
 .avatar-gallery-modal {
-    background: rgba(0, 0, 0, 0.85);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .avatar-gallery {
-    background: #242b37;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+  background: #242b37;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .avatar-gallery-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .avatar-gallery-header h3 {
-    margin: 0;
-    color: #fff;
+  margin: 0;
+  color: #fff;
 }
 
 .avatar-gallery-close {
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    font-size: 24px;
-    padding: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 0;
 }
 
 .avatar-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 10px;
-    max-width: 600px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  max-width: 600px;
 }
 
 .avatar-option {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-size: 120%;
-    background-position: center;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-size: 120%;
+  background-position: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .avatar-option:hover {
-    border-color: #4a90e2;
-    background-size: 130%;
+  border-color: #4a90e2;
+  background-size: 130%;
 }
 
 .avatar-option.selected {
-    border-color: #ffd700;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    background-size: 130%;
-}   
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  background-size: 130%;
+}
 
 .avatar-gallery .loading {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.7);  /* Semi-transparent overlay */
-    border-radius: 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay */
+  border-radius: 8px;
 }
 
 .avatar-gallery .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: #ffd700;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}   
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #ffd700;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}

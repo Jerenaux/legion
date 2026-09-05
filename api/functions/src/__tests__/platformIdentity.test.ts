@@ -7,7 +7,7 @@ import {
   validateItchKey,
   validateSteamTicket,
 } from "../platformIdentity";
-import {starterCharacterId} from "../playerProvisioning";
+import { starterCharacterId } from "../playerProvisioning";
 
 describe("platform identity", () => {
   test("builds stable safe identity keys and Firebase UIDs", () => {
@@ -20,25 +20,33 @@ describe("platform identity", () => {
     const fetcher = async (url: string) => {
       expect(url).toContain("ticket=deadbeef");
       expect(url).toContain("identity=legion");
-      return new Response(JSON.stringify({response: {params: {result: "OK", steamid: "7656"}}}), {status: 200});
+      return new Response(JSON.stringify({ response: { params: { result: "OK", steamid: "7656" } } }), { status: 200 });
     };
-    await expect(validateSteamTicket("deadbeef", {
-      appId: "123",
-      apiKey: "secret",
-      identity: "legion",
-    }, fetcher)).resolves.toBe("7656");
+    await expect(
+      validateSteamTicket(
+        "deadbeef",
+        {
+          appId: "123",
+          apiKey: "secret",
+          identity: "legion",
+        },
+        fetcher,
+      ),
+    ).resolves.toBe("7656");
   });
 
   test("rejects an invalid Steam response", async () => {
-    const fetcher = async () => new Response(JSON.stringify({response: {params: {result: "Invalid"}}}), {status: 200});
-    await expect(validateSteamTicket("bad", {appId: "1", apiKey: "k", identity: "legion"}, fetcher))
-      .rejects.toThrow("Steam ticket rejected");
+    const fetcher = async () =>
+      new Response(JSON.stringify({ response: { params: { result: "Invalid" } } }), { status: 200 });
+    await expect(validateSteamTicket("bad", { appId: "1", apiKey: "k", identity: "legion" }, fetcher)).rejects.toThrow(
+      "Steam ticket rejected",
+    );
   });
 
   test("validates an Itch session key", async () => {
     const fetcher = async (_url: string, init?: RequestInit) => {
       expect((init?.headers as Record<string, string>).Authorization).toBe("itch-key");
-      return new Response(JSON.stringify({user: {id: 42}}), {status: 200});
+      return new Response(JSON.stringify({ user: { id: 42 } }), { status: 200 });
     };
     await expect(validateItchKey("itch-key", fetcher)).resolves.toBe("42");
   });

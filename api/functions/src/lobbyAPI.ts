@@ -1,10 +1,10 @@
-import {onRequest} from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import admin, {corsMiddleware, getUID, performLockedOperation} from "./APIsetup";
+import admin, { corsMiddleware, getUID, performLockedOperation } from "./APIsetup";
 
 const db = admin.firestore();
 
-export const createLobby = onRequest({memory: "512MiB"}, (request, response) =>
+export const createLobby = onRequest({ memory: "512MiB" }, (request, response) =>
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
@@ -14,30 +14,32 @@ export const createLobby = onRequest({memory: "512MiB"}, (request, response) =>
         return;
       }
 
-      const result = await performLockedOperation(uid, () => db.runTransaction(async (transaction) => {
-        const [playerDoc, opponentDoc] = await Promise.all([
-          transaction.get(db.collection("players").doc(uid)),
-          transaction.get(db.collection("players").doc(opponentUID)),
-        ]);
-        if (!playerDoc.exists || !opponentDoc.exists) throw new Error("Player not found");
-        const player = playerDoc.data()!;
-        const opponent = opponentDoc.data()!;
-        const lobby = db.collection("lobbies").doc();
-        transaction.create(lobby, {
-          creatorUID: uid,
-          opponentUID,
-          avatar: player.avatar,
-          nickname: player.name,
-          opponentNickname: opponent.name,
-          elo: player.elo,
-          league: player.league,
-          rank: player.leagueStats?.rank || 0,
-          type: "friend",
-          status: "pending",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        return {lobbyId: lobby.id};
-      }));
+      const result = await performLockedOperation(uid, () =>
+        db.runTransaction(async (transaction) => {
+          const [playerDoc, opponentDoc] = await Promise.all([
+            transaction.get(db.collection("players").doc(uid)),
+            transaction.get(db.collection("players").doc(opponentUID)),
+          ]);
+          if (!playerDoc.exists || !opponentDoc.exists) throw new Error("Player not found");
+          const player = playerDoc.data()!;
+          const opponent = opponentDoc.data()!;
+          const lobby = db.collection("lobbies").doc();
+          transaction.create(lobby, {
+            creatorUID: uid,
+            opponentUID,
+            avatar: player.avatar,
+            nickname: player.name,
+            opponentNickname: opponent.name,
+            elo: player.elo,
+            league: player.league,
+            rank: player.leagueStats?.rank || 0,
+            type: "friend",
+            status: "pending",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          return { lobbyId: lobby.id };
+        }),
+      );
       response.status(200).send(result);
     } catch (error) {
       logger.error("createLobby error:", error);
@@ -46,7 +48,7 @@ export const createLobby = onRequest({memory: "512MiB"}, (request, response) =>
   }),
 );
 
-export const cancelLobby = onRequest({memory: "512MiB"}, (request, response) =>
+export const cancelLobby = onRequest({ memory: "512MiB" }, (request, response) =>
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
@@ -57,9 +59,9 @@ export const cancelLobby = onRequest({memory: "512MiB"}, (request, response) =>
         if (!snapshot.exists) throw new Error("Lobby not found");
         if (data?.creatorUID !== uid) throw new Error("Only the creator can cancel the lobby");
         if (data?.status !== "pending") throw new Error("Lobby is no longer pending");
-        transaction.update(lobby, {status: "cancelled"});
+        transaction.update(lobby, { status: "cancelled" });
       });
-      response.status(200).send({status: "cancelled"});
+      response.status(200).send({ status: "cancelled" });
     } catch (error) {
       logger.error("cancelLobby error:", error);
       response.status(400).send("Unable to cancel lobby");
@@ -67,7 +69,7 @@ export const cancelLobby = onRequest({memory: "512MiB"}, (request, response) =>
   }),
 );
 
-export const getLobbyDetails = onRequest({memory: "512MiB"}, (request, response) =>
+export const getLobbyDetails = onRequest({ memory: "512MiB" }, (request, response) =>
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);

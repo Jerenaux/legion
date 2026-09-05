@@ -1,40 +1,40 @@
 .rosterContainer {
-    max-width: 1024px;
-    margin: auto;
+  max-width: 1024px;
+  margin: auto;
 }
 
 .rosters {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 50px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 50px;
 }
 
 .addCardContainer {
-    width: 304px;
-    height: 86px;
-    display: flex;
-    justify-content: flex-end;
-    cursor: pointer;
+  width: 304px;
+  height: 86px;
+  display: flex;
+  justify-content: flex-end;
+  cursor: pointer;
 }
 
 .addCard {
-    width: 258px;
-    height: 76px;
-    background-color: #1c1f25;
-    border: 1px solid #000000;
-    border-radius: 6px;
-    margin-right: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  width: 258px;
+  height: 76px;
+  background-color: #1c1f25;
+  border: 1px solid #000000;
+  border-radius: 6px;
+  margin-right: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .addCard:hover {
-    background-color: #242830;
+  background-color: #242830;
 }
 
 .addCard img {
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 }

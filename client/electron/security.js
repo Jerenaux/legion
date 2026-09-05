@@ -11,4 +11,4 @@ function isSafeExternalURL(value) {
   }
 }
 
-module.exports = {isTrustedSender, isSafeExternalURL};
+module.exports = { isTrustedSender, isSafeExternalURL };

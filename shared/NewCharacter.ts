@@ -1,18 +1,22 @@
 import { Class, Stat, statFieldsByIndex } from "./enums";
 import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
-import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
-  from "./sprites";
+import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites } from "./sprites";
 import { male_names, female_names } from "./names";
 import { selectStatToLevelUp, increaseStat, getSPIncrement } from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
-import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
+import {
+  LOTSA_MP,
+  BASE_CHARACTER_CARRYING_CAPACITY,
+  STARTING_WHITE_MAGE_SPELLS,
+  STARTING_BLACK_MAGE_SPELLS,
+} from "./config";
 import { getSpellById, getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
   M,
-  F
+  F,
 }
 export class NewCharacter {
   name: string;
@@ -32,13 +36,13 @@ export class NewCharacter {
   skills: number[];
 
   constructor(characterClass = Class.RANDOM, level = 1, unicornBonus = false, isAI = false) {
-    console.log(`[NewCharacter:constructor] Creating new character with class ${characterClass}, level ${level}, unicornBonus ${unicornBonus}, isAI ${isAI}`);
+    console.log(
+      `[NewCharacter:constructor] Creating new character with class ${characterClass}, level ${level}, unicornBonus ${unicornBonus}, isAI ${isAI}`,
+    );
     if (characterClass === Class.RANDOM) {
       const candidates = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
       // Get random value from candidates
-      this.characterClass = candidates[
-        Math.floor(Math.random() * candidates.length)
-      ];
+      this.characterClass = candidates[Math.floor(Math.random() * candidates.length)];
     } else {
       this.characterClass = characterClass;
     }
@@ -141,13 +145,9 @@ export class NewCharacter {
       case Class.WARRIOR:
         return warriorSprites[Math.floor(Math.random() * warriorSprites.length)];
       case Class.WHITE_MAGE:
-        return whiteMageSprites[
-          Math.floor(Math.random() * whiteMageSprites.length)
-        ];
+        return whiteMageSprites[Math.floor(Math.random() * whiteMageSprites.length)];
       case Class.BLACK_MAGE:
-        return blackMageSprites[
-          Math.floor(Math.random() * blackMageSprites.length)
-        ];
+        return blackMageSprites[Math.floor(Math.random() * blackMageSprites.length)];
       case Class.THIEF:
         return thiefSprites[Math.floor(Math.random() * thiefSprites.length)];
     }
@@ -267,43 +267,41 @@ export class NewCharacter {
 
   getCharacterData(includePrice = false): DBCharacterData {
     // Convert stats from enum keys to string keys for DB storage
-    const validStats = statFieldsByIndex.filter(key => 
-        Stat[key.toUpperCase() as keyof typeof Stat] !== Stat.NONE
-    );
+    const validStats = statFieldsByIndex.filter((key) => Stat[key.toUpperCase() as keyof typeof Stat] !== Stat.NONE);
 
     const dbStats = Object.fromEntries(
-        // @ts-ignore: Stat indexing is actually safe here
-        validStats.map(key => [key, this.stats[Stat[key.toUpperCase() as keyof typeof Stat]]])
+      // @ts-ignore: Stat indexing is actually safe here
+      validStats.map((key) => [key, this.stats[Stat[key.toUpperCase() as keyof typeof Stat]]]),
     );
     const dbEquipmentBonuses = Object.fromEntries(
-        // @ts-ignore: Stat indexing is actually safe here
-        validStats.map(key => [key, this.equipment_bonuses[Stat[key.toUpperCase() as keyof typeof Stat]]])
+      // @ts-ignore: Stat indexing is actually safe here
+      validStats.map((key) => [key, this.equipment_bonuses[Stat[key.toUpperCase() as keyof typeof Stat]]]),
     );
     const dbSpBonuses = Object.fromEntries(
-        // @ts-ignore: Stat indexing is actually safe here
-        validStats.map(key => [key, this.sp_bonuses[Stat[key.toUpperCase() as keyof typeof Stat]]])
+      // @ts-ignore: Stat indexing is actually safe here
+      validStats.map((key) => [key, this.sp_bonuses[Stat[key.toUpperCase() as keyof typeof Stat]]]),
     );
 
     const data: DBCharacterData = {
-        name: this.name,
-        portrait: this.portrait,
-        class: this.characterClass,
-        level: this.level,
-        xp: 0,
-        sp: 0,
-        allTimeSP: 0,
-        stats: dbStats,
-        carrying_capacity: this.carrying_capacity,
-        carrying_capacity_bonus: this.carrying_capacity_bonus,
-        skill_slots: this.skill_slots,
-        inventory: this.inventory,
-        equipment: this.equipment,
-        equipment_bonuses: dbEquipmentBonuses,
-        sp_bonuses: dbSpBonuses,
-        skills: this.skills
+      name: this.name,
+      portrait: this.portrait,
+      class: this.characterClass,
+      level: this.level,
+      xp: 0,
+      sp: 0,
+      allTimeSP: 0,
+      stats: dbStats,
+      carrying_capacity: this.carrying_capacity,
+      carrying_capacity_bonus: this.carrying_capacity_bonus,
+      skill_slots: this.skill_slots,
+      inventory: this.inventory,
+      equipment: this.equipment,
+      equipment_bonuses: dbEquipmentBonuses,
+      sp_bonuses: dbSpBonuses,
+      skills: this.skills,
     };
     if (includePrice) {
-        data.price = this.getPrice();
+      data.price = this.getPrice();
     }
     return data;
   }
@@ -318,13 +316,17 @@ export function getSpells(characterClass: Class, level: number, skill_slots: num
     case Class.WHITE_MAGE:
       if (!isAI) return STARTING_WHITE_MAGE_SPELLS;
       // Remove spells that are already in STARTING_WHITE_MAGE_SPELLS
-      spells = spells.filter(spell => !STARTING_WHITE_MAGE_SPELLS.includes(spell));
+      spells = spells.filter((spell) => !STARTING_WHITE_MAGE_SPELLS.includes(spell));
       // Select `skill_slots` random spells from spells
-      return STARTING_WHITE_MAGE_SPELLS.concat(spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_WHITE_MAGE_SPELLS.length ));
+      return STARTING_WHITE_MAGE_SPELLS.concat(
+        spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_WHITE_MAGE_SPELLS.length),
+      );
     case Class.BLACK_MAGE:
       if (!isAI) return STARTING_BLACK_MAGE_SPELLS;
-      spells = spells.filter(spell => !STARTING_BLACK_MAGE_SPELLS.includes(spell));
-      const randomSpells = spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_BLACK_MAGE_SPELLS.length );
+      spells = spells.filter((spell) => !STARTING_BLACK_MAGE_SPELLS.includes(spell));
+      const randomSpells = spells
+        .sort(() => Math.random() - 0.5)
+        .slice(0, skill_slots - STARTING_BLACK_MAGE_SPELLS.length);
       const result = STARTING_BLACK_MAGE_SPELLS.concat(randomSpells);
       return result;
     case Class.THIEF:
@@ -340,7 +342,7 @@ export function setUpInventory(characterClass: Class, level: number, carrying_ca
 
   // If the character is not a mage, filter out mage specific items
   if (characterClass !== Class.WHITE_MAGE && characterClass !== Class.BLACK_MAGE) {
-    consumables = consumables.filter(item => !MAGE_SPECIFIC_ITEMS.includes(item));
+    consumables = consumables.filter((item) => !MAGE_SPECIFIC_ITEMS.includes(item));
   }
 
   // For each available slot, add a random consumable or possibly nothing

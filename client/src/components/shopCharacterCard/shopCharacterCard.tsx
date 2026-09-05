@@ -1,20 +1,20 @@
 // ShopCharacterCard.tsx
-import './shopCharacterCard.style.css';
-import { h, Component } from 'preact';
-import { classEnumToString, getSpeedClass, getSpritePath, getStatEnum } from '../utils';
-import { modalData } from '../shopContent/ShopContent';
+import "./shopCharacterCard.style.css";
+import { h, Component } from "preact";
+import { classEnumToString, getSpeedClass, getSpritePath, getStatEnum } from "../utils";
+import { modalData } from "../shopContent/ShopContent";
 
-import goldIcon from '@assets/gold_icon.png';
-import { spells } from '@legion/shared/Spells';
-import { mapFrameToCoordinates } from '../utils';
-import { Target, RarityColor, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from '@legion/shared/enums';
-import { BaseSpell } from '@legion/shared/BaseSpell';
+import goldIcon from "@assets/gold_icon.png";
+import { spells } from "@legion/shared/Spells";
+import { mapFrameToCoordinates } from "../utils";
+import { Target, RarityColor, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from "@legion/shared/enums";
+import { BaseSpell } from "@legion/shared/BaseSpell";
 
-import spellsSpritesheet from '@assets/spells.png';
-import mpIcon from '@assets/stats_icons/mp_icon.png';
-import cooldownIcon from '@assets/inventory/cd_icon.png';
-import targetIcon from '@assets/inventory/target_icon.png';
-import cancelIcon from '@assets/inventory/cancel_icon.png';
+import spellsSpritesheet from "@assets/spells.png";
+import mpIcon from "@assets/stats_icons/mp_icon.png";
+import cooldownIcon from "@assets/inventory/cd_icon.png";
+import targetIcon from "@assets/inventory/target_icon.png";
+import cancelIcon from "@assets/inventory/cancel_icon.png";
 
 interface ShopCharacteCardProps {
   key: number;
@@ -33,7 +33,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
     this.state = {
       curItem: null,
       shopCharacterCardDialogShow: false,
-    }
+    };
   }
 
   render() {
@@ -49,9 +49,9 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
     const statColor = (stat: string) => {
       return {
-        backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(stat)]]
-      }
-    }
+        backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(stat)]],
+      };
+    };
 
     const modalData: modalData = {
       id: data.id,
@@ -59,19 +59,22 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
       frame: -1,
       url: data.portrait,
       price: data.price,
-      isCharacter: true
-    }
-
+      isCharacter: true,
+    };
 
     const getSpell = (spellId) => {
-      return spells.find(item => item.id == spellId);
-    }
+      return spells.find((item) => item.id == spellId);
+    };
 
     return (
-      <div className="shop-character-card-container" key={this.props.key} onClick={(e) => {
-        this.props.handleOpenModal(e, modalData); 
-        this.setState({shopCharacterCardDialogShow: false});  
-      }}>
+      <div
+        className="shop-character-card-container"
+        key={this.props.key}
+        onClick={(e) => {
+          this.props.handleOpenModal(e, modalData);
+          this.setState({ shopCharacterCardDialogShow: false });
+        }}
+      >
         <div className="shop-character-card-title">
           <div className="shop-character-card-title-name">
             <span>{data.name}</span>
@@ -91,7 +94,9 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
             {data.skills.map((item, i) => (
               <div
                 key={i}
-                style={{ backgroundImage: `linear-gradient(to bottom right, ${RarityColor[getSpell(item)?.rarity]}, #1c1f25)` }}
+                style={{
+                  backgroundImage: `linear-gradient(to bottom right, ${RarityColor[getSpell(item)?.rarity]}, #1c1f25)`,
+                }}
                 className="shop-character-card-slot"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -103,7 +108,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
                   style={{
                     backgroundImage: `url(${spellsSpritesheet})`,
                     backgroundPosition: `-${mapFrameToCoordinates(getSpell(item).frame).x}px -${mapFrameToCoordinates(getSpell(item).frame).y}px`,
-                    cursor: 'pointer',
+                    cursor: "pointer",
                   }}
                 />
               </div>
@@ -111,9 +116,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
             {Array.from({ length: data.skill_slots }, (_, i) => {
               if (i >= data.skills.length) {
-                return (
-                  <div key={i} className="shop-character-card-slot"></div>
-                )
+                return <div key={i} className="shop-character-card-slot"></div>;
               }
             })}
           </div>
@@ -125,10 +128,13 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
               className="shop-character-card-dialog-container"
             >
               <div className="shop-character-card-dialog-wrapper">
-                <div className="shop-character-card-dialog-container-image" style={{
-                  backgroundImage: `url(spells.png)`,
-                  backgroundPosition: `-${mapFrameToCoordinates(this.state.curItem?.frame).x}px -${mapFrameToCoordinates(this.state.curItem?.frame).y}px`,
-                }} />
+                <div
+                  className="shop-character-card-dialog-container-image"
+                  style={{
+                    backgroundImage: `url(spells.png)`,
+                    backgroundPosition: `-${mapFrameToCoordinates(this.state.curItem?.frame).x}px -${mapFrameToCoordinates(this.state.curItem?.frame).y}px`,
+                  }}
+                />
               </div>
               <p className="shop-character-card-dialog-name">{this.state.curItem?.name}</p>
               <p className="shop-character-card-dialog-desc">{this.state.curItem?.description}</p>
@@ -147,11 +153,16 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
                 </div>
               </div>
               <div className="dialog-button-container">
-                <button className="dialog-decline" onClick={() => this.setState({ shopCharacterCardDialogShow: false })}><img src={cancelIcon} alt="decline" />Cancel</button>
+                <button
+                  className="dialog-decline"
+                  onClick={() => this.setState({ shopCharacterCardDialogShow: false })}
+                >
+                  <img src={cancelIcon} alt="decline" />
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
-
         </div>
 
         <div className="shop-character-card-effect-container">

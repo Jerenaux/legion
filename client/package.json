@@ -81,7 +81,12 @@
       {
         "from": "node_modules/steamworks.js",
         "to": "steamworks.js",
-        "filter": ["index.js", "package.json", "LICENSE", "dist/**/*"]
+        "filter": [
+          "index.js",
+          "package.json",
+          "LICENSE",
+          "dist/**/*"
+        ]
       }
     ],
     "npmRebuild": false,
@@ -103,11 +108,15 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "public/logo.png",

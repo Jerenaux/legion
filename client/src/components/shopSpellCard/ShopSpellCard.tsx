@@ -1,22 +1,22 @@
 // ShopSpellCard.tsx
-import './ShopSpellCard.style.css'
-import { h, Component, createRef } from 'preact';
+import "./ShopSpellCard.style.css";
+import { h, Component, createRef } from "preact";
 import { Class, InventoryType, RarityColor, Target } from "@legion/shared/enums";
-import { BaseSpell } from '@legion/shared/BaseSpell';
-import { getSpeedClass, mapFrameToCoordinates } from '../utils';
+import { BaseSpell } from "@legion/shared/BaseSpell";
+import { getSpeedClass, mapFrameToCoordinates } from "../utils";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
 // Import image assets
-import spellsSpritesheet from '@assets/spells.png';
-import warriorIcon from '@assets/shop/warrior_icon.png';
-import mageIcon from '@assets/shop/mage_icon.png';
-import itemCountIcon from '@assets/shop/item_count_icon.png';
-import whiteBoxBg from '@assets/shop/white_box_bg.png';
-import purpleBoxBg from '@assets/shop/purple_box_bg.png';
-import mpIcon from '@assets/stats_icons/mp_icon.png';
-import cdIcon from '@assets/inventory/cd_icon.png';
-import targetIcon from '@assets/inventory/target_icon.png';
-import goldIcon from '@assets/gold_icon.png';
+import spellsSpritesheet from "@assets/spells.png";
+import warriorIcon from "@assets/shop/warrior_icon.png";
+import mageIcon from "@assets/shop/mage_icon.png";
+import itemCountIcon from "@assets/shop/item_count_icon.png";
+import whiteBoxBg from "@assets/shop/white_box_bg.png";
+import purpleBoxBg from "@assets/shop/purple_box_bg.png";
+import mpIcon from "@assets/stats_icons/mp_icon.png";
+import cdIcon from "@assets/inventory/cd_icon.png";
+import targetIcon from "@assets/inventory/target_icon.png";
+import goldIcon from "@assets/gold_icon.png";
 
 interface modalData {
   id: string | number;
@@ -39,62 +39,62 @@ class ShopSpellCard extends Component<ShopCardProps> {
 
   componentDidMount() {
     if (this.props.isHighlighted && this.cardRef.current) {
-      this.cardRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center'
+      this.cardRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
       });
     }
   }
 
   componentDidUpdate(prevProps: ShopCardProps) {
     if (!prevProps.isHighlighted && this.props.isHighlighted && this.cardRef.current) {
-      this.cardRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center'
+      this.cardRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
       });
     }
   }
 
   render() {
     const getRarityValue = (effort) => {
-      if(effort < 10) {
-        return {val: "Common", clr: "cyan"};
-      } else if(effort < 25) {
-        return {val: "Rare", clr: "tomato"};
-      } else if(effort < 50) {
-        return {val: "Epic", clr: "red"};
+      if (effort < 10) {
+        return { val: "Common", clr: "cyan" };
+      } else if (effort < 25) {
+        return { val: "Rare", clr: "tomato" };
+      } else if (effort < 50) {
+        return { val: "Epic", clr: "red" };
       } else {
-        return {val: "Legendary", clr: "orange"};
+        return { val: "Legendary", clr: "orange" };
       }
-    }
+    };
 
-    const { data } = this.props; 
+    const { data } = this.props;
 
     const classStyle = (classes: Class) => {
       return {
-        backgroundImage: `url(${classes === Class.BLACK_MAGE ? purpleBoxBg : whiteBoxBg})`
-      }
-    }
+        backgroundImage: `url(${classes === Class.BLACK_MAGE ? purpleBoxBg : whiteBoxBg})`,
+      };
+    };
 
     const titleStyle = {
-      borderRadius: '4px',
-    }
+      borderRadius: "4px",
+    };
 
     const modalData: modalData = {
       id: data.id,
       name: data.name,
       frame: data.frame,
       url: spellsSpritesheet,
-      price: data.price
-    }
+      price: data.price,
+    };
 
     const coordinates = mapFrameToCoordinates(data.frame);
 
     return (
-      <div 
+      <div
         ref={this.cardRef}
-        className={`spell-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`} 
-        key={this.props.key} 
+        className={`spell-card-container ${this.props.isHighlighted ? "feature-highlight" : ""}`}
+        key={this.props.key}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
       >
         <div className="spell-card-title" style={titleStyle}>
@@ -111,10 +111,13 @@ class ShopSpellCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="spell-card-content">
-          <div className="shop-portrait" style={{ 
-                backgroundImage: `url(${spellsSpritesheet})`,
-                backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
-            }} />
+          <div
+            className="shop-portrait"
+            style={{
+              backgroundImage: `url(${spellsSpritesheet})`,
+              backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
+            }}
+          />
           <div className="shop-card-class-container">
             {data.classes.map((classes, index) => (
               <div key={index} className="spell-card-class" style={classStyle(classes)}>
@@ -123,7 +126,9 @@ class ShopSpellCard extends Component<ShopCardProps> {
             ))}
           </div>
         </div>
-        <p data-tooltip-id={`spell-desc-tooltip-${data.id}`} className="spell-card-description">{data.description}</p>
+        <p data-tooltip-id={`spell-desc-tooltip-${data.id}`} className="spell-card-description">
+          {data.description}
+        </p>
         <div className="spell-card-effect-container">
           <div className="spell-card-effect">
             <img src={mpIcon} alt="cost" />
@@ -138,8 +143,8 @@ class ShopSpellCard extends Component<ShopCardProps> {
             <span>{Target[data.target]}</span>
           </div>
         </div>
-        <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '11px', fontFamily: 'Kim'}}>
+        <div style={{ lineHeight: "0.5" }}>
+          <span style={{ color: `${getRarityValue(data.effort).clr}`, fontSize: "11px", fontFamily: "Kim" }}>
             {getRarityValue(data.effort).val}
           </span>
         </div>

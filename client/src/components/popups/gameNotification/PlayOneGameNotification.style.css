@@ -7,12 +7,14 @@
   border: 0.1vw solid #00ffff;
   border-radius: 8px;
   padding: 16px 24px;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(0, 255, 255, 0.3),
     0 0 20px rgba(0, 255, 255, 0.2),
     inset 0 0 8px rgba(0, 255, 255, 0.2);
   z-index: 1000;
-  animation: slideUp 0.3s ease-out, dialogueGlow 2s ease-in-out infinite;
+  animation:
+    slideUp 0.3s ease-out,
+    dialogueGlow 2s ease-in-out infinite;
 }
 
 .game-notification-content {
@@ -76,19 +78,19 @@
 
 @keyframes dialogueGlow {
   0% {
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(0, 255, 255, 0.3),
       0 0 20px rgba(0, 255, 255, 0.2),
       inset 0 0 8px rgba(0, 255, 255, 0.2);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 15px rgba(0, 255, 255, 0.4),
       0 0 30px rgba(0, 255, 255, 0.3),
       inset 0 0 12px rgba(0, 255, 255, 0.3);
   }
   100% {
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(0, 255, 255, 0.3),
       0 0 20px rgba(0, 255, 255, 0.2),
       inset 0 0 8px rgba(0, 255, 255, 0.2);
@@ -115,7 +117,7 @@
     font-size: 0.9rem;
     /* transform: scale(0.5); */
   }
-  
+
   .game-notification-content {
     gap: 12px;
   }
@@ -126,7 +128,7 @@
     padding: 3px;
     padding-left: 4px;
   }
-  
+
   .game-notification-header {
     font-size: 0.9rem;
   }
@@ -250,4 +252,4 @@
     height: 20px;
     font-size: 1rem;
   }
-} 
+}

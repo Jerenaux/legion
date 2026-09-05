@@ -2,121 +2,120 @@ import { SpeedClass, Stat } from "@legion/shared/enums";
 import { ServerPlayer } from "./ServerPlayer";
 
 interface TurnQueueItem {
-    character: ServerPlayer;
-    nextActionTime: number;
-    passCount: number;
+  character: ServerPlayer;
+  nextActionTime: number;
+  passCount: number;
 }
 
 const ACTION_COOLDOWNS = {
-    [SpeedClass.PASS]: 60,      // Base cooldown for passing
-    [SpeedClass.FAST]: 100,    
-    [SpeedClass.NORMAL]: 150,   
-    [SpeedClass.SLOW]: 250      
+  [SpeedClass.PASS]: 60, // Base cooldown for passing
+  [SpeedClass.FAST]: 100,
+  [SpeedClass.NORMAL]: 150,
+  [SpeedClass.SLOW]: 250,
 };
 
 export class TurnSystem {
-    private currentTime: number;
-    private turnQueue: TurnQueueItem[];
+  private currentTime: number;
+  private turnQueue: TurnQueueItem[];
 
-    constructor() {
-        this.currentTime = 0;
-        this.turnQueue = [];
+  constructor() {
+    this.currentTime = 0;
+    this.turnQueue = [];
+  }
+
+  // When initializing combat, compute initial turn order
+  initializeTurnOrder(characters: ServerPlayer[]) {
+    this.turnQueue = characters.map((char) => ({
+      character: char,
+      nextActionTime: this.getInitialActionTime(char.getStat(Stat.SPEED)),
+      passCount: 0,
+    }));
+
+    // Sort by nextActionTime ascending
+    this.sortQueue();
+  }
+
+  getInitialActionTime(speed) {
+    // Higher speed = lower initial action time
+    // Base value of 1001 gives us room for variation
+    return 1001 - speed * 5;
+  }
+
+  // After a character takes an action
+  processAction(character: ServerPlayer, actionType: SpeedClass) {
+    const queueItem = this.turnQueue.find((c) => c.character === character);
+    if (!queueItem) return;
+
+    // Get base cooldown for the action
+    const baseCooldown = ACTION_COOLDOWNS[actionType];
+
+    const charSpeed = character.getStat(Stat.SPEED);
+
+    // Compute new action time:
+    // - Start from current time
+    // - Add cooldown modified by speed (faster characters recover faster)
+    // - Add small random factor to prevent perfect loops
+    const speedMultiplier = 1 - charSpeed * 0.0045; // Speed reduces cooldown by 0.4% per point
+    const randomVariation = Math.random() * 10 - 5; // ±5 variation
+    let timeIncrement = baseCooldown * speedMultiplier + randomVariation;
+
+    // Find the next fastest actor's time (for all actions)
+    const otherActors = this.turnQueue.filter((item) => item.character !== character && item.character.isAlive());
+
+    if (otherActors.length > 0) {
+      const nextFastestTime = Math.min(...otherActors.map((item) => item.nextActionTime));
+      // Ensure we go after the next fastest actor
+      const minimumNextTime = nextFastestTime + 1;
+      const requiredIncrement = minimumNextTime - this.currentTime;
+      timeIncrement = Math.max(timeIncrement, requiredIncrement);
     }
 
-    // When initializing combat, compute initial turn order
-    initializeTurnOrder(characters: ServerPlayer[]) {
-        this.turnQueue = characters.map(char => ({
-            character: char,
-            nextActionTime: this.getInitialActionTime(char.getStat(Stat.SPEED)),
-            passCount: 0
-        }));
-        
-        // Sort by nextActionTime ascending
-        this.sortQueue();
+    // Handle pass count
+    if (actionType === SpeedClass.PASS) {
+      queueItem.passCount++;
+    } else {
+      queueItem.passCount = 0;
     }
 
-    getInitialActionTime(speed) {
-        // Higher speed = lower initial action time
-        // Base value of 1001 gives us room for variation
-        return 1001 - (speed * 5);
-    }
+    queueItem.nextActionTime = this.currentTime + timeIncrement;
+    this.sortQueue();
+  }
 
-    // After a character takes an action
-    processAction(character: ServerPlayer, actionType: SpeedClass) {
-        const queueItem = this.turnQueue.find(c => c.character === character);
-        if (!queueItem) return;
+  // Get the next character that can act
+  getNextActor(): ServerPlayer {
+    if (this.turnQueue.length === 0) return null;
 
-        // Get base cooldown for the action
-        const baseCooldown = ACTION_COOLDOWNS[actionType];
-        
-        const charSpeed = character.getStat(Stat.SPEED);
-        
-        // Compute new action time:
-        // - Start from current time
-        // - Add cooldown modified by speed (faster characters recover faster)
-        // - Add small random factor to prevent perfect loops
-        const speedMultiplier = 1 - (charSpeed * 0.0045); // Speed reduces cooldown by 0.4% per point
-        const randomVariation = Math.random() * 10 - 5; // ±5 variation
-        let timeIncrement = (baseCooldown * speedMultiplier) + randomVariation;
-        
-        // Find the next fastest actor's time (for all actions)
-        const otherActors = this.turnQueue.filter(item => 
-            item.character !== character && 
-            item.character.isAlive()
-        );
-        
-        if (otherActors.length > 0) {
-            const nextFastestTime = Math.min(...otherActors.map(item => item.nextActionTime));
-            // Ensure we go after the next fastest actor
-            const minimumNextTime = nextFastestTime + 1;
-            const requiredIncrement = minimumNextTime - this.currentTime;
-            timeIncrement = Math.max(timeIncrement, requiredIncrement);
-        }
-        
-        // Handle pass count
-        if (actionType === SpeedClass.PASS) {
-            queueItem.passCount++;
-        } else {
-            queueItem.passCount = 0;
-        }
-        
-        queueItem.nextActionTime = this.currentTime + timeIncrement;
-        this.sortQueue();
-    }
+    // Get the first character that is alive
+    const aliveQueue = this.turnQueue.filter((item) => item.character.isAlive());
+    if (aliveQueue.length === 0) return null;
 
-    // Get the next character that can act
-    getNextActor(): ServerPlayer {
-        if (this.turnQueue.length === 0) return null;
+    // Advance time to next action
+    this.currentTime = aliveQueue[0].nextActionTime;
+    return aliveQueue[0].character;
+  }
 
-        // Get the first character that is alive
-        const aliveQueue = this.turnQueue.filter(item => item.character.isAlive());
-        if (aliveQueue.length === 0) return null;
-        
-        // Advance time to next action
-        this.currentTime = aliveQueue[0].nextActionTime;
-        return aliveQueue[0].character;
-    }
+  sortQueue() {
+    this.turnQueue.sort((a, b) => a.nextActionTime - b.nextActionTime);
+  }
 
-    sortQueue() {
-        this.turnQueue.sort((a, b) => a.nextActionTime - b.nextActionTime);
-    }
+  getQueueData() {
+    return this.turnQueue
+      .filter((item) => item.character.isAlive())
+      .map((item, i) => {
+        return {
+          num: item.character.num,
+          team: item.character.team.id,
+          position: i,
+        };
+      });
+  }
 
-    getQueueData() {
-        return this.turnQueue.filter(item => item.character.isAlive()).map((item, i) => {
-            return {
-                num: item.character.num,
-                team: item.character.team.id,
-                position: i,
-            }
-        });
-    }
-
-    addCharacter(character: ServerPlayer) {
-        this.turnQueue.push({
-            character: character,
-            nextActionTime: this.getInitialActionTime(character.getStat(Stat.SPEED)),
-            passCount: 0
-        });
-        this.sortQueue();
-    }
+  addCharacter(character: ServerPlayer) {
+    this.turnQueue.push({
+      character: character,
+      nextActionTime: this.getInitialActionTime(character.getStat(Stat.SPEED)),
+      passCount: 0,
+    });
+    this.sortQueue();
+  }
 }

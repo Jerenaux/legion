@@ -1,5 +1,5 @@
-import {expect, test} from "bun:test";
-import {STEAM_STORE_URL, titlePlayRoute} from "../titleScreenRoute";
+import { expect, test } from "bun:test";
+import { STEAM_STORE_URL, titlePlayRoute } from "../titleScreenRoute";
 
 test("starts newcomers in the tutorial after Play", () => {
   expect(titlePlayRoute(0)).toBe("/game/0");

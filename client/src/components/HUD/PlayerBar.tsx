@@ -1,16 +1,16 @@
-import { h, Fragment, Component } from 'preact';
+import { h, Fragment, Component } from "preact";
 import { ProgressBar } from "react-progressbar-fancy";
-import './PlayerBar.style.css';
-import hpIcon from '@assets/stats_icons/hp_icon.png';
-import mpIcon from '@assets/stats_icons/mp_icon.png';
-import { statusIcons } from '../utils';
-import { StatusEffect } from '@legion/shared/enums';
-import { StatusEffects } from '@legion/shared/interfaces';
-import { CircularTimer } from './CircularTimer';
-import ItemIcon from './NewItemIcon';
-import { InventoryType } from '@legion/shared/enums';
-import {loadGameSettings} from '../../settings';
-type EventEmitter = {on: Function; off: Function; emit: Function};
+import "./PlayerBar.style.css";
+import hpIcon from "@assets/stats_icons/hp_icon.png";
+import mpIcon from "@assets/stats_icons/mp_icon.png";
+import { statusIcons } from "../utils";
+import { StatusEffect } from "@legion/shared/enums";
+import { StatusEffects } from "@legion/shared/interfaces";
+import { CircularTimer } from "./CircularTimer";
+import ItemIcon from "./NewItemIcon";
+import { InventoryType } from "@legion/shared/enums";
+import { loadGameSettings } from "../../settings";
+type EventEmitter = { on: Function; off: Function; emit: Function };
 
 interface PlayerBarProps {
   hp: number;
@@ -35,7 +35,7 @@ interface PlayerBarProps {
 class PlayerBar extends Component<PlayerBarProps> {
   events: EventEmitter;
   state = {
-    keyboardLayout: 1 // Default to QWERTY
+    keyboardLayout: 1, // Default to QWERTY
   };
 
   constructor(props: PlayerBarProps) {
@@ -45,48 +45,48 @@ class PlayerBar extends Component<PlayerBarProps> {
   }
 
   componentDidMount() {
-    this.events.on('settingsChanged', this.handleSettingsChanged);
+    this.events.on("settingsChanged", this.handleSettingsChanged);
   }
 
   componentWillUnmount() {
-    this.events.off('settingsChanged', this.handleSettingsChanged);
+    this.events.off("settingsChanged", this.handleSettingsChanged);
   }
 
   handleSettingsChanged = (settings) => {
     this.setState({ keyboardLayout: settings.keyboardLayout });
-  }
+  };
 
   loadKeyboardLayout = () => {
     this.setState({ keyboardLayout: loadGameSettings().keyboardLayout });
-  }
+  };
 
   handleActionClick = (event: Event, index: number) => {
     event.stopPropagation();
-    this.events.emit('itemClick', index);
-  }
+    this.events.emit("itemClick", index);
+  };
 
   renderActionRow(actions: any[], startIndex: number, type: InventoryType) {
     if (!actions?.length) return null;
-    
+
     const pending = type === InventoryType.CONSUMABLES ? this.props.pendingItem : this.props.pendingSpell;
 
     return (
       <div className="player_bar_action_row">
         <div className="player_bar_actions">
           {actions.map((action, idx) => (
-            <div 
+            <div
               id={`player_hud_${type}`}
               key={idx}
-              className={`player_bar_action ${pending === idx ? 'pending-action' : ''}`}
+              className={`player_bar_action ${pending === idx ? "pending-action" : ""}`}
               style={{
-                background: 'initial',
+                background: "initial",
               }}
               onClick={(event: Event) => this.handleActionClick(event, startIndex + idx)}
             >
               <ItemIcon
                 action={action}
                 index={idx}
-                canAct={type === InventoryType.CONSUMABLES || (action?.cost <= this.props.mp)}
+                canAct={type === InventoryType.CONSUMABLES || action?.cost <= this.props.mp}
                 actionType={type}
                 keyboardLayout={this.state.keyboardLayout}
               />
@@ -100,12 +100,27 @@ class PlayerBar extends Component<PlayerBarProps> {
 
   hasPendingAction = () => {
     return this.props.pendingSpell != null || this.props.pendingItem != null;
-  }
+  };
 
-  render({ hp, maxHp, mp, maxMp, hasSpells, statuses, isPlayerTurn, 
-          turnDuration, timeLeft, turnNumber, onPassTurn, animate = true,
-          items = [], spells = [], pendingSpell, pendingItem }: PlayerBarProps) {
-     // Add mock values for each status effect (DO NOT REMOVE)
+  render({
+    hp,
+    maxHp,
+    mp,
+    maxMp,
+    hasSpells,
+    statuses,
+    isPlayerTurn,
+    turnDuration,
+    timeLeft,
+    turnNumber,
+    onPassTurn,
+    animate = true,
+    items = [],
+    spells = [],
+    pendingSpell,
+    pendingItem,
+  }: PlayerBarProps) {
+    // Add mock values for each status effect (DO NOT REMOVE)
     // statuses = {
     //   [StatusEffect.FREEZE]: 1,
     //   [StatusEffect.BURN]: 2,
@@ -118,10 +133,11 @@ class PlayerBar extends Component<PlayerBarProps> {
     const isMuted = statuses?.[StatusEffect.MUTE] > 0;
     const pendingSpellCost = pendingSpell !== null ? spells[pendingSpell]?.cost : 0;
 
-    const keyboardLayout = this.state.keyboardLayout === 0 ? 'AZERTYUIOPQSDFGHJKLMWXCVBN' : 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const spellsIndex = this.state.keyboardLayout === 0 ? keyboardLayout.indexOf('W') : keyboardLayout.indexOf('Z');
+    const keyboardLayout =
+      this.state.keyboardLayout === 0 ? "AZERTYUIOPQSDFGHJKLMWXCVBN" : "QWERTYUIOPASDFGHJKLZXCVBNM";
+    const spellsIndex = this.state.keyboardLayout === 0 ? keyboardLayout.indexOf("W") : keyboardLayout.indexOf("Z");
     return (
-      <div className={`player_bar_container ${animate ? '' : 'no-progress-animation'}`}>
+      <div className={`player_bar_container ${animate ? "" : "no-progress-animation"}`}>
         <div className="player_bar">
           {isPlayerTurn ? (
             <>
@@ -130,16 +146,12 @@ class PlayerBar extends Component<PlayerBarProps> {
                   Your Turn!
                 </div> */}
                 <div className="player_bar_controls">
-                  <CircularTimer 
-                    turnDuration={turnDuration}
-                    timeLeft={timeLeft}
-                    turnNumber={turnNumber}
-                  />
-                  <button 
-                    className="player_bar_pass_turn" 
+                  <CircularTimer turnDuration={turnDuration} timeLeft={timeLeft} turnNumber={turnNumber} />
+                  <button
+                    className="player_bar_pass_turn"
                     onClick={onPassTurn}
                     disabled={this.hasPendingAction()}
-                    style={{ pointerEvents: this.hasPendingAction() ? 'none' : 'auto' }}
+                    style={{ pointerEvents: this.hasPendingAction() ? "none" : "auto" }}
                   >
                     <span>Pass</span>
                     <span>Turn</span>
@@ -152,41 +164,46 @@ class PlayerBar extends Component<PlayerBarProps> {
                     <img src={hpIcon} alt="HP" />
                     <span>HP</span>
                   </div>
-                  <ProgressBar 
-                    score={(hp / maxHp)*100} 
-                    hideText={true} 
-                    primaryColor={'#2E7D32'} 
-                    secondaryColor={'#4CAF50'} 
+                  <ProgressBar
+                    score={(hp / maxHp) * 100}
+                    hideText={true}
+                    primaryColor={"#2E7D32"}
+                    secondaryColor={"#4CAF50"}
                   />
                   <p className="player_bar_stat_value">
-                    <span style={{color: '#71deff'}}>{hp}</span> / <span>{maxHp}</span>
+                    <span style={{ color: "#71deff" }}>{hp}</span> / <span>{maxHp}</span>
                   </p>
                   <div className="player_bar_statuses">
-                    {Object.keys(statuses).map((status: string) => statuses[status] !== 0 && (
-                      <div key={status}>
-                        <img src={statusIcons[status]} alt="" />
-                        <span>{statuses[status] === -1 ? '∞' : statuses[status]}</span>
-                      </div>
-                    ))}
+                    {Object.keys(statuses).map(
+                      (status: string) =>
+                        statuses[status] !== 0 && (
+                          <div key={status}>
+                            <img src={statusIcons[status]} alt="" />
+                            <span>{statuses[status] === -1 ? "∞" : statuses[status]}</span>
+                          </div>
+                        ),
+                    )}
                   </div>
                 </div>
-                
+
                 {hasSpells && (
                   <div className="player_bar_stat">
                     <div className="player_bar_stat_icon">
                       <img src={mpIcon} alt="MP" />
                       <span>MP</span>
                     </div>
-                    <ProgressBar 
-                      score={(mp / maxMp)*100} 
-                      hideText={true} 
-                      primaryColor={'#1565C0'} 
-                      secondaryColor={'#2196F3'} 
+                    <ProgressBar
+                      score={(mp / maxMp) * 100}
+                      hideText={true}
+                      primaryColor={"#1565C0"}
+                      secondaryColor={"#2196F3"}
                     />
                     <p className="player_bar_stat_value">
-                      <span style={{
-                        color: pendingSpellCost > 0 ? '#ff6b6b' : '#71deff'
-                      }}>
+                      <span
+                        style={{
+                          color: pendingSpellCost > 0 ? "#ff6b6b" : "#71deff",
+                        }}
+                      >
                         {pendingSpellCost > 0 ? mp - pendingSpellCost : mp}
                       </span>
                       <span> / </span>
@@ -197,22 +214,19 @@ class PlayerBar extends Component<PlayerBarProps> {
               </div>
             </>
           ) : (
-            <div className="enemy_turn_banner">
-              Enemy Turn
-            </div>
+            <div className="enemy_turn_banner">Enemy Turn</div>
           )}
         </div>
-        
+
         {isPlayerTurn && (
           <div className="player_bar_actions_container">
             {this.renderActionRow(items, 0, InventoryType.CONSUMABLES)}
-            {hasSpells && (
-              isMuted ? (
-                <div className="player_bar_silenced_message">
-                  Character is Silenced!
-                </div>
-              ) : this.renderActionRow(spells, spellsIndex, InventoryType.SPELLS)
-            )}
+            {hasSpells &&
+              (isMuted ? (
+                <div className="player_bar_silenced_message">Character is Silenced!</div>
+              ) : (
+                this.renderActionRow(spells, spellsIndex, InventoryType.SPELLS)
+              ))}
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
-import { h } from 'preact';
-import './Spinner.style.css';
+import { h } from "preact";
+import "./Spinner.style.css";
 
 const Spinner = () => (
   <div className="spinner" role="status">
@@ -7,4 +7,4 @@ const Spinner = () => (
   </div>
 );
 
-export default Spinner; 
+export default Spinner;

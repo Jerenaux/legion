@@ -17,7 +17,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: .2s;
+  transition: 0.2s;
   padding-bottom: 12px;
   pointer-events: auto;
 
@@ -129,7 +129,7 @@
 }
 
 .turn_order_label {
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
@@ -161,12 +161,7 @@
   top: 50%;
   width: 15px;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(113, 222, 255, 0.4),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(113, 222, 255, 0.4), transparent);
 }
 
 .turn_order_label::before {
@@ -203,15 +198,15 @@
 }
 
 .frame-warrior {
-  background-image: url('@assets/HUD/class_icon_frame_w.png');
+  background-image: url("@assets/HUD/class_icon_frame_w.png");
 }
 
 .frame-black-mage {
-  background-image: url('@assets/HUD/class_icon_frame_bm.png');
+  background-image: url("@assets/HUD/class_icon_frame_bm.png");
 }
 
 .frame-white-mage {
-  background-image: url('@assets/HUD/class_icon_frame_wm.png');
+  background-image: url("@assets/HUD/class_icon_frame_wm.png");
 }
 
 .timeline_class_indicator img {
@@ -231,9 +226,9 @@
 }
 
 .ally_portrait {
-  background-image: url('@assets/HUD/blue_box.png');
+  background-image: url("@assets/HUD/blue_box.png");
 }
 
 .enemy_portrait {
-  background-image: url('@assets/HUD/red_box.png');
+  background-image: url("@assets/HUD/red_box.png");
 }

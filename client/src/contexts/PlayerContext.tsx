@@ -1,7 +1,7 @@
-import { createContext } from 'preact';
-import { PlayerContextData, APICharacterData, FriendData, } from '@legion/shared/interfaces';
+import { createContext } from "preact";
+import { PlayerContextData, APICharacterData, FriendData } from "@legion/shared/interfaces";
 import { League, Stat, InventoryActionType, ShopTab, LockedFeatures } from "@legion/shared/enums";
-import { Socket } from 'socket.io-client';
+import { Socket } from "socket.io-client";
 
 export interface PlayerContextState {
   player: PlayerContextData;
@@ -73,9 +73,9 @@ export const PlayerContext = createContext<{
   buyInventorySlots: (slots: number) => Promise<void>;
 }>({
   player: {
-    uid: '',
-    name: '',
-    avatar: '0',
+    uid: "",
+    name: "",
+    avatar: "0",
     lvl: 0,
     gold: 0,
     elo: 0,
@@ -95,7 +95,7 @@ export const PlayerContext = createContext<{
   },
   loaded: false,
   characters: [],
-  activeCharacterId: '',
+  activeCharacterId: "",
   characterSheetIsDirty: false,
   welcomeShown: false,
   setPlayerInfo: () => {},
@@ -116,10 +116,10 @@ export const PlayerContext = createContext<{
   socket: null,
   challengeModal: {
     show: false,
-    challengerId: '',
-    challengerName: '',
-    challengerAvatar: '',
-    lobbyId: '',
+    challengerId: "",
+    challengerName: "",
+    challengerAvatar: "",
+    lobbyId: "",
   },
   handleChallengeAccept: () => {},
   handleChallengeDecline: () => {},

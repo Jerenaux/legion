@@ -1,13 +1,13 @@
-const path = require('path');
+const path = require("path");
 
-const isDocker = process.env.NODE_ENV === 'docker';
+const isDocker = process.env.NODE_ENV === "docker";
 
 module.exports = {
-  mode: 'development', 
-  entry: './src/index.ts', 
-  target: 'node', // Important for Firebase functions
+  mode: "development",
+  entry: "./src/index.ts",
+  target: "node", // Important for Firebase functions
   stats: {
-    warnings: false
+    warnings: false,
   },
   module: {
     rules: [
@@ -15,27 +15,27 @@ module.exports = {
         test: /\.tsx?$/,
         use: [
           {
-            loader: 'ts-loader',
+            loader: "ts-loader",
             options: {
-              configFile: isDocker ? 'tsconfig.docker.json' : 'tsconfig.json'
-            }
-          }
+              configFile: isDocker ? "tsconfig.docker.json" : "tsconfig.json",
+            },
+          },
         ],
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: [".tsx", ".ts", ".js"],
     alias: {
-        '@legion/shared': path.resolve(__dirname, isDocker ? 'shared' : '../../shared'),
-      },
+      "@legion/shared": path.resolve(__dirname, isDocker ? "shared" : "../../shared"),
+    },
   },
   output: {
-    path: path.resolve(__dirname, 'lib'), // Output directory
-    filename: 'index.js', // Output file name
-    libraryTarget: 'commonjs', // !! Important for Firebase functions
+    path: path.resolve(__dirname, "lib"), // Output directory
+    filename: "index.js", // Output file name
+    libraryTarget: "commonjs", // !! Important for Firebase functions
   },
   plugins: [],
-  devtool: 'inline-source-map', // For development mode
+  devtool: "inline-source-map", // For development mode
 };

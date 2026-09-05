@@ -1,7 +1,7 @@
-import { h, Component } from 'preact';
-import { PlayerNetworkData } from '@legion/shared/interfaces';
-import CharacterCard from '../HUD/CharacterCard';
-import './TeamReveal.style.css';
+import { h, Component } from "preact";
+import { PlayerNetworkData } from "@legion/shared/interfaces";
+import CharacterCard from "../HUD/CharacterCard";
+import "./TeamReveal.style.css";
 
 interface TeamRevealProps {
   team: PlayerNetworkData[];
@@ -23,11 +23,11 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
     if (!this.state.revealedIndices[index]) {
       const newRevealedIndices = [...this.state.revealedIndices];
       newRevealedIndices[index] = true;
-      const allRevealed = newRevealedIndices.every(revealed => revealed);
-      
-      this.setState({ 
+      const allRevealed = newRevealedIndices.every((revealed) => revealed);
+
+      this.setState({
         revealedIndices: newRevealedIndices,
-        allRevealed
+        allRevealed,
       });
     }
   };
@@ -36,31 +36,26 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
     return (
       <div className="team-reveal-overlay">
         <h2 className="team-reveal-title">Click to discover your champions!</h2>
-        <p className="team-reveal-subtitle">They will form your starting team of characters than you can use in the arena!</p>
+        <p className="team-reveal-subtitle">
+          They will form your starting team of characters than you can use in the arena!
+        </p>
         <div className="team-reveal-grid">
           {this.props.team.map((character, index) => (
-            <div 
+            <div
               key={index}
-              className={`team-reveal-wrapper ${this.state.revealedIndices[index] ? 'revealed' : ''}`}
+              className={`team-reveal-wrapper ${this.state.revealedIndices[index] ? "revealed" : ""}`}
               onClick={() => this.handleRevealCharacter(index)}
             >
-              <CharacterCard
-                member={character}
-                hideXP={true}
-                isQuestionMark={!this.state.revealedIndices[index]}
-              />
+              <CharacterCard member={character} hideXP={true} isQuestionMark={!this.state.revealedIndices[index]} />
             </div>
           ))}
         </div>
         {this.state.allRevealed && (
-          <button 
-            className="team-reveal-play-button"
-            onClick={this.props.onComplete}
-          >
+          <button className="team-reveal-play-button" onClick={this.props.onComplete}>
             PLAY!
           </button>
         )}
       </div>
     );
   }
-} 
+}

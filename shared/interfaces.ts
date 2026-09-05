@@ -2,486 +2,492 @@ import { BaseEquipment } from "./BaseEquipment";
 import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
 import {
-    Stat, Target, EffectDirection, EquipmentSlot, Terrain, ChestColor,
-    StatusEffect, Class, PlayMode, League,
-    SpeedClass,
-    TargetHighlight,
-    LockedFeatures,
-    RewardType,
-    ConsumableShopCategory,
-    SpellShopCategory
+  Stat,
+  Target,
+  EffectDirection,
+  EquipmentSlot,
+  Terrain,
+  ChestColor,
+  StatusEffect,
+  Class,
+  PlayMode,
+  League,
+  SpeedClass,
+  TargetHighlight,
+  LockedFeatures,
+  RewardType,
+  ConsumableShopCategory,
+  SpellShopCategory,
 } from "./enums";
 
 export class EffectModifier {
-    stat;
-    value;
-    direction;
+  stat;
+  value;
+  direction;
 
-    constructor(stat: Stat, value: number, direction: EffectDirection) {
-        this.stat = stat;
-        this.value = value;
-        this.direction = direction;
-    }
+  constructor(stat: Stat, value: number, direction: EffectDirection) {
+    this.stat = stat;
+    this.value = value;
+    this.direction = direction;
+  }
 }
 
 export class EffectModifiers {
-    casterModifier;
-    targetModifier;
+  casterModifier;
+  targetModifier;
 
-    constructor(casterModifier: EffectModifier, targetModifier: EffectModifier) {
-        this.casterModifier = casterModifier;
-        this.targetModifier = targetModifier;
-    }
+  constructor(casterModifier: EffectModifier, targetModifier: EffectModifier) {
+    this.casterModifier = casterModifier;
+    this.targetModifier = targetModifier;
+  }
 }
 
 export interface Effect {
-    stat: Stat;
-    value: number;
-    modifiers?: EffectModifiers;
-    onKO?: boolean;
+  stat: Stat;
+  value: number;
+  modifiers?: EffectModifiers;
+  onKO?: boolean;
 }
 
-
 export interface SpellData {
-    id: number;
-    name: string;
-    description: string;
-    frame: number;
-    sfx: string;
-    vfx: string;
-    projectile?: string;
-    charge?: string;
-    speedClass: SpeedClass;
-    cost?: number;
-    target: Target;
-    radius: number;
-    effects: Effect[];
-    score: number;
-    terrain?: Terrain;
-    minLevel?: number;
-    classes?: Class[];
-    status?: StatusEffectData;
-    effort: number;
-    targetHighlight?: TargetHighlight;
-    unlock?: LockedFeatures;
-    category?: SpellShopCategory;
+  id: number;
+  name: string;
+  description: string;
+  frame: number;
+  sfx: string;
+  vfx: string;
+  projectile?: string;
+  charge?: string;
+  speedClass: SpeedClass;
+  cost?: number;
+  target: Target;
+  radius: number;
+  effects: Effect[];
+  score: number;
+  terrain?: Terrain;
+  minLevel?: number;
+  classes?: Class[];
+  status?: StatusEffectData;
+  effort: number;
+  targetHighlight?: TargetHighlight;
+  unlock?: LockedFeatures;
+  category?: SpellShopCategory;
 }
 
 export interface ConsumableData {
-    id: number;
-    name: string;
-    description: string;
-    frame: number;
-    sfx: string;
-    animation: string;
-    speedClass: SpeedClass;
-    target: Target;
-    radius?: number;
-    effects: Effect[];
-    statusRemovals?: StatusEffect[];
-    status?: StatusEffectData;
-    effort: number;
-    targetHighlight?: TargetHighlight;
-    unlock?: LockedFeatures;
-    category?: ConsumableShopCategory;
+  id: number;
+  name: string;
+  description: string;
+  frame: number;
+  sfx: string;
+  animation: string;
+  speedClass: SpeedClass;
+  target: Target;
+  radius?: number;
+  effects: Effect[];
+  statusRemovals?: StatusEffect[];
+  status?: StatusEffectData;
+  effort: number;
+  targetHighlight?: TargetHighlight;
+  unlock?: LockedFeatures;
+  category?: ConsumableShopCategory;
 }
 
 export interface EquipmentData {
-    id: number;
-    name: string;
-    description: string;
-    frame: number;
-    effects: Effect[];
-    statusEffects?: WeaponStatusEffect[];
-    slot: EquipmentSlot,
-    minLevel?: number;
-    classes?: Class[];
-    beltSize?: number;
-    effort: number;
+  id: number;
+  name: string;
+  description: string;
+  frame: number;
+  effects: Effect[];
+  statusEffects?: WeaponStatusEffect[];
+  slot: EquipmentSlot;
+  minLevel?: number;
+  classes?: Class[];
+  beltSize?: number;
+  effort: number;
 }
 
 export interface WeaponStatusEffect {
-    effect: StatusEffect;
-    chance: number;
+  effect: StatusEffect;
+  chance: number;
 }
 
 export interface CharacterUpdate {
-    id: string;
-    num: number;
-    points: number;
-    xp: number;
-    earnedXP: number;
-    level: number;
+  id: string;
+  num: number;
+  points: number;
+  xp: number;
+  earnedXP: number;
+  level: number;
 }
 export interface OutcomeData {
-    isWinner: boolean;
-    rawGrade: number;
-    grade: string;
-    xp: number;
-    gold: number;
-    characters?: CharacterUpdate[];
-    elo: number;
-    key: ChestColor;
-    chests: GameOutcomeReward[];
-    score: number;
+  isWinner: boolean;
+  rawGrade: number;
+  grade: string;
+  xp: number;
+  gold: number;
+  characters?: CharacterUpdate[];
+  elo: number;
+  key: ChestColor;
+  chests: GameOutcomeReward[];
+  score: number;
 }
 
 export type CharacterStats = {
-    [K in Exclude<Stat, Stat.NONE>]: number;
-}
+  [K in Exclude<Stat, Stat.NONE>]: number;
+};
 
 export type CharacterStatsModifiers = {
-    [K in Exclude<Stat, Stat.NONE>]: number[];
-}
+  [K in Exclude<Stat, Stat.NONE>]: number[];
+};
 
 export type CharacterStringStats = {
-    [key: string]: number;
-}
-
+  [key: string]: number;
+};
 
 export interface Equipment {
-    weapon: number;
-    armor: number;
-    helmet: number;
-    belt: number;
-    gloves: number;
-    boots: number;
-    left_ring: number;
-    right_ring: number;
-    necklace: number;
+  weapon: number;
+  armor: number;
+  helmet: number;
+  belt: number;
+  gloves: number;
+  boots: number;
+  left_ring: number;
+  right_ring: number;
+  necklace: number;
 }
 
 export interface PlayerInventory {
-    consumables: number[];
-    spells: number[];
-    equipment: number[];
+  consumables: number[];
+  spells: number[];
+  equipment: number[];
 }
 
 export interface ShopItems {
-    consumables: BaseItem[];
-    spells: BaseSpell[];
-    equipment: BaseEquipment[];
+  consumables: BaseItem[];
+  spells: BaseSpell[];
+  equipment: BaseEquipment[];
 }
 
 export interface TerrainUpdate {
-    x: number;
-    y: number;
-    terrain: Terrain;
+  x: number;
+  y: number;
+  terrain: Terrain;
 }
 
 export interface StatusEffectData {
-    effect: StatusEffect;
-    duration: number;
-    chance: number;
+  effect: StatusEffect;
+  duration: number;
+  chance: number;
 }
 
 export interface DailyLootAllAPIData {
-    [ChestColor.BRONZE]: DailyLootAPIData;
-    [ChestColor.SILVER]: DailyLootAPIData;
-    [ChestColor.GOLD]: DailyLootAPIData;
+  [ChestColor.BRONZE]: DailyLootAPIData;
+  [ChestColor.SILVER]: DailyLootAPIData;
+  [ChestColor.GOLD]: DailyLootAPIData;
 }
 
 export interface DailyLootAPIData {
-    hasKey: boolean;
-    countdown: number;
+  hasKey: boolean;
+  countdown: number;
 }
 
 export interface DailyLootAllDBData {
-    [ChestColor.BRONZE]: DailyLootDBData;
-    [ChestColor.SILVER]: DailyLootDBData;
-    [ChestColor.GOLD]: DailyLootDBData;
+  [ChestColor.BRONZE]: DailyLootDBData;
+  [ChestColor.SILVER]: DailyLootDBData;
+  [ChestColor.GOLD]: DailyLootDBData;
 }
 
 export interface DailyLootDBData {
-    hasKey: boolean;
-    time: number;
+  hasKey: boolean;
+  time: number;
 }
 export interface DBPlayerData {
-    name: string;
-    avatar: string;
-    gold: number;
-    carrying_capacity: number;
-    inventory: PlayerInventory;
-    purchasedInventorySlots: number;
-    characters: any[];
-    elo: number;
-    league: number;
-    lvl: number;
-    dailyloot: DailyLootAllDBData;
-    xp: number;
-    leagueStats: LeagueStats;
-    allTimeStats: LeagueStats;
-    friends: string[];
-    engagementStats?: EngagementStats;
+  name: string;
+  avatar: string;
+  gold: number;
+  carrying_capacity: number;
+  inventory: PlayerInventory;
+  purchasedInventorySlots: number;
+  characters: any[];
+  elo: number;
+  league: number;
+  lvl: number;
+  dailyloot: DailyLootAllDBData;
+  xp: number;
+  leagueStats: LeagueStats;
+  allTimeStats: LeagueStats;
+  friends: string[];
+  engagementStats?: EngagementStats;
 }
 
 interface LeagueStats {
-    wins: number;
-    losses: number;
-    rank: number;
-    winStreak: number;
-    lossesStreak: number;
-    nbGames: number;
-    avgAudienceScore: number;
-    avgGrade: number;
-    seasonId?: string;
+  wins: number;
+  losses: number;
+  rank: number;
+  winStreak: number;
+  lossesStreak: number;
+  nbGames: number;
+  avgAudienceScore: number;
+  avgGrade: number;
+  seasonId?: string;
 }
 
 export interface TeamData {
-    playerUID: string;
-    elo: number;
-    lvl: number;
-    playerName: string;
-    teamName: string;
-    avatar: string;
-    league: number;
-    rank: number;
-    dailyloot: DailyLootAllAPIData;
-    AIwinRatio: number;
-    completedGames: number;
-    engagementStats: any;
+  playerUID: string;
+  elo: number;
+  lvl: number;
+  playerName: string;
+  teamName: string;
+  avatar: string;
+  league: number;
+  rank: number;
+  dailyloot: DailyLootAllAPIData;
+  AIwinRatio: number;
+  completedGames: number;
+  engagementStats: any;
 }
 
 export interface GameOutcomeReward {
-    color: ChestColor;
-    content: ChestReward[];
+  color: ChestColor;
+  content: ChestReward[];
 }
 
 export interface CharacterData {
-    name: string;
-    portrait: string;
-    class: Class;
-    level: number;
-    xp: number;
-    sp: number;
-    stats: CharacterStringStats;
-    carrying_capacity: number;
-    carrying_capacity_bonus: number;
-    skill_slots: number;
-    inventory: number[];
-    equipment: Equipment;
-    equipment_bonuses: CharacterStringStats;
-    sp_bonuses: CharacterStringStats;
-    skills: number[];
-    onSale?: boolean;
-    price?: number;
+  name: string;
+  portrait: string;
+  class: Class;
+  level: number;
+  xp: number;
+  sp: number;
+  stats: CharacterStringStats;
+  carrying_capacity: number;
+  carrying_capacity_bonus: number;
+  skill_slots: number;
+  inventory: number[];
+  equipment: Equipment;
+  equipment_bonuses: CharacterStringStats;
+  sp_bonuses: CharacterStringStats;
+  skills: number[];
+  onSale?: boolean;
+  price?: number;
 }
 export interface DBCharacterData extends CharacterData {
-    allTimeSP: number;
+  allTimeSP: number;
 }
 
 export interface APICharacterData extends DBCharacterData {
-    id: string;
+  id: string;
 }
 
 export interface PlayerNetworkData {
-    portrait: string;
-    name: string;
-    x: number;
-    y: number;
-    hp: number;
-    maxHP: number;
-    statuses: any;
-    mp?: number;
-    maxMP?: number;
-    distance?: number;
-    cooldown?: number;
-    inventory?: number[];
-    spells?: number[];
-    xp?: number;
-    class: Class;
-    level: number;
-    id?: string;
-    sp?: number;
+  portrait: string;
+  name: string;
+  x: number;
+  y: number;
+  hp: number;
+  maxHP: number;
+  statuses: any;
+  mp?: number;
+  maxMP?: number;
+  distance?: number;
+  cooldown?: number;
+  inventory?: number[];
+  spells?: number[];
+  xp?: number;
+  class: Class;
+  level: number;
+  id?: string;
+  sp?: number;
 }
 
 export interface PlayerProfileData {
-    teamName: string;
-    playerName: string;
-    playerLevel: number;
-    playerRank: number;
-    playerAvatar: string;
-    playerLeague: number;
-    completedGames: number;
-    engagementStats?: EngagementStats;
+  teamName: string;
+  playerName: string;
+  playerLevel: number;
+  playerRank: number;
+  playerAvatar: string;
+  playerLeague: number;
+  completedGames: number;
+  engagementStats?: EngagementStats;
 }
 interface GamePlayerData {
-    teamId: number;
-    player: PlayerProfileData;
-    team: PlayerNetworkData[];
-    score: number;
+  teamId: number;
+  player: PlayerProfileData;
+  team: PlayerNetworkData[];
+  score: number;
 }
 
 export interface GameData {
-    general: {
-        reconnect: boolean;
-        spectator: boolean;
-        mode: PlayMode;
-    },
-    queue: any[];
-    turnee: {
-        num: number;
-        team: number;
-    },
-    player: GamePlayerData,
-    opponent: GamePlayerData,
-    terrain: TerrainUpdate[],
-    holes: {x: number, y: number}[];
+  general: {
+    reconnect: boolean;
+    spectator: boolean;
+    mode: PlayMode;
+  };
+  queue: any[];
+  turnee: {
+    num: number;
+    team: number;
+  };
+  player: GamePlayerData;
+  opponent: GamePlayerData;
+  terrain: TerrainUpdate[];
+  holes: { x: number; y: number }[];
 }
 
 export interface PlayerProps {
-    name: string;
-    number: number;
-    team: number;
-    portrait: string;
-    hp: number;
-    maxHp: number;
-    mp: number;
-    maxMp: number;
-    spells: BaseSpell[];
-    items: BaseItem[];
-    casting: boolean;
-    statuses: StatusEffects;
-    pendingSpell: number;
-    pendingItem: number;
-    isParalyzed: boolean;
-    isPlayer: boolean;
+  name: string;
+  number: number;
+  team: number;
+  portrait: string;
+  hp: number;
+  maxHp: number;
+  mp: number;
+  maxMp: number;
+  spells: BaseSpell[];
+  items: BaseItem[];
+  casting: boolean;
+  statuses: StatusEffects;
+  pendingSpell: number;
+  pendingItem: number;
+  isParalyzed: boolean;
+  isPlayer: boolean;
 }
 
 export type StatusEffects = {
-    [key in StatusEffect]: number;
-}
+  [key in StatusEffect]: number;
+};
 
 export interface TeamMember {
-    portrait: string;
-    name: string;
-    hp: number;
-    maxHP: number;
-    mp: number;
-    maxMP: number;
-    isAlive: boolean;
-    isPlayer: boolean;
-    class: Class;
-    statuses: StatusEffects;
-    xp?: number;
-    level?: number;
-    id?: string;
-    sp?: number;
+  portrait: string;
+  name: string;
+  hp: number;
+  maxHP: number;
+  mp: number;
+  maxMP: number;
+  isAlive: boolean;
+  isPlayer: boolean;
+  class: Class;
+  statuses: StatusEffects;
+  xp?: number;
+  level?: number;
+  id?: string;
+  sp?: number;
 }
 
 export interface TeamOverview {
-    members: TeamMember[];
-    player: PlayerProfileData;
-    score: number;
-    isPlayerTeam: boolean;
+  members: TeamMember[];
+  player: PlayerProfileData;
+  score: number;
+  isPlayerTeam: boolean;
 }
 
 export interface EndGameDataResults {
-    [key: string]: {
-        audience: number;
-        score: number;
-    }
+  [key: string]: {
+    audience: number;
+    score: number;
+  };
 }
 
 export interface EndGameData {
-    winner: string,
-    results: EndGameDataResults,
+  winner: string;
+  results: EndGameDataResults;
 }
 
 export interface PlayerContextData {
-    uid: string;
-    name: string;
-    avatar: string;
-    lvl: number;
-    gold: number;
-    elo: number;
-    wins: number;
-    rank: number;
-    allTimeRank: number;
-    dailyloot: DailyLootAllAPIData;
-    league: League;
-    isLoaded: boolean;
-    inventory: PlayerInventory;
-    carrying_capacity: number;
-    AIwinRatio?: number;
-    friends?: FriendData[];
-    completedGames?: number;
-    engagementStats?: any;
+  uid: string;
+  name: string;
+  avatar: string;
+  lvl: number;
+  gold: number;
+  elo: number;
+  wins: number;
+  rank: number;
+  allTimeRank: number;
+  dailyloot: DailyLootAllAPIData;
+  league: League;
+  isLoaded: boolean;
+  inventory: PlayerInventory;
+  carrying_capacity: number;
+  AIwinRatio?: number;
+  friends?: FriendData[];
+  completedGames?: number;
+  engagementStats?: any;
 }
 
 export interface PlayerDataForGame {
-    uid: string;
-    name: string;
-    teamName: string;
-    avatar: string;
-    lvl: number;
-    elo: number;
-    rank: number;
-    dailyloot: DailyLootAllAPIData;
-    league: League;
-    AIwinRatio?: number;
-    completedGames?: number;
-    engagementStats?: any;
+  uid: string;
+  name: string;
+  teamName: string;
+  avatar: string;
+  lvl: number;
+  elo: number;
+  rank: number;
+  dailyloot: DailyLootAllAPIData;
+  league: League;
+  AIwinRatio?: number;
+  completedGames?: number;
+  engagementStats?: any;
 }
 
 export interface GameReplayMessage {
-    timestamp: number;  // Milliseconds since game start
-    event: string;     // Socket event name
-    data: any;         // Event data
+  timestamp: number; // Milliseconds since game start
+  event: string; // Socket event name
+  data: any; // Event data
 }
 
 export interface LeaderboardRow {
-    rank: number;
-    player: string;
-    avatar: string;
-    elo: number;
-    wins: number;
-    losses: number;
-    winsRatio: string;
-    isPlayer: boolean;
-    chestColor: ChestColor | null;
-    isFriend: boolean;
-    isPromoted: boolean;
-    isDemoted: boolean;
-    playerId?: string | null;
+  rank: number;
+  player: string;
+  avatar: string;
+  elo: number;
+  wins: number;
+  losses: number;
+  winsRatio: string;
+  isPlayer: boolean;
+  chestColor: ChestColor | null;
+  isFriend: boolean;
+  isPromoted: boolean;
+  isDemoted: boolean;
+  playerId?: string | null;
 }
 
 export interface APILeaderboardResponse {
-    league: number;
-    seasonEnd: number;
-    highlights: any[];
-    ranking: LeaderboardRow[];
-    playerRank?: number | null;
-  }
+  league: number;
+  seasonEnd: number;
+  highlights: any[];
+  ranking: LeaderboardRow[];
+  playerRank?: number | null;
+}
 
 export interface FriendData {
-    id: string;
-    name: string;
-    avatar: string;
+  id: string;
+  name: string;
+  avatar: string;
 }
 
 export interface EngagementStats {
-    completedGames: number;
-    totalGames: number;
-    everPurchased: boolean;
-    everSpentSP: boolean;
-    everOpenedDailyLoot: boolean;
-    everEquippedConsumable: boolean;
-    everEquippedEquipment: boolean;
-    everEquippedSpell: boolean;
-    everUsedSpell: boolean;
-    everUsedItem: boolean;
-    everPlayedPractice: boolean;
-    everPlayedCasual: boolean;
-    everPlayedRanked: boolean;
-    everMoved: boolean;
-    everAttacked: boolean;
-    everSawFlames: boolean;
-    everSawIce: boolean;
-    everPoisoned: boolean;
-    everSilenced: boolean;
-    everParalyzed: boolean;
-    everLowMP: boolean;
+  completedGames: number;
+  totalGames: number;
+  everPurchased: boolean;
+  everSpentSP: boolean;
+  everOpenedDailyLoot: boolean;
+  everEquippedConsumable: boolean;
+  everEquippedEquipment: boolean;
+  everEquippedSpell: boolean;
+  everUsedSpell: boolean;
+  everUsedItem: boolean;
+  everPlayedPractice: boolean;
+  everPlayedCasual: boolean;
+  everPlayedRanked: boolean;
+  everMoved: boolean;
+  everAttacked: boolean;
+  everSawFlames: boolean;
+  everSawIce: boolean;
+  everPoisoned: boolean;
+  everSilenced: boolean;
+  everParalyzed: boolean;
+  everLowMP: boolean;
 }
 
-export type ChestReward = { type: RewardType, id: number, amount: number };
+export type ChestReward = { type: RewardType; id: number; amount: number };

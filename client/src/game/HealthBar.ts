@@ -1,5 +1,5 @@
-import RoundRectangle from 'phaser3-rex-plugins/plugins/roundrectangle.js';
-import { DARKENING_INTENSITY } from './Arena';
+import RoundRectangle from "phaser3-rex-plugins/plugins/roundrectangle.js";
+import { DARKENING_INTENSITY } from "./Arena";
 
 export class HealthBar extends Phaser.GameObjects.Container {
   private readonly barBackground: RoundRectangle;
@@ -88,7 +88,7 @@ export class HealthBar extends Phaser.GameObjects.Container {
   darken(): void {
     // Darken the main health bar
     this.hpBar.setFillStyle(this.multiplyColor(this.originalColor, DARKENING_INTENSITY * 2));
-    
+
     // Darken the background
     this.barBackground.setFillStyle(this.multiplyColor(this.originalBgColor, DARKENING_INTENSITY * 2));
   }
@@ -100,9 +100,9 @@ export class HealthBar extends Phaser.GameObjects.Container {
   }
 
   private multiplyColor(color: number, factor: number): number {
-    const r = ((color >> 16) & 0xFF) * factor;
-    const g = ((color >> 8) & 0xFF) * factor;
-    const b = (color & 0xFF) * factor;
+    const r = ((color >> 16) & 0xff) * factor;
+    const g = ((color >> 8) & 0xff) * factor;
+    const b = (color & 0xff) * factor;
     return (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
   }
 }

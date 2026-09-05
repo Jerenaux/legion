@@ -1,6 +1,6 @@
 import { LockedFeatures, RewardType } from "./enums";
 
-const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'docker';
+const isDev = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "docker";
 
 export const POINT_TO_STEAM = false;
 
@@ -35,11 +35,11 @@ export const STARTING_CONSUMABLES = [];
 export const STARTING_WHITE_MAGE_SPELLS = [9];
 export const STARTING_BLACK_MAGE_SPELLS = [0];
 export const XP_PER_LEVEL = 50;
-export const AVERAGE_GOLD_REWARD_PER_GAME = 100; 
+export const AVERAGE_GOLD_REWARD_PER_GAME = 100;
 export const MAX_AUDIENCE_SCORE = 1500;
 export const PROMOTION_RATIO = 0.4;
 export const DEMOTION_RATIO = 0.3;
-export const SEASON_END_CRON = '0 19 * * 5' // UTC
+export const SEASON_END_CRON = "0 19 * * 5"; // UTC
 export const BASE_ANIM_FRAME_RATE = 5;
 export const MOVEMENT_RANGE = 2;
 export const SPELL_RANGE = 5;
@@ -96,103 +96,95 @@ export let VALIDATE_TARGETS = false;
 export const CAST_ZOOM = false;
 
 // Social
-export const DISCORD_LINK = 'https://discord.gg/s2XZhYCK2m';
-export const X_LINK = 'https://x.com/iolegion';
+export const DISCORD_LINK = "https://discord.gg/s2XZhYCK2m";
+export const X_LINK = "https://x.com/iolegion";
 
 // Locked features
 export const LOCKED_FEATURES = {
-    [LockedFeatures.CONSUMABLES_BATCH_1]: 1,
-    [LockedFeatures.SPELLS_BATCH_1]: 2,
-    [LockedFeatures.EQUIPMENT_BATCH_1]: 3,
-    [LockedFeatures.RANKED_MODE]: 4,
-    [LockedFeatures.CONSUMABLES_BATCH_2]: 5,
-    [LockedFeatures.SPELLS_BATCH_2]: 6,
-    [LockedFeatures.EQUIPMENT_BATCH_2]: 7,
-    [LockedFeatures.DAILY_LOOT]: 8,
-    [LockedFeatures.CONSUMABLES_BATCH_3]: 9,
-    [LockedFeatures.EQUIPMENT_BATCH_3]: 10,
-    [LockedFeatures.SPELLS_BATCH_3]: 11,
-    [LockedFeatures.CHARACTER_PURCHASES]: 12,
-}
+  [LockedFeatures.CONSUMABLES_BATCH_1]: 1,
+  [LockedFeatures.SPELLS_BATCH_1]: 2,
+  [LockedFeatures.EQUIPMENT_BATCH_1]: 3,
+  [LockedFeatures.RANKED_MODE]: 4,
+  [LockedFeatures.CONSUMABLES_BATCH_2]: 5,
+  [LockedFeatures.SPELLS_BATCH_2]: 6,
+  [LockedFeatures.EQUIPMENT_BATCH_2]: 7,
+  [LockedFeatures.DAILY_LOOT]: 8,
+  [LockedFeatures.CONSUMABLES_BATCH_3]: 9,
+  [LockedFeatures.EQUIPMENT_BATCH_3]: 10,
+  [LockedFeatures.SPELLS_BATCH_3]: 11,
+  [LockedFeatures.CHARACTER_PURCHASES]: 12,
+};
 
 export const EQUIPMENT_BATCH_GOLD = {
-    [LockedFeatures.EQUIPMENT_BATCH_1]: 500,
-    [LockedFeatures.EQUIPMENT_BATCH_2]: 1000,
-    [LockedFeatures.EQUIPMENT_BATCH_3]: 1000000,
-}
+  [LockedFeatures.EQUIPMENT_BATCH_1]: 500,
+  [LockedFeatures.EQUIPMENT_BATCH_2]: 1000,
+  [LockedFeatures.EQUIPMENT_BATCH_3]: 1000000,
+};
 
 export const UNLOCK_REWARDS = {
-    [LockedFeatures.CONSUMABLES_BATCH_1]: [
-        { type: RewardType.CONSUMABLES, id: 0, amount: 5 },
-        { type: RewardType.GOLD, id: -1, amount: 100 },
-    ],
-    [LockedFeatures.SPELLS_BATCH_1]: [
-        { type: RewardType.CONSUMABLES, id: 1, amount: 5 },
-        { type: RewardType.GOLD, id: -1, amount: 500 },
-    ],
-    [LockedFeatures.EQUIPMENT_BATCH_1]: [
-        { type: RewardType.EQUIPMENT, id: 17, amount: 1 },
-        { type: RewardType.GOLD, id: -1, amount: 1000 },
-    ],
-    [LockedFeatures.RANKED_MODE]: [
-        { type: RewardType.CONSUMABLES, id: 8, amount: 2 },
-        { type: RewardType.GOLD, id: -1, amount: 200 },
-    ],
-    [LockedFeatures.CONSUMABLES_BATCH_2]: [
-        { type: RewardType.CONSUMABLES, id: 10, amount: 2 },
-        { type: RewardType.CONSUMABLES, id: 12, amount: 2 },
-        { type: RewardType.GOLD, id: -1, amount: 200 },
-    ],
-    [LockedFeatures.SPELLS_BATCH_2]: [
-        { type: RewardType.CONSUMABLES, id: 1, amount: 3 },
-        { type: RewardType.GOLD, id: -1, amount: 200 },
-    ],
-    [LockedFeatures.EQUIPMENT_BATCH_2]: [
-        { type: RewardType.EQUIPMENT, id: 16, amount: 1 },
-        { type: RewardType.GOLD, id: -1, amount: 200 },
-    ],
-    [LockedFeatures.DAILY_LOOT]: [
-        { type: RewardType.GOLD, id: -1, amount: 200 },
-    ],
-    [LockedFeatures.CONSUMABLES_BATCH_3]: [
-        { type: RewardType.CONSUMABLES, id: 11, amount: 1 },
-        { type: RewardType.GOLD, id: -1, amount: 200 },
-    ],
-    [LockedFeatures.EQUIPMENT_BATCH_3]: [
-        { type: RewardType.GOLD, id: -1, amount: 500 },
-    ],
-    [LockedFeatures.SPELLS_BATCH_3]: [
-        { type: RewardType.GOLD, id: -1, amount: 500 },
-    ],
-    [LockedFeatures.CHARACTER_PURCHASES]: [
-        { type: RewardType.GOLD, id: -1, amount: 500 },
-    ],
-}
+  [LockedFeatures.CONSUMABLES_BATCH_1]: [
+    { type: RewardType.CONSUMABLES, id: 0, amount: 5 },
+    { type: RewardType.GOLD, id: -1, amount: 100 },
+  ],
+  [LockedFeatures.SPELLS_BATCH_1]: [
+    { type: RewardType.CONSUMABLES, id: 1, amount: 5 },
+    { type: RewardType.GOLD, id: -1, amount: 500 },
+  ],
+  [LockedFeatures.EQUIPMENT_BATCH_1]: [
+    { type: RewardType.EQUIPMENT, id: 17, amount: 1 },
+    { type: RewardType.GOLD, id: -1, amount: 1000 },
+  ],
+  [LockedFeatures.RANKED_MODE]: [
+    { type: RewardType.CONSUMABLES, id: 8, amount: 2 },
+    { type: RewardType.GOLD, id: -1, amount: 200 },
+  ],
+  [LockedFeatures.CONSUMABLES_BATCH_2]: [
+    { type: RewardType.CONSUMABLES, id: 10, amount: 2 },
+    { type: RewardType.CONSUMABLES, id: 12, amount: 2 },
+    { type: RewardType.GOLD, id: -1, amount: 200 },
+  ],
+  [LockedFeatures.SPELLS_BATCH_2]: [
+    { type: RewardType.CONSUMABLES, id: 1, amount: 3 },
+    { type: RewardType.GOLD, id: -1, amount: 200 },
+  ],
+  [LockedFeatures.EQUIPMENT_BATCH_2]: [
+    { type: RewardType.EQUIPMENT, id: 16, amount: 1 },
+    { type: RewardType.GOLD, id: -1, amount: 200 },
+  ],
+  [LockedFeatures.DAILY_LOOT]: [{ type: RewardType.GOLD, id: -1, amount: 200 }],
+  [LockedFeatures.CONSUMABLES_BATCH_3]: [
+    { type: RewardType.CONSUMABLES, id: 11, amount: 1 },
+    { type: RewardType.GOLD, id: -1, amount: 200 },
+  ],
+  [LockedFeatures.EQUIPMENT_BATCH_3]: [{ type: RewardType.GOLD, id: -1, amount: 500 }],
+  [LockedFeatures.SPELLS_BATCH_3]: [{ type: RewardType.GOLD, id: -1, amount: 500 }],
+  [LockedFeatures.CHARACTER_PURCHASES]: [{ type: RewardType.GOLD, id: -1, amount: 500 }],
+};
 
 export const remoteConfig = {
-    AUTO_DEFEAT: false,
-    AUTO_WIN: false,
-    HIGH_DAMAGE: false,
-    FAST_MODE: true,
-    COOLDOWN_OVERRIDE: 500,
-}
+  AUTO_DEFEAT: false,
+  AUTO_WIN: false,
+  HIGH_DAMAGE: false,
+  FAST_MODE: true,
+  COOLDOWN_OVERRIDE: 500,
+};
 
 if (isDev) {
-    // STARTING_BLACK_MAGE_SPELLS.push(2);
+  // STARTING_BLACK_MAGE_SPELLS.push(2);
 }
 
 if (!isDev) {
-    FREEZE_AI = false;
-    INJURED_MODE = false;
-    SKIP_LEVEL_RESTRICTIONS = false;
-    IMMEDIATE_LOOT = false;
-    LOTSA_MP = false;
-    LOTSA_HP = false;
-    ALLOW_SWITCHEROO_RANKED = true;
-    MAX_AI_CHARACTERS = MAX_CHARACTERS;
-    KILLALL_BM = false;
-    KILLALL_WM = false;
-    KILLALL_W = false;
-    FREEZE_CAMERA = false;
-    VALIDATE_TARGETS = true;
+  FREEZE_AI = false;
+  INJURED_MODE = false;
+  SKIP_LEVEL_RESTRICTIONS = false;
+  IMMEDIATE_LOOT = false;
+  LOTSA_MP = false;
+  LOTSA_HP = false;
+  ALLOW_SWITCHEROO_RANKED = true;
+  MAX_AI_CHARACTERS = MAX_CHARACTERS;
+  KILLALL_BM = false;
+  KILLALL_WM = false;
+  KILLALL_W = false;
+  FREEZE_CAMERA = false;
+  VALIDATE_TARGETS = true;
 }

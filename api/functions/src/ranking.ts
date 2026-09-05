@@ -1,5 +1,5 @@
-import {ChestColor, League} from "@legion/shared/enums";
-import {LeaderboardRow} from "@legion/shared/interfaces";
+import { ChestColor, League } from "@legion/shared/enums";
+import { LeaderboardRow } from "@legion/shared/interfaces";
 
 export const LEADERBOARD_LIMIT = 100;
 export const LEAGUE_ELO_THRESHOLDS = [0, 300, 600, 900, 1200] as const;
@@ -66,12 +66,12 @@ export function applyRankedResult(
   resetMismatchedSeason: boolean,
 ): RankStats {
   const reset = resetMismatchedSeason && stats?.seasonId !== seasonId;
-  const current = reset || !stats ? getEmptyLeagueStats(0, seasonId) : {...stats};
+  const current = reset || !stats ? getEmptyLeagueStats(0, seasonId) : { ...stats };
   const games = current.nbGames || 0;
 
   return {
     ...current,
-    ...(resetMismatchedSeason ? {seasonId} : {}),
+    ...(resetMismatchedSeason ? { seasonId } : {}),
     wins: current.wins + (isWinner ? 1 : 0),
     losses: current.losses + (isWinner ? 0 : 1),
     winStreak: isWinner ? current.winStreak + 1 : 0,
@@ -82,11 +82,7 @@ export function applyRankedResult(
   };
 }
 
-export function rankPlayers(
-  players: RankedPlayer[],
-  isAllTime: boolean,
-  uid?: string,
-): LeaderboardRow[] {
+export function rankPlayers(players: RankedPlayer[], isAllTime: boolean, uid?: string): LeaderboardRow[] {
   let previousScore = "";
   let rank = 0;
 
@@ -97,11 +93,10 @@ export function rankPlayers(
     previousScore = score;
 
     const games = stats.wins + stats.losses;
-    const chestColor = !isAllTime && stats.wins > 0 && rank <= 3 ? [
-      ChestColor.GOLD,
-      ChestColor.SILVER,
-      ChestColor.BRONZE,
-    ][rank - 1] : null;
+    const chestColor =
+      !isAllTime && stats.wins > 0 && rank <= 3
+        ? [ChestColor.GOLD, ChestColor.SILVER, ChestColor.BRONZE][rank - 1]
+        : null;
 
     return {
       rank,

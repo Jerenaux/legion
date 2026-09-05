@@ -1,4 +1,4 @@
-import { test, expect } from 'bun:test';
+import { test, expect } from "bun:test";
 import { getTokenWithRetry } from "../firebaseToken";
 
 test("uses Firebase's cached token unless a refresh is requested", async () => {

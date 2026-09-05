@@ -1,7 +1,7 @@
-import {onRequest} from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 
-import admin, {corsMiddleware, getUID} from "./APIsetup";
-import {currentSeasonId, LEADERBOARD_LIMIT, RankedPlayer, rankPlayers} from "./ranking";
+import admin, { corsMiddleware, getUID } from "./APIsetup";
+import { currentSeasonId, LEADERBOARD_LIMIT, RankedPlayer, rankPlayers } from "./ranking";
 
 interface LeaderboardHighlight {
   name: string;
@@ -23,17 +23,18 @@ function secondsUntilNextSeason(now = new Date()): number {
 function getHighlights(players: RankedPlayer[], isAllTime: boolean): LeaderboardHighlight[] {
   if (!players.length) return [];
 
-  const highest = (metric: "avgGrade" | "avgAudienceScore" | "winStreak") => players.reduce((best, player) => {
-    const bestStats = isAllTime ? best.allTimeStats : best.leagueStats;
-    const playerStats = isAllTime ? player.allTimeStats : player.leagueStats;
-    return playerStats[metric] > bestStats[metric] ? player : best;
-  });
+  const highest = (metric: "avgGrade" | "avgAudienceScore" | "winStreak") =>
+    players.reduce((best, player) => {
+      const bestStats = isAllTime ? best.allTimeStats : best.leagueStats;
+      const playerStats = isAllTime ? player.allTimeStats : player.leagueStats;
+      return playerStats[metric] > bestStats[metric] ? player : best;
+    });
 
   const highlights: LeaderboardHighlight[] = [
-    {player: highest("avgGrade"), title: "Ace Player", description: "Highest Game Grades"},
-    {player: highest("avgAudienceScore"), title: "Crowd Favorite", description: "Highest Audience Scores"},
-    {player: highest("winStreak"), title: "Unstoppable", description: "Longest Win Streak"},
-  ].map(({player, title, description}) => ({
+    { player: highest("avgGrade"), title: "Ace Player", description: "Highest Game Grades" },
+    { player: highest("avgAudienceScore"), title: "Crowd Favorite", description: "Highest Audience Scores" },
+    { player: highest("winStreak"), title: "Unstoppable", description: "Longest Win Streak" },
+  ].map(({ player, title, description }) => ({
     name: player.name,
     avatar: player.avatar,
     id: player.id,
@@ -42,7 +43,7 @@ function getHighlights(players: RankedPlayer[], isAllTime: boolean): Leaderboard
   }));
 
   if (isAllTime) {
-    const highestElo = players.reduce((best, player) => player.elo > best.elo ? player : best);
+    const highestElo = players.reduce((best, player) => (player.elo > best.elo ? player : best));
     highlights.push({
       name: highestElo.name,
       avatar: highestElo.avatar,
@@ -61,20 +62,28 @@ async function getPersonalRank(leagueID: number, uid: string): Promise<number | 
   const player = playerDoc.data()!;
 
   if (leagueID === 5) {
-    const higher = await db.collection("players").where("elo", ">", player.elo || 0).count().get();
+    const higher = await db
+      .collection("players")
+      .where("elo", ">", player.elo || 0)
+      .count()
+      .get();
     return higher.data().count + 1;
   }
 
   const stats = player.leagueStats;
   const seasonId = currentSeasonId();
   if (player.league !== leagueID || stats?.seasonId !== seasonId) return null;
-  const base = db.collection("players")
-    .where("league", "==", leagueID)
-    .where("leagueStats.seasonId", "==", seasonId);
+  const base = db.collection("players").where("league", "==", leagueID).where("leagueStats.seasonId", "==", seasonId);
   const [moreWins, tiedWithFewerLosses] = await Promise.all([
-    base.where("leagueStats.wins", ">", stats.wins || 0).count().get(),
-    base.where("leagueStats.wins", "==", stats.wins || 0)
-      .where("leagueStats.losses", "<", stats.losses || 0).count().get(),
+    base
+      .where("leagueStats.wins", ">", stats.wins || 0)
+      .count()
+      .get(),
+    base
+      .where("leagueStats.wins", "==", stats.wins || 0)
+      .where("leagueStats.losses", "<", stats.losses || 0)
+      .count()
+      .get(),
   ]);
   return moreWins.data().count + tiedWithFewerLosses.data().count + 1;
 }
@@ -100,7 +109,7 @@ async function getLeaderboard(leagueID: number, uid: string) {
     query.limit(LEADERBOARD_LIMIT).get(),
     getPersonalRank(leagueID, uid),
   ]);
-  const players = snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()})) as RankedPlayer[];
+  const players = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as RankedPlayer[];
 
   return {
     league: leagueID,
@@ -111,7 +120,7 @@ async function getLeaderboard(leagueID: number, uid: string) {
   };
 }
 
-export const fetchLeaderboard = onRequest({memory: "512MiB"}, (request, response) => {
+export const fetchLeaderboard = onRequest({ memory: "512MiB" }, (request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);

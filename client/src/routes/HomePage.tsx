@@ -1,7 +1,7 @@
-import {Component, h} from "preact";
-import {Route, Router} from "preact-router";
+import { Component, h } from "preact";
+import { Route, Router } from "preact-router";
 
-import {PlayerContext} from "../contexts/PlayerContext";
+import { PlayerContext } from "../contexts/PlayerContext";
 import Navbar from "../components/navbar/Navbar";
 import PlayPage from "../components/PlayPage";
 import Profile from "../components/profile/Profile";
@@ -14,7 +14,7 @@ export default class HomePage extends Component {
   render() {
     return (
       <PlayerContext.Consumer>
-        {({player}) => (
+        {({ player }) => (
           <div className="homePage">
             <Navbar playerData={player} />
             <div className="content">

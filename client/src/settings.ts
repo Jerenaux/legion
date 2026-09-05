@@ -25,7 +25,7 @@ export function parseGameSettings(raw: string | null): GameSettings {
       isFullscreen: saved.isFullscreen === true,
     };
   } catch {
-    return {...defaultGameSettings};
+    return { ...defaultGameSettings };
   }
 }
 

@@ -1,71 +1,88 @@
-import { io } from 'socket.io-client';
-import { Player } from './Player';
-import { GameHUD, events } from '../components/HUD/GameHUD';
-import { Team } from './Team';
-import { MusicManager } from './MusicManager';
-import { getSpellById } from '@legion/shared/Spells';
-import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
-import { getFirebaseIdToken } from '../services/apiService';
-import { allSprites } from '@legion/shared/sprites';
+import { io } from "socket.io-client";
+import { Player } from "./Player";
+import { GameHUD, events } from "../components/HUD/GameHUD";
+import { Team } from "./Team";
+import { MusicManager } from "./MusicManager";
+import { getSpellById } from "@legion/shared/Spells";
+import { serializeCoords, hexDistance, isInSpellRange } from "@legion/shared/utils";
+import { getFirebaseIdToken } from "../services/apiService";
+import { allSprites } from "@legion/shared/sprites";
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
-import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
-import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
-import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
-     SPELL_RANGE, PROJECTILE_DURATION, VALIDATE_TARGETS, CAST_ZOOM } from '@legion/shared/config';
+import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from "@legion/shared/interfaces";
+import { createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions } from "../services/socketPolicy";
+import {
+  KILL_CAM_DURATION,
+  BASE_ANIM_FRAME_RATE,
+  FREEZE_CAMERA,
+  GRID_WIDTH,
+  GRID_HEIGHT,
+  SPELL_RANGE,
+  PROJECTILE_DURATION,
+  VALIDATE_TARGETS,
+  CAST_ZOOM,
+} from "@legion/shared/config";
 
-import iceblockImage from '@assets/iceblock.png';
-import meltdownImage from '@assets/meltdown.png';
+import iceblockImage from "@assets/iceblock.png";
+import meltdownImage from "@assets/meltdown.png";
 
-import smokeImage from '@assets/vfx/smoke.png';
-import potionHealImage from '@assets/vfx/potion_heal.png';
-import castImage from '@assets/vfx/cast.png';
-import slashImage from '@assets/vfx/slash.png';
-import impactImage from '@assets/vfx/sword_impact.png';
-import poisonImage from '@assets/vfx/poison.png';
-import muteImage from '@assets/vfx/mute.png';
-import reviveImage from '@assets/vfx/revive.png';
+import smokeImage from "@assets/vfx/smoke.png";
+import potionHealImage from "@assets/vfx/potion_heal.png";
+import castImage from "@assets/vfx/cast.png";
+import slashImage from "@assets/vfx/slash.png";
+import impactImage from "@assets/vfx/sword_impact.png";
+import poisonImage from "@assets/vfx/poison.png";
+import muteImage from "@assets/vfx/mute.png";
+import reviveImage from "@assets/vfx/revive.png";
 
-import statusesImage from '@assets/States.png';
+import statusesImage from "@assets/States.png";
 
-import clickSFX from '@assets/sfx/click_2.wav';
-import slashSFX from '@assets/sfx/swish_2.wav';
-import stepsSFX from '@assets/sfx/steps.wav';
-import nopeSFX from '@assets/sfx/nope.wav';
-import heartSFX from '@assets/sfx/heart.wav';
-import cooldownSFX from '@assets/sfx/cooldown.wav';
-import shatterSFX from '@assets/sfx/shatter.wav';
-import flamesSFX from '@assets/sfx/flame.wav';
-import crowdSFX from '@assets/sfx/crowd.wav';
-import castSoundSFX from '@assets/sfx/spells/cast.wav';
-import fireballSFX from '@assets/sfx/spells/fire_3.wav';
-import thunderSoundSFX from '@assets/sfx/spells/thunder.wav';
-import iceSoundSFX from '@assets/sfx/spells/ice.wav';
-import healingSFX from '@assets/sfx/spells/healing.wav';
-import reviveSFX from '@assets/sfx/spells/revive.wav';
-import poisonSoundSFX from '@assets/sfx/spells/poison.wav';
-import muteSoundSFX from '@assets/sfx/spells/mute.wav';
-import bgmStartSFX from '@assets/music/bgm_start.wav';
-import bgmEndSFX from '@assets/music/bgm_end.wav';
-import thudSFX from '@assets/sfx/thud.wav';
+import clickSFX from "@assets/sfx/click_2.wav";
+import slashSFX from "@assets/sfx/swish_2.wav";
+import stepsSFX from "@assets/sfx/steps.wav";
+import nopeSFX from "@assets/sfx/nope.wav";
+import heartSFX from "@assets/sfx/heart.wav";
+import cooldownSFX from "@assets/sfx/cooldown.wav";
+import shatterSFX from "@assets/sfx/shatter.wav";
+import flamesSFX from "@assets/sfx/flame.wav";
+import crowdSFX from "@assets/sfx/crowd.wav";
+import castSoundSFX from "@assets/sfx/spells/cast.wav";
+import fireballSFX from "@assets/sfx/spells/fire_3.wav";
+import thunderSoundSFX from "@assets/sfx/spells/thunder.wav";
+import iceSoundSFX from "@assets/sfx/spells/ice.wav";
+import healingSFX from "@assets/sfx/spells/healing.wav";
+import reviveSFX from "@assets/sfx/spells/revive.wav";
+import poisonSoundSFX from "@assets/sfx/spells/poison.wav";
+import muteSoundSFX from "@assets/sfx/spells/mute.wav";
+import bgmStartSFX from "@assets/music/bgm_start.wav";
+import bgmEndSFX from "@assets/music/bgm_end.wav";
+import thudSFX from "@assets/sfx/thud.wav";
 
-import speechBubble from '@assets/speech_bubble.png';
-import speechTail from '@assets/speech_tail.png';
+import speechBubble from "@assets/speech_bubble.png";
+import speechTail from "@assets/speech_tail.png";
 
-import groundTilesImage from '@assets/tiles2.png';
-import groundTilesAtlas from '@assets/tiles2.json';
-import { errorToast, recordLoadingStep, silentErrorToast } from '../components/utils';
-import { BaseSpell } from '@legion/shared/BaseSpell';
-import { BaseItem } from '@legion/shared/BaseItem';
+import groundTilesImage from "@assets/tiles2.png";
+import groundTilesAtlas from "@assets/tiles2.json";
+import { errorToast, recordLoadingStep, silentErrorToast } from "../components/utils";
+import { BaseSpell } from "@legion/shared/BaseSpell";
+import { BaseItem } from "@legion/shared/BaseItem";
 
-import { HexGridManager, HighlightType } from './HexGridManager';
-import { TutorialManager } from './TutorialManager';
+import { HexGridManager, HighlightType } from "./HexGridManager";
+import { TutorialManager } from "./TutorialManager";
 
-import hexTileImage from '@assets/tile.png';
-import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels, 
-    chargedIceLevels, chargedThunderLevels, iceLevels, thunderLevels,
-    healLevels } from './VFXconfig';
-import {loadGameSettings} from '../settings';
-import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
+import hexTileImage from "@assets/tile.png";
+import {
+  VFXconfig,
+  fireLevels,
+  terrainFireLevels,
+  chargedFireLevels,
+  chargedIceLevels,
+  chargedThunderLevels,
+  iceLevels,
+  thunderLevels,
+  healLevels,
+} from "./VFXconfig";
+import { loadGameSettings } from "../settings";
+import { DESKTOP_ACTION_EVENT, DesktopAction } from "../input/actions";
 
 const LOCAL_ANIMATION_SCALE = 2;
 const DEPTH_OFFSET = 0.01;
@@ -74,2232 +91,2320 @@ const TINT_COLOR = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
 const AIR_ENTRANCE_DELAY = 750;
 const AIR_ENTRANCE_DELAY_VARIANCE = 200;
 
-export class Arena extends Phaser.Scene
-{
-    gamehud;
-    socket;
-    HUD;
-    playerTeamId;
-    gridCorners;
-    gridMap: Map<string, Player> = new Map<string, Player>();
-    teamsMap: Map<number, Team> = new Map<number, Team>();
-    selectedPlayer: Player | null = null;
-    localAnimationSprite: Phaser.GameObjects.Sprite;
-    terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
-    terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
-    server;
-    animationScales;
-    SFX;
-    overviewReady = false;
-    musicManager: MusicManager;
-    sprites: Phaser.GameObjects.Sprite[] = [];
-    environmentalAudioSources;
-    gameSettings;
-    killCamActive = false;
-    pendingGEN: GEN;
-    genQueue: GEN[] = [];
-    isDisplayingGEN: boolean = false;
-    eventsQueue = [];
-    isLateToTheParty = false;
-    sceneCreated = false;
-    gameInitialized = false;
-    gameEnded = false;
-    sfxVolume: number;
-    inputLocked = false;
-    handSprite: Phaser.GameObjects.Sprite;
-    queue: any[];
-    turnee: any;
-    isReplay: boolean = false;
-    replayData: any = null;
-    replayTimer: Phaser.Time.TimerEvent = null;
-    currentReplayIndex: number = 0;
-    eventHandlers: Map<string, (data: any) => void>;
-    isDarkened: boolean = false;
-    tutorialManager: TutorialManager;
-    hexGridManager: HexGridManager;
+export class Arena extends Phaser.Scene {
+  gamehud;
+  socket;
+  HUD;
+  playerTeamId;
+  gridCorners;
+  gridMap: Map<string, Player> = new Map<string, Player>();
+  teamsMap: Map<number, Team> = new Map<number, Team>();
+  selectedPlayer: Player | null = null;
+  localAnimationSprite: Phaser.GameObjects.Sprite;
+  terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
+  terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
+  server;
+  animationScales;
+  SFX;
+  overviewReady = false;
+  musicManager: MusicManager;
+  sprites: Phaser.GameObjects.Sprite[] = [];
+  environmentalAudioSources;
+  gameSettings;
+  killCamActive = false;
+  pendingGEN: GEN;
+  genQueue: GEN[] = [];
+  isDisplayingGEN: boolean = false;
+  eventsQueue = [];
+  isLateToTheParty = false;
+  sceneCreated = false;
+  gameInitialized = false;
+  gameEnded = false;
+  sfxVolume: number;
+  inputLocked = false;
+  handSprite: Phaser.GameObjects.Sprite;
+  queue: any[];
+  turnee: any;
+  isReplay: boolean = false;
+  replayData: any = null;
+  replayTimer: Phaser.Time.TimerEvent = null;
+  currentReplayIndex: number = 0;
+  eventHandlers: Map<string, (data: any) => void>;
+  isDarkened: boolean = false;
+  tutorialManager: TutorialManager;
+  hexGridManager: HexGridManager;
 
-    // Add to the class properties at the top of the file
-    private lastKeyTime: number = 0;
-    // Add this class property at the top of the Arena class
-    private isZoomedForSpellCast: boolean = false;
+  // Add to the class properties at the top of the file
+  private lastKeyTime: number = 0;
+  // Add this class property at the top of the Arena class
+  private isZoomedForSpellCast: boolean = false;
 
-    private static readonly GEN_CONFIGS = {
-        [GEN.COMBAT_BEGINS]: { text1: 'combat', text2: 'begins' },
-        [GEN.MULTI_KILL]: { text1: 'multi', text2: 'kill' },
-        [GEN.MULTI_HIT]: { text1: 'multi', text2: 'hit' },
-        [GEN.ONE_SHOT]: { text1: 'one', text2: 'shot' },
-        [GEN.FROZEN]: { text1: 'frozen', text2: null },
-        [GEN.BURNING]: { text1: 'stuff-is', text2: 'on-fire' },
-        [GEN.TUTORIAL]: { text1: 'tutorial', text2: null },
+  private static readonly GEN_CONFIGS = {
+    [GEN.COMBAT_BEGINS]: { text1: "combat", text2: "begins" },
+    [GEN.MULTI_KILL]: { text1: "multi", text2: "kill" },
+    [GEN.MULTI_HIT]: { text1: "multi", text2: "hit" },
+    [GEN.ONE_SHOT]: { text1: "one", text2: "shot" },
+    [GEN.FROZEN]: { text1: "frozen", text2: null },
+    [GEN.BURNING]: { text1: "stuff-is", text2: "on-fire" },
+    [GEN.TUTORIAL]: { text1: "tutorial", text2: null },
+  };
+
+  private static readonly SOUND_NAMES = [
+    "click",
+    "slash",
+    "steps",
+    "nope",
+    "heart",
+    "cooldown",
+    "fireball",
+    "healing",
+    "cast",
+    "thunder",
+    "ice",
+    "shatter",
+    "flames",
+    "crowd",
+    "poison",
+    "mute",
+    "thud",
+    "revive",
+  ];
+
+  private isInTargetMode: boolean = false;
+  private targetModeSize: number = 1;
+  private targetModeListener: any;
+
+  constructor() {
+    super({ key: "Arena" });
+    this.sfxVolume = this.getSFXVolumeFromLocalStorage();
+
+    // Initialize event handlers map
+    const handlers = {
+      gameStatus: this.initializeGame,
+      move: this.processMove,
+      attack: this.processAttack,
+      obstacleattack: this.processObstacleAttack,
+      inventory: this.processInventory,
+      hpchange: this.processHPChange,
+      statuseffectchange: this.processStatusChange,
+      mpchange: this.processMPChange,
+      useitem: this.processUseItem,
+      cast: (data) => this.processCast(true, data),
+      endcast: (data) => this.processCast(false, data),
+      terrain: this.processTerrain,
+      gen: (data) => {
+        if (Array.isArray(data)) {
+          data.forEach((g) => this.enqueueGEN(g));
+        } else {
+          this.enqueueGEN(data.gen);
+        }
+      },
+      localanimation: this.processLocalAnimation,
+      gameEnd: this.processGameEnd,
+      score: this.processScoreUpdate,
+      addCharacter: this.processAddCharacter,
+      queueData: this.processQueueData,
+      turnee: this.processTurnee,
     };
 
-    private static readonly SOUND_NAMES = [
-        'click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball',
-        'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd',
-        'poison', 'mute', 'thud', 'revive'
+    this.eventHandlers = new Map(Object.entries(handlers).map(([event, handler]) => [event, handler.bind(this)]));
+  }
+
+  lockInput() {
+    this.inputLocked = true;
+  }
+
+  unlockInput() {
+    this.inputLocked = false;
+  }
+
+  getSFXVolumeFromLocalStorage(): number {
+    return loadGameSettings().sfxVolume / 100;
+  }
+
+  preload() {
+    // console.log('Preloading assets ...');
+    this.gamehud = new GameHUD();
+
+    this.load.image("iceblock", iceblockImage);
+    this.load.spritesheet("meltdown", meltdownImage, { frameWidth: 150, frameHeight: 150 });
+    this.load.image("speech_bubble", speechBubble);
+    this.load.image("speech_tail", speechTail);
+
+    // Iterate over assetsMap and load spritesheets
+    allSprites.forEach((sprite) => {
+      this.load.spritesheet(sprite, require(`@assets/sprites/${sprite}.png`), { frameWidth: 144, frameHeight: 144 });
+    });
+    this.load.spritesheet("potion_heal", potionHealImage, { frameWidth: 48, frameHeight: 64 });
+
+    fireLevels.forEach((level) => {
+      this.load.spritesheet(`fire_${level}_explosion`, require(`@assets/vfx/fire_${level}_explosion.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+      // this.load.spritesheet(`fireball_${level}`, require(`@assets/vfx/fireball_${level}.png`), { frameWidth: 512, frameHeight: 512});
+    });
+    terrainFireLevels.forEach((level) => {
+      this.load.spritesheet(`terrain_fire_${level}`, require(`@assets/vfx/terrain_fire_${level}.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+    });
+    chargedFireLevels.forEach((level) => {
+      this.load.spritesheet(`charged_fire_${level}`, require(`@assets/vfx/charged_fire_${level}.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+    });
+    iceLevels.forEach((level) => {
+      this.load.spritesheet(`ice_${level}`, require(`@assets/vfx/ice_${level}.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+    });
+    chargedIceLevels.forEach((level) => {
+      this.load.spritesheet(`charged_ice_${level}`, require(`@assets/vfx/charged_ice_${level}.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+    });
+    thunderLevels.forEach((level) => {
+      this.load.spritesheet(`thunder_${level}`, require(`@assets/vfx/thunder_${level}.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+    });
+    chargedThunderLevels.forEach((level) => {
+      this.load.spritesheet(`charged_thunder_${level}`, require(`@assets/vfx/charged_thunder_${level}.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+    });
+    healLevels.forEach((level) => {
+      this.load.spritesheet(`heal_${level}`, require(`@assets/vfx/heal_${level}.png`), {
+        frameWidth: 512,
+        frameHeight: 512,
+      });
+    });
+
+    this.load.spritesheet("smoke", smokeImage, { frameWidth: 96, frameHeight: 96 });
+    this.load.spritesheet("cast", castImage, { frameWidth: 48, frameHeight: 64 });
+    this.load.spritesheet("slash", slashImage, { frameWidth: 96, frameHeight: 96 });
+    this.load.spritesheet("impact", impactImage, { frameWidth: 291, frameHeight: 291 });
+    this.load.spritesheet("poison", poisonImage, { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet("mute", muteImage, { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet("statuses", statusesImage, { frameWidth: 96, frameHeight: 96 });
+    this.load.spritesheet("revive", reviveImage, { frameWidth: 48, frameHeight: 64 });
+
+    this.load.audio("click", clickSFX);
+    this.load.audio("slash", slashSFX);
+    this.load.audio("steps", stepsSFX);
+    this.load.audio("nope", nopeSFX);
+    this.load.audio("heart", heartSFX);
+    this.load.audio("cooldown", cooldownSFX);
+    this.load.audio("shatter", shatterSFX);
+    this.load.audio("flames", flamesSFX);
+    this.load.audio("crowd", crowdSFX);
+    // this.load.audio('cheer', cheerSFX);
+    this.load.audio("thud", thudSFX);
+
+    // Load spell sounds
+    this.load.audio("cast", castSoundSFX);
+    this.load.audio("fireball", fireballSFX);
+    this.load.audio("thunder", thunderSoundSFX);
+    this.load.audio("ice", iceSoundSFX);
+    this.load.audio("healing", healingSFX);
+    this.load.audio("poison", poisonSoundSFX);
+    this.load.audio("mute", muteSoundSFX);
+    this.load.audio("revive", reviveSFX);
+
+    // Load music
+    this.load.audio("bgm_start", bgmStartSFX);
+    this.load.audio(`bgm_loop_1`, require(`@assets/music/bgm_loop_1.wav`));
+
+    this.load.atlas("groundTiles", groundTilesImage, groundTilesAtlas);
+
+    const GEN = [
+      "gen_bg",
+      "begins",
+      "blood",
+      "blue_bang",
+      "combat",
+      "first",
+      "orange_bang",
+      "multi",
+      "kill",
+      "hit",
+      "one",
+      "shot",
+      "frozen",
+      "stuff-is",
+      "on-fire",
+      "tutorial",
     ];
+    GEN.forEach((name) => {
+      this.load.image(name, require(`@assets/GEN/${name}.png`));
+    });
 
-    private isInTargetMode: boolean = false;
-    private targetModeSize: number = 1;
-    private targetModeListener: any;
+    this.load.on("progress", (value) => {
+      events.emit("progressUpdate", Math.floor(value * 100));
+    });
 
-    constructor() {
-        super({ key: 'Arena' });
-        this.sfxVolume = this.getSFXVolumeFromLocalStorage();
-        
-        // Initialize event handlers map
-        const handlers = {
-            gameStatus: this.initializeGame,
-            move: this.processMove,
-            attack: this.processAttack,
-            obstacleattack: this.processObstacleAttack,
-            inventory: this.processInventory,
-            hpchange: this.processHPChange,
-            statuseffectchange: this.processStatusChange,
-            mpchange: this.processMPChange,
-            useitem: this.processUseItem,
-            cast: (data) => this.processCast(true, data),
-            endcast: (data) => this.processCast(false, data),
-            terrain: this.processTerrain,
-            gen: (data) => {
-                if (Array.isArray(data)) {
-                    data.forEach(g => this.enqueueGEN(g));
-                } else {
-                    this.enqueueGEN(data.gen);
-                }
-            },
-            localanimation: this.processLocalAnimation,
-            gameEnd: this.processGameEnd,
-            score: this.processScoreUpdate,
-            addCharacter: this.processAddCharacter,
-            queueData: this.processQueueData,
-            turnee: this.processTurnee,
-        };
+    this.load.on("complete", () => {
+      events.emit("progressUpdate", 100);
+      // Remove listener
+      this.load.off("progress");
+      this.load.off("complete");
+    });
+    this.connectToServer();
 
-        this.eventHandlers = new Map(
-            Object.entries(handlers).map(([event, handler]) => 
-                [event, handler.bind(this)]
-            )
-        );
-    }
+    this.load.image("hexTile", hexTileImage);
+  }
 
-    lockInput() {
-        this.inputLocked = true;
-    }
+  extractGameIdFromUrl() {
+    const pathArray = window.location.pathname.split("/");
+    // Assuming the URL pattern is "/game/{gameId}", and "game" is always at a fixed position
+    const gameIdIndex = pathArray.findIndex((element) => element === "game") + 1;
+    return pathArray[gameIdIndex];
+  }
 
-    unlockInput() {
-        this.inputLocked = false;
-    }
+  async connectToServer() {
+    console.log("Connecting to the server ...");
+    const pathParts = window.location.pathname.split("/");
+    const isReplay = pathParts[1] === "replay";
+    const gameId = pathParts[2];
 
-    getSFXVolumeFromLocalStorage(): number {
-        return loadGameSettings().sfxVolume / 100;
-    }
+    this.socket = io(process.env.GAME_SERVER_URL, {
+      ...socketReconnectOptions,
+      auth: createRefreshingSocketAuth(() => getFirebaseIdToken(true), { gameId, isReplay }),
+    });
 
-    preload()
-    {
-        // console.log('Preloading assets ...');
-        this.gamehud = new GameHUD();
-        
-        this.load.image('iceblock',  iceblockImage);
-        this.load.spritesheet('meltdown',  meltdownImage, { frameWidth: 150, frameHeight: 150});
-        this.load.image('speech_bubble', speechBubble);
-        this.load.image('speech_tail', speechTail);
-
-        // Iterate over assetsMap and load spritesheets
-        allSprites.forEach((sprite) => {
-            this.load.spritesheet(sprite, require(`@assets/sprites/${sprite}.png`), { frameWidth: 144, frameHeight: 144});
-        });
-        this.load.spritesheet('potion_heal', potionHealImage, { frameWidth: 48, frameHeight: 64});
-
-        fireLevels.forEach(level => {
-            this.load.spritesheet(`fire_${level}_explosion`, require(`@assets/vfx/fire_${level}_explosion.png`), { frameWidth: 512, frameHeight: 512});
-            // this.load.spritesheet(`fireball_${level}`, require(`@assets/vfx/fireball_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        terrainFireLevels.forEach(level => {
-            this.load.spritesheet(`terrain_fire_${level}`, require(`@assets/vfx/terrain_fire_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        chargedFireLevels.forEach(level => {
-            this.load.spritesheet(`charged_fire_${level}`, require(`@assets/vfx/charged_fire_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        iceLevels.forEach(level => {
-            this.load.spritesheet(`ice_${level}`, require(`@assets/vfx/ice_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        chargedIceLevels.forEach(level => {
-            this.load.spritesheet(`charged_ice_${level}`, require(`@assets/vfx/charged_ice_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        thunderLevels.forEach(level => {
-            this.load.spritesheet(`thunder_${level}`, require(`@assets/vfx/thunder_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        chargedThunderLevels.forEach(level => {
-            this.load.spritesheet(`charged_thunder_${level}`, require(`@assets/vfx/charged_thunder_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        healLevels.forEach(level => {
-            this.load.spritesheet(`heal_${level}`, require(`@assets/vfx/heal_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-
-        this.load.spritesheet('smoke', smokeImage, { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('cast', castImage, { frameWidth: 48, frameHeight: 64});
-        this.load.spritesheet('slash', slashImage, { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('impact', impactImage, { frameWidth: 291, frameHeight: 291});
-        this.load.spritesheet('poison', poisonImage, { frameWidth: 64, frameHeight: 64});
-        this.load.spritesheet('mute', muteImage, { frameWidth: 64, frameHeight: 64});
-        this.load.spritesheet('statuses', statusesImage, { frameWidth: 96, frameHeight: 96});
-        this.load.spritesheet('revive', reviveImage, { frameWidth: 48, frameHeight: 64});
-
-        this.load.audio('click', clickSFX);
-        this.load.audio('slash', slashSFX);
-        this.load.audio('steps', stepsSFX);
-        this.load.audio('nope', nopeSFX);
-        this.load.audio('heart', heartSFX);
-        this.load.audio('cooldown', cooldownSFX);
-        this.load.audio('shatter', shatterSFX);
-        this.load.audio('flames', flamesSFX);
-        this.load.audio('crowd', crowdSFX);
-        // this.load.audio('cheer', cheerSFX);
-        this.load.audio('thud', thudSFX);
-
-
-        // Load spell sounds
-        this.load.audio('cast', castSoundSFX);
-        this.load.audio('fireball', fireballSFX);
-        this.load.audio('thunder', thunderSoundSFX);
-        this.load.audio('ice', iceSoundSFX);
-        this.load.audio('healing', healingSFX);
-        this.load.audio('poison', poisonSoundSFX);
-        this.load.audio('mute', muteSoundSFX);
-        this.load.audio('revive', reviveSFX);
-
-        // Load music
-        this.load.audio('bgm_start', bgmStartSFX);
-        this.load.audio(`bgm_loop_1`, require(`@assets/music/bgm_loop_1.wav`));
-
-        this.load.atlas('groundTiles', groundTilesImage, groundTilesAtlas);
-    
-        const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill', 
-            'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire', 'tutorial'];
-        GEN.forEach((name) => {
-            this.load.image(name, require(`@assets/GEN/${name}.png`));
-        });
-
-        this.load.on('progress', (value) => {
-            events.emit('progressUpdate', Math.floor(value * 100));
-        });
-
-        this.load.on('complete', () => {
-            events.emit('progressUpdate', 100);
-            // Remove listener
-            this.load.off('progress');
-            this.load.off('complete');
-        });
-        this.connectToServer();
-
-        this.load.image('hexTile', hexTileImage);
-    }
-
-    extractGameIdFromUrl() {
-        const pathArray = window.location.pathname.split('/');
-        // Assuming the URL pattern is "/game/{gameId}", and "game" is always at a fixed position
-        const gameIdIndex = pathArray.findIndex(element => element === 'game') + 1;
-        return pathArray[gameIdIndex];
-    }
-
-    async connectToServer() {
-        console.log('Connecting to the server ...');
-        const pathParts = window.location.pathname.split('/');
-        const isReplay = pathParts[1] === 'replay';
-        const gameId = pathParts[2];
-
-        this.socket = io(
-            process.env.GAME_SERVER_URL,
-            {
-                ...socketReconnectOptions,
-                auth: createRefreshingSocketAuth(
-                    () => getFirebaseIdToken(true),
-                    {gameId, isReplay},
-                ),
-            }
-        );
-
-        // Queue socket events until the scene is created
-        var onevent = this.socket.onevent;
-        const scene = this;
-        this.socket.onevent = function (packet) {
-            if (!scene.sceneCreated){ // Set at the end of create()
-                console.warn('queueing ',packet.data[0]);
-                scene.eventsQueue.push(packet);
-            } else {
-                onevent.call(this, packet);    // original call
-            }
-        };
-
-        // Set up socket event listeners using the event handlers map
-        this.eventHandlers.forEach((handler, event) => {
-            this.socket.on(event, handler);
-        });
-
-        // Add special handlers that aren't part of the regular game flow
-        this.socket.on('connect', () => {
-            // console.log('Connected to the server');
-        });
-
-        this.socket.on('disconnect', (reason) => {
-            if (shouldAbandonGame(reason)) {
-                console.error(`Server disconnect during game: ${reason}`);
-                silentErrorToast('Disconnected from server');
-                events.emit('serverDisconnect');
-                this.destroy();
-            }
-        });
-
-        this.socket.io.on('reconnect_failed', () => {
-            silentErrorToast('Could not reconnect to server');
-            events.emit('serverDisconnect');
-            this.destroy();
-        });
-
-        this.socket.on('joinError', (error) => {
-            console.error('Could not join game:', error);
-            events.emit('serverDisconnect');
-            this.destroy();
-        });
-
-        this.socket.on('error', (error) => {
-            console.error('Error:', error);
-            errorToast(`An error occurred: ${error}`);
-        });
-
-        this.socket.on('replayData', this.handleReplayData.bind(this));
-    }
-
-    sendMove(x, y) {
-        const data = {
-            tile: { x, y},
-        };
-        this.send('move', data);
-        events.emit('performAction');
-    }
-
-    sendAttack(player: Player) {
-        if (!this.selectedPlayer?.canAct()) return;
-        const data = {
-            target: player.num,
-            sameTeam: player.team.id === this.selectedPlayer.team.id,
-        };
-        this.send('attack', data);
-        events.emit('performAction');
-    }
-
-    sendObstacleAttack(x, y) {
-        if (!this.selectedPlayer?.canAct()) return;
-        const data = {
-            x,
-            y,
-        };
-        this.send('obstacleattack', data);
-    }
-
-    sendSpell(x: number, y: number, player: Player | null) {
-        console.log(`[Arena:sendSpell] Sending spell at ${x}, ${y}`);
-        if (!this.selectedPlayer || !this.selectedPlayer.canAct()) return;
-        const data = {
-            x,
-            y,
-            index: this.selectedPlayer.pendingSpell,
-            targetTeam: player?.team.id,
-            target: player?.num,
-        };
-        this.send('spell', data);
-        this.toggleTargetMode(false);
-        this.selectedPlayer.pendingSpell = null;
-        events.emit(`playerCastSpell_${this.selectedPlayer.pendingSpell}`);
-        events.emit('performAction');
-    }
-
-    sendUseItem(index: number, x: number, y: number, player: Player | null) {
-        if (!this.selectedPlayer.canAct()) return;
-        const data = {
-            x,
-            y,
-            index,
-            targetTeam: player?.team.id,
-            target: player?.num,
-        };
-        this.send('useitem', data);
-        this.toggleItemMode(false);
-        this.selectedPlayer.pendingItem = null;
-        const item = this.selectedPlayer.inventory[index];
-        events.emit(`playerUseItem_${item.id}`);
-        events.emit('performAction');
-    }
-
-    endTutorial() {
-        if (this.socket) {
-            this.socket.emit('endTutorial');
-        }
-    }
-
-    send(channel, data) {
-        if (this.socket) {
-            this.socket.emit(channel, data);
-        }
-    }
-
-    getStartXY() {
-        const totalWidth = HexGridManager.HEX_WIDTH * GRID_WIDTH;
-        const totalHeight = HexGridManager.HEX_HEIGHT * GRID_HEIGHT;
-        const gameWidth = this.scale.gameSize.width;
-        const gameHeight = this.scale.gameSize.height;
-        const verticalOffset = 200;
-        const startX = (gameWidth - totalWidth) / 2;
-        const startY = (gameHeight - totalHeight) / 2 + verticalOffset;
-        return {startX, startY};
-    }
-
-    setUpArena() {
-        const {startX, startY} = this.getStartXY();
-
-        this.gridCorners = {
-            startX,
-            startY,
-        };
-
-       this.input.on('pointerdown', function (pointer) {
-           if (pointer.rightButtonDown()) {
-               this.selectedPlayer?.cancelSkill();
-               this.selectedPlayer?.displayMovementRange();
-               return;
-           }
-       }, this);
-
-        this.input.keyboard.on('keydown', this.handleKeyDown, this);
-    }
-
-    toggleTargetMode(flag: boolean) {
-        if (flag) {
-            const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
-            const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
-            
-            this.isInTargetMode = true;
-            this.targetModeSize = spell?.radius - 1|| 0;
-            this.hexGridManager.toggleTargetMode(true);
-            
-            // Add pointer move listener to highlight tiles in radius as cursor moves
-            if (!this.targetModeListener) {
-                this.targetModeListener = this.input.on('pointermove', (pointer) => {
-                    if (this.isInTargetMode) {
-                        this.updateTargetHighlight(pointer);
-                    }
-                });
-            }
-            
-            // Clear any existing highlights
-            this.hexGridManager.clearHighlight();
-            
-            // Highlight target range
-            if (this.selectedPlayer) {
-                this.hexGridManager.highlightTargetRange(
-                    this.selectedPlayer.gridX,
-                    this.selectedPlayer.gridY,
-                    this.selectedPlayer.distance,
-                    isAllyTargetingSpell
-                );
-            }
-            events.emit('pendingSpell');
-        } else {
-            // Exit target mode
-            this.isInTargetMode = false;
-            this.targetModeSize = 1;
-            this.hexGridManager.toggleTargetMode(false);
-            
-            // Clear all highlighted tiles
-            this.hexGridManager.clearHighlight();
-            
-            // Remove the pointer move listener
-            if (this.targetModeListener) {
-                this.input.off('pointermove', this.targetModeListener);
-                this.targetModeListener = null;
-            }
-            
-            events.emit('clearPendingSpell');
-            this.brightenScene();
-            this.selectedPlayer?.displayMovementRange();
-        }
-    }
-
-    toggleItemMode(flag: boolean) {
-        if (flag) {
-            const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
-            this.hexGridManager.clearHighlight();
-            
-            // Highlight target range if there's a selected player
-            if (this.selectedPlayer) {
-                this.hexGridManager.highlightTargetRange(
-                    this.selectedPlayer.gridX,
-                    this.selectedPlayer.gridY,
-                    this.selectedPlayer.distance
-                );
-            }
-            
-            events.emit('pendingItem');
-            // this.darkenScene(item?.targetHighlight);
-        } else {
-            events.emit('clearPendingItem');
-            // this.brightenScene();
-        }
-    }
-
-    handleKeyDown(event) {
-        // Prevent key event handling if input is locked
-        if (this.inputLocked) return;
-        
-        // Simple debouncing - prevent multiple rapid triggers of the same key
-        if (this.lastKeyTime && (Date.now() - this.lastKeyTime < 100)) {
-            return;
-        }
-        this.lastKeyTime = Date.now();
-        
-        // Check if the pressed key is a number
-        const isNumberKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NINE) || (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NUMPAD_NINE);
-        if (!isNumberKey) {
-            const isLetterKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.A && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.Z);
-            if (isLetterKey) {
-                // Get the letter corresponding to the keyCode
-                const letter = String.fromCharCode(event.keyCode);
-                this.selectedPlayer?.onLetterKey(letter);
-            }
-        }
-    }
-
-    handleDesktopAction = (event: CustomEvent<{action: DesktopAction}>) => {
-        if (this.inputLocked || !this.gameInitialized) return;
-        const {action} = event.detail;
-        const members = this.teamsMap.get(this.playerTeamId)?.members.filter(player => player.isAlive()) || [];
-        if (action.startsWith('select-unit-')) {
-            this.selectOwnUnit(members[Number(action.at(-1)) - 1]);
-        } else if ((action === 'next-unit' || action === 'previous-unit') && members.length) {
-            const current = members.indexOf(this.selectedPlayer);
-            const direction = action === 'next-unit' ? 1 : -1;
-            this.selectOwnUnit(members[(current + direction + members.length) % members.length]);
-        } else if (action === 'cancel') {
-            this.selectedPlayer?.cancelSkill();
-            this.deselectPlayer();
-        }
+    // Queue socket events until the scene is created
+    var onevent = this.socket.onevent;
+    const scene = this;
+    this.socket.onevent = function (packet) {
+      if (!scene.sceneCreated) {
+        // Set at the end of create()
+        console.warn("queueing ", packet.data[0]);
+        scene.eventsQueue.push(packet);
+      } else {
+        onevent.call(this, packet); // original call
+      }
     };
 
-    selectOwnUnit(player?: Player) {
-        if (!player) return;
-        this.deselectPlayer();
-        this.selectPlayer(player);
-    }
-
-    isFree(gridX, gridY) {
-        return !this.gridMap.get(serializeCoords(gridX, gridY)) && 
-               !this.hexGridManager.hasObstacle(gridX, gridY) &&
-               !this.hexGridManager.isHole(gridX, gridY);
-    }
-
-    hasPlayer(gridX, gridY) {
-        return this.gridMap.has(serializeCoords(gridX, gridY));
-    }
-
-    handleTileClick(gridX, gridY) {
-        console.log(`[Arena:handleTileClick] Clicked on tile: ${gridX}, ${gridY}`);
-        if (this.inputLocked) {
-            this.unlockInput();
-            return;
-        }
-        
-        const player = this.gridMap.get(serializeCoords(gridX, gridY));
-        const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
-        const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
-        if (pendingSpell != null) {
-            if (!this.validateTarget(gridX, gridY, pendingSpell)) {
-                this.playSound('nope', 0.2);
-                return;
-            }
-            this.sendSpell(gridX, gridY, player);
-        } else if (pendingItem != null) {
-            if (!this.validateTarget(gridX, gridY, pendingItem)) {
-                this.playSound('nope', 0.2);
-                return;
-            }
-            this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
-        } else if ((!player || !player.isAlive()) && this.hexGridManager.hasObstacle(gridX, gridY)) {
-            this.sendObstacleAttack(gridX, gridY);
-        } else if (this.selectedPlayer && !player && this.selectedPlayer.canMoveTo(gridX, gridY)) {
-            this.handleMove(gridX, gridY);
-        } else if (player){ 
-            player.onClick();
-        }
-    }
-
-    handleTileHover(gridX, gridY, hover = true) {
-        const player = this.gridMap.get(serializeCoords(gridX, gridY));
-        if (player) {
-            if (hover) {
-                player.onPointerOver();
-            } else {
-                player.onPointerOut();
-            }
-        }
-    }
-
-    validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
-        if (!VALIDATE_TARGETS) return true;
-        if (!isInSpellRange(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) return false;
-        if (action.target == Target.AOE && action.radius > 1) {
-            return true;
-        }
-        const character = this.gridMap.get(serializeCoords(gridX, gridY));
-        if (!character && action.target === Target.SINGLE) return false;
-        const isAlly = character?.team.id === this.playerTeamId;
-        if (action.targetHighlight === TargetHighlight.ALLY && isAlly) {
-            return true;
-        } else if ((action.targetHighlight == undefined || action.targetHighlight === TargetHighlight.ENEMY) && !isAlly) {
-            return true;
-        } else if (action.targetHighlight === TargetHighlight.DEAD && !character?.isAlive()) {
-            return true;
-        }
-        return false;
-    }
-
-    handleMove(gridX, gridY) {
-        if (!this.selectedPlayer.canMoveTo(gridX, gridY) || !this.hexGridManager.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY, this.isFree.bind(this))) {
-            this.playSound('nope');
-            return;
-        }
-        this.playSound('click');
-        this.sendMove(gridX, gridY);
-        this.hexGridManager.clearHighlight();
-    }
-
-    refreshBox() {
-        if (this.selectedPlayer) {
-            events.emit('showPlayerBox', this.selectedPlayer.getProps());
-        }
-    }
-    
-    refreshOverview() {
-        this.overviewReady = true;
-        const { team1, team2, general, initialized, queue, turnee } = this.getOverview();
-        if (this.overviewReady) {
-            events.emit('refreshOverview', team1, team2, general, initialized, queue, turnee);
-        }
-    }
-
-    relayEvent(event, data?) {
-        // console.log(`[Arena:relayEvent] Emitting event: ${event}`);
-        events.emit(event, data);
-    }
-
-    refreshUI(num) {
-        if (this.selectedPlayer && num === this.selectedPlayer.num) {
-            this.refreshBox();
-        }
-        this.refreshOverview();
-    }
-
-    selectTurnee() {
-        this.deselectPlayer();
-        if (this.turnee) {
-            const player = this.getPlayer(this.turnee.team, this.turnee.num);
-            this.selectPlayer(player);
-        }
-    }
-
-    selectPlayer(player: Player) {
-        if (!this.gameInitialized) return;
-        this.selectedPlayer = player;
-        this.selectedPlayer?.select();
-        this.refreshBox();
-        this.refreshOverview();
-    }
-
-    deselectPlayer() {
-        if (this.selectedPlayer) {
-            this.selectedPlayer.deselect();
-            this.selectedPlayer.cancelSkill();
-            this.selectedPlayer = null;
-            this.hexGridManager.clearHighlight();
-        }
-    }
-
-    getPlayer(team: number, num: number): Player {
-        return this.teamsMap?.get(team)?.getMember(num);
-    }
-
-    getOtherTeam(id: number): number {
-        return id === 1 ? 2 : 1;
-    }
-
-    processMove({team, tile, num}) {
-        if (this.gameEnded) return;
-        
-        const player = this.getPlayer(team, num);
-        if (!player) {
-            return;
-        }
-
-        this.gridMap.delete(serializeCoords(player.gridX, player.gridY));
-        this.gridMap.set(serializeCoords(tile.x, tile.y), player);
-
-        player.walkTo(tile.x, tile.y);
-        this.playSoundMultipleTimes('steps', 2);
-        if (player.isPlayer) {
-            events.emit('playerMoved');
-        }
-    }
-
-    processAttack({team, target, num, damage, hp, isKill, sameTeam}) {
-        if (this.gameEnded) return;
-        const player = this.getPlayer(team, num);
-        const otherTeam = sameTeam ? team : this.getOtherTeam(team);
-        const targetPlayer = this.getPlayer(otherTeam, target);
-
-        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
-        if (isKill) this.killCam(pixelX, pixelY);
-        
-        this.playSound('slash');
-        player.attack(targetPlayer.gridX);
-        targetPlayer.setHP(hp);
-        targetPlayer.displaySlash(player);   
-        this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);   
-        if (player.isPlayer) {
-            events.emit('playerAttacked');
-        }
-    }
-
-    processObstacleAttack({team, num, x, y}) {
-        if (this.gameEnded) return;
-        const player = this.getPlayer(team, num);
-        this.playSound('slash');
-        this.playSound('shatter');
-        player.attack(x);
-        this.displayAttackImpact(x, y);
-    }
-
-    processInventory({num, inventory}) {
-        if (this.gameEnded) return;
-        const player = this.getPlayer(this.playerTeamId, num);
-        player.setInventory(inventory);
-        this.refreshBox();
-    }
-
-    processHPChange({team, num, hp, damage}) {
-        if (this.gameEnded) return;
-        const player = this.getPlayer(team, num);
-        if (!player) return;
-        player.setHP(hp);
-        if (damage) player.displayDamage(damage);
-        if (player.isPlayer) events.emit('hpChange', {num, hp});
-    }
-
-    processStatusChange({team, num, statuses}) {
-        if (this.gameEnded) return;
-        const player = this.getPlayer(team, num);
-        player?.setStatuses(statuses);
-    }
-
-    processMPChange({num, mp}) {
-        if (this.gameEnded) return;
-        const player = this.getPlayer(this.playerTeamId, num);
-        player.setMP(mp);
-    }
-
-    processUseItem({team, num, animation, name, sfx}) {
-        if (this.gameEnded) return;
-        const player = this.getPlayer(team, num);
-        player.useItemAnimation(animation, name);
-        this.playSound(sfx);
-        if (player.isPlayer) {
-            events.emit(`playerUseItem`);
-        }
-    }
-
-
-    processTerrain(updates: TerrainUpdate[], isReconnect = false) {
-        if (this.gameEnded) return;
-        updates.forEach(({x, y, terrain}) => {
-            const handlers = {
-                [Terrain.FIRE]: () => this.handleFireTerrain(x, y),
-                [Terrain.ICE]: () => this.handleIceTerrain(x, y, isReconnect),
-                [Terrain.NONE]: () => this.handleClearTerrain(x, y)
-            };
-            handlers[terrain]?.();
-        });
-    }
-
-    hasFlame(x: number, y: number) {
-        return this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE;
-    }
-
-    hasIce(x: number, y: number) {
-        return this.terrainMap.get(serializeCoords(x, y)) === Terrain.ICE;
-    }
-
-    createIceBlock(x: number, y: number) {
-        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
-        const depth = this.yToZ(y) + DEPTH_OFFSET;
-        const icesprite = this.add.sprite(pixelX, pixelY, 'iceblock')
-            .setDepth(depth).setAlpha(0.9)
-            .setOrigin(0.5, 0.35)
-            // .setInteractive();
-        // Add pointerover event to sprite
-        icesprite.on('pointerover', () => {
-            if (this.selectedPlayer?.isNextTo(x, y) 
-                && this.selectedPlayer.canAct()
-                && this.selectedPlayer.pendingSpell == null
-                && this.selectedPlayer.pendingItem == null) {
-                events.emit('hoverEnemyCharacter');
-            } 
-        });
-        icesprite.on('pointerdown', () => {
-            this.handleTileClick(x, y);
-        });
-        // Add pointerout event to sprite
-        icesprite.on('pointerout', () => {
-            events.emit('unhoverCharacter');
-        });
-        icesprite.postFX.addShine(0.5, .2, 5);
-        return icesprite;
-    }
-
-    flickerAndDestroy(sprite, times, duration) {
-        if (!sprite) return;
-    
-        // Create a tween to flicker the sprite
-        this.tweens.add({
-            targets: sprite,
-            alpha: { from: 1, to: 0 },
-            duration: duration / (times * 2),
-            yoyo: true,
-            repeat: times - 1, // Repeat for the number of times - 1 since it starts from 1
-            onComplete: () => {
-                sprite.destroy();
-            }
-        });
-    }    
-
-    displayAttackImpact(gridX, gridY) {
-        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(gridX, gridY);
-        this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
-            .setVisible(true)
-            .setDepth(this.yToZ(gridY) + DEPTH_OFFSET)
-            .setScale(0.5)
-            .play('impact');
-    }
-
-    yToZ(y) {
-        return Number((3.5 + y/10).toFixed(2));
-    }
-
-    processCast(flag, {team, num, id, target,}) {
-        if (this.gameEnded) return;
-        
-        const player = this.getPlayer(team, num);
-        const spell = getSpellById(id);
-        player?.castAnimation(flag, spell?.name, spell?.charge);
-
-        if (CAST_ZOOM) {
-            // Check for cast start with charged spell
-            if (flag && spell?.charge) {
-                console.log(`Starting charged spell cast`);
-                const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(player.gridX, player.gridY);
-                this.chargeCastCam(pixelX, pixelY);
-                this.isZoomedForSpellCast = true;
-            } 
-            // Check for cast end when camera is zoomed for a spell
-            else if (!flag && this.isZoomedForSpellCast) {
-                console.log(`Ending spell cast, resetting camera`);
-                this.resetCamera();
-                    this.isZoomedForSpellCast = false;
-            }
-        }
-        
-        if (player?.isPlayer) {
-            events.emit(`playerCastSpell`);
-        }
-    }
-
-    // Simplify the chargeCastCam method - no need for revert parameter
-    chargeCastCam(pixelX, pixelY) {
-        if (FREEZE_CAMERA) return;
-        
-        // Target zoom level for charged spells
-        const targetZoom = 1.5;
-        const panDuration = 800;
-        
-        // Move camera to the caster's location and zoom in
-        this.cameras.main.pan(pixelX, pixelY, panDuration, 'Power2');
-        this.cameras.main.zoomTo(targetZoom, panDuration, 'Power2');
-    }
-
-    // Add a helper method to reset the camera
-    resetCamera(scrollX = null, scrollY = null, zoom = null) {
-        if (FREEZE_CAMERA) return;
-        
-        const gameWidth = this.cameras.main.width;
-        const gameHeight = this.cameras.main.height;
-        
-        // Use provided values or center the camera
-        const targetX = scrollX !== null ? gameWidth/2 + scrollX : gameWidth/2;
-        const targetY = scrollY !== null ? gameHeight/2 + scrollY : gameHeight/2;
-        const targetZoom = zoom !== null ? zoom : 1;
-        
-        // Smoothly transition back
-        this.cameras.main.pan(targetX, targetY, 800, 'Power2');
-        this.cameras.main.zoomTo(targetZoom, 800, 'Power2');
-    }
-
-    processLocalAnimation({fromX, fromY, toX, toY, id, isKill}) {
-        const spell = getSpellById(id);
-        const {x: pixelXInitial, y: pixelYInitial} = this.hexGridToPixelCoords(toX, toY);
-        let pixelY = pixelYInitial;
-        let pixelX = pixelXInitial;
-
-        const config = VFXconfig[spell.vfx];
-        if (config) {
-            if (config.yoffset) pixelY += config.yoffset;
-            if (config.xoffset) pixelX += config.xoffset;
-        }
-
-        if (spell.projectile) {
-            this.animateProjectile(fromX, fromY, toX, toY, spell.projectile);
-        }
-
-        setTimeout(() => {
-            if (isKill) {
-                this.killCam(pixelXInitial, pixelYInitial);
-            } else {
-                // this.spellCam(pixelX, pixelY);
-            }
-
-            const scale = config && 'scale' in config ? config.scale : LOCAL_ANIMATION_SCALE;
-            let yScale = scale;
-            let yOrigin = 1;
-
-            if (config && config.stretch) {
-                let distanceToTop = pixelY;
-                // if (config && config.extraStretch) {
-                //     distanceToTop += 100;
-                // }
-                const baseHeight = 512; // Base height of the thunder sprite
-                
-                // Set the scale: normal width, stretched height to reach top
-                let heightScale = distanceToTop / baseHeight;
-                if (config && config.extraStretch) {
-                    heightScale *= 1.2;
-                }
-                yScale = heightScale;
-                yOrigin = 1;
-            }
-            // Normal handling for other animations
-            this.localAnimationSprite.setPosition(pixelX, pixelY)
-                .setVisible(true)
-                .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
-                .setScale(scale, yScale);
-
-            if (config && config.stretch) {
-                this.localAnimationSprite.setOrigin(0.5, yOrigin);
-            }
-            
-            console.log(`[Arena:processLocalAnimation] spell.vfx: ${spell.vfx}`);
-            this.localAnimationSprite.play(spell.vfx);
-            
-            this.playSound(spell.sfx);
-
-            if (config && config.shake) {
-                const duration = isKill ? 2000 : 1000;
-                const intensity = isKill ? 0.002 : 0.02;
-                this.cameras.main.shake(duration, intensity);
-            } 
-        }, spell.projectile ? PROJECTILE_DURATION * 1000 : 0);
-    }
-
-    // New method to animate projectile from caster to target
-        animateProjectile(fromX: number, fromY: number, toX: number, toY: number, projectileKey: string) {
-        // Convert grid coordinates to pixel coordinates
-        const {x: startX, y: startY} = this.hexGridToPixelCoords(fromX, fromY);
-        const {x: endX, y: endY} = this.hexGridToPixelCoords(toX, toY);
-        
-        // Create projectile sprite at caster position
-        const projectile = this.add.sprite(startX, startY, '')
-            .setScale(VFXconfig[projectileKey].scale)
-            .setOrigin(0.5, 0.5)
-            .setDepth(this.yToZ(fromY) + DEPTH_OFFSET + 0.1);
-
-        // Set initial rotation - point upward 
-        // Since sprite faces right by default, we need -90 degrees to point up
-        projectile.setRotation(-Math.PI/2);
-        
-        // Play projectile animation
-        projectile.play(projectileKey);
-        
-        // Calculate screen top with some padding
-        const screenTop = -50;
-        
-        // Calculate total distance based on the actual path (up then down)
-        const distanceUp = Math.abs(startY - screenTop);
-        const distanceDown = Math.abs(endY - screenTop);
-        const totalDistance = distanceUp + distanceDown;
-        
-        const totalDuration = PROJECTILE_DURATION * 1000;
-        
-        // Phase 1: Ascent - Move projectile straight up
-        this.tweens.add({
-            targets: projectile,
-            y: screenTop,
-            duration: (distanceUp / totalDistance) * totalDuration,
-            ease: 'Cubic.easeOut',
-            onComplete: () => {
-                // Phase 2: Hide the projectile
-                projectile.setVisible(false);
-                
-                // Phase 3: Reappear above target and crash down
-                setTimeout(() => {
-                    // Reposition projectile above the target
-                    projectile.setPosition(endX, screenTop)
-                        .setVisible(true)
-                        // Set rotation to point downward (90 degrees)
-                        .setRotation(Math.PI/2);
-                    
-                    // Create the descent tween
-                    this.tweens.add({
-                        targets: projectile,
-                        y: endY,
-                        duration: (distanceDown / totalDistance) * totalDuration,
-                        ease: 'Cubic.easeIn',
-                        onComplete: () => {
-                            // Fade out and destroy on impact
-                            this.tweens.add({
-                                targets: projectile,
-                                alpha: 0,
-                                scale: projectile.scale * 1.5,
-                                duration: 200,
-                                onComplete: () => {
-                                    projectile.destroy();
-                                }
-                            });
-                        }
-                    });
-                }, totalDuration / 10); // Brief pause before reappearing
-            }
-        });
-    }
-
-    // Add this new method to handle camera movement
-    panCameraWithOffset(targetX: number, targetY: number, duration: number = 1000, easing: string = 'Cubic.easeOut') {
-        if (FREEZE_CAMERA) return;
-        // Get screen dimensions and target position
-        const screenWidth = this.cameras.main.width;
-        const screenHeight = this.cameras.main.height;
-
-        // Calculate camera movement from center
-        const moveRatio = 0.4;
-        const screenCenterX = screenWidth/2;
-        const screenCenterY = screenHeight/2;
-        
-        const offsetX = (targetX - screenCenterX) * moveRatio;
-        const offsetY = (targetY - screenCenterY) * moveRatio;
-
-        // Pan camera smoothly from center
-        this.cameras.main.pan(
-            screenCenterX + offsetX,
-            screenCenterY + offsetY,
-            duration,
-            easing
-        );
-    }
-
-    // Update spellCam to use the new method
-    spellCam(pixelX: number, pixelY: number, revert = false) {
-        const originalScrollX = this.cameras.main.scrollX;
-        const originalScrollY = this.cameras.main.scrollY;
-        
-        this.panCameraWithOffset(pixelX, pixelY);
-
-        if (revert) {
-            // After animation duration, pan back to original position
-            setTimeout(() => {
-                this.cameras.main.pan(
-                    this.cameras.main.width/2 + originalScrollX,
-                    this.cameras.main.height/2 + originalScrollY,
-                    1000,
-                    'Power2'
-                );
-            }, 1000);
-        }
-    }
-
-    // Update highlightTurnee to use the new method
-    highlightTurnee() {
-        if (!this.turnee) return;
-        
-        const player = this.getPlayer(this.turnee.team, this.turnee.num);
-        if (!player) return;
-
-        // If killcam is active, wait for it to finish before highlighting turnee
-        if (this.killCamActive) {
-            this.time.delayedCall(KILL_CAM_DURATION * 1000, () => {
-                this.highlightTurnee();
-            });
-            return;
-        }
-
-        const {x, y} = this.hexGridToPixelCoords(player.gridX, player.gridY);
-        // this.panCameraWithOffset(x, y);
-    }
-
-    processGameEnd(data: OutcomeData) {
-        this.gameEnded = true;
-        this.musicManager.playEnd();
-        const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
-        setTimeout(() => {
-            winningTeam?.members.forEach((player) => {
-                player.victoryDance();
-            });
-        }, 200);
-        if (this.overviewReady) {
-            events.emit('gameEnd', data);
-        }
-    }
-
-    processScoreUpdate({score}) {
-        // console.log(`Team ${teamId} score updated to ${score}`);
-        const team = this.teamsMap.get(this.playerTeamId);
-        const _score = team.score;
-        team.setScore(score);
-        // this.refreshOverview(); // TODO: add if display score again
-        // if (score - _score > 50) this.playSound('cheer', 2);
-    }
-
-    processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
-        const team = this.teamsMap.get(data.team);
-        this.placeCharacter(data.character, team, false);
-    }
-
-    processQueueData(data: any[]) {
-        this.queue = data;
-        this.refreshOverview();
-    }
-
-    processTurnee(data: {num: number, team: number, turnDuration: number, timeLeft: number}) {
-        if (this.gameEnded) return;
-        // Determine if turnee is player
-        if (data.team != this.playerTeamId) {
-            events.emit('enemyTurn');
-        }
-        events.emit('turnStarted');
-
-        this.turnee = data;
-        this.selectTurnee();
-        this.highlightTurnee();
-    }
-
-    updateMusicIntensity(ratio){
-        this.musicManager.updateMusicIntensity(ratio);
-    }
-
-    createSounds() {
-        this.SFX = Object.fromEntries(
-            Arena.SOUND_NAMES.map(name => [
-                name,
-                this.sound.get(name) || this.sound.add(name)
-            ])
-        );
-
-        events.on('settingsChanged', this.onSettingsChanged, this);
-    }
-
-    onSettingsChanged = (settings) => {
-        this.sfxVolume = settings.sfxVolume / 100;
-    }
-
-    playSound(name, volume = 1, loop = false) {
-        if (!this.SFX || !this.SFX[name]) {
-            console.warn(`Sound effect "${name}" not found`);
-            return;
-        }
-        
-        const adjustedVolume = volume * this.sfxVolume;
-        try {
-            this.SFX[name].play({delay: 0, volume: adjustedVolume, loop});
-        } catch (error) {
-            console.warn(`Error playing sound "${name}":`, error);
-        }
-    }
-
-    stopSound(name) {
-        this.SFX[name].stop();
-    }
-
-    playSoundMultipleTimes(key, times) {
-        if(times <= 0) return;
-    
-        const sound = this.SFX[key];
-    
-        sound.once('complete', () => {
-            this.playSoundMultipleTimes(key, times - 1); // Play the sound again
-        });
-    
-        sound.play();
-    }
-
-
-    createAnims() {
-        allSprites.forEach((asset) => {
-            // Character postures
-            this.createCharacterAnim(asset, 'idle', [9, 10, 11], { repeat: -1, yoyo: true });
-            this.createCharacterAnim(asset, 'idle_hurt', [33, 34, 35], { repeat: -1, yoyo: true });
-            this.createCharacterAnim(asset, 'walk', [6, 7, 8], { repeat: -1 });
-            this.createCharacterAnim(asset, 'attack', [12, 13, 14], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
-            this.createCharacterAnim(asset, 'dodge', [45, 46, 47], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
-            this.createCharacterAnim(asset, 'item', [48, 49, 50], { frameRate: BASE_ANIM_FRAME_RATE });
-            this.createCharacterAnim(asset, 'hurt', [42, 43, 44], { frameRate: BASE_ANIM_FRAME_RATE });
-            this.createCharacterAnim(asset, 'cast', [39, 40, 41], { frameRate: BASE_ANIM_FRAME_RATE });
-            this.createCharacterAnim(asset, 'die', [51, 52, 53], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
-            this.createCharacterAnim(asset, 'victory', [15, 16, 17], { repeat: -1, yoyo: true });
-            this.createCharacterAnim(asset, 'boast', [15, 16, 17], { frameRate: BASE_ANIM_FRAME_RATE * 1.5, repeat: 2, yoyo: true });
-        });
-
-        this.anims.create({
-            key: `cast`, 
-            frames: this.anims.generateFrameNumbers('cast', { frames: [10, 11, 12] }), 
-            frameRate: 15, 
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: `slash`, 
-            frames: this.anims.generateFrameNumbers('slash', { frames: [99, 100, 101, 102] }), 
-            frameRate: 15, 
-        });
-
-        this.anims.create({
-            key: `impact`, 
-            frames: this.anims.generateFrameNumbers('impact', { start: 0, end: 12 }), 
-            frameRate: 25, 
-        });
-
-        // Spells VFX
-
-        this.anims.create({
-            key: `meltdown`, 
-            frames: this.anims.generateFrameNumbers('meltdown'), 
-            frameRate: 10, 
-        });
-
-        this.anims.create({
-            key: `potion_heal`, 
-            frames: this.anims.generateFrameNumbers('potion_heal'), 
-            frameRate: 10, 
-        });
-
-        this.anims.create({
-            key: `revive`, 
-            frames: this.anims.generateFrameNumbers('revive'), 
-            frameRate: 15, 
-        });
-
-        fireLevels.forEach(level => {
-            const key = `fire_${level}_explosion`;
-            // const fireballKey = `fireball_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
-            });
-
-            // this.anims.create({
-            //     key: fireballKey, 
-            //     frames: this.anims.generateFrameNumbers(fireballKey), 
-            //     frameRate: VFXconfig[fireballKey]?.frameRate || 15, 
-            //     repeat: -1,
-            // });
-        });
-
-        chargedFireLevels.forEach(level => {
-            const key = `charged_fire_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 50,
-                repeat: -1,
-            });
-        });
-
-        iceLevels.forEach(level => {
-            const key = `ice_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
-            });
-        });
-
-        thunderLevels.forEach(level => {
-            const key = `thunder_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
-            });
-        });
-
-        chargedIceLevels.forEach(level => {
-            const key = `charged_ice_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 50,
-                repeat: -1,
-            });
-        });
-
-        chargedThunderLevels.forEach(level => {
-            const key = `charged_thunder_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 50,
-                repeat: -1,
-            });
-        });
-
-        healLevels.forEach(level => {
-            const key = `heal_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15,
-            });
-        });
-
-        this.anims.create({
-            key: `poison`, 
-            frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 16 }), 
-            frameRate: 15,
-        });
-
-        this.anims.create({
-            key: `mute`, 
-            frames: this.anims.generateFrameNumbers('mute', { start: 0, end: 13 }), 
-            frameRate: 15,
-        });
-
-        // Terrain VFX
-        terrainFireLevels.forEach(level => {
-            const key = `terrain_fire_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 30,
-                repeat: -1,
-            });
-        });
-
-        this.anims.create({
-            key: `smoke`, 
-            frames: this.anims.generateFrameNumbers('smoke', { start: 32, end: 42 }), 
-            frameRate: 12,
-        });
-
-        // Status effects VFX
-
-        this.anims.create({
-            key: `paralyzed`, 
-            frames: this.anims.generateFrameNumbers('statuses', { start: 56, end: 63 }), 
-            frameRate: 15,
-            repeat: -1,
-        });
-
-        this.anims.create({
-            key: `poisoned`, 
-            frames: this.anims.generateFrameNumbers('statuses', { start: 0, end: 7 }), 
-            frameRate: 10,
-            repeat: -1,
-        });
-
-        this.anims.create({
-            key: `muted`, 
-            frames: this.anims.generateFrameNumbers('statuses', { start: 16, end: 23 }), 
-            frameRate: 10,
-            repeat: -1,
-        });
-
-
-        this.animationScales = {
-            slash: 1,
-        }
-    }
-
-    placeCharacter(character: PlayerNetworkData, team: Team, isReconnect = false) {
-        const isPlayer = team.id === this.playerTeamId;
-        const {x, y} = this.hexGridToPixelCoords(character.x, character.y);
-
-        const player = new Player(
-            this, this, team, character.name, character.x, character.y, x, y,
-            team.getMembers().length + 1, character.portrait, isPlayer, character.class,
-            character.hp, character.maxHP, character.mp, character.maxMP,
-            character.level, character.xp,
-        );
-        
-        if (isPlayer) {
-            player.setDistance(character.distance);
-            player.setInventory(character.inventory);
-            player.setSpells(character.spells);
-        }
-        player.setStatuses(character.statuses);
-
-        if (!isReconnect) {
-            player.y -= 1000;
-            // Stagger the entrance of each player with a random offset between -200 and +200 ms
-            const randomOffset = Math.floor(Math.random() * (AIR_ENTRANCE_DELAY_VARIANCE * 2 + 1)) - AIR_ENTRANCE_DELAY_VARIANCE; // Random number between -AIR_ENTRANCE_DELAY_VARIANCE and AIR_ENTRANCE_DELAY_VARIANCE
-            const entranceDelay = AIR_ENTRANCE_DELAY + randomOffset;
-            this.time.delayedCall(entranceDelay, player.makeAirEntrance, [], player);
-        }
-
-        this.gridMap.set(serializeCoords(character.x, character.y), player);
-
-        team.addMember(player);
-    }
-
-    placeCharacters(data: PlayerNetworkData[], team: Team, isReconnect = false) {
-        data.forEach(player => this.placeCharacter(player, team, isReconnect));
-    }
-
-    highlightCells(gridX, gridY, radius) {
-        // Clear any existing highlights
-        this.hexGridManager.clearHighlight();
-        
-        // Use the common helper with custom validation for movement
-        this.hexGridManager.highlightTilesInRadius(
-            gridX, 
-            gridY, 
-            radius, 
-            0x00ffff, // Cyan
-            (targetX, targetY) => this.hexGridManager.isValidCell(gridX, gridY, targetX, targetY, this.isFree.bind(this))
-        );
-    }
-
-    hasEnemyNextTo(gridX, gridY) {
-        const enemyTeam = this.teamsMap.get(this.getOtherTeam(this.playerTeamId))
-        return enemyTeam.getMembers().some(member => {
-            return hexDistance(member.gridX, member.gridY, gridX, gridY) <= 1;
-        });
-    }
-    
-    create()
-    {
-        window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
-        this.loadBackgroundMusic();
-        this.setUpArena();
-        this.createAnims();
-        this.createSounds();
-
-        this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(LOCAL_ANIMATION_SCALE).setOrigin(0.5, 0.7).setVisible(false);
-        this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);
-
-        this.input.mouse.disableContextMenu();
-
-        this.musicManager = new MusicManager(this, 1, 12, [5, 6, 11]);
-        this.musicManager.playBeginning();
-        // this.playSound('crowd', 0.5, true);
-
-        this.environmentalAudioSources = {
-            flames: 0,
-        }
-
-        this.gameSettings = {
-            tutorial: false,
-            spectator: false,
-            game0: false,
-            mode: null,
-        }
-
-        this.hexGridManager = new HexGridManager(this);
-
-        this.sceneCreated = true;
-        this.emptyQueue();
-        
-        this.setUpArena();
-        
-        this.input.keyboard.on('keydown-D', () => {
-            this.hexGridManager.toggleCoordinateDisplay();
-        });
-
-        // Add character glow effect listener
-        window.addEventListener('characterInSpellRadius', (e: CustomEvent) => {
-            const { x, y, isAlly } = e.detail;
-            const player = this.gridMap.get(serializeCoords(x, y));
-            if (player) {
-                player.onPointerOver();
-            }
-        });
-
-        // Add character un-highlight effect listener
-        window.addEventListener('characterOutOfSpellRadius', (e: CustomEvent) => {
-            const { x, y } = e.detail;
-            const player = this.gridMap.get(serializeCoords(x, y));
-            if (player) {
-                player.onPointerOut();
-            }
-        });
-    }
-
-    emptyQueue(){ // Process the events that have been queued during initialization
-        // console.log(`[Arena:emptyQueue] Emptying event queue`);
-        if (this.eventsQueue.length > 1) this.isLateToTheParty = true;
-        this.eventsQueue.forEach((event) => {
-            this.socket.onevent.call(this.socket, event);
-        });
-    };
-
-    loadBackgroundMusic() {
-        // Add the music files to the loader
-        for (let i = 2; i <= 12; i++) {
-            this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
-        }
-        this.load.audio('bgm_end', bgmEndSFX);
-    
-        // Start the loader
-        this.load.start();
-    }
-
-    initializeGame(data: GameData): void {
-        recordLoadingStep('finish');
-        const isReconnect = data.general.reconnect || this.isLateToTheParty;
-        // console.log(`[Arena:initializeGame] Reconnecting to game: ${isReconnect}`);
-
-        this.playerTeamId = data.player.teamId;
-
-        if(this.playerTeamId === undefined) {
-            console.error('Player team id is undefined');
-        }
-
-        this.gameSettings.spectator = data.general.spectator;
-        this.gameSettings.mode = data.general.mode;
-        this.queue = data.queue;
-        this.turnee = data.turnee;
-        this.gameSettings.game0 = data.player.player.completedGames === 0;
-
-        this.tutorialManager = new TutorialManager(this, data.player.player.engagementStats);
-
-        this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
-        this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
-
-        // Set up holes in the grid
-        if (data.holes && this.hexGridManager) {
-            this.hexGridManager.setHoles(data.holes);
-        }
-
-        // Events from the HUD
-        events.on('itemClick', (keyIndex) => {
-            this.selectedPlayer?.onKey(keyIndex);
-        });
-
-        events.on('passTurn', () => {
-            this.playSound('click');
-            this.socket.emit('passTurn');
-        });
-
-        events.on('abandonGame', () => {
-            this.abandonGame();
-        });
-
-        events.on('exitGame', () => {
-            this.destroy();
-        });   
-        
-        events.on('teamRevealed', () => {
-            this.socket.emit('teamRevealed');
-            this.displayGame(data, isReconnect);
-        });
-
-        events.emit('gameInitialized', {game0: this.gameSettings.game0});
-        
-        if (this.gameSettings.game0) {
-            events.emit('revealTeam', data.player.team);
-        } else {
-            this.displayGame(data, isReconnect);
-        }
-    }
-
-    displayGame(data: GameData, isReconnect: boolean) {
-        this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
-        this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
-        
-        const tilesDelay = isReconnect ? 0 : 1000;
-
-        this.hexGridManager.floatHexTiles(
-            tilesDelay,
-            this.handleTileClick.bind(this),
-            this.handleTileHover.bind(this)
-        );
-        
-        setTimeout(() => {
-            // Move this AFTER floatHexTiles so the tiles exist
-            this.hexGridManager.setCharacterTiles(this.gridMap);
-        }, isReconnect ? 0 : AIR_ENTRANCE_DELAY + AIR_ENTRANCE_DELAY_VARIANCE * 2);
-
-        this.processTerrain(data.terrain, isReconnect); // Put after floatTiles() to allow for tilesMap to be intialized
-
-        if (isReconnect) {
-            this.setGameInitialized();
-            this.selectTurnee();
-        } else {
-            const delay = 3000;
-            setTimeout(this.refreshOverview.bind(this), delay + 1000);
-            setTimeout(() => {
-                this.displayGEN(GEN.COMBAT_BEGINS);
-                this.setGameInitialized();
-                this.selectTurnee();
-            }, delay);
-        }
-    }
-
-    setGameInitialized() {
-        this.gameInitialized = true;
-        this.refreshOverview();
-    }
-
-    startAnimation() {
-        const bandHeight = 300; 
-        const screenWidth = this.cameras.main.width;
-        const screenHeight = this.cameras.main.height;
-        const bandY = (screenHeight - bandHeight) / 2; // Position Y so the band is centered vertically
-    
-        // Create the semi-transparent black band
-        let currentHeight = 1; // Start with a height of 1
-        const band = this.add.graphics({ fillStyle: { color: 0x000000, alpha: 0.5 } }).setDepth(10);
-        band.fillRect(0, bandY, screenWidth, currentHeight);
-    
-        // Animate the height of the band
-        this.tweens.add({
-            targets: { height: 1 },
-            height: bandHeight, // Target height for the animation
-            duration: 500,
-            ease: 'Power2',
-            onUpdate: (tween) => {
-                currentHeight = tween.getValue();
-                band.clear(); // Clear previous frame
-                band.fillRect(0, bandY, screenWidth, currentHeight);
-            },
-            onComplete: () => {
-                // Once band animation is complete, animate 'START' text
-                const startText = this.add.text(0, bandY + (bandHeight - 20) / 2, 'FIGHT!', { fontSize: '40px', color: '#FFFFFF', fontFamily: 'Kim' }).setAlpha(0).setDepth(11);
-                startText.x = -startText.width; // Position text off-screen to the left
-    
-                // Slide in animation for 'START' text
-                this.tweens.add({
-                    targets: startText,
-                    x: (screenWidth - startText.width) / 2,
-                    alpha: 1,
-                    duration: 500,
-                    ease: 'Power2',
-                    hold: 500, // Keep in place for a bit
-                    onComplete: () => {
-                        // Slide out to the right
-                        this.tweens.add({
-                            targets: startText,
-                            x: screenWidth,
-                            alpha: 0,
-                            duration: 200,
-                            ease: 'Power2',
-                            onComplete: () => {
-                                // Cleanup: remove the text and band
-                                startText.destroy();
-                                band.destroy();
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    enqueueGEN(gen: GEN) {
-        this.genQueue.push(gen);
-        this.processGENQueue();
-    }
-
-    processGENQueue() {
-        if (this.gameEnded || this.isDisplayingGEN || this.killCamActive || this.genQueue.length === 0) {
-            return;
-        }
-        this.isDisplayingGEN = true;
-        const gen = this.genQueue.shift();
-        this.displayGEN(gen).then(() => {
-            this.isDisplayingGEN = false;
-            this.processGENQueue(); // Proceed to next GEN
-        });
-    }
-
-    displayGEN(gen: GEN): Promise<void> {
-        if (this.gameEnded) return Promise.resolve();
-        
-        return new Promise((resolve) => {
-            if (this.killCamActive) {
-                this.genQueue.unshift(gen);
-                resolve();
-                return;
-            }
-
-            if (gen != GEN.COMBAT_BEGINS && this.gameSettings.game0) {
-                return;
-            }
-
-            const config = Arena.GEN_CONFIGS[gen];
-            if (!config) {
-                resolve();
-                return;
-            }
-
-            // Setup GEN Background
-            const textTweenDuration = 600;
-            const textDelay = 400;
-            const yOffset = 80;
-            const bgYPosition = yOffset;
-            // Remove camera scroll from xPosition since we're using setScrollFactor(0)
-            const xPosition = this.cameras.main.centerX;
-            const yPosition = yOffset;
-            const scale = 0.5;
-
-            let genBg = this.add.image(xPosition, bgYPosition, 'gen_bg')
-                .setScrollFactor(0)
-                .setAlpha(0)
-                .setDepth(10)
-                .setScale(scale);
-
-            this.tweens.add({
-                targets: genBg,
-                alpha: 0.7,
-                duration: 200,
-                ease: 'Power2',
-            });
-
-            // Setup GEN Texts
-            const targets = [
-                this.add.image(-350, yPosition, config.text1)
-                    .setScrollFactor(0) // Make it stick to camera
-                    .setDepth(10)
-                    .setScale(scale),
-                this.add.image(this.cameras.main.width + 100, yPosition, 'blue_bang')
-                    .setScrollFactor(0) // Make it stick to camera
-                    .setDepth(10)
-                    .setScale(scale)
-            ];
-            
-            if (config.text2) {
-                targets.push(
-                    this.add.image(this.cameras.main.width + 100, yPosition, config.text2)
-                        .setScrollFactor(0) // Make it stick to camera
-                        .setDepth(10)
-                        .setScale(scale)
-                );
-            }
-
-            // Animate GEN Texts into View
-            this.tweens.add({
-                targets,
-                x: xPosition,
-                duration: textTweenDuration,
-                ease: 'Power2',
-                delay: textDelay,
-                onComplete: () => {
-                    // After displaying, wait for a duration then fade out
-                    this.time.delayedCall(2000, () => {
-                        this.tweens.add({
-                            targets: targets.concat([genBg]),
-                            alpha: 0,
-                            duration: 200,
-                            ease: 'Power2',
-                            onComplete: () => {
-                                // Clean up GEN elements
-                                targets.forEach(t => t.destroy());
-                                genBg.destroy();
-                                resolve(); // Resolve the promise to allow next GEN to be processed
-                            }
-                        });
-                    });
-                }
-            });
-        });
-    }
-
-    getOverview() {
-        const overview =  {
-            team1: this.teamsMap.get(1).getOverview(),
-            team2: this.teamsMap.get(2).getOverview(),
-            general: this.gameSettings,
-            initialized: this.gameInitialized,
-            queue: this.getQueue(),
-            turnee: this.getTurnee(),
-        };
-        return overview;
-    }
-
-    getQueue() {
-        return this.queue;
-    }
-
-    getTurnee() {
-        return this.turnee;
-    }
-
-    killCam(x, y) {
-        this.killCamActive = true;
-        // Save the original camera state
-        const originalZoom = this.cameras.main.zoom;
-        const originalTimeScale = this.localAnimationSprite.anims.timeScale;
-        const originalSoundRate = this.sound.rate;
-        const originalTweenRate = this.tweens.timeScale;
-        const originalScrollX = this.cameras.main.scrollX;
-        const originalScrollY = this.cameras.main.scrollY;
-
-        const targetZoom = 2; 
-        const slowMotionScale = 0.2; 
-
-        this.sound.setRate(slowMotionScale);
-        this.localAnimationSprite.anims.timeScale = slowMotionScale;
-        this.tweens.timeScale = slowMotionScale;
-        
-        // For every sprites in this.sprites, set anims.timeScale to slowMotionScale
-        this.sprites.forEach((sprite) => {
-            if (sprite.anims) sprite.anims.timeScale = slowMotionScale;
-        });
-
-        const firstDelay = 0;
-        const secondDelay = firstDelay + KILL_CAM_DURATION * 1000;
-        const cameraSpeed = 200;
-
-        this.time.delayedCall(firstDelay, () => {
-            // Move camera to the spell's location and zoom in
-            this.cameras.main.pan(x, y, cameraSpeed, 'Power2');
-            this.cameras.main.zoomTo(targetZoom, cameraSpeed, 'Power2');
-        });
-          
-        this.time.delayedCall(secondDelay, () => {
-            // Return the camera to its original position and zoom level
-            const returnX = this.cameras.main.width / 2 + originalScrollX;
-            const returnY = this.cameras.main.height / 2 + originalScrollY;
-            this.cameras.main.pan(returnX, returnY, cameraSpeed, 'Power2');
-            this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2');
-            this.localAnimationSprite.anims.timeScale = originalTimeScale;
-            this.sound.setRate(originalSoundRate);
-            this.tweens.timeScale = originalTweenRate;
-
-            this.sprites.forEach((sprite) => {
-                if (sprite.anims) sprite.anims.timeScale = originalTimeScale;
-            });
-            this.killCamActive = false;
-            this.processGENQueue(); // Trigger processing of GEN queue after kill cam
-        });
-    }
-
-    addFlames() {
-        this.environmentalAudioSources.flames++;
-        this.updateEnvironmentAudio();
-    }
-
-    removeFlames() {
-        this.environmentalAudioSources.flames--;
-        this.updateEnvironmentAudio();
-    }
-
-    updateEnvironmentAudio() {
-        if (this.gameEnded || !this.gameInitialized) return;
-        const flames = this.environmentalAudioSources.flames;
-        if (flames > 0) {
-            this.playSound('flames', 0.5, true);
-        } else {
-            this.stopSound('flames');
-        }
-    }
-    
-    abandonGame() {
-        this.socket.emit('abandonGame');
+    // Set up socket event listeners using the event handlers map
+    this.eventHandlers.forEach((handler, event) => {
+      this.socket.on(event, handler);
+    });
+
+    // Add special handlers that aren't part of the regular game flow
+    this.socket.on("connect", () => {
+      // console.log('Connected to the server');
+    });
+
+    this.socket.on("disconnect", (reason) => {
+      if (shouldAbandonGame(reason)) {
+        console.error(`Server disconnect during game: ${reason}`);
+        silentErrorToast("Disconnected from server");
+        events.emit("serverDisconnect");
         this.destroy();
+      }
+    });
+
+    this.socket.io.on("reconnect_failed", () => {
+      silentErrorToast("Could not reconnect to server");
+      events.emit("serverDisconnect");
+      this.destroy();
+    });
+
+    this.socket.on("joinError", (error) => {
+      console.error("Could not join game:", error);
+      events.emit("serverDisconnect");
+      this.destroy();
+    });
+
+    this.socket.on("error", (error) => {
+      console.error("Error:", error);
+      errorToast(`An error occurred: ${error}`);
+    });
+
+    this.socket.on("replayData", this.handleReplayData.bind(this));
+  }
+
+  sendMove(x, y) {
+    const data = {
+      tile: { x, y },
+    };
+    this.send("move", data);
+    events.emit("performAction");
+  }
+
+  sendAttack(player: Player) {
+    if (!this.selectedPlayer?.canAct()) return;
+    const data = {
+      target: player.num,
+      sameTeam: player.team.id === this.selectedPlayer.team.id,
+    };
+    this.send("attack", data);
+    events.emit("performAction");
+  }
+
+  sendObstacleAttack(x, y) {
+    if (!this.selectedPlayer?.canAct()) return;
+    const data = {
+      x,
+      y,
+    };
+    this.send("obstacleattack", data);
+  }
+
+  sendSpell(x: number, y: number, player: Player | null) {
+    console.log(`[Arena:sendSpell] Sending spell at ${x}, ${y}`);
+    if (!this.selectedPlayer || !this.selectedPlayer.canAct()) return;
+    const data = {
+      x,
+      y,
+      index: this.selectedPlayer.pendingSpell,
+      targetTeam: player?.team.id,
+      target: player?.num,
+    };
+    this.send("spell", data);
+    this.toggleTargetMode(false);
+    this.selectedPlayer.pendingSpell = null;
+    events.emit(`playerCastSpell_${this.selectedPlayer.pendingSpell}`);
+    events.emit("performAction");
+  }
+
+  sendUseItem(index: number, x: number, y: number, player: Player | null) {
+    if (!this.selectedPlayer.canAct()) return;
+    const data = {
+      x,
+      y,
+      index,
+      targetTeam: player?.team.id,
+      target: player?.num,
+    };
+    this.send("useitem", data);
+    this.toggleItemMode(false);
+    this.selectedPlayer.pendingItem = null;
+    const item = this.selectedPlayer.inventory[index];
+    events.emit(`playerUseItem_${item.id}`);
+    events.emit("performAction");
+  }
+
+  endTutorial() {
+    if (this.socket) {
+      this.socket.emit("endTutorial");
     }
+  }
 
-    destroy() {
-        window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
-        events.emit('notifyMatchmakerLeave');
-        this.socket.disconnect();
+  send(channel, data) {
+    if (this.socket) {
+      this.socket.emit(channel, data);
+    }
+  }
 
-        this.teamsMap.forEach((team) => {
-            team.members.forEach((player) => {
-                player.destroy();
-            });
+  getStartXY() {
+    const totalWidth = HexGridManager.HEX_WIDTH * GRID_WIDTH;
+    const totalHeight = HexGridManager.HEX_HEIGHT * GRID_HEIGHT;
+    const gameWidth = this.scale.gameSize.width;
+    const gameHeight = this.scale.gameSize.height;
+    const verticalOffset = 200;
+    const startX = (gameWidth - totalWidth) / 2;
+    const startY = (gameHeight - totalHeight) / 2 + verticalOffset;
+    return { startX, startY };
+  }
+
+  setUpArena() {
+    const { startX, startY } = this.getStartXY();
+
+    this.gridCorners = {
+      startX,
+      startY,
+    };
+
+    this.input.on(
+      "pointerdown",
+      function (pointer) {
+        if (pointer.rightButtonDown()) {
+          this.selectedPlayer?.cancelSkill();
+          this.selectedPlayer?.displayMovementRange();
+          return;
+        }
+      },
+      this,
+    );
+
+    this.input.keyboard.on("keydown", this.handleKeyDown, this);
+  }
+
+  toggleTargetMode(flag: boolean) {
+    if (flag) {
+      const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
+      const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
+
+      this.isInTargetMode = true;
+      this.targetModeSize = spell?.radius - 1 || 0;
+      this.hexGridManager.toggleTargetMode(true);
+
+      // Add pointer move listener to highlight tiles in radius as cursor moves
+      if (!this.targetModeListener) {
+        this.targetModeListener = this.input.on("pointermove", (pointer) => {
+          if (this.isInTargetMode) {
+            this.updateTargetHighlight(pointer);
+          }
         });
+      }
 
-        if (this.SFX) {
-            Object.values(this.SFX).forEach(sound => {
-                // @ts-ignore
-            if (sound.isPlaying) {
-                // @ts-ignore
-                sound.stop();
-                }
-            });
-        }
-    
-        // Stop and destroy the music manager
-        if (this.musicManager) {
-            this.musicManager.destroy();
-        }
-    
-        // Stop any ongoing tweens
-        this.tweens.killAll();
-    
-        // Stop any ongoing timers
-        this.time.removeAllEvents();
-    
-        // Stop the HUD and current scene
-        this.scene.stop('HUD');
+      // Clear any existing highlights
+      this.hexGridManager.clearHighlight();
 
-        // In the destroy method, add:
-        if (this.tutorialManager) {
-            this.tutorialManager.destroy();
-        }
-        this.scene.stop();
+      // Highlight target range
+      if (this.selectedPlayer) {
+        this.hexGridManager.highlightTargetRange(
+          this.selectedPlayer.gridX,
+          this.selectedPlayer.gridY,
+          this.selectedPlayer.distance,
+          isAllyTargetingSpell,
+        );
+      }
+      events.emit("pendingSpell");
+    } else {
+      // Exit target mode
+      this.isInTargetMode = false;
+      this.targetModeSize = 1;
+      this.hexGridManager.toggleTargetMode(false);
 
-        // Clean up any other resources or listeners
-        events.removeAllListeners();
-        events.off('settingsChanged', this.onSettingsChanged, this);
+      // Clear all highlighted tiles
+      this.hexGridManager.clearHighlight();
 
-        // Add cleanup for hexGridManager
-        if (this.hexGridManager) {
-            this.hexGridManager.destroy();
-        }
+      // Remove the pointer move listener
+      if (this.targetModeListener) {
+        this.input.off("pointermove", this.targetModeListener);
+        this.targetModeListener = null;
+      }
+
+      events.emit("clearPendingSpell");
+      this.brightenScene();
+      this.selectedPlayer?.displayMovementRange();
+    }
+  }
+
+  toggleItemMode(flag: boolean) {
+    if (flag) {
+      const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
+      this.hexGridManager.clearHighlight();
+
+      // Highlight target range if there's a selected player
+      if (this.selectedPlayer) {
+        this.hexGridManager.highlightTargetRange(
+          this.selectedPlayer.gridX,
+          this.selectedPlayer.gridY,
+          this.selectedPlayer.distance,
+        );
+      }
+
+      events.emit("pendingItem");
+      // this.darkenScene(item?.targetHighlight);
+    } else {
+      events.emit("clearPendingItem");
+      // this.brightenScene();
+    }
+  }
+
+  handleKeyDown(event) {
+    // Prevent key event handling if input is locked
+    if (this.inputLocked) return;
+
+    // Simple debouncing - prevent multiple rapid triggers of the same key
+    if (this.lastKeyTime && Date.now() - this.lastKeyTime < 100) {
+      return;
+    }
+    this.lastKeyTime = Date.now();
+
+    // Check if the pressed key is a number
+    const isNumberKey =
+      (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NINE) ||
+      (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO &&
+        event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NUMPAD_NINE);
+    if (!isNumberKey) {
+      const isLetterKey =
+        event.keyCode >= Phaser.Input.Keyboard.KeyCodes.A && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.Z;
+      if (isLetterKey) {
+        // Get the letter corresponding to the keyCode
+        const letter = String.fromCharCode(event.keyCode);
+        this.selectedPlayer?.onLetterKey(letter);
+      }
+    }
+  }
+
+  handleDesktopAction = (event: CustomEvent<{ action: DesktopAction }>) => {
+    if (this.inputLocked || !this.gameInitialized) return;
+    const { action } = event.detail;
+    const members = this.teamsMap.get(this.playerTeamId)?.members.filter((player) => player.isAlive()) || [];
+    if (action.startsWith("select-unit-")) {
+      this.selectOwnUnit(members[Number(action.at(-1)) - 1]);
+    } else if ((action === "next-unit" || action === "previous-unit") && members.length) {
+      const current = members.indexOf(this.selectedPlayer);
+      const direction = action === "next-unit" ? 1 : -1;
+      this.selectOwnUnit(members[(current + direction + members.length) % members.length]);
+    } else if (action === "cancel") {
+      this.selectedPlayer?.cancelSkill();
+      this.deselectPlayer();
+    }
+  };
+
+  selectOwnUnit(player?: Player) {
+    if (!player) return;
+    this.deselectPlayer();
+    this.selectPlayer(player);
+  }
+
+  isFree(gridX, gridY) {
+    return (
+      !this.gridMap.get(serializeCoords(gridX, gridY)) &&
+      !this.hexGridManager.hasObstacle(gridX, gridY) &&
+      !this.hexGridManager.isHole(gridX, gridY)
+    );
+  }
+
+  hasPlayer(gridX, gridY) {
+    return this.gridMap.has(serializeCoords(gridX, gridY));
+  }
+
+  handleTileClick(gridX, gridY) {
+    console.log(`[Arena:handleTileClick] Clicked on tile: ${gridX}, ${gridY}`);
+    if (this.inputLocked) {
+      this.unlockInput();
+      return;
     }
 
-    // update (time, delta)
-    // {
-    // }
+    const player = this.gridMap.get(serializeCoords(gridX, gridY));
+    const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
+    const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
+    if (pendingSpell != null) {
+      if (!this.validateTarget(gridX, gridY, pendingSpell)) {
+        this.playSound("nope", 0.2);
+        return;
+      }
+      this.sendSpell(gridX, gridY, player);
+    } else if (pendingItem != null) {
+      if (!this.validateTarget(gridX, gridY, pendingItem)) {
+        this.playSound("nope", 0.2);
+        return;
+      }
+      this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
+    } else if ((!player || !player.isAlive()) && this.hexGridManager.hasObstacle(gridX, gridY)) {
+      this.sendObstacleAttack(gridX, gridY);
+    } else if (this.selectedPlayer && !player && this.selectedPlayer.canMoveTo(gridX, gridY)) {
+      this.handleMove(gridX, gridY);
+    } else if (player) {
+      player.onClick();
+    }
+  }
 
-    getCharacterPosition(playerTeam: boolean, characterIdx: number) {
-        const teamId = playerTeam ? this.playerTeamId : 2;
-        const character = this.teamsMap.get(teamId).members[characterIdx];
-        return {x: character.gridX, y: character.gridY};
+  handleTileHover(gridX, gridY, hover = true) {
+    const player = this.gridMap.get(serializeCoords(gridX, gridY));
+    if (player) {
+      if (hover) {
+        player.onPointerOver();
+      } else {
+        player.onPointerOut();
+      }
+    }
+  }
+
+  validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
+    if (!VALIDATE_TARGETS) return true;
+    if (!isInSpellRange(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) return false;
+    if (action.target == Target.AOE && action.radius > 1) {
+      return true;
+    }
+    const character = this.gridMap.get(serializeCoords(gridX, gridY));
+    if (!character && action.target === Target.SINGLE) return false;
+    const isAlly = character?.team.id === this.playerTeamId;
+    if (action.targetHighlight === TargetHighlight.ALLY && isAlly) {
+      return true;
+    } else if ((action.targetHighlight == undefined || action.targetHighlight === TargetHighlight.ENEMY) && !isAlly) {
+      return true;
+    } else if (action.targetHighlight === TargetHighlight.DEAD && !character?.isAlive()) {
+      return true;
+    }
+    return false;
+  }
+
+  handleMove(gridX, gridY) {
+    if (
+      !this.selectedPlayer.canMoveTo(gridX, gridY) ||
+      !this.hexGridManager.isValidCell(
+        this.selectedPlayer.gridX,
+        this.selectedPlayer.gridY,
+        gridX,
+        gridY,
+        this.isFree.bind(this),
+      )
+    ) {
+      this.playSound("nope");
+      return;
+    }
+    this.playSound("click");
+    this.sendMove(gridX, gridY);
+    this.hexGridManager.clearHighlight();
+  }
+
+  refreshBox() {
+    if (this.selectedPlayer) {
+      events.emit("showPlayerBox", this.selectedPlayer.getProps());
+    }
+  }
+
+  refreshOverview() {
+    this.overviewReady = true;
+    const { team1, team2, general, initialized, queue, turnee } = this.getOverview();
+    if (this.overviewReady) {
+      events.emit("refreshOverview", team1, team2, general, initialized, queue, turnee);
+    }
+  }
+
+  relayEvent(event, data?) {
+    // console.log(`[Arena:relayEvent] Emitting event: ${event}`);
+    events.emit(event, data);
+  }
+
+  refreshUI(num) {
+    if (this.selectedPlayer && num === this.selectedPlayer.num) {
+      this.refreshBox();
+    }
+    this.refreshOverview();
+  }
+
+  selectTurnee() {
+    this.deselectPlayer();
+    if (this.turnee) {
+      const player = this.getPlayer(this.turnee.team, this.turnee.num);
+      this.selectPlayer(player);
+    }
+  }
+
+  selectPlayer(player: Player) {
+    if (!this.gameInitialized) return;
+    this.selectedPlayer = player;
+    this.selectedPlayer?.select();
+    this.refreshBox();
+    this.refreshOverview();
+  }
+
+  deselectPlayer() {
+    if (this.selectedPlayer) {
+      this.selectedPlayer.deselect();
+      this.selectedPlayer.cancelSkill();
+      this.selectedPlayer = null;
+      this.hexGridManager.clearHighlight();
+    }
+  }
+
+  getPlayer(team: number, num: number): Player {
+    return this.teamsMap?.get(team)?.getMember(num);
+  }
+
+  getOtherTeam(id: number): number {
+    return id === 1 ? 2 : 1;
+  }
+
+  processMove({ team, tile, num }) {
+    if (this.gameEnded) return;
+
+    const player = this.getPlayer(team, num);
+    if (!player) {
+      return;
     }
 
-    summonEnemy(x: number, y: number, attackMode: AIAttackMode = AIAttackMode.IDLE) {
-        this.send('tutorialEvent', {action: 'summonEnemy', x, y, attackMode});
+    this.gridMap.delete(serializeCoords(player.gridX, player.gridY));
+    this.gridMap.set(serializeCoords(tile.x, tile.y), player);
+
+    player.walkTo(tile.x, tile.y);
+    this.playSoundMultipleTimes("steps", 2);
+    if (player.isPlayer) {
+      events.emit("playerMoved");
+    }
+  }
+
+  processAttack({ team, target, num, damage, hp, isKill, sameTeam }) {
+    if (this.gameEnded) return;
+    const player = this.getPlayer(team, num);
+    const otherTeam = sameTeam ? team : this.getOtherTeam(team);
+    const targetPlayer = this.getPlayer(otherTeam, target);
+
+    const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
+    if (isKill) this.killCam(pixelX, pixelY);
+
+    this.playSound("slash");
+    player.attack(targetPlayer.gridX);
+    targetPlayer.setHP(hp);
+    targetPlayer.displaySlash(player);
+    this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);
+    if (player.isPlayer) {
+      events.emit("playerAttacked");
+    }
+  }
+
+  processObstacleAttack({ team, num, x, y }) {
+    if (this.gameEnded) return;
+    const player = this.getPlayer(team, num);
+    this.playSound("slash");
+    this.playSound("shatter");
+    player.attack(x);
+    this.displayAttackImpact(x, y);
+  }
+
+  processInventory({ num, inventory }) {
+    if (this.gameEnded) return;
+    const player = this.getPlayer(this.playerTeamId, num);
+    player.setInventory(inventory);
+    this.refreshBox();
+  }
+
+  processHPChange({ team, num, hp, damage }) {
+    if (this.gameEnded) return;
+    const player = this.getPlayer(team, num);
+    if (!player) return;
+    player.setHP(hp);
+    if (damage) player.displayDamage(damage);
+    if (player.isPlayer) events.emit("hpChange", { num, hp });
+  }
+
+  processStatusChange({ team, num, statuses }) {
+    if (this.gameEnded) return;
+    const player = this.getPlayer(team, num);
+    player?.setStatuses(statuses);
+  }
+
+  processMPChange({ num, mp }) {
+    if (this.gameEnded) return;
+    const player = this.getPlayer(this.playerTeamId, num);
+    player.setMP(mp);
+  }
+
+  processUseItem({ team, num, animation, name, sfx }) {
+    if (this.gameEnded) return;
+    const player = this.getPlayer(team, num);
+    player.useItemAnimation(animation, name);
+    this.playSound(sfx);
+    if (player.isPlayer) {
+      events.emit(`playerUseItem`);
+    }
+  }
+
+  processTerrain(updates: TerrainUpdate[], isReconnect = false) {
+    if (this.gameEnded) return;
+    updates.forEach(({ x, y, terrain }) => {
+      const handlers = {
+        [Terrain.FIRE]: () => this.handleFireTerrain(x, y),
+        [Terrain.ICE]: () => this.handleIceTerrain(x, y, isReconnect),
+        [Terrain.NONE]: () => this.handleClearTerrain(x, y),
+      };
+      handlers[terrain]?.();
+    });
+  }
+
+  hasFlame(x: number, y: number) {
+    return this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE;
+  }
+
+  hasIce(x: number, y: number) {
+    return this.terrainMap.get(serializeCoords(x, y)) === Terrain.ICE;
+  }
+
+  createIceBlock(x: number, y: number) {
+    const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(x, y);
+    const depth = this.yToZ(y) + DEPTH_OFFSET;
+    const icesprite = this.add.sprite(pixelX, pixelY, "iceblock").setDepth(depth).setAlpha(0.9).setOrigin(0.5, 0.35);
+    // .setInteractive();
+    // Add pointerover event to sprite
+    icesprite.on("pointerover", () => {
+      if (
+        this.selectedPlayer?.isNextTo(x, y) &&
+        this.selectedPlayer.canAct() &&
+        this.selectedPlayer.pendingSpell == null &&
+        this.selectedPlayer.pendingItem == null
+      ) {
+        events.emit("hoverEnemyCharacter");
+      }
+    });
+    icesprite.on("pointerdown", () => {
+      this.handleTileClick(x, y);
+    });
+    // Add pointerout event to sprite
+    icesprite.on("pointerout", () => {
+      events.emit("unhoverCharacter");
+    });
+    icesprite.postFX.addShine(0.5, 0.2, 5);
+    return icesprite;
+  }
+
+  flickerAndDestroy(sprite, times, duration) {
+    if (!sprite) return;
+
+    // Create a tween to flicker the sprite
+    this.tweens.add({
+      targets: sprite,
+      alpha: { from: 1, to: 0 },
+      duration: duration / (times * 2),
+      yoyo: true,
+      repeat: times - 1, // Repeat for the number of times - 1 since it starts from 1
+      onComplete: () => {
+        sprite.destroy();
+      },
+    });
+  }
+
+  displayAttackImpact(gridX, gridY) {
+    const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(gridX, gridY);
+    this.localAnimationSprite
+      .setPosition(pixelX, pixelY + 30)
+      .setVisible(true)
+      .setDepth(this.yToZ(gridY) + DEPTH_OFFSET)
+      .setScale(0.5)
+      .play("impact");
+  }
+
+  yToZ(y) {
+    return Number((3.5 + y / 10).toFixed(2));
+  }
+
+  processCast(flag, { team, num, id, target }) {
+    if (this.gameEnded) return;
+
+    const player = this.getPlayer(team, num);
+    const spell = getSpellById(id);
+    player?.castAnimation(flag, spell?.name, spell?.charge);
+
+    if (CAST_ZOOM) {
+      // Check for cast start with charged spell
+      if (flag && spell?.charge) {
+        console.log(`Starting charged spell cast`);
+        const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(player.gridX, player.gridY);
+        this.chargeCastCam(pixelX, pixelY);
+        this.isZoomedForSpellCast = true;
+      }
+      // Check for cast end when camera is zoomed for a spell
+      else if (!flag && this.isZoomedForSpellCast) {
+        console.log(`Ending spell cast, resetting camera`);
+        this.resetCamera();
+        this.isZoomedForSpellCast = false;
+      }
     }
 
-    summonAlly(x: number, y: number, className: Class) {
-        this.send('tutorialEvent', {action: 'summonAlly', x, y, className});
+    if (player?.isPlayer) {
+      events.emit(`playerCastSpell`);
+    }
+  }
+
+  // Simplify the chargeCastCam method - no need for revert parameter
+  chargeCastCam(pixelX, pixelY) {
+    if (FREEZE_CAMERA) return;
+
+    // Target zoom level for charged spells
+    const targetZoom = 1.5;
+    const panDuration = 800;
+
+    // Move camera to the caster's location and zoom in
+    this.cameras.main.pan(pixelX, pixelY, panDuration, "Power2");
+    this.cameras.main.zoomTo(targetZoom, panDuration, "Power2");
+  }
+
+  // Add a helper method to reset the camera
+  resetCamera(scrollX = null, scrollY = null, zoom = null) {
+    if (FREEZE_CAMERA) return;
+
+    const gameWidth = this.cameras.main.width;
+    const gameHeight = this.cameras.main.height;
+
+    // Use provided values or center the camera
+    const targetX = scrollX !== null ? gameWidth / 2 + scrollX : gameWidth / 2;
+    const targetY = scrollY !== null ? gameHeight / 2 + scrollY : gameHeight / 2;
+    const targetZoom = zoom !== null ? zoom : 1;
+
+    // Smoothly transition back
+    this.cameras.main.pan(targetX, targetY, 800, "Power2");
+    this.cameras.main.zoomTo(targetZoom, 800, "Power2");
+  }
+
+  processLocalAnimation({ fromX, fromY, toX, toY, id, isKill }) {
+    const spell = getSpellById(id);
+    const { x: pixelXInitial, y: pixelYInitial } = this.hexGridToPixelCoords(toX, toY);
+    let pixelY = pixelYInitial;
+    let pixelX = pixelXInitial;
+
+    const config = VFXconfig[spell.vfx];
+    if (config) {
+      if (config.yoffset) pixelY += config.yoffset;
+      if (config.xoffset) pixelX += config.xoffset;
     }
 
-    putInFormation() {
-        this.send('tutorialEvent', {action: 'putInFormation'});
+    if (spell.projectile) {
+      this.animateProjectile(fromX, fromY, toX, toY, spell.projectile);
     }
 
-    slowDownCooldowns() {
-        this.send('tutorialEvent', {action: 'slowDownCooldowns'});
-    }
-
-    isCharacterSelected(index: number) {
-        return this.selectedPlayer?.num === index;
-    }
-
-    isTutorial() {
-        return this.gameSettings.tutorial;
-    }
-
-    handleReplayData(data: any) {
-        this.isReplay = true;
-        this.replayData = data;
-        
-        // Initialize game with first gameStatus message
-        const initialStatus = this.replayData.messages.find(m => m.event === 'gameStatus');
-        if (initialStatus) {
-            this.initializeGame(initialStatus.data);
-        }
-
-        // Start replay timer
-        this.startReplayPlayback();
-    }
-
-    startReplayPlayback() {
-        this.currentReplayIndex = 0;
-        this.processNextReplayEvent();
-    }
-
-    processNextReplayEvent() {
-        if (this.currentReplayIndex >= this.replayData.messages.length) {
-            console.log('Replay finished');
-            return;
-        }
-
-        const currentMessage = this.replayData.messages[this.currentReplayIndex];
-        const nextMessage = this.replayData.messages[this.currentReplayIndex + 1];
-
-        // Process current message
-        if (currentMessage.event !== 'gameStatus') { // We already processed gameStatus
-            this.processReplayMessage(currentMessage);
-        }
-
-        this.currentReplayIndex++;
-
-        // Schedule next message if there is one
-        if (nextMessage) {
-            const delay = nextMessage.timestamp - currentMessage.timestamp;
-            this.time.delayedCall(delay, this.processNextReplayEvent, [], this);
-        }
-    }
-
-    processReplayMessage(message: any) {
-        const handler = this.eventHandlers.get(message.event);
-        if (handler) {
-            handler(message.data);
+    setTimeout(
+      () => {
+        if (isKill) {
+          this.killCam(pixelXInitial, pixelYInitial);
         } else {
-            console.warn(`No handler found for replay event: ${message.event}`);
+          // this.spellCam(pixelX, pixelY);
         }
-    }
 
-    darkenScene(targetHighlight: TargetHighlight = TargetHighlight.ENEMY) {
-        if (this.isDarkened) return;
-        this.isDarkened = true;
+        const scale = config && "scale" in config ? config.scale : LOCAL_ANIMATION_SCALE;
+        let yScale = scale;
+        let yOrigin = 1;
 
-        this.getAllDarkenableObjects().forEach(obj => obj.setTint(TINT_COLOR));
-        this.hexGridManager.darkenAllTiles(TINT_COLOR);
+        if (config && config.stretch) {
+          let distanceToTop = pixelY;
+          // if (config && config.extraStretch) {
+          //     distanceToTop += 100;
+          // }
+          const baseHeight = 512; // Base height of the thunder sprite
 
-        // Process players separately for health bars
-        this.teamsMap.forEach(team => {
-            team.members.forEach(player => {
-                if (this.shouldStayBright(player, targetHighlight)) {
-                    player.sprite.clearTint();
-                    player.healthBar?.brighten();
-                    player.MPBar?.brighten();
-                } else {
-                    player.healthBar?.darken();
-                    player.MPBar?.darken();
-                }
-            });
-        });
-    }
-
-    brightenScene() {
-        if (!this.isDarkened) return;
-        this.isDarkened = false;
-
-        this.getAllDarkenableObjects().forEach(obj => obj.clearTint());
-        this.hexGridManager.brightenAllTiles();
-
-        // Brighten all bars
-        this.teamsMap.forEach(team => {
-            team.members.forEach(player => {
-                player.healthBar?.brighten();
-                player.MPBar?.brighten();
-            });
-        });
-
-        // Restore movement range highlight if appropriate
-        if (this.selectedPlayer?.canAct() && 
-            !this.selectedPlayer?.pendingSpell && 
-            !this.selectedPlayer?.pendingItem) {
-            this.selectedPlayer.displayMovementRange();
+          // Set the scale: normal width, stretched height to reach top
+          let heightScale = distanceToTop / baseHeight;
+          if (config && config.extraStretch) {
+            heightScale *= 1.2;
+          }
+          yScale = heightScale;
+          yOrigin = 1;
         }
-    }
+        // Normal handling for other animations
+        this.localAnimationSprite
+          .setPosition(pixelX, pixelY)
+          .setVisible(true)
+          .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
+          .setScale(scale, yScale);
 
-    private shouldStayBright(player: Player, targetHighlight: TargetHighlight = TargetHighlight.ENEMY): boolean {
-        const isAlly = this.isAlly(player);
-        
-        switch (targetHighlight) {
-            case TargetHighlight.ALLY:
-                return isAlly && player.isAlive();
-            case TargetHighlight.ENEMY:
-                return !isAlly && player.isAlive();
-            case TargetHighlight.DEAD:
-                return !player.isAlive();
-            default:
-                return !isAlly && player.isAlive();
+        if (config && config.stretch) {
+          this.localAnimationSprite.setOrigin(0.5, yOrigin);
         }
-    }
 
-    private handleFireTerrain(x: number, y: number) {
-        const TERRAIN_SPRITE_DELAY = 200;
-        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
-        // Do nothing if the tile already has fire
-        if (this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE) return;
+        console.log(`[Arena:processLocalAnimation] spell.vfx: ${spell.vfx}`);
+        this.localAnimationSprite.play(spell.vfx);
+
+        this.playSound(spell.sfx);
+
+        if (config && config.shake) {
+          const duration = isKill ? 2000 : 1000;
+          const intensity = isKill ? 0.002 : 0.02;
+          this.cameras.main.shake(duration, intensity);
+        }
+      },
+      spell.projectile ? PROJECTILE_DURATION * 1000 : 0,
+    );
+  }
+
+  // New method to animate projectile from caster to target
+  animateProjectile(fromX: number, fromY: number, toX: number, toY: number, projectileKey: string) {
+    // Convert grid coordinates to pixel coordinates
+    const { x: startX, y: startY } = this.hexGridToPixelCoords(fromX, fromY);
+    const { x: endX, y: endY } = this.hexGridToPixelCoords(toX, toY);
+
+    // Create projectile sprite at caster position
+    const projectile = this.add
+      .sprite(startX, startY, "")
+      .setScale(VFXconfig[projectileKey].scale)
+      .setOrigin(0.5, 0.5)
+      .setDepth(this.yToZ(fromY) + DEPTH_OFFSET + 0.1);
+
+    // Set initial rotation - point upward
+    // Since sprite faces right by default, we need -90 degrees to point up
+    projectile.setRotation(-Math.PI / 2);
+
+    // Play projectile animation
+    projectile.play(projectileKey);
+
+    // Calculate screen top with some padding
+    const screenTop = -50;
+
+    // Calculate total distance based on the actual path (up then down)
+    const distanceUp = Math.abs(startY - screenTop);
+    const distanceDown = Math.abs(endY - screenTop);
+    const totalDistance = distanceUp + distanceDown;
+
+    const totalDuration = PROJECTILE_DURATION * 1000;
+
+    // Phase 1: Ascent - Move projectile straight up
+    this.tweens.add({
+      targets: projectile,
+      y: screenTop,
+      duration: (distanceUp / totalDistance) * totalDuration,
+      ease: "Cubic.easeOut",
+      onComplete: () => {
+        // Phase 2: Hide the projectile
+        projectile.setVisible(false);
+
+        // Phase 3: Reappear above target and crash down
         setTimeout(() => {
-            const sprite = this.add.sprite(pixelX, pixelY, '')
-                .setDepth(this.yToZ(y)).setScale(0.5).setAlpha(0.9);
-            this.addFlames();
-            sprite.on('destroy', () => {
-                this.removeFlames();
-            });
-            const randomLevel = terrainFireLevels[Math.floor(Math.random() * terrainFireLevels.length)];
-            sprite.anims.play(`terrain_fire_${randomLevel}`);
-            // Apply a random flip X
-            if (Math.random() < 0.5) {
-                sprite.setFlipX(true);
-            }
-            this.sprites.push(sprite);
-            this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
-            this.terrainMap.set(serializeCoords(x, y), Terrain.FIRE);
-            events.emit('flamesAppeared');
-        }, TERRAIN_SPRITE_DELAY);
+          // Reposition projectile above the target
+          projectile
+            .setPosition(endX, screenTop)
+            .setVisible(true)
+            // Set rotation to point downward (90 degrees)
+            .setRotation(Math.PI / 2);
+
+          // Create the descent tween
+          this.tweens.add({
+            targets: projectile,
+            y: endY,
+            duration: (distanceDown / totalDistance) * totalDuration,
+            ease: "Cubic.easeIn",
+            onComplete: () => {
+              // Fade out and destroy on impact
+              this.tweens.add({
+                targets: projectile,
+                alpha: 0,
+                scale: projectile.scale * 1.5,
+                duration: 200,
+                onComplete: () => {
+                  projectile.destroy();
+                },
+              });
+            },
+          });
+        }, totalDuration / 10); // Brief pause before reappearing
+      },
+    });
+  }
+
+  // Add this new method to handle camera movement
+  panCameraWithOffset(targetX: number, targetY: number, duration: number = 1000, easing: string = "Cubic.easeOut") {
+    if (FREEZE_CAMERA) return;
+    // Get screen dimensions and target position
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+
+    // Calculate camera movement from center
+    const moveRatio = 0.4;
+    const screenCenterX = screenWidth / 2;
+    const screenCenterY = screenHeight / 2;
+
+    const offsetX = (targetX - screenCenterX) * moveRatio;
+    const offsetY = (targetY - screenCenterY) * moveRatio;
+
+    // Pan camera smoothly from center
+    this.cameras.main.pan(screenCenterX + offsetX, screenCenterY + offsetY, duration, easing);
+  }
+
+  // Update spellCam to use the new method
+  spellCam(pixelX: number, pixelY: number, revert = false) {
+    const originalScrollX = this.cameras.main.scrollX;
+    const originalScrollY = this.cameras.main.scrollY;
+
+    this.panCameraWithOffset(pixelX, pixelY);
+
+    if (revert) {
+      // After animation duration, pan back to original position
+      setTimeout(() => {
+        this.cameras.main.pan(
+          this.cameras.main.width / 2 + originalScrollX,
+          this.cameras.main.height / 2 + originalScrollY,
+          1000,
+          "Power2",
+        );
+      }, 1000);
+    }
+  }
+
+  // Update highlightTurnee to use the new method
+  highlightTurnee() {
+    if (!this.turnee) return;
+
+    const player = this.getPlayer(this.turnee.team, this.turnee.num);
+    if (!player) return;
+
+    // If killcam is active, wait for it to finish before highlighting turnee
+    if (this.killCamActive) {
+      this.time.delayedCall(KILL_CAM_DURATION * 1000, () => {
+        this.highlightTurnee();
+      });
+      return;
     }
 
-    private iceFormation(x: number, y: number, isReconnect = false) {
-        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
-        const depth = this.yToZ(y) + DEPTH_OFFSET;
-        const TERRAIN_SPRITE_DELAY = 200;
+    const { x, y } = this.hexGridToPixelCoords(player.gridX, player.gridY);
+    // this.panCameraWithOffset(x, y);
+  }
 
-        // Helper function to create ice block and update maps
-        const createIceAndUpdateMaps = () => {
-            const icesprite = this.createIceBlock(x, y);
-            this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
-            this.terrainMap.set(serializeCoords(x, y), Terrain.ICE);
-            this.hexGridManager.setObstacle(x, y, true);
-            events.emit('iceAppeared');
-        };
+  processGameEnd(data: OutcomeData) {
+    this.gameEnded = true;
+    this.musicManager.playEnd();
+    const winningTeam = data.isWinner
+      ? this.teamsMap.get(this.playerTeamId)
+      : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
+    setTimeout(() => {
+      winningTeam?.members.forEach((player) => {
+        player.victoryDance();
+      });
+    }, 200);
+    if (this.overviewReady) {
+      events.emit("gameEnd", data);
+    }
+  }
 
-        if (isReconnect) {
-            // Skip animation and create ice block immediately when reconnecting
-            createIceAndUpdateMaps();
+  processScoreUpdate({ score }) {
+    // console.log(`Team ${teamId} score updated to ${score}`);
+    const team = this.teamsMap.get(this.playerTeamId);
+    const _score = team.score;
+    team.setScore(score);
+    // this.refreshOverview(); // TODO: add if display score again
+    // if (score - _score > 50) this.playSound('cheer', 2);
+  }
+
+  processAddCharacter(data: { team: number; character: PlayerNetworkData }) {
+    const team = this.teamsMap.get(data.team);
+    this.placeCharacter(data.character, team, false);
+  }
+
+  processQueueData(data: any[]) {
+    this.queue = data;
+    this.refreshOverview();
+  }
+
+  processTurnee(data: { num: number; team: number; turnDuration: number; timeLeft: number }) {
+    if (this.gameEnded) return;
+    // Determine if turnee is player
+    if (data.team != this.playerTeamId) {
+      events.emit("enemyTurn");
+    }
+    events.emit("turnStarted");
+
+    this.turnee = data;
+    this.selectTurnee();
+    this.highlightTurnee();
+  }
+
+  updateMusicIntensity(ratio) {
+    this.musicManager.updateMusicIntensity(ratio);
+  }
+
+  createSounds() {
+    this.SFX = Object.fromEntries(
+      Arena.SOUND_NAMES.map((name) => [name, this.sound.get(name) || this.sound.add(name)]),
+    );
+
+    events.on("settingsChanged", this.onSettingsChanged, this);
+  }
+
+  onSettingsChanged = (settings) => {
+    this.sfxVolume = settings.sfxVolume / 100;
+  };
+
+  playSound(name, volume = 1, loop = false) {
+    if (!this.SFX || !this.SFX[name]) {
+      console.warn(`Sound effect "${name}" not found`);
+      return;
+    }
+
+    const adjustedVolume = volume * this.sfxVolume;
+    try {
+      this.SFX[name].play({ delay: 0, volume: adjustedVolume, loop });
+    } catch (error) {
+      console.warn(`Error playing sound "${name}":`, error);
+    }
+  }
+
+  stopSound(name) {
+    this.SFX[name].stop();
+  }
+
+  playSoundMultipleTimes(key, times) {
+    if (times <= 0) return;
+
+    const sound = this.SFX[key];
+
+    sound.once("complete", () => {
+      this.playSoundMultipleTimes(key, times - 1); // Play the sound again
+    });
+
+    sound.play();
+  }
+
+  createAnims() {
+    allSprites.forEach((asset) => {
+      // Character postures
+      this.createCharacterAnim(asset, "idle", [9, 10, 11], { repeat: -1, yoyo: true });
+      this.createCharacterAnim(asset, "idle_hurt", [33, 34, 35], { repeat: -1, yoyo: true });
+      this.createCharacterAnim(asset, "walk", [6, 7, 8], { repeat: -1 });
+      this.createCharacterAnim(asset, "attack", [12, 13, 14], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
+      this.createCharacterAnim(asset, "dodge", [45, 46, 47], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
+      this.createCharacterAnim(asset, "item", [48, 49, 50], { frameRate: BASE_ANIM_FRAME_RATE });
+      this.createCharacterAnim(asset, "hurt", [42, 43, 44], { frameRate: BASE_ANIM_FRAME_RATE });
+      this.createCharacterAnim(asset, "cast", [39, 40, 41], { frameRate: BASE_ANIM_FRAME_RATE });
+      this.createCharacterAnim(asset, "die", [51, 52, 53], { frameRate: BASE_ANIM_FRAME_RATE * 2 });
+      this.createCharacterAnim(asset, "victory", [15, 16, 17], { repeat: -1, yoyo: true });
+      this.createCharacterAnim(asset, "boast", [15, 16, 17], {
+        frameRate: BASE_ANIM_FRAME_RATE * 1.5,
+        repeat: 2,
+        yoyo: true,
+      });
+    });
+
+    this.anims.create({
+      key: `cast`,
+      frames: this.anims.generateFrameNumbers("cast", { frames: [10, 11, 12] }),
+      frameRate: 15,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: `slash`,
+      frames: this.anims.generateFrameNumbers("slash", { frames: [99, 100, 101, 102] }),
+      frameRate: 15,
+    });
+
+    this.anims.create({
+      key: `impact`,
+      frames: this.anims.generateFrameNumbers("impact", { start: 0, end: 12 }),
+      frameRate: 25,
+    });
+
+    // Spells VFX
+
+    this.anims.create({
+      key: `meltdown`,
+      frames: this.anims.generateFrameNumbers("meltdown"),
+      frameRate: 10,
+    });
+
+    this.anims.create({
+      key: `potion_heal`,
+      frames: this.anims.generateFrameNumbers("potion_heal"),
+      frameRate: 10,
+    });
+
+    this.anims.create({
+      key: `revive`,
+      frames: this.anims.generateFrameNumbers("revive"),
+      frameRate: 15,
+    });
+
+    fireLevels.forEach((level) => {
+      const key = `fire_${level}_explosion`;
+      // const fireballKey = `fireball_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
+      });
+
+      // this.anims.create({
+      //     key: fireballKey,
+      //     frames: this.anims.generateFrameNumbers(fireballKey),
+      //     frameRate: VFXconfig[fireballKey]?.frameRate || 15,
+      //     repeat: -1,
+      // });
+    });
+
+    chargedFireLevels.forEach((level) => {
+      const key = `charged_fire_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: 50,
+        repeat: -1,
+      });
+    });
+
+    iceLevels.forEach((level) => {
+      const key = `ice_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
+      });
+    });
+
+    thunderLevels.forEach((level) => {
+      const key = `thunder_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
+      });
+    });
+
+    chargedIceLevels.forEach((level) => {
+      const key = `charged_ice_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: 50,
+        repeat: -1,
+      });
+    });
+
+    chargedThunderLevels.forEach((level) => {
+      const key = `charged_thunder_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: 50,
+        repeat: -1,
+      });
+    });
+
+    healLevels.forEach((level) => {
+      const key = `heal_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: VFXconfig[key]?.frameRate || 15,
+      });
+    });
+
+    this.anims.create({
+      key: `poison`,
+      frames: this.anims.generateFrameNumbers("poison", { start: 0, end: 16 }),
+      frameRate: 15,
+    });
+
+    this.anims.create({
+      key: `mute`,
+      frames: this.anims.generateFrameNumbers("mute", { start: 0, end: 13 }),
+      frameRate: 15,
+    });
+
+    // Terrain VFX
+    terrainFireLevels.forEach((level) => {
+      const key = `terrain_fire_${level}`;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(key),
+        frameRate: 30,
+        repeat: -1,
+      });
+    });
+
+    this.anims.create({
+      key: `smoke`,
+      frames: this.anims.generateFrameNumbers("smoke", { start: 32, end: 42 }),
+      frameRate: 12,
+    });
+
+    // Status effects VFX
+
+    this.anims.create({
+      key: `paralyzed`,
+      frames: this.anims.generateFrameNumbers("statuses", { start: 56, end: 63 }),
+      frameRate: 15,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: `poisoned`,
+      frames: this.anims.generateFrameNumbers("statuses", { start: 0, end: 7 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: `muted`,
+      frames: this.anims.generateFrameNumbers("statuses", { start: 16, end: 23 }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.animationScales = {
+      slash: 1,
+    };
+  }
+
+  placeCharacter(character: PlayerNetworkData, team: Team, isReconnect = false) {
+    const isPlayer = team.id === this.playerTeamId;
+    const { x, y } = this.hexGridToPixelCoords(character.x, character.y);
+
+    const player = new Player(
+      this,
+      this,
+      team,
+      character.name,
+      character.x,
+      character.y,
+      x,
+      y,
+      team.getMembers().length + 1,
+      character.portrait,
+      isPlayer,
+      character.class,
+      character.hp,
+      character.maxHP,
+      character.mp,
+      character.maxMP,
+      character.level,
+      character.xp,
+    );
+
+    if (isPlayer) {
+      player.setDistance(character.distance);
+      player.setInventory(character.inventory);
+      player.setSpells(character.spells);
+    }
+    player.setStatuses(character.statuses);
+
+    if (!isReconnect) {
+      player.y -= 1000;
+      // Stagger the entrance of each player with a random offset between -200 and +200 ms
+      const randomOffset =
+        Math.floor(Math.random() * (AIR_ENTRANCE_DELAY_VARIANCE * 2 + 1)) - AIR_ENTRANCE_DELAY_VARIANCE; // Random number between -AIR_ENTRANCE_DELAY_VARIANCE and AIR_ENTRANCE_DELAY_VARIANCE
+      const entranceDelay = AIR_ENTRANCE_DELAY + randomOffset;
+      this.time.delayedCall(entranceDelay, player.makeAirEntrance, [], player);
+    }
+
+    this.gridMap.set(serializeCoords(character.x, character.y), player);
+
+    team.addMember(player);
+  }
+
+  placeCharacters(data: PlayerNetworkData[], team: Team, isReconnect = false) {
+    data.forEach((player) => this.placeCharacter(player, team, isReconnect));
+  }
+
+  highlightCells(gridX, gridY, radius) {
+    // Clear any existing highlights
+    this.hexGridManager.clearHighlight();
+
+    // Use the common helper with custom validation for movement
+    this.hexGridManager.highlightTilesInRadius(
+      gridX,
+      gridY,
+      radius,
+      0x00ffff, // Cyan
+      (targetX, targetY) => this.hexGridManager.isValidCell(gridX, gridY, targetX, targetY, this.isFree.bind(this)),
+    );
+  }
+
+  hasEnemyNextTo(gridX, gridY) {
+    const enemyTeam = this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
+    return enemyTeam.getMembers().some((member) => {
+      return hexDistance(member.gridX, member.gridY, gridX, gridY) <= 1;
+    });
+  }
+
+  create() {
+    window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+    this.loadBackgroundMusic();
+    this.setUpArena();
+    this.createAnims();
+    this.createSounds();
+
+    this.localAnimationSprite = this.add
+      .sprite(0, 0, "")
+      .setScale(LOCAL_ANIMATION_SCALE)
+      .setOrigin(0.5, 0.7)
+      .setVisible(false);
+    this.localAnimationSprite.on("animationcomplete", () => this.localAnimationSprite.setVisible(false), this);
+
+    this.input.mouse.disableContextMenu();
+
+    this.musicManager = new MusicManager(this, 1, 12, [5, 6, 11]);
+    this.musicManager.playBeginning();
+    // this.playSound('crowd', 0.5, true);
+
+    this.environmentalAudioSources = {
+      flames: 0,
+    };
+
+    this.gameSettings = {
+      tutorial: false,
+      spectator: false,
+      game0: false,
+      mode: null,
+    };
+
+    this.hexGridManager = new HexGridManager(this);
+
+    this.sceneCreated = true;
+    this.emptyQueue();
+
+    this.setUpArena();
+
+    this.input.keyboard.on("keydown-D", () => {
+      this.hexGridManager.toggleCoordinateDisplay();
+    });
+
+    // Add character glow effect listener
+    window.addEventListener("characterInSpellRadius", (e: CustomEvent) => {
+      const { x, y, isAlly } = e.detail;
+      const player = this.gridMap.get(serializeCoords(x, y));
+      if (player) {
+        player.onPointerOver();
+      }
+    });
+
+    // Add character un-highlight effect listener
+    window.addEventListener("characterOutOfSpellRadius", (e: CustomEvent) => {
+      const { x, y } = e.detail;
+      const player = this.gridMap.get(serializeCoords(x, y));
+      if (player) {
+        player.onPointerOut();
+      }
+    });
+  }
+
+  emptyQueue() {
+    // Process the events that have been queued during initialization
+    // console.log(`[Arena:emptyQueue] Emptying event queue`);
+    if (this.eventsQueue.length > 1) this.isLateToTheParty = true;
+    this.eventsQueue.forEach((event) => {
+      this.socket.onevent.call(this.socket, event);
+    });
+  }
+
+  loadBackgroundMusic() {
+    // Add the music files to the loader
+    for (let i = 2; i <= 12; i++) {
+      this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
+    }
+    this.load.audio("bgm_end", bgmEndSFX);
+
+    // Start the loader
+    this.load.start();
+  }
+
+  initializeGame(data: GameData): void {
+    recordLoadingStep("finish");
+    const isReconnect = data.general.reconnect || this.isLateToTheParty;
+    // console.log(`[Arena:initializeGame] Reconnecting to game: ${isReconnect}`);
+
+    this.playerTeamId = data.player.teamId;
+
+    if (this.playerTeamId === undefined) {
+      console.error("Player team id is undefined");
+    }
+
+    this.gameSettings.spectator = data.general.spectator;
+    this.gameSettings.mode = data.general.mode;
+    this.queue = data.queue;
+    this.turnee = data.turnee;
+    this.gameSettings.game0 = data.player.player.completedGames === 0;
+
+    this.tutorialManager = new TutorialManager(this, data.player.player.engagementStats);
+
+    this.teamsMap.set(
+      data.player.teamId,
+      new Team(this, data.player.teamId, true, data.player.player, data.player.score),
+    );
+    this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
+
+    // Set up holes in the grid
+    if (data.holes && this.hexGridManager) {
+      this.hexGridManager.setHoles(data.holes);
+    }
+
+    // Events from the HUD
+    events.on("itemClick", (keyIndex) => {
+      this.selectedPlayer?.onKey(keyIndex);
+    });
+
+    events.on("passTurn", () => {
+      this.playSound("click");
+      this.socket.emit("passTurn");
+    });
+
+    events.on("abandonGame", () => {
+      this.abandonGame();
+    });
+
+    events.on("exitGame", () => {
+      this.destroy();
+    });
+
+    events.on("teamRevealed", () => {
+      this.socket.emit("teamRevealed");
+      this.displayGame(data, isReconnect);
+    });
+
+    events.emit("gameInitialized", { game0: this.gameSettings.game0 });
+
+    if (this.gameSettings.game0) {
+      events.emit("revealTeam", data.player.team);
+    } else {
+      this.displayGame(data, isReconnect);
+    }
+  }
+
+  displayGame(data: GameData, isReconnect: boolean) {
+    this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
+    this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
+
+    const tilesDelay = isReconnect ? 0 : 1000;
+
+    this.hexGridManager.floatHexTiles(tilesDelay, this.handleTileClick.bind(this), this.handleTileHover.bind(this));
+
+    setTimeout(
+      () => {
+        // Move this AFTER floatHexTiles so the tiles exist
+        this.hexGridManager.setCharacterTiles(this.gridMap);
+      },
+      isReconnect ? 0 : AIR_ENTRANCE_DELAY + AIR_ENTRANCE_DELAY_VARIANCE * 2,
+    );
+
+    this.processTerrain(data.terrain, isReconnect); // Put after floatTiles() to allow for tilesMap to be intialized
+
+    if (isReconnect) {
+      this.setGameInitialized();
+      this.selectTurnee();
+    } else {
+      const delay = 3000;
+      setTimeout(this.refreshOverview.bind(this), delay + 1000);
+      setTimeout(() => {
+        this.displayGEN(GEN.COMBAT_BEGINS);
+        this.setGameInitialized();
+        this.selectTurnee();
+      }, delay);
+    }
+  }
+
+  setGameInitialized() {
+    this.gameInitialized = true;
+    this.refreshOverview();
+  }
+
+  startAnimation() {
+    const bandHeight = 300;
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const bandY = (screenHeight - bandHeight) / 2; // Position Y so the band is centered vertically
+
+    // Create the semi-transparent black band
+    let currentHeight = 1; // Start with a height of 1
+    const band = this.add.graphics({ fillStyle: { color: 0x000000, alpha: 0.5 } }).setDepth(10);
+    band.fillRect(0, bandY, screenWidth, currentHeight);
+
+    // Animate the height of the band
+    this.tweens.add({
+      targets: { height: 1 },
+      height: bandHeight, // Target height for the animation
+      duration: 500,
+      ease: "Power2",
+      onUpdate: (tween) => {
+        currentHeight = tween.getValue();
+        band.clear(); // Clear previous frame
+        band.fillRect(0, bandY, screenWidth, currentHeight);
+      },
+      onComplete: () => {
+        // Once band animation is complete, animate 'START' text
+        const startText = this.add
+          .text(0, bandY + (bandHeight - 20) / 2, "FIGHT!", { fontSize: "40px", color: "#FFFFFF", fontFamily: "Kim" })
+          .setAlpha(0)
+          .setDepth(11);
+        startText.x = -startText.width; // Position text off-screen to the left
+
+        // Slide in animation for 'START' text
+        this.tweens.add({
+          targets: startText,
+          x: (screenWidth - startText.width) / 2,
+          alpha: 1,
+          duration: 500,
+          ease: "Power2",
+          hold: 500, // Keep in place for a bit
+          onComplete: () => {
+            // Slide out to the right
+            this.tweens.add({
+              targets: startText,
+              x: screenWidth,
+              alpha: 0,
+              duration: 200,
+              ease: "Power2",
+              onComplete: () => {
+                // Cleanup: remove the text and band
+                startText.destroy();
+                band.destroy();
+              },
+            });
+          },
+        });
+      },
+    });
+  }
+
+  enqueueGEN(gen: GEN) {
+    this.genQueue.push(gen);
+    this.processGENQueue();
+  }
+
+  processGENQueue() {
+    if (this.gameEnded || this.isDisplayingGEN || this.killCamActive || this.genQueue.length === 0) {
+      return;
+    }
+    this.isDisplayingGEN = true;
+    const gen = this.genQueue.shift();
+    this.displayGEN(gen).then(() => {
+      this.isDisplayingGEN = false;
+      this.processGENQueue(); // Proceed to next GEN
+    });
+  }
+
+  displayGEN(gen: GEN): Promise<void> {
+    if (this.gameEnded) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      if (this.killCamActive) {
+        this.genQueue.unshift(gen);
+        resolve();
+        return;
+      }
+
+      if (gen != GEN.COMBAT_BEGINS && this.gameSettings.game0) {
+        return;
+      }
+
+      const config = Arena.GEN_CONFIGS[gen];
+      if (!config) {
+        resolve();
+        return;
+      }
+
+      // Setup GEN Background
+      const textTweenDuration = 600;
+      const textDelay = 400;
+      const yOffset = 80;
+      const bgYPosition = yOffset;
+      // Remove camera scroll from xPosition since we're using setScrollFactor(0)
+      const xPosition = this.cameras.main.centerX;
+      const yPosition = yOffset;
+      const scale = 0.5;
+
+      let genBg = this.add
+        .image(xPosition, bgYPosition, "gen_bg")
+        .setScrollFactor(0)
+        .setAlpha(0)
+        .setDepth(10)
+        .setScale(scale);
+
+      this.tweens.add({
+        targets: genBg,
+        alpha: 0.7,
+        duration: 200,
+        ease: "Power2",
+      });
+
+      // Setup GEN Texts
+      const targets = [
+        this.add
+          .image(-350, yPosition, config.text1)
+          .setScrollFactor(0) // Make it stick to camera
+          .setDepth(10)
+          .setScale(scale),
+        this.add
+          .image(this.cameras.main.width + 100, yPosition, "blue_bang")
+          .setScrollFactor(0) // Make it stick to camera
+          .setDepth(10)
+          .setScale(scale),
+      ];
+
+      if (config.text2) {
+        targets.push(
+          this.add
+            .image(this.cameras.main.width + 100, yPosition, config.text2)
+            .setScrollFactor(0) // Make it stick to camera
+            .setDepth(10)
+            .setScale(scale),
+        );
+      }
+
+      // Animate GEN Texts into View
+      this.tweens.add({
+        targets,
+        x: xPosition,
+        duration: textTweenDuration,
+        ease: "Power2",
+        delay: textDelay,
+        onComplete: () => {
+          // After displaying, wait for a duration then fade out
+          this.time.delayedCall(2000, () => {
+            this.tweens.add({
+              targets: targets.concat([genBg]),
+              alpha: 0,
+              duration: 200,
+              ease: "Power2",
+              onComplete: () => {
+                // Clean up GEN elements
+                targets.forEach((t) => t.destroy());
+                genBg.destroy();
+                resolve(); // Resolve the promise to allow next GEN to be processed
+              },
+            });
+          });
+        },
+      });
+    });
+  }
+
+  getOverview() {
+    const overview = {
+      team1: this.teamsMap.get(1).getOverview(),
+      team2: this.teamsMap.get(2).getOverview(),
+      general: this.gameSettings,
+      initialized: this.gameInitialized,
+      queue: this.getQueue(),
+      turnee: this.getTurnee(),
+    };
+    return overview;
+  }
+
+  getQueue() {
+    return this.queue;
+  }
+
+  getTurnee() {
+    return this.turnee;
+  }
+
+  killCam(x, y) {
+    this.killCamActive = true;
+    // Save the original camera state
+    const originalZoom = this.cameras.main.zoom;
+    const originalTimeScale = this.localAnimationSprite.anims.timeScale;
+    const originalSoundRate = this.sound.rate;
+    const originalTweenRate = this.tweens.timeScale;
+    const originalScrollX = this.cameras.main.scrollX;
+    const originalScrollY = this.cameras.main.scrollY;
+
+    const targetZoom = 2;
+    const slowMotionScale = 0.2;
+
+    this.sound.setRate(slowMotionScale);
+    this.localAnimationSprite.anims.timeScale = slowMotionScale;
+    this.tweens.timeScale = slowMotionScale;
+
+    // For every sprites in this.sprites, set anims.timeScale to slowMotionScale
+    this.sprites.forEach((sprite) => {
+      if (sprite.anims) sprite.anims.timeScale = slowMotionScale;
+    });
+
+    const firstDelay = 0;
+    const secondDelay = firstDelay + KILL_CAM_DURATION * 1000;
+    const cameraSpeed = 200;
+
+    this.time.delayedCall(firstDelay, () => {
+      // Move camera to the spell's location and zoom in
+      this.cameras.main.pan(x, y, cameraSpeed, "Power2");
+      this.cameras.main.zoomTo(targetZoom, cameraSpeed, "Power2");
+    });
+
+    this.time.delayedCall(secondDelay, () => {
+      // Return the camera to its original position and zoom level
+      const returnX = this.cameras.main.width / 2 + originalScrollX;
+      const returnY = this.cameras.main.height / 2 + originalScrollY;
+      this.cameras.main.pan(returnX, returnY, cameraSpeed, "Power2");
+      this.cameras.main.zoomTo(originalZoom, cameraSpeed, "Power2");
+      this.localAnimationSprite.anims.timeScale = originalTimeScale;
+      this.sound.setRate(originalSoundRate);
+      this.tweens.timeScale = originalTweenRate;
+
+      this.sprites.forEach((sprite) => {
+        if (sprite.anims) sprite.anims.timeScale = originalTimeScale;
+      });
+      this.killCamActive = false;
+      this.processGENQueue(); // Trigger processing of GEN queue after kill cam
+    });
+  }
+
+  addFlames() {
+    this.environmentalAudioSources.flames++;
+    this.updateEnvironmentAudio();
+  }
+
+  removeFlames() {
+    this.environmentalAudioSources.flames--;
+    this.updateEnvironmentAudio();
+  }
+
+  updateEnvironmentAudio() {
+    if (this.gameEnded || !this.gameInitialized) return;
+    const flames = this.environmentalAudioSources.flames;
+    if (flames > 0) {
+      this.playSound("flames", 0.5, true);
+    } else {
+      this.stopSound("flames");
+    }
+  }
+
+  abandonGame() {
+    this.socket.emit("abandonGame");
+    this.destroy();
+  }
+
+  destroy() {
+    window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+    events.emit("notifyMatchmakerLeave");
+    this.socket.disconnect();
+
+    this.teamsMap.forEach((team) => {
+      team.members.forEach((player) => {
+        player.destroy();
+      });
+    });
+
+    if (this.SFX) {
+      Object.values(this.SFX).forEach((sound) => {
+        // @ts-ignore
+        if (sound.isPlaying) {
+          // @ts-ignore
+          sound.stop();
+        }
+      });
+    }
+
+    // Stop and destroy the music manager
+    if (this.musicManager) {
+      this.musicManager.destroy();
+    }
+
+    // Stop any ongoing tweens
+    this.tweens.killAll();
+
+    // Stop any ongoing timers
+    this.time.removeAllEvents();
+
+    // Stop the HUD and current scene
+    this.scene.stop("HUD");
+
+    // In the destroy method, add:
+    if (this.tutorialManager) {
+      this.tutorialManager.destroy();
+    }
+    this.scene.stop();
+
+    // Clean up any other resources or listeners
+    events.removeAllListeners();
+    events.off("settingsChanged", this.onSettingsChanged, this);
+
+    // Add cleanup for hexGridManager
+    if (this.hexGridManager) {
+      this.hexGridManager.destroy();
+    }
+  }
+
+  // update (time, delta)
+  // {
+  // }
+
+  getCharacterPosition(playerTeam: boolean, characterIdx: number) {
+    const teamId = playerTeam ? this.playerTeamId : 2;
+    const character = this.teamsMap.get(teamId).members[characterIdx];
+    return { x: character.gridX, y: character.gridY };
+  }
+
+  summonEnemy(x: number, y: number, attackMode: AIAttackMode = AIAttackMode.IDLE) {
+    this.send("tutorialEvent", { action: "summonEnemy", x, y, attackMode });
+  }
+
+  summonAlly(x: number, y: number, className: Class) {
+    this.send("tutorialEvent", { action: "summonAlly", x, y, className });
+  }
+
+  putInFormation() {
+    this.send("tutorialEvent", { action: "putInFormation" });
+  }
+
+  slowDownCooldowns() {
+    this.send("tutorialEvent", { action: "slowDownCooldowns" });
+  }
+
+  isCharacterSelected(index: number) {
+    return this.selectedPlayer?.num === index;
+  }
+
+  isTutorial() {
+    return this.gameSettings.tutorial;
+  }
+
+  handleReplayData(data: any) {
+    this.isReplay = true;
+    this.replayData = data;
+
+    // Initialize game with first gameStatus message
+    const initialStatus = this.replayData.messages.find((m) => m.event === "gameStatus");
+    if (initialStatus) {
+      this.initializeGame(initialStatus.data);
+    }
+
+    // Start replay timer
+    this.startReplayPlayback();
+  }
+
+  startReplayPlayback() {
+    this.currentReplayIndex = 0;
+    this.processNextReplayEvent();
+  }
+
+  processNextReplayEvent() {
+    if (this.currentReplayIndex >= this.replayData.messages.length) {
+      console.log("Replay finished");
+      return;
+    }
+
+    const currentMessage = this.replayData.messages[this.currentReplayIndex];
+    const nextMessage = this.replayData.messages[this.currentReplayIndex + 1];
+
+    // Process current message
+    if (currentMessage.event !== "gameStatus") {
+      // We already processed gameStatus
+      this.processReplayMessage(currentMessage);
+    }
+
+    this.currentReplayIndex++;
+
+    // Schedule next message if there is one
+    if (nextMessage) {
+      const delay = nextMessage.timestamp - currentMessage.timestamp;
+      this.time.delayedCall(delay, this.processNextReplayEvent, [], this);
+    }
+  }
+
+  processReplayMessage(message: any) {
+    const handler = this.eventHandlers.get(message.event);
+    if (handler) {
+      handler(message.data);
+    } else {
+      console.warn(`No handler found for replay event: ${message.event}`);
+    }
+  }
+
+  darkenScene(targetHighlight: TargetHighlight = TargetHighlight.ENEMY) {
+    if (this.isDarkened) return;
+    this.isDarkened = true;
+
+    this.getAllDarkenableObjects().forEach((obj) => obj.setTint(TINT_COLOR));
+    this.hexGridManager.darkenAllTiles(TINT_COLOR);
+
+    // Process players separately for health bars
+    this.teamsMap.forEach((team) => {
+      team.members.forEach((player) => {
+        if (this.shouldStayBright(player, targetHighlight)) {
+          player.sprite.clearTint();
+          player.healthBar?.brighten();
+          player.MPBar?.brighten();
         } else {
-            // Generate a random delay between 0-150ms for more natural look when multiple blocks appear
-            const randomDelay = Math.floor(Math.random() * 150);
-            
-            // Use Phaser's time delayed call to execute with random delay
-            this.time.delayedCall(TERRAIN_SPRITE_DELAY + randomDelay, () => {
-                // Create meltdown sprite for reverse animation
-                const meltdownSprite = this.add.sprite(pixelX, pixelY, 'meltdown')
-                    .setDepth(depth)
-                    .setOrigin(0.5, 0.35);
-                
-                // Get all frames from the meltdown animation
-                const frames = this.anims.generateFrameNumbers('meltdown');
-                
-                // Create a reverse animation key if it doesn't exist
-                const reverseAnimKey = 'meltdown_reverse';
-                if (!this.anims.exists(reverseAnimKey)) {
-                    this.anims.create({
-                        key: reverseAnimKey,
-                        frames: this.anims.generateFrameNumbers('meltdown', { frames: frames.map((_, i) => frames.length - 1 - i) }),
-                        frameRate: 10
-                    });
-                }
-                
-                // Play the reverse animation
-                meltdownSprite.play(reverseAnimKey);
-                
-                // When animation completes, create the ice block
-                meltdownSprite.once('animationcomplete', () => {
-                    meltdownSprite.destroy();
-                    
-                    // Create the ice block and update maps
-                    createIceAndUpdateMaps();
-                });
-            });
+          player.healthBar?.darken();
+          player.MPBar?.darken();
         }
-    }
+      });
+    });
+  }
 
-    private handleIceTerrain(x: number, y: number, isReconnect = false) {
-        if (this.terrainMap.get(serializeCoords(x, y)) === Terrain.ICE) return;
-        this.iceFormation(x, y, isReconnect);
-    }
+  brightenScene() {
+    if (!this.isDarkened) return;
+    this.isDarkened = false;
 
-    private meltdown(sprite: Phaser.GameObjects.Sprite) {
-        // Create a meltdown sprite at the same position as the terrain sprite
-        const meltdownSprite = this.add.sprite(
-            sprite.x, 
-            sprite.y, 
-            'meltdown'
-        )
-            .setDepth(sprite.depth + 0.01)
-            .setScale(sprite.scaleX)
-            .setOrigin(0.5, 0.5);
-        
-        // Hide the original terrain sprite
-        sprite.setVisible(false);
-        
-        // Play meltdown animation
-        meltdownSprite.play('meltdown');
-        
-        // When animation completes, destroy both sprites
-        meltdownSprite.once('animationcomplete', () => {
-            meltdownSprite.destroy();
-            sprite.destroy();
+    this.getAllDarkenableObjects().forEach((obj) => obj.clearTint());
+    this.hexGridManager.brightenAllTiles();
+
+    // Brighten all bars
+    this.teamsMap.forEach((team) => {
+      team.members.forEach((player) => {
+        player.healthBar?.brighten();
+        player.MPBar?.brighten();
+      });
+    });
+
+    // Restore movement range highlight if appropriate
+    if (this.selectedPlayer?.canAct() && !this.selectedPlayer?.pendingSpell && !this.selectedPlayer?.pendingItem) {
+      this.selectedPlayer.displayMovementRange();
+    }
+  }
+
+  private shouldStayBright(player: Player, targetHighlight: TargetHighlight = TargetHighlight.ENEMY): boolean {
+    const isAlly = this.isAlly(player);
+
+    switch (targetHighlight) {
+      case TargetHighlight.ALLY:
+        return isAlly && player.isAlive();
+      case TargetHighlight.ENEMY:
+        return !isAlly && player.isAlive();
+      case TargetHighlight.DEAD:
+        return !player.isAlive();
+      default:
+        return !isAlly && player.isAlive();
+    }
+  }
+
+  private handleFireTerrain(x: number, y: number) {
+    const TERRAIN_SPRITE_DELAY = 200;
+    const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(x, y);
+    // Do nothing if the tile already has fire
+    if (this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE) return;
+    setTimeout(() => {
+      const sprite = this.add.sprite(pixelX, pixelY, "").setDepth(this.yToZ(y)).setScale(0.5).setAlpha(0.9);
+      this.addFlames();
+      sprite.on("destroy", () => {
+        this.removeFlames();
+      });
+      const randomLevel = terrainFireLevels[Math.floor(Math.random() * terrainFireLevels.length)];
+      sprite.anims.play(`terrain_fire_${randomLevel}`);
+      // Apply a random flip X
+      if (Math.random() < 0.5) {
+        sprite.setFlipX(true);
+      }
+      this.sprites.push(sprite);
+      this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
+      this.terrainMap.set(serializeCoords(x, y), Terrain.FIRE);
+      events.emit("flamesAppeared");
+    }, TERRAIN_SPRITE_DELAY);
+  }
+
+  private iceFormation(x: number, y: number, isReconnect = false) {
+    const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(x, y);
+    const depth = this.yToZ(y) + DEPTH_OFFSET;
+    const TERRAIN_SPRITE_DELAY = 200;
+
+    // Helper function to create ice block and update maps
+    const createIceAndUpdateMaps = () => {
+      const icesprite = this.createIceBlock(x, y);
+      this.terrainSpritesMap.set(serializeCoords(x, y), icesprite);
+      this.terrainMap.set(serializeCoords(x, y), Terrain.ICE);
+      this.hexGridManager.setObstacle(x, y, true);
+      events.emit("iceAppeared");
+    };
+
+    if (isReconnect) {
+      // Skip animation and create ice block immediately when reconnecting
+      createIceAndUpdateMaps();
+    } else {
+      // Generate a random delay between 0-150ms for more natural look when multiple blocks appear
+      const randomDelay = Math.floor(Math.random() * 150);
+
+      // Use Phaser's time delayed call to execute with random delay
+      this.time.delayedCall(TERRAIN_SPRITE_DELAY + randomDelay, () => {
+        // Create meltdown sprite for reverse animation
+        const meltdownSprite = this.add.sprite(pixelX, pixelY, "meltdown").setDepth(depth).setOrigin(0.5, 0.35);
+
+        // Get all frames from the meltdown animation
+        const frames = this.anims.generateFrameNumbers("meltdown");
+
+        // Create a reverse animation key if it doesn't exist
+        const reverseAnimKey = "meltdown_reverse";
+        if (!this.anims.exists(reverseAnimKey)) {
+          this.anims.create({
+            key: reverseAnimKey,
+            frames: this.anims.generateFrameNumbers("meltdown", {
+              frames: frames.map((_, i) => frames.length - 1 - i),
+            }),
+            frameRate: 10,
+          });
+        }
+
+        // Play the reverse animation
+        meltdownSprite.play(reverseAnimKey);
+
+        // When animation completes, create the ice block
+        meltdownSprite.once("animationcomplete", () => {
+          meltdownSprite.destroy();
+
+          // Create the ice block and update maps
+          createIceAndUpdateMaps();
         });
+      });
     }
+  }
 
-    private handleClearTerrain(x: number, y: number) {
-        this.hexGridManager.setObstacle(x, y, false);
-        this.terrainMap.delete(serializeCoords(x, y));
-        const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
-        if (terrainsprite) {
-            this.meltdown(terrainsprite);
-            this.terrainSpritesMap.delete(serializeCoords(x, y));
-        }
+  private handleIceTerrain(x: number, y: number, isReconnect = false) {
+    if (this.terrainMap.get(serializeCoords(x, y)) === Terrain.ICE) return;
+    this.iceFormation(x, y, isReconnect);
+  }
+
+  private meltdown(sprite: Phaser.GameObjects.Sprite) {
+    // Create a meltdown sprite at the same position as the terrain sprite
+    const meltdownSprite = this.add
+      .sprite(sprite.x, sprite.y, "meltdown")
+      .setDepth(sprite.depth + 0.01)
+      .setScale(sprite.scaleX)
+      .setOrigin(0.5, 0.5);
+
+    // Hide the original terrain sprite
+    sprite.setVisible(false);
+
+    // Play meltdown animation
+    meltdownSprite.play("meltdown");
+
+    // When animation completes, destroy both sprites
+    meltdownSprite.once("animationcomplete", () => {
+      meltdownSprite.destroy();
+      sprite.destroy();
+    });
+  }
+
+  private handleClearTerrain(x: number, y: number) {
+    this.hexGridManager.setObstacle(x, y, false);
+    this.terrainMap.delete(serializeCoords(x, y));
+    const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
+    if (terrainsprite) {
+      this.meltdown(terrainsprite);
+      this.terrainSpritesMap.delete(serializeCoords(x, y));
     }
+  }
 
-    private createCharacterAnim(asset: string, key: string, frames: number[], config = {}) {
-        this.anims.create({
-            key: `${asset}_anim_${key}`,
-            frames: this.anims.generateFrameNumbers(asset, { frames }),
-            frameRate: BASE_ANIM_FRAME_RATE,
-            ...config
-        });
+  private createCharacterAnim(asset: string, key: string, frames: number[], config = {}) {
+    this.anims.create({
+      key: `${asset}_anim_${key}`,
+      frames: this.anims.generateFrameNumbers(asset, { frames }),
+      frameRate: BASE_ANIM_FRAME_RATE,
+      ...config,
+    });
+  }
+
+  private getAllDarkenableObjects() {
+    return [
+      ...this.sprites,
+      ...Array.from(this.teamsMap.values()).flatMap((team) => team.members.map((player) => player.sprite)),
+    ];
+  }
+
+  // Add helper methods:
+  isPlayerTeam(teamId: number): boolean {
+    return teamId === this.playerTeamId;
+  }
+
+  isAlly(player: Player): boolean {
+    return this.isPlayerTeam(player.team.id);
+  }
+
+  hexGridToPixelCoords(gridX, gridY) {
+    return this.hexGridManager.hexGridToPixelCoords(gridX, gridY);
+  }
+
+  updateTargetHighlight(pointer) {
+    if (!this.isInTargetMode || !this.selectedPlayer) return;
+
+    const { gridX, gridY } = this.hexGridManager.pointerToHexGrid(pointer);
+
+    // Calculate distance from player to highlight center
+    const playerX = this.selectedPlayer.gridX;
+    const playerY = this.selectedPlayer.gridY;
+    const distance = hexDistance(playerX, playerY, gridX, gridY);
+
+    // Get the current spell
+    const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
+    const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
+
+    // Check if the target is within range (player's distance + SPELL_RANGE)
+    if (
+      this.hexGridManager.isValidGridPosition(gridX, gridY) &&
+      distance <= this.selectedPlayer.distance + SPELL_RANGE
+    ) {
+      // Clear previous spell highlights but keep target range
+      this.hexGridManager.clearHighlightOfType(HighlightType.SPELL);
+
+      // Highlight spell area with direct gridMap reference
+      this.hexGridManager.highlightSpellRadius(
+        gridX,
+        gridY,
+        this.targetModeSize,
+        this.gridMap,
+        (player) => this.isAlly(player),
+        isAllyTargetingSpell,
+      );
     }
+  }
 
-    private getAllDarkenableObjects() {
-        return [
-            ...this.sprites,
-            ...Array.from(this.teamsMap.values()).flatMap(team => 
-                team.members.map(player => player.sprite)
-            )
-        ];
-    }
-
-    // Add helper methods:
-    isPlayerTeam(teamId: number): boolean {
-        return teamId === this.playerTeamId;
-    }
-
-    isAlly(player: Player): boolean {
-        return this.isPlayerTeam(player.team.id);
-    }
-
-    hexGridToPixelCoords(gridX, gridY) {
-        return this.hexGridManager.hexGridToPixelCoords(gridX, gridY);
-    }
-
-    updateTargetHighlight(pointer) {
-        if (!this.isInTargetMode || !this.selectedPlayer) return;
-        
-        const {gridX, gridY} = this.hexGridManager.pointerToHexGrid(pointer);
-        
-        // Calculate distance from player to highlight center
-        const playerX = this.selectedPlayer.gridX;
-        const playerY = this.selectedPlayer.gridY;
-        const distance = hexDistance(playerX, playerY, gridX, gridY);
-        
-        // Get the current spell
-        const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
-        const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
-
-        // Check if the target is within range (player's distance + SPELL_RANGE)
-        if (this.hexGridManager.isValidGridPosition(gridX, gridY) && distance <= this.selectedPlayer.distance + SPELL_RANGE) {
-            // Clear previous spell highlights but keep target range
-            this.hexGridManager.clearHighlightOfType(HighlightType.SPELL);
-            
-            // Highlight spell area with direct gridMap reference
-            this.hexGridManager.highlightSpellRadius(
-                gridX, 
-                gridY, 
-                this.targetModeSize,
-                this.gridMap,
-                player => this.isAlly(player),
-                isAllyTargetingSpell
-            );
-        }
-    }
-
-    hasObstacle(gridX: number, gridY: number) {
-        return this.hexGridManager.hasObstacle(gridX, gridY);
-    }
+  hasObstacle(gridX: number, gridY: number) {
+    return this.hexGridManager.hasObstacle(gridX, gridY);
+  }
 }

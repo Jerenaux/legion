@@ -9,10 +9,7 @@ export function extractBearerToken(authorization: string | undefined): string {
   return match[1];
 }
 
-export async function verifyUID(
-  authorization: string | undefined,
-  verifyToken: TokenVerifier,
-): Promise<string> {
+export async function verifyUID(authorization: string | undefined, verifyToken: TokenVerifier): Promise<string> {
   const token = extractBearerToken(authorization);
   const decoded = await verifyToken(token);
   if (!decoded.uid) throw new Error("Verified token has no uid");

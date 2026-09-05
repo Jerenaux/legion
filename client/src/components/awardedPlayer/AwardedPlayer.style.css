@@ -1,23 +1,23 @@
 .highlights-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    margin-right: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-right: 28px;
 }
 
 .award-player-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    position: relative;
-    background-image: url('@assets/rank/players_bg.png');
-    background-size: 100% 100%;
-    min-height: 118px;
-    min-width: 148px;
-    margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  background-image: url("@assets/rank/players_bg.png");
+  background-size: 100% 100%;
+  min-height: 118px;
+  min-width: 148px;
+  margin-bottom: 4px;
 }
 
 /* .award-player-container img {
@@ -27,61 +27,63 @@
     top: -32px;
 }  */
 
-.award-player-avatar-container { 
-    position: absolute;
-    width: 64px;
-    height: 64px;
-    top: -32px; 
-    background-image: url('@assets/rank/player_profile_bg.png'); 
-    background-size: 100% 100%; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-} 
+.award-player-avatar-container {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  top: -32px;
+  background-image: url("@assets/rank/player_profile_bg.png");
+  background-size: 100% 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-.award-player-avatar-container > img { 
-    width: 60px; 
-    height: 60px; 
-    border-radius: 6px;
+.award-player-avatar-container > img {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
 }
 
 .award-player-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: #FFFFFF;
-    position: absolute;
-    top: 42px;
-    text-transform: uppercase;
-    max-width: 130px;
-    overflow: hidden;
-    white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  position: absolute;
+  top: 42px;
+  text-transform: uppercase;
+  max-width: 130px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .award-player-title {
-    font-size: 12px;
-    font-weight: 500;
-    color: #ffa600;
-    position: absolute;
-    top: 56px;
-    text-transform: uppercase;
-    max-width: 120px;
-    overflow: hidden;
-    white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffa600;
+  position: absolute;
+  top: 56px;
+  text-transform: uppercase;
+  max-width: 120px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .award-player-desc {
-    font-size: 10px;
-    color: #FFFFFF;
-    position: absolute;
-    bottom: 16px; 
+  font-size: 10px;
+  color: #ffffff;
+  position: absolute;
+  bottom: 16px;
 }
 
 .award-player-container.clickable {
-    cursor: pointer;
-    transition: transform 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
 }
 
 .award-player-container.clickable:hover {
-    transform: scale(1.05);
-    filter: brightness(1.2);
+  transform: scale(1.05);
+  filter: brightness(1.2);
 }

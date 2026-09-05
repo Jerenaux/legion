@@ -1,10 +1,19 @@
 export const DESKTOP_ACTION_EVENT = "legion:desktop-action";
 
 export type DesktopAction =
-  | "menu-up" | "menu-down" | "menu-left" | "menu-right"
-  | "confirm" | "cancel" | "previous-unit" | "next-unit"
-  | "select-unit-1" | "select-unit-2" | "select-unit-3"
-  | "end-turn" | "pause";
+  | "menu-up"
+  | "menu-down"
+  | "menu-left"
+  | "menu-right"
+  | "confirm"
+  | "cancel"
+  | "previous-unit"
+  | "next-unit"
+  | "select-unit-1"
+  | "select-unit-2"
+  | "select-unit-3"
+  | "end-turn"
+  | "pause";
 
 export type DesktopActionSource = "keyboard" | "gamepad";
 
@@ -29,5 +38,5 @@ export function actionFromKeyboard(event: Pick<KeyboardEvent, "code" | "key" | "
 }
 
 export function dispatchDesktopAction(action: DesktopAction, source: DesktopActionSource) {
-  window.dispatchEvent(new CustomEvent(DESKTOP_ACTION_EVENT, {detail: {action, source}}));
+  window.dispatchEvent(new CustomEvent(DESKTOP_ACTION_EVENT, { detail: { action, source } }));
 }

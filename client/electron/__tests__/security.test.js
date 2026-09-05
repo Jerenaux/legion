@@ -1,6 +1,6 @@
 const path = require("node:path");
-const {resolveAppPath} = require("../protocol");
-const {isSafeExternalURL, isTrustedSender} = require("../security");
+const { resolveAppPath } = require("../protocol");
+const { isSafeExternalURL, isTrustedSender } = require("../security");
 
 test("keeps app protocol paths inside dist", () => {
   const dist = path.resolve("dist");

@@ -1,14 +1,12 @@
-import {onRequest} from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import admin, {checkAPIKey, corsMiddleware, storage, isDevelopment} from "./APIsetup";
-import {EndGameData, GameReplayMessage} from "@legion/shared/interfaces";
-import {GameStatus, League, PlayMode} from "@legion/shared/enums";
-import {logPlayerAction} from "./dashboardAPI";
-import Busboy from 'busboy';
+import admin, { checkAPIKey, corsMiddleware, storage, isDevelopment } from "./APIsetup";
+import { EndGameData, GameReplayMessage } from "@legion/shared/interfaces";
+import { GameStatus, League, PlayMode } from "@legion/shared/enums";
+import { logPlayerAction } from "./dashboardAPI";
+import Busboy from "busboy";
 
-export async function createGameDocument(
-  gameId: string, players: string[], mode: PlayMode, league: League
-) {
+export async function createGameDocument(gameId: string, players: string[], mode: PlayMode, league: League) {
   const db = admin.firestore();
   const gameData = {
     date: new Date(),
@@ -22,175 +20,182 @@ export async function createGameDocument(
   console.log(`[createGameDocument] Game ${gameId} created`);
 }
 
-export const createGame = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Creating game");
-  const db = admin.firestore();
+export const createGame = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    logger.info("Creating game");
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
-      const gameId = request.body.gameId;
-      const players = request.body.players;
-      const mode = request.body.mode;
-      const league = request.body.league;
-      await createGameDocument(gameId, players, mode, league);
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
+        const gameId = request.body.gameId;
+        const players = request.body.players;
+        const mode = request.body.mode;
+        const league = request.body.league;
+        await createGameDocument(gameId, players, mode, league);
 
-      for (const player of players) {
-        logPlayerAction(player, "gameStart", {
-          gameId,
-          league,
-          mode,
-        });
-      }
-
-      response.status(200).send({status: 0});
-    } catch (error) {
-      console.error("createGame error:", error);
-      response.status(401).send("Unauthorized");
-    }
-  });
-});
-
-export const completeGame = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send("Unauthorized");
-        return;
-      }
-      const gameId = request.body.gameId;
-      const winnerUID = request.body.winnerUID || -1; // -1 for AI
-      const rawResults: EndGameData = request.body.results;
-      console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(rawResults)}`);
-      // Filter out the results object to remove keys that are empty strings or undefined
-      const results = Object.fromEntries(
-        Object.entries(rawResults).filter(([key, value]) => key !== '' && value !== undefined)
-      );
-      console.log(`[completeGame] Filtered results: ${JSON.stringify(results)}`);
-
-      const gameDoc = await db.collection("games").doc(gameId).get();
-      if (!gameDoc.exists) { // Most likely a tutorial ending
-        // throw new Error("Invalid game ID");
-        response.status(200).send({status: 0});
-        return; // Exit the function early
-      }
-
-      const gameData = gameDoc.data();
-      if (!gameData) {
-        throw new Error("gameData is null");
-      }
-
-      for (const player of gameData.players) {
-        if (player) { // Add a check to ensure player is not undefined or empty string
-          logPlayerAction(player, "gameComplete", {
+        for (const player of players) {
+          logPlayerAction(player, "gameStart", {
             gameId,
-            winner: winnerUID == player,
-            results: results[player as keyof EndGameData],
-            league: gameData.league,
-            mode: gameData.mode,
+            league,
+            mode,
           });
         }
+
+        response.status(200).send({ status: 0 });
+      } catch (error) {
+        console.error("createGame error:", error);
+        response.status(401).send("Unauthorized");
       }
+    });
+  },
+);
 
-      const newGameData = {
-        status: GameStatus.COMPLETED,
-        winner: winnerUID,
-        results,
-        end: new Date(),
-      };
+export const completeGame = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-      // Only add results to newGameData if it's not empty
-      if (Object.keys(results).length > 0) {
-        newGameData['results'] = results;
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
+        const gameId = request.body.gameId;
+        const winnerUID = request.body.winnerUID || -1; // -1 for AI
+        const rawResults: EndGameData = request.body.results;
+        console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(rawResults)}`);
+        // Filter out the results object to remove keys that are empty strings or undefined
+        const results = Object.fromEntries(
+          Object.entries(rawResults).filter(([key, value]) => key !== "" && value !== undefined),
+        );
+        console.log(`[completeGame] Filtered results: ${JSON.stringify(results)}`);
+
+        const gameDoc = await db.collection("games").doc(gameId).get();
+        if (!gameDoc.exists) {
+          // Most likely a tutorial ending
+          // throw new Error("Invalid game ID");
+          response.status(200).send({ status: 0 });
+          return; // Exit the function early
+        }
+
+        const gameData = gameDoc.data();
+        if (!gameData) {
+          throw new Error("gameData is null");
+        }
+
+        for (const player of gameData.players) {
+          if (player) {
+            // Add a check to ensure player is not undefined or empty string
+            logPlayerAction(player, "gameComplete", {
+              gameId,
+              winner: winnerUID == player,
+              results: results[player as keyof EndGameData],
+              league: gameData.league,
+              mode: gameData.mode,
+            });
+          }
+        }
+
+        const newGameData = {
+          status: GameStatus.COMPLETED,
+          winner: winnerUID,
+          results,
+          end: new Date(),
+        };
+
+        // Only add results to newGameData if it's not empty
+        if (Object.keys(results).length > 0) {
+          newGameData["results"] = results;
+        }
+
+        await gameDoc.ref.update(newGameData);
+        response.status(200).send({ status: 0 });
+      } catch (error) {
+        console.error("[completeGame] Error:", error);
+        response.status(500).send("Error");
       }
+    });
+  },
+);
 
-      await gameDoc.ref.update(newGameData);
-      response.status(200).send({status: 0});
-    } catch (error) {
-      console.error("[completeGame] Error:", error);
-      response.status(500).send("Error");
-    }
-  });
-});
+export const getNews = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
+    corsMiddleware(request, response, async () => {
+      try {
+        const limit = parseInt(request.query.limit as string) || 3;
+        const isFrontPage = request.query.isFrontPage === "true";
 
-export const getNews = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-  corsMiddleware(request, response, async () => {
-    try {
-      const limit = parseInt(request.query.limit as string) || 3;
-      const isFrontPage = request.query.isFrontPage === 'true';
+        // Get all news
+        const newsCollection = db.collection("news");
+        const allNewsSnapshot = await newsCollection.get();
+        const allNews = allNewsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-      // Get all news
-      const newsCollection = db.collection("news");
-      const allNewsSnapshot = await newsCollection.get();
-      const allNews = allNewsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+        // Sort by date (newest first)
+        const sortByDateDesc = (a: any, b: any) => {
+          const dateA = a.date || "0000-00-00";
+          const dateB = b.date || "0000-00-00";
+          return dateB.localeCompare(dateA);
+        };
 
-      // Sort by date (newest first)
-      const sortByDateDesc = (a: any, b: any) => {
-        const dateA = a.date || '0000-00-00';
-        const dateB = b.date || '0000-00-00';
-        return dateB.localeCompare(dateA);
-      };
+        if (!isFrontPage) {
+          // Separate pinned and unpinned news
+          const pinnedNews = allNews.filter((news: any) => news.pinned);
+          const unpinnedNews = allNews.filter((news: any) => !news.pinned);
 
-      if (!isFrontPage) {
-        // Separate pinned and unpinned news
-        const pinnedNews = allNews.filter((news: any) => news.pinned);
-        const unpinnedNews = allNews.filter((news: any) => !news.pinned);
+          // Sort unpinned news by date
+          const sortedUnpinnedNews = unpinnedNews.sort(sortByDateDesc);
 
-        // Sort unpinned news by date
-        const sortedUnpinnedNews = unpinnedNews.sort(sortByDateDesc);
+          // Take only what we need from unpinned news, considering we'll add pinned ones
+          const unpinnedToKeep = Math.max(0, limit - pinnedNews.length);
+          const result = [...sortedUnpinnedNews.slice(0, unpinnedToKeep), ...pinnedNews];
 
-        // Take only what we need from unpinned news, considering we'll add pinned ones
-        const unpinnedToKeep = Math.max(0, limit - pinnedNews.length);
-        const result = [
-          ...sortedUnpinnedNews.slice(0, unpinnedToKeep),
-          ...pinnedNews,
-        ];
-
-        response.status(200).json(result);
-      } else {
-        // Regular sorting by date only
-        const sortedNews = allNews.sort(sortByDateDesc);
-        response.status(200).json(sortedNews.slice(0, limit));
+          response.status(200).json(result);
+        } else {
+          // Regular sorting by date only
+          const sortedNews = allNews.sort(sortByDateDesc);
+          response.status(200).json(sortedNews.slice(0, limit));
+        }
+      } catch (error) {
+        console.error("getNews error:", error);
+        response.status(500).send("Error fetching news");
       }
-    } catch (error) {
-      console.error("getNews error:", error);
-      response.status(500).send("Error fetching news");
-    }
-  });
-});
+    });
+  },
+);
 
 async function handleNewsMediaUpload(
   buffer: Buffer | null,
   mimeType: string | null,
-  oldUrl?: string | null
+  oldUrl?: string | null,
 ): Promise<string | null> {
   if (!buffer || isDevelopment) {
     return null;
   }
 
-  const isVideo = mimeType?.toLowerCase().startsWith('video/') ||
-                  mimeType?.toLowerCase() === 'application/quicktime';
-  const ext = mimeType?.split('/')[1]?.toLowerCase() || (isVideo ? 'mov' : 'jpg');
-  const folder = isVideo ? 'news-videos' : 'news-images';
+  const isVideo = mimeType?.toLowerCase().startsWith("video/") || mimeType?.toLowerCase() === "application/quicktime";
+  const ext = mimeType?.split("/")[1]?.toLowerCase() || (isVideo ? "mov" : "jpg");
+  const folder = isVideo ? "news-videos" : "news-images";
   const filename = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-  const bucket = storage.bucket('legion-32c6d.firebasestorage.app');
+  const bucket = storage.bucket("legion-32c6d.firebasestorage.app");
 
   try {
     const file = bucket.file(filename);
@@ -204,308 +209,316 @@ async function handleNewsMediaUpload(
 
     // Delete old media if it exists
     if (oldUrl) {
-      const oldFilename = decodeURIComponent(oldUrl.split('/o/')[1].split('?')[0]);
+      const oldFilename = decodeURIComponent(oldUrl.split("/o/")[1].split("?")[0]);
       try {
         await bucket.file(oldFilename).delete();
       } catch (error) {
-        console.warn('[handleNewsMediaUpload] Error deleting old media:', error);
+        console.warn("[handleNewsMediaUpload] Error deleting old media:", error);
       }
     }
 
     return url;
   } catch (error) {
-    console.error('[handleNewsMediaUpload] Storage error:', error);
+    console.error("[handleNewsMediaUpload] Storage error:", error);
     // @ts-ignore
     throw new Error(`Storage error: ${error.message}`);
   }
 }
 
-export const addNews = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const addNews = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
-      console.log(`[addNews] Processing news upload...`);
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
+        console.log(`[addNews] Processing news upload...`);
 
-      // Handle multipart form data
-      const busboy = Busboy({ headers: request.headers });
-      const fields: any = {};
-      let imageBuffer: Buffer | null = null;
-      let imageType: string | null = null;
+        // Handle multipart form data
+        const busboy = Busboy({ headers: request.headers });
+        const fields: any = {};
+        let imageBuffer: Buffer | null = null;
+        let imageType: string | null = null;
 
-      // Handle regular fields
-      busboy.on('field', (fieldname: string, val: any) => {
-        fields[fieldname] = val;
-      });
-
-      // Handle file upload - skip in development
-      if (!isDevelopment) {
-        busboy.on('file', (_fieldname: string, file: any, { mimeType }: { mimeType: string }) => {
-          console.log(`[addNews] Processing file upload with mimeType:`, mimeType);
-          const chunks: Buffer[] = [];
-          imageType = mimeType.toLowerCase();
-
-          file.on('data', (data: Buffer) => {
-            chunks.push(data);
-          });
-
-          file.on('end', () => {
-            if (chunks.length) {
-              imageBuffer = Buffer.concat(chunks);
-            }
-          });
+        // Handle regular fields
+        busboy.on("field", (fieldname: string, val: any) => {
+          fields[fieldname] = val;
         });
-      }
 
-      console.log(`[addNews] Busboy setup complete...`);
-      // Process the upload when everything is done
-      const result = await new Promise((resolve, reject) => {
-        busboy.on('finish', async () => {
-          try {
-            console.log(`[addNews] Processing finished...`);
-            // Validate required fields
-            if (!fields.title || !fields.text || !fields.date) {
-              reject(new Error("Missing required fields (title, text, date)"));
-              return;
-            }
+        // Handle file upload - skip in development
+        if (!isDevelopment) {
+          busboy.on("file", (_fieldname: string, file: any, { mimeType }: { mimeType: string }) => {
+            console.log(`[addNews] Processing file upload with mimeType:`, mimeType);
+            const chunks: Buffer[] = [];
+            imageType = mimeType.toLowerCase();
 
-            const mediaUrl = await handleNewsMediaUpload(imageBuffer, imageType);
-
-            const newsData = {
-              title: fields.title,
-              text: fields.text,
-              date: fields.date,
-              pinned: fields.pinned === 'true',
-              link: fields.link || null,
-              category: fields.category || 'general',
-              imageUrl: isDevelopment ? (fields.imageUrl || null) : mediaUrl,
-              isVideo: !isDevelopment && imageType?.startsWith('video/') || false,
-              createdAt: new Date(),
-            };
-
-            const docRef = await db.collection("news").add(newsData);
-            resolve({
-              status: "success",
-              message: "News added successfully",
-              id: docRef.id,
-              imageUrl: newsData.imageUrl,
+            file.on("data", (data: Buffer) => {
+              chunks.push(data);
             });
-          } catch (error) {
-            reject(error);
+
+            file.on("end", () => {
+              if (chunks.length) {
+                imageBuffer = Buffer.concat(chunks);
+              }
+            });
+          });
+        }
+
+        console.log(`[addNews] Busboy setup complete...`);
+        // Process the upload when everything is done
+        const result = await new Promise((resolve, reject) => {
+          busboy.on("finish", async () => {
+            try {
+              console.log(`[addNews] Processing finished...`);
+              // Validate required fields
+              if (!fields.title || !fields.text || !fields.date) {
+                reject(new Error("Missing required fields (title, text, date)"));
+                return;
+              }
+
+              const mediaUrl = await handleNewsMediaUpload(imageBuffer, imageType);
+
+              const newsData = {
+                title: fields.title,
+                text: fields.text,
+                date: fields.date,
+                pinned: fields.pinned === "true",
+                link: fields.link || null,
+                category: fields.category || "general",
+                imageUrl: isDevelopment ? fields.imageUrl || null : mediaUrl,
+                isVideo: (!isDevelopment && imageType?.startsWith("video/")) || false,
+                createdAt: new Date(),
+              };
+
+              const docRef = await db.collection("news").add(newsData);
+              resolve({
+                status: "success",
+                message: "News added successfully",
+                id: docRef.id,
+                imageUrl: newsData.imageUrl,
+              });
+            } catch (error) {
+              reject(error);
+            }
+          });
+
+          busboy.on("error", reject);
+
+          // Feed the request data into busboy
+          if (request.rawBody) {
+            busboy.end(request.rawBody);
+          } else {
+            request.pipe(busboy);
           }
         });
 
-        busboy.on('error', reject);
-
-        // Feed the request data into busboy
-        if (request.rawBody) {
-          busboy.end(request.rawBody);
-        } else {
-          request.pipe(busboy);
-        }
-      });
-
-      response.status(200).json(result);
-    } catch (error) {
-      console.error("addNews error:", error);
-      // @ts-ignore
-      if (error.message === "Missing required fields (title, text, date)") {
+        response.status(200).json(result);
+      } catch (error) {
+        console.error("addNews error:", error);
         // @ts-ignore
-        response.status(400).send(error.message);
-      } else {
-        response.status(500).send("Error adding news");
+        if (error.message === "Missing required fields (title, text, date)") {
+          // @ts-ignore
+          response.status(400).send(error.message);
+        } else {
+          response.status(500).send("Error adding news");
+        }
       }
-    }
-  });
-});
+    });
+  },
+);
 
-export const updateNewsThumbnail = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+export const updateNewsThumbnail = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
-      }
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
 
-      const newsId = request.query.id;
-      if (!newsId) {
-        response.status(400).send('Missing news ID');
-        return;
-      }
+        const newsId = request.query.id;
+        if (!newsId) {
+          response.status(400).send("Missing news ID");
+          return;
+        }
 
-      console.log(`[updateNewsThumbnail] Processing thumbnail update for news ${newsId}...`);
+        console.log(`[updateNewsThumbnail] Processing thumbnail update for news ${newsId}...`);
 
-      const busboy = Busboy({ headers: request.headers });
-      let imageBuffer: Buffer | null = null;
-      let imageType: string | null = null;
+        const busboy = Busboy({ headers: request.headers });
+        let imageBuffer: Buffer | null = null;
+        let imageType: string | null = null;
 
-      // Handle file upload - skip in development
-      if (!isDevelopment) {
-        busboy.on('file', (_fieldname: string, file: any, { mimeType }: { mimeType: string }) => {
-          console.log(`[updateNewsThumbnail] Processing file upload with mimeType:`, mimeType);
-          const chunks: Buffer[] = [];
-          imageType = mimeType.toLowerCase();
+        // Handle file upload - skip in development
+        if (!isDevelopment) {
+          busboy.on("file", (_fieldname: string, file: any, { mimeType }: { mimeType: string }) => {
+            console.log(`[updateNewsThumbnail] Processing file upload with mimeType:`, mimeType);
+            const chunks: Buffer[] = [];
+            imageType = mimeType.toLowerCase();
 
-          file.on('data', (data: Buffer) => {
-            chunks.push(data);
-          });
-
-          file.on('end', () => {
-            if (chunks.length) {
-              imageBuffer = Buffer.concat(chunks);
-            }
-          });
-        });
-      }
-
-      // Process the upload when everything is done
-      const result = await new Promise((resolve, reject) => {
-        busboy.on('finish', async () => {
-          try {
-            // Get the news document
-            const newsDoc = await db.collection("news").doc(newsId as string).get();
-            if (!newsDoc.exists) {
-              reject(new Error("News item not found"));
-              return;
-            }
-
-            const oldMediaUrl = newsDoc.data()?.imageUrl;
-            const mediaUrl = await handleNewsMediaUpload(imageBuffer, imageType, oldMediaUrl);
-
-            // Update the news document with the new image URL
-            await newsDoc.ref.update({
-              imageUrl: isDevelopment ? null : mediaUrl,
-              updatedAt: new Date(),
+            file.on("data", (data: Buffer) => {
+              chunks.push(data);
             });
 
-            resolve({
-              status: "success",
-              message: "Thumbnail updated successfully",
-              imageUrl: mediaUrl,
+            file.on("end", () => {
+              if (chunks.length) {
+                imageBuffer = Buffer.concat(chunks);
+              }
             });
-          } catch (error) {
-            reject(error);
+          });
+        }
+
+        // Process the upload when everything is done
+        const result = await new Promise((resolve, reject) => {
+          busboy.on("finish", async () => {
+            try {
+              // Get the news document
+              const newsDoc = await db
+                .collection("news")
+                .doc(newsId as string)
+                .get();
+              if (!newsDoc.exists) {
+                reject(new Error("News item not found"));
+                return;
+              }
+
+              const oldMediaUrl = newsDoc.data()?.imageUrl;
+              const mediaUrl = await handleNewsMediaUpload(imageBuffer, imageType, oldMediaUrl);
+
+              // Update the news document with the new image URL
+              await newsDoc.ref.update({
+                imageUrl: isDevelopment ? null : mediaUrl,
+                updatedAt: new Date(),
+              });
+
+              resolve({
+                status: "success",
+                message: "Thumbnail updated successfully",
+                imageUrl: mediaUrl,
+              });
+            } catch (error) {
+              reject(error);
+            }
+          });
+
+          busboy.on("error", reject);
+
+          if (request.rawBody) {
+            busboy.end(request.rawBody);
+          } else {
+            request.pipe(busboy);
           }
         });
 
-        busboy.on('error', reject);
-
-        if (request.rawBody) {
-          busboy.end(request.rawBody);
+        response.status(200).json(result);
+      } catch (error) {
+        console.error("[updateNewsThumbnail] Error:", error);
+        // @ts-ignore
+        if (error.message === "News item not found") {
+          response.status(404).send("News item not found");
         } else {
-          request.pipe(busboy);
+          response.status(500).send("Error updating thumbnail");
         }
-      });
-
-      response.status(200).json(result);
-    } catch (error) {
-      console.error("[updateNewsThumbnail] Error:", error);
-      // @ts-ignore
-      if (error.message === "News item not found") {
-        response.status(404).send("News item not found");
-      } else {
-        response.status(500).send("Error updating thumbnail");
       }
-    }
-  });
-});
+    });
+  },
+);
 
+export const saveReplay = onRequest(
+  {
+    secrets: ["API_KEY"],
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-export const saveReplay = onRequest({
-  secrets: ["API_KEY"],
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
+    corsMiddleware(request, response, async () => {
+      try {
+        if (!checkAPIKey(request)) {
+          response.status(401).send("Unauthorized");
+          return;
+        }
 
-  corsMiddleware(request, response, async () => {
-    try {
-      if (!checkAPIKey(request)) {
-        response.status(401).send('Unauthorized');
-        return;
+        const { gameId, messages, duration, mode } = request.body;
+
+        // Validate required fields
+        if (!gameId || !messages || !Array.isArray(messages)) {
+          response.status(400).send("Bad Request: Missing or invalid required fields");
+          return;
+        }
+
+        // Create replay data object
+        const replayData = {
+          messages: messages as GameReplayMessage[],
+          duration,
+          mode,
+          savedAt: new Date(),
+        };
+
+        // Find the game document and update it with replay data
+        const gameRef = await db.collection("games").where("gameId", "==", gameId).limit(1).get();
+
+        if (gameRef.empty) {
+          response.status(404).send("Game not found");
+          return;
+        }
+
+        await gameRef.docs[0].ref.update({ replay: replayData });
+
+        response.status(200).send({ status: 0 });
+      } catch (error) {
+        console.error("saveReplay error:", error);
+        response.status(500).send("Error saving replay");
       }
+    });
+  },
+);
 
-      const { gameId, messages, duration, mode } = request.body;
+export const getReplay = onRequest(
+  {
+    memory: "512MiB",
+  },
+  (request, response) => {
+    const db = admin.firestore();
 
-      // Validate required fields
-      if (!gameId || !messages || !Array.isArray(messages)) {
-        response.status(400).send("Bad Request: Missing or invalid required fields");
-        return;
+    corsMiddleware(request, response, async () => {
+      try {
+        const gameId = request.query.id;
+        if (!gameId) {
+          response.status(400).send("Bad Request: Missing game ID");
+          return;
+        }
+
+        const gameRef = await db.collection("games").where("gameId", "==", gameId.toString()).limit(1).get();
+
+        if (gameRef.empty) {
+          response.status(404).send("Game not found");
+          return;
+        }
+
+        const gameData = gameRef.docs[0].data();
+        if (!gameData.replay) {
+          response.status(404).send("Replay not found");
+          return;
+        }
+
+        response.status(200).json(gameData.replay);
+      } catch (error) {
+        console.error("getReplay error:", error);
+        response.status(500).send("Error fetching replay");
       }
-
-      // Create replay data object
-      const replayData = {
-        messages: messages as GameReplayMessage[],
-        duration,
-        mode,
-        savedAt: new Date(),
-      };
-
-      // Find the game document and update it with replay data
-      const gameRef = await db.collection("games")
-        .where("gameId", "==", gameId)
-        .limit(1)
-        .get();
-
-      if (gameRef.empty) {
-        response.status(404).send("Game not found");
-        return;
-      }
-
-      await gameRef.docs[0].ref.update({ replay: replayData });
-
-      response.status(200).send({status: 0});
-    } catch (error) {
-      console.error("saveReplay error:", error);
-      response.status(500).send("Error saving replay");
-    }
-  });
-});
-
-export const getReplay = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = admin.firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const gameId = request.query.id;
-      if (!gameId) {
-        response.status(400).send("Bad Request: Missing game ID");
-        return;
-      }
-
-      const gameRef = await db.collection("games")
-        .where("gameId", "==", gameId.toString())
-        .limit(1)
-        .get();
-
-      if (gameRef.empty) {
-        response.status(404).send("Game not found");
-        return;
-      }
-
-      const gameData = gameRef.docs[0].data();
-      if (!gameData.replay) {
-        response.status(404).send("Replay not found");
-        return;
-      }
-
-      response.status(200).json(gameData.replay);
-    } catch (error) {
-      console.error("getReplay error:", error);
-      response.status(500).send("Error fetching replay");
-    }
-  });
-});
+    });
+  },
+);

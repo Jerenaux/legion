@@ -1,36 +1,34 @@
-const {
-  sentryWebpackPlugin
-} = require("@sentry/webpack-plugin");
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const webpack = require('webpack');
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const webpack = require("webpack");
 
 const isDocker = process.env.IS_DOCKER;
-const isProduction = process.env.NODE_ENV === 'production';
-const isElectron = process.env.BUILD_TARGET === 'electron';
-const requiredElectronUrls = ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL'];
+const isProduction = process.env.NODE_ENV === "production";
+const isElectron = process.env.BUILD_TARGET === "electron";
+const requiredElectronUrls = ["API_URL", "GAME_SERVER_URL", "MATCHMAKER_URL"];
 
 if (isProduction && isElectron) {
-  const missingUrls = requiredElectronUrls.filter(key => !process.env[key]);
-  if (missingUrls.length) throw new Error(`Missing Electron build variables: ${missingUrls.join(', ')}`);
+  const missingUrls = requiredElectronUrls.filter((key) => !process.env[key]);
+  if (missingUrls.length) throw new Error(`Missing Electron build variables: ${missingUrls.join(", ")}`);
 }
 
-console.log('BUILD_TARGET:', process.env.BUILD_TARGET);
-console.log('isElectron:', isElectron);
+console.log("BUILD_TARGET:", process.env.BUILD_TARGET);
+console.log("isElectron:", isElectron);
 
-const sharedPrefix = isDocker ? '' : '../';
+const sharedPrefix = isDocker ? "" : "../";
 
 module.exports = {
-  mode: 'development',
-  entry: './src/index.tsx',
+  mode: "development",
+  entry: "./src/index.tsx",
 
   devServer: {
     historyApiFallback: true,
     headers: {
-      'Permissions-Policy': '*=()'
-    }
+      "Permissions-Policy": "*=()",
+    },
   },
 
   module: {
@@ -39,113 +37,119 @@ module.exports = {
         test: /\.tsx?$/,
         use: [
           {
-            loader: 'ts-loader',
+            loader: "ts-loader",
             options: {
-              configFile: isDocker ? 'tsconfig.docker.json' : 'tsconfig.json',
+              configFile: isDocker ? "tsconfig.docker.json" : "tsconfig.json",
               errorFormatter: (error, colors) => {
                 try {
                   // Function to replace absolute paths with relative ones
                   const replaceAbsolutePath = (str) => {
-                    if (typeof str === 'string') {
-                      return str.replace(/\/usr\/src\/app\//g, '');
+                    if (typeof str === "string") {
+                      return str.replace(/\/usr\/src\/app\//g, "");
                     }
                     return str;
                   };
 
-                  let errorMessage = '';
+                  let errorMessage = "";
 
                   // Add file location
                   if (error.file) {
                     errorMessage += colors.cyan(replaceAbsolutePath(error.file));
                     if (error.line) {
-                      errorMessage += colors.cyan(':' + error.line);
+                      errorMessage += colors.cyan(":" + error.line);
                       if (error.character) {
-                        errorMessage += colors.cyan(':' + error.character);
+                        errorMessage += colors.cyan(":" + error.character);
                       }
                     }
-                    errorMessage += '\n';
+                    errorMessage += "\n";
                   }
 
                   // Add error severity and content
-                  errorMessage += colors.red(error.severity.toUpperCase() + ': ') + error.content;
+                  errorMessage += colors.red(error.severity.toUpperCase() + ": ") + error.content;
 
                   return errorMessage;
                 } catch (formattingError) {
-                  console.error('Error in errorFormatter:', formattingError);
-                  return colors.red('ERROR: Unable to format error message');
+                  console.error("Error in errorFormatter:", formattingError);
+                  return colors.red("ERROR: Unable to format error message");
                 }
-              }
-            }
-          }
+              },
+            },
+          },
         ],
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.jsx?$/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env', ['@babel/preset-react', { pragma: 'h' }]]
-          }
+            presets: ["@babel/preset-env", ["@babel/preset-react", { pragma: "h" }]],
+          },
         },
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: ["style-loader", "css-loader"],
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/resource',
+        type: "asset/resource",
       },
       {
         test: /\.(wav|mp3|ogg)$/i,
-        type: 'asset/resource'
+        type: "asset/resource",
       },
       {
         test: /\.json$/i,
-        type: 'json'
-      }
-    ]
+        type: "json",
+      },
+    ],
   },
 
   resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.jsx'],
+    extensions: [".tsx", ".ts", ".js", ".jsx"],
     alias: {
-      'react': 'preact/compat',
-      'react-dom': 'preact/compat',
-      '@legion/shared': path.resolve(__dirname, `${sharedPrefix}shared`),
-      '@assets': path.resolve(__dirname, 'public'),
-      'phaser': path.resolve(__dirname, 'node_modules/phaser/dist/phaser.js'),
-    }
+      react: "preact/compat",
+      "react-dom": "preact/compat",
+      "@legion/shared": path.resolve(__dirname, `${sharedPrefix}shared`),
+      "@assets": path.resolve(__dirname, "public"),
+      phaser: path.resolve(__dirname, "node_modules/phaser/dist/phaser.js"),
+    },
   },
 
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-    publicPath: '/',
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "dist"),
+    publicPath: "/",
   },
 
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.html',
+      template: "src/index.html",
       hash: !isElectron,
     }),
-    new webpack.DefinePlugin(Object.fromEntries([
-      ...requiredElectronUrls,
-      'USE_FIREBASE_EMULATOR', 'FIREBASE_AUTH_EMULATOR_HOST',
-    ].map(key => [`process.env.${key}`, JSON.stringify(process.env[key] || '')]))),
+    new webpack.DefinePlugin(
+      Object.fromEntries(
+        [...requiredElectronUrls, "USE_FIREBASE_EMULATOR", "FIREBASE_AUTH_EMULATOR_HOST"].map((key) => [
+          `process.env.${key}`,
+          JSON.stringify(process.env[key] || ""),
+        ]),
+      ),
+    ),
     new CopyWebpackPlugin({
-      patterns: [
-        { from: 'public/favicon.ico', to: 'favicon.ico' },
-      ]
+      patterns: [{ from: "public/favicon.ico", to: "favicon.ico" }],
     }),
-    ...(process.env.SENTRY_AUTH_TOKEN ? [sentryWebpackPlugin({
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      org: "dynetis-games",
-      project: "javascript-react"
-    })] : []),
+    ...(process.env.SENTRY_AUTH_TOKEN
+      ? [
+          sentryWebpackPlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: "dynetis-games",
+            project: "javascript-react",
+          }),
+        ]
+      : []),
   ],
 
-  devtool: isProduction ? "hidden-source-map" : "source-map"
+  devtool: isProduction ? "hidden-source-map" : "source-map",
 };

@@ -1,20 +1,20 @@
 // PlayPage.tsx
-import { h, Component, createRef } from 'preact';
-import Roster from './roster/Roster';
-import PlayModes from './playModes/PlayModes';
-import OnGoingArena from './onGoingArena/OnGoingArena';
-import DailyQuest from './dailyQuest/DailyQuest';
-import DailyLoot from './dailyLoot/DailyLoot';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css'
-import { PlayerContext } from '../contexts/PlayerContext';
+import { h, Component, createRef } from "preact";
+import Roster from "./roster/Roster";
+import PlayModes from "./playModes/PlayModes";
+import OnGoingArena from "./onGoingArena/OnGoingArena";
+import DailyQuest from "./dailyQuest/DailyQuest";
+import DailyLoot from "./dailyLoot/DailyLoot";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+import { PlayerContext } from "../contexts/PlayerContext";
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
-import { firebaseAuth } from '../services/firebaseService'; 
-import PopupManager, { Popup } from './popups/PopupManager';
+import { firebaseAuth } from "../services/firebaseService";
+import PopupManager, { Popup } from "./popups/PopupManager";
 import { LockedFeatures } from "@legion/shared/enums";
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
-  static contextType = PlayerContext; 
+  static contextType = PlayerContext;
 
   state = {
     showWelcome: false,
@@ -24,7 +24,7 @@ class PlayPage extends Component {
 
   componentDidMount() {
     const user = firebaseAuth.currentUser;
-    
+
     if (user?.isAnonymous && !this.context.welcomeShown && this.context.player.isLoaded) {
       this.popupManagerRef.current?.enqueuePopup(Popup.Guest);
     }
@@ -32,18 +32,18 @@ class PlayPage extends Component {
 
   enqueuePopup = (popup: Popup) => {
     this.popupManagerRef.current?.enqueuePopup(popup);
-  }
-  
+  };
+
   componentDidUpdate() {
     if (!this.context.player.isLoaded) return;
 
     const completedGames = this.context.getCompletedGames();
 
-    if (completedGames > 12) { 
+    if (completedGames > 12) {
       this.enqueuePopup(Popup.FeatureReveal);
     }
-    
-    switch(completedGames) {
+
+    switch (completedGames) {
       case 0:
         this.enqueuePopup(Popup.PlayToUnlockShop);
         break;
@@ -109,17 +109,17 @@ class PlayPage extends Component {
         {
           name: "Use 5 fire spells",
           rewards: { gold: 500, xp: 2000 },
-          completion: 0.8
+          completion: 0.8,
         },
         {
           name: "Win 3 games",
           rewards: { gold: 700, xp: 1000 },
-          completion: 1 // = completed
+          completion: 1, // = completed
         },
         {
           name: "Use 5 fire spells",
           rewards: { gold: 500, xp: 2000 },
-          completion: 0.8
+          completion: 0.8,
         },
       ],
       ongoingGames: [
@@ -164,23 +164,25 @@ class PlayPage extends Component {
           },
           spectators: 5,
           duration: 621, // seconds
-        }
-      ]
-    }
+        },
+      ],
+    };
 
     return (
       <div className="play-content">
-        <PopupManager 
-          ref={this.popupManagerRef}
-          onPopupResolved={this.handlePopupResolved}
-        />
-        <Roster/>
-        {data ? <PlayModes /> : <Skeleton
-          height={50}
-          count={2}
-          highlightColor='#0000004d'
-          baseColor='#0f1421'
-          style={{ margin: '2px 146px', width: '1024px'}} />}
+        <PopupManager ref={this.popupManagerRef} onPopupResolved={this.handlePopupResolved} />
+        <Roster />
+        {data ? (
+          <PlayModes />
+        ) : (
+          <Skeleton
+            height={50}
+            count={2}
+            highlightColor="#0000004d"
+            baseColor="#0f1421"
+            style={{ margin: "2px 146px", width: "1024px" }}
+          />
+        )}
         {this.context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={this.context.player.dailyloot} />}
         {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}
         {ENABLE_SPECTATOR_MODE && <OnGoingArena ongoingGameData={data.ongoingGames} />}

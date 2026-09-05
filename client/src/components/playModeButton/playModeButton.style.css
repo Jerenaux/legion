@@ -1,219 +1,219 @@
 .buttonContainer {
-    background-color: #1A1A1A;
-    width: 200px;
-    height: 280px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    cursor: pointer;
-    border: 2px solid #00FFFF;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
-    color: inherit;
-    font: inherit;
+  background-color: #1a1a1a;
+  width: 200px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+  color: inherit;
+  font: inherit;
 }
 
 .buttonContainer:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
 }
 
 .buttonContainer.disabled {
-    cursor: not-allowed;
-    filter: grayscale(100%);
-    opacity: 0.7;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+  opacity: 0.7;
 }
 
 .buttonContainer.disabled:hover {
-    transform: none;
+  transform: none;
 }
 
 .buttonContainer.disabled .lock-overlay {
-    filter: none; /* Keep the lock icon colorful */
+  filter: none; /* Keep the lock icon colorful */
 }
 
 .buttonContainer img.mode-icon {
-    width: auto;
-    height: auto;
-    max-width: 80px;
-    margin-top: -48px;
-    padding: 8px;
+  width: auto;
+  height: auto;
+  max-width: 80px;
+  margin-top: -48px;
+  padding: 8px;
 }
 
 .buttonContainer.ranked img.mode-icon {
-    margin-top: -90px;
+  margin-top: -90px;
 }
 
 .labelContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 0px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0px;
+  width: 100%;
 }
 
 .buttonContainer.ranked .labelContainer {
-    margin-top: -5px;
+  margin-top: -5px;
 }
 
 .buttonContainer[data-playmode="practice"] .labelContainer {
-    margin-top: 15px;
+  margin-top: 15px;
 }
 
 .buttonContainer[data-playmode="casual"] .labelContainer {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 .labelContainer .label {
-    font-size: 24px;
-    font-weight: 700;
-    color: #FFFFFF;
-    text-transform: uppercase;
-    font-family: "Kim";
-    margin-bottom: 16px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    letter-spacing: 2px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-family: "Kim";
+  margin-bottom: 16px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  letter-spacing: 2px;
 }
 
 .buttonContainer.ranked .labelContainer .label {
-    color: #FFB000;
+  color: #ffb000;
 }
 
 .labelContainer .player {
-    font-size: 14px;
-    color: #4ff4f6;
-    margin-bottom: 16px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  font-size: 14px;
+  color: #4ff4f6;
+  margin-bottom: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .labelContainer .player .count {
-    color: #FFB653;
+  color: #ffb653;
 }
 
 .info-container {
-    width: 100%;
-    margin-top: 16px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 12px;
-    border-radius: 4px;
+  width: 100%;
+  margin-top: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 4px;
 }
 
 .buttonContainer.disabled .info-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
 }
 
 .info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 14px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .info-row:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .info-label {
-    color: #999999;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  color: #999999;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .info-label .reward-icon {
-    width: 16px;
-    height: 16px;
-    object-fit: contain;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 .info-value {
-    color: #FFFFFF;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .info-value.high {
-    color: #00FF66;
-    text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+  color: #00ff66;
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
 }
 
 .info-value.medium {
-    color: #FFE666;
-    text-shadow: 0 0 8px rgba(255, 230, 102, 0.3);
+  color: #ffe666;
+  text-shadow: 0 0 8px rgba(255, 230, 102, 0.3);
 }
 
 .info-value.low {
-    color: #FF9966;
-    text-shadow: 0 0 8px rgba(255, 153, 102, 0.3);
+  color: #ff9966;
+  text-shadow: 0 0 8px rgba(255, 153, 102, 0.3);
 }
 
 .playModeButton.disabled {
-    cursor: not-allowed;
-    pointer-events: all;
+  cursor: not-allowed;
+  pointer-events: all;
 }
 
 .playModeButton.disabled:hover {
-    transform: none;
+  transform: none;
 }
 
 .playModeButton img.grayscale {
-    filter: grayscale(100%);
+  filter: grayscale(100%);
 }
 
 .playModeButton .lock-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 48px;
-    height: 48px;
-    pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
 }
 
 .buttonContainer.ranked {
-    border-color: #FFB000;
-    box-shadow: 0 0 15px rgba(255, 176, 0, 0.1);
+  border-color: #ffb000;
+  box-shadow: 0 0 15px rgba(255, 176, 0, 0.1);
 }
 
 .buttonContainer.ranked:hover {
-    box-shadow: 0 0 25px rgba(255, 176, 0, 0.2);
+  box-shadow: 0 0 25px rgba(255, 176, 0, 0.2);
 }
 
 .lock-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    padding: 8px 0 0 0;
-    flex-direction: column;
-    gap: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 8px 0 0 0;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .lock-container .lock-icon {
-    width: 64px;
-    height: 64px;
-    pointer-events: none;
+  width: 64px;
+  height: 64px;
+  pointer-events: none;
 }
 
 .lock-container .unlock-message {
-    color: #FFB653;
-    font-size: 14px;
-    text-align: center;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: -8px;
+  color: #ffb653;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: -8px;
 }

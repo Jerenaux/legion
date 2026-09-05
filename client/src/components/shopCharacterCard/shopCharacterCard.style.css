@@ -1,314 +1,317 @@
 .shop-character-card-container {
-    background-image: url('@assets/shop/daily_bg_idle.png');
-    background-size: 100% 100%;
-    padding: 18px 12px;
-    min-width: 196px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    font-family: 'Kim';
+  background-image: url("@assets/shop/daily_bg_idle.png");
+  background-size: 100% 100%;
+  padding: 18px 12px;
+  min-width: 196px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: "Kim";
 }
 
 .shop-character-card-container:hover {
-    background-image: url('@assets/shop/daily_bg_active.png');
+  background-image: url("@assets/shop/daily_bg_active.png");
 }
 
 .shop-character-card-title {
-    padding: 2px 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-image: url('@assets/shop/daily_title_bar.png');
-    background-size: 100% 100%;
-    width: 94%;
+  padding: 2px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-image: url("@assets/shop/daily_title_bar.png");
+  background-size: 100% 100%;
+  width: 94%;
 }
 
 .shop-character-card-title-name {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
 .shop-character-card-title-name span {
-    max-width: 100px;
-    font-size: 14px;
-    text-transform: capitalize;
-    overflow: hidden;
-    /* text-overflow: ellipsis; */
-    white-space: nowrap;
+  max-width: 100px;
+  font-size: 14px;
+  text-transform: capitalize;
+  overflow: hidden;
+  /* text-overflow: ellipsis; */
+  white-space: nowrap;
 }
 
 .shop-character-card-title-name .character-class {
-    font-size: 10px;
-    color: #ffa600;
-    letter-spacing: 0.32px;
+  font-size: 10px;
+  color: #ffa600;
+  letter-spacing: 0.32px;
 }
 
 .shop-character-card-title span {
-    font-size: 14px;
-    font-weight: 600;
-    color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .shop-character-card-info-box {
-    background-image: url('@assets/shop/black_info_bg.png');
-    background-size: 100% 100%;
-    padding: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2px;
+  background-image: url("@assets/shop/black_info_bg.png");
+  background-size: 100% 100%;
+  padding: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 }
 
 .shop-character-card-info-box .shop-character-card-info-lv {
-    font-weight: 400;
-    color: #ffa600;
-    font-size: 10px;
+  font-weight: 400;
+  color: #ffa600;
+  font-size: 10px;
 }
 
 .shop-character-card-info-container {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
 }
 
 .shop-character-card-info-box span {
-    font-size: 12px;
-    color: #FFFFFF;
+  font-size: 12px;
+  color: #ffffff;
 }
 
 .shop-character-card-info-box img {
-    width: 12px;
-    height: 12px;
+  width: 12px;
+  height: 12px;
 }
 
 .shop-character-card-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    box-sizing: border-box;
-    padding: 0 4px;
-    width: 100%;
-    position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  width: 100%;
+  position: relative;
 }
 
 .shop-character-card-content img {
-    width: 128px;
-    height: 128px;
-    border-radius: 12px;
-    transform: scale(0.75);
+  width: 128px;
+  height: 128px;
+  border-radius: 12px;
+  transform: scale(0.75);
 }
 
 .shop-character-card-effect-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 4px;
-    width: 100%;
-    max-width: 196px;
-    padding: 4px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 196px;
+  padding: 4px 0;
 }
 
 .shop-character-card-effect {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 4px;
-    background-color: #16181c;
-    border-radius: 4px;
-    overflow: hidden;
-    width: 96px;
-    height: 26px;
-    position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  background-color: #16181c;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 96px;
+  height: 26px;
+  position: relative;
 }
 
 .shop-character-card-effect span {
-    font-size: 11px;
+  font-size: 11px;
 }
 
 .shop-character-card-effect-stat {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 46px;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 600;
-    color: #FFFFFF;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .shop-character-card-effect-value {
-    padding: 4px 12px;
-    line-height: 12px;
-    color: #FFFFFF;
+  padding: 4px 12px;
+  line-height: 12px;
+  color: #ffffff;
 }
 
 .shop-card-price {
-    background-image: url('@assets/shop/daily_button.png');
-    background-size: 100% 100%;
-    padding: 8px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    color: #FFFFFF;
-    font-size: 14px;
-    width: 100%;
-    margin-bottom: 4px;
-    font-family: "Kim";
+  background-image: url("@assets/shop/daily_button.png");
+  background-size: 100% 100%;
+  padding: 8px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+  font-size: 14px;
+  width: 100%;
+  margin-bottom: 4px;
+  font-family: "Kim";
 }
 
 .shop-card-price img {
-    width: 14px;
-    height: 14px;
+  width: 14px;
+  height: 14px;
 }
 
 .shop-character-card-class-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 4px 6px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px 6px;
 }
 
 .character-card-portrait {
-    width: 68px;
-    min-height: 128px;
-    background-position: -40px -40px;
-    background-repeat: no-repeat;
-    animation: animate-sprite 0.7s steps(1) infinite;
-    transform: scale(.6);
+  width: 68px;
+  min-height: 128px;
+  background-position: -40px -40px;
+  background-repeat: no-repeat;
+  animation: animate-sprite 0.7s steps(1) infinite;
+  transform: scale(0.6);
 }
 
 .shop-character-card-slot {
-    box-sizing: border-box;
-    width: 43px;
-    height: 43px;
-    background-color: #1c1f25; 
-    border-radius: 6px;
-    border: 1px solid #274c57;
-    padding: 4px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-} 
+  box-sizing: border-box;
+  width: 43px;
+  height: 43px;
+  background-color: #1c1f25;
+  border-radius: 6px;
+  border: 1px solid #274c57;
+  padding: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .shop-character-card-slot:hover {
-    cursor: pointer;
-    border: 1px solid #71deff;
-} 
+  cursor: pointer;
+  border: 1px solid #71deff;
+}
 
 .shop-character-card-slot > div {
-    width: 32px; 
-    height: 32px;
-} 
+  width: 32px;
+  height: 32px;
+}
 
-
-.shop-character-card-dialog-position { 
-    position: absolute; 
-    top: 20px; 
-    right: 20px; 
-    z-index: 2; 
+.shop-character-card-dialog-position {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 2;
 }
 .shop-character-card-dialog-container {
-    background-color: #1c1f25;
-    border: 1px solid #3c616c;
-    border-radius: 4px;
-    padding: 6px 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    /* justify-content: center; */
-    gap: 8px;
-    max-width: 128px;
-    position: relative;
+  background-color: #1c1f25;
+  border: 1px solid #3c616c;
+  border-radius: 4px;
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: center; */
+  gap: 8px;
+  max-width: 128px;
+  position: relative;
 }
 
 .shop-character-card-dialog-container > img {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #244752;
-    padding: 4px;
-    border-radius: 4px;
-    position: absolute;
-    top: -16px;
-    background-color: #1c1f25;    
+  width: 32px;
+  height: 32px;
+  border: 1px solid #244752;
+  padding: 4px;
+  border-radius: 4px;
+  position: absolute;
+  top: -16px;
+  background-color: #1c1f25;
 }
 
 .shop-character-card-dialog-wrapper {
-    width: 43px;
-    height: 43px;
-    border: 1px solid #3e5367;
-    border-radius: 6px;
-    background-color: #1c1f25;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: -20px;
-    margin-bottom: -20px;
+  width: 43px;
+  height: 43px;
+  border: 1px solid #3e5367;
+  border-radius: 6px;
+  background-color: #1c1f25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -20px;
+  margin-bottom: -20px;
 }
 
 .shop-character-card-dialog-container-image {
-    width: 32px;
-    height: 32px;
-    /* padding: 4px; */
-    border-radius: 4px;
-    position: absolute;
-    background-color: #1c1f25;    
-    background-repeat: no-repeat;
+  width: 32px;
+  height: 32px;
+  /* padding: 4px; */
+  border-radius: 4px;
+  position: absolute;
+  background-color: #1c1f25;
+  background-repeat: no-repeat;
 }
 
 .shop-character-card-dialog-container p {
-    font-size: 10px;
-    text-align: center;
+  font-size: 10px;
+  text-align: center;
 }
 
 .shop-character-card-dialog-container .shop-character-card-dialog-name {
-    margin-top: 24px;
-    text-transform: capitalize;
+  margin-top: 24px;
+  text-transform: capitalize;
 }
 
 .shop-character-card-dialog-container .shop-character-card-dialog-desc {
-    color: #71deff;
+  color: #71deff;
 }
 
-.shop-character-card-dialog-info-container { 
-    margin-top: 6px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+.shop-character-card-dialog-info-container {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
 }
 
 .shop-character-card-dialog-info {
-    flex: 1;
-    padding: 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background-color: #303540;
-    border-radius: 4px;
+  flex: 1;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background-color: #303540;
+  border-radius: 4px;
 }
 
 .shop-character-card-dialog-info img {
-    width: 12px;
-    height: 16px;
+  width: 12px;
+  height: 16px;
 }
 
 .shop-character-card-dialog-info span {
-    font-size: 10px;
-    color: #ffffff;
+  font-size: 10px;
+  color: #ffffff;
 }
 
-.shop-character-card-dialog-container .dialog-button-container { 
-    margin-top: 8px; 
-    margin-bottom: 4px;
-    justify-content: center;
-} 
+.shop-character-card-dialog-container .dialog-button-container {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  justify-content: center;
+}

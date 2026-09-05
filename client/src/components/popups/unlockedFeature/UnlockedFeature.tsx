@@ -1,10 +1,10 @@
-import { h, Fragment, Component } from 'preact';
-import { route } from 'preact-router';
+import { h, Fragment, Component } from "preact";
+import { route } from "preact-router";
 import { ChestReward } from "@legion/shared/interfaces";
 import { RewardType } from "@legion/shared/enums";
-import { mapFrameToCoordinates } from '../../utils';
-import './UnlockedFeature.style.css';
-import { getRewardBgImage, getRewardObject } from '../../utils';
+import { mapFrameToCoordinates } from "../../utils";
+import "./UnlockedFeature.style.css";
+import { getRewardBgImage, getRewardObject } from "../../utils";
 
 interface Props {
   name: string;
@@ -15,7 +15,6 @@ interface Props {
 }
 
 export class UnlockedFeature extends Component<Props> {
-
   renderRewards() {
     return this.props.rewards.map((reward, idx) => {
       const rewardObject = getRewardObject(reward.type, reward.id);
@@ -23,11 +22,14 @@ export class UnlockedFeature extends Component<Props> {
       const backgroundImageUrl = getRewardBgImage(reward.type);
       return (
         <div key={idx} className="unlocked-feature-reward-item">
-          <div className="unlocked-feature-reward-icon" style={{
-            backgroundImage: `url(${backgroundImageUrl})`,
-            backgroundPosition: reward.type === RewardType.GOLD ? '' : `-${coordinates.x}px -${coordinates.y}px`,
-            backgroundSize: reward.type === RewardType.GOLD ? '84% 100%' : 'initial',
-          }}/>
+          <div
+            className="unlocked-feature-reward-icon"
+            style={{
+              backgroundImage: `url(${backgroundImageUrl})`,
+              backgroundPosition: reward.type === RewardType.GOLD ? "" : `-${coordinates.x}px -${coordinates.y}px`,
+              backgroundSize: reward.type === RewardType.GOLD ? "84% 100%" : "initial",
+            }}
+          />
           <span className="unlocked-feature-reward-amount">{reward.amount}</span>
         </div>
       );
@@ -51,32 +53,21 @@ export class UnlockedFeature extends Component<Props> {
             You unlocked <span className="highlight-text">{name}</span>!
           </h2>
           <p className="unlocked-feature-description" dangerouslySetInnerHTML={{ __html: description }} />
-          
-          <div className="unlocked-feature-rewards">
-            {this.renderRewards()}
-          </div>
+
+          <div className="unlocked-feature-rewards">{this.renderRewards()}</div>
 
           <div className="unlocked-feature-buttons">
             {route ? (
               <>
-                <button 
-                  className="unlocked-feature-button primary" 
-                  onClick={this.handleCheckout}
-                >
+                <button className="unlocked-feature-button primary" onClick={this.handleCheckout}>
                   Check it out
                 </button>
-                <button 
-                  className="unlocked-feature-button secondary" 
-                  onClick={this.props.onHide}
-                >
+                <button className="unlocked-feature-button secondary" onClick={this.props.onHide}>
                   Dismiss
                 </button>
               </>
             ) : (
-              <button 
-                className="unlocked-feature-button primary" 
-                onClick={this.props.onHide}
-              >
+              <button className="unlocked-feature-button primary" onClick={this.props.onHide}>
                 Continue
               </button>
             )}
@@ -85,4 +76,4 @@ export class UnlockedFeature extends Component<Props> {
       </div>
     );
   }
-} 
+}

@@ -1,13 +1,13 @@
-import {h} from "preact";
-import {useContext} from "preact/hooks";
-import {route} from "preact-router";
+import { h } from "preact";
+import { useContext } from "preact/hooks";
+import { route } from "preact-router";
 import logoBig from "@assets/logo.png";
-import {PlayerContext} from "../contexts/PlayerContext";
-import {STEAM_STORE_URL, titlePlayRoute} from "./titleScreenRoute";
+import { PlayerContext } from "../contexts/PlayerContext";
+import { STEAM_STORE_URL, titlePlayRoute } from "./titleScreenRoute";
 import "./TitleScreen.style.css";
 
 const TitleScreen = () => {
-  const {loaded, player} = useContext(PlayerContext);
+  const { loaded, player } = useContext(PlayerContext);
   const play = () => route(titlePlayRoute(player.engagementStats?.completedGames || 0));
 
   return (
@@ -16,7 +16,9 @@ const TitleScreen = () => {
         <img src={logoBig} alt="Legion" className="logo-big" />
         {loaded && (
           <div className="title-screen-actions">
-            <button autoFocus className="title-screen-button title-screen-button--play" onClick={play}>Play</button>
+            <button autoFocus className="title-screen-button title-screen-button--play" onClick={play}>
+              Play
+            </button>
             <a
               className="title-screen-button title-screen-button--steam"
               href={STEAM_STORE_URL}

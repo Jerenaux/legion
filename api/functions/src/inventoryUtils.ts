@@ -16,7 +16,7 @@ export function addItemsToInventory(
   playerData: DBPlayerData,
   itemType: RewardType,
   itemId: number,
-  quantity: number
+  quantity: number,
 ): InventoryUpdate {
   const update: InventoryUpdate = {
     inventory: { ...playerData.inventory },
@@ -24,22 +24,17 @@ export function addItemsToInventory(
 
   switch (itemType) {
     case RewardType.CONSUMABLES:
-      update.inventory!.consumables = [
-        ...playerData.inventory.consumables,
-        ...Array(quantity).fill(itemId),
-      ].sort(numericalSort);
+      update.inventory!.consumables = [...playerData.inventory.consumables, ...Array(quantity).fill(itemId)].sort(
+        numericalSort,
+      );
       break;
     case RewardType.SPELL:
-      update.inventory!.spells = [
-        ...playerData.inventory.spells,
-        ...Array(quantity).fill(itemId),
-      ].sort(numericalSort);
+      update.inventory!.spells = [...playerData.inventory.spells, ...Array(quantity).fill(itemId)].sort(numericalSort);
       break;
     case RewardType.EQUIPMENT:
-      update.inventory!.equipment = [
-        ...playerData.inventory.equipment,
-        ...Array(quantity).fill(itemId),
-      ].sort(numericalSort);
+      update.inventory!.equipment = [...playerData.inventory.equipment, ...Array(quantity).fill(itemId)].sort(
+        numericalSort,
+      );
       break;
   }
 

@@ -1,85 +1,82 @@
 interface ApiFetchOptions {
-    method?: string;
-    headers?: Record<string, string>;
-    body?: any;
+  method?: string;
+  headers?: Record<string, string>;
+  body?: any;
 }
 
 class ApiError extends Error {
-    status;
-    endpoint;
+  status;
+  endpoint;
 
-    constructor(message, status, endpoint) {
-        super(message);
-        this.status = status;
-        this.endpoint = endpoint;
-    }
+  constructor(message, status, endpoint) {
+    super(message);
+    this.status = status;
+    this.endpoint = endpoint;
+  }
 }
 
 function timeoutPromise(duration) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            reject(new Error('Request timed out'));
-        }, duration);
-    });
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error("Request timed out"));
+    }, duration);
+  });
 }
 
 const TIMEOUT_DURATION = 15000;
 
 export function createApiHeaders(
-    initialHeaders: Record<string, string>,
-    idToken: string,
-    apiKey: string | undefined,
+  initialHeaders: Record<string, string>,
+  idToken: string,
+  apiKey: string | undefined,
 ): Headers {
-    const headers = new Headers(initialHeaders);
-    if (idToken) {
-        headers.set("Authorization", `Bearer ${idToken}`);
-    } else if (apiKey) {
-        headers.set("x-api-key", apiKey);
-    }
-    return headers;
+  const headers = new Headers(initialHeaders);
+  if (idToken) {
+    headers.set("Authorization", `Bearer ${idToken}`);
+  } else if (apiKey) {
+    headers.set("x-api-key", apiKey);
+  }
+  return headers;
 }
 
 export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {}, maxRetries = 1, retryDelay = 250) {
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            const headers = createApiHeaders(options.headers || {}, idToken, process.env.API_KEY);
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const headers = createApiHeaders(options.headers || {}, idToken, process.env.API_KEY);
 
-            if (options.body && !headers.has('Content-Type')) {
-                headers.append('Content-Type', 'application/json');
-            }
+      if (options.body && !headers.has("Content-Type")) {
+        headers.append("Content-Type", "application/json");
+      }
 
-            const body = options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body;
+      const body = options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body;
 
-            const fetchPromise = fetch(`${process.env.API_URL}/${endpoint}`, {
-                ...options,
-                body,
-                headers,
-            });
+      const fetchPromise = fetch(`${process.env.API_URL}/${endpoint}`, {
+        ...options,
+        body,
+        headers,
+      });
 
-            const response = await Promise.race([
-                fetchPromise,
-                timeoutPromise(TIMEOUT_DURATION)
-            ]) as Response;
+      const response = (await Promise.race([fetchPromise, timeoutPromise(TIMEOUT_DURATION)])) as Response;
 
-            if (response.ok) {
-                console.log(`[API:apiFetch] API call to ${endpoint} succeeded on attempt ${attempt + 1}`);
-            } else {
-                const errorBody = await response.text();
-                throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
-            }
+      if (response.ok) {
+        console.log(`[API:apiFetch] API call to ${endpoint} succeeded on attempt ${attempt + 1}`);
+      } else {
+        const errorBody = await response.text();
+        throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
+      }
 
-            return response.json();
-        } catch (error) {
-            console.error(`[API:apiFetch] Attempt ${attempt + 1}/${maxRetries} failed for API call to ${endpoint}:`, error);
-            
-            if (attempt === maxRetries - 1) {
-                throw error;
-            }
+      return response.json();
+    } catch (error) {
+      console.error(`[API:apiFetch] Attempt ${attempt + 1}/${maxRetries} failed for API call to ${endpoint}:`, error);
 
-            // Always retry, regardless of error type
-            
-            console.log(`Retrying in ${retryDelay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, retryDelay));
-        }
+      if (attempt === maxRetries - 1) {
+        throw error;
+      }
+
+      // Always retry, regardless of error type
+
+      console.log(`Retrying in ${retryDelay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
     }
+  }
 }

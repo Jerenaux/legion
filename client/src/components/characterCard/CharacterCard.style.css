@@ -5,8 +5,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  font-family: 'Kim';
-
+  font-family: "Kim";
 }
 
 .characterLevel {
@@ -38,44 +37,44 @@
 }
 
 .characterName .name {
-    max-width: 132px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 16px;
-    font-weight: 500;
-    color: #ffffff;
-    text-transform: capitalize;
+  max-width: 132px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  text-transform: capitalize;
 }
 
 .characterName .class {
-    max-width: 114px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 10px;
-    font-weight: 500;
-    color: #ffa600;
-    text-transform: uppercase;
+  max-width: 114px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 500;
+  color: #ffa600;
+  text-transform: uppercase;
 }
 
 .portraitContainer {
-    position: absolute;
-    right: 20px;
-    width: 58px;
-    height: 96px;
-    border-radius: 8px;
-    padding-bottom: 6px;
+  position: absolute;
+  right: 20px;
+  width: 58px;
+  height: 96px;
+  border-radius: 8px;
+  padding-bottom: 6px;
 }
 
 .portrait {
-    width: 100%;
-    height: 100%;
-    background-position: -40px -40px;
-    background-repeat: no-repeat;
-    animation: animate-sprite 0.7s steps(1) infinite;
-    transform: scale(.6);
-} 
+  width: 100%;
+  height: 100%;
+  background-position: -40px -40px;
+  background-repeat: no-repeat;
+  animation: animate-sprite 0.7s steps(1) infinite;
+  transform: scale(0.6);
+}
 
 .characterSp {
   position: absolute;
@@ -86,7 +85,7 @@
   font-size: 10px;
   color: white;
   animation: bgColorChange 0.5s ease-in-out infinite;
-  
+
   /* New styles for fuzzy effect */
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
   border: 2px solid transparent;
@@ -109,14 +108,14 @@
   filter: blur(1px);
 }
 
-@keyframes bgColorChange { 
-  0% { 
+@keyframes bgColorChange {
+  0% {
     background-color: rgb(219, 43, 31);
-  } 
-  50% { 
+  }
+  50% {
     background-color: rgb(253, 36, 36);
-  } 
-  100% { 
+  }
+  100% {
     background-color: rgb(219, 43, 31);
   }
 }

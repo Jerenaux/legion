@@ -1,10 +1,10 @@
-import {Component, ComponentChildren, h} from "preact";
+import { Component, ComponentChildren, h } from "preact";
 import firebase from "firebase/compat/app";
 
 import AuthContext from "../contexts/AuthContext";
-import {firebaseAuth} from "../services/firebaseService";
-import {exchangePlatformCredential, getPlatformCredential} from "../services/platformSession";
-import {getElectronAPI} from "../utils/electronUtils";
+import { firebaseAuth } from "../services/firebaseService";
+import { exchangePlatformCredential, getPlatformCredential } from "../services/platformSession";
+import { getElectronAPI } from "../utils/electronUtils";
 import logo from "@assets/logo.png";
 import "./AuthProvider.style.css";
 
@@ -19,14 +19,14 @@ interface State {
 }
 
 export default class AuthProvider extends Component<Props, State> {
-  state: State = {user: null, isLoading: true, error: null};
+  state: State = { user: null, isLoading: true, error: null };
   private unsubscribe?: firebase.Unsubscribe;
   private authenticating = false;
 
   componentDidMount() {
-    this.unsubscribe = firebaseAuth.onAuthStateChanged(user => {
-      this.setState({user});
-      if (user) this.setState({isLoading: false, error: null});
+    this.unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
+      this.setState({ user });
+      if (user) this.setState({ isLoading: false, error: null });
       else this.startSession();
     });
   }
@@ -38,13 +38,11 @@ export default class AuthProvider extends Component<Props, State> {
   startSession = async () => {
     if (this.authenticating) return;
     this.authenticating = true;
-    this.setState({isLoading: true, error: null});
+    this.setState({ isLoading: true, error: null });
     try {
       if (!process.env.API_URL) throw new Error("API_URL is not configured");
-      const credential = await getPlatformCredential(
-        getElectronAPI(),
-        localStorage,
-        () => globalThis.crypto.randomUUID(),
+      const credential = await getPlatformCredential(getElectronAPI(), localStorage, () =>
+        globalThis.crypto.randomUUID(),
       );
       const customToken = await exchangePlatformCredential(process.env.API_URL, credential);
       await firebaseAuth.signInWithCustomToken(customToken);
@@ -60,7 +58,7 @@ export default class AuthProvider extends Component<Props, State> {
   };
 
   render() {
-    const {user, isLoading, error} = this.state;
+    const { user, isLoading, error } = this.state;
     if (isLoading) {
       return (
         <main className="session-screen">
@@ -69,7 +67,9 @@ export default class AuthProvider extends Component<Props, State> {
             <p className="session-status__eyebrow">Connecting</p>
             <h1>Preparing your arena</h1>
             <p className="session-status__message">Securing your session…</p>
-            <div className="session-status__progress" aria-hidden="true"><span /></div>
+            <div className="session-status__progress" aria-hidden="true">
+              <span />
+            </div>
           </section>
         </main>
       );
@@ -79,7 +79,9 @@ export default class AuthProvider extends Component<Props, State> {
         <main className="session-screen session-screen--error">
           <section className="session-status" role="alert">
             <img className="session-status__logo" src={logo} alt="Legion" />
-            <div className="session-status__error-mark" aria-hidden="true">!</div>
+            <div className="session-status__error-mark" aria-hidden="true">
+              !
+            </div>
             <p className="session-status__eyebrow">Connection interrupted</p>
             <h1>The arena is out of reach</h1>
             <p className="session-status__message">{error || "Your Legion session could not be started."}</p>
@@ -93,7 +95,7 @@ export default class AuthProvider extends Component<Props, State> {
     }
 
     return (
-      <AuthContext.Provider value={{user, isAuthenticated: true, isLoading: false, retrySession: this.startSession}}>
+      <AuthContext.Provider value={{ user, isAuthenticated: true, isLoading: false, retrySession: this.startSession }}>
         {this.props.children}
       </AuthContext.Provider>
     );

@@ -1,170 +1,170 @@
 .rank-table-container {
-    flex: 1;
-    height: 100%; 
-    position: relative; 
-} 
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
 
-.table-empty { 
-    position: absolute; 
-    width: 400px; 
-    left: calc(50% - 200px);  
-    top: 30%;
-    font-size: 28px; 
-    text-align: center;
-    color: antiquewhite;
+.table-empty {
+  position: absolute;
+  width: 400px;
+  left: calc(50% - 200px);
+  top: 30%;
+  font-size: 28px;
+  text-align: center;
+  color: antiquewhite;
 }
 
 .rank-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: #FFFFFF;
+  width: 100%;
+  border-collapse: collapse;
+  color: #ffffff;
 }
 
 .rank-table thead tr {
-    display: table;
-    table-layout: fixed;
-    width: 100%;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
 }
 
 .rank-table thead tr th:nth-child(1) {
-    width: 152px; 
-    text-align: left;
-} 
+  width: 152px;
+  text-align: left;
+}
 
-.rank-table thead tr th:nth-child(1) > div { 
-    width: 78px; 
-    /* background-color: tomato;  */
-    text-align: center;
-} 
+.rank-table thead tr th:nth-child(1) > div {
+  width: 78px;
+  /* background-color: tomato;  */
+  text-align: center;
+}
 
 .rank-table thead tr th:nth-child(2) {
-    width: 172px; 
-    text-align: left;
-} 
+  width: 172px;
+  text-align: left;
+}
 
-.rank-table thead tr th { 
-    width: 126px;
-    padding: 4px 0;
-    font-size: 14px;
-    text-transform: capitalize; 
-    border-bottom: 1px solid #ffa600;
-    cursor: pointer; 
-    text-align: center;
-} 
+.rank-table thead tr th {
+  width: 126px;
+  padding: 4px 0;
+  font-size: 14px;
+  text-transform: capitalize;
+  border-bottom: 1px solid #ffa600;
+  cursor: pointer;
+  text-align: center;
+}
 
 .rank-table thead tr th > div {
-    text-align: center;
+  text-align: center;
 }
 
 .rank-table .thead-sort-icon {
-    width: 8px;
-    height: 8px;
-    margin-left: 4px;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
 }
 
 .rank-table tbody {
-    display: block;
-    height: 540px;
-    overflow-y: auto;
-    border-collapse: collapse;
+  display: block;
+  height: 540px;
+  overflow-y: auto;
+  border-collapse: collapse;
 }
 
 .rank-table tbody tr {
-    cursor: pointer;
-    background-image: url('@assets/leaderboard/leaderboard_bg.png');
-    background-size: 100% 100%;
-    display: table;
-    width: 100%;
-    margin-top: 8px;
+  cursor: pointer;
+  background-image: url("@assets/leaderboard/leaderboard_bg.png");
+  background-size: 100% 100%;
+  display: table;
+  width: 100%;
+  margin-top: 8px;
 }
 
 .rank-table tbody tr td:nth-child(1) {
-    width: 152px;
-} 
+  width: 152px;
+}
 
-.rank-table tbody tr td:nth-child(2) { 
-    width: 172px;
+.rank-table tbody tr td:nth-child(2) {
+  width: 172px;
 }
 
 .rank-table tbody tr:hover {
-    background-image: url('@assets/leaderboard/leaderboard_bg_active.png');
+  background-image: url("@assets/leaderboard/leaderboard_bg_active.png");
 }
 
 .rank-table tbody tr:hover .rank-row-avatar {
-    background-image: url('@assets/leaderboard/leaderboard_avatar_frame_active.png');
+  background-image: url("@assets/leaderboard/leaderboard_avatar_frame_active.png");
 }
 
 .rank-table tbody tr td {
-    width: 126px; 
-    text-align: center;
+  width: 126px;
+  text-align: center;
 }
 
 .rank-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    gap: 10px;
-    position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  position: relative;
 }
 
 .rank-row .rank-row-number {
-    background-size: 100% 100%;
-    width: 46px;
-    height: 46px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background-size: 100% 100%;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .rank-row-avatar {
-    position: absolute;
-    left: 64px;
-    background-image: url('@assets/leaderboard/leaderboard_avatar_frame.png');
-    background-size: 100% 100%;
-    width: 48px;
-    height: 48px; 
-    border: 1px solid #35b0c5; 
-    border-radius: 4px;
+  position: absolute;
+  left: 64px;
+  background-image: url("@assets/leaderboard/leaderboard_avatar_frame.png");
+  background-size: 100% 100%;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #35b0c5;
+  border-radius: 4px;
 }
 
 .rank-row-upgrade {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 2;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 2;
 }
 
 .rank-row-win {
-    color: #ffa600;
+  color: #ffa600;
 }
 
 .rank-row-winRatio {
-    color: #35b0c5;
+  color: #35b0c5;
 }
 
 .rank-row-reward img {
-    width: 48px;
-    height: 40px;
+  width: 48px;
+  height: 40px;
 }
 
 .clickable-row {
-    cursor: pointer;
-    transition: filter 0.2s ease;
+  cursor: pointer;
+  transition: filter 0.2s ease;
 }
 
 .clickable-row:hover {
-    filter: brightness(1.2);
+  filter: brightness(1.2);
 }
 
 .rank-table tr {
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
 }

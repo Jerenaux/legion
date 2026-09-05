@@ -10,9 +10,11 @@ describe("API authentication policy", () => {
   });
 
   test("rejects an invalid token instead of returning an empty uid", async () => {
-    await expect(verifyUID("Bearer bad", async () => {
-      throw new Error("invalid token");
-    })).rejects.toThrow("invalid token");
+    await expect(
+      verifyUID("Bearer bad", async () => {
+        throw new Error("invalid token");
+      }),
+    ).rejects.toThrow("invalid token");
   });
 
   test("returns only a verified non-empty uid", async () => {

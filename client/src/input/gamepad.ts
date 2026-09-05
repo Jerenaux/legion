@@ -1,4 +1,4 @@
-import {DesktopAction} from "./actions";
+import { DesktopAction } from "./actions";
 
 const BUTTON_ACTIONS: Record<number, DesktopAction> = {
   0: "confirm",
@@ -30,15 +30,15 @@ export function gamepadActions(gamepad: GamepadLike): DesktopAction[] {
 export function pollGamepads(gamepads: ArrayLike<GamepadLike | null>, previous = new Set<string>()) {
   const pressed = new Set<string>();
   const actions: DesktopAction[] = [];
-  Array.from(gamepads).forEach(gamepad => {
+  Array.from(gamepads).forEach((gamepad) => {
     if (!gamepad) return;
-    gamepadActions(gamepad).forEach(action => {
+    gamepadActions(gamepad).forEach((action) => {
       const key = `${gamepad.index}:${action}`;
       pressed.add(key);
       if (!previous.has(key)) actions.push(action);
     });
   });
-  return {actions, pressed};
+  return { actions, pressed };
 }
 
 export function startGamepadInput(onAction: (action: DesktopAction) => void) {

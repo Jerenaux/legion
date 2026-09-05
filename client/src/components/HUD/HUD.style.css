@@ -148,7 +148,7 @@
   padding: 8px 16px 12px 36px;
   max-width: 320px;
   min-width: 260px;
-  font-family: 'Kim';
+  font-family: "Kim";
 }
 
 .player_info_container_right {
@@ -178,7 +178,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: 'Kim';
+  font-family: "Kim";
 }
 
 .player_info_lv_right {
@@ -205,7 +205,7 @@
   border: 1px solid #274c57;
 }
 
-.player_info_player_profile>img {
+.player_info_player_profile > img {
   width: 100%;
   height: 100%;
 }
@@ -243,8 +243,12 @@
   margin-top: -2px;
   margin-right: 4px;
   font-style: italic;
-  font-family: 'Kim';
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .player_info_team {
@@ -436,11 +440,6 @@
   height: 22px;
 }
 
-
-
-
-
-
 .light_streak_container {
   position: absolute;
   top: 0;
@@ -504,7 +503,7 @@
   margin-left: 6px;
 }
 
-.streak_gold_list>div:first-child {
+.streak_gold_list > div:first-child {
   width: 32px;
   height: 32px;
   background-repeat: no-repeat;
@@ -566,10 +565,13 @@
   margin-bottom: 4px;
   text-align: center;
   cursor: var(--game-pointer);
-  font-family: 'Kim';
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
-
 
 .exit_game_label {
   background-color: #252b36;
@@ -579,14 +581,22 @@
   margin-bottom: 4px;
   text-align: center;
   cursor: var(--game-pointer);
-  font-family: 'Kim';
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .exit_game_menu {
   cursor: var(--game-pointer);
-  font-family: 'Kim';
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .setting_menu {
@@ -594,8 +604,12 @@
   padding: 16px;
   border: 2px solid #51fdff;
   border-radius: 8px;
-  font-family: 'Kim';
-  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  font-family: "Kim";
+  text-shadow:
+    -1px 0 black,
+    0 1px black,
+    1px 0 black,
+    0 -1px black;
 }
 
 .setting_menu_btn {
@@ -625,7 +639,7 @@
 
 .setting_menu_btn_active {
   color: #51fdff;
-  opacity: 1.0;
+  opacity: 1;
 }
 
 .setting_dialog {
@@ -682,7 +696,6 @@
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-
 }
 
 .setting_dialog_control_label_start {
@@ -749,7 +762,6 @@
 }
 
 @keyframes oscillate-brightness {
-
   0%,
   100% {
     filter: brightness(1);
@@ -770,7 +782,9 @@
   font-weight: bold;
   text-transform: uppercase;
   position: relative;
-  text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
+  text-shadow:
+    0.05em 0 0 #00fffc,
+    -0.03em -0.04em 0 #fc00ff,
     0.025em 0.04em 0 #fffc00;
   animation: glitch 725ms infinite;
 }
@@ -797,37 +811,51 @@
 
 @keyframes glitch {
   0% {
-    text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
+    text-shadow:
+      0.05em 0 0 #00fffc,
+      -0.03em -0.04em 0 #fc00ff,
       0.025em 0.04em 0 #fffc00;
   }
 
   15% {
-    text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
+    text-shadow:
+      0.05em 0 0 #00fffc,
+      -0.03em -0.04em 0 #fc00ff,
       0.025em 0.04em 0 #fffc00;
   }
 
   16% {
-    text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff,
+    text-shadow:
+      -0.05em -0.025em 0 #00fffc,
+      0.025em 0.035em 0 #fc00ff,
       -0.05em -0.05em 0 #fffc00;
   }
 
   49% {
-    text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff,
+    text-shadow:
+      -0.05em -0.025em 0 #00fffc,
+      0.025em 0.035em 0 #fc00ff,
       -0.05em -0.05em 0 #fffc00;
   }
 
   50% {
-    text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff,
+    text-shadow:
+      0.05em 0.035em 0 #00fffc,
+      0.03em 0 0 #fc00ff,
       0 -0.04em 0 #fffc00;
   }
 
   99% {
-    text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff,
+    text-shadow:
+      0.05em 0.035em 0 #00fffc,
+      0.03em 0 0 #fc00ff,
       0 -0.04em 0 #fffc00;
   }
 
   100% {
-    text-shadow: -0.05em 0 0 #00fffc, -0.025em -0.04em 0 #fc00ff,
+    text-shadow:
+      -0.05em 0 0 #00fffc,
+      -0.025em -0.04em 0 #fc00ff,
       -0.04em -0.025em 0 #fffc00;
   }
 }
@@ -845,7 +873,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
-  
+
   /* Container styling */
   background: linear-gradient(
     90deg,
@@ -857,23 +885,24 @@
   );
   padding: 12px 40px;
   border-radius: 4px;
-  
+
   /* Text styling */
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   font-size: 24px;
   color: #ffffff;
   text-align: center;
   text-transform: uppercase;
-  text-shadow: 
+  text-shadow:
     0 0 10px rgba(202, 48, 77, 0.8),
     -1px -1px 0 #ca304d,
     1px -1px 0 #ca304d,
     -1px 1px 0 #ca304d,
     1px 1px 0 #ca304d;
-  
+
   /* Animation */
-  animation: enemyTurnBanner 0.5s ease-out forwards,
-             enemyTurnPulse 2s infinite;
+  animation:
+    enemyTurnBanner 0.5s ease-out forwards,
+    enemyTurnPulse 2s infinite;
 }
 
 @keyframes enemyTurnBanner {
@@ -888,13 +917,14 @@
 }
 
 @keyframes enemyTurnPulse {
-  0%, 100% {
-    box-shadow: 
+  0%,
+  100% {
+    box-shadow:
       0 0 20px rgba(202, 48, 77, 0.3),
       inset 0 0 20px rgba(202, 48, 77, 0.3);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 30px rgba(202, 48, 77, 0.5),
       inset 0 0 30px rgba(202, 48, 77, 0.5);
   }
@@ -908,12 +938,7 @@
   top: 50%;
   width: 20px;
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    #ca304d,
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, #ca304d, transparent);
 }
 
 .enemy_turn_banner::before {
@@ -958,13 +983,13 @@
   padding: clamp(6px, 1vh, 8px) clamp(20px, 3vw, 30px);
   border-radius: 4px;
   min-width: clamp(160px, 20vw, 200px);
-  
-  font-family: 'Kim', sans-serif;
+
+  font-family: "Kim", sans-serif;
   font-size: clamp(14px, 2vw, 18px);
   color: #ffffff;
   text-align: center;
   text-transform: uppercase;
-  text-shadow: 
+  text-shadow:
     0 0 8px rgba(69, 131, 208, 0.8),
     -1px -1px 0 #4583d0,
     1px -1px 0 #4583d0,
@@ -1017,7 +1042,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
-  
+
   /* Container styling */
   background: linear-gradient(
     90deg,
@@ -1029,32 +1054,33 @@
   );
   padding: 8px 30px;
   border-radius: 4px;
-  
+
   /* Text styling */
-  font-family: 'Kim', sans-serif;
+  font-family: "Kim", sans-serif;
   font-size: 20px;
   color: #ffffff;
   text-align: center;
   text-transform: uppercase;
-  text-shadow: 
+  text-shadow:
     0 0 10px rgba(45, 212, 191, 0.8),
-    -1px -1px 0 #2DD4BF,
-    1px -1px 0 #2DD4BF,
-    -1px 1px 0 #2DD4BF,
-    1px 1px 0 #2DD4BF;
-  
+    -1px -1px 0 #2dd4bf,
+    1px -1px 0 #2dd4bf,
+    -1px 1px 0 #2dd4bf,
+    1px 1px 0 #2dd4bf;
+
   /* Animation */
   animation: targetSelectionPulse 2s infinite;
 }
 
 @keyframes targetSelectionPulse {
-  0%, 100% {
-    box-shadow: 
+  0%,
+  100% {
+    box-shadow:
       0 0 20px rgba(45, 212, 191, 0.3),
       inset 0 0 20px rgba(45, 212, 191, 0.3);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 30px rgba(45, 212, 191, 0.5),
       inset 0 0 30px rgba(45, 212, 191, 0.5);
   }

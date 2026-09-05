@@ -1,465 +1,465 @@
 .inventoryFullContainer {
-    background-color: #242b36;
-    border: 1px solid #2e3e4e;
-    border-radius: 8px;
-    padding: 4px;
+  background-color: #242b36;
+  border: 1px solid #2e3e4e;
+  border-radius: 8px;
+  padding: 4px;
 }
 
 .inventoryContainer {
-    padding: 4px;
-    border-radius: 4px;
-    border: 1px solid #71deff;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #71deff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .inventoryWrapper {
-    position: relative;
-    width: 540px;
-    height: 340px;
-    overflow-y: auto;
-    overflow-x: hidden;
+  position: relative;
+  width: 540px;
+  height: 340px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .inventoryCategoryContainer {
-    background-color: #2f404d;
-    border-radius: 3px;
-    width: 100%;
-    padding: 4px 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-sizing: border-box;
+  background-color: #2f404d;
+  border-radius: 3px;
+  width: 100%;
+  padding: 4px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .inventoryCategories {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .inventoryCategory {
-    border-radius: 3px;
-    border: 1px solid #71deff;
-    background-color: #1c1f25;
-    padding: 4px;
-    font-size: 10px;
-    font-weight: 400;
-    font-family: 'Kim';
-    color: #ffffff;
-    letter-spacing: 0.4px;
+  border-radius: 3px;
+  border: 1px solid #71deff;
+  background-color: #1c1f25;
+  padding: 4px;
+  font-size: 10px;
+  font-weight: 400;
+  font-family: "Kim";
+  color: #ffffff;
+  letter-spacing: 0.4px;
 }
 
 .inventoryCategory:hover {
-    background-color: transparent;
-    border: 1px solid #a5670f;
-    cursor: pointer;
+  background-color: transparent;
+  border: 1px solid #a5670f;
+  cursor: pointer;
 }
 
 .inventoryLabel {
-    font-size: 12px;
-    font-weight: 500;
-    font-family: 'Kim';
-    letter-spacing: 0.6px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: "Kim";
+  letter-spacing: 0.6px;
 }
 
 .categoryCount {
-    background-color: #1c1f25;
-    padding: 4px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
+  background-color: #1c1f25;
+  padding: 4px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
 }
 
 .categoryCount span {
-    color: #71deff;
+  color: #71deff;
 }
 
 .categoryBtn {
-    width: 24px;
-    height: 24px;
-    background-size: 100% 100%;
+  width: 24px;
+  height: 24px;
+  background-size: 100% 100%;
 }
 
 .categoryBtn:hover {
-    opacity: 0.6;
-    cursor: pointer;
+  opacity: 0.6;
+  cursor: pointer;
 }
 
 .hint-modal-container {
-    box-sizing: border-box;
-    background-color: #1c1f25;
-    border: 1px solid #71deff;
-    border-radius: 8px;
-    width: 264px;
-    height: 180px;
-    padding: 12px;
-    position: relative;
+  box-sizing: border-box;
+  background-color: #1c1f25;
+  border: 1px solid #71deff;
+  border-radius: 8px;
+  width: 264px;
+  height: 180px;
+  padding: 12px;
+  position: relative;
 }
 
 .hint-modal-heading {
-    font-size: 24px;
-    text-align: center;
-    color: #71deff;
+  font-size: 24px;
+  text-align: center;
+  color: #71deff;
 }
 
 .hint-modal-button-container {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .hint-modal-button-container button {
-    padding: 10px;
-    font-size: 14px;
-    color: #ffffff;
-    border-radius: 6px;
-    border: 1px solid #46899e;
-    background-color: transparent;
+  padding: 10px;
+  font-size: 14px;
+  color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #46899e;
+  background-color: transparent;
 }
 
 .hint-modal-button-container button:hover {
-    opacity: 0.7;
-    cursor: pointer;
-    border: 1px solid #8be0f9;
+  opacity: 0.7;
+  cursor: pointer;
+  border: 1px solid #8be0f9;
 }
 
 .empty-slots-container {
-    background-color: rgba(28, 31, 37, 0.85);
-    border-radius: 8px;
-    padding: 12px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 12px;
+  background-color: rgba(28, 31, 37, 0.85);
+  border-radius: 8px;
+  padding: 12px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .empty-slots-container p {
-    font-size: 16px;
-    text-align: center;
+  font-size: 16px;
+  text-align: center;
 }
 
 .empty-slots-container a {
-    padding: 8px;
-    font-size: 14px;
-    color: #ffffff;
-    border-radius: 6px;
-    border: 1px solid #46899e;
-    background-color: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
+  padding: 8px;
+  font-size: 14px;
+  color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #46899e;
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
 }
 
 .empty-slots-container a img {
-    width: 20px;
-    height: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .inventory-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 8px;
-    height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px;
+  height: 100%;
 }
 
 .inventory-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .section-title {
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 500;
-    font-family: 'Kim';
-    letter-spacing: 0.6px;
-    background-color: #2f404d;
-    padding: 4px 8px;
-    border-radius: 3px;
-    display: inline-block;
-    margin: 0;
-    border: 1px solid #71deff;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: "Kim";
+  letter-spacing: 0.6px;
+  background-color: #2f404d;
+  padding: 4px 8px;
+  border-radius: 3px;
+  display: inline-block;
+  margin: 0;
+  border: 1px solid #71deff;
 }
 
 .section-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    max-width: 520px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 520px;
 }
 
 .inventoryWrapper::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 .inventoryWrapper::-webkit-scrollbar-track {
-    background: #1c1f25;
-    border-radius: 4px;
+  background: #1c1f25;
+  border-radius: 4px;
 }
 
 .inventoryWrapper::-webkit-scrollbar-thumb {
-    background: #2e3e4e;
-    border-radius: 4px;
+  background: #2e3e4e;
+  border-radius: 4px;
 }
 
 .inventoryWrapper::-webkit-scrollbar-thumb:hover {
-    background: #3e4e5e;
+  background: #3e4e5e;
 }
 
 .info-bar-plus {
-    width: 24px;
-    height: 24px;
-    background-color: #1c1f25;
-    border: 1px solid #71deff;
-    border-radius: 3px;
-    color: #71deff;
-    font-size: 16px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
+  width: 24px;
+  height: 24px;
+  background-color: #1c1f25;
+  border: 1px solid #71deff;
+  border-radius: 3px;
+  color: #71deff;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .info-bar-plus:before {
-    content: '+';
-    font-family: 'Kim', monospace;
-    line-height: 1;
+  content: "+";
+  font-family: "Kim", monospace;
+  line-height: 1;
 }
 
 .info-bar-plus:hover:not(:disabled) {
-    background-color: #2e3e4e;
-    border-color: #8be0f9;
-    color: #8be0f9;
-    transform: scale(1.05);
+  background-color: #2e3e4e;
+  border-color: #8be0f9;
+  color: #8be0f9;
+  transform: scale(1.05);
 }
 
 .info-bar-plus:active:not(:disabled) {
-    transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 .info-bar-plus:disabled {
-    background-color: #2a2a2a;
-    border-color: #555;
-    color: #666;
-    cursor: not-allowed;
-    opacity: 0.5;
+  background-color: #2a2a2a;
+  border-color: #555;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .info-bar-plus-loading {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #1c1f25;
-    border: 1px solid #71deff;
-    border-radius: 3px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1c1f25;
+  border: 1px solid #71deff;
+  border-radius: 3px;
 }
 
 .info-bar-plus-loading .spinner {
-    width: 16px;
-    height: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Purchase Dialog Styles */
 
 .purchase-dialog-container {
-    background-color: #1c1f25;
-    border: 1px solid #71deff;
-    border-radius: 8px;
-    padding: 20px;
-    min-width: 320px;
-    max-width: 400px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  background-color: #1c1f25;
+  border: 1px solid #71deff;
+  border-radius: 8px;
+  padding: 20px;
+  min-width: 320px;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .purchase-dialog-heading {
-    color: #71deff;
-    font-size: 18px;
-    font-family: 'Kim';
-    margin: 0 0 16px 0;
-    text-align: center;
-    letter-spacing: 0.5px;
+  color: #71deff;
+  font-size: 18px;
+  font-family: "Kim";
+  margin: 0 0 16px 0;
+  text-align: center;
+  letter-spacing: 0.5px;
 }
 
 .purchase-dialog-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .quantity-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .quantity-selector label {
-    color: #ffffff;
-    font-size: 14px;
-    font-family: 'Kim';
-    font-weight: 500;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: "Kim";
+  font-weight: 500;
 }
 
 .quantity-input {
-    background-color: #2f404d;
-    border: 1px solid #71deff;
-    border-radius: 4px;
-    padding: 8px 12px;
-    color: #ffffff;
-    font-size: 14px;
-    font-family: 'Kim';
-    width: 80px;
+  background-color: #2f404d;
+  border: 1px solid #71deff;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: "Kim";
+  width: 80px;
 }
 
 .quantity-input:focus {
-    outline: none;
-    border-color: #8be0f9;
-    background-color: #3a4f5f;
+  outline: none;
+  border-color: #8be0f9;
+  background-color: #3a4f5f;
 }
 
 .quantity-input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .price-display {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background-color: #2f404d;
-    padding: 12px;
-    border-radius: 4px;
-    border: 1px solid #46899e;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #2f404d;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #46899e;
 }
 
 .price-breakdown,
 .price-total,
 .remaining-gold {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    color: #ffffff;
-    font-family: 'Kim';
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #ffffff;
+  font-family: "Kim";
 }
 
 .price-total {
-    font-weight: bold;
-    padding-top: 4px;
-    border-top: 1px solid #46899e;
+  font-weight: bold;
+  padding-top: 4px;
+  border-top: 1px solid #46899e;
 }
 
 .price-value {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #71deff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #71deff;
 }
 
 .price-value.total {
-    color: #8be0f9;
-    font-size: 16px;
+  color: #8be0f9;
+  font-size: 16px;
 }
 
 .price-value.insufficient {
-    color: #ff6b6b;
+  color: #ff6b6b;
 }
 
 .gold-icon {
-    width: 16px;
-    height: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .purchase-dialog-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .purchase-dialog-cancel,
 .purchase-dialog-confirm {
-    padding: 10px 16px;
-    font-size: 14px;
-    font-family: 'Kim';
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-family: "Kim";
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
 
 .purchase-dialog-cancel {
-    background-color: transparent;
-    border: 1px solid #666;
-    color: #ffffff;
+  background-color: transparent;
+  border: 1px solid #666;
+  color: #ffffff;
 }
 
 .purchase-dialog-cancel:hover {
-    border-color: #888;
-    background-color: rgba(255, 255, 255, 0.1);
+  border-color: #888;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .purchase-dialog-confirm {
-    background-color: #46899e;
-    border: 1px solid #71deff;
-    color: #ffffff;
+  background-color: #46899e;
+  border: 1px solid #71deff;
+  color: #ffffff;
 }
 
 .purchase-dialog-confirm:hover:not(:disabled) {
-    background-color: #5a9fb5;
-    border-color: #8be0f9;
+  background-color: #5a9fb5;
+  border-color: #8be0f9;
 }
 
 .purchase-dialog-confirm:disabled {
-    background-color: #2a2a2a;
-    border-color: #555;
-    color: #666;
-    cursor: not-allowed;
-    opacity: 0.5;
+  background-color: #2a2a2a;
+  border-color: #555;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .purchase-dialog-cancel img,
 .purchase-dialog-confirm img {
-    width: 16px;
-    height: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .purchase-loading {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #71deff;
-    font-family: 'Kim';
-    justify-content: center;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #71deff;
+  font-family: "Kim";
+  justify-content: center;
+  width: 100%;
 }
 
 .purchase-loading .spinner {
-    width: 20px;
-    height: 20px;
+  width: 20px;
+  height: 20px;
 }

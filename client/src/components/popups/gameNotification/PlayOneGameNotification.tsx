@@ -1,14 +1,14 @@
-import { h, Component } from 'preact';
-import goldChestImage from '@assets/shop/gold_chest.png';
+import { h, Component } from "preact";
+import goldChestImage from "@assets/shop/gold_chest.png";
 import { ChestReward } from "@legion/shared/interfaces";
 import { RewardType } from "@legion/shared/enums";
-import { mapFrameToCoordinates } from '../../utils';
-import { getRewardBgImage, getRewardObject } from '../../utils';
-import './PlayOneGameNotification.style.css';
+import { mapFrameToCoordinates } from "../../utils";
+import { getRewardBgImage, getRewardObject } from "../../utils";
+import "./PlayOneGameNotification.style.css";
 
-if (process.env.NODE_ENV === 'development') {
-  window.addEventListener('error', (e) => {
-    if (e.message.includes('ResizeObserver')) {
+if (process.env.NODE_ENV === "development") {
+  window.addEventListener("error", (e) => {
+    if (e.message.includes("ResizeObserver")) {
       e.stopImmediatePropagation();
     }
   });
@@ -31,11 +31,14 @@ export class PlayOneGameNotification extends Component<Props> {
       const backgroundImageUrl = getRewardBgImage(reward.type);
       return (
         <div key={idx} className="unlocked-feature-reward-item">
-          <div className="unlocked-feature-reward-icon" style={{
-            backgroundImage: `url(${backgroundImageUrl})`,
-            backgroundPosition: reward.type === RewardType.GOLD ? '' : `-${coordinates.x}px -${coordinates.y}px`,
-            backgroundSize: reward.type === RewardType.GOLD ? '84% 100%' : 'initial',
-          }}/>
+          <div
+            className="unlocked-feature-reward-icon"
+            style={{
+              backgroundImage: `url(${backgroundImageUrl})`,
+              backgroundPosition: reward.type === RewardType.GOLD ? "" : `-${coordinates.x}px -${coordinates.y}px`,
+              backgroundSize: reward.type === RewardType.GOLD ? "84% 100%" : "initial",
+            }}
+          />
           <span className="unlocked-feature-reward-amount">{reward.amount}</span>
         </div>
       );
@@ -46,32 +49,18 @@ export class PlayOneGameNotification extends Component<Props> {
     const { header, text, rewards, onHide } = this.props;
     return (
       <div className="game-notification">
-        <button 
-          className="game-notification-close" 
-          onClick={onHide}
-          aria-label="Close notification"
-        >
+        <button className="game-notification-close" onClick={onHide} aria-label="Close notification">
           ×
         </button>
         <div className="game-notification-content">
-          <img 
-            src={goldChestImage} 
-            alt="Gold chest" 
-            className="game-notification-icon"
-          />
+          <img src={goldChestImage} alt="Gold chest" className="game-notification-icon" />
           <div className="game-notification-text-container">
             <h3 className="game-notification-header">{header}</h3>
-            <p className="game-notification-text"
-               dangerouslySetInnerHTML={{ __html: text }}
-            />
-            {rewards && (
-              <div className="expected-rewards-container">
-                {this.renderRewards()}
-              </div>
-            )}
+            <p className="game-notification-text" dangerouslySetInnerHTML={{ __html: text }} />
+            {rewards && <div className="expected-rewards-container">{this.renderRewards()}</div>}
           </div>
         </div>
       </div>
     );
   }
-} 
+}

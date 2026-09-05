@@ -14,7 +14,7 @@ export async function getTokenWithRetry(
       return await user.getIdToken(forceRefresh);
     } catch (error) {
       lastError = error;
-      if (attempt < maxAttempts - 1) await new Promise(resolve => setTimeout(resolve, delay));
+      if (attempt < maxAttempts - 1) await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
   throw lastError;
