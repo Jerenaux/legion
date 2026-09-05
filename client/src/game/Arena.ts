@@ -51,8 +51,6 @@ import thudSFX from '@assets/sfx/thud.wav';
 import speechBubble from '@assets/speech_bubble.png';
 import speechTail from '@assets/speech_tail.png';
 
-import arenaBg from '@assets/arenabg.png';
-
 import groundTilesImage from '@assets/tiles2.png';
 import groundTilesAtlas from '@assets/tiles2.json';
 import { errorToast, recordLoadingStep, silentErrorToast } from '../components/utils';
@@ -295,7 +293,6 @@ export class Arena extends Phaser.Scene
         });
         this.connectToServer();
 
-        this.load.image('arenaBg', arenaBg);
         this.load.image('hexTile', hexTileImage);
     }
 
@@ -1494,38 +1491,6 @@ export class Arena extends Phaser.Scene
     
     create()
     {
-        // Add the background image first so it's behind everything else
-        const bg = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'arenaBg')
-            .setDepth(0)
-            .setOrigin(0.5, 0.5);
-        
-        // Apply a basic scale to cover the screen initially
-        const baseScaleX = this.cameras.main.width / bg.width;
-        const baseScaleY = this.cameras.main.height / bg.height;
-        const baseScale = Math.max(baseScaleX, baseScaleY);
-        bg.setScale(baseScale);
-        
-        // Handle window resizing
-        this.scale.on('resize', (gameSize) => {
-            const newScaleX = gameSize.width / bg.width;
-            const newScaleY = gameSize.height / bg.height;
-            const newScale = Math.max(newScaleX, newScaleY);
-            
-            bg.setScale(newScale);
-            bg.setPosition(gameSize.width / 2, gameSize.height / 2);
-        });
-        
-        // Follow camera movement - keep background centered on screen
-        this.cameras.main.on('camerascroll', () => {
-            if (!bg) return;
-            
-            // Keep background centered on the camera's view
-            const centerX = this.cameras.main.scrollX + this.cameras.main.width / 2;
-            const centerY = this.cameras.main.scrollY + this.cameras.main.height / 2;
-            
-            bg.setPosition(centerX, centerY);
-        });
-        
         window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         this.loadBackgroundMusic();
         this.setUpArena();
