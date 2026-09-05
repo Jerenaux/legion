@@ -235,7 +235,6 @@ export const addNews = onRequest({
       console.log(`[addNews] Processing news upload...`);
 
       // Handle multipart form data
-      // eslint-disable-next-line new-cap
       const busboy = Busboy({ headers: request.headers });
       const fields: any = {};
       let imageBuffer: Buffer | null = null;
@@ -348,7 +347,6 @@ export const updateNewsThumbnail = onRequest({
 
       console.log(`[updateNewsThumbnail] Processing thumbnail update for news ${newsId}...`);
 
-      // eslint-disable-next-line new-cap
       const busboy = Busboy({ headers: request.headers });
       let imageBuffer: Buffer | null = null;
       let imageType: string | null = null;
