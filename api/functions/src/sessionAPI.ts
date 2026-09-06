@@ -60,7 +60,7 @@ async function ensureAuthUser(uid: string): Promise<void> {
   try {
     await admin.auth().getUser(uid);
   } catch (error) {
-    if ((error as any)?.code !== "auth/user-not-found") throw error;
+    if (!error || typeof error !== "object" || !("code" in error) || error.code !== "auth/user-not-found") throw error;
     await admin.auth().createUser({uid});
   }
 }

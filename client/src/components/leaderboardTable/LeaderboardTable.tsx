@@ -1,7 +1,8 @@
-import { ChestColor, League } from "@legion/shared/enums";
+import { h } from 'preact';
+import { ChestColor, } from "@legion/shared/enums";
 import { LeaderboardRow} from "@legion/shared/interfaces";
 import './LeaderboardTable.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { loadAvatar } from '../utils';
 import Skeleton from 'react-loading-skeleton';
 import { route } from 'preact-router';
@@ -69,36 +70,36 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
     }
 
     handleSort(column: string, index: number) {
-        if (index != 0 && (index < 2 || index > 5)) return;
+        if (index !== 0 && (index < 2 || index > 5)) return;
 
         const sortedData = [...this.state.tableData].sort((a, b) => {
             // Handle cases where the column value might be undefined or null
             const aValue = a[column];
             const bValue = b[column];
-            
+
             // If either value is undefined/null, sort it to the end
             if (!aValue && aValue !== 0) return 1;
             if (!bValue && bValue !== 0) return -1;
-            
+
             if (typeof aValue === 'string' && typeof bValue === 'string') {
                 // Handle percentage strings or other number-containing strings
                 const aMatch = aValue.match(/\d+(\.\d+)?/);
                 const bMatch = bValue.match(/\d+(\.\d+)?/);
-                
+
                 if (aMatch && bMatch) {
                     const aTemp = parseFloat(aMatch[0]);
                     const bTemp = parseFloat(bMatch[0]);
                     return this.state.isAscending[index] ? aTemp - bTemp : bTemp - aTemp;
                 }
                 // If not number strings, do regular string comparison
-                return this.state.isAscending[index] 
-                    ? aValue.localeCompare(bValue) 
+                return this.state.isAscending[index]
+                    ? aValue.localeCompare(bValue)
                     : bValue.localeCompare(aValue);
             }
-            
+
             // Handle numeric values
-            return this.state.isAscending[index] 
-                ? Number(aValue) - Number(bValue) 
+            return this.state.isAscending[index]
+                ? Number(aValue) - Number(bValue)
                 : Number(bValue) - Number(aValue);
         });
 
@@ -132,7 +133,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
     };
 
     getUpgradeImage = (isPromoted: boolean, isDemoted: boolean): string => {
-        if (this.state.league == 5) {
+        if (this.state.league === 5) {
             return '';
         }
 
@@ -149,7 +150,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
         const { rankRowNumberStyle, camelCaseToNormal } = this.props;
         const columns = ['rank', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
 
-        const rankRowAvatar = (index: number) => { 
+        const rankRowAvatar = (index: number) => {
             return {
                 backgroundImage: `url(${loadAvatar(this.state.tableData[index].avatar)})`
             }
@@ -159,7 +160,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
             return {
                 transform: `rotate(${this.state.isAscending[index] ? '180' : '0'}deg)`
             }
-        } 
+        }
 
         return (
             <div className="rank-table-container">
@@ -178,8 +179,8 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                     </thead>
                     <tbody>
                         {this.props.data ? this.state.tableData.map((item: LeaderboardRow, index: number) => (
-                            <tr 
-                                key={index} 
+                            <tr
+                                key={index}
                                 className={`${item.player === 'Me' ? 'highlighted-row' : ''} clickable-row`}
                                 style={this.getRowBG(item, index)}
                                 onMouseEnter={() => this.handleRowHover(index)}
@@ -189,8 +190,8 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                                 <td className="rank-row">
                                     <div className="rank-row-number" style={rankRowNumberStyle(item.rank)}>{item.rank}</div>
                                     <div className="rank-row-avatar" style={rankRowAvatar(index)}></div>
-                                    <div 
-                                        className="rank-row-upgrade" 
+                                    <div
+                                        className="rank-row-upgrade"
                                         style={{ backgroundImage: this.getUpgradeImage(item.isPromoted, item.isDemoted) }}
                                     ></div>
                                 </td>
@@ -200,7 +201,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                                 <td>{item.losses}</td>
                                 <td className="rank-row-winRatio">{item.winsRatio}</td>
                                 <td className="rank-row-reward">
-                                    {item.chestColor && rewardImage[item.chestColor] && 
+                                    {item.chestColor && rewardImage[item.chestColor] &&
                                         <img src={rewardImage[item.chestColor]} alt={`${ChestColor[item.chestColor]} chest`} />
                                     }
                                 </td>

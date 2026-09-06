@@ -1,5 +1,5 @@
 .season-card-container {
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
 }
 
 .season-card-header {
@@ -13,9 +13,9 @@
     position: relative;
 }
 
-.season-card-header .categoryBtn { 
-    position: absolute; 
-    top: 4px; 
+.season-card-header .categoryBtn {
+    position: absolute;
+    top: 4px;
     right: 4px;
 }
 
@@ -24,7 +24,7 @@
     position: absolute;
     top: calc(50% - 20px);
     left: 12px;
-    height: 54px; 
+    height: 54px;
     width: 54px;
 }
 
@@ -164,7 +164,7 @@
     font-size: 12px;
 }
 
-.season-timer-icon { 
+.season-timer-icon {
     margin-top: 4px;
     width: 16px;
     height: 16px;

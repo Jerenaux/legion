@@ -1,10 +1,11 @@
+
+import { h } from 'preact';
 // ShopSpellCard.tsx
 import './ShopSpellCard.style.css'
-import { h, Component, createRef } from 'preact';
-import { Class, InventoryType, RarityColor, Target } from "@legion/shared/enums";
+import { Component, createRef } from 'preact';
+import { Class, InventoryType, Target } from "@legion/shared/enums";
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { getSpeedClass, mapFrameToCoordinates } from '../utils';
-import { Tooltip as ReactTooltip } from "react-tooltip";
 
 // Import image assets
 import spellsSpritesheet from '@assets/spells.png';
@@ -30,7 +31,7 @@ interface ShopCardProps {
   key: number;
   data: BaseSpell;
   getItemAmount: (index: number, type: InventoryType) => number;
-  handleOpenModal: (e: any, modalData: modalData) => void;
+  handleOpenModal: (e: Event, modalData: modalData) => void;
   isHighlighted?: boolean;
 }
 
@@ -39,8 +40,8 @@ class ShopSpellCard extends Component<ShopCardProps> {
 
   componentDidMount() {
     if (this.props.isHighlighted && this.cardRef.current) {
-      this.cardRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
+      this.cardRef.current.scrollIntoView({
+        behavior: 'smooth',
         block: 'center'
       });
     }
@@ -48,8 +49,8 @@ class ShopSpellCard extends Component<ShopCardProps> {
 
   componentDidUpdate(prevProps: ShopCardProps) {
     if (!prevProps.isHighlighted && this.props.isHighlighted && this.cardRef.current) {
-      this.cardRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
+      this.cardRef.current.scrollIntoView({
+        behavior: 'smooth',
         block: 'center'
       });
     }
@@ -68,7 +69,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
       }
     }
 
-    const { data } = this.props; 
+    const { data } = this.props;
 
     const classStyle = (classes: Class) => {
       return {
@@ -91,10 +92,10 @@ class ShopSpellCard extends Component<ShopCardProps> {
     const coordinates = mapFrameToCoordinates(data.frame);
 
     return (
-      <div 
+      <button type="button" data-game-control
         ref={this.cardRef}
-        className={`spell-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`} 
-        key={this.props.key} 
+        className={`spell-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`}
+        key={this.props.key}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
       >
         <div className="spell-card-title" style={titleStyle}>
@@ -111,7 +112,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="spell-card-content">
-          <div className="shop-portrait" style={{ 
+          <div className="shop-portrait" style={{
                 backgroundImage: `url(${spellsSpritesheet})`,
                 backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
             }} />
@@ -147,7 +148,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
           <img src={goldIcon} alt="gold" />
           {data.price}
         </div>
-      </div>
+      </button>
     );
   }
 }

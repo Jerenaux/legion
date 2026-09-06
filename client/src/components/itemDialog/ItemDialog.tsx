@@ -1,7 +1,9 @@
+
+import { h } from 'preact';
 // ItemDialog.tsx
 import './ItemDialog.style.css';
 import Modal from 'react-modal';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -16,7 +18,6 @@ import {
   canLearnSpell,
   canEquipEquipment,
   roomInInventory,
-  hasMinLevel,
   hasRequiredClass,
   canIncreaseStat
 } from '@legion/shared/inventory';
@@ -40,7 +41,7 @@ interface DialogProps {
   index?: number;
   isEquipped?: boolean;
   actionType: InventoryActionType;
-  dialogType: ItemDialogType; 
+  dialogType: ItemDialogType;
   dialogOpen: boolean;
   dialogData: BaseItem | BaseSpell | BaseEquipment | SPSPendingData | null;
   position: {
@@ -48,13 +49,13 @@ interface DialogProps {
     left: number
   };
   handleClose: () => void;
-  handleSelectedEquipmentSlot: (newValue: number) => void; 
+  handleSelectedEquipmentSlot: (newValue: number) => void;
   updateCharacterData?: () => void;
 }
 
 interface DialogState {
-  dialogSpellModalShow: boolean; 
-  dialogSPModalShow: boolean; 
+  dialogSpellModalShow: boolean;
+  dialogSPModalShow: boolean;
   dialogValue: number;
   inventory: {
     consumables: number[];
@@ -68,7 +69,7 @@ interface DialogState {
 }
 
 class ItemDialog extends Component<DialogProps, DialogState> {
-  static contextType = PlayerContext; 
+  static contextType = PlayerContext;
 
   constructor(props: DialogProps) {
     super(props);
@@ -131,7 +132,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   handleClose = () => {
-    this.setState({ 
+    this.setState({
       dialogSPModalShow: false,
       dialogValue: 1  // Reset dialogValue when closing
     });
@@ -145,7 +146,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       index,
       characterId: this.context.getActiveCharacter().id,
       inventoryType: type,
-      action: actionType === InventoryActionType.EQUIP && this.state.sellModalShow ? 
+      action: actionType === InventoryActionType.EQUIP && this.state.sellModalShow ?
         InventoryActionType.SELL : actionType
     };
 
@@ -169,7 +170,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       .catch(error => console.error(`Error: ${error}`));
   }
 
-  spendSP = async (stat: Stat, amount: number) => {  
+  spendSP = async (stat: Stat, amount: number) => {
     const payload = {
       stat,
       amount,
@@ -193,14 +194,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       .catch(error => errorToast(`Error: ${error}`));
   }
 
-  getSpritePosition(frame: number) {
-    const coordinates = mapFrameToCoordinates(frame);
-    return `${-coordinates.x + 5}px ${-coordinates.y + 5}px`;
-  }
-
   renderDialogButtons(acceptAction: () => void, isDisabled: boolean = false) {
     const { actionType, dialogType } = this.props;
-    let acceptLabel = actionType == InventoryActionType.UNEQUIP ? 'Remove' : 'Equip';
+    let acceptLabel = actionType === InventoryActionType.UNEQUIP ? 'Remove' : 'Equip';
     if (this.props.dialogType === ItemDialogType.SPELLS) {
       acceptLabel = 'Learn';
     } else if (this.props.dialogType === ItemDialogType.SP) {
@@ -212,7 +208,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     return (
       <div className="dialog-button-container">
-        <button
+        <button type="button"
           className="dialog-accept"
           disabled={isDisabled}
           onClick={acceptAction}
@@ -222,7 +218,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           {acceptLabel}
         </button>
         {showSellButton && (
-          <button 
+          <button type="button"
             className="dialog-sell"
             onClick={() => this.setState({ sellModalShow: true })}
           >
@@ -230,7 +226,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             Sell
           </button>
         )}
-        <button className="dialog-decline" onClick={this.handleClose}>
+        <button type="button" className="dialog-decline" onClick={this.handleClose}>
           <img src={cancelIcon} alt="decline" />
           Cancel
         </button>
@@ -241,10 +237,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   renderEquipmentDialog(dialogData: BaseEquipment) {
     if (!dialogData) return null;
     const { index } = this.props;
-    const backgroundPosition = this.getSpritePosition(dialogData.frame);
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
     if (!activeCharacter) return null;
-    const isDisabled = this.props.actionType == InventoryActionType.EQUIP && !canEquipEquipment(activeCharacter, dialogData.id);
+    const isDisabled = this.props.actionType === InventoryActionType.EQUIP && !canEquipEquipment(activeCharacter, dialogData.id);
 
     return (
       <div className="equip-dialog-container">
@@ -271,10 +266,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   renderConsumableDialog(dialogData: BaseItem) {
     const { index } = this.props;
-    const backgroundPosition = this.getSpritePosition(dialogData.frame);
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
 
-    const actionAllowed = 
+    const actionAllowed =
       this.props.actionType === InventoryActionType.EQUIP ?
       canEquipConsumable(activeCharacter) :
       roomInInventory(this.context.player);
@@ -283,7 +277,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       <div className="dialog-item-container">
         <div className="dialog-item-heading-bg"></div>
         <div className="dialog-item-heading">
-        <div className="dialog-item-heading-image" style={{ 
+        <div className="dialog-item-heading-image" style={{
             backgroundImage: `url(${this.state.croppedImages[ItemDialogType.CONSUMABLES] || ''})`,
             backgroundSize: 'cover',
           }} />
@@ -307,8 +301,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           {dialogData.effects.map(effect => (
             <div className="dialog-item-info">
               <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[Stat[effect.stat]] }}><span>{Stat[effect.stat]}</span></div>
-              <span style={{ color: effect.value > 0 || effect.value == -1 ? '#9ed94c' : '#c95a74' }}>
-                {effect.value > 0 ? `+${effect.value}` : (effect.value == -1 ? '∞' : effect.value)}
+              <span style={{ color: effect.value > 0 || effect.value === -1 ? '#9ed94c' : '#c95a74' }}>
+                {effect.value > 0 ? `+${effect.value}` : (effect.value === -1 ? '∞' : effect.value)}
               </span>
             </div>
           ))}
@@ -323,14 +317,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   renderSpellDialog(dialogData: BaseSpell) {
     const { index, isEquipped } = this.props;
-    const backgroundPosition = this.getSpritePosition(dialogData.frame);
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
     const isDisabled = !canLearnSpell(activeCharacter, dialogData.id);
 
     return (
       <div className="dialog-spell-container">
         <div className="spell-wrapper">
-        <div className="dialog-spell-container-image" style={{ 
+        <div className="dialog-spell-container-image" style={{
             backgroundImage: `url(${this.state.croppedImages[ItemDialogType.SPELLS] || ''})`,
             backgroundSize: 'cover',
           }} />
@@ -399,9 +392,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           </div>
         </div>
         <div className="character-info-dialog-control">
-          <div className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))}>-</div>
+          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))}>-</button>
           <div className="character-info-dialog-control-val">{dialogValue}</div>
-          <div className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, prevState.dialogValue + 1) }))}>+</div>
+          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, prevState.dialogValue + 1) }))}>+</button>
         </div>
         {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }))}
         {this.renderSPConfirmationModal(dialogData)}
@@ -426,7 +419,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   renderSellConfirmationModal() {
     const { dialogType, index, dialogData } = this.props;
     if (!dialogData || !('id' in dialogData)) return null;
-    
+
     const sellPrice = getSellPrice(dialogData.id, dialogType);
     return (
       <div style={{ display: this.state.sellModalShow ? 'block' : 'none' }} className="dialog-spell-modal">
@@ -434,7 +427,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           Are you sure you want to sell this item for {sellPrice} gold?
         </div>
         <div className="dialog-button-container">
-          <button
+          <button type="button"
             className="dialog-accept"
             onClick={() => {
               this.AcceptAction(dialogType, index);
@@ -444,8 +437,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             <img src={confirmIcon} alt="confirm" />
             Confirm
           </button>
-          <button 
-            className="dialog-decline" 
+          <button type="button"
+            className="dialog-decline"
             onClick={() => this.setState({ sellModalShow: false })}
           >
             <img src={cancelIcon} alt="decline" />

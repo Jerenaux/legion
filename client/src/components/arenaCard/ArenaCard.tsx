@@ -1,7 +1,7 @@
+import { h } from 'preact';
 // ArenaCard.tsx
 import './ArenaCard.style.css'
-import { h, Component } from 'preact';
-import { route } from 'preact-router';
+import { Component } from 'preact';
 import vsActive from '@assets/vs_bg_active.png';
 import vsIdle from '@assets/vs_bg_idle.png';
 
@@ -35,7 +35,7 @@ class ArenaCard extends Component<CardProps> {
       this.setState({time: this.state.time + 1});
     }, 1000);
   }
-  
+
   componentWillUnmount(): void {
     if(this.timer) {
       clearInterval(this.timer);
@@ -56,6 +56,7 @@ class ArenaCard extends Component<CardProps> {
     };
 
     return (
+      // biome-ignore lint/a11y/noStaticElementInteractions: Pointer hover only changes this card's decorative background.
       <div className="arenaCard" style={bgStyle} onMouseEnter={() => this.setState({active: true})} onMouseLeave={() => this.setState({active: false})}>
         <div className="team_a_members">
           <span><span>{data.teamA.aliveCharacters}</span>/{data.teamA.teamSize}</span>

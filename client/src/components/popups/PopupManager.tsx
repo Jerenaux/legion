@@ -1,9 +1,10 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import Welcome from './welcome/Welcome';
 import { PlayOneGameNotification } from './gameNotification/PlayOneGameNotification';
 import { UnlockedFeature } from './unlockedFeature/UnlockedFeature';
 import { ChestReward } from "@legion/shared/interfaces";
-import { InventoryType, LockedFeatures, ShopTab } from "@legion/shared/enums";
+import { InventoryType, LockedFeatures, } from "@legion/shared/enums";
 import { SimplePopup } from './simplePopup/SimplePopup';
 import { UNLOCK_REWARDS } from '@legion/shared/config';
 import { PlayerContext } from '../../contexts/PlayerContext';
@@ -69,11 +70,12 @@ interface FeatureRevealConfig {
 }
 
 interface PopupConfig {
+  // biome-ignore lint/suspicious/noExplicitAny: Popup components deliberately have heterogeneous prop contracts enforced by each registry entry.
   component: any;
   priority: number;
   highlightSelectors?: string[];  // CSS selectors for elements to highlight
-  props?: UnlockedFeatureConfig | SimplePopupConfig | FeatureRevealConfig;  
-  ignoreStorage?: boolean;  
+  props?: UnlockedFeatureConfig | SimplePopupConfig | FeatureRevealConfig;
+  ignoreStorage?: boolean;
 }
 
 const STORAGE_KEY = 'displayed_popups';
@@ -311,7 +313,7 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
       '[data-playmode="practice"]',
       '[data-playmode="casual"]'
     ],
-  },  
+  },
   [Popup.PlayToUnlockRanked]: {
     component: PlayOneGameNotification,
     priority: 21,
@@ -477,7 +479,7 @@ export class PopupManager extends Component<Props, State> {
     queuedPopups: new Set()
   };
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
+  componentDidUpdate(_prevProps: Props, _prevState: State) {
     // Always remove all highlights first
     document.querySelectorAll('.popup-highlight').forEach(element => {
       element.classList.remove('popup-highlight');
@@ -518,13 +520,13 @@ export class PopupManager extends Component<Props, State> {
         }
         if (selector === '[data-item-learnable]') {
           const spellId = this.context.getSpellsThatCurrentCharacterCanEquip();
-          if (spellId != undefined) {
+          if (spellId !== undefined) {
             selector = `[data-item-icon="spells-${spellId}"]`;
           }
         }
         if (selector === '[data-item-equipable]') {
           const equipmentId = this.context.getEquipmentThatCurrentCharacterCanEquip();
-          if (equipmentId != undefined) {
+          if (equipmentId !== undefined) {
             selector = `[data-item-icon="equipment-${equipmentId}"]`;
           }
         }
@@ -617,7 +619,7 @@ export class PopupManager extends Component<Props, State> {
       element.classList.remove('popup-highlight');
     });
     // Clear both active popup and queue
-    this.setState({ 
+    this.setState({
       activePopup: null,
       queuedPopups: new Set()
     });
@@ -629,11 +631,11 @@ export class PopupManager extends Component<Props, State> {
 
     const config = POPUP_CONFIGS[activePopup];
     const PopupComponent = config.component;
-    return <PopupComponent 
+    return <PopupComponent
       onHide={this.handlePopupClosed}
-      {...config.props}  
+      {...config.props}
     />;
   }
 }
 
-export default PopupManager; 
+export default PopupManager;

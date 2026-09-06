@@ -1,4 +1,6 @@
-import { h, Fragment, Component } from 'preact';
+import { Fragment } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import { route } from 'preact-router';
 import { InventoryType } from "@legion/shared/enums";
 import { mapFrameToCoordinates, cropFrame } from '../../utils';
@@ -67,9 +69,9 @@ export class FeatureReveal extends Component<Props, State> {
           <h2 className="feature-reveal-header">
             {title}
           </h2>
-          
+
           <div className="feature-reveal-icon">
-            <div 
+            <div
                 className="feature-icon"
                 style={{
                     backgroundImage: `url(${croppedImageUrl})`,
@@ -82,22 +84,22 @@ export class FeatureReveal extends Component<Props, State> {
           <div className="feature-reveal-buttons">
             {route ? (
               <>
-                <button 
-                  className="feature-reveal-button primary" 
+                <button type="button"
+                  className="feature-reveal-button primary"
                   onClick={this.handleCheckout}
                 >
                   Check it out
                 </button>
-                <button 
-                  className="feature-reveal-button secondary" 
+                <button type="button"
+                  className="feature-reveal-button secondary"
                   onClick={this.props.onHide}
                 >
                   Dismiss
                 </button>
               </>
             ) : (
-              <button 
-                className="feature-reveal-button primary" 
+              <button type="button"
+                className="feature-reveal-button primary"
                 onClick={this.props.onHide}
               >
                 Continue
@@ -108,4 +110,4 @@ export class FeatureReveal extends Component<Props, State> {
       </div>
     );
   }
-} 
+}

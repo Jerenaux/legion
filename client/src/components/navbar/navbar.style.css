@@ -79,7 +79,7 @@
   justify-content: center;
   padding: 0 8px;
   padding-right: 24px;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
 }
 
 .userInfo span {
@@ -134,7 +134,6 @@
   position: absolute;
   top: 36px;
   right: 4px;
-  background-color: #f9f9f9;
   border-radius: 6px;
   border: 1px solid #49d7d8;
   background-color: #253644;
@@ -223,7 +222,7 @@ login-buttons {
   text-align: center;
   transition: all 0.3s ease;
   /* Smooth hover and active transition */
-  font-family: Kim;
+  font-family: Kim, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   background-color: #ffcc00;
   /* Golden color */

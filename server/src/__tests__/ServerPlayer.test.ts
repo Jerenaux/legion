@@ -1,7 +1,8 @@
 import { ServerPlayer } from '../ServerPlayer';
 import { Team } from '../Team';
-import { Class, Stat, StatusEffect, Terrain } from '@legion/shared/enums';
+import { Stat, StatusEffect, } from '@legion/shared/enums';
 import { MOVEMENT_RANGE } from '@legion/shared/config';
+import { Game } from '../Game';
 
 describe('ServerPlayer', () => {
   let player: ServerPlayer;
@@ -43,7 +44,7 @@ describe('ServerPlayer', () => {
   });
 
   describe('HP management', () => {
-    let mockGame: any;
+    let mockGame: Game;
     let mockTeam: Team;
 
     beforeEach(() => {
@@ -54,10 +55,10 @@ describe('ServerPlayer', () => {
         checkFirstBlood: jest.fn(),
         handleTeamKill: jest.fn(),
         processDeath: jest.fn(),
-      };
+      } as unknown as Game;
       mockTeam = new Team(1, mockGame);
       player.setTeam(mockTeam);
-      
+
       player.hp = 100;
       player._hp = 100;
       player.stats = {
@@ -89,7 +90,7 @@ describe('ServerPlayer', () => {
 
     it('should calculate HP ratio correctly', () => {
       expect(player.getHPratio()).toBeCloseTo(100 / 150, 2);
-      
+
       player.hp = 75;
       expect(player.getHPratio()).toBeCloseTo(0.5, 2);
     });
@@ -296,18 +297,18 @@ describe('ServerPlayer', () => {
 
   describe('team assignment', () => {
     it('should set team correctly', () => {
-      const mockGame = {} as any;
+      const mockGame = {} as unknown as Game;
       const team = new Team(1, mockGame);
-      
+
       player.setTeam(team);
       expect(player.team).toBe(team);
     });
 
     it('should access team directly', () => {
-      const mockGame = {} as any;
+      const mockGame = {} as unknown as Game;
       const team = new Team(1, mockGame);
       player.setTeam(team);
-      
+
       expect(player.team).toBe(team);
     });
   });

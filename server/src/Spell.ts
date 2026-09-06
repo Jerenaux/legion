@@ -1,6 +1,6 @@
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
-import { Stat, Target, EffectDirection, StatusEffect } from "@legion/shared/enums";
+import { Stat, Target, EffectDirection, } from "@legion/shared/enums";
 import { EffectModifiers, EffectModifier, Effect } from "@legion/shared/interfaces";
 
 import { BaseSpell } from "@legion/shared/BaseSpell";
@@ -10,7 +10,7 @@ export function convertBaseToSpell(base: BaseSpell): Spell {
 }
 
 export class Spell extends BaseSpell {
-    
+
     getTargets(game: Game, x: number, y: number): ServerPlayer[] {
         // console.log(`Looking for targets at ${x}, ${y} for spell ${this.name}, target type ${Target[this.target]}`);
         if (this.target === Target.SINGLE) {
@@ -47,19 +47,19 @@ export class Spell extends BaseSpell {
         const statValue = player.getStat(modifier.stat);
         const sign = modifier.direction === EffectDirection.PLUS ? 1 : -1;
         const random = (Math.random() - 0.5)/10;
-        
+
         // Store the original sign of the value
         const originalSign = Math.sign(value);
-        
+
         // Calculate the modified value
         let modifiedValue = value * (1 + (statValue * modifier.value * sign)) * (1 + random);
-        
+
         // Ensure the sign of the value doesn't change (damage stays damage, healing stays healing)
         // If sign flipped, set to a minimum effect value (e.g., 1)
         if (Math.sign(modifiedValue) !== originalSign) {
             modifiedValue = originalSign * 1; // Minimum effect of 1 in the original direction
         }
-        
+
         return modifiedValue;
     }
 

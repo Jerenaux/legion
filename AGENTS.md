@@ -15,3 +15,9 @@ Use Semantic Versioning:
 Make the bump after syncing the latest `main`, so concurrent branches do not reuse a version. If `main` already contains the intended next version, increment again. Never create a Git tag as part of an ordinary version bump.
 
 Release tags must be `v<version>`, for example `v0.2.0`, and must exactly match `client/package.json`. The desktop workflow rejects mismatched tags and publishes the package version to every Itch channel.
+
+## Static analysis
+
+Run `bun run lint` from the repository root for functional Biome diagnostics. The command deliberately skips the `style` and `complexity` rule groups and does not run the formatter. Do not replace it with `biome check`, which also checks formatting.
+
+Biome complements rather than replaces TypeScript. Run `bunx tsc --noEmit` in `client`, `server`, `matchmaker`, and `api/functions` when validating types.

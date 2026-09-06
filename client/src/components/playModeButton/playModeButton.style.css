@@ -72,7 +72,7 @@
     font-weight: 700;
     color: #FFFFFF;
     text-transform: uppercase;
-    font-family: "Kim";
+    font-family: "Kim", sans-serif;
     margin-bottom: 16px;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     letter-spacing: 2px;

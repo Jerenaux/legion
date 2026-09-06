@@ -1,4 +1,4 @@
-import Shepherd from 'shepherd.js';
+import Shepherd, { Tour } from 'shepherd.js';
 import { apiFetch } from '../services/apiService';
 
 let tourLock = false;
@@ -6,7 +6,7 @@ export function startTour(page) {
     // console.log(`Starting tour for ${page}`);
     if (tourLock) return;
     tourLock = true;
-    let tour;
+    let tour: Tour;
     switch (page) {
         case 'rank':
             tour = startRankTour();
@@ -245,6 +245,6 @@ function startRankTour() {
         },
         true)
     );
-    
+
     return tour;
 }

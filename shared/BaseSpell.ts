@@ -27,7 +27,7 @@ export class BaseSpell {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: SpellShopCategory;
-    
+
     constructor(props: SpellData) {
         Object.assign(this, props);
         this.price = getPrice(props.effort);
@@ -35,19 +35,19 @@ export class BaseSpell {
 
         this.cost = 2;
         // this.castTime = 1;
-        if (props.target == Target.AOE) {
+        if (props.target === Target.AOE) {
             this.cost *= Math.round(props.radius * 5);
             // this.castTime *= Math.round(props.radius);
         }
-        if (props.terrain == Terrain.FIRE) {
+        if (props.terrain === Terrain.FIRE) {
             this.cost = Math.round(this.cost * 1);
             // this.castTime = Math.round(this.castTime * 1.2);
         }
-        if (props.terrain == Terrain.ICE) {
+        if (props.terrain === Terrain.ICE) {
             this.cost = Math.round(this.cost * 3);
             // this.castTime = Math.round(this.castTime * 3);
         }
-    
+
         if (props.status) {
             this.cost = Math.round(this.cost * 2);
             // this.castTime = Math.round(this.castTime * 2);

@@ -36,7 +36,7 @@
   transform: translate(-50%, -50%);
   font-size: 36px;
   color: white;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
 }
 
 @keyframes spin {
@@ -65,7 +65,7 @@
 .orientation-overlay__text {
   font-size: 1.5em;
   margin-top: 20px;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
 }
 
 .waiting-container {
@@ -76,7 +76,7 @@
 }
 
 .waiting-div {
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
   font-size: 24px;
   margin-bottom: 20px;
 }
@@ -99,7 +99,7 @@
 #scene {
   background: #242529 url('@assets/arenabg.png') center / cover no-repeat;
   margin: 0;
-  padding: 0; 
+  padding: 0;
   height: 100vh;
   width: 100vw;
   overflow: hidden;

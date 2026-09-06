@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import cdIcon from '@assets/inventory/cd_icon.png';
 
 interface CircularTimerProps {
@@ -71,6 +72,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
     return (
       <div class="circular_timer">
         <svg width={size} height={size}>
+          <title>Turn time remaining</title>
           <circle
             class="circular_timer_bg"
             cx={size / 2}
@@ -95,4 +97,4 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
       </div>
     );
   }
-} 
+}

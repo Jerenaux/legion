@@ -1,4 +1,5 @@
 import { h } from 'preact';
+
 import './Spinner.style.css';
 
 const Spinner = () => (
@@ -7,4 +8,4 @@ const Spinner = () => (
   </div>
 );
 
-export default Spinner; 
+export default Spinner;

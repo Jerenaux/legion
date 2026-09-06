@@ -1,4 +1,6 @@
-import { h, Component } from 'preact';
+
+import { h } from 'preact';
+import { Component } from 'preact';
 import { route, getCurrentUrl } from 'preact-router';
 
 import { ClassLabels } from '@legion/shared/enums';
@@ -11,7 +13,7 @@ interface CountUpProps {
     member: TeamMember | PlayerNetworkData | APICharacterData;
     // Endgame props
     update?: CharacterUpdate;
-    isWinner?: boolean;        
+    isWinner?: boolean;
     // Team reveal props
     hideXP?: boolean;
     isQuestionMark?: boolean;
@@ -34,18 +36,18 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
         totalXP: (this.props.update?.earnedXP || 0) + this.props.member.xp,
     }
 
-    componentDidMount(): void { 
+    componentDidMount(): void {
         if (!this.props.hideXP && !this.props.isQuestionMark) {
             const baseInterval = Math.max(0.1, this.state.totalXP / 500);
             this.timer = setInterval(() => {
-                const maxXP = getXPThreshold(this.props.member.level); 
+                const maxXP = getXPThreshold(this.props.member.level);
 
                 if (this.state.totalXP > maxXP && this.state.xpCounter >= maxXP) {
-                    this.setState(prevState => ({ 
-                        isLevelUp: prevState.isLevelUp + 1, 
-                        xpCounter: 0, 
-                        totalXP: prevState.totalXP - maxXP 
-                    })); 
+                    this.setState(prevState => ({
+                        isLevelUp: prevState.isLevelUp + 1,
+                        xpCounter: 0,
+                        totalXP: prevState.totalXP - maxXP
+                    }));
                     return;
                 }
 
@@ -77,14 +79,14 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
         const currentPath = getCurrentUrl();
         const match = /^\/team\/([^/]+)/.exec(currentPath);
         if (!match) return false;
-        
+
         const characterId = match[1];
         return 'id' in this.props.member && this.props.member.id === characterId;
     };
 
     render() {
         const { update, member, hideXP, isQuestionMark, isClickable, showSPBadge } = this.props;
-        const maxXP = getXPThreshold(this.props.member.level); 
+        const maxXP = getXPThreshold(this.props.member.level);
         const isReceivingXP = update?.earnedXP > 0;
         const isResettingXP = this.state.xpCounter === 0;
         const isLevelingUp = this.state.isLevelUp > 0;
@@ -100,7 +102,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
         }
 
         return (
-            <div 
+            <button type="button" data-game-control
                 className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''} ${isClickable ? 'clickable' : ''} ${this.isSelected() ? 'selected' : ''}`}
                 data-character-id={member.id}
                 onClick={this.handleClick}
@@ -108,22 +110,22 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                 {showSPBadge && member.sp > 0 && (
                     <div className="endgame_character_sp_badge">SP</div>
                 )}
-                
-                {isLevelingUp && 
+
+                {isLevelingUp &&
                     <div className="endgame_character_lvlup">LVL UP!</div>
                 }
-                
+
                 <div className="endgame_character_level">
                     <span>Lvl</span> {member.level + this.state.isLevelUp}
                 </div>
-                
+
                 {!hideXP && (
                     <div className="endgame_character_level_container">
                         {isReceivingXP && (
                             <div className="endgame_character_xp_container">
                                 <div className="endgame_character_xp_label">XP</div>
                                 <div className="endgame_character_xp_bar">
-                                    <div 
+                                    <div
                                         className={`endgame_character_xp_fill ${isResettingXP ? 'reset' : ''}`}
                                         style={{ width: `${(this.state.xpCounter / maxXP) * 100}%` }}
                                     />
@@ -134,17 +136,17 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                 )}
 
                 <div className="endgame_character_portrait">
-                    <div 
-                        className={`char_portrait ${this.props.isWinner ? 'victory-animation' : ''}`} 
+                    <div
+                        className={`char_portrait ${this.props.isWinner ? 'victory-animation' : ''}`}
                         style={{
                             backgroundImage: `url(${getSpritePath(member.portrait)})`,
-                        }} 
+                        }}
                     />
                 </div>
 
                 <div className="endgame_character_name">{member.name}</div>
                 <div className="endgame_character_class">{ClassLabels[member.class]}</div>
-            </div>
+            </button>
         );
     }
 }

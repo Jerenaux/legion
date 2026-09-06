@@ -1,5 +1,7 @@
+
+import { h } from 'preact';
 import './ItemIcon.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { InventoryActionType, InventoryType, ItemDialogType } from '@legion/shared/enums';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
@@ -19,8 +21,8 @@ interface ItemIconProps {
   hideHotKey?: boolean;
   refreshCharacter?: () => void;
   handleItemEffect?: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
-  onActionClick?: (type: string, letter: string, index: number) => void; 
-  handleSelectedEquipmentSlot: (newValue: number) => void; 
+  onActionClick?: (type: string, letter: string, index: number) => void;
+  handleSelectedEquipmentSlot: (newValue: number) => void;
 }
 
 interface ItemIconState {
@@ -91,15 +93,15 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     }
   }
 
-  handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, inventoryType: InventoryType) => {
-    const elementRect = e.currentTarget.getBoundingClientRect();
+  handleOpenModal = (e: Event, modalData: BaseItem | BaseSpell | BaseEquipment, inventoryType: InventoryType) => {
+    const elementRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    
+
     // Estimate modal dimensions based on content type
     let estimatedModalHeight = 200; // Default height
     let estimatedModalWidth = 150;  // Default width
-    
+
     // Adjust estimated height based on content type
     if (modalData.description) {
         estimatedModalHeight += 50; // Add more height for items with description
@@ -107,23 +109,23 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     if ('effects' in modalData && modalData.effects?.length > 0) {
         estimatedModalHeight += modalData.effects.length * 25; // Add height for each effect
     }
-    
+
     // Calculate initial position
     let top = elementRect.top;
     let left = elementRect.left + elementRect.width;
-    
+
     // Check if modal would extend below viewport
     if (top + estimatedModalHeight > viewportHeight) {
         // Position modal above the click point
         top = Math.max(10, viewportHeight - estimatedModalHeight - 10);
     }
-    
+
     // Check if modal would extend beyond right edge
     if (left + estimatedModalWidth > viewportWidth) {
         // Position modal to the left of the click point
         left = Math.max(10, elementRect.left - estimatedModalWidth);
     }
-    
+
     // Ensure minimum margins from viewport edges
     top = Math.max(10, Math.min(top, viewportHeight - estimatedModalHeight - 10));
     left = Math.max(10, Math.min(left, viewportWidth - estimatedModalWidth - 10));
@@ -134,8 +136,8 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     this.setState({ openModal: true, modalType, modalPosition, modalData });
   }
 
-  handleCloseModal = () => { 
-    this.props.handleSelectedEquipmentSlot(-1); 
+  handleCloseModal = () => {
+    this.props.handleSelectedEquipmentSlot(-1);
 
     this.setState({ openModal: false });
 
@@ -152,17 +154,17 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
     const keyBinding = keyboardLayout.charAt(startPosition + index);
 
-    const handleOnClickAction = (e: any) => {
+    const handleOnClickAction = (e: Event) => {
       const pathArray = window.location.pathname.split('/');
 
       if (pathArray[1] === 'game') return;
 
       if (actionType === InventoryType.EQUIPMENTS) {
         this.props.handleItemEffect(action.effects, InventoryActionType.EQUIP, (action as BaseEquipment).slot);
-      } 
+      }
 
       if(actionType === InventoryType.EQUIPMENTS) {
-        this.props.handleSelectedEquipmentSlot((action as BaseEquipment).slot); 
+        this.props.handleSelectedEquipmentSlot((action as BaseEquipment).slot);
       }
 
       this.handleOpenModal(e, action, actionType);
@@ -173,7 +175,13 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     }
 
     return (
-      <div onClick={handleOnClickAction}>
+      // biome-ignore lint/a11y/useSemanticElements: This keyboard-accessible slot owns a dialog with independent buttons, so it cannot itself be a button.
+      <div role="button" tabIndex={0} onKeyDown={(event) => {
+        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }} onClick={handleOnClickAction}>
         {action.id > -1 && (
           <div
             className='item-icon'
@@ -195,7 +203,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
           position={this.state.modalPosition}
           dialogData={this.state.modalData}
           handleClose={this.handleCloseModal}
-          handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot} 
+          handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
         />
       </div>
     );

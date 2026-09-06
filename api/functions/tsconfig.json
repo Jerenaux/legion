@@ -9,6 +9,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
+    "lib": ["es2022"],
     "baseUrl": "./",
 		"paths": {
 			"@legion/shared/*": ["../../shared/*"]

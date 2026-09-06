@@ -1,0 +1,11 @@
+{
+  "name": "legion-game-root",
+  "private": true,
+  "scripts": {
+    "format": "biome format --write",
+    "lint": "biome lint --skip=style --skip=complexity ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12"
+  }
+}

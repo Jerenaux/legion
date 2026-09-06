@@ -2,6 +2,8 @@ import { Game } from '../Game';
 import { Server } from 'socket.io';
 import { PlayMode, League, Terrain, Class } from '@legion/shared/enums';
 import { GRID_WIDTH, GRID_HEIGHT } from '@legion/shared/config';
+import { ServerPlayer } from '../ServerPlayer';
+import { Socket } from 'socket.io';
 
 // Create a concrete test implementation of the abstract Game class
 class TestGame extends Game {
@@ -18,8 +20,8 @@ describe('Game', () => {
     mockIo = {
       to: jest.fn().mockReturnThis(),
       emit: jest.fn(),
-    } as any;
-    
+    } as unknown as jest.Mocked<Server>;
+
     game = new TestGame('test-game-id', PlayMode.PRACTICE, League.GOLD, mockIo);
   });
 
@@ -55,7 +57,7 @@ describe('Game', () => {
 
     it('should detect occupied cells', () => {
       // Place a mock player on the grid
-      const mockPlayer: any = { x: 3, y: 4 };
+      const mockPlayer = { x: 3, y: 4 } as unknown as ServerPlayer;
       game.gridMap.set('3,4', mockPlayer);
 
       expect(game.isFree(3, 4)).toBe(false);
@@ -75,9 +77,9 @@ describe('Game', () => {
     });
 
     it('should free a cell', () => {
-      const mockPlayer: any = { x: 5, y: 5 };
+      const mockPlayer = { x: 5, y: 5 } as unknown as ServerPlayer;
       game.gridMap.set('5,5', mockPlayer);
-      
+
       game.freeCell(5, 5);
       expect(game.gridMap.has('5,5')).toBe(false);
     });
@@ -96,14 +98,14 @@ describe('Game', () => {
     it('should place team 1 on left side of grid', () => {
       const position = game.getPosition(0, false, Class.WARRIOR);
       const halfWidth = Math.floor(GRID_WIDTH / 2);
-      
+
       expect(position.x).toBeLessThan(halfWidth);
     });
 
     it('should place team 2 on right side of grid', () => {
       const position = game.getPosition(0, true, Class.WARRIOR);
       const halfWidth = Math.floor(GRID_WIDTH / 2);
-      
+
       expect(position.x).toBeGreaterThanOrEqual(halfWidth);
     });
 
@@ -111,14 +113,14 @@ describe('Game', () => {
       // Warriors should spawn in middle third
       const oneThird = Math.floor(GRID_WIDTH / 3);
       const twoThirds = Math.floor(2 * GRID_WIDTH / 3);
-      
+
       // Test multiple times to account for randomness
-      const positions = Array.from({ length: 20 }, () => 
+      const positions = Array.from({ length: 20 }, () =>
         game.getPosition(0, false, Class.WARRIOR)
       );
-      
+
       // At least some positions should be in the middle third
-      const hasMiddlePositions = positions.some(pos => 
+      const hasMiddlePositions = positions.some(pos =>
         pos.x >= oneThird && pos.x < twoThirds
       );
       expect(hasMiddlePositions).toBe(true);
@@ -130,12 +132,12 @@ describe('Game', () => {
       // In that case, the method falls back to a random position
       for (let x = 0; x < 8; x++) {
         for (let y = 0; y < GRID_HEIGHT; y++) {
-          game.gridMap.set(`${x},${y}`, {} as any);
+          game.gridMap.set(`${x},${y}`, {} as unknown as ServerPlayer);
         }
       }
 
       const position = game.getPosition(0, false, Class.WARRIOR);
-      
+
       // Should return a position (may fallback to occupied if no free spots)
       expect(position).toHaveProperty('x');
       expect(position).toHaveProperty('y');
@@ -145,14 +147,14 @@ describe('Game', () => {
   describe('hole generation', () => {
     it('should generate holes on the grid', () => {
       game.generateHoles();
-      
+
       // Should have created some holes (exact number depends on implementation)
       expect(game.holePositions.size).toBeGreaterThanOrEqual(0);
     });
 
     it('should check if position is a hole', () => {
       game.holePositions.add('4,4');
-      
+
       expect(game.isHole(4, 4)).toBe(true);
       expect(game.isHole(4, 5)).toBe(false);
     });
@@ -183,9 +185,9 @@ describe('Game', () => {
 
   describe('socket management', () => {
     it('should add socket to game', () => {
-      const mockSocket: any = {
+      const mockSocket = {
         join: jest.fn(),
-      };
+      } as unknown as Socket;
 
       game.addSocket(mockSocket);
 
@@ -194,8 +196,8 @@ describe('Game', () => {
     });
 
     it('should handle multiple sockets', () => {
-      const socket1: any = { join: jest.fn() };
-      const socket2: any = { join: jest.fn() };
+      const socket1 = { join: jest.fn() } as unknown as Socket;
+      const socket2 = { join: jest.fn() } as unknown as Socket;
 
       game.addSocket(socket1);
       game.addSocket(socket2);
@@ -204,7 +206,7 @@ describe('Game', () => {
     });
 
     it('reconnects a player to their own team', () => {
-      const socket: any = { uid: 'player-two', join: jest.fn(), emit: jest.fn() };
+      const socket = { uid: 'player-two', join: jest.fn(), emit: jest.fn() } as unknown as Socket;
       game.teams.get(1)!.teamData.playerUID = 'player-one';
       game.teams.get(2)!.teamData.playerUID = 'player-two';
       jest.spyOn(game, 'sendGameStatus').mockImplementation(() => undefined);

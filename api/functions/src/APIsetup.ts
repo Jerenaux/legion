@@ -63,7 +63,7 @@ async function releaseLock(uid: string) {
   }
 }
 
-export async function performLockedOperation(uid: string, operation: () => Promise<any>) {
+export async function performLockedOperation<T>(uid: string, operation: () => Promise<T>): Promise<T> {
   let lockAcquired = false;
   try {
       lockAcquired = await acquireLock(uid);

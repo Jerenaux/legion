@@ -8,7 +8,7 @@
     align-items: center;
     gap: 6px;
     cursor: pointer;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
 }
 
 .shop-character-card-container:hover {
@@ -163,7 +163,7 @@
     font-size: 14px;
     width: 100%;
     margin-bottom: 4px;
-    font-family: "Kim";
+    font-family: "Kim", sans-serif;
 }
 
 .shop-card-price img {
@@ -191,31 +191,31 @@
     box-sizing: border-box;
     width: 43px;
     height: 43px;
-    background-color: #1c1f25; 
+    background-color: #1c1f25;
     border-radius: 6px;
     border: 1px solid #274c57;
-    padding: 4px; 
-    display: flex; 
-    justify-content: center; 
+    padding: 4px;
+    display: flex;
+    justify-content: center;
     align-items: center;
-} 
+}
 
 .shop-character-card-slot:hover {
     cursor: pointer;
     border: 1px solid #71deff;
-} 
+}
 
 .shop-character-card-slot > div {
-    width: 32px; 
+    width: 32px;
     height: 32px;
-} 
+}
 
 
-.shop-character-card-dialog-position { 
-    position: absolute; 
-    top: 20px; 
-    right: 20px; 
-    z-index: 2; 
+.shop-character-card-dialog-position {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2;
 }
 .shop-character-card-dialog-container {
     background-color: #1c1f25;
@@ -224,7 +224,7 @@
     padding: 6px 12px;
     display: flex;
     flex-direction: column;
-    align-items: center; 
+    align-items: center;
     /* justify-content: center; */
     gap: 8px;
     max-width: 128px;
@@ -239,7 +239,7 @@
     border-radius: 4px;
     position: absolute;
     top: -16px;
-    background-color: #1c1f25;    
+    background-color: #1c1f25;
 }
 
 .shop-character-card-dialog-wrapper {
@@ -261,7 +261,7 @@
     /* padding: 4px; */
     border-radius: 4px;
     position: absolute;
-    background-color: #1c1f25;    
+    background-color: #1c1f25;
     background-repeat: no-repeat;
 }
 
@@ -279,7 +279,7 @@
     color: #71deff;
 }
 
-.shop-character-card-dialog-info-container { 
+.shop-character-card-dialog-info-container {
     margin-top: 6px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -307,8 +307,8 @@
     color: #ffffff;
 }
 
-.shop-character-card-dialog-container .dialog-button-container { 
-    margin-top: 8px; 
+.shop-character-card-dialog-container .dialog-button-container {
+    margin-top: 8px;
     margin-bottom: 4px;
     justify-content: center;
-} 
+}

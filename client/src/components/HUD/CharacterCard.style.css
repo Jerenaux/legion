@@ -58,7 +58,7 @@
     position: absolute;
     top: clamp(4px, 0.8vh, 8px);
     right: clamp(8px, 1vw, 12px);
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     font-size: clamp(12px, 1.5vh, 16px);
     font-weight: 600;
     color: #ffa600;
@@ -144,7 +144,7 @@
 }
 
 .endgame_character_name {
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     font-size: clamp(12px, 1.5vh, 16px);
     font-weight: 600;
     color: #ffffff;
@@ -154,7 +154,7 @@
 }
 
 .endgame_character_class {
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     font-size: clamp(10px, 2vh, 14px);
     color: #71deff;
     text-transform: uppercase;
@@ -191,7 +191,7 @@
     padding: clamp(4px, 1vh, 6px) clamp(12px, 2vw, 16px);
     border-radius: 12px;
     white-space: nowrap;
-    box-shadow: 
+    box-shadow:
         0 0 20px rgba(255, 166, 0, 0.6),
         0 0 40px rgba(255, 166, 0, 0.3);
     animation: levelUpFloat 2s ease-in-out infinite;
@@ -207,7 +207,7 @@
     left: -20%;
     right: -20%;
     bottom: -20%;
-    background: 
+    background:
         /* Delayed sparkles */
         radial-gradient(circle at 50% 30%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
         radial-gradient(circle at 25% 50%, rgba(255, 215, 0, 0.8) 0%, transparent 7%),
@@ -225,7 +225,7 @@
     left: -20%;
     right: -20%;
     bottom: -20%;
-    background: 
+    background:
         /* Inner sparkles - brighter and closer */
         radial-gradient(circle at 30% 40%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
         radial-gradient(circle at 70% 45%, rgba(255, 215, 0, 0.9) 0%, transparent 6%),
@@ -254,25 +254,25 @@
 }
 
 @keyframes sparkles {
-    0% { 
-        opacity: 0; 
-        transform: scale(0.8) rotate(-5deg); 
+    0% {
+        opacity: 0;
+        transform: scale(0.8) rotate(-5deg);
     }
     15% {
         opacity: 0.3;
         transform: scale(0.9) rotate(-3deg);
     }
-    50% { 
-        opacity: 1; 
-        transform: scale(1.1) rotate(2deg); 
+    50% {
+        opacity: 1;
+        transform: scale(1.1) rotate(2deg);
     }
     75% {
         opacity: 0.6;
         transform: scale(1.15) rotate(4deg);
     }
-    100% { 
-        opacity: 0; 
-        transform: scale(1.2) rotate(5deg); 
+    100% {
+        opacity: 0;
+        transform: scale(1.2) rotate(5deg);
     }
 }
 
@@ -338,7 +338,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     font-size: clamp(48px, 8vw, 72px);
     color: #3c616c;
     text-shadow: 0 0 20px rgba(81, 253, 255, 0.2);
@@ -374,7 +374,7 @@
 /* Add hover effect for non-question-mark cards */
 .endgame_character:not(.question-mark-mode):hover {
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 
+    box-shadow:
         0 5px 15px rgba(81, 253, 255, 0.1),
         0 0 30px rgba(81, 253, 255, 0.05);
 }
@@ -407,7 +407,7 @@
 /* Enhance hover effect for clickable cards */
 .endgame_character.clickable:hover {
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 
+    box-shadow:
         0 5px 15px rgba(81, 253, 255, 0.1),
         0 0 30px rgba(81, 253, 255, 0.05);
 }
@@ -434,7 +434,7 @@
 }
 
 .endgame_character.selected {
-    box-shadow: 
+    box-shadow:
         0 0 0 2px #51fdff,
         0 0 15px rgba(81, 253, 255, 0.3);
 }
@@ -463,7 +463,7 @@
 
 /* Combine hover and selected states */
 .endgame_character.selected:hover {
-    box-shadow: 
+    box-shadow:
         0 0 0 2px #51fdff,
         0 0 20px rgba(81, 253, 255, 0.4),
         0 5px 15px rgba(81, 253, 255, 0.2);
@@ -475,7 +475,7 @@
     left: clamp(8px, 1vw, 12px);
     background: linear-gradient(135deg, #ff4646, #ff0000);
     color: white;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     font-size: clamp(10px, 1.2vh, 14px);
     font-weight: 600;
     padding: 2px clamp(4px, 0.5vw, 6px);

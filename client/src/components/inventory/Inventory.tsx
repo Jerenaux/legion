@@ -1,5 +1,7 @@
+import { Fragment } from 'preact';
+import { h } from 'preact';
 // Inventory.tsx
-import { h, Fragment, Component } from 'preact';
+import { Component } from 'preact';
 import './Inventory.style.css';
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
@@ -32,7 +34,7 @@ interface InventoryProps {
 }
 
 class Inventory extends Component<InventoryProps> {
-  static contextType = PlayerContext; 
+  static contextType = PlayerContext;
 
   state = {
     openModal: false,
@@ -54,24 +56,24 @@ class Inventory extends Component<InventoryProps> {
   handleOpenPurchaseDialog = () => {
     console.log('handleOpenPurchaseDialog');
     console.log('Current state before:', this.state);
-    this.setState({ 
+    this.setState({
       showPurchaseDialog: true,
-      slotsQuantity: 1 
+      slotsQuantity: 1
     }, () => {
       console.log('State after update:', this.state);
     });
   }
 
   handleClosePurchaseDialog = () => {
-    this.setState({ 
+    this.setState({
       showPurchaseDialog: false,
-      slotsQuantity: 1 
+      slotsQuantity: 1
     });
   }
 
   handleQuantityChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
-    const value = parseInt(target.value) || 1;
+    const value = parseInt(target.value, 10) || 1;
     const maxAffordable = Math.floor(this.context.player.gold / INVENTORY_SLOT_PRICE);
     const clampedValue = Math.max(1, Math.min(value, Math.max(1, maxAffordable)));
     this.setState({ slotsQuantity: clampedValue });
@@ -79,7 +81,7 @@ class Inventory extends Component<InventoryProps> {
 
   handleConfirmPurchase = async () => {
     this.setState({ isPurchasing: true });
-    
+
     try {
       await this.context.buyInventorySlots(this.state.slotsQuantity);
       successToast(`Successfully purchased ${this.state.slotsQuantity} inventory slot${this.state.slotsQuantity > 1 ? 's' : ''}!`);
@@ -121,9 +123,9 @@ class Inventory extends Component<InventoryProps> {
               }
 
               return (
-                <div 
-                  key={i} 
-                  className="item" 
+                <div
+                  key={i}
+                  className="item"
                   style={slotStyle}
                   data-item-icon={`${type}-${item?.id}`}
                 >
@@ -168,7 +170,7 @@ class Inventory extends Component<InventoryProps> {
                       <Spinner />
                     </div>
                   ) : (
-                    <button 
+                    <button type="button"
                       className="info-bar-plus"
                       onClick={(e) => {
                         console.log('Button clicked!', e);
@@ -201,7 +203,7 @@ class Inventory extends Component<InventoryProps> {
                 {renderInventorySection(InventoryType.CONSUMABLES, "CONSUMABLES")}
                 {renderInventorySection(InventoryType.EQUIPMENTS, "EQUIPMENT")}
                 {renderInventorySection(InventoryType.SPELLS, "SPELLS")}
-                {!Object.values(InventoryType).some(type => 
+                {!Object.values(InventoryType).some(type =>
                   this.context.player.inventory[type]?.length > 0
                 ) && (
                   <div className='empty-slots-container'>
@@ -220,8 +222,8 @@ class Inventory extends Component<InventoryProps> {
           console.log('Modal render check - showPurchaseDialog:', this.state.showPurchaseDialog);
           return null;
         })()}
-        <Modal 
-          isOpen={this.state.showPurchaseDialog} 
+        <Modal
+          isOpen={this.state.showPurchaseDialog}
           onRequestClose={this.handleClosePurchaseDialog}
           style={{
             content: {
@@ -244,14 +246,14 @@ class Inventory extends Component<InventoryProps> {
         >
           <div className="purchase-dialog-container">
             <h3 className="purchase-dialog-heading">Buy Inventory Slots</h3>
-            
+
             <div className="purchase-dialog-content">
               <div className="quantity-selector">
                 <label htmlFor="slot-quantity">Number of slots:</label>
-                <input 
+                <input
                   id="slot-quantity"
-                  type="number" 
-                  min="1" 
+                  type="number"
+                  min="1"
                   max={Math.max(1, Math.floor(this.context.player.gold / INVENTORY_SLOT_PRICE))}
                   value={this.state.slotsQuantity}
                   onChange={this.handleQuantityChange}
@@ -259,7 +261,7 @@ class Inventory extends Component<InventoryProps> {
                   className="quantity-input"
                 />
               </div>
-              
+
               <div className="price-display">
                 <div className="price-breakdown">
                   <span>Price per slot:</span>
@@ -293,15 +295,15 @@ class Inventory extends Component<InventoryProps> {
                 </div>
               ) : (
                 <>
-                  <button 
-                    className="purchase-dialog-cancel" 
+                  <button type="button"
+                    className="purchase-dialog-cancel"
                     onClick={this.handleClosePurchaseDialog}
                   >
                     <img src={cancelIcon} alt="cancel" />
                     Cancel
                   </button>
-                  <button 
-                    className="purchase-dialog-confirm" 
+                  <button type="button"
+                    className="purchase-dialog-confirm"
                     onClick={this.handleConfirmPurchase}
                     disabled={this.context.player.gold < (this.state.slotsQuantity * INVENTORY_SLOT_PRICE)}
                   >
@@ -318,7 +320,7 @@ class Inventory extends Component<InventoryProps> {
           <div className="hint-modal-container">
             <p className="hint-modal-heading">Hint Modal</p>
             <div className="hint-modal-button-container">
-              <button className="hint-modal-decline" onClick={this.handleCloseModal}>Close</button>
+              <button type="button" className="hint-modal-decline" onClick={this.handleCloseModal}>Close</button>
             </div>
           </div>
         </Modal>

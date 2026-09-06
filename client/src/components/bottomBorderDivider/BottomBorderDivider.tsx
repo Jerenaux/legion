@@ -1,5 +1,6 @@
+import { h } from 'preact';
 // Button.tsx
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import './BottomBorderDivider.style.css';
 
 interface DividerProps {

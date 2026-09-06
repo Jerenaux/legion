@@ -1,8 +1,10 @@
+
+import { h } from 'preact';
 // Navbar.tsx
 
 import './navbar.style.css';
 import './SettingsModalWrapper.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
@@ -79,7 +81,7 @@ class Navbar extends Component<Props, State> {
     loadAvatar = () => {
         this.setState({ isLoading: true });
         const { avatar } = this.props.playerData;
-        if (avatar != '0') {
+        if (avatar !== '0') {
             try {
                 const avatarUrl = avatarContext(`./${avatar}.png`);
                 this.setState({ avatarUrl, isLoading: false });
@@ -90,7 +92,7 @@ class Navbar extends Component<Props, State> {
         }
     }
 
-    copyIDtoClipboard = () => {  
+    copyIDtoClipboard = () => {
         const textToCopy = this.props.playerData.uid;
         navigator.clipboard.writeText(textToCopy).then(() => {
             successToast(`Player ID ${textToCopy} copied!`);
@@ -101,7 +103,7 @@ class Navbar extends Component<Props, State> {
 
     formatNumber = (number) => {
         const format = 'en-US';
-        return new Intl.NumberFormat(format, { 
+        return new Intl.NumberFormat(format, {
           useGrouping: true,
           maximumFractionDigits: 2
         }).format(number);
@@ -170,14 +172,14 @@ class Navbar extends Component<Props, State> {
                                             </div>
                                         </Link>
                                         <Link href="/team" onMouseOver={() => this.setState({ hovered: MenuItems.TEAM })} onMouseLeave={() => this.setState({ hovered: '' })}>
-                                            <div 
+                                            <div
                                                 className={`menuItemContainer ${currentPage(Routes.TEAM) ? 'activeFlag' : ''}`}
                                                 data-team-page
                                             >
                                                 <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} alt="Team" />
                                             </div>
                                         </Link>
-                                        <Link 
+                                        <Link
                                             href={playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) ? "/shop" : "#"}
                                             onClick={(e) => {
                                                 if (!playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1)) {
@@ -185,25 +187,25 @@ class Navbar extends Component<Props, State> {
                                                     return;
                                                 }
                                             }}
-                                            onMouseOver={() => this.setState({ hovered: MenuItems.SHOP })} 
+                                            onMouseOver={() => this.setState({ hovered: MenuItems.SHOP })}
                                             onMouseLeave={() => this.setState({ hovered: '' })}
                                         >
                                             <div className={`menuItemContainer ${currentPage(Routes.SHOP) ? 'activeFlag' : ''} ${!playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) ? 'disabled' : ''}`}>
-                                                <img 
-                                                    className="menuItem" 
-                                                    src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon} 
-                                                    alt="Shop" 
+                                                <img
+                                                    className="menuItem"
+                                                    src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon}
+                                                    alt="Shop"
                                                 />
                                                 {!playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) && (
-                                                    <img 
+                                                    <img
                                                         className="lock-overlay"
-                                                        src={lockIcon} 
-                                                        alt="Locked" 
+                                                        src={lockIcon}
+                                                        alt="Locked"
                                                     />
                                                 )}
                                             </div>
                                         </Link>
-                                        <Link 
+                                        <Link
                                             href={playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) ? "/rank" : "#"}
                                             onClick={(e) => {
                                                 if (!playerContext.canAccessFeature(LockedFeatures.RANKED_MODE)) {
@@ -211,20 +213,20 @@ class Navbar extends Component<Props, State> {
                                                     return;
                                                 }
                                             }}
-                                            onMouseOver={() => this.setState({ hovered: MenuItems.RANK })} 
+                                            onMouseOver={() => this.setState({ hovered: MenuItems.RANK })}
                                             onMouseLeave={() => this.setState({ hovered: '' })}
                                         >
                                             <div className={`menuItemContainer ${currentPage(Routes.RANK) ? 'activeFlag' : ''} ${!playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) ? 'disabled' : ''}`}>
-                                                <img 
-                                                    className="menuItem" 
-                                                    src={this.state.hovered === MenuItems.RANK ? rankActiveIcon : rankIcon} 
-                                                    alt="Rank" 
+                                                <img
+                                                    className="menuItem"
+                                                    src={this.state.hovered === MenuItems.RANK ? rankActiveIcon : rankIcon}
+                                                    alt="Rank"
                                                 />
                                                 {!playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
-                                                    <img 
+                                                    <img
                                                         className="lock-overlay"
-                                                        src={lockIcon} 
-                                                        alt="Locked" 
+                                                        src={lockIcon}
+                                                        alt="Locked"
                                                     />
                                                 )}
                                             </div>
@@ -234,16 +236,18 @@ class Navbar extends Component<Props, State> {
                                     <div className="flexContainer" id="goldEloArea">
                                         <UserInfoBar icon='gold' label={`${this.state.isLoading ? 'Loading...' : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
                                         {playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
-                                            <UserInfoBar 
-                                                icon='league' 
-                                                label={this.state.isLoading ? 'Loading...' : `#${this.props.playerData?.rank}`} 
-                                                isLeague={true} 
-                                                bigLabel={!this.state.isLoading} 
-                                                league={this.props.playerData?.league} 
+                                            <UserInfoBar
+                                                icon='league'
+                                                label={this.state.isLoading ? 'Loading...' : `#${this.props.playerData?.rank}`}
+                                                isLeague={true}
+                                                bigLabel={!this.state.isLoading}
+                                                league={this.props.playerData?.league}
                                             />
                                         )}
+                                        {/* biome-ignore lint/a11y/noStaticElementInteractions: Hover is a pointer shortcut; the nested button provides keyboard access. */}
                                         <div className="expand_btn" onMouseEnter={() => this.setState({ openDropdown: true })}>
                                             <button type="button" className="expand_btn_trigger" aria-label="More options" aria-expanded={this.state.openDropdown} style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} />
+                                            {/* biome-ignore lint/a11y/noStaticElementInteractions: Pointer leave only dismisses a menu already controlled by a keyboard-accessible button. */}
                                             <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
                                                 <button type="button" onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
                                                     <img src={helpIcon} alt="How to play" /> How to play
@@ -259,7 +263,7 @@ class Navbar extends Component<Props, State> {
                                     </div>
                                     {this.state.isSettingsModalOpen && (
                                         <div className="settings-modal-wrapper">
-                                            <div className="settings-modal-overlay" onClick={this.toggleSettingsModal}></div>
+                                            <button type="button" data-game-control className="settings-modal-overlay" onClick={this.toggleSettingsModal}></button>
                                             <div className="settings-modal-container">
                                                 <SettingsModal onClose={this.toggleSettingsModal} />
                                             </div>

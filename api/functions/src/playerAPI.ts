@@ -1,13 +1,13 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions/v1";
-import admin, { corsMiddleware, getUID, checkAPIKey, performLockedOperation } from "./APIsetup";
+import admin, { corsMiddleware, getUID, checkAPIKey, } from "./APIsetup";
 
 import { uniqueNamesGenerator } from "unique-names-generator";
 
 import { Class, ChestColor, League, PlayMode } from "@legion/shared/enums";
 import { PlayerContextData, DailyLootAllDBData, DBPlayerData,
-  PlayerInventory, ChestReward } from "@legion/shared/interfaces";
+  PlayerInventory, ChestReward, EngagementStats } from "@legion/shared/interfaces";
 import { NewCharacter } from "@legion/shared/NewCharacter";
 import { getChestContent } from "@legion/shared/chests";
 import {
@@ -27,7 +27,6 @@ import { numericalSort } from "@legion/shared/inventory";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { createGameDocument } from "./gameAPI";
 import { transformDailyLoot } from "@legion/shared/utils";
-import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards } from "./inventoryUtils";
 import {starterCharacterId} from "./playerProvisioning";
 
 export const buyInventorySlots = onRequest({
@@ -40,7 +39,7 @@ export const buyInventorySlots = onRequest({
       const uid = await getUID(request);
       const slotsToBuy = parseInt(request.body.slots, 10);
 
-      if (isNaN(slotsToBuy) || slotsToBuy <= 0) {
+      if (Number.isNaN(slotsToBuy) || slotsToBuy <= 0) {
         response.status(400).send("Invalid number of slots");
         return;
       }
@@ -154,7 +153,7 @@ function generateName() {
     separator: " ",
     style: "capital",
   };
-  // @ts-ignore
+  // @ts-expect-error
   const base = uniqueNamesGenerator(options);
   return base.length > MAX_NICKNAME_LENGTH ? base.slice(0, MAX_NICKNAME_LENGTH) : base;
 }
@@ -165,7 +164,7 @@ export async function ensurePlayer(uid: string): Promise<void> {
   const playerRef = db.collection("players").doc(user.uid);
   const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const startLeague = League.BRONZE;
-  const isAdmin = (process.env.ADMIN_MODE == 'true');
+  const isAdmin = (process.env.ADMIN_MODE === 'true');
 
   const name = generateName();
   // Define the character data structure
@@ -237,7 +236,7 @@ export async function ensurePlayer(uid: string): Promise<void> {
   try {
     await batch.commit();
   } catch (error) {
-    const code = (error as any)?.code;
+    const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
     if (code === 6 || code === "already-exists") return;
     throw error;
   }
@@ -428,7 +427,7 @@ export async function awardChestContent(
     const playerData = playerDoc.data() as DBPlayerData;
 
     // Prepare updates
-    const updates: { [key: string]: any } = {};
+    const updates: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {};
     let goldIncrement = 0;
 
     for (const reward of content) {
@@ -586,8 +585,13 @@ export const completeTour = onRequest({
   });
 });
 
-const figureOutGuideTip = (playerData: any) => {
-  const joinedSince = (new Date().getTime() - new Date(playerData.joinDate).getTime()) / 1000;
+type FirestorePlayerData = DBPlayerData<admin.firestore.DocumentReference>;
+
+const figureOutGuideTip = async (playerData: FirestorePlayerData) => {
+  const guideTipsShown = playerData.guideTipsShown ?? [];
+  const engagementStats: Partial<EngagementStats> = playerData.engagementStats ?? {};
+  const casualStats = playerData.casualStats ?? {nbGames: 0, wins: 0};
+  const joinedSince = (Date.now() - new Date(playerData.joinDate ?? 0).getTime()) / 1000;
   console.log(`[figureOutGuideTip] joinedSince: ${joinedSince}`);
   if (joinedSince < 10) {
     return {
@@ -596,20 +600,20 @@ const figureOutGuideTip = (playerData: any) => {
     };
   }
 
-  if (!playerData.guideTipsShown.includes(0) &&
+  if (!guideTipsShown.includes(0) &&
     playerData.gold >= STARTING_GOLD * 3 &&
-    !playerData.engagementStats.everPurchased) {
+    !engagementStats.everPurchased) {
     return {
       guideId: 0,
       route: "/shop",
     };
   }
 
-  if (!playerData.guideTipsShown.includes(1) && !playerData.engagementStats.everSpentSP) {
+  if (!guideTipsShown.includes(1) && !engagementStats.everSpentSP) {
     // Iterate over the characters of the player to find one where sp > 0
     for (const characterRef of playerData.characters) {
-      const characterData = characterRef.get();
-      if (characterData.sp > 0) {
+      const characterData = await characterRef.get();
+      if ((characterData.data()?.sp ?? 0) > 0) {
         return {
           guideId: 1,
           route: `/team/${characterRef.id}`,
@@ -618,7 +622,7 @@ const figureOutGuideTip = (playerData: any) => {
     }
   }
 
-  if (!playerData.guideTipsShown.includes(2) && !playerData.engagementStats.everOpenedDailyLoot) {
+  if (!guideTipsShown.includes(2) && !engagementStats.everOpenedDailyLoot) {
     // Check in the daily loot of the character if one of the time fields is in the past
     for (const chestType of Object.values(ChestColor)) {
       if (playerData.dailyloot[chestType].time < Date.now() / 1000) {
@@ -631,9 +635,9 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // You have unused equipment pieces in your inventory! Click here to go to the team page and equip them!
-  if (!playerData.guideTipsShown.includes(3) &&
+  if (!guideTipsShown.includes(3) &&
     playerData.inventory.equipment.length > 0 &&
-    !playerData.engagementStats.everEquippedEquipment) {
+    !engagementStats.everEquippedEquipment) {
     return {
       guideId: 3,
       route: "/team",
@@ -641,9 +645,9 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "You have unused consumables in your inventory! Click here to go to the team page and equip them on your characters!",
-  if (!playerData.guideTipsShown.includes(4) &&
+  if (!guideTipsShown.includes(4) &&
     playerData.inventory.consumables.length > 3 &&
-    !playerData.engagementStats.everEquippedConsumable) {
+    !engagementStats.everEquippedConsumable) {
     return {
       guideId: 4,
       route: "/team",
@@ -651,9 +655,9 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "You have unused spells in your inventory! Click here to go to the team page and teach them to your characters!",
-  if (!playerData.guideTipsShown.includes(5) &&
+  if (!guideTipsShown.includes(5) &&
     playerData.inventory.spells.length > 0 &&
-    !playerData.engagementStats.everEquippedSpell) {
+    !engagementStats.everEquippedSpell) {
     return {
       guideId: 5,
       route: "/team",
@@ -661,8 +665,8 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "Not sure what to do? Just click here to start a Practice game and try out your characters and spells!",
-  if (!playerData.guideTipsShown.includes(6) &&
-    !playerData.engagementStats.everPlayedPractice) {
+  if (!guideTipsShown.includes(6) &&
+    !engagementStats.everPlayedPractice) {
     return {
       guideId: 6,
       route: "/queue/0",
@@ -670,9 +674,9 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "Now that you know the game a bit more, click here to play against another player in Casual mode!",
-  if (!playerData.guideTipsShown.includes(7) &&
-    playerData.engagementStats.everPlayedPractice &&
-    !playerData.engagementStats.everPlayedCasual) {
+  if (!guideTipsShown.includes(7) &&
+    engagementStats.everPlayedPractice &&
+    !engagementStats.everPlayedCasual) {
     return {
       guideId: 7,
       route: "/queue/1",
@@ -680,9 +684,9 @@ const figureOutGuideTip = (playerData: any) => {
   }
 
   // "You've had a few victories now, why don't you try your luck in Ranked mode and climb the ladder? Click here to start!",
-  if (!playerData.guideTipsShown.includes(8) &&
-    playerData.casualStats.wins >= 2 &&
-    !playerData.engagementStats.everPlayedRanked) {
+  if (!guideTipsShown.includes(8) &&
+    casualStats.wins >= 2 &&
+    !engagementStats.everPlayedRanked) {
     return {
       guideId: 8,
       route: "/queue/2",
@@ -696,11 +700,13 @@ const figureOutGuideTip = (playerData: any) => {
   };
 };
 
-const figureOutConbatTip = (playerData: any) => {
+const figureOutCombatTip = (playerData: FirestorePlayerData) => {
+  const guideTipsShown = playerData.guideTipsShown ?? [];
+  const engagementStats: Partial<EngagementStats> = playerData.engagementStats ?? {};
   // "Your characters know cool spells, this time why don't you give them a try in combat?",
-  if (!playerData.guideTipsShown.includes(9) &&
-    (playerData.engagementStats.everPlayedPractice || playerData.engagementStats.everPlayedCasual || playerData.engagementStats.everPlayedRanked) &&
-    !playerData.engagementStats.everUsedSpell) {
+  if (!guideTipsShown.includes(9) &&
+    (engagementStats.everPlayedPractice || engagementStats.everPlayedCasual || engagementStats.everPlayedRanked) &&
+    !engagementStats.everUsedSpell) {
     return {
       guideId: 9,
       route: "",
@@ -735,7 +741,7 @@ export const fetchGuideTip = onRequest({
         throw new Error("playerData is null");
       }
 
-      const { guideId, route } = combatTip ? figureOutConbatTip(playerData) : figureOutGuideTip(playerData);
+      const { guideId, route } = await (combatTip ? figureOutCombatTip(playerData as FirestorePlayerData) : figureOutGuideTip(playerData as FirestorePlayerData));
       // Update the player document to add the guideId to the list of shown tips
       if (guideId !== -1) {
         await playerRef.update({
@@ -851,7 +857,7 @@ export const setPlayerOnSteroids = onRequest({
         for (let i = 0; i <= 12; i++) {
           const amount = Math.floor(Math.random() * 3) + 1;
           for (let j = 0; j < amount; j++) {
-            // @ts-ignore
+            // @ts-expect-error
             newInventory.consumables.push(i);
           }
         }
@@ -860,7 +866,7 @@ export const setPlayerOnSteroids = onRequest({
         for (let i = 0; i <= 31; i++) {
           const amount = Math.floor(Math.random() * 2) + 1;
           for (let j = 0; j < amount; j++) {
-            // @ts-ignore
+            // @ts-expect-error
             newInventory.equipment.push(i);
           }
         }
@@ -930,7 +936,7 @@ export const zombieData = onRequest(
 
     console.log(`[zombieData] Fetching zombie data for elo: ${targetElo} and league: ${league}`);
 
-    if (isNaN(league) || isNaN(targetElo)) {
+    if (Number.isNaN(league) || Number.isNaN(targetElo)) {
       res.status(400).json({ error: 'Valid league and elo parameters are required' });
       console.log(`[zombieData] Invalid league or elo parameters: ${league} ${targetElo}`);
       return;
@@ -1113,7 +1119,7 @@ export const updateInactivePlayersStats = onSchedule(
     schedule: "every day 00:00",
     memory: "512MiB",
   },
-  async (event) => {
+  async (_event) => {
   const db = admin.firestore();
   const now = new Date();
 
@@ -1137,11 +1143,6 @@ export const updateInactivePlayersStats = onSchedule(
       const lambda = 0.1; // Parameter for exponential distribution
       const randomGames = Math.round(-Math.log(1 - Math.random()) / lambda);
       const cappedGames = Math.min(Math.max(randomGames, 1), 50); // Cap between 1 and 50 games
-
-      // Generate win ratio using beta distribution for more natural variation
-      // Beta distribution parameters (can be adjusted)
-      const alpha = 2;
-      const beta = 2;
 
       // Approximate beta distribution using normal distribution
       const u1 = Math.random();
@@ -1528,7 +1529,7 @@ export const updatePlayerAvatar = onRequest({
 
       // Convert to number and validate range
       const numericAvatarId = parseInt(avatarId, 10);
-      if (isNaN(numericAvatarId) ||
+      if (Number.isNaN(numericAvatarId) ||
           numericAvatarId < 1 ||
           numericAvatarId > MAX_AVATAR_ID) {
         response.status(400).send(`Avatar ID must be between 1 and ${MAX_AVATAR_ID}`);
@@ -1572,7 +1573,7 @@ export const setUserAttributes = onRequest({
 
             logger.info(`Setting user attributes for player: ${uid} attributes: ${JSON.stringify(attributes)}`);
 
-            const updateData: any = {};
+            const updateData: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {};
 
             if (attributes.utmSource) {
                 updateData['acquisition.utmSource'] = attributes.utmSource;

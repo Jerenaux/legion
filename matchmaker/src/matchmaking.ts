@@ -12,6 +12,8 @@ import {eloRangeIncreaseInterval, eloRangeStart, eloRangeStep, goldRewardInterva
 import { PlayMode, League } from '@legion/shared/enums';
 import { sendMessageToAdmin } from '@legion/shared/utils';
 
+export type MatchmakingSocket = Socket & {uid: string; firebaseToken: string};
+
 const discordEnabled = false; //(process.env.DISCORD_TOKEN !== undefined);
 const discordClient = new Client({intents: [GatewayIntentBits.Guilds]});
 if (discordEnabled) {
@@ -21,7 +23,7 @@ if (discordEnabled) {
 initializeApp({projectId: firebaseConfig.projectId});
 
 interface QueuingPlayer {
-    socket: any,
+    socket: MatchmakingSocket,
     elo: number;
     range: number;
     mode: number;
@@ -34,8 +36,8 @@ class Lobby {
     id: string;
     creatorId: string;
     opponentId: string | null;
-    creatorSocket: Socket;
-    opponentSocket: Socket;
+    creatorSocket: MatchmakingSocket | null;
+    opponentSocket: MatchmakingSocket | null;
     constructor(id: string, creatorId: string, opponentId: string | null = null) {
         this.id = id;
         this.creatorId = creatorId;
@@ -44,15 +46,14 @@ class Lobby {
         this.opponentSocket = null;
     }
 
-    addPlayer(socket: any): boolean {
+    addPlayer(socket: MatchmakingSocket): boolean {
         console.log(`[matchmaker:Lobby:addPlayer] Adding player ${socket.uid} to lobby ${this.id} ...`);
-        // @ts-ignore
         console.log(`[matchmaker:Lobby:addPlayer] creatorSocket: ${this.creatorSocket?.uid}, creatorId: ${this.creatorId}, isCreator: ${socket.uid === this.creatorId}, opponentSocket: ${this.opponentSocket?.uid}`);
         if (this.creatorSocket == null && socket.uid === this.creatorId) {
             this.creatorSocket = socket;
             return true;
         }
-        if (this.opponentSocket == null && socket.uid != this.creatorId) {
+        if (this.opponentSocket == null && socket.uid !== this.creatorId) {
             this.opponentSocket = socket;
             return true;
         }
@@ -60,7 +61,6 @@ class Lobby {
     }
 
     isFull(): boolean {
-        // @ts-ignore
         // console.log(`[matchmaker:Lobby:isFull] creatorSocket: ${this.creatorSocket?.uid}, opponentSocket: ${this.opponentSocket?.uid}`);
         return this.creatorSocket != null && this.opponentSocket != null;
     }
@@ -82,15 +82,15 @@ export function parseQueueMode(value: unknown): PlayMode | null {
 }
 let matchmakingInProgress = false;
 
-async function notifyAdmin(uid1: string, uid2:string, mode: PlayMode, action: string) {
+async function notifyAdmin(uid1: string, uid2: string | null, mode: PlayMode, action: 'left' | 'joined' | 'matched') {
     if (!discordEnabled) return;
     try {
-        let message;
-        if (action == 'left') {
+        let message: string;
+        if (action === 'left') {
             message = `Player ${uid1} has left the queue.`;
-        } else if(action == 'joined') {
+        } else if(action === 'joined') {
             message = `Player ${uid1} has joined the queue in ${PlayMode[mode]} mode!`;
-        } else if (action == 'matched') {
+        } else if (action === 'matched') {
             message = `Players ${uid1} and ${uid2} have been matched in ${PlayMode[mode]} mode!`;
         }
         sendMessageToAdmin(discordClient, message);
@@ -127,7 +127,7 @@ function emitQueueCount() {
     if (FAKE_QUEUE_NUMBERS_ENABLED) {
         count = Math.floor(Math.random() * 4) + 2;
     }
-    io.emit('queueCount', { count }); 
+    io.emit('queueCount', { count });
 }
 
 function removePlayerFromQ(player: QueuingPlayer) {
@@ -145,8 +145,8 @@ function removePlayerFromQ(player: QueuingPlayer) {
 }
 
 function incrementGoldReward(player: QueuingPlayer) {
-    if (player.mode != PlayMode.PRACTICE && player.waitingTime % goldRewardInterval === 0) {
-        player.gold += goldReward; 
+    if (player.mode !== PlayMode.PRACTICE && player.waitingTime % goldRewardInterval === 0) {
+        player.gold += goldReward;
         player.socket.emit("updateGold", { gold: player.gold });
     }
 }
@@ -166,8 +166,8 @@ function queueTimeUpdate() {
 }
 
 function switcherooCheck(player: QueuingPlayer) {
-    if ((player.mode == PlayMode.CASUAL 
-        || (ALLOW_SWITCHEROO_RANKED && player.mode == PlayMode.RANKED)) 
+    if ((player.mode === PlayMode.CASUAL
+        || (ALLOW_SWITCHEROO_RANKED && player.mode === PlayMode.RANKED))
         && player.waitingTime > casualModeThresholdTime) {
         // Calculate the probability of redirecting to a PRACTICE game
         const waitTimeBeyondThreshold = player.waitingTime - casualModeThresholdTime;
@@ -175,8 +175,8 @@ function switcherooCheck(player: QueuingPlayer) {
 
         if (Math.random() < redirectionProbability) {
             console.log(`Redirecting ${player.socket.id} to a CASUAL_VS_AI game due to long wait.`);
-            const mode = player.mode == PlayMode.CASUAL ? PlayMode.CASUAL_VS_AI : PlayMode.RANKED_VS_AI;
-            const league = player.mode == PlayMode.RANKED ? player.league : null;
+            const mode = player.mode === PlayMode.CASUAL ? PlayMode.CASUAL_VS_AI : PlayMode.RANKED_VS_AI;
+            const league = player.mode === PlayMode.RANKED ? player.league : null;
             createGame(player.socket, null, mode, league);
             removePlayerFromQ(player);
             return true;
@@ -203,7 +203,7 @@ export async function tryMatchPlayers(
         for (let j = i + 1; j < queue.length; j++) {
             let player2 = queue[j];
             console.log(`[matchmaker:tryMatchPlayers] Considering ${player1.socket.id} with ${player2.socket.id} ...`);
-            if (player1.mode == player2.mode && canBeMatched(player1, player2)) {
+            if (player1.mode === player2.mode && canBeMatched(player1, player2)) {
                 console.log(`Match found between ${player1.socket.id} and ${player2.socket.id}`);
                 // Start a game for these two players
                 const success = await createMatch(player1.socket, player2.socket, player1.mode, player1.league);
@@ -218,7 +218,7 @@ export async function tryMatchPlayers(
                 }
                 break;
             } else {
-                if (player1.mode == player2.mode) {
+                if (player1.mode === player2.mode) {
                     console.log(`[matchmaker:tryMatchPlayers] Mismatchibg modes`);
                 } else {
                     console.log(`[matchmaker:tryMatchPlayers] Incompatible ELOs: ${player1.elo} vs ${player2.elo}, ranges: ${player1.range} vs ${player2.range}`);
@@ -234,7 +234,7 @@ export async function tryMatchPlayers(
 
 function countQueuingPlayers(mode: PlayMode, league: League): number {
     const playersInMode =  playersQueue.filter(player => player.mode === mode);
-    if (mode == PlayMode.RANKED) {
+    if (mode === PlayMode.RANKED) {
         return playersInMode.filter(player => player.league === league).length;
     }
     if (FAKE_QUEUE_NUMBERS_ENABLED) {
@@ -247,7 +247,7 @@ function countQueuingPlayers(mode: PlayMode, league: League): number {
 function canBeMatched(player1: QueuingPlayer, player2: QueuingPlayer): boolean {
     const isDifferentPlayers = player1.socket.uid !== player2.socket.uid;
     const isEloCompatible = Math.abs(player1.elo - player2.elo) <= player1.range && Math.abs(player1.elo - player2.elo) <= player2.range;
-    const isLeagueCompatible = player1.mode != PlayMode.RANKED || player1.league == player2.league;
+    const isLeagueCompatible = player1.mode !== PlayMode.RANKED || player1.league === player2.league;
     return isDifferentPlayers && isEloCompatible && isLeagueCompatible;
 }
 
@@ -265,15 +265,15 @@ async function createGame(
             console.log(`[matchmaker:createGame] Failed to join game for player2`);
             // Reset player1's status if player2 can't join
             console.log(`[matchmaker:createGame] Resetting player1's status to ONLINE after failed player2 join`);
-            // @ts-ignore
+            // @ts-expect-error
             updatePlayerStatus(player1.uid, PlayerStatus.ONLINE);
             return false;
         }
 
         // Decline any pending challenges for both players
-        // @ts-ignore
+        // @ts-expect-error
         declinePendingChallenge(player1.uid);
-        // @ts-ignore
+        // @ts-expect-error
         if (player2) declinePendingChallenge(player2.uid);
 
         const gameId = crypto.randomUUID();
@@ -284,7 +284,7 @@ async function createGame(
                 method: 'POST',
                 body: {
                     gameId,
-                    // @ts-ignore
+                    // @ts-expect-error
                     players: [player1.uid, player2?.uid],
                     mode,
                     league,
@@ -296,10 +296,10 @@ async function createGame(
         );
 
         // Update status for both players
-        // @ts-ignore
+        // @ts-expect-error
         updatePlayerStatus(player1.uid, PlayerStatus.INGAME, gameId);
         if (player2) {
-            // @ts-ignore
+            // @ts-expect-error
             updatePlayerStatus(player2.uid, PlayerStatus.INGAME, gameId);
         }
 
@@ -307,16 +307,16 @@ async function createGame(
         if (player2)
             player2.nsp.to(player2.id).emit("matchFound", { gameId });
 
-        // @ts-ignore
+        // @ts-expect-error
         notifyAdmin(player1?.uid, player2?.uid, mode, 'matched');
         return true;
     } catch (error) {
         console.error(`Error creating game: ${error}`);
         // Reset players' status on error
-        // @ts-ignore
+        // @ts-expect-error
         updatePlayerStatus(player1.uid, PlayerStatus.ONLINE);
         if (player2) {
-            // @ts-ignore
+            // @ts-expect-error
             updatePlayerStatus(player2.uid, PlayerStatus.ONLINE);
         }
         return false;
@@ -332,13 +332,13 @@ function sendQData(player: QueuingPlayer) {
     });
 }
 
-async function addToQueue(socket: any, mode: PlayMode) {
+async function addToQueue(socket: MatchmakingSocket, mode: PlayMode) {
     try {
         const queuingData = await apiFetch(
             'queuingData',
             socket.firebaseToken,
         );
-    
+
         const player: QueuingPlayer = {
             socket,
             elo: queuingData.elo,
@@ -351,7 +351,6 @@ async function addToQueue(socket: any, mode: PlayMode) {
         playersQueue.push(player);
         sendQData(player);
         emitQueueCount();
-        // @ts-ignore
         updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
         console.log(`Player ${socket.id} joined queue  in mode ${mode} with elo ${player.elo} and league ${player.league}`);
     } catch (error) {
@@ -360,7 +359,7 @@ async function addToQueue(socket: any, mode: PlayMode) {
 }
 
 async function savePlayerGold(player: QueuingPlayer) {
-    if (player.gold == 0) return;
+    if (player.gold === 0) return;
     try {
         await apiFetch(
             'saveGoldReward',
@@ -368,7 +367,7 @@ async function savePlayerGold(player: QueuingPlayer) {
             {
                 method: 'POST',
                 body: {
-                    uid: player.socket.uid, 
+                    uid: player.socket.uid,
                     gold: player.gold,
                 },
                 headers: {
@@ -382,7 +381,7 @@ async function savePlayerGold(player: QueuingPlayer) {
     }
 }
 
-async function logQueuingActivity(playerId: string, actionType: string, details: any) {
+async function logQueuingActivity(playerId: string, actionType: string, details: unknown) {
     console.log(`Logging queuing activity: ${playerId}, ${actionType}, ${details}`);
     try {
         await apiFetch(
@@ -417,7 +416,7 @@ export async function processJoinQueue(socket, data: { mode: unknown }) {
         }
         console.log(`[matchmaker:processJoinQueue] Player ${socket.id} joining queue in mode ${mode} ...`);
 
-        if (mode == PlayMode.PRACTICE) {
+        if (mode === PlayMode.PRACTICE) {
             notifyAdmin(socket.uid, null, mode, 'joined');
             createGame(socket, null, PlayMode.PRACTICE);
             return;
@@ -446,8 +445,8 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
     try {
         // Check if player can join a game
         if (!(await tryJoinGame(socket))) {
-            socket.emit('lobbyError', { 
-                message: 'Cannot join lobby while in another game' 
+            socket.emit('lobbyError', {
+                message: 'Cannot join lobby while in another game'
             });
             return;
         }
@@ -472,12 +471,12 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
         if (!lobby) {
             // Create new lobby instance with opponentId from lobbyDetails
             const newLobby = new Lobby(
-                data.lobbyId, 
+                data.lobbyId,
                 lobbyDetails.creatorId,
                 lobbyDetails.opponentId,
             );
             lobbies.set(data.lobbyId, newLobby);
-            
+
             if (!newLobby.addPlayer(socket)) {
                 socket.emit('lobbyError', { message: 'Failed to join lobby' });
                 return;
@@ -485,13 +484,13 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
 
             // Update player status
             updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
-            
+
             // Send lobby details along with the join confirmation
-            socket.emit('lobbyJoined', { 
+            socket.emit('lobbyJoined', {
                 lobbyId: data.lobbyId,
                 type: lobbyDetails.type,
-                opponentName: lobbyDetails.type === 'friend' ? 
-                    (socket.uid === lobbyDetails.creatorId ? lobbyDetails.opponentNickname : lobbyDetails.nickname) : 
+                opponentName: lobbyDetails.type === 'friend' ?
+                    (socket.uid === lobbyDetails.creatorId ? lobbyDetails.opponentNickname : lobbyDetails.nickname) :
                     null
             });
             return;
@@ -516,7 +515,7 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
         if (lobby.isFull()) {
             // Clear any pending challenge before starting the game
             pendingChallenges.delete(lobby.opponentId);
-            
+
             await createGame(
                 lobby.creatorSocket,
                 lobby.opponentSocket,
@@ -529,7 +528,7 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
         // Reset player status on error
         updatePlayerStatus(socket.uid, PlayerStatus.ONLINE);
         console.error('Error joining lobby:', error);
-        socket.emit('lobbyError', { 
+        socket.emit('lobbyError', {
             message: error instanceof Error ? error.message : 'Failed to join lobby'
         });
     }
@@ -537,10 +536,9 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
 
 
 export async function processLeaveQueue(socket) {
-    // @ts-ignore
     const uid = socket.uid;
     const status = getPlayerStatus(uid);
-    
+
     console.log(`[matchmaker:processLeaveQueue] Player ${uid} leaving queue in status ${status}`);
     if (status === PlayerStatus.QUEUING) {
         updatePlayerStatus(uid, PlayerStatus.ONLINE);
@@ -562,7 +560,7 @@ export async function processLeaveQueue(socket) {
 
     leaveQueueOrLobby(socket);
 }
-  
+
 export async function processDisconnect(socket) {
     console.log(`Player ${socket.id} disconnected`);
     await leaveQueueOrLobby(socket);
@@ -591,24 +589,24 @@ async function handleQueueDisconnect(player: QueuingPlayer) {
 
 async function handleLobbyDisconnect(socket, lobby: Lobby) {
     console.log(`Player ${socket.id} disconnected from lobby ${lobby.id}`);
-    
+
     // Destroy the lobby
     lobbies.delete(lobby.id);
-    
+
     // Only call cancelLobby if the disconnecting player is the creator
     if (socket.uid === lobby.creatorId) {
         try {
             await cancelLobby(socket.firebaseToken, lobby.id, 'creator disconnected');
-        } catch (error) {
+        } catch (_error) {
             // Already logged in cancelLobby
         }
     }
-    
+
     await logQueuingActivity(socket.uid, 'leaveLobby', lobby.id);
 }
 
 function findLobbyBySocketId(socketId: string): Lobby | undefined {
-    return Array.from(lobbies.values()).find(lobby => 
+    return Array.from(lobbies.values()).find(lobby =>
         lobby.creatorSocket?.id === socketId || lobby.opponentSocket?.id === socketId
     );
 }
@@ -661,10 +659,10 @@ export function processConnection(socket) {
 }
 
 export function processLeaveGame(socket: Socket, data: { gameId: string }) {
-    // @ts-ignore
+    // @ts-expect-error
     const uid = socket.uid;
     const status = getPlayerStatus(uid);
-    
+
     console.log(`[matchmaker:processLeaveGame] Player ${uid} leaving game ${data.gameId}`);
     if (status === PlayerStatus.INGAME) {
         // Only update if they're leaving the game they're actually in
@@ -679,7 +677,7 @@ export function processLeaveGame(socket: Socket, data: { gameId: string }) {
 function getPlayerStatusInfo(uid: string) {
     const player = connectedPlayers[uid];
     if (!player) return { status: PlayerStatus.OFFLINE };
-    
+
     return {
         status: player.status,
         gameId: player.gameId
@@ -704,13 +702,13 @@ export function processGetFriendsStatuses(socket: Socket, data: { friendIds: str
     socket.emit('friendsStatuses', statuses);
 }
 
-export async function processSendChallenge(socket: any, data: { opponentUID: string }) {
+export async function processSendChallenge(socket: MatchmakingSocket, data: { opponentUID: string }) {
     try {
         // Get opponent's socket if they're connected
         const opponentSocket = getPlayerSocket(data.opponentUID);
         if (!opponentSocket) {
-            socket.emit('challengeResponse', { 
-                error: 'Player is not currently online' 
+            socket.emit('challengeResponse', {
+                error: 'Player is not currently online'
             });
             return;
         }
@@ -719,8 +717,8 @@ export async function processSendChallenge(socket: any, data: { opponentUID: str
         const opponentStatus = getPlayerStatus(data.opponentUID);
         const allowedStatuses = [PlayerStatus.ONLINE];
         if (!allowedStatuses.includes(opponentStatus)) {
-            socket.emit('challengeResponse', { 
-                error: 'Player is not available for challenges right now' 
+            socket.emit('challengeResponse', {
+                error: 'Player is not available for challenges right now'
             });
             return;
         }
@@ -780,30 +778,30 @@ export async function processSendChallenge(socket: any, data: { opponentUID: str
 
         } catch (error) {
             console.error('Error creating friend lobby:', error);
-            socket.emit('challengeResponse', { 
-                error: 'Failed to create challenge lobby' 
+            socket.emit('challengeResponse', {
+                error: 'Failed to create challenge lobby'
             });
         }
 
     } catch (error) {
         console.error('Error processing challenge:', error);
-        socket.emit('challengeResponse', { 
-            error: 'Internal server error while processing challenge' 
+        socket.emit('challengeResponse', {
+            error: 'Internal server error while processing challenge'
         });
     }
 }
 
-export async function processChallengeDeclined(socket, data: { 
+export async function processChallengeDeclined(socket, data: {
     challengerId: string,
-    lobbyId: string 
+    lobbyId: string
 }) {
     console.log(`[matchmaker:processChallengeDeclined] Challenger ${data.challengerId} declined challenge for lobby ${data.lobbyId}`);
-    
+
     // Get the pending challenge before removing it
     const pendingChallenge = pendingChallenges.get(socket.uid);
     // Remove the pending challenge
     pendingChallenges.delete(socket.uid);
-    
+
     // Get challenger's socket if they're connected
     const challengerSocket = getPlayerSocket(data.challengerId);
     if (challengerSocket) {
@@ -812,9 +810,9 @@ export async function processChallengeDeclined(socket, data: {
         });
 
         try {
-            // @ts-ignore
+            // @ts-expect-error
             await cancelLobby(challengerSocket.firebaseToken, data.lobbyId, 'challenge declined');
-        } catch (error) {
+        } catch (_error) {
             // Already logged in cancelLobby
         }
     }
@@ -825,18 +823,18 @@ export async function processChallengeDeclined(socket, data: {
 }
 
 async function tryJoinGame(socket: Socket): Promise<boolean> {
-    // @ts-ignore
+    // @ts-expect-error
     const uid = socket.uid;
     const status = getPlayerStatus(uid);
-    
+
     // If player is already in a game or joining one, prevent joining
     if (status === PlayerStatus.INGAME || status === PlayerStatus.JOINING_GAME) {
-        socket.emit('gameError', { 
-            message: 'Already in or joining another game' 
+        socket.emit('gameError', {
+            message: 'Already in or joining another game'
         });
         return false;
     }
-    
+
     // Set status to joining game
     updatePlayerStatus(uid, PlayerStatus.JOINING_GAME);
     return true;
@@ -858,23 +856,23 @@ function declinePendingChallenge(uid: string) {
     const pendingChallenge = pendingChallenges.get(uid);
     if (pendingChallenge) {
         const { challengerId, lobbyId } = pendingChallenge;
-        
+
         // Get challenger's socket if they're connected
         const challengerSocket = getPlayerSocket(challengerId);
         if (challengerSocket) {
             challengerSocket.emit('challengeDeclined');
-            
-            // @ts-ignore
+
+            // @ts-expect-error
             cancelLobby(challengerSocket.firebaseToken, lobbyId, 'pending challenge declined')
                 .catch(() => {}); // Error already logged in cancelLobby
         }
 
         // Update challenger's status back to online
         updatePlayerStatus(challengerId, PlayerStatus.ONLINE);
-        
+
         // Remove the pending challenge
         pendingChallenges.delete(uid);
-        
+
         console.log(`Declined pending challenge from ${challengerId} (lobby: ${lobbyId}) due to queue match`);
     }
 }

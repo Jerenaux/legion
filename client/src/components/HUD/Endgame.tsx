@@ -1,4 +1,6 @@
-import { h, Component } from 'preact';
+
+import { h } from 'preact';
+import { Component } from 'preact';
 import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
 import { CharacterUpdate, GameOutcomeReward, TeamMember } from '@legion/shared/interfaces';
@@ -10,6 +12,7 @@ import { events } from './GameHUD';
 import './Endgame.style.css';
 import _lockIcon from '@assets/lock.png';
 import { PlayerContext } from '../../contexts/PlayerContext';
+import { EventEmitter } from 'eventemitter3';
 
 // Asset imports
 import victoryBg from '@assets/game_end/victory_bg.png';
@@ -51,7 +54,7 @@ interface EndgameProps {
     chestKey: ChestColor;
     game0: boolean;
     mode: PlayMode;
-    eventEmitter: any;
+    eventEmitter: EventEmitter;
     closeGame: () => void;
 }
 
@@ -64,8 +67,8 @@ interface Reward {
 }
 
 export class Endgame extends Component<EndgameProps, EndgameState> {
-    events: any;
-    static contextType = PlayerContext; 
+    events: EventEmitter;
+    static contextType = PlayerContext;
 
     constructor(props) {
         super(props);
@@ -175,9 +178,6 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
     render() {
         const [width, height] = useWindowSize()
         const { members, characters } = this.props;
-        const isGame0 = this.props.game0;
-        const grade = isGame0 ? 'A' : this.props.grade;
-
         const showPlayAgain = !this.props.game0 && this.props.mode !== PlayMode.CASUAL_VS_FRIEND;
 
         return (
@@ -187,7 +187,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 </div>
 
                 <div className="endgame_characters_grid">
-                    {characters.map((character, idx) => (
+                    {characters.map((character) => (
                         <CharacterCard
                             member={members[character.num - 1]}
                             update={character as CharacterUpdate}
@@ -198,9 +198,9 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
 
                 <div className="endgame_rewards_container">
                     <div className="endgame_rewards_heading_container">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
+                        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                         <p className="endgame_rewards_heading">Rewards</p>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
+                        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                     </div>
                     <div className="flex items_center justify_center gap_4 endgame_rewards_items">
                         {this.getRewardsList().map((reward, idx) => (
@@ -229,12 +229,12 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 <div className="endgame_buttons">
                     {showPlayAgain && (
                         this.context.getCompletedGames() > 11 ? (
-                            <div 
+                            <button type="button" data-game-control
                                 className="endgame_button endgame_button_primary"
                                 onClick={this.handlePlayAgain}
                             >
                                 <span>Play Again!</span>
-                            </div>
+                            </button>
                         ) : (
                             <div className="endgame_unlock_message">
                                 <img src={_lockIcon} className="shaking-lock" alt="Lock icon" />
@@ -242,15 +242,15 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                             </div>
                         )
                     )}
-                    <div 
+                    <button type="button" data-game-control
                         className="endgame_button endgame_button_secondary"
                         onClick={this.props.closeGame}
                     >
                         <span>Main Menu</span>
-                    </div>
+                    </button>
                 </div>
 
-                {!!this.state.selectedChest && <OpenedChest 
+                {!!this.state.selectedChest && <OpenedChest
                     width={width}
                     height={height}
                     color={this.state.selectedChest.color}

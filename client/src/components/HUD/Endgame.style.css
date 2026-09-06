@@ -16,7 +16,7 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     text-transform: uppercase;
     transition: all 0.2s ease;
     position: relative;
@@ -29,7 +29,7 @@
     background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
     color: #1c1f25;
     border: 2px solid #ffd700;
-    box-shadow: 
+    box-shadow:
         0 0 20px rgba(255, 166, 0, 0.3),
         inset 0 0 10px rgba(255, 255, 255, 0.5);
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
@@ -37,7 +37,7 @@
 
 .endgame_button_primary:hover {
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
         0 0 30px rgba(255, 166, 0, 0.5),
         inset 0 0 15px rgba(255, 255, 255, 0.7);
 }
@@ -116,11 +116,11 @@
         height: clamp(20px, 4vh, 24px);
         margin: clamp(12px, 3vh, 16px) auto clamp(8px, 2vh, 12px);
     }
-    
+
     .defeat_title .defeat_title_bg {
         height: clamp(36px, 6vh, 48px);
     }
-    
+
     .defeat_title .defeat_title_effect {
         width: 50vh;
         top: clamp(-24px, -4vh, -28px);
@@ -140,18 +140,18 @@
 }
 
 @keyframes titleBounce {
-    0% { 
-        transform: scale(0.5); 
+    0% {
+        transform: scale(0.5);
         opacity: 0;
     }
-    50% { 
+    50% {
         transform: scale(1.2);
         opacity: 1;
     }
-    75% { 
+    75% {
         transform: scale(0.9);
     }
-    100% { 
+    100% {
         transform: scale(1);
     }
 }
@@ -172,28 +172,28 @@
 }
 
 /* Update media query for small screens */
-@media screen and (max-width: 480px), 
+@media screen and (max-width: 480px),
        screen and (max-height: 600px) {
     .endgame_rewards_container {
         transform: scale(0.8);
         bottom: 25vh;
     }
-    
+
     .endgame_rewards_items {
         gap: 8px;
         max-width: 90%;
     }
-    
+
     .streak_gold_list {
         width: 56px;
         height: 56px;
     }
-    
+
     .streak_gold_list > div:first-child {
         width: 36px;
         height: 36px;
     }
-    
+
     .streak_gold_list_amount {
         font-size: 12px;
     }
@@ -292,20 +292,20 @@
     align-items: center;
     color: #ffffff;
   }
-  
+
   .game_leave_btn {
     background-image: url("@assets/HUD/button_bg_idle.png");
     background-size: 100% 100%;
     width: 50%;
     height: 52px;
-  
+
     display: flex;
     align-items: center;
     justify-content: center;
-  
+
     color: #ffffff;
   }
-  
+
   .game_leave_btn:hover {
     background-image: url("@assets/HUD/button_bg_active.png");
   }
@@ -322,22 +322,22 @@
     background-size: 100% 100%;
     width: 156px;
     height: 56px;
-  
+
     font-size: 16px;
     font-weight: 600;
     color: #ffffff;
-  
+
     display: flex;
     justify-content: center;
     align-items: center;
-  
+
     padding-right: 8px;
     cursor: pointer;
-  
+
     position: absolute;
     bottom: 36px;
 }
-  
+
 .endgame_leave:hover {
     background-image: url("@assets/game_end/leave_btn_active.png");
 }
@@ -432,4 +432,3 @@
         transform: scale(0.8);
     }
 }
-  

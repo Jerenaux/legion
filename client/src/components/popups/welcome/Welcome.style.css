@@ -10,7 +10,7 @@
     align-items: center;
     z-index: 1000;
   }
-  
+
   .welcome-dialog {
     position: relative;
     background-color: #242b37;
@@ -20,11 +20,11 @@
     text-align: center;
     padding: 90px 20px 20px; /* Increased top padding */
     width: 400px;
-    font-family: Kim;
+    font-family: Kim, sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     color: white;
   }
-  
+
   .welcome-logo {
     position: absolute;
     top: -100px; /* Adjusted to move the logo up */
@@ -34,7 +34,7 @@
     height: auto;
     z-index: 1;
   }
-  
+
   .dialog-content {
     margin-top: 10px; /* Reduced top margin */
   }
@@ -43,12 +43,12 @@
     font-size: 16px;
     color: white;
   }
-  
+
   .login-header {
     font-size: 14px;
     color: white;
   }
-  
+
   .login-buttons {
     display: flex;
     flex-direction: column;
@@ -66,7 +66,7 @@
     width: 80%; /* Adjust width as needed */
     text-align: center;
     transition: all 0.3s ease; /* Smooth hover and active transition */
-    font-family: Kim;
+    font-family: Kim, sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -116,7 +116,7 @@
     width: 50%; /* Adjust width as needed */
     text-align: center;
   }
-  
+
   .back-button:hover {
     opacity: 0.8;
   }

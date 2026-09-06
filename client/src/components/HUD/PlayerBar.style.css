@@ -104,11 +104,11 @@
   font-size: 16px;
   font-weight: 500;
   text-shadow: 0 0 4px rgba(81, 253, 255, 0.5);
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
 }
 
 .player_bar_stat_value {
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
   font-size: 16px;
   color: #ffffff;
   min-width: 70px;
@@ -128,7 +128,7 @@
     width: 75%;
     transform: translateX(-50%) scale(0.85);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.85) translateX(5%);
   }
@@ -139,16 +139,16 @@
     width: 80%;
     transform: translateX(-50%) scale(0.8);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.8) translateX(8%);
     top: -35px;
   }
-  
+
   .player_bar_stats {
     max-width: 350px;
   }
-  
+
   .player_bar_turn_info {
     left: 60px;
   }
@@ -159,7 +159,7 @@
     width: 90%;
     transform: translateX(-50%) scale(0.75);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.75) translateX(12%);
   }
@@ -170,7 +170,7 @@
     width: 95%;
     transform: translateX(-50%) scale(0.65);
   }
-  
+
   .player_bar_actions_container {
     transform: scale(0.65) translateX(15%) translateY(-15%);
   }
@@ -193,7 +193,7 @@
   justify-content: center;
   align-items: center;
   font-size: 14px;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
   color: #ffffff;
   background: rgba(28, 31, 37, 0.6);
   padding: 2px 4px;
@@ -203,7 +203,6 @@
 .player_bar_statuses img {
   width: 20px;
   height: 22px;
-  background-color: #1c1f25;
   padding: 2px;
   border-radius: 2px;
   background: linear-gradient(135deg, #1c1f25 0%, #2a3746 100%);
@@ -225,7 +224,7 @@
   min-width: 300px;
   padding: 12px 40px;
   z-index: 1;
-  
+
   /* Container styling */
   background: linear-gradient(
     90deg,
@@ -236,32 +235,32 @@
     rgba(28, 31, 37, 0) 100%
   );
   border-radius: 4px;
-  
+
   /* Text styling */
   font-family: 'Kim', sans-serif;
   font-size: 24px;
   color: #ffffff;
   text-align: center;
   text-transform: uppercase;
-  text-shadow: 
+  text-shadow:
     0 0 10px rgba(202, 48, 77, 0.8),
     -1px -1px 0 #ca304d,
     1px -1px 0 #ca304d,
     -1px 1px 0 #ca304d,
     1px 1px 0 #ca304d;
-  
+
   /* Animation */
   animation: enemyTurnPulse 2s infinite;
 }
 
 @keyframes enemyTurnPulse {
   0%, 100% {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(202, 48, 77, 0.3),
       inset 0 0 20px rgba(202, 48, 77, 0.3);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 30px rgba(202, 48, 77, 0.5),
       inset 0 0 30px rgba(202, 48, 77, 0.5);
   }
@@ -291,7 +290,7 @@
   font-size: 18px;
   color: #ffffff;
   text-transform: uppercase;
-  text-shadow: 
+  text-shadow:
     0 0 8px rgba(69, 131, 208, 0.8),
     -1px -1px 0 #4583d0,
     1px -1px 0 #4583d0,
@@ -309,7 +308,7 @@
   width: 64px;
   height: 64px;
   padding: 8px 0;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
   font-size: 16px;
   text-transform: uppercase;
   color: #ffffff;
@@ -425,10 +424,10 @@
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
   font-size: 12px;
   color: #ffffff;
-  text-shadow: 
+  text-shadow:
     -1px -1px 0 #000,
     1px -1px 0 #000,
     -1px 1px 0 #000,
@@ -477,10 +476,10 @@
   position: absolute;
   bottom: 0px;
   right: 4px;
-  color: white;   
-  font-size: 14px; 
+  color: white;
+  font-size: 14px;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
   pointer-events: none;
   z-index: 1;
 }
@@ -518,7 +517,7 @@
   font-family: 'Kim', sans-serif;
   font-size: 16px;
   color: #ffffff;
-  text-shadow: 
+  text-shadow:
     0 0 8px rgba(202, 48, 77, 0.8),
     -1px -1px 0 #ca304d,
     1px -1px 0 #ca304d,
@@ -529,12 +528,12 @@
 
 @keyframes silencedPulse {
   0%, 100% {
-    box-shadow: 
+    box-shadow:
       0 0 15px rgba(202, 48, 77, 0.2),
       inset 0 0 15px rgba(202, 48, 77, 0.2);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(202, 48, 77, 0.4),
       inset 0 0 20px rgba(202, 48, 77, 0.4);
   }
@@ -551,7 +550,7 @@
   .player_bar_container {
     height: 12vh;
   }
-  
+
   .player_bar_actions_container {
     top: -30px;
   }

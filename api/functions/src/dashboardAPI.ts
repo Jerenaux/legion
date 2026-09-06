@@ -1,6 +1,5 @@
-import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
-import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
+import {onRequest, HttpsFunction, HttpsOptions} from "firebase-functions/v2/https";
+import admin, {checkAPIKey, corsMiddleware, } from "./APIsetup";
 import {Request, Response} from "express";
 
 type DashboardHandler = (request: Request, response: Response) => void | Promise<void>;
@@ -13,9 +12,9 @@ const adminHandler = (handler: DashboardHandler) => async (request: Request, res
     return handler(request, response);
 };
 
-function adminOnRequest(handler: DashboardHandler): any;
-function adminOnRequest(options: any, handler: DashboardHandler): any;
-function adminOnRequest(optionsOrHandler: any, maybeHandler?: DashboardHandler): any {
+function adminOnRequest(handler: DashboardHandler): HttpsFunction;
+function adminOnRequest(options: HttpsOptions, handler: DashboardHandler): HttpsFunction;
+function adminOnRequest(optionsOrHandler: HttpsOptions | DashboardHandler, maybeHandler?: DashboardHandler): HttpsFunction {
     if (typeof optionsOrHandler === "function") {
         return onRequest({secrets: ["API_KEY"]}, adminHandler(optionsOrHandler));
     }
@@ -25,25 +24,6 @@ function adminOnRequest(optionsOrHandler: any, maybeHandler?: DashboardHandler):
     );
 }
 
-interface RetentionData {
-    returningPlayers: number;
-    retentionRate: number;
-}
-
-interface DashboardData {
-    DAU: {
-        date: string;
-        userCount: number;
-    }[];
-    totalPlayers: number;
-    day1retention: RetentionData;
-    day7retention: RetentionData;
-    day30retention: RetentionData;
-    yesterdayRetention: RetentionData;
-    newPlayersPerDay: { [key: string]: number };
-    gamesPerModePerDay: GamesPerModePerDay;
-    medianGameDuration: number;
-}
 interface GamesPerModePerDay {
     [date: string]: {
         [mode: string]: number;
@@ -68,7 +48,14 @@ interface PlayerGameHistory {
     mode: string;
     hasReplay: boolean;
     playerWon: boolean;
-    actions: any[];
+    actions: FirebaseFirestore.DocumentData[];
+}
+
+interface DailyVisitor {
+    id: string;
+    referrer: string | null;
+    isMobile: boolean;
+    isDeveloper: boolean;
 }
 
 export async function updateDAU(userId: string) {
@@ -112,10 +99,10 @@ export async function updateDailyVisits(visitorId?: string, referrer?: string, i
             });
         } else {
             const docData = doc.data();
-            const visitors = docData && docData.visitors ? docData.visitors : [];
+            const visitors = (docData?.visitors ?? []) as DailyVisitor[];
 
             // Check if visitor already exists by ID
-            const visitorIndex = visitors.findIndex((v: any) => v.id === visitorId);
+            const visitorIndex = visitors.findIndex((visitor) => visitor.id === visitorId);
 
             if (visitorIndex === -1) {
                 // Add new visitor
@@ -132,7 +119,7 @@ export async function updateDailyVisits(visitorId?: string, referrer?: string, i
 }
 
 
-export async function logPlayerAction(playerId: string, actionType: string, details: any) {
+export async function logPlayerAction(playerId: string, actionType: string, details: unknown) {
     if (!playerId || playerId === '' || playerId === undefined || playerId === null) return;
     console.log(`[logPlayerAction] playerId: ${playerId}, actionType: ${actionType}, details: ${JSON.stringify(details)}`);
     const db = admin.firestore();
@@ -144,7 +131,7 @@ export async function logPlayerAction(playerId: string, actionType: string, deta
     });
 }
 
-export async function logGameAction(gameId: string, playerId: string, actionType: string, details: any) {
+export async function logGameAction(gameId: string, playerId: string, actionType: string, details: unknown) {
     console.log(`Logging game action: ${gameId}, ${playerId}, ${actionType}, ${details}`);
     const db = admin.firestore();
 
@@ -219,7 +206,7 @@ export const getDashboardData = adminOnRequest(
                         const joinDateObj = new Date(joinDate);
                         const lastActiveDateObj = new Date(lastActiveDate);
 
-                        if (!isNaN(joinDateObj.getTime()) && !isNaN(lastActiveDateObj.getTime())) {
+                        if (!Number.isNaN(joinDateObj.getTime()) && !Number.isNaN(lastActiveDateObj.getTime())) {
                             const daysActive = (lastActiveDateObj.getTime() - joinDateObj.getTime()) / (1000 * 60 * 60 * 24);
 
                             if (daysActive >= days) {
@@ -244,7 +231,7 @@ export const getDashboardData = adminOnRequest(
                         const joinDateObj = new Date(joinDate);
                         const lastActiveDateObj = new Date(lastActiveDate);
 
-                        if (!isNaN(joinDateObj.getTime()) && !isNaN(lastActiveDateObj.getTime())) {
+                        if (!Number.isNaN(joinDateObj.getTime()) && !Number.isNaN(lastActiveDateObj.getTime())) {
                             const daysActive = (lastActiveDateObj.getTime() - joinDateObj.getTime()) / (1000 * 60 * 60 * 24);
                             const now = new Date();
                             const daysSinceLastActive = (now.getTime() - lastActiveDateObj.getTime()) / (1000 * 60 * 60 * 24);
@@ -350,7 +337,7 @@ export const getActionLog = adminOnRequest(
             // Extract game IDs from the action log
             const gameIdSet = new Set();
             actionLog.forEach((action) => {
-                // @ts-ignore
+                // @ts-expect-error
                 const details = action.details || {};
                 const gameId = details.gameId;
                 if (gameId) {
@@ -366,8 +353,8 @@ export const getActionLog = adminOnRequest(
                 return;
             }
             const playerData = playerDoc.data();
-            // @ts-ignore
-            const { gold, rank, leagueStats, allTimeStats, characters, lossesStreak, engagementStats, joinDate, lastActiveDate } = playerData;
+            // @ts-expect-error
+            const { gold, leagueStats, allTimeStats, characters, engagementStats, joinDate, lastActiveDate } = playerData;
 
             // Fetch character details
             const characterDetails = [];
@@ -479,10 +466,10 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
             const playedMultipleGamesCutoff = request.query.playedMultipleGamesCutoff || playedGamesCutoff;
 
             // Mobile filtering: 0 = all, -1 = non-mobile only, 1 = mobile only
-            const mobileFilter = parseInt(request.query.mobile as string || '0');
+            const mobileFilter = parseInt(request.query.mobile as string || '0', 10);
 
             // Developer filtering: 0 = all, -1 = non-dev only, 1 = dev only
-            const devFilter = parseInt(request.query.dev as string || '0');
+            const devFilter = parseInt(request.query.dev as string || '0', 10);
 
             if (!startDate) {
                 response.status(400).send("Bad Request: Missing date parameter");
@@ -557,8 +544,8 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
             // Count unique visitors based on filters
             const uniqueVisitors = new Set();
             visitsSnapshot.forEach((doc) => {
-                const visitors = doc.data().visitors || [];
-                visitors.forEach((visitor: any) => {
+                const visitors = (doc.data().visitors || []) as DailyVisitor[];
+                visitors.forEach((visitor) => {
                     // Apply mobile filter if needed
                     if (mobileFilter === 1 && !visitor.isMobile) return;
                     if (mobileFilter === -1 && visitor.isMobile) return;
@@ -865,7 +852,7 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during migration",
-                // @ts-ignore
+                // @ts-expect-error
                 error: error.toString(),
             });
         }
@@ -915,7 +902,7 @@ export const migrateMetricsToStats = adminOnRequest(async (request, response) =>
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during migration",
-                // @ts-ignore
+                // @ts-expect-error
                 error: error.toString(),
             });
         }
@@ -1022,7 +1009,7 @@ export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (req
 
             // Filter for documents that don't have the isMobile field
             const docsToUpdate = playersSnapshot.docs.filter((doc) =>
-                !Object.prototype.hasOwnProperty.call(doc.data(), 'isMobile')
+                !Object.hasOwn(doc.data(), 'isMobile')
             );
 
             console.log(`Found ${docsToUpdate.length} players without isMobile flag`);
@@ -1070,7 +1057,7 @@ export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (req
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during migration",
-                // @ts-ignore
+                // @ts-expect-error
                 error: error.toString(),
             });
         }
@@ -1118,7 +1105,6 @@ export const getPlayerActionsReport = adminOnRequest({ memory: '512MiB' }, async
                 // Process each action
                 actionsSnapshot.docs.forEach((actionDoc) => {
                     const action = actionDoc.data();
-                    const timestamp = action.timestamp?.toDate?.() || 'unknown time';
                     textLog += `\n ${action.actionType}\n`;
                     if (action.details) {
                         textLog += `Details: ${JSON.stringify(action.details, null, 2)}\n`;
@@ -1192,7 +1178,7 @@ export const migrateCharacterSpeed = adminOnRequest({ memory: '512MiB' }, async 
             console.error("Migration error:", error);
             response.status(500).send({
                 message: "Error during character speed migration",
-                // @ts-ignore
+                // @ts-expect-error
                 error: error.toString(),
             });
         }

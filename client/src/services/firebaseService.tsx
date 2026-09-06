@@ -23,13 +23,13 @@ const configureFirebaseAuth = async () => {
         firebase.auth.Auth.Persistence.SESSION,
         firebase.auth.Auth.Persistence.NONE
       ];
-      
+
       for (const persistenceType of persistenceTypes) {
         try {
           await firebaseAuth.setPersistence(persistenceType);
           // console.log(`Firebase Auth: Successfully set ${persistenceType} persistence in Electron`);
           break;
-        } catch (error) {
+        } catch (_error) {
           console.warn(`Firebase Auth: ${persistenceType} persistence not supported, trying next option`);
           continue;
         }
@@ -39,7 +39,7 @@ const configureFirebaseAuth = async () => {
       try {
         await firebaseAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         // console.log('Firebase Auth: Using LOCAL persistence in web environment');
-      } catch (error) {
+      } catch (_error) {
         console.warn('Firebase Auth: LOCAL persistence not supported in web environment, using default');
       }
     }
@@ -52,7 +52,7 @@ const configureFirebaseAuth = async () => {
 // Configure persistence when auth is ready
 configureFirebaseAuth();
 
-if (process.env.USE_FIREBASE_EMULATOR == 'true') {
+if (process.env.USE_FIREBASE_EMULATOR === 'true') {
   console.log(`Using Firebase emulator at ${process.env.FIREBASE_AUTH_EMULATOR_HOST}`);
   firebaseAuth.useEmulator(process.env.FIREBASE_AUTH_EMULATOR_HOST);
 }

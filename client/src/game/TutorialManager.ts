@@ -1,5 +1,4 @@
 import { events } from '../components/HUD/GameHUD';
-import { Arena } from './Arena';
 import { EngagementStats } from '@legion/shared/interfaces';
 
 interface TutorialMessage {
@@ -8,7 +7,7 @@ interface TutorialMessage {
 }
 
 export class TutorialManager {
-    private engagementStats: EngagementStats;
+    private engagementStats: Partial<EngagementStats>;
     private messageQueue: TutorialMessage[] = [];
     private isProcessingQueue = false;
     private lastMessageTime: number = 0;
@@ -52,8 +51,7 @@ export class TutorialManager {
         }
     };
 
-    constructor(arena: Arena, engagementStats: EngagementStats) {
-        // @ts-ignore
+    constructor(engagementStats: Partial<EngagementStats>) {
         this.engagementStats = engagementStats || {};
         this.setupEventListeners();
     }
@@ -173,7 +171,7 @@ export class TutorialManager {
         if (this.gameEnded) return false;
         // console.log(`[TutorialManager:queueMessage] Attempting to queue message: ${messageKey}`);
         const now = Date.now();
-        
+
         // Check if enough time has passed since the last message
         if (now - this.lastMessageTime < this.MESSAGE_COOLDOWN) {
             // console.log(`[TutorialManager:queueMessage] Skipping message: too soon after last message`);
@@ -197,7 +195,7 @@ export class TutorialManager {
         this.isProcessingQueue = true;
         const message = this.messageQueue.shift();
         events.emit('showTutorialMessage', message);
-        
+
         this.isProcessingQueue = false;
         this.processMessageQueue();
     }
@@ -219,4 +217,4 @@ export class TutorialManager {
         events.removeAllListeners('hasStatus_PARALYZE');
 
     }
-} 
+}

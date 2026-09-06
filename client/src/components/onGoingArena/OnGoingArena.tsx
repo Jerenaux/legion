@@ -1,7 +1,7 @@
+import { h } from 'preact';
 // OnGoing Arena.tsx
 import './OnGoingArena.style.css';
-import { h, Component } from 'preact';
-import { route } from 'preact-router';
+import { Component } from 'preact';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import ArenaCard from '../arenaCard/ArenaCard';
 import Skeleton from 'react-loading-skeleton';

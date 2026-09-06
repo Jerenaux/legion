@@ -1,7 +1,9 @@
+
+import { h } from 'preact';
 // ShopItemFilter.tsx
 import { Class, ClassLabels, EquipmentSlot, ShopTab } from '@legion/shared/enums';
 import './ShopItemFilter.style.css'
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { ShopItems } from '@legion/shared/interfaces';
 
 // Import image assets
@@ -65,7 +67,7 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
                 return;
             }
 
-            const updatedInventory = curr_tab == 1 ? {
+            const updatedInventory = curr_tab === 1 ? {
                 consumables: shopItems.consumables,
                 spells: shopItems.spells,
                 equipment: shopItems.equipment.filter(item => item.classes.includes(Class[curr_class]))
@@ -88,7 +90,7 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
             const equipmentTemp = shopItems.equipment;
             const updatedEquipment = equipmentTemp.filter(item => updatedCheckboxes[item.slot]);
 
-            const noChecked = updatedEquipment.length == 0 && updatedCheckboxes.filter(item => item).length == 0;
+            const noChecked = updatedEquipment.length === 0 && updatedCheckboxes.filter(item => item).length === 0;
 
             this.props.handleInventory({
                 consumables: shopItems.consumables,
@@ -99,11 +101,11 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
 
         return (
             <div>
-                <div className="shop-item-filter-container" onClick={() => this.setState(prevState => ({ isOpen: !prevState.isOpen }))}>
+                <button type="button" data-game-control className="shop-item-filter-container" onClick={() => this.setState(prevState => ({ isOpen: !prevState.isOpen }))}>
                     <div className="shop-item-filter-title">
                         <span>Filter Items</span>
                     </div>
-                </div>
+                </button>
                 {this.state.isOpen && (
                     <div className="shop-filter-list">
                         {curr_tab === 1 && (
@@ -128,9 +130,11 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
 
                         <ul>
                             {CharacterClasses.map(character_class => (
-                                <li key={character_class} onClick={() => handleCurrentClass(character_class)}>
-                                    {this.state.currClass === character_class && <img src={confirmIcon} alt="confirm" />}
-                                    <span>{ClassLabels[character_class]}</span>
+                                <li key={character_class}>
+                                    <button type="button" data-game-control onClick={() => handleCurrentClass(character_class)}>
+                                        {this.state.currClass === character_class && <img src={confirmIcon} alt="Selected" />}
+                                        <span>{ClassLabels[character_class]}</span>
+                                    </button>
                                 </li>
                             ))}
                         </ul>

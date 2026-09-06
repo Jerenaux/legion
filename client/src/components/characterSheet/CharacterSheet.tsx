@@ -1,4 +1,6 @@
-import { h, Component } from 'preact';
+
+import { h } from 'preact';
+import { Component, ComponentChildren } from 'preact';
 import './CharacterSheet.style.css';
 import { classEnumToString, mapFrameToCoordinates, getSpritePath, getStatEnum } from '../utils';
 import { BaseItem } from '@legion/shared/BaseItem';
@@ -34,13 +36,13 @@ import spellsSpritesheet from '@assets/spells.png';
 interface CharacterSheetProps {
     itemEffects: Effect[];
     handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
-    selectedEquipmentSlot: number; 
-    handleSelectedEquipmentSlot: (newValue: number) => void; 
+    selectedEquipmentSlot: number;
+    handleSelectedEquipmentSlot: (newValue: number) => void;
     updateCharacterData: () => void;
 }
 
 class CharacterSheet extends Component<CharacterSheetProps> {
-    static contextType = PlayerContext; 
+    static contextType = PlayerContext;
 
     state = {
         characterItems: [],
@@ -55,8 +57,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         powerUpActive: false, //this.props.powerUpActive
     }
 
-    handleOpenModal = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment | SPSPendingData, modalType: ItemDialogType, index: number) => {
-        const elementRect = e.currentTarget.getBoundingClientRect();
+    handleOpenModal = (e: Event, modalData: BaseItem | BaseSpell | BaseEquipment | SPSPendingData, modalType: ItemDialogType, index: number) => {
+        const elementRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 
         const modalPosition = {
             top: elementRect.top + elementRect.height / 2,
@@ -71,14 +73,14 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         this.props.handleItemEffect([], InventoryActionType.UNEQUIP);
     }
 
-    handleUnEquipItem = (e: any, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: ItemDialogType, index: number) => {
+    handleUnEquipItem = (e: Event, modalData: BaseItem | BaseSpell | BaseEquipment, modalType: ItemDialogType, index: number) => {
         if (!modalData) return;
         this.handleOpenModal(e, modalData, modalType, index);
         this.props.handleItemEffect(modalData.effects, InventoryActionType.UNEQUIP);
     }
 
     render() {
-        const characterData = this.context.getActiveCharacter(); 
+        const characterData = this.context.getActiveCharacter();
         if (!characterData) return;
 
         const renderInfoBars = () => {
@@ -115,10 +117,10 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                         </p>
                     </div>
 
-                    {characterData?.sp > 0 && <button 
-                        className="info-bar-plus" 
+                    {characterData?.sp > 0 && <button type="button"
+                        className="info-bar-plus"
                         onClick={(e) => this.handleOpenModal(
-                            e, 
+                            e,
                             {
                                 stat: index,
                                 value: item.value,
@@ -135,13 +137,16 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         const renderEquipmentItems = (itemCategory) => {
             if (!characterData || !characterData.equipment) return;
 
-            let items, desiredOrder, backgroundImageUrl, isSpecialEquip;
+            let items: Array<{key: string; value: number}>;
+            let desiredOrder: string[];
+            let backgroundImageUrl: string;
+            let isSpecialEquip: boolean;
             const specialSlotsStart = 6;
 
             // Configure based on the category of items to render
             switch (itemCategory) {
                 case 'standardEquip':
-                    items = Object.entries(characterData.equipment)
+                    items = Object.entries(characterData.equipment as Record<string, number>)
                         .map(([key, value]) => ({ key, value }))
                         .slice(0, specialSlotsStart); // Standard equipment slots
                     desiredOrder = [
@@ -157,7 +162,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     isSpecialEquip = false;
                     break;
                 case 'specialEquip':
-                    items = Object.entries(characterData.equipment)
+                    items = Object.entries(characterData.equipment as Record<string, number>)
                         .map(([key, value]) => ({ key, value }))
                         .slice(specialSlotsStart, 9); // Special equipment slots
                     desiredOrder = [
@@ -190,8 +195,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
 
             return items.map((item, index) => {
                 if (isSpecialEquip) index += specialSlotsStart;
-                let content;
-                const itemData = getEquipmentById(item.value); 
+                let content: ComponentChildren;
+                const itemData = getEquipmentById(item.value);
                 if (item.value < 0) {
                     // Handle the case where there is no item equipped in this slot
                     content = (
@@ -209,25 +214,25 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     );
                 }
 
-                const equipmentItem = getEquipmentById(item.value); 
+                const equipmentItem = getEquipmentById(item.value);
 
                 const slotStyle = {
                     backgroundImage: item.value >= 0 && `linear-gradient(to bottom right, ${RarityColor[equipmentItem?.rarity]}, #1c1f25)`
-                } 
-                
+                }
+
                 if (this.props.selectedEquipmentSlot > -1) { // Equipping something
-                    if (this.props.selectedEquipmentSlot == EquipmentSlot.LEFT_RING 
-                        && characterData.equipment.left_ring != -1
-                        && characterData.equipment.right_ring == -1
+                    if (this.props.selectedEquipmentSlot === EquipmentSlot.LEFT_RING
+                        && characterData.equipment.left_ring !== -1
+                        && characterData.equipment.right_ring === -1
                     ) {
                         this.props.selectedEquipmentSlot = EquipmentSlot.RIGHT_RING;
                     }
                 }
 
-                
+
                 // Return the container div for each item
                 return (
-                    <div
+                    <button type="button" data-game-control
                       key={index}
                       className={`sheet-item ${
                         (itemData !== undefined)
@@ -240,7 +245,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                       onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}
                     >
                       {content}
-                    </div>
+                    </button>
                   );
             });
         };
@@ -250,7 +255,11 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             if (!characterData) return;
 
             // Define the capacity and array of items based on type
-            let capacity, items, dialogType, backgroundImageUrl, dataCallback;
+            let capacity: number;
+            let items: number[];
+            let dialogType: ItemDialogType;
+            let backgroundImageUrl: string;
+            let dataCallback: (id: number) => BaseItem | BaseSpell | BaseEquipment | undefined;
             switch (inventoryType) {
                 case InventoryType.CONSUMABLES:
                     capacity = characterData.carrying_capacity + characterData.carrying_capacity_bonus;
@@ -281,12 +290,12 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     }
 
                     return (
-                        <div className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
+                        <button type="button" data-game-control className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
                             <div className="special-equip" style={{
                                 backgroundImage: `url(${backgroundImageUrl})`,
                                 backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
                             }} />
-                        </div>
+                        </button>
                     );
                 } else {
                     return <div className="team-item" key={i} />;

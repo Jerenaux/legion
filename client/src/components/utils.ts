@@ -43,14 +43,9 @@ export function classEnumToString(characterClass: Class) {
 }
 
 export const statStrings: string[] = Object.keys(Stat)
-  .filter(key => isNaN(Number(key)))
+  .filter(key => Number.isNaN(Number(key)))
   .filter(key => key !== 'NONE')
   .map(key => key.toLowerCase());
-
-interface ExtraStyle {
-  background?: string;
-  backgroundSize?: string;
-}
 
 function showToast(text: string, duration: number = 3000, avatar: string) {
   Toastify({
@@ -103,7 +98,7 @@ export function errorToast(text: string, duration: number = -1) {
   console.error(text);
   showToast(text, duration, errorIcon);
 }
- 
+
 export function mapFrameToCoordinates(frame: number) {
   const width = 10;
   return {
@@ -128,7 +123,7 @@ export function fetchGuideTip() {
 
   }, 1, 300, true)
   .then((data) => {
-      if (data.guideId == -1) return;
+      if (data.guideId === -1) return;
       showGuideToast(guide[data.guideId], data.route);
       tipLock = false;
   })
@@ -145,7 +140,7 @@ export function getSpritePath(fileName: string) {
 }
 
 export function loadAvatar(avatar) {
-  if (avatar != '0') {
+  if (avatar !== '0') {
       try {
           return avatarContext(`./${avatar}.png`);
       } catch (error) {
@@ -204,11 +199,6 @@ export const statusIcons = {
   'Haste': hasteIcon,
 };
 
-interface ActionDetails {
-  message: string;
-  isMobile: boolean;
-}
-
 async function recordPlayerAction(actionType: string, details: string) {
   try {
     await apiFetch('recordPlayerAction', {
@@ -241,7 +231,7 @@ export function recordPageView(page: string) {
 export function isMobileDevice(): boolean {
   // Check if running in browser environment
   if (typeof window === 'undefined') return false;
-  
+
   return (
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
       // Include tablet detection
@@ -254,7 +244,7 @@ export function isMobileDevice(): boolean {
 // You can also add a more specific check if needed
 export function isTabletDevice(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   const userAgent = navigator.userAgent.toLowerCase();
   return (
       /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP))))/i.test(userAgent) ||
@@ -293,5 +283,5 @@ export function getRewardBgImage(rewardType: RewardType) {
       case RewardType.GOLD:
           return goldIcon;
   }
-} 
+}
 export const lockIcon = _lockIcon;

@@ -95,7 +95,7 @@ export class Player extends Phaser.GameObjects.Container {
         // Create the sprite using the given key and add it to the container
         this.sprite = scene.add.sprite(0, 0, texture);
 
-        this.add(this.sprite); 
+        this.add(this.sprite);
 
         this.healthBar = new HealthBar(scene, 0, -50, 0x00ff08);
         this.add(this.healthBar);
@@ -117,14 +117,14 @@ export class Player extends Phaser.GameObjects.Container {
         if (isPlayer) {
             this.numKey = scene.add.text(30, 70, num.toString(), { fontFamily: 'Kim', fontSize: '12px', color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(1,1);
             this.add(this.numKey);
-        } 
+        }
 
         // this.baseSquare.fillStyle(isPlayer ? 0x0000ff : 0xff0000); // Must be called before strokeRect
-        // this.baseSquare.fillRoundedRect(-30, 10, 60, 60, BASE_SQUARE_RADIUS);  
+        // this.baseSquare.fillRoundedRect(-30, 10, 60, 60, BASE_SQUARE_RADIUS);
 
         if (gridX < GRID_WIDTH/2) this.sprite.flipX = true;
 
-        // @ts-ignore
+        // @ts-expect-error
         this.scene.sprites.push(this.sprite);
 
         this.glowFx = this.sprite.preFX.addGlow(0x000000, 6);
@@ -186,12 +186,12 @@ export class Player extends Phaser.GameObjects.Container {
             const sprite = this.scene.add.sprite(0 + xOffset, -20 + yOffset, 'statuses')
                 .setOrigin(0.5, 0.1)
                 .setVisible(false);
-            
+
             this.add(sprite);
             this.statusSprites.set(StatusEffect[effect], sprite);
-            
+
             // Add to sprites list for kill cam effect
-            // @ts-ignore
+            // @ts-expect-error
             this.scene.sprites.push(sprite);
         });
     }
@@ -291,18 +291,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     makeEntrance() {
-        const combatStartPhrases: string[] = [
-            "Let's dance!",
-            "Prepare to fall!",
-            "Show me what you've got!",
-            "This ends now!",
-            "I've been waiting for this!",
-            "Victory or death!",
-            "No mercy!",
-            "This is my moment!",
-            "Let the battle begin!"
-          ];
-        const callback = () => { 
+        const callback = () => {
             this.playAnim('boast', true);
         };
         this.walkTo(this.gridX, this.gridY, 2000, callback);
@@ -314,20 +303,20 @@ export class Player extends Phaser.GameObjects.Container {
 
     isFrozen() {
         if (!this.statuses) return false;
-        return this.statuses[StatusEffect.FREEZE] != 0;
+        return this.statuses[StatusEffect.FREEZE] !== 0;
     }
 
     isParalyzed() {
-        return (this.statuses[StatusEffect.PARALYZE] != 0) || this.isFrozen();
+        return (this.statuses[StatusEffect.PARALYZE] !== 0) || this.isFrozen();
     }
 
     isMuted() {
-        return this.statuses[StatusEffect.MUTE] != 0;
+        return this.statuses[StatusEffect.MUTE] !== 0;
     }
 
     isHasted() {
         if (!this.statuses) return false;
-        return this.statuses[StatusEffect.HASTE] != 0;
+        return this.statuses[StatusEffect.HASTE] !== 0;
     }
 
     canAct() {
@@ -485,7 +474,7 @@ export class Player extends Phaser.GameObjects.Container {
 
     canMoveTo(x: number, y: number) {
         if (!this.canAct()) return false;
-        
+
         const distance = hexDistance(this.gridX, this.gridY, x, y);
         // console.log(`[Player:canMoveTo] distance: ${distance}, distance: ${this.distance}`);
         return distance <= this.distance;
@@ -509,7 +498,7 @@ export class Player extends Phaser.GameObjects.Container {
          * if `isSelected()` is true, do nothing
          * else, glow in green
          */
-        let glowColor;
+        let glowColor: GlowColors | undefined;
         if (!this.isPlayer) {
             glowColor = GlowColors.Enemy;
         } else if (!this.isSelected()) {
@@ -520,7 +509,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.glowFx.setActive(true);
         }
     }
-    
+
     onPointerOut() {
         this.arena.relayEvent('unhoverCharacter');
         if (this.isSelected()) return;
@@ -530,7 +519,7 @@ export class Player extends Phaser.GameObjects.Container {
     onPointerDown() {
         const selectedPlayer = this.arena.selectedPlayer;
         if (selectedPlayer) {
-            if (selectedPlayer == this) return; // Might be a move up order
+            if (selectedPlayer === this) return; // Might be a move up order
             if (selectedPlayer.hasPendingSpell() || selectedPlayer.hasPendingItem()) return; // Spell cast or item use should be tile-based
             if (!this.isNextTo(selectedPlayer.gridX, selectedPlayer.gridY)) return;
         }
@@ -549,7 +538,7 @@ export class Player extends Phaser.GameObjects.Container {
     isInIce() {
         return this.arena.hasObstacle(this.gridX, this.gridY);
     }
-    
+
     onClick() {
         if(this.isTarget()) {
             this.arena.playSound('click');
@@ -589,7 +578,7 @@ export class Player extends Phaser.GameObjects.Container {
 
     useItem(index) {
         // console.log(`[Player:useItem] index: ${index}`);
-        if (this.pendingItem == index) {
+        if (this.pendingItem === index) {
             this.cancelItem();
             return;
         }
@@ -606,7 +595,7 @@ export class Player extends Phaser.GameObjects.Container {
             return;
         }
         if (item) {
-            if (item.target == Target.SELF) {
+            if (item.target === Target.SELF) {
                 this.arena.sendUseItem(index, this.x, this.y, this);
             } else {
                 this.pendingItem = index;
@@ -628,7 +617,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.animationSprite.setVisible(true).play('cast');
             this.displayOverheadText(name, 4000, '#fff');
             this.arena.playSound('cast', 1);
-            
+
             if (charge) {
                 // Create charge sprite above the player
                 this.chargeSprite = this.scene.add.sprite(
@@ -638,10 +627,10 @@ export class Player extends Phaser.GameObjects.Container {
                 )
                 .setDepth(1) // Set slightly higher depth than player
                 .setScale(0.5);
-                
+
                 // Add the chargeSprite to the player container
                 this.add(this.chargeSprite);
-                
+
                 // Play the fire charge animation
                 this.chargeSprite.play(charge);
             }
@@ -653,7 +642,7 @@ export class Player extends Phaser.GameObjects.Container {
                 this.chargeSprite.destroy();
                 this.chargeSprite = null;
             }
-            
+
             this.playAnim('idle');
             this.animationSprite.setVisible(false);
             this.arena.stopSound('cast');
@@ -678,18 +667,18 @@ export class Player extends Phaser.GameObjects.Container {
         if (!spell) {
             return;
         }
-        
+
         // If the same spell is selected again, cancel it
-        if (this.pendingSpell == index) {
+        if (this.pendingSpell === index) {
             this.cancelSkill();
             return;
         }
-        
+
         // Cancel any pending item
         if (this.pendingItem != null) {
             this.cancelItem();
         }
-        
+
         // Check conditions for using a spell
         if (!this.canAct() || spell.cost > this.mp || this.isMuted()) {
             this.arena.playSound('nope', 0.2);
@@ -701,7 +690,7 @@ export class Player extends Phaser.GameObjects.Container {
             }
             return;
         }
-        
+
         // Set the pending spell and enable target mode
         this.pendingSpell = index;
         this.arena.toggleTargetMode(true);
@@ -723,19 +712,19 @@ export class Player extends Phaser.GameObjects.Container {
         // Store old position
         const oldGridX = this.gridX;
         const oldGridY = this.gridY;
-        
+
         // Update grid position - this changes the character's logical position
         this.updatePos(gridX, gridY);
-        
+
         // Start walking animation
         this.playAnim('walk');
 
         // Get the pixel coordinates for the movement
         const {x, y} = this.arena.hexGridToPixelCoords(gridX, gridY);
-        
+
         // Update grid tile at old position (remove character from old tile)
         this.arena.hexGridManager.updateTileOnCharacterExit(oldGridX, oldGridY);
-        
+
         // Animate the character to the new position
         this.scene.tweens.add({
             targets: this,
@@ -747,7 +736,7 @@ export class Player extends Phaser.GameObjects.Container {
             onComplete: () => {
                 // Update grid tile at new position (add character to new tile)
                 this.arena.hexGridManager.updateTileOnCharacterEnter(gridX, gridY, this.isPlayer);
-                
+
                 // Execute callback or return to idle animation
                 if (callback) {
                     callback();
@@ -758,7 +747,7 @@ export class Player extends Phaser.GameObjects.Container {
         });
 
         // Flip sprite if moving horizontally
-        if (oldGridX != this.gridX) this.sprite.flipX = this.gridX > oldGridX;
+        if (oldGridX !== this.gridX) this.sprite.flipX = this.gridX > oldGridX;
     }
 
     setHP(hp) {
@@ -766,7 +755,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.hp = hp;
         this.healthBar.setHpValue(hp / this.maxHP);
         if (this.hp < _hp) {
-            this.hurt();   
+            this.hurt();
         }
 
         if(this.isSelected()) this.checkHeartbeat();
@@ -777,11 +766,11 @@ export class Player extends Phaser.GameObjects.Container {
             // this.showBaseSquare(); // Show baseSquare when alive
 
             if (!this.casting) this.playAnim('hurt', true);
-            
+
             this.displayBars();
         }
 
-        if(this.hp != _hp) {
+        if(this.hp !== _hp) {
             this.arena.refreshUI(this.num);
             this.team.updateHP();
         }
@@ -796,7 +785,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.mp = mp;
         this.MPBar.setHpValue(mp / this.maxMP);
 
-        if(this.mp != _mp) {
+        if(this.mp !== _mp) {
             this.arena.refreshUI(this.num);
         }
     }
@@ -806,22 +795,9 @@ export class Player extends Phaser.GameObjects.Container {
         this.MPBar?.setVisible(false);
         this.hideAllStatusAnimations();
         this.playAnim('die');
-        // this.hideBaseSquare(); 
+        // this.hideBaseSquare();
         // this.stopBlinkingBaseSquare(); // Stop blinking if any
-        if (this.arena.selectedPlayer == this) this.arena.deselectPlayer();
-
-        const deathPhrases: string[] = [
-            "Not like this...",
-            "You'll regret that!",
-            "Avenge me!",
-            "I'll be back",
-            "Curse you!",
-            "Into the void...",
-            "Remember my name...",
-            "This isn't over!",
-          ];
-        const phrase = deathPhrases[Math.floor(Math.random() * deathPhrases.length)];
-        // this.talk(phrase);
+        if (this.arena.selectedPlayer === this) this.arena.deselectPlayer();
 
         this.arena.relayEvent('characterKilled');
     }
@@ -847,26 +823,26 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     displayOverheadText(text, duration, color) {
-        const randomXOffset = 0; //(Math.random() - 0.5) * 30; 
-        let randomYOffset = 0; // (Math.random() - 0.5) * 10; 
+        const randomXOffset = 0; //(Math.random() - 0.5) * 30;
+        let randomYOffset = 0; // (Math.random() - 0.5) * 10;
 
         if (Date.now() - this.lastOverheadMessage < 100) {
             randomYOffset -= 30;
         }
 
         const textObject = this.scene.add.text(
-            randomXOffset,( -this.sprite.height / 2) + 15 + randomYOffset, `${String(text)}`, 
+            randomXOffset,( -this.sprite.height / 2) + 15 + randomYOffset, `${String(text)}`,
             { fontSize: '24px', color, stroke: '#000', strokeThickness: 3, fontFamily: 'Kim',}
             ).setOrigin(0.5).setDepth(10)   ;
         this.add(textObject);
         this.lastOverheadMessage = Date.now();
-    
+
         // Create a tween to animate the damage text
         this.scene.tweens.add({
             targets: textObject,
             y: `-=${30 - randomYOffset}`,  // move up
             alpha: 0,   // fade out
-            duration, 
+            duration,
             ease: 'Power2',  // smooth easing
             onComplete: () => {
                 // remove the text when the tween is complete
@@ -909,7 +885,7 @@ export class Player extends Phaser.GameObjects.Container {
         // Map the spell IDs to the actual spell objects
         this.spells = spellsIds.map(spellId => {
             return getSpellById(spellId);
-        });   
+        });
         this.displayBars();
     }
 
@@ -921,16 +897,16 @@ export class Player extends Phaser.GameObjects.Container {
         Object.keys(statuses).forEach(status => {
             const duration = statuses[status];
             this.statuses[status] = duration;
-            if (duration != 0) {
+            if (duration !== 0) {
                 this.showStatusAnimation(status as keyof StatusEffects);
                 this.arena.relayEvent(`statusGained_${status}`);
             } else {
                 this.hideStatusAnimation(status as keyof StatusEffects);
-            } 
+            }
         });
 
         // Compute if any of the paralyzing statuses are active
-        const paralyzing = paralyzingStatuses.some(status => statuses[status] != null && statuses[status] != 0);
+        const paralyzing = paralyzingStatuses.some(status => statuses[status] != null && statuses[status] !== 0);
         this.toggleCharacterImmobilization(paralyzing);
 
         this.arena.refreshUI(this.num);
@@ -969,22 +945,21 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     toggleCharacterImmobilization(flag: boolean) {
-        if (flag) 
+        if (flag)
         {
-            this.sprite.anims.stop();   
+            this.sprite.anims.stop();
         } else {
             this.playAnim(this.getIdleAnim());
-        }   
+        }
     }
 
     async talk(text: string, sticky = false) {
         if (!this.speechBubble) return;
-        if (this.speechBubble.visible && this.speechBubble.getText() == text) return;
+        if (this.speechBubble.visible && this.speechBubble.getText() === text) return;
         if (this.speechBubble.visible) {
             this.hideBubble();
         }
-        
-        // @ts-ignore
+
         // await this.scene?.sleep(10);
         this.speechBubble.setText(text);
         this.speechBubble.setVisible(true);
@@ -1022,10 +997,10 @@ export class Player extends Phaser.GameObjects.Container {
         // Iterate over items, retun true if at least one replenishes HP and the character's
         // HP is less than maxHP, same for MP
         return this.inventory.some(item => {
-            return item.target == Target.SELF 
+            return item.target === Target.SELF
             && (
-                item.effects.some(effect => effect.stat == Stat.HP && effect.value > 0 && this.hp < this.maxHP) 
-                || item.effects.some(effect => effect.stat == Stat.MP && effect.value > 0 && this.mp < this.maxMP)
+                item.effects.some(effect => effect.stat === Stat.HP && effect.value > 0 && this.hp < this.maxHP)
+                || item.effects.some(effect => effect.stat === Stat.MP && effect.value > 0 && this.mp < this.maxMP)
             );
         });
     }
@@ -1042,13 +1017,13 @@ export class Player extends Phaser.GameObjects.Container {
             this.chargeSprite.destroy();
             this.chargeSprite = null;
         }
-        
+
         // Stop all tweens related to this player
         if (this.scene?.tweens) {
             this.scene.tweens.killTweensOf(this);
             // this.scene.tweens.killTweensOf(this.baseSquare);
         }
-    
+
         if (this.blinkTween) {
             this.blinkTween.stop();
             this.blinkTween = null;
@@ -1057,7 +1032,7 @@ export class Player extends Phaser.GameObjects.Container {
         // Stop any ongoing animations
         this.sprite.anims?.stop();
         this.animationSprite.anims.stop();
-    
+
         if (this.selectionArrow) {
             this.scene.tweens.killTweensOf(this.selectionArrow);
         }

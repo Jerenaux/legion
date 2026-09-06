@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
-import { CharacterUpdate, PlayerContextData, PlayerDataForGame, TeamData } from '@legion/shared/interfaces';
+import { CharacterUpdate, PlayerDataForGame, TeamData } from '@legion/shared/interfaces';
 import { ChestColor } from '@legion/shared/enums';
 import { MAX_AUDIENCE_SCORE } from "@legion/shared/config";
 import { AIServerPlayer } from "./AIServerPlayer";
@@ -58,7 +58,7 @@ export class Team {
             completedGames: 0,
             engagementStats: {},
         };
-    }   
+    }
 
     getRandomAIName() {
         const names = ['Aureus', 'Sovereign', 'Sentinel', 'Praetorian', 'Centurion', 'Gladius', 'Phalanx'];
@@ -153,7 +153,7 @@ export class Team {
     }
 
     sendScore() {
-        if (this.score != this._score) {
+        if (this.score !== this._score) {
             this.game.emitScoreChange(this);
         }
     }
@@ -194,7 +194,7 @@ export class Team {
     getCompletedGames() {
         return this.teamData.completedGames || 0;
     }
-    
+
     getChestKey(): ChestColor | null {
         if (!this.teamData.dailyloot) {
             return null;
@@ -220,7 +220,7 @@ export class Team {
     }
 
     getFirebaseToken() {
-        // @ts-ignore
+        // @ts-expect-error
         return this.socket?.firebaseToken;
     }
 
@@ -243,7 +243,7 @@ export class Team {
             earnedXP: member.earnedXP,
             level: member.levelsGained
         }));
-    }    
+    }
 
     getEngagement() {
         console.log(`[Team:getEngagement] Getting engagement for team ${this.id}`);
@@ -357,7 +357,7 @@ export class Team {
     getTeamSize() {
         return this.members.length;
     }
-    
+
     addWinRatio(winRatio: number) {
         this.teamData.AIwinRatio = winRatio;
     }

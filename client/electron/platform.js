@@ -16,7 +16,7 @@ async function getPlatformAuth(env = process.env, loadSteamworks = () => require
       env.STEAM_WEB_API_IDENTITY || STEAM_WEB_API_IDENTITY,
     );
     return {provider: "steam", credential: activeTicket.getBytes().toString("hex")};
-  } catch (error) {
+  } catch (_error) {
     if (env.NODE_ENV === "development") console.info("Steam is unavailable; using a direct session.");
     return null;
   }

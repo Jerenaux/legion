@@ -1,5 +1,8 @@
-import { h, Component, Fragment } from 'preact';
-import { avatarContext, getLeagueIcon, successToast, errorToast } from '../utils';
+
+import { Fragment } from 'preact';
+import { h } from 'preact';
+import { Component, } from 'preact';
+import { avatarContext, successToast, errorToast } from '../utils';
 import { LeaguesNames } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import './profile.style.css';
@@ -12,8 +15,29 @@ interface Props {
     id?: string;
 }
 
+interface ProfileStats {
+    gamesPlayed?: number;
+    nbGames?: number;
+    wins: number;
+    losses?: number;
+    winStreak?: number;
+    lossStreak?: number;
+    rank?: number;
+    league?: number;
+}
+
+interface ProfileData {
+    name: string;
+    avatar: string;
+    elo: number;
+    joinDate: string;
+    allTimeStats: ProfileStats;
+    casualStats: ProfileStats;
+    leagueStats: ProfileStats;
+}
+
 interface State {
-    profileData: any;
+    profileData: ProfileData | null;
     isLoading: boolean;
     error: string | null;
     avatarUrl: string | null;
@@ -98,8 +122,8 @@ class Profile extends Component<Props, State> {
             if (!response.ok) {
                 throw new Error('Failed to fetch profile data');
             }
-            const profileData = await response.json();
-            
+            const profileData = await response.json() as ProfileData;
+
             // Load avatar
             if (profileData.avatar !== '0') {
                 try {
@@ -113,9 +137,9 @@ class Profile extends Component<Props, State> {
             this.setState({ profileData, isLoading: false });
         } catch (error) {
             console.error('Error loading profile:', error);
-            this.setState({ 
-                error: 'Failed to load profile data', 
-                isLoading: false 
+            this.setState({
+                error: 'Failed to load profile data',
+                isLoading: false
             });
         }
     };
@@ -202,12 +226,12 @@ class Profile extends Component<Props, State> {
         this.statusInterval = setInterval(fetchStatuses, 5000);
     }
 
-    renderPlayerStatus = (status: string, gameId?: string) => {
+    renderPlayerStatus = (status: string) => {
         return (
             <>
                 <div className={`status-dot ${status}`} />
                 {/* {status === 'ingame' && gameId && (
-                    <div 
+                    <div
                         className="spectate-badge"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -229,8 +253,6 @@ class Profile extends Component<Props, State> {
         if (!this.UIDready() || this.isOwnProfile()) return null;
 
         const status = this.state.playerStatus.status;
-        const gameId = this.state.playerStatus.gameId;
-        
         let statusMessage = '';
         let showChallengeButton = false;
 
@@ -257,7 +279,7 @@ class Profile extends Component<Props, State> {
                     <span className="status-message">{statusMessage}</span>
                 </div>
                 {showChallengeButton && (
-                    <button 
+                    <button type="button"
                         className="challenge-button"
                         onClick={this.handleChallenge}
                     >
@@ -309,15 +331,15 @@ class Profile extends Component<Props, State> {
             console.error('Error creating challenge:', error);
             errorToast('Failed to create challenge: ' + (error.message || error));
         } finally {
-            this.setState({ 
+            this.setState({
                 isCreatingChallenge: false,
-                showChallengeModal: false 
+                showChallengeModal: false
             });
         }
     };
 
     handleEditNameClick = () => {
-        this.setState({ 
+        this.setState({
             isEditingName: true,
             newName: this.state.profileData.name
         });
@@ -330,7 +352,7 @@ class Profile extends Component<Props, State> {
 
     handleNameSubmit = async (e: Event) => {
         e.preventDefault();
-        
+
         this.setState({ isUpdatingName: true });
         try {
             const response = await apiFetch('updatePlayerName', {
@@ -351,7 +373,7 @@ class Profile extends Component<Props, State> {
 
                 // Update PlayerContext
                 this.context.setPlayerInfo({ name: this.state.newName });
-                
+
                 successToast('Name updated successfully!');
             }
         } catch (error) {
@@ -363,9 +385,9 @@ class Profile extends Component<Props, State> {
             }
             errorToast(message);
         } finally {
-            this.setState({ 
+            this.setState({
                 isEditingName: false,
-                isUpdatingName: false 
+                isUpdatingName: false
             });
         }
     };
@@ -402,16 +424,16 @@ class Profile extends Component<Props, State> {
 
                 // Update PlayerContext
                 this.context.setPlayerInfo({ avatar: avatarId });
-                
+
                 successToast('Avatar updated successfully!');
             }
         } catch (error) {
             console.error('Error updating avatar:', error);
             errorToast('Failed to update avatar');
         } finally {
-            this.setState({ 
+            this.setState({
                 isUpdatingAvatar: false,
-                showAvatarGallery: false 
+                showAvatarGallery: false
             });
         }
     };
@@ -423,12 +445,12 @@ class Profile extends Component<Props, State> {
         for (let i = 1; i <= MAX_AVATAR_ID; i++) {
             const avatarId = i.toString();
             avatarOptions.push(
-                <div
+                <button type="button" data-game-control
                     key={avatarId}
                     className={`avatar-option ${this.state.profileData.avatar === avatarId ? 'selected' : ''}`}
                     style={{ backgroundImage: `url(${avatarContext(`./${avatarId}.png`)})` }}
                     onClick={() => this.handleAvatarSelect(avatarId)}
-                />
+                ></button>
             );
         }
 
@@ -437,7 +459,7 @@ class Profile extends Component<Props, State> {
                 <div className="avatar-gallery">
                     <div className="avatar-gallery-header">
                         <h3>Choose your Avatar</h3>
-                        <button 
+                        <button type="button"
                             className="avatar-gallery-close"
                             onClick={() => this.setState({ showAvatarGallery: false })}
                         >
@@ -478,12 +500,9 @@ class Profile extends Component<Props, State> {
             <div className="profile-container">
                 <div className="profile-header">
                     <div className="profile-avatar" style={{ backgroundImage: avatarUrl ? `url(${avatarUrl})` : 'none' }}>
-                        {this.UIDready() && !isOwnProfile && this.renderPlayerStatus(
-                            this.state.playerStatus.status,
-                            this.state.playerStatus.gameId
-                        )}
+                        {this.UIDready() && !isOwnProfile && this.renderPlayerStatus(this.state.playerStatus.status)}
                         {isOwnProfile && (
-                            <div 
+                            <button type="button" data-game-control
                                 className="edit-avatar-icon"
                                 onClick={this.handleEditAvatarClick}
                             >
@@ -497,9 +516,10 @@ class Profile extends Component<Props, State> {
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                 >
+                                    <title>Edit avatar</title>
                                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                                 </svg>
-                            </div>
+                            </button>
                         )}
                     </div>
                     <div className="profile-info">
@@ -512,15 +532,14 @@ class Profile extends Component<Props, State> {
                                         value={this.state.newName}
                                         onChange={this.handleNameChange}
                                         maxLength={20}
-                                        autoFocus
                                     />
                                     {this.state.isUpdatingName ? (
                                         <div className="name-edit-spinner" />
                                     ) : (
                                         <>
                                             <button type="submit">Save</button>
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 onClick={() => this.setState({ isEditingName: false })}
                                             >
                                                 Cancel
@@ -532,20 +551,25 @@ class Profile extends Component<Props, State> {
                                 <>
                                     <h1>{profileData.name}</h1>
                                     {isOwnProfile && (
-                                        <svg
+                                        <button type="button" data-game-control
                                             className="edit-name-icon"
                                             onClick={this.handleEditNameClick}
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
+                                            aria-label="Edit name"
                                         >
-                                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                                        </svg>
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <title>Edit name</title>
+                                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                            </svg>
+                                        </button>
                                     )}
                                 </>
                             )}
@@ -561,11 +585,11 @@ class Profile extends Component<Props, State> {
                             </div>
                             {this.UIDready() && !isOwnProfile && (
                                 this.isAlreadyFriend() ? (
-                                    <button className="profile-add-friend is-friend">
+                                    <button type="button" className="profile-add-friend is-friend">
                                         Friend
                                     </button>
                                 ) : (
-                                    <button 
+                                    <button type="button"
                                         className="profile-add-friend"
                                         onClick={this.handleAddFriend}
                                         disabled={this.state.isAddingFriend}
@@ -610,7 +634,7 @@ class Profile extends Component<Props, State> {
                             <span className="value">
                                 {this.formatNumber(
                                     this.getMaxStats(
-                                        (profileData.allTimeStats.wins / 
+                                        (profileData.allTimeStats.wins /
                                         (profileData.allTimeStats.wins + profileData.allTimeStats.losses)) * 100 || 0,
                                         (profileData.leagueStats.wins / profileData.leagueStats.gamesPlayed) * 100 || 0
                                     )
@@ -688,7 +712,7 @@ class Profile extends Component<Props, State> {
                 {isOwnProfile && (
                     <div className="friends-section">
                         <h2>Friends</h2>
-                        <SearchPlayers 
+                        <SearchPlayers
                             onAddFriend={async (playerId) => {
                                 try {
                                     await this.context.addFriend(playerId);
@@ -698,28 +722,25 @@ class Profile extends Component<Props, State> {
                                 }
                             }}
                         />
-                        
+
                         <div className="friends-mosaic">
                             {this.context.friends.length > 0 ? (
                                 this.context.friends.map(friend => (
-                                    <div 
+                                    <button type="button" data-game-control
                                         key={friend.id}
                                         className="friend-tile"
                                         onClick={() => route(`/profile/${friend.id}`)}
                                     >
-                                        <div 
-                                            className="friend-avatar" 
-                                            style={{ 
-                                                backgroundImage: `url(${avatarContext(`./${friend.avatar}.png`)})` 
+                                        <div
+                                            className="friend-avatar"
+                                            style={{
+                                                backgroundImage: `url(${avatarContext(`./${friend.avatar}.png`)})`
                                             }}
                                         >
-                                            {this.renderPlayerStatus(
-                                                this.state.friendStatuses[friend.id]?.status || 'offline',
-                                                this.state.friendStatuses[friend.id]?.gameId
-                                            )}
+                                            {this.renderPlayerStatus(this.state.friendStatuses[friend.id]?.status || 'offline')}
                                         </div>
                                         <span className="friend-name">{friend.name}</span>
-                                    </div>
+                                    </button>
                                 ))
                             ) : (
                                 <div className="no-friends">No friends yet</div>
@@ -732,7 +753,7 @@ class Profile extends Component<Props, State> {
                 {this.state.showChallengeModal && (
                     <div className="modal-overlay">
                         <div className="modal challenge-modal">
-                            <div 
+                            <div
                                 className="challenger-avatar"
                                 style={{ backgroundImage: avatarUrl ? `url(${avatarUrl})` : 'none' }}
                             />
@@ -749,13 +770,13 @@ class Profile extends Component<Props, State> {
                                     <div className="lobby-spinner"></div>
                                 ) : (
                                     <>
-                                        <button
+                                        <button type="button"
                                             onClick={() => this.setState({ showChallengeModal: false })}
                                             className="cancel-btn"
                                         >
                                             Cancel
                                         </button>
-                                        <button
+                                        <button type="button"
                                             onClick={this.handleChallengeConfirm}
                                             className="confirm-btn"
                                         >
@@ -774,4 +795,4 @@ class Profile extends Component<Props, State> {
     }
 }
 
-export default Profile; 
+export default Profile;

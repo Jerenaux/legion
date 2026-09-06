@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import { avatarContext } from '../utils';
 import debounce from 'lodash/debounce';
 import { apiFetch } from '../../services/apiService';
@@ -25,7 +26,7 @@ interface State {
 class SearchPlayers extends Component<Props, State> {
     static contextType = PlayerContext;
     searchCache: Map<string, PlayerSearchResult[]> = new Map();
-    
+
     state: State = {
         searchTerm: '',
         results: [],
@@ -45,9 +46,9 @@ class SearchPlayers extends Component<Props, State> {
             const cachedResults = this.searchCache.get(term) || [];
             // Filter out current user from cached results
             const filteredResults = this.filterOutCurrentUser(cachedResults);
-            this.setState({ 
+            this.setState({
                 results: filteredResults,
-                isLoading: false 
+                isLoading: false
             });
             return;
         }
@@ -59,13 +60,13 @@ class SearchPlayers extends Component<Props, State> {
             // Filter out current user from API results
             const filteredResults = this.filterOutCurrentUser(results);
             this.searchCache.set(term, results); // Cache the original results
-            this.setState({ 
+            this.setState({
                 results: filteredResults,
                 error: null,
                 isLoading: false
             });
-        } catch (error) {
-            this.setState({ 
+        } catch (_error) {
+            this.setState({
                 error: 'Failed to search players',
                 isLoading: false
             });
@@ -79,7 +80,7 @@ class SearchPlayers extends Component<Props, State> {
 
     handleSearchInput = (event: Event) => {
         const input = event.target as HTMLInputElement;
-        this.setState({ 
+        this.setState({
             searchTerm: input.value,
             showResults: true
         });
@@ -117,26 +118,26 @@ class SearchPlayers extends Component<Props, State> {
                 {showResults && searchTerm.length >= 3 && (
                     <div className="search-results">
                         {error && <div className="search-error">{error}</div>}
-                        
+
                         {results.length > 0 ? (
                             <div className="results-list">
                                 {results.map(player => (
                                     <div key={player.id} className="player-result">
                                         <div className="player-info">
-                                            <div 
-                                                className="player-avatar" 
-                                                style={{ 
-                                                    backgroundImage: `url(${avatarContext(`./${player.avatar}.png`)})` 
+                                            <div
+                                                className="player-avatar"
+                                                style={{
+                                                    backgroundImage: `url(${avatarContext(`./${player.avatar}.png`)})`
                                                 }}
                                             />
                                             <span className="player-name">{player.name}</span>
                                         </div>
                                         {this.isAlreadyFriend(player.id) ? (
-                                            <button className="add-friend-btn is-friend">
+                                            <button type="button" className="add-friend-btn is-friend">
                                                 Already Friends
                                             </button>
                                         ) : (
-                                            <button 
+                                            <button type="button"
                                                 className="add-friend-btn"
                                                 onClick={() => this.props.onAddFriend(player.id)}
                                             >
@@ -147,7 +148,7 @@ class SearchPlayers extends Component<Props, State> {
                                 ))}
                             </div>
                         ) : (
-                            searchTerm.length >= 3 && !isLoading && 
+                            searchTerm.length >= 3 && !isLoading &&
                             <div className="no-results">No players found</div>
                         )}
                     </div>

@@ -42,12 +42,12 @@ export class HexGridManager {
     private coordinateTexts: Map<string, Phaser.GameObjects.Text> = new Map<string, Phaser.GameObjects.Text>();
     private showCoordinates: boolean = false;
     private isDarkened: boolean = false;
-    private tileStates: Map<string, { 
-        baseColor: number, 
-        highlights: Map<HighlightType, number> 
+    private tileStates: Map<string, {
+        baseColor: number,
+        highlights: Map<HighlightType, number>
     }> = new Map();
     private isInTargetMode: boolean = false;
-    
+
     // Grid dimensions and position
     private gridCorners: { startX: number, startY: number };
     private holePositions: Set<string> = new Set<string>();
@@ -76,10 +76,10 @@ export class HexGridManager {
         const { startX, startY } = this.gridCorners;
         const offsetX = startX + HexGridManager.HEX_WIDTH / 2;
         const offsetY = startY + HexGridManager.HEX_HEIGHT / 2;
-        
+
         // Calculate row offset (even rows are shifted right)
         const rowOffset = (gridY % 2 === 0) ? HexGridManager.HEX_WIDTH / 2 : 0;
-        
+
         return {
             x: offsetX + gridX * HexGridManager.HEX_HORIZ_SPACING + rowOffset,
             y: offsetY + gridY * HexGridManager.HEX_VERT_SPACING - centerTileYOffset
@@ -89,44 +89,43 @@ export class HexGridManager {
     // Convert pixel coordinates to hex grid coordinates
     pointerToHexGrid(pointer: Phaser.Input.Pointer) {
         const { startX, startY } = this.gridCorners;
-        const offsetX = startX + HexGridManager.HEX_WIDTH / 2;
         const offsetY = 0;
-        
+
         const pointerX = pointer.x + this.scene.cameras.main.scrollX - startX;
         const pointerY = pointer.y + this.scene.cameras.main.scrollY - startY;
-        
+
         // Estimate the row first based on Y position
         const estimatedRow = Math.floor((pointerY - offsetY) / HexGridManager.HEX_VERT_SPACING);
-        
+
         // Determine the column offset for this row
         const rowOffset = (estimatedRow % 2 === 0) ? HexGridManager.HEX_WIDTH / 2 : 0;
-        
+
         // Estimate the column based on X position and row offset
         const estimatedCol = Math.floor((pointerX - rowOffset) / HexGridManager.HEX_HORIZ_SPACING);
-        
+
         return { gridX: estimatedCol, gridY: estimatedRow };
     }
 
-    // Create the hex grid tiles with proper animation
-    floatHexTiles(duration: number, onTileClickHandler: (x: number, y: number) => void, onTileHoverHandler: (x: number, y: number, hover?: boolean) => void) {
+    // Create the hex grid tiles.
+    floatHexTiles(onTileClickHandler: (x: number, y: number) => void, onTileHoverHandler: (x: number, y: number, hover?: boolean) => void) {
         const { startX, startY } = this.gridCorners;
         const offsetX = startX + HexGridManager.HEX_WIDTH / 2;
         const offsetY = startY + HexGridManager.HEX_HEIGHT / 2;
-        
+
         // Loop over each row
         for (let y = 0; y < GRID_HEIGHT; y++) {
             // Calculate row offset (even rows are shifted right)
             const rowOffset = (y % 2 === 0) ? (HexGridManager.HEX_WIDTH / 2) : 0;
-            
+
             // In each row, loop over each column
             for (let x = 0; x < GRID_WIDTH; x++) {
                 if (isSkip(x, y) || this.isHole(x, y)) continue;
-                
+
                 // Calculate hex position
                 const hexX = offsetX + x * HexGridManager.HEX_HORIZ_SPACING + rowOffset;
                 const hexY = offsetY + y * HexGridManager.HEX_VERT_SPACING;
-                
-                this.floatOneHexTile(x, y, hexX, hexY, duration, onTileClickHandler, onTileHoverHandler);
+
+                this.floatOneHexTile(x, y, hexX, hexY, onTileClickHandler, onTileHoverHandler);
             }
         }
     }
@@ -135,24 +134,24 @@ export class HexGridManager {
     // For regular character movement, use updateTileOnCharacterExit and updateTileOnCharacterEnter instead.
     setCharacterTiles(gridMap: Map<string, Player>) {
         // Reset tile base colors
-        this.tileStates.forEach((state, key) => {
+        this.tileStates.forEach((state, _key) => {
             state.baseColor = TileColors.NORMAL;
         });
-        
+
         // Update colors based on gridMap
         gridMap.forEach((player, key) => {
             const color = player.isPlayer ? TileColors.PLAYER_TEAM : TileColors.ENEMY_TEAM;
-            
+
             if (!this.tileStates.has(key)) {
-                this.tileStates.set(key, { 
-                    baseColor: color, 
-                    highlights: new Map() 
+                this.tileStates.set(key, {
+                    baseColor: color,
+                    highlights: new Map()
                 });
             } else {
                 this.tileStates.get(key).baseColor = color;
             }
         });
-        
+
         // Update all tile colors
         this.refreshTileColors();
     }
@@ -172,16 +171,16 @@ export class HexGridManager {
     private applyTileColor(tile: Phaser.GameObjects.Image, color: number) {
         if (this.isDarkened) {
             // Update the list of colors that shouldn't be darkened
-            const isDarkenable = 
-                color !== TileColors.SPELL_RADIUS && 
-                color !== TileColors.TARGET_ALLY && 
+            const isDarkenable =
+                color !== TileColors.SPELL_RADIUS &&
+                color !== TileColors.TARGET_ALLY &&
                 color !== TileColors.TARGET_ENEMY &&
                 color !== TileColors.HOVER &&
                 color !== TileColors.PLAYER_TEAM &&  // Add player team color
                 color !== TileColors.ENEMY_TEAM;     // Add enemy team color
-                
+
             if (isDarkenable) {
-                // @ts-ignore
+                // @ts-expect-error
                 tile.previousTint = color; // Store the intended color
                 tile.setTint(TileColors.DARKENED);
             } else {
@@ -196,19 +195,19 @@ export class HexGridManager {
     applyHighlight(gridX: number, gridY: number, color: number, type: HighlightType) {
         const key = serializeCoords(gridX, gridY);
         const tile = this.getTile(gridX, gridY);
-        
+
         if (tile) {
             // Initialize tile state if needed
             if (!this.tileStates.has(key)) {
-                this.tileStates.set(key, { 
-                    baseColor: TileColors.NORMAL, 
+                this.tileStates.set(key, {
+                    baseColor: TileColors.NORMAL,
                     highlights: new Map()
                 });
             }
-            
+
             // Add this highlight type
             this.tileStates.get(key).highlights.set(type, color);
-            
+
             // Apply the highest priority highlight
             this.applyHighestPriorityHighlight(tile, key);
         }
@@ -218,11 +217,11 @@ export class HexGridManager {
     removeHighlight(gridX: number, gridY: number, type: HighlightType) {
         const key = serializeCoords(gridX, gridY);
         const tile = this.getTile(gridX, gridY);
-        
+
         if (tile && this.tileStates.has(key)) {
             // Remove this highlight type
             this.tileStates.get(key).highlights.delete(type);
-            
+
             // Apply the next highest priority highlight
             this.applyHighestPriorityHighlight(tile, key);
         }
@@ -231,20 +230,20 @@ export class HexGridManager {
     // Apply the highest priority highlight to a tile
     private applyHighestPriorityHighlight(tile: Phaser.GameObjects.Image, key: string) {
         const state = this.tileStates.get(key);
-        
+
         if (!state) return;
-        
+
         // Find the highest priority highlight
         let highestPriority = HighlightType.BASE;
         let highestColor = state.baseColor;
-        
+
         state.highlights.forEach((color, type) => {
             if (type > highestPriority) {
                 highestPriority = type;
                 highestColor = color;
             }
         });
-        
+
         // Apply the highest priority color
         this.applyTileColor(tile, highestColor);
     }
@@ -262,17 +261,16 @@ export class HexGridManager {
 
     // Create a single hex tile with animation and interactivity
     private floatOneHexTile(
-        x: number, 
-        y: number, 
-        hexX: number, 
-        hexY: number, 
-        duration: number,
+        x: number,
+        y: number,
+        hexX: number,
+        hexY: number,
         arenaTileClickHandler: (x: number, y: number) => void,
         arenaTileHoverHandler: (x: number, y: number, hover?: boolean) => void
     ) {
         // Create tile
         const tileSprite = this.scene.add.image(
-            hexX, 
+            hexX,
             hexY,
             'hexTile'
         )
@@ -283,7 +281,7 @@ export class HexGridManager {
 
         // Make tile interactive
         tileSprite.setInteractive();
-        
+
         // Set up event handlers
         tileSprite.on('pointerover', () => {
             if (isSkip(x, y)) return;
@@ -307,20 +305,20 @@ export class HexGridManager {
 
         // Initialize tile state
         this.tileStates.set(
-            serializeCoords(x, y), 
-            { 
-                baseColor: TileColors.NORMAL, 
-                highlights: new Map() 
+            serializeCoords(x, y),
+            {
+                baseColor: TileColors.NORMAL,
+                highlights: new Map()
             }
         );
-        
+
         // Create coordinate text
         const coordText = this.scene.add.text(
-            hexX, 
-            hexY, 
+            hexX,
+            hexY,
             `${x},${y}`,
-            { 
-                fontFamily: 'Arial', 
+            {
+                fontFamily: 'Arial',
                 fontSize: '16px',
                 color: '#FFFFFF',
                 stroke: '#000000',
@@ -330,23 +328,23 @@ export class HexGridManager {
         .setDepth(10)
         .setOrigin(0.5, 0.5)
         .setVisible(this.showCoordinates);
-        
+
         // Store coordinate text reference
         this.coordinateTexts.set(serializeCoords(x, y), coordText);
-        
+
         return tileSprite;
     }
 
     // Validation methods
     isValidGridPosition(x: number, y: number): boolean {
-        return x >= 0 && x < GRID_WIDTH && 
-               y >= 0 && y < GRID_HEIGHT && 
+        return x >= 0 && x < GRID_WIDTH &&
+               y >= 0 && y < GRID_HEIGHT &&
                !isSkip(x, y) &&
                !this.isHole(x, y);
     }
 
     isValidCell(fromX: number, fromY: number, toX: number, toY: number, isFree: (x: number, y: number) => boolean) {
-        return this.isValidGridPosition(toX, toY) 
+        return this.isValidGridPosition(toX, toY)
             && isFree(toX, toY)
             && lineOfSight(fromX, fromY, toX, toY, isFree);
     }
@@ -354,12 +352,12 @@ export class HexGridManager {
     // Highlight method for tiles in a radius
     highlightTilesInRadius(gridX: number, gridY: number, radius: number, color: number = TileColors.MOVEMENT_RANGE, shouldHighlight?: (x: number, y: number) => boolean, type: HighlightType = HighlightType.MOVEMENT) {
         const tilesInRadius = this.getTilesInRadius(gridX, gridY, radius);
-        
+
         for (const tile of tilesInRadius) {
             if (!this.isValidGridPosition(tile.x, tile.y)) continue;
-            
+
             if (shouldHighlight && !shouldHighlight(tile.x, tile.y)) continue;
-            
+
             this.applyHighlight(tile.x, tile.y, color, type);
         }
     }
@@ -374,25 +372,25 @@ export class HexGridManager {
     highlightSpellRadius(gridX: number, gridY: number, radius: number, gridMap: Map<string, Player>, isAllyCallback: (player: Player) => boolean, isAllyTargetingSpell: boolean = false) {
         const tilesInRadius = this.getTilesInRadius(gridX, gridY, radius);
         const charactersInRadius = new Set<string>();
-        
+
         // Use ally targeting color if specified
         const spellRadiusColor = isAllyTargetingSpell ? TileColors.SPELL_RADIUS_ALLY : TileColors.SPELL_RADIUS;
-        
+
         for (const tile of tilesInRadius) {
             if (!this.isValidGridPosition(tile.x, tile.y)) continue;
-            
+
             const key = serializeCoords(tile.x, tile.y);
             const tileSprite = this.tilesMap.get(key);
-            
+
             if (tileSprite) {
                 // Only apply spell radius color if the tile is in target range
                 const state = this.tileStates.get(key);
                 const isInTargetRange = state?.highlights.has(HighlightType.TARGET);
-                
+
                 if (isInTargetRange) {
                     // Apply spell radius color using the highlight system
                     this.applyHighlight(tile.x, tile.y, spellRadiusColor, HighlightType.SPELL);
-                    
+
                     // If there's a character on this tile, make it glow
                     const player = gridMap.get(key);
                     if (player) {
@@ -406,14 +404,14 @@ export class HexGridManager {
                             }
                         });
                         window.dispatchEvent(event);
-                        
+
                         // Add to current radius set
                         charactersInRadius.add(key);
                     }
                 }
             }
         }
-        
+
         // Unhighlight characters that are no longer in the radius
         this.highlightedCharacters.forEach(charKey => {
             if (!charactersInRadius.has(charKey)) {
@@ -428,14 +426,14 @@ export class HexGridManager {
                 window.dispatchEvent(event);
             }
         });
-        
+
         // Update our set of highlighted characters
         this.highlightedCharacters = charactersInRadius;
     }
 
     // Clear all highlighted tiles of a specific type
     clearHighlightOfType(type: HighlightType) {
-        this.tilesMap.forEach((tile, key) => {
+        this.tilesMap.forEach((_tile, key) => {
             const gridPos = key.split(',').map(Number);
             this.removeHighlight(gridPos[0], gridPos[1], type);
         });
@@ -488,8 +486,12 @@ export class HexGridManager {
 
     // Clean up resources
     destroy() {
-        this.coordinateTexts.forEach(text => text.destroy());
-        this.tilesMap.forEach(tile => tile.destroy());
+        this.coordinateTexts.forEach(text => {
+            text.destroy();
+        });
+        this.tilesMap.forEach(tile => {
+            tile.destroy();
+        });
         this.coordinateTexts.clear();
         this.tilesMap.clear();
         this.obstaclesMap.clear();
@@ -519,14 +521,14 @@ export class HexGridManager {
         this.isDarkened = true;
         this.tilesMap.forEach(tile => {
             const key = serializeCoords(
-                // @ts-ignore
-                tile.gridX, 
-                // @ts-ignore
+                // @ts-expect-error
+                tile.gridX,
+                // @ts-expect-error
                 tile.gridY
             );
-            
+
             const state = this.tileStates.get(key);
-            // @ts-ignore
+            // @ts-expect-error
             tile.previousTint = state?.highlights.get(HighlightType.HOVER) || state?.baseColor || tile.tint;
             tile.setTint(tintColor);
         });
@@ -536,18 +538,18 @@ export class HexGridManager {
         this.isDarkened = false;
         this.tilesMap.forEach(tile => {
             const key = serializeCoords(
-                // @ts-ignore
-                tile.gridX, 
-                // @ts-ignore
+                // @ts-expect-error
+                tile.gridX,
+                // @ts-expect-error
                 tile.gridY
             );
-            
+
             const state = this.tileStates.get(key);
             if (state) {
                 const color = state.highlights.get(HighlightType.HOVER) || state.baseColor;
                 this.applyTileColor(tile, color);
             } else {
-                // @ts-ignore
+                // @ts-expect-error
                 tile.setTint(tile.previousTint || TileColors.NORMAL);
             }
         });
@@ -561,7 +563,7 @@ export class HexGridManager {
     // Update a tile when a character leaves it
     updateTileOnCharacterExit(gridX: number, gridY: number) {
         const key = serializeCoords(gridX, gridY);
-        
+
         // Reset tile color to normal
         if (this.tileStates.has(key)) {
             this.tileStates.get(key).baseColor = TileColors.NORMAL;
@@ -575,19 +577,19 @@ export class HexGridManager {
     // Update a tile when a character enters it
     updateTileOnCharacterEnter(gridX: number, gridY: number, isPlayerTeam: boolean) {
         const key = serializeCoords(gridX, gridY);
-        
+
         // Update tile color based on team
         const color = isPlayerTeam ? TileColors.PLAYER_TEAM : TileColors.ENEMY_TEAM;
-        
+
         if (!this.tileStates.has(key)) {
-            this.tileStates.set(key, { 
-                baseColor: color, 
-                highlights: new Map() 
+            this.tileStates.set(key, {
+                baseColor: color,
+                highlights: new Map()
             });
         } else {
             this.tileStates.get(key).baseColor = color;
         }
-        
+
         // Apply the color to the tile
         const tile = this.tilesMap.get(key);
         if (tile) {
@@ -600,7 +602,7 @@ export class HexGridManager {
             this.holePositions.add(serializeCoords(hole.x, hole.y));
         });
     }
-    
+
     isHole(x: number, y: number): boolean {
         return this.holePositions.has(serializeCoords(x, y));
     }
@@ -608,7 +610,7 @@ export class HexGridManager {
     // Update toggleTargetMode to handle character highlights
     toggleTargetMode(flag: boolean) {
         this.isInTargetMode = flag;
-        
+
         // Clear character highlights when leaving target mode
         if (!flag) {
             this.clearHighlightedCharacters();
@@ -629,4 +631,4 @@ export class HexGridManager {
         });
         this.highlightedCharacters.clear();
     }
-} 
+}

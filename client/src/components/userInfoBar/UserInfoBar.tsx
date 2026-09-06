@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import './UserInfoBar.style.css';
 import GoldIcon from '@assets/gold_icon.png';
 import {League} from "@legion/shared/enums";
@@ -25,7 +26,7 @@ const iconsMap = {
 };
 
 class UserInfoBar extends Component<BarProps> {
-    
+
     render() {
         const leagueName = leagueMap.get(this.props.league);
         const leagueIcon = getLeagueIcon(leagueName);
@@ -33,8 +34,9 @@ class UserInfoBar extends Component<BarProps> {
         return (
             <div className="userInfoBar">
                 <div className="barLogo">
-                    <img 
+                    <img
                         src={this.props.isLeague ? leagueIcon : iconsMap[this.props.icon]}
+                        alt=""
                     />
                 </div>
                 <div className="userInfoLabel">

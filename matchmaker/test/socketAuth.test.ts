@@ -1,8 +1,8 @@
 import {expect, test} from "bun:test";
-import {authenticateSocket} from "@legion/shared/socketAuth";
+import {AuthenticatedSocketData, authenticateSocket} from "@legion/shared/socketAuth";
 
 test("authenticates a socket before handlers are registered", async () => {
-  const socket: any = {handshake: {auth: {token: "valid"}}};
+  const socket: AuthenticatedSocketData = {handshake: {auth: {token: "valid"}}};
   await authenticateSocket(socket, async token => ({uid: token === "valid" ? "player-1" : ""}));
   expect(socket.firebaseToken).toBe("valid");
   expect(socket.uid).toBe("player-1");
