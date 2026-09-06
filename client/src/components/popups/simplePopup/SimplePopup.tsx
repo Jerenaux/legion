@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import goldChestImage from '@assets/shop/gold_chest.png';
 import './SimplePopup.style.css';
 
@@ -13,9 +14,9 @@ export class SimplePopup extends Component<Props> {
     return (
       <div className="simple-popup">
         <div className="simple-popup-content">
-          <img 
-            src={goldChestImage} 
-            alt="Gold chest" 
+          <img
+            src={goldChestImage}
+            alt="Gold chest"
             className="simple-popup-icon"
           />
           <div className="simple-popup-text-container">
@@ -28,4 +29,4 @@ export class SimplePopup extends Component<Props> {
       </div>
     );
   }
-} 
+}

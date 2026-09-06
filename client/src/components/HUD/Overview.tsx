@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
 import PlayerInfo from './PlayerInfo';
 import { PlayMode, StatusEffect } from '@legion/shared/enums';
@@ -10,13 +11,14 @@ import charProfileActive from '@assets/HUD/char_profile_active.png';
 import charProfileIdle from '@assets/HUD/char_profile_idle.png';
 import charStatsBgActive from '@assets/HUD/char_stats_bg_Active.png';
 import charStatsBg from '@assets/HUD/char_stats_bg.png';
+import { EventEmitter } from 'eventemitter3';
 interface Props {
   members: TeamMember[];
   score: number;
   position: string;
   isSpectator: boolean;
   selectedPlayer: PlayerProps;
-  eventEmitter: any;
+  eventEmitter: EventEmitter;
   isPlayerTeam: boolean;
   player: PlayerProfileData;
   mode: PlayMode;

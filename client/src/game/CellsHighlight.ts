@@ -54,14 +54,14 @@ export class CellsHighlight extends Phaser.GameObjects.Graphics {
         for(let x = gridX - leftOffset; x <= gridX + rightOffset; x++) {
             for(let y = gridY - leftOffset; y <= gridY + rightOffset; y++) {
                 if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
-                    // @ts-ignore
+                    // @ts-expect-error
                     if (this.scene.isSkip(x, y)) continue;
 
                     // Draw a new highlight over the hovered tile
-                    this.fillStyle(this.color, 0.3); 
+                    this.fillStyle(this.color, 0.3);
                     this.fillRect(
-                        this.gridCorners.startX + x * this.tileSize, 
-                        this.gridCorners.startY + y * this.tileSize, 
+                        this.gridCorners.startX + x * this.tileSize,
+                        this.gridCorners.startY + y * this.tileSize,
                         this.tileSize, this.tileSize
                     );
                 }

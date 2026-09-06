@@ -1,6 +1,8 @@
+
+import { h } from 'preact';
 import './ShopConsumableCard.style.css';
-import { h, Component } from 'preact';
-import { InventoryType, RarityColor, Target } from "@legion/shared/enums";
+import { Component } from 'preact';
+import { InventoryType, Target } from "@legion/shared/enums";
 import { BaseItem } from '@legion/shared/BaseItem';
 import { getSpeedClass, mapFrameToCoordinates } from '../utils';
 import { Tooltip as ReactTooltip } from "react-tooltip";
@@ -45,7 +47,7 @@ interface ShopCardProps {
   key: number;
   data: BaseItem;
   getItemAmount: (index: number, type: InventoryType) => number;
-  handleOpenModal: (e: any, modalData: modalData) => void;
+  handleOpenModal: (e: Event, modalData: modalData) => void;
   isHighlighted?: boolean;
 }
 
@@ -76,7 +78,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
     const titleStyle = {
       borderRadius: '4px',
     }
-    
+
     const coordinates = mapFrameToCoordinates(data.frame);
 
     const getEffectValue = (effect: Effect) => {
@@ -85,9 +87,9 @@ class ShopConsumableCard extends Component<ShopCardProps> {
     }
 
     return (
-      <div 
+      <button type="button" data-game-control
         className={`shop-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`}
-        key={this.props.key} 
+        key={this.props.key}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
         data-shop-item={`consumable-${data.id}`}
       >
@@ -99,7 +101,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="consumable-card-content">
-          <div className="shop-portrait" style={{ 
+          <div className="shop-portrait" style={{
               backgroundImage: `url(${consumablesSpritesheet})`,
               backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
           }} />
@@ -108,10 +110,10 @@ class ShopConsumableCard extends Component<ShopCardProps> {
         <div className="consumable-card-effect-container">
           {data.effects.map((effect, index) => (
             <div key={index} className="consumable-card-effect">
-              <img 
-                src={StatIcons[effect.stat]} 
-                style={effect.stat === 1 ? {transform: 'scaleX(0.8)'} : {}} 
-                alt="" 
+              <img
+                src={StatIcons[effect.stat]}
+                style={effect.stat === 1 ? {transform: 'scaleX(0.8)'} : {}}
+                alt=""
               />
               <span>{getEffectValue(effect)}</span>
             </div>
@@ -142,7 +144,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
           content={data.description}
           style={{maxWidth: '120px'}}
         />
-      </div>
+      </button>
     );
   }
 }

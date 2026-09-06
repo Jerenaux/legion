@@ -1,11 +1,9 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import { events } from './GameHUD';
 import '../../styles/components/TutorialDialogue.css';
 
-import avatarSrc from '@assets/avatars/default.png';
 import { InventoryType } from '@legion/shared/enums';
-const DEFAULT_SPEAKER_NAME = 'Taskmaster';
-
 interface TutorialDialogueProps {
   messages: string[];
   position?: 'bottom' | 'spells' | 'items';
@@ -14,7 +12,6 @@ interface TutorialDialogueProps {
 interface TutorialDialogueState {
   messageIndex: number;
   displayedMessage: string;
-  isAvatarLoaded: boolean;
   dialoguePosition: { top?: number; left?: number } | null;
 }
 
@@ -25,7 +22,6 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   state: TutorialDialogueState = {
     messageIndex: 0,
     displayedMessage: '',
-    isAvatarLoaded: false,
     dialoguePosition: null
   };
 
@@ -81,10 +77,6 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
     }
   }
 
-  handleAvatarLoad = () => {
-    this.setState({ isAvatarLoaded: true });
-  }
-
   handleNext = () => {
     events.emit('nextTutorialMessage');
     // If we're switching to the last message, emit a corresponding event
@@ -106,7 +98,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
       const rect = firstIcon.getBoundingClientRect();
       this.setState({
         dialoguePosition: {
-          top: rect.bottom - 120, 
+          top: rect.bottom - 120,
           left: rect.right - 50,
         }
       });
@@ -114,7 +106,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
   };
 
   render() {
-    const { displayedMessage, isAvatarLoaded, messageIndex, dialoguePosition } = this.state;
+    const { displayedMessage, messageIndex, dialoguePosition } = this.state;
     const { messages, position = 'bottom' } = this.props;
 
     if (displayedMessage.length === 0) return null;
@@ -124,14 +116,14 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
       : undefined;
 
     return (
-      <div 
+      <div
         className={`tutorial-dialogue ${position} visible`}
         style={style}
       >
-        {/* <img 
-          src={avatarSrc} 
-          alt="Character Avatar" 
-          className="tutorial-dialogue-avatar" 
+        {/* <img
+          src={avatarSrc}
+          alt="Character Avatar"
+          className="tutorial-dialogue-avatar"
           onLoad={this.handleAvatarLoad}
         /> */}
         <div className="tutorial-dialogue-content">
@@ -139,7 +131,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
           <p className="tutorial-dialogue-message">{displayedMessage}</p>
         </div>
         {messageIndex < messages.length - 1 && (
-          <button className="tutorial-dialogue-next" onClick={this.handleNext}>
+          <button type="button" className="tutorial-dialogue-next" onClick={this.handleNext}>
             <span className="tutorial-dialogue-next-text">Next</span>
             <span className="tutorial-dialogue-next-arrow"></span>
           </button>

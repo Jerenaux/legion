@@ -1,11 +1,10 @@
 .queue-container {
     display: flex;
     flex-flow: column;
-    align-items: center;    
+    align-items: center;
   }
-  
+
   .queue-body {
-    display: inline-block;
     background-image: url('@assets/queue/pattern.png');
     width: 80vw;
     height: 24vw;
@@ -15,19 +14,19 @@
     display: flex;
     justify-content: center;
   }
-  
+
   .queue-info {
     width: 30vw;
     height: 20vw;
     position: relative;
   }
-  
+
   .queue-spinner {
     position: absolute;
     top: 2.5vw;
     left: 1vw;
   }
-  
+
   .queue-spinner-centered {
     margin: 0 auto;
     display: flex;
@@ -35,7 +34,7 @@
     align-items: center;
     margin-top: 40px;
   }
-  
+
   .queue-spinner-loader {
     width: 14vw;
     height: 14vw;
@@ -46,7 +45,7 @@
     box-sizing: border-box;
     animation: rotation 2s linear infinite;
   }
-  
+
   .queue-spinner-loader::after {
     content: '';
     box-sizing: border-box;
@@ -59,12 +58,12 @@
     border-radius: 50%;
     background: #080c15;
   }
-  
+
   @keyframes rotation {
     0% { transform: rotate(0deg) }
     100% { transform: rotate(360deg) }
   }
-  
+
   .queue-count {
     position: absolute;
     top: 3.45vw;
@@ -76,18 +75,18 @@
     justify-content: center;
     align-items: center;
   }
-  
+
   @keyframes progress {
     0% { --percentage: 0; }
     100% { --percentage: var(--value); }
   }
-  
+
   @property --percentage {
     syntax: '<number>';
     inherits: true;
     initial-value: 20;
   }
-  
+
   [role="progressbar"] {
     --percentage: var(--value);
     --primary: #369;
@@ -101,7 +100,7 @@
     display: grid;
     place-items: center;
   }
-  
+
   [role="progressbar"]::before {
     content: "";
     position: absolute;
@@ -115,19 +114,19 @@
     -webkit-mask: radial-gradient(#0000 68%, black 0);
     -webkit-mask-mode: alpha;
   }
-  
+
   .queue-count-number {
     font-size: 3.2vw;
     font-weight: 900;
     color: #f5b70e;
     text-align: center;
   }
-  
+
   .queue-count-text {
     font-size: 1.4vw;
     color: white;
   }
-  
+
   .queue-detail {
     position: absolute;
     top: 2vw;
@@ -140,20 +139,20 @@
     background-repeat: no-repeat;
     padding: 0 0.55vw;
   }
-  
+
   .queue-detail > div {
     position: relative;
     width: 100%;
     height: 100%;
   }
-  
+
   .queue-detail-header {
     display: flex;
     width: 100%;
     justify-content: flex-end;
     margin-bottom: 0.5vw;
   }
-  
+
   .queue-detail-btn {
     font-size: 1vw;
     color: white;
@@ -166,37 +165,37 @@
     border-radius: 5px;
     cursor: pointer;
   }
-  
+
   .active {
     background-color: #252b36;
     border: 1px solid goldenrod;
   }
-  
+
   .queue-detail-body {
     position: absolute;
     top: 4.2vw;
     left: 10vw;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
   }
-  
+
   .queue-detail-body > div {
     margin: 0.1vw 0 0.5vw;
     padding-bottom: 5px;
   }
-  
+
   .queue-detail-body > div:not(:last-child) {
     border-bottom: 1px solid transparent;
     border-image-source: url('@assets/queue/blue_separator.png');
     border-image-slice: 1;
     border-image-repeat: repeat;
   }
-  
+
   .queue-detail-body > div > div:first-child {
     font-size: 0.8vw;
     line-height: 1vw;
     color: white;
   }
-  
+
   .queue-detail-body > div > div:last-child {
     font-size: 1vw;
     line-height: 1vw;
@@ -204,13 +203,13 @@
     display: flex;
     align-items: center;
   }
-  
+
   .queue-detail-body > div > div:last-child > div > img {
     width: 1vw;
     height: 1vw;
     margin-right: 4px;
   }
-  
+
   .queue-detail-footer {
     position: absolute;
     bottom: 0px;
@@ -226,47 +225,47 @@
     padding-bottom: 0.65vw;
     cursor: pointer;
   }
-  
+
   .queue-footer-exit {
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  
+
   .queue-footer-exit > img {
     width: 1.2vw;
     height: 1.2vw;
   }
-  
+
   .queue-footer-text {
     text-align: center;
     margin-left: 3vw;
-    font-family: Tahoma;
+    font-family: Tahoma, sans-serif;
     font-size: 0.9vw;
     color: white;
   }
-  
+
   .queue-detail-footer:hover .queue-footer-text {
     color: cyan;
   }
-  
+
   .queue-detail-arrow {
     position: absolute;
     top: 7vw;
     left: 8.15vw;
   }
-  
+
   .queue-detail-arrow > img {
     width: 0.6vw;
     height: auto;
   }
-  
+
   .queue-text {
     position: absolute;
     top: 18.75vw;
     width: 100%;
     font-size: 1.2vw;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     text-align: center;
     color: white;
   }
@@ -274,13 +273,13 @@
   .queue-text-error {
     color: oklch(0.74 0.16 25);
   }
-  
+
   .queue-news {
     width: 100vw;
     display: flex;
     justify-content: center;
   }
-  
+
   .queue-news-container {
     background-image: url('@assets/queue/news_bg.png');
     width: 23vw;
@@ -291,9 +290,9 @@
     display: flex;
     flex-flow: column;
     justify-content: space-between;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
   }
-  
+
   .queue-news-content {
     color: white;
     padding: 0.5vw 1vw;
@@ -301,7 +300,7 @@
     height: 4vw;
     font-size: 0.8vw;
   }
-  
+
   .queue-news-title {
     width: 100%;
     height: 2vw;
@@ -312,12 +311,12 @@
     align-items: center;
     justify-content: space-between;
   }
-  
+
   .queue-news-date {
     font-size: 0.75vw;
     min-width: 4vw;
   }
-  
+
   .queue-news-readmore {
     width: 21.4vw;
     height: 2vw;
@@ -332,51 +331,51 @@
     font-size: 0.75vw;
     cursor: pointer;
   }
-  
+
   .queue-btns {
     margin-top: 0.5vw;
     margin-bottom: 0;
     display: flex;
     justify-content: center;
   }
-  
+
   .queue-btns > a > div {
     width: 2.5vw;
     height: 2.5vw;
     cursor: pointer;
   }
-  
+
   .queue-btns > a > div > img {
     width: 100%;
     height: 100%;
   }
-  
+
   .btn-x {
     margin-right: 0.25vw;
   }
-  
+
   /* Lobby mode specific styles */
   .lobby-mode .queue-detail-footer {
     position: static;
     margin: 20px auto 0;
   }
-  
+
   .lobby-mode .queue-text {
     position: static;
     margin-top: 20px;
   }
-  
+
   .lobby-info-text {
     text-align: center;
     color: #ccc;
     margin-top: 20px;
     font-size: 0.9vw;
   }
-  
+
   .lobby-info-text p {
     margin: 5px 0;
   }
-  
+
   .cancel-game-link {
     text-decoration: none;
   }

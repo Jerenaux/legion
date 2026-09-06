@@ -3,12 +3,12 @@ import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
 import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
   from "./sprites";
 import { male_names, female_names } from "./names";
-import { selectStatToLevelUp, increaseStat, getSPIncrement } from "./levelling";
+import { selectStatToLevelUp, increaseStat, } from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
 import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
-import { getSpellById, getSpellsUpToLevel } from "./Spells";
+import { getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
   M,
@@ -128,7 +128,7 @@ export class NewCharacter {
   }
 
   getName(): string {
-    if (this.gender == Gender.M) {
+    if (this.gender === Gender.M) {
       // Pick a random element of male_names
       return male_names[Math.floor(Math.random() * male_names.length)];
     } else {
@@ -267,21 +267,19 @@ export class NewCharacter {
 
   getCharacterData(includePrice = false): DBCharacterData {
     // Convert stats from enum keys to string keys for DB storage
-    const validStats = statFieldsByIndex.filter(key => 
-        Stat[key.toUpperCase() as keyof typeof Stat] !== Stat.NONE
-    );
+    const validStats = statFieldsByIndex.map(key => ({
+        key,
+        stat: Stat[key.toUpperCase() as keyof typeof Stat] as Exclude<Stat, Stat.NONE>,
+    }));
 
     const dbStats = Object.fromEntries(
-        // @ts-ignore: Stat indexing is actually safe here
-        validStats.map(key => [key, this.stats[Stat[key.toUpperCase() as keyof typeof Stat]]])
+        validStats.map(({key, stat}) => [key, this.stats[stat]])
     );
     const dbEquipmentBonuses = Object.fromEntries(
-        // @ts-ignore: Stat indexing is actually safe here
-        validStats.map(key => [key, this.equipment_bonuses[Stat[key.toUpperCase() as keyof typeof Stat]]])
+        validStats.map(({key, stat}) => [key, this.equipment_bonuses[stat]])
     );
     const dbSpBonuses = Object.fromEntries(
-        // @ts-ignore: Stat indexing is actually safe here
-        validStats.map(key => [key, this.sp_bonuses[Stat[key.toUpperCase() as keyof typeof Stat]]])
+        validStats.map(({key, stat}) => [key, this.sp_bonuses[stat]])
     );
 
     const data: DBCharacterData = {
@@ -321,12 +319,13 @@ export function getSpells(characterClass: Class, level: number, skill_slots: num
       spells = spells.filter(spell => !STARTING_WHITE_MAGE_SPELLS.includes(spell));
       // Select `skill_slots` random spells from spells
       return STARTING_WHITE_MAGE_SPELLS.concat(spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_WHITE_MAGE_SPELLS.length ));
-    case Class.BLACK_MAGE:
+    case Class.BLACK_MAGE: {
       if (!isAI) return STARTING_BLACK_MAGE_SPELLS;
       spells = spells.filter(spell => !STARTING_BLACK_MAGE_SPELLS.includes(spell));
       const randomSpells = spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_BLACK_MAGE_SPELLS.length );
       const result = STARTING_BLACK_MAGE_SPELLS.concat(randomSpells);
       return result;
+    }
     case Class.THIEF:
       return [];
   }

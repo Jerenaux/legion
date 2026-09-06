@@ -12,12 +12,12 @@ COPY api/functions/ ./
 
 
 # Install Node, required for firebase emulators
-FROM node:20-slim
+FROM node:20-trixie-slim
 
 # Install Java, required for firebase emulators
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    openjdk-17-jdk && \
+    openjdk-21-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

@@ -2,14 +2,7 @@ import {onRequest} from "firebase-functions/v2/https";
 
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {currentSeasonId, LEADERBOARD_LIMIT, RankedPlayer, rankPlayers} from "./ranking";
-
-interface LeaderboardHighlight {
-  name: string;
-  id: string;
-  avatar: string;
-  description: string;
-  title: string;
-}
+import {LeaderboardHighlight} from "@legion/shared/interfaces";
 
 function secondsUntilNextSeason(now = new Date()): number {
   const next = new Date(now);

@@ -5,7 +5,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  font-family: 'Kim';
+  font-family: 'Kim', sans-serif;
 
 }
 
@@ -75,7 +75,7 @@
     background-repeat: no-repeat;
     animation: animate-sprite 0.7s steps(1) infinite;
     transform: scale(.6);
-} 
+}
 
 .characterSp {
   position: absolute;
@@ -86,7 +86,7 @@
   font-size: 10px;
   color: white;
   animation: bgColorChange 0.5s ease-in-out infinite;
-  
+
   /* New styles for fuzzy effect */
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
   border: 2px solid transparent;
@@ -109,14 +109,14 @@
   filter: blur(1px);
 }
 
-@keyframes bgColorChange { 
-  0% { 
+@keyframes bgColorChange {
+  0% {
     background-color: rgb(219, 43, 31);
-  } 
-  50% { 
+  }
+  50% {
     background-color: rgb(253, 36, 36);
-  } 
-  100% { 
+  }
+  100% {
     background-color: rgb(219, 43, 31);
   }
 }

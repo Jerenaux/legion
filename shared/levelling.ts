@@ -18,7 +18,7 @@ export function selectStatToLevelUp(characterClass: Class): Stat {
     const weightedStats: Stat[] = [];
 
     for (const statKey in weights) {
-        if (weights.hasOwnProperty(statKey)) {
+        if (Object.hasOwn(weights, statKey)) {
             const statEnumKey = Number(statKey) as Stat;
             const weight = weights[statEnumKey];
             if (weight) {

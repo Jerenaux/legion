@@ -1,4 +1,5 @@
-import {Component, ComponentChildren, h} from "preact";
+import { h } from 'preact';
+import {Component, ComponentChildren, } from "preact";
 import firebase from "firebase/compat/app";
 
 import AuthContext from "../contexts/AuthContext";
@@ -83,7 +84,7 @@ export default class AuthProvider extends Component<Props, State> {
             <p className="session-status__eyebrow">Connection interrupted</p>
             <h1>The arena is out of reach</h1>
             <p className="session-status__message">{error || "Your Legion session could not be started."}</p>
-            <button className="session-status__retry" type="button" autoFocus onClick={this.startSession}>
+            <button className="session-status__retry" type="button" onClick={this.startSession}>
               Try again
             </button>
             <p className="session-status__hint">Press Enter or controller A to retry</p>

@@ -25,7 +25,7 @@ if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     initializeApp({
         projectId: firebaseConfig.projectId,
     });
-    
+
     // Connect to local emulator
     const db = getFirestore();
     db.settings({
@@ -34,7 +34,7 @@ if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     });
 
     process.env["FIREBASE_AUTH_EMULATOR_HOST"] = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-    process.env["FIRESTORE_EMULATOR_HOST"] = "api:8090"; 
+    process.env["FIRESTORE_EMULATOR_HOST"] = "api:8090";
 } else {
     // We're running in production
     initializeApp(firebaseConfig);
@@ -80,12 +80,13 @@ function shortToken(token: string) {
 
 const socketMap = new Map<Socket, Game>();
 const gamesMap = new Map<string, Game>();
+type GameSocket = Socket & {uid: string; firebaseToken: string};
 
 async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<PlayerDataForGame> {
   return withRetry(async () => {
     const db = getFirestore();
     const playerDoc = await db.collection('players').doc(uid).get();
-    
+
     if (!playerDoc.exists) {
       throw new Error('Player not found');
     }
@@ -106,7 +107,7 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<Pl
     // Transform dailyloot data
     const transformedDailyLoot = transformDailyLoot(playerData.dailyloot || {});
 
-    const AIwinRatio = 
+    const AIwinRatio =
       playerData.AIstats && playerData.AIstats.nbGames > 0 ?
         (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
         0;
@@ -146,29 +147,30 @@ async function getGameData(gameId: string, retries = 10, delay = 500) {
   }, retries, delay, 'getGameData');
 }
 
-io.use(async (socket: any, next) => {
+io.use(async (socket, next) => {
   try {
     await authenticateSocket(socket, token => getAuth().verifyIdToken(token));
     next();
-  } catch (error) {
+  } catch (_error) {
     console.warn('Rejected unauthenticated game socket');
     next(new Error('Authentication failed'));
   }
 });
 
-io.on('connection', async (socket: any) => {
+io.on('connection', async (socket) => {
+    const gameSocket = socket as GameSocket;
     try {
       let gameId = socket.handshake.auth.gameId;
       const isReplay = socket.handshake.auth.isReplay;
 
-      if (gameId == undefined) {
+      if (gameId === undefined) {
         console.error('No game ID provided!');
         socket.disconnect();
         return;
       }
 
       if (isReplay) {
-        console.log(`[server:connection] User ${shortToken(socket.uid)} requesting replay of game ${gameId}`);
+        console.log(`[server:connection] User ${shortToken(gameSocket.uid)} requesting replay of game ${gameId}`);
         const replayData = await apiFetch(
           `getReplay?id=${gameId}`,
           '',
@@ -178,7 +180,7 @@ io.on('connection', async (socket: any) => {
             }
           }
         );
-        
+
         if (!replayData) {
           console.error(`Replay ${gameId} not found!`);
           socket.disconnect();
@@ -190,19 +192,19 @@ io.on('connection', async (socket: any) => {
         return;
       }
 
-      console.log(`[server:connection] User ${shortToken(socket.uid)} connecting to game ${gameId}`);
+      console.log(`[server:connection] User ${shortToken(gameSocket.uid)} connecting to game ${gameId}`);
 
       const isGame0 = gameId === '0';
-      if (isGame0) gameId = socket.uid;
+      if (isGame0) gameId = gameSocket.uid;
 
       const gameData = await getGameData(gameId);
-  
+
       // Check if firebase UID is in gameData.players
-      if (!gameData.players.includes(socket.uid)) {
-        console.error(`Player with UID ${shortToken(socket.uid)} is not in game ${gameId}!`);
+      if (!gameData.players.includes(gameSocket.uid)) {
+        console.error(`Player with UID ${shortToken(gameSocket.uid)} is not in game ${gameId}!`);
         socket.disconnect();
         return;
-      } 
+      }
 
       let game: Game;
       if (!gamesMap.has(gameId)) {
@@ -215,43 +217,43 @@ io.on('connection', async (socket: any) => {
       game = gamesMap.get(gameId)!;
 
       if (game.gameStarted) { // Reconnecting player
-        console.log(`Reconnecting player ${shortToken(socket.uid)} to game ${gameId}`);
+        console.log(`Reconnecting player ${shortToken(gameSocket.uid)} to game ${gameId}`);
         game.reconnectPlayer(socket);
       } else {
-        console.log(`[server:connection] Fetching player data for ${socket.uid}`);
-        const playerData = await getPlayerData(socket.uid);
+        console.log(`[server:connection] Fetching player data for ${gameSocket.uid}`);
+        const playerData = await getPlayerData(gameSocket.uid);
         game.addPlayer(socket, playerData);
       }
 
       socketMap.set(socket, game);
-  
+
       socket.on('disconnect', () => {
-          console.log(`[server:disconnect] User ${shortToken(socket.uid)} disconnected`);
+          console.log(`[server:disconnect] User ${shortToken(gameSocket.uid)} disconnected`);
           socketMap.get(socket)?.handleDisconnect(socket);
           socketMap.delete(socket);
       });
-  
-      socket.on('move', (data: any) => {
+
+      socket.on('move', (data) => {
         const game = socketMap.get(socket);
         game?.processAction('move', data, socket);
       });
-  
-      socket.on('attack', (data: any) => {
+
+      socket.on('attack', (data) => {
         const game = socketMap.get(socket);
         game?.processAction('attack', data, socket);
       });
 
-      socket.on('obstacleattack', (data: any) => {
+      socket.on('obstacleattack', (data) => {
         const game = socketMap.get(socket);
         game?.processAction('obstacleattack', data, socket);
       });
-  
-      socket.on('useitem', (data: any) => {
+
+      socket.on('useitem', (data) => {
         const game = socketMap.get(socket);
         game?.processAction('useitem', data, socket);
       });
-  
-      socket.on('spell', (data: any) => {
+
+      socket.on('spell', (data) => {
         const game = socketMap.get(socket);
         game?.processAction('spell', data, socket);
       });
@@ -285,7 +287,7 @@ const gameCleanupTimer = setInterval(() => {
 gameCleanupTimer.unref();
 
 // Basic HTTP endpoint for health checks
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   console.log(`[server] Health check / warm up request`);
   res.send('Game server is running');
 });

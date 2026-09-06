@@ -1,4 +1,5 @@
-import { h, Component, Fragment } from 'preact';
+import { h } from 'preact';
+import { Component, Fragment } from 'preact';
 import { route } from 'preact-router';
 import { GameHUD, events } from '../components/HUD/GameHUD';
 import { QueueTips } from '../components/queueTips/QueueTips';
@@ -111,7 +112,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     });
   };
 
-  handleGameInitialized = ({game0}) => {
+  handleGameInitialized = () => {
     this.setState({ initialized: true });
     if (this.waitingTimer) {
       clearTimeout(this.waitingTimer);
@@ -129,7 +130,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
 
   handleServerDisconnect = () => {
     console.log(`[GamePage:serverDisconnect] Server disconnected`);
-    
+
     if (process.env.NODE_ENV === 'development') return;
     route('/');
   };
@@ -180,8 +181,8 @@ class GamePage extends Component<GamePageProps, GamePageState> {
             </div>
           )}
           {this.state.revealedTeam && (
-            <TeamReveal 
-              team={this.state.revealedTeam} 
+            <TeamReveal
+              team={this.state.revealedTeam}
               onComplete={this.endReveal}
             />
           )}

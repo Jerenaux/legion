@@ -1,4 +1,5 @@
-import {Component, ComponentType, h} from "preact";
+import { h } from 'preact';
+import {Component, ComponentType, } from "preact";
 import AuthContext from "../contexts/AuthContext";
 
 interface WithAuthProps {

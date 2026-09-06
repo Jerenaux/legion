@@ -144,19 +144,19 @@ export class ServerPlayer {
     }
 
     isFrozen() {
-        return this.statuses[StatusEffect.FREEZE] != 0;
+        return this.statuses[StatusEffect.FREEZE] !== 0;
     }
 
     isParalyzed() {
-        return (this.statuses[StatusEffect.PARALYZE] != 0) || this.isFrozen();
+        return (this.statuses[StatusEffect.PARALYZE] !== 0) || this.isFrozen();
     }
 
     isHasted() {
-        return this.statuses[StatusEffect.HASTE] != 0;
+        return this.statuses[StatusEffect.HASTE] !== 0;
     }
 
     isMuted() {
-        return this.statuses[StatusEffect.MUTE] != 0;
+        return this.statuses[StatusEffect.MUTE] !== 0;
     }
 
     canAct() {
@@ -165,7 +165,7 @@ export class ServerPlayer {
 
     canMoveTo(x: number, y: number) {
         if (!this.canAct()) return false;
-        
+
         const distance = hexDistance(this.x, this.y, x, y);
         return distance <= this.distance;
     }
@@ -288,9 +288,9 @@ export class ServerPlayer {
     }
 
     hasStatusEffect(status: StatusEffect) {
-        return this.statuses[status] != 0;
+        return this.statuses[status] !== 0;
     }
-    
+
     setPosition(x: number, y: number) {
         this.x = x;
         this.y = y;
@@ -308,7 +308,7 @@ export class ServerPlayer {
 
     getHP() {
         return this.hp;
-    } 
+    }
 
     getLevel() {
         return this.level;
@@ -429,10 +429,11 @@ export class ServerPlayer {
     // Called when traversing cells with terrain effects
     applyTerrainEffect(terrain: Terrain) {
         switch (terrain) {
-            case Terrain.FIRE:
+            case Terrain.FIRE: {
                 const damage = this.team?.isGame0() ? terrainDot[terrain] / 2 : terrainDot[terrain];
                 this.takeDamage(damage);
                 break;
+            }
             default:
                 break;
         }
@@ -446,7 +447,7 @@ export class ServerPlayer {
             this.activeTerrainDoT = terrain;
         }
 
-        if (terrain == Terrain.ICE) {
+        if (terrain === Terrain.ICE) {
             this.addStatusEffect(StatusEffect.FREEZE, -1, 1);
         }
     }
@@ -457,7 +458,7 @@ export class ServerPlayer {
 
     removeTerrainEffect(terrain: Terrain) {
         this.activeTerrainDoT = null;
-        if (terrain == Terrain.ICE) {
+        if (terrain === Terrain.ICE) {
             this.removeStatusEffect(StatusEffect.FREEZE);
         }
     }
@@ -513,7 +514,7 @@ export class ServerPlayer {
         for (const status in this.statuses) {
             if (this.statuses[status] > 0) {
                 this.statuses[status]--;
-                if (this.statuses[status] == 0) {
+                if (this.statuses[status] === 0) {
                     change = true;
                     this.removeStatusEffect(status as keyof StatusEffects);
                 }
@@ -525,7 +526,7 @@ export class ServerPlayer {
     clearStatusEffects() {
         let change = false;
         for (const status in this.statuses) {
-            if (this.statuses[status] != 0) change = true;
+            if (this.statuses[status] !== 0) change = true;
             this.statuses[status] = 0;
             this.removeStatusEffect(status as keyof StatusEffects);
         }
@@ -606,8 +607,8 @@ export class ServerPlayer {
 
     startTurn() {
         if (this.activeTerrainDoT) {
-            this.applyTerrainEffect(this.activeTerrainDoT);  
-            
+            this.applyTerrainEffect(this.activeTerrainDoT);
+
             this.team!.incrementFlames();
         }
 

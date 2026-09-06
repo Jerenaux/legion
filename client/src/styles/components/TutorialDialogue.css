@@ -13,7 +13,7 @@
   opacity: 0;
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
   border: 0.1vw solid #00ffff;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(0, 255, 255, 0.3),
     0 0 20px rgba(0, 255, 255, 0.2),
     inset 0 0 8px rgba(0, 255, 255, 0.2);
@@ -113,7 +113,7 @@
   min-width: 60px;
   z-index: 1;
   animation: buttonPulse 1.5s ease-in-out infinite;
-  background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.2));
+  background-image: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.2));
 }
 
 .tutorial-dialogue-next:hover {
@@ -209,7 +209,7 @@
   .tutorial-dialogue {
     padding: 10px; /* Reduce padding on mobile if needed */
   }
-  
+
   .tutorial-dialogue-next {
     padding: 8px; /* Smaller padding for the button */
   }
@@ -227,19 +227,19 @@
 
 @keyframes dialogueGlow {
   0% {
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(0, 255, 255, 0.3),
       0 0 20px rgba(0, 255, 255, 0.2),
       inset 0 0 8px rgba(0, 255, 255, 0.2);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 15px rgba(0, 255, 255, 0.4),
       0 0 30px rgba(0, 255, 255, 0.3),
       inset 0 0 12px rgba(0, 255, 255, 0.3);
   }
   100% {
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(0, 255, 255, 0.3),
       0 0 20px rgba(0, 255, 255, 0.2),
       inset 0 0 8px rgba(0, 255, 255, 0.2);
@@ -280,4 +280,4 @@
     transform: translateX(3px);
   }
 }
- 
+

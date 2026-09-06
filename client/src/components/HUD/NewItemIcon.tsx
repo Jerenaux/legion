@@ -1,12 +1,12 @@
+import { h } from 'preact';
 import './HUD.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { InventoryType, ItemDialogType } from '@legion/shared/enums';
 import { BaseItem } from "@legion/shared/BaseItem";
 import { BaseSpell } from "@legion/shared/BaseSpell";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { mapFrameToCoordinates } from '../utils';
-import { cropFrame } from '../utils'; 
-import { events } from './GameHUD';
+import { cropFrame } from '../utils';
 
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -23,7 +23,7 @@ interface ItemIconProps {
 interface ItemIconState {
   openModal: boolean;
   modalType: ItemDialogType;
-  modalData: any;
+  modalData: BaseItem | BaseSpell | BaseEquipment | null;
   modalPosition: {
     top: number;
     left: number;
@@ -79,8 +79,8 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     const azertyLayout = 'AZERTYUIOPQSDFGHJKLMWXCVBN';
 
     const layout = keyboardLayout === 0 ? azertyLayout : qwertyLayout;
-    
-    let startPosition;
+
+    let startPosition: number;
     if (actionType === InventoryType.CONSUMABLES) {
       startPosition = keyboardLayout === 0 ? layout.indexOf('A') : layout.indexOf('Q');
     } else { // For spells
@@ -101,7 +101,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     return (
       <div className="player_bar_action">
         {action.id > -1 && (
-          <div 
+          <div
             className={!canAct ? 'player_bar_item-icon player_bar_item-icon-off' : 'player_bar_item-icon player_bar_item-icon-pointer'}
             style={{
               backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : 'none',

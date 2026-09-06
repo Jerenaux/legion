@@ -7,13 +7,19 @@ import {apiFetch} from './API';
 import { Class, PlayMode, League, AIAttackMode, Stat } from "@legion/shared/enums";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Team} from "./Team";
-import { DBCharacterData, PlayerDataForGame } from '@legion/shared/interfaces';
+import { CharacterData, DBCharacterData, PlayerDataForGame } from '@legion/shared/interfaces';
 import { Item } from './Item';
 import { getConsumableById } from '@legion/shared/Items';
 import { GAME_0_TURN_DURATION, MAX_AI_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
 
 
 const AI_VS_AI = false;
+
+type TutorialEvent =
+    | {action: 'summonEnemy'; x: number; y: number; attackMode: AIAttackMode; className?: Class; full?: boolean}
+    | {action: 'summonAlly'; x: number; y: number; className: Class}
+    | {action: 'putInFormation'}
+    | {action: 'slowDownCooldowns'};
 
 export class AIGame extends Game {
     nbExpectedPlayers = 1;
@@ -42,7 +48,7 @@ export class AIGame extends Game {
         });
     }
 
-    summonEnemy(data: {x: number, y: number, attackMode: AIAttackMode, className: Class, full: boolean}) {
+    summonEnemy(data: {x: number, y: number, attackMode: AIAttackMode, className?: Class, full?: boolean}) {
         if (!data.className) data.className = Class.WARRIOR;
         const aiTeam = this.teams.get(2);
         const character = new NewCharacter(data.className, 1, false, true).getCharacterData();
@@ -100,7 +106,7 @@ export class AIGame extends Game {
 
     async fetchZombieData(elo: number) {
         try {
-            const league = this.mode == PlayMode.RANKED_VS_AI ? this.league : -1;
+            const league = this.mode === PlayMode.RANKED_VS_AI ? this.league : -1;
             const data = await apiFetch(
                 `zombieData?league=${league}&elo=${elo}`,
                 '',
@@ -120,20 +126,20 @@ export class AIGame extends Game {
 
     async createZombieTeam(team: Team, zombieData) {
         team.setPlayerData(zombieData.playerData);
-        zombieData.rosterData.characters.forEach((character: DBCharacterData, index: number) => {
+        zombieData.rosterData.characters.forEach((character: DBCharacterData) => {
             this.addAICharacter(team, character).setZombie(true);
         });
     }
 
     modifyTeamForTutorial(characters: ServerPlayer[]) {
-        if (this.mode == PlayMode.TUTORIAL) {
+        if (this.mode === PlayMode.TUTORIAL) {
             // Save all characters in a map for later use, mapping class to character
             characters.forEach(character => {
                 this.savedCharacters[character.class] = character;
             });
             this.savedCharacters[Class.WARRIOR].addItem(new Item(getConsumableById(0)));
             this.savedCharacters[Class.BLACK_MAGE].addItem(new Item(getConsumableById(1)));
-            this.savedCharacters[Class.WHITE_MAGE].addItem(new Item(getConsumableById(0))); 
+            this.savedCharacters[Class.WHITE_MAGE].addItem(new Item(getConsumableById(0)));
             characters = [this.savedCharacters[Class.WARRIOR]];
             characters[0].y += 1;
         }
@@ -143,7 +149,7 @@ export class AIGame extends Game {
     async createPlayerTeam(playerTeam: Team) {
         const teamData = await this.getRosterData(playerTeam.getFirebaseToken());
         let characters = [];
-        teamData.characters.forEach((character: any, index) => {
+        teamData.characters.forEach((character: CharacterData, index) => {
             const position = this.getPosition(index, false, character.class);
             const newCharacter = new ServerPlayer(index + 1, character.name, character.portrait, position.x, position.y);
             newCharacter.setTeam(playerTeam!);
@@ -187,7 +193,7 @@ export class AIGame extends Game {
                 this.createAITeam(aiTeam!, nb, levels);
             }
         } else { // Create a matching team for practice
-            if (this.mode != PlayMode.TUTORIAL) {
+            if (this.mode !== PlayMode.TUTORIAL) {
                 this.createAITeam(aiTeam!, nb, levels);
             }
         }
@@ -199,7 +205,7 @@ export class AIGame extends Game {
             let winRatio = playerTeam.teamData.AIwinRatio;
             if (this.mode === PlayMode.RANKED_VS_AI) winRatio += 0.1 + (this.league * 0.1);
             if (this.mode === PlayMode.PRACTICE) winRatio -= 0.1;
-        
+
             aiTeam.addWinRatio(winRatio);
             console.log(`[AIGame:populateTeams] AI team win ratio: ${winRatio}`);
 
@@ -213,7 +219,7 @@ export class AIGame extends Game {
             if (winRatio <= 0.6) aiTeam.banSpells([6,7,8]);
             if (winRatio > 0.9) {
                 if (
-                    !isVsZombie || 
+                    !isVsZombie ||
                     (this.mode === PlayMode.RANKED_VS_AI && this.league >= League.GOLD)
                 ) this.addExtraTeamMember(aiTeam!);
                 aiTeam.scaleStats(1.2);
@@ -279,7 +285,7 @@ export class AIGame extends Game {
         this.tutorialSettings.allowVictoryConditions = true;
     }
 
-    processTutorialEvent(data: any) {
+    processTutorialEvent(data: TutorialEvent) {
         switch (data.action) {
             case 'summonEnemy':
                 this.summonEnemy(data);

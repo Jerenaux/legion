@@ -1,4 +1,5 @@
-import { h, render } from 'preact';
+import { h } from 'preact';
+import { render } from 'preact';
 
 import 'shepherd.js/dist/css/shepherd.css';
 import "toastify-js/src/toastify.css"

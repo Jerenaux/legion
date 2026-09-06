@@ -41,12 +41,16 @@
 
 .shop-filter-list ul li {
     list-style-type: none;
+}
+
+.shop-filter-list ul li button {
     padding: 4px 8px;
     font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 4px;
+    width: 100%;
 }
 
 .shop-filter-list ul li:hover {

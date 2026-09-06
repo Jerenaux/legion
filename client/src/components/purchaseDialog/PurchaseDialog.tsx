@@ -1,7 +1,9 @@
+
+import { h } from 'preact';
 // PurchaseDialog.tsx
 import './PurchaseDialog.style.css';
 import Modal from 'react-modal';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { mapFrameToCoordinates, getSpritePath } from '../utils';
 import { modalData } from '../shopContent/ShopContent';
 import { PlayerContext } from '../../contexts/PlayerContext';
@@ -36,7 +38,7 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
   }
 
   handleCount = (increase: boolean) => {
-    if (!increase && this.state.count == 1) return;
+    if (!increase && this.state.count === 1) return;
     this.setState(prev => ({count: increase ? prev.count + 1 : prev.count - 1}));
   }
 
@@ -110,11 +112,11 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
 
           {!dialogData.isCharacter && (
             <div className="purchase-count-container">
-              <div className="purchase-count-button" onClick={() => this.handleCount(false)}><span>-</span></div>
+              <button type="button" data-game-control className="purchase-count-button" onClick={() => this.handleCount(false)}><span>-</span></button>
               <div className="purchase-count">
                 <span>{this.state.count > 9 ? this.state.count : `0${this.state.count}`}</span>
               </div>
-              <div className="purchase-count-button" onClick={() => this.handleCount(true)}><span>+</span></div>
+              <button type="button" data-game-control className="purchase-count-button" onClick={() => this.handleCount(true)}><span>+</span></button>
             </div>
           )}
 
@@ -124,15 +126,15 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
           </div>
 
           <div className="purchase-dialog-button-container">
-            <button 
-              className="purchase-dialog-accept" 
-              onClick={() => this.props.purchase(dialogData.id, this.state.count, dialogData.price)} 
-              style={buyBtnStyle} 
+            <button type="button"
+              className="purchase-dialog-accept"
+              onClick={() => this.props.purchase(dialogData.id, this.state.count, dialogData.price)}
+              style={buyBtnStyle}
               disabled={!hasEnoughGold}
             >
               <img src={confirmIcon} alt="confirm" />Buy
             </button>
-            <button className="purchase-dialog-decline" onClick={this.handleCloseDialog}>
+            <button type="button" className="purchase-dialog-decline" onClick={this.handleCloseDialog}>
               <img src={cancelIcon} alt="decline" />Cancel
             </button>
           </div>

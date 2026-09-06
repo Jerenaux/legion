@@ -1,5 +1,6 @@
+import { h } from 'preact';
 // PlayPage.tsx
-import { h, Component, createRef } from 'preact';
+import { Component, createRef } from 'preact';
 import Roster from './roster/Roster';
 import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
@@ -9,12 +10,12 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css'
 import { PlayerContext } from '../contexts/PlayerContext';
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
-import { firebaseAuth } from '../services/firebaseService'; 
+import { firebaseAuth } from '../services/firebaseService';
 import PopupManager, { Popup } from './popups/PopupManager';
 import { LockedFeatures } from "@legion/shared/enums";
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
-  static contextType = PlayerContext; 
+  static contextType = PlayerContext;
 
   state = {
     showWelcome: false,
@@ -24,7 +25,7 @@ class PlayPage extends Component {
 
   componentDidMount() {
     const user = firebaseAuth.currentUser;
-    
+
     if (user?.isAnonymous && !this.context.welcomeShown && this.context.player.isLoaded) {
       this.popupManagerRef.current?.enqueuePopup(Popup.Guest);
     }
@@ -33,16 +34,16 @@ class PlayPage extends Component {
   enqueuePopup = (popup: Popup) => {
     this.popupManagerRef.current?.enqueuePopup(popup);
   }
-  
+
   componentDidUpdate() {
     if (!this.context.player.isLoaded) return;
 
     const completedGames = this.context.getCompletedGames();
 
-    if (completedGames > 12) { 
+    if (completedGames > 12) {
       this.enqueuePopup(Popup.FeatureReveal);
     }
-    
+
     switch(completedGames) {
       case 0:
         this.enqueuePopup(Popup.PlayToUnlockShop);
@@ -170,7 +171,7 @@ class PlayPage extends Component {
 
     return (
       <div className="play-content">
-        <PopupManager 
+        <PopupManager
           ref={this.popupManagerRef}
           onPopupResolved={this.handlePopupResolved}
         />

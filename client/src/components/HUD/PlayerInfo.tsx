@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import { route } from 'preact-router';
 import Modal from 'react-modal';
 import { PlayerProfileData } from "@legion/shared/interfaces";
@@ -12,19 +13,20 @@ import applauseIcon from '@assets/HUD/applause_icon.png';
 import donateIcon from '@assets/HUD/donate_icon.png';
 import settingsIcon from '@assets/HUD/settings_icon.png';
 import { SettingsModal } from '../settingsModal/SettingsModal';
+import { EventEmitter } from 'eventemitter3';
 
 interface Props {
   player: PlayerProfileData;
   position: string;
   isSpectator: boolean;
-  eventEmitter: any;
+  eventEmitter: EventEmitter;
   isPlayerTeam: boolean;
 }
 interface State {
   isMenuModalOpen: boolean;
   isExitModalOpen: boolean;
   isSettingsModalOpen: boolean;
-  modalPos: any;
+  modalPos: {top: number; left: number} | null;
 }
 
 class PlayerInfo extends Component<Props, State> {
@@ -101,16 +103,16 @@ class PlayerInfo extends Component<Props, State> {
       }
     };
 
-    const isBot = player.playerRank == -1;
+    const isBot = player.playerRank === -1;
 
     return (
-      <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`} onClick={() => { }}>
+      <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`}>
         {ENABLE_PLAYER_LEVEL && <div className={`player_info_lv ${position === 'right' && 'player_info_lv_right'}`}>
           <span>Lvl</span>
           <span className="player_info_lvalue">{player.playerLevel}</span>
         </div>}
         <div className="player_info_player_profile">
-          <img src={player.playerAvatar ? loadAvatar(player.playerAvatar) : loadAvatar('default')} />
+          <img src={player.playerAvatar ? loadAvatar(player.playerAvatar) : loadAvatar('default')} alt={`${player.playerName} avatar`} />
         </div>
         <div className="player_info">
           <div
@@ -129,23 +131,23 @@ class PlayerInfo extends Component<Props, State> {
         </div>
         {isPlayerTeam && <div className={position === 'right' ? "spectator_container_right" : "spectator_container"}>
           {isSpectator && <div className="spectator_div">
-            <div className="spectator" onClick={() => { }}>
+            <div className="spectator">
               <img src={applauseIcon} alt="" />
             </div>
-            <div className="spectator" onClick={() => { }}>
+            <div className="spectator">
               <img src={donateIcon} alt="" />
             </div>
           </div>}
-          <button className="spectator" data-game-menu aria-label="Game menu" onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
+          <button type="button" className="spectator" data-game-menu aria-label="Game menu" onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
             <img src={settingsIcon} alt="" />
           </button>
         </div>}
         <Modal isOpen={this.state.isMenuModalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
           <div>
-            {ENABLE_SETTINGS && <button className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
+            {ENABLE_SETTINGS && <button type="button" className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
               <p>Settings</p>
             </button>}
-            <button className="exit_game_label" onClick={(e) => this.handleOpenModal(e, "exit_modal")}>
+            <button type="button" className="exit_game_label" onClick={(e) => this.handleOpenModal(e, "exit_modal")}>
               <p>Abandon Game!</p>
             </button>
           </div>
@@ -154,8 +156,8 @@ class PlayerInfo extends Component<Props, State> {
           <div className="exit_game_menu flex flex_col gap_4">
             <div className="game_leave_dialog">Are you sure you want to abandon the game? This will count as a loss.</div>
             <div className="flex gap_4">
-              <button className="game_leave_btn" onClick={this.handleExit}>Leave</button>
-              <button className="game_leave_btn" data-desktop-cancel onClick={this.handleCloseModal}>Cancel</button>
+              <button type="button" className="game_leave_btn" onClick={this.handleExit}>Leave</button>
+              <button type="button" className="game_leave_btn" data-desktop-cancel onClick={this.handleCloseModal}>Cancel</button>
             </div>
           </div>
         </Modal>

@@ -51,8 +51,8 @@ export abstract class Game
     turnTimer: NodeJS.Timeout | null = null;
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
-    config: any;
-    tutorialSettings: any;
+    config: Record<string, string | number | boolean | undefined>;
+    tutorialSettings: {allowVictoryConditions: boolean; shortCooldowns: boolean};
     GENhistory: Set<GEN> = new Set<GEN>();
     turnStart: number = 0;
     turnDuration: number = 0;
@@ -115,12 +115,13 @@ export abstract class Game
 
     reconnectPlayer(socket: Socket) {
         console.log(`Reconnecting player to game ${this.id} ...`)
-        const team = Array.from(this.teams.values()).find(candidate => candidate.teamData.playerUID === (socket as any).uid);
+        const uid = "uid" in socket && typeof socket.uid === "string" ? socket.uid : undefined;
+        const team = Array.from(this.teams.values()).find(candidate => candidate.teamData.playerUID === uid);
         if (!team) throw new Error('Player team not found');
         this.addSocket(socket);
         this.socketMap.set(socket, team);
         team.setSocket(socket);
-        
+
         this.sendGameStatus(socket, true);
 
         // If game is over, re-emit the game end event
@@ -158,10 +159,9 @@ export abstract class Game
             const template = await remoteConfig.getTemplate();
 
             // Extract parameter values from the template
-            const configValues: { [key: string]: any } = {};
+            const configValues: Record<string, string | boolean | undefined> = {};
             for (const [key, parameter] of Object.entries(template.parameters)) {
-                // @ts-ignore
-                let value = parameter.defaultValue?.value;
+                let value: string | boolean | undefined = parameter.defaultValue && "value" in parameter.defaultValue ? parameter.defaultValue.value : undefined;
                 if (value === "true") value = true;
                 if (value === "false") value = false;
                 configValues[key] = value;
@@ -185,10 +185,10 @@ export abstract class Game
         const xRange = flip
             ? Array.from({ length: GRID_WIDTH - halfWidth }, (_, i) => i + halfWidth)
             : Array.from({ length: halfWidth }, (_, i) => i);
-    
+
         // Find all available positions on that side.
         let availablePositions: { x: number; y: number }[] = [];
-        
+
         // Calculate thirds based on the ENTIRE battlefield width
         const oneThirdWidth = Math.floor(GRID_WIDTH / 3);
         const twoThirdsWidth = Math.floor(2 * GRID_WIDTH / 3);
@@ -211,7 +211,7 @@ export abstract class Game
                 }
             }
         }
-    
+
         // If there are no available positions with restrictions, try without them.
         if (availablePositions.length === 0) {
             console.warn(`[Game:getPosition] No available position found for class ${characterClass}. Falling back to any valid position.`);
@@ -231,21 +231,21 @@ export abstract class Game
             const y = Math.floor(Math.random() * GRID_HEIGHT);
             return { x, y };
         }
-    
+
         // Return a random position from the available ones.
         const randomIndex = Math.floor(Math.random() * availablePositions.length);
         const position = availablePositions[randomIndex];
-    
+
         return position;
     }
 
     isFree(gridX: number, gridY: number) {
-        return !this.gridMap.get(`${gridX},${gridY}`) && 
+        return !this.gridMap.get(`${gridX},${gridY}`) &&
                !this.hasObstacle(gridX, gridY);
     }
 
     hasObstacle(gridX: number, gridY: number) {
-        return this.terrainManager.terrainMap.get(`${gridX},${gridY}`) === Terrain.ICE || 
+        return this.terrainManager.terrainMap.get(`${gridX},${gridY}`) === Terrain.ICE ||
                this.isHole(gridX, gridY);
     }
 
@@ -326,7 +326,7 @@ export abstract class Game
         if (!this.isGame0()) {
             setTimeout(this.processTurn.bind(this), FIRST_TURN_DELAY);
         }
-        
+
         this.audienceTimer = setInterval(() => {
             this.teams.forEach(team => {
                 team.incrementScore(10);
@@ -430,7 +430,7 @@ export abstract class Game
     }
 
     processDeath(player: ServerPlayer) {
-        if (this.turnee == player) {
+        if (this.turnee === player) {
             this.processTurn();
         }
     }
@@ -442,9 +442,14 @@ export abstract class Game
         if (reconnect && !this.gameStarted) {
             console.error(`[Game:sendGameStatus] Reconnect flag set to true for game not started`);
         }
-        const teamId = this.socketMap.get(socket)?.id!;
+        const team = this.socketMap.get(socket);
+        if (!team) {
+            console.error(`[Game:sendGameStatus] Socket is not assigned to a team`);
+            return;
+        }
+        const teamId = team.id;
         const gameData = this.getGameData(teamId, reconnect);
-        
+
         socket.emit('gameStatus', gameData);
     }
 
@@ -453,7 +458,7 @@ export abstract class Game
         this.broadcast('queueData', queueData);
     }
 
-    broadcast(event: string, data: any) {
+    broadcast(event: string, data: unknown) {
         const timestamp = Date.now() - this.startTime;
         this.replayMessages.push({
             timestamp,
@@ -517,25 +522,25 @@ export abstract class Game
         // let baseDamage = attacker.atk - defender.def;
         let baseDamage = attacker.getStat(Stat.ATK) / (1 + defender.getStat(Stat.DEF));
         baseDamage *= 10;
-    
+
         // Ensure baseDamage doesn't fall below some minimum (e.g., 1)
         baseDamage = Math.max(baseDamage, 1);
-    
+
         // Add randomness factor - in this case, damage can be from 0.9 to 1.1 times the baseDamage
         let randomFactor = 0.9 + Math.random() * 0.2;
         let totalDamage = baseDamage * randomFactor;
-    
+
         // Round the result to get rid of fractions
         totalDamage = Math.round(totalDamage);
-    
+
         // Ensure totalDamage is at least 1
         totalDamage = Math.max(totalDamage, 1);
-    
+
         return totalDamage;
     }
 
     getTeam(team: number): ServerPlayer[] {
-        return this.teams.get(team)?.getMembers()!;
+        return this.teams.get(team)?.getMembers() ?? [];
     }
 
     getOtherTeam(id: number): Team {
@@ -559,7 +564,7 @@ export abstract class Game
         return players;
     }
 
-    processAction(action: string, data: any, socket: Socket | null = null) {
+    processAction(action: string, data: unknown, socket: Socket | null = null) {
         if (this.gameOver || !this.gameStarted) return;
         if (this.turnee.hasActed) return;
 
@@ -582,22 +587,22 @@ export abstract class Game
 
         switch (action) {
             case 'move':
-                this.processMove(data);
+                this.processMove(data as Parameters<Game["processMove"]>[0]);
                 this.saveGameAction(team.teamData.playerUID, GameAction.MOVE, data);
                 break;
             case 'attack':
-                this.processAttack(data);
+                this.processAttack(data as Parameters<Game["processAttack"]>[0]);
                 this.saveGameAction(team.teamData.playerUID, GameAction.ATTACK, data);
                 break;
             case 'obstacleattack':
-                this.processObstacleAttack(data);
+                this.processObstacleAttack(data as Parameters<Game["processObstacleAttack"]>[0]);
                 break;
             case 'useitem':
-                this.processUseItem(data);
+                this.processUseItem(data as Parameters<Game["processUseItem"]>[0]);
                 this.saveGameAction(team.teamData.playerUID, GameAction.ITEM_USE, data);
                 break;
             case 'spell':
-                this.processMagic(data);
+                this.processMagic(data as Parameters<Game["processMagic"]>[0]);
                 this.saveGameAction(team.teamData.playerUID, GameAction.SPELL_USE, data);
                 break;
             case 'passTurn':
@@ -608,7 +613,7 @@ export abstract class Game
 
     checkEndGame() {
         if (this.gameOver) return;
-        if (this.mode == PlayMode.TUTORIAL && !this.tutorialSettings.allowVictoryConditions) return;
+        if (this.mode === PlayMode.TUTORIAL && !this.tutorialSettings.allowVictoryConditions) return;
         if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
             this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
         }
@@ -636,7 +641,7 @@ export abstract class Game
                 }
                 const otherTeam = this.getOtherTeam(team!.id);
                 const outcomes = this.computeGameOutcomes(team, otherTeam, winnerTeamID) as OutcomeData;
-                
+
                 // Store outcomes for reconnecting players
                 this.gameOutcomes.set(team.id, outcomes);
 
@@ -690,9 +695,9 @@ export abstract class Game
         this.checkForTerrainEffects(player, listCellsOnTheWay(player.x, player.y, tile.x, tile.y));
 
         this.updatePlayerPosition(player, tile.x, tile.y);
-        
+
         this.checkForStandingOnTerrain(player);
-        
+
         this.broadcastMove(player.team, player.num, tile);
 
         this.turnSystem.processAction(player, SpeedClass.FAST);
@@ -744,9 +749,9 @@ export abstract class Game
         const player = this.turnee;
         const opponentTeam = sameTeam ? player.team : this.getOtherTeam(player.team.id);
         const opponent = opponentTeam.getMembers()[target - 1];
-        
+
         if (
-            !player.canAct() || 
+            !player.canAct() ||
             !opponent.isAlive()
         ) {return
         };
@@ -764,10 +769,10 @@ export abstract class Game
             this.processMove({tile: closestCell});
             return;
         }
-        
+
         const damage = this.calculateDamage(player, opponent);
         opponent.takeDamage(damage);
-        
+
         const weapon = player.getWeapon();
         // console.log(`[Game:processAttack] Weapon: ${weapon?.name}`);
         if (weapon) {
@@ -775,7 +780,7 @@ export abstract class Game
                 opponent.addStatusEffect(effect.effect, effect.chance);
             });
         }
-        
+
         player.increaseDamageDealt(damage);
         player.team.incrementOffensiveActions();
         player.addInteractedTarget(opponent);
@@ -812,10 +817,10 @@ export abstract class Game
 
     processObstacleAttack({x, y}: {x: number, y: number}) {
         const player = this.turnee;
-        
+
         if (
-            !player.canAct() || 
-            !player.isNextTo(x, y) || 
+            !player.canAct() ||
+            !player.isNextTo(x, y) ||
             !this.hasObstacle(x, y)
         ) return;
 
@@ -833,7 +838,7 @@ export abstract class Game
     }
 
     processUseItem(
-        {x, y, index, targetTeam, target}: 
+        {x, y, index, targetTeam, target}:
         {x: number, y: number, index: number,  targetTeam: number, target: number | null}
     ) {
         const player = this.turnee;
@@ -860,13 +865,15 @@ export abstract class Game
         const targets = targetPlayer ? [targetPlayer] : item.getTargets(this, player, x, y);
 
         // Only check if the item is applicable if there is a single target
-        if (targets.length == 1 && !item.effectsAreApplicable(targets[0])) {
+        if (targets.length === 1 && !item.effectsAreApplicable(targets[0])) {
             console.log(`[Game:processUseItem] Item ${item.name} is not applicable!`);
             return;
         };
 
         // Add all targets to the list of interacted targets
-        targets.forEach(target => player.addInteractedTarget(target));
+        targets.forEach(target => {
+            player.addInteractedTarget(target);
+        });
 
         const deadTargets_ = targets.filter(target => !target.isAlive()).length;
         item.applyEffect(targets);
@@ -894,7 +901,7 @@ export abstract class Game
             if (target.MPHasChanged()) {
                 this.emitMPchange(target.team!, target.num, target.getMP());
             }
-        });    
+        });
 
         player.team.socket?.emit('inventory', {
             num: player.num,
@@ -927,12 +934,12 @@ export abstract class Game
                 } else if (delta < 0) {
                     nbHits++;
                 }
-                if (delta < 0 && Math.abs(delta) == target.getMaxHP()) {
+                if (delta < 0 && Math.abs(delta) === target.getMaxHP()) {
                     oneShot = true;
                 }
             }
             player.addInteractedTarget(target);
-        });       
+        });
         targets.forEach(target => {
             target.justDied = false;
         });
@@ -966,7 +973,7 @@ export abstract class Game
 
         const nbFrozen_ = targets.filter(target => target.hasStatusEffect(StatusEffect.FREEZE)).length;
         const nbBurning_ = this.terrainManager.getNbBurning();
-        
+
         const isKill = nbKills > 0;
         this.broadcast('localanimation', {
             fromX: player.x,
@@ -990,7 +997,7 @@ export abstract class Game
             team: team.id,
             num: player.num
         });
-        
+
         team.sendScore();
 
         // console.log(`[Game:processMagic] Processed spell, isKill: ${isKill}`);
@@ -1007,20 +1014,22 @@ export abstract class Game
         // Filter out repeated GENs that are in the GEN history, allow others
         GENs = GENs.filter(gen => !this.GENhistory.has(gen) || !noRepeatGENs.includes(gen) || (noRepeatGENs.includes(gen) && !this.GENhistory.has(gen)));
         // Add the new GENs to the history
-        GENs.forEach(gen => this.GENhistory.add(gen));
+        GENs.forEach(gen => {
+            this.GENhistory.add(gen);
+        });
 
         // If GEN.MULTI_KILL is in the array, remove GEN.MULTI_HIT if it's present
         if (GENs.includes(GEN.MULTI_KILL) && GENs.includes(GEN.MULTI_HIT)) {
             GENs = GENs.filter(gen => gen !== GEN.MULTI_HIT);
         }
-    
+
         // console.log(`[Game:broadcastGEN] GENs: ${GENs}`);
         this.broadcast('gen', GENs);
     }
 
     processMagic(
-        {x, y, index, targetTeam, target}: 
-        {x: number, y: number, index: number, targetTeam: number, target: number}, 
+        {x, y, index, targetTeam, target}:
+        {x: number, y: number, index: number, targetTeam: number, target: number},
     ) {
         // console.log(`Processing magic for team ${team.id}, player ${num}, spell ${index}, target team ${targetTeam}, target ${target}`);
         const player = this.turnee;
@@ -1167,10 +1176,10 @@ export abstract class Game
     listCellsInRange(gridX: number, gridY: number, radius: number): Tile[] {
         // Get all tiles within hex radius
         const hexTiles = getTilesInHexRadius(gridX, gridY, radius);
-        
+
         // Filter for valid cells only
         return hexTiles
-            .filter(tile => !isSkip(tile.x, tile.y) && 
+            .filter(tile => !isSkip(tile.x, tile.y) &&
                             this.isValidCell(gridX, gridY, tile.x, tile.y))
             .map(tile => ({
                 x: tile.x,
@@ -1216,9 +1225,9 @@ export abstract class Game
     computeGameOutcomes(team: Team, otherTeam: Team, winnerTeamId: number): OutcomeData {
         try {
             const isWinner = team.id === winnerTeamId;
-            const eloUpdate = 
-                this.mode == PlayMode.RANKED || this.mode == PlayMode.RANKED_VS_AI ? 
-                this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) : 
+            const eloUpdate =
+                this.mode === PlayMode.RANKED || this.mode === PlayMode.RANKED_VS_AI ?
+                this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) :
                 {winnerUpdate: 0, loserUpdate: 0};
             const grade = this.computeGrade(team, otherTeam);
             return {
@@ -1228,7 +1237,7 @@ export abstract class Game
                 gold: this.computeTeamGold(grade, this.mode),
                 xp: this.computeTeamXP(team, otherTeam, grade, this.mode),
                 elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
-                key: (this.mode == PlayMode.PRACTICE || this.mode == PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
+                key: (this.mode === PlayMode.PRACTICE || this.mode === PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
                 chests: this.computeChests(team.score, this.mode),
                 score: team.score,
             }
@@ -1250,11 +1259,11 @@ export abstract class Game
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
         const chests: GameOutcomeReward[] = [];
-        if (mode != PlayMode.PRACTICE && mode != PlayMode.TUTORIAL) this.computeAudienceRewards(score, chests);
+        if (mode !== PlayMode.PRACTICE && mode !== PlayMode.TUTORIAL) this.computeAudienceRewards(score, chests);
 
         return chests;
     }
-    
+
     computeAudienceRewards(score: number, chests: Array<GameOutcomeReward>): void {
         // console.log(`[Game:computeAudienceRewards] League: ${this.league}, Score: ${score}`);
         const casualRewards = [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.SILVER];
@@ -1266,13 +1275,13 @@ export abstract class Game
             [League.APEX]: [ChestColor.GOLD, ChestColor.GOLD, ChestColor.GOLD],
         };
 
-        let rewards = 
-            this.mode == PlayMode.RANKED || this.mode == PlayMode.RANKED_VS_AI ?
+        let rewards =
+            this.mode === PlayMode.RANKED || this.mode === PlayMode.RANKED_VS_AI ?
             leagueRewards[this.league] :
             casualRewards;
         if (!rewards) rewards = casualRewards;
         const numberOfChests = Math.floor(score / 500);
-    
+
         for (let i = 0; i < numberOfChests && i < rewards.length; i++) {
             const chestColor = rewards[i];
             chests.push({color: chestColor, content: getChestContent(chestColor)} as GameOutcomeReward);
@@ -1286,8 +1295,8 @@ export abstract class Game
         // Adjusting the offensive actions calculation
         const teamOffensiveActions = team.getOffensiveActions();
         const otherTeamOffensiveActions = otherTeam.getOffensiveActions();
-        let offenseFactor;
-        
+        let offenseFactor: number;
+
         // Check for one-shot victories
         if (teamOffensiveActions === 1) {
             // Maximum score for one-shot victory
@@ -1328,15 +1337,15 @@ export abstract class Game
 
         const expectedScoreWinner = 1 / (1 + Math.pow(10, (losingTeam.getElo() - winningTeam.getElo()) / 400));
         const expectedScoreLoser = 1 / (1 + Math.pow(10, (winningTeam.getElo() - losingTeam.getElo()) / 400));
-    
+
         // Since it's a match, winner's actual score is 1 and loser's actual score is 0
         const actualScoreWinner = 1;
         const actualScoreLoser = 0;
-    
+
         // Calculate rating updates
         const winnerUpdate = Math.round(K_FACTOR * (actualScoreWinner - expectedScoreWinner));
         const loserUpdate = Math.round(K_FACTOR * (actualScoreLoser - expectedScoreLoser));
-    
+
         // Return the elo update for each team
         return {
           winnerUpdate: winnerUpdate,
@@ -1346,8 +1355,8 @@ export abstract class Game
 
     computeTeamGold(grade: number, mode: PlayMode) {
         let gold = AVERAGE_GOLD_REWARD_PER_GAME * (grade + 0.3);
-        if (mode == PlayMode.PRACTICE || mode == PlayMode.TUTORIAL) gold *= PRACTICE_GOLD_COEF; 
-        if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) gold *= RANKED_GOLD_COEF;
+        if (mode === PlayMode.PRACTICE || mode === PlayMode.TUTORIAL) gold *= PRACTICE_GOLD_COEF;
+        if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) gold *= RANKED_GOLD_COEF;
         // Add +- 5% random factor
         gold *= 0.95 + Math.random() * 0.1;
         return Math.round(gold);
@@ -1360,11 +1369,11 @@ export abstract class Game
     }
 
     computeTeamXP(team: Team, otherTeam: Team, grade: number, mode: PlayMode) {
-        if (team.getTotalInteractedTargets() == 0) return 0;
+        if (team.getTotalInteractedTargets() === 0) return 0;
         let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (grade + 0.3);
         // console.log(`Base XP: ${xp}: ${otherTeam.getTotalLevel()} * ${XP_PER_LEVEL} * (${grade} + 0.3)`);
-        if (mode == PlayMode.PRACTICE || mode == PlayMode.TUTORIAL) xp *= PRACTICE_XP_COEF;
-        if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) xp *= RANKED_XP_COEF;
+        if (mode === PlayMode.PRACTICE || mode === PlayMode.TUTORIAL) xp *= PRACTICE_XP_COEF;
+        if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) xp *= RANKED_XP_COEF;
         if (team.isGame0) xp *= 2;
         // Add +- 5% random factor
         xp *= 0.95 + Math.random() * 0.1;
@@ -1372,7 +1381,7 @@ export abstract class Game
         return Math.round(xp); // Round to nearest whole number
     }
 
-    async writeOutcomesToDb(team: Team, outcomes: OutcomeData, engagement: any) {
+    async writeOutcomesToDb(team: Team, outcomes: OutcomeData, engagement: ReturnType<Team["getEngagement"]>) {
         // console.log(`[Game:writeOutcomesToDb] Writing outcomes to DB for team ${team.id}`);
         try {
             const uid = team.teamData.playerUID;
@@ -1380,19 +1389,19 @@ export abstract class Game
             if (!uid || typeof uid !== 'string' || uid.trim() === '') {
                 return;
             }
-            
+
             // Check if this UID has already been processed in this game
             if (this.processedUIDs && this.processedUIDs.has(uid)) {
                 console.log(`[Game:writeOutcomesToDb] UID ${uid} already processed, skipping`);
                 return;
             }
-            
+
             // Add UID to processed set
             if (!this.processedUIDs) {
                 this.processedUIDs = new Set<string>();
             }
             this.processedUIDs.add(uid);
-            
+
             await apiFetch(
                 'postGameUpdate',
                 '',
@@ -1471,7 +1480,7 @@ export abstract class Game
         }
     }
 
-    async saveGameAction(playerId: string, action: GameAction, details: any) {
+    async saveGameAction(playerId: string, action: GameAction, details: unknown) {
         try {
             await apiFetch(
                 'insertGameAction',
@@ -1546,14 +1555,14 @@ export abstract class Game
             const db = getFirestore();
             const decodedToken = await getAuth().verifyIdToken(token);
             const uid = decodedToken.uid;
-            
+
             const docSnap = await db.collection("players").doc(uid).get();
             if (!docSnap.exists) {
                 throw new Error('Player not found');
             }
 
             const characters = docSnap.data()?.characters as DocumentReference[];
-            
+
             // Batch get operation with field mask for optimization
             const characterDocs = await db.getAll(...characters, {
                 fieldMask: [
@@ -1644,7 +1653,7 @@ export abstract class Game
             {x: 14, y: 10},
             {x: 15, y: 10},
         ];
-        
+
         this.holePositions = new Set(fixedHoles.map(hole => `${hole.x},${hole.y}`));
     }
 

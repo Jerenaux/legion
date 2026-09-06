@@ -37,11 +37,13 @@ function getRandomItem(
     }
 
     for (const rarity in rarityDistribution) {
-        // @ts-ignore
-        cumulativeProbability += rarityDistribution[rarity as keyof Rarity].reduce((a, b) => a + b, 0);
+        const rarityKey = Number(rarity) as Rarity;
+        const weights = rarityDistribution[rarityKey];
+        if (!weights) continue;
+
+        cumulativeProbability += weights.reduce((a, b) => a + b, 0);
         if (rarityRoll < cumulativeProbability) {
-            // @ts-ignore
-            chosenRarity = rarity as Rarity;
+            chosenRarity = rarityKey;
             break;
         }
     }
@@ -52,8 +54,8 @@ function getRandomItem(
 
     const rewardType = getRandomType(rewardTypeDistribution);
 
-    let rewardPool;
-    
+    let rewardPool: Array<{id: number; rarity: Rarity}>;
+
     switch (rewardType) {
         case 'consumable':
             rewardPool = items;
@@ -68,8 +70,7 @@ function getRandomItem(
             throw new Error('Invalid item type');
     }
 
-    // @ts-ignore
-    const filteredPool = rewardPool.filter(item => item.rarity == chosenRarity);
+    const filteredPool = rewardPool.filter(item => item.rarity === chosenRarity);
     if (filteredPool.length === 0) {
         console.log(`No items found for type ${rewardType} with rarity ${chosenRarity}, retrying...`);
         return getRandomItem(rarityDistribution, rewardTypeDistribution, goldChance, goldAmount, allowGold);
@@ -141,7 +142,7 @@ export function getChestContent(type: ChestColor): ChestReward[] {
 
     return Array.from({ length: numberOfItems }, () => {
         const item = getRandomItem(rarityDistribution, rewardTypeDistribution, 0.1, AVERAGE_GOLD_REWARD_PER_GAME * goldCoefficient, allowGold);
-        if (item.type == RewardType.GOLD) {
+        if (item.type === RewardType.GOLD) {
             allowGold = false;
         }
         return item;

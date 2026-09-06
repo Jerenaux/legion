@@ -1,5 +1,7 @@
+import { Fragment } from 'preact';
+import { h } from 'preact';
 import './playModeButton.style.css'
-import { h, Fragment, Component } from 'preact';
+import { Component } from 'preact';
 import { route } from 'preact-router';
 import PracticeIcon from '@assets/practice_icon.png';
 import CasualIcon from '@assets/casual_icon.png';
@@ -48,23 +50,13 @@ const modeInfoMap: Partial<Record<PlayMode, ModeInfo>> = {
 };
 
 class PlayModeButton extends Component<Props> {
-    state = {
-        active: false,
-        lobbiesCount: null
-    }
-
     handleCardClick = () => {
         route(`/queue/${this.props.mode}`);
     }
-    
+
     render() {
         const { label, players, mode, disabled, lockIcon, gamesUntilUnlock, ...otherProps } = this.props;
-        const { active, lobbiesCount } = this.state;
         const modeInfo = modeInfoMap[mode];
-
-        const playerSpanStyle = {
-            color: `${active ? '#4ff4f6' : '#ffb653'}`
-        }
 
         const btnIcons = {
             practice: PracticeIcon,
@@ -82,24 +74,24 @@ class PlayModeButton extends Component<Props> {
                 disabled={disabled}
                 {...otherProps}
             >
-                <img 
-                    src={btnIcons[label]} 
+                <img
+                    src={btnIcons[label]}
                     alt={label}
                     className="mode-icon"
                 />
                 <div className="labelContainer">
                     <span className="label">{label}</span>
                     {!disabled && (
-                        mode === PlayMode.PRACTICE 
+                        mode === PlayMode.PRACTICE
                             ? <span className="player">vs AI</span>
                             : (players && <span className="player"><span className="count">{players}</span> {players === 1 ? 'Player' : 'Players'} Queuing</span>)
                     )}
                     <div className="info-container">
                         {disabled ? (
                             <div className="lock-container">
-                                <img 
-                                    src={lockIcon} 
-                                    alt="Locked" 
+                                <img
+                                    src={lockIcon}
+                                    alt="Locked"
                                     className="lock-icon"
                                 />
                                 {gamesUntilUnlock > 0 && (

@@ -37,7 +37,7 @@ describe("platform identity", () => {
 
   test("validates an Itch session key", async () => {
     const fetcher = async (_url: string, init?: RequestInit) => {
-      expect((init?.headers as Record<string, string>).Authorization).toBe("itch-key");
+      expect(new Headers(init?.headers).get("Authorization")).toBe("itch-key");
       return new Response(JSON.stringify({user: {id: 42}}), {status: 200});
     };
     await expect(validateItchKey("itch-key", fetcher)).resolves.toBe("42");

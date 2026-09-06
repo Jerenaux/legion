@@ -1,4 +1,6 @@
-import { h, Component } from 'preact';
+
+import { h } from 'preact';
+import { Component } from 'preact';
 import { ChestColor } from "@legion/shared/enums";
 
 // Explicit imports for chest images
@@ -123,11 +125,11 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
     render() {
         const { onClick } = this.props;
         return (
-            <div className="lootBoxContainer" onClick={onClick}>
+            <button type="button" data-game-control className="lootBoxContainer" onClick={onClick}>
                 <div className="loot-box-title"><span>{this.getTitle()}</span></div>
                 <img className="loot-box-image" src={this.getImageSrc()} alt={this.props.color} />
                 <div className="loot-box-footer">{this.getFooterContent()}</div>
-            </div>
+            </button>
         );
     }
 }

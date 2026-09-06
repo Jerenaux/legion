@@ -31,7 +31,7 @@ export class AIServerPlayer extends ServerPlayer {
 
     attackMode: AIAttackMode = AIAttackMode.IDLE;
     actionCount: number = 0;
-    
+
     constructor(num: number, name: string, frame: string, x: number, y: number) {
         super(num, name, frame, x, y);
 
@@ -103,7 +103,7 @@ export class AIServerPlayer extends ServerPlayer {
             this.handleActionTaken();
             return 0;
         }
-        
+
         // Try to use a spell
         if (this.checkForSpellUse()) {
             this.handleActionTaken();
@@ -114,7 +114,7 @@ export class AIServerPlayer extends ServerPlayer {
         if (!this.hasValidTarget()) {
             this.determineTarget();
         }
-        
+
         if (!this.target) {
             // console.log(`[AIServerPlayer:takeAction] ${this.name} has no valid target`);
             return 0;
@@ -207,7 +207,7 @@ export class AIServerPlayer extends ServerPlayer {
 
     checkForHealUse(index: number): boolean {
         const spell = this.spells[index];
-        if (spell.target != Target.SINGLE) return false;
+        if (spell.target !== Target.SINGLE) return false;
         if (!spell.isHealingSpell()) return false;
         if (Math.random() > this.healRandomThreshold) return false;
 
@@ -235,7 +235,7 @@ export class AIServerPlayer extends ServerPlayer {
         if (Math.random() < 0.4) return false;
 
         const spell = this.spells[index];
-        if (spell.target != Target.AOE) return false;
+        if (spell.target !== Target.AOE) return false;
 
         const tile = this.team?.game.scanGridForAoE(this, spell.radius - 1, spell.radius - 1);
         if (tile) {
@@ -264,8 +264,8 @@ export class AIServerPlayer extends ServerPlayer {
         }
         if (!targets || targets.length === 0) return false;
         // Find the first target that is not afflicted by the status effect
-        const target = targets.find(target => !target.hasStatusEffect(spell.status.effect)); 
-        
+        const target = targets.find(target => !target.hasStatusEffect(spell.status.effect));
+
         if (target) {
             const data = {
                 x: target.x,
@@ -282,7 +282,7 @@ export class AIServerPlayer extends ServerPlayer {
 
     determineTarget() {
         this.setArchetype();
-        
+
         switch (this.AItype) {
             case AIType.Opportunist:
                 this.opportunistTarget();
@@ -298,6 +298,7 @@ export class AIServerPlayer extends ServerPlayer {
                 break;
             case AIType.Hero:
                 this.heroTarget();
+                break;
             default:
                 this.opportunistTarget();
                 break;
@@ -317,7 +318,7 @@ export class AIServerPlayer extends ServerPlayer {
     getClosestTarget(targets: ServerPlayer[], from: ServerPlayer = this) {
         let closestTarget: ServerPlayer | null = null;
         targets.forEach(target => {
-            if (!closestTarget || this.distanceTo(target.x, target.y) < this.distanceTo(closestTarget.x, closestTarget.y)) {
+            if (!closestTarget || from.distanceTo(target.x, target.y) < from.distanceTo(closestTarget.x, closestTarget.y)) {
                 closestTarget = target;
             }
         });
@@ -369,7 +370,7 @@ export class AIServerPlayer extends ServerPlayer {
 
     moveTowards(x: number, y: number) {
         const tiles = this.team?.game.listCellsInRange(this.x, this.y, this.distance);
-        
+
         // Find the tile with the lowest distance to (x, y)
         let closestTile = tiles![0];
         if (!closestTile) return;
@@ -379,7 +380,7 @@ export class AIServerPlayer extends ServerPlayer {
             if (nextTo) {
                 closestTile = tiles![i];
                 break;
-            } 
+            }
             const distance = Math.pow(tiles![i].x - x, 2) + Math.pow(tiles![i].y - y, 2);
             if (distance < closestDistance) {
                 closestTile = tiles![i];

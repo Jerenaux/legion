@@ -21,19 +21,21 @@ export class Item extends BaseItem {
             this.effects.forEach(effect => {
                 if (effect.onKO && target.isAlive()) return;
                 if (!effect.onKO && !target.isAlive()) return;
-                let value;
+                let value: number;
                 switch (effect.stat) {
                     case Stat.HP:
-                        value = effect.value == -1 ? target.getMaxHP() : effect.value;
+                        value = effect.value === -1 ? target.getMaxHP() : effect.value;
                         target.heal(value);
                         break;
                     case Stat.MP:
-                        value = effect.value == -1 ? target.getMaxMP() : effect.value;
+                        value = effect.value === -1 ? target.getMaxMP() : effect.value;
                         target.restoreMP(value);
                         break;
                 }
             });
-            this.statusRemovals.forEach(status => target.removeStatusEffect(status));
+            this.statusRemovals.forEach(status => {
+                target.removeStatusEffect(status);
+            });
             if (this.status) {
                 target.addStatusEffect(this.status.effect, this.status.duration, this.status.chance)
             }

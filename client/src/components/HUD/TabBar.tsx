@@ -1,7 +1,7 @@
 import { h } from 'preact';
 
-const TabBar = ({ title = 'HP', value, maxValue, barClass = '' }) => {
-    const difference = maxValue - value;
+
+const TabBar = ({ value, maxValue, barClass = '' }) => {
     const percentage = (value / maxValue) * 100;
 
     return (

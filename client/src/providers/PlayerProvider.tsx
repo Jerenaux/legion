@@ -1,11 +1,12 @@
-import { Component, h } from 'preact';
+import { h } from 'preact';
+import { Component, } from 'preact';
 import { PlayerContextState, PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
 import { errorToast, avatarContext, silentErrorToast } from '../components/utils';
 import { APICharacterData, PlayerContextData, PlayerInventory } from '@legion/shared/interfaces';
 import { League, Stat, StatFields, InventoryActionType, ShopTab, ItemDialogType, LockedFeatures
  } from "@legion/shared/enums";
-import { firebaseAuth } from '../services/firebaseService'; 
+import { firebaseAuth } from '../services/firebaseService';
 import { getSPIncrement } from '@legion/shared/levelling';
 import { playSoundEffect } from '../components/utils';
 import { io } from 'socket.io-client';
@@ -35,7 +36,7 @@ import { LOCKED_FEATURES } from '@legion/shared/config';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private fetchAllDataTimeout: NodeJS.Timeout | null = null;
-    private fetchAllDataDelay: number = 400; 
+    private fetchAllDataDelay: number = 400;
 
     constructor(props: {}) {
       super(props);
@@ -161,14 +162,14 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.fetchRosterData();
       this.fetchFriends();
     }
-    
+
     async fetchPlayerData() {
       const user = firebaseAuth.currentUser;
       if (!user) return;
-    
+
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
-          this.setState({ 
+          this.setState({
               player: {
                   uid: user.uid,
                   name: data.name,
@@ -205,7 +206,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     updateActiveCharacter = (characterId: string): void => {
-      this.setState({ 
+      this.setState({
         activeCharacterId: characterId,
         characterSheetIsDirty: true
       });
@@ -226,7 +227,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           return character;
         });
 
-        return { 
+        return {
             characterSheetIsDirty: true,
             characters: updatedCharacters,
             player: {
@@ -247,18 +248,18 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           errorToast('No active character selected!');
           return prevState;
         }
-  
+
         const newState = { ...prevState };
         let updatedInventory = { ...newState.player.inventory };
         let updatedCharacter = { ...activeCharacter };
-  
+
         let result = null;
-  
+
         // Handle sell action
         if (action === InventoryActionType.SELL) {
           let itemPrice = 0;
           let inventoryField: keyof PlayerInventory;
-          
+
           switch(type) {
             case ItemDialogType.CONSUMABLES:
               itemPrice = (getConsumableById(updatedInventory.consumables[index])?.price || 0) / 2;
@@ -292,7 +293,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           };
         }
         // ### END OF SELL ACTION ###
-  
+
         switch(type) {
           case ItemDialogType.CONSUMABLES:
             if (action === InventoryActionType.EQUIP) {
@@ -334,18 +335,18 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
             }
             break;
         }
-  
+
         if (!result) {
           return prevState;
         }
-  
+
         playSoundEffect(equipSfx);
-  
+
         // Update the character in the characters array
         const updatedCharacters = newState.characters.map(char =>
           char.id === updatedCharacter.id ? { ...updatedCharacter, ...result.characterUpdate } : char
         );
-  
+
         return {
           ...newState,
           inventory: result.playerUpdate.inventory,
@@ -375,10 +376,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         );
         return;
       }
-    
+
       const { inventory } = this.state.player;
       let inventoryField: keyof PlayerInventory;
-      
+
       switch (shoptab) {
         case ShopTab.CONSUMABLES:
           inventoryField = 'consumables';
@@ -392,12 +393,12 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         default:
           return;
       }
-      
+
       const updatedInventoryField = [...inventory[inventoryField]];
       for (let i = 0; i < quantity; i++) {
         updatedInventoryField.push(articleId);
       }
-      
+
       this.setState({
         player: {
           ...this.state.player,
@@ -438,7 +439,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                 method: 'POST',
                 body: { friendId }
             });
-            
+
             // Refresh friends list after adding
             await this.fetchFriends();
         } catch (error) {
@@ -462,13 +463,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           console.warn('Error fetching friends:', error);
       }
     };
-  
+
     setupSocket = async () => {
       const user = firebaseAuth.currentUser;
       if (!user || this.state.socket) return;
 
       // console.log(`Connecting to ${process.env.MATCHMAKER_URL} ...`);
-      
+
       const socket = io(process.env.MATCHMAKER_URL, {
         auth: createRefreshingSocketAuth(() => getFirebaseIdToken(true)),
         ...socketReconnectOptions,
@@ -480,13 +481,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
       socket.on('disconnect', (reason) => {
         console.log(`Disconnected from matchmaker: ${reason}`);
-        
+
       });
 
       socket.on('connect_error', (error) => {
         console.error('Connection error:', error);
         // errorToast('Connection error, attempting to reconnect...');
-        
+
       });
 
       socket.on('error', (e) => {
@@ -497,11 +498,11 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         console.error(data.message);
       });
 
-      socket.on('challengeReceived', (data: { 
+      socket.on('challengeReceived', (data: {
         challengerId: string,
         challengerName: string,
         challengerAvatar: string,
-        lobbyId: string 
+        lobbyId: string
     }) => {
           // Show the challenge modal with the received data
           this.setState({
@@ -546,7 +547,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     handleChallengeAccept = () => {
         const { lobbyId } = this.state.challengeModal;
-        
+
         // Close modal and redirect
         this.setState({ challengeModal: { ...this.state.challengeModal, show: false } });
         route(`/lobby/${lobbyId}`);
@@ -555,14 +556,14 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     handleChallengeDecline = () => {
         const { socket } = this.state;
         const { challengerId, lobbyId } = this.state.challengeModal;
-        
+
         if (socket) {
-            socket.emit('challengeDeclined', { 
+            socket.emit('challengeDeclined', {
                 challengerId,
                 lobbyId
             });
         }
-        
+
         this.setState({ challengeModal: { ...this.state.challengeModal, show: false } });
     };
 
@@ -599,7 +600,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     hasEquipableEquipment = (): boolean => {
-      return this.state.characters.some(character => 
+      return this.state.characters.some(character =>
         this.state.player.inventory.equipment.some(equipment => canEquipEquipment(character, equipment))
       );
     }
@@ -613,7 +614,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     hasEquipableSpells = (): boolean => {
-      return this.state.characters.some(character => 
+      return this.state.characters.some(character =>
         this.state.player.inventory.spells.some(spell => canLearnSpell(character, spell))
       );
     }
@@ -631,7 +632,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     getCharacterThatCanEquipEquipment = (): APICharacterData => {
-      return this.state.characters.find(character => 
+      return this.state.characters.find(character =>
         this.state.player.inventory.equipment.some(equipment => canEquipEquipment(character, equipment))
       );
     }
@@ -641,7 +642,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     getCharacterThatCanEquipSpells = (): APICharacterData => {
-      return this.state.characters.find(character => 
+      return this.state.characters.find(character =>
         this.state.player.inventory.spells.some(spell => canLearnSpell(character, spell))
       );
     }
@@ -673,7 +674,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     render() {
       const { children } = this.props;
-  
+
       return (
         <PlayerContext.Provider value={{
           player: this.state.player,
@@ -721,17 +722,17 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           buyInventorySlots: this.buyInventorySlots,
         }}>
           {children}
-          
+
           {/* Challenge Response Modal */}
           {this.state.challengeModal.show && (
               <div className="modal-overlay">
                   <div className="modal challenge-modal">
-                      <div 
+                      <div
                           className="challenger-avatar"
-                          style={{ 
+                          style={{
                               backgroundImage: `url(${avatarContext(
                                   `./${this.state.challengeModal.challengerAvatar}.png`
-                              )})` 
+                              )})`
                           }}
                       />
                       <h3>Duel</h3>
@@ -744,13 +745,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                           </p>
                       </div>
                       <div className="modal-footer">
-                          <button
+                          <button type="button"
                               onClick={this.handleChallengeDecline}
                               className="cancel-btn"
                           >
                               Decline
                           </button>
-                          <button
+                          <button type="button"
                               onClick={this.handleChallengeAccept}
                               className="confirm-btn"
                           >

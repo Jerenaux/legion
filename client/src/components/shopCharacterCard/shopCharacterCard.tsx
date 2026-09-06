@@ -1,8 +1,11 @@
+
+import { h } from 'preact';
 // ShopCharacterCard.tsx
 import './shopCharacterCard.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { classEnumToString, getSpeedClass, getSpritePath, getStatEnum } from '../utils';
 import { modalData } from '../shopContent/ShopContent';
+import { APICharacterData } from '@legion/shared/interfaces';
 
 import goldIcon from '@assets/gold_icon.png';
 import { spells } from '@legion/shared/Spells';
@@ -18,8 +21,8 @@ import cancelIcon from '@assets/inventory/cancel_icon.png';
 
 interface ShopCharacteCardProps {
   key: number;
-  data: any;
-  handleOpenModal: (e: any, modalData: modalData) => void;
+  data: APICharacterData & { price: number };
+  handleOpenModal: (e: Event, modalData: modalData) => void;
 }
 
 interface ShopCharacterCardState {
@@ -64,13 +67,19 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
 
     const getSpell = (spellId) => {
-      return spells.find(item => item.id == spellId);
+      return spells.find(item => item.id === spellId);
     }
 
     return (
-      <div className="shop-character-card-container" key={this.props.key} onClick={(e) => {
-        this.props.handleOpenModal(e, modalData); 
-        this.setState({shopCharacterCardDialogShow: false});  
+      // biome-ignore lint/a11y/useSemanticElements: This keyboard-accessible card contains independent spell buttons, so it cannot itself be a button.
+      <div role="button" tabIndex={0} onKeyDown={(event) => {
+        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }} className="shop-character-card-container" key={this.props.key} onClick={(e) => {
+        this.props.handleOpenModal(e, modalData);
+        this.setState({shopCharacterCardDialogShow: false});
       }}>
         <div className="shop-character-card-title">
           <div className="shop-character-card-title-name">
@@ -87,9 +96,10 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
 
         <div className="shop-character-card-content">
           <div className="character-card-portrait" style={portraitStyle}></div>
+          {/* biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: This handler only prevents the parent card click from opening. */}
           <div onClick={(event) => event.stopPropagation()} className="shop-character-card-class-container">
             {data.skills.map((item, i) => (
-              <div
+              <button type="button" data-game-control
                 key={i}
                 style={{ backgroundImage: `linear-gradient(to bottom right, ${RarityColor[getSpell(item)?.rarity]}, #1c1f25)` }}
                 className="shop-character-card-slot"
@@ -106,7 +116,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
                     cursor: 'pointer',
                   }}
                 />
-              </div>
+              </button>
             ))}
 
             {Array.from({ length: data.skill_slots }, (_, i) => {
@@ -115,10 +125,12 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
                   <div key={i} className="shop-character-card-slot"></div>
                 )
               }
+              return null;
             })}
           </div>
 
           <div className="shop-character-card-dialog-position">
+            {/* biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: This handler only prevents the parent card click from opening. */}
             <div
               onClick={(event) => event.stopPropagation()}
               style={this.state.shopCharacterCardDialogShow ? { display: "flex" } : { display: "none" }}
@@ -147,7 +159,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
                 </div>
               </div>
               <div className="dialog-button-container">
-                <button className="dialog-decline" onClick={() => this.setState({ shopCharacterCardDialogShow: false })}><img src={cancelIcon} alt="decline" />Cancel</button>
+                <button type="button" className="dialog-decline" onClick={() => this.setState({ shopCharacterCardDialogShow: false })}><img src={cancelIcon} alt="decline" />Cancel</button>
               </div>
             </div>
           </div>

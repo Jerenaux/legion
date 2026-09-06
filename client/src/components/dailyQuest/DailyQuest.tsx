@@ -1,7 +1,7 @@
+import { h } from 'preact';
 // DailyQuest.tsx
 import './DailyQuest.style.css'
-import { h, Component } from 'preact';
-import { route } from 'preact-router';
+import { Component } from 'preact';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import QuestCard from '../questCard/QuestCard';
 import Skeleton from 'react-loading-skeleton';

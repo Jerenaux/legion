@@ -1,17 +1,18 @@
+
+import { h } from 'preact';
 // SeasonCard.tsx
 import './SeasonCard.style.css';
-import { h, Component, createRef } from 'preact';
+import { Component, createRef } from 'preact';
 
 import eloRatingBg from '@assets/rank/elo_rating_bg.png';
 import recapBluebar from '@assets/rank/recap_blue_bar.png';
 import infinityIcon from '@assets/rank/infinity_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import shareIcon from '@assets/rank/share_icon.png';
-import infoIcon from '@assets/inventory/info_btn.png';
 import {rankIcons} from '../RankPage';
 import { isElectron } from '../../utils/electronUtils';
 
-const leagues = ['bronze', 'silver', 'gold', 'zenith', 'apex', 'alltime']; 
+const leagues = ['bronze', 'silver', 'gold', 'zenith', 'apex', 'alltime'];
 
 interface SeasonCardProps {
     seasonEnd: number;
@@ -35,7 +36,7 @@ class SeasonCard extends Component<SeasonCardProps> {
         this.seasonTimer();
     }
 
-    componentDidUpdate(previousProps: Readonly<SeasonCardProps>, previousState: Readonly<{}>): void {
+    componentDidUpdate(previousProps: Readonly<SeasonCardProps>, _previousState: Readonly<{}>): void {
         if (this.props.currTab !== previousProps.currTab || this.props.seasonEnd !== previousProps.seasonEnd) {
             clearInterval(this.timer);
             this.seasonTimer();
@@ -101,7 +102,7 @@ class SeasonCard extends Component<SeasonCardProps> {
             hour: Math.floor(Math.min(23, (this.state.time % 86400) / 3600)),
             minute: Math.floor((this.state.time % 3600) / 60),
             second: Math.floor(this.state.time % 60)
-        }; 
+        };
 
         const isAllTime = this.props.currTab === 'alltime';
 
@@ -109,12 +110,12 @@ class SeasonCard extends Component<SeasonCardProps> {
             <div className="season-card-container">
                 <div className="season-card-header">
                     <div className="season-card-header-img">
-                        <img src={rankIcons[leagues.indexOf(this.props.currTab)]} />
-                    </div> 
+                        <img src={rankIcons[leagues.indexOf(this.props.currTab)]} alt={`${this.props.currTab} league`} />
+                    </div>
                     <div className="season-card-header-title">
-                        <span>{this.props.currTab.toUpperCase()} </span> 
+                        <span>{this.props.currTab.toUpperCase()} </span>
                         <span>LEAGUE</span>
-                    </div> 
+                    </div>
                     {/* <div className="categoryBtn" style={{ backgroundImage: `url(${infoIcon})` }} onClick={() => {}}></div> */}
                 </div>
                 <div className="season-card-body">
@@ -158,10 +159,10 @@ class SeasonCard extends Component<SeasonCardProps> {
                         </div>
                     </div>
                     {!isElectron() && (
-                        <div className="season-share-button" onClick={() => this.shareOnTwitter(this.props.playerRanking.rank, this.props.currTab)}>
+                        <button type="button" data-game-control className="season-share-button" onClick={() => this.shareOnTwitter(this.props.playerRanking.rank, this.props.currTab)}>
                             <img src={shareIcon} alt="" />
                             <span>SHARE</span>
-                        </div>
+                        </button>
                     )}
                 </div>
             </div>

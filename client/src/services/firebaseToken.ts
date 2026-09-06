@@ -8,7 +8,7 @@ export async function getTokenWithRetry(
   maxAttempts = 3,
   delay = 100,
 ): Promise<string> {
-  let lastError: any;
+  let lastError: unknown;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       return await user.getIdToken(forceRefresh);

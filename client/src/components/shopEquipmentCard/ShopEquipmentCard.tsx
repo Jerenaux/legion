@@ -1,6 +1,8 @@
+
+import { h } from 'preact';
 // ShopEquipmentCard.tsx
 import './ShopEquipmentCard.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { Class, InventoryType, equipmentSlotFields } from "@legion/shared/enums";
 import { mapFrameToCoordinates } from '../utils';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -29,7 +31,7 @@ interface ShopCardProps {
   key: number;
   data: BaseEquipment;
   getItemAmount: (index: number, type: InventoryType) => number;
-  handleOpenModal: (e: any, modalData: modalData) => void;
+  handleOpenModal: (e: Event, modalData: modalData) => void;
   isHighlighted?: boolean;
 }
 
@@ -47,7 +49,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
       }
     }
 
-    const { data } = this.props; 
+    const { data } = this.props;
 
     const classStyle = (classes: Class) => {
       return {
@@ -74,9 +76,9 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
     }
 
     return (
-      <div 
-        className={`shop-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`} 
-        key={this.props.key} 
+      <button type="button" data-game-control
+        className={`shop-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`}
+        key={this.props.key}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
       >
         <div className="shop-card-title" style={titleStyle}>
@@ -93,17 +95,17 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
           </div>
         </div>
         <div className="equipment-card-content">
-          <div className="shop-portrait" style={{ 
+          <div className="shop-portrait" style={{
                 backgroundImage: `url(${equipmentSpritesheet})`,
                 backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
             }} />
           <div className="shop-card-class-container">
             {data.classes.map((classes, index) => (
               <div key={index} className="shop-card-class" style={classStyle(classes)}>
-                <img 
-                  src={classes === Class.WARRIOR ? warriorIcon : mageIcon} 
-                  style={classes === Class.WARRIOR ? {transform: 'scaleX(1.5)'} : {}} 
-                  alt={classes === Class.WARRIOR ? "warrior" : "mage"} 
+                <img
+                  src={classes === Class.WARRIOR ? warriorIcon : mageIcon}
+                  style={classes === Class.WARRIOR ? {transform: 'scaleX(1.5)'} : {}}
+                  alt={classes === Class.WARRIOR ? "warrior" : "mage"}
                 />
               </div>
             ))}
@@ -138,7 +140,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
           content={data.description}
           style={{maxWidth: '120px'}}
         />
-      </div>
+      </button>
     );
   }
 }

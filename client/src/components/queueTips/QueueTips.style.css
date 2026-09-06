@@ -6,7 +6,7 @@
     background-position: center;
     background-repeat: no-repeat;
     color: white;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     position: relative;
     display: flex;
@@ -39,7 +39,7 @@
   }
   .queue-tips-text {
     font-size: 1.2vw;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     text-align: center;
     color: cyan;
   }

@@ -8,7 +8,7 @@ import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/uti
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
-import { TerrainUpdate, GameData, OutcomeData, PlayerNetworkData } from '@legion/shared/interfaces';
+import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
      SPELL_RANGE, PROJECTILE_DURATION, VALIDATE_TARGETS, CAST_ZOOM } from '@legion/shared/config';
@@ -61,7 +61,7 @@ import { HexGridManager, HighlightType } from './HexGridManager';
 import { TutorialManager } from './TutorialManager';
 
 import hexTileImage from '@assets/tile.png';
-import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels, 
+import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels,
     chargedIceLevels, chargedThunderLevels, iceLevels, thunderLevels,
     healLevels } from './VFXconfig';
 import {loadGameSettings} from '../settings';
@@ -107,13 +107,13 @@ export class Arena extends Phaser.Scene
     sfxVolume: number;
     inputLocked = false;
     handSprite: Phaser.GameObjects.Sprite;
-    queue: any[];
-    turnee: any;
+    queue: TurnQueueEntry[];
+    turnee: TurnState | null;
     isReplay: boolean = false;
-    replayData: any = null;
+    replayData: {messages: GameReplayMessage[]} | null = null;
     replayTimer: Phaser.Time.TimerEvent = null;
     currentReplayIndex: number = 0;
-    eventHandlers: Map<string, (data: any) => void>;
+    eventHandlers: Map<string, Function>;
     isDarkened: boolean = false;
     tutorialManager: TutorialManager;
     hexGridManager: HexGridManager;
@@ -141,12 +141,12 @@ export class Arena extends Phaser.Scene
 
     private isInTargetMode: boolean = false;
     private targetModeSize: number = 1;
-    private targetModeListener: any;
+    private targetModeListener: ((pointer: Phaser.Input.Pointer) => void) | null = null;
 
     constructor() {
         super({ key: 'Arena' });
         this.sfxVolume = this.getSFXVolumeFromLocalStorage();
-        
+
         // Initialize event handlers map
         const handlers = {
             gameStatus: this.initializeGame,
@@ -163,7 +163,9 @@ export class Arena extends Phaser.Scene
             terrain: this.processTerrain,
             gen: (data) => {
                 if (Array.isArray(data)) {
-                    data.forEach(g => this.enqueueGEN(g));
+                    data.forEach(g => {
+                        this.enqueueGEN(g);
+                    });
                 } else {
                     this.enqueueGEN(data.gen);
                 }
@@ -177,7 +179,7 @@ export class Arena extends Phaser.Scene
         };
 
         this.eventHandlers = new Map(
-            Object.entries(handlers).map(([event, handler]) => 
+            Object.entries(handlers).map(([event, handler]) =>
                 [event, handler.bind(this)]
             )
         );
@@ -199,7 +201,7 @@ export class Arena extends Phaser.Scene
     {
         // console.log('Preloading assets ...');
         this.gamehud = new GameHUD();
-        
+
         this.load.image('iceblock',  iceblockImage);
         this.load.spritesheet('meltdown',  meltdownImage, { frameWidth: 150, frameHeight: 150});
         this.load.image('speech_bubble', speechBubble);
@@ -274,8 +276,8 @@ export class Arena extends Phaser.Scene
         this.load.audio(`bgm_loop_1`, require(`@assets/music/bgm_loop_1.wav`));
 
         this.load.atlas('groundTiles', groundTilesImage, groundTilesAtlas);
-    
-        const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill', 
+
+        const GEN = ['gen_bg', 'begins', 'blood', 'blue_bang', 'combat', 'first', 'orange_bang', 'multi', 'kill',
             'hit', 'one', 'shot', 'frozen', 'stuff-is', 'on-fire', 'tutorial'];
         GEN.forEach((name) => {
             this.load.image(name, require(`@assets/GEN/${name}.png`));
@@ -478,23 +480,24 @@ export class Arena extends Phaser.Scene
         if (flag) {
             const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
             const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
-            
+
             this.isInTargetMode = true;
             this.targetModeSize = spell?.radius - 1|| 0;
             this.hexGridManager.toggleTargetMode(true);
-            
+
             // Add pointer move listener to highlight tiles in radius as cursor moves
             if (!this.targetModeListener) {
-                this.targetModeListener = this.input.on('pointermove', (pointer) => {
+                this.targetModeListener = (pointer: Phaser.Input.Pointer) => {
                     if (this.isInTargetMode) {
                         this.updateTargetHighlight(pointer);
                     }
-                });
+                };
+                this.input.on('pointermove', this.targetModeListener);
             }
-            
+
             // Clear any existing highlights
             this.hexGridManager.clearHighlight();
-            
+
             // Highlight target range
             if (this.selectedPlayer) {
                 this.hexGridManager.highlightTargetRange(
@@ -510,16 +513,16 @@ export class Arena extends Phaser.Scene
             this.isInTargetMode = false;
             this.targetModeSize = 1;
             this.hexGridManager.toggleTargetMode(false);
-            
+
             // Clear all highlighted tiles
             this.hexGridManager.clearHighlight();
-            
+
             // Remove the pointer move listener
             if (this.targetModeListener) {
                 this.input.off('pointermove', this.targetModeListener);
                 this.targetModeListener = null;
             }
-            
+
             events.emit('clearPendingSpell');
             this.brightenScene();
             this.selectedPlayer?.displayMovementRange();
@@ -528,9 +531,8 @@ export class Arena extends Phaser.Scene
 
     toggleItemMode(flag: boolean) {
         if (flag) {
-            const item = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
             this.hexGridManager.clearHighlight();
-            
+
             // Highlight target range if there's a selected player
             if (this.selectedPlayer) {
                 this.hexGridManager.highlightTargetRange(
@@ -539,7 +541,7 @@ export class Arena extends Phaser.Scene
                     this.selectedPlayer.distance
                 );
             }
-            
+
             events.emit('pendingItem');
             // this.darkenScene(item?.targetHighlight);
         } else {
@@ -551,13 +553,13 @@ export class Arena extends Phaser.Scene
     handleKeyDown(event) {
         // Prevent key event handling if input is locked
         if (this.inputLocked) return;
-        
+
         // Simple debouncing - prevent multiple rapid triggers of the same key
         if (this.lastKeyTime && (Date.now() - this.lastKeyTime < 100)) {
             return;
         }
         this.lastKeyTime = Date.now();
-        
+
         // Check if the pressed key is a number
         const isNumberKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NINE) || (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NUMPAD_NINE);
         if (!isNumberKey) {
@@ -593,7 +595,7 @@ export class Arena extends Phaser.Scene
     }
 
     isFree(gridX, gridY) {
-        return !this.gridMap.get(serializeCoords(gridX, gridY)) && 
+        return !this.gridMap.get(serializeCoords(gridX, gridY)) &&
                !this.hexGridManager.hasObstacle(gridX, gridY) &&
                !this.hexGridManager.isHole(gridX, gridY);
     }
@@ -608,7 +610,7 @@ export class Arena extends Phaser.Scene
             this.unlockInput();
             return;
         }
-        
+
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
@@ -628,7 +630,7 @@ export class Arena extends Phaser.Scene
             this.sendObstacleAttack(gridX, gridY);
         } else if (this.selectedPlayer && !player && this.selectedPlayer.canMoveTo(gridX, gridY)) {
             this.handleMove(gridX, gridY);
-        } else if (player){ 
+        } else if (player){
             player.onClick();
         }
     }
@@ -647,7 +649,7 @@ export class Arena extends Phaser.Scene
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
         if (!VALIDATE_TARGETS) return true;
         if (!isInSpellRange(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) return false;
-        if (action.target == Target.AOE && action.radius > 1) {
+        if (action.target === Target.AOE && action.radius > 1) {
             return true;
         }
         const character = this.gridMap.get(serializeCoords(gridX, gridY));
@@ -655,7 +657,7 @@ export class Arena extends Phaser.Scene
         const isAlly = character?.team.id === this.playerTeamId;
         if (action.targetHighlight === TargetHighlight.ALLY && isAlly) {
             return true;
-        } else if ((action.targetHighlight == undefined || action.targetHighlight === TargetHighlight.ENEMY) && !isAlly) {
+        } else if ((action.targetHighlight === undefined || action.targetHighlight === TargetHighlight.ENEMY) && !isAlly) {
             return true;
         } else if (action.targetHighlight === TargetHighlight.DEAD && !character?.isAlive()) {
             return true;
@@ -678,7 +680,7 @@ export class Arena extends Phaser.Scene
             events.emit('showPlayerBox', this.selectedPlayer.getProps());
         }
     }
-    
+
     refreshOverview() {
         this.overviewReady = true;
         const { team1, team2, general, initialized, queue, turnee } = this.getOverview();
@@ -734,7 +736,7 @@ export class Arena extends Phaser.Scene
 
     processMove({team, tile, num}) {
         if (this.gameEnded) return;
-        
+
         const player = this.getPlayer(team, num);
         if (!player) {
             return;
@@ -750,7 +752,7 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    processAttack({team, target, num, damage, hp, isKill, sameTeam}) {
+    processAttack({team, target, num, hp, isKill, sameTeam}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         const otherTeam = sameTeam ? team : this.getOtherTeam(team);
@@ -758,12 +760,12 @@ export class Arena extends Phaser.Scene
 
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
         if (isKill) this.killCam(pixelX, pixelY);
-        
+
         this.playSound('slash');
         player.attack(targetPlayer.gridX);
         targetPlayer.setHP(hp);
-        targetPlayer.displaySlash(player);   
-        this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);   
+        targetPlayer.displaySlash(player);
+        this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);
         if (player.isPlayer) {
             events.emit('playerAttacked');
         }
@@ -846,12 +848,12 @@ export class Arena extends Phaser.Scene
             // .setInteractive();
         // Add pointerover event to sprite
         icesprite.on('pointerover', () => {
-            if (this.selectedPlayer?.isNextTo(x, y) 
+            if (this.selectedPlayer?.isNextTo(x, y)
                 && this.selectedPlayer.canAct()
                 && this.selectedPlayer.pendingSpell == null
                 && this.selectedPlayer.pendingItem == null) {
                 events.emit('hoverEnemyCharacter');
-            } 
+            }
         });
         icesprite.on('pointerdown', () => {
             this.handleTileClick(x, y);
@@ -866,7 +868,7 @@ export class Arena extends Phaser.Scene
 
     flickerAndDestroy(sprite, times, duration) {
         if (!sprite) return;
-    
+
         // Create a tween to flicker the sprite
         this.tweens.add({
             targets: sprite,
@@ -878,7 +880,7 @@ export class Arena extends Phaser.Scene
                 sprite.destroy();
             }
         });
-    }    
+    }
 
     displayAttackImpact(gridX, gridY) {
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(gridX, gridY);
@@ -893,9 +895,9 @@ export class Arena extends Phaser.Scene
         return Number((3.5 + y/10).toFixed(2));
     }
 
-    processCast(flag, {team, num, id, target,}) {
+    processCast(flag, {team, num, id,}) {
         if (this.gameEnded) return;
-        
+
         const player = this.getPlayer(team, num);
         const spell = getSpellById(id);
         player?.castAnimation(flag, spell?.name, spell?.charge);
@@ -907,7 +909,7 @@ export class Arena extends Phaser.Scene
                 const { x: pixelX, y: pixelY } = this.hexGridToPixelCoords(player.gridX, player.gridY);
                 this.chargeCastCam(pixelX, pixelY);
                 this.isZoomedForSpellCast = true;
-            } 
+            }
             // Check for cast end when camera is zoomed for a spell
             else if (!flag && this.isZoomedForSpellCast) {
                 console.log(`Ending spell cast, resetting camera`);
@@ -915,7 +917,7 @@ export class Arena extends Phaser.Scene
                     this.isZoomedForSpellCast = false;
             }
         }
-        
+
         if (player?.isPlayer) {
             events.emit(`playerCastSpell`);
         }
@@ -924,11 +926,11 @@ export class Arena extends Phaser.Scene
     // Simplify the chargeCastCam method - no need for revert parameter
     chargeCastCam(pixelX, pixelY) {
         if (FREEZE_CAMERA) return;
-        
+
         // Target zoom level for charged spells
         const targetZoom = 1.5;
         const panDuration = 800;
-        
+
         // Move camera to the caster's location and zoom in
         this.cameras.main.pan(pixelX, pixelY, panDuration, 'Power2');
         this.cameras.main.zoomTo(targetZoom, panDuration, 'Power2');
@@ -937,15 +939,15 @@ export class Arena extends Phaser.Scene
     // Add a helper method to reset the camera
     resetCamera(scrollX = null, scrollY = null, zoom = null) {
         if (FREEZE_CAMERA) return;
-        
+
         const gameWidth = this.cameras.main.width;
         const gameHeight = this.cameras.main.height;
-        
+
         // Use provided values or center the camera
         const targetX = scrollX !== null ? gameWidth/2 + scrollX : gameWidth/2;
         const targetY = scrollY !== null ? gameHeight/2 + scrollY : gameHeight/2;
         const targetZoom = zoom !== null ? zoom : 1;
-        
+
         // Smoothly transition back
         this.cameras.main.pan(targetX, targetY, 800, 'Power2');
         this.cameras.main.zoomTo(targetZoom, 800, 'Power2');
@@ -984,7 +986,7 @@ export class Arena extends Phaser.Scene
                 //     distanceToTop += 100;
                 // }
                 const baseHeight = 512; // Base height of the thunder sprite
-                
+
                 // Set the scale: normal width, stretched height to reach top
                 let heightScale = distanceToTop / baseHeight;
                 if (config && config.extraStretch) {
@@ -1002,17 +1004,17 @@ export class Arena extends Phaser.Scene
             if (config && config.stretch) {
                 this.localAnimationSprite.setOrigin(0.5, yOrigin);
             }
-            
+
             console.log(`[Arena:processLocalAnimation] spell.vfx: ${spell.vfx}`);
             this.localAnimationSprite.play(spell.vfx);
-            
+
             this.playSound(spell.sfx);
 
             if (config && config.shake) {
                 const duration = isKill ? 2000 : 1000;
                 const intensity = isKill ? 0.002 : 0.02;
                 this.cameras.main.shake(duration, intensity);
-            } 
+            }
         }, spell.projectile ? PROJECTILE_DURATION * 1000 : 0);
     }
 
@@ -1021,30 +1023,30 @@ export class Arena extends Phaser.Scene
         // Convert grid coordinates to pixel coordinates
         const {x: startX, y: startY} = this.hexGridToPixelCoords(fromX, fromY);
         const {x: endX, y: endY} = this.hexGridToPixelCoords(toX, toY);
-        
+
         // Create projectile sprite at caster position
         const projectile = this.add.sprite(startX, startY, '')
             .setScale(VFXconfig[projectileKey].scale)
             .setOrigin(0.5, 0.5)
             .setDepth(this.yToZ(fromY) + DEPTH_OFFSET + 0.1);
 
-        // Set initial rotation - point upward 
+        // Set initial rotation - point upward
         // Since sprite faces right by default, we need -90 degrees to point up
         projectile.setRotation(-Math.PI/2);
-        
+
         // Play projectile animation
         projectile.play(projectileKey);
-        
+
         // Calculate screen top with some padding
         const screenTop = -50;
-        
+
         // Calculate total distance based on the actual path (up then down)
         const distanceUp = Math.abs(startY - screenTop);
         const distanceDown = Math.abs(endY - screenTop);
         const totalDistance = distanceUp + distanceDown;
-        
+
         const totalDuration = PROJECTILE_DURATION * 1000;
-        
+
         // Phase 1: Ascent - Move projectile straight up
         this.tweens.add({
             targets: projectile,
@@ -1054,7 +1056,7 @@ export class Arena extends Phaser.Scene
             onComplete: () => {
                 // Phase 2: Hide the projectile
                 projectile.setVisible(false);
-                
+
                 // Phase 3: Reappear above target and crash down
                 setTimeout(() => {
                     // Reposition projectile above the target
@@ -1062,7 +1064,7 @@ export class Arena extends Phaser.Scene
                         .setVisible(true)
                         // Set rotation to point downward (90 degrees)
                         .setRotation(Math.PI/2);
-                    
+
                     // Create the descent tween
                     this.tweens.add({
                         targets: projectile,
@@ -1098,7 +1100,7 @@ export class Arena extends Phaser.Scene
         const moveRatio = 0.4;
         const screenCenterX = screenWidth/2;
         const screenCenterY = screenHeight/2;
-        
+
         const offsetX = (targetX - screenCenterX) * moveRatio;
         const offsetY = (targetY - screenCenterY) * moveRatio;
 
@@ -1115,7 +1117,7 @@ export class Arena extends Phaser.Scene
     spellCam(pixelX: number, pixelY: number, revert = false) {
         const originalScrollX = this.cameras.main.scrollX;
         const originalScrollY = this.cameras.main.scrollY;
-        
+
         this.panCameraWithOffset(pixelX, pixelY);
 
         if (revert) {
@@ -1134,7 +1136,7 @@ export class Arena extends Phaser.Scene
     // Update highlightTurnee to use the new method
     highlightTurnee() {
         if (!this.turnee) return;
-        
+
         const player = this.getPlayer(this.turnee.team, this.turnee.num);
         if (!player) return;
 
@@ -1146,7 +1148,6 @@ export class Arena extends Phaser.Scene
             return;
         }
 
-        const {x, y} = this.hexGridToPixelCoords(player.gridX, player.gridY);
         // this.panCameraWithOffset(x, y);
     }
 
@@ -1178,15 +1179,15 @@ export class Arena extends Phaser.Scene
         this.placeCharacter(data.character, team, false);
     }
 
-    processQueueData(data: any[]) {
+    processQueueData(data: TurnQueueEntry[]) {
         this.queue = data;
         this.refreshOverview();
     }
 
-    processTurnee(data: {num: number, team: number, turnDuration: number, timeLeft: number}) {
+    processTurnee(data: TurnState) {
         if (this.gameEnded) return;
         // Determine if turnee is player
-        if (data.team != this.playerTeamId) {
+        if (data.team !== this.playerTeamId) {
             events.emit('enemyTurn');
         }
         events.emit('turnStarted');
@@ -1220,7 +1221,7 @@ export class Arena extends Phaser.Scene
             console.warn(`Sound effect "${name}" not found`);
             return;
         }
-        
+
         const adjustedVolume = volume * this.sfxVolume;
         try {
             this.SFX[name].play({delay: 0, volume: adjustedVolume, loop});
@@ -1235,13 +1236,13 @@ export class Arena extends Phaser.Scene
 
     playSoundMultipleTimes(key, times) {
         if(times <= 0) return;
-    
+
         const sound = this.SFX[key];
-    
+
         sound.once('complete', () => {
             this.playSoundMultipleTimes(key, times - 1); // Play the sound again
         });
-    
+
         sound.play();
     }
 
@@ -1263,42 +1264,42 @@ export class Arena extends Phaser.Scene
         });
 
         this.anims.create({
-            key: `cast`, 
-            frames: this.anims.generateFrameNumbers('cast', { frames: [10, 11, 12] }), 
-            frameRate: 15, 
+            key: `cast`,
+            frames: this.anims.generateFrameNumbers('cast', { frames: [10, 11, 12] }),
+            frameRate: 15,
             repeat: -1
         });
 
         this.anims.create({
-            key: `slash`, 
-            frames: this.anims.generateFrameNumbers('slash', { frames: [99, 100, 101, 102] }), 
-            frameRate: 15, 
+            key: `slash`,
+            frames: this.anims.generateFrameNumbers('slash', { frames: [99, 100, 101, 102] }),
+            frameRate: 15,
         });
 
         this.anims.create({
-            key: `impact`, 
-            frames: this.anims.generateFrameNumbers('impact', { start: 0, end: 12 }), 
-            frameRate: 25, 
+            key: `impact`,
+            frames: this.anims.generateFrameNumbers('impact', { start: 0, end: 12 }),
+            frameRate: 25,
         });
 
         // Spells VFX
 
         this.anims.create({
-            key: `meltdown`, 
-            frames: this.anims.generateFrameNumbers('meltdown'), 
-            frameRate: 10, 
+            key: `meltdown`,
+            frames: this.anims.generateFrameNumbers('meltdown'),
+            frameRate: 10,
         });
 
         this.anims.create({
-            key: `potion_heal`, 
-            frames: this.anims.generateFrameNumbers('potion_heal'), 
-            frameRate: 10, 
+            key: `potion_heal`,
+            frames: this.anims.generateFrameNumbers('potion_heal'),
+            frameRate: 10,
         });
 
         this.anims.create({
-            key: `revive`, 
-            frames: this.anims.generateFrameNumbers('revive'), 
-            frameRate: 15, 
+            key: `revive`,
+            frames: this.anims.generateFrameNumbers('revive'),
+            frameRate: 15,
         });
 
         fireLevels.forEach(level => {
@@ -1311,9 +1312,9 @@ export class Arena extends Phaser.Scene
             });
 
             // this.anims.create({
-            //     key: fireballKey, 
-            //     frames: this.anims.generateFrameNumbers(fireballKey), 
-            //     frameRate: VFXconfig[fireballKey]?.frameRate || 15, 
+            //     key: fireballKey,
+            //     frames: this.anims.generateFrameNumbers(fireballKey),
+            //     frameRate: VFXconfig[fireballKey]?.frameRate || 15,
             //     repeat: -1,
             // });
         });
@@ -1376,14 +1377,14 @@ export class Arena extends Phaser.Scene
         });
 
         this.anims.create({
-            key: `poison`, 
-            frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 16 }), 
+            key: `poison`,
+            frames: this.anims.generateFrameNumbers('poison', { start: 0, end: 16 }),
             frameRate: 15,
         });
 
         this.anims.create({
-            key: `mute`, 
-            frames: this.anims.generateFrameNumbers('mute', { start: 0, end: 13 }), 
+            key: `mute`,
+            frames: this.anims.generateFrameNumbers('mute', { start: 0, end: 13 }),
             frameRate: 15,
         });
 
@@ -1399,30 +1400,30 @@ export class Arena extends Phaser.Scene
         });
 
         this.anims.create({
-            key: `smoke`, 
-            frames: this.anims.generateFrameNumbers('smoke', { start: 32, end: 42 }), 
+            key: `smoke`,
+            frames: this.anims.generateFrameNumbers('smoke', { start: 32, end: 42 }),
             frameRate: 12,
         });
 
         // Status effects VFX
 
         this.anims.create({
-            key: `paralyzed`, 
-            frames: this.anims.generateFrameNumbers('statuses', { start: 56, end: 63 }), 
+            key: `paralyzed`,
+            frames: this.anims.generateFrameNumbers('statuses', { start: 56, end: 63 }),
             frameRate: 15,
             repeat: -1,
         });
 
         this.anims.create({
-            key: `poisoned`, 
-            frames: this.anims.generateFrameNumbers('statuses', { start: 0, end: 7 }), 
+            key: `poisoned`,
+            frames: this.anims.generateFrameNumbers('statuses', { start: 0, end: 7 }),
             frameRate: 10,
             repeat: -1,
         });
 
         this.anims.create({
-            key: `muted`, 
-            frames: this.anims.generateFrameNumbers('statuses', { start: 16, end: 23 }), 
+            key: `muted`,
+            frames: this.anims.generateFrameNumbers('statuses', { start: 16, end: 23 }),
             frameRate: 10,
             repeat: -1,
         });
@@ -1443,7 +1444,7 @@ export class Arena extends Phaser.Scene
             character.hp, character.maxHP, character.mp, character.maxMP,
             character.level, character.xp,
         );
-        
+
         if (isPlayer) {
             player.setDistance(character.distance);
             player.setInventory(character.inventory);
@@ -1465,18 +1466,20 @@ export class Arena extends Phaser.Scene
     }
 
     placeCharacters(data: PlayerNetworkData[], team: Team, isReconnect = false) {
-        data.forEach(player => this.placeCharacter(player, team, isReconnect));
+        data.forEach(player => {
+            this.placeCharacter(player, team, isReconnect);
+        });
     }
 
     highlightCells(gridX, gridY, radius) {
         // Clear any existing highlights
         this.hexGridManager.clearHighlight();
-        
+
         // Use the common helper with custom validation for movement
         this.hexGridManager.highlightTilesInRadius(
-            gridX, 
-            gridY, 
-            radius, 
+            gridX,
+            gridY,
+            radius,
             0x00ffff, // Cyan
             (targetX, targetY) => this.hexGridManager.isValidCell(gridX, gridY, targetX, targetY, this.isFree.bind(this))
         );
@@ -1488,7 +1491,7 @@ export class Arena extends Phaser.Scene
             return hexDistance(member.gridX, member.gridY, gridX, gridY) <= 1;
         });
     }
-    
+
     create()
     {
         window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
@@ -1521,16 +1524,16 @@ export class Arena extends Phaser.Scene
 
         this.sceneCreated = true;
         this.emptyQueue();
-        
+
         this.setUpArena();
-        
+
         this.input.keyboard.on('keydown-D', () => {
             this.hexGridManager.toggleCoordinateDisplay();
         });
 
         // Add character glow effect listener
         window.addEventListener('characterInSpellRadius', (e: CustomEvent) => {
-            const { x, y, isAlly } = e.detail;
+            const { x, y } = e.detail;
             const player = this.gridMap.get(serializeCoords(x, y));
             if (player) {
                 player.onPointerOver();
@@ -1561,7 +1564,7 @@ export class Arena extends Phaser.Scene
             this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
         }
         this.load.audio('bgm_end', bgmEndSFX);
-    
+
         // Start the loader
         this.load.start();
     }
@@ -1583,7 +1586,7 @@ export class Arena extends Phaser.Scene
         this.turnee = data.turnee;
         this.gameSettings.game0 = data.player.player.completedGames === 0;
 
-        this.tutorialManager = new TutorialManager(this, data.player.player.engagementStats);
+        this.tutorialManager = new TutorialManager(data.player.player.engagementStats);
 
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
@@ -1609,15 +1612,15 @@ export class Arena extends Phaser.Scene
 
         events.on('exitGame', () => {
             this.destroy();
-        });   
-        
+        });
+
         events.on('teamRevealed', () => {
             this.socket.emit('teamRevealed');
             this.displayGame(data, isReconnect);
         });
 
         events.emit('gameInitialized', {game0: this.gameSettings.game0});
-        
+
         if (this.gameSettings.game0) {
             events.emit('revealTeam', data.player.team);
         } else {
@@ -1628,15 +1631,12 @@ export class Arena extends Phaser.Scene
     displayGame(data: GameData, isReconnect: boolean) {
         this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
-        
-        const tilesDelay = isReconnect ? 0 : 1000;
 
         this.hexGridManager.floatHexTiles(
-            tilesDelay,
             this.handleTileClick.bind(this),
             this.handleTileHover.bind(this)
         );
-        
+
         setTimeout(() => {
             // Move this AFTER floatHexTiles so the tiles exist
             this.hexGridManager.setCharacterTiles(this.gridMap);
@@ -1664,16 +1664,16 @@ export class Arena extends Phaser.Scene
     }
 
     startAnimation() {
-        const bandHeight = 300; 
+        const bandHeight = 300;
         const screenWidth = this.cameras.main.width;
         const screenHeight = this.cameras.main.height;
         const bandY = (screenHeight - bandHeight) / 2; // Position Y so the band is centered vertically
-    
+
         // Create the semi-transparent black band
         let currentHeight = 1; // Start with a height of 1
         const band = this.add.graphics({ fillStyle: { color: 0x000000, alpha: 0.5 } }).setDepth(10);
         band.fillRect(0, bandY, screenWidth, currentHeight);
-    
+
         // Animate the height of the band
         this.tweens.add({
             targets: { height: 1 },
@@ -1689,7 +1689,7 @@ export class Arena extends Phaser.Scene
                 // Once band animation is complete, animate 'START' text
                 const startText = this.add.text(0, bandY + (bandHeight - 20) / 2, 'FIGHT!', { fontSize: '40px', color: '#FFFFFF', fontFamily: 'Kim' }).setAlpha(0).setDepth(11);
                 startText.x = -startText.width; // Position text off-screen to the left
-    
+
                 // Slide in animation for 'START' text
                 this.tweens.add({
                     targets: startText,
@@ -1737,7 +1737,7 @@ export class Arena extends Phaser.Scene
 
     displayGEN(gen: GEN): Promise<void> {
         if (this.gameEnded) return Promise.resolve();
-        
+
         return new Promise((resolve) => {
             if (this.killCamActive) {
                 this.genQueue.unshift(gen);
@@ -1745,7 +1745,7 @@ export class Arena extends Phaser.Scene
                 return;
             }
 
-            if (gen != GEN.COMBAT_BEGINS && this.gameSettings.game0) {
+            if (gen !== GEN.COMBAT_BEGINS && this.gameSettings.game0) {
                 return;
             }
 
@@ -1789,7 +1789,7 @@ export class Arena extends Phaser.Scene
                     .setDepth(10)
                     .setScale(scale)
             ];
-            
+
             if (config.text2) {
                 targets.push(
                     this.add.image(this.cameras.main.width + 100, yPosition, config.text2)
@@ -1816,7 +1816,9 @@ export class Arena extends Phaser.Scene
                             ease: 'Power2',
                             onComplete: () => {
                                 // Clean up GEN elements
-                                targets.forEach(t => t.destroy());
+                                targets.forEach(t => {
+                                    t.destroy();
+                                });
                                 genBg.destroy();
                                 resolve(); // Resolve the promise to allow next GEN to be processed
                             }
@@ -1857,13 +1859,13 @@ export class Arena extends Phaser.Scene
         const originalScrollX = this.cameras.main.scrollX;
         const originalScrollY = this.cameras.main.scrollY;
 
-        const targetZoom = 2; 
-        const slowMotionScale = 0.2; 
+        const targetZoom = 2;
+        const slowMotionScale = 0.2;
 
         this.sound.setRate(slowMotionScale);
         this.localAnimationSprite.anims.timeScale = slowMotionScale;
         this.tweens.timeScale = slowMotionScale;
-        
+
         // For every sprites in this.sprites, set anims.timeScale to slowMotionScale
         this.sprites.forEach((sprite) => {
             if (sprite.anims) sprite.anims.timeScale = slowMotionScale;
@@ -1878,7 +1880,7 @@ export class Arena extends Phaser.Scene
             this.cameras.main.pan(x, y, cameraSpeed, 'Power2');
             this.cameras.main.zoomTo(targetZoom, cameraSpeed, 'Power2');
         });
-          
+
         this.time.delayedCall(secondDelay, () => {
             // Return the camera to its original position and zoom level
             const returnX = this.cameras.main.width / 2 + originalScrollX;
@@ -1916,7 +1918,7 @@ export class Arena extends Phaser.Scene
             this.stopSound('flames');
         }
     }
-    
+
     abandonGame() {
         this.socket.emit('abandonGame');
         this.destroy();
@@ -1935,25 +1937,25 @@ export class Arena extends Phaser.Scene
 
         if (this.SFX) {
             Object.values(this.SFX).forEach(sound => {
-                // @ts-ignore
+                // @ts-expect-error
             if (sound.isPlaying) {
-                // @ts-ignore
+                // @ts-expect-error
                 sound.stop();
                 }
             });
         }
-    
+
         // Stop and destroy the music manager
         if (this.musicManager) {
             this.musicManager.destroy();
         }
-    
+
         // Stop any ongoing tweens
         this.tweens.killAll();
-    
+
         // Stop any ongoing timers
         this.time.removeAllEvents();
-    
+
         // Stop the HUD and current scene
         this.scene.stop('HUD');
 
@@ -2007,14 +2009,14 @@ export class Arena extends Phaser.Scene
         return this.gameSettings.tutorial;
     }
 
-    handleReplayData(data: any) {
+    handleReplayData(data: {messages: GameReplayMessage[]}) {
         this.isReplay = true;
         this.replayData = data;
-        
+
         // Initialize game with first gameStatus message
         const initialStatus = this.replayData.messages.find(m => m.event === 'gameStatus');
         if (initialStatus) {
-            this.initializeGame(initialStatus.data);
+            this.initializeGame(initialStatus.data as GameData);
         }
 
         // Start replay timer
@@ -2049,7 +2051,7 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    processReplayMessage(message: any) {
+    processReplayMessage(message: GameReplayMessage) {
         const handler = this.eventHandlers.get(message.event);
         if (handler) {
             handler(message.data);
@@ -2062,7 +2064,9 @@ export class Arena extends Phaser.Scene
         if (this.isDarkened) return;
         this.isDarkened = true;
 
-        this.getAllDarkenableObjects().forEach(obj => obj.setTint(TINT_COLOR));
+        this.getAllDarkenableObjects().forEach(obj => {
+            obj.setTint(TINT_COLOR);
+        });
         this.hexGridManager.darkenAllTiles(TINT_COLOR);
 
         // Process players separately for health bars
@@ -2084,7 +2088,9 @@ export class Arena extends Phaser.Scene
         if (!this.isDarkened) return;
         this.isDarkened = false;
 
-        this.getAllDarkenableObjects().forEach(obj => obj.clearTint());
+        this.getAllDarkenableObjects().forEach(obj => {
+            obj.clearTint();
+        });
         this.hexGridManager.brightenAllTiles();
 
         // Brighten all bars
@@ -2096,8 +2102,8 @@ export class Arena extends Phaser.Scene
         });
 
         // Restore movement range highlight if appropriate
-        if (this.selectedPlayer?.canAct() && 
-            !this.selectedPlayer?.pendingSpell && 
+        if (this.selectedPlayer?.canAct() &&
+            !this.selectedPlayer?.pendingSpell &&
             !this.selectedPlayer?.pendingItem) {
             this.selectedPlayer.displayMovementRange();
         }
@@ -2105,7 +2111,7 @@ export class Arena extends Phaser.Scene
 
     private shouldStayBright(player: Player, targetHighlight: TargetHighlight = TargetHighlight.ENEMY): boolean {
         const isAlly = this.isAlly(player);
-        
+
         switch (targetHighlight) {
             case TargetHighlight.ALLY:
                 return isAlly && player.isAlive();
@@ -2163,17 +2169,17 @@ export class Arena extends Phaser.Scene
         } else {
             // Generate a random delay between 0-150ms for more natural look when multiple blocks appear
             const randomDelay = Math.floor(Math.random() * 150);
-            
+
             // Use Phaser's time delayed call to execute with random delay
             this.time.delayedCall(TERRAIN_SPRITE_DELAY + randomDelay, () => {
                 // Create meltdown sprite for reverse animation
                 const meltdownSprite = this.add.sprite(pixelX, pixelY, 'meltdown')
                     .setDepth(depth)
                     .setOrigin(0.5, 0.35);
-                
+
                 // Get all frames from the meltdown animation
                 const frames = this.anims.generateFrameNumbers('meltdown');
-                
+
                 // Create a reverse animation key if it doesn't exist
                 const reverseAnimKey = 'meltdown_reverse';
                 if (!this.anims.exists(reverseAnimKey)) {
@@ -2183,14 +2189,14 @@ export class Arena extends Phaser.Scene
                         frameRate: 10
                     });
                 }
-                
+
                 // Play the reverse animation
                 meltdownSprite.play(reverseAnimKey);
-                
+
                 // When animation completes, create the ice block
                 meltdownSprite.once('animationcomplete', () => {
                     meltdownSprite.destroy();
-                    
+
                     // Create the ice block and update maps
                     createIceAndUpdateMaps();
                 });
@@ -2206,20 +2212,20 @@ export class Arena extends Phaser.Scene
     private meltdown(sprite: Phaser.GameObjects.Sprite) {
         // Create a meltdown sprite at the same position as the terrain sprite
         const meltdownSprite = this.add.sprite(
-            sprite.x, 
-            sprite.y, 
+            sprite.x,
+            sprite.y,
             'meltdown'
         )
             .setDepth(sprite.depth + 0.01)
             .setScale(sprite.scaleX)
             .setOrigin(0.5, 0.5);
-        
+
         // Hide the original terrain sprite
         sprite.setVisible(false);
-        
+
         // Play meltdown animation
         meltdownSprite.play('meltdown');
-        
+
         // When animation completes, destroy both sprites
         meltdownSprite.once('animationcomplete', () => {
             meltdownSprite.destroy();
@@ -2249,7 +2255,7 @@ export class Arena extends Phaser.Scene
     private getAllDarkenableObjects() {
         return [
             ...this.sprites,
-            ...Array.from(this.teamsMap.values()).flatMap(team => 
+            ...Array.from(this.teamsMap.values()).flatMap(team =>
                 team.members.map(player => player.sprite)
             )
         ];
@@ -2270,14 +2276,14 @@ export class Arena extends Phaser.Scene
 
     updateTargetHighlight(pointer) {
         if (!this.isInTargetMode || !this.selectedPlayer) return;
-        
+
         const {gridX, gridY} = this.hexGridManager.pointerToHexGrid(pointer);
-        
+
         // Calculate distance from player to highlight center
         const playerX = this.selectedPlayer.gridX;
         const playerY = this.selectedPlayer.gridY;
         const distance = hexDistance(playerX, playerY, gridX, gridY);
-        
+
         // Get the current spell
         const spell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
@@ -2286,11 +2292,11 @@ export class Arena extends Phaser.Scene
         if (this.hexGridManager.isValidGridPosition(gridX, gridY) && distance <= this.selectedPlayer.distance + SPELL_RANGE) {
             // Clear previous spell highlights but keep target range
             this.hexGridManager.clearHighlightOfType(HighlightType.SPELL);
-            
+
             // Highlight spell area with direct gridMap reference
             this.hexGridManager.highlightSpellRadius(
-                gridX, 
-                gridY, 
+                gridX,
+                gridY,
                 this.targetModeSize,
                 this.gridMap,
                 player => this.isAlly(player),

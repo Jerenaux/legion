@@ -1,5 +1,6 @@
+import { h } from 'preact';
 // SpectatorFooter.tsx
-import { h, Fragment, Component } from 'preact';
+import { Component } from 'preact';
 import { PlayMode, Class } from '@legion/shared/enums';
 import { TeamOverview } from "@legion/shared/interfaces";
 import { getSpritePath } from '../utils';
@@ -12,7 +13,7 @@ interface TimelineProps {
   score: number;
   mode: PlayMode;
   queue: {
-    num: any;
+    num: number;
     team: number;
     position: number;
   }[];
@@ -39,13 +40,13 @@ class Timeline extends Component<TimelineProps, TimelineState> {
         const key = `${item.team}-${item.num}`;
         newPositions[key] = index;
       });
-      
+
       this.setState({ positions: newPositions });
     }
   }
 
   render() {
-    const { isTutorial, queue, team1, team2, closeGame } = this.props;
+    const { queue, team1, team2 } = this.props;
     const { positions } = this.state;
 
     const getCharacterFromQueue = (queueItem: { team: number; num: number }) => {
@@ -60,16 +61,15 @@ class Timeline extends Component<TimelineProps, TimelineState> {
     const portraitWidth = 72; // Width of each portrait
     const timelineWidth = Math.max(100, sortedQueue.length * portraitWidth);
     const startOffset = (timelineWidth - sortedQueue.length * portraitWidth) / 2;
-    const timerPosition = startOffset - 70 + 570; // Position timer just before the first portrait
 
     return (
       <div className="spectator_footer_wrapper">
         <div className="spectator_footer_container">
           <div className="turn_timeline_wrapper">
             <div className="turn_order_label">Turn Order</div>
-            <div 
+            <div
               className="turn_timeline"
-              style={{ 
+              style={{
                 width: `${timelineWidth}px`,
                 position: 'relative'
               }}
@@ -91,28 +91,29 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                 };
 
                 return (
-                  <div 
+                  <div
                     key={characterKey}
                     className={`timeline_character ${queueItem.team === 1 ? 'timeline_ally' : 'timeline_enemy'}`}
                     style={style}
                   >
-                    <div 
+                    <div
                       className={`timeline_portrait_container ${queueItem.team === 1 ? 'ally_portrait' : 'enemy_portrait'}`}
                     >
-                      <div 
-                        className="timeline_portrait" 
+                      <div
+                        className="timeline_portrait"
                         style={portraitStyle}
                       />
                       <div className={`timeline_class_indicator ${
-                        character.class === Class.WARRIOR 
-                          ? 'frame-warrior' 
-                          : character.class === Class.BLACK_MAGE 
+                        character.class === Class.WARRIOR
+                          ? 'frame-warrior'
+                          : character.class === Class.BLACK_MAGE
                           ? 'frame-black-mage'
                           : 'frame-white-mage'
                       }`}>
-                        <img 
+                        <img
                           src={character.class === Class.WARRIOR ? warriorIcon : mageIcon}
                           className={`class-icon ${character.class === Class.WARRIOR ? 'warrior' : ''}`}
+                          alt={`${Class[character.class]} class`}
                         />
                       </div>
                     </div>

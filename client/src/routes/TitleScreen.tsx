@@ -1,4 +1,5 @@
-import {h} from "preact";
+import { h } from 'preact';
+
 import {useContext} from "preact/hooks";
 import {route} from "preact-router";
 import logoBig from "@assets/logo.png";
@@ -16,7 +17,7 @@ const TitleScreen = () => {
         <img src={logoBig} alt="Legion" className="logo-big" />
         {loaded && (
           <div className="title-screen-actions">
-            <button autoFocus className="title-screen-button title-screen-button--play" onClick={play}>Play</button>
+            <button type="button" className="title-screen-button title-screen-button--play" onClick={play}>Play</button>
             <a
               className="title-screen-button title-screen-button--steam"
               href={STEAM_STORE_URL}
