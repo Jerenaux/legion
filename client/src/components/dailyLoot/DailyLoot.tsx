@@ -1,6 +1,7 @@
+import { h } from 'preact';
 // DailyLootBox.tsx
 import './DailyLoot.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -8,7 +9,7 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import { useWindowSize } from '@react-hook/window-size';
 
 import { apiFetch } from '../../services/apiService';
-import { errorToast, silentErrorToast, successToast } from '../utils';
+import { silentErrorToast, } from '../utils';
 import { ChestColor } from "@legion/shared/enums";
 import { DailyLootAllAPIData, ChestReward } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
@@ -17,13 +18,13 @@ import OpenedChest from '../dailyLoot/OpenedChest';
 import { IMMEDIATE_LOOT } from '@legion/shared/config';
 
 interface DailyLootProps {
-  data: DailyLootAllAPIData, 
+  data: DailyLootAllAPIData,
 }
 
 interface DailyLootState {
   chestColor: ChestColor | null,
-  chestContent: ChestReward[] | null, 
-  chestDailyLoot: any | null, 
+  chestContent: ChestReward[] | null,
+  chestDailyLoot: DailyLootAllAPIData | null,
 }
 
 class DailyLoot extends Component<DailyLootProps, DailyLootState> {
@@ -31,8 +32,8 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
     super(props);
     this.state = {
       chestColor: null,
-      chestContent: null, 
-      chestDailyLoot: null, 
+      chestContent: null,
+      chestDailyLoot: null,
     }
   }
 
@@ -66,9 +67,9 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
         this.context.refreshAllData();
 
         // Update state with fetched data
-        this.setState({ 
-          chestContent: data.content, 
-          chestDailyLoot: data.dailyloot 
+        this.setState({
+          chestContent: data.content,
+          chestDailyLoot: data.dailyloot
         });
 
       } catch (error) {
@@ -79,16 +80,16 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
         });
         console.error(`Error: ${error}`);
       }
-    } 
+    }
 
-    const chestConfirm = () => { 
+    const chestConfirm = () => {
       if (this.state.chestDailyLoot) {
-        this.context.setPlayerInfo({ dailyloot: this.state.chestDailyLoot }); 
+        this.context.setPlayerInfo({ dailyloot: this.state.chestDailyLoot });
       }
       this.setState({
-        chestColor: null, 
-        chestContent: null, 
-        chestDailyLoot: null, 
+        chestColor: null,
+        chestContent: null,
+        chestDailyLoot: null,
       });
     }
 
@@ -120,8 +121,8 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
           highlightColor='#0000004d'
           baseColor='#0f1421'
           style={{ margin: '2px 0', width: '100%' }} />}
-        {this.state.chestColor && 
-          <OpenedChest 
+        {this.state.chestColor &&
+          <OpenedChest
                 width={width}
                 height={height}
                 color={this.state.chestColor}

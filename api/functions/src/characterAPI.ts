@@ -124,17 +124,17 @@ export async function processChestRewards(
       transaction.update(playerRef, {
         gold: admin.firestore.FieldValue.increment(reward.amount || 0),
       });
-    } else if (reward.type == "consumable") {
+    } else if (reward.type === "consumable") {
       consumables.push(reward.id);
       transaction.update(playerRef, {
         "inventory.consumables": consumables,
       });
-    } else if (reward.type == "spell") {
+    } else if (reward.type === "spell") {
       spells.push(reward.id);
       transaction.update(playerRef, {
         "inventory.spells": spells,
       });
-    } else if (reward.type == "equipment") {
+    } else if (reward.type === "equipment") {
       equipment.push(reward.id);
       transaction.update(playerRef, {
         "inventory.equipment": equipment,
@@ -205,7 +205,7 @@ export const postGameUpdate = onRequest({
         await processChestRewards(transaction, playerRef, contents, consumables, spells, equipment);
 
         // Base updates
-        const updates: any = {
+        const updates: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {
           xp: admin.firestore.FieldValue.increment(xp || 0),
           elo: admin.firestore.FieldValue.increment(elo || 0),
           dailyloot: dailyLoot,
@@ -281,11 +281,11 @@ export const postGameUpdate = onRequest({
         if (lowMP) updates['engagementStats.everLowMP'] = true;
 
         // Update mode-specific stats
-        if (mode == PlayMode.PRACTICE) {
+        if (mode === PlayMode.PRACTICE) {
           updates['engagementStats.everPlayedPractice'] = true;
-        } else if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
+        } else if (mode === PlayMode.CASUAL || mode === PlayMode.CASUAL_VS_AI) {
           updates['engagementStats.everPlayedCasual'] = true;
-        } else if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
+        } else if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) {
           updates['engagementStats.everPlayedRanked'] = true;
         }
 
@@ -294,21 +294,21 @@ export const postGameUpdate = onRequest({
         }
 
         // Update win/loss stats
-        if (mode != PlayMode.PRACTICE) {
+        if (mode !== PlayMode.PRACTICE) {
           if (isWinner) {
             updates.lossesStreak = 0;
           } else {
             updates.lossesStreak = admin.firestore.FieldValue.increment(1);
           }
 
-          if (mode == PlayMode.CASUAL || mode == PlayMode.CASUAL_VS_AI) {
+          if (mode === PlayMode.CASUAL || mode === PlayMode.CASUAL_VS_AI) {
             updates['casualStats.nbGames'] = admin.firestore.FieldValue.increment(1);
             if (isWinner) {
               updates['casualStats.wins'] = admin.firestore.FieldValue.increment(1);
             }
           }
 
-          if (mode == PlayMode.RANKED || mode == PlayMode.RANKED_VS_AI) {
+          if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) {
             const seasonId = currentSeasonId();
             updates.leagueStats = applyRankedResult(
               playerData.leagueStats,
@@ -330,7 +330,7 @@ export const postGameUpdate = onRequest({
           }
         }
 
-        if (mode == PlayMode.PRACTICE || mode == PlayMode.CASUAL_VS_AI || mode == PlayMode.RANKED_VS_AI) {
+        if (mode === PlayMode.PRACTICE || mode === PlayMode.CASUAL_VS_AI || mode === PlayMode.RANKED_VS_AI) {
           const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
           updates.AIstats = {
             nbGames: currentAIStats.nbGames + 1,
@@ -394,7 +394,7 @@ async function monitorCharactersOnSale(db: FirebaseFirestore.Firestore) {
   // Check that the list of on sale characters contains at least one
   // character of each class
   const classCounts = new Array(3).fill(0);
-  querySnapshot.docs.forEach((doc: any) => {
+  querySnapshot.docs.forEach((doc) => {
     const characterData = doc.data();
     classCounts[characterData.class]++;
   });
@@ -483,7 +483,9 @@ export const deleteOnSaleCharacters = onRequest({
         .where("onSale", "==", true)
         .get();
       const batch = db.batch();
-      querySnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      querySnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
       await batch.commit();
       response.send({status: 0});
     } catch (error) {
@@ -584,7 +586,6 @@ export const spendSP = onRequest({
       const characterId = request.body.characterId as string;
       const amount = request.body.amount;
       const index = request.body.stat as number;
-      let stat;
       console.log(`[spendSP] Spending ${amount} SP on stat [${index} ] ${statFieldsByIndex[index]}`);
 
       if (index < 0 || index >= statFieldsByIndex.length) {
@@ -638,7 +639,7 @@ export const spendSP = onRequest({
         });
       });
 
-      logPlayerAction(uid, "spendSP", {characterId, amount, stat});
+      logPlayerAction(uid, "spendSP", {characterId, amount, stat: statFieldsByIndex[index]});
 
       response.send({status: 0});
     } catch (error) {

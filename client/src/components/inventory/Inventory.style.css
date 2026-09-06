@@ -48,7 +48,7 @@
     padding: 4px;
     font-size: 10px;
     font-weight: 400;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     color: #ffffff;
     letter-spacing: 0.4px;
 }
@@ -62,7 +62,7 @@
 .inventoryLabel {
     font-size: 12px;
     font-weight: 500;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     letter-spacing: 0.6px;
 }
 
@@ -190,7 +190,7 @@
     color: #ffffff;
     font-size: 12px;
     font-weight: 500;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     letter-spacing: 0.6px;
     background-color: #2f404d;
     padding: 4px 8px;
@@ -298,7 +298,7 @@
 .purchase-dialog-heading {
     color: #71deff;
     font-size: 18px;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     margin: 0 0 16px 0;
     text-align: center;
     letter-spacing: 0.5px;
@@ -320,7 +320,7 @@
 .quantity-selector label {
     color: #ffffff;
     font-size: 14px;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     font-weight: 500;
 }
 
@@ -331,7 +331,7 @@
     padding: 8px 12px;
     color: #ffffff;
     font-size: 14px;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     width: 80px;
 }
 
@@ -364,7 +364,7 @@
     align-items: center;
     font-size: 14px;
     color: #ffffff;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
 }
 
 .price-total {
@@ -404,7 +404,7 @@
 .purchase-dialog-confirm {
     padding: 10px 16px;
     font-size: 14px;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -454,7 +454,7 @@
     align-items: center;
     gap: 8px;
     color: #71deff;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     justify-content: center;
     width: 100%;
 }

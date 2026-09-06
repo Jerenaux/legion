@@ -7,7 +7,7 @@
   border: 0.1vw solid #00ffff;
   border-radius: 8px;
   padding: 16px 24px;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(0, 255, 255, 0.3),
     0 0 20px rgba(0, 255, 255, 0.2),
     inset 0 0 8px rgba(0, 255, 255, 0.2);
@@ -42,7 +42,7 @@
   color: #00ffff;
   font-size: 1rem;
   margin: 0;
-  font-family: Kim;
+  font-family: Kim, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -76,19 +76,19 @@
 
 @keyframes dialogueGlow {
   0% {
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(0, 255, 255, 0.3),
       0 0 20px rgba(0, 255, 255, 0.2),
       inset 0 0 8px rgba(0, 255, 255, 0.2);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 15px rgba(0, 255, 255, 0.4),
       0 0 30px rgba(0, 255, 255, 0.3),
       inset 0 0 12px rgba(0, 255, 255, 0.3);
   }
   100% {
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(0, 255, 255, 0.3),
       0 0 20px rgba(0, 255, 255, 0.2),
       inset 0 0 8px rgba(0, 255, 255, 0.2);
@@ -112,7 +112,7 @@
     width: 90%;
     padding: 12px 16px;
   }
-  
+
   .simple-popup-text {
     font-size: 1rem;
   }
@@ -134,4 +134,4 @@
   height: 16px;
   margin-right: 0;
   margin-bottom: -2px;
-} 
+}

@@ -1,4 +1,5 @@
-import {Component, h} from "preact";
+import { h } from 'preact';
+import {Component, } from "preact";
 import {Route, Router} from "preact-router";
 
 import {PlayerContext} from "../contexts/PlayerContext";

@@ -2,9 +2,9 @@ import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equ
 import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType, Stat, statFieldsByIndex } from "./enums";
 import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
-import { inventorySize } from '@legion/shared/utils';
+import { inventorySize } from './utils';
 import { getConsumableById } from './Items';
-import { SKIP_LEVEL_RESTRICTIONS } from '@legion/shared/config';
+import { SKIP_LEVEL_RESTRICTIONS } from './config';
 import { getMaxStatValue } from './levelling';
 import { getSPIncrement } from './levelling';
 
@@ -51,7 +51,6 @@ export function canLearnSpell(characterData: DBCharacterData | APICharacterData,
 
 export function hasMinLevel(characterData: DBCharacterData | APICharacterData, level: number): boolean {
   // if (dev) console.log(`[hasMinLevel] level: ${level}, characterData.level: ${characterData.level}, SKIP_LEVEL_RESTRICTIONS: ${SKIP_LEVEL_RESTRICTIONS}`);
-  return true;
   return SKIP_LEVEL_RESTRICTIONS || characterData.level >= level;
 }
 
@@ -98,7 +97,7 @@ export function equipConsumable(playerData: PlayerContextData | DBPlayerData, ch
 
   playerInventory.consumables = consumables.sort(numericalSort);
   return {
-    playerUpdate: { 
+    playerUpdate: {
       inventory: playerInventory,
       engagementStats: {
         ...playerData.engagementStats,
@@ -148,7 +147,7 @@ export function learnSpell(playerData: PlayerContextData | DBPlayerData, charact
 
   playerInventory.spells = spells.sort(numericalSort);
   return {
-    playerUpdate: { 
+    playerUpdate: {
       inventory: playerInventory,
       engagementStats: {
         ...playerData.engagementStats,
@@ -195,18 +194,18 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
   }
 
   let slotNumber: number = data.slot;
-  if (slotNumber == EquipmentSlot.LEFT_RING && equipped.left_ring !== -1) {
+  if (slotNumber === EquipmentSlot.LEFT_RING && equipped.left_ring !== -1) {
     slotNumber = EquipmentSlot.RIGHT_RING;
   }
 
   const field = equipmentSlotFields[slotNumber as EquipmentSlot];
   const currentlyEquipped = equipped[field as keyof Equipment];
-  if (currentlyEquipped != -1) {
+  if (currentlyEquipped !== -1) {
     equipment.push(currentlyEquipped);
   }
   equipped[field as keyof Equipment] = item;
 
-  if (slotNumber == EquipmentSlot.BELT) {
+  if (slotNumber === EquipmentSlot.BELT) {
     carrying_capacity_bonus = data.beltSize || 0;
     const newCapacity = characterData.carrying_capacity + carrying_capacity_bonus;
     const { characterInventory, playerConsumables } = handleInventoryCapacityChange(
@@ -220,7 +219,7 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
 
   playerInventory.equipment = equipment.sort(numericalSort);
   return {
-    playerUpdate: { 
+    playerUpdate: {
       inventory: playerInventory,
       engagementStats: {
         ...playerData.engagementStats,
@@ -251,8 +250,8 @@ export function unequipEquipment(playerData: PlayerContextData | DBPlayerData, c
   const field = equipmentSlotFields[slotNumber as EquipmentSlot];
   const item = equipped[field as keyof Equipment];
 
-  if (item != -1) {
-    if (slotNumber == EquipmentSlot.BELT) {
+  if (item !== -1) {
+    if (slotNumber === EquipmentSlot.BELT) {
       carrying_capacity_bonus = 0;
       const newCapacity = characterData.carrying_capacity;
       const { characterInventory, playerConsumables } = handleInventoryCapacityChange(

@@ -52,12 +52,6 @@ export const inventoryData = onRequest({
   });
 });
 
-const addConsumableToInventory = async (uid: string, itemId: number, nb: number) => {
-  const db = admin.firestore();
-  const playerDocRef = db.collection("players").doc(uid);
-  const docSnap = await playerDocRef.get();
-};
-
 export const purchaseItem = onRequest({
   memory: '512MiB',
 }, (request, response) => {
@@ -116,7 +110,7 @@ export const purchaseItem = onRequest({
         );
 
         const result = await db.runTransaction(async (transaction) => {
-          const updates: any = {
+          const updates: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {
             "gold": gold,
             'engagementStats.everPurchased': true,
           };
@@ -205,7 +199,13 @@ export const inventoryTransaction = onRequest({
         }
       }
 
-      let update;
+      let update:
+        | ReturnType<typeof equipConsumable>
+        | ReturnType<typeof learnSpell>
+        | ReturnType<typeof equipEquipment>
+        | ReturnType<typeof unequipConsumable>
+        | ReturnType<typeof unequipEquipment>
+        | undefined;
       if (action === InventoryActionType.EQUIP) {
         switch (inventoryType) {
           case InventoryType.CONSUMABLES:
@@ -241,7 +241,7 @@ export const inventoryTransaction = onRequest({
 
         const itemPrice = getSellPrice(itemId, inventoryType);
         const inventory = { ...playerData.inventory };
-        // @ts-ignore
+        // @ts-expect-error
         inventory[inventoryField] = inventory[inventoryField].filter((_, i) => i !== index);
 
         await playerRef.update({

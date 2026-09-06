@@ -1,4 +1,6 @@
-import { h, Fragment, Component } from 'preact';
+import { Fragment } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import { route } from 'preact-router';
 import { ChestReward } from "@legion/shared/interfaces";
 import { RewardType } from "@legion/shared/enums";
@@ -51,7 +53,7 @@ export class UnlockedFeature extends Component<Props> {
             You unlocked <span className="highlight-text">{name}</span>!
           </h2>
           <p className="unlocked-feature-description" dangerouslySetInnerHTML={{ __html: description }} />
-          
+
           <div className="unlocked-feature-rewards">
             {this.renderRewards()}
           </div>
@@ -59,22 +61,22 @@ export class UnlockedFeature extends Component<Props> {
           <div className="unlocked-feature-buttons">
             {route ? (
               <>
-                <button 
-                  className="unlocked-feature-button primary" 
+                <button type="button"
+                  className="unlocked-feature-button primary"
                   onClick={this.handleCheckout}
                 >
                   Check it out
                 </button>
-                <button 
-                  className="unlocked-feature-button secondary" 
+                <button type="button"
+                  className="unlocked-feature-button secondary"
                   onClick={this.props.onHide}
                 >
                   Dismiss
                 </button>
               </>
             ) : (
-              <button 
-                className="unlocked-feature-button primary" 
+              <button type="button"
+                className="unlocked-feature-button primary"
                 onClick={this.props.onHide}
               >
                 Continue
@@ -85,4 +87,4 @@ export class UnlockedFeature extends Component<Props> {
       </div>
     );
   }
-} 
+}

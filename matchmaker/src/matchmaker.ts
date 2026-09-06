@@ -1,9 +1,9 @@
 import express from 'express';
-import { Socket, Server } from "socket.io";
+import { Server } from "socket.io";
 import { createServer } from "http";
 import cors from 'cors';
 
-import { setupMatchmaking, processJoinQueue, processJoinLobby, processDisconnect, processConnection, processLeaveQueue, processLeaveGame, processGetPlayerStatus, processGetFriendsStatuses, processSendChallenge, processChallengeDeclined } from './matchmaking';
+import { setupMatchmaking, processJoinQueue, processJoinLobby, processDisconnect, processConnection, processLeaveQueue, processLeaveGame, processGetPlayerStatus, processGetFriendsStatuses, processSendChallenge, processChallengeDeclined, MatchmakingSocket } from './matchmaking';
 import {getAuth} from 'firebase-admin/auth';
 import {authenticateSocket} from '@legion/shared/socketAuth';
 
@@ -12,7 +12,7 @@ console.log(`Allowed client origins: ${allowedOrigins}`);
 
 const corsSettings = {
   origin: (origin, callback) => {
-      
+
       if (!origin || allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.indexOf('*') !== -1) {
         // console.log("Successful connection from origin:", origin);
         callback(null, true);
@@ -33,7 +33,7 @@ const io = new Server(httpServer, {
 });
 
 // Basic HTTP endpoint for health checks
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     console.log(`[server] Matchmaker check / warm up request`);
     res.send('Matchmaking server is running');
 });
@@ -44,29 +44,30 @@ httpServer.listen(port, () => {
 });
 
 
-io.use(async (socket: any, next) => {
+io.use(async (socket, next) => {
     try {
         await authenticateSocket(socket, token => getAuth().verifyIdToken(token));
         next();
-    } catch (error) {
+    } catch (_error) {
         console.warn('Rejected unauthenticated matchmaker socket');
         next(new Error('Authentication failed'));
     }
 });
 
-io.on("connection", (socket: any) => {
+io.on("connection", (socket) => {
+    const matchmakingSocket = socket as MatchmakingSocket;
     console.log(`Socket connected`);
-    processConnection(socket);
+    processConnection(matchmakingSocket);
 
-    socket.on("joinQueue", (data) => processJoinQueue(socket, data));
-    socket.on("joinLobby", (data) => processJoinLobby(socket, data));
-    socket.on("leaveQueue", () => processLeaveQueue(socket));
-    socket.on("leaveGame", (data) => processLeaveGame(socket, data));
-    socket.on("disconnect", () => processDisconnect(socket));
-    socket.on("getPlayerStatus", (data) => processGetPlayerStatus(socket, data));
-    socket.on("getFriendsStatuses", (data) => processGetFriendsStatuses(socket, data));
-    socket.on("sendChallenge", (data) => processSendChallenge(socket, data));
-    socket.on("challengeDeclined", (data) => processChallengeDeclined(socket, data));
+    socket.on("joinQueue", (data) => processJoinQueue(matchmakingSocket, data));
+    socket.on("joinLobby", (data) => processJoinLobby(matchmakingSocket, data));
+    socket.on("leaveQueue", () => processLeaveQueue(matchmakingSocket));
+    socket.on("leaveGame", (data) => processLeaveGame(matchmakingSocket, data));
+    socket.on("disconnect", () => processDisconnect(matchmakingSocket));
+    socket.on("getPlayerStatus", (data) => processGetPlayerStatus(matchmakingSocket, data));
+    socket.on("getFriendsStatuses", (data) => processGetFriendsStatuses(matchmakingSocket, data));
+    socket.on("sendChallenge", (data) => processSendChallenge(matchmakingSocket, data));
+    socket.on("challengeDeclined", (data) => processChallengeDeclined(matchmakingSocket, data));
 });
 
 setupMatchmaking(io);

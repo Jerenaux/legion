@@ -1,7 +1,7 @@
 interface ApiFetchOptions {
     method?: string;
     headers?: Record<string, string>;
-    body?: any;
+    body?: unknown;
 }
 
 class ApiError extends Error {
@@ -16,7 +16,7 @@ class ApiError extends Error {
 }
 
 function timeoutPromise(duration) {
-    return new Promise((resolve, reject) => {
+    return new Promise((_resolve, reject) => {
         setTimeout(() => {
             reject(new Error('Request timed out'));
         }, duration);
@@ -48,7 +48,7 @@ export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {},
                 headers.append('Content-Type', 'application/json');
             }
 
-            const body = options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body;
+            const body = options.body == null ? undefined : typeof options.body === "string" ? options.body : JSON.stringify(options.body);
 
             const fetchPromise = fetch(`${process.env.API_URL}/${endpoint}`, {
                 ...options,
@@ -71,13 +71,13 @@ export async function apiFetch(endpoint, idToken, options: ApiFetchOptions = {},
             return response.json();
         } catch (error) {
             console.error(`[API:apiFetch] Attempt ${attempt + 1}/${maxRetries} failed for API call to ${endpoint}:`, error);
-            
+
             if (attempt === maxRetries - 1) {
                 throw error;
             }
 
             // Always retry, regardless of error type
-            
+
             console.log(`Retrying in ${retryDelay}ms...`);
             await new Promise(resolve => setTimeout(resolve, retryDelay));
         }

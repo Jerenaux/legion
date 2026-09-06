@@ -1,6 +1,5 @@
 import { BaseEquipment } from "./BaseEquipment";
-import { Stat, EquipmentSlot, Rarity, Class, StatusEffect } from ".";
-import { getPrice } from "./economy";
+import { Stat, EquipmentSlot, Class, StatusEffect } from ".";
 
 export const equipments:BaseEquipment[] = [];
 
@@ -406,7 +405,7 @@ equipments[33] = new BaseEquipment({
     id: 33,
     name: "Viridian Striker",
     description: "30% chance to poison enemy on melee attacks.",
-    frame: 3, 
+    frame: 3,
     effects: [
         {stat: Stat.ATK, value: 40},
     ],

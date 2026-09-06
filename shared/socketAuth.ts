@@ -1,5 +1,11 @@
+export interface AuthenticatedSocketData {
+  handshake: {auth?: {token?: unknown}};
+  firebaseToken?: string;
+  uid?: string;
+}
+
 export async function authenticateSocket(
-  socket: any,
+  socket: AuthenticatedSocketData,
   verifyToken: (token: string) => Promise<{uid?: string}>,
 ): Promise<void> {
   const token = socket.handshake?.auth?.token;

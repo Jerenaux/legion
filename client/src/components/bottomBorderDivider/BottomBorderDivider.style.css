@@ -2,7 +2,7 @@
     padding: 6px 0;
     margin: 12px 0;
     border-bottom: 1px solid #ffa600;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
 }
 
 .dividerContainer span {

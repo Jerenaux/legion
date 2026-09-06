@@ -1,10 +1,12 @@
+import { Fragment } from 'preact';
+import { h } from 'preact';
 // GameHUD.tsx
-import { h, Fragment, Component } from 'preact';
+import { Component } from 'preact';
 import { route } from 'preact-router';
 import Overview from './Overview';
 import { Endgame } from './Endgame';
 import { EventEmitter } from 'eventemitter3';
-import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamMember, TeamOverview } from "@legion/shared/interfaces";
+import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamMember, TeamOverview, TurnQueueEntry, TurnState } from "@legion/shared/interfaces";
 import Timeline from './Timeline';
 import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { recordCompletedGame } from '../utils';
@@ -39,7 +41,7 @@ interface GameHUDState {
   isTutorialVisible: boolean;
   showTopMenu: boolean;
   showOverview: boolean;
-  queue: any[];
+  queue: TurnQueueEntry[];
   turnDuration: number;
   timeLeft: number;
   turnNumber: number;
@@ -110,35 +112,35 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     });
 
     events.on('pendingSpell', () => {
-      this.setState({ 
-        pendingSpell: true, 
+      this.setState({
+        pendingSpell: true,
         pendingItem: false,
-        showTargetBanner: true 
+        showTargetBanner: true
       });
       this.handleCursorChange('spellCursor')
     });
 
     events.on('pendingItem', () => {
-      this.setState({ 
-        pendingSpell: false, 
+      this.setState({
+        pendingSpell: false,
         pendingItem: true,
-        showTargetBanner: true 
+        showTargetBanner: true
       });
       this.handleCursorChange('itemCursor')
     });
 
     events.on('clearPendingSpell', () => {
-      this.setState({ 
+      this.setState({
         pendingSpell: false,
-        showTargetBanner: false 
+        showTargetBanner: false
       });
       this.handleCursorChange('normalCursor')
     });
 
     events.on('clearPendingItem', () => {
-      this.setState({ 
+      this.setState({
         pendingItem: false,
-        showTargetBanner: false 
+        showTargetBanner: false
       });
       this.handleCursorChange('normalCursor')
     });
@@ -164,16 +166,20 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     const playerKey = `${playerData.team}-${playerData.number}`;
     const isCharacterSwitch = this.lastPlayerKey !== playerKey;
     this.lastPlayerKey = playerKey;
-    
-    this.setState({ 
+
+    this.setState({
       player: playerData,
       animate: !isCharacterSwitch
     });
   }
 
   updateOverview = (
-    team1: TeamOverview, team2: TeamOverview, general: any, initialized: boolean, 
-    queue: any[], turnee: any
+    team1: TeamOverview,
+    team2: TeamOverview,
+    general: {isSpectator: boolean; mode: PlayMode; game0: boolean},
+    initialized: boolean,
+    queue: TurnQueueEntry[],
+    turnee: TurnState,
   ) => {
     const _showTopMenu = this.state.showTopMenu;
     this.setState({ team1, team2 });
@@ -215,7 +221,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     route('/play');
   }
 
-  handleTutorialMessage = (message: any) => {
+  handleTutorialMessage = (message: {content: string; position?: 'bottom' | 'spells' | 'items'}) => {
     this.setState({
         tutorialMessages: [message.content],
         isTutorialVisible: true,
@@ -238,17 +244,17 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   handlePassTurn = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const now = Date.now();
     if (now - this.lastPassTurnClick < 200) {
       return;
     }
     this.lastPassTurnClick = now;
-    
+
     if (this.state.pendingSpell || this.state.pendingItem) {
       return;
     }
-    
+
     events.emit('passTurn');
   }
 
@@ -260,7 +266,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   render() {
-    const { 
+    const {
       player, team1, team2, isSpectator, mode, gameInitialized,
       showOverview, isHUDVisible
     } = this.state;
@@ -291,7 +297,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           </>
         )}
         {isHUDVisible && (
-          <PlayerBar 
+          <PlayerBar
             hp={player?.hp || 0}
             maxHp={player?.maxHp || 0}
             mp={player?.mp || 0}

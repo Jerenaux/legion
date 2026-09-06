@@ -1,4 +1,5 @@
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { Component } from 'preact';
 import goldChestImage from '@assets/shop/gold_chest.png';
 import { ChestReward } from "@legion/shared/interfaces";
 import { RewardType } from "@legion/shared/enums";
@@ -46,17 +47,17 @@ export class PlayOneGameNotification extends Component<Props> {
     const { header, text, rewards, onHide } = this.props;
     return (
       <div className="game-notification">
-        <button 
-          className="game-notification-close" 
+        <button type="button"
+          className="game-notification-close"
           onClick={onHide}
           aria-label="Close notification"
         >
           ×
         </button>
         <div className="game-notification-content">
-          <img 
-            src={goldChestImage} 
-            alt="Gold chest" 
+          <img
+            src={goldChestImage}
+            alt="Gold chest"
             className="game-notification-icon"
           />
           <div className="game-notification-text-container">
@@ -74,4 +75,4 @@ export class PlayOneGameNotification extends Component<Props> {
       </div>
     );
   }
-} 
+}

@@ -1,4 +1,6 @@
-import { h, Component } from 'preact';
+
+import { h } from 'preact';
+import { Component } from 'preact';
 import { route } from 'preact-router';
 import { classEnumToString, getSpritePath } from '../utils';
 import { APICharacterData } from '@legion/shared/interfaces';
@@ -38,11 +40,11 @@ class CharacterCard extends Component<APICharacterData> {
     }
 
     return (
-      <div 
-        className="cardContainer" 
-        style={bgStyle} 
-        onClick={this.handleCardClick} 
-        onMouseEnter={() => this.setState({ active: true })} 
+      <button type="button" data-game-control
+        className="cardContainer"
+        style={bgStyle}
+        onClick={this.handleCardClick}
+        onMouseEnter={() => this.setState({ active: true })}
         onMouseLeave={() => this.setState({ active: false })}
         data-character-id={this.props.id}
       >
@@ -62,7 +64,7 @@ class CharacterCard extends Component<APICharacterData> {
             SP
           </div>
         )}
-      </div>
+      </button>
     );
   }
 }

@@ -1,4 +1,6 @@
-import { h, Component } from 'preact';
+
+import { h } from 'preact';
+import { Component } from 'preact';
 import { apiFetch } from '../services/apiService';
 import LeaderboardTable from './leaderboardTable/LeaderboardTable';
 import SeasonCard from './seasonCard/SeasonCard';
@@ -151,11 +153,11 @@ class RankPage extends Component<{}, State> {
         <div className="flexContainer" style={{ gap: '24px' }}>
           <div className="rank-tab-container">
             {rankIcons.map((icon, i) => (
-              <div key={i} style={getRankTabStyle(i)} onClick={() => this.handleCurrTab(i)}>
+              <button type="button" data-game-control key={i} style={getRankTabStyle(i)} onClick={() => this.handleCurrTab(i)}>
                 <img src={icon} alt={tabs[i]} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </div>
+              </button>
             ))}
-          </div> 
+          </div>
 
           {!this.state.isLoading ?
             <LeaderboardTable

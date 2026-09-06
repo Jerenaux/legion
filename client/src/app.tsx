@@ -132,7 +132,7 @@ class App extends Component<{}, AppState> {
     warmUpMatchmaker = () => {
         try {
             fetch(`${process.env.MATCHMAKER_URL}`);
-        } catch (err) {
+        } catch (_err) {
             // console.error('Error warming up matchmaker:', err);
         }
     }
@@ -172,7 +172,7 @@ class App extends Component<{}, AppState> {
         }
     };
 
-    shouldComponentUpdate(nextProps: {}, nextState: AppState) {
+    shouldComponentUpdate(_nextProps: {}, nextState: AppState) {
         return (
             this.state.currentUrl !== nextState.currentUrl ||
             this.state.currentMainRoute !== nextState.currentMainRoute

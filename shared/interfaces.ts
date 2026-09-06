@@ -196,14 +196,14 @@ export interface DailyLootDBData {
     hasKey: boolean;
     time: number;
 }
-export interface DBPlayerData {
+export interface DBPlayerData<CharacterReference = unknown> {
     name: string;
     avatar: string;
     gold: number;
     carrying_capacity: number;
     inventory: PlayerInventory;
     purchasedInventorySlots: number;
-    characters: any[];
+    characters: CharacterReference[];
     elo: number;
     league: number;
     lvl: number;
@@ -213,9 +213,13 @@ export interface DBPlayerData {
     allTimeStats: LeagueStats;
     friends: string[];
     engagementStats?: EngagementStats;
+    joinDate?: string;
+    guideTipsShown?: number[];
+    casualStats?: {nbGames: number; wins: number};
+    tours?: Record<string, boolean>;
 }
 
-interface LeagueStats {
+export interface LeagueStats {
     wins: number;
     losses: number;
     rank: number;
@@ -239,7 +243,7 @@ export interface TeamData {
     dailyloot: DailyLootAllAPIData;
     AIwinRatio: number;
     completedGames: number;
-    engagementStats: any;
+    engagementStats: Partial<EngagementStats>;
 }
 
 export interface GameOutcomeReward {
@@ -281,7 +285,7 @@ export interface PlayerNetworkData {
     y: number;
     hp: number;
     maxHP: number;
-    statuses: any;
+    statuses: StatusEffects;
     mp?: number;
     maxMP?: number;
     distance?: number;
@@ -303,7 +307,7 @@ export interface PlayerProfileData {
     playerAvatar: string;
     playerLeague: number;
     completedGames: number;
-    engagementStats?: EngagementStats;
+    engagementStats?: Partial<EngagementStats>;
 }
 interface GamePlayerData {
     teamId: number;
@@ -318,11 +322,8 @@ export interface GameData {
         spectator: boolean;
         mode: PlayMode;
     },
-    queue: any[];
-    turnee: {
-        num: number;
-        team: number;
-    },
+    queue: TurnQueueEntry[];
+    turnee: TurnState;
     player: GamePlayerData,
     opponent: GamePlayerData,
     terrain: TerrainUpdate[],
@@ -406,7 +407,7 @@ export interface PlayerContextData {
     AIwinRatio?: number;
     friends?: FriendData[];
     completedGames?: number;
-    engagementStats?: any;
+    engagementStats?: Partial<EngagementStats>;
 }
 
 export interface PlayerDataForGame {
@@ -421,13 +422,35 @@ export interface PlayerDataForGame {
     league: League;
     AIwinRatio?: number;
     completedGames?: number;
-    engagementStats?: any;
+    engagementStats?: Partial<EngagementStats>;
+}
+
+export interface TurnQueueEntry {
+    num: number;
+    team: number;
+    position: number;
+}
+
+export interface TurnState {
+    num?: number;
+    team?: number;
+    turnDuration: number;
+    timeLeft: number;
+    turnNumber: number;
 }
 
 export interface GameReplayMessage {
     timestamp: number;  // Milliseconds since game start
     event: string;     // Socket event name
-    data: any;         // Event data
+    data: unknown;     // Event data is validated by its named handler.
+}
+
+export interface LeaderboardHighlight {
+    name: string;
+    id: string;
+    avatar: string;
+    description: string;
+    title: string;
 }
 
 export interface LeaderboardRow {
@@ -449,7 +472,7 @@ export interface LeaderboardRow {
 export interface APILeaderboardResponse {
     league: number;
     seasonEnd: number;
-    highlights: any[];
+    highlights: LeaderboardHighlight[];
     ranking: LeaderboardRow[];
     playerRank?: number | null;
   }

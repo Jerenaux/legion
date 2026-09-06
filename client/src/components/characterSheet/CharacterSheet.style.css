@@ -10,7 +10,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
 }
 
 .team-equip-container {
@@ -94,7 +94,7 @@
     background-size: 100% 100%;
     width: 64px;
     height: 64px;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
 }
 
 .team-level span {
@@ -118,7 +118,7 @@
 
 .team-sp-container {
     cursor: pointer;
-    background-image: url('@assets/inventory/sp_bg_active.png');  
+    background-image: url('@assets/inventory/sp_bg_active.png');
     background-size: 100% 100%;
     width: 60px;
     height: 60px;
@@ -149,7 +149,7 @@
     font-weight: 500;
     color: #ffffff;
     text-transform: capitalize;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
 }
 
 .team-character-class {
@@ -221,7 +221,7 @@
 }
 
 .team-character-overlay {
-    width: 48px; 
+    width: 48px;
     height: 64px;
     position: absolute;
     top: 0;
@@ -233,8 +233,8 @@
 /* Additional animation keyframes for power-up */
 @keyframes power-up-animation {
     from { background-position: 0px 0; }
-    to { background-position: -816px 0; } 
-  }  
+    to { background-position: -816px 0; }
+  }
 
 .team-character-info {
     display: grid;
@@ -268,7 +268,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -282,7 +282,7 @@
     width: 60px;
     display: flex;
     justify-content: center;
-    font-family: 'Kim';
+    font-family: 'Kim', sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -364,7 +364,7 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 4px 6px; 
+    gap: 4px 6px;
 }
 
 .team-items .team-item {

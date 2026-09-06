@@ -6,6 +6,12 @@ import {GameStatus, League, PlayMode} from "@legion/shared/enums";
 import {logPlayerAction} from "./dashboardAPI";
 import Busboy from 'busboy';
 
+interface NewsItem extends FirebaseFirestore.DocumentData {
+  id: string;
+  date?: string;
+  pinned?: boolean;
+}
+
 export async function createGameDocument(
   gameId: string, players: string[], mode: PlayMode, league: League
 ) {
@@ -27,7 +33,6 @@ export const createGame = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Creating game");
-  const db = admin.firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -95,7 +100,7 @@ export const completeGame = onRequest({
         if (player) { // Add a check to ensure player is not undefined or empty string
           logPlayerAction(player, "gameComplete", {
             gameId,
-            winner: winnerUID == player,
+            winner: winnerUID === player,
             results: results[player as keyof EndGameData],
             league: gameData.league,
             mode: gameData.mode,
@@ -130,19 +135,19 @@ export const getNews = onRequest({
   const db = admin.firestore();
   corsMiddleware(request, response, async () => {
     try {
-      const limit = parseInt(request.query.limit as string) || 3;
+      const limit = parseInt(request.query.limit as string, 10) || 3;
       const isFrontPage = request.query.isFrontPage === 'true';
 
       // Get all news
       const newsCollection = db.collection("news");
       const allNewsSnapshot = await newsCollection.get();
-      const allNews = allNewsSnapshot.docs.map((doc) => ({
+      const allNews: NewsItem[] = allNewsSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
       // Sort by date (newest first)
-      const sortByDateDesc = (a: any, b: any) => {
+      const sortByDateDesc = (a: NewsItem, b: NewsItem) => {
         const dateA = a.date || '0000-00-00';
         const dateB = b.date || '0000-00-00';
         return dateB.localeCompare(dateA);
@@ -150,8 +155,8 @@ export const getNews = onRequest({
 
       if (!isFrontPage) {
         // Separate pinned and unpinned news
-        const pinnedNews = allNews.filter((news: any) => news.pinned);
-        const unpinnedNews = allNews.filter((news: any) => !news.pinned);
+        const pinnedNews = allNews.filter((news) => news.pinned);
+        const unpinnedNews = allNews.filter((news) => !news.pinned);
 
         // Sort unpinned news by date
         const sortedUnpinnedNews = unpinnedNews.sort(sortByDateDesc);
@@ -215,7 +220,7 @@ async function handleNewsMediaUpload(
     return url;
   } catch (error) {
     console.error('[handleNewsMediaUpload] Storage error:', error);
-    // @ts-ignore
+    // @ts-expect-error
     throw new Error(`Storage error: ${error.message}`);
   }
 }
@@ -236,18 +241,18 @@ export const addNews = onRequest({
 
       // Handle multipart form data
       const busboy = Busboy({ headers: request.headers });
-      const fields: any = {};
+      const fields: Record<string, string> = {};
       let imageBuffer: Buffer | null = null;
       let imageType: string | null = null;
 
       // Handle regular fields
-      busboy.on('field', (fieldname: string, val: any) => {
+      busboy.on('field', (fieldname, val) => {
         fields[fieldname] = val;
       });
 
       // Handle file upload - skip in development
       if (!isDevelopment) {
-        busboy.on('file', (_fieldname: string, file: any, { mimeType }: { mimeType: string }) => {
+        busboy.on('file', (_fieldname, file, { mimeType }) => {
           console.log(`[addNews] Processing file upload with mimeType:`, mimeType);
           const chunks: Buffer[] = [];
           imageType = mimeType.toLowerCase();
@@ -315,9 +320,9 @@ export const addNews = onRequest({
       response.status(200).json(result);
     } catch (error) {
       console.error("addNews error:", error);
-      // @ts-ignore
+      // @ts-expect-error
       if (error.message === "Missing required fields (title, text, date)") {
-        // @ts-ignore
+        // @ts-expect-error
         response.status(400).send(error.message);
       } else {
         response.status(500).send("Error adding news");
@@ -353,7 +358,7 @@ export const updateNewsThumbnail = onRequest({
 
       // Handle file upload - skip in development
       if (!isDevelopment) {
-        busboy.on('file', (_fieldname: string, file: any, { mimeType }: { mimeType: string }) => {
+        busboy.on('file', (_fieldname, file, { mimeType }) => {
           console.log(`[updateNewsThumbnail] Processing file upload with mimeType:`, mimeType);
           const chunks: Buffer[] = [];
           imageType = mimeType.toLowerCase();
@@ -412,7 +417,7 @@ export const updateNewsThumbnail = onRequest({
       response.status(200).json(result);
     } catch (error) {
       console.error("[updateNewsThumbnail] Error:", error);
-      // @ts-ignore
+      // @ts-expect-error
       if (error.message === "News item not found") {
         response.status(404).send("News item not found");
       } else {

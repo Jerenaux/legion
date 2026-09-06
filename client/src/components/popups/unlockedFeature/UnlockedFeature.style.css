@@ -7,7 +7,7 @@
   border: 0.1vw solid #00ffff;
   border-radius: 8px;
   padding: 24px;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(0, 255, 255, 0.3),
     0 0 20px rgba(0, 255, 255, 0.2),
     inset 0 0 8px rgba(0, 255, 255, 0.2);
@@ -28,7 +28,7 @@
   color: #e0e0e0;
   font-size: 1.5rem;
   margin: 0;
-  font-family: Kim;
+  font-family: Kim, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -86,7 +86,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
-  font-family: Kim;
+  font-family: Kim, sans-serif;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -98,7 +98,7 @@
   color: #242b37;
   border: 1px solid #ffaa00;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(255, 153, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
@@ -106,7 +106,7 @@
 .unlocked-feature-button.primary:hover {
   background: linear-gradient(to bottom, #ffdd33, #ffaa00);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 4px 8px rgba(255, 153, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
@@ -115,7 +115,7 @@
   background-color: rgba(0, 0, 0, 0.3);
   border: 1px solid #e0e0e0;
   color: #e0e0e0;
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.2),
     inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
@@ -125,7 +125,7 @@
   border-color: #ffffff;
   color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.3),
     inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
@@ -161,4 +161,4 @@
   margin-bottom: -8px;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-} 
+}

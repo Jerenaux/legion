@@ -1,7 +1,8 @@
+import { h } from 'preact';
 // QuestCard.tsx
 import CountUp from 'react-countup';
 import './QuestCard.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import questActive from '@assets/quest_bg_active.png';
 import questIdle from '@assets/quest_bg_idle.png';
 import completionMarker from '@assets/completion_marker.png';
@@ -34,6 +35,7 @@ class QuestCard extends Component<CardProps> {
         }
 
         return (
+            // biome-ignore lint/a11y/noStaticElementInteractions: Pointer hover only changes this card's decorative background.
             <div className="questCardContainer" style={bgStyle} onMouseEnter={() => this.setState({ active: true })} onMouseLeave={() => this.setState({ active: false })}>
                 <div className="questInfoContainer">
                     <span className="fireSpells">{data.name}</span>
@@ -42,6 +44,7 @@ class QuestCard extends Component<CardProps> {
                 </div>
                 {data.completion === 1 ? <div className="completion" style={{backgroundImage: `url(${completionMarker})`}}></div> : <div className="chartContainer">
                     <svg viewBox="0 0 63.6619772368 63.6619772368">
+                        <title>Quest progress</title>
                         <style>
                             {`
                                 @keyframes pie-chart {

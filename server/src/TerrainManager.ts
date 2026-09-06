@@ -47,16 +47,16 @@ export class TerrainManager {
 
     updateTerrainFromSpell(spell: Spell, x: number, y: number) {
         this.updates = [];
-        
+
         const tilesInRadius = getTilesInHexRadius(x, y, spell.radius - 1);
-        
+
         for (const tile of tilesInRadius) {
             if (isSkip(tile.x, tile.y)) continue;
-            
+
             this.determineTerrain(spell.terrain, tile.x, tile.y);
             this.postProcessing(tile.x, tile.y);
         }
-        
+
         return this.updates;
     }
 
@@ -65,10 +65,10 @@ export class TerrainManager {
         const newTerrain = this.getTerrain(x, y);
         const player = this.game.getPlayerAt(x, y);
         if (player) {
-            if (previousTerrain == Terrain.NONE && newTerrain != Terrain.NONE) {
+            if (previousTerrain === Terrain.NONE && newTerrain !== Terrain.NONE) {
                 player.setUpTerrainEffect(newTerrain);
             }
-            if (previousTerrain != Terrain.NONE && newTerrain == Terrain.NONE) {
+            if (previousTerrain !== Terrain.NONE && newTerrain === Terrain.NONE) {
                 player.removeTerrainEffect(previousTerrain);
             }
         }
@@ -79,7 +79,7 @@ export class TerrainManager {
         // If incompatile terrains, they cancel each other
         if (existingTerrain && this.incompatibility.getIncompatibleTerrains(existingTerrain).includes(newTerrain)) {
             newTerrain = Terrain.NONE;
-        } 
+        }
         this.updateTerrainMap(newTerrain, x, y);
     }
 

@@ -1,11 +1,12 @@
+
+import { h } from 'preact';
 import '../style/QueuePage.style.css';
-import { h, Component } from 'preact';
-import { io } from 'socket.io-client';
+import { Component } from 'preact';
 import { route } from 'preact-router';
-import { Link, useRouter } from 'preact-router';
+import { Link, } from 'preact-router';
 import Skeleton from 'react-loading-skeleton';
 
-import { apiFetch, getFirebaseIdToken } from '../services/apiService';
+import { apiFetch, } from '../services/apiService';
 import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS, DISCORD_LINK, X_LINK } from '@legion/shared/config';
 import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';
@@ -77,18 +78,18 @@ class QueuePage extends Component<QPageProps, QpageState> {
             PlayMode.CASUAL,
             PlayMode.RANKED,
         ] as number[];
-        
+
         const currentMode = Number(this.props.matches.mode);
-        
+
         if (this.props.matches.id !== undefined) {
             return true;
         }
 
-        if (isNaN(currentMode) || !validModes.includes(currentMode)) {
+        if (Number.isNaN(currentMode) || !validModes.includes(currentMode)) {
             silentErrorToast('Invalid play mode, please select a mode from the home page');
             return false;
         }
-        
+
         return true;
     }
 
@@ -277,7 +278,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
         if (socket) {
             // Emit leaveQueue event before removing listeners
             socket.emit('leaveQueue');
-            
+
             // Remove all game-related listeners
             socket.off('matchFound');
             socket.off('updateGold');
@@ -390,18 +391,18 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                 <div>
                                     {ENABLE_MM_TOGGLE && (
                                         <div className="queue-detail-header">
-                                            <div
+                                            <button type="button" data-game-control
                                                 className={this.state.findState === 'quick' ? 'queue-detail-btn active' : 'queue-detail-btn'}
                                                 onClickCapture={this.handleQuickFind}
                                             >
                                                 Quick find
-                                            </div>
-                                            <div
+                                            </button>
+                                            <button type="button" data-game-control
                                                 className={this.state.findState === 'accurate' ? 'queue-detail-btn active' : 'queue-detail-btn'}
                                                 onClick={this.handleAccurateFind}
                                             >
                                                 Accurate find
-                                            </div>
+                                            </button>
                                         </div>
                                     )}
                                     <div className="queue-detail-body">
@@ -477,12 +478,12 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                     <div className="queue-news-content">
                                         {newsItem.text}
                                     </div>
-                                    <div
+                                    <button type="button" data-game-control
                                         className="queue-news-readmore"
                                         onClick={() => window.open(newsItem.link, '_blank')}
                                     >
                                         READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
-                                    </div>
+                                    </button>
                                 </div>
                             ))
                         ) : (
@@ -504,12 +505,12 @@ class QueuePage extends Component<QPageProps, QpageState> {
                 <div className="queue-btns">
                     <Link href={X_LINK} target="_blank">
                         <div className="btn-x">
-                            <img src={xIcon} />
+                            <img src={xIcon} alt="X" />
                         </div>
                     </Link>
                     <Link href={DISCORD_LINK} target="_blank">
                         <div className="btn-discord">
-                            <img src={discordIcon} />
+                            <img src={discordIcon} alt="Discord" />
                         </div>
                     </Link>
                 </div>

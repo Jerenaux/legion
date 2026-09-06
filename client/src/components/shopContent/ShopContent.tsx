@@ -1,13 +1,14 @@
+import { h } from 'preact';
 import './ShopContent.style.css';
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import Skeleton from 'react-loading-skeleton';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
 import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, LockedFeatures } from '@legion/shared/enums';
 import { EQUIPMENT_BATCH_GOLD, MAX_CHARACTERS } from "@legion/shared/config";
-import { ShopItems, DBCharacterData } from '@legion/shared/interfaces';
+import { ShopItems, APICharacterData } from '@legion/shared/interfaces';
 import { errorToast, successToast, playSoundEffect, silentErrorToast, lockIcon } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
@@ -32,7 +33,7 @@ import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 
 interface ShopContentProps {
-    characters: DBCharacterData[];
+    characters: Array<APICharacterData & {price: number}>;
     requiredTab: number;
     highlightedItemId?: string;
     fetchCharactersOnSale: () => void;
@@ -47,7 +48,7 @@ export interface modalData {
     isCharacter?: boolean;
 }
 
-function sortByRarityAndPrice(a: any, b: any) {
+function sortByRarityAndPrice(a: BaseItem | BaseSpell | BaseEquipment, b: BaseItem | BaseSpell | BaseEquipment) {
     if (a.rarity === b.rarity) {
         return a.price - b.price;
     }
@@ -147,8 +148,8 @@ class ShopContent extends Component<ShopContentProps> {
         }
     }
 
-    handleOpenModal = (e: any, modalData: modalData) => {
-        const elementRect = e.currentTarget.getBoundingClientRect();
+    handleOpenModal = (e: Event, modalData: modalData) => {
+        const elementRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 
         const modalPosition = {
             top: Math.min(elementRect.top + elementRect.height / 2, window.innerHeight - elementRect.height + 40),
@@ -171,7 +172,7 @@ class ShopContent extends Component<ShopContentProps> {
     }
 
     purchase = async (id: string | number, quantity: number, price: number) => {
-        if (!id && id != 0) {
+        if (!id && id !== 0) {
             errorToast('No article selected!');
             return;
         }
@@ -181,7 +182,7 @@ class ShopContent extends Component<ShopContentProps> {
             return;
         }
 
-        const purchasingCharacter = this.state.curr_tab == ShopTab.CHARACTERS;
+        const purchasingCharacter = this.state.curr_tab === ShopTab.CHARACTERS;
 
         if (purchasingCharacter) {
             if (this.context.characters.length >= MAX_CHARACTERS) {
@@ -210,7 +211,7 @@ class ShopContent extends Component<ShopContentProps> {
             method: 'POST',
             body: payload
         })
-            .then(data => {
+            .then(() => {
                 if (purchasingCharacter) {
                     this.props.fetchCharactersOnSale();
                 }
@@ -242,7 +243,7 @@ class ShopContent extends Component<ShopContentProps> {
         const { characters } = this.props;
 
         const getItemAmount = (index: number, type: InventoryType) => {
-            return this.context.player.inventory[type].filter((item: number) => item == index).length;
+            return this.context.player.inventory[type].filter((item: number) => item === index).length;
         }
 
         const renderItems = () => {
@@ -251,9 +252,9 @@ class ShopContent extends Component<ShopContentProps> {
                     const unlockedSpells = this.state.inventoryData.spells.filter(
                         spell => this.context.canAccessFeature(spell.unlock)
                     );
-                    
+
                     const groupedSpells = groupSpellsByCategory(unlockedSpells);
-                    
+
                     return (
                         <div className="spells-container">
                             {Object.entries(groupedSpells).map(([category, spells]) => (
@@ -262,11 +263,11 @@ class ShopContent extends Component<ShopContentProps> {
                                         {category.charAt(0) + category.slice(1).toLowerCase()}
                                     </h3>
                                     <div className="spells-grid">
-                                        {spells.map((spell, index) => 
-                                            <ShopSpellCard 
-                                                key={index} 
-                                                data={spell} 
-                                                getItemAmount={getItemAmount} 
+                                        {spells.map((spell, index) =>
+                                            <ShopSpellCard
+                                                key={index}
+                                                data={spell}
+                                                getItemAmount={getItemAmount}
                                                 handleOpenModal={this.handleOpenModal}
                                                 isHighlighted={this.props.highlightedItemId !== undefined && spell.id === Number(this.props.highlightedItemId)}
                                             />
@@ -274,7 +275,7 @@ class ShopContent extends Component<ShopContentProps> {
                                     </div>
                                 </div>
                             ))}
-                            {(!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) || 
+                            {(!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) ||
                               !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_3)) && (
                                 <div className="locked-spells-notice">
                                     <img src={lockIcon} alt="Locked content" />
@@ -283,7 +284,7 @@ class ShopContent extends Component<ShopContentProps> {
                                         {!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) && (
                                             `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_2)} more games to unlock more powerful spells!`
                                         )}
-                                        {this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) && 
+                                        {this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) &&
                                          !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_3) && (
                                             `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_3)} more games to unlock more powerful spells!`
                                         )}
@@ -297,9 +298,9 @@ class ShopContent extends Component<ShopContentProps> {
                     const unlockedConsumables = this.state.inventoryData.consumables.filter(
                         consumable => this.context.canAccessFeature(consumable.unlock)
                     );
-                    
+
                     const groupedConsumables = groupConsumablesByCategory(unlockedConsumables);
-                    
+
                     return (
                         <div className="consumables-container">
                             {Object.entries(groupedConsumables).map(([category, items]) => (
@@ -308,11 +309,11 @@ class ShopContent extends Component<ShopContentProps> {
                                         {category.charAt(0) + category.slice(1).toLowerCase()}
                                     </h3>
                                     <div className="consumables-grid">
-                                        {items.map((item, index) => 
-                                            <ShopConsumableCard 
-                                                key={index} 
-                                                data={item} 
-                                                getItemAmount={getItemAmount} 
+                                        {items.map((item, index) =>
+                                            <ShopConsumableCard
+                                                key={index}
+                                                data={item}
+                                                getItemAmount={getItemAmount}
                                                 handleOpenModal={this.handleOpenModal}
                                                 isHighlighted={this.props.highlightedItemId !== undefined && item.id === Number(this.props.highlightedItemId)}
                                             />
@@ -320,7 +321,7 @@ class ShopContent extends Component<ShopContentProps> {
                                     </div>
                                 </div>
                             ))}
-                            {(!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) || 
+                            {(!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) ||
                               !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_3)) && (
                                 <div className="locked-spells-notice">
                                     <img src={lockIcon} alt="Locked content" />
@@ -329,7 +330,7 @@ class ShopContent extends Component<ShopContentProps> {
                                         {!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) && (
                                             `Play ${this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_2)} more games to unlock better consumables!`
                                         )}
-                                        {this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) && 
+                                        {this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) &&
                                          !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_3) && (
                                             `Play ${this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_3)} more games to unlock the final consumables tier!`
                                         )}
@@ -347,22 +348,22 @@ class ShopContent extends Component<ShopContentProps> {
 
                     const useDetailedCategories = this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2);
                     const groupedEquipment = groupEquipmentByType(unlockedEquipment, !useDetailedCategories);
-                    
+
                     return (
                         <div className="equipment-sections">
                             {Object.entries(groupedEquipment).map(([category, items]) => (
                                 <div key={category} className="equipment-section">
                                     <h3 className="equipment-type-title">
-                                        {useDetailedCategories 
+                                        {useDetailedCategories
                                             ? equipmentSlotLabelsPlural[category as unknown as EquipmentSlot]
                                             : category}
                                     </h3>
                                     <div className="equipment-grid">
-                                        {items.map((item: BaseEquipment, index: number) => 
-                                            <ShopEquipmentCard 
-                                                key={index} 
-                                                data={item} 
-                                                getItemAmount={getItemAmount} 
+                                        {items.map((item: BaseEquipment, index: number) =>
+                                            <ShopEquipmentCard
+                                                key={index}
+                                                data={item}
+                                                getItemAmount={getItemAmount}
                                                 handleOpenModal={this.handleOpenModal}
                                                 isHighlighted={this.props.highlightedItemId !== undefined && item.id === Number(this.props.highlightedItemId)}
                                             />
@@ -370,7 +371,7 @@ class ShopContent extends Component<ShopContentProps> {
                                     </div>
                                 </div>
                             ))}
-                            {(!this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) || 
+                            {(!this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) ||
                               !this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_3)) && (
                                 <div className="locked-spells-notice">
                                     <img src={lockIcon} alt="Locked content" />
@@ -379,7 +380,7 @@ class ShopContent extends Component<ShopContentProps> {
                                         {!this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) && (
                                             `Play ${this.context.getGamesUntilFeature(LockedFeatures.EQUIPMENT_BATCH_2)} more games to unlock better equipment!`
                                         )}
-                                        {this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) && 
+                                        {this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) &&
                                          !this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_3) && (
                                             `Play ${this.context.getGamesUntilFeature(LockedFeatures.EQUIPMENT_BATCH_3)} more games to unlock the final equipment tier!`
                                         )}
@@ -390,12 +391,12 @@ class ShopContent extends Component<ShopContentProps> {
                     );
                 }
                 case ShopTab.CHARACTERS:
-                    return this.state.isLoadingCharacters ? 
+                    return this.state.isLoadingCharacters ?
                         renderSkeletons() :
-                        characters?.map((item, index) => 
-                            <ShopCharacterCard 
-                                key={index} 
-                                data={item} 
+                        characters?.map((item, index) =>
+                            <ShopCharacterCard
+                                key={index}
+                                data={item}
                                 handleOpenModal={this.handleOpenModal}
                             />
                         );
@@ -416,7 +417,7 @@ class ShopContent extends Component<ShopContentProps> {
                     <div key={index} >
                         <Skeleton
                             height={320}
-                            width={200} 
+                            width={200}
                             highlightColor="#0000004d"
                             baseColor="#0f1421"
                         />

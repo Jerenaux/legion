@@ -10,5 +10,8 @@
     "indentStyle": "space",
     "lineEnding": "lf",
     "lineWidth": 120
+  },
+  "javascript": {
+    "jsxRuntime": "reactClassic"
   }
 }

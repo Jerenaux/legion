@@ -2,11 +2,8 @@ import * as Phaser from 'phaser';
 import { Arena } from './Arena';
 import RoundRectanglePlugin from 'phaser3-rex-plugins/plugins/roundrectangle-plugin.js';
 
-let gameWidth;
-let gameHeight;
-
-gameWidth = 1920;
-gameHeight = 1080;
+const gameWidth = 1920;
+const gameHeight = 1080;
 
 const config = {
     type: Phaser.WEBGL,
@@ -37,4 +34,3 @@ const config = {
 export function startGame() {
     new Phaser.Game(config);
 }
-

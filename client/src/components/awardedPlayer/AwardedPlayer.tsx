@@ -1,20 +1,14 @@
+
+import { h } from 'preact';
 // AwardedPlayer.tsx
 import './AwardedPlayer.style.css';
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { route } from 'preact-router';
 import { loadAvatar } from '../utils';
-
-interface PlayerProps {
-    rank: number;
-    id: string;
-    name: string;
-    avatar: string;
-    title?: string;
-    description?: string;
-}
+import { LeaderboardHighlight } from '@legion/shared/interfaces';
 
 interface Props {
-    players: PlayerProps[];
+    players: LeaderboardHighlight[];
 }
 
 class AwardedPlayer extends Component<Props> {
@@ -24,13 +18,13 @@ class AwardedPlayer extends Component<Props> {
 
     render() {
         const { players } = this.props;
-        
+
         return (
             <div className="highlights-container">
                 {players.map((player) => (
-                    <div 
-                        key={player.id} 
-                        className="award-player-container clickable" 
+                    <button type="button" data-game-control
+                        key={player.id}
+                        className="award-player-container clickable"
                         onClick={() => this.handleClick(player.id)}
                     >
                         <div className="award-player-avatar-container">
@@ -39,7 +33,7 @@ class AwardedPlayer extends Component<Props> {
                         <div className="award-player-name">{player.name}</div>
                         {player.title && <div className="award-player-title">{player.title}</div>}
                         {player.description && <div className="award-player-desc">{player.description}</div>}
-                    </div>
+                    </button>
                 ))}
             </div>
         );

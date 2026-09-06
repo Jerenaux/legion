@@ -2,17 +2,9 @@ import { DailyLootAllAPIData, DailyLootAllDBData, PlayerInventory } from "./inte
 import { ChestColor, StatusEffect } from "./enums";
 import { GRID_HEIGHT, GRID_WIDTH, MOVEMENT_RANGE, SPELL_RANGE } from "./config";
 
-function specialRound(num: number): number {
-    if (num >= 0) {
-        return Math.round(num);
-    } else {
-        return -Math.round(-num);
-    }
-}
-
 export function serializeCoords(x: number, y: number): string {
     return `${x},${y}`;
-}  
+}
 
 // Convert offset coordinates to cube coordinates
 export function offsetToCube(col: number, row: number): { x: number, y: number, z: number } {
@@ -32,9 +24,9 @@ function oddOffsetToCube(col: number, row: number): { x: number, y: number, z: n
 }
 
 // Convert cube coordinates back to offset coordinates
-export function cubeToOffset(x: number, y: number, z: number, centerRow: number) {
+export function cubeToOffset(x: number, _y: number, z: number, centerRow: number) {
     const row = z;
-    const col = centerRow % 2 === 0 
+    const col = centerRow % 2 === 0
         ? x + Math.floor((z + 1) / 2)
         : x + Math.floor(z / 2);
     return { col, row };
@@ -42,8 +34,8 @@ export function cubeToOffset(x: number, y: number, z: number, centerRow: number)
 
 
 // Interpolate between two cube coordinates
-function cubeLinearInterpolation(a: { x: number, y: number, z: number }, 
-                                b: { x: number, y: number, z: number }, 
+function cubeLinearInterpolation(a: { x: number, y: number, z: number },
+                                b: { x: number, y: number, z: number },
                                 t: number) {
     return {
         x: a.x * (1 - t) + b.x * t,
@@ -94,18 +86,18 @@ export function lineOfSight(startX: number, startY: number, endX: number, endY: 
 
 export function listCellsOnTheWay(startX: number, startY: number, endX: number, endY: number): Set<string> {
     // Convert cube coordinates back to offset coordinates
-    function cubeToOffset(x: number, y: number, z: number, centerRow: number) {
+    function cubeToOffset(x: number, _y: number, z: number, centerRow: number) {
         const row = z;
-        const col = centerRow % 2 === 0 
+        const col = centerRow % 2 === 0
             ? x + Math.floor(z / 2)
             : x + Math.floor((z + 1) / 2);
         return { col, row };
     }
-    
+
     // Convert to cube coordinates
     const startCube = oddOffsetToCube(startX, startY);
     const endCube = oddOffsetToCube(endX, endY);
-    
+
     // Calculate the cube distance
     const distance = Math.max(
         Math.abs(endCube.x - startCube.x),
@@ -124,18 +116,18 @@ export function listCellsOnTheWay(startX: number, startY: number, endX: number, 
 
     // Calculate the number of steps
     const steps = Math.max(1, distance);
-    
-    
+
+
     // Track each point along the line
     for (let i = 1; i <= steps; i++) {
         // Interpolate in cube coordinates
         const t = i / steps;
         const interpolated = cubeLinearInterpolation(startCube, endCube, t);
         const rounded = roundCube(interpolated);
-        
+
         // Convert back to offset coordinates
         const { col, row } = cubeToOffset(rounded.x, rounded.y, rounded.z, rounded.z);
-        
+
         // Add this position to the list
         cells.add(serializeCoords(col, row));
     }
@@ -150,7 +142,10 @@ export function inventorySize(inventory: PlayerInventory): number {
     .reduce((acc, curr) => acc + curr, 0);
 }
 
-export async function sendMessageToAdmin(client: any, message: string) {
+export async function sendMessageToAdmin(
+  client: {users: {fetch: (id: string) => Promise<{send: (content: string) => unknown}>}},
+  message: string,
+) {
     const adminUser = await client.users.fetch('272906141728505867');
     adminUser.send(message);
 }
@@ -178,7 +173,7 @@ export const transformDailyLoot = (dailyloot: DailyLootAllDBData): DailyLootAllA
 /**
  * Calculate the distance between two points on a pointy hex grid
  * using cube coordinates
- * 
+ *
  * @param x1 First point x coordinate
  * @param y1 First point y coordinate
  * @param x2 Second point x coordinate
@@ -188,7 +183,7 @@ export const transformDailyLoot = (dailyloot: DailyLootAllDBData): DailyLootAllA
 export function hexDistance(x1: number, y1: number, x2: number, y2: number): number {
     const startCube = oddOffsetToCube(x1, y1);
     const endCube = oddOffsetToCube(x2, y2);
-    
+
     // Calculate hex distance using maximum of the absolute differences
     return Math.max(
         Math.abs(startCube.x - endCube.x),
@@ -199,7 +194,7 @@ export function hexDistance(x1: number, y1: number, x2: number, y2: number): num
 
 /**
  * Gets all hex tiles within a specified radius of a center point
- * 
+ *
  * @param centerX Center point x coordinate
  * @param centerY Center point y coordinate
  * @param radius Radius in hex grid units
@@ -207,34 +202,34 @@ export function hexDistance(x1: number, y1: number, x2: number, y2: number): num
  */
 export function getTilesInHexRadius(centerX: number, centerY: number, radius: number): Array<{x: number, y: number}> {
     const results: Array<{x: number, y: number}> = [];
-    
+
     // For hexagonal grids, enumerate tiles using cube coordinates
     for (let q = -radius; q <= radius; q++) {
         // In a hex grid, the range of the second coordinate depends on the first
         // This ensures we scan a proper hexagonal area
         const r1 = Math.max(-radius, -q - radius);
         const r2 = Math.min(radius, -q + radius);
-        
+
         for (let r = r1; r <= r2; r++) {
             const {col, row} = cubeToOffset(q, r, -q-r, centerY);
-            
+
             // Add offset from center point
             const targetX = centerX + col;
             const targetY = centerY + row;
-            
+
             results.push({ x: targetX, y: targetY });
         }
     }
-    
+
     return results;
 }
 
 
 export function isSkip(x: number, y: number) {
     if (
-        x < 0 || 
-        y < 0 || 
-        x >= GRID_WIDTH || 
+        x < 0 ||
+        y < 0 ||
+        x >= GRID_WIDTH ||
         y >= GRID_HEIGHT ||
         y % 2 === 0 && x >= GRID_WIDTH - 1
     ) return true;

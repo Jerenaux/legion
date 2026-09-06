@@ -1,4 +1,6 @@
-import { h, Component } from 'preact';
+
+import { h } from 'preact';
+import { Component } from 'preact';
 import { tips } from '../tips'
 import './QueueTips.style.css';
 
@@ -42,12 +44,12 @@ export class QueueTips extends Component<{}, QueueTipsState> {
                         </span>
                     </div>
                 </div>
-                <div onClick={this.prevTip} className="queue-tips-arrow prev">
+                <button type="button" data-game-control onClick={this.prevTip} className="queue-tips-arrow prev">
                     ◀
-                </div>
-                <div onClick={this.nextTip} className="queue-tips-arrow next">
+                </button>
+                <button type="button" data-game-control onClick={this.nextTip} className="queue-tips-arrow next">
                     ▶
-                </div>
+                </button>
             </div>
         );
     }

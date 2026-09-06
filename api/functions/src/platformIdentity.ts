@@ -34,7 +34,7 @@ export async function validateSteamTicket(
     `https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?${params}`,
   );
   if (!response.ok) throw new Error("Steam authentication unavailable");
-  const body = await response.json() as any;
+  const body = await response.json() as {response?: {params?: {result?: string; steamid?: string}}};
   const result = body?.response?.params;
   if (result?.result !== "OK" || !result?.steamid) throw new Error("Steam ticket rejected");
   return String(result.steamid);
@@ -46,7 +46,7 @@ export async function validateItchKey(apiKey: string, fetcher: Fetcher = fetch):
     headers: {Authorization: apiKey},
   });
   if (!response.ok) throw new Error("Itch key rejected");
-  const body = await response.json() as any;
+  const body = await response.json() as {user?: {id?: string | number}};
   if (!body?.user?.id) throw new Error("Itch profile missing user id");
   return String(body.user.id);
 }

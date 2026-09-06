@@ -1,5 +1,5 @@
 // apiService.js
-import { firebaseAuth } from './firebaseService'; 
+import { firebaseAuth } from './firebaseService';
 import { errorToast } from '../components/utils';
 import {getTokenWithRetry} from "./firebaseToken";
 
@@ -22,7 +22,7 @@ export async function getFirebaseIdToken(forceRefresh = false) {
 interface ApiFetchOptions {
     method?: string;
     headers?: Record<string, string>;
-    body?: any;
+    body?: unknown;
 }
 
 class ApiError extends Error {
@@ -37,7 +37,7 @@ class ApiError extends Error {
 }
 
 function timeoutPromise(duration) {
-    return new Promise((resolve, reject) => {
+    return new Promise((_resolve, reject) => {
         setTimeout(() => {
             reject(new Error('Request timed out'));
         }, duration);
@@ -54,16 +54,16 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
 
             if (options.body && !headers.has('Content-Type')) {
                 headers.append('Content-Type', 'application/json');
-            } 
+            }
 
             headers.set("Authorization", `Bearer ${idToken}`);
-            const body = options.body && typeof options.body !== "string" ? JSON.stringify(options.body) : options.body;
+            const body = options.body == null ? undefined : typeof options.body === "string" ? options.body : JSON.stringify(options.body);
 
             const fullEndpoint = `${apiBaseUrl}/${endpoint}`;
             if (process.env.NODE_ENV === 'development') {
                 // console.log(`Attempt ${attempt + 1} of ${maxRetries}: Calling ${fullEndpoint}`);
             }
-            
+
             let fetchPromise = fetch(fullEndpoint, {
                 ...options,
                 body,

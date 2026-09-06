@@ -1,6 +1,7 @@
-import { h, Component, createRef } from 'preact';
+import { h } from 'preact';
+import { Component, createRef } from 'preact';
 import { apiFetch } from '../services/apiService';
-import { DBCharacterData } from '@legion/shared/interfaces';
+import { APICharacterData } from '@legion/shared/interfaces';
 import ShopContent from './shopContent/ShopContent';
 import { ShopTab } from '@legion/shared/enums';
 import { PlayerContext } from '../contexts/PlayerContext';
@@ -14,7 +15,7 @@ enum DialogType {
 }
 
 interface State {
-  characters: DBCharacterData[]; // Characters on sale
+  characters: Array<APICharacterData & {price: number}>; // Characters on sale
   openDialog: DialogType;
   quantity: number;
 }
@@ -27,7 +28,7 @@ interface ShopPageProps {
 }
 
 class ShopPage extends Component<ShopPageProps, State> {
-  static contextType = PlayerContext; 
+  static contextType = PlayerContext;
 
   state: State = {
     characters: [],
@@ -44,18 +45,18 @@ class ShopPage extends Component<ShopPageProps, State> {
   componentDidUpdate() {
     if (this.context.player.isLoaded) {
       if (!this.context.checkEngagementFlag('everPurchased')) {
-        if (!this.props.matches.category || this.props.matches.category == 'consumables') {
+        if (!this.props.matches.category || this.props.matches.category === 'consumables') {
           this.popupManagerRef.current?.enqueuePopup(Popup.BuySomething);
         }
       } else if (!this.context.checkEngagementFlag('everEquippedConsumable') && this.context.hasConsumable()) {
         this.popupManagerRef.current?.enqueuePopup(Popup.GoTeamPage);
       } else if (
-        !this.context.checkEngagementFlag('everEquippedEquipment') && 
+        !this.context.checkEngagementFlag('everEquippedEquipment') &&
         this.context.hasEquipableEquipment()
       ) {
         this.popupManagerRef.current?.enqueuePopup(Popup.GoTeamPage);
       } else if (
-        !this.context.checkEngagementFlag('everEquippedSpell') && 
+        !this.context.checkEngagementFlag('everEquippedSpell') &&
         this.context.hasEquipableSpells()
       ) {
         this.popupManagerRef.current?.enqueuePopup(Popup.GoTeamPage);
@@ -63,12 +64,12 @@ class ShopPage extends Component<ShopPageProps, State> {
     }
   }
 
-  async fetchCharactersOnSale() { 
-    // await new Promise(resolve => setTimeout(resolve, 2000)); 
+  async fetchCharactersOnSale() {
+    // await new Promise(resolve => setTimeout(resolve, 2000));
     try {
         const data = await apiFetch('listOnSaleCharacters');
 
-        this.setState({ 
+        this.setState({
             characters: data
         });
     } catch (error) {
@@ -82,12 +83,12 @@ class ShopPage extends Component<ShopPageProps, State> {
 
     return (
         <div className="shop-container">
-          <PopupManager 
+          <PopupManager
             ref={this.popupManagerRef}
             onPopupResolved={() => {}}
           />
           <ShopContent
-            characters={this.state.characters} 
+            characters={this.state.characters}
             requiredTab={ShopTab[this.props.matches.category?.toUpperCase()]}
             highlightedItemId={hasValidId ? this.props.matches.id : undefined}
             fetchCharactersOnSale={this.fetchCharactersOnSale.bind(this)}
