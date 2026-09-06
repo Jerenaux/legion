@@ -17,14 +17,12 @@ export function selectStatToLevelUp(characterClass: Class): Stat {
     const weights = classStatWeights[characterClass];
     const weightedStats: Stat[] = [];
 
-    for (const statKey in weights) {
-        if (Object.hasOwn(weights, statKey)) {
-            const statEnumKey = Number(statKey) as Stat;
-            const weight = weights[statEnumKey];
-            if (weight) {
-                for (let i = 0; i < weight; i++) {
-                    weightedStats.push(statEnumKey);
-                }
+    for (const statKey of Object.keys(weights)) {
+        const statEnumKey = Number(statKey) as Stat;
+        const weight = weights[statEnumKey];
+        if (weight) {
+            for (let i = 0; i < weight; i++) {
+                weightedStats.push(statEnumKey);
             }
         }
     }
