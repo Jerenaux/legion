@@ -1,6 +1,132 @@
 {
   "indexes": [
     {
+      "collectionGroup": "actions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "actionType", "order": "ASCENDING"},
+        {"fieldPath": "timestamp", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "players", "arrayConfig": "CONTAINS"},
+        {"fieldPath": "date", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "news",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "pinned", "order": "ASCENDING"},
+        {"fieldPath": "date", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "engagementStats.totalGames", "order": "ASCENDING"},
+        {"fieldPath": "joinDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "isMobile", "order": "ASCENDING"},
+        {"fieldPath": "joinDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "is_developer", "order": "ASCENDING"},
+        {"fieldPath": "joinDate", "order": "ASCENDING"},
+        {"fieldPath": "lastActiveDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "is_developer", "order": "ASCENDING"},
+        {"fieldPath": "joinDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "is_excluded", "order": "ASCENDING"},
+        {"fieldPath": "joinDate", "order": "ASCENDING"},
+        {"fieldPath": "lastActiveDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "is_excluded", "order": "ASCENDING"},
+        {"fieldPath": "joinDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "joinDate", "order": "ASCENDING"},
+        {"fieldPath": "lastActiveDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "league", "order": "ASCENDING"},
+        {"fieldPath": "lastActiveDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "league", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.rank", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "league", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.wins", "order": "DESCENDING"},
+        {"fieldPath": "leagueStats.losses", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "leagueStats.losses", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.wins", "order": "ASCENDING"},
+        {"fieldPath": "engagementStats.completedGames", "order": "ASCENDING"},
+        {"fieldPath": "lastActiveDate", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "leagueStats.losses", "order": "ASCENDING"},
+        {"fieldPath": "leagueStats.wins", "order": "ASCENDING"},
+        {"fieldPath": "lastActiveDate", "order": "ASCENDING"}
+      ]
+    },
+    {
       "collectionGroup": "players",
       "queryScope": "COLLECTION",
       "fields": [
