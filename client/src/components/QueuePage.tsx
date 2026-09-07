@@ -299,6 +299,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     loadNews = async () => {
+        if (!ENABLE_Q_NEWS) return;
         try {
             const news = await apiFetch('getNews');
             this.setState({ news, newsLoaded: true });
