@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "Legion desktop game client",
   "author": "Dynetis Games",
   "private": true,

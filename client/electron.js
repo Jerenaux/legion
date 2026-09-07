@@ -4,7 +4,7 @@ const path = require("node:path");
 const {pathToFileURL} = require("node:url");
 
 const {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
-const {resolveAppPath} = require("./electron/protocol");
+const {PACKAGED_APP_URL, resolveAppPath} = require("./electron/protocol");
 const {isSafeExternalURL, isTrustedSender} = require("./electron/security");
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
@@ -85,7 +85,7 @@ function createWindow() {
     mainWindow.loadURL("http://localhost:8080/");
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadURL("app://legion/index.html");
+    mainWindow.loadURL(PACKAGED_APP_URL);
   }
 }
 
