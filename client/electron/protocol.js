@@ -1,5 +1,7 @@
 const path = require("node:path");
 
+const PACKAGED_APP_URL = "app://legion/";
+
 function resolveAppPath(distPath, requestUrl) {
   const url = new URL(requestUrl);
   if (url.protocol !== "app:" || url.hostname !== "legion") throw new Error("Invalid app URL");
@@ -14,4 +16,4 @@ function resolveAppPath(distPath, requestUrl) {
   return resolved;
 }
 
-module.exports = {resolveAppPath};
+module.exports = {PACKAGED_APP_URL, resolveAppPath};
