@@ -1,8 +1,8 @@
 import {ChestColor, League} from "@legion/shared/enums";
 import {LeaderboardRow} from "@legion/shared/interfaces";
+import {DEMOTION_RATIO, PROMOTION_RATIO} from "@legion/shared/config";
 
 export const LEADERBOARD_LIMIT = 100;
-export const LEAGUE_ELO_THRESHOLDS = [0, 300, 600, 900, 1200] as const;
 
 interface RankStats {
   wins: number;
@@ -35,12 +35,9 @@ export function currentSeasonId(now = new Date()): string {
   return boundary.toISOString().slice(0, 10);
 }
 
-export function getLeagueForElo(elo: number): League {
-  let league = League.BRONZE;
-  LEAGUE_ELO_THRESHOLDS.forEach((threshold, index) => {
-    if (elo >= threshold) league = index as League;
-  });
-  return league;
+export function seasonEndingAt(boundary: Date): string {
+  const currentSeasonStart = new Date(`${currentSeasonId(boundary)}T19:00:00.000Z`);
+  return currentSeasonId(new Date(currentSeasonStart.getTime() - 1));
 }
 
 export function getEmptyLeagueStats(rank = 0, seasonId = currentSeasonId()) {
@@ -86,9 +83,13 @@ export function rankPlayers(
   players: RankedPlayer[],
   isAllTime: boolean,
   uid?: string,
+  league?: League,
+  participantCount = players.length,
 ): LeaderboardRow[] {
   let previousScore = "";
   let rank = 0;
+  const promotionCount = Math.min(participantCount, Math.max(Math.ceil(participantCount * PROMOTION_RATIO), 3));
+  const demotionCount = Math.floor(participantCount * DEMOTION_RATIO);
 
   return players.map((player, index) => {
     const stats = isAllTime ? player.allTimeStats : player.leagueStats;
@@ -97,11 +98,15 @@ export function rankPlayers(
     previousScore = score;
 
     const games = stats.wins + stats.losses;
-    const chestColor = !isAllTime && stats.wins > 0 && rank <= 3 ? [
+    const chestColor = !isAllTime && stats.wins > 0 && index < 3 ? [
       ChestColor.GOLD,
       ChestColor.SILVER,
       ChestColor.BRONZE,
-    ][rank - 1] : null;
+    ][index] : null;
+    const isPromoted = !isAllTime && league !== undefined && league < League.APEX &&
+      stats.wins > 0 && index < promotionCount;
+    const isDemoted = !isAllTime && league !== undefined && league > League.BRONZE &&
+      !isPromoted && index >= participantCount - demotionCount;
 
     return {
       rank,
@@ -115,8 +120,8 @@ export function rankPlayers(
       playerId: player.id,
       chestColor,
       isFriend: false,
-      isPromoted: false,
-      isDemoted: false,
+      isPromoted,
+      isDemoted,
     };
   });
 }

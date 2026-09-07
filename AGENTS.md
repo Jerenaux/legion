@@ -27,3 +27,7 @@ Biome complements rather than replaces TypeScript. Run `bunx tsc --noEmit` in `c
 Packaged builds must open `app://legion/`, using `PACKAGED_APP_URL` from `client/electron/protocol.js`. Do not load `app://legion/index.html`: Preact Router reads that as the `/index.html` application route, which bypasses the title screen and leaves the authenticated home content empty. The custom protocol already maps `/` to the bundled `index.html` file.
 
 Local development starts at `http://localhost:8080/`, so it cannot catch a packaged-only entry-path regression by itself. When changing the Electron entry URL, custom protocol, or top-level routes, keep the packaged-root assertion in `client/electron/__tests__/security.test.js` passing and smoke-test a packaged build.
+
+## Weekly leagues
+
+League promotion and demotion happens only in the `leaguesUpdate` Friday 19:00 UTC scheduled function. Do not derive a player's league directly from ELO. Preserve the low-cost design: query only participants from the season that just ended, calculate ranks on demand, write only promotion/demotion and podium-reward recipients, and let `seasonId` reset statistics lazily. Never restore per-player rank writes, Firestore rank-update triggers, or a global weekly stats reset.

@@ -1,4 +1,4 @@
-import {fetchLeaderboard} from "./leaderboardsAPI";
+import {fetchLeaderboard, leaguesUpdate} from "./leaderboardsAPI";
 import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getReward}
   from "./inventoryAPI";
 import {rosterData, characterData, postGameUpdate,
@@ -20,7 +20,7 @@ import {getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
 import {createPlatformSession, linkPlatformIdentity} from "./sessionAPI";
 
 export {
-  fetchLeaderboard, inventoryData, purchaseItem,
+  fetchLeaderboard, leaguesUpdate, inventoryData, purchaseItem,
   createPlayer, rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters, deleteOnSaleCharacters,
   purchaseCharacter, getPlayerData, queuingData, createGame,

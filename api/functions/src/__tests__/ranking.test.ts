@@ -1,11 +1,13 @@
-import { describe, expect, test } from "bun:test";
+import {describe, expect, test} from "bun:test";
+
+import {ChestColor, League} from "@legion/shared/enums";
 
 import {
   LEADERBOARD_LIMIT,
   applyRankedResult,
   currentSeasonId,
-  getLeagueForElo,
   rankPlayers,
+  seasonEndingAt,
 } from "../ranking";
 
 const player = (
@@ -44,17 +46,33 @@ describe("indexed ranking helpers", () => {
     expect(rows[0].isPlayer).toBe(true);
   });
 
-  test("maps elo to stable league thresholds", () => {
-    expect(getLeagueForElo(100)).toBe(0);
-    expect(getLeagueForElo(300)).toBe(1);
-    expect(getLeagueForElo(650)).toBe(2);
-    expect(getLeagueForElo(950)).toBe(3);
-    expect(getLeagueForElo(1300)).toBe(4);
-  });
-
   test("uses the most recent Friday 19:00 UTC as a weekly season id", () => {
     expect(currentSeasonId(new Date("2026-09-01T12:00:00Z"))).toBe("2026-08-28");
     expect(currentSeasonId(new Date("2026-09-04T20:00:00Z"))).toBe("2026-09-04");
+    expect(seasonEndingAt(new Date("2026-09-04T19:00:00Z"))).toBe("2026-08-28");
+    expect(seasonEndingAt(new Date("2026-09-07T12:00:00Z"))).toBe("2026-08-28");
+  });
+
+  test("marks the old weekly promotion, demotion, and podium outcomes", () => {
+    const players = Array.from({length: 10}, (_, index) =>
+      player(`p${index + 1}`, 20 - index, index, 1000 - index),
+    );
+    const rows = rankPlayers(players, false, undefined, League.SILVER, players.length);
+
+    expect(rows.filter((row) => row.isPromoted).map((row) => row.playerId))
+      .toEqual(["p1", "p2", "p3", "p4"]);
+    expect(rows.filter((row) => row.isDemoted).map((row) => row.playerId))
+      .toEqual(["p8", "p9", "p10"]);
+    expect(rows.slice(0, 4).map((row) => row.chestColor))
+      .toEqual([ChestColor.GOLD, ChestColor.SILVER, ChestColor.BRONZE, null]);
+  });
+
+  test("keeps the lowest and highest leagues bounded", () => {
+    const players = [player("first", 2, 0, 200), player("second", 1, 1, 100)];
+    expect(rankPlayers(players, false, undefined, League.BRONZE, players.length)
+      .some((row) => row.isDemoted)).toBe(false);
+    expect(rankPlayers(players, false, undefined, League.APEX, players.length)
+      .some((row) => row.isPromoted)).toBe(false);
   });
 
   test("resets stale seasonal stats lazily and retains all-time stats", () => {

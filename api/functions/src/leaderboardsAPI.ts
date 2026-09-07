@@ -1,8 +1,27 @@
 import {onRequest} from "firebase-functions/v2/https";
+import {onSchedule} from "firebase-functions/v2/scheduler";
+import * as logger from "firebase-functions/logger";
 
 import admin, {corsMiddleware, getUID} from "./APIsetup";
-import {currentSeasonId, LEADERBOARD_LIMIT, RankedPlayer, rankPlayers} from "./ranking";
-import {LeaderboardHighlight} from "@legion/shared/interfaces";
+import {currentSeasonId, LEADERBOARD_LIMIT, RankedPlayer, rankPlayers, seasonEndingAt} from "./ranking";
+import {processChestRewards} from "./characterAPI";
+import {ChestColor, League} from "@legion/shared/enums";
+import {DBPlayerData, LeaderboardHighlight} from "@legion/shared/interfaces";
+import {getChestContent} from "@legion/shared/chests";
+import {SEASON_END_CRON} from "@legion/shared/config";
+
+interface LeagueOutcome {
+  playerId: string;
+  league: League;
+  newLeague: League;
+  chestColor: ChestColor | null;
+}
+
+interface LeagueRollover {
+  status: "running" | "completed";
+  participants: number;
+  outcomes: LeagueOutcome[];
+}
 
 function secondsUntilNextSeason(now = new Date()): number {
   const next = new Date(now);
@@ -89,20 +108,138 @@ async function getLeaderboard(leagueID: number, uid: string) {
       .orderBy("elo", "desc");
   }
 
-  const [snapshot, playerRank] = await Promise.all([
+  const [snapshot, playerRank, participantCountSnapshot] = await Promise.all([
     query.limit(LEADERBOARD_LIMIT).get(),
     getPersonalRank(leagueID, uid),
+    isAllTime ? Promise.resolve(null) : query.count().get(),
   ]);
   const players = snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()})) as RankedPlayer[];
+  const participantCount = participantCountSnapshot?.data().count ?? players.length;
 
   return {
     league: leagueID,
     seasonEnd: isAllTime ? -1 : secondsUntilNextSeason(),
     playerRank,
     highlights: getHighlights(players, isAllTime),
-    ranking: rankPlayers(players, isAllTime, uid),
+    ranking: rankPlayers(players, isAllTime, uid, isAllTime ? undefined : leagueID as League, participantCount),
   };
 }
+
+async function getLeagueOutcomes(seasonId: string): Promise<{participants: number; outcomes: LeagueOutcome[]}> {
+  const db = admin.firestore();
+  const leagues = [League.BRONZE, League.SILVER, League.GOLD, League.ZENITH, League.APEX];
+  const snapshots = await Promise.all(leagues.map((league) => db.collection("players")
+    .where("league", "==", league)
+    .where("leagueStats.seasonId", "==", seasonId)
+    .orderBy("leagueStats.wins", "desc")
+    .orderBy("leagueStats.losses", "asc")
+    .orderBy("elo", "desc")
+    .get()));
+
+  const outcomes: LeagueOutcome[] = [];
+  let participants = 0;
+  snapshots.forEach((snapshot, league) => {
+    participants += snapshot.size;
+    const players = snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()})) as RankedPlayer[];
+    const rows = rankPlayers(players, false, undefined, league, snapshot.size);
+    rows.forEach((row, index) => {
+      if (!row.isPromoted && !row.isDemoted && row.chestColor === null) return;
+      outcomes.push({
+        playerId: snapshot.docs[index].id,
+        league,
+        newLeague: (row.isPromoted ? league + 1 : row.isDemoted ? league - 1 : league) as League,
+        chestColor: row.chestColor,
+      });
+    });
+  });
+  return {participants, outcomes};
+}
+
+async function applyLeagueOutcome(outcome: LeagueOutcome, seasonId: string): Promise<boolean> {
+  const db = admin.firestore();
+  const playerRef = db.collection("players").doc(outcome.playerId);
+  const content = outcome.chestColor === null ? [] : getChestContent(outcome.chestColor);
+  return db.runTransaction(async (transaction) => {
+    const playerDoc = await transaction.get(playerRef);
+    if (!playerDoc.exists) return false;
+    const player = playerDoc.data() as DBPlayerData;
+    if (player.lastLeagueRolloverSeason === seasonId || player.league !== outcome.league) return false;
+
+    transaction.update(playerRef, {
+      league: outcome.newLeague,
+      lastLeagueRolloverSeason: seasonId,
+    });
+    if (content.length) {
+      await processChestRewards(
+        transaction,
+        playerRef,
+        content,
+        [...(player.inventory?.consumables || [])],
+        [...(player.inventory?.spells || [])],
+        [...(player.inventory?.equipment || [])],
+      );
+    }
+    return true;
+  });
+}
+
+async function getOrCreateRollover(seasonId: string): Promise<LeagueRollover> {
+  const db = admin.firestore();
+  const runRef = db.collection("leagueRollovers").doc(seasonId);
+  const existing = await runRef.get();
+  if (existing.exists) return existing.data() as LeagueRollover;
+  const plan = await getLeagueOutcomes(seasonId);
+  return db.runTransaction(async (transaction) => {
+    const concurrent = await transaction.get(runRef);
+    if (concurrent.exists) return concurrent.data() as LeagueRollover;
+    // ponytail: one plan document is sufficient at current scale; shard if it approaches Firestore's 1 MiB limit.
+    const rollover: LeagueRollover = {status: "running", ...plan};
+    transaction.create(runRef, {
+      ...rollover,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return rollover;
+  });
+}
+
+export const leaguesUpdate = onSchedule({
+  schedule: SEASON_END_CRON,
+  timeZone: "UTC",
+  memory: "256MiB",
+  cpu: "gcf_gen1",
+  minInstances: 0,
+  maxInstances: 1,
+  concurrency: 1,
+  retryCount: 2,
+}, async (event) => {
+  const db = admin.firestore();
+  const seasonId = seasonEndingAt(new Date(event.scheduleTime));
+  const rollover = await getOrCreateRollover(seasonId);
+  if (rollover.status === "completed") {
+    logger.info("Weekly league rollover already completed", {seasonId});
+    return;
+  }
+  const {participants, outcomes} = rollover;
+  let updated = 0;
+  for (let index = 0; index < outcomes.length; index += 25) {
+    const results = await Promise.all(outcomes.slice(index, index + 25)
+      .map((outcome) => applyLeagueOutcome(outcome, seasonId)));
+    updated += results.filter(Boolean).length;
+  }
+  await db.collection("leagueRollovers").doc(seasonId).update({
+    status: "completed",
+    completedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updated,
+  });
+  logger.info("Weekly league rollover complete", {
+    seasonId,
+    participants,
+    promotions: outcomes.filter((outcome) => outcome.newLeague > outcome.league).length,
+    demotions: outcomes.filter((outcome) => outcome.newLeague < outcome.league).length,
+    rewards: outcomes.filter((outcome) => outcome.chestColor !== null).length,
+    updated,
+  });
+});
 
 export const fetchLeaderboard = onRequest({memory: "512MiB"}, (request, response) => {
   corsMiddleware(request, response, async () => {

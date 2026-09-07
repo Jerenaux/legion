@@ -36,7 +36,7 @@ Tracked environment files are removed and ignored. Docker services receive secre
 
 Fake and synthetic ranking behavior remains. The expensive persisted exact-rank fan-out does not.
 
-Leaderboard reads query indexed score fields directly with a fixed limit. Active ranked statistics are season-scoped and reset lazily when a player first participates in a new season. League divisions use score thresholds. The response includes numbered positions for the top rows and derives the requesting player's personal position with an aggregation count only when needed. Old rank-trigger exports and the unauthenticated manual rerank endpoint are removed, while the synthetic inactive-player schedule remains exported and its generated players continue to appear through the indexed queries.
+Leaderboard reads query indexed score fields directly with a fixed limit. Active ranked statistics are season-scoped and reset lazily when a player first participates in a new season. A later correction restored weekly percentage-based league promotion and demotion without restoring persisted-rank fan-out or global resets. The response includes numbered positions for the top rows and derives the requesting player's personal position with aggregation counts only when needed. Old rank-trigger exports and the unauthenticated manual rerank endpoint remain removed, while the synthetic inactive-player schedule remains exported and its generated players continue to appear through the indexed queries.
 
 ## Realtime services
 
