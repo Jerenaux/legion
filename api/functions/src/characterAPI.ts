@@ -11,7 +11,7 @@ import {OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerD
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
-import {applyRankedResult, currentSeasonId, getLeagueForElo} from "./ranking";
+import {applyRankedResult, currentSeasonId} from "./ranking";
 import {gameResultReceiptId} from "./gameResults";
 
 export const rosterData = onRequest({
@@ -326,7 +326,6 @@ export const postGameUpdate = onRequest({
               seasonId,
               false,
             );
-            updates.league = getLeagueForElo((playerData.elo || 0) + (elo || 0));
           }
         }
 

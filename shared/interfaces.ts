@@ -211,6 +211,7 @@ export interface DBPlayerData<CharacterReference = unknown> {
     xp: number;
     leagueStats: LeagueStats;
     allTimeStats: LeagueStats;
+    lastLeagueRolloverSeason?: string;
     friends: string[];
     engagementStats?: EngagementStats;
     joinDate?: string;

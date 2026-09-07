@@ -22,7 +22,7 @@ import {
   MAX_AVATAR_ID,
 } from "@legion/shared/config";
 import { logPlayerAction, updateDAU } from "./dashboardAPI";
-import {currentSeasonId, getEmptyLeagueStats, getLeagueForElo} from "./ranking";
+import {currentSeasonId, getEmptyLeagueStats} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { createGameDocument } from "./gameAPI";
@@ -1169,7 +1169,6 @@ export const updateInactivePlayersStats = onSchedule(
         'leagueStats.nbGames': cappedGames,
         'leagueStats.seasonId': currentSeasonId(),
         "elo": newElo,
-        "league": getLeagueForElo(newElo),
       });
 
       updatedCount++;
