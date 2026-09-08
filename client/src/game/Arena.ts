@@ -11,7 +11,7 @@ import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/sha
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
-     SPELL_RANGE, PROJECTILE_DURATION, VALIDATE_TARGETS, CAST_ZOOM } from '@legion/shared/config';
+     SPELL_RANGE, PROJECTILE_DURATION, CAST_ZOOM } from '@legion/shared/config';
 
 import iceblockImage from '@assets/iceblock.png';
 import meltdownImage from '@assets/meltdown.png';
@@ -647,7 +647,6 @@ export class Arena extends Phaser.Scene
     }
 
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
-        if (!VALIDATE_TARGETS) return true;
         if (!isInSpellRange(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) return false;
         if (action.target === Target.AOE && action.radius > 1) {
             return true;

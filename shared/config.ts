@@ -92,7 +92,6 @@ export let KILLALL_BM = false;
 export let KILLALL_WM = false;
 export let KILLALL_W = false;
 export let FREEZE_CAMERA = false;
-export let VALIDATE_TARGETS = false;
 export const CAST_ZOOM = false;
 
 // Social
@@ -194,5 +193,4 @@ if (!isDev) {
     KILLALL_WM = false;
     KILLALL_W = false;
     FREEZE_CAMERA = false;
-    VALIDATE_TARGETS = true;
 }
