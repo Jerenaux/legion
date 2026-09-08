@@ -8,6 +8,8 @@ import Spinner from "../components/spinner/Spinner";
 import {STEAM_STORE_URL, titlePlayRoute} from "./titleScreenRoute";
 import "./TitleScreen.style.css";
 
+const {version} = require("../../package.json");
+
 const TitleScreen = () => {
   const {loaded, player} = useContext(PlayerContext);
   const play = () => route(titlePlayRoute(player.engagementStats?.completedGames || 0));
@@ -41,6 +43,7 @@ const TitleScreen = () => {
           </div>
         )}
       </div>
+      <small className="title-screen-version">v{version}</small>
     </div>
   );
 };
