@@ -98,6 +98,8 @@ if (!process.versions.electron) {
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
+        const expectedVersion = `v${require('../../package.json').version}`;
+        assert.equal(await js('document.querySelector(".title-screen-version")?.textContent'), expectedVersion);
         assert.equal(await js('document.querySelector(".title-screen-content").getAttribute("aria-busy")'), 'true');
         assert.match(await js('document.querySelector(".title-screen-loading").innerText'), /Loading your game/);
         assert.equal(await js('document.querySelectorAll(".title-screen-button").length'), 0);
@@ -109,6 +111,9 @@ if (!process.versions.electron) {
           assert(await js(`(() => {const r = document.querySelector('.title-screen-loading').getBoundingClientRect();
             return r.width > 0 && r.height > 0 && r.x >= 0 && r.right <= innerWidth && r.y >= 0 && r.bottom <= innerHeight;
           })()`), 'Title loading status must remain visible');
+          assert(await js(`(() => {const r = document.querySelector('.title-screen-version').getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && innerWidth - r.right === 16 && innerHeight - r.bottom === 16;
+          })()`), 'Title version must remain inset at the bottom right');
           assert.notEqual(await js('getComputedStyle(document.querySelector(".title-screen-loading .spinner")).animationName'), 'none');
           fs.writeFileSync(path.join(dist, `title-loading-${width}.png`), (await win.webContents.capturePage()).toPNG());
         }
@@ -121,6 +126,7 @@ if (!process.versions.electron) {
         assert.equal(await js('document.querySelector(".title-screen-loading")'), null);
         assert.equal(await js('document.querySelector(".title-screen-content").getAttribute("aria-busy")'), 'false');
         assert.equal(await js('document.querySelectorAll(".title-screen-button").length'), 2);
+        assert.equal(await js('document.querySelector(".title-screen-version").textContent'), expectedVersion);
         console.log('Title loading spinner, text, reduced motion, and transition to Play/Wishlist pass');
         await js('document.querySelector(".title-screen-button--play").click()');
         await waitFor('Boolean(document.querySelector("[data-playmode=practice]"))');

@@ -22,6 +22,15 @@
     z-index: 10;
 }
 
+.title-screen-version {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    color: oklch(0.78 0.01 85);
+    font: 14px/1.4 Arial, sans-serif;
+    text-shadow: 0 1px 3px oklch(0.15 0.005 85);
+}
+
 .logo-big {
     width: 400px;
     margin-bottom: 20px;
