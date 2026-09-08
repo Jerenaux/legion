@@ -35,6 +35,10 @@ base64 < "$HOME/Library/Application Support/Steam/config/config.vdf" |
 
 The pipe stores the credential directly without displaying it or creating another credential file. Do not print or commit the configuration. If Steam expires the cached login, repeat the local authentication and replace the secret. Restrict the `desktop-release` environment to deployments from `main`.
 
+Shared Steam installations can contain other accounts and exceed GitHub's 48 KiB secret limit. Export only the intended account's Steam `Accounts` and `ConnectCache` entries plus the `Authentication` block, preserving their VDF nesting; omit browser storage and unrelated client settings. Never upload another account's credentials.
+
+The upload action must set both `XDG_DATA_HOME` and `STEAM_HOME` as configured in the workflow. The Debian SteamCMD launcher otherwise reads a different directory from the action's credential writer when GitHub changes the container's home directory. Use the image's preinstalled SteamCMD directory so creating its `config` folder does not suppress the launcher's first-run installation.
+
 ## Steam player authentication
 
 Upload credentials and player-login credentials are different. In Steamworks, go to **Users & Permissions → Manage Groups**, select/create a group containing **Legion Demo (`3996730`)**, and create a publisher Web API key with **General** permissions. Keep this key server-side:
@@ -44,6 +48,8 @@ node api/functions/node_modules/firebase-tools/lib/bin/firebase.js functions:sec
 ```
 
 Enter the key at the local prompt. The `createPlatformSession` and `linkPlatformIdentity` Functions bind this secret and verify tickets against Demo App ID `3996730`, using the `legion` ticket identity. Provision the secret before merging changes that deploy these bindings.
+
+After selecting General permissions in Steamworks, click Save Changes **and confirm the dialog**; reload to verify that General remains checked. Before deployment, grant the Functions runtime service account `roles/secretmanager.secretAccessor` on this secret. CI does not need permission to change secret IAM policies.
 
 The desktop shell takes its App ID from Steam's `SteamAppId` launch environment. `STEAM_APP_ID` is only an explicit local-test override. Itch launcher sessions keep their Itch identity, and direct downloads do not initialize Steam just because it happens to be installed.
 

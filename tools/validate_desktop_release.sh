@@ -12,6 +12,8 @@ assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"], "Desktop relea
 assert.equal(workflow.jobs.build.if, "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'", "Desktop builds must be restricted to main");
 const steam = workflow.jobs["upload-steam-private"];
 const upload = steam.steps.find(step => step.uses?.startsWith("game-ci/steam-deploy@"));
+assert.equal(upload.env?.XDG_DATA_HOME, "/root/.local/share", "SteamCMD must use the image's preinstalled data directory");
+assert.equal(upload.env?.STEAM_HOME, `${upload.env?.XDG_DATA_HOME}/Steam/steamcmd`, "Upload credentials must go to the directory SteamCMD actually reads");
 assert.equal(upload.with.appId, 3996730, "Only Legion Demo may receive Steam uploads");
 assert.equal(upload.with.firstDepotIdOverride, 3996731, "The first Demo depot is macOS");
 assert.equal(upload.with.depot1Path, "mac");
