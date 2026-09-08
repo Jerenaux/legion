@@ -39,10 +39,10 @@ if (!process.versions.electron) {
 } else {
   const {app, BrowserWindow, protocol, net, session} = require('electron');
   const {pathToFileURL} = require('node:url');
-  const {PACKAGED_APP_URL, resolveAppPath} = require('../../electron/protocol');
+  const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
   const dist = process.argv[2];
   app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-profile-')));
-  protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {standard: true, secure: true, supportFetchAPI: true}}]);
+  protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
     // Fail closed: neither telemetry nor the game can reach any external service.
     session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (_details, done) => done({cancel: true}));
@@ -109,6 +109,12 @@ if (!process.versions.electron) {
         assert.equal(await js('document.querySelector(".expand_btn_trigger").getAttribute("aria-expanded")'), 'false');
         assert.equal(await js('document.querySelectorAll(".guide-eyebrow, .guide-index-note").length'), 0, 'Guide should not have decorative subtitles or taglines');
         assert.doesNotMatch(await js('document.querySelector(".guide-page").innerText'), /tutorial|introductory match|your first match|read at your pace|learn the rest in the arena/i, 'Guide is a between-matches reference, not a tutorial walkthrough');
+        assert.doesNotMatch(await js('document.querySelector(".guide-page").innerText'), /If the server rejects|Removing one opponent|Finish the match before returning/);
+        for (const mode of ['Casual', 'Ranked']) {
+          const description = await js(`Array.from(document.querySelectorAll('.guide-page dt')).find(item => item.textContent === '${mode}').nextElementSibling.textContent`);
+          assert.match(description, /^Play against other players/);
+          assert.doesNotMatch(description, /AI opponent/);
+        }
         console.log('Packaged title → Play → burger menu → Guide passes');
 
         for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [1920, 1080]]) {
@@ -143,8 +149,46 @@ if (!process.versions.electron) {
         await waitFor('location.pathname === "/play" && Boolean(document.querySelector("[data-playmode=practice]"))');
         console.log('Escape, direct packaged /guide load, and return to Play pass');
 
-        await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
+        // Model a player's click so the later match-found sound has browser audio permission.
+        await win.webContents.executeJavaScript('document.querySelector("[data-playmode=casual]").click()', true);
+        await waitFor('Boolean(document.querySelector(".queue-count-number"))');
+        const queuePath = await js('location.pathname');
+        for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [600, 600], [1920, 1080]]) {
+          win.setContentSize(width, height);
+          await ready();
+          assert(await js(`(() => {const card = document.querySelector('.queue-guide-card'); const r = card.getBoundingClientRect();
+            return r.x >= 0 && r.right <= innerWidth && r.y >= 0 && r.bottom <= innerHeight && card.scrollWidth <= card.clientWidth;
+          })()`), 'Queue guide card must fit the window');
+          fs.writeFileSync(path.join(dist, `queue-guide-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          await js('document.querySelector(".queue-guide-card").focus(); document.querySelector(".queue-guide-card").click()');
+          await waitFor('Boolean(document.querySelector("#guide-title"))');
+          assert.equal(await js('document.activeElement.id'), 'guide-title');
+          assert.equal(await js('location.pathname'), queuePath);
+          assert.equal(await js('queueCheck.joins'), 1);
+          assert.equal(await js('queueCheck.leaves'), 0, 'Opening the guide must not leave matchmaking');
+          await js('document.querySelector(\'.guide-index a[href="#combat"]\').click()');
+          assert.equal(await js('document.activeElement.id'), 'combat');
+          await js('queueCheck.socket.emit("queueCount", {count: 13})');
+          win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'ESC'});
+          win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'ESC'});
+          await waitFor('Boolean(document.querySelector(".queue-guide-card"))');
+          assert(await js('document.activeElement.matches(".queue-guide-card")'), 'Closing the guide restores focus to its card');
+          assert.equal(await js('document.querySelector(".queue-count-number").textContent.trim()'), '13');
+          console.log(`Queue guide card, chapter jump, Escape and preserved matchmaking pass at ${width}×${height}`);
+        }
+        await js('document.querySelector(".queue-guide-card").click()');
+        await waitFor('Boolean(document.querySelector("#guide-title"))');
+        await js('document.querySelector(".guide-finish").click()');
+        await waitFor('Boolean(document.querySelector(".queue-guide-card"))');
+        assert.equal(await js('queueCheck.leaves'), 0);
+        await js('document.querySelector(".queue-guide-card").click()');
+        await waitFor('Boolean(document.querySelector("#guide-title"))');
+        await js('queueCheck.socket.emit("matchFound", {gameId: "guide-local"})');
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        assert.equal(await js('location.pathname'), '/game/guide-local');
+        assert.equal(await js('queueCheck.leaves'), 1);
+        assert.equal(await js('queueCheck.socket.listenerCount("matchFound")'), 0);
+        console.log('A match found while reading the guide opens combat and cleans up the queue');
         await ready();
         await js(`(() => {
           const {arena} = window.combatCheck;

@@ -2,6 +2,8 @@
 
 Players open **Guide** in the top-right menu. The `/guide` page and its screenshots are bundled with the client; reading it does not fetch a remote guide or depend on queue news being enabled.
 
+The queue's **Open guide** card opens the same guide in place, with **Back to queue** controls. Keep `QueuePage` mounted while reading: leaving that component emits `leaveQueue` and removes the match-found listener. Queue updates continue, and a found match opens automatically. The card is independent of the disabled news feature.
+
 Content lives in `client/src/components/GuidePage.tsx`. Keep both the outer route in `client/src/app.tsx` and the inner route in `client/src/routes/HomePage.tsx` when changing this screen.
 
 ## Keeping it accurate
@@ -33,5 +35,7 @@ The second command builds a production-mode renderer with screenshot-only accoun
 All HTTP(S)/WebSocket traffic is blocked in this harness. It substitutes only authentication, player data, telemetry API responses, and the battle transport; the app routes, components, assets, and Phaser renderer are real. The release webpack configuration does not import anything in `client/tools/guide`. This is a renderer/navigation smoke test, not a production matchmaking or authentication test.
 
 The smoke test also checks combat recovery: press Z, click outside range, choose a valid target, simulate a server rejection, then verify that movement and Pass Turn remain usable. Server action/resource validation is covered separately by `server/src/__tests__/actionValidation.test.ts`.
+
+It also checks the queue card at desktop and compact window sizes, guide opening/closing and keyboard focus, preserved matchmaking and queue updates while reading, and automatic entry into combat when a match is found with the guide open. It uses the packaged app's shared protocol privileges, including media streaming for the match-found sound; do not replace those with separate test-only settings.
 
 Run the standard lint, TypeScript checks, and tests too. Guide-only changes (copy, presentation, or illustrations) do not require a product version bump. If the same batch also changes gameplay or other shipped behavior, follow the normal versioning rules in `AGENTS.md`.

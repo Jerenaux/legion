@@ -1,5 +1,5 @@
 const path = require("node:path");
-const {PACKAGED_APP_URL, resolveAppPath} = require("../protocol");
+const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("../protocol");
 const {isSafeExternalURL, isTrustedSender} = require("../security");
 
 test("keeps app protocol paths inside dist", () => {
@@ -12,6 +12,12 @@ test("starts the packaged renderer at the root route", () => {
   const dist = path.resolve("dist");
   expect(new URL(PACKAGED_APP_URL).pathname).toBe("/");
   expect(resolveAppPath(dist, PACKAGED_APP_URL)).toBe(path.join(dist, "index.html"));
+});
+
+test("allows packaged media playback without bypassing the content security policy", () => {
+  expect(PACKAGED_APP_SCHEME.scheme).toBe(new URL(PACKAGED_APP_URL).protocol.slice(0, -1));
+  expect(PACKAGED_APP_SCHEME.privileges.stream).toBe(true);
+  expect(PACKAGED_APP_SCHEME.privileges.bypassCSP).not.toBe(true);
 });
 
 test("accepts only the packaged app as an IPC sender", () => {

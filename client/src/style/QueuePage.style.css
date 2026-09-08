@@ -280,6 +280,53 @@
     justify-content: center;
   }
 
+  .queue-guide-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: min(720px, calc(100vw - 48px));
+    margin: 0 0 16px;
+    padding: 18px 24px;
+    border: 1px solid oklch(0.52 0.06 78);
+    border-bottom: 4px solid oklch(0.32 0.04 78);
+    border-radius: 8px;
+    background: linear-gradient(115deg, oklch(0.26 0.035 240), oklch(0.2 0.025 240));
+    box-shadow: 0 8px 20px oklch(0.1 0.01 240 / 0.35), inset 0 1px oklch(0.85 0.06 85 / 0.1);
+    color: oklch(0.94 0.015 85);
+    font: 16px/1.4 Arial, sans-serif;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 180ms ease-out, border-color 180ms ease-out, box-shadow 180ms ease-out;
+  }
+
+  .queue-guide-card:hover {
+    transform: translateY(-2px);
+    border-color: oklch(0.73 0.09 85);
+    box-shadow: 0 10px 24px oklch(0.1 0.01 240 / 0.45);
+  }
+
+  .queue-guide-card:active { transform: translateY(1px); }
+  .queue-guide-icon { flex: 0 0 72px; width: 72px; height: 72px; }
+  .queue-guide-copy { flex: 1; display: grid; gap: 4px; }
+  .queue-guide-copy strong { font-size: 22px; }
+  .queue-guide-copy small { color: oklch(0.75 0.025 240); font-size: 14px; }
+  .queue-guide-action {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    border: 1px solid oklch(0.66 0.085 78);
+    border-bottom: 3px solid oklch(0.32 0.04 78);
+    border-radius: 5px;
+    background: oklch(0.39 0.065 78);
+    font-weight: 700;
+  }
+
+  @media (max-width: 720px) {
+    .queue-guide-card { gap: 12px; padding: 14px 16px; flex-wrap: wrap; }
+    .queue-guide-icon { flex-basis: 56px; width: 56px; height: 56px; }
+    .queue-guide-copy strong { font-size: 20px; }
+    .queue-guide-action { margin-left: 68px; }
+  }
+
   .queue-news-container {
     background-image: url('@assets/queue/news_bg.png');
     width: 23vw;
@@ -381,6 +428,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .queue-guide-card { transition: none; transform: none; }
     .queue-spinner-loader {
       animation: none;
     }

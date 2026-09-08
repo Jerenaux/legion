@@ -48,6 +48,21 @@
   margin-bottom: 28px;
 }
 
+.guide-page button {
+  color: #81e4e8;
+  font: inherit;
+  cursor: pointer;
+}
+
+.guide-page button.guide-return {
+  border: 0;
+  background: none;
+}
+
+.guide-page button:hover {
+  color: #f6f3eb;
+}
+
 .guide-index ol {
   padding: 0;
   margin: 0;

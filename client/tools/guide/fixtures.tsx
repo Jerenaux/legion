@@ -53,11 +53,20 @@ export function FixtureAuth({children}: {children: ComponentChildren}) {
   return <AuthContext.Provider value={{user: null, isAuthenticated: true, isLoading: false, retrySession: async () => {}}}>{children}</AuthContext.Provider>;
 }
 
+const queueCheck = {socket: Object.assign(new EventEmitter(), {connected: true}), joins: 0, leaves: 0};
+queueCheck.socket.on('joinQueue', () => {
+  queueCheck.joins++;
+  queueCheck.socket.emit('queueData', {goldRewardInterval: 30, goldReward: 1, estimatedWaitingTime: 20, nbInQueue: 12});
+});
+queueCheck.socket.on('leaveQueue', () => {queueCheck.leaves++;});
+Object.assign(window, {queueCheck});
+
 export default function FixturePlayer({children}: {children: ComponentChildren}) {
   const defaults = useContext(PlayerContext);
   const [activeId, setActiveId] = useState(characters[2].id);
   const value = {
     ...defaults, loaded: true, welcomeShown: true, characters, activeCharacterId: activeId,
+    socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
       isLoaded: true, completedGames: 12, engagementStats: profile.engagementStats, gold: 240, elo: 128, rank: 12,
       carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},

@@ -1,6 +1,10 @@
 const path = require("node:path");
 
 const PACKAGED_APP_URL = "app://legion/";
+const PACKAGED_APP_SCHEME = {
+  scheme: "app",
+  privileges: {standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true},
+};
 
 function resolveAppPath(distPath, requestUrl) {
   const url = new URL(requestUrl);
@@ -16,4 +20,4 @@ function resolveAppPath(distPath, requestUrl) {
   return resolved;
 }
 
-module.exports = {PACKAGED_APP_URL, resolveAppPath};
+module.exports = {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath};

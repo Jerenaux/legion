@@ -25,12 +25,16 @@ function jumpToSection(event: h.JSX.TargetedMouseEvent<HTMLAnchorElement>) {
   heading?.scrollIntoView({block: 'start'});
 }
 
-export default function GuidePage() {
+export default function GuidePage({onClose}: {onClose?: () => void}) {
   return (
     <main className="guide-page" aria-labelledby="guide-title">
       <div className="guide-layout">
         <nav className="guide-index" aria-label="Guide chapters">
-          <Link className="guide-return" href="/play" data-desktop-cancel>← Back to Play</Link>
+          {onClose ? (
+            <button type="button" className="guide-return" onClick={onClose} data-desktop-cancel>← Back to queue</button>
+          ) : (
+            <Link className="guide-return" href="/play" data-desktop-cancel>← Back to Play</Link>
+          )}
           <ol>
             {sections.map(([id, label]) => (
               <li key={id}><a href={`#${id}`} onClick={jumpToSection}>{label}</a></li>
@@ -40,9 +44,10 @@ export default function GuidePage() {
 
         <article className="guide-article">
           <header className="guide-intro">
-            <h1 id="guide-title">How to play Legion</h1>
+            <h1 id="guide-title" tabIndex={-1}>How to play Legion</h1>
             <p className="guide-lead">Plan your turns, prepare your team, and compete in the weekly leagues.</p>
             <p>Use the chapters to look up combat rules, equipment, rewards, or controls between matches. You can reopen this guide from the top-right menu.</p>
+            {onClose && <p role="status">Matchmaking continues while you read. Your match will open automatically.</p>}
             <figure>
               <img src={battle} width="840" height="405" alt="The hex arena with a selected Black Mage, blue movement tiles, opposing characters, fire, and an ice block." />
               <figcaption>The battlefield: use the highlighted tiles to plan your position, and keep an eye on hazards between the teams.</figcaption>
@@ -56,8 +61,8 @@ export default function GuidePage() {
             <h3>Game modes</h3>
             <dl className="guide-definitions">
               <div><dt>Practice</dt><dd>Fight AI and learn your loadout. Reduced XP and gold; no item rewards or ELO changes. Equipped consumables are still used up.</dd></div>
-              <div><dt>Casual</dt><dd>Play for normal rewards without putting your ELO or league record on the line. Matchmaking may provide an AI opponent.</dd></div>
-              <div><dt>Ranked</dt><dd>Unlocks after {LOCKED_FEATURES[LockedFeatures.RANKED_MODE]} completed games. Higher rewards, with results counting toward ELO and the weekly league. AI opponents can appear here too.</dd></div>
+              <div><dt>Casual</dt><dd>Play against other players for normal rewards without putting your ELO or league record on the line.</dd></div>
+              <div><dt>Ranked</dt><dd>Play against other players for higher rewards, with results counting toward ELO and the weekly league. Unlocks after {LOCKED_FEATURES[LockedFeatures.RANKED_MODE]} completed games.</dd></div>
             </dl>
           </section>
 
@@ -77,13 +82,12 @@ export default function GuidePage() {
               <div><dt>Pass</dt><dd>Click <strong>Pass Turn</strong> beside the hourglass timer or press <kbd>E</kbd> / <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
             </dl>
             <p>Clicks outside the targeting range are ignored. Choose another target, or press <kbd>Esc</kbd> to cancel targeting and move or pass instead.</p>
-            <p>If the server rejects an action, it does not spend your turn, MP, or item. Choose another action before the original turn timer runs out.</p>
             <figure>
               <img src={actions} width="960" height="110" loading="lazy" alt="The selected mage’s action bar with HP, MP, equipped Potion and Ether, learned spells, keyboard shortcuts, and the pass-turn hourglass." />
               <figcaption>Green is HP (health); blue is MP (magic). The bar shows what this character can use, not everything in your shared inventory.</figcaption>
             </figure>
             <h3>A reliable opening plan</h3>
-            <p>Let sturdy fighters approach first. Keep your healer out of easy melee range, leave space between allies against area spells, and concentrate damage on a vulnerable enemy. Removing one opponent also removes their future turns.</p>
+            <p>Let sturdy fighters approach first. Keep your healer out of easy melee range, leave space between allies against area spells, and concentrate damage on a vulnerable enemy.</p>
             <p>Check the order before committing: can an enemy finish your injured character before your healer acts? Sometimes a Potion now is worth more than another attack.</p>
           </section>
 
@@ -153,17 +157,21 @@ export default function GuidePage() {
               <div><dt>Action letters</dt><dd>Use the letters printed on the item and spell icons. Choose QWERTY or AZERTY in Settings; follow the labels for your layout.</dd></div>
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Select your first three living characters. <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> cycle through living allies. Selection does not let a character act out of turn.</dd></div>
               <div><dt><kbd>E</kbd> / <kbd>End</kbd></dt><dd>Pass the active turn.</dd></div>
-              <div><dt><kbd>Esc</kbd></dt><dd>Cancel spell targeting or selection in combat; close supported dialogs. From this guide, return to Play.</dd></div>
+              <div><dt><kbd>Esc</kbd></dt><dd>Cancel spell targeting or selection in combat; close supported dialogs. From this guide, return to {onClose ? 'the queue' : 'Play'}.</dd></div>
               <div><dt><kbd>P</kbd></dt><dd>Open the combat menu. <strong>The match keeps running:</strong> opening Settings does not pause the opponent or the turn timer.</dd></div>
               <div><dt>Menus</dt><dd><kbd>Tab</kbd> or arrow keys move focus; <kbd>Enter</kbd> or <kbd>Space</kbd> activates a focused control. You can use the mouse wheel to scroll this guide.</dd></div>
             </dl>
             <h3>“Why can’t I act?”</h3>
             <p>Check whose turn it is, whether the timer expired, and whether your character is frozen or paralyzed. For spells, also check MP, silence, and target range. A spell in your shared inventory is not yet learned; a consumable there is not yet equipped.</p>
             <h3>“Can I leave a battle?”</h3>
-            <p>The combat menu offers <strong>Abandon Game</strong> and asks for confirmation. Leaving counts as a loss. Finish the match before returning here to read.</p>
+            <p>The combat menu offers <strong>Abandon Game</strong> and asks for confirmation. Leaving counts as a loss.</p>
             <h3>Before you queue again</h3>
             <p>Spend spare SP. Refill consumables. Check your spells. Then pick one thing to practice in the next fight: protect your healer, avoid clustering, or use the turn order to secure a knockout.</p>
-            <Link className="guide-finish" href="/play">Back to Play →</Link>
+            {onClose ? (
+              <button type="button" className="guide-finish" onClick={onClose}>Back to queue →</button>
+            ) : (
+              <Link className="guide-finish" href="/play">Back to Play →</Link>
+            )}
           </section>
         </article>
       </div>
