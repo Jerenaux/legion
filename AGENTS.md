@@ -1,5 +1,12 @@
 # Repository instructions
 
+## Branches and desktop releases
+
+- Start each independent, coherent work batch on a new branch from the latest `main`. Do not accumulate unrelated requests on one branch or reuse a merged branch.
+- Commit and push each completed batch. Merge through its own PR when authorized; keep later independent work separate.
+- Desktop release builds are manual-only and must use `main`, after all intended changes have been merged. Never release from a feature branch, and do not add automatic desktop release triggers on merges, pushes, or tags.
+- Use `gh workflow run release-desktop.yml --ref main` with the explicitly requested store-upload inputs. Do not trigger a release merely because work was merged. Normal CI checks and backend deployment workflows remain automatic.
+
 ## Legion versioning
 
 `client/package.json` is the single source of truth for the Legion product version. Desktop packages and Itch channels must use that exact version. Do not create another version file or independently version each platform.
@@ -14,7 +21,7 @@ Use Semantic Versioning:
 
 Make the bump after syncing the latest `main`, so concurrent branches do not reuse a version. If `main` already contains the intended next version, increment again. Never create a Git tag as part of an ordinary version bump.
 
-Release tags must be `v<version>`, for example `v0.2.0`, and must exactly match `client/package.json`. The desktop workflow rejects mismatched tags and publishes the package version to every Itch channel.
+If explicitly requested, release tags must be `v<version>`, for example `v0.2.0`, and must exactly match `client/package.json`. Tags do not trigger desktop builds. Manual desktop releases publish the package version from `main` to every selected Itch channel.
 
 ## Static analysis
 

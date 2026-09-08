@@ -1,8 +1,6 @@
 name: Build desktop releases
 
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
     inputs:
       publish_itch:
@@ -23,6 +21,7 @@ permissions:
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
@@ -53,10 +52,6 @@ jobs:
             echo "client/package.json version is not valid SemVer: $version" >&2
             exit 1
           }
-          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$version" ]]; then
-            echo "Tag $GITHUB_REF_NAME does not match client version $version" >&2
-            exit 1
-          fi
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version-file: ".bun-version"
@@ -87,7 +82,7 @@ jobs:
             [[ -n "${!variable}" ]] || unset "$variable"
           done
           BUILD_TARGET=electron bun run build
-          bunx electron-builder ${{ matrix.builder_args }} -c.forceCodeSigning=${{ startsWith(github.ref, 'refs/tags/') }}
+          bunx electron-builder ${{ matrix.builder_args }}
       - name: Prepare store directory
         working-directory: client
         shell: bash
