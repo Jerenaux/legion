@@ -8,11 +8,11 @@ on:
         type: boolean
         default: false
       upload_steam:
-        description: Upload depots to a private Steam branch
+        description: Upload Legion Demo (3996730) to a private Steam branch
         type: boolean
         default: false
       steam_branch:
-        description: Existing private Steam beta branch
+        description: Existing private Legion Demo beta branch (never public/default)
         type: string
         default: playtest
 
@@ -164,26 +164,33 @@ jobs:
     runs-on: ubuntu-latest
     environment: desktop-release
     steps:
+      - name: Validate private Steam branch
+        env:
+          STEAM_BRANCH: ${{ inputs.steam_branch }}
+        run: |
+          if [[ ! "$STEAM_BRANCH" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ || "$STEAM_BRANCH" == "public" || "$STEAM_BRANCH" == "default" ]]; then
+            echo "Choose an existing private Legion Demo branch; public/default promotion is manual." >&2
+            exit 1
+          fi
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: artifacts
           merge-multiple: true
       - name: Extract Steam depots
         run: |
-          for platform in windows mac linux; do
+          for platform in mac windows; do
             mkdir -p "steam-content/$platform"
             tar -xzf "artifacts/Legion-$platform.tar.gz" -C "steam-content/$platform"
           done
-      - name: Upload private Steam build
+      - name: Upload private Legion Demo build
         uses: game-ci/steam-deploy@50f6b29fc64922e19a16d202a88fe199d394b536 # v3.2.1
         with:
           username: ${{ secrets.STEAM_USERNAME }}
           configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
-          appId: 3729580
-          firstDepotIdOverride: ${{ vars.STEAM_FIRST_DEPOT_ID }}
+          appId: 3996730
+          firstDepotIdOverride: 3996731
           buildDescription: ${{ github.ref_name }}-${{ github.sha }}
           rootPath: steam-content
-          depot1Path: windows
-          depot2Path: linux
-          depot3Path: mac
+          depot1Path: mac
+          depot2Path: windows
           releaseBranch: ${{ inputs.steam_branch }}

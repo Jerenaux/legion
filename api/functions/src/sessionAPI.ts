@@ -3,6 +3,7 @@ import {onRequest} from "firebase-functions/v2/https";
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {
   PlatformProvider,
+  STEAM_DEMO_APP_ID,
   canonicalUID,
   identityKey,
   validateDirectDevice,
@@ -14,7 +15,7 @@ import {ensurePlayer} from "./playerAPI";
 class PlatformIdentityConflictError extends Error {}
 
 const steamConfig = () => ({
-  appId: process.env.STEAM_APP_ID || "",
+  appId: STEAM_DEMO_APP_ID,
   apiKey: process.env.STEAM_WEB_API_KEY || "",
   identity: process.env.STEAM_WEB_API_IDENTITY || "legion",
 });
@@ -65,10 +66,10 @@ async function ensureAuthUser(uid: string): Promise<void> {
   }
 }
 
-// TODO: ponytail: bind Steam secrets here once production Steam credentials are provisioned.
 const sessionOptions = {
   memory: "512MiB" as const,
   invoker: "public" as const,
+  secrets: ["STEAM_WEB_API_KEY"],
 };
 
 export const createPlatformSession = onRequest(sessionOptions, (request, response) => {
