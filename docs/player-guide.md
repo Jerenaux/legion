@@ -6,6 +6,8 @@ Content lives in `client/src/components/GuidePage.tsx`. Keep both the outer rout
 
 ## Keeping it accurate
 
+Write for players consulting the guide between matches, after the tutorial is over. Do not describe the tutorial game or its onboarding flow. Use clear chapter headings without decorative subtitles or taglines.
+
 The [previous guide](https://guide.play-legion.io/) inspired the chapter structure, not the rules. The implemented game is authoritative:
 
 - Turn rules, movement, targeting, consumable use: `server/src/Game.ts`, `AIGame.ts`, `ServerPlayer.ts`, `TurnSystem.ts`, `Spell.ts`, and `TerrainManager.ts`.
@@ -32,4 +34,4 @@ All HTTP(S)/WebSocket traffic is blocked in this harness. It substitutes only au
 
 The smoke test also checks combat recovery: press Z, click outside range, choose a valid target, simulate a server rejection, then verify that movement and Pass Turn remain usable. Server action/resource validation is covered separately by `server/src/__tests__/actionValidation.test.ts`.
 
-Run the standard lint, TypeScript checks, and tests too. Changes to guide content/assets are shipped changes and require the usual product version bump.
+Run the standard lint, TypeScript checks, and tests too. Guide-only changes (copy, presentation, or illustrations) do not require a product version bump. If the same batch also changes gameplay or other shipped behavior, follow the normal versioning rules in `AGENTS.md`.

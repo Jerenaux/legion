@@ -48,15 +48,6 @@
   margin-bottom: 28px;
 }
 
-.guide-page .guide-eyebrow {
-  margin: 0 0 12px;
-  color: #d4b177;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .guide-index ol {
   padding: 0;
   margin: 0;
@@ -81,12 +72,6 @@
   white-space: pre;
   color: #d4b177;
   font-size: 12px;
-}
-
-.guide-page .guide-index-note {
-  margin-top: 28px;
-  color: #9aaabd;
-  font-size: 13px;
 }
 
 .guide-page h1,
@@ -227,7 +212,6 @@
   .guide-index { position: static; }
   .guide-return { margin-bottom: 12px; }
   .guide-index ol { display: flex; flex-wrap: wrap; gap: 0 24px; }
-  .guide-index-note { display: none; }
   .guide-page h1 { font-size: 34px; }
 }
 

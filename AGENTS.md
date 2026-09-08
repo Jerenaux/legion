@@ -4,7 +4,7 @@
 
 `client/package.json` is the single source of truth for the Legion product version. Desktop packages and Itch channels must use that exact version. Do not create another version file or independently version each platform.
 
-Every coherent batch that changes shipped code, game assets, dependencies, infrastructure, or release behavior must bump the version once before its final commit. Documentation-only and test-only changes do not require a bump.
+Every coherent batch that changes shipped code, game assets, dependencies, infrastructure, or release behavior must bump the version once before its final commit. Documentation-only, test-only, and guide-only changes (copy, presentation, or illustrations) do not require a bump. Batches that also change gameplay or other shipped behavior still follow the normal versioning rules.
 
 Use Semantic Versioning:
 

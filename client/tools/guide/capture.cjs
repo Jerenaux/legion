@@ -107,6 +107,8 @@ if (!process.versions.electron) {
         await js('document.querySelectorAll(".guide-page img").forEach(image => {image.loading = "eager";})');
         assert.equal(await js('location.pathname'), '/guide');
         assert.equal(await js('document.querySelector(".expand_btn_trigger").getAttribute("aria-expanded")'), 'false');
+        assert.equal(await js('document.querySelectorAll(".guide-eyebrow, .guide-index-note").length'), 0, 'Guide should not have decorative subtitles or taglines');
+        assert.doesNotMatch(await js('document.querySelector(".guide-page").innerText'), /tutorial|introductory match|your first match|read at your pace|learn the rest in the arena/i, 'Guide is a between-matches reference, not a tutorial walkthrough');
         console.log('Packaged title → Play → burger menu → Guide passes');
 
         for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [1920, 1080]]) {

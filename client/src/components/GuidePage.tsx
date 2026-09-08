@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { Link } from 'preact-router/match';
-import { GAME_0_TURN_DURATION, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
+import { LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
 import { LockedFeatures } from '@legion/shared/enums';
 import battle from '@assets/guide/battle.jpg';
 import actions from '@assets/guide/actions.jpg';
@@ -9,7 +9,7 @@ import loadout from '@assets/guide/loadout.jpg';
 import './GuidePage.css';
 
 const sections = [
-  ['first-match', 'Your first match'],
+  ['first-match', 'Matches & modes'],
   ['combat', 'Taking your turn'],
   ['magic', 'Magic & terrain'],
   ['team', 'Build your team'],
@@ -31,21 +31,18 @@ export default function GuidePage() {
       <div className="guide-layout">
         <nav className="guide-index" aria-label="Guide chapters">
           <Link className="guide-return" href="/play" data-desktop-cancel>← Back to Play</Link>
-          <p className="guide-eyebrow">Field guide</p>
           <ol>
             {sections.map(([id, label]) => (
               <li key={id}><a href={`#${id}`} onClick={jumpToSection}>{label}</a></li>
             ))}
           </ol>
-          <p className="guide-index-note">Read at your pace.<br />Learn the rest in the arena.</p>
         </nav>
 
         <article className="guide-article">
           <header className="guide-intro">
-            <p className="guide-eyebrow">Legion · Player guide</p>
             <h1 id="guide-title">How to play Legion</h1>
-            <p className="guide-lead">Win the arena one decision at a time. Learn your first turn, prepare your characters, then take on the leagues.</p>
-            <p>New here? Start with the first two chapters. You can come back to this guide from the top-right menu between matches.</p>
+            <p className="guide-lead">Plan your turns, prepare your team, and compete in the weekly leagues.</p>
+            <p>Use the chapters to look up combat rules, equipment, rewards, or controls between matches. You can reopen this guide from the top-right menu.</p>
             <figure>
               <img src={battle} width="840" height="405" alt="The hex arena with a selected Black Mage, blue movement tiles, opposing characters, fire, and an ice block." />
               <figcaption>The battlefield: use the highlighted tiles to plan your position, and keep an eye on hazards between the teams.</figcaption>
@@ -53,16 +50,10 @@ export default function GuidePage() {
           </header>
 
           <section aria-labelledby="first-match">
-            <p className="guide-eyebrow">01 · Start here</p>
-            <h2 id="first-match" tabIndex={-1}>Your first match</h2>
+            <h2 id="first-match" tabIndex={-1}>Matches & modes</h2>
             <p>Legion is a turn-based battle between two teams on a hexagonal arena. <strong>Defeat every opposing character to win.</strong> You begin with {NB_START_CHARACTERS} characters; your roster can eventually grow to {MAX_CHARACTERS}.</p>
-            <ol className="guide-steps">
-              <li><strong>Press Play on the title screen.</strong> A new player goes into an introductory match, where your team is revealed and hints explain your first actions.</li>
-              <li><strong>Watch which character acts next.</strong> When it is your turn, the active character is selected for you. The blue tiles show where they can move.</li>
-              <li><strong>Choose one action:</strong> move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.</li>
-              <li><strong>After the battle, visit Team.</strong> Spend earned stat points and equip new items before your next match.</li>
-            </ol>
-            <h3>Choose a mode when you return</h3>
+            <p>Before queuing, visit <strong>Team</strong> to spend stat points and equip items. Then open <strong>Play</strong> and choose a mode.</p>
+            <h3>Game modes</h3>
             <dl className="guide-definitions">
               <div><dt>Practice</dt><dd>Fight AI and learn your loadout. Reduced XP and gold; no item rewards or ELO changes. Equipped consumables are still used up.</dd></div>
               <div><dt>Casual</dt><dd>Play for normal rewards without putting your ELO or league record on the line. Matchmaking may provide an AI opponent.</dd></div>
@@ -71,9 +62,9 @@ export default function GuidePage() {
           </section>
 
           <section aria-labelledby="combat">
-            <p className="guide-eyebrow">02 · Combat basics</p>
             <h2 id="combat" tabIndex={-1}>Make your turn count</h2>
-            <p>Ordinary turns give you <strong>{TURN_DURATION} seconds</strong> to choose an action; your introductory match allows {GAME_0_TURN_DURATION} seconds. Decide while your opponent is acting. If the timer runs out, you lose that opportunity to act.</p>
+            <p>When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <strong>one action</strong>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.</p>
+            <p>The standard turn timer is <strong>{TURN_DURATION} seconds</strong>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.</p>
             <figure className="guide-figure-compact">
               <img src={turnOrder} width="460" height="90" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act." />
               <figcaption>The turn order is your planning tool. Speed and the recovery time of each action affect when a character acts again.</figcaption>
@@ -89,7 +80,7 @@ export default function GuidePage() {
             <p>If the server rejects an action, it does not spend your turn, MP, or item. Choose another action before the original turn timer runs out.</p>
             <figure>
               <img src={actions} width="960" height="110" loading="lazy" alt="The selected mage’s action bar with HP, MP, equipped Potion and Ether, learned spells, keyboard shortcuts, and the pass-turn hourglass." />
-              <figcaption>Green is HP (health); blue is MP (magic). The bar shows what this character can actually use—not everything in your shared inventory.</figcaption>
+              <figcaption>Green is HP (health); blue is MP (magic). The bar shows what this character can use, not everything in your shared inventory.</figcaption>
             </figure>
             <h3>A reliable opening plan</h3>
             <p>Let sturdy fighters approach first. Keep your healer out of easy melee range, leave space between allies against area spells, and concentrate damage on a vulnerable enemy. Removing one opponent also removes their future turns.</p>
@@ -97,7 +88,6 @@ export default function GuidePage() {
           </section>
 
           <section aria-labelledby="magic">
-            <p className="guide-eyebrow">03 · More than damage</p>
             <h2 id="magic" tabIndex={-1}>Magic changes the battlefield</h2>
             <p>Read item and spell details in Team or Shop before a match: check the effect, MP cost, and action speed. Fast actions bring your next turn around sooner than slow ones. A bigger spell is not always the better choice.</p>
             <p><strong>Check the whole target area.</strong> Area spells can affect allies as well as enemies, and healing can help an opponent caught in the area. Aim carefully before confirming.</p>
@@ -112,7 +102,6 @@ export default function GuidePage() {
           </section>
 
           <section aria-labelledby="team">
-            <p className="guide-eyebrow">04 · Between battles</p>
             <h2 id="team" tabIndex={-1}>Build a team that works together</h2>
             <p>Open <strong>Team</strong> in the top navigation and select a character’s portrait. Their sheet shows stats, equipment, carried consumables, and learned spells. Your shared inventory sits beside it.</p>
             <figure>
@@ -139,7 +128,6 @@ export default function GuidePage() {
           </section>
 
           <section aria-labelledby="progression">
-            <p className="guide-eyebrow">05 · Keep growing</p>
             <h2 id="progression" tabIndex={-1}>Rewards, unlocks & weekly leagues</h2>
             <p>The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <strong>Shop</strong>, then return to Team to put purchases to use.</p>
             <h3>What unlocks when?</h3>
@@ -159,7 +147,6 @@ export default function GuidePage() {
           </section>
 
           <section aria-labelledby="controls">
-            <p className="guide-eyebrow">06 · Keep this handy</p>
             <h2 id="controls" tabIndex={-1}>Controls & quick help</h2>
             <dl className="guide-definitions">
               <div><dt>Mouse</dt><dd>Click tiles to move, enemies to attack, and action icons to use items or select spells.</dd></div>
