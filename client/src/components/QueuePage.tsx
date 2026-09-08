@@ -12,6 +12,7 @@ import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';
 import { playSoundEffect, silentErrorToast } from './utils';
 import { QueueTips } from './queueTips/QueueTips';
+import GuidePage from './GuidePage';
 
 import goldIcon from '@assets/gold_icon.png';
 import exitIcon from '@assets/queue/exit_icon.png';
@@ -43,6 +44,7 @@ interface NewsItem {
 }
 
 interface QpageState {
+    guideOpen: boolean;
     tipCount: number;
     progress: number;
     findState: string;
@@ -99,6 +101,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
             return;
         }
         this.state = {
+            guideOpen: false,
             tipCount: 0,
             progress: 0,
             findState: 'quick',
@@ -299,6 +302,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     loadNews = async () => {
+        if (!ENABLE_Q_NEWS) return;
         try {
             const news = await apiFetch('getNews');
             this.setState({ news, newsLoaded: true });
@@ -329,6 +333,13 @@ class QueuePage extends Component<QPageProps, QpageState> {
         this.setState({ findState: 'accurate' });
     }
 
+    showGuide = (guideOpen: boolean) => {
+        // Keep this component mounted: navigating away would leave matchmaking.
+        this.setState({ guideOpen }, () => {
+            document.querySelector<HTMLElement>(guideOpen ? '#guide-title' : '.queue-guide-card')?.focus();
+        });
+    }
+
     renderPendingState = (isLobbyMode: boolean) => (
         <div className="queue-info lobby-mode">
             <div className="queue-spinner-centered" aria-hidden="true">
@@ -355,6 +366,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
     )
 
     render() {
+        if (this.state.guideOpen) return <GuidePage onClose={() => this.showGuide(false)} />;
+
         const { progress, queueData, news, newsLoaded } = this.state;
         const isLobbyMode = this.props.matches.id !== undefined;
 
@@ -465,6 +478,22 @@ class QueuePage extends Component<QPageProps, QpageState> {
                         )
                     ) : this.renderPendingState(isLobbyMode)}
                 </div>
+
+                <button type="button" className="queue-guide-card" onClick={() => this.showGuide(true)}>
+                    <svg className="queue-guide-icon" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+                        <path d="M8 20 36 25 40 31 44 25 72 20V63L44 68 40 72 36 68 8 63Z" fill="oklch(0.27 0.04 235)" stroke="oklch(0.67 0.09 78)" stroke-width="2" stroke-linejoin="round" />
+                        <path d="M40 28C32 20 22 17 12 17V57C23 57 32 60 40 66 48 60 57 57 68 57V17C58 17 48 20 40 28Z" fill="oklch(0.84 0.06 85)" stroke="oklch(0.53 0.07 73)" stroke-width="2" />
+                        <path d="M40 28V65M19 29 32 33M19 38 32 42M19 47 32 51M48 36 61 32M48 45 61 41" stroke="oklch(0.53 0.07 73)" stroke-width="2" stroke-linecap="round" />
+                        <path d="M54 19V34L58 30 62 32V17" fill="oklch(0.65 0.09 210)" stroke="oklch(0.38 0.04 225)" stroke-width="1.5" />
+                        <path d="M40 5 43 12 50 15 43 18 40 25 37 18 30 15 37 12Z" fill="oklch(0.85 0.09 85)" />
+                    </svg>
+                    <span className="queue-guide-copy">
+                        <strong>Prepare for the arena</strong>
+                        <span>Combat, spells, equipment and leagues.</span>
+                        <small>Keep your place in the queue while you read.</small>
+                    </span>
+                    <span className="queue-guide-action">Open guide <span aria-hidden="true">→</span></span>
+                </button>
 
                 {ENABLE_Q_NEWS && (
                     <div className="queue-news">

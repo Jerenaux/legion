@@ -115,6 +115,31 @@
   width: min(300px, 72vw);
 }
 
+.title-screen-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 132px;
+  width: min(300px, 72vw);
+  color: oklch(0.92 0.025 85);
+}
+
+.title-screen-loading .spinner {
+  border-color: oklch(0.4 0.025 85);
+  border-top-color: oklch(0.82 0.16 85);
+}
+
+.title-screen-loading p {
+  margin: 0;
+  font: 18px/1.5 Arial, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-screen-loading .spinner { animation: none; }
+}
+
 .title-screen-button {
   align-items: center;
   border-radius: 10px;

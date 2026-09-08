@@ -10,6 +10,7 @@ import QueuePage from "../components/QueuePage";
 import RankPage from "../components/RankPage";
 import ShopPage from "../components/ShopPage";
 import TeamPage from "../components/TeamPage";
+import GuidePage from "../components/GuidePage";
 
 export default class HomePage extends Component {
   render() {
@@ -22,6 +23,7 @@ export default class HomePage extends Component {
               <div className="mainContent">
                 <Router>
                   <Route path="/play" component={PlayPage} />
+                  <Route path="/guide" component={GuidePage} />
                   <Route path="/queue/:mode" component={QueuePage} />
                   <Route path="/lobby/:id" component={QueuePage} />
                   <Route path="/team/:id?" component={TeamPage} />

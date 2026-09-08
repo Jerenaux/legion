@@ -249,9 +249,9 @@ class Navbar extends Component<Props, State> {
                                             <button type="button" className="expand_btn_trigger" aria-label="More options" aria-expanded={this.state.openDropdown} style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} />
                                             {/* biome-ignore lint/a11y/noStaticElementInteractions: Pointer leave only dismisses a menu already controlled by a keyboard-accessible button. */}
                                             <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
-                                                <button type="button" onClick={() => window.open('https://guide.play-legion.io', '_blank')}>
-                                                    <img src={helpIcon} alt="How to play" /> How to play
-                                                </button>
+                                                <Link href="/guide" onClick={() => this.setState({ openDropdown: false })}>
+                                                    <img src={helpIcon} alt="" /> Guide
+                                                </Link>
                                                 <button type="button" onClick={this.copyIDtoClipboard}>
                                                     <img src={copyIcon} alt="Copy" /> Player ID
                                                 </button>

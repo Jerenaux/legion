@@ -1,0 +1,239 @@
+.homePage:has(.guide-page) .content,
+.homePage:has(.guide-page) .mainContent {
+  min-height: 0;
+}
+
+.homePage:has(.guide-page) .mainContent {
+  padding: 0;
+}
+
+.guide-page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  background: #0c121d;
+  color: #d3dbe4;
+  font: 17px/1.65 Arial, sans-serif;
+}
+
+.guide-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 860px);
+  gap: clamp(28px, 4vw, 64px);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 36px 28px 72px;
+}
+
+.guide-index {
+  position: sticky;
+  top: 28px;
+  align-self: start;
+  font-size: 15px;
+}
+
+.guide-page a {
+  color: #81e4e8;
+  text-underline-offset: 4px;
+}
+
+.guide-page a:hover {
+  color: #fff;
+}
+
+.guide-return {
+  display: inline-block;
+  padding: 8px 0;
+  margin-bottom: 28px;
+}
+
+.guide-page button {
+  color: #81e4e8;
+  font: inherit;
+  cursor: pointer;
+}
+
+.guide-page button.guide-return {
+  border: 0;
+  background: none;
+}
+
+.guide-page button:hover {
+  color: #f6f3eb;
+}
+
+.guide-index ol {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  counter-reset: chapter;
+}
+
+.guide-index li {
+  margin: 0;
+  counter-increment: chapter;
+}
+
+.guide-index li a {
+  display: block;
+  padding: 9px 0;
+  text-decoration: none;
+  color: #d3dbe4;
+}
+
+.guide-index li a::before {
+  content: counter(chapter, decimal-leading-zero) "  ";
+  white-space: pre;
+  color: #d4b177;
+  font-size: 12px;
+}
+
+.guide-page h1,
+.guide-page h2,
+.guide-page h3 {
+  color: #f6f3eb;
+  text-wrap: balance;
+}
+
+.guide-page h1 {
+  margin: 0 0 18px;
+  font: 42px/1.15 'Kim', Arial, sans-serif;
+}
+
+.guide-page h2 {
+  margin: 0 0 22px;
+  font: 30px/1.25 'Kim', Arial, sans-serif;
+  scroll-margin-top: 64px;
+}
+
+.guide-page h3 {
+  margin: 32px 0 12px;
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.guide-page p {
+  margin: 0 0 18px;
+  max-width: 72ch;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.guide-page strong {
+  color: #f6f3eb;
+}
+
+.guide-page .guide-lead {
+  font-size: 21px;
+  line-height: 1.5;
+  color: #e2e7ec;
+}
+
+.guide-article section {
+  margin-top: 44px;
+  padding-top: 36px;
+  border-top: 1px solid #2d3b4d;
+}
+
+.guide-steps {
+  margin: 20px 0 28px;
+  padding-left: 24px;
+}
+
+.guide-steps li {
+  margin-bottom: 16px;
+  padding-left: 6px;
+}
+
+.guide-steps li::marker {
+  color: #d4b177;
+  font-weight: 700;
+}
+
+.guide-page figure {
+  margin: 28px 0;
+}
+
+.guide-page figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #3b4b5c;
+  box-sizing: border-box;
+}
+
+.guide-page .guide-figure-compact {
+  max-width: 480px;
+}
+
+.guide-page figcaption {
+  margin-top: 10px;
+  color: #aab9c9;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.guide-definitions {
+  margin: 20px 0;
+}
+
+.guide-definitions > div {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid #243142;
+}
+
+.guide-definitions dt {
+  font-weight: 700;
+  color: #f6f3eb;
+}
+
+.guide-definitions dd {
+  margin: 0;
+}
+
+.guide-page kbd {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid #536579;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: #1b2736;
+  color: #fff;
+  font: 0.85em/1.6 Arial, sans-serif;
+}
+
+.guide-finish {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 22px;
+  border: 1px solid #496579;
+  border-bottom: 4px solid #314b60;
+  border-radius: 5px;
+  background: #21384b;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.guide-finish:hover {
+  background: #2e4d64;
+}
+
+@media (max-width: 900px) {
+  .guide-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 20px 24px 48px; }
+  .guide-index { position: static; }
+  .guide-return { margin-bottom: 12px; }
+  .guide-index ol { display: flex; flex-wrap: wrap; gap: 0 24px; }
+  .guide-page h1 { font-size: 34px; }
+}
+
+@media (max-width: 540px) {
+  .guide-page { font-size: 16px; }
+  .guide-layout { padding-inline: 16px; }
+  .guide-definitions > div { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .guide-page h1 { font-size: 30px; }
+  .guide-page h2 { font-size: 26px; }
+}

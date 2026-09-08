@@ -4,7 +4,7 @@ const path = require("node:path");
 const {pathToFileURL} = require("node:url");
 
 const {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
-const {PACKAGED_APP_URL, resolveAppPath} = require("./electron/protocol");
+const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {isSafeExternalURL, isTrustedSender} = require("./electron/security");
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
@@ -12,10 +12,7 @@ let mainWindow;
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) app.quit();
 
-protocol.registerSchemesAsPrivileged([{
-  scheme: "app",
-  privileges: {standard: true, secure: true, supportFetchAPI: true, corsEnabled: true},
-}]);
+protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
 
 function trustedIPC(event) {
   return event.sender === mainWindow?.webContents && isTrustedSender(event.senderFrame?.url || "", isDev);

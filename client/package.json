@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "0.3.10",
+  "version": "0.4.4",
   "description": "Legion desktop game client",
   "author": "Dynetis Games",
   "private": true,
@@ -8,6 +8,8 @@
     "start": "webpack serve --open",
     "build": "NODE_ENV=production webpack --mode production",
     "test": "bun test",
+    "test:guide": "node tools/guide/capture.cjs",
+    "guide:screenshots": "node tools/guide/capture.cjs --images",
     "electron:dev": "concurrently \"bun run start\" \"electron electron.js\"",
     "electron:build": "BUILD_TARGET=electron bun run build && electron-builder --mac --win",
     "electron:build:mac": "BUILD_TARGET=electron bun run build && electron-builder --mac",

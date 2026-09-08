@@ -4,7 +4,7 @@
 
 `client/package.json` is the single source of truth for the Legion product version. Desktop packages and Itch channels must use that exact version. Do not create another version file or independently version each platform.
 
-Every coherent batch that changes shipped code, game assets, dependencies, infrastructure, or release behavior must bump the version once before its final commit. Documentation-only and test-only changes do not require a bump.
+Every coherent batch that changes shipped code, game assets, dependencies, infrastructure, or release behavior must bump the version once before its final commit. Documentation-only, test-only, and guide-only changes (copy, presentation, or illustrations) do not require a bump. Batches that also change gameplay or other shipped behavior still follow the normal versioning rules.
 
 Use Semantic Versioning:
 
@@ -33,3 +33,7 @@ Local development starts at `http://localhost:8080/`, so it cannot catch a packa
 League promotion and demotion happens only in the `leaguesUpdate` Friday 19:00 UTC scheduled function. Do not derive a player's league directly from ELO. Preserve the low-cost design: query only participants from the season that just ended, calculate ranks on demand, write only promotion/demotion and podium-reward recipients, and let `seasonId` reset statistics lazily. Never restore per-player rank writes, Firestore rank-update triggers, or a global weekly stats reset.
 
 Keep every production composite index in `firestore.indexes.json`; the API deployment applies that file before deploying Functions. Any new or changed Firestore query must include its required index in the same PR.
+
+## Player guide
+
+When changing player-facing rules, controls, unlocks, or the illustrated UI, update the bundled guide in `client/src/components/GuidePage.tsx` in the same batch. The implemented game—not the legacy external guide—is authoritative. Follow `docs/player-guide.md` to refresh its cropped screenshots and run `bun run test:guide` from `client` to verify the real packaged routes with local fixtures. Never ship the screenshot fixtures in the release bundle.

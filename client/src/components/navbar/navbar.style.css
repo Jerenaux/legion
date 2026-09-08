@@ -148,7 +148,8 @@
   padding-bottom: 3px;
 }
 
-.dropdown-content button {
+.dropdown-content button,
+.dropdown-content a {
   color: #fff;
   padding: 8px 12px;
   width: 100%;
@@ -159,9 +160,11 @@
   display: block;
   text-align: left;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
-.dropdown-content button:hover {
+.dropdown-content button:hover,
+.dropdown-content a:hover {
   background-color: #2e4556;
 }
 
