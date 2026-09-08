@@ -86,6 +86,7 @@ export default function GuidePage() {
               <div><dt>Pass</dt><dd>Click <strong>Pass Turn</strong> beside the hourglass timer or press <kbd>E</kbd> / <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
             </dl>
             <p>Clicks outside the targeting range are ignored. Choose another target, or press <kbd>Esc</kbd> to cancel targeting and move or pass instead.</p>
+            <p>If the server rejects an action, it does not spend your turn, MP, or item. Choose another action before the original turn timer runs out.</p>
             <figure>
               <img src={actions} width="960" height="110" loading="lazy" alt="The selected mage’s action bar with HP, MP, equipped Potion and Ether, learned spells, keyboard shortcuts, and the pass-turn hourglass." />
               <figcaption>Green is HP (health); blue is MP (magic). The bar shows what this character can actually use—not everything in your shared inventory.</figcaption>

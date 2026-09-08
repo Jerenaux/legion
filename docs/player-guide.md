@@ -30,4 +30,6 @@ The second command builds a production-mode renderer with screenshot-only accoun
 
 All HTTP(S)/WebSocket traffic is blocked in this harness. It substitutes only authentication, player data, telemetry API responses, and the battle transport; the app routes, components, assets, and Phaser renderer are real. The release webpack configuration does not import anything in `client/tools/guide`. This is a renderer/navigation smoke test, not a production matchmaking or authentication test.
 
+The smoke test also checks combat recovery: press Z, click outside range, choose a valid target, simulate a server rejection, then verify that movement and Pass Turn remain usable. Server action/resource validation is covered separately by `server/src/__tests__/actionValidation.test.ts`.
+
 Run the standard lint, TypeScript checks, and tests too. Changes to guide content/assets are shipped changes and require the usual product version bump.

@@ -140,6 +140,29 @@ if (!process.versions.electron) {
         await js('document.querySelector(".guide-finish").click()');
         await waitFor('location.pathname === "/play" && Boolean(document.querySelector("[data-playmode=practice]"))');
         console.log('Escape, direct packaged /guide load, and return to Play pass');
+
+        await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        await ready();
+        await js(`(() => {
+          const {arena} = window.combatCheck;
+          for (const event of ['spell', 'move', 'passTurn']) arena.socket.on(event, () => window.combatCheck.sent.push(event));
+        })()`);
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Z'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Z'});
+        await waitFor('document.querySelector(".player_bar_pass_turn").disabled');
+        await js('combatCheck.arena.handleTileClick(0, 0)');
+        assert.deepEqual(await js('combatCheck.sent'), [], 'Out-of-range click sent a spell');
+        await js('combatCheck.arena.handleTileClick(9, 8)');
+        await waitFor('!document.querySelector(".player_bar_pass_turn").disabled');
+        await js('combatCheck.arena.eventHandlers.get("actionRejected")({...combatCheck.arena.turnee})');
+        await waitFor('!document.querySelector(".player_bar_pass_turn").disabled');
+        assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), null);
+        await js('combatCheck.arena.handleTileClick(6, 7)');
+        await js('combatCheck.arena.eventHandlers.get("actionRejected")({...combatCheck.arena.turnee})');
+        await js('document.querySelector(".player_bar_pass_turn").click()');
+        assert.deepEqual(await js('combatCheck.sent'), ['spell', 'move', 'passTurn']);
+        console.log('Combat Z → invalid target → valid target → server rejection → move/pass controls pass');
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
     } finally {

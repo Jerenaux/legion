@@ -17,7 +17,7 @@ import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
     TURN_DURATION, KILL_CAM_DURATION, MOVE_DELAY, ATTACK_DELAY, SPELL_DELAY,
     ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY, KILLALL_BM, KILLALL_WM, KILLALL_W,
-    GRID_WIDTH, GRID_HEIGHT, MOVEMENT_RANGE, SPELL_RANGE, PROJECTILE_DURATION } from '@legion/shared/config';
+    GRID_WIDTH, GRID_HEIGHT, PROJECTILE_DURATION } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 import { TurnSystem } from './TurnSystem';
 import { withRetry } from './utils';
@@ -425,6 +425,7 @@ export abstract class Game
     }
 
     processPassTurn() {
+        if (!this.beginAction(this.turnee)) return;
         this.turnSystem.processAction(this.turnee, SpeedClass.PASS);
         this.processTurn();
     }
@@ -565,8 +566,8 @@ export abstract class Game
     }
 
     processAction(action: string, data: unknown, socket: Socket | null = null) {
-        if (this.gameOver || !this.gameStarted) return;
-        if (this.turnee.hasActed) return;
+        const player = this.turnee;
+        if (this.gameOver || !this.gameStarted || !player || player.hasActed) return;
 
         let team: Team;
         if (socket) {
@@ -575,40 +576,52 @@ export abstract class Game
             team = this.teams.get(2);
         }
 
-        if (team.id !== this.turnee.team.id) {
-            console.log(`[Game:processAction] Team ${team.id} is not the current turnee's team!`);
+        if (!team || team.id !== player.team.id) return;
+        if (action !== 'passTurn' && (!data || typeof data !== 'object')) {
+            socket?.emit('actionRejected', this.getTurneeData());
             return;
         }
 
-        team!.incrementActions();
-        team!.snapshotScore();
-
-        this.turnee.setHasActed(true);
-
+        let recordedAction: GameAction | undefined;
         switch (action) {
             case 'move':
                 this.processMove(data as Parameters<Game["processMove"]>[0]);
-                this.saveGameAction(team.teamData.playerUID, GameAction.MOVE, data);
+                recordedAction = GameAction.MOVE;
                 break;
             case 'attack':
                 this.processAttack(data as Parameters<Game["processAttack"]>[0]);
-                this.saveGameAction(team.teamData.playerUID, GameAction.ATTACK, data);
+                recordedAction = GameAction.ATTACK;
                 break;
             case 'obstacleattack':
                 this.processObstacleAttack(data as Parameters<Game["processObstacleAttack"]>[0]);
                 break;
             case 'useitem':
                 this.processUseItem(data as Parameters<Game["processUseItem"]>[0]);
-                this.saveGameAction(team.teamData.playerUID, GameAction.ITEM_USE, data);
+                recordedAction = GameAction.ITEM_USE;
                 break;
             case 'spell':
                 this.processMagic(data as Parameters<Game["processMagic"]>[0]);
-                this.saveGameAction(team.teamData.playerUID, GameAction.SPELL_USE, data);
+                recordedAction = GameAction.SPELL_USE;
                 break;
             case 'passTurn':
                 this.processPassTurn();
                 break;
         }
+        if (!player.hasActed) {
+            socket?.emit('actionRejected', this.getTurneeData());
+        } else if (recordedAction !== undefined) {
+            this.saveGameAction(team.teamData.playerUID, recordedAction, data);
+        }
+    }
+
+    // Called only after validation, before effects or async work, including direct AI actions.
+    private beginAction(player: ServerPlayer | null): boolean {
+        if (this.gameOver || !this.gameStarted || !player?.canAct() || player !== this.turnee || player.hasActed) return false;
+        player.setHasActed(true);
+        clearTimeout(this.turnTimer!); // Accepted actions advance the turn when their animation/effects finish.
+        player.team.incrementActions();
+        player.team.snapshotScore();
+        return true;
     }
 
     checkEndGame() {
@@ -677,7 +690,7 @@ export abstract class Game
     processMove({tile}: {tile: Tile}) {
         const player = this.turnee;
         // console.log(`[Game:processMove] Player ${player.num} moving to ${tile.x},${tile.y}`);
-        if (!player.canAct()) {
+        if (!player?.canAct() || !Number.isInteger(tile?.x) || !Number.isInteger(tile?.y)) {
             return;
         }
         if (!this.isValidCell(player.x, player.y, tile.x, tile.y)) {
@@ -688,6 +701,7 @@ export abstract class Game
             console.log(`[Game:processMove] Player ${player.num} cannot move to ${tile.x},${tile.y}!`);
             return;
         }
+        if (!this.beginAction(player)) return;
 
         player.removeCurrentTerrainEffect();
         player.team.incrementMoved();
@@ -747,19 +761,16 @@ export abstract class Game
     processAttack({target, sameTeam}: {target: number, sameTeam: boolean}) {
         // console.log(`[Game:processAttack] Player ${this.turnee.num} attacking target ${target}`);
         const player = this.turnee;
+        if (!player?.canAct() || !Number.isInteger(target) || typeof sameTeam !== 'boolean') return;
         const opponentTeam = sameTeam ? player.team : this.getOtherTeam(player.team.id);
         const opponent = opponentTeam.getMembers()[target - 1];
 
-        if (
-            !player.canAct() ||
-            !opponent.isAlive()
-        ) {return
-        };
+        if (!opponent?.isAlive()) return;
 
         if (!player.isNextTo(opponent.x, opponent.y)) {
             // Find closest cell to opponent in movement range
             const cellsInRange = this.listCellsInRange(player.x, player.y, player.distance);
-            if (!cellsInRange) {
+            if (!cellsInRange?.length) {
                 return;
             }
             const closestCell = cellsInRange.reduce((closest, cell) => {
@@ -769,6 +780,7 @@ export abstract class Game
             this.processMove({tile: closestCell});
             return;
         }
+        if (!this.beginAction(player)) return;
 
         const damage = this.calculateDamage(player, opponent);
         opponent.takeDamage(damage);
@@ -819,10 +831,12 @@ export abstract class Game
         const player = this.turnee;
 
         if (
-            !player.canAct() ||
+            !player?.canAct() ||
+            !Number.isInteger(x) || !Number.isInteger(y) ||
             !player.isNextTo(x, y) ||
             !this.hasObstacle(x, y)
         ) return;
+        if (!this.beginAction(player)) return;
 
         const terrainUpdates = this.terrainManager.removeIce(x, y);
         this.broadcastTerrain(terrainUpdates);
@@ -842,11 +856,7 @@ export abstract class Game
         {x: number, y: number, index: number,  targetTeam: number, target: number | null}
     ) {
         const player = this.turnee;
-        console.log(`[Game:processUseItem] Player ${player.num} using item ${index}`);
-        if (!player.canAct()) {
-            console.log(`[Game:processUseItem] Player ${player.num} cannot act!`);
-            return;
-        }
+        if (!player?.canAct() || !Number.isInteger(index) || index < 0) return;
 
         const item = player.getItemAtIndex(index);
         if (!item) {
@@ -861,7 +871,11 @@ export abstract class Game
                 console.log('[Game:processUseItem] Invalid target!');
                 return;
             }
+            x = targetPlayer.x;
+            y = targetPlayer.y;
         }
+        if (item.target !== Target.SELF &&
+            (!Number.isInteger(x) || !Number.isInteger(y) || isSkip(x, y) || !isInSpellRange(player.x, player.y, x, y))) return;
         const targets = targetPlayer ? [targetPlayer] : item.getTargets(this, player, x, y);
 
         // Only check if the item is applicable if there is a single target
@@ -869,6 +883,7 @@ export abstract class Game
             console.log(`[Game:processUseItem] Item ${item.name} is not applicable!`);
             return;
         };
+        if (!this.beginAction(player)) return;
 
         // Add all targets to the list of interacted targets
         targets.forEach(target => {
@@ -1033,15 +1048,12 @@ export abstract class Game
     ) {
         // console.log(`Processing magic for team ${team.id}, player ${num}, spell ${index}, target team ${targetTeam}, target ${target}`);
         const player = this.turnee;
-        if (!player.canAct()) {
+        if (!player?.canAct() || !Number.isInteger(index) || index < 0) {
             console.log('[Game:processMagic] cannot act');
             return;
         }
 
         if (player.isMuted()) return;
-
-        const distance = hexDistance(player.x, player.y, x, y);
-        if (distance > MOVEMENT_RANGE + SPELL_RANGE) return;
 
         const spell: Spell | null = player.getSpellAtIndex(index);
         if (!spell) return;
@@ -1051,8 +1063,6 @@ export abstract class Game
             console.log(`[Game:processMagic] Not enough MP, ${spell.cost} > ${player.getMP()}!`);
             return;
         }
-        const mp = player.consumeMP(spell.cost);
-
         let targetPlayer: ServerPlayer | null = null;
         if (spell.target === Target.SINGLE) {
             targetPlayer = this.teams.get(targetTeam)?.getMembers()[target - 1];
@@ -1063,6 +1073,9 @@ export abstract class Game
             x = targetPlayer.x;
             y = targetPlayer.y;
         }
+        if (!Number.isInteger(x) || !Number.isInteger(y) || isSkip(x, y) || !isInSpellRange(player.x, player.y, x, y)) return;
+        if (!this.beginAction(player)) return;
+        const mp = player.consumeMP(spell.cost);
 
         if (!spell.isHealingSpell()) player.team.incrementOffensiveActions();
         player.team.incrementSpellCasts();
