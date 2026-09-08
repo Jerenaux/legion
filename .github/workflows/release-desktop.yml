@@ -185,9 +185,8 @@ jobs:
       - name: Upload private Legion Demo build
         uses: game-ci/steam-deploy@50f6b29fc64922e19a16d202a88fe199d394b536 # v3.2.1
         env:
-          # Keep the Debian launcher and credential writer on the image's preinstalled SteamCMD.
+          # Reuse the preinstalled executable; leave STEAM_HOME unset so credentials go to $HOME/Steam.
           XDG_DATA_HOME: /root/.local/share
-          STEAM_HOME: /root/.local/share/Steam/steamcmd
         with:
           username: ${{ secrets.STEAM_USERNAME }}
           configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
