@@ -37,7 +37,9 @@ The pipe stores the credential directly without displaying it or creating anothe
 
 Shared Steam installations can contain other accounts and exceed GitHub's 48 KiB secret limit. Export only the intended account's Steam `Accounts` and `ConnectCache` entries plus the `Authentication` block, preserving their VDF nesting; omit browser storage and unrelated client settings. Never upload another account's credentials.
 
-The upload action must set both `XDG_DATA_HOME` and `STEAM_HOME` as configured in the workflow. The Debian SteamCMD launcher otherwise reads a different directory from the action's credential writer when GitHub changes the container's home directory. Use the image's preinstalled SteamCMD directory so creating its `config` folder does not suppress the launcher's first-run installation.
+Keep `XDG_DATA_HOME` configured as in the workflow so the Debian launcher reuses the image's preinstalled SteamCMD executable. **Leave `STEAM_HOME` unset**: the upload action then writes `config/config.vdf` under `$HOME/Steam`, which is where SteamCMD reads it. The executable directory and Steam's configuration directory are different; putting credentials beside the executable causes `Cached credentials not found` even when the GitHub secret is present.
+
+This separation was verified with native Linux file-access tracing against the upload image: with the workflow's Steam environment settings and a dummy configuration beside the executable, SteamCMD opened only `$HOME/Steam/config/config.vdf`. When changing the uploader or its container, verify the actual file reads again; a binary-location check or log-directory message alone is not sufficient evidence. `tools/validate_desktop_release.sh` guards against restoring the incorrect override.
 
 ## Steam player authentication
 
