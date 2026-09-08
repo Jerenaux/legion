@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  STEAM_DEMO_APP_ID,
   canonicalUID,
   identityKey,
   validateDirectDevice,
@@ -18,15 +19,22 @@ describe("platform identity", () => {
 
   test("validates a Steam Web API ticket server-side", async () => {
     const fetcher = async (url: string) => {
+      expect(new URL(url).searchParams.get("appid")).toBe("3996730");
       expect(url).toContain("ticket=deadbeef");
       expect(url).toContain("identity=legion");
       return new Response(JSON.stringify({response: {params: {result: "OK", steamid: "7656"}}}), {status: 200});
     };
     await expect(validateSteamTicket("deadbeef", {
-      appId: "123",
+      appId: STEAM_DEMO_APP_ID,
       apiKey: "secret",
       identity: "legion",
     }, fetcher)).resolves.toBe("7656");
+  });
+
+  test("does not contact Steam without server-side credentials", async () => {
+    const fetcher = async () => { throw new Error("must not send request"); };
+    await expect(validateSteamTicket("deadbeef", {appId: STEAM_DEMO_APP_ID, apiKey: "", identity: "legion"}, fetcher))
+      .rejects.toThrow("Steam authentication is not configured");
   });
 
   test("rejects an invalid Steam response", async () => {

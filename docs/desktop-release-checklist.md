@@ -46,7 +46,7 @@ The comparable local macOS arm64 package fell from 694 MB before the desktop cle
 
 - [ ] Release build is signed with Authenticode and Developer ID, then notarized by Apple.
 - [ ] Install the Itch `windows`, `mac`, and `linux` channels through the Itch app and verify platform authentication.
-- [ ] Upload to a private Steam beta and verify Steam ticket authentication on Windows, macOS, and Steam Deck.
+- [ ] Upload to a private beta inside Legion Demo (`3996730`) and verify Steam ticket authentication on Windows and macOS. Follow `STEAM_DEPLOYMENT.md`; the Demo has no Linux depot.
 - [ ] On each store build: create/join matchmaking, complete a match, reconnect after a transport drop, and confirm rewards are applied once.
 - [ ] On Steam Deck/controller: navigate menus, confirm/cancel, switch units, pass turn, open the game menu, enter text with the Steam keyboard, toggle fullscreen, and exit cleanly.
 - [ ] Promote the tested Steam Build ID manually; never automate the default-branch promotion.

@@ -1,5 +1,6 @@
 import {createHash} from "node:crypto";
 
+export const STEAM_DEMO_APP_ID = "3996730";
 export type PlatformProvider = "steam" | "itch" | "direct";
 type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
 

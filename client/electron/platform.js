@@ -1,4 +1,3 @@
-const STEAM_APP_ID = 3729580;
 const STEAM_WEB_API_IDENTITY = "legion";
 let activeTicket;
 let activeSteamClient;
@@ -6,10 +5,12 @@ let activeSteamClient;
 async function getPlatformAuth(env = process.env, loadSteamworks = () => require("steamworks.js")) {
   if (env.ITCHIO_API_KEY) return {provider: "itch", credential: env.ITCHIO_API_KEY};
   if (env.USE_DIRECT_AUTH === "true") return null;
+  const appId = Number(env.SteamAppId || env.STEAM_APP_ID);
+  if (!Number.isSafeInteger(appId) || appId <= 0 || appId > 0xffffffff) return null;
 
   try {
     const steamworks = loadSteamworks();
-    const client = steamworks.init(Number(env.STEAM_APP_ID) || STEAM_APP_ID);
+    const client = steamworks.init(appId);
     activeSteamClient = client;
     activeTicket?.cancel();
     activeTicket = await client.auth.getAuthTicketForWebApi(
@@ -52,4 +53,4 @@ function shutdownPlatform() {
   activeSteamClient = undefined;
 }
 
-module.exports = {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, STEAM_APP_ID};
+module.exports = {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform};

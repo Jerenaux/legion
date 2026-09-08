@@ -19,8 +19,29 @@ test("creates a Steam Web API ticket", async () => {
   expect(getAuthTicketForWebApi).toHaveBeenCalledWith("legion");
 });
 
-test("falls back to a direct session outside store launchers", async () => {
-  await expect(getPlatformAuth({}, () => { throw new Error("Steam is not running"); })).resolves.toBeNull();
+test("uses the Demo App ID supplied by Steam instead of a full-game override", async () => {
+  const init = jest.fn(() => ({auth: {
+    getAuthTicketForWebApi: async () => ({cancel: jest.fn(), getBytes: () => Buffer.from("demo-ticket")}),
+  }}));
+  await expect(getPlatformAuth({SteamAppId: "3996730", STEAM_APP_ID: "3729580"}, () => ({init})))
+    .resolves.toEqual({provider: "steam", credential: Buffer.from("demo-ticket").toString("hex")});
+  expect(init).toHaveBeenCalledWith(3996730);
+});
+
+test("direct downloads do not initialize Steam just because it is installed", async () => {
+  const loadSteamworks = jest.fn();
+  await expect(getPlatformAuth({}, loadSteamworks)).resolves.toBeNull();
+  expect(loadSteamworks).not.toHaveBeenCalled();
+});
+
+test.each(["", "invalid", "-1", "1.5", "4294967296"])("ignores invalid Steam App ID %s", async (SteamAppId) => {
+  const loadSteamworks = jest.fn();
+  await expect(getPlatformAuth({SteamAppId}, loadSteamworks)).resolves.toBeNull();
+  expect(loadSteamworks).not.toHaveBeenCalled();
+});
+
+test("falls back to a direct session when Steam initialization fails", async () => {
+  await expect(getPlatformAuth({SteamAppId: "3996730"}, () => { throw new Error("Steam is not running"); })).resolves.toBeNull();
 });
 
 test("can force a direct session for local development", async () => {
@@ -31,7 +52,7 @@ test("can force a direct session for local development", async () => {
 test("uses Steam's native gamepad keyboard and controller type when available", async () => {
   const show = jest.fn(async () => "Legionary");
   const controller = {getType: () => "SteamDeckController"};
-  await getPlatformAuth({}, () => ({init: () => ({
+  await getPlatformAuth({SteamAppId: "3996730"}, () => ({init: () => ({
     auth: {getAuthTicketForWebApi: async () => ({cancel: jest.fn(), getBytes: () => Buffer.from("ticket")})},
     utils: {showGamepadTextInput: show},
     input: {init: jest.fn(), shutdown: jest.fn(), getControllers: () => [controller]},
