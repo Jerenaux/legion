@@ -2,6 +2,18 @@
 
 Last local verification: 2026-09-01 on `codex/steam-itch-desktop-overhaul` (macOS arm64).
 
+## Release policy
+
+Use a fresh branch from the latest `main` for each independent work batch, then merge its PR. Desktop releases run only on manual request from `main`; merging code or pushing a tag does not publish a release. Normal CI checks and backend deployments still run automatically.
+
+After confirming all intended work is merged, publish to Itch with:
+
+```sh
+gh workflow run release-desktop.yml --ref main -F publish_itch=true -F upload_steam=false
+```
+
+For artifacts without a store upload, omit the inputs. A dispatch targeting another branch or a tag skips all release jobs. `tools/validate_desktop_release.sh`, also run in CI, checks the manual-only trigger and main-only build guard.
+
 ## Automated checks
 
 - [x] Client: 8 suites, 16 tests; TypeScript check; production Electron bundle.
@@ -32,11 +44,11 @@ The comparable local macOS arm64 package fell from 694 MB before the desktop cle
 
 ## Store and hardware gates
 
-- [ ] Tagged CI build is signed with Authenticode and Developer ID, then notarized by Apple.
+- [ ] Release build is signed with Authenticode and Developer ID, then notarized by Apple.
 - [ ] Install the Itch `windows`, `mac`, and `linux` channels through the Itch app and verify platform authentication.
 - [ ] Upload to a private Steam beta and verify Steam ticket authentication on Windows, macOS, and Steam Deck.
 - [ ] On each store build: create/join matchmaking, complete a match, reconnect after a transport drop, and confirm rewards are applied once.
 - [ ] On Steam Deck/controller: navigate menus, confirm/cancel, switch units, pass turn, open the game menu, enter text with the Steam keyboard, toggle fullscreen, and exit cleanly.
 - [ ] Promote the tested Steam Build ID manually; never automate the default-branch promotion.
 
-The unchecked gates require repository signing/store credentials and real launcher/hardware sessions. CI is configured to fail tagged releases without signing credentials and to smoke-test all three native packages before any optional store upload.
+The unchecked gates require repository signing/store credentials and real launcher/hardware sessions. Manual builds currently allow unsigned packages; signing and notarization use the configured credentials when available. The release workflow smoke-tests all three native packages before any optional store upload.
