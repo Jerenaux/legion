@@ -1,0 +1,33 @@
+# In-game player guide
+
+Players open **Guide** in the top-right menu. The `/guide` page and its screenshots are bundled with the client; reading it does not fetch a remote guide or depend on queue news being enabled.
+
+Content lives in `client/src/components/GuidePage.tsx`. Keep both the outer route in `client/src/app.tsx` and the inner route in `client/src/routes/HomePage.tsx` when changing this screen.
+
+## Keeping it accurate
+
+The [previous guide](https://guide.play-legion.io/) inspired the chapter structure, not the rules. The implemented game is authoritative:
+
+- Turn rules, movement, targeting, consumable use: `server/src/Game.ts`, `AIGame.ts`, `ServerPlayer.ts`, `TurnSystem.ts`, `Spell.ts`, and `TerrainManager.ts`.
+- Item/spell effects, equipment restrictions, SP, unlock milestones: `shared/Items.ts`, `Spells.ts`, `inventory.ts`, `levelling.ts`, and `config.ts`. The guide imports its timer and milestone constants from shared configuration.
+- Actual controls and loadout interactions: `client/src/input/actions.ts`, `game/Player.ts`, `components/HUD/PlayerBar.tsx`, and `components/itemDialog/ItemDialog.tsx`.
+- Seasonal rankings: `api/functions/src/ranking.ts` and `leaderboardsAPI.ts`.
+
+When changing player-facing rules or controls, update the relevant guide text and screenshots in the same batch. Do not copy old instructions about action-bar hover tooltips, the position of the turn order, or equipping through empty slots. Preserve the distinction between ELO and weekly leagues, and do not advertise disabled features.
+
+## Screenshots and desktop smoke test
+
+From `client`, with dependencies installed:
+
+```sh
+bun run guide:screenshots
+bun run test:guide
+```
+
+The first command renders the real Phaser arena, combat HUD, and Team screen in a hidden Electron window, then captures tight JPEG crops into `client/public/guide/`. It uses a local training fixture, not a live account or an image generator. Check every crop visually after regeneration, especially if the HUD moves. Images are captured at 1600×900 and cropped without changing the UI layout.
+
+The second command builds a production-mode renderer with screenshot-only account/API fixtures. It checks the actual title → Play → burger → Guide flow on `app://legion/`, every chapter jump, image loading, scrolling at 1280×720, 960×540, 800×600, and 1920×1080, Escape/back navigation, and a direct packaged `/guide` load. Renderer errors fail the test. Preview PNGs and the fixture bundle remain in the temporary directory printed by the command; the normal `client/dist` is untouched. Electron needs a graphical session (or Xvfb on Linux).
+
+All HTTP(S)/WebSocket traffic is blocked in this harness. It substitutes only authentication, player data, telemetry API responses, and the battle transport; the app routes, components, assets, and Phaser renderer are real. The release webpack configuration does not import anything in `client/tools/guide`. This is a renderer/navigation smoke test, not a production matchmaking or authentication test.
+
+Run the standard lint, TypeScript checks, and tests too. Changes to guide content/assets are shipped changes and require the usual product version bump.
