@@ -64,11 +64,13 @@ Object.assign(window, {queueCheck});
 export default function FixturePlayer({children}: {children: ComponentChildren}) {
   const defaults = useContext(PlayerContext);
   const [activeId, setActiveId] = useState(characters[2].id);
+  const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
+  Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true)}});
   const value = {
-    ...defaults, loaded: true, welcomeShown: true, characters, activeCharacterId: activeId,
+    ...defaults, loaded, welcomeShown: true, characters, activeCharacterId: activeId,
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
-      isLoaded: true, completedGames: 12, engagementStats: profile.engagementStats, gold: 240, elo: 128, rank: 12,
+      isLoaded: loaded, completedGames: 12, engagementStats: profile.engagementStats, gold: 240, elo: 128, rank: 12,
       carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
     canAccessFeature: () => true, getCompletedGames: () => 12, checkEngagementFlag: () => true,
     getCharacter: (id: string) => characters.find(character => character.id === id),

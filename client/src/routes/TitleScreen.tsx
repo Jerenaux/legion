@@ -4,6 +4,7 @@ import {useContext} from "preact/hooks";
 import {route} from "preact-router";
 import logoBig from "@assets/logo.png";
 import {PlayerContext} from "../contexts/PlayerContext";
+import Spinner from "../components/spinner/Spinner";
 import {STEAM_STORE_URL, titlePlayRoute} from "./titleScreenRoute";
 import "./TitleScreen.style.css";
 
@@ -13,9 +14,9 @@ const TitleScreen = () => {
 
   return (
     <div className="title-screen">
-      <div className="title-screen-content">
+      <div className="title-screen-content" aria-busy={!loaded}>
         <img src={logoBig} alt="Legion" className="logo-big" />
-        {loaded && (
+        {loaded ? (
           <div className="title-screen-actions">
             <button type="button" className="title-screen-button title-screen-button--play" onClick={play}>Play</button>
             <a
@@ -32,6 +33,11 @@ const TitleScreen = () => {
               </svg>
               <span>Wishlist on Steam</span>
             </a>
+          </div>
+        ) : (
+          <div className="title-screen-loading">
+            <Spinner />
+            <p>Loading your game…</p>
           </div>
         )}
       </div>
