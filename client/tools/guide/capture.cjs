@@ -38,6 +38,11 @@ if (!process.versions.electron) {
   });
 } else {
   const {app, BrowserWindow, protocol, net, session} = require('electron');
+  if (process.env.CI && process.platform === 'linux') {
+    // Hosted runners have no GPU. These switches apply only to the fixture harness, never releases.
+    app.commandLine.appendSwitch('use-angle', 'swiftshader');
+    app.commandLine.appendSwitch('enable-unsafe-swiftshader');
+  }
   // Keep cleanup from triggering Electron's implicit zero-exit before a failed assertion is reported.
   app.on('window-all-closed', () => {});
   const {pathToFileURL} = require('node:url');
