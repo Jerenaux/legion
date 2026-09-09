@@ -241,27 +241,41 @@ if (!process.versions.electron) {
         console.log('Combat Z → invalid target → valid target → server rejection → move/pass controls pass');
 
         await waitFor('Array.from({length: 12}, (_, i) => combatCheck.arena.cache.audio.has("bgm_loop_" + (i + 1))).every(Boolean)');
-        const musicTracks = await js(`(() => {
-          const music = combatCheck.arena.musicManager;
+        const musicTracks = await win.webContents.executeJavaScript(`(async () => {
+          const {arena} = combatCheck;
+          const music = arena.musicManager;
           music.currentSound.stop();
           music.currentSound.removeAllListeners();
           music.intensity = music.desiredIntensity = 1;
           music.playingIntensity = music.loopsPlayed = 0;
-          music.playBeginning();
+          const originalRate = arena.sound.rate;
+          const originalPauseOnBlur = arena.sound.pauseOnBlur;
+          arena.sound.pauseOnBlur = false;
+          arena.sound.setRate(8); // Keep real audio completion events, but make this smoke test fast.
+          await arena.sound.context.resume();
           const tracks = [];
-          const complete = () => {
-            music.currentSound.stop();
-            music.currentSound.emit('complete');
-            tracks.push(music.currentSound.key);
-          };
-          for (let i = 0; i < 6; i++) complete();
-          music.updateMusicIntensity(0.5);
-          complete();
-          music.playEnd();
-          return tracks;
-        })()`);
-        assert.deepEqual(musicTracks, [...Array(5).fill('bgm_loop_1'), 'bgm_loop_2', 'bgm_loop_7']);
-        console.log('Muted Phaser audio: five plays → next track → health-driven jump passes');
+          const complete = () => new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Music did not complete naturally')), 5000);
+            music.currentSound.once('complete', () => {
+              clearTimeout(timeout);
+              tracks.push(music.currentSound.key);
+              resolve();
+            });
+          });
+          try {
+            music.playBeginning();
+            for (let i = 0; i < 3; i++) await complete();
+            music.updateMusicIntensity(0.5);
+            await complete();
+            return tracks;
+          } finally {
+            music.playEnd();
+            arena.sound.setRate(originalRate);
+            arena.sound.pauseOnBlur = originalPauseOnBlur;
+          }
+        })()`, true);
+        assert.deepEqual(musicTracks, ['bgm_loop_1', 'bgm_loop_1', 'bgm_loop_2', 'bgm_loop_7']);
+        console.log('Muted Phaser audio: two natural plays → next track → health-driven jump passes');
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
     } finally {

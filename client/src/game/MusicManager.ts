@@ -94,7 +94,7 @@ export class MusicManager {
         if (this.gameOver) return;
 
         // Health or a bridge may already have selected the next track; let that take priority.
-        if (this.intensity === this.playingIntensity && this.loopsPlayed >= 5 && this.intensity < this.nbIntensities) {
+        if (this.intensity === this.playingIntensity && this.loopsPlayed >= 2 && this.intensity < this.nbIntensities) {
             if (this.scene.cache.audio.has(`bgm_loop_${this.intensity + 1}`)) {
                 this.intensity++;
             }

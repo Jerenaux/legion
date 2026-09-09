@@ -40,21 +40,21 @@ function setup() {
   return {manager, complete, played, available, events, settings, scene};
 }
 
-test('the intro is separate, and each combat track plays five times before advancing', () => {
+test('the intro is separate, and each combat track plays twice before advancing', () => {
   const {manager, complete, played} = setup();
   expect(played).toEqual(['bgm_start']);
   complete();
   for (const intensity of [1, 2, 3]) {
     expect(manager.currentSound.key).toBe(`bgm_loop_${intensity}`);
-    complete(4);
+    complete();
     expect(manager.currentSound.key).toBe(`bgm_loop_${intensity}`);
-    expect(played.filter(key => key === `bgm_loop_${intensity}`)).toHaveLength(5);
+    expect(played.filter(key => key === `bgm_loop_${intensity}`)).toHaveLength(2);
     complete();
     expect(manager.currentSound.key).toBe(`bgm_loop_${intensity + 1}`);
   }
 });
 
-for (const plays of [1, 5]) {
+for (const plays of [1, 2]) {
   test(`health takes priority after ${plays} plays and gives the new track a fresh counter`, () => {
     const {manager, complete} = setup();
     complete(plays);
@@ -63,7 +63,7 @@ for (const plays of [1, 5]) {
     complete();
     expect(manager.currentSound.key).toBe('bgm_loop_7');
     manager.updateMusicIntensity(1); // Healing never reverses the existing intensity ramp.
-    complete(4);
+    complete();
     expect(manager.currentSound.key).toBe('bgm_loop_7');
     complete();
     expect(manager.currentSound.key).toBe('bgm_loop_8');
@@ -73,8 +73,8 @@ for (const plays of [1, 5]) {
 test('transition tracks play once and the final track never advances past the available score', () => {
   const {manager, complete, played} = setup();
   manager.updateMusicIntensity(0.75);
-  complete(6);
-  expect(played.slice(1)).toEqual([...Array(5).fill('bgm_loop_4'), 'bgm_loop_5']);
+  complete(3);
+  expect(played.slice(1)).toEqual(['bgm_loop_4', 'bgm_loop_4', 'bgm_loop_5']);
   complete();
   expect(manager.currentSound.key).toBe('bgm_loop_6');
   complete();
@@ -88,18 +88,18 @@ test('transition tracks play once and the final track never advances past the av
 test('a delayed next asset keeps the current track playing and advances once loaded', () => {
   const {manager, complete, available} = setup();
   available.delete('bgm_loop_2');
-  complete(7);
+  complete(4);
   expect(manager.currentSound.key).toBe('bgm_loop_1');
   available.add('bgm_loop_2');
   complete();
   expect(manager.currentSound.key).toBe('bgm_loop_2');
-  complete(4);
+  complete();
   expect(manager.currentSound.key).toBe('bgm_loop_2');
 });
 
 test('volume changes and cleanup still work, and completion cannot restart combat music after game over', () => {
   const {manager, complete, played, settings, events, scene} = setup();
-  complete(5);
+  complete(2);
   settings.musicVolume = 25;
   events.emit('settingsChanged');
   expect(manager.currentSound.setVolume).toHaveBeenCalledWith(0.25);
