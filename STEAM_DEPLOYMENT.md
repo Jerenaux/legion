@@ -16,7 +16,9 @@ The Demo has no Linux depot. Linux artifacts remain available for Itch. Never su
 
 ## Steam upload authentication
 
-Use a Steam build account with access to the Demo and only the required upload permissions. Run these commands in your own terminal, using your SteamCMD executable if it is not on `PATH`:
+Use a Steam build account with access to the Demo and only the required upload permissions. Authenticate an **isolated native Linux SteamCMD installation**, not the configuration shared with your desktop Steam launcher. On Apple Silicon, use a native x86 Linux environment (for example Cloud Shell); 32-bit SteamCMD is not reliably supported by Docker's Mac emulation.
+
+Run these commands in that installation, using your SteamCMD executable if it is not on `PATH`:
 
 ```sh
 steamcmd +login <steam-build-account> +quit
@@ -25,21 +27,25 @@ steamcmd +login <steam-build-account> +quit
 
 Enter the password and complete Steam Guard locally. The second login must succeed without another password or Guard prompt. Never paste the password into chat, a command argument, the repository, or a PR.
 
-Store `STEAM_USERNAME` and the base64-encoded SteamCMD `config/config.vdf` as GitHub Actions secrets in the `desktop-release` environment. On macOS the configuration is normally under `$HOME/Library/Application Support/Steam/config/config.vdf`; on Linux, use the configuration belonging to the SteamCMD installation that you authenticated.
+Keep `STEAM_USERNAME` in the GitHub `desktop-release` environment. Store the **raw** authenticated `config/config.vdf` in the `STEAM_CONFIG_VDF` secret in Google Secret Manager, project `legion-32c6d`. Use the actual configuration read by SteamCMD, normally `$HOME/Steam/config/config.vdf` on Linux—not the executable directory.
 
 ```sh
 gh secret set STEAM_USERNAME --env desktop-release
-base64 < "$HOME/Library/Application Support/Steam/config/config.vdf" |
-  gh secret set STEAM_CONFIG_VDF --env desktop-release
+STEAM_USERNAME=<steam-build-account> node tools/steam-credentials.cjs validate <path-to-config.vdf>
+gcloud secrets versions add STEAM_CONFIG_VDF --project=legion-32c6d --data-file=<path-to-config.vdf>
 ```
 
-The pipe stores the credential directly without displaying it or creating another credential file. Do not print or commit the configuration. If Steam expires the cached login, repeat the local authentication and replace the secret. Restrict the `desktop-release` environment to deployments from `main`.
+These commands do not display credentials. The validator rejects empty/cleared caches, malformed files, multiple accounts, a wrong account, and files over Secret Manager's 64 KiB limit. Do not print or commit the configuration, or put it in Actions artifacts/caches. Restrict the `desktop-release` environment to deployments from `main`.
 
-Shared Steam installations can contain other accounts and exceed GitHub's 48 KiB secret limit. Export only the intended account's Steam `Accounts` and `ConnectCache` entries plus the `Authentication` block, preserving their VDF nesting; omit browser storage and unrelated client settings. Never upload another account's credentials.
+The desktop launcher can clear SteamCMD's shared Mac login cache. Steam can also update the credential after login: [Valve requires preserving the updated configuration between runs](https://partner.steamgames.com/doc/sdk/uploading#5). A static GitHub secret snapshot alone is therefore insufficient. Do not renew CI credentials from your normal desktop Steam profile or sign in interactively with the build account while an upload is running.
+
+The workflow reads the latest Secret Manager version, validates/masks it, and passes its base64 encoding to the upload action. After the action, it saves changed, valid credentials back—even if authentication succeeded but a subsequent upload operation failed. It never replaces the stored credential with a cleared or malformed cache. Steam jobs are serialized, without cancelling an active upload, to prevent concurrent token updates.
+
+The existing `github-actions` service account needs `roles/secretmanager.secretAccessor` and `roles/secretmanager.secretVersionAdder` **on this secret only**, using the existing `GCP_SA_KEY` authentication. No additional GitHub token or stored Steam password is needed. Older secret versions provide recovery history; disable obsolete versions when no longer needed. If Steam expires or revokes the login, repeat the isolated authentication and add a fresh secret version.
 
 Keep `XDG_DATA_HOME` configured as in the workflow so the Debian launcher reuses the image's preinstalled SteamCMD executable. **Leave `STEAM_HOME` unset**: the upload action then writes `config/config.vdf` under `$HOME/Steam`, which is where SteamCMD reads it. The executable directory and Steam's configuration directory are different; putting credentials beside the executable causes `Cached credentials not found` even when the GitHub secret is present.
 
-This separation was verified with native Linux file-access tracing against the upload image: with the workflow's Steam environment settings and a dummy configuration beside the executable, SteamCMD opened only `$HOME/Steam/config/config.vdf`. When changing the uploader or its container, verify the actual file reads again; a binary-location check or log-directory message alone is not sufficient evidence. `tools/validate_desktop_release.sh` guards against restoring the incorrect override.
+This separation was verified with native Linux file-access tracing against the upload image: with the workflow's Steam environment settings and a dummy configuration beside the executable, SteamCMD opened only `$HOME/Steam/config/config.vdf`. Docker actions map `/github/home` to `$RUNNER_TEMP/_github_home` on the runner; the preservation step reads the updated file there. When changing the uploader or its container, verify the actual file reads and write-back path again. `tools/validate_desktop_release.sh` guards these paths, secret restoration/preservation, upload serialization, and credential validation.
 
 ## Steam player authentication
 
