@@ -122,6 +122,21 @@ jobs:
         env:
           DEPLOY: true
 
+      - name: Verify Firebase discovery and telemetry startup
+        working-directory: api/functions
+        env:
+          GCLOUD_PROJECT: legion-32c6d
+        run: |
+          node - <<'JS'
+          const assert = require('node:assert/strict');
+          const Sentry = require('@sentry/google-cloud-serverless');
+          const functions = require('./lib');
+          assert(Object.keys(functions).length > 0);
+          assert(Object.values(functions).every(fn => fn.__endpoint), 'Keep Firebase deployment metadata');
+          assert.equal(Sentry.isEnabled(), false, 'Do not report during CLI discovery');
+          assert.equal(functions.leaguesUpdate.__endpoint.scheduleTrigger.schedule, '0 19 * * 5');
+          JS
+
   build-matchmaker:
     name: Build Matchmaker
     runs-on: ubuntu-latest

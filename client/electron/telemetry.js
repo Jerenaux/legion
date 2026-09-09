@@ -1,12 +1,13 @@
 const Sentry = require('@sentry/electron/main');
 const {anrIntegration} = require('@sentry/node');
 const {dsn, dataCollection} = require('./telemetry-options');
+const {version} = require('../package.json');
 
 function initializeTelemetry(app) {
-  if (!app.isPackaged) return;
+  if (!app.isPackaged && process.env.NODE_ENV !== 'production') return;
   Sentry.init({
     dsn,
-    release: `legion@${app.getVersion()}`,
+    release: `legion@${version}`,
     environment: 'production',
     dataCollection,
     maxBreadcrumbs: 30,
