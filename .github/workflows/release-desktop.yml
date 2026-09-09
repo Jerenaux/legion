@@ -70,6 +70,7 @@ jobs:
           API_URL: ${{ vars.API_URL }}
           GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
           MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           CSC_LINK: ${{ matrix.platform == 'mac' && secrets.MAC_CSC_LINK || '' }}
           CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.MAC_CSC_KEY_PASSWORD || '' }}
           APPLE_API_KEY: ${{ matrix.platform == 'mac' && secrets.APPLE_API_KEY || '' }}
@@ -78,6 +79,7 @@ jobs:
           WIN_CSC_LINK: ${{ matrix.platform == 'windows' && secrets.WIN_CSC_LINK || '' }}
           WIN_CSC_KEY_PASSWORD: ${{ matrix.platform == 'windows' && secrets.WIN_CSC_KEY_PASSWORD || '' }}
         run: |
+          test -n "$SENTRY_AUTH_TOKEN" || { echo 'Missing SENTRY_AUTH_TOKEN for release source maps' >&2; exit 1; }
           for variable in CSC_LINK CSC_KEY_PASSWORD APPLE_API_KEY APPLE_API_KEY_ID APPLE_API_ISSUER WIN_CSC_LINK WIN_CSC_KEY_PASSWORD; do
             [[ -n "${!variable}" ]] || unset "$variable"
           done

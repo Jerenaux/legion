@@ -1,3 +1,4 @@
+import './telemetry';
 import {fetchLeaderboard, leaguesUpdate} from "./leaderboardsAPI";
 import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getReward}
   from "./inventoryAPI";

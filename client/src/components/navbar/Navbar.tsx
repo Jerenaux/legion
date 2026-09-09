@@ -8,7 +8,8 @@ import { Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
-import { successToast, avatarContext, lockIcon } from '../utils';
+import { successToast, errorToast, avatarContext, lockIcon } from '../utils';
+import {reportProblem} from '../../telemetry';
 import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
 import { SettingsModal } from '../settingsModal/SettingsModal';
 import { PlayerContext } from '../../contexts/PlayerContext';
@@ -252,6 +253,12 @@ class Navbar extends Component<Props, State> {
                                                 <Link href="/guide" onClick={() => this.setState({ openDropdown: false })}>
                                                     <img src={helpIcon} alt="" /> Guide
                                                 </Link>
+                                                <button type="button" data-report-problem onClick={() => {
+                                                    this.setState({openDropdown: false});
+                                                    void reportProblem().catch(() => errorToast('Unable to open the report form. Please try again.'));
+                                                }}>
+                                                    <img src={helpIcon} alt="" /> Report a problem
+                                                </button>
                                                 <button type="button" onClick={this.copyIDtoClipboard}>
                                                     <img src={copyIcon} alt="Copy" /> Player ID
                                                 </button>

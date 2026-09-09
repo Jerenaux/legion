@@ -88,6 +88,10 @@ jobs:
           GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
           MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
 
+      - name: Smoke-test packaged routes, combat, and Sentry reporting
+        working-directory: client
+        run: xvfb-run -a bun run test:guide
+
   build-api:
     name: Build API
     runs-on: ubuntu-latest

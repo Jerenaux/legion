@@ -1,4 +1,5 @@
 const {app, BrowserWindow, ipcMain, net, protocol, session, shell} = require("electron");
+require('./electron/telemetry').initializeTelemetry(app);
 const fs = require("node:fs");
 const path = require("node:path");
 const {pathToFileURL} = require("node:url");
@@ -92,7 +93,8 @@ if (hasSingleInstanceLock) app.whenReady().then(async () => {
   if (!isDev) {
     const csp = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' https: wss:; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'";
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => callback({
-      responseHeaders: {...details.responseHeaders, "Content-Security-Policy": [csp]},
+      responseHeaders: {...details.responseHeaders, "Content-Security-Policy": [csp],
+        "Document-Policy": ["include-js-call-stacks-in-crash-reports"]},
     }));
   }
 

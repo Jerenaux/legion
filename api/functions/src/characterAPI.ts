@@ -1,6 +1,6 @@
 import {Transaction} from "firebase-admin/firestore";
 
-import {onRequest} from "firebase-functions/v2/https";
+import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
 import {getMaxStatValue, getSPIncrement} from "@legion/shared/levelling";

@@ -1,4 +1,4 @@
-import { onRequest } from "firebase-functions/v2/https";
+import { onRequest } from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions/v1";
 import admin, { corsMiddleware, getUID, checkAPIKey, } from "./APIsetup";
@@ -24,7 +24,7 @@ import {
 import { logPlayerAction, updateDAU } from "./dashboardAPI";
 import {currentSeasonId, getEmptyLeagueStats} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
-import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onSchedule } from "./telemetry";
 import { createGameDocument } from "./gameAPI";
 import { transformDailyLoot } from "@legion/shared/utils";
 import {starterCharacterId} from "./playerProvisioning";

@@ -15,6 +15,7 @@ COPY server/tsconfig.docker.json ./tsconfig.json
 COPY server/src/ ./src/
 
 RUN bun run build
+RUN bunx sentry-cli sourcemaps inject dist
 
 FROM oven/bun:${BUN_VERSION}-slim
 

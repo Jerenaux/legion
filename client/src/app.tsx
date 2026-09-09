@@ -10,34 +10,20 @@ import GamePage from './routes/GamePage';
 import Root from './routes/Root';
 import withAuth from './components/withAuth';
 
-import * as Sentry from "@sentry/react";
+import {setUser} from './telemetry';
 import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import LogRocket from './logrocketSetup';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
 import {startGamepadInput} from './input/gamepad';
-// Only initialize Sentry if not in development mode
-if (process.env.NODE_ENV !== 'development') {
-  Sentry.init({
-    environment: process.env.NODE_ENV,
-    dsn: "https://c3c72f4dedb26b85b58c0eb82feea9c1@o4508024644567040.ingest.de.sentry.io/4508024650268752",
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.captureConsoleIntegration({
-        levels: ['error']
-      })
-    ],
-    // Tracing
-    tracesSampleRate: 0.1,
-  });
-
+if (process.env.NODE_ENV === 'production') {
   // Set up auth state listener to update Sentry user info
   firebaseAuth.onAuthStateChanged((user) => {
     if (user) {
-      Sentry.setUser({ id: user.uid });
+      setUser({ id: user.uid });
       LogRocket.identify(user.uid);
     } else {
-      Sentry.setUser(null);
+      setUser(null);
     }
   });
 }

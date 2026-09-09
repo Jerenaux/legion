@@ -2,6 +2,7 @@
 import { firebaseAuth } from './firebaseService';
 import { errorToast } from '../components/utils';
 import {getTokenWithRetry} from "./firebaseToken";
+import {captureException} from '../telemetry';
 
 const apiBaseUrl = process.env.API_URL;
 
@@ -87,7 +88,7 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
                 throw new ApiError(`Error ${response.status} from ${endpoint}: ${errorBody}`, response.status, endpoint);
             }
 
-            return response.json();
+            return await response.json();
         } catch (error) {
             if (process.env.NODE_ENV === 'development') {
                 console.error(`Attempt ${attempt + 1} failed for API call to ${endpoint}:`, error);
@@ -96,10 +97,15 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
 
             // If it's the last attempt, throw the error
             if (attempt === maxRetries - 1) {
+                // Expected 4xx rejections are not application faults. Report exhausted
+                // requests even when a caller catches the error or only displays a toast.
+                if (!(error instanceof ApiError) || error.status >= 500) {
+                    // Do not send response bodies or URL credentials to telemetry.
+                    const failure = error instanceof ApiError ? new Error(`API request failed (${error.status})`) : error;
+                    captureException(failure, {tags: {operation: 'api', endpoint: endpoint.split(/[?#]/)[0]}});
+                }
                 if (!invisibleErrors) {
                     errorToast(`${error.message}`);
-                } else {
-                    console.error(`${error.message}`);
                 }
                 throw error;
             }

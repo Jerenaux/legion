@@ -1,4 +1,4 @@
-import {onRequest, HttpsFunction, HttpsOptions} from "firebase-functions/v2/https";
+import {onRequest, HttpsFunction, HttpsOptions} from "./telemetry";
 import admin, {checkAPIKey, corsMiddleware, } from "./APIsetup";
 import {Request, Response} from "express";
 
