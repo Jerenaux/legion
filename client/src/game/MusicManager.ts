@@ -7,6 +7,8 @@ export class MusicManager {
     startinIntensity = 0;
     intensity = 0; // Current playing intensity level
     desiredIntensity = 0; // Desired intensity level based on game state
+    playingIntensity = 0;
+    loopsPlayed = 0;
     nbIntensities = 0;
     bridges = [];
     gameOver = false;
@@ -89,6 +91,15 @@ export class MusicManager {
     }
 
     playNext() {
+        if (this.gameOver) return;
+
+        // Health or a bridge may already have selected the next track; let that take priority.
+        if (this.intensity === this.playingIntensity && this.loopsPlayed >= 5 && this.intensity < this.nbIntensities) {
+            if (this.scene.cache.audio.has(`bgm_loop_${this.intensity + 1}`)) {
+                this.intensity++;
+            }
+        }
+
         let key = `bgm_loop_${this.intensity}`;
 
         // Check if the current intensity's asset is loaded
@@ -110,6 +121,10 @@ export class MusicManager {
                 return;
             }
         }
+
+        // Count actual plays, including asset fallbacks, and reset whenever the track changes.
+        this.loopsPlayed = this.intensity === this.playingIntensity ? this.loopsPlayed + 1 : 1;
+        this.playingIntensity = this.intensity;
 
         // Play the music at the current intensity level
         this.currentSound = this.scene.sound.add(key, this.soundConfig);

@@ -239,6 +239,29 @@ if (!process.versions.electron) {
         await js('document.querySelector(".player_bar_pass_turn").click()');
         assert.deepEqual(await js('combatCheck.sent'), ['spell', 'move', 'passTurn']);
         console.log('Combat Z → invalid target → valid target → server rejection → move/pass controls pass');
+
+        await waitFor('Array.from({length: 12}, (_, i) => combatCheck.arena.cache.audio.has("bgm_loop_" + (i + 1))).every(Boolean)');
+        const musicTracks = await js(`(() => {
+          const music = combatCheck.arena.musicManager;
+          music.currentSound.stop();
+          music.currentSound.removeAllListeners();
+          music.intensity = music.desiredIntensity = 1;
+          music.playingIntensity = music.loopsPlayed = 0;
+          music.playBeginning();
+          const tracks = [];
+          const complete = () => {
+            music.currentSound.stop();
+            music.currentSound.emit('complete');
+            tracks.push(music.currentSound.key);
+          };
+          for (let i = 0; i < 6; i++) complete();
+          music.updateMusicIntensity(0.5);
+          complete();
+          music.playEnd();
+          return tracks;
+        })()`);
+        assert.deepEqual(musicTracks, [...Array(5).fill('bgm_loop_1'), 'bgm_loop_2', 'bgm_loop_7']);
+        console.log('Muted Phaser audio: five plays → next track → health-driven jump passes');
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
     } finally {
