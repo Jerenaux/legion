@@ -2,7 +2,7 @@ import {scrubTelemetry} from './telemetryPrivacy';
 
 // Public ingestion key, not a privileged Sentry auth token.
 export const backendTelemetryOptions = {
-  dsn: 'https://c3c72f4dedb26b85b58c0eb82feea9c1@o4508024644567040.ingest.de.sentry.io/4508024701452368',
+  dsn: 'https://90fb226b1d81d5043db10dd8ef2135ff@o4508024644567040.ingest.de.sentry.io/4512060848078928',
   enabled: process.env.NODE_ENV === 'production' && process.env.FUNCTIONS_EMULATOR !== 'true',
   environment: 'production',
   release: process.env.SENTRY_RELEASE,

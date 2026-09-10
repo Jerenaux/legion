@@ -147,7 +147,7 @@ module.exports = {
     ...(process.env.SENTRY_AUTH_TOKEN ? [sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: "dynetis-games",
-      project: "javascript-react",
+      project: "legion-desktop",
       release: {name: `legion@${require('./package.json').version}`},
       sourcemaps: {assets: ['./dist/**']},
       telemetry: false,

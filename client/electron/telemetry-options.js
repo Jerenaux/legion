@@ -1,5 +1,5 @@
 // Public ingestion key, never the source-map upload token.
-const dsn = 'https://c3c72f4dedb26b85b58c0eb82feea9c1@o4508024644567040.ingest.de.sentry.io/4508024650268752';
+const dsn = 'https://48a2c455bc08f1a0dff91cc403135b83@o4508024644567040.ingest.de.sentry.io/4512060847947856';
 const dataCollection = {
   userInfo: false,
   cookies: false,
