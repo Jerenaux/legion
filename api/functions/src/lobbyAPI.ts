@@ -1,4 +1,4 @@
-import {onRequest} from "firebase-functions/v2/https";
+import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID, performLockedOperation} from "./APIsetup";
 

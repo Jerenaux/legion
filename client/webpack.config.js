@@ -135,6 +135,10 @@ module.exports = {
       ...requiredElectronUrls,
       'USE_FIREBASE_EMULATOR', 'FIREBASE_AUTH_EMULATOR_HOST',
     ].map(key => [`process.env.${key}`, JSON.stringify(process.env[key] || '')]))),
+    new webpack.DefinePlugin({
+      'process.env.BUILD_TARGET': JSON.stringify(process.env.BUILD_TARGET || 'web'),
+      'process.env.SENTRY_RELEASE': JSON.stringify(`legion@${require('./package.json').version}`),
+    }),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'public/favicon.ico', to: 'favicon.ico' },
@@ -143,7 +147,10 @@ module.exports = {
     ...(process.env.SENTRY_AUTH_TOKEN ? [sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: "dynetis-games",
-      project: "javascript-react"
+      project: "legion-desktop",
+      release: {name: `legion@${require('./package.json').version}`},
+      sourcemaps: {assets: ['./dist/**']},
+      telemetry: false,
     })] : []),
   ],
 

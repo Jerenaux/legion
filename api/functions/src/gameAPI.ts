@@ -1,4 +1,4 @@
-import {onRequest} from "firebase-functions/v2/https";
+import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, storage, isDevelopment} from "./APIsetup";
 import {EndGameData, GameReplayMessage} from "@legion/shared/interfaces";

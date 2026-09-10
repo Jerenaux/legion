@@ -38,14 +38,38 @@ if (!process.versions.electron) {
   });
 } else {
   const {app, BrowserWindow, protocol, net, session} = require('electron');
+  if (process.env.CI && process.platform === 'linux') {
+    // Hosted runners have no GPU. These switches apply only to the fixture harness, never releases.
+    app.commandLine.appendSwitch('use-angle', 'swiftshader');
+    app.commandLine.appendSwitch('enable-unsafe-swiftshader');
+  }
+  // Keep cleanup from triggering Electron's implicit zero-exit before a failed assertion is reported.
+  app.on('window-all-closed', () => {});
   const {pathToFileURL} = require('node:url');
   const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
   const dist = process.argv[2];
   app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-profile-')));
+  // Exercise the real production SDK and preload, but ingest exclusively on loopback.
+  const Sentry = require('@sentry/electron/main');
+  const envelopes = [];
+  const sink = require('node:http').createServer(async (request, response) => {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    let body = Buffer.concat(chunks);
+    if (request.headers['content-encoding'] === 'gzip') body = require('node:zlib').gunzipSync(body);
+    envelopes.push(body.toString());
+    response.writeHead(200, {'Content-Type': 'application/json'});
+    response.end('{}');
+  }).listen(0);
+  const sinkURL = `http://127.0.0.1:${sink.address().port}`;
+  const originalInit = Sentry.init;
+  Sentry.init = options => originalInit({...options, dsn: `${sinkURL.replace('http://', 'http://test@')}/1`, environment: 'test', onFatalError: () => {}});
+  require('../../electron/telemetry').initializeTelemetry({isPackaged: true, getVersion: () => require('../../package.json').version});
+  Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
     // Fail closed: neither telemetry nor the game can reach any external service.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (_details, done) => done({cancel: true}));
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`)}));
     protocol.handle('app', request => {
       if (new URL(request.url).pathname === '/__fixture') return Response.json({});
       let target = resolveAppPath(dist, request.url);
@@ -57,7 +81,7 @@ if (!process.versions.electron) {
     win.webContents.setAudioMuted(true);
     const rendererErrors = [];
     win.webContents.on('console-message', event => {
-      if (event.level === 'error') {rendererErrors.push(event.message); console.log('Renderer:', event.message);}
+      if (event.level === 'error' && !event.message.includes('telemetry-smoke-')) {rendererErrors.push(event.message); console.log('Renderer:', event.message);}
     });
     const js = code => win.webContents.executeJavaScript(code);
     const waitFor = async expression => {
@@ -132,6 +156,29 @@ if (!process.versions.electron) {
         await waitFor('Boolean(document.querySelector("[data-playmode=practice]"))');
         await js('document.querySelector(".expand_btn_trigger").click()');
         await waitFor('document.querySelector(".expand_btn_trigger").getAttribute("aria-expanded") === "true"');
+        await js('document.querySelector("[data-report-problem]").click()');
+        await waitFor('Boolean(document.querySelector("#sentry-feedback")?.shadowRoot?.querySelector("textarea"))');
+        assert.equal(await js('document.querySelector("#sentry-feedback").shadowRoot.querySelectorAll("input:not([type=hidden])").length'), 0);
+        assert.equal(await js('Array.from(document.querySelector("#sentry-feedback").shadowRoot.querySelectorAll("input[type=hidden]")).every(input => !input.value)'), true);
+        await js(`(() => {
+          const root = document.querySelector('#sentry-feedback').shadowRoot;
+          const message = root.querySelector('textarea');
+          message.value = 'telemetry-smoke-player-report';
+          message.dispatchEvent(new Event('input', {bubbles: true}));
+          root.querySelector('form').requestSubmit();
+        })()`);
+        await waitFor('!document.querySelector("#sentry-feedback")?.shadowRoot?.querySelector("dialog[open]")');
+        process.emit('uncaughtException', new Error('telemetry-smoke-main'));
+        await js(`console.error(new Error('telemetry-smoke-console')); setTimeout(() => {throw new Error('telemetry-smoke-renderer');}, 0); setTimeout(() => {void Promise.reject(new Error('telemetry-smoke-rejection'));}, 20);`);
+        const telemetryDeadline = Date.now() + 10000;
+        const expectedReports = ['player-report', 'main', 'console', 'renderer', 'rejection'];
+        while (!expectedReports.every(kind => envelopes.some(body => body.includes(`telemetry-smoke-${kind}`)))) {
+          assert(Date.now() < telemetryDeadline, `Missing Sentry reports: ${expectedReports.filter(kind => !envelopes.some(body => body.includes('telemetry-smoke-' + kind))).join(', ')}`);
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        assert(envelopes.some(body => body.includes(`legion@${require('../../package.json').version}`)), 'Events must identify the shipped product version');
+        console.log('Real Electron main/renderer errors, rejection, console error, and player feedback reach the local Sentry sink');
+        await js('document.querySelector(".expand_btn_trigger").click()');
         await js(`document.querySelector('.dropdown-content a[href="/guide"]').click()`);
         await waitFor('Boolean(document.querySelector("#guide-title"))');
         await js('document.querySelectorAll(".guide-page img").forEach(image => {image.loading = "eager";})');
@@ -278,9 +325,20 @@ if (!process.versions.electron) {
         console.log('Muted Phaser audio: two natural plays → next track → health-driven jump passes');
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
+      if (!process.argv.includes('--images')) {
+        const crashed = new Promise(resolve => win.webContents.once('render-process-gone', (_event, details) => resolve(details.reason)));
+        win.webContents.debugger.attach('1.3');
+        void win.webContents.debugger.sendCommand('Page.crash').catch(() => {});
+        assert.equal(await crashed, 'crashed');
+        await Sentry.flush(2000);
+        assert(envelopes.some(body => body.includes("process exited with 'crashed'")), 'Native renderer exits must be reported');
+        console.log('Native renderer crash reporting passes');
+      }
     } finally {
       win.destroy();
-      app.quit();
+      await Sentry.close(2000);
+      sink.closeAllConnections();
+      sink.close();
     }
-  }).catch(error => {console.error(error); app.exit(1);});
+  }).then(() => app.quit()).catch(error => {console.error(error); app.exit(1);});
 }

@@ -60,6 +60,18 @@ jobs:
             --platform linux/amd64 \
             .
 
+      - name: Upload exact container source maps
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: dynetis-games
+          SENTRY_PROJECT: ${{ vars.SENTRY_BACKEND_PROJECT }}
+        run: |
+          test -n "$SENTRY_AUTH_TOKEN" && test -n "$SENTRY_PROJECT"
+          container=$(docker create gcr.io/legion-32c6d/server:${{ github.sha }})
+          docker cp "$container:/usr/src/app/dist" "$RUNNER_TEMP/server-dist"
+          docker rm "$container"
+          server/node_modules/.bin/sentry-cli sourcemaps upload "$RUNNER_TEMP/server-dist" --release "legion@$(node -p "require('./client/package.json').version")"
+
       - name: Push Docker image
         run: |
           docker push gcr.io/legion-32c6d/server:${{ github.sha }}
@@ -77,7 +89,7 @@ jobs:
             --timeout 3600 \
             --max-instances 1 \
             --min-instances 0 \
-            --set-env-vars NODE_ENV=production,API_URL=${{ vars.API_URL }},CLIENT_ORIGIN=app://legion \
+            --set-env-vars NODE_ENV=production,SENTRY_RELEASE="legion@$(node -p "require('./client/package.json').version")",API_URL=${{ vars.API_URL }},CLIENT_ORIGIN=app://legion \
             --set-secrets API_KEY=API_KEY:latest
 
       - name: Deployment summary

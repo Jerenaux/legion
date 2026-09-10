@@ -1,4 +1,4 @@
-// server.ts
+import {flush} from './instrument';
 
 import express from 'express';
 import { Socket, Server } from 'socket.io';
@@ -297,23 +297,11 @@ server.listen(port, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  // Optionally perform cleanup
-  process.exit(1); // Exit to allow Cloud Run to restart the container
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Optionally perform cleanup
-  process.exit(1); // Exit to allow Cloud Run to restart the container
-});
-
 const shutdown = () => {
   console.log('Received kill signal, shutting down gracefully.');
   server.close(() => {
     console.log('Closed out remaining connections.');
-    process.exit(0);
+    void flush(2000).finally(() => process.exit(0));
   });
 
   // Force shutdown after 10 seconds

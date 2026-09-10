@@ -1,4 +1,4 @@
-import {onRequest} from "firebase-functions/v2/https";
+import {onRequest} from "./telemetry";
 
 import admin, {corsMiddleware, getUID} from "./APIsetup";
 import {

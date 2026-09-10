@@ -42,6 +42,10 @@ League promotion and demotion happens only in the `leaguesUpdate` Friday 19:00 U
 
 Keep every production composite index in `firestore.indexes.json`; the API deployment applies that file before deploying Functions. Any new or changed Firestore query must include its required index in the same PR.
 
+## Error reporting
+
+Preserve early Sentry initialization in Electron, Bun services, and Firebase. Register Firebase HTTP/scheduled handlers through `api/functions/src/telemetry.ts` so reports flush before serverless execution ends. Follow `docs/error-reporting.md`; do not log credentials, bundle upload tokens/source maps, or enable backend tracing/profiling by default. Keep the real SDK loopback smoke test in `bun run test:guide` passing.
+
 ## Player guide
 
 When changing player-facing rules, controls, unlocks, or the illustrated UI, update the bundled guide in `client/src/components/GuidePage.tsx` in the same batch. The implemented game—not the legacy external guide—is authoritative. Follow `docs/player-guide.md` to refresh its cropped screenshots and run `bun run test:guide` from `client` to verify the real packaged routes with local fixtures. Never ship the screenshot fixtures in the release bundle.

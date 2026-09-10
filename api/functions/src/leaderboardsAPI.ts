@@ -1,5 +1,4 @@
-import {onRequest} from "firebase-functions/v2/https";
-import {onSchedule} from "firebase-functions/v2/scheduler";
+import {onRequest, onSchedule} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 
 import admin, {corsMiddleware, getUID} from "./APIsetup";

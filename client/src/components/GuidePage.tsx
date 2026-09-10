@@ -166,6 +166,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h3>“Can I leave a battle?”</h3>
             <p>The combat menu offers <strong>Abandon Game</strong> and asks for confirmation. Leaving counts as a loss.</p>
             <h3>Before you queue again</h3>
+            <p>Something not working as expected? Choose <strong>Report a problem</strong> in the top-right menu and describe what happened. Reports include your game version and player ID, but do not ask for passwords or contact details.</p>
             <p>Spend spare SP. Refill consumables. Check your spells. Then pick one thing to practice in the next fight: protect your healer, avoid clustering, or use the turn order to secure a knockout.</p>
             {onClose ? (
               <button type="button" className="guide-finish" onClick={onClose}>Back to queue →</button>
