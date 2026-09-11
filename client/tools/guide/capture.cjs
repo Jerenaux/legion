@@ -47,6 +47,7 @@ if (!process.versions.electron) {
   app.on('window-all-closed', () => {});
   const {pathToFileURL} = require('node:url');
   const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
+  const {PACKAGED_CSP} = require('../../electron/security');
   const dist = process.argv[2];
   app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-profile-')));
   // Exercise the real production SDK and preload, but ingest exclusively on loopback.
@@ -68,8 +69,13 @@ if (!process.versions.electron) {
   Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
-    // Fail closed: neither telemetry nor the game can reach any external service.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`)}));
+    const logrocketLive = process.argv.includes('--logrocket-live');
+    const logrocket = await require('./logrocket.cjs').installLogRocketSink(session.defaultSession, logrocketLive);
+    // Fail closed: game/Sentry stay local; only the explicit LogRocket verification mode may upload fixtures.
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !logrocket.allows(details.url)}));
+    session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
+      responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP]},
+    }));
     protocol.handle('app', request => {
       if (new URL(request.url).pathname === '/__fixture') return Response.json({});
       let target = resolveAppPath(dist, request.url);
@@ -81,7 +87,7 @@ if (!process.versions.electron) {
     win.webContents.setAudioMuted(true);
     const rendererErrors = [];
     win.webContents.on('console-message', event => {
-      if (event.level === 'error' && !event.message.includes('telemetry-smoke-')) {rendererErrors.push(event.message); console.log('Renderer:', event.message);}
+      if (event.level === 'error' && !event.message.includes('telemetry-smoke-') && !event.message.includes('https://blocked.invalid/__csp_probe__.js')) {rendererErrors.push(event.message); console.log('Renderer:', event.message);}
     });
     const js = code => win.webContents.executeJavaScript(code);
     const waitFor = async expression => {
@@ -122,6 +128,27 @@ if (!process.versions.electron) {
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
+        await waitFor('typeof window._LRLogger === "function"');
+        assert.equal(await js(`new Promise(resolve => {
+          document.addEventListener('securitypolicyviolation', event => {
+            if (event.blockedURI === 'https://blocked.invalid/__csp_probe__.js') resolve(event.effectiveDirective);
+          });
+          const script = document.createElement('script');
+          script.src = 'https://blocked.invalid/__csp_probe__.js';
+          document.head.appendChild(script);
+          setTimeout(() => resolve('No CSP violation'), 2000);
+        })`), 'script-src-elem', 'Unrelated remote scripts must still be blocked by CSP, not just the test network filter');
+        await ready();
+        await js(`(async () => {
+          const marker = document.createElement('div');
+          marker.textContent = 'logrocket-smoke-dom';
+          const input = document.createElement('input');
+          input.value = 'private-logrocket-input';
+          marker.appendChild(input);
+          document.body.appendChild(marker);
+          await fetch('/__fixture?token=private-logrocket-query', {method: 'POST',
+            headers: {Authorization: 'private-logrocket-header'}, body: 'private-logrocket-body'});
+        })()`);
         const expectedVersion = `v${require('../../package.json').version}`;
         assert.equal(await js('document.querySelector(".title-screen-version")?.textContent'), expectedVersion);
         assert.equal(await js('document.querySelector(".title-screen-content").getAttribute("aria-busy")'), 'true');
@@ -325,6 +352,24 @@ if (!process.versions.electron) {
         console.log('Muted Phaser audio: two natural plays → next track → health-driven jump passes');
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
+      const recordingDeadline = Date.now() + 15000;
+      const delivered = logrocketLive ? logrocket.accepted : logrocket.uploads;
+      while (!delivered.some(body => body.includes('Arena Apprentice')) && Date.now() < recordingDeadline) await new Promise(resolve => setTimeout(resolve, 100));
+      const recorded = Buffer.concat(logrocket.uploads);
+      assert(recorded.includes('Arena Apprentice'), 'LogRocket must upload the combat HUD under the production CSP');
+      assert(delivered.some(body => body.includes('Arena Apprentice')), 'The ingestion endpoint must accept the combat HUD upload');
+      if (!process.argv.includes('--images')) {
+        assert(recorded.includes('logrocket-smoke-dom'), 'LogRocket must upload DOM changes, not just initialize');
+        assert(recorded.includes('app://legion/__fixture'), 'LogRocket must retain sanitized network diagnostics');
+        assert(!recorded.includes('private-logrocket-'), 'LogRocket must not upload inputs, request bodies, headers or query secrets');
+      }
+      assert.deepEqual(logrocket.failures, [], 'Live LogRocket ingestion must accept the verification recording');
+      console.log('Real LogRocket recorder: DOM/combat HUD + sanitized network uploads verified under production CSP');
+      if (logrocketLive) {
+        const recordingURL = await js('new Promise(resolve => {window._lr_surl_cb(resolve); setTimeout(() => resolve(null), 10000);})');
+        assert(recordingURL, 'LogRocket did not provide a session URL');
+        console.log('Verify playback in LogRocket:', recordingURL);
+      }
       if (!process.argv.includes('--images')) {
         const crashed = new Promise(resolve => win.webContents.once('render-process-gone', (_event, details) => resolve(details.reason)));
         win.webContents.debugger.attach('1.3');

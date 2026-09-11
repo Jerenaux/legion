@@ -6,7 +6,7 @@ const {pathToFileURL} = require("node:url");
 
 const {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
-const {isSafeExternalURL, isTrustedSender} = require("./electron/security");
+const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
@@ -91,9 +91,8 @@ if (hasSingleInstanceLock) app.whenReady().then(async () => {
   registerIPC();
   registerAppProtocol();
   if (!isDev) {
-    const csp = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' https: wss:; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'";
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => callback({
-      responseHeaders: {...details.responseHeaders, "Content-Security-Policy": [csp],
+      responseHeaders: {...details.responseHeaders, "Content-Security-Policy": [PACKAGED_CSP],
         "Document-Policy": ["include-js-call-stacks-in-crash-reports"]},
     }));
   }

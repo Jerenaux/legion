@@ -88,7 +88,7 @@ jobs:
           GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
           MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
 
-      - name: Smoke-test packaged routes, combat, and Sentry reporting
+      - name: Smoke-test packaged routes, combat, Sentry, and LogRocket recording
         working-directory: client
         run: |
           node -e "require('electron')"

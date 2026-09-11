@@ -21,7 +21,7 @@ Desktop releases remain manual and main-only. Merging this setup does not update
 
 ## Privacy and cost
 
-Disable automatic HTTP bodies, headers, cookies, URL query parameters, local variables, names/emails, screenshots, and replay. Shared scrubbing also removes credential-shaped fields, query strings, and JWTs from renderer/backend event text. Don't log credentials: no scrubber can recognize arbitrary private text, and native minidumps can contain process memory. The report form asks for no name/email and warns players against including private information. Existing LogRocket remains unchanged.
+For Sentry, disable automatic HTTP bodies, headers, cookies, URL query parameters, local variables, names/emails, screenshots, and replay. Shared scrubbing also removes credential-shaped fields, query strings, and JWTs from renderer/backend event text. Don't log credentials: no scrubber can recognize arbitrary private text, and native minidumps can contain process memory. The report form asks for no name/email and warns players against including private information. LogRocket's separate privacy controls are described below.
 
 Backend tracing/profiling is off. Existing 10% renderer performance sampling is retained; errors are not sampled away. As verified on 2026-09-10, the organization uses the free Developer plan with a shared 5,000-error allowance and no on-demand spending. No paid plan or billing change was made. Check **Settings → Subscription / Usage** before relying on coverage at higher volume: exhausted quotas can discard reports, and retention depends on the plan.
 
@@ -32,3 +32,31 @@ Both projects enable server-side sensitive-data and IP-address scrubbing. Their 
 Run `bun run lint`, the four services' test/type checks, and `bun run test:guide` from `client`. The guide smoke test is muted, uses local fixtures only, exercises the real SDK transport, and runs in CI. Do not send deliberate production exceptions through live gameplay endpoints. For account-level verification, send a clearly tagged event in the `verification` environment and confirm its receipt/release/source context in Sentry; do not claim dashboard delivery based only on an accepted envelope.
 
 The September 2026 setup was verified with tagged synthetic exceptions in both projects: `legion@0.5.3` reports were stored and their uploaded desktop/Firebase source maps resolved compiled stack locations to the original TypeScript source. These are setup checks, not player failures. Future project migrations must repeat this check and update both ingestion DSNs and upload destinations together.
+
+## LogRocket desktop recordings
+
+The production renderer initializes `bpfssp/legion` before other imports and identifies signed-in players by Firebase UID, not name/email. It embeds the same `legion@<version>` release as Sentry. Development builds do not initialize LogRocket.
+
+The npm package loads its recorder from `https://cdn.lrkt-in.com` and needs a blob worker. `PACKAGED_CSP` in `client/electron/security.js` permits that exact script origin and local workers; the Electron shell and packaged-route smoke test share it. Keep the sandbox, context isolation, web security, and unrelated-script/iframe restrictions intact. Review the origin if the LogRocket SDK changes; do not allow arbitrary remote scripts or disable CSP.
+
+Inputs, network bodies/headers/referrers, URL credentials/query strings/fragments, and IP collection are excluded. Network method/status/timing and DOM interactions remain available. Console and automatic exception capture are disabled in LogRocket because Sentry already handles those with explicit scrubbing.
+
+### Coverage limits
+
+- LogRocket records DOM changes and interactions, including menus, queues, the guide, and the combat HUD. It is **not a screen-video recorder**: Phaser's WebGL arena pixels are not captured. Do not claim a session reproduces the complete battle visually.
+- Bundled images/fonts are served from private `app://legion/` URLs that LogRocket's replay servers cannot fetch. No public asset mirror is configured, so visual playback can have missing assets. LogRocket's supported solution is a version-matched public static asset mirror and `dom.baseHref`; that is a separate release-infrastructure change, not a reason to expose local files or weaken Electron security.
+- An accepted upload/session URL does not prove the dashboard has stored a playable recording. Check actual playback before claiming visual fidelity, and check account quota/retention when diagnosing missing sessions.
+
+### Recording checks
+
+`bun run test:guide` downloads the real CDN recorder (internet required), serves it at its production origin, and intercepts ingestion locally. It checks real DOM/combat HUD uploads and credential/input redaction under the production CSP, and verifies an unrelated remote script is still blocked. CI sends no sessions to LogRocket and keeps Firebase/game traffic blocked. A CDN outage or an incompatible recorder update fails this check rather than silently skipping it.
+
+For an explicit live account check, run from `client`:
+
+```sh
+bun run test:guide --logrocket-live
+```
+
+This opt-in mode sends only synthetic guide/combat fixtures to `bpfssp/legion`, checks HTTP/quota rejection, and prints a session link for dashboard playback verification. It consumes recording quota and is prohibited in CI. Sentry stays on loopback and no production player/match is created. Never run live verification with a real player's profile or credentials.
+
+References: [LogRocket CSP troubleshooting](https://docs.logrocket.com/docs/troubleshooting-sessions), [DOM recording](https://docs.logrocket.com/reference/dom), [private assets and baseHref](https://docs.logrocket.com/reference/accessing-private-assets).
