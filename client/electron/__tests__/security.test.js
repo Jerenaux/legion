@@ -1,6 +1,16 @@
 const path = require("node:path");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("../protocol");
-const {isSafeExternalURL, isTrustedSender} = require("../security");
+const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("../security");
+
+test("permits only the LogRocket recorder origin and local workers alongside bundled scripts", () => {
+  const directives = Object.fromEntries(PACKAGED_CSP.split(';').map(value => {
+    const [name, ...sources] = value.trim().split(/\s+/);
+    return [name, sources];
+  }));
+  expect(directives['script-src']).toEqual(["'self'", 'https://cdn.lrkt-in.com']);
+  expect(directives['worker-src']).toEqual(["'self'", 'blob:']);
+  expect(directives['frame-src']).toEqual(["'none'"]);
+});
 
 test("keeps app protocol paths inside dist", () => {
   const dist = path.resolve("dist");

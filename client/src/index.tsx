@@ -1,3 +1,4 @@
+import './logrocketSetup';
 import './telemetry';
 import { h } from 'preact';
 import { render } from 'preact';
