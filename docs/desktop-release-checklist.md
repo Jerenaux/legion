@@ -6,13 +6,13 @@ Last local verification: 2026-09-01 on `codex/steam-itch-desktop-overhaul` (macO
 
 Use a fresh branch from the latest `main` for each independent work batch, then merge its PR. Desktop releases run only on manual request from `main`; merging code or pushing a tag does not publish a release. Normal CI checks and backend deployments still run automatically.
 
-After confirming all intended work is merged, publish to Itch with:
+After confirming all intended work is merged, build for both stores with:
 
 ```sh
-gh workflow run release-desktop.yml --ref main -F publish_itch=true -F upload_steam=false
+gh workflow run release-desktop.yml --ref main -F publish_itch=true -F upload_steam=true -F steam_branch=playtest
 ```
 
-For artifacts without a store upload, omit the inputs. A dispatch targeting another branch or a tag skips all release jobs. `tools/validate_desktop_release.sh`, also run in CI, checks the manual-only trigger and main-only build guard.
+Then promote the verified Steam Build ID to the **public Legion Demo by default**, following `STEAM_DEPLOYMENT.md`; private upload alone does not complete a normal Steam release. Do not ask for separate publication approval, but request any confirmation Valve requires. Honor explicit private-only, Itch-only, Steam-only, or artifacts-only requests by selecting the corresponding inputs and skipping excluded destinations. For artifacts without a store upload, omit the inputs. A dispatch targeting another branch or a tag skips all release jobs. `tools/validate_desktop_release.sh`, also run in CI, checks the manual-only trigger and main-only build guard.
 
 ## Automated checks
 
@@ -49,6 +49,6 @@ The comparable local macOS arm64 package fell from 694 MB before the desktop cle
 - [ ] Upload to a private beta inside Legion Demo (`3996730`) and verify Steam ticket authentication on Windows and macOS. Follow `STEAM_DEPLOYMENT.md`; the Demo has no Linux depot.
 - [ ] On each store build: create/join matchmaking, complete a match, reconnect after a transport drop, and confirm rewards are applied once.
 - [ ] On Steam Deck/controller: navigate menus, confirm/cancel, switch units, pass turn, open the game menu, enter text with the Steam keyboard, toggle fullscreen, and exit cleanly.
-- [ ] Promote the tested Steam Build ID manually; never automate the default-branch promotion.
+- [ ] Unless explicitly excluded, promote the verified Steam Build ID to the Demo's public/default branch, complete any Valve confirmation, and verify the public Build ID. Record the previous Build ID for rollback.
 
 The unchecked gates require repository signing/store credentials and real launcher/hardware sessions. Manual builds currently allow unsigned packages; signing and notarization use the configured credentials when available. The release workflow smoke-tests all three native packages before any optional store upload.
