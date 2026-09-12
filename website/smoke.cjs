@@ -30,7 +30,7 @@ if (!process.versions.electron) {
       if (external) remote.push(details.url);
       done({cancel: external});
     });
-    const win = new BrowserWindow({show: false, webPreferences: {sandbox: true, contextIsolation: true}});
+    const win = new BrowserWindow({show: false, webPreferences: {sandbox: true, contextIsolation: true, backgroundThrottling: false}});
     win.webContents.setAudioMuted(true);
     try {
       for (const route of ['/', '/game/0']) {
@@ -38,6 +38,7 @@ if (!process.versions.electron) {
         for (const width of [1280, 375]) {
           win.setContentSize(width, 900);
           await win.webContents.executeJavaScript('document.fonts.ready');
+          await win.webContents.executeJavaScript('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
           const state = await win.webContents.executeJavaScript(`({
             scripts: document.scripts.length,
             links: Array.from(document.querySelectorAll('a')).map(a => a.href),
@@ -51,7 +52,8 @@ if (!process.versions.electron) {
           assert(state.title.includes('Classic RPG combat'));
           assert.equal(state.links.filter(link => link.startsWith('https://store.steampowered.com/app/3729580/Legion/')).length, 3);
           assert(state.links.includes('https://dikaryon.itch.io/legion'));
-          if (route === '/') fs.writeFileSync(path.join(profile, `website-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          // Local visual review only; CI verifies layout/assets without GPU screenshots.
+          if (route === '/' && !process.env.CI) fs.writeFileSync(path.join(profile, `website-${width}.png`), (await win.webContents.capturePage()).toPNG());
         }
       }
       assert(remote.every(url => url.startsWith('https://www.youtube-nocookie.com/')), 'The landing page must not contact game/auth/telemetry services');
