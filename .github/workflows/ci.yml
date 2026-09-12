@@ -141,6 +141,11 @@ jobs:
         run: |
           node - <<'JS'
           const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const bundle = fs.readFileSync('./lib/index.js', 'utf8');
+          const mapURLs = [...bundle.matchAll(/sourceMappingURL=([^\s]+)/g)];
+          assert.equal(mapURLs.at(-1)?.[1], 'index.js.map', 'Sentry must resolve the bundle map, not a dependency map');
+          assert.equal(JSON.parse(fs.readFileSync('./lib/index.js.map', 'utf8')).file, 'index.js');
           const Sentry = require('@sentry/google-cloud-serverless');
           const functions = require('./lib');
           assert(Object.keys(functions).length > 0);
