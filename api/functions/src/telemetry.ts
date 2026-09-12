@@ -2,13 +2,20 @@ import * as Sentry from '@sentry/google-cloud-serverless';
 import {onRequest as firebaseOnRequest, HttpsFunction, HttpsOptions, Request} from 'firebase-functions/v2/https';
 import {onSchedule as firebaseOnSchedule, ScheduleOptions, ScheduledEvent} from 'firebase-functions/v2/scheduler';
 import type {Response} from 'express';
+import type {ErrorEvent} from '@sentry/core';
 import {backendTelemetryOptions} from '@legion/shared/telemetry';
 
 Sentry.init({...backendTelemetryOptions,
+  beforeSend: filterAPIEvent,
   enabled: backendTelemetryOptions.enabled && Boolean(process.env.K_SERVICE),
   initialScope: {tags: {service: 'firebase-api'}},
   integrations: [Sentry.captureConsoleIntegration({levels: ['error']})],
 });
+
+export function filterAPIEvent(event: ErrorEvent) {
+  if (event.exception?.values?.some(value => value.type === 'AuthenticationError')) return null;
+  return backendTelemetryOptions.beforeSend(event);
+}
 
 type Handler = (request: Request, response: Response) => void | Promise<void>;
 const wrap = (handler: Handler) => Sentry.wrapHttpFunction((request, response) => handler(request as Request, response));

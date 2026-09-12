@@ -50,6 +50,14 @@ if (!process.versions.electron) {
   const {PACKAGED_CSP} = require('../../electron/security');
   const dist = process.argv[2];
   app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-profile-')));
+  const inheritedDumps = path.join(app.getPath('userData'), 'foreign-crashpad');
+  const foreignDumps = ['reports', 'completed'].map(folder => {
+    fs.mkdirSync(path.join(inheritedDumps, folder), {recursive: true});
+    const file = path.join(inheritedDumps, folder, 'foreign.dmp');
+    fs.writeFileSync(file, 'Not a Legion crash; must not be read or deleted');
+    return file;
+  });
+  app.setPath('crashDumps', inheritedDumps);
   // Exercise the real production SDK and preload, but ingest exclusively on loopback.
   const Sentry = require('@sentry/electron/main');
   const envelopes = [];
@@ -65,7 +73,8 @@ if (!process.versions.electron) {
   const sinkURL = `http://127.0.0.1:${sink.address().port}`;
   const originalInit = Sentry.init;
   Sentry.init = options => originalInit({...options, dsn: `${sinkURL.replace('http://', 'http://test@')}/1`, environment: 'test', onFatalError: () => {}});
-  require('../../electron/telemetry').initializeTelemetry({isPackaged: true, getVersion: () => require('../../package.json').version});
+  require('../../electron/telemetry').initializeTelemetry(app);
+  assert.equal(app.getPath('crashDumps'), path.join(app.getPath('userData'), 'legion-crashpad'));
   Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
@@ -378,6 +387,8 @@ if (!process.versions.electron) {
         await Sentry.flush(2000);
         assert(envelopes.some(body => body.includes("process exited with 'crashed'")), 'Native renderer exits must be reported');
         console.log('Native renderer crash reporting passes');
+        assert(foreignDumps.every(file => fs.existsSync(file)), 'Never scan/delete foreign crash dumps');
+        console.log('Native crash storage isolation passes');
       }
     } finally {
       win.destroy();

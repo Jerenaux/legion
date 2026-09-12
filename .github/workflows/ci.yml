@@ -72,6 +72,9 @@ jobs:
           bun run test --runInBand
           bunx tsc --noEmit
 
+      - name: Check promotional website isolation
+        run: node website/build.cjs
+
       - name: Build and package Electron client
         run: |
           cd client
@@ -95,6 +98,11 @@ jobs:
           sudo chown root:root node_modules/electron/dist/chrome-sandbox
           sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
           xvfb-run -a bun run test:guide
+          xvfb-run -a node ../website/smoke.cjs
+
+      - name: Smoke-test actual packaged startup and clean shutdown offline
+        working-directory: client
+        run: xvfb-run -a release/linux-unpacked/Legion --no-sandbox --smoke-test
 
   build-api:
     name: Build API

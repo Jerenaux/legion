@@ -19,6 +19,7 @@ import { PlayerDataForGame } from '@legion/shared/interfaces';
 import { withRetry } from './utils';
 import {authenticateSocket} from '@legion/shared/socketAuth';
 import {shouldRetireGame} from './gameLifecycle';
+import {desktopCors, rejectSocketOrigin, rejectUntrustedOrigin} from '@legion/shared/corsPolicy';
 
 if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     // We're running locally with emulators
@@ -45,32 +46,17 @@ const PORT = process.env.PORT || 3123;
 // Create a new express application instance
 const app: express.Application = express();
 
-const allowedOrigins = [process.env.CLIENT_ORIGIN, 'app://legion', 'http://localhost:8080'];
-
-const corsSettings = {
-  origin: (origin, callback) => {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.indexOf('*') !== -1) {
-        // console.log("Successful connection from origin:", origin);
-        callback(null, true);
-      } else {
-        console.log("Origin not allowed:", origin);
-        callback(new Error('CORS not allowed'));
-      }
-  },
-  methods: ["GET", "POST"],
-  credentials: true
-};
-
 // Use the cors middleware
-app.use(cors(corsSettings));
+app.use(rejectUntrustedOrigin, cors(desktopCors));
 
 // Create a new http server instance
 const server = createServer(app);
 
 // Create a new socket.io instance
 const io = new Server(server, {
-    cors: corsSettings
+    cors: desktopCors,
   });
+io.engine.use(rejectSocketOrigin);
 
 function shortToken(token: string) {
   // Return the first 3 and last 3 characters of the token

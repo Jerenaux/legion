@@ -2,9 +2,11 @@ import * as Sentry from '@sentry/react';
 import {init as initElectron, eventLoopBlockIntegration} from '@sentry/electron/renderer';
 import {dsn, dataCollection} from '../electron/telemetry-options';
 import {scrubTelemetry} from '@legion/shared/telemetryPrivacy';
+import {getElectronAPI} from './utils/electronUtils';
 
 if (process.env.NODE_ENV === 'production') {
   const options = {
+    enabled: !getElectronAPI()?.smokeTest,
     dsn,
     environment: 'production',
     release: process.env.SENTRY_RELEASE,
