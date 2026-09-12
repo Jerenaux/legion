@@ -7,6 +7,7 @@ import {verifyUID} from '../authPolicy';
 import {backendTelemetryOptions} from '../../../../shared/telemetry';
 
 test('reports caught HTTP and scheduled failures before completion, preserving deployment metadata and retries', async () => {
+  expect(filterAPIEvent({exception: {values: [{type: 'Error', value: 'Unexpected failure'}, {type: 'AuthenticationError'}]}})).not.toBeNull();
   const sent: string[] = [];
   const pending = new Set<Promise<void>>();
   Sentry.init({...backendTelemetryOptions, enabled: true, environment: 'test',

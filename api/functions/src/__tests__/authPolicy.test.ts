@@ -27,6 +27,13 @@ describe("API authentication policy", () => {
     }
     const outage = Object.assign(new Error('Verifier unavailable'), {code: 'auth/internal-error'});
     await expect(verifyUID('Bearer example', async () => {throw outage;})).rejects.toBe(outage);
+    try {
+      await verifyUID('Bearer example', async () => ({}));
+      throw new Error('Verifier contract violation must reject');
+    } catch (error) {
+      expect(error).not.toBeInstanceOf(AuthenticationError);
+      expect((error as Error).message).toBe('Verified token has no uid');
+    }
   });
 
   test("requires an exact service key in production", () => {

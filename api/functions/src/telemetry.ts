@@ -13,7 +13,8 @@ Sentry.init({...backendTelemetryOptions,
 });
 
 export function filterAPIEvent(event: ErrorEvent) {
-  if (event.exception?.values?.some(value => value.type === 'AuthenticationError')) return null;
+  const exceptions = event.exception?.values;
+  if (exceptions?.length && exceptions.every(value => value.type === 'AuthenticationError')) return null;
   return backendTelemetryOptions.beforeSend(event);
 }
 

@@ -20,7 +20,7 @@ export async function verifyUID(
   const token = extractBearerToken(authorization);
   try {
     const decoded = await verifyToken(token);
-    if (!decoded.uid) throw new AuthenticationError("Verified token has no uid");
+    if (!decoded.uid) throw new Error("Verified token has no uid");
     return decoded.uid;
   } catch (error) {
     // Do not hide verifier outages, service-account errors, or unexpected failures.
