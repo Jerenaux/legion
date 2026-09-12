@@ -10,6 +10,8 @@ The Bun game server and matchmaker initialize Sentry before other services. Fire
 
 ## CI credentials and source maps
 
+Firebase's `firebase.json` predeploy hook is the **only** deployment build. Pass `SENTRY_AUTH_TOKEN` and `SENTRY_BACKEND_PROJECT` to the Firebase deploy step itself. Never build/upload first and then let a credential-less predeploy rebuild replace the instrumented files. `api/functions/src/__tests__/deployment.test.ts` guards this sequencing. Verify a deployed bundle's debug ID against its uploaded map, not just a synthetic event made from an earlier local build.
+
 - Repository secret `SENTRY_AUTH_TOKEN`: organization-scoped CI token for `dynetis-games`, with `org:ci` permission for source maps and releases. Dashboard verification uses a separate authenticated session, not a broader CI token. Never put this token in the client bundle, Docker build arguments, or a committed env file.
 - Repository variable `SENTRY_BACKEND_PROJECT`: `legion-backend` (project ID `4512060848078928`). Desktop project: `legion-desktop` (ID `4512060847947856`). DSNs are public ingestion keys, not upload credentials.
 - Open [Legion Desktop](https://dynetis-games.sentry.io/issues/?project=4512060847947856) or [Legion Backend](https://dynetis-games.sentry.io/issues/?project=4512060848078928). Select the **Dynetis Games** organization if Sentry initially opens another workspace. The former projects no longer exist; do not restore their old DSNs.
@@ -21,6 +23,12 @@ Desktop releases remain manual and main-only. Merging this setup does not update
 
 ## Privacy and cost
 
+Set Electron's `crashDumps` path to `userData/legion-crashpad` **before** initializing Sentry. Do not scan, migrate or delete the inherited/default crash directory: old reports there can belong to Steam. Valve-identified minidumps are also rejected by the desktop event filter. Native dumps can contain process memory, so metadata scrubbing alone does not make collecting another application's dump safe.
+
+Only the exact Electron `DEP0180` / `fs.Stats` console deprecation is suppressed. Real exceptions, other warnings, OOM and renderer crashes remain reportable. Firebase's `AuthenticationError` distinguishes missing/malformed/expired credentials from verifier outages; only the former is excluded from Sentry. Never suppress every `auth/*` error or every HTTP 401, as callers may misclassify a real outage.
+
+The game server and matchmaker share the desktop-origin policy. Disallowed origins receive HTTP 403 (Engine.IO uses HTTP 400 for denied WebSocket upgrades), without throwing into error reporting. Keep direct WebSocket validation and Firebase token authentication; CORS alone is not authentication. Production Hosting serves a standalone promotional page, never the old browser game.
+
 For Sentry, disable automatic HTTP bodies, headers, cookies, URL query parameters, local variables, names/emails, screenshots, and replay. Shared scrubbing also removes credential-shaped fields, query strings, and JWTs from renderer/backend event text. Don't log credentials: no scrubber can recognize arbitrary private text, and native minidumps can contain process memory. The report form asks for no name/email and warns players against including private information. LogRocket's separate privacy controls are described below.
 
 Backend tracing/profiling is off. Existing 10% renderer performance sampling is retained; errors are not sampled away. As verified on 2026-09-10, the organization uses the free Developer plan with a shared 5,000-error allowance and no on-demand spending. No paid plan or billing change was made. Check **Settings → Subscription / Usage** before relying on coverage at higher volume: exhausted quotas can discard reports, and retention depends on the plan.
@@ -30,6 +38,8 @@ Both projects enable server-side sensitive-data and IP-address scrubbing. Their 
 ## Verification
 
 Run `bun run lint`, the four services' test/type checks, and `bun run test:guide` from `client`. The guide smoke test is muted, uses local fixtures only, exercises the real SDK transport, and runs in CI. Do not send deliberate production exceptions through live gameplay endpoints. For account-level verification, send a clearly tagged event in the `verification` environment and confirm its receipt/release/source context in Sentry; do not claim dashboard delivery based only on an accepted envelope.
+
+Native packages support `Legion --smoke-test`: an isolated temporary profile, muted/hidden window, disabled Sentry and LogRocket, blocked remote renderer requests, no Steam authentication, and normal window close after the real `app://legion/` offline-recovery screen renders. A fresh offline profile cannot reach the authenticated title; the guide harness separately checks that full flow. CI and release workflows run this instead of killing the executable after ten seconds. This startup check complements, not replaces, the guide harness's fixture gameplay and real-SDK loopback/crash tests. Never mark synthetic CI sessions as production or send CI recordings to live ingestion.
 
 The September 2026 setup was verified with tagged synthetic exceptions in both projects: `legion@0.5.3` reports were stored and their uploaded desktop/Firebase source maps resolved compiled stack locations to the original TypeScript source. These are setup checks, not player failures. Future project migrations must repeat this check and update both ingestion DSNs and upload destinations together.
 

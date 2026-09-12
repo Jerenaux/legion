@@ -102,15 +102,7 @@ jobs:
           else
             command=("$executable")
           fi
-          "${command[@]}" > release/smoke-${{ matrix.platform }}.log 2>&1 &
-          pid=$!
-          sleep 10
-          if ! kill -0 "$pid" 2>/dev/null; then
-            cat release/smoke-${{ matrix.platform }}.log
-            wait "$pid"
-            exit 1
-          fi
-          kill "$pid"
+          "${command[@]}" --smoke-test
       - name: Archive store directory
         working-directory: client
         shell: bash

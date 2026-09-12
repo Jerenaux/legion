@@ -1,8 +1,10 @@
 const {app, BrowserWindow, ipcMain, net, protocol, session, shell} = require("electron");
-require('./electron/telemetry').initializeTelemetry(app);
 const fs = require("node:fs");
 const path = require("node:path");
 const {pathToFileURL} = require("node:url");
+const smokeTest = process.argv.includes('--smoke-test');
+if (smokeTest) app.setPath('userData', fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'legion-smoke-')));
+require('./electron/telemetry').initializeTelemetry(app);
 
 const {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
@@ -28,6 +30,7 @@ function registerIPC() {
   });
   ipcMain.handle("get-platform-auth", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
+    if (smokeTest) return null;
     const modulePath = app.isPackaged ? path.join(process.resourcesPath, "steamworks.js") : "steamworks.js";
     return getPlatformAuth(process.env, () => require(modulePath));
   });
@@ -63,8 +66,28 @@ function createWindow() {
       sandbox: true,
       devTools: isDev,
       webSecurity: true,
+      additionalArguments: smokeTest ? ['--legion-smoke-test'] : [],
     },
   });
+
+  if (smokeTest) {
+    mainWindow.webContents.setAudioMuted(true);
+    const timeout = setTimeout(() => {console.error('Packaged startup timed out'); app.exit(1);}, 20000);
+    mainWindow.webContents.once('did-finish-load', async () => {
+      try {
+        let recovered = false;
+        for (let attempt = 0; attempt < 100; attempt++) {
+          recovered = await mainWindow.webContents.executeJavaScript('Boolean(document.querySelector(".session-status__retry") && window.electronAPI?.smokeTest)');
+          if (recovered) break;
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        if (!recovered || mainWindow.webContents.getURL() !== PACKAGED_APP_URL) throw new Error('Packaged offline recovery screen missing');
+        clearTimeout(timeout);
+        console.log('Packaged offline recovery screen loaded; closing normally');
+        mainWindow.close();
+      } catch (error) {console.error(error); app.exit(1);}
+    });
+  }
 
   mainWindow.webContents.setWindowOpenHandler(({url}) => {
     if (isSafeExternalURL(url)) shell.openExternal(url);
@@ -74,8 +97,9 @@ function createWindow() {
     if (!isTrustedSender(url, isDev)) event.preventDefault();
   });
   mainWindow.once("ready-to-show", () => {
+    if (!mainWindow) return;
     mainWindow.maximize();
-    mainWindow.show();
+    if (!smokeTest) mainWindow.show();
   });
   mainWindow.on("closed", () => { mainWindow = undefined; });
 
@@ -88,6 +112,10 @@ function createWindow() {
 }
 
 if (hasSingleInstanceLock) app.whenReady().then(async () => {
+  if (smokeTest) session.defaultSession.webRequest.onBeforeRequest(
+    {urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*']},
+    (_details, done) => done({cancel: true}),
+  );
   registerIPC();
   registerAppProtocol();
   if (!isDev) {

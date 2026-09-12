@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { extractBearerToken, hasValidAPIKey, isDevelopmentEnvironment, verifyUID } from "../authPolicy";
+import { AuthenticationError, extractBearerToken, hasValidAPIKey, isDevelopmentEnvironment, verifyUID } from "../authPolicy";
 
 describe("API authentication policy", () => {
   test("rejects a missing or malformed bearer token", () => {
@@ -18,6 +18,22 @@ describe("API authentication policy", () => {
   test("returns only a verified non-empty uid", async () => {
     await expect(verifyUID("Bearer good", async (token) => ({ uid: token }))).resolves.toBe("good");
     await expect(verifyUID("Bearer bad", async () => ({ uid: "" }))).rejects.toThrow("Verified token has no uid");
+  });
+
+  test('distinguishes expected auth rejections from verifier outages', async () => {
+    expect(() => extractBearerToken(undefined)).toThrow(AuthenticationError);
+    for (const code of ['auth/argument-error', 'auth/invalid-id-token', 'auth/id-token-expired', 'auth/id-token-revoked', 'auth/user-disabled', 'auth/user-not-found']) {
+      await expect(verifyUID('Bearer rejected', async () => {throw {code};})).rejects.toBeInstanceOf(AuthenticationError);
+    }
+    const outage = Object.assign(new Error('Verifier unavailable'), {code: 'auth/internal-error'});
+    await expect(verifyUID('Bearer example', async () => {throw outage;})).rejects.toBe(outage);
+    try {
+      await verifyUID('Bearer example', async () => ({}));
+      throw new Error('Verifier contract violation must reject');
+    } catch (error) {
+      expect(error).not.toBeInstanceOf(AuthenticationError);
+      expect((error as Error).message).toBe('Verified token has no uid');
+    }
   });
 
   test("requires an exact service key in production", () => {
