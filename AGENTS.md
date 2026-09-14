@@ -6,7 +6,7 @@
 - Commit and push each completed batch. Merge through its own PR when authorized; keep later independent work separate.
 - Desktop release builds are manual-only and must use `main`, after all intended changes have been merged. Never release from a feature branch, and do not add automatic desktop release triggers on merges, pushes, or tags.
 - Use `gh workflow run release-desktop.yml --ref main` with the explicitly requested store-upload inputs. Do not trigger a release merely because work was merged. Normal CI checks and backend deployment workflows remain automatic.
-- Steam uploads currently target **Legion Demo (`3996730`)** only: macOS depot `3996731`, Windows depot `3996732`, no Linux depot. Use a private branch inside that Demo app, never the full game (`3729580`) or the separate Playtest app. Follow `STEAM_DEPLOYMENT.md`; public promotion happens only after Steam authentication and gameplay verification.
+- Steam releases target **Legion Demo (`3996730`)** only: macOS depot `3996731`, Windows depot `3996732`, no Linux depot. Never target the full game (`3729580`) or the separate Playtest app. **Update the public/default Demo by default**, unless Jerome explicitly requests a private-only release or otherwise excludes public Steam publication. Follow `STEAM_DEPLOYMENT.md`: the workflow stages the build on `playtest`, then promote that exact verified Build ID through Steamworks or the publisher API. Do not stop at the private upload or ask for separate publication approval; request any confirmation Valve requires and verify the public branch actually changed. Preserve the previous public Build ID for rollback.
 
 ## Legion versioning
 

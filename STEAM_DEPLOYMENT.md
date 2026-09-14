@@ -14,6 +14,8 @@ The workflow uploads **Legion Demo**, not the full game or the separate Steam Pl
 
 The Demo has no Linux depot. Linux artifacts remain available for Itch. Never substitute the full-game App ID `3729580` or assume Windows is the first depot. The wishlist button should still link to the full game's store page.
 
+**Standing release instruction:** a requested Steam release includes updating the Demo's public/default branch, unless Jerome explicitly requests private-only distribution or otherwise excludes public Steam publication. The private `playtest` branch is a staging step, not the normal final destination. Do not ask again for permission to promote; Valve's authentication/confirmation requirements still apply.
+
 ## Steam upload authentication
 
 Use a Steam build account with access to the Demo and only the required upload permissions. Authenticate an **isolated native Linux SteamCMD installation**, not the configuration shared with your desktop Steam launcher. On Apple Silicon, use a native x86 Linux environment (for example Cloud Shell); 32-bit SteamCMD is not reliably supported by Docker's Mac emulation.
@@ -72,8 +74,19 @@ The desktop shell takes its App ID from Steam's `SteamAppId` launch environment.
    ```
 
    Add `publish_itch=true` only when an Itch release is also requested. Both stores consume the same platform artifacts and product version from `client/package.json`.
-4. Install the Demo's private branch on Windows and macOS. Verify startup, Steam login, matchmaking, a completed match, reconnect, and clean exit. Verify a direct download and an Itch session still work too.
-5. Only after verification, manually promote that exact Build ID to the Demo's public/default branch in [Steamworks](https://partner.steamgames.com/apps/builds/3996730). The workflow rejects public/default destinations and never promotes them automatically. Keep the previous Build ID for rollback.
+4. Verify the completed workflow and its exact commit, source-map uploads, and packaged startup checks. Run the relevant Steam login/gameplay checks for the changes, including matchmaking, match completion, reconnect, and clean exit where applicable. Keep direct-download and Itch authentication covered too. Report any untested hardware/session paths honestly; never publish a known failing build.
+5. Unless the request explicitly excludes public publication, promote that exact Build ID to the Demo's public/default branch in [Steamworks](https://partner.steamgames.com/apps/builds/3996730) or through the publisher API below. Do not rebuild or stop at the private upload. Keep the previous public Build ID for rollback, complete any Valve confirmation, then verify the public branch points to the new Build ID before reporting it live.
+
+### Public promotion through the publisher API
+
+Use Valve's [ISteamApps API](https://partner.steamgames.com/doc/webapi/ISteamApps) from a trusted local/server process. The publisher credential is `STEAM_WEB_API_KEY` in Secret Manager, project `legion-32c6d`; keep it in memory, never in command arguments, logs, source control, or the client. This is separate from the SteamCMD login cache, which promotion must not modify.
+
+1. Read `GetAppBetas/v1` and `GetAppBuilds/v1` for App ID `3996730`. Confirm the staged Build ID belongs to the successful `main` release, includes depots `3996731` and `3996732`, and record the current `public` Build ID.
+2. Call `SetAppBuildLive/v2` with `appid=3996730`, that `buildid`, `betakey=public`, and the authorized publisher account's `steamid`. Verify the account identity rather than guessing it. Send the publisher key securely to `https://partner.steam-api.com/` only.
+3. HTTP 201 means Valve requires confirmation, not that publication is complete. Prompt Jerome to approve the Steam Mobile confirmation; never bypass that confirmation or repeatedly submit promotion requests. If the API rejects the request because no mobile authenticator is registered, use the Steamworks website's SMS confirmation flow instead. Do not change the account's authentication settings to make the API work.
+4. Re-read `GetAppBetas/v1` and confirm `public.BuildID` equals the intended Build ID. If confirmation is pending or publication failed, report that explicitly.
+
+The workflow's `steam_branch=playtest` input and public/default rejection remain intentional: SteamCMD's `SetLive` supports beta branches, not the default branch. Public-by-default is the complete release procedure above, not a request to pass `public` to the upload action. Builds remain manual-only and main-only.
 
 Manual builds allow unsigned packages; signing and notarization use the configured credentials when available. Signing setup is separate from Steam upload authentication.
 
