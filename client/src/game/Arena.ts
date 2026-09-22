@@ -764,6 +764,7 @@ export class Arena extends Phaser.Scene
         const player = this.getPlayer(team, num);
         const otherTeam = sameTeam ? team : this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
+        if (!player || !targetPlayer) return;
 
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
         if (isKill) this.killCam(pixelX, pixelY);
