@@ -302,6 +302,26 @@ if (!process.versions.electron) {
         assert.equal(await js('queueCheck.leaves'), 1);
         assert.equal(await js('queueCheck.socket.listenerCount("matchFound")'), 0);
         console.log('A match found while reading the guide opens combat and cleans up the queue');
+        await js(`combatCheck.arena.tutorialManager.queueMessage('howToCastSpell')`);
+        await waitFor('Boolean(document.querySelector(".tutorial-dialogue.spells"))');
+        for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [600, 600], [1920, 1080]]) {
+          win.setContentSize(width, height);
+          await ready();
+          const spellTutorialLayout = await js(`(() => {
+            const dialogue = document.querySelector('.tutorial-dialogue.spells').getBoundingClientRect();
+            const spells = document.querySelector('#player_hud_spells').getBoundingClientRect();
+            return {
+              dialogue: {left: dialogue.left, top: dialogue.top, right: dialogue.right, bottom: dialogue.bottom},
+              spells: {left: spells.left, top: spells.top, right: spells.right, bottom: spells.bottom},
+              overlaps: dialogue.left < spells.right && dialogue.right > spells.left && dialogue.top < spells.bottom && dialogue.bottom > spells.top,
+              offscreen: dialogue.left < 0 || dialogue.top < 0 || dialogue.right > innerWidth || dialogue.bottom > innerHeight,
+            };
+          })()`);
+          fs.writeFileSync(path.join(dist, `tutorial-spell-tooltip-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          assert.equal(spellTutorialLayout.overlaps || spellTutorialLayout.offscreen, false,
+            `Spell tutorial obscures controls or leaves the viewport at ${width}×${height}: ${JSON.stringify(spellTutorialLayout)}`);
+          console.log(`Spell tutorial remains visible and clear of its controls at ${width}×${height}`);
+        }
         await ready();
         await js(`(() => {
           const {arena} = window.combatCheck;
