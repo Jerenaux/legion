@@ -12,12 +12,17 @@ interface TutorialDialogueProps {
 interface TutorialDialogueState {
   messageIndex: number;
   displayedMessage: string;
-  dialoguePosition: { top?: number; left?: number } | null;
+  dialoguePosition: { bottom: number; right: number; left: 'auto' } | null;
 }
 
 class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogueState> {
   private typingTimer: number | null = null;
   private typingSpeed: number = 30; // milliseconds per character
+  private handleResize = () => {
+    if (this.props.position === 'spells' || this.props.position === 'items') {
+      this.updateDialoguePosition(this.props.position);
+    }
+  };
 
   state: TutorialDialogueState = {
     messageIndex: 0,
@@ -31,8 +36,8 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
     }
     if (this.props.position === 'spells' || this.props.position === 'items') {
       this.updateDialoguePosition(this.props.position);
-      window.addEventListener('resize', this.updateDialoguePosition.bind(this, this.props.position));
     }
+    window.addEventListener('resize', this.handleResize);
   }
 
   componentDidUpdate(prevProps: TutorialDialogueProps, prevState: TutorialDialogueState) {
@@ -42,11 +47,14 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
     if (this.props.messages !== prevProps.messages || this.state.messageIndex !== prevState.messageIndex) {
       this.resetTyping();
     }
+    if (this.props.position !== prevProps.position) {
+      this.handleResize();
+    }
   }
 
   componentWillUnmount() {
     this.clearTypingTimer();
-    window.removeEventListener('resize', this.updateDialoguePosition.bind(this, this.props.position));
+    window.removeEventListener('resize', this.handleResize);
   }
 
   resetTyping() {
@@ -98,8 +106,9 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
       const rect = firstIcon.getBoundingClientRect();
       this.setState({
         dialoguePosition: {
-          top: rect.bottom - 120,
-          left: rect.right - 50,
+          bottom: window.innerHeight - rect.top + 12,
+          right: Math.max(12, window.innerWidth - rect.right),
+          left: 'auto',
         }
       });
     }
