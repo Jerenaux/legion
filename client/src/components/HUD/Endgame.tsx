@@ -32,6 +32,7 @@ import goldIcon from '@assets/gold_icon.png';
 import { mapFrameToCoordinates } from '../utils';
 import { getRewardObject } from '../utils';
 import { getRewardBgImage } from '../utils';
+import {shouldShowUnlockMessage} from './endgameUnlock';
 
 /* eslint-disable react/prefer-stateless-function */
 interface EndgameState {
@@ -228,18 +229,18 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
 
                 <div className="endgame_buttons">
                     {showPlayAgain && (
-                        this.context.getCompletedGames() > 11 ? (
+                        shouldShowUnlockMessage(this.props.mode, this.context.getCompletedGames()) ? (
+                            <div className="endgame_unlock_message">
+                                <img src={_lockIcon} className="shaking-lock" alt="Lock icon" />
+                                <span>You unlocked something new in the main menu!</span>
+                            </div>
+                        ) : (
                             <button type="button" data-game-control
                                 className="endgame_button endgame_button_primary"
                                 onClick={this.handlePlayAgain}
                             >
                                 <span>Play Again!</span>
                             </button>
-                        ) : (
-                            <div className="endgame_unlock_message">
-                                <img src={_lockIcon} className="shaking-lock" alt="Lock icon" />
-                                <span>You unlocked something new in the main menu!</span>
-                            </div>
                         )
                     )}
                     <button type="button" data-game-control
