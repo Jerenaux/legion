@@ -269,6 +269,8 @@ bun run electron:build:linux    # Linux only
 
 ### Steam Deployment
 
+For agent-operated builds, store uploads, public promotion, and recovery, start with the [desktop release runbook](docs/release-runbook.md).
+
 For Steam-specific deployment instructions, see [STEAM_DEPLOYMENT.md](./STEAM_DEPLOYMENT.md).
 
 ## Project Structure

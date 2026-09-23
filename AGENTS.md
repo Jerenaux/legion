@@ -2,6 +2,8 @@
 
 ## Branches and desktop releases
 
+- Follow `docs/release-runbook.md` when operating releases for Jerome. For requested Steam releases, update the public Demo by default unless he asks otherwise: stage privately, verify, then perform the separate public promotion. Report a blocked promotion as incomplete, not as a successful public release.
+
 - Start each independent, coherent work batch on a new branch from the latest `main`. Do not accumulate unrelated requests on one branch or reuse a merged branch.
 - Commit and push each completed batch. Merge through its own PR when authorized; keep later independent work separate.
 - Desktop release builds are manual-only and must use `main`, after all intended changes have been merged. Never release from a feature branch, and do not add automatic desktop release triggers on merges, pushes, or tags.

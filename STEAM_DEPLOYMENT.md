@@ -1,5 +1,7 @@
 # Legion Demo releases on Steam
 
+For the agent-operated end-to-end procedure, monitoring, recovery, and handoff, see [the release runbook](docs/release-runbook.md). Requested Steam releases target the public Demo by default unless Jerome specifies private-only; private upload is staging, and public promotion remains a separate verified operator action.
+
 Desktop releases are manual-only, from `main`, through `.github/workflows/release-desktop.yml`. Merge the intended changes first. Tags and merges do not trigger desktop releases.
 
 ## Destination

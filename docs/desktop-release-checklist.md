@@ -1,6 +1,6 @@
 # Desktop release checklist
 
-Last local verification: 2026-09-01 on `codex/steam-itch-desktop-overhaul` (macOS arm64).
+Use [the release runbook](release-runbook.md) for current operator steps. The checked measurements and test counts below are historical results from 2026-09-01 on `codex/steam-itch-desktop-overhaul` (macOS arm64), not evidence for the next release. Record fresh results against each release's SHA and artifacts; do not reuse these checkmarks as approval. The telemetry entry has since been updated to reflect Sentry Replay.
 
 ## Release policy
 
