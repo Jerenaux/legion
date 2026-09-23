@@ -31,7 +31,7 @@ Only the exact Electron `DEP0180` / `fs.Stats` console deprecation is suppressed
 
 The game server and matchmaker share the desktop-origin policy. Disallowed origins receive HTTP 403 (Engine.IO uses HTTP 400 for denied WebSocket upgrades), without throwing into error reporting. Keep direct WebSocket validation and Firebase token authentication; CORS alone is not authentication. Production Hosting serves a standalone promotional page, never the old browser game.
 
-For Sentry, disable automatic HTTP bodies, headers, cookies, URL query parameters, local variables, names/emails, screenshots, and replay. Shared scrubbing also removes credential-shaped fields, query strings, and JWTs from renderer/backend event text. Don't log credentials: no scrubber can recognize arbitrary private text, and native minidumps can contain process memory. The report form asks for no name/email and warns players against including private information. LogRocket's separate privacy controls are described below.
+For Sentry, disable automatic HTTP bodies, headers, cookies, URL query parameters, local variables, names/emails, and feedback screenshots. Shared scrubbing also removes credential-shaped fields, query strings, and JWTs from renderer/backend event text. Don't log credentials: no scrubber can recognize arbitrary private text, and native minidumps can contain process memory. The report form asks for no name/email and warns players against including private information. Replay privacy controls are described below.
 
 Backend tracing/profiling is off. Existing 10% renderer performance sampling is retained; errors are not sampled away. As verified on 2026-09-10, the organization uses the free Developer plan with a shared 5,000-error allowance and no on-demand spending. No paid plan or billing change was made. Check **Settings → Subscription / Usage** before relying on coverage at higher volume: exhausted quotas can discard reports, and retention depends on the plan.
 
@@ -44,6 +44,18 @@ Run `bun run lint`, the four services' test/type checks, and `bun run test:guide
 Native packages support `Legion --smoke-test`: an isolated temporary profile, muted/hidden window, disabled Sentry and LogRocket, blocked remote renderer requests, no Steam authentication, and normal window close after the real `app://legion/` offline-recovery screen renders. A fresh offline profile cannot reach the authenticated title; the guide harness separately checks that full flow. CI and release workflows run this instead of killing the executable after ten seconds. This startup check complements, not replaces, the guide harness's fixture gameplay and real-SDK loopback/crash tests. Never mark synthetic CI sessions as production or send CI recordings to live ingestion.
 
 The September 2026 setup was verified with tagged synthetic exceptions in both projects: `legion@0.5.3` reports were stored and their uploaded desktop/Firebase source maps resolved compiled stack locations to the original TypeScript source. These are setup checks, not player failures. Future project migrations must repeat this check and update both ingestion DSNs and upload destinations together.
+
+## Sentry desktop replays
+
+Production renderer sessions enable Replay with `replaysSessionSampleRate: 1` (100% of sessions), including sessions without errors. `replaysOnErrorSampleRate: 0` avoids a separate error-only buffering mode. Development and packaged `--smoke-test` runs do not record. This does not change the existing trace sampling rate. The account's replay quota limits accepted recordings; there is no client-side 50-session counter, paid upgrade, or spending change. Once the quota is exhausted, recordings can be discarded until it renews.
+
+The existing Sentry SDK records the Phaser WebGL canvas through `replayCanvasIntegration` in manual snapshot mode. Phaser's `POST_RENDER` event captures pixels before the buffer clears; the SDK limits capture to 2 fps. Keep `preserveDrawingBuffer` disabled and capture failures isolated from gameplay. These are low-frame-rate recordings, not smooth video.
+
+DOM text and all inputs remain masked; other media is blocked, with only `#scene canvas` unblocked. Network bodies and detailed headers are not collected, and custom recording events pass through the shared credential/URL scrubber. Canvas pixels cannot be scrubbed: do not render passwords, chat, or other sensitive information into the arena. Private `app://` fonts and images outside the canvas remain a playback limitation; no public asset mirror is configured.
+
+`bun run test:guide` verifies real compressed Replay envelopes through Electron's transport to a loopback sink, including DOM snapshots, decodable nonblank combat pixels, and input/network redaction under the production CSP. It never consumes live Sentry quota. This verifies capture and transport, not live dashboard storage or playback.
+
+Reference: [Sentry canvas recording](https://docs.sentry.io/platforms/javascript/session-replay/#canvas-recording).
 
 ## LogRocket desktop recordings
 

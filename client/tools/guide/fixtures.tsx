@@ -10,6 +10,9 @@ import { NewCharacter } from '../../../shared/NewCharacter';
 import { Class, League, PlayMode, StatusEffect, Terrain } from '../../../shared/enums';
 import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
+import {getReplay} from '@sentry/react';
+
+Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId()}});
 
 const characters = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind, i) => ({
   ...new NewCharacter(kind, 1).getCharacterData(), level: 3,

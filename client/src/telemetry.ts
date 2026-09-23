@@ -3,6 +3,9 @@ import {init as initElectron, eventLoopBlockIntegration} from '@sentry/electron/
 import {dsn, dataCollection} from '../electron/telemetry-options';
 import {scrubTelemetry} from '@legion/shared/telemetryPrivacy';
 import {getElectronAPI} from './utils/electronUtils';
+import {telemetryConfig} from './telemetryConfig';
+
+const replayCanvas = Sentry.replayCanvasIntegration({enableManualSnapshot: true});
 
 if (process.env.NODE_ENV === 'production') {
   const options = {
@@ -15,7 +18,28 @@ if (process.env.NODE_ENV === 'production') {
     beforeBreadcrumb: scrubTelemetry,
     maxBreadcrumbs: 30,
     tracesSampleRate: 0.1,
+    replaysSessionSampleRate: telemetryConfig.sentryReplay ? 1 : 0,
+    replaysOnErrorSampleRate: 0,
     integrations: [
+      ...(telemetryConfig.sentryReplay && !getElectronAPI()?.smokeTest ? [
+        Sentry.replayIntegration({
+          maskAllText: true,
+          maskAllInputs: true,
+          blockAllMedia: true,
+          unblock: ['#scene canvas'],
+          networkCaptureBodies: false,
+          networkDetailAllowUrls: [],
+          beforeAddRecordingEvent: event => {
+            const payload = event.data?.payload;
+            if (payload && 'op' in payload && payload.op.startsWith('resource.') && 'description' in payload && typeof payload.description === 'string') {
+              // Fetch spans can contain relative URLs, which the shared absolute-URL scrubber cannot match.
+              payload.description = payload.description.split(/[?#]/)[0];
+            }
+            return scrubTelemetry(event);
+          },
+        }),
+        replayCanvas,
+      ] : []),
       Sentry.browserTracingIntegration(),
       Sentry.captureConsoleIntegration({levels: ['error']}),
       Sentry.feedbackIntegration({
@@ -37,6 +61,13 @@ if (process.env.NODE_ENV === 'production') {
       eventLoopBlockIntegration({threshold: 10000, pollInterval: 1000}),
     ]}, Sentry.init);
   } else Sentry.init(options);
+}
+
+export function captureCombatFrame(canvas: HTMLCanvasElement) {
+  if (Sentry.getReplay()?.getReplayId()) {
+    // Capture before WebGL clears the frame; the SDK throttles snapshots to 2 fps.
+    void replayCanvas.snapshot(canvas, {skipRequestAnimationFrame: true}).catch(() => {});
+  }
 }
 
 export async function reportProblem() {

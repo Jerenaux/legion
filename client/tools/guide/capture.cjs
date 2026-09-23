@@ -61,12 +61,22 @@ if (!process.versions.electron) {
   // Exercise the real production SDK and preload, but ingest exclusively on loopback.
   const Sentry = require('@sentry/electron/main');
   const envelopes = [];
+  const replayEvents = [];
   const sink = require('node:http').createServer(async (request, response) => {
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
     let body = Buffer.concat(chunks);
     if (request.headers['content-encoding'] === 'gzip') body = require('node:zlib').gunzipSync(body);
     envelopes.push(body.toString());
+    if (request.url.includes('/envelope/')) {
+      const {parseEnvelope} = require('@sentry/core');
+      for (const [header, payload] of parseEnvelope(body)[1]) {
+        if (header.type !== 'replay_recording') continue;
+        const recording = Buffer.from(payload);
+        const data = recording.subarray(recording.indexOf(10) + 1);
+        replayEvents.push(...JSON.parse(data[0] === 91 ? data.toString() : require('node:zlib').inflateSync(data).toString()));
+      }
+    }
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end('{}');
   }).listen(0);
@@ -98,7 +108,9 @@ if (!process.versions.electron) {
     win.webContents.on('console-message', event => {
       if (event.level === 'error' && !event.message.includes('telemetry-smoke-') && !event.message.includes('https://blocked.invalid/__csp_probe__.js')) {rendererErrors.push(event.message); console.log('Renderer:', event.message);}
     });
-    const js = code => win.webContents.executeJavaScript(code);
+    const js = code => win.webContents.executeJavaScript(code).catch(error => {
+      throw new Error(`Renderer check failed: ${code.slice(0, 160)}`, {cause: error});
+    });
     const waitFor = async expression => {
       for (let i = 0; i < 100; i++) {
         if (await js(expression)) return;
@@ -109,7 +121,7 @@ if (!process.versions.electron) {
       throw new Error(`Timed out: ${expression}`);
     };
     const ready = async () => {
-      await js('document.fonts.ready');
+      await js('document.fonts.ready.then(() => true)');
       await js('Promise.all(Array.from(document.images).filter(image => image.loading !== "lazy" || image.complete).map(image => image.decode().catch(() => {})))');
       await new Promise(resolve => setTimeout(resolve, 700));
     };
@@ -137,6 +149,7 @@ if (!process.versions.electron) {
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
+        await waitFor('Boolean(replayCheck.id())');
         await waitFor('typeof window._LRLogger === "function"');
         assert.equal(await js(`new Promise(resolve => {
           document.addEventListener('securitypolicyviolation', event => {
@@ -379,6 +392,30 @@ if (!process.versions.electron) {
         })()`, true);
         assert.deepEqual(musicTracks, ['bgm_loop_1', 'bgm_loop_1', 'bgm_loop_2', 'bgm_loop_7']);
         console.log('Muted Phaser audio: two natural plays → next track → health-driven jump passes');
+        assert(await js('replayCheck.id()'), 'Production sessions must start Sentry Replay without an error');
+        await js('replayCheck.flush()');
+        const replayDeadline = Date.now() + 10000;
+        while (!replayEvents.some(event => event.type === 3 && event.data.source === 9)) {
+          assert(Date.now() < replayDeadline, 'Sentry must deliver canvas frames to the loopback sink');
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        assert(replayEvents.some(event => event.type === 2), 'Sentry must deliver the surrounding DOM');
+        assert.deepEqual(replayEvents.filter(event => JSON.stringify(event).includes('private-logrocket-')), [], 'Replay must not upload private inputs/network data');
+        const frames = replayEvents.filter(event => event.type === 3 && event.data.source === 9);
+        const encodedFrame = frames.flatMap(event => event.data.commands ?? [])
+          .filter(command => command.property === 'drawImage').at(-1)?.args[0].args[0];
+        assert(encodedFrame?.data[0].base64, 'Canvas recording must contain encoded pixels');
+        assert(await js(`(async () => {
+          const image = new Image();
+          image.src = ${JSON.stringify(`data:${encodedFrame.type};base64,${encodedFrame.data[0].base64}`)};
+          await image.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = 32;
+          const context = canvas.getContext('2d');
+          context.drawImage(image, 0, 0, 32, 32);
+          return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
+        })()`), 'Recorded combat pixels must not be blank');
+        console.log(`Sentry Replay: DOM and ${frames.length} canvas updates delivered with private inputs/network data scrubbed`);
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
       const recordingDeadline = Date.now() + 15000;
