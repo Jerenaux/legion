@@ -3,7 +3,7 @@ import type LogRocket from 'logrocket';
 export const telemetryConfig = {
   logRocket: true,
   hotjar: false,
-  sentryReplay: false,
+  sentryReplay: true,
 } as const;
 
 function sanitizeURL(value: string): string {

@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { Arena } from './Arena';
 import RoundRectanglePlugin from 'phaser3-rex-plugins/plugins/roundrectangle-plugin.js';
+import {captureCombatFrame} from '../telemetry';
 
 const gameWidth = 1920;
 const gameHeight = 1080;
@@ -32,5 +33,6 @@ const config = {
 };
 
 export function startGame() {
-    new Phaser.Game(config);
+    const game = new Phaser.Game(config);
+    game.events.on(Phaser.Core.Events.POST_RENDER, () => captureCombatFrame(game.canvas));
 }
