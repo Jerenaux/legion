@@ -88,10 +88,8 @@ if (!process.versions.electron) {
   Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
-    const logrocketLive = process.argv.includes('--logrocket-live');
-    const logrocket = await require('./logrocket.cjs').installLogRocketSink(session.defaultSession, logrocketLive);
-    // Fail closed: game/Sentry stay local; only the explicit LogRocket verification mode may upload fixtures.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !logrocket.allows(details.url)}));
+    // Fail closed: all telemetry and game traffic must stay local.
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`)}));
     session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
       responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP]},
     }));
@@ -150,7 +148,6 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('Boolean(replayCheck.id())');
-        await waitFor('typeof window._LRLogger === "function"');
         assert.equal(await js(`new Promise(resolve => {
           document.addEventListener('securitypolicyviolation', event => {
             if (event.blockedURI === 'https://blocked.invalid/__csp_probe__.js') resolve(event.effectiveDirective);
@@ -163,13 +160,13 @@ if (!process.versions.electron) {
         await ready();
         await js(`(async () => {
           const marker = document.createElement('div');
-          marker.textContent = 'logrocket-smoke-dom';
+          marker.textContent = 'replay-smoke-dom';
           const input = document.createElement('input');
-          input.value = 'private-logrocket-input';
+          input.value = 'private-replay-input';
           marker.appendChild(input);
           document.body.appendChild(marker);
-          await fetch('/__fixture?token=private-logrocket-query', {method: 'POST',
-            headers: {Authorization: 'private-logrocket-header'}, body: 'private-logrocket-body'});
+          await fetch('/__fixture?token=private-replay-query', {method: 'POST',
+            headers: {Authorization: 'private-replay-header'}, body: 'private-replay-body'});
         })()`);
         const expectedVersion = `v${require('../../package.json').version}`;
         assert.equal(await js('document.querySelector(".title-screen-version")?.textContent'), expectedVersion);
@@ -400,7 +397,7 @@ if (!process.versions.electron) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
         assert(replayEvents.some(event => event.type === 2), 'Sentry must deliver the surrounding DOM');
-        assert.deepEqual(replayEvents.filter(event => JSON.stringify(event).includes('private-logrocket-')), [], 'Replay must not upload private inputs/network data');
+        assert.deepEqual(replayEvents.filter(event => JSON.stringify(event).includes('private-replay-')), [], 'Replay must not upload private inputs/network data');
         const frames = replayEvents.filter(event => event.type === 3 && event.data.source === 9);
         const encodedFrame = frames.flatMap(event => event.data.commands ?? [])
           .filter(command => command.property === 'drawImage').at(-1)?.args[0].args[0];
@@ -418,24 +415,6 @@ if (!process.versions.electron) {
         console.log(`Sentry Replay: DOM and ${frames.length} canvas updates delivered with private inputs/network data scrubbed`);
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      const recordingDeadline = Date.now() + 15000;
-      const delivered = logrocketLive ? logrocket.accepted : logrocket.uploads;
-      while (!delivered.some(body => body.includes('Arena Apprentice')) && Date.now() < recordingDeadline) await new Promise(resolve => setTimeout(resolve, 100));
-      const recorded = Buffer.concat(logrocket.uploads);
-      assert(recorded.includes('Arena Apprentice'), 'LogRocket must upload the combat HUD under the production CSP');
-      assert(delivered.some(body => body.includes('Arena Apprentice')), 'The ingestion endpoint must accept the combat HUD upload');
-      if (!process.argv.includes('--images')) {
-        assert(recorded.includes('logrocket-smoke-dom'), 'LogRocket must upload DOM changes, not just initialize');
-        assert(recorded.includes('app://legion/__fixture'), 'LogRocket must retain sanitized network diagnostics');
-        assert(!recorded.includes('private-logrocket-'), 'LogRocket must not upload inputs, request bodies, headers or query secrets');
-      }
-      assert.deepEqual(logrocket.failures, [], 'Live LogRocket ingestion must accept the verification recording');
-      console.log('Real LogRocket recorder: DOM/combat HUD + sanitized network uploads verified under production CSP');
-      if (logrocketLive) {
-        const recordingURL = await js('new Promise(resolve => {window._lr_surl_cb(resolve); setTimeout(() => resolve(null), 10000);})');
-        assert(recordingURL, 'LogRocket did not provide a session URL');
-        console.log('Verify playback in LogRocket:', recordingURL);
-      }
       if (!process.argv.includes('--images')) {
         const crashed = new Promise(resolve => win.webContents.once('render-process-gone', (_event, details) => resolve(details.reason)));
         win.webContents.debugger.attach('1.3');

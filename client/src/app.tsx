@@ -13,7 +13,6 @@ import withAuth from './components/withAuth';
 import {setUser} from './telemetry';
 import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
-import LogRocket from './logrocketSetup';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
 import {startGamepadInput} from './input/gamepad';
 if (process.env.NODE_ENV === 'production') {
@@ -21,7 +20,6 @@ if (process.env.NODE_ENV === 'production') {
   firebaseAuth.onAuthStateChanged((user) => {
     if (user) {
       setUser({ id: user.uid });
-      LogRocket.identify(user.uid);
     } else {
       setUser(null);
     }
