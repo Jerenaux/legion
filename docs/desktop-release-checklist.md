@@ -39,7 +39,7 @@ The comparable local macOS arm64 package fell from 694 MB before the desktop cle
 
 - [x] Fake queue numbers remain enabled and regression-tested.
 - [x] Synthetic/fake players and fake league ranking remain enabled and regression-tested.
-- [x] LogRocket recorder loading, DOM/combat HUD uploads, and input/network redaction are tested under the production CSP with local ingestion (`bun run test:guide`). WebGL pixels and private assets are not a full visual replay; see `docs/error-reporting.md`. Hotjar and Sentry Replay remain removed.
+- [x] Sentry Replay DOM/canvas uploads and input/network redaction are tested under the production CSP with local ingestion (`bun run test:guide`). Canvas capture is limited to 2 fps and private assets remain a playback limitation; see `docs/error-reporting.md`. LogRocket and Hotjar are removed.
 - [x] Friend challenges remain; wager/blockchain paths are removed.
 
 ## Store and hardware gates

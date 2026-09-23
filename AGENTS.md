@@ -46,7 +46,7 @@ Keep every production composite index in `firestore.indexes.json`; the API deplo
 
 Preserve early Sentry initialization in Electron, Bun services, and Firebase. Register Firebase HTTP/scheduled handlers through `api/functions/src/telemetry.ts` so reports flush before serverless execution ends. Follow `docs/error-reporting.md`; do not log credentials, bundle upload tokens/source maps, or enable backend tracing/profiling by default. Keep the real SDK loopback smoke test in `bun run test:guide` passing.
 
-Keep LogRocket initialization before the renderer's other imports and its recorder origin/blob worker allowed by the shared `PACKAGED_CSP`. The guide smoke test must exercise the real recorder and sanitized DOM/network uploads under that policy; an enabled flag alone does not verify recording. Never send CI recordings to LogRocket. Do not promise pixel-perfect combat replay: the WebGL arena and private `app://` assets have the limitations documented in `docs/error-reporting.md`.
+Sentry is the sole session recorder; do not reintroduce LogRocket. Preserve the shared `PACKAGED_CSP`: bundled scripts only, with local/blob workers for Sentry Replay. The guide smoke test must verify real replay envelopes, nonblank combat canvas frames, and input/network redaction using local ingestion only. Never send CI recordings to production. Replay frame rate and private `app://` assets have the limitations documented in `docs/error-reporting.md`.
 
 ## Player guide
 

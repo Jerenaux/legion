@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "description": "Legion desktop game client",
   "author": "Dynetis Games",
   "private": true,
@@ -30,7 +30,6 @@
     "@types/react-tooltip": "^4.2.4",
     "copy-webpack-plugin": "^14.0.0",
     "firebase": "^12.18.0",
-    "logrocket": "^9.0.2",
     "phaser": "^3.90.0",
     "phaser3-rex-plugins": "^1.80.20",
     "preact": "10.19.3",
