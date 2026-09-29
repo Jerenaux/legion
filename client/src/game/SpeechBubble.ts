@@ -8,6 +8,7 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
     private tail: Phaser.GameObjects.Image;
     private text: string;
     private timer: Phaser.Time.TimerEvent;
+    private layoutFrame: number | null = null;
 
     constructor(scene: Phaser.Scene, x: number, y: number, text: string) {
         super(scene, x, y);
@@ -42,8 +43,11 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
     }
 
     private layout(): void {
-        requestAnimationFrame(() => {
+        if (this.layoutFrame !== null) cancelAnimationFrame(this.layoutFrame);
+        this.layoutFrame = requestAnimationFrame(() => {
+            this.layoutFrame = null;
             const domNode = this.content.node as HTMLElement;
+            if (!this.scene || !domNode) return;
     
             // Get the dimensions
             const textWidth = domNode.offsetWidth + 20;  // Add some padding
@@ -65,6 +69,13 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
             // Set the container size to match the entire speech bubble (including tail)
             this.setSize(Math.max(this.bubble.width, this.tail.width), this.bubble.height + tailHeight);
         });
+    }
+
+    destroy(fromScene?: boolean) {
+        if (this.layoutFrame !== null) cancelAnimationFrame(this.layoutFrame);
+        this.layoutFrame = null;
+        this.timer?.destroy();
+        super.destroy(fromScene);
     }
     
 

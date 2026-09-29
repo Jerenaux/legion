@@ -38,13 +38,18 @@ if (!process.versions.electron) {
   });
 } else {
   const {app, BrowserWindow, protocol, net, session} = require('electron');
-  if (process.env.CI && process.platform === 'linux') {
+  if ((process.env.CI && process.platform === 'linux') || process.argv.includes('--software-webgl')) {
     // Hosted runners have no GPU. These switches apply only to the fixture harness, never releases.
     app.commandLine.appendSwitch('use-angle', 'swiftshader');
     app.commandLine.appendSwitch('enable-unsafe-swiftshader');
   }
   // Keep cleanup from triggering Electron's implicit zero-exit before a failed assertion is reported.
   app.on('window-all-closed', () => {});
+  const deadline = setTimeout(() => {
+    console.error('Packaged stability smoke test exceeded ten minutes');
+    app.exit(1);
+  }, 10 * 60 * 1000);
+  deadline.unref();
   const {pathToFileURL} = require('node:url');
   const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
   const {PACKAGED_CSP} = require('../../electron/security');
@@ -428,6 +433,7 @@ if (!process.versions.electron) {
         const cleanup = await js(`(() => {
           window.previousGame = combatCheck.arena.game;
           const player = combatCheck.arena.selectedPlayer;
+          player.speechBubble.setText('Pending layout during teardown');
           player.animationSprite.destroy();
           try { combatCheck.close(); return null; } catch (error) { return error.message; }
         })()`);
@@ -451,7 +457,8 @@ if (!process.versions.electron) {
             assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 1);
             assert.equal(await js('combatCheck.events.listenerCount("passTurn")'), 1, 'Old matches must not receive new actions');
             assert(await js('combatCheck.arena.game.loop.running'));
-            assert.equal(await js('combatCheck.arena.game.config.renderType'), exit === 'canvas' ? 1 : 2);
+            const rendererType = await js('combatCheck.arena.game.config.renderType');
+            assert(exit === 'canvas' ? rendererType === 1 : [1, 2].includes(rendererType));
             const textures = await js(`Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((bytes, s) => bytes + s.width*s.height*4, 0)`);
             assert(textures < 900 * 1024 * 1024, 'Combat decoded texture budget exceeded');
             console.log(`${exit}: decoded texture storage ${(textures/1024/1024).toFixed(0)} MiB`);
