@@ -534,7 +534,11 @@ if (!process.versions.electron) {
           await win.loadURL(`${PACKAGED_APP_URL}${scenario === 'socket-replay' ? 'replay' : 'game'}/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
           if (scenario !== 'socket-valid' && scenario !== 'socket-replay') {
             // Allow the real production 30-second deadline to expire for the missing-snapshot case.
-            if (scenario === 'socket-timeout') await new Promise(resolve => setTimeout(resolve, 2000));
+            if (scenario === 'socket-timeout') {
+              // Software-rendered CI takes longer to preload. The snapshot deadline starts after it.
+              await waitFor('Boolean(document.querySelector(".waiting-container"))');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
             await waitFor('Boolean(document.querySelector(".session-status__retry"))');
             assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
             console.log(`${scenario}: actionable recovery, no abandoned canvas`);
