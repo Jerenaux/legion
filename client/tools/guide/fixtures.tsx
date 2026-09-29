@@ -47,12 +47,21 @@ const battle = {
 } as GameData;
 
 // Feed the real scene a local gameStatus; never connect to a live match or mutate an account.
+const connectToLocalServer = Arena.prototype.connectToServer;
 Arena.prototype.connectToServer = async function () {
   Object.assign(window, {combatCheck: {arena: this, sent: [], route, events,
     resync: () => this.initializeGame(battle),
     close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
+  const socketURL = new URLSearchParams(location.search).get('socketURL');
+  if (socketURL) {
+    if (!socketURL.startsWith('http://127.0.0.1:')) throw new Error('Smoke sockets must stay on loopback');
+    await connectToLocalServer.call(this, socketURL);
+    this.socket.on('connect', () => this.socket.emit('fixture-ready', battle));
+    return;
+  }
   this.socket = Object.assign(new EventEmitter(), {disconnect() {}}) as typeof this.socket;
-  this.events.once('create', () => this.initializeGame(battle));
+  this.enqueueMessage('queueData', battle.queue);
+  this.enqueueMessage('gameStatus', battle);
 };
 
 export async function getFirebaseIdToken() { return 'guide-local-only'; }

@@ -2,7 +2,8 @@ const {dialog} = require('electron');
 
 function installRendererRecovery(window) {
   let prompting = false;
-  window.webContents.on('render-process-gone', async (_event, {reason}) => {
+  let restarting = false;
+  const recover = async (reason) => {
     if (reason === 'clean-exit' || window.isDestroyed() || prompting) return;
     prompting = true;
     try {
@@ -13,7 +14,14 @@ function installRendererRecovery(window) {
         buttons: ['Reload game', 'Close Legion'], defaultId: 0, cancelId: 1,
       });
       if (window.isDestroyed()) return;
-      if (response === 0) window.webContents.reload();
+      if (response === 0) {
+        if (reason === 'unresponsive') {
+          restarting = true;
+          window.webContents.once('did-finish-load', () => {restarting = false;});
+          window.webContents.forcefullyCrashRenderer();
+        }
+        window.webContents.reload();
+      }
       else window.close();
     } catch (error) {
       console.error('Could not recover the renderer:', error);
@@ -21,6 +29,14 @@ function installRendererRecovery(window) {
     } finally {
       prompting = false;
     }
+  };
+  window.webContents.on('render-process-gone', (_event, {reason}) => {
+    if (restarting) {restarting = false; return;}
+    return recover(reason);
+  });
+  window.on('unresponsive', () => recover('unresponsive'));
+  window.webContents.on('did-fail-load', (_event, code, _description, _url, isMainFrame) => {
+    if (isMainFrame && code !== -3) void recover('load-failed');
   });
 }
 
