@@ -72,6 +72,7 @@ export const DARKENING_INTENSITY = 0.9;
 const TINT_COLOR = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
 const AIR_ENTRANCE_DELAY = 750;
 const AIR_ENTRANCE_DELAY_VARIANCE = 200;
+const spellSheetFiles = require.context('@assets/vfx', false, /^\.\/(fire_[123]_explosion|terrain_fire_1|charged_(fire|ice|thunder)_[12]|(ice|thunder|heal)_[123])\.png$/);
 const SPELL_SHEETS = [
     ...fireLevels.map(level => `fire_${level}_explosion`),
     ...iceLevels.map(level => `ice_${level}`),
@@ -1289,7 +1290,7 @@ export class Arena extends Phaser.Scene
         for (const key of missing) {
             const sprite = allSprites.includes(key);
             if (!sprite && !SPELL_SHEETS.includes(key)) throw new Error('Unknown spell asset');
-            this.load.spritesheet(key, sprite ? require(`@assets/sprites/${key}.png`) : require(`@assets/vfx/${key}.png`), {
+            this.load.spritesheet(key, sprite ? require(`@assets/sprites/${key}.png`) : spellSheetFiles(`./${key}.png`), {
                 frameWidth: sprite ? 144 : VFX_FRAME_SIZE, frameHeight: sprite ? 144 : VFX_FRAME_SIZE,
             });
         }
