@@ -567,7 +567,7 @@ if (!process.versions.electron) {
           if (scenario === 'timing-hidden') {
             await waitFor('combatCheck.arena.gameInitialized');
             assert.equal(timingChecks.get(scenario).acks, 0, 'A hidden arena must not start combat');
-            await js("Object.defineProperty(document, 'hidden', {configurable: true, value: false})");
+            await js("void Object.defineProperty(document, 'hidden', {configurable: true, value: false})");
           }
           if (scenario === 'timing-entrance' || scenario === 'timing-portrait') {
             await waitFor('combatCheck.arena.gameInitialized');
