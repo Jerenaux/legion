@@ -148,7 +148,13 @@ module.exports = {
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: "dynetis-games",
       project: "legion-desktop",
-      release: {name: `legion@${require('./package.json').version}`},
+      release: {
+        name: `legion@${require('./package.json').version}`,
+        // Main-process ANR captures have renderer URLs but no renderer debug IDs.
+        // Keep the modern upload too; normal JS errors use its exact debug-ID match.
+        uploadLegacySourcemaps: [{paths: ['./dist'], urlPrefix: 'app://legion',
+          ext: ['js', 'map'], sourceMapReference: true}],
+      },
       sourcemaps: {assets: ['./dist/**']},
       telemetry: false,
     })] : []),

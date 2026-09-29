@@ -63,7 +63,7 @@ import { TutorialManager } from './TutorialManager';
 import hexTileImage from '@assets/tile.png';
 import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels,
     chargedIceLevels, chargedThunderLevels, iceLevels, thunderLevels,
-    healLevels } from './VFXconfig';
+    healLevels, VFX_FRAME_SIZE, VFX_DISPLAY_SCALE } from './VFXconfig';
 import {loadGameSettings} from '../settings';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 
@@ -142,6 +142,8 @@ export class Arena extends Phaser.Scene
     private isInTargetMode: boolean = false;
     private targetModeSize: number = 1;
     private targetModeListener: ((pointer: Phaser.Input.Pointer) => void) | null = null;
+    private disposed = false;
+    private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
 
     constructor() {
         super({ key: 'Arena' });
@@ -200,6 +202,8 @@ export class Arena extends Phaser.Scene
 
     preload()
     {
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
+        this.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
         // console.log('Preloading assets ...');
         this.gamehud = new GameHUD();
 
@@ -215,29 +219,29 @@ export class Arena extends Phaser.Scene
         this.load.spritesheet('potion_heal', potionHealImage, { frameWidth: 48, frameHeight: 64});
 
         fireLevels.forEach(level => {
-            this.load.spritesheet(`fire_${level}_explosion`, require(`@assets/vfx/fire_${level}_explosion.png`), { frameWidth: 512, frameHeight: 512});
-            // this.load.spritesheet(`fireball_${level}`, require(`@assets/vfx/fireball_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`fire_${level}_explosion`, require(`@assets/vfx/fire_${level}_explosion.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
+            // this.load.spritesheet(`fireball_${level}`, require(`@assets/vfx/fireball_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
         terrainFireLevels.forEach(level => {
-            this.load.spritesheet(`terrain_fire_${level}`, require(`@assets/vfx/terrain_fire_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`terrain_fire_${level}`, require(`@assets/vfx/terrain_fire_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
         chargedFireLevels.forEach(level => {
-            this.load.spritesheet(`charged_fire_${level}`, require(`@assets/vfx/charged_fire_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`charged_fire_${level}`, require(`@assets/vfx/charged_fire_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
         iceLevels.forEach(level => {
-            this.load.spritesheet(`ice_${level}`, require(`@assets/vfx/ice_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`ice_${level}`, require(`@assets/vfx/ice_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
         chargedIceLevels.forEach(level => {
-            this.load.spritesheet(`charged_ice_${level}`, require(`@assets/vfx/charged_ice_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`charged_ice_${level}`, require(`@assets/vfx/charged_ice_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
         thunderLevels.forEach(level => {
-            this.load.spritesheet(`thunder_${level}`, require(`@assets/vfx/thunder_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`thunder_${level}`, require(`@assets/vfx/thunder_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
         chargedThunderLevels.forEach(level => {
-            this.load.spritesheet(`charged_thunder_${level}`, require(`@assets/vfx/charged_thunder_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`charged_thunder_${level}`, require(`@assets/vfx/charged_thunder_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
         healLevels.forEach(level => {
-            this.load.spritesheet(`heal_${level}`, require(`@assets/vfx/heal_${level}.png`), { frameWidth: 512, frameHeight: 512});
+            this.load.spritesheet(`heal_${level}`, require(`@assets/vfx/heal_${level}.png`), { frameWidth: VFX_FRAME_SIZE, frameHeight: VFX_FRAME_SIZE});
         });
 
         this.load.spritesheet('smoke', smokeImage, { frameWidth: 96, frameHeight: 96});
@@ -354,11 +358,7 @@ export class Arena extends Phaser.Scene
             }
         });
 
-        this.socket.io.on('reconnect_failed', () => {
-            silentErrorToast('Could not reconnect to server');
-            events.emit('serverDisconnect');
-            this.destroy();
-        });
+        this.socket.io.on('reconnect_failed', this.handleReconnectFailure);
 
         this.socket.on('joinError', (error) => {
             console.error('Could not join game:', error);
@@ -977,7 +977,7 @@ export class Arena extends Phaser.Scene
             this.animateProjectile(fromX, fromY, toX, toY, spell.projectile);
         }
 
-        setTimeout(() => {
+        this.time.delayedCall(spell.projectile ? PROJECTILE_DURATION * 1000 : 0, () => {
             if (isKill) {
                 this.killCam(pixelXInitial, pixelYInitial);
             } else {
@@ -1007,7 +1007,7 @@ export class Arena extends Phaser.Scene
             this.localAnimationSprite.setPosition(pixelX, pixelY)
                 .setVisible(true)
                 .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
-                .setScale(scale, yScale);
+                .setScale(scale * (config ? VFX_DISPLAY_SCALE : 1), yScale * (config ? VFX_DISPLAY_SCALE : 1));
 
             if (config && config.stretch) {
                 this.localAnimationSprite.setOrigin(0.5, yOrigin);
@@ -1023,7 +1023,7 @@ export class Arena extends Phaser.Scene
                 const intensity = isKill ? 0.002 : 0.02;
                 this.cameras.main.shake(duration, intensity);
             }
-        }, spell.projectile ? PROJECTILE_DURATION * 1000 : 0);
+        });
     }
 
     // New method to animate projectile from caster to target
@@ -1066,7 +1066,7 @@ export class Arena extends Phaser.Scene
                 projectile.setVisible(false);
 
                 // Phase 3: Reappear above target and crash down
-                setTimeout(() => {
+                this.time.delayedCall(totalDuration / 10, () => {
                     // Reposition projectile above the target
                     projectile.setPosition(endX, screenTop)
                         .setVisible(true)
@@ -1092,7 +1092,7 @@ export class Arena extends Phaser.Scene
                             });
                         }
                     });
-                }, totalDuration / 10); // Brief pause before reappearing
+                }); // Brief pause before reappearing
             }
         });
     }
@@ -1130,14 +1130,14 @@ export class Arena extends Phaser.Scene
 
         if (revert) {
             // After animation duration, pan back to original position
-            setTimeout(() => {
+            this.time.delayedCall(1000, () => {
                 this.cameras.main.pan(
                     this.cameras.main.width/2 + originalScrollX,
                     this.cameras.main.height/2 + originalScrollY,
                     1000,
                     'Power2'
                 );
-            }, 1000);
+            });
         }
     }
 
@@ -1163,11 +1163,11 @@ export class Arena extends Phaser.Scene
         this.gameEnded = true;
         this.musicManager.playEnd();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
-        setTimeout(() => {
+        this.time.delayedCall(200, () => {
             winningTeam?.members.forEach((player) => {
                 player.victoryDance();
             });
-        }, 200);
+        });
         if (this.overviewReady) {
             events.emit('gameEnd', data);
         }
@@ -1578,6 +1578,13 @@ export class Arena extends Phaser.Scene
     }
 
     initializeGame(data: GameData): void {
+        if (this.disposed) return;
+        if (this.teamsMap.size) {
+            // A fresh server snapshot replaces the match, never appends a second scene's objects.
+            // Reload preserves this match URL and credentials and rejoins authoritatively.
+            window.location.reload();
+            return;
+        }
         recordLoadingStep('finish');
         const isReconnect = data.general.reconnect || this.isLateToTheParty;
         // console.log(`[Arena:initializeGame] Reconnecting to game: ${isReconnect}`);
@@ -1605,27 +1612,17 @@ export class Arena extends Phaser.Scene
         }
 
         // Events from the HUD
-        events.on('itemClick', (keyIndex) => {
-            this.selectedPlayer?.onKey(keyIndex);
-        });
-
-        events.on('passTurn', () => {
-            this.playSound('click');
-            this.socket.emit('passTurn');
-        });
-
-        events.on('abandonGame', () => {
-            this.abandonGame();
-        });
-
-        events.on('exitGame', () => {
-            this.destroy();
-        });
-
-        events.on('teamRevealed', () => {
-            this.socket.emit('teamRevealed');
-            this.displayGame(data, isReconnect);
-        });
+        this.hudHandlers = {
+            itemClick: (keyIndex: number) => this.selectedPlayer?.onKey(keyIndex),
+            passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
+            abandonGame: () => this.abandonGame(),
+            exitGame: () => this.destroy(),
+            teamRevealed: () => {
+                this.socket.emit('teamRevealed');
+                this.displayGame(data, isReconnect);
+            },
+        };
+        Object.entries(this.hudHandlers).forEach(([event, handler]) => { events.on(event, handler); });
 
         events.emit('gameInitialized', {game0: this.gameSettings.game0});
 
@@ -1645,10 +1642,10 @@ export class Arena extends Phaser.Scene
             this.handleTileHover.bind(this)
         );
 
-        setTimeout(() => {
+        this.time.delayedCall(isReconnect ? 0 : AIR_ENTRANCE_DELAY + AIR_ENTRANCE_DELAY_VARIANCE * 2, () => {
             // Move this AFTER floatHexTiles so the tiles exist
             this.hexGridManager.setCharacterTiles(this.gridMap);
-        }, isReconnect ? 0 : AIR_ENTRANCE_DELAY + AIR_ENTRANCE_DELAY_VARIANCE * 2);
+        });
 
         this.processTerrain(data.terrain, isReconnect); // Put after floatTiles() to allow for tilesMap to be intialized
 
@@ -1657,12 +1654,12 @@ export class Arena extends Phaser.Scene
             this.selectTurnee();
         } else {
             const delay = 3000;
-            setTimeout(this.refreshOverview.bind(this), delay + 1000);
-            setTimeout(() => {
+            this.time.delayedCall(delay + 1000, this.refreshOverview, [], this);
+            this.time.delayedCall(delay, () => {
                 this.displayGEN(GEN.COMBAT_BEGINS);
                 this.setGameInitialized();
                 this.selectTurnee();
-            }, delay);
+            });
         }
     }
 
@@ -1932,55 +1929,30 @@ export class Arena extends Phaser.Scene
         this.destroy();
     }
 
+    private handleReconnectFailure = () => {
+        silentErrorToast('Could not reconnect to server');
+        events.emit('serverDisconnect');
+        this.destroy();
+    };
+
     destroy() {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.gameEnded = true;
         window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         events.emit('notifyMatchmakerLeave');
-        this.socket.disconnect();
-
-        this.teamsMap.forEach((team) => {
-            team.members.forEach((player) => {
-                player.destroy();
-            });
-        });
-
-        if (this.SFX) {
-            Object.values(this.SFX).forEach(sound => {
-                // @ts-expect-error
-            if (sound.isPlaying) {
-                // @ts-expect-error
-                sound.stop();
-                }
-            });
-        }
-
-        // Stop and destroy the music manager
-        if (this.musicManager) {
-            this.musicManager.destroy();
-        }
-
-        // Stop any ongoing tweens
-        this.tweens.killAll();
-
-        // Stop any ongoing timers
-        this.time.removeAllEvents();
-
-        // Stop the HUD and current scene
-        this.scene.stop('HUD');
-
-        // In the destroy method, add:
-        if (this.tutorialManager) {
-            this.tutorialManager.destroy();
-        }
-        this.scene.stop();
-
-        // Clean up any other resources or listeners
-        events.removeAllListeners();
+        this.socket?.removeAllListeners();
+        this.socket?.io?.off('reconnect_failed', this.handleReconnectFailure);
+        this.socket?.disconnect();
+        Object.entries(this.hudHandlers).forEach(([event, handler]) => { events.off(event, handler); });
         events.off('settingsChanged', this.onSettingsChanged, this);
-
-        // Add cleanup for hexGridManager
-        if (this.hexGridManager) {
-            this.hexGridManager.destroy();
-        }
+        this.musicManager?.destroy();
+        this.tutorialManager?.destroy();
+        this.tweens?.killAll();
+        this.time?.removeAllEvents();
+        // Phaser owns the display list (including Player containers and children).
+        // Destroying those manually as well can destroy the same sprite twice.
+        this.scene.stop();
     }
 
     // update (time, delta)
@@ -2137,9 +2109,9 @@ export class Arena extends Phaser.Scene
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
         // Do nothing if the tile already has fire
         if (this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE) return;
-        setTimeout(() => {
+        this.time.delayedCall(TERRAIN_SPRITE_DELAY, () => {
             const sprite = this.add.sprite(pixelX, pixelY, '')
-                .setDepth(this.yToZ(y)).setScale(0.5).setAlpha(0.9);
+                .setDepth(this.yToZ(y)).setScale(0.5 * VFX_DISPLAY_SCALE).setAlpha(0.9);
             this.addFlames();
             sprite.on('destroy', () => {
                 this.removeFlames();
@@ -2154,7 +2126,7 @@ export class Arena extends Phaser.Scene
             this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
             this.terrainMap.set(serializeCoords(x, y), Terrain.FIRE);
             events.emit('flamesAppeared');
-        }, TERRAIN_SPRITE_DELAY);
+        });
     }
 
     private iceFormation(x: number, y: number, isReconnect = false) {

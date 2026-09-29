@@ -16,7 +16,7 @@ if (!process.versions.electron) {
   delete process.env.SENTRY_AUTH_TOKEN;
   const config = require('../../webpack.config');
   config.mode = 'production';
-  config.devtool = false;
+  config.devtool = 'hidden-source-map';
   config.output.path = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-'));
   config.plugins.push(new webpack.NormalModuleReplacementPlugin(/providers\/(AuthProvider|PlayerProvider)$/, resource => {
     resource.request = path.join(__dirname, resource.request.endsWith('AuthProvider') ? 'auth.tsx' : 'fixtures.tsx');
@@ -91,7 +91,8 @@ if (!process.versions.electron) {
     // Fail closed: all telemetry and game traffic must stay local.
     session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`)}));
     session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
-      responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP]},
+      responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP],
+        'Document-Policy': ['include-js-call-stacks-in-crash-reports']},
     }));
     protocol.handle('app', request => {
       if (new URL(request.url).pathname === '/__fixture') return Response.json({});
@@ -110,7 +111,7 @@ if (!process.versions.electron) {
       throw new Error(`Renderer check failed: ${code.slice(0, 160)}`, {cause: error});
     });
     const waitFor = async expression => {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 300; i++) {
         if (await js(expression)) return;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -424,16 +425,102 @@ if (!process.versions.electron) {
           return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
         })()`), 'Recorded combat pixels must not be blank');
         console.log(`Sentry Replay: visible DOM, inputs, media, and ${frames.length} canvas updates delivered; passwords and network data scrubbed`);
+        const cleanup = await js(`(() => {
+          window.previousGame = combatCheck.arena.game;
+          const player = combatCheck.arena.selectedPlayer;
+          player.animationSprite.destroy();
+          try { combatCheck.close(); return null; } catch (error) { return error.message; }
+        })()`);
+        console.log('Repeated-match cleanup result:', cleanup);
+        await js('combatCheck.route("/play")');
+        await ready();
+        assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
+        assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
+        assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
+        for (const exit of ['normal', 'loading', 'animation', 'context-loss', 'canvas']) {
+          if (exit === 'canvas') await js(`(() => {
+            const original = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function(type, ...args) {
+              return type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl' ? null : original.call(this, type, ...args);
+            };
+          })()`);
+          await js(`combatCheck.route('/game/stability-${exit}')`);
+          if (exit !== 'loading') {
+            await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+            await ready();
+            assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 1);
+            assert.equal(await js('combatCheck.events.listenerCount("passTurn")'), 1, 'Old matches must not receive new actions');
+            assert(await js('combatCheck.arena.game.loop.running'));
+            assert.equal(await js('combatCheck.arena.game.config.renderType'), exit === 'canvas' ? 1 : 2);
+            const textures = await js(`Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((bytes, s) => bytes + s.width*s.height*4, 0)`);
+            assert(textures < 900 * 1024 * 1024, 'Combat decoded texture budget exceeded');
+            console.log(`${exit}: decoded texture storage ${(textures/1024/1024).toFixed(0)} MiB`);
+          } else {
+            await waitFor('Boolean(document.querySelector("#scene canvas"))');
+          }
+          await js('void (window.previousGame = combatCheck.arena.game)');
+          if (exit === 'animation') await js(`combatCheck.arena.processLocalAnimation({fromX: 5, fromY: 7, toX: 9, toY: 8, id: 0, isKill: false})`);
+          if (exit === 'context-loss') {
+            await js('combatCheck.arena.game.canvas.dispatchEvent(new Event("webglcontextlost", {cancelable: true}))');
+            await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+            assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+          } else if (exit !== 'loading') await js('combatCheck.close()');
+          await js('combatCheck.route("/play")');
+          await waitFor('!previousGame.loop.running');
+          assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
+          assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
+          await ready();
+          console.log(`Repeated match: ${exit} teardown passes`);
+        }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
       if (!process.argv.includes('--images')) {
+        // A hidden test window intentionally does not arm the SDK visibility watchdog.
+        // Enable its real main-process watcher explicitly, then block the actual renderer.
+        Sentry.getClient().getIntegrationByName('RendererEventLoopBlock')
+          .createRendererEventLoopBlockStatusHandler()({status: 'visible', config: {
+            anrThreshold: 10000, pollInterval: 1000, captureStackTrace: true,
+          }}, win.webContents);
+        await js('stabilityFreeze()');
+        await Sentry.flush(2000);
+        const {parseEnvelope} = require('@sentry/core');
+        const anr = envelopes.flatMap(body => {
+          try { return parseEnvelope(new TextEncoder().encode(body))[1].filter(([header]) => header.type === 'event').map(([, event]) => event); }
+          catch { return []; }
+        }).find(event => event.exception?.values?.some(value => value.type === 'ApplicationNotResponding'));
+        assert(anr, 'Real renderer freezes must reach Sentry');
+        const frames = anr.exception.values.flatMap(value => value.stacktrace?.frames ?? []);
+        const map = new (require('node:module').SourceMap)(JSON.parse(fs.readFileSync(path.join(dist, 'bundle.js.map'), 'utf8')));
+        assert(frames.some(frame => frame.filename === 'app://legion/bundle.js' &&
+          map.findEntry(frame.lineno - 1, frame.colno - 1).originalSource?.endsWith('/tools/guide/fixtures.tsx')),
+          `Native ANR frames must map back to TypeScript: ${JSON.stringify(frames)}`);
+        console.log('Real native renderer ANR stack maps back to its original TypeScript');
+
+        // Restore a fresh WebGL document after the forced Canvas fallback, then crash in combat.
+        await win.loadURL(`${PACKAGED_APP_URL}game/crash-recovery`);
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        const {dialog} = require('electron');
+        const showMessageBox = dialog.showMessageBox;
+        let recoveryPrompted = false;
+        dialog.showMessageBox = async (_window, options) => {
+          assert.equal(options.buttons[0], 'Reload game');
+          recoveryPrompted = true;
+          return {response: 0};
+        };
+        require('../../electron/recovery').installRendererRecovery(win);
         const crashed = new Promise(resolve => win.webContents.once('render-process-gone', (_event, details) => resolve(details.reason)));
+        const reloaded = new Promise(resolve => win.webContents.once('did-finish-load', resolve));
         win.webContents.debugger.attach('1.3');
         void win.webContents.debugger.sendCommand('Page.crash').catch(() => {});
         assert.equal(await crashed, 'crashed');
+        await reloaded;
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        dialog.showMessageBox = showMessageBox;
+        assert(recoveryPrompted);
+        assert.equal(win.webContents.getURL(), `${PACKAGED_APP_URL}game/crash-recovery`);
         await Sentry.flush(2000);
         assert(envelopes.some(body => body.includes("process exited with 'crashed'")), 'Native renderer exits must be reported');
-        console.log('Native renderer crash reporting passes');
+        console.log('Native renderer crash reporting and same-match recovery pass');
         assert(foreignDumps.every(file => fs.existsSync(file)), 'Never scan/delete foreign crash dumps');
         console.log('Native crash storage isolation passes');
       }

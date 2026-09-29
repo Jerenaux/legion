@@ -8,6 +8,10 @@ interface VFXConfig {
     extraStretch?: boolean;
 }
 
+// Spell sheets are half-resolution (same frame count/timing, 75% less decoded memory).
+export const VFX_FRAME_SIZE = 256;
+export const VFX_DISPLAY_SCALE = 512 / VFX_FRAME_SIZE;
+
 export const VFXconfig: Record<string, VFXConfig>    = {
     fire_1_explosion: {
         frameRate: 30,

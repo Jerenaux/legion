@@ -104,6 +104,24 @@ jobs:
         working-directory: client
         run: xvfb-run -a release/linux-unpacked/Legion --no-sandbox --smoke-test
 
+  desktop-stability:
+    name: Desktop stability (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: ".bun-version"
+      - working-directory: client
+        run: bun ci
+      - name: Repeated matches, software rendering, teardown, and recovery
+        working-directory: client
+        run: bun run test:guide
+
   build-api:
     name: Build API
     runs-on: ubuntu-latest

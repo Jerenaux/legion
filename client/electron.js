@@ -69,6 +69,7 @@ function createWindow() {
       additionalArguments: smokeTest ? ['--legion-smoke-test'] : [],
     },
   });
+  require('./electron/recovery').installRendererRecovery(mainWindow);
 
   if (smokeTest) {
     mainWindow.webContents.setAudioMuted(true);

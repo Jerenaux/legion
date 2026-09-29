@@ -11,8 +11,15 @@ import { Class, League, PlayMode, StatusEffect, Terrain } from '../../../shared/
 import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
 import {getReplay} from '@sentry/react';
+import {route} from 'preact-router';
+import {GameHUD, events} from '../../src/components/HUD/GameHUD';
 
-Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId()}});
+Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId()},
+  stabilityFreeze: function stabilityFreeze() {
+    const until = performance.now() + 11500;
+    while (performance.now() < until) { /* Deliberate local-only ANR for source-map verification. */ }
+  },
+});
 
 const characters = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind, i) => ({
   ...new NewCharacter(kind, 1).getCharacterData(), level: 3,
@@ -41,7 +48,7 @@ const battle = {
 
 // Feed the real scene a local gameStatus; never connect to a live match or mutate an account.
 Arena.prototype.connectToServer = async function () {
-  Object.assign(window, {combatCheck: {arena: this, sent: []}});
+  Object.assign(window, {combatCheck: {arena: this, sent: [], route, events, close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
   this.socket = Object.assign(new EventEmitter(), {disconnect() {}}) as typeof this.socket;
   this.events.once('create', () => this.initializeGame(battle));
 };

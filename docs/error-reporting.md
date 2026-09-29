@@ -23,6 +23,20 @@ Keep the unminified Firebase production build on Webpack's `source-map`, not `hi
 
 Desktop releases remain manual and main-only. Merging this setup does not update existing Itch/Steam installations; the next requested desktop release does.
 
+### Renderer freeze source maps
+
+Electron's native ANR stacks are captured in the main process. They contain `app://legion/bundle.js` locations but do not carry the renderer's debug IDs. Keep both the modern debug-ID upload and `release.uploadLegacySourcemaps` with `urlPrefix: 'app://legion'` and source-map headers enabled. The latter associates these frames with the exact product release; it is not permission to publish maps in the app. Upload failures must remain fatal.
+
+`bun run test:guide` deliberately freezes its local renderer and resolves the resulting native ANR frame through the production-format hidden source map to the fixture's TypeScript. It also crashes and reloads the renderer into the same match, using a test response to the real recovery handler. All envelopes stay on loopback. Release verification must additionally check a newly uploaded release's frame resolution in Sentry; a local map check alone cannot prove successful server-side artifact association.
+
+### Combat lifecycle and memory
+
+`GamePage` owns the entire Phaser game and must destroy it when its route unmounts. Stopping `Arena` alone leaves textures, audio, render loops, and WebGL contexts alive. Arena teardown is idempotent, disconnects its socket and removes only its own listeners; Phaser owns display-object destruction. Delayed combat callbacks must use the scene clock, never browser `setTimeout`, so shutdown cancels them. A replacement server snapshot or direct match-ID switch reloads that match URL rather than stacking another match's objects into the old scene.
+
+The large spell sheets use 256-pixel frames with compensated display scaling. Their 19 decoded textures occupy 292 MiB instead of 1,168 MiB; the fixture's total texture storage is about 538 MiB. Preserve frame count, duration, and on-screen dimensions when changing these assets. Image loading is limited to four parallel requests to reduce decode/upload bursts. Do not reintroduce 4096-pixel sheets without measuring memory on low-end Windows hardware.
+
+The native renderer is preferred; a Canvas renderer is available when WebGL context creation fails. JavaScript render failures and context loss offer a reload/reconnect screen, while a terminated Electron renderer offers a native reload/close dialog. These are recovery paths, not a guarantee against GPU-driver failures or insufficient system memory. CI runs repeated-match, interrupted-loading, teardown, and recovery checks on Linux, Windows, and macOS. It does not emulate every player's GPU.
+
 ## Privacy and cost
 
 Set Electron's `crashDumps` path to `userData/legion-crashpad` **before** initializing Sentry. Do not scan, migrate or delete the inherited/default crash directory: old reports there can belong to Steam. Valve-identified minidumps are also rejected by the desktop event filter. Native dumps can contain process memory, so metadata scrubbing alone does not make collecting another application's dump safe.

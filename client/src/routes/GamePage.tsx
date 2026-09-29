@@ -4,6 +4,9 @@ import { route } from 'preact-router';
 import { GameHUD, events } from '../components/HUD/GameHUD';
 import { QueueTips } from '../components/queueTips/QueueTips';
 import { startGame } from '../game/game';
+import { Arena } from '../game/Arena';
+import {CombatRecovery} from '../components/CombatRecovery';
+import {captureException, addBreadcrumb} from '@sentry/react';
 import './GamePage.style.css';
 import { recordLoadingStep } from '../components/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
@@ -17,6 +20,7 @@ interface GamePageProps {
 }
 
 interface GamePageState {
+  failed: boolean;
   mainDivClass: string;
   loading: boolean;
   initialized: boolean;
@@ -41,10 +45,12 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   static contextType = PlayerContext;
   private waitingTimer: number | null = null;
   private messageTimer: number | null = null;
+  private game: ReturnType<typeof startGame> | null = null;
 
   constructor(props: GamePageProps) {
     super(props);
     this.state = {
+      failed: false,
       mainDivClass: 'normalCursor',
       progress: 0,
       loading: true,
@@ -67,10 +73,13 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     this.cleanup();
   }
 
+  componentDidUpdate(previousProps: GamePageProps) {
+    // Preact Router can reuse this component when only the match ID changes.
+    if (previousProps.matches.id !== this.props.matches.id) window.location.reload();
+  }
+
   initializeGame = () => {
     recordLoadingStep('start');
-    startGame();
-
     events.on('progressUpdate', this.updateProgress);
     events.on('gameInitialized', this.handleGameInitialized);
     events.on('serverDisconnect', this.handleServerDisconnect);
@@ -79,9 +88,31 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     this.checkOrientation();
     window.addEventListener('resize', this.checkOrientation);
     window.addEventListener('orientationchange', this.checkOrientation);
+    window.addEventListener('error', this.handleRuntimeError);
+    try {
+      this.game = startGame();
+      this.game.canvas.addEventListener('webglcontextlost', this.handleContextLoss);
+    } catch (error) {
+      this.failGame(error);
+    }
   }
 
   cleanup = () => {
+    // The route owns the entire engine, not just the currently running scene.
+    // Dispose scene-owned listeners synchronously before another match can mount.
+    const game = this.game;
+    this.game = null;
+    if (game) {
+      game.canvas?.removeEventListener('webglcontextlost', this.handleContextLoss);
+      try {
+        (game.scene.getScene('Arena') as Arena | null)?.destroy();
+      } catch (error) {
+        captureException(error);
+      } finally {
+        game.destroy(true);
+      }
+    }
+    window.removeEventListener('error', this.handleRuntimeError);
     events.off('progressUpdate', this.updateProgress);
     events.off('gameInitialized', this.handleGameInitialized);
     events.off('serverDisconnect', this.handleServerDisconnect);
@@ -94,6 +125,19 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     }
     if (this.messageTimer) clearInterval(this.messageTimer);
   }
+
+  handleRuntimeError = (event: ErrorEvent) => {
+    if (event.error) this.failGame(event.error);
+  };
+
+  handleContextLoss = () => this.failGame(new Error('Combat WebGL context lost'));
+
+  failGame = (error: unknown) => {
+    if (this.state.failed) return;
+    captureException(error);
+    this.cleanup();
+    this.setState({failed: true});
+  };
 
   checkOrientation = () => {
     this.setState({ isPortraitMode: window.matchMedia('(orientation: portrait)').matches });
@@ -113,6 +157,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   handleGameInitialized = () => {
+    addBreadcrumb({category: 'combat', message: 'Match initialized'});
     this.setState({ initialized: true });
     if (this.waitingTimer) {
       clearTimeout(this.waitingTimer);
@@ -161,6 +206,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   render() {
+    if (this.state.failed) return <CombatRecovery />;
     return (
       <Fragment key={this.state.key}>
         <div className={this.state.mainDivClass}>
