@@ -160,10 +160,17 @@ if (!process.versions.electron) {
         await ready();
         await js(`(async () => {
           const marker = document.createElement('div');
-          marker.textContent = 'replay-smoke-dom';
+          marker.textContent = 'visible-replay-text';
           const input = document.createElement('input');
-          input.value = 'private-replay-input';
+          input.value = 'visible-replay-input';
           marker.appendChild(input);
+          const password = document.createElement('input');
+          password.type = 'password';
+          password.value = 'private-replay-password';
+          marker.appendChild(password);
+          const image = document.createElement('img');
+          image.src = '/guide.png?replay-smoke-media';
+          marker.appendChild(image);
           document.body.appendChild(marker);
           await fetch('/__fixture?token=private-replay-query', {method: 'POST',
             headers: {Authorization: 'private-replay-header'}, body: 'private-replay-body'});
@@ -397,7 +404,11 @@ if (!process.versions.electron) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
         assert(replayEvents.some(event => event.type === 2), 'Sentry must deliver the surrounding DOM');
-        assert.deepEqual(replayEvents.filter(event => JSON.stringify(event).includes('private-replay-')), [], 'Replay must not upload private inputs/network data');
+        const recordedDOM = JSON.stringify(replayEvents);
+        for (const visible of ['visible-replay-text', 'visible-replay-input', 'guide.png?replay-smoke-media']) {
+          assert(recordedDOM.includes(visible), `Replay must show ${visible}`);
+        }
+        assert.deepEqual(replayEvents.filter(event => JSON.stringify(event).includes('private-replay-')), [], 'Replay must not upload passwords or private network data');
         const frames = replayEvents.filter(event => event.type === 3 && event.data.source === 9);
         const encodedFrame = frames.flatMap(event => event.data.commands ?? [])
           .filter(command => command.property === 'drawImage').at(-1)?.args[0].args[0];
@@ -412,7 +423,7 @@ if (!process.versions.electron) {
           context.drawImage(image, 0, 0, 32, 32);
           return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
         })()`), 'Recorded combat pixels must not be blank');
-        console.log(`Sentry Replay: DOM and ${frames.length} canvas updates delivered with private inputs/network data scrubbed`);
+        console.log(`Sentry Replay: visible DOM, inputs, media, and ${frames.length} canvas updates delivered; passwords and network data scrubbed`);
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
       if (!process.argv.includes('--images')) {

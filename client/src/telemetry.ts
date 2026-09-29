@@ -23,10 +23,9 @@ if (process.env.NODE_ENV === 'production') {
     integrations: [
       ...(telemetryConfig.sentryReplay && !getElectronAPI()?.smokeTest ? [
         Sentry.replayIntegration({
-          maskAllText: true,
-          maskAllInputs: true,
-          blockAllMedia: true,
-          unblock: ['#scene canvas'],
+          maskAllText: false,
+          maskAllInputs: false,
+          blockAllMedia: false,
           networkCaptureBodies: false,
           networkDetailAllowUrls: [],
           beforeAddRecordingEvent: event => {
