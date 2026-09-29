@@ -200,8 +200,73 @@ if (!process.versions.electron) {
       fs.writeFileSync(output, shot.resize({width: rect.width}).toJPEG(88));
       console.log('Captured', name, rect);
     };
+    const checkInventoryTooltips = async () => {
+      await win.loadURL(`${PACKAGED_APP_URL}team/guide-0`);
+      await waitFor('document.querySelectorAll("[data-tooltip-id=inventory-item-details]").length === 5');
+      win.webContents.debugger.attach('1.3');
+      await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: true});
+      for (const [width, height] of [[1280, 720], [960, 540]]) {
+        win.setContentSize(width, height);
+        await ready();
+        for (const [slot, expected] of [
+          ['consumables-0', ['Potion', '+50']],
+          ['consumables-9', ['Full', 'HP', 'MP']],
+          ['equipment-0', ['Jagged Sword', '+100', '+15', 'Warrior']],
+          ['equipment-3', ['Basic belt', 'Increases item slots by 1']],
+          ['spells-3', ['Thunder', 'MP', 'Black Mage']],
+        ]) {
+          win.webContents.sendInputEvent({type: 'mouseMove', x: 1, y: 1});
+          await waitFor('!document.querySelector("#inventory-item-details") || getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "0"');
+          const point = await js(`(async () => {
+            const anchor = document.querySelector('[data-item-icon="${slot}"] [role=button]');
+            anchor.scrollIntoView({block: 'center', inline: 'nearest', behavior: 'instant'});
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            anchor.addEventListener('mouseover', () => {window.tooltipEnteredAt = performance.now();}, {once: true});
+            const r = anchor.getBoundingClientRect();
+            return {x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2)};
+          })()`);
+          win.webContents.sendInputEvent({type: 'mouseMove', ...point});
+          await waitFor('document.querySelector("#inventory-item-details") && getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "1"');
+          const preview = await js(`(() => {
+            const t = document.querySelector('#inventory-item-details');
+            const r = t.getBoundingClientRect();
+            return {text: t.innerText, transition: getComputedStyle(t).transitionDuration,
+              elapsed: performance.now() - tooltipEnteredAt,
+              icon: getComputedStyle(t.querySelector('.item-preview-icon')).backgroundImage,
+              fits: r.x >= 0 && r.y >= 0 && r.right <= innerWidth && r.bottom <= innerHeight};
+          })()`);
+          for (const text of expected) assert(preview.text.includes(text), `${slot}: missing ${text}`);
+          assert.equal(preview.transition, '0s', 'Inventory tooltips must not fade in');
+          assert(preview.fits, `${slot} tooltip must stay inside the ${width}px viewport`);
+          assert(preview.icon.startsWith('url('), `${slot} must show its item sprite`);
+          console.log(`${slot} tooltip visible after ${Math.round(preview.elapsed)}ms at ${width}px`);
+          fs.writeFileSync(path.join(dist, `inventory-tooltip-${slot}-${width}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        await js('document.querySelector("[data-item-icon=spells-3] [role=button]").click()');
+        await waitFor('Boolean(document.querySelector(".dialog-spell-container"))');
+        await waitFor('!document.querySelector("#inventory-item-details") || getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "0"');
+        fs.writeFileSync(path.join(dist, `inventory-click-dialog-${width}.png`), (await win.webContents.capturePage()).toPNG());
+        await js('document.querySelector(".dialog-decline").click()');
+        await waitFor('!document.querySelector(".ReactModal__Overlay")');
+        win.webContents.sendInputEvent({type: 'mouseMove', x: 1, y: 1});
+        await js('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
+        await js('document.querySelector("[data-item-icon=consumables-0] [role=button]").focus()');
+        await waitFor('document.querySelector("#inventory-item-details")?.innerText.includes("Potion") && getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "1"');
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Escape'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Escape'});
+        await waitFor('!document.querySelector("#inventory-item-details") || getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "0"');
+        await js('document.activeElement.blur()');
+      }
+      assert.deepEqual(rendererErrors, [], 'Inventory hover/click/focus must not produce renderer errors');
+      await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: false});
+      win.webContents.debugger.detach();
+      win.setContentSize(1600, 900);
+      console.log('Inventory previews, keyboard focus, dismissal, and click dialogs pass');
+    };
     try {
-      if (process.argv.includes('--images')) {
+      if (process.argv.includes('--tooltips')) {
+        await checkInventoryTooltips();
+      } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
         await ready();
@@ -214,6 +279,7 @@ if (!process.versions.electron) {
         await ready();
         await capture('loadout', {x: 270, y: 328, width: 1045, height: 428});
       } else {
+        await checkInventoryTooltips();
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('Boolean(replayCheck.id())');
@@ -559,7 +625,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tooltips')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

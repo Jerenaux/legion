@@ -181,6 +181,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     return (
       // biome-ignore lint/a11y/useSemanticElements: This keyboard-accessible slot owns a dialog with independent buttons, so it cannot itself be a button.
       <div role="button" tabIndex={0} aria-label={details ?? action.name}
+        data-tooltip-item-type={actionType} data-tooltip-item-id={action.id}
         data-tooltip-id={this.props.tooltipId} data-tooltip-content={details} onKeyDown={(event) => {
         if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();

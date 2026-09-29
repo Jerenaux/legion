@@ -102,7 +102,9 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
       isLoaded: loaded, completedGames: 12, engagementStats: profile.engagementStats, gold: 240, elo: 128, rank: 12,
-      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
+      carrying_capacity: BASE_INVENTORY_SIZE, inventory: location.pathname === '/team/guide-0'
+        ? {consumables: [0, 9], spells: [3], equipment: [0, 3]}
+        : {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
     canAccessFeature: () => true, getCompletedGames: () => 12, checkEngagementFlag: () => true,
     getCharacter: (id: string) => characters.find(character => character.id === id),
     getActiveCharacter: () => characters.find(character => character.id === activeId),
