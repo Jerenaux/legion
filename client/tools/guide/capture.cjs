@@ -157,9 +157,7 @@ if (!process.versions.electron) {
       if (!fs.existsSync(target)) target = path.join(dist, 'index.html');
       return net.fetch(pathToFileURL(target).toString());
     });
-    // Hidden windows stop receiving compositor frames on Windows/Linux. CI has
-    // its own desktop (Xvfb on Linux); local runs stay hidden and never steal focus.
-    const win = new BrowserWindow({width: 1600, height: 900, useContentSize: true, show: Boolean(process.env.CI),
+    const win = new BrowserWindow({width: 1600, height: 900, useContentSize: true, show: false,
       webPreferences: {contextIsolation: true, sandbox: true, backgroundThrottling: false}});
     win.webContents.setAudioMuted(true);
     const rendererErrors = [];
@@ -562,6 +560,11 @@ if (!process.versions.electron) {
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
       if (!process.argv.includes('--images')) {
+        // Hidden CI windows stop receiving compositor frames on Windows/Linux.
+        // Show only these animation checks on CI's isolated desktop, at a size
+        // that fits its display. Keep oversized layout captures and local runs hidden.
+        win.setContentSize(1280, 720);
+        if (process.env.CI) win.show();
         for (const scenario of ['timing-first', 'timing-next', 'timing-resume', 'timing-hidden', 'timing-entrance', 'timing-portrait']) {
           if (scenario === 'timing-portrait') win.setContentSize(600, 900);
           await win.loadURL(`${PACKAGED_APP_URL}game/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
@@ -598,6 +601,7 @@ if (!process.versions.electron) {
           assert.equal(await js('Boolean(document.querySelector(".match-ready-status"))'), false);
           console.log(`${scenario}: rendered readiness, full opening turn, and reconnect reveal behavior pass`);
         }
+        if (process.env.CI) win.hide();
         for (const scenario of ['socket-valid', 'socket-replay', 'socket-invalid', 'socket-auth', 'socket-timeout']) {
           await win.loadURL(`${PACKAGED_APP_URL}${scenario === 'socket-replay' ? 'replay' : 'game'}/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
           if (scenario !== 'socket-valid' && scenario !== 'socket-replay') {
