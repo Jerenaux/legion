@@ -443,7 +443,7 @@ if (!process.versions.electron) {
         assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
         assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
         assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
-        for (const exit of ['normal', 'loading', 'animation', 'context-loss', 'canvas']) {
+        for (const exit of ['normal', 'loading', 'animation', 'sleeping', 'context-loss', 'canvas']) {
           if (exit === 'canvas') await js(`(() => {
             const original = HTMLCanvasElement.prototype.getContext;
             HTMLCanvasElement.prototype.getContext = function(type, ...args) {
@@ -472,6 +472,7 @@ if (!process.versions.electron) {
             await waitFor('Boolean(document.querySelector("#scene canvas"))');
           }
           await js('void (window.previousGame = combatCheck.arena.game)');
+          if (exit === 'sleeping') await js('void combatCheck.arena.game.loop.sleep()');
           if (exit === 'animation') await js(`combatCheck.arena.processLocalAnimation({fromX: 5, fromY: 7, toX: 9, toY: 8, id: 0, isKill: false})`);
           if (exit === 'context-loss') {
             await js('combatCheck.arena.game.canvas.dispatchEvent(new Event("webglcontextlost", {cancelable: true}))');
@@ -480,6 +481,7 @@ if (!process.versions.electron) {
           } else if (exit !== 'loading') await js('combatCheck.close()');
           await js('combatCheck.route("/play")');
           await waitFor('!previousGame.loop.running');
+          await waitFor('Object.keys(previousGame.textures.list).length === 0');
           assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
           assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
           await ready();

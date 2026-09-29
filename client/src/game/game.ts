@@ -55,3 +55,14 @@ export function startGame() {
     });
     return game;
 }
+
+export function stopGame(game: Phaser.Game) {
+    let destroyed = false;
+    game.events.once(Phaser.Core.Events.DESTROY, () => { destroyed = true; });
+    game.destroy(true);
+    // Finish after the current call stack, even if a hidden window stops animation frames.
+    // With pendingDestroy set, Phaser's own step only destroys; it cannot update/render.
+    const finish = () => queueMicrotask(() => { if (!destroyed) game.step(0, 0); });
+    if (game.isRunning) finish();
+    else game.events.once(Phaser.Core.Events.READY, finish);
+}

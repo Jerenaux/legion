@@ -3,7 +3,7 @@ import { Component, Fragment } from 'preact';
 import { route } from 'preact-router';
 import { GameHUD, events } from '../components/HUD/GameHUD';
 import { QueueTips } from '../components/queueTips/QueueTips';
-import { startGame } from '../game/game';
+import { startGame, stopGame } from '../game/game';
 import { Arena } from '../game/Arena';
 import {CombatRecovery} from '../components/CombatRecovery';
 import {captureException, addBreadcrumb} from '@sentry/react';
@@ -109,7 +109,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
       } catch (error) {
         captureException(error);
       } finally {
-        game.destroy(true);
+        stopGame(game);
       }
     }
     window.removeEventListener('error', this.handleRuntimeError);
