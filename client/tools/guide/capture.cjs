@@ -222,10 +222,14 @@ if (!process.versions.electron) {
             anchor.scrollIntoView({block: 'center', inline: 'nearest', behavior: 'instant'});
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             anchor.addEventListener('mouseover', () => {window.tooltipEnteredAt = performance.now();}, {once: true});
-            const r = anchor.getBoundingClientRect();
-            return {x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2)};
+            const r = anchor.closest('[data-item-icon]').getBoundingClientRect();
+            const corners = [[r.x + 2, r.y + 2], [r.right - 2, r.y + 2],
+              [r.x + 2, r.bottom - 2], [r.right - 2, r.bottom - 2]];
+            return {x: Math.round(corners[0][0]), y: Math.round(corners[0][1]),
+              coversCard: corners.every(([x, y]) => anchor.contains(document.elementFromPoint(x, y)))};
           })()`);
-          win.webContents.sendInputEvent({type: 'mouseMove', ...point});
+          assert(point.coversCard, `${slot}: every card corner must belong to the interactive tooltip anchor`);
+          win.webContents.sendInputEvent({type: 'mouseMove', x: point.x, y: point.y});
           await waitFor('document.querySelector("#inventory-item-details") && getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "1"');
           const preview = await js(`(() => {
             const t = document.querySelector('#inventory-item-details');
