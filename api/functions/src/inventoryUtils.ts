@@ -1,7 +1,7 @@
 
 import { RewardType, LockedFeatures } from "@legion/shared/enums";
 import { numericalSort } from "@legion/shared/inventory";
-import { DBPlayerData } from "@legion/shared/interfaces";
+import { DBPlayerData, EngagementStats, PlayerInventory } from "@legion/shared/interfaces";
 import { LOCKED_FEATURES, UNLOCK_REWARDS } from "@legion/shared/config";
 
 export interface InventoryUpdate {
@@ -10,6 +10,16 @@ export interface InventoryUpdate {
     spells?: number[];
     equipment?: number[];
   };
+}
+
+// Inventory helpers include a copy of the profile they read. Never persist that
+// whole map: a match may have incremented completedGames since the read.
+export function inventoryPlayerWrite(update: {inventory: PlayerInventory; engagementStats?: Partial<EngagementStats>}) {
+  const fields: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {inventory: update.inventory};
+  for (const flag of ['everEquippedConsumable', 'everEquippedSpell', 'everEquippedEquipment'] as const) {
+    if (update.engagementStats?.[flag]) fields[`engagementStats.${flag}`] = true;
+  }
+  return fields;
 }
 
 export function addItemsToInventory(

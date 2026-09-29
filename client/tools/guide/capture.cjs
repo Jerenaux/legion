@@ -591,7 +591,7 @@ if (!process.versions.electron) {
             if (scenario === 'timing-entrance') await js('combatCheck.arena.tweens.timeScale = 1');
             else win.setContentSize(1280, 720);
           }
-          await waitFor('combatCheck.arena.gameInitialized && combatCheck.arena.readyToken === null && combatCheck.arena.turnee?.num === 3 && combatCheck.arena.eventsQueue.length === 0');
+          await waitFor(`combatCheck.arena.gameInitialized && combatCheck.arena.readyToken === null && combatCheck.arena.turnee?.num === 3 && combatCheck.arena.turnee.turnNumber === ${scenario === 'timing-resume' ? 8 : 1} && combatCheck.arena.eventsQueue.length === 0`);
           assert.equal(timingChecks.get(scenario).acks, 1, 'Exactly one readiness acknowledgement per snapshot');
           assert.equal(await js('Boolean(document.querySelector(".team-reveal-overlay"))'), false, 'A running first match must not reveal champions again');
           assert.equal(await js('combatCheck.arena.turnee.timeLeft'), scenario === 'timing-resume' ? 4 : 7);

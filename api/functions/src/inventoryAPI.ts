@@ -22,7 +22,7 @@ import { getSellPrice,
 } from '@legion/shared/inventory';
 
 
-import { addItemsToInventory } from "./inventoryUtils";
+import { addItemsToInventory, inventoryPlayerWrite } from "./inventoryUtils";
 
 export const inventoryData = onRequest({
   memory: '512MiB',
@@ -268,7 +268,7 @@ export const inventoryTransaction = onRequest({
         return;
       }
 
-      await playerRef.update(update.playerUpdate);
+      await playerRef.update(inventoryPlayerWrite(update.playerUpdate));
       console.log(`[inventoryTransaction] Character update: ${JSON.stringify(update.characterUpdate)}`);
       await characterRef.update(update.characterUpdate);
 
