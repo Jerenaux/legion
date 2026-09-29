@@ -300,7 +300,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
 
                     return (
                         <button type="button" data-game-control className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle}
-                            aria-label={itemTooltip(item)} data-tooltip-id="character-sheet-details" data-tooltip-content={itemTooltip(item)}
+                            aria-label={item ? itemTooltip(item) : 'Unknown item'}
+                            data-tooltip-id={item ? 'character-sheet-details' : undefined}
+                            data-tooltip-content={item ? itemTooltip(item) : undefined}
                             onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
                             <div className="special-equip" style={{
                                 backgroundImage: `url(${backgroundImageUrl})`,
