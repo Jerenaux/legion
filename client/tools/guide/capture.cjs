@@ -433,7 +433,7 @@ if (!process.versions.electron) {
         })()`);
         console.log('Repeated-match cleanup result:', cleanup);
         await js('combatCheck.route("/play")');
-        await ready();
+        await waitFor('!previousGame.loop.running');
         assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
         assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
         assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
