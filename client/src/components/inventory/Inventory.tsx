@@ -219,7 +219,8 @@ class Inventory extends Component<InventoryProps> {
               </div>
             )}
           </div>
-          <ReactTooltip id="inventory-item-details" place="top" positionStrategy="fixed" delayShow={150} style={tooltipStyle} />
+          <ReactTooltip id="inventory-item-details" place="top" positionStrategy="fixed" delayShow={150}
+            closeEvents={{ mouseleave: true, blur: true, click: true }} style={tooltipStyle} />
         </div>
         {/* Purchase Inventory Slots Dialog */}
         {(() => {

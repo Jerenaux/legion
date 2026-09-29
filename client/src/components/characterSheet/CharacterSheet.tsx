@@ -391,7 +391,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     updateCharacterData={this.props.updateCharacterData}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
-                <ReactTooltip id="character-sheet-details" place="top" positionStrategy="fixed" delayShow={150} style={tooltipStyle} />
+                <ReactTooltip id="character-sheet-details" place="top" positionStrategy="fixed" delayShow={150}
+                    closeEvents={{ mouseleave: true, blur: true, click: true }} style={tooltipStyle} />
             </div>
         );
     }
