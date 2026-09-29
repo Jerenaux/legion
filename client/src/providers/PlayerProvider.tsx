@@ -37,6 +37,7 @@ import { LOCKED_FEATURES } from '@legion/shared/config';
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private fetchAllDataTimeout: NodeJS.Timeout | null = null;
     private fetchAllDataDelay: number = 400;
+    private playerFetchGeneration = 0;
 
     constructor(props: {}) {
       super(props);
@@ -109,6 +110,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     resetState = () => {
+      this.playerFetchGeneration++;
       if (this.state.socket) {
         this.state.socket.disconnect();
       }
@@ -166,9 +168,11 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     async fetchPlayerData() {
       const user = firebaseAuth.currentUser;
       if (!user) return;
+      const generation = ++this.playerFetchGeneration;
 
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
+          if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== user.uid) return;
           this.setState({
               player: {
                   uid: user.uid,
@@ -189,6 +193,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
               }
           });
       } catch (error) {
+          if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== user.uid) return;
           errorToast(`Error: ${error}`);
       }
     }
@@ -243,15 +248,17 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     updateInventory(type: ItemDialogType, action: InventoryActionType, index: number) {
       this.setState((prevState) => {
-        const activeCharacter = this.getActiveCharacter();
+        const activeCharacter = prevState.characters.find(character => character.id === prevState.activeCharacterId) || prevState.characters[0];
         if (!activeCharacter) {
           errorToast('No active character selected!');
           return prevState;
         }
 
-        const newState = { ...prevState };
-        let updatedInventory = { ...newState.player.inventory };
-        let updatedCharacter = { ...activeCharacter };
+        // Shared inventory helpers mutate their inputs. Work on detached copies
+        // so queued updates and failed operations cannot corrupt existing state.
+        const newState = { ...prevState, player: {...prevState.player, inventory: structuredClone(prevState.player.inventory)} };
+        const updatedInventory = newState.player.inventory;
+        const updatedCharacter = structuredClone(activeCharacter);
 
         let result = null;
 
@@ -349,12 +356,15 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
         return {
           ...newState,
-          inventory: result.playerUpdate.inventory,
           characters: updatedCharacters,
           characterSheetIsDirty: true,
           player: {
             ...newState.player,
-            engagementStats: result.playerUpdate.engagementStats
+            ...result.playerUpdate,
+            engagementStats: {
+              ...newState.player.engagementStats,
+              ...result.playerUpdate.engagementStats,
+            }
           }
         };
       });
@@ -425,7 +435,9 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     setPlayerInfo = (updates: Partial<PlayerContextData>) => {
       this.setState(({ player }) => ({
-        player: { ...player, ...updates }
+        player: { ...player, ...updates,
+          engagementStats: {...player.engagementStats, ...updates.engagementStats}
+        }
       }));
     }
 
