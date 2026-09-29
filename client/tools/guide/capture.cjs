@@ -201,7 +201,7 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     const checkInventoryTooltips = async () => {
-      await win.loadURL(`${PACKAGED_APP_URL}team/guide-0`);
+      await win.loadURL(`${PACKAGED_APP_URL}team/guide-tooltips`);
       await waitFor('document.querySelectorAll("[data-tooltip-id=inventory-item-details]").length === 5');
       win.webContents.debugger.attach('1.3');
       await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: true});
@@ -214,29 +214,40 @@ if (!process.versions.electron) {
           ['equipment-0', ['Jagged Sword', '+100', '+15', 'Warrior']],
           ['equipment-3', ['Basic belt', 'Increases item slots by 1']],
           ['spells-3', ['Thunder', 'MP', 'Black Mage']],
+          ['equipped:consumables:0', ['Potion', '+50']],
+          ['equipped:equipment:1', ['Basic staff', '+5', '+10', 'Black Mage']],
+          ['equipped:spells:3', ['Thunder', 'MP', 'Black Mage']],
         ]) {
+          const equipped = slot.startsWith('equipped:');
+          const [, type, id] = slot.split(':');
+          const selector = equipped
+            ? `[data-tooltip-id="equipped-item-details"][data-tooltip-item-type="${type}"][data-tooltip-item-id="${id}"]`
+            : `[data-item-icon="${slot}"] [role=button]`;
+          const tooltipId = equipped ? 'equipped-item-details' : 'inventory-item-details';
           win.webContents.sendInputEvent({type: 'mouseMove', x: 1, y: 1});
-          await waitFor('!document.querySelector("#inventory-item-details") || getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "0"');
+          await js('document.activeElement.blur()');
+          await waitFor('[...document.querySelectorAll(".item-details-tooltip")].every(t => getComputedStyle(t).opacity === "0")');
           const point = await js(`(async () => {
-            const anchor = document.querySelector('[data-item-icon="${slot}"] [role=button]');
+            const anchor = document.querySelector('${selector}');
             anchor.scrollIntoView({block: 'center', inline: 'nearest', behavior: 'instant'});
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             anchor.addEventListener('mouseover', () => {window.tooltipEnteredAt = performance.now();}, {once: true});
-            const r = anchor.closest('[data-item-icon]').getBoundingClientRect();
-            const corners = [[r.x + 2, r.y + 2], [r.right - 2, r.y + 2],
-              [r.x + 2, r.bottom - 2], [r.right - 2, r.bottom - 2]];
-            return {x: Math.round(corners[0][0]), y: Math.round(corners[0][1]),
-              coversCard: corners.every(([x, y]) => anchor.contains(document.elementFromPoint(x, y)))};
+            const r = (anchor.closest('[data-item-icon]') || anchor).getBoundingClientRect();
+            const edges = [[r.x + 2, r.y + r.height / 2], [r.right - 2, r.y + r.height / 2],
+              [r.x + r.width / 2, r.y + 2], [r.x + r.width / 2, r.bottom - 2]];
+            return {x: Math.round(edges[0][0]), y: Math.round(edges[0][1]),
+              coversCard: edges.every(([x, y]) => anchor.contains(document.elementFromPoint(x, y)))};
           })()`);
-          assert(point.coversCard, `${slot}: every card corner must belong to the interactive tooltip anchor`);
+          assert(point.coversCard, `${slot}: every card edge must belong to the interactive tooltip anchor`);
           win.webContents.sendInputEvent({type: 'mouseMove', x: point.x, y: point.y});
-          await waitFor('document.querySelector("#inventory-item-details") && getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "1"');
+          await waitFor(`document.querySelector('#${tooltipId}') && getComputedStyle(document.querySelector('#${tooltipId}')).opacity === '1'`);
+          await waitFor(`document.querySelector('#${tooltipId}')?.innerText.includes(${JSON.stringify(expected[0])})`);
           const preview = await js(`(() => {
-            const t = document.querySelector('#inventory-item-details');
+            const t = document.querySelector('#${tooltipId}');
             const r = t.getBoundingClientRect();
             return {text: t.innerText, transition: getComputedStyle(t).transitionDuration,
               elapsed: performance.now() - tooltipEnteredAt,
-              icon: getComputedStyle(t.querySelector('.item-preview-icon')).backgroundImage,
+              icon: getComputedStyle(t.querySelector('.item-preview-sprite')).backgroundImage,
               fits: r.x >= 0 && r.y >= 0 && r.right <= innerWidth && r.bottom <= innerHeight};
           })()`);
           for (const text of expected) assert(preview.text.includes(text), `${slot}: missing ${text}`);
@@ -244,7 +255,15 @@ if (!process.versions.electron) {
           assert(preview.fits, `${slot} tooltip must stay inside the ${width}px viewport`);
           assert(preview.icon.startsWith('url('), `${slot} must show its item sprite`);
           console.log(`${slot} tooltip visible after ${Math.round(preview.elapsed)}ms at ${width}px`);
-          fs.writeFileSync(path.join(dist, `inventory-tooltip-${slot}-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          fs.writeFileSync(path.join(dist, `inventory-tooltip-${slot.replaceAll(':', '-')}-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          if (equipped) {
+            await js(`document.querySelector('${selector}').click()`);
+            await waitFor('Boolean(document.querySelector(".ReactModal__Overlay"))');
+            await waitFor(`!document.querySelector('#${tooltipId}') || getComputedStyle(document.querySelector('#${tooltipId}')).opacity === '0'`);
+            win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Escape'});
+            win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Escape'});
+            await waitFor('!document.querySelector(".ReactModal__Overlay")');
+          }
         }
         await js('document.querySelector("[data-item-icon=spells-3] [role=button]").click()');
         await waitFor('Boolean(document.querySelector(".dialog-spell-container"))');

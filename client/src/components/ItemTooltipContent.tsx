@@ -2,22 +2,45 @@ import {h} from 'preact';
 import {BaseEquipment} from '@legion/shared/BaseEquipment';
 import {BaseItem} from '@legion/shared/BaseItem';
 import {BaseSpell} from '@legion/shared/BaseSpell';
-import {StatLabels, STATS_BG_COLOR, Target} from '@legion/shared/enums';
-import {classEnumToString, getSpeedClass} from './utils';
+import {InventoryType, StatLabels, STATS_BG_COLOR, Target} from '@legion/shared/enums';
+import {getConsumableById} from '@legion/shared/Items';
+import {getSpellById} from '@legion/shared/Spells';
+import {getEquipmentById} from '@legion/shared/Equipments';
+import {Tooltip as ReactTooltip} from 'react-tooltip';
+import {classEnumToString, getSpeedClass, mapFrameToCoordinates} from './utils';
+import equipmentSpritesheet from '@assets/equipment.png';
+import consumablesSpritesheet from '@assets/consumables.png';
+import spellsSpritesheet from '@assets/spells.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
 import speedIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 import './ItemTooltipContent.css';
 
-export function ItemTooltipContent({item, image}: {
+export function ItemTooltip({id}: {id: string}) {
+  return <ReactTooltip id={id} className="item-details-tooltip" place="top" positionStrategy="fixed" delayShow={0} delayHide={0}
+    closeEvents={{mouseleave: true, blur: true, click: true}} globalCloseEvents={{escape: true}}
+    render={({activeAnchor}) => {
+      const itemId = Number(activeAnchor?.getAttribute('data-tooltip-item-id'));
+      const type = activeAnchor?.getAttribute('data-tooltip-item-type');
+      const item = type === InventoryType.CONSUMABLES ? getConsumableById(itemId)
+        : type === InventoryType.SPELLS ? getSpellById(itemId)
+        : type === InventoryType.EQUIPMENTS ? getEquipmentById(itemId) : null;
+      return item ? <ItemTooltipContent item={item} /> : null;
+    }} />;
+}
+
+function ItemTooltipContent({item}: {
   item: BaseItem | BaseSpell | BaseEquipment;
-  image?: string;
 }) {
   const spell = item instanceof BaseSpell;
   const equipment = item instanceof BaseEquipment;
+  const sprite = spell ? spellsSpritesheet : equipment ? equipmentSpritesheet : consumablesSpritesheet;
+  const {x, y} = mapFrameToCoordinates(item.frame);
   return <div className="item-preview">
     <div className="item-preview-heading">
-      <div className="item-preview-icon" style={{backgroundImage: image}} />
+      <div className="item-preview-icon">
+        <div className="item-preview-sprite" style={{backgroundImage: `url(${sprite})`, backgroundPosition: `-${x}px -${y}px`}} />
+      </div>
       <div>
         <span className="item-preview-kind">{spell ? 'Spell' : equipment ? 'Equipment' : 'Consumable'}</span>
         <strong className="item-preview-name">{item.name}</strong>

@@ -20,6 +20,7 @@ import { PlayerContext } from '../../contexts/PlayerContext';
 import { StatLabels } from '@legion/shared/enums';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { itemTooltip, statExplanations, tooltipStyle } from '../itemTooltip';
+import { ItemTooltip } from '../ItemTooltipContent';
 
 import helmetIcon from '@assets/inventory/helmet_icon.png';
 import armorIcon from '@assets/inventory/armor_icon.png';
@@ -249,7 +250,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                       }`}
                       style={(itemData !== undefined) ? slotStyle : {}}
                       aria-label={itemData ? itemTooltip(itemData) : item.key}
-                      data-tooltip-id={itemData ? 'character-sheet-details' : undefined}
+                      data-tooltip-id={itemData ? 'equipped-item-details' : undefined}
+                      data-tooltip-item-type={InventoryType.EQUIPMENTS}
+                      data-tooltip-item-id={itemData?.id}
                       data-tooltip-content={itemData ? itemTooltip(itemData) : undefined}
                       onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}
                     >
@@ -301,7 +304,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     return (
                         <button type="button" data-game-control className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle}
                             aria-label={item ? itemTooltip(item) : 'Unknown item'}
-                            data-tooltip-id={item ? 'character-sheet-details' : undefined}
+                            data-tooltip-id={item ? 'equipped-item-details' : undefined}
+                            data-tooltip-item-type={inventoryType}
+                            data-tooltip-item-id={item?.id}
                             data-tooltip-content={item ? itemTooltip(item) : undefined}
                             onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
                             <div className="special-equip" style={{
@@ -391,6 +396,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     updateCharacterData={this.props.updateCharacterData}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
+                <ItemTooltip id="equipped-item-details" />
                 <ReactTooltip id="character-sheet-details" place="top" positionStrategy="fixed" delayShow={150}
                     closeEvents={{ mouseleave: true, blur: true, click: true }} style={tooltipStyle} />
             </div>

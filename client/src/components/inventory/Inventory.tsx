@@ -13,8 +13,7 @@ import { inventorySize } from '@legion/shared/utils';
 
 import Skeleton from 'react-loading-skeleton';
 import Spinner from '../spinner/Spinner';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
-import { ItemTooltipContent } from '../ItemTooltipContent';
+import { ItemTooltip } from '../ItemTooltipContent';
 
 import { Link } from 'preact-router';
 import Modal from 'react-modal';
@@ -219,18 +218,7 @@ class Inventory extends Component<InventoryProps> {
               </div>
             )}
           </div>
-          <ReactTooltip id="inventory-item-details" place="top" positionStrategy="fixed" delayShow={0} delayHide={0}
-            closeEvents={{ mouseleave: true, blur: true, click: true }}
-            globalCloseEvents={{ escape: true }}
-            render={({activeAnchor}) => {
-              const id = Number(activeAnchor?.getAttribute('data-tooltip-item-id'));
-              const type = activeAnchor?.getAttribute('data-tooltip-item-type');
-              const item = type === InventoryType.CONSUMABLES ? getConsumableById(id)
-                : type === InventoryType.SPELLS ? getSpellById(id)
-                : type === InventoryType.EQUIPMENTS ? getEquipmentById(id) : null;
-              return item ? <ItemTooltipContent item={item}
-                image={activeAnchor?.querySelector<HTMLElement>('.item-icon')?.style.backgroundImage} /> : null;
-            }} />
+          <ItemTooltip id="inventory-item-details" />
         </div>
         {/* Purchase Inventory Slots Dialog */}
         {(() => {

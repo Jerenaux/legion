@@ -108,7 +108,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="team">
             <h2 id="team" tabIndex={-1}>Build a team that works together</h2>
-            <p>Open <strong>Team</strong> in the top navigation and select a character’s portrait. Their sheet shows stats, equipment, carried consumables, and learned spells. Your shared inventory sits beside it. Hover over or focus an inventory item for an instant preview of its effects, casting cost, and requirements. Hover over a stat label to learn what it does.</p>
+            <p>Open <strong>Team</strong> in the top navigation and select a character’s portrait. Their sheet shows stats, equipment, carried consumables, and learned spells. Your shared inventory sits beside it. Hover over or focus any item or learned spell, in your inventory or on the character sheet, for an instant preview of its effects, casting cost, and requirements. Hover over a stat label to learn what it does.</p>
             <figure>
               <img src={loadout} width="1045" height="428" loading="lazy" alt="The Team screen: Ember’s character stats and equipment slots on the left, equipped consumables and spells below, and the shared inventory on the right." />
               <figcaption>Owning an item is not enough: assign it to the character who needs it before queuing.</figcaption>

@@ -1,4 +1,4 @@
-#inventory-item-details {
+.react-tooltip.item-details-tooltip {
   --rt-transition-show-delay: 0s;
   --rt-transition-closing-delay: 0s;
   padding: 0;
@@ -18,20 +18,21 @@
   z-index: 1200;
 }
 
-#inventory-item-details .react-tooltip-content-wrapper { padding: 0; }
+.item-details-tooltip .react-tooltip-content-wrapper { padding: 0; }
 .item-preview { padding: 12px; }
 .item-preview-heading { display: flex; align-items: center; gap: 10px; }
 .item-preview-icon {
   flex: 0 0 44px;
   height: 44px;
   background-color: #2f404d;
-  background-size: 32px 32px;
-  background-repeat: no-repeat;
-  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #3c616c;
   border-radius: 4px;
   image-rendering: pixelated;
 }
+.item-preview-sprite { width: 32px; height: 32px; background-repeat: no-repeat; }
 .item-preview-kind { display: block; color: #a1b7c3; font-size: 10px; }
 .item-preview-name { display: block; font-size: 15px; line-height: 1.3; }
 .item-preview-description { margin: 12px 0 0; color: #71deff; }
