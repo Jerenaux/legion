@@ -320,6 +320,7 @@ export class Arena extends Phaser.Scene
             process.env.GAME_SERVER_URL,
             {
                 ...socketReconnectOptions,
+                forceNew: true, // The global Socket.IO manager cache must not retain a finished Arena.
                 auth: createRefreshingSocketAuth(
                     () => getFirebaseIdToken(true),
                     {gameId, isReplay},
