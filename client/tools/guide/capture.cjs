@@ -157,10 +157,10 @@ if (!process.versions.electron) {
       if (!fs.existsSync(target)) target = path.join(dist, 'index.html');
       return net.fetch(pathToFileURL(target).toString());
     });
-    // A merely hidden window stops receiving compositor frames on Windows/Linux.
-    // Offscreen rendering keeps real Phaser frames flowing without stealing focus.
-    const win = new BrowserWindow({width: 1600, height: 900, useContentSize: true, show: false,
-      webPreferences: {contextIsolation: true, sandbox: true, backgroundThrottling: false, offscreen: true}});
+    // Hidden windows stop receiving compositor frames on Windows/Linux. CI has
+    // its own desktop (Xvfb on Linux); local runs stay hidden and never steal focus.
+    const win = new BrowserWindow({width: 1600, height: 900, useContentSize: true, show: Boolean(process.env.CI),
+      webPreferences: {contextIsolation: true, sandbox: true, backgroundThrottling: false}});
     win.webContents.setAudioMuted(true);
     const rendererErrors = [];
     win.webContents.on('console-message', event => {
