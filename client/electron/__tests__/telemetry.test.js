@@ -9,7 +9,7 @@ function loadTelemetry(argv = []) {
     captureConsoleIntegration: () => ({}), childProcessIntegration: () => ({}), rendererEventLoopBlockIntegration: () => ({})};
   const module = {exports: {}};
   runInNewContext(readFileSync(path.join(__dirname, '../telemetry.js'), 'utf8'), {
-    module, process: {env: {NODE_ENV: 'production'}, argv},
+    module, process: {env: {NODE_ENV: 'production'}, argv, platform: 'win32'},
     require: name => ({'@sentry/electron/main': Sentry, '@sentry/node': {anrIntegration: () => ({})},
       './telemetry-options': {}, '../package.json': {version: 'test'}, 'node:path': path,
       'node:fs': {mkdirSync: directory => calls.push(['mkdir', directory])}})[name],
@@ -26,6 +26,7 @@ test('isolates crash storage before Sentry scans it, without touching inherited 
   expect(calls.map(call => call[0])).toEqual(['mkdir', 'setPath', 'init']);
   expect(calls[1]).toEqual(['setPath', 'crashDumps', path.join(profile, 'legion-crashpad')]);
   expect(calls[2][1].enabled).toBe(true);
+  expect(calls[2][1].dist).toBe('win32');
 });
 
 test('only suppresses foreign Valve dumps and the exact known Electron warning', () => {

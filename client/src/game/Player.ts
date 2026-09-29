@@ -12,6 +12,7 @@ import { SpeechBubble } from "./SpeechBubble";
 import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE, GRID_WIDTH } from '@legion/shared/config';
 import { hexDistance } from '@legion/shared/utils';
 import {loadGameSettings} from '../settings';
+import {VFX_DISPLAY_SCALE} from './VFXconfig';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -626,7 +627,7 @@ export class Player extends Phaser.GameObjects.Container {
                     ''
                 )
                 .setDepth(1) // Set slightly higher depth than player
-                .setScale(0.5);
+                .setScale(0.5 * VFX_DISPLAY_SCALE);
 
                 // Add the chargeSprite to the player container
                 this.add(this.chargeSprite);
@@ -1012,6 +1013,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     destroy() {
+        if (!this.scene) return;
         // Cleanup charge sprite if it exists
         if (this.chargeSprite) {
             this.chargeSprite.destroy();
@@ -1031,7 +1033,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         // Stop any ongoing animations
         this.sprite.anims?.stop();
-        this.animationSprite.anims.stop();
+        this.animationSprite.anims?.stop();
 
         if (this.selectionArrow) {
             this.scene.tweens.killTweensOf(this.selectionArrow);

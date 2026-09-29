@@ -23,6 +23,7 @@ function initializeTelemetry(app) {
     dsn,
     enabled: !process.argv.includes('--smoke-test'),
     release: `legion@${version}`,
+    dist: process.platform,
     environment: 'production',
     dataCollection,
     maxBreadcrumbs: 30,
