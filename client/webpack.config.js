@@ -138,6 +138,7 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.BUILD_TARGET': JSON.stringify(process.env.BUILD_TARGET || 'web'),
       'process.env.SENTRY_RELEASE': JSON.stringify(`legion@${require('./package.json').version}`),
+      'process.env.SENTRY_DIST': JSON.stringify(process.platform),
     }),
     new CopyWebpackPlugin({
       patterns: [
@@ -150,6 +151,7 @@ module.exports = {
       project: "legion-desktop",
       release: {
         name: `legion@${require('./package.json').version}`,
+        dist: process.platform,
         // Main-process ANR captures have renderer URLs but no renderer debug IDs.
         // Keep the modern upload too; normal JS errors use its exact debug-ID match.
         uploadLegacySourcemaps: [{paths: ['./dist'], urlPrefix: 'app://legion',

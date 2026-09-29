@@ -77,7 +77,9 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   const defaults = useContext(PlayerContext);
   const [activeId, setActiveId] = useState(characters[2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
-  Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true)}});
+  const [renderFailed, setRenderFailed] = useState(false);
+  Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true), fail: () => setRenderFailed(true)}});
+  if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
     ...defaults, loaded, welcomeShown: true, characters, activeCharacterId: activeId,
     socket: queueCheck.socket as unknown as typeof defaults.socket,

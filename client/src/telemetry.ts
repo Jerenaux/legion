@@ -13,6 +13,7 @@ if (process.env.NODE_ENV === 'production') {
     dsn,
     environment: 'production',
     release: process.env.SENTRY_RELEASE,
+    dist: process.env.SENTRY_DIST,
     dataCollection,
     beforeSend: scrubTelemetry,
     beforeBreadcrumb: scrubTelemetry,

@@ -25,7 +25,7 @@ Desktop releases remain manual and main-only. Merging this setup does not update
 
 ### Renderer freeze source maps
 
-Electron's native ANR stacks are captured in the main process. They contain `app://legion/bundle.js` locations but do not carry the renderer's debug IDs. Keep both the modern debug-ID upload and `release.uploadLegacySourcemaps` with `urlPrefix: 'app://legion'` and source-map headers enabled. The latter associates these frames with the exact product release; it is not permission to publish maps in the app. Upload failures must remain fatal.
+Electron's native ANR stacks are captured in the main process. They contain `app://legion/bundle.js` locations but do not carry the renderer's debug IDs. Keep both the modern debug-ID upload and `release.uploadLegacySourcemaps` with `urlPrefix: 'app://legion'` and source-map headers enabled. Use the build platform (`darwin`, `win32`, or `linux`) as Sentry `dist` in the uploader and both SDK processes, so simultaneous platform builds cannot overwrite each other's legacy maps. The latter associates these frames with the exact product release and platform; it is not permission to publish maps in the app. Upload failures must remain fatal.
 
 `bun run test:guide` deliberately freezes its local renderer and resolves the resulting native ANR frame through the production-format hidden source map to the fixture's TypeScript. It also crashes and reloads the renderer into the same match, using a test response to the real recovery handler. All envelopes stay on loopback. Release verification must additionally check a newly uploaded release's frame resolution in Sentry; a local map check alone cannot prove successful server-side artifact association.
 

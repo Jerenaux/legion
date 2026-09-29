@@ -455,6 +455,12 @@ if (!process.versions.electron) {
             const textures = await js(`Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((bytes, s) => bytes + s.width*s.height*4, 0)`);
             assert(textures < 900 * 1024 * 1024, 'Combat decoded texture budget exceeded');
             console.log(`${exit}: decoded texture storage ${(textures/1024/1024).toFixed(0)} MiB`);
+            if (exit === 'canvas') assert(await js(`(() => {
+              let passed = false;
+              combatCheck.arena.socket.once('passTurn', () => {passed = true;});
+              document.querySelector('.player_bar_pass_turn').click();
+              return passed;
+            })()`), 'Software rendering must preserve combat controls');
           } else {
             await waitFor('Boolean(document.querySelector("#scene canvas"))');
           }
@@ -489,6 +495,7 @@ if (!process.versions.electron) {
           catch { return []; }
         }).find(event => event.exception?.values?.some(value => value.type === 'ApplicationNotResponding'));
         assert(anr, 'Real renderer freezes must reach Sentry');
+        assert.equal(anr.dist, process.platform, 'Freeze reports and uploaded maps must use the same platform dist');
         const frames = anr.exception.values.flatMap(value => value.stacktrace?.frames ?? []);
         const map = new (require('node:module').SourceMap)(JSON.parse(fs.readFileSync(path.join(dist, 'bundle.js.map'), 'utf8')));
         assert(frames.some(frame => frame.filename === 'app://legion/bundle.js' &&
@@ -529,6 +536,21 @@ if (!process.versions.electron) {
         await Sentry.flush(2000);
         assert(envelopes.some(body => body.includes("process exited with 'crashed'")), 'Native renderer exits must be reported');
         console.log('Native renderer crash reporting and same-match recovery pass');
+        await js('titleLoadingCheck.fail()');
+        await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+        assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        await ready();
+        await js(`(() => {
+          HTMLCanvasElement.prototype.getContext = () => null;
+          const link = document.createElement('a');
+          link.href = '/game/renderer-unavailable';
+          document.body.appendChild(link);
+          link.click();
+        })()`);
+        await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+        assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+        console.log('Render exceptions and unavailable graphics show recovery rather than a blank page');
         assert(foreignDumps.every(file => fs.existsSync(file)), 'Never scan/delete foreign crash dumps');
         console.log('Native crash storage isolation passes');
       }
