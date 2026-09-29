@@ -88,11 +88,30 @@ if (!process.versions.electron) {
   const sinkURL = `http://127.0.0.1:${sink.address().port}`;
   const {Server} = require('../../../server/node_modules/socket.io');
   const sockets = new Server(sink, {cors: {origin: true}});
+  const timingChecks = new Map();
   sockets.use((socket, next) => socket.handshake.auth.gameId === 'socket-auth'
     ? next(new Error('Authentication failed')) : next());
   sockets.on('connection', socket => {
     socket.on('fixture-ready', snapshot => {
       const scenario = socket.handshake.auth.gameId;
+      if (scenario.startsWith('timing-')) {
+        const resume = scenario === 'timing-resume';
+        snapshot.general = {...snapshot.general, reconnect: true, combatStarted: resume, readyToken: socket.id};
+        snapshot.player.player.completedGames = scenario === 'timing-first' || resume ? 0 : 12;
+        snapshot.turnee = resume ? {...snapshot.turnee, timeLeft: 4} : {turnDuration: 7, timeLeft: 0, turnNumber: 0};
+        const timing = {acks: 0, sentAt: Date.now(), readyAt: 0};
+        timingChecks.set(scenario, timing);
+        socket.on('arenaReady', token => {
+          assert.equal(token, socket.id);
+          timing.acks++;
+          timing.readyAt = Date.now();
+          socket.emit('turnee', {num: 3, team: 1, turnDuration: 7, timeLeft: resume ? 4 : 7, turnNumber: resume ? 8 : 1});
+        });
+        socket.emit('queueData', snapshot.queue);
+        socket.emit('gameStatus', snapshot);
+        socket.emit('score', {teamId: 1, score: 0}); // Harmless backlog must not skip the intro.
+        return;
+      }
       if (scenario === 'socket-timeout') return;
       if (scenario === 'socket-invalid') snapshot.player.team = null;
       if (scenario === 'socket-replay') {
@@ -154,6 +173,17 @@ if (!process.versions.electron) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       console.log('Visible text:', await js('document.body.innerText'));
+      console.log('Combat readiness:', await js(`(() => {
+        const arena = window.combatCheck?.arena;
+        return {hidden: document.hidden, portrait: matchMedia('(orientation: portrait)').matches,
+          initialized: arena?.gameInitialized, entrances: arena?.pendingEntrances,
+          awaitingReady: Boolean(arena?.readyToken), connected: arena?.socket?.connected,
+          frame: arena?.game?.loop?.frame, queued: arena?.eventsQueue?.length,
+          units: arena ? [...arena.gridMap.values()].map(unit => ({
+            animation: unit.sprite?.anims?.currentAnim?.key, playing: unit.sprite?.anims?.isPlaying,
+            frame: unit.sprite?.anims?.currentFrame?.index,
+          })) : []};
+      })()`));
       fs.writeFileSync(path.join(dist, 'failure.png'), (await win.webContents.capturePage()).toPNG());
       throw new Error(`Timed out: ${expression}`);
     };
@@ -530,6 +560,47 @@ if (!process.versions.electron) {
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
       if (!process.argv.includes('--images')) {
+        // Hidden CI windows stop receiving compositor frames on Windows/Linux.
+        // Show the remaining combat checks on CI's isolated desktop, at a size
+        // that fits its display. Keep oversized layout captures and local runs hidden.
+        win.setContentSize(1280, 720);
+        if (process.env.CI) win.show();
+        for (const scenario of ['timing-first', 'timing-next', 'timing-resume', 'timing-hidden', 'timing-entrance', 'timing-portrait']) {
+          if (scenario === 'timing-portrait') win.setContentSize(600, 900);
+          await win.loadURL(`${PACKAGED_APP_URL}game/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
+          if (scenario === 'timing-first') {
+            await waitFor('Boolean(document.querySelector(".team-reveal-overlay"))');
+            assert.equal(timingChecks.get(scenario).acks, 0, 'Champion reveal must not start combat');
+            for (let index = 0; index < 3; index++) {
+              await js(`document.querySelectorAll('.team-reveal-wrapper')[${index}].click()`);
+              await waitFor(`document.querySelectorAll('.team-reveal-wrapper')[${index}].classList.contains('revealed')`);
+            }
+            await waitFor('Boolean(document.querySelector(".team-reveal-play-button"))');
+            timingChecks.get(scenario).sentAt = Date.now();
+            await js('document.querySelector(".team-reveal-play-button").click()');
+            assert.equal(timingChecks.get(scenario).acks, 0, 'Play must wait for the arena intro to finish');
+          }
+          if (scenario === 'timing-hidden') {
+            await waitFor('combatCheck.arena.gameInitialized');
+            assert.equal(timingChecks.get(scenario).acks, 0, 'A hidden arena must not start combat');
+            await js("void Object.defineProperty(document, 'hidden', {configurable: true, value: false})");
+          }
+          if (scenario === 'timing-entrance' || scenario === 'timing-portrait') {
+            await waitFor('combatCheck.arena.gameInitialized');
+            assert.equal(timingChecks.get(scenario).acks, 0, 'Incomplete entrances or an orientation overlay must not start combat');
+            if (scenario === 'timing-entrance') await js('combatCheck.arena.tweens.timeScale = 1');
+            else win.setContentSize(1280, 720);
+          }
+          await waitFor('combatCheck.arena.gameInitialized && combatCheck.arena.readyToken === null && combatCheck.arena.turnee?.num === 3 && combatCheck.arena.eventsQueue.length === 0');
+          assert.equal(timingChecks.get(scenario).acks, 1, 'Exactly one readiness acknowledgement per snapshot');
+          assert.equal(await js('Boolean(document.querySelector(".team-reveal-overlay"))'), false, 'A running first match must not reveal champions again');
+          assert.equal(await js('combatCheck.arena.turnee.timeLeft'), scenario === 'timing-resume' ? 4 : 7);
+          if (scenario !== 'timing-resume') {
+            assert(timingChecks.get(scenario).readyAt - timingChecks.get(scenario).sentAt >= 2900, 'Fresh matches must play the intro even with buffered messages');
+          }
+          assert.equal(await js('Boolean(document.querySelector(".match-ready-status"))'), false);
+          console.log(`${scenario}: rendered readiness, full opening turn, and reconnect reveal behavior pass`);
+        }
         for (const scenario of ['socket-valid', 'socket-replay', 'socket-invalid', 'socket-auth', 'socket-timeout']) {
           await win.loadURL(`${PACKAGED_APP_URL}${scenario === 'socket-replay' ? 'replay' : 'game'}/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
           if (scenario !== 'socket-valid' && scenario !== 'socket-replay') {

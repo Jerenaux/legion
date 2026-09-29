@@ -70,6 +70,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h2 id="combat" tabIndex={-1}>Make your turn count</h2>
             <p>When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <strong>one action</strong>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.</p>
             <p>The standard turn timer is <strong>{TURN_DURATION} seconds</strong>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.</p>
+            <p>Combat starts once everyone has loaded the arena. Practice matches pause if your connection drops and resume after the arena is ready again, keeping your remaining turn time. Once a match against another player has started, its clock keeps running if you disconnect.</p>
             <figure className="guide-figure-compact">
               <img src={turnOrder} width="460" height="90" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act." />
               <figcaption>The turn order is your planning tool. Speed and the recovery time of each action affect when a character acts again.</figcaption>

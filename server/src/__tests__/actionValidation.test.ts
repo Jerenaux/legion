@@ -48,6 +48,7 @@ beforeEach(() => {
   game.turnSystem.initializeTurnOrder([player, enemy]);
   spyOn(game.turnSystem, 'processAction');
   spyOn(globalThis, 'clearTimeout');
+  spyOn(game.combatClock, 'cancel');
   spyOn(game, 'processTurn').mockImplementation(() => {});
   spyOn(game, 'saveGameAction').mockResolvedValue(undefined);
   spyOn(game, 'saveInventoryToDb').mockResolvedValue(undefined);
@@ -130,7 +131,7 @@ test('a valid spell spends MP once, locks the action during casting, and applies
   expect(player.hasActed).toBe(true);
   expect(player.team.actions).toBe(1);
   expect(player.team.spellCasts).toBe(1);
-  expect(globalThis.clearTimeout).toHaveBeenCalledTimes(1);
+  expect(game.combatClock.cancel).toHaveBeenCalledTimes(1);
   expect(scheduled.length).toBe(1);
   expect(game.saveGameAction).toHaveBeenCalledTimes(1);
   scheduled[0]();

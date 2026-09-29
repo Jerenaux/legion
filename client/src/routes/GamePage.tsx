@@ -21,6 +21,7 @@ interface GamePageProps {
 interface GamePageState {
   failed: boolean;
   reconnecting: boolean;
+  waitingForPlayers: boolean;
   mainDivClass: string;
   loading: boolean;
   initialized: boolean;
@@ -53,6 +54,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     this.state = {
       failed: false,
       reconnecting: false,
+      waitingForPlayers: false,
       mainDivClass: 'normalCursor',
       progress: 0,
       loading: true,
@@ -84,6 +86,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     recordLoadingStep('start');
     events.on('progressUpdate', this.updateProgress);
     events.on('gameInitialized', this.handleGameInitialized);
+    events.on('combatWaiting', this.handleCombatWaiting);
     events.on('serverDisconnect', this.handleServerDisconnect);
     events.on('combatError', this.failGame);
     events.on('combatConnectionLost', this.handleConnectionLost);
@@ -124,6 +127,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.off('combatConnectionLost', this.handleConnectionLost);
     events.off('progressUpdate', this.updateProgress);
     events.off('gameInitialized', this.handleGameInitialized);
+    events.off('combatWaiting', this.handleCombatWaiting);
     events.off('serverDisconnect', this.handleServerDisconnect);
     events.off('revealTeam', this.handleRevealTeam);
     events.off('notifyMatchmakerLeave', this.handleMatchmakerLeave);
@@ -178,6 +182,8 @@ class GamePage extends Component<GamePageProps, GamePageState> {
       clearTimeout(this.waitingTimer);
     }
   };
+
+  handleCombatWaiting = (waitingForPlayers: boolean) => this.setState({waitingForPlayers});
 
   handleRevealTeam = (team: PlayerNetworkData[]) => {
     this.setState({ revealedTeam: team });
@@ -243,6 +249,9 @@ class GamePage extends Component<GamePageProps, GamePageState> {
               team={this.state.revealedTeam}
               onComplete={this.endReveal}
             />
+          )}
+          {this.state.initialized && this.state.waitingForPlayers && !this.state.revealedTeam && (
+            <div className="match-ready-status" role="status">Preparing the match — waiting for everyone to be ready</div>
           )}
         </div>
         {this.state.isPortraitMode && <OrientationOverlay />}

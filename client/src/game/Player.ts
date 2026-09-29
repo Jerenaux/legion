@@ -220,7 +220,7 @@ export class Player extends Phaser.GameObjects.Container {
           }
     }
 
-    makeAirEntrance() {
+    makeAirEntrance(onEntered?: () => void) {
         // this.baseSquare.setVisible(false);
         const {x: targetX, y: targetY} = this.arena.hexGridToPixelCoords(this.gridX, this.gridY);
 
@@ -285,6 +285,7 @@ export class Player extends Phaser.GameObjects.Container {
                 // Revert to idle animation after a short delay
                 this.scene.time.delayedCall(300, () => {
                     this.playAnim('boast', true);
+                    if (onEntered) this.sprite.once('animationcomplete', onEntered);
                     this.arena.relayEvent('characterAdded');
                 });
             }

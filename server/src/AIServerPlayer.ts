@@ -412,8 +412,8 @@ export class AIServerPlayer extends ServerPlayer {
         }
         // If is zombie, take between 1 and 4 seconds to act, otherwise between 1 and 2
         const delay = this.isZombie ? Math.floor(Math.random() * 3000) + 1000 : Math.floor(Math.random() * 1000) + 1000;
-        setTimeout(() => {
-            this.takeAction();
+        this.team!.game.combatClock.schedule(() => {
+            if (this.team!.game.turnee === this && !this.hasActed) this.takeAction();
         }, delay);
     }
 }

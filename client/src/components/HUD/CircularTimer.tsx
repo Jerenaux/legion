@@ -27,7 +27,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
   }
 
   componentDidUpdate(prevProps: CircularTimerProps) {
-    if (prevProps.turnNumber !== this.props.turnNumber) {
+    if (prevProps.turnNumber !== this.props.turnNumber || prevProps.timeLeft !== this.props.timeLeft || prevProps.turnDuration !== this.props.turnDuration) {
       this.startTimer();
     }
   }
@@ -45,7 +45,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
 
     // Always start with fresh values from props
     this.startTime = performance.now();
-    const initialProgress = (this.props.timeLeft / this.props.turnDuration) * 100;
+    const initialProgress = this.props.turnDuration > 0 ? (this.props.timeLeft / this.props.turnDuration) * 100 : 0;
     this.setState({ progress: initialProgress });
     this.animate();
   }
@@ -54,7 +54,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
     const currentTime = performance.now();
     const elapsed = currentTime - this.startTime;
     const remainingTime = Math.max(0, this.props.timeLeft - elapsed / 1000);
-    const progress = (remainingTime / this.props.turnDuration) * 100;
+    const progress = this.props.turnDuration > 0 ? (remainingTime / this.props.turnDuration) * 100 : 0;
 
     this.setState({ progress });
 

@@ -322,6 +322,8 @@ export interface GameData {
         reconnect: boolean;
         spectator: boolean;
         mode: PlayMode;
+        combatStarted?: boolean;
+        readyToken?: string;
     },
     queue: TurnQueueEntry[];
     turnee: TurnState;

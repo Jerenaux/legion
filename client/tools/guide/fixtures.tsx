@@ -53,6 +53,14 @@ Arena.prototype.connectToServer = async function () {
     resync: () => this.initializeGame(battle),
     close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
   const socketURL = new URLSearchParams(location.search).get('socketURL');
+  if (location.pathname.includes('/timing-')) {
+    // The smoke window stays offscreen. Electron reports it hidden on Windows
+    // and Linux, so model gameplay visibility explicitly on every platform.
+    Object.defineProperty(document, 'hidden', {configurable: true, value: location.pathname.endsWith('/timing-hidden')});
+  }
+  if (location.pathname.endsWith('/timing-entrance')) {
+    this.events.once('create', () => { this.tweens.timeScale = 0; });
+  }
   if (socketURL) {
     if (!socketURL.startsWith('http://127.0.0.1:')) throw new Error('Smoke sockets must stay on loopback');
     await connectToLocalServer.call(this, socketURL);
