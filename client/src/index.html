@@ -5,9 +5,23 @@
     <title>Legion</title>
     <base href="/" />
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        body { margin: 0; background: oklch(15% 0.025 245); }
+        #startup-recovery { min-height: 100vh; box-sizing: border-box; display: grid; place-content: center; padding: 2rem; text-align: center; color: oklch(96% 0.01 85); font: 18px/1.5 Arial, sans-serif; }
+        #startup-recovery p { max-width: 40ch; margin: 1rem auto; }
+        #startup-recovery button { padding: .8rem 1.5rem; border: 2px solid oklch(91% 0.1 91); border-radius: .5rem; background: oklch(78% 0.16 85); color: oklch(16% 0.02 245); box-shadow: 0 .3rem 0 oklch(69% 0.15 73); font: bold 18px Arial, sans-serif; cursor: pointer; }
+        #startup-recovery button:focus-visible { outline: 3px solid oklch(96% 0.01 85); outline-offset: 5px; }
+        #root:not(:empty) + #startup-recovery { display: none; }
+    </style>
 </head>
 
 <body>
     <div id="root"></div>
+    <!-- Works even when the JavaScript bundle cannot load or fails during imports. -->
+    <main id="startup-recovery" role="status">
+        <h1>Loading Legion</h1>
+        <p>If the arena doesn’t appear, reload the game. If it still won’t open, restart Legion or check for an update.</p>
+        <form method="get"><button type="submit">Reload game</button></form>
+    </main>
 </body>
 </html>

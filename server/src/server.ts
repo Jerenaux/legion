@@ -184,6 +184,7 @@ io.on('connection', async (socket) => {
       if (isGame0) gameId = gameSocket.uid;
 
       const gameData = await getGameData(gameId);
+      if (!socket.connected) return;
 
       // Check if firebase UID is in gameData.players
       if (!gameData.players.includes(gameSocket.uid)) {
@@ -208,7 +209,8 @@ io.on('connection', async (socket) => {
       } else {
         console.log(`[server:connection] Fetching player data for ${gameSocket.uid}`);
         const playerData = await getPlayerData(gameSocket.uid);
-        game.addPlayer(socket, playerData);
+        if (!socket.connected) return;
+        await game.addPlayer(socket, playerData);
       }
 
       socketMap.set(socket, game);

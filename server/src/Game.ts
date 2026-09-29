@@ -45,6 +45,7 @@ export abstract class Game
     startTime: number = Date.now();
     duration: number = 0;
     gameStarted: boolean = false;
+    private starting = false;
     firstBlood: boolean = false;
     gameOver: boolean = false;
     endedAt: number | null = null;
@@ -86,25 +87,33 @@ export abstract class Game
     }
 
     addPlayer(socket: Socket, playerData: PlayerDataForGame) {
-        try {
-            if (this.sockets.length === 2) return;
-            this.addSocket(socket);
-            const index = this.sockets.indexOf(socket);
-            // console.log(`[Game:addPlayer] Adding player ${index + 1} to game ${this.id}`);
-
-            const team = this.teams.get(index + 1);
-            // console.log(`[Game:addPlayer] Player ${playerData.name} assigned to team ${team.id}`);
-            this.socketMap.set(socket, team);
-            team.setSocket(socket);
-            team.setPlayerData(playerData);
-        } catch (error) {
-            console.error(error);
+        if (this.gameStarted || this.gameOver) {
+            this.reconnectPlayer(socket);
+            return;
         }
+        const uid = 'uid' in socket && typeof socket.uid === 'string' ? socket.uid : undefined;
+        if (!uid) throw new Error('Missing authenticated player identity');
+        const team = Array.from(this.teams.values()).find(team => team.teamData.playerUID === uid)
+            || Array.from(this.teams.values()).find(team => !team.teamData.playerUID);
+        if (!team) throw new Error('Game is full');
+        const previous = team.getSocket();
+        if (previous === socket) return;
+        // Replace a connection without changing its team, even during async startup.
+        if (previous) {
+            this.socketMap.delete(previous);
+            this.sockets = this.sockets.filter(candidate => candidate !== previous);
+            previous.leave(this.id);
+        }
+        this.addSocket(socket);
+        this.socketMap.set(socket, team);
+        team.setSocket(socket);
+        team.setPlayerData(playerData);
+        previous?.disconnect(true);
     }
 
     handleDisconnect(socket: Socket) {
         const disconnectingTeam = this.socketMap.get(socket);
-        disconnectingTeam?.unsetSocket();
+        if (disconnectingTeam?.getSocket() === socket) disconnectingTeam.unsetSocket();
         this.socketMap.delete(socket);
         // Slice the player from the game
         this.sockets = this.sockets.filter(s => s !== socket);
@@ -118,10 +127,18 @@ export abstract class Game
         const uid = "uid" in socket && typeof socket.uid === "string" ? socket.uid : undefined;
         const team = Array.from(this.teams.values()).find(candidate => candidate.teamData.playerUID === uid);
         if (!team) throw new Error('Player team not found');
+        const previous = team.getSocket();
+        if (previous === socket) return;
+        if (previous) {
+            this.socketMap.delete(previous);
+            this.sockets = this.sockets.filter(candidate => candidate !== previous);
+            previous.leave(this.id);
+        }
         this.addSocket(socket);
         this.socketMap.set(socket, team);
         team.setSocket(socket);
 
+        previous?.disconnect(true);
         this.sendGameStatus(socket, true);
 
         // If game is over, re-emit the game end event
@@ -134,6 +151,8 @@ export abstract class Game
     abstract populateTeams(): void;
 
     async start() {
+        if (this.starting || this.gameStarted || this.gameOver) return;
+        this.starting = true;
         console.log(`[Game:start]`);
         try {
             await this.getRemoteConfig();
@@ -1527,6 +1546,7 @@ export abstract class Game
 
     abandonGame(socket) {
         const team = this.socketMap.get(socket);
+        if (!team) return;
         const otherTeam = this.getOtherTeam(team.id);
         this.endGame(otherTeam.id);
     }

@@ -86,6 +86,35 @@ if (!process.versions.electron) {
     response.end('{}');
   }).listen(0);
   const sinkURL = `http://127.0.0.1:${sink.address().port}`;
+  const {Server} = require('../../../server/node_modules/socket.io');
+  const sockets = new Server(sink, {cors: {origin: true}});
+  sockets.use((socket, next) => socket.handshake.auth.gameId === 'socket-auth'
+    ? next(new Error('Authentication failed')) : next());
+  sockets.on('connection', socket => {
+    socket.on('fixture-ready', snapshot => {
+      const scenario = socket.handshake.auth.gameId;
+      if (scenario === 'socket-timeout') return;
+      if (scenario === 'socket-invalid') snapshot.player.team = null;
+      if (scenario === 'socket-replay') {
+        socket.emit('replayData', {messages: [
+          {event: 'gameStatus', data: snapshot, timestamp: 0},
+          {event: 'queueData', data: snapshot.queue, timestamp: 10},
+          {event: 'turnee', data: snapshot.turnee, timestamp: 20},
+        ]});
+      } else {
+        socket.emit('queueData', snapshot.queue); // Deliberately before the snapshot and preload completion.
+        socket.emit('gameStatus', snapshot);
+        socket.emit('turnee', snapshot.turnee);
+      }
+      socket.on('late-assets', () => {
+        socket.emit('addCharacter', {team: 2, character: {...snapshot.opponent.team[0], portrait: 'mil1_3', x: 11, y: 7}});
+        socket.emit('cast', {team: 2, num: 4, id: 8}); // Enemy Ice III, not in the initial loadout.
+        socket.emit('endcast', {team: 2, num: 4, id: 8});
+        socket.emit('localanimation', {fromX: 11, fromY: 7, toX: 4, toY: 4, id: 8, isKill: false});
+      });
+    });
+  });
+  let assetFault;
   const originalInit = Sentry.init;
   Sentry.init = options => originalInit({...options, dsn: `${sinkURL.replace('http://', 'http://test@')}/1`, environment: 'test', onFatalError: () => {}});
   require('../../electron/telemetry').initializeTelemetry(app);
@@ -94,12 +123,16 @@ if (!process.versions.electron) {
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
     // Fail closed: all telemetry and game traffic must stay local.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`)}));
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`)}));
     session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
-      responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP],
+      responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP.replace("connect-src 'self'", `connect-src 'self' ${sinkURL} ${sinkURL.replace('http:', 'ws:')}`)],
         'Document-Policy': ['include-js-call-stacks-in-crash-reports']},
     }));
     protocol.handle('app', request => {
+      const pathname = new URL(request.url).pathname;
+      if (assetFault === 'bundle' && pathname === '/bundle.js') return new Response('Unavailable', {status: 404});
+      if (assetFault === 'boot-error' && pathname === '/bundle.js') return new Response('throw new Error("Expected startup test failure");', {headers: {'Content-Type': 'text/javascript'}});
+      if (assetFault === 'audio' && pathname.endsWith('.wav')) return new Response('Unavailable', {status: 404});
       if (new URL(request.url).pathname === '/__fixture') return Response.json({});
       let target = resolveAppPath(dist, request.url);
       if (!fs.existsSync(target)) target = path.join(dist, 'index.html');
@@ -366,7 +399,7 @@ if (!process.versions.electron) {
         assert.deepEqual(await js('combatCheck.sent'), ['spell', 'move', 'passTurn']);
         console.log('Combat Z → invalid target → valid target → server rejection → move/pass controls pass');
 
-        await waitFor('Array.from({length: 12}, (_, i) => combatCheck.arena.cache.audio.has("bgm_loop_" + (i + 1))).every(Boolean)');
+        await waitFor('combatCheck.arena.cache.audio.has("bgm_loop_1")');
         const musicTracks = await win.webContents.executeJavaScript(`(async () => {
           const {arena} = combatCheck;
           const music = arena.musicManager;
@@ -389,8 +422,9 @@ if (!process.versions.electron) {
             });
           });
           try {
-            music.playBeginning();
-            for (let i = 0; i < 3; i++) await complete();
+            music.playNext();
+            tracks.push(music.currentSound.key);
+            for (let i = 0; i < 2; i++) await complete();
             music.updateMusicIntensity(0.5);
             await complete();
             return tracks;
@@ -460,7 +494,7 @@ if (!process.versions.electron) {
             const rendererType = await js('combatCheck.arena.game.config.renderType');
             assert(exit === 'canvas' ? rendererType === 1 : [1, 2].includes(rendererType));
             const textures = await js(`Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((bytes, s) => bytes + s.width*s.height*4, 0)`);
-            assert(textures < 900 * 1024 * 1024, 'Combat decoded texture budget exceeded');
+            assert(textures < 200 * 1024 * 1024, 'Combat decoded texture budget exceeded');
             console.log(`${exit}: decoded texture storage ${(textures/1024/1024).toFixed(0)} MiB`);
             if (exit === 'canvas') assert(await js(`(() => {
               let passed = false;
@@ -472,6 +506,10 @@ if (!process.versions.electron) {
             await waitFor('Boolean(document.querySelector("#scene canvas"))');
           }
           await js('void (window.previousGame = combatCheck.arena.game)');
+          await js(`(() => {
+            window.staleHighlights = 0;
+            combatCheck.arena.gridMap.set('0,0', {onPointerOver() {staleHighlights++;}, onPointerOut() {staleHighlights++;}});
+          })()`);
           if (exit === 'sleeping') await js('void combatCheck.arena.game.loop.sleep()');
           if (exit === 'animation') await js(`combatCheck.arena.processLocalAnimation({fromX: 5, fromY: 7, toX: 9, toY: 8, id: 0, isKill: false})`);
           if (exit === 'context-loss') {
@@ -484,12 +522,62 @@ if (!process.versions.electron) {
           await waitFor('Object.keys(previousGame.textures.list).length === 0');
           assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
           assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
+          await js(`['characterInSpellRadius', 'characterOutOfSpellRadius'].forEach(type => window.dispatchEvent(new CustomEvent(type, {detail: {x: 0, y: 0}})))`);
+          assert.equal(await js('staleHighlights'), 0, 'Disposed arenas must not receive targeting events');
           await ready();
           console.log(`Repeated match: ${exit} teardown passes`);
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
       if (!process.argv.includes('--images')) {
+        for (const scenario of ['socket-valid', 'socket-replay', 'socket-invalid', 'socket-auth', 'socket-timeout']) {
+          await win.loadURL(`${PACKAGED_APP_URL}${scenario === 'socket-replay' ? 'replay' : 'game'}/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
+          if (scenario !== 'socket-valid' && scenario !== 'socket-replay') {
+            // Allow the real production 30-second deadline to expire for the missing-snapshot case.
+            if (scenario === 'socket-timeout') await new Promise(resolve => setTimeout(resolve, 2000));
+            await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+            assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
+            console.log(`${scenario}: actionable recovery, no abandoned canvas`);
+            continue;
+          }
+          await waitFor('combatCheck.arena.gameInitialized && combatCheck.arena.eventsQueue.length === 0');
+          assert.equal(await js('combatCheck.arena.socket.connected'), true);
+          assert.equal(await js('combatCheck.arena.teamsMap.size'), 2);
+          if (scenario === 'socket-replay') assert.equal(await js('combatCheck.arena.isReplay'), true);
+          const memory = await js(`({textures: Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((n, s) => n+s.width*s.height*4, 0),
+            audio: Object.values(combatCheck.arena.cache.audio.entries.entries).reduce((n, b) => n+b.length*b.numberOfChannels*4, 0)})`);
+          assert(memory.textures < 200 * 1048576 && memory.audio < 35 * 1048576, 'Decoded texture/audio budget exceeded');
+          console.log('Live-socket decoded memory (MiB):', {textures: Math.round(memory.textures / 1048576), audio: Math.round(memory.audio / 1048576)});
+          assert.equal(await js('combatCheck.arena.textures.exists("ice_3")'), false);
+          await js('combatCheck.arena.socket.emit("late-assets") && undefined');
+          await waitFor('combatCheck.arena.teamsMap.get(2).members.length === 4 && combatCheck.arena.eventsQueue.length === 0');
+          assert.equal(await js('combatCheck.arena.textures.exists("ice_3") && combatCheck.arena.anims.exists("charged_ice_2")'), true);
+          await ready();
+          assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
+          assert.deepEqual(rendererErrors, [], 'Live and replay socket events must not produce renderer errors');
+          console.log('Real socket buffering, summoned sprite and unseen enemy spell pass');
+        }
+        for (const fault of ['audio', 'bundle', 'boot-error']) {
+          assetFault = fault;
+          await session.defaultSession.clearCache();
+          if (fault === 'audio') {
+            await win.loadURL(`${PACKAGED_APP_URL}game/missing-assets`);
+            await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+          }
+          else {
+            // A new renderer cannot reuse the previous page's compiled bundle from memory.
+            const bootWindow = new BrowserWindow({show: false, webPreferences: {contextIsolation: true, sandbox: true}});
+            bootWindow.webContents.setAudioMuted(true);
+            try {
+              await bootWindow.loadURL(`${PACKAGED_APP_URL}?fault=${fault}`);
+              assert.equal(await bootWindow.webContents.executeJavaScript('getComputedStyle(document.getElementById("startup-recovery")).display'), 'grid');
+              assert(await bootWindow.webContents.executeJavaScript('document.body.innerText.includes("Reload game")'));
+            } finally { bootWindow.destroy(); }
+          }
+          console.log(`${fault}: visible recovery without relying on successful startup`);
+        }
+        assetFault = undefined;
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
         // A hidden test window intentionally does not arm the SDK visibility watchdog.
         // Enable its real main-process watcher explicitly, then block the actual renderer.
         Sentry.getClient().getIntegrationByName('RendererEventLoopBlock')

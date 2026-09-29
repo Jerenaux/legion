@@ -94,6 +94,7 @@ jobs:
       - name: Smoke-test packaged routes, combat, and Sentry recording
         working-directory: client
         run: |
+          bun ci --cwd ../server
           node -e "require('electron')"
           sudo chown root:root node_modules/electron/dist/chrome-sandbox
           sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
@@ -117,6 +118,8 @@ jobs:
         with:
           bun-version-file: ".bun-version"
       - working-directory: client
+        run: bun ci
+      - working-directory: server
         run: bun ci
       - name: Repeated matches, software rendering, teardown, and recovery
         working-directory: client

@@ -14,6 +14,7 @@ export class MusicManager {
     gameOver = false;
     soundConfig: { volume: number };
     volume: number;
+    private pending = new Map<string, () => void>();
 
     constructor(scene, startinIntensity, nbIntensities, bridges) {
         this.scene = scene;
@@ -68,26 +69,17 @@ export class MusicManager {
             this.desiredIntensity = this.nbIntensities;
         }
 
-        // Attempt to increase the current intensity towards the desired intensity
-        if (this.desiredIntensity > this.intensity) {
-            for (let i = this.intensity + 1; i <= this.desiredIntensity; i++) {
-                const key = `bgm_loop_${i}`;
-                if (this.scene.cache.audio.has(key)) {
-                    this.intensity = i; // Asset is loaded; advance to this intensity
-                } else {
-                    // Asset not loaded; cannot advance further
-                    break;
-                }
-            }
-        }
-        // Note: You can implement decreasing intensity similarly if needed
+        this.intensity = Math.max(this.intensity, this.desiredIntensity);
+        this.prefetch();
     }
 
     playBeginning() {
+        this.releaseCurrent();
         // Play the starting music
         this.currentSound = this.scene.sound.add('bgm_start', this.soundConfig);
         this.currentSound.once('complete', () => this.playNext(), this);
         this.currentSound.play();
+        this.prefetch();
     }
 
     playNext() {
@@ -100,66 +92,75 @@ export class MusicManager {
             }
         }
 
-        let key = `bgm_loop_${this.intensity}`;
-
-        // Check if the current intensity's asset is loaded
-        if (!this.scene.cache.audio.has(key)) {
-            // Attempt to find the highest available intensity below the desired one
-            let fallbackIntensity = this.intensity;
-            while (fallbackIntensity > 0) {
-                key = `bgm_loop_${fallbackIntensity}`;
-                if (this.scene.cache.audio.has(key)) {
-                    this.intensity = fallbackIntensity;
-                    break;
-                }
-                fallbackIntensity--;
-            }
-
-            if (fallbackIntensity === 0) {
-                // No suitable asset found; cannot play background music
-                console.warn('No suitable background music loaded to play.');
-                return;
-            }
-        }
+        // Keep the current phrase while a health-driven jump is still decoding.
+        const playing = this.scene.cache.audio.has(`bgm_loop_${this.intensity}`)
+            ? this.intensity : this.playingIntensity || 1;
+        const key = `bgm_loop_${playing}`;
+        if (!this.scene.cache.audio.has(key)) return;
 
         // Count actual plays, including asset fallbacks, and reset whenever the track changes.
-        this.loopsPlayed = this.intensity === this.playingIntensity ? this.loopsPlayed + 1 : 1;
-        this.playingIntensity = this.intensity;
+        this.loopsPlayed = playing === this.playingIntensity ? this.loopsPlayed + 1 : 1;
+        this.playingIntensity = playing;
 
         // Play the music at the current intensity level
+        this.releaseCurrent();
         this.currentSound = this.scene.sound.add(key, this.soundConfig);
         this.currentSound.once('complete', () => this.playNext(), this);
         this.currentSound.play();
 
-        // After starting playback, attempt to advance intensity for the next loop
-        if (this.intensity < this.desiredIntensity) {
-            const nextIntensity = this.intensity + 1;
-            const nextKey = `bgm_loop_${nextIntensity}`;
-            if (this.scene.cache.audio.has(nextKey)) {
-                this.intensity = nextIntensity;
-            }
-        }
-
         // Handle bridges if applicable
-        if (this.bridges.includes(this.intensity)) {
-            const nextIntensity = this.intensity + 1;
-            const nextKey = `bgm_loop_${nextIntensity}`;
-            if (this.scene.cache.audio.has(nextKey)) {
-                this.intensity = nextIntensity;
-            }
-        }
+        if (this.bridges.includes(playing)) this.intensity = Math.max(this.intensity, playing + 1);
+        this.prefetch();
     }
 
     playEnd() {
         this.gameOver = true;
-        if (this.currentSound) {
-            this.currentSound.stop();
+        this.releaseCurrent();
+        this.requestTrack('bgm_end');
+        this.playLoadedEnd();
+        this.trimCache();
+    }
+
+    private playLoadedEnd() {
+        if (!this.scene || !this.gameOver || this.currentSound || !this.scene.cache.audio.has('bgm_end')) return;
+        this.currentSound = this.scene.sound.add('bgm_end', this.soundConfig);
+        this.currentSound.play();
+    }
+
+    private releaseCurrent() {
+        this.currentSound?.destroy();
+        this.currentSound = null;
+    }
+
+    private nextKey() {
+        const next = this.intensity > this.playingIntensity ? this.intensity : Math.min(this.intensity + 1, this.nbIntensities);
+        return this.gameOver ? 'bgm_end' : `bgm_loop_${next}`;
+    }
+
+    private prefetch() {
+        this.requestTrack(this.nextKey());
+        this.trimCache();
+    }
+
+    private requestTrack(key: string) {
+        if (!this.scene || this.scene.cache.audio.has(key) || this.pending.has(key)) return;
+        const loaded = () => {
+            this.pending.delete(key);
+            this.playLoadedEnd();
+            this.trimCache();
+        };
+        this.pending.set(key, loaded);
+        this.scene.load.once(`filecomplete-audio-${key}`, loaded);
+        this.scene.load.audio(key, require(`@assets/music/${key}.wav`));
+        this.scene.load.start();
+    }
+
+    private trimCache() {
+        if (!this.scene) return;
+        for (const key of this.scene.cache.audio.getKeys()) {
+            const introFallback = !this.gameOver && !this.playingIntensity && key === 'bgm_loop_1';
+            if (key.startsWith('bgm_') && !introFallback && key !== this.currentSound?.key && key !== this.nextKey()) this.scene.cache.audio.remove(key);
         }
-        // Check if the end music asset is loaded
-        if (!this.scene.cache.audio.has('bgm_end')) {
-            return;
-        }
-        this.scene.sound.add('bgm_end', this.soundConfig).play();
     }
 
     stopAll() {
@@ -173,6 +174,8 @@ export class MusicManager {
     }
 
     destroy() {
+        for (const [key, callback] of this.pending) this.scene?.load.off(`filecomplete-audio-${key}`, callback);
+        this.pending.clear();
         this.stopAll();
         events.off('settingsChanged', this.onSettingsChanged, this);
         this.scene = null;
