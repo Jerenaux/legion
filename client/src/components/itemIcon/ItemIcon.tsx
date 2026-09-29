@@ -9,6 +9,7 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { Effect } from '@legion/shared/interfaces';
 import { mapFrameToCoordinates, cropFrame } from '../utils';
+import { itemTooltip } from '../itemTooltip';
 
 import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
@@ -23,6 +24,7 @@ interface ItemIconProps {
   handleItemEffect?: (effects: Effect[], actionType: InventoryActionType, index?: number) => void;
   onActionClick?: (type: string, letter: string, index: number) => void;
   handleSelectedEquipmentSlot: (newValue: number) => void;
+  tooltipId?: string;
 }
 
 interface ItemIconState {
@@ -174,9 +176,12 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
       return <div className={`${actionType}`} />;
     }
 
+    const details = this.props.tooltipId ? itemTooltip(action) : undefined;
+
     return (
       // biome-ignore lint/a11y/useSemanticElements: This keyboard-accessible slot owns a dialog with independent buttons, so it cannot itself be a button.
-      <div role="button" tabIndex={0} onKeyDown={(event) => {
+      <div role="button" tabIndex={0} aria-label={details ?? action.name}
+        data-tooltip-id={this.props.tooltipId} data-tooltip-content={details} onKeyDown={(event) => {
         if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
           event.currentTarget.click();
