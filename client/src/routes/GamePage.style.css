@@ -81,6 +81,21 @@
   margin-bottom: 20px;
 }
 
+.match-ready-status {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  max-width: 80vw;
+  padding: 16px 24px;
+  border-radius: 8px;
+  background: rgba(20, 26, 34, 0.95);
+  color: white;
+  text-align: center;
+  pointer-events: none;
+}
+
 @keyframes ellipsis {
   0% { content: ''; }
   25% { content: '.'; }

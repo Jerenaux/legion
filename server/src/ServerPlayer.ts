@@ -629,7 +629,7 @@ export class ServerPlayer {
 
         if (this.isParalyzed()) {
             this.team!.game.turnSystem.processAction(this, SpeedClass.SLOW);
-            setTimeout(() => {
+            this.team!.game.combatClock.schedule(() => {
                 this.team!.game.processTurn();
             }, PARALYZED_DELAY * 1000);
         }
@@ -639,4 +639,3 @@ export class ServerPlayer {
         this.hasActed = hasActed;
     }
 }
-

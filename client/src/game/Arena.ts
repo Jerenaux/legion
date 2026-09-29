@@ -110,7 +110,10 @@ export class Arena extends Phaser.Scene
     genQueue: GEN[] = [];
     isDisplayingGEN: boolean = false;
     eventsQueue = [];
-    isLateToTheParty = false;
+    private readyToken: string | null = null;
+    private legacyFirstMatch = false;
+    private arenaDisplayed = false;
+    private pendingEntrances = 0;
     sceneCreated = false;
     gameInitialized = false;
     gameEnded = false;
@@ -305,7 +308,7 @@ export class Arena extends Phaser.Scene
                 forceNew: true, // The global Socket.IO manager cache must not retain a finished Arena.
                 auth: createRefreshingSocketAuth(
                     () => getFirebaseIdToken(true),
-                    {gameId, isReplay},
+                    {gameId, isReplay, combatReady: 1},
                 ),
             }
         );
@@ -1168,6 +1171,7 @@ export class Arena extends Phaser.Scene
 
     processTurnee(data: TurnState) {
         if (this.gameEnded) return;
+        events.emit('combatWaiting', false);
         // Determine if turnee is player
         if (data.team !== this.playerTeamId) {
             events.emit('enemyTurn');
@@ -1429,7 +1433,8 @@ export class Arena extends Phaser.Scene
             // Stagger the entrance of each player with a random offset between -200 and +200 ms
             const randomOffset = Math.floor(Math.random() * (AIR_ENTRANCE_DELAY_VARIANCE * 2 + 1)) - AIR_ENTRANCE_DELAY_VARIANCE; // Random number between -AIR_ENTRANCE_DELAY_VARIANCE and AIR_ENTRANCE_DELAY_VARIANCE
             const entranceDelay = AIR_ENTRANCE_DELAY + randomOffset;
-            this.time.delayedCall(entranceDelay, player.makeAirEntrance, [], player);
+            this.pendingEntrances++;
+            this.time.delayedCall(entranceDelay, () => player.makeAirEntrance(() => { this.pendingEntrances--; }));
         }
 
         this.gridMap.set(serializeCoords(character.x, character.y), player);
@@ -1496,6 +1501,7 @@ export class Arena extends Phaser.Scene
         this.hexGridManager = new HexGridManager(this);
 
         this.sceneCreated = true;
+        this.game.events.on(Phaser.Core.Events.POST_RENDER, this.reportArenaReady, this);
         this.emptyQueue();
 
         this.input.keyboard.on('keydown-D', () => {
@@ -1534,7 +1540,6 @@ export class Arena extends Phaser.Scene
                 // The authoritative snapshot supersedes updates received before it.
                 if (index > 0) this.eventsQueue.splice(0, index);
                 const {event, data} = this.eventsQueue.shift();
-                if (event === 'gameStatus' && this.eventsQueue.length) this.isLateToTheParty = true;
                 await this.prepareMessageAssets(event, data);
                 if (!this.disposed) await this.eventHandlers.get(event)?.(data);
             }
@@ -1562,7 +1567,11 @@ export class Arena extends Phaser.Scene
         await this.prepareMessageAssets('gameStatus', data);
         if (this.disposed) return;
         recordLoadingStep('finish');
-        const isReconnect = data.general.reconnect || this.isLateToTheParty;
+        // A reconnect during loading is still a fresh battle. Only actual combat
+        // progress skips the intro, never harmless messages buffered during loading.
+        const isReconnect = data.general.combatStarted ?? data.turnee.turnNumber > 0;
+        this.readyToken = data.general.readyToken ?? null;
+        this.legacyFirstMatch = !this.readyToken && data.player.player.completedGames === 0 && !this.isReplay;
         // console.log(`[Arena:initializeGame] Reconnecting to game: ${isReconnect}`);
 
         this.playerTeamId = data.player.teamId;
@@ -1594,7 +1603,6 @@ export class Arena extends Phaser.Scene
             abandonGame: () => this.abandonGame(),
             exitGame: () => this.destroy(),
             teamRevealed: () => {
-                this.socket.emit('teamRevealed');
                 this.displayGame(data, isReconnect);
             },
         };
@@ -1602,7 +1610,8 @@ export class Arena extends Phaser.Scene
 
         events.emit('gameInitialized', {game0: this.gameSettings.game0});
 
-        if (this.gameSettings.game0) {
+        events.emit('combatWaiting', !isReconnect);
+        if (this.gameSettings.game0 && !isReconnect && !this.isReplay) {
             events.emit('revealTeam', data.player.team);
         } else {
             this.displayGame(data, isReconnect);
@@ -1610,6 +1619,8 @@ export class Arena extends Phaser.Scene
     }
 
     displayGame(data: GameData, isReconnect: boolean) {
+        if (this.arenaDisplayed || this.disposed) return;
+        this.arenaDisplayed = true;
         this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
 
@@ -1643,6 +1654,19 @@ export class Arena extends Phaser.Scene
         this.gameInitialized = true;
         this.refreshOverview();
         void this.emptyQueue();
+    }
+
+    private reportArenaReady() {
+        if (this.disposed || this.isReplay || !this.gameInitialized || this.pendingEntrances > 0 || document.hidden || !this.socket?.connected) return;
+        if (window.matchMedia('(orientation: portrait)').matches) return;
+        // POST_RENDER runs after the intro and the first complete arena frame.
+        if (this.readyToken) {
+            this.socket.emit('arenaReady', this.readyToken);
+            this.readyToken = null;
+        } else if (this.legacyFirstMatch) {
+            this.socket.emit('teamRevealed');
+            this.legacyFirstMatch = false;
+        }
     }
 
     startAnimation() {
@@ -1913,6 +1937,7 @@ export class Arena extends Phaser.Scene
     };
 
     destroy() {
+        this.game.events.off(Phaser.Core.Events.POST_RENDER, this.reportArenaReady, this);
         if (this.disposed) return;
         this.disposed = true;
         this.eventsQueue.length = 0;

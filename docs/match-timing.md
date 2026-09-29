@@ -1,0 +1,15 @@
+# Match readiness and recovery
+
+`Game.gameStarted` means the roster and initial snapshot exist. `combatStarted` means every human slot has acknowledged readiness. Do not start turns, AI decisions or audience scoring when merely sending `gameStatus` or receiving the champion reveal click.
+
+Updated clients advertise `combatReady: 1` in socket authentication. Each snapshot supplies a new `readyToken`. The Arena sends `arenaReady(token)` from Phaser's post-render event only after assets, champion reveal and all entrance animations finish, while the document is visible and the portrait-orientation overlay is absent. The server accepts that token only from the current connection assigned to the team. Duplicates and tokens from replaced connections cannot advance combat. AI roster owners are not human participants, even if their copied profile contains a UID.
+
+Only `combatStarted` (or a positive turn number from an older server) indicates an in-progress battle. Neither a transport reconnect nor buffered score/queue messages justify skipping an opening animation. A running first match must not repeat champion reveal on reconnect.
+
+Practice/tutorial recovery pauses the shared monotonic `CombatClock` until a new snapshot is rendered and acknowledged. Use that clock for every delayed gameplay effect, including AI decisions, spells, terrain damage, paralysis and turn transitions. Preserve remaining time; do not repeat start-of-turn effects or award a new full turn. Cancelling or ending a match disposes all outstanding effects. Established PvP and competitive AI matches continue during disconnects to prevent pause exploits; their clients receive the current remaining time when ready again.
+
+Initial readiness and practice recovery have a two-minute wall-clock deadline. Expiry closes the match without rewards, a player completion increment or a loss; first-match onboarding can be retried. Menus do not pause combat. A connected renderer stall after combat starts is not detected by this protocol; transport loss pauses practice when the server detects it.
+
+For a backend-first rollout, already installed clients without the capability retain a bounded legacy intro delay (in milliseconds), with the first match waiting for `teamRevealed`. Only updated clients provide a render acknowledgement, so publish the matching desktop/web client to deliver the full fix. Do not remove this fallback until old installed builds can be retired.
+
+Regression checks: `bun test` in `server` exercises long loads, both PvP participants, copied AI profiles, stale/duplicate readiness, reconnects, in-flight casts, AI decisions, cancellation and old clients. `bun run test:guide` in `client` runs the real packaged Phaser renderer over loopback Socket.IO, checking champion reveal, intro completion, a full opening turn, resumed first matches and hidden-window readiness. CI runs that smoke test on Windows, macOS and Linux.

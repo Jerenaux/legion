@@ -194,6 +194,8 @@ io.on('connection', async (socket) => {
       }
 
       let game: Game;
+      const previousGame = gamesMap.get(gameId);
+      if (previousGame?.gameOver && previousGame.gameOutcomes.size === 0) gamesMap.delete(gameId);
       if (!gamesMap.has(gameId)) {
         // console.log(`[server:connection] Creating game ${gameId} with mode ${gameData.mode}`);
         const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI, PlayMode.TUTORIAL];
@@ -253,7 +255,11 @@ io.on('connection', async (socket) => {
 
       socket.on('teamRevealed', () => {
         const game = socketMap.get(socket);
-        game?.handleTeamRevealed();
+        game?.handleTeamRevealed(socket);
+      });
+
+      socket.on('arenaReady', (token: unknown) => {
+        socketMap.get(socket)?.handleArenaReady(socket, token);
       });
 
       socket.on('passTurn', () => {

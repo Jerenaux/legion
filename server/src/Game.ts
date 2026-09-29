@@ -21,6 +21,8 @@ import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
 import { TerrainManager } from './TerrainManager';
 import { TurnSystem } from './TurnSystem';
 import { withRetry } from './utils';
+import {randomUUID} from 'node:crypto';
+import {CombatClock} from './CombatClock';
 
 
 enum GameAction {
@@ -33,6 +35,7 @@ export abstract class Game
 {
     id: string;
     mode: PlayMode;
+    nbExpectedPlayers = 2;
     league: League;
     teams: Map<number, Team> = new Map<number, Team>();
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
@@ -46,10 +49,16 @@ export abstract class Game
     duration: number = 0;
     gameStarted: boolean = false;
     private starting = false;
+    combatStarted = false;
+    readonly combatClock = new CombatClock();
+    private readySockets = new Set<Socket>();
+    private readyTokens = new Map<Socket, string>();
+    private loadingTimer: ReturnType<typeof setTimeout> | null = null;
     firstBlood: boolean = false;
     gameOver: boolean = false;
     endedAt: number | null = null;
-    turnTimer: NodeJS.Timeout | null = null;
+    turnTimer: number | null = null;
+    private nextTurnTimer: number | null = null;
     audienceTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
     config: Record<string, string | number | boolean | undefined>;
@@ -96,27 +105,35 @@ export abstract class Game
         const team = Array.from(this.teams.values()).find(team => team.teamData.playerUID === uid)
             || Array.from(this.teams.values()).find(team => !team.teamData.playerUID);
         if (!team) throw new Error('Game is full');
+        this.replaceSocket(socket, team);
+        team.setPlayerData(playerData);
+    }
+
+    private replaceSocket(socket: Socket, team: Team) {
         const previous = team.getSocket();
         if (previous === socket) return;
-        // Replace a connection without changing its team, even during async startup.
         if (previous) {
             this.socketMap.delete(previous);
+            this.readySockets.delete(previous);
+            this.readyTokens.delete(previous);
             this.sockets = this.sockets.filter(candidate => candidate !== previous);
             previous.leave(this.id);
         }
         this.addSocket(socket);
         this.socketMap.set(socket, team);
         team.setSocket(socket);
-        team.setPlayerData(playerData);
         previous?.disconnect(true);
     }
 
     handleDisconnect(socket: Socket) {
         const disconnectingTeam = this.socketMap.get(socket);
         if (disconnectingTeam?.getSocket() === socket) disconnectingTeam.unsetSocket();
+        this.readySockets.delete(socket);
+        this.readyTokens.delete(socket);
         this.socketMap.delete(socket);
         // Slice the player from the game
         this.sockets = this.sockets.filter(s => s !== socket);
+        if (disconnectingTeam) this.pauseForRecovery();
         if (this.sockets.length === 0) {
             this.saveReplayToDb();
         }
@@ -127,18 +144,10 @@ export abstract class Game
         const uid = "uid" in socket && typeof socket.uid === "string" ? socket.uid : undefined;
         const team = Array.from(this.teams.values()).find(candidate => candidate.teamData.playerUID === uid);
         if (!team) throw new Error('Player team not found');
-        const previous = team.getSocket();
-        if (previous === socket) return;
-        if (previous) {
-            this.socketMap.delete(previous);
-            this.sockets = this.sockets.filter(candidate => candidate !== previous);
-            previous.leave(this.id);
-        }
-        this.addSocket(socket);
-        this.socketMap.set(socket, team);
-        team.setSocket(socket);
+        if (team.getSocket() === socket) return;
+        this.replaceSocket(socket, team);
+        this.pauseForRecovery();
 
-        previous?.disconnect(true);
         this.sendGameStatus(socket, true);
 
         // If game is over, re-emit the game end event
@@ -328,6 +337,7 @@ export abstract class Game
     }
 
     startGame() {
+        if (this.gameStarted || this.gameOver) return;
         console.log(`[Game:startGame]`)
         this.startTime = Date.now();
         this.gameStarted = true;
@@ -335,18 +345,16 @@ export abstract class Game
         this.turnSystem = new TurnSystem();
         const allCharacters = this.getTeam(1).concat(this.getTeam(2));
         this.turnSystem.initializeTurnOrder(allCharacters);
+        this.combatClock.pause();
+        this.startLoadingDeadline();
 
         this.saveInitialStateToReplay();
         this.sockets.forEach(socket => {
             this.sendGameStatus(socket);
-            this.incrementStartedGames(this.socketMap.get(socket)!);
         });
 
-        if (!this.isGame0()) {
-            setTimeout(this.processTurn.bind(this), FIRST_TURN_DELAY);
-        }
-
         this.audienceTimer = setInterval(() => {
+            if (!this.combatStarted || this.combatClock.paused || this.gameOver) return;
             this.teams.forEach(team => {
                 team.incrementScore(10);
                 team!.sendScore();
@@ -358,12 +366,12 @@ export abstract class Game
         }, 1000);
 
         if (this.config.AUTO_DEFEAT) {
-            setTimeout(() => {
+            this.combatClock.schedule(() => {
                 this.endGame(2);
             }, 5000);
         }
         if (this.config.AUTO_WIN) {
-            setTimeout(() => {
+            this.combatClock.schedule(() => {
                 this.endGame(1);
             }, 2000);
         }
@@ -401,6 +409,75 @@ export abstract class Game
         return this.teams.get(1)!.isGame0();
     }
 
+    private usesReadiness(socket: Socket) {
+        return socket.handshake?.auth?.combatReady === 1;
+    }
+
+    private legacyReady(socket: Socket) {
+        if (this.readyTokens.has(socket)) return;
+        const token = randomUUID();
+        this.readyTokens.set(socket, token);
+        setTimeout(() => this.handleArenaReady(socket, token), FIRST_TURN_DELAY * 1000 + 1000);
+    }
+
+    private startLoadingDeadline() {
+        // A silent client must not hold a match/server allocation indefinitely.
+        if (this.loadingTimer || this.gameOver) return;
+        this.loadingTimer = setTimeout(() => this.cancelWaitingGame(), 120_000);
+    }
+
+    private cancelWaitingGame() {
+        if (this.gameOver) return;
+        this.gameOver = true;
+        this.endedAt = Date.now();
+        this.clearTimers();
+        this.broadcast('joinError', {message: 'The match could not get everyone ready. Please try again.'});
+        // No loss, reward, unlock or completed-player-game increment for a load failure.
+        void this.updateGameInDB('', {});
+    }
+
+    private pauseForRecovery() {
+        if (this.gameOver || !this.gameStarted) return;
+        if (!this.combatStarted || this.mode === PlayMode.PRACTICE || this.mode === PlayMode.TUTORIAL) {
+            this.combatClock.pause();
+            this.startLoadingDeadline();
+        }
+    }
+
+    handleArenaReady(socket: Socket, token: unknown) {
+        if (typeof token !== 'string' || token !== this.readyTokens.get(socket)) return;
+        this.markReady(socket);
+    }
+
+    private markReady(socket: Socket) {
+        const team = this.socketMap.get(socket);
+        if (this.gameOver || !this.gameStarted || !team || team.getSocket() !== socket || socket.connected === false || this.readySockets.has(socket)) return;
+        this.readySockets.add(socket);
+        // AI opponents copied from real rosters also have a player UID.
+        // Human slots come from the game type, never from that profile field.
+        const humans = Array.from(this.teams.values()).filter(candidate => candidate.id <= this.nbExpectedPlayers);
+        if (!humans.length || !humans.every(candidate => this.readySockets.has(candidate.getSocket()))) return;
+        clearTimeout(this.loadingTimer!);
+        this.loadingTimer = null;
+        this.combatClock.resume();
+        if (!this.combatStarted) {
+            this.combatStarted = true;
+            humans.forEach(candidate => { void this.incrementStartedGames(candidate); });
+            this.processTurn();
+        } else if (this.turnee) {
+            // Recovery preserves remaining time, rather than granting a new turn.
+            this.broadcast('turnee', this.getTurneeData());
+        }
+    }
+
+    private clearTimers() {
+        clearTimeout(this.loadingTimer!);
+        this.loadingTimer = null;
+        clearInterval(this.audienceTimer!);
+        clearInterval(this.checkEndTimer!);
+        this.combatClock.dispose();
+    }
+
     saveInitialStateToReplay() {
         const timestamp = Date.now() - this.startTime;
         this.replayMessages.push({
@@ -411,18 +488,21 @@ export abstract class Game
     }
 
     resetTurnTimer(turnDuration: number) {
-        clearTimeout(this.turnTimer!);
-        this.turnStart = Date.now();
+        this.combatClock.cancel(this.turnTimer);
+        this.turnStart = this.combatClock.now();
         // console.log(`[Game:resetTurnTimer] Resetting turn: ${turnDuration}`);
-        this.turnTimer = setTimeout(this.processTurn.bind(this), turnDuration * 1000);
+        this.turnTimer = this.combatClock.schedule(() => this.processTurn(), turnDuration * 1000);
         this.turnDuration = turnDuration;
 
     }
 
     processTurn(delay: number = 0) {
-        clearTimeout(this.turnTimer!); // To avoid race condition between that timeout and the one below
+        this.combatClock.cancel(this.turnTimer);
+        this.combatClock.cancel(this.nextTurnTimer);
         if (this.gameOver) return;
-        setTimeout(() => {
+        this.nextTurnTimer = this.combatClock.schedule(() => {
+            this.nextTurnTimer = null;
+            if (this.gameOver || !this.combatStarted) return;
             // const time = `${new Date().toTimeString().split(' ')[0]}.${String(new Date().getMilliseconds()).padStart(3, '0')}`;
             // console.log(`[${time}] [Game:processTurn] Actual turn`);
             // Check if the previous turnee has acted
@@ -432,6 +512,7 @@ export abstract class Game
 
             this.broadcastQueueData();
             this.turnee = this.turnSystem.getNextActor();
+            if (!this.turnee) return;
             this.turnee.setHasActed(false);
 
             // console.log(`[Game:processTurn] Turnee: ${this.turnee.num} from team ${this.turnee.team.id}`);
@@ -469,8 +550,18 @@ export abstract class Game
         }
         const teamId = team.id;
         const gameData = this.getGameData(teamId, reconnect);
-
+        this.readySockets.delete(socket);
+        if (this.usesReadiness(socket)) {
+            const token = randomUUID();
+            this.readyTokens.set(socket, token);
+            gameData.general.readyToken = token;
+        }
         socket.emit('gameStatus', gameData);
+        // Compatibility for already installed clients during a backend-first rollout.
+        // Updated clients always acknowledge a rendered arena instead of this fallback.
+        if (!this.usesReadiness(socket) && (!this.isGame0() || this.combatStarted)) {
+            this.legacyReady(socket);
+        }
     }
 
     broadcastQueueData() {
@@ -493,7 +584,7 @@ export abstract class Game
             num: this.turnee?.num,
             team: this.turnee?.team.id,
             turnDuration: this.turnDuration,
-            timeLeft: this.turnDuration - (Date.now() - this.turnStart)/1000,
+            timeLeft: this.turnee ? Math.max(0, this.turnDuration - (this.combatClock.now() - this.turnStart)/1000) : 0,
             turnNumber: this.turnNumber,
         }
     }
@@ -507,6 +598,7 @@ export abstract class Game
                 reconnect,
                 spectator: false,
                 mode: this.mode,
+                combatStarted: this.combatStarted,
             },
             queue: this.turnSystem.getQueueData(),
             turnee: this.getTurneeData(),
@@ -586,7 +678,7 @@ export abstract class Game
 
     processAction(action: string, data: unknown, socket: Socket | null = null) {
         const player = this.turnee;
-        if (this.gameOver || !this.gameStarted || !player || player.hasActed) return;
+        if (this.gameOver || !this.gameStarted || this.combatClock.paused || !player || player.hasActed) return;
 
         let team: Team;
         if (socket) {
@@ -635,16 +727,16 @@ export abstract class Game
 
     // Called only after validation, before effects or async work, including direct AI actions.
     private beginAction(player: ServerPlayer | null): boolean {
-        if (this.gameOver || !this.gameStarted || !player?.canAct() || player !== this.turnee || player.hasActed) return false;
+        if (this.gameOver || !this.gameStarted || this.combatClock.paused || !player?.canAct() || player !== this.turnee || player.hasActed) return false;
         player.setHasActed(true);
-        clearTimeout(this.turnTimer!); // Accepted actions advance the turn when their animation/effects finish.
+        this.combatClock.cancel(this.turnTimer); // Accepted actions advance after their effects finish.
         player.team.incrementActions();
         player.team.snapshotScore();
         return true;
     }
 
     checkEndGame() {
-        if (this.gameOver) return;
+        if (this.gameOver || !this.combatStarted || this.combatClock.paused) return;
         if (this.mode === PlayMode.TUTORIAL && !this.tutorialSettings.allowVictoryConditions) return;
         if (this.teams.get(1)!.isDefeated() || this.teams.get(2)!.isDefeated()) {
             this.endGame(this.teams.get(1).isDefeated() ? 2 : 1);
@@ -653,15 +745,14 @@ export abstract class Game
 
     endGame(winnerTeamID: number) {
         if (this.gameOver) return;
+        if (!this.combatStarted) { this.cancelWaitingGame(); return; }
         try {
             console.log(`[Game:endGame] Game ${this.id} ended, mode = ${this.mode}`);
             this.duration = Date.now() - this.startTime;
             this.gameOver = true;
             this.endedAt = Date.now();
 
-            clearTimeout(this.audienceTimer!);
-            clearTimeout(this.checkEndTimer!);
-            clearInterval(this.turnTimer!);
+            this.clearTimers();
 
             const results = {};
             let winnerUID = '';
@@ -758,7 +849,7 @@ export abstract class Game
             const terrain = this.terrainManager.terrainMap.get(cell);
             if (terrain) {
                 const distance = hexDistance(player.x, player.y, x, y);
-                setTimeout(() => {
+                this.combatClock.schedule(() => {
                     player.applyTerrainEffect(terrain);
                 }, distance * 100);
             }
@@ -1113,7 +1204,7 @@ export abstract class Game
         if (spell.charge) {
             delay += 1000;
         }
-        setTimeout(this.applyMagic.bind(this, spell, player, x, y, player.team, targetPlayer), delay);
+        this.combatClock.schedule(() => this.applyMagic(spell, player, x, y, player.team, targetPlayer), delay);
         return delay;
     }
 
@@ -1551,8 +1642,8 @@ export abstract class Game
         this.endGame(otherTeam.id);
     }
 
-    handleTeamRevealed() {
-        this.processTurn(FIRST_TURN_DELAY);
+    handleTeamRevealed(socket: Socket) {
+        if (!this.usesReadiness(socket) && this.isGame0()) this.legacyReady(socket);
     }
 
     isTutorial() {

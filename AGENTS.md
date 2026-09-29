@@ -48,6 +48,10 @@ Preserve early Sentry initialization in Electron, Bun services, and Firebase. Re
 
 Sentry is the sole session recorder; do not reintroduce LogRocket. Preserve the shared `PACKAGED_CSP`: bundled scripts only, with local/blob workers for Sentry Replay. The guide smoke test must verify real replay envelopes, nonblank combat canvas frames, and input/network redaction using local ingestion only. Never send CI recordings to production. Replay frame rate and private `app://` assets have the limitations documented in `docs/error-reporting.md`.
 
+## Match timing
+
+Follow `docs/match-timing.md`. Sending a snapshot is not permission to start combat: wait for every human slot's rendered-arena acknowledgement. Keep delayed combat effects on the shared `CombatClock` so practice reconnects cannot advance spells or consume turns while loading. Preserve the installed-client compatibility path and the packaged readiness smoke tests.
+
 ## Player guide
 
 When changing player-facing rules, controls, unlocks, or the illustrated UI, update the bundled guide in `client/src/components/GuidePage.tsx` in the same batch. The implemented game—not the legacy external guide—is authoritative. Follow `docs/player-guide.md` to refresh its cropped screenshots and run `bun run test:guide` from `client` to verify the real packaged routes with local fixtures. Never ship the screenshot fixtures in the release bundle.
