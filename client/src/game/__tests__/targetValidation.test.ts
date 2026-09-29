@@ -15,6 +15,7 @@ function inputMethods(file: string, names: string[]) {
   return ts.transpileModule(`({${methods}})`, {compilerOptions: {target: ts.ScriptTarget.ESNext}}).outputText;
 }
 const code = inputMethods("Arena.ts", ["validateTarget", "handleTileClick", "sendSpell", "sendUseItem", "refreshBox", "processActionRejected", "unlockInput"]);
+const eventCode = inputMethods("Arena.ts", ["getOtherTeam", "processAttack"]);
 const playerCode = inputMethods("Player.ts", ["cancelSkill", "cancelItem"]);
 
 for (const mode of ["development", "production"]) {
@@ -99,4 +100,15 @@ test('server rejection restores controls for the same turn, but never resets a l
   expect(arena.selectedPlayer.cancelItem).toHaveBeenCalledTimes(1);
   expect(arena.selectTurnee).toHaveBeenCalledTimes(1);
   expect(toast).toHaveBeenCalledTimes(1);
+});
+
+test('stale attack events with a missing actor or target are ignored', () => {
+  const arena = runInNewContext(eventCode);
+  const player = {attack: mock()};
+  arena.gameEnded = false;
+  arena.getPlayer = (team: number, num: number) => team === 1 && num === 1 ? player : undefined;
+
+  expect(() => arena.processAttack({team: 1, num: 1, target: 2, hp: 0, isKill: true, sameTeam: false})).not.toThrow();
+  expect(() => arena.processAttack({team: 2, num: 1, target: 1, hp: 0, isKill: true, sameTeam: false})).not.toThrow();
+  expect(player.attack).not.toHaveBeenCalled();
 });

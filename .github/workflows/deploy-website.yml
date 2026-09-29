@@ -1,0 +1,25 @@
+name: Deploy promotional website
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: .bun-version
+      - name: Install Firebase CLI from the existing lockfile
+        working-directory: api/functions
+        run: bun ci
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Deploy only the static website
+        run: node api/functions/node_modules/firebase-tools/lib/bin/firebase.js deploy --only hosting --project legion-32c6d --non-interactive

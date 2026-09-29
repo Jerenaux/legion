@@ -1,11 +1,10 @@
 from nicegui import ui
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from dotenv import load_dotenv
 import os
 import plotly.graph_objects as go
-from collections import defaultdict
 from datetime import timedelta
 import asyncio
 import pytz
@@ -362,80 +361,40 @@ async def fetch_dashboard_data():
         response = await asyncio.to_thread(
             requests.get,
             f"{current_api}/getDashboardData",
-            headers=get_headers()
+            params={
+                'startDate': date_input.value,
+                'endDate': datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+            },
+            headers=get_headers(),
+            timeout=120,
         )
-        if response.status_code == 200:
-            data = response.json()
-            
-            # Filter data based on cutoff date
-            cutoff_date = datetime.strptime(date_input.value, '%Y-%m-%d').date()
-            
-            # Plot new players per day
-            dates = list(data['newPlayersPerDay'].keys())
-            player_counts = list(data['newPlayersPerDay'].values())
-            
-            # Filter data points after cutoff date
-            filtered_data = [(date, count) for date, count in zip(dates, player_counts) 
-                           if datetime.strptime(date, '%Y-%m-%d').date() >= cutoff_date]
-            dates, player_counts = zip(*filtered_data) if filtered_data else ([], [])
-            
-            new_players_fig = go.Figure()
-            new_players_fig.add_trace(go.Bar(
-                x=dates,
-                y=player_counts,
-                name='New Players'
-            ))
-            new_players_fig.update_layout(
-                title='New Players per Day',
-                xaxis_title='Date',
-                yaxis_title='Number of New Players',
-                height=400,
-                width=600,
+        if response.status_code != 200:
+            ui.notify(f'Error fetching dashboard data: {response.status_code} {response.text}', type='error')
+            return
+        data = response.json()
+        daily_active = {entry['date']: entry['userCount'] for entry in data['DAU']}
+        for container, title, series in [
+            (new_players_plot, 'Player Accounts per Day (UTC)', [
+                ('New accounts', data['newPlayersPerDay']),
+                ('Active accounts', daily_active),
+            ]),
+            (games_plot, 'Matchmaking Games per Day (UTC)', [
+                ('Created', data['matchesCreatedPerDay']),
+                ('Completed', data['matchesCompletedPerDay']),
+            ]),
+        ]:
+            figure = go.Figure()
+            for label, counts in series:
+                figure.add_trace(go.Bar(x=list(counts.keys()), y=list(counts.values()), name=label))
+            figure.update_layout(
+                title=title, xaxis_title='Date (UTC)', yaxis_title='Count',
+                barmode='group', height=400, width=600,
                 margin=dict(l=50, r=20, t=40, b=40),
-                xaxis=dict(
-                    dtick='D1',  # One tick per day
-                    tickformat='%d/%m'  # Show as DD/MM
-                )
+                xaxis=dict(dtick='D1', tickformat='%d/%m'),
             )
-            
-            # Calculate total games per day
-            games_per_day = defaultdict(int)
-            for date, modes in data['gamesPerModePerDay'].items():
-                if datetime.strptime(date, '%Y-%m-%d').date() >= cutoff_date:
-                    games_per_day[date] = sum(modes.values())
-            
-            dates = list(games_per_day.keys())
-            game_counts = list(games_per_day.values())
-            
-            games_fig = go.Figure()
-            games_fig.add_trace(go.Bar(
-                x=dates,
-                y=game_counts,
-                name='Games Played'
-            ))
-            games_fig.update_layout(
-                title='Games Played per Day',
-                xaxis_title='Date',
-                yaxis_title='Number of Games',
-                height=400,
-                width=600,
-                margin=dict(l=50, r=20, t=40, b=40),
-                xaxis=dict(
-                    dtick='D1',  # One tick per day
-                    tickformat='%d/%m'  # Show as DD/MM
-                )
-            )
-            
-            # Update the plots in the UI
-            new_players_plot.clear()
-            games_plot.clear()
-            with new_players_plot:
-                ui.plotly(new_players_fig).classes('w-full')
-            with games_plot:
-                ui.plotly(games_fig).classes('w-full')
-            
-        else:
-            ui.notify(f'Error fetching dashboard data: {response.status_code}', type='error')
+            container.clear()
+            with container:
+                ui.plotly(figure).classes('w-full')
     except Exception as e:
         ui.notify(f'Error: {str(e)}', type='error')
 
@@ -568,8 +527,12 @@ async def dashboard():
                 ui.switch('Use Local API', on_change=toggle_api)
                 api_label = ui.label(f"Current API: {current_api}")
                 ui.label('Show data from:').classes('ml-4')
-                date_input = ui.input(value='2024-12-06', placeholder='YYYY-MM-DD')
-                date_input.on('change', lambda: [fetch_dashboard_data(), fetch_engagement_metrics()])
+                date_input = ui.input(value=(datetime.now(timezone.utc) - timedelta(days=29)).strftime('%Y-%m-%d'), placeholder='YYYY-MM-DD')
+                ui.label('UTC dates, up to 93 days. Match counts exclude tutorial/practice; completed games use their end date.')
+                async def refresh_date():
+                    await fetch_dashboard_data()
+                    fetch_engagement_metrics()
+                date_input.on('change', refresh_date)
             
             # Add the metrics container
             metrics_container = ui.row().classes('w-full mt-4')

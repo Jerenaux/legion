@@ -45,7 +45,6 @@ import reviveSFX from '@assets/sfx/spells/revive.wav';
 import poisonSoundSFX from '@assets/sfx/spells/poison.wav';
 import muteSoundSFX from '@assets/sfx/spells/mute.wav';
 import bgmStartSFX from '@assets/music/bgm_start.wav';
-import bgmEndSFX from '@assets/music/bgm_end.wav';
 import thudSFX from '@assets/sfx/thud.wav';
 
 import speechBubble from '@assets/speech_bubble.png';
@@ -63,7 +62,7 @@ import { TutorialManager } from './TutorialManager';
 import hexTileImage from '@assets/tile.png';
 import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels,
     chargedIceLevels, chargedThunderLevels, iceLevels, thunderLevels,
-    healLevels } from './VFXconfig';
+    healLevels, VFX_FRAME_SIZE, VFX_DISPLAY_SCALE } from './VFXconfig';
 import {loadGameSettings} from '../settings';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 
@@ -73,6 +72,17 @@ export const DARKENING_INTENSITY = 0.9;
 const TINT_COLOR = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
 const AIR_ENTRANCE_DELAY = 750;
 const AIR_ENTRANCE_DELAY_VARIANCE = 200;
+const spellSheetFiles = require.context('@assets/vfx', false, /^\.\/(fire_[123]_explosion|terrain_fire_1|charged_(fire|ice|thunder)_[12]|(ice|thunder|heal)_[123])\.png$/);
+const SPELL_SHEETS = [
+    ...fireLevels.map(level => `fire_${level}_explosion`),
+    ...iceLevels.map(level => `ice_${level}`),
+    ...thunderLevels.map(level => `thunder_${level}`),
+    ...healLevels.map(level => `heal_${level}`),
+    ...terrainFireLevels.map(level => `terrain_fire_${level}`),
+    ...chargedFireLevels.map(level => `charged_fire_${level}`),
+    ...chargedIceLevels.map(level => `charged_ice_${level}`),
+    ...chargedThunderLevels.map(level => `charged_thunder_${level}`),
+];
 
 export class Arena extends Phaser.Scene
 {
@@ -142,6 +152,8 @@ export class Arena extends Phaser.Scene
     private isInTargetMode: boolean = false;
     private targetModeSize: number = 1;
     private targetModeListener: ((pointer: Phaser.Input.Pointer) => void) | null = null;
+    private disposed = false;
+    private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
 
     constructor() {
         super({ key: 'Arena' });
@@ -150,6 +162,7 @@ export class Arena extends Phaser.Scene
         // Initialize event handlers map
         const handlers = {
             gameStatus: this.initializeGame,
+            replayData: this.handleReplayData,
             actionRejected: this.processActionRejected,
             move: this.processMove,
             attack: this.processAttack,
@@ -200,6 +213,8 @@ export class Arena extends Phaser.Scene
 
     preload()
     {
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
+        this.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
         // console.log('Preloading assets ...');
         this.gamehud = new GameHUD();
 
@@ -208,37 +223,7 @@ export class Arena extends Phaser.Scene
         this.load.image('speech_bubble', speechBubble);
         this.load.image('speech_tail', speechTail);
 
-        // Iterate over assetsMap and load spritesheets
-        allSprites.forEach((sprite) => {
-            this.load.spritesheet(sprite, require(`@assets/sprites/${sprite}.png`), { frameWidth: 144, frameHeight: 144});
-        });
         this.load.spritesheet('potion_heal', potionHealImage, { frameWidth: 48, frameHeight: 64});
-
-        fireLevels.forEach(level => {
-            this.load.spritesheet(`fire_${level}_explosion`, require(`@assets/vfx/fire_${level}_explosion.png`), { frameWidth: 512, frameHeight: 512});
-            // this.load.spritesheet(`fireball_${level}`, require(`@assets/vfx/fireball_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        terrainFireLevels.forEach(level => {
-            this.load.spritesheet(`terrain_fire_${level}`, require(`@assets/vfx/terrain_fire_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        chargedFireLevels.forEach(level => {
-            this.load.spritesheet(`charged_fire_${level}`, require(`@assets/vfx/charged_fire_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        iceLevels.forEach(level => {
-            this.load.spritesheet(`ice_${level}`, require(`@assets/vfx/ice_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        chargedIceLevels.forEach(level => {
-            this.load.spritesheet(`charged_ice_${level}`, require(`@assets/vfx/charged_ice_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        thunderLevels.forEach(level => {
-            this.load.spritesheet(`thunder_${level}`, require(`@assets/vfx/thunder_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        chargedThunderLevels.forEach(level => {
-            this.load.spritesheet(`charged_thunder_${level}`, require(`@assets/vfx/charged_thunder_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
-        healLevels.forEach(level => {
-            this.load.spritesheet(`heal_${level}`, require(`@assets/vfx/heal_${level}.png`), { frameWidth: 512, frameHeight: 512});
-        });
 
         this.load.spritesheet('smoke', smokeImage, { frameWidth: 96, frameHeight: 96});
         this.load.spritesheet('cast', castImage, { frameWidth: 48, frameHeight: 64});
@@ -294,7 +279,8 @@ export class Arena extends Phaser.Scene
             this.load.off('progress');
             this.load.off('complete');
         });
-        this.connectToServer();
+        this.load.on('loaderror', file => this.failCombat(new Error('Could not load arena asset: ' + file.key)));
+        this.connectToServer().catch(this.failCombat);
 
         this.load.image('hexTile', hexTileImage);
     }
@@ -306,16 +292,17 @@ export class Arena extends Phaser.Scene
         return pathArray[gameIdIndex];
     }
 
-    async connectToServer() {
+    async connectToServer(serverURL = process.env.GAME_SERVER_URL) {
         console.log('Connecting to the server ...');
         const pathParts = window.location.pathname.split('/');
         const isReplay = pathParts[1] === 'replay';
         const gameId = pathParts[2];
 
         this.socket = io(
-            process.env.GAME_SERVER_URL,
+            serverURL,
             {
                 ...socketReconnectOptions,
+                forceNew: true, // The global Socket.IO manager cache must not retain a finished Arena.
                 auth: createRefreshingSocketAuth(
                     () => getFirebaseIdToken(true),
                     {gameId, isReplay},
@@ -323,21 +310,11 @@ export class Arena extends Phaser.Scene
             }
         );
 
-        // Queue socket events until the scene is created
-        var onevent = this.socket.onevent;
-        const scene = this;
-        this.socket.onevent = function (packet) {
-            if (!scene.sceneCreated){ // Set at the end of create()
-                console.warn('queueing ',packet.data[0]);
-                scene.eventsQueue.push(packet);
-            } else {
-                onevent.call(this, packet);    // original call
-            }
-        };
-
-        // Set up socket event listeners using the event handlers map
-        this.eventHandlers.forEach((handler, event) => {
-            this.socket.on(event, handler);
+        this.eventHandlers.forEach((_handler, event) => {
+            this.socket.on(event, data => this.enqueueMessage(event, data));
+        });
+        this.socket.on('connect_error', error => {
+            if (!this.socket.active) this.failCombat(error);
         });
 
         // Add special handlers that aren't part of the regular game flow
@@ -351,14 +328,12 @@ export class Arena extends Phaser.Scene
                 silentErrorToast('Disconnected from server');
                 events.emit('serverDisconnect');
                 this.destroy();
+            } else if (!this.disposed) {
+                events.emit('combatConnectionLost');
             }
         });
 
-        this.socket.io.on('reconnect_failed', () => {
-            silentErrorToast('Could not reconnect to server');
-            events.emit('serverDisconnect');
-            this.destroy();
-        });
+        this.socket.io.on('reconnect_failed', this.handleReconnectFailure);
 
         this.socket.on('joinError', (error) => {
             console.error('Could not join game:', error);
@@ -371,7 +346,6 @@ export class Arena extends Phaser.Scene
             errorToast(`An error occurred: ${error}`);
         });
 
-        this.socket.on('replayData', this.handleReplayData.bind(this));
     }
 
     sendMove(x, y) {
@@ -764,6 +738,7 @@ export class Arena extends Phaser.Scene
         const player = this.getPlayer(team, num);
         const otherTeam = sameTeam ? team : this.getOtherTeam(team);
         const targetPlayer = this.getPlayer(otherTeam, target);
+        if (!player || !targetPlayer) return;
 
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
         if (isKill) this.killCam(pixelX, pixelY);
@@ -976,7 +951,7 @@ export class Arena extends Phaser.Scene
             this.animateProjectile(fromX, fromY, toX, toY, spell.projectile);
         }
 
-        setTimeout(() => {
+        this.time.delayedCall(spell.projectile ? PROJECTILE_DURATION * 1000 : 0, () => {
             if (isKill) {
                 this.killCam(pixelXInitial, pixelYInitial);
             } else {
@@ -1006,7 +981,7 @@ export class Arena extends Phaser.Scene
             this.localAnimationSprite.setPosition(pixelX, pixelY)
                 .setVisible(true)
                 .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
-                .setScale(scale, yScale);
+                .setScale(scale * (config ? VFX_DISPLAY_SCALE : 1), yScale * (config ? VFX_DISPLAY_SCALE : 1));
 
             if (config && config.stretch) {
                 this.localAnimationSprite.setOrigin(0.5, yOrigin);
@@ -1022,7 +997,7 @@ export class Arena extends Phaser.Scene
                 const intensity = isKill ? 0.002 : 0.02;
                 this.cameras.main.shake(duration, intensity);
             }
-        }, spell.projectile ? PROJECTILE_DURATION * 1000 : 0);
+        });
     }
 
     // New method to animate projectile from caster to target
@@ -1065,7 +1040,7 @@ export class Arena extends Phaser.Scene
                 projectile.setVisible(false);
 
                 // Phase 3: Reappear above target and crash down
-                setTimeout(() => {
+                this.time.delayedCall(totalDuration / 10, () => {
                     // Reposition projectile above the target
                     projectile.setPosition(endX, screenTop)
                         .setVisible(true)
@@ -1091,7 +1066,7 @@ export class Arena extends Phaser.Scene
                             });
                         }
                     });
-                }, totalDuration / 10); // Brief pause before reappearing
+                }); // Brief pause before reappearing
             }
         });
     }
@@ -1129,14 +1104,14 @@ export class Arena extends Phaser.Scene
 
         if (revert) {
             // After animation duration, pan back to original position
-            setTimeout(() => {
+            this.time.delayedCall(1000, () => {
                 this.cameras.main.pan(
                     this.cameras.main.width/2 + originalScrollX,
                     this.cameras.main.height/2 + originalScrollY,
                     1000,
                     'Power2'
                 );
-            }, 1000);
+            });
         }
     }
 
@@ -1162,11 +1137,11 @@ export class Arena extends Phaser.Scene
         this.gameEnded = true;
         this.musicManager.playEnd();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
-        setTimeout(() => {
+        this.time.delayedCall(200, () => {
             winningTeam?.members.forEach((player) => {
                 player.victoryDance();
             });
-        }, 200);
+        });
         if (this.overviewReady) {
             events.emit('gameEnd', data);
         }
@@ -1254,8 +1229,8 @@ export class Arena extends Phaser.Scene
     }
 
 
-    createAnims() {
-        allSprites.forEach((asset) => {
+    createCharacterAnims() {
+        allSprites.filter(asset => this.textures.exists(asset) && !this.anims.exists(`${asset}_anim_idle`)).forEach((asset) => {
             // Character postures
             this.createCharacterAnim(asset, 'idle', [9, 10, 11], { repeat: -1, yoyo: true });
             this.createCharacterAnim(asset, 'idle_hurt', [33, 34, 35], { repeat: -1, yoyo: true });
@@ -1269,6 +1244,77 @@ export class Arena extends Phaser.Scene
             this.createCharacterAnim(asset, 'victory', [15, 16, 17], { repeat: -1, yoyo: true });
             this.createCharacterAnim(asset, 'boast', [15, 16, 17], { frameRate: BASE_ANIM_FRAME_RATE * 1.5, repeat: 2, yoyo: true });
         });
+    }
+
+    createSpellAnims() {
+        for (const key of SPELL_SHEETS) {
+            if (!this.textures.exists(key) || this.anims.exists(key)) continue;
+            const charged = key.startsWith('charged_');
+            const terrain = key.startsWith('terrain_');
+            this.anims.create({key, frames: this.anims.generateFrameNumbers(key),
+                frameRate: charged ? 50 : terrain ? 30 : VFXconfig[key]?.frameRate || 15,
+                repeat: charged || terrain ? -1 : 0});
+        }
+    }
+
+    private async prepareMessageAssets(event: string, data) {
+        let characters: PlayerNetworkData[] = [];
+        const spells: number[] = [];
+        if (event === 'gameStatus') {
+            if (!data?.general || !Array.isArray(data.player?.team) || !Array.isArray(data.opponent?.team)
+                || !Array.isArray(data.queue) || !data.player.player || !data.opponent.player) {
+                throw new Error('Invalid match snapshot');
+            }
+            characters = [...data.player.team, ...data.opponent.team];
+        } else if (event === 'addCharacter') {
+            characters = [data.character];
+        } else if (event === 'cast' || event === 'endcast' || event === 'localanimation') {
+            spells.push(data.id);
+        }
+        const keys = new Set<string>();
+        for (const character of characters) {
+            if (!character || !allSprites.includes(character.portrait)) throw new Error('Invalid character sprite');
+            keys.add(character.portrait);
+            spells.push(...(character.spells || []));
+        }
+        for (const id of spells) {
+            const spell = getSpellById(id);
+            if (!spell) throw new Error('Invalid spell in match event');
+            if (spell.vfx) keys.add(spell.vfx);
+            if (spell.charge) keys.add(spell.charge);
+        }
+        // Terrain may be created by either team, including opponents with hidden loadouts.
+        if (event === 'gameStatus' || event === 'terrain') keys.add('terrain_fire_1');
+        const missing = [...keys].filter(key => !this.textures.exists(key));
+        if (!missing.length) return;
+        for (const key of missing) {
+            const sprite = allSprites.includes(key);
+            if (!sprite && !SPELL_SHEETS.includes(key)) throw new Error('Unknown spell asset');
+            this.load.spritesheet(key, sprite ? require(`@assets/sprites/${key}.png`) : spellSheetFiles(`./${key}.png`), {
+                frameWidth: sprite ? 144 : VFX_FRAME_SIZE, frameHeight: sprite ? 144 : VFX_FRAME_SIZE,
+            });
+        }
+        await new Promise<void>((resolve, reject) => {
+            const finish = (error?: Error) => {
+                clearTimeout(timer);
+                this.load.off('complete', complete);
+                this.events.off(Phaser.Scenes.Events.SHUTDOWN, cancel);
+                error ? reject(error) : resolve();
+            };
+            const complete = () => finish(missing.some(key => !this.textures.exists(key)) ? new Error('Missing match assets') : undefined);
+            const cancel = () => finish(new Error('Arena closed while loading'));
+            const timer = setTimeout(() => finish(new Error('Match asset loading timed out')), 30000);
+            this.load.once('complete', complete);
+            this.events.once(Phaser.Scenes.Events.SHUTDOWN, cancel);
+            this.load.start();
+        });
+        if (this.disposed) return;
+        this.createCharacterAnims();
+        this.createSpellAnims();
+    }
+
+    createAnims() {
+        this.createCharacterAnims();
 
         this.anims.create({
             key: `cast`,
@@ -1309,79 +1355,7 @@ export class Arena extends Phaser.Scene
             frameRate: 15,
         });
 
-        fireLevels.forEach(level => {
-            const key = `fire_${level}_explosion`;
-            // const fireballKey = `fireball_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
-            });
-
-            // this.anims.create({
-            //     key: fireballKey,
-            //     frames: this.anims.generateFrameNumbers(fireballKey),
-            //     frameRate: VFXconfig[fireballKey]?.frameRate || 15,
-            //     repeat: -1,
-            // });
-        });
-
-        chargedFireLevels.forEach(level => {
-            const key = `charged_fire_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 50,
-                repeat: -1,
-            });
-        });
-
-        iceLevels.forEach(level => {
-            const key = `ice_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
-            });
-        });
-
-        thunderLevels.forEach(level => {
-            const key = `thunder_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15, // Fallback to 15 if not specified
-            });
-        });
-
-        chargedIceLevels.forEach(level => {
-            const key = `charged_ice_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 50,
-                repeat: -1,
-            });
-        });
-
-        chargedThunderLevels.forEach(level => {
-            const key = `charged_thunder_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 50,
-                repeat: -1,
-            });
-        });
-
-        healLevels.forEach(level => {
-            const key = `heal_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: VFXconfig[key]?.frameRate || 15,
-            });
-        });
+        this.createSpellAnims();
 
         this.anims.create({
             key: `poison`,
@@ -1395,16 +1369,7 @@ export class Arena extends Phaser.Scene
             frameRate: 15,
         });
 
-        // Terrain VFX
-        terrainFireLevels.forEach(level => {
-            const key = `terrain_fire_${level}`;
-            this.anims.create({
-                key,
-                frames: this.anims.generateFrameNumbers(key),
-                frameRate: 30,
-                repeat: -1,
-            });
-        });
+
 
         this.anims.create({
             key: `smoke`,
@@ -1501,8 +1466,9 @@ export class Arena extends Phaser.Scene
 
     create()
     {
+        if (this.disposed) return;
         window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
-        this.loadBackgroundMusic();
+
         this.setUpArena();
         this.createAnims();
         this.createSounds();
@@ -1532,51 +1498,69 @@ export class Arena extends Phaser.Scene
         this.sceneCreated = true;
         this.emptyQueue();
 
-        this.setUpArena();
-
         this.input.keyboard.on('keydown-D', () => {
             this.hexGridManager.toggleCoordinateDisplay();
         });
 
-        // Add character glow effect listener
-        window.addEventListener('characterInSpellRadius', (e: CustomEvent) => {
-            const { x, y } = e.detail;
-            const player = this.gridMap.get(serializeCoords(x, y));
-            if (player) {
-                player.onPointerOver();
-            }
-        });
-
-        // Add character un-highlight effect listener
-        window.addEventListener('characterOutOfSpellRadius', (e: CustomEvent) => {
-            const { x, y } = e.detail;
-            const player = this.gridMap.get(serializeCoords(x, y));
-            if (player) {
-                player.onPointerOut();
-            }
-        });
+        window.addEventListener('characterInSpellRadius', this.highlightCharacter);
+        window.addEventListener('characterOutOfSpellRadius', this.unhighlightCharacter);
     }
 
-    emptyQueue(){ // Process the events that have been queued during initialization
-        // console.log(`[Arena:emptyQueue] Emptying event queue`);
-        if (this.eventsQueue.length > 1) this.isLateToTheParty = true;
-        this.eventsQueue.forEach((event) => {
-            this.socket.onevent.call(this.socket, event);
-        });
+    private highlightCharacter = (e: CustomEvent) => {
+        this.gridMap.get(serializeCoords(e.detail.x, e.detail.y))?.onPointerOver();
+    };
+    private unhighlightCharacter = (e: CustomEvent) => {
+        this.gridMap.get(serializeCoords(e.detail.x, e.detail.y))?.onPointerOut();
     };
 
-    loadBackgroundMusic() {
-        // Add the music files to the loader
-        for (let i = 2; i <= 12; i++) {
-            this.load.audio(`bgm_loop_${i}`, require(`@assets/music/bgm_loop_${i}.wav`));
+    enqueueMessage(event: string, data: unknown) {
+        if (this.disposed) return;
+        if (this.eventsQueue.length >= 1000) {
+            this.failCombat(new Error('Match event backlog exceeded its limit'));
+            return;
         }
-        this.load.audio('bgm_end', bgmEndSFX);
-
-        // Start the loader
-        this.load.start();
+        this.eventsQueue.push({event, data});
+        void this.emptyQueue();
     }
 
-    initializeGame(data: GameData): void {
+    private draining = false;
+    async emptyQueue() {
+        if (this.draining || !this.sceneCreated || this.disposed) return;
+        this.draining = true;
+        try {
+            while (this.eventsQueue.length && !this.disposed) {
+                const index = this.gameInitialized ? 0 : this.eventsQueue.findIndex(message => message.event === 'gameStatus' || message.event === 'replayData');
+                if (index < 0) break;
+                // The authoritative snapshot supersedes updates received before it.
+                if (index > 0) this.eventsQueue.splice(0, index);
+                const {event, data} = this.eventsQueue.shift();
+                if (event === 'gameStatus' && this.eventsQueue.length) this.isLateToTheParty = true;
+                await this.prepareMessageAssets(event, data);
+                if (!this.disposed) await this.eventHandlers.get(event)?.(data);
+            }
+        } catch (error) {
+            this.failCombat(error);
+        } finally {
+            this.draining = false;
+        }
+    }
+
+    private failCombat = (error: unknown) => {
+        if (this.disposed) return;
+        events.emit('combatError', error);
+        this.destroy();
+    };
+
+    async initializeGame(data: GameData): Promise<void> {
+        if (this.disposed) return;
+        if (this.teamsMap.size) {
+            // A fresh server snapshot replaces the match, never appends a second scene's objects.
+            // Reload preserves this match URL and credentials and rejoins authoritatively.
+            window.location.reload();
+            return;
+        }
+        await this.prepareMessageAssets('gameStatus', data);
+        if (this.disposed) return;
         recordLoadingStep('finish');
         const isReconnect = data.general.reconnect || this.isLateToTheParty;
         // console.log(`[Arena:initializeGame] Reconnecting to game: ${isReconnect}`);
@@ -1604,27 +1588,17 @@ export class Arena extends Phaser.Scene
         }
 
         // Events from the HUD
-        events.on('itemClick', (keyIndex) => {
-            this.selectedPlayer?.onKey(keyIndex);
-        });
-
-        events.on('passTurn', () => {
-            this.playSound('click');
-            this.socket.emit('passTurn');
-        });
-
-        events.on('abandonGame', () => {
-            this.abandonGame();
-        });
-
-        events.on('exitGame', () => {
-            this.destroy();
-        });
-
-        events.on('teamRevealed', () => {
-            this.socket.emit('teamRevealed');
-            this.displayGame(data, isReconnect);
-        });
+        this.hudHandlers = {
+            itemClick: (keyIndex: number) => this.selectedPlayer?.onKey(keyIndex),
+            passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
+            abandonGame: () => this.abandonGame(),
+            exitGame: () => this.destroy(),
+            teamRevealed: () => {
+                this.socket.emit('teamRevealed');
+                this.displayGame(data, isReconnect);
+            },
+        };
+        Object.entries(this.hudHandlers).forEach(([event, handler]) => { events.on(event, handler); });
 
         events.emit('gameInitialized', {game0: this.gameSettings.game0});
 
@@ -1644,10 +1618,10 @@ export class Arena extends Phaser.Scene
             this.handleTileHover.bind(this)
         );
 
-        setTimeout(() => {
+        this.time.delayedCall(isReconnect ? 0 : AIR_ENTRANCE_DELAY + AIR_ENTRANCE_DELAY_VARIANCE * 2, () => {
             // Move this AFTER floatHexTiles so the tiles exist
             this.hexGridManager.setCharacterTiles(this.gridMap);
-        }, isReconnect ? 0 : AIR_ENTRANCE_DELAY + AIR_ENTRANCE_DELAY_VARIANCE * 2);
+        });
 
         this.processTerrain(data.terrain, isReconnect); // Put after floatTiles() to allow for tilesMap to be intialized
 
@@ -1656,18 +1630,19 @@ export class Arena extends Phaser.Scene
             this.selectTurnee();
         } else {
             const delay = 3000;
-            setTimeout(this.refreshOverview.bind(this), delay + 1000);
-            setTimeout(() => {
+            this.time.delayedCall(delay + 1000, this.refreshOverview, [], this);
+            this.time.delayedCall(delay, () => {
                 this.displayGEN(GEN.COMBAT_BEGINS);
                 this.setGameInitialized();
                 this.selectTurnee();
-            }, delay);
+            });
         }
     }
 
     setGameInitialized() {
         this.gameInitialized = true;
         this.refreshOverview();
+        void this.emptyQueue();
     }
 
     startAnimation() {
@@ -1931,55 +1906,33 @@ export class Arena extends Phaser.Scene
         this.destroy();
     }
 
+    private handleReconnectFailure = () => {
+        silentErrorToast('Could not reconnect to server');
+        events.emit('serverDisconnect');
+        this.destroy();
+    };
+
     destroy() {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.eventsQueue.length = 0;
+        window.removeEventListener('characterInSpellRadius', this.highlightCharacter);
+        window.removeEventListener('characterOutOfSpellRadius', this.unhighlightCharacter);
+        this.gameEnded = true;
         window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         events.emit('notifyMatchmakerLeave');
-        this.socket.disconnect();
-
-        this.teamsMap.forEach((team) => {
-            team.members.forEach((player) => {
-                player.destroy();
-            });
-        });
-
-        if (this.SFX) {
-            Object.values(this.SFX).forEach(sound => {
-                // @ts-expect-error
-            if (sound.isPlaying) {
-                // @ts-expect-error
-                sound.stop();
-                }
-            });
-        }
-
-        // Stop and destroy the music manager
-        if (this.musicManager) {
-            this.musicManager.destroy();
-        }
-
-        // Stop any ongoing tweens
-        this.tweens.killAll();
-
-        // Stop any ongoing timers
-        this.time.removeAllEvents();
-
-        // Stop the HUD and current scene
-        this.scene.stop('HUD');
-
-        // In the destroy method, add:
-        if (this.tutorialManager) {
-            this.tutorialManager.destroy();
-        }
-        this.scene.stop();
-
-        // Clean up any other resources or listeners
-        events.removeAllListeners();
+        this.socket?.removeAllListeners();
+        this.socket?.io?.off('reconnect_failed', this.handleReconnectFailure);
+        this.socket?.disconnect();
+        Object.entries(this.hudHandlers).forEach(([event, handler]) => { events.off(event, handler); });
         events.off('settingsChanged', this.onSettingsChanged, this);
-
-        // Add cleanup for hexGridManager
-        if (this.hexGridManager) {
-            this.hexGridManager.destroy();
-        }
+        this.musicManager?.destroy();
+        this.tutorialManager?.destroy();
+        this.tweens?.killAll();
+        this.time?.removeAllEvents();
+        // Phaser owns the display list (including Player containers and children).
+        // Destroying those manually as well can destroy the same sprite twice.
+        this.scene.stop();
     }
 
     // update (time, delta)
@@ -2016,15 +1969,15 @@ export class Arena extends Phaser.Scene
         return this.gameSettings.tutorial;
     }
 
-    handleReplayData(data: {messages: GameReplayMessage[]}) {
+    async handleReplayData(data: {messages: GameReplayMessage[]}) {
         this.isReplay = true;
         this.replayData = data;
 
         // Initialize game with first gameStatus message
         const initialStatus = this.replayData.messages.find(m => m.event === 'gameStatus');
         if (initialStatus) {
-            this.initializeGame(initialStatus.data as GameData);
-        }
+            await this.initializeGame(initialStatus.data as GameData);
+        } else throw new Error('Replay has no initial match snapshot');
 
         // Start replay timer
         this.startReplayPlayback();
@@ -2061,7 +2014,7 @@ export class Arena extends Phaser.Scene
     processReplayMessage(message: GameReplayMessage) {
         const handler = this.eventHandlers.get(message.event);
         if (handler) {
-            handler(message.data);
+            this.enqueueMessage(message.event, message.data);
         } else {
             console.warn(`No handler found for replay event: ${message.event}`);
         }
@@ -2136,9 +2089,9 @@ export class Arena extends Phaser.Scene
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
         // Do nothing if the tile already has fire
         if (this.terrainMap.get(serializeCoords(x, y)) === Terrain.FIRE) return;
-        setTimeout(() => {
+        this.time.delayedCall(TERRAIN_SPRITE_DELAY, () => {
             const sprite = this.add.sprite(pixelX, pixelY, '')
-                .setDepth(this.yToZ(y)).setScale(0.5).setAlpha(0.9);
+                .setDepth(this.yToZ(y)).setScale(0.5 * VFX_DISPLAY_SCALE).setAlpha(0.9);
             this.addFlames();
             sprite.on('destroy', () => {
                 this.removeFlames();
@@ -2153,7 +2106,7 @@ export class Arena extends Phaser.Scene
             this.terrainSpritesMap.set(serializeCoords(x, y), sprite);
             this.terrainMap.set(serializeCoords(x, y), Terrain.FIRE);
             events.emit('flamesAppeared');
-        }, TERRAIN_SPRITE_DELAY);
+        });
     }
 
     private iceFormation(x: number, y: number, isReconnect = false) {

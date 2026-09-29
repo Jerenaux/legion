@@ -16,17 +16,27 @@ function setup() {
   runInNewContext(code, {exports, require: (name: string) => {
     if (name === '../components/HUD/GameHUD') return {events};
     if (name === '../settings') return {loadGameSettings: () => settings};
+    if (name.startsWith('@assets/music/')) return name;
     throw new Error(`Unexpected music dependency: ${name}`);
   }});
-  const available = new Set(['bgm_start', 'bgm_end', ...Array.from({length: 12}, (_, i) => `bgm_loop_${i + 1}`)]);
+  const available = new Set(['bgm_start', 'bgm_loop_1']);
+  const blocked = new Set<string>();
+  const load = Object.assign(new EventEmitter(), {
+    audio: (key: string) => {
+      if (blocked.has(key)) return;
+      available.add(key);
+      load.emit(`filecomplete-audio-${key}`);
+    }, start() {},
+  });
   const played: string[] = [];
   const scene = {
-    cache: {audio: {has: (key: string) => available.has(key)}},
+    load,
+    cache: {audio: {has: (key: string) => available.has(key), getKeys: () => [...available], remove: (key: string) => available.delete(key)}},
     sound: {
       add: (key: string) => {
         expect(available.has(key)).toBe(true);
         return Object.assign(new EventEmitter(), {
-          key, play: () => played.push(key), stop: mock(), setVolume: mock(),
+          key, play: () => played.push(key), stop: mock(), setVolume: mock(), destroy: mock(),
         });
       },
       removeAll: mock(),
@@ -37,7 +47,7 @@ function setup() {
     for (let i = 0; i < times; i++) manager.currentSound.emit('complete');
   };
   manager.playBeginning();
-  return {manager, complete, played, available, events, settings, scene};
+  return {manager, complete, played, available, blocked, events, settings, scene};
 }
 
 test('the intro is separate, and each combat track plays twice before advancing', () => {
@@ -86,8 +96,8 @@ test('transition tracks play once and the final track never advances past the av
 });
 
 test('a delayed next asset keeps the current track playing and advances once loaded', () => {
-  const {manager, complete, available} = setup();
-  available.delete('bgm_loop_2');
+  const {manager, complete, available, blocked} = setup();
+  blocked.add('bgm_loop_2');
   complete(4);
   expect(manager.currentSound.key).toBe('bgm_loop_1');
   available.add('bgm_loop_2');
@@ -95,6 +105,27 @@ test('a delayed next asset keeps the current track playing and advances once loa
   expect(manager.currentSound.key).toBe('bgm_loop_2');
   complete();
   expect(manager.currentSound.key).toBe('bgm_loop_2');
+});
+
+test('decoded music stays bounded to the playing track and its next transition', () => {
+  const {manager, complete, available} = setup();
+  for (let i = 0; i < 30; i++) {
+    complete();
+    expect(available.size).toBeLessThanOrEqual(2);
+  }
+  manager.playEnd();
+  expect([...available]).toEqual(['bgm_end']);
+});
+
+test('a health jump during the intro retains a fallback until the requested audio arrives', () => {
+  const {manager, complete, available, blocked} = setup();
+  blocked.add('bgm_loop_7');
+  manager.updateMusicIntensity(0.5);
+  complete();
+  expect(manager.currentSound.key).toBe('bgm_loop_1');
+  available.add('bgm_loop_7');
+  complete();
+  expect(manager.currentSound.key).toBe('bgm_loop_7');
 });
 
 test('volume changes and cleanup still work, and completion cannot restart combat music after game over', () => {

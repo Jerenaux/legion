@@ -1,6 +1,23 @@
 {
   "indexes": [
     {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "mode", "order": "ASCENDING"},
+        {"fieldPath": "date", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "mode", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"},
+        {"fieldPath": "end", "order": "ASCENDING"}
+      ]
+    },
+    {
       "collectionGroup": "actions",
       "queryScope": "COLLECTION",
       "fields": [

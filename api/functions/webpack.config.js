@@ -54,5 +54,6 @@ module.exports = {
       telemetry: false,
     })] : []),
   ],
-  devtool: isDeploy ? 'hidden-source-map' : 'inline-source-map',
+  // End with this bundle's map URL: bundled dependencies contain misleading map comments.
+  devtool: isDeploy ? 'source-map' : 'inline-source-map',
 };

@@ -1,9 +1,11 @@
 import { h } from 'preact';
 import { Component, Fragment } from 'preact';
-import { route } from 'preact-router';
 import { GameHUD, events } from '../components/HUD/GameHUD';
 import { QueueTips } from '../components/queueTips/QueueTips';
-import { startGame } from '../game/game';
+import { startGame, stopGame } from '../game/game';
+import { Arena } from '../game/Arena';
+import {CombatRecovery} from '../components/CombatRecovery';
+import {captureException, addBreadcrumb} from '@sentry/react';
 import './GamePage.style.css';
 import { recordLoadingStep } from '../components/utils';
 import { PlayerContext } from '../contexts/PlayerContext';
@@ -17,6 +19,8 @@ interface GamePageProps {
 }
 
 interface GamePageState {
+  failed: boolean;
+  reconnecting: boolean;
   mainDivClass: string;
   loading: boolean;
   initialized: boolean;
@@ -41,10 +45,14 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   static contextType = PlayerContext;
   private waitingTimer: number | null = null;
   private messageTimer: number | null = null;
+  private game: ReturnType<typeof startGame> | null = null;
+  private failing = false;
 
   constructor(props: GamePageProps) {
     super(props);
     this.state = {
+      failed: false,
+      reconnecting: false,
       mainDivClass: 'normalCursor',
       progress: 0,
       loading: true,
@@ -67,21 +75,53 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     this.cleanup();
   }
 
+  componentDidUpdate(previousProps: GamePageProps) {
+    // Preact Router can reuse this component when only the match ID changes.
+    if (previousProps.matches.id !== this.props.matches.id) window.location.reload();
+  }
+
   initializeGame = () => {
     recordLoadingStep('start');
-    startGame();
-
     events.on('progressUpdate', this.updateProgress);
     events.on('gameInitialized', this.handleGameInitialized);
     events.on('serverDisconnect', this.handleServerDisconnect);
+    events.on('combatError', this.failGame);
+    events.on('combatConnectionLost', this.handleConnectionLost);
     events.on('revealTeam', this.handleRevealTeam);
     events.on('notifyMatchmakerLeave', this.handleMatchmakerLeave);
     this.checkOrientation();
     window.addEventListener('resize', this.checkOrientation);
     window.addEventListener('orientationchange', this.checkOrientation);
+    window.addEventListener('error', this.handleRuntimeError);
+    window.addEventListener('unhandledrejection', this.handleRejection);
+    this.startWaitingTimer();
+    try {
+      this.game = startGame();
+      this.game.canvas.addEventListener('webglcontextlost', this.handleContextLoss);
+    } catch (error) {
+      this.failGame(error);
+    }
   }
 
   cleanup = () => {
+    // The route owns the entire engine, not just the currently running scene.
+    // Dispose scene-owned listeners synchronously before another match can mount.
+    const game = this.game;
+    this.game = null;
+    if (game) {
+      game.canvas?.removeEventListener('webglcontextlost', this.handleContextLoss);
+      try {
+        (game.scene.getScene('Arena') as Arena | null)?.destroy();
+      } catch (error) {
+        captureException(error);
+      } finally {
+        stopGame(game);
+      }
+    }
+    window.removeEventListener('error', this.handleRuntimeError);
+    window.removeEventListener('unhandledrejection', this.handleRejection);
+    events.off('combatError', this.failGame);
+    events.off('combatConnectionLost', this.handleConnectionLost);
     events.off('progressUpdate', this.updateProgress);
     events.off('gameInitialized', this.handleGameInitialized);
     events.off('serverDisconnect', this.handleServerDisconnect);
@@ -94,6 +134,25 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     }
     if (this.messageTimer) clearInterval(this.messageTimer);
   }
+
+  handleRuntimeError = (event: ErrorEvent) => {
+    if (event.error) this.failGame(event.error);
+  };
+
+  handleContextLoss = () => this.failGame(new Error('Combat WebGL context lost'));
+  handleConnectionLost = () => {
+    this.setState({reconnecting: true});
+    this.startWaitingTimer();
+  };
+  handleRejection = (event: PromiseRejectionEvent) => this.failGame(event.reason);
+
+  failGame = (error: unknown) => {
+    if (this.failing) return;
+    this.failing = true;
+    captureException(error);
+    this.cleanup();
+    this.setState({failed: true});
+  };
 
   checkOrientation = () => {
     this.setState({ isPortraitMode: window.matchMedia('(orientation: portrait)').matches });
@@ -113,6 +172,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   handleGameInitialized = () => {
+    addBreadcrumb({category: 'combat', message: 'Match initialized'});
     this.setState({ initialized: true });
     if (this.waitingTimer) {
       clearTimeout(this.waitingTimer);
@@ -131,8 +191,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   handleServerDisconnect = () => {
     console.log(`[GamePage:serverDisconnect] Server disconnected`);
 
-    if (process.env.NODE_ENV === 'development') return;
-    route('/');
+    this.failGame(new Error('Connection to the match was interrupted'));
   };
 
   handleMatchmakerLeave = () => {
@@ -141,13 +200,11 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   startWaitingTimer = () => {
+    if (this.waitingTimer) clearTimeout(this.waitingTimer);
     this.setState({ waitingStartTime: Date.now() });
     this.startMessageRotation();
     this.waitingTimer = window.setTimeout(() => {
-      const waitingDuration = Date.now() - (this.state.waitingStartTime || 0);
-      if (waitingDuration >= 30000) {
-        console.error('Error: Server connection timeout - Waiting for server exceeded 30 seconds');
-      }
+      this.failGame(new Error('Arena loading timed out after 30 seconds'));
     }, 30000);
   };
 
@@ -161,6 +218,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   render() {
+    if (this.state.failed) return <CombatRecovery />;
     return (
       <Fragment key={this.state.key}>
         <div className={this.state.mainDivClass}>
@@ -174,9 +232,9 @@ class GamePage extends Component<GamePageProps, GamePageState> {
               </div>
             </div>
           )}
-          {!this.state.loading && !this.state.initialized && (
+          {!this.state.loading && (!this.state.initialized || this.state.reconnecting) && (
             <div className='waiting-container'>
-              <div className='waiting-div'>{WAITING_MESSAGES[this.state.currentMessageIndex]}</div>
+              <div className='waiting-div'>{this.state.reconnecting ? 'Reconnecting to your match' : WAITING_MESSAGES[this.state.currentMessageIndex]}</div>
               <QueueTips />
             </div>
           )}

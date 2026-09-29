@@ -1,5 +1,4 @@
 export const telemetryConfig = {
-  logRocket: true,
   hotjar: false,
-  sentryReplay: false,
+  sentryReplay: true,
 } as const;

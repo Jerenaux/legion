@@ -2,10 +2,9 @@ import { test, expect } from 'bun:test';
 import { telemetryConfig } from "../telemetryConfig";
 import {scrubTelemetry} from '../../../shared/telemetryPrivacy';
 
-test("keeps LogRocket while disabling browser session capture", () => {
-  expect(telemetryConfig.logRocket).toBe(true);
+test("keeps Sentry replay enabled", () => {
   expect(telemetryConfig.hotjar).toBe(false);
-  expect(telemetryConfig.sentryReplay).toBe(false);
+  expect(telemetryConfig.sentryReplay).toBe(true);
 });
 
 test('redacts telemetry credentials without throwing on complex console arguments', () => {

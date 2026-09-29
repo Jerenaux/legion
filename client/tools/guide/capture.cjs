@@ -16,7 +16,7 @@ if (!process.versions.electron) {
   delete process.env.SENTRY_AUTH_TOKEN;
   const config = require('../../webpack.config');
   config.mode = 'production';
-  config.devtool = false;
+  config.devtool = 'hidden-source-map';
   config.output.path = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-'));
   config.plugins.push(new webpack.NormalModuleReplacementPlugin(/providers\/(AuthProvider|PlayerProvider)$/, resource => {
     resource.request = path.join(__dirname, resource.request.endsWith('AuthProvider') ? 'auth.tsx' : 'fixtures.tsx');
@@ -38,39 +38,101 @@ if (!process.versions.electron) {
   });
 } else {
   const {app, BrowserWindow, protocol, net, session} = require('electron');
-  if (process.env.CI && process.platform === 'linux') {
+  if ((process.env.CI && process.platform === 'linux') || process.argv.includes('--software-webgl')) {
     // Hosted runners have no GPU. These switches apply only to the fixture harness, never releases.
     app.commandLine.appendSwitch('use-angle', 'swiftshader');
     app.commandLine.appendSwitch('enable-unsafe-swiftshader');
   }
   // Keep cleanup from triggering Electron's implicit zero-exit before a failed assertion is reported.
   app.on('window-all-closed', () => {});
+  const deadline = setTimeout(() => {
+    console.error('Packaged stability smoke test exceeded ten minutes');
+    app.exit(1);
+  }, 10 * 60 * 1000);
+  deadline.unref();
   const {pathToFileURL} = require('node:url');
   const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
+  const {PACKAGED_CSP} = require('../../electron/security');
   const dist = process.argv[2];
   app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-profile-')));
+  const inheritedDumps = path.join(app.getPath('userData'), 'foreign-crashpad');
+  const foreignDumps = ['reports', 'completed'].map(folder => {
+    fs.mkdirSync(path.join(inheritedDumps, folder), {recursive: true});
+    const file = path.join(inheritedDumps, folder, 'foreign.dmp');
+    fs.writeFileSync(file, 'Not a Legion crash; must not be read or deleted');
+    return file;
+  });
+  app.setPath('crashDumps', inheritedDumps);
   // Exercise the real production SDK and preload, but ingest exclusively on loopback.
   const Sentry = require('@sentry/electron/main');
   const envelopes = [];
+  const replayEvents = [];
   const sink = require('node:http').createServer(async (request, response) => {
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
     let body = Buffer.concat(chunks);
     if (request.headers['content-encoding'] === 'gzip') body = require('node:zlib').gunzipSync(body);
     envelopes.push(body.toString());
+    if (request.url.includes('/envelope/')) {
+      const {parseEnvelope} = require('@sentry/core');
+      for (const [header, payload] of parseEnvelope(body)[1]) {
+        if (header.type !== 'replay_recording') continue;
+        const recording = Buffer.from(payload);
+        const data = recording.subarray(recording.indexOf(10) + 1);
+        replayEvents.push(...JSON.parse(data[0] === 91 ? data.toString() : require('node:zlib').inflateSync(data).toString()));
+      }
+    }
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end('{}');
   }).listen(0);
   const sinkURL = `http://127.0.0.1:${sink.address().port}`;
+  const {Server} = require('../../../server/node_modules/socket.io');
+  const sockets = new Server(sink, {cors: {origin: true}});
+  sockets.use((socket, next) => socket.handshake.auth.gameId === 'socket-auth'
+    ? next(new Error('Authentication failed')) : next());
+  sockets.on('connection', socket => {
+    socket.on('fixture-ready', snapshot => {
+      const scenario = socket.handshake.auth.gameId;
+      if (scenario === 'socket-timeout') return;
+      if (scenario === 'socket-invalid') snapshot.player.team = null;
+      if (scenario === 'socket-replay') {
+        socket.emit('replayData', {messages: [
+          {event: 'gameStatus', data: snapshot, timestamp: 0},
+          {event: 'queueData', data: snapshot.queue, timestamp: 10},
+          {event: 'turnee', data: snapshot.turnee, timestamp: 20},
+        ]});
+      } else {
+        socket.emit('queueData', snapshot.queue); // Deliberately before the snapshot and preload completion.
+        socket.emit('gameStatus', snapshot);
+        socket.emit('turnee', snapshot.turnee);
+      }
+      socket.on('late-assets', () => {
+        socket.emit('addCharacter', {team: 2, character: {...snapshot.opponent.team[0], portrait: 'mil1_3', x: 11, y: 7}});
+        socket.emit('cast', {team: 2, num: 4, id: 8}); // Enemy Ice III, not in the initial loadout.
+        socket.emit('endcast', {team: 2, num: 4, id: 8});
+        socket.emit('localanimation', {fromX: 11, fromY: 7, toX: 4, toY: 4, id: 8, isKill: false});
+      });
+    });
+  });
+  let assetFault;
   const originalInit = Sentry.init;
   Sentry.init = options => originalInit({...options, dsn: `${sinkURL.replace('http://', 'http://test@')}/1`, environment: 'test', onFatalError: () => {}});
-  require('../../electron/telemetry').initializeTelemetry({isPackaged: true, getVersion: () => require('../../package.json').version});
+  require('../../electron/telemetry').initializeTelemetry(app);
+  assert.equal(app.getPath('crashDumps'), path.join(app.getPath('userData'), 'legion-crashpad'));
   Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
-    // Fail closed: neither telemetry nor the game can reach any external service.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`)}));
+    // Fail closed: all telemetry and game traffic must stay local.
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`)}));
+    session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
+      responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP.replace("connect-src 'self'", `connect-src 'self' ${sinkURL} ${sinkURL.replace('http:', 'ws:')}`)],
+        'Document-Policy': ['include-js-call-stacks-in-crash-reports']},
+    }));
     protocol.handle('app', request => {
+      const pathname = new URL(request.url).pathname;
+      if (assetFault === 'bundle' && pathname === '/bundle.js') return new Response('Unavailable', {status: 404});
+      if (assetFault === 'boot-error' && pathname === '/bundle.js') return new Response('throw new Error("Expected startup test failure");', {headers: {'Content-Type': 'text/javascript'}});
+      if (assetFault === 'audio' && pathname.endsWith('.wav')) return new Response('Unavailable', {status: 404});
       if (new URL(request.url).pathname === '/__fixture') return Response.json({});
       let target = resolveAppPath(dist, request.url);
       if (!fs.existsSync(target)) target = path.join(dist, 'index.html');
@@ -81,11 +143,13 @@ if (!process.versions.electron) {
     win.webContents.setAudioMuted(true);
     const rendererErrors = [];
     win.webContents.on('console-message', event => {
-      if (event.level === 'error' && !event.message.includes('telemetry-smoke-')) {rendererErrors.push(event.message); console.log('Renderer:', event.message);}
+      if (event.level === 'error' && !event.message.includes('telemetry-smoke-') && !event.message.includes('https://blocked.invalid/__csp_probe__.js')) {rendererErrors.push(event.message); console.log('Renderer:', event.message);}
     });
-    const js = code => win.webContents.executeJavaScript(code);
+    const js = code => win.webContents.executeJavaScript(code).catch(error => {
+      throw new Error(`Renderer check failed: ${code.slice(0, 160)}`, {cause: error});
+    });
     const waitFor = async expression => {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 300; i++) {
         if (await js(expression)) return;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -94,7 +158,7 @@ if (!process.versions.electron) {
       throw new Error(`Timed out: ${expression}`);
     };
     const ready = async () => {
-      await js('document.fonts.ready');
+      await js('document.fonts.ready.then(() => true)');
       await js('Promise.all(Array.from(document.images).filter(image => image.loading !== "lazy" || image.complete).map(image => image.decode().catch(() => {})))');
       await new Promise(resolve => setTimeout(resolve, 700));
     };
@@ -122,6 +186,34 @@ if (!process.versions.electron) {
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
+        await waitFor('Boolean(replayCheck.id())');
+        assert.equal(await js(`new Promise(resolve => {
+          document.addEventListener('securitypolicyviolation', event => {
+            if (event.blockedURI === 'https://blocked.invalid/__csp_probe__.js') resolve(event.effectiveDirective);
+          });
+          const script = document.createElement('script');
+          script.src = 'https://blocked.invalid/__csp_probe__.js';
+          document.head.appendChild(script);
+          setTimeout(() => resolve('No CSP violation'), 2000);
+        })`), 'script-src-elem', 'Unrelated remote scripts must still be blocked by CSP, not just the test network filter');
+        await ready();
+        await js(`(async () => {
+          const marker = document.createElement('div');
+          marker.textContent = 'visible-replay-text';
+          const input = document.createElement('input');
+          input.value = 'visible-replay-input';
+          marker.appendChild(input);
+          const password = document.createElement('input');
+          password.type = 'password';
+          password.value = 'private-replay-password';
+          marker.appendChild(password);
+          const image = document.createElement('img');
+          image.src = '/guide.png?replay-smoke-media';
+          marker.appendChild(image);
+          document.body.appendChild(marker);
+          await fetch('/__fixture?token=private-replay-query', {method: 'POST',
+            headers: {Authorization: 'private-replay-header'}, body: 'private-replay-body'});
+        })()`);
         const expectedVersion = `v${require('../../package.json').version}`;
         assert.equal(await js('document.querySelector(".title-screen-version")?.textContent'), expectedVersion);
         assert.equal(await js('document.querySelector(".title-screen-content").getAttribute("aria-busy")'), 'true');
@@ -266,6 +358,26 @@ if (!process.versions.electron) {
         assert.equal(await js('queueCheck.leaves'), 1);
         assert.equal(await js('queueCheck.socket.listenerCount("matchFound")'), 0);
         console.log('A match found while reading the guide opens combat and cleans up the queue');
+        await js(`combatCheck.arena.tutorialManager.queueMessage('howToCastSpell')`);
+        await waitFor('Boolean(document.querySelector(".tutorial-dialogue.spells"))');
+        for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [600, 600], [1920, 1080]]) {
+          win.setContentSize(width, height);
+          await ready();
+          const spellTutorialLayout = await js(`(() => {
+            const dialogue = document.querySelector('.tutorial-dialogue.spells').getBoundingClientRect();
+            const spells = document.querySelector('#player_hud_spells').getBoundingClientRect();
+            return {
+              dialogue: {left: dialogue.left, top: dialogue.top, right: dialogue.right, bottom: dialogue.bottom},
+              spells: {left: spells.left, top: spells.top, right: spells.right, bottom: spells.bottom},
+              overlaps: dialogue.left < spells.right && dialogue.right > spells.left && dialogue.top < spells.bottom && dialogue.bottom > spells.top,
+              offscreen: dialogue.left < 0 || dialogue.top < 0 || dialogue.right > innerWidth || dialogue.bottom > innerHeight,
+            };
+          })()`);
+          fs.writeFileSync(path.join(dist, `tutorial-spell-tooltip-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          assert.equal(spellTutorialLayout.overlaps || spellTutorialLayout.offscreen, false,
+            `Spell tutorial obscures controls or leaves the viewport at ${width}×${height}: ${JSON.stringify(spellTutorialLayout)}`);
+          console.log(`Spell tutorial remains visible and clear of its controls at ${width}×${height}`);
+        }
         await ready();
         await js(`(() => {
           const {arena} = window.combatCheck;
@@ -287,7 +399,7 @@ if (!process.versions.electron) {
         assert.deepEqual(await js('combatCheck.sent'), ['spell', 'move', 'passTurn']);
         console.log('Combat Z → invalid target → valid target → server rejection → move/pass controls pass');
 
-        await waitFor('Array.from({length: 12}, (_, i) => combatCheck.arena.cache.audio.has("bgm_loop_" + (i + 1))).every(Boolean)');
+        await waitFor('combatCheck.arena.cache.audio.has("bgm_loop_1")');
         const musicTracks = await win.webContents.executeJavaScript(`(async () => {
           const {arena} = combatCheck;
           const music = arena.musicManager;
@@ -310,8 +422,9 @@ if (!process.versions.electron) {
             });
           });
           try {
-            music.playBeginning();
-            for (let i = 0; i < 3; i++) await complete();
+            music.playNext();
+            tracks.push(music.currentSound.key);
+            for (let i = 0; i < 2; i++) await complete();
             music.updateMusicIntensity(0.5);
             await complete();
             return tracks;
@@ -323,16 +436,224 @@ if (!process.versions.electron) {
         })()`, true);
         assert.deepEqual(musicTracks, ['bgm_loop_1', 'bgm_loop_1', 'bgm_loop_2', 'bgm_loop_7']);
         console.log('Muted Phaser audio: two natural plays → next track → health-driven jump passes');
+        assert(await js('replayCheck.id()'), 'Production sessions must start Sentry Replay without an error');
+        await js('replayCheck.flush()');
+        const replayDeadline = Date.now() + 10000;
+        while (!replayEvents.some(event => event.type === 3 && event.data.source === 9)) {
+          assert(Date.now() < replayDeadline, 'Sentry must deliver canvas frames to the loopback sink');
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        assert(replayEvents.some(event => event.type === 2), 'Sentry must deliver the surrounding DOM');
+        const recordedDOM = JSON.stringify(replayEvents);
+        for (const visible of ['visible-replay-text', 'visible-replay-input', 'guide.png?replay-smoke-media']) {
+          assert(recordedDOM.includes(visible), `Replay must show ${visible}`);
+        }
+        assert.deepEqual(replayEvents.filter(event => JSON.stringify(event).includes('private-replay-')), [], 'Replay must not upload passwords or private network data');
+        const frames = replayEvents.filter(event => event.type === 3 && event.data.source === 9);
+        const encodedFrame = frames.flatMap(event => event.data.commands ?? [])
+          .filter(command => command.property === 'drawImage').at(-1)?.args[0].args[0];
+        assert(encodedFrame?.data[0].base64, 'Canvas recording must contain encoded pixels');
+        assert(await js(`(async () => {
+          const image = new Image();
+          image.src = ${JSON.stringify(`data:${encodedFrame.type};base64,${encodedFrame.data[0].base64}`)};
+          await image.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = 32;
+          const context = canvas.getContext('2d');
+          context.drawImage(image, 0, 0, 32, 32);
+          return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
+        })()`), 'Recorded combat pixels must not be blank');
+        console.log(`Sentry Replay: visible DOM, inputs, media, and ${frames.length} canvas updates delivered; passwords and network data scrubbed`);
+        const cleanup = await js(`(() => {
+          window.previousGame = combatCheck.arena.game;
+          const player = combatCheck.arena.selectedPlayer;
+          player.speechBubble.setText('Pending layout during teardown');
+          player.animationSprite.destroy();
+          try { combatCheck.close(); return null; } catch (error) { return error.message; }
+        })()`);
+        console.log('Repeated-match cleanup result:', cleanup);
+        await js('combatCheck.route("/play")');
+        await waitFor('!previousGame.loop.running');
+        assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
+        assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
+        assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
+        for (const exit of ['normal', 'loading', 'animation', 'sleeping', 'context-loss', 'canvas']) {
+          if (exit === 'canvas') await js(`(() => {
+            const original = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function(type, ...args) {
+              return type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl' ? null : original.call(this, type, ...args);
+            };
+          })()`);
+          await js(`combatCheck.route('/game/stability-${exit}')`);
+          if (exit !== 'loading') {
+            await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+            await ready();
+            assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 1);
+            assert.equal(await js('combatCheck.events.listenerCount("passTurn")'), 1, 'Old matches must not receive new actions');
+            assert(await js('combatCheck.arena.game.loop.running'));
+            const rendererType = await js('combatCheck.arena.game.config.renderType');
+            assert(exit === 'canvas' ? rendererType === 1 : [1, 2].includes(rendererType));
+            const textures = await js(`Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((bytes, s) => bytes + s.width*s.height*4, 0)`);
+            assert(textures < 200 * 1024 * 1024, 'Combat decoded texture budget exceeded');
+            console.log(`${exit}: decoded texture storage ${(textures/1024/1024).toFixed(0)} MiB`);
+            if (exit === 'canvas') assert(await js(`(() => {
+              let passed = false;
+              combatCheck.arena.socket.once('passTurn', () => {passed = true;});
+              document.querySelector('.player_bar_pass_turn').click();
+              return passed;
+            })()`), 'Software rendering must preserve combat controls');
+          } else {
+            await waitFor('Boolean(document.querySelector("#scene canvas"))');
+          }
+          await js('void (window.previousGame = combatCheck.arena.game)');
+          await js(`(() => {
+            window.staleHighlights = 0;
+            combatCheck.arena.gridMap.set('0,0', {onPointerOver() {staleHighlights++;}, onPointerOut() {staleHighlights++;}});
+          })()`);
+          if (exit === 'sleeping') await js('void combatCheck.arena.game.loop.sleep()');
+          if (exit === 'animation') await js(`combatCheck.arena.processLocalAnimation({fromX: 5, fromY: 7, toX: 9, toY: 8, id: 0, isKill: false})`);
+          if (exit === 'context-loss') {
+            await js('combatCheck.arena.game.canvas.dispatchEvent(new Event("webglcontextlost", {cancelable: true}))');
+            await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+            assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+          } else if (exit !== 'loading') await js('combatCheck.close()');
+          await js('combatCheck.route("/play")');
+          await waitFor('!previousGame.loop.running');
+          await waitFor('Object.keys(previousGame.textures.list).length === 0');
+          assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
+          assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
+          await js(`['characterInSpellRadius', 'characterOutOfSpellRadius'].forEach(type => window.dispatchEvent(new CustomEvent(type, {detail: {x: 0, y: 0}})))`);
+          assert.equal(await js('staleHighlights'), 0, 'Disposed arenas must not receive targeting events');
+          await ready();
+          console.log(`Repeated match: ${exit} teardown passes`);
+        }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
       if (!process.argv.includes('--images')) {
+        for (const scenario of ['socket-valid', 'socket-replay', 'socket-invalid', 'socket-auth', 'socket-timeout']) {
+          await win.loadURL(`${PACKAGED_APP_URL}${scenario === 'socket-replay' ? 'replay' : 'game'}/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
+          if (scenario !== 'socket-valid' && scenario !== 'socket-replay') {
+            // Allow the real production 30-second deadline to expire for the missing-snapshot case.
+            if (scenario === 'socket-timeout') {
+              // Software-rendered CI takes longer to preload. The snapshot deadline starts after it.
+              await waitFor('Boolean(document.querySelector(".waiting-container"))');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+            assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
+            console.log(`${scenario}: actionable recovery, no abandoned canvas`);
+            continue;
+          }
+          await waitFor('combatCheck.arena.gameInitialized && combatCheck.arena.eventsQueue.length === 0');
+          assert.equal(await js('combatCheck.arena.socket.connected'), true);
+          assert.equal(await js('combatCheck.arena.teamsMap.size'), 2);
+          if (scenario === 'socket-replay') assert.equal(await js('combatCheck.arena.isReplay'), true);
+          const memory = await js(`({textures: Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((n, s) => n+s.width*s.height*4, 0),
+            audio: Object.values(combatCheck.arena.cache.audio.entries.entries).reduce((n, b) => n+b.length*b.numberOfChannels*4, 0)})`);
+          assert(memory.textures < 200 * 1048576 && memory.audio < 35 * 1048576, 'Decoded texture/audio budget exceeded');
+          console.log('Live-socket decoded memory (MiB):', {textures: Math.round(memory.textures / 1048576), audio: Math.round(memory.audio / 1048576)});
+          assert.equal(await js('combatCheck.arena.textures.exists("ice_3")'), false);
+          await js('combatCheck.arena.socket.emit("late-assets") && undefined');
+          await waitFor('combatCheck.arena.teamsMap.get(2).members.length === 4 && combatCheck.arena.eventsQueue.length === 0');
+          assert.equal(await js('combatCheck.arena.textures.exists("ice_3") && combatCheck.arena.anims.exists("charged_ice_2")'), true);
+          await ready();
+          assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
+          assert.deepEqual(rendererErrors, [], 'Live and replay socket events must not produce renderer errors');
+          console.log('Real socket buffering, summoned sprite and unseen enemy spell pass');
+        }
+        for (const fault of ['audio', 'bundle', 'boot-error']) {
+          assetFault = fault;
+          await session.defaultSession.clearCache();
+          if (fault === 'audio') {
+            await win.loadURL(`${PACKAGED_APP_URL}game/missing-assets`);
+            await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+          }
+          else {
+            // A new renderer cannot reuse the previous page's compiled bundle from memory.
+            const bootWindow = new BrowserWindow({show: false, webPreferences: {contextIsolation: true, sandbox: true}});
+            bootWindow.webContents.setAudioMuted(true);
+            try {
+              await bootWindow.loadURL(`${PACKAGED_APP_URL}?fault=${fault}`);
+              assert.equal(await bootWindow.webContents.executeJavaScript('getComputedStyle(document.getElementById("startup-recovery")).display'), 'grid');
+              assert(await bootWindow.webContents.executeJavaScript('document.body.innerText.includes("Reload game")'));
+            } finally { bootWindow.destroy(); }
+          }
+          console.log(`${fault}: visible recovery without relying on successful startup`);
+        }
+        assetFault = undefined;
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        // A hidden test window intentionally does not arm the SDK visibility watchdog.
+        // Enable its real main-process watcher explicitly, then block the actual renderer.
+        Sentry.getClient().getIntegrationByName('RendererEventLoopBlock')
+          .createRendererEventLoopBlockStatusHandler()({status: 'visible', config: {
+            anrThreshold: 10000, pollInterval: 1000, captureStackTrace: true,
+          }}, win.webContents);
+        await js('stabilityFreeze()');
+        await Sentry.flush(2000);
+        const {parseEnvelope} = require('@sentry/core');
+        const anr = envelopes.flatMap(body => {
+          try { return parseEnvelope(new TextEncoder().encode(body))[1].filter(([header]) => header.type === 'event').map(([, event]) => event); }
+          catch { return []; }
+        }).find(event => event.exception?.values?.some(value => value.type === 'ApplicationNotResponding'));
+        assert(anr, 'Real renderer freezes must reach Sentry');
+        assert.equal(anr.dist, process.platform, 'Freeze reports and uploaded maps must use the same platform dist');
+        const frames = anr.exception.values.flatMap(value => value.stacktrace?.frames ?? []);
+        const map = new (require('node:module').SourceMap)(JSON.parse(fs.readFileSync(path.join(dist, 'bundle.js.map'), 'utf8')));
+        assert(frames.some(frame => frame.filename === 'app://legion/bundle.js' &&
+          map.findEntry(frame.lineno - 1, frame.colno - 1).originalSource?.endsWith('/tools/guide/fixtures.tsx')),
+          `Native ANR frames must map back to TypeScript: ${JSON.stringify(frames)}`);
+        console.log('Real native renderer ANR stack maps back to its original TypeScript');
+
+        // Restore a fresh WebGL document after the forced Canvas fallback, then crash in combat.
+        await win.loadURL(`${PACKAGED_APP_URL}game/crash-recovery`);
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        const resynced = new Promise(resolve => win.webContents.once('did-finish-load', resolve));
+        await js('setTimeout(() => combatCheck.resync(), 0)');
+        await resynced;
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        assert.equal(await js('combatCheck.events.listenerCount("passTurn")'), 1);
+        assert.equal(await js('combatCheck.arena.teamsMap.size'), 2);
+        assert.equal(win.webContents.getURL(), `${PACKAGED_APP_URL}game/crash-recovery`);
+        console.log('Server resynchronization rejoins without duplicate units or controls');
+        const {dialog} = require('electron');
+        const showMessageBox = dialog.showMessageBox;
+        let recoveryPrompted = false;
+        dialog.showMessageBox = async (_window, options) => {
+          assert.equal(options.buttons[0], 'Reload game');
+          recoveryPrompted = true;
+          return {response: 0};
+        };
+        require('../../electron/recovery').installRendererRecovery(win);
         const crashed = new Promise(resolve => win.webContents.once('render-process-gone', (_event, details) => resolve(details.reason)));
+        const reloaded = new Promise(resolve => win.webContents.once('did-finish-load', resolve));
         win.webContents.debugger.attach('1.3');
         void win.webContents.debugger.sendCommand('Page.crash').catch(() => {});
         assert.equal(await crashed, 'crashed');
+        await reloaded;
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        dialog.showMessageBox = showMessageBox;
+        assert(recoveryPrompted);
+        assert.equal(win.webContents.getURL(), `${PACKAGED_APP_URL}game/crash-recovery`);
         await Sentry.flush(2000);
         assert(envelopes.some(body => body.includes("process exited with 'crashed'")), 'Native renderer exits must be reported');
-        console.log('Native renderer crash reporting passes');
+        console.log('Native renderer crash reporting and same-match recovery pass');
+        await js('titleLoadingCheck.fail()');
+        await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+        assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        await ready();
+        await js(`(() => {
+          HTMLCanvasElement.prototype.getContext = () => null;
+          const link = document.createElement('a');
+          link.href = '/game/renderer-unavailable';
+          document.body.appendChild(link);
+          link.click();
+        })()`);
+        await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+        assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+        console.log('Render exceptions and unavailable graphics show recovery rather than a blank page');
+        assert(foreignDumps.every(file => fs.existsSync(file)), 'Never scan/delete foreign crash dumps');
+        console.log('Native crash storage isolation passes');
       }
     } finally {
       win.destroy();

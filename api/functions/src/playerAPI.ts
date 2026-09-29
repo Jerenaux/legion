@@ -21,7 +21,8 @@ import {
   MAX_NICKNAME_LENGTH,
   MAX_AVATAR_ID,
 } from "@legion/shared/config";
-import { logPlayerAction, updateDAU } from "./dashboardAPI";
+import { logPlayerAction } from "./dashboardAPI";
+import {recordPlayerActivity} from "./dailyAnalytics";
 import {currentSeasonId, getEmptyLeagueStats} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
 import { onSchedule } from "./telemetry";
@@ -267,13 +268,7 @@ export const getPlayerData = onRequest({
           throw new Error("playerData is null");
         }
 
-        const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
-        if (playerData.lastActiveDate !== today) {
-          db.collection("players").doc(uid).update({
-            lastActiveDate: today,
-          });
-          updateDAU(uid);
-        }
+        await recordPlayerActivity(db, uid, playerData.lastActiveDate);
 
         // Check if dailyloot exists, if not create it
         if (!playerData.dailyloot) {
