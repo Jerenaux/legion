@@ -499,6 +499,14 @@ if (!process.versions.electron) {
         // Restore a fresh WebGL document after the forced Canvas fallback, then crash in combat.
         await win.loadURL(`${PACKAGED_APP_URL}game/crash-recovery`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        const resynced = new Promise(resolve => win.webContents.once('did-finish-load', resolve));
+        await js('setTimeout(() => combatCheck.resync(), 0)');
+        await resynced;
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        assert.equal(await js('combatCheck.events.listenerCount("passTurn")'), 1);
+        assert.equal(await js('combatCheck.arena.teamsMap.size'), 2);
+        assert.equal(win.webContents.getURL(), `${PACKAGED_APP_URL}game/crash-recovery`);
+        console.log('Server resynchronization rejoins without duplicate units or controls');
         const {dialog} = require('electron');
         const showMessageBox = dialog.showMessageBox;
         let recoveryPrompted = false;

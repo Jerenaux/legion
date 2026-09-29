@@ -48,7 +48,9 @@ const battle = {
 
 // Feed the real scene a local gameStatus; never connect to a live match or mutate an account.
 Arena.prototype.connectToServer = async function () {
-  Object.assign(window, {combatCheck: {arena: this, sent: [], route, events, close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
+  Object.assign(window, {combatCheck: {arena: this, sent: [], route, events,
+    resync: () => this.initializeGame(battle),
+    close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
   this.socket = Object.assign(new EventEmitter(), {disconnect() {}}) as typeof this.socket;
   this.events.once('create', () => this.initializeGame(battle));
 };
