@@ -173,6 +173,17 @@ if (!process.versions.electron) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       console.log('Visible text:', await js('document.body.innerText'));
+      console.log('Combat readiness:', await js(`(() => {
+        const arena = window.combatCheck?.arena;
+        return {hidden: document.hidden, portrait: matchMedia('(orientation: portrait)').matches,
+          initialized: arena?.gameInitialized, entrances: arena?.pendingEntrances,
+          awaitingReady: Boolean(arena?.readyToken), connected: arena?.socket?.connected,
+          frame: arena?.game?.loop?.frame, queued: arena?.eventsQueue?.length,
+          units: arena ? [...arena.gridMap.values()].map(unit => ({
+            animation: unit.sprite?.anims?.currentAnim?.key, playing: unit.sprite?.anims?.isPlaying,
+            frame: unit.sprite?.anims?.currentFrame?.index,
+          })) : []};
+      })()`));
       fs.writeFileSync(path.join(dist, 'failure.png'), (await win.webContents.capturePage()).toPNG());
       throw new Error(`Timed out: ${expression}`);
     };
