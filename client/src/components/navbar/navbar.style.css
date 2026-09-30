@@ -172,6 +172,13 @@
   font-size: 14px;
 }
 
+.dropdown-version {
+  display: block;
+  padding: 8px 12px;
+  color: #c8d8e4;
+  font-size: 12px;
+}
+
 .menuItems {
   display: flex;
   justify-content: center;
