@@ -171,7 +171,7 @@ if (!process.versions.electron) {
     });
     const waitFor = async expression => {
       for (let i = 0; i < 300; i++) {
-        if (await js(expression)) return;
+        if (typeof expression === 'function' ? expression() : await js(expression)) return;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       console.log('Visible text:', await js('document.body.innerText'));
@@ -629,6 +629,8 @@ if (!process.versions.electron) {
             else win.setContentSize(1280, 720);
           }
           await waitFor(`combatCheck.arena.gameInitialized && combatCheck.arena.readyToken === null && combatCheck.arena.turnee?.num === 3 && combatCheck.arena.turnee.turnNumber === ${scenario === 'timing-resume' ? 8 : 1} && combatCheck.arena.eventsQueue.length === 0`);
+          // Resumed snapshots already contain the turn; wait for the emitted token to reach the server.
+          await waitFor(() => timingChecks.get(scenario).acks > 0);
           assert.equal(timingChecks.get(scenario).acks, 1, 'Exactly one readiness acknowledgement per snapshot');
           assert.equal(await js('Boolean(document.querySelector(".team-reveal-overlay"))'), false, 'A running first match must not reveal champions again');
           assert.equal(await js('combatCheck.arena.turnee.timeLeft'), scenario === 'timing-resume' ? 4 : 7);
