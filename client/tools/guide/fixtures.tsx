@@ -14,6 +14,7 @@ import {getReplay} from '@sentry/react';
 import {route} from 'preact-router';
 import {GameHUD, events} from '../../src/components/HUD/GameHUD';
 import {spells} from '../../../shared/Spells';
+import {items} from '../../../shared/Items';
 
 Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId()},
   stabilityFreeze: function stabilityFreeze() {
@@ -50,7 +51,8 @@ const battle = {
 // Feed the real scene a local gameStatus; never connect to a live match or mutate an account.
 const connectToLocalServer = Arena.prototype.connectToServer;
 Arena.prototype.connectToServer = async function () {
-  Object.assign(window, {combatCheck: {arena: this, sent: [], route, events, spellEffects: spells.map(({id, vfx}) => ({id, vfx})),
+  Object.assign(window, {combatCheck: {arena: this, sent: [], route, events, spellEffects: spells.map(({id, vfx, charge}) => ({id, vfx, charge})),
+    itemEffects: items.map(({animation, sfx, name}) => ({animation, sfx, name})),
     resync: () => this.initializeGame(battle),
     close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
   const socketURL = new URLSearchParams(location.search).get('socketURL');
@@ -65,7 +67,11 @@ Arena.prototype.connectToServer = async function () {
   if (socketURL) {
     if (!socketURL.startsWith('http://127.0.0.1:')) throw new Error('Smoke sockets must stay on loopback');
     await connectToLocalServer.call(this, socketURL);
-    this.socket.on('connect', () => this.socket.emit('fixture-ready', battle));
+    // Exercise every spell, including effects absent from the local team's loadout.
+    const snapshot = {...battle, opponent: {...battle.opponent, team: battle.opponent.team.map((unit, i) => ({
+      ...unit, spells: i === 2 ? spells.map(spell => spell.id) : unit.spells,
+    }))}};
+    this.socket.on('connect', () => this.socket.emit('fixture-ready', snapshot));
     return;
   }
   this.socket = Object.assign(new EventEmitter(), {disconnect() {}}) as typeof this.socket;

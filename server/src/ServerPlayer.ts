@@ -117,13 +117,14 @@ export class ServerPlayer {
             statuses: this.statuses,
             class: this.class,
             level: this.level,
+            // Both teams need spell effects loaded before combat or a summoned unit acts.
+            spells: this.getNetworkSpells(),
         }
         if (includePersonal) {
             data['mp'] = this.mp;
             data['maxMP'] = this.getStat(Stat.MP);
             data['distance'] = this.distance;
             data['inventory'] = this.getNetworkInventory();
-            data['spells'] = this.getNetworkSpells();
             data['xp'] = this.xp;
             data['isPlayer'] = includePersonal;
         }

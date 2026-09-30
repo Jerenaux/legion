@@ -1285,7 +1285,7 @@ export class Arena extends Phaser.Scene
             if (spell.vfx) keys.add(spell.vfx);
             if (spell.charge) keys.add(spell.charge);
         }
-        // Terrain may be created by either team, including opponents with hidden loadouts.
+        // Terrain may be created by either team.
         if (event === 'gameStatus' || event === 'terrain') keys.add('terrain_fire_1');
         const missing = [...keys].filter(key => !this.textures.exists(key));
         if (!missing.length) return;

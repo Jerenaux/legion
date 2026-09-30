@@ -87,6 +87,22 @@ afterEach(() => {
   finally {mock.restore();}
 });
 
+test('both teams disclose spell IDs in initial, reconnect, replay, and summoned-unit data', () => {
+  enemy.spells = [new Spell(getSpellById(8))];
+  for (const reconnect of [false, true]) {
+    for (const teamId of [1, 2]) {
+      const snapshot = game.getGameData(teamId, reconnect);
+      expect(snapshot.player.team[0].spells).toEqual(teamId === 1 ? [0, 9] : [8]);
+      expect(snapshot.opponent.team[0].spells).toEqual(teamId === 1 ? [8] : [0, 9]);
+      expect(snapshot.opponent.team[0].inventory).toBeUndefined();
+      expect(snapshot.opponent.team[0].mp).toBeUndefined();
+    }
+  }
+  game.saveInitialStateToReplay();
+  expect(game.replayMessages[0].data.opponent.team[0].spells).toEqual([8]);
+  expect(enemy.getPlacementData(false).spells).toEqual([8]);
+});
+
 const invalidActions = [
   {name: 'out-of-range spell', action: 'spell', data: {x: 14, y: 5, index: 0}},
   {name: 'missing spell', action: 'spell', data: {x: 3, y: 5, index: 99}},
