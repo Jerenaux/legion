@@ -243,7 +243,19 @@ if (!process.versions.electron) {
           await js('window.tooltipEnteredAt = null');
           await moveMouse(point.x, point.y);
           assert(await js('window.tooltipEnteredAt !== null'), `${slot}: browser did not deliver the hover event`);
-          await waitFor(`document.querySelector('#${tooltipId}') && getComputedStyle(document.querySelector('#${tooltipId}')).opacity === '1'`);
+          try {
+            await waitFor(`document.querySelector('#${tooltipId}') && getComputedStyle(document.querySelector('#${tooltipId}')).opacity === '1'`);
+          } catch (error) {
+            console.log('Tooltip hover state:', slot, await js(`(() => {
+              const anchor = document.querySelector('${selector}');
+              const tooltip = document.querySelector('#${tooltipId}');
+              const hit = document.elementFromPoint(${point.x}, ${point.y});
+              return {enteredAt: window.tooltipEnteredAt, hit: hit?.outerHTML.slice(0, 250),
+                anchor: anchor?.outerHTML.slice(0, 400), tooltip: tooltip?.outerHTML.slice(0, 400),
+                opacity: tooltip && getComputedStyle(tooltip).opacity};
+            })()`));
+            throw error;
+          }
           await waitFor(`document.querySelector('#${tooltipId}')?.innerText.includes(${JSON.stringify(expected[0])})`);
           const preview = await js(`(() => {
             const t = document.querySelector('#${tooltipId}');
