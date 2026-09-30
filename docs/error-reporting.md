@@ -43,6 +43,8 @@ The native renderer is preferred; a Canvas renderer is available when WebGL cont
 
 Authentication rejection, malformed match messages, asset failures, unhandled rejections, and a missing snapshot must reach the same recovery screen. Loading and reconnection have a 30-second deadline, not just a console warning. Electron also offers recovery for an unresponsive renderer or failed main-frame navigation. The HTML entry contains a script-independent reload fallback for missing bundles and exceptions before Preact mounts; keep it compatible with the existing CSP. `test:guide` uses a real loopback Socket.IO server for these failures; install both client and server dependencies before running it. Test-only connection overrides remain in fixtures, which must never enter a release bundle.
 
+Graphics failures and loading timeouts show specific explanations and recovery steps. Handle runtime error events even when only their message is available, and show recovery even if engine cleanup throws. WebGL context creation failure is not Linux-specific: drivers, disabled or blocked acceleration, GPU-process failures, and resource exhaustion can affect other platforms too. Keep the Canvas fallback and context disposal; do not force unsafe GPU flags in release builds. A player's release, desktop runtime (native or Proton), and graphics diagnostics are needed to identify their particular cause.
+
 Server startup is guarded before its first asynchronous operation. Repeated joins for the same authenticated UID replace that player's socket, never consume another team slot. A superseded socket cannot clear the replacement on disconnect. Keep the AI and PvP lifecycle regression tests when changing connection setup.
 
 ## Privacy and cost

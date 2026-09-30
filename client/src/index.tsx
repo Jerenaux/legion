@@ -10,11 +10,11 @@ import {ErrorBoundary} from '@sentry/react';
 import {CombatRecovery} from './components/CombatRecovery';
 
 try {
-  render(<ErrorBoundary fallback={<CombatRecovery />}><App /></ErrorBoundary>, document.getElementById('root'));
+  render(<ErrorBoundary fallback={({error}) => <CombatRecovery error={error} />}><App /></ErrorBoundary>, document.getElementById('root'));
   // console.log('React index.tsx: App rendered successfully');
 } catch (error) {
   console.error('React index.tsx: Error rendering app:', error);
-  render(<CombatRecovery />, document.getElementById('root'));
+  render(<CombatRecovery error={error} />, document.getElementById('root'));
 }
 
 export default App;

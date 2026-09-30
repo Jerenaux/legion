@@ -19,7 +19,7 @@ interface GamePageProps {
 }
 
 interface GamePageState {
-  failed: boolean;
+  failure: Error | null;
   reconnecting: boolean;
   waitingForPlayers: boolean;
   mainDivClass: string;
@@ -52,7 +52,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   constructor(props: GamePageProps) {
     super(props);
     this.state = {
-      failed: false,
+      failure: null,
       reconnecting: false,
       waitingForPlayers: false,
       mainDivClass: 'normalCursor',
@@ -140,7 +140,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   }
 
   handleRuntimeError = (event: ErrorEvent) => {
-    if (event.error) this.failGame(event.error);
+    this.failGame(event.error ?? new Error(event.message || 'Unexpected game error'));
   };
 
   handleContextLoss = () => this.failGame(new Error('Combat WebGL context lost'));
@@ -154,8 +154,13 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     if (this.failing) return;
     this.failing = true;
     captureException(error);
-    this.cleanup();
-    this.setState({failed: true});
+    try {
+      this.cleanup();
+    } catch (cleanupError) {
+      captureException(cleanupError);
+    } finally {
+      this.setState({failure: error instanceof Error ? error : new Error(String(error))});
+    }
   };
 
   checkOrientation = () => {
@@ -224,7 +229,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
   };
 
   render() {
-    if (this.state.failed) return <CombatRecovery />;
+    if (this.state.failure) return <CombatRecovery error={this.state.failure} />;
     return (
       <Fragment key={this.state.key}>
         <div className={this.state.mainDivClass}>
