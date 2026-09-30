@@ -258,6 +258,9 @@
 }
 
 .character-info-bar .info-class {
+    border: 0;
+    padding: 0;
+    cursor: help;
     position: absolute;
     top: 0;
     left: 0;
@@ -270,6 +273,11 @@
     justify-content: center;
     font-family: 'Kim', sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.character-info-bar .info-class:focus-visible {
+    outline: 2px solid #71deff;
+    outline-offset: 2px;
 }
 
 .character-info-bar .info-class span {
@@ -387,4 +395,3 @@
     cursor: pointer;
     border: 1px solid #71deff;
 }
-

@@ -21,6 +21,8 @@ import { items } from '@legion/shared/Items';
 import { equipments } from '@legion/shared/Equipments';
 import { inventorySize } from '@legion/shared/utils';
 import { Link } from 'preact-router';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
+import { tooltipStyle } from '../itemTooltip';
 
 import spellsIcon from '@assets/shop/spells_icon.png';
 import consumablesIcon from '@assets/shop/consumables_icon.png';
@@ -56,6 +58,12 @@ function sortByRarityAndPrice(a: BaseItem | BaseSpell | BaseEquipment, b: BaseIt
 }
 
 const TAB_LABELS = ['Consumables', 'Equipment', 'Spells', 'Characters'];
+const TAB_UNLOCKS = [
+    LockedFeatures.CONSUMABLES_BATCH_1,
+    LockedFeatures.EQUIPMENT_BATCH_1,
+    LockedFeatures.SPELLS_BATCH_1,
+    LockedFeatures.CHARACTER_PURCHASES,
+];
 
 const EQUIP_CATEGORIES_GROUPPING = {
     [EquipmentSlot.WEAPON]: 'Weapons',
@@ -438,13 +446,12 @@ class ShopContent extends Component<ShopContentProps> {
                 <div className='shop-tabs-container'>
                     {this.state.inventoryData && shopTabIcons.map((icon, index) => {
                         const isCharacterTab = index === ShopTab.CHARACTERS;
-                        const isSpellsTab = index === ShopTab.SPELLS;
-                        const isEquipmentTab = index === ShopTab.EQUIPMENTS;
-                        const isConsumablesTab = index === ShopTab.CONSUMABLES;
-                        const isDisabled = (isCharacterTab && !this.context.canAccessFeature(LockedFeatures.CHARACTER_PURCHASES)) ||
-                                         (isSpellsTab && !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_1)) ||
-                                         (isEquipmentTab && !this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_1)) ||
-                                         (isConsumablesTab && !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1));
+                        const feature = TAB_UNLOCKS[index];
+                        const isDisabled = !this.context.canAccessFeature(feature);
+                        const gamesLeft = isDisabled ? this.context.getGamesUntilFeature(feature) : 0;
+                        const unlockHint = isDisabled
+                            ? `Play ${gamesLeft} more ${gamesLeft === 1 ? 'game' : 'games'} to unlock ${TAB_LABELS[index]}.`
+                            : undefined;
 
                         return (
                             <Link
@@ -460,6 +467,10 @@ class ShopContent extends Component<ShopContentProps> {
                                     }
                                 }}
                                 key={index}
+                                aria-disabled={isDisabled}
+                                aria-label={unlockHint ?? TAB_LABELS[index]}
+                                data-tooltip-id={isDisabled ? 'shop-unlock-details' : undefined}
+                                data-tooltip-content={unlockHint}
                                 className={`shop-tab-item ${index === this.state.curr_tab ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
                             >
                                 <img src={isDisabled ? lockIcon : icon} alt={`${ShopTab[index]} icon`} />
@@ -468,6 +479,7 @@ class ShopContent extends Component<ShopContentProps> {
                         );
                     })}
                 </div>
+                <ReactTooltip id="shop-unlock-details" place="bottom" positionStrategy="fixed" delayShow={150} style={tooltipStyle} />
                 <div className={`shop-items-container ${this.state.curr_tab === ShopTab.EQUIPMENTS ? 'equipment-view' : ''}`}>
                     {renderItems()}
                 </div>
