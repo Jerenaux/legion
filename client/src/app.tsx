@@ -114,11 +114,9 @@ class App extends Component<{}, AppState> {
     };
 
     warmUpMatchmaker = () => {
-        try {
-            fetch(`${process.env.MATCHMAKER_URL}`);
-        } catch (_err) {
-            // console.error('Error warming up matchmaker:', err);
-        }
+        void fetch(`${process.env.MATCHMAKER_URL}`).catch(() => {
+            // Best-effort warm-up; matchmaking handles connection failures.
+        });
     }
 
     getMainRoute(url: string): string {
