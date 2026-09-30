@@ -29,6 +29,8 @@ import helpIcon from '@assets/svg/help.svg';
 import copyIcon from '@assets/svg/copy.svg';
 import cogIcon from '@assets/svg/cog.svg';
 
+const {version} = require('../../../package.json');
+
 enum MenuItems {
     PLAY = 'PLAY',
     TEAM = 'TEAM',
@@ -265,6 +267,7 @@ class Navbar extends Component<Props, State> {
                                                 <button type="button" onClick={this.toggleSettingsModal}>
                                                     <img src={cogIcon} alt="Settings" /> Settings
                                                 </button>
+                                                <small className="dropdown-version">Version {version}</small>
                                             </div>
                                         </div>
                                     </div>
