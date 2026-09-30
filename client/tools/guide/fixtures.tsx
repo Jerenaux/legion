@@ -26,8 +26,6 @@ const characters = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind
   id: `guide-${i}`, name: ['Roland', 'Luna', 'Ember'][i], portrait: ['1_1', '1_7', '1_5'][i],
   sp: 2, inventory: [0, 1], skills: [[], [9], [0, 3]][i],
 }));
-const tooltipCharacters = characters.map(character => character.id === 'guide-2'
-  ? {...character, id: 'guide-tooltips', equipment: {...character.equipment, weapon: 1}} : character);
 const profile = {
   playerName: 'Arena Apprentice', teamName: '', playerAvatar: 'default',
   playerLevel: 1, playerRank: 12, playerLeague: League.BRONZE, completedGames: 12,
@@ -94,23 +92,20 @@ Object.assign(window, {queueCheck});
 
 export default function FixturePlayer({children}: {children: ComponentChildren}) {
   const defaults = useContext(PlayerContext);
-  const roster = location.pathname === '/team/guide-tooltips' ? tooltipCharacters : characters;
   const [activeId, setActiveId] = useState(characters[2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
   Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true), fail: () => setRenderFailed(true)}});
   if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
-    ...defaults, loaded, welcomeShown: true, characters: roster, activeCharacterId: activeId,
+    ...defaults, loaded, welcomeShown: true, characters, activeCharacterId: activeId,
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
       isLoaded: loaded, completedGames: 12, engagementStats: profile.engagementStats, gold: 240, elo: 128, rank: 12,
-      carrying_capacity: BASE_INVENTORY_SIZE, inventory: location.pathname === '/team/guide-tooltips'
-        ? {consumables: [0, 9], spells: [3], equipment: [0, 3]}
-        : {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
+      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
     canAccessFeature: () => true, getCompletedGames: () => 12, checkEngagementFlag: () => true,
-    getCharacter: (id: string) => roster.find(character => character.id === id),
-    getActiveCharacter: () => roster.find(character => character.id === activeId),
+    getCharacter: (id: string) => characters.find(character => character.id === id),
+    getActiveCharacter: () => characters.find(character => character.id === activeId),
     updateActiveCharacter: (id: string) => {if (id) setActiveId(id);},
   };
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

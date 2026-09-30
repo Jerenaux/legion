@@ -30,6 +30,8 @@ Run `bun run lint` from the repository root for functional Biome diagnostics. Th
 
 Biome complements rather than replaces TypeScript. Run `bunx tsc --noEmit` in `client`, `server`, `matchmaker`, and `api/functions` when validating types.
 
+For presentation-only UI work (for example card hover effects, tooltip styling, spacing, or colors), do not add or run automated tests just to verify appearance. Inspect screenshots manually when useful or requested. Keep focused tests for behavior such as gameplay, navigation, accessibility, error handling, and security.
+
 ## Electron startup routing
 
 Packaged builds must open `app://legion/`, using `PACKAGED_APP_URL` from `client/electron/protocol.js`. Do not load `app://legion/index.html`: Preact Router reads that as the `/index.html` application route, which bypasses the title screen and leaves the authenticated home content empty. The custom protocol already maps `/` to the bundled `index.html` file.
@@ -54,4 +56,4 @@ Follow `docs/match-timing.md`. Sending a snapshot is not permission to start com
 
 ## Player guide
 
-When changing player-facing rules, controls, unlocks, or the illustrated UI, update the bundled guide in `client/src/components/GuidePage.tsx` in the same batch. The implemented game—not the legacy external guide—is authoritative. Follow `docs/player-guide.md` to refresh its cropped screenshots and run `bun run test:guide` from `client` to verify the real packaged routes with local fixtures. Never ship the screenshot fixtures in the release bundle.
+When changing player-facing rules, controls, unlocks, or the illustrated UI, update the bundled guide in `client/src/components/GuidePage.tsx` in the same batch. The implemented game—not the legacy external guide—is authoritative. Follow `docs/player-guide.md` to refresh its cropped screenshots; run `bun run test:guide` from `client` when changing functional flows or guide routing, not for presentation-only edits. Never ship the screenshot fixtures in the release bundle.

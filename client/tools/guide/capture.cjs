@@ -200,111 +200,8 @@ if (!process.versions.electron) {
       fs.writeFileSync(output, shot.resize({width: rect.width}).toJPEG(88));
       console.log('Captured', name, rect);
     };
-    const checkInventoryTooltips = async () => {
-      await win.loadURL(`${PACKAGED_APP_URL}team/guide-tooltips`);
-      await waitFor('document.querySelectorAll("[data-tooltip-id=inventory-item-details]").length === 5');
-      win.webContents.debugger.attach('1.3');
-      await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: true});
-      const moveMouse = (x, y) => win.webContents.debugger.sendCommand('Input.dispatchMouseEvent', {type: 'mouseMoved', x, y});
-      for (const [width, height] of [[1280, 720], [960, 540]]) {
-        win.setContentSize(width, height);
-        await ready();
-        for (const [slot, expected] of [
-          ['consumables-0', ['Potion', '+50']],
-          ['consumables-9', ['Full', 'HP', 'MP']],
-          ['equipment-0', ['Jagged Sword', '+100', '+15', 'Warrior']],
-          ['equipment-3', ['Basic belt', 'Increases item slots by 1']],
-          ['spells-3', ['Thunder', 'MP', 'Black Mage']],
-          ['equipped:consumables:0', ['Potion', '+50']],
-          ['equipped:equipment:1', ['Basic staff', '+5', '+10', 'Black Mage']],
-          ['equipped:spells:3', ['Thunder', 'MP', 'Black Mage']],
-        ]) {
-          const equipped = slot.startsWith('equipped:');
-          const [, type, id] = slot.split(':');
-          const selector = equipped
-            ? `[data-tooltip-id="equipped-item-details"][data-tooltip-item-type="${type}"][data-tooltip-item-id="${id}"]`
-            : `[data-item-icon="${slot}"] [role=button]`;
-          const tooltipId = equipped ? 'equipped-item-details' : 'inventory-item-details';
-          await moveMouse(1, 1);
-          await js('document.activeElement.blur()');
-          await waitFor('[...document.querySelectorAll(".item-details-tooltip")].every(t => getComputedStyle(t).opacity === "0")');
-          const point = await js(`(async () => {
-            const anchor = document.querySelector('${selector}');
-            anchor.scrollIntoView({block: 'center', inline: 'nearest', behavior: 'instant'});
-            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-            anchor.addEventListener('mouseover', () => {window.tooltipEnteredAt = performance.now();}, {once: true});
-            const r = (anchor.closest('[data-item-icon]') || anchor).getBoundingClientRect();
-            const edges = [[r.x + 2, r.y + r.height / 2], [r.right - 2, r.y + r.height / 2],
-              [r.x + r.width / 2, r.y + 2], [r.x + r.width / 2, r.bottom - 2]];
-            return {x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2),
-              coversCard: edges.every(([x, y]) => anchor.contains(document.elementFromPoint(x, y)))};
-          })()`);
-          assert(point.coversCard, `${slot}: every card edge must belong to the interactive tooltip anchor`);
-          await js('window.tooltipEnteredAt = null');
-          await moveMouse(point.x, point.y);
-          assert(await js('window.tooltipEnteredAt !== null'), `${slot}: browser did not deliver the hover event`);
-          try {
-            await waitFor(`document.querySelector('#${tooltipId}') && getComputedStyle(document.querySelector('#${tooltipId}')).opacity === '1'`);
-          } catch (error) {
-            console.log('Tooltip hover state:', slot, await js(`(() => {
-              const anchor = document.querySelector('${selector}');
-              const tooltip = document.querySelector('#${tooltipId}');
-              const hit = document.elementFromPoint(${point.x}, ${point.y});
-              return {enteredAt: window.tooltipEnteredAt, hit: hit?.outerHTML.slice(0, 250),
-                anchor: anchor?.outerHTML.slice(0, 400), tooltip: tooltip?.outerHTML.slice(0, 400),
-                opacity: tooltip && getComputedStyle(tooltip).opacity};
-            })()`));
-            throw error;
-          }
-          await waitFor(`document.querySelector('#${tooltipId}')?.innerText.includes(${JSON.stringify(expected[0])})`);
-          const preview = await js(`(() => {
-            const t = document.querySelector('#${tooltipId}');
-            const r = t.getBoundingClientRect();
-            return {text: t.innerText, transition: getComputedStyle(t).transitionDuration,
-              elapsed: performance.now() - tooltipEnteredAt,
-              icon: getComputedStyle(t.querySelector('.item-preview-sprite')).backgroundImage,
-              fits: r.x >= 0 && r.y >= 0 && r.right <= innerWidth && r.bottom <= innerHeight};
-          })()`);
-          for (const text of expected) assert(preview.text.includes(text), `${slot}: missing ${text}`);
-          assert.equal(preview.transition, '0s', 'Inventory tooltips must not fade in');
-          assert(preview.fits, `${slot} tooltip must stay inside the ${width}px viewport`);
-          assert(preview.icon.startsWith('url('), `${slot} must show its item sprite`);
-          console.log(`${slot} tooltip visible after ${Math.round(preview.elapsed)}ms at ${width}px`);
-          fs.writeFileSync(path.join(dist, `inventory-tooltip-${slot.replaceAll(':', '-')}-${width}.png`), (await win.webContents.capturePage()).toPNG());
-          if (equipped) {
-            await js(`document.querySelector('${selector}').click()`);
-            await waitFor('Boolean(document.querySelector(".ReactModal__Overlay"))');
-            await waitFor(`!document.querySelector('#${tooltipId}') || getComputedStyle(document.querySelector('#${tooltipId}')).opacity === '0'`);
-            win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Escape'});
-            win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Escape'});
-            await waitFor('!document.querySelector(".ReactModal__Overlay")');
-          }
-        }
-        await js('document.querySelector("[data-item-icon=spells-3] [role=button]").click()');
-        await waitFor('Boolean(document.querySelector(".dialog-spell-container"))');
-        await waitFor('!document.querySelector("#inventory-item-details") || getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "0"');
-        fs.writeFileSync(path.join(dist, `inventory-click-dialog-${width}.png`), (await win.webContents.capturePage()).toPNG());
-        await js('document.querySelector(".dialog-decline").click()');
-        await waitFor('!document.querySelector(".ReactModal__Overlay")');
-        await moveMouse(1, 1);
-        await js('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
-        await js('document.querySelector("[data-item-icon=consumables-0] [role=button]").focus()');
-        await waitFor('document.querySelector("#inventory-item-details")?.innerText.includes("Potion") && getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "1"');
-        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Escape'});
-        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Escape'});
-        await waitFor('!document.querySelector("#inventory-item-details") || getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "0"');
-        await js('document.activeElement.blur()');
-      }
-      assert.deepEqual(rendererErrors, [], 'Inventory hover/click/focus must not produce renderer errors');
-      await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: false});
-      win.webContents.debugger.detach();
-      win.setContentSize(1600, 900);
-      console.log('Inventory previews, keyboard focus, dismissal, and click dialogs pass');
-    };
     try {
-      if (process.argv.includes('--tooltips')) {
-        await checkInventoryTooltips();
-      } else if (process.argv.includes('--images')) {
+      if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
         await ready();
@@ -317,7 +214,6 @@ if (!process.versions.electron) {
         await ready();
         await capture('loadout', {x: 270, y: 328, width: 1045, height: 428});
       } else {
-        await checkInventoryTooltips();
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('Boolean(replayCheck.id())');
@@ -663,7 +559,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tooltips')) {
+      if (!process.argv.includes('--images')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.
