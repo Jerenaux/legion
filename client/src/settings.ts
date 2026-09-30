@@ -6,7 +6,7 @@ export interface GameSettings {
 }
 
 export const defaultGameSettings: GameSettings = {
-  musicVolume: 50,
+  musicVolume: 25,
   sfxVolume: 50,
   keyboardLayout: 1,
   isFullscreen: false,

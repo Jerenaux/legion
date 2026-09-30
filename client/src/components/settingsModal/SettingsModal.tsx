@@ -2,7 +2,7 @@ import { h } from 'preact';
 import { Component } from 'preact';
 import { events } from '../HUD/GameHUD';
 import { isElectron, getElectronAPI } from '../../utils/electronUtils';
-import {loadGameSettings} from '../../settings';
+import {defaultGameSettings, loadGameSettings} from '../../settings';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -10,7 +10,7 @@ interface SettingsModalProps {
 
 export class SettingsModal extends Component<SettingsModalProps> {
     state = {
-      musicCurrentValue: 50,
+      musicCurrentValue: defaultGameSettings.musicVolume,
       musicMinValue: 0,
       musicMaxValue: 100,
       sfxCurrentValue: 50,
