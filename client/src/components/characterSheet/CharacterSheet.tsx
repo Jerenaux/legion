@@ -18,6 +18,9 @@ import { Effect } from '@legion/shared/interfaces';
 import { equipmentSlotFields } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { StatLabels } from '@legion/shared/enums';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
+import { itemTooltip, statExplanations, tooltipStyle } from '../itemTooltip';
+import { ItemTooltip } from '../ItemTooltipContent';
 
 import helmetIcon from '@assets/inventory/helmet_icon.png';
 import armorIcon from '@assets/inventory/armor_icon.png';
@@ -106,9 +109,13 @@ class CharacterSheet extends Component<CharacterSheetProps> {
 
             return rearrangedStats.map((item, index) => (
                 <div data-sp-plus="true" className="character-info-bar" key={index}>
-                    <div className="info-class" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(item.key)]] }}>
+                    <button type="button" className="info-class"
+                        aria-label={`${StatLabels[getStatEnum(item.key)]}: ${statExplanations[getStatEnum(item.key)]}`}
+                        data-tooltip-id="character-sheet-details"
+                        data-tooltip-content={statExplanations[getStatEnum(item.key)]}
+                        style={{ backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(item.key)]] }}>
                         <span>{StatLabels[getStatEnum(item.key)]}</span>
-                    </div>
+                    </button>
                     <div className="curr-info-container">
                         <p className="curr-info">
                             <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : effectVal(item.key) < 0 ? { color: '#c95a74' } : {}}>
@@ -242,6 +249,11 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                             : ''
                       }`}
                       style={(itemData !== undefined) ? slotStyle : {}}
+                      aria-label={itemData ? itemTooltip(itemData) : item.key}
+                      data-tooltip-id={itemData ? 'equipped-item-details' : undefined}
+                      data-tooltip-item-type={InventoryType.EQUIPMENTS}
+                      data-tooltip-item-id={itemData?.id}
+                      data-tooltip-content={itemData ? itemTooltip(itemData) : undefined}
                       onClick={(e) => this.handleUnEquipItem(e, itemData, ItemDialogType.EQUIPMENTS, index)}
                     >
                       {content}
@@ -290,7 +302,13 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     }
 
                     return (
-                        <button type="button" data-game-control className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle} onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
+                        <button type="button" data-game-control className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle}
+                            aria-label={item ? itemTooltip(item) : 'Unknown item'}
+                            data-tooltip-id={item ? 'equipped-item-details' : undefined}
+                            data-tooltip-item-type={inventoryType}
+                            data-tooltip-item-id={item?.id}
+                            data-tooltip-content={item ? itemTooltip(item) : undefined}
+                            onClick={(e) => this.handleOpenModal(e, item, dialogType, i)}>
                             <div className="special-equip" style={{
                                 backgroundImage: `url(${backgroundImageUrl})`,
                                 backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
@@ -378,6 +396,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     updateCharacterData={this.props.updateCharacterData}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
+                <ItemTooltip id="equipped-item-details" />
+                <ReactTooltip id="character-sheet-details" place="top" positionStrategy="fixed" delayShow={150}
+                    closeEvents={{ mouseleave: true, blur: true, click: true }} style={tooltipStyle} />
             </div>
         );
     }

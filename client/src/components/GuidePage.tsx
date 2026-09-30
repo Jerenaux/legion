@@ -108,7 +108,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="team">
             <h2 id="team" tabIndex={-1}>Build a team that works together</h2>
-            <p>Open <strong>Team</strong> in the top navigation and select a character’s portrait. Their sheet shows stats, equipment, carried consumables, and learned spells. Your shared inventory sits beside it.</p>
+            <p>Open <strong>Team</strong> in the top navigation and select a character’s portrait. Their sheet shows stats, equipment, carried consumables, and learned spells. Your shared inventory sits beside it. Hover over or focus any item or learned spell, in your inventory or on the character sheet, for an instant preview of its effects, casting cost, and requirements. Hover over a stat label to learn what it does.</p>
             <figure>
               <img src={loadout} width="1045" height="428" loading="lazy" alt="The Team screen: Ember’s character stats and equipment slots on the left, equipped consumables and spells below, and the shared inventory on the right." />
               <figcaption>Owning an item is not enough: assign it to the character who needs it before queuing.</figcaption>
@@ -136,7 +136,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h2 id="progression" tabIndex={-1}>Rewards, unlocks & weekly leagues</h2>
             <p>The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <strong>Shop</strong>, then return to Team to put purchases to use.</p>
             <h3>What unlocks when?</h3>
-            <p>Unlocks use <strong>completed games, not just wins</strong>. Locked buttons tell you how many more games you need.</p>
+            <p>Unlocks use <strong>completed games, not just wins</strong>. Hover over or focus a locked Shop tab to see how many more games you need.</p>
             <dl className="guide-definitions guide-unlocks">
               <div><dt>{LOCKED_FEATURES[LockedFeatures.CONSUMABLES_BATCH_1]} game</dt><dd>Shop and the first consumables.</dd></div>
               <div><dt>{LOCKED_FEATURES[LockedFeatures.SPELLS_BATCH_1]} games</dt><dd>The first spell purchases.</dd></div>
