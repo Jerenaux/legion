@@ -683,7 +683,7 @@ if (!process.versions.electron) {
           assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
           assert.deepEqual(rendererErrors, [], 'Live and replay socket events must not produce renderer errors');
           console.log('Real socket buffering, summoned sprite and preloaded enemy spell pass');
-          await js('combatCheck.assetLoads = 0; combatCheck.arena.load.on("start", () => combatCheck.assetLoads++); undefined');
+          await js('combatCheck.assetLoads = []; combatCheck.arena.load.on("addfile", (key, type) => combatCheck.assetLoads.push({key, type})); undefined');
           for (const {id, vfx} of await js('combatCheck.spellEffects')) {
             await js(`combatCheck.arena.socket.emit('spell-cycle', ${id}) && undefined`);
             await waitFor(`combatCheck.arena.turnee.turnNumber === ${100 + id} && combatCheck.arena.eventsQueue.length === 0`);
@@ -699,7 +699,9 @@ if (!process.versions.electron) {
             await js(`combatCheck.arena.socket.emit('item-effect', ${JSON.stringify(effect)}) && undefined`);
             await waitFor(`combatCheck.arena.getPlayer(2, 4).animationSprite.anims.currentAnim?.key === ${JSON.stringify(effect.animation)} && !combatCheck.arena.getPlayer(2, 4).animationSprite.anims.isPlaying`);
           }
-          assert.equal(await js('combatCheck.assetLoads'), 0, 'Spells and items must not start any asset loads during combat');
+          // Music independently prefetches its next track during combat.
+          assert.deepEqual(await js('combatCheck.assetLoads.filter(({key, type}) => !(type === "audio" && key.startsWith("bgm_")))'), [],
+            'Spells and items must not load graphics or sound effects during combat');
           assert.deepEqual(rendererErrors, [], 'Every spell must complete and advance to the next turn');
           console.log(`${scenario}: all spell effects, item effects, cast completion, and subsequent turns pass without asset loads`);
         }
