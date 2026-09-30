@@ -139,6 +139,7 @@ module.exports = {
       'process.env.BUILD_TARGET': JSON.stringify(process.env.BUILD_TARGET || 'web'),
       'process.env.SENTRY_RELEASE': JSON.stringify(`legion@${require('./package.json').version}`),
       'process.env.SENTRY_DIST': JSON.stringify(process.platform),
+      'process.env.SENTRY_REPLAY_ENABLED': JSON.stringify(process.env.SENTRY_REPLAY_ENABLED || ''),
     }),
     new CopyWebpackPlugin({
       patterns: [

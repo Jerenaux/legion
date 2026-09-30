@@ -71,6 +71,7 @@ jobs:
           GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
           MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_REPLAY_ENABLED: 'true'
           CSC_LINK: ${{ matrix.platform == 'mac' && secrets.MAC_CSC_LINK || '' }}
           CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.MAC_CSC_KEY_PASSWORD || '' }}
           APPLE_API_KEY: ${{ matrix.platform == 'mac' && secrets.APPLE_API_KEY || '' }}

@@ -1,10 +1,21 @@
 import { test, expect } from 'bun:test';
-import { telemetryConfig } from "../telemetryConfig";
+import {resolve} from 'node:path';
 import {scrubTelemetry} from '../../../shared/telemetryPrivacy';
 
-test("keeps Sentry replay enabled", () => {
-  expect(telemetryConfig.hotjar).toBe(false);
-  expect(telemetryConfig.sentryReplay).toBe(true);
+test('records replays only when a production store build opts in', () => {
+  const readReplaySetting = (nodeEnv: string, enabled: string) => {
+    const result = Bun.spawnSync({
+      cmd: [process.execPath, '-e', 'import {telemetryConfig} from "./src/telemetryConfig.ts"; console.log(telemetryConfig.sentryReplay)'],
+      cwd: resolve(import.meta.dir, '../..'),
+      env: {...process.env, NODE_ENV: nodeEnv, SENTRY_REPLAY_ENABLED: enabled},
+      stdout: 'pipe', stderr: 'pipe',
+    });
+    expect(result.exitCode).toBe(0);
+    return result.stdout.toString().trim();
+  };
+  expect(readReplaySetting('production', '')).toBe('false');
+  expect(readReplaySetting('development', 'true')).toBe('false');
+  expect(readReplaySetting('production', 'true')).toBe('true');
 });
 
 test('redacts telemetry credentials without throwing on complex console arguments', () => {
