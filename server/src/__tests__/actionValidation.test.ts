@@ -1,7 +1,10 @@
 import {afterEach, beforeEach, expect, mock, spyOn, test} from 'bun:test';
 import {Server, Socket} from 'socket.io';
 import {Class, League, PlayMode, Stat, StatusEffect, Terrain} from '@legion/shared/enums';
-import {getSpellById} from '@legion/shared/Spells';
+import {getSpellById, spells} from '@legion/shared/Spells';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
 import {getConsumableById} from '@legion/shared/Items';
 import {Game} from '../Game';
 import {ServerPlayer} from '../ServerPlayer';
@@ -12,6 +15,25 @@ import {TurnSystem} from '../TurnSystem';
 
 class TestGame extends Game {
   populateTeams() {}
+}
+
+// Check real server messages against the client's asset gate without starting a renderer.
+// The packaged smoke test separately exercises actual loading and animation playback.
+const arenaSource = ts.createSourceFile('Arena.ts', readFileSync(new URL('../../../client/src/game/Arena.ts', import.meta.url), 'utf8'), ts.ScriptTarget.Latest, true);
+const assetMethod = arenaSource.statements.find(ts.isClassDeclaration)!.members
+  .find(member => member.name?.getText(arenaSource) === 'prepareMessageAssets')!;
+const assetGateCode = ts.transpileModule(`new class {${assetMethod.getText(arenaSource)}}`, {
+  compilerOptions: {target: ts.ScriptTarget.ESNext},
+}).outputText;
+
+async function checkClientAssets() {
+  const arena = runInNewContext(assetGateCode, {getSpellById});
+  arena.textures = {exists: () => true};
+  for (const {event, data} of game.replayMessages) await arena.prepareMessageAssets(event, data);
+  for (const [event, data] of (socket.emit as ReturnType<typeof mock>).mock.calls) await arena.prepareMessageAssets(event, data);
+  // Required IDs on events that actually introduce graphics must still be validated.
+  await expect(arena.prepareMessageAssets('cast', {team: 1, num: 1})).rejects.toThrow('Invalid spell');
+  await expect(arena.prepareMessageAssets('localanimation', {id: -1})).rejects.toThrow('Invalid spell');
 }
 
 let game: TestGame;
@@ -110,7 +132,7 @@ for (const scenario of invalidActions) {
   });
 }
 
-test('an out-of-range cast can be followed by a real move, without allowing a second action', () => {
+test('an out-of-range cast can be followed by a real move, without allowing a second action', async () => {
   game.processAction('spell', {x: 14, y: 5, index: 0}, socket);
   game.processAction('move', {tile: {x: 2, y: 5}}, socket);
   game.processAction('passTurn', null, socket);
@@ -120,7 +142,24 @@ test('an out-of-range cast can be followed by a real move, without allowing a se
   expect(player.team.movements).toBe(1);
   expect(game.turnSystem.processAction).toHaveBeenCalledTimes(1);
   expect(game.saveGameAction).toHaveBeenCalledTimes(1);
+  await checkClientAssets();
 });
+
+for (const base of spells) {
+  test(`${base.name}: real cast/effect/endcast messages pass the client asset gate`, async () => {
+    player.spells = [new Spell(base)];
+    game.updatePlayerPosition(enemy, 5, 5); // Keep the caster outside the largest blast radius.
+    enemy.hp = base.effects.some(effect => effect.onKO) ? 0 : 50;
+    game.processAction('spell', {x: enemy.x, y: enemy.y, index: 0, targetTeam: 2, target: enemy.num}, socket);
+    expect(scheduled).toHaveLength(1);
+    scheduled[0]();
+    expect(game.replayMessages.find(message => message.event === 'cast')?.data).toMatchObject({id: base.id});
+    expect(game.replayMessages.find(message => message.event === 'localanimation')?.data).toMatchObject({id: base.id});
+    expect(game.replayMessages.find(message => message.event === 'endcast')?.data).toEqual({team: 1, num: player.num});
+    await checkClientAssets();
+    expect(game.processTurn).toHaveBeenCalledTimes(1);
+  });
+}
 
 test('a valid spell spends MP once, locks the action during casting, and applies damage', () => {
   const data = {x: 3, y: 5, index: 0};
@@ -140,7 +179,7 @@ test('a valid spell spends MP once, locks the action during casting, and applies
   expect(game.processTurn).toHaveBeenCalledTimes(1);
 });
 
-test('successful items, attacks, and obstacle attacks still consume exactly one action', () => {
+test('successful items, attacks, and obstacle attacks still consume exactly one action', async () => {
   player.hp = 50;
   game.processAction('useitem', {index: 0}, socket);
   expect(player.hp).toBe(100);
@@ -160,6 +199,7 @@ test('successful items, attacks, and obstacle attacks still consume exactly one 
   expect(player.hasActed).toBe(true);
   expect(player.team.actions).toBe(3);
   expect(game.turnSystem.processAction).toHaveBeenCalledTimes(3);
+  await checkClientAssets();
 });
 
 test('an attack that becomes movement and direct AI actions use the same acceptance gate', () => {

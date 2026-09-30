@@ -13,6 +13,7 @@ import { GameData, StatusEffects } from '../../../shared/interfaces';
 import {getReplay} from '@sentry/react';
 import {route} from 'preact-router';
 import {GameHUD, events} from '../../src/components/HUD/GameHUD';
+import {spells} from '../../../shared/Spells';
 
 Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId()},
   stabilityFreeze: function stabilityFreeze() {
@@ -49,7 +50,7 @@ const battle = {
 // Feed the real scene a local gameStatus; never connect to a live match or mutate an account.
 const connectToLocalServer = Arena.prototype.connectToServer;
 Arena.prototype.connectToServer = async function () {
-  Object.assign(window, {combatCheck: {arena: this, sent: [], route, events,
+  Object.assign(window, {combatCheck: {arena: this, sent: [], route, events, spellEffects: spells.map(({id, vfx}) => ({id, vfx})),
     resync: () => this.initializeGame(battle),
     close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
   const socketURL = new URLSearchParams(location.search).get('socketURL');

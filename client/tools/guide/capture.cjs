@@ -130,8 +130,14 @@ if (!process.versions.electron) {
       socket.on('late-assets', () => {
         socket.emit('addCharacter', {team: 2, character: {...snapshot.opponent.team[0], portrait: 'mil1_3', x: 11, y: 7}});
         socket.emit('cast', {team: 2, num: 4, id: 8}); // Enemy Ice III, not in the initial loadout.
-        socket.emit('endcast', {team: 2, num: 4, id: 8});
         socket.emit('localanimation', {fromX: 11, fromY: 7, toX: 4, toY: 4, id: 8, isKill: false});
+        socket.emit('endcast', {team: 2, num: 4});
+      });
+      socket.on('spell-cycle', id => {
+        socket.emit('cast', {team: 2, num: 4, id});
+        socket.emit('localanimation', {fromX: 11, fromY: 7, toX: 4, toY: 4, id, isKill: false});
+        socket.emit('endcast', {team: 2, num: 4});
+        socket.emit('turnee', {...snapshot.turnee, turnNumber: 100 + id});
       });
     });
   });
@@ -671,6 +677,18 @@ if (!process.versions.electron) {
           assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
           assert.deepEqual(rendererErrors, [], 'Live and replay socket events must not produce renderer errors');
           console.log('Real socket buffering, summoned sprite and unseen enemy spell pass');
+          for (const {id, vfx} of await js('combatCheck.spellEffects')) {
+            await js(`combatCheck.arena.socket.emit('spell-cycle', ${id}) && undefined`);
+            await waitFor(`combatCheck.arena.turnee.turnNumber === ${100 + id} && combatCheck.arena.eventsQueue.length === 0`);
+            assert(await js(`(() => {const player = combatCheck.arena.getPlayer(2, 4);
+              return !player.casting && !player.chargeSprite && !player.animationSprite.visible;
+            })()`), 'Spell completion must stop casting and remove charge graphics');
+            // Let the actual effect animation and its delayed callbacks run before the next spell.
+            await waitFor(`combatCheck.arena.localAnimationSprite.anims.currentAnim?.key === ${JSON.stringify(vfx)} && !combatCheck.arena.localAnimationSprite.anims.isPlaying`);
+            assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
+          }
+          assert.deepEqual(rendererErrors, [], 'Every spell must complete and advance to the next turn');
+          console.log(`${scenario}: all spell effects, cast completion, and subsequent turns pass`);
         }
         for (const fault of ['audio', 'bundle', 'boot-error']) {
           assetFault = fault;
