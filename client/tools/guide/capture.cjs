@@ -12,6 +12,8 @@ if (!process.versions.electron) {
   process.chdir(client);
   process.env.NODE_ENV = 'production';
   process.env.BUILD_TARGET = 'electron';
+  // Exercise store Replay against the loopback sink, never production ingestion.
+  process.env.SENTRY_REPLAY_ENABLED = process.argv.includes('--replay-off') ? '' : 'true';
   for (const key of ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL']) process.env[key] = 'app://legion/__fixture';
   delete process.env.SENTRY_AUTH_TOKEN;
   const config = require('../../webpack.config');
@@ -201,7 +203,15 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (process.argv.includes('--images')) {
+      if (process.argv.includes('--replay-off')) {
+        await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
+        await waitFor('Boolean(document.querySelector("#scene canvas"))');
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        assert.equal(await js('replayCheck.id()'), undefined, 'Local combat must not start a Replay session');
+        assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
+        assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
+        console.log('Locally packaged combat runs without Replay capture');
+      } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
         await ready();
