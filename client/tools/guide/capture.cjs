@@ -129,10 +129,17 @@ if (!process.versions.electron) {
       }
       socket.on('late-assets', () => {
         socket.emit('addCharacter', {team: 2, character: {...snapshot.opponent.team[0], portrait: 'mil1_3', x: 11, y: 7}});
-        socket.emit('cast', {team: 2, num: 4, id: 8}); // Enemy Ice III, not in the initial loadout.
-        socket.emit('endcast', {team: 2, num: 4, id: 8});
+        socket.emit('cast', {team: 2, num: 4, id: 8}); // Enemy Ice III, absent from the local team's loadout.
         socket.emit('localanimation', {fromX: 11, fromY: 7, toX: 4, toY: 4, id: 8, isKill: false});
+        socket.emit('endcast', {team: 2, num: 4});
       });
+      socket.on('spell-cycle', id => {
+        socket.emit('cast', {team: 2, num: 4, id});
+        socket.emit('localanimation', {fromX: 11, fromY: 7, toX: 4, toY: 4, id, isKill: false});
+        socket.emit('endcast', {team: 2, num: 4});
+        socket.emit('turnee', {...snapshot.turnee, turnNumber: 100 + id});
+      });
+      socket.on('item-effect', effect => socket.emit('useitem', {team: 2, num: 4, ...effect}));
     });
   });
   let assetFault;
@@ -169,6 +176,9 @@ if (!process.versions.electron) {
     const js = code => win.webContents.executeJavaScript(code).catch(error => {
       throw new Error(`Renderer check failed: ${code.slice(0, 160)}`, {cause: error});
     });
+    const effectsReady = `combatCheck.spellEffects.every(({vfx, charge}) => [vfx, charge].filter(Boolean)
+      .every(key => combatCheck.arena.textures.exists(key) && combatCheck.arena.anims.exists(key))) &&
+      combatCheck.itemEffects.every(({animation, sfx}) => combatCheck.arena.anims.exists(animation) && combatCheck.arena.cache.audio.exists(sfx))`;
     const waitFor = async expression => {
       for (let i = 0; i < 300; i++) {
         if (typeof expression === 'function' ? expression() : await js(expression)) return;
@@ -632,6 +642,7 @@ if (!process.versions.electron) {
           // Resumed snapshots already contain the turn; wait for the emitted token to reach the server.
           await waitFor(() => timingChecks.get(scenario).acks > 0);
           assert.equal(timingChecks.get(scenario).acks, 1, 'Exactly one readiness acknowledgement per snapshot');
+          assert(await js(effectsReady), 'Both teams’ spell effects and every item effect must be ready before combat');
           assert.equal(await js('Boolean(document.querySelector(".team-reveal-overlay"))'), false, 'A running first match must not reveal champions again');
           assert.equal(await js('combatCheck.arena.turnee.timeLeft'), scenario === 'timing-resume' ? 4 : 7);
           if (scenario !== 'timing-resume') {
@@ -661,16 +672,38 @@ if (!process.versions.electron) {
           if (scenario === 'socket-replay') assert.equal(await js('combatCheck.arena.isReplay'), true);
           const memory = await js(`({textures: Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((n, s) => n+s.width*s.height*4, 0),
             audio: Object.values(combatCheck.arena.cache.audio.entries.entries).reduce((n, b) => n+b.length*b.numberOfChannels*4, 0)})`);
-          assert(memory.textures < 200 * 1048576 && memory.audio < 35 * 1048576, 'Decoded texture/audio budget exceeded');
+          // This socket fixture deliberately equips the opponent with the entire spell catalog.
+          assert(memory.textures < 400 * 1048576 && memory.audio < 35 * 1048576, 'Decoded texture/audio budget exceeded');
           console.log('Live-socket decoded memory (MiB):', {textures: Math.round(memory.textures / 1048576), audio: Math.round(memory.audio / 1048576)});
-          assert.equal(await js('combatCheck.arena.textures.exists("ice_3")'), false);
+          assert(await js(effectsReady), 'Opponent spells and all consumable effects must be preloaded');
           await js('combatCheck.arena.socket.emit("late-assets") && undefined');
           await waitFor('combatCheck.arena.teamsMap.get(2).members.length === 4 && combatCheck.arena.eventsQueue.length === 0');
           assert.equal(await js('combatCheck.arena.textures.exists("ice_3") && combatCheck.arena.anims.exists("charged_ice_2")'), true);
           await ready();
           assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
           assert.deepEqual(rendererErrors, [], 'Live and replay socket events must not produce renderer errors');
-          console.log('Real socket buffering, summoned sprite and unseen enemy spell pass');
+          console.log('Real socket buffering, summoned sprite and preloaded enemy spell pass');
+          await js('combatCheck.assetLoads = []; combatCheck.arena.load.on("addfile", (key, type) => combatCheck.assetLoads.push({key, type})); undefined');
+          for (const {id, vfx} of await js('combatCheck.spellEffects')) {
+            await js(`combatCheck.arena.socket.emit('spell-cycle', ${id}) && undefined`);
+            await waitFor(`combatCheck.arena.turnee.turnNumber === ${100 + id} && combatCheck.arena.eventsQueue.length === 0`);
+            assert(await js(`(() => {const player = combatCheck.arena.getPlayer(2, 4);
+              return !player.casting && !player.chargeSprite && !player.animationSprite.visible;
+            })()`), 'Spell completion must stop casting and remove charge graphics');
+            // Let the actual effect animation and its delayed callbacks run before the next spell.
+            await waitFor(`combatCheck.arena.localAnimationSprite.anims.currentAnim?.key === ${JSON.stringify(vfx)} && !combatCheck.arena.localAnimationSprite.anims.isPlaying`);
+            assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
+          }
+          const itemEffects = await js('combatCheck.itemEffects');
+          for (const effect of new Map(itemEffects.map(effect => [effect.animation + effect.sfx, effect])).values()) {
+            await js(`combatCheck.arena.socket.emit('item-effect', ${JSON.stringify(effect)}) && undefined`);
+            await waitFor(`combatCheck.arena.getPlayer(2, 4).animationSprite.anims.currentAnim?.key === ${JSON.stringify(effect.animation)} && !combatCheck.arena.getPlayer(2, 4).animationSprite.anims.isPlaying`);
+          }
+          // Music independently prefetches its next track during combat.
+          assert.deepEqual(await js('combatCheck.assetLoads.filter(({key, type}) => !(type === "audio" && key.startsWith("bgm_")))'), [],
+            'Spells and items must not load graphics or sound effects during combat');
+          assert.deepEqual(rendererErrors, [], 'Every spell must complete and advance to the next turn');
+          console.log(`${scenario}: all spell effects, item effects, cast completion, and subsequent turns pass without asset loads`);
         }
         for (const fault of ['audio', 'bundle', 'boot-error']) {
           assetFault = fault;

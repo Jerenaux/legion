@@ -1268,7 +1268,9 @@ export class Arena extends Phaser.Scene
             characters = [...data.player.team, ...data.opponent.team];
         } else if (event === 'addCharacter') {
             characters = [data.character];
-        } else if (event === 'cast' || event === 'endcast' || event === 'localanimation') {
+        } else if (event === 'cast' || event === 'localanimation') {
+            // These events introduce spell graphics. endcast only stops existing animations
+            // and the server deliberately sends it without a spell ID.
             spells.push(data.id);
         }
         const keys = new Set<string>();
@@ -1283,7 +1285,7 @@ export class Arena extends Phaser.Scene
             if (spell.vfx) keys.add(spell.vfx);
             if (spell.charge) keys.add(spell.charge);
         }
-        // Terrain may be created by either team, including opponents with hidden loadouts.
+        // Terrain may be created by either team.
         if (event === 'gameStatus' || event === 'terrain') keys.add('terrain_fire_1');
         const missing = [...keys].filter(key => !this.textures.exists(key));
         if (!missing.length) return;

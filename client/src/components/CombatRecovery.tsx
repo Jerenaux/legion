@@ -15,9 +15,7 @@ export function CombatRecovery({error}: {error?: unknown}) {
           ? 'Loading took too long and has stopped. Check your connection, then reload to reconnect if your match is still in progress.'
           : 'Legion couldn’t keep running. Reload to reconnect if your match is still in progress.'}</p>
       <button className="session-status__retry" type="button" onClick={() => location.reload()}>Reload game</button>
-      <p className="session-status__hint">{graphicsFailed
-        ? 'If reloading doesn’t help, restart Legion, close other games or apps, and update your graphics driver. Make sure Steam or Itch has installed the latest Legion update.'
-        : 'If this keeps happening, restart Legion and close other apps to free up memory.'}</p>
+      {graphicsFailed && <p className="session-status__hint">If reloading doesn’t help, restart Legion, close other games or apps, and update your graphics driver. Make sure Steam or Itch has installed the latest Legion update.</p>}
     </section>
   </main>;
 }

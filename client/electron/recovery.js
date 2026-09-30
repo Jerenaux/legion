@@ -10,7 +10,7 @@ function installRendererRecovery(window) {
       const {response} = await dialog.showMessageBox(window, {
         type: 'error', title: 'Legion was interrupted',
         message: 'The game stopped unexpectedly.',
-        detail: 'Reload to reconnect if your match is still running. If this happens again, close other apps to free up memory.',
+        detail: 'Reload to reconnect if your match is still running.',
         buttons: ['Reload game', 'Close Legion'], defaultId: 0, cancelId: 1,
       });
       if (window.isDestroyed()) return;
