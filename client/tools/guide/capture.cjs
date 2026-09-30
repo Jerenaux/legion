@@ -235,7 +235,7 @@ if (!process.versions.electron) {
             const r = (anchor.closest('[data-item-icon]') || anchor).getBoundingClientRect();
             const edges = [[r.x + 2, r.y + r.height / 2], [r.right - 2, r.y + r.height / 2],
               [r.x + r.width / 2, r.y + 2], [r.x + r.width / 2, r.bottom - 2]];
-            return {x: Math.round(edges[0][0]), y: Math.round(edges[0][1]),
+            return {x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2),
               coversCard: edges.every(([x, y]) => anchor.contains(document.elementFromPoint(x, y)))};
           })()`);
           assert(point.coversCard, `${slot}: every card edge must belong to the interactive tooltip anchor`);
