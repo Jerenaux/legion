@@ -167,6 +167,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h3>“Can I leave a battle?”</h3>
             <p>The combat menu offers <strong>Abandon Game</strong> and asks for confirmation. Leaving counts as a loss.</p>
             <h3>Before you queue again</h3>
+            <p>If Rank cannot load, it retries once automatically. If it still fails, check your connection and choose <strong>Retry</strong>, or select another league tab.</p>
             <p>If loading fails or the game is interrupted, choose <strong>Reload game</strong> to reconnect if your match is still running. Temporary connection losses reconnect automatically. If this keeps happening, restart Legion and close other apps to free up memory.</p>
             <p>If Legion reports that it cannot start game graphics, try reloading, then restart Legion and update your graphics driver. Make sure Steam or Itch has installed the latest Legion update. Legion automatically uses a simpler renderer when WebGL is unavailable; if graphics still cannot start, it shows a recovery screen instead of continuing to load.</p>
             <p>Something not working as expected? Choose <strong>Report a problem</strong> in the top-right menu and describe what happened. Reports include your game version and player ID, but do not ask for passwords or contact details.</p>

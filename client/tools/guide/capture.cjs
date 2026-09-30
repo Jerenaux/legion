@@ -358,6 +358,28 @@ if (!process.versions.electron) {
         await waitFor('location.pathname === "/play" && Boolean(document.querySelector("[data-playmode=practice]"))');
         console.log('Escape, direct packaged /guide load, and return to Play pass');
 
+        win.setContentSize(1280, 720);
+        await win.loadURL(`${PACKAGED_APP_URL}rank`);
+        await waitFor('Boolean(document.querySelector(".rank-load-error"))');
+        assert.equal(await js('document.querySelector(".rank-content").getAttribute("aria-busy")'), 'false');
+        assert.equal(await js('document.querySelectorAll(".rank-content .react-loading-skeleton").length'), 0);
+        assert.equal(await js('document.querySelector(".rank-load-error").getAttribute("role")'), 'alert');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'rank-recovery.png'), (await win.webContents.capturePage()).toPNG());
+        await js('rankCheck.fail = false; document.querySelector(".rank-load-error button").focus()');
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'ENTER'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'ENTER'});
+        await waitFor('Boolean(document.querySelector(".rank-table"))');
+        assert.equal(await js('Boolean(document.querySelector(".rank-load-error"))'), false);
+        await js('rankCheck.fail = true; document.querySelectorAll(".rank-tab-container button")[1].click()');
+        await waitFor('Boolean(document.querySelector(".rank-load-error"))');
+        await js('rankCheck.fail = false; document.querySelectorAll(".rank-tab-container button")[2].click()');
+        await waitFor('Boolean(document.querySelector(".rank-table"))');
+        assert.equal(await js('Boolean(document.querySelector(".rank-load-error"))'), false);
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        await waitFor('Boolean(document.querySelector("[data-playmode=practice]"))');
+        console.log('Rank failure removes loading placeholders; keyboard Retry and league switching recover');
+
         // Model a player's click so the later match-found sound has browser audio permission.
         await win.webContents.executeJavaScript('document.querySelector("[data-playmode=casual]").click()', true);
         await waitFor('Boolean(document.querySelector(".queue-count-number"))');

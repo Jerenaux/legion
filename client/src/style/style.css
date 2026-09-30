@@ -737,6 +737,20 @@ canvas {
   padding-top: 36px;
 }
 
+.rank-load-error {
+  flex: 1;
+  padding: 32px;
+  text-align: center;
+  --session-gold: oklch(78% 0.16 85);
+  --session-gold-active: oklch(69% 0.15 73);
+  --session-ink: oklch(16% 0.02 245);
+}
+
+.rank-load-error h2 {
+  color: white;
+  font-family: Kim, sans-serif;
+}
+
 .leaderboard-table {
   border-collapse: separate;
   border-spacing: 0;
