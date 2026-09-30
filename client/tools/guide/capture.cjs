@@ -205,6 +205,7 @@ if (!process.versions.electron) {
       await waitFor('document.querySelectorAll("[data-tooltip-id=inventory-item-details]").length === 5');
       win.webContents.debugger.attach('1.3');
       await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: true});
+      const moveMouse = (x, y) => win.webContents.debugger.sendCommand('Input.dispatchMouseEvent', {type: 'mouseMoved', x, y});
       for (const [width, height] of [[1280, 720], [960, 540]]) {
         win.setContentSize(width, height);
         await ready();
@@ -224,7 +225,7 @@ if (!process.versions.electron) {
             ? `[data-tooltip-id="equipped-item-details"][data-tooltip-item-type="${type}"][data-tooltip-item-id="${id}"]`
             : `[data-item-icon="${slot}"] [role=button]`;
           const tooltipId = equipped ? 'equipped-item-details' : 'inventory-item-details';
-          win.webContents.sendInputEvent({type: 'mouseMove', x: 1, y: 1});
+          await moveMouse(1, 1);
           await js('document.activeElement.blur()');
           await waitFor('[...document.querySelectorAll(".item-details-tooltip")].every(t => getComputedStyle(t).opacity === "0")');
           const point = await js(`(async () => {
@@ -239,7 +240,9 @@ if (!process.versions.electron) {
               coversCard: edges.every(([x, y]) => anchor.contains(document.elementFromPoint(x, y)))};
           })()`);
           assert(point.coversCard, `${slot}: every card edge must belong to the interactive tooltip anchor`);
-          win.webContents.sendInputEvent({type: 'mouseMove', x: point.x, y: point.y});
+          await js('window.tooltipEnteredAt = null');
+          await moveMouse(point.x, point.y);
+          assert(await js('window.tooltipEnteredAt !== null'), `${slot}: browser did not deliver the hover event`);
           await waitFor(`document.querySelector('#${tooltipId}') && getComputedStyle(document.querySelector('#${tooltipId}')).opacity === '1'`);
           await waitFor(`document.querySelector('#${tooltipId}')?.innerText.includes(${JSON.stringify(expected[0])})`);
           const preview = await js(`(() => {
@@ -271,7 +274,7 @@ if (!process.versions.electron) {
         fs.writeFileSync(path.join(dist, `inventory-click-dialog-${width}.png`), (await win.webContents.capturePage()).toPNG());
         await js('document.querySelector(".dialog-decline").click()');
         await waitFor('!document.querySelector(".ReactModal__Overlay")');
-        win.webContents.sendInputEvent({type: 'mouseMove', x: 1, y: 1});
+        await moveMouse(1, 1);
         await js('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
         await js('document.querySelector("[data-item-icon=consumables-0] [role=button]").focus()');
         await waitFor('document.querySelector("#inventory-item-details")?.innerText.includes("Potion") && getComputedStyle(document.querySelector("#inventory-item-details")).opacity === "1"');
