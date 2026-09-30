@@ -255,9 +255,9 @@ class GamePage extends Component<GamePageProps, GamePageState> {
               onComplete={this.endReveal}
             />
           )}
-          {this.state.initialized && this.state.waitingForPlayers && !this.state.revealedTeam && (
+          {/* {this.state.initialized && this.state.waitingForPlayers && !this.state.revealedTeam && (
             <div className="match-ready-status" role="status">Preparing the match — waiting for everyone to be ready</div>
-          )}
+          )} */}
         </div>
         {this.state.isPortraitMode && <OrientationOverlay />}
       </Fragment>
