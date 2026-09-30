@@ -73,8 +73,14 @@ Arena.prototype.connectToServer = async function () {
 };
 
 export async function getFirebaseIdToken() { return 'guide-local-only'; }
+const rankCheck = {fail: true};
+Object.assign(window, {rankCheck});
 export async function apiFetch(endpoint: string) {
   if (endpoint === 'recordPlayerAction') return {};
+  if (endpoint.startsWith('fetchLeaderboard?tab=')) {
+    if (rankCheck.fail) throw new Error('Expected leaderboard timeout');
+    return {league: Number(endpoint.split('=')[1]), seasonEnd: 3600, playerRank: 1, ranking: [], highlights: []};
+  }
   throw new Error(`Unexpected API call in guide smoke test: ${endpoint}`);
 }
 

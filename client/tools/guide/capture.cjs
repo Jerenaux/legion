@@ -358,6 +358,28 @@ if (!process.versions.electron) {
         await waitFor('location.pathname === "/play" && Boolean(document.querySelector("[data-playmode=practice]"))');
         console.log('Escape, direct packaged /guide load, and return to Play pass');
 
+        win.setContentSize(1280, 720);
+        await win.loadURL(`${PACKAGED_APP_URL}rank`);
+        await waitFor('Boolean(document.querySelector(".rank-load-error"))');
+        assert.equal(await js('document.querySelector(".rank-content").getAttribute("aria-busy")'), 'false');
+        assert.equal(await js('document.querySelectorAll(".rank-content .react-loading-skeleton").length'), 0);
+        assert.equal(await js('document.querySelector(".rank-load-error").getAttribute("role")'), 'alert');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'rank-recovery.png'), (await win.webContents.capturePage()).toPNG());
+        await js('rankCheck.fail = false; document.querySelector(".rank-load-error button").focus()');
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'ENTER'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'ENTER'});
+        await waitFor('Boolean(document.querySelector(".rank-table"))');
+        assert.equal(await js('Boolean(document.querySelector(".rank-load-error"))'), false);
+        await js('rankCheck.fail = true; document.querySelectorAll(".rank-tab-container button")[1].click()');
+        await waitFor('Boolean(document.querySelector(".rank-load-error"))');
+        await js('rankCheck.fail = false; document.querySelectorAll(".rank-tab-container button")[2].click()');
+        await waitFor('Boolean(document.querySelector(".rank-table"))');
+        assert.equal(await js('Boolean(document.querySelector(".rank-load-error"))'), false);
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        await waitFor('Boolean(document.querySelector("[data-playmode=practice]"))');
+        console.log('Rank failure removes loading placeholders; keyboard Retry and league switching recover');
+
         // Model a player's click so the later match-found sound has browser audio permission.
         await win.webContents.executeJavaScript('document.querySelector("[data-playmode=casual]").click()', true);
         await waitFor('Boolean(document.querySelector(".queue-count-number"))');
@@ -517,11 +539,15 @@ if (!process.versions.electron) {
         assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
         assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
         assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
-        for (const exit of ['normal', 'loading', 'animation', 'sleeping', 'context-loss', 'canvas']) {
-          if (exit === 'canvas') await js(`(() => {
+        for (const exit of ['normal', 'loading', 'animation', 'sleeping', 'context-loss', 'canvas', 'canvas-throws']) {
+          if (exit.startsWith('canvas')) await js(`(() => {
             const original = HTMLCanvasElement.prototype.getContext;
             HTMLCanvasElement.prototype.getContext = function(type, ...args) {
-              return type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl' ? null : original.call(this, type, ...args);
+              if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') {
+                if (${exit === 'canvas-throws'}) throw new Error('Cannot create WebGL context, aborting.');
+                return null;
+              }
+              return original.call(this, type, ...args);
             };
           })()`);
           await js(`combatCheck.route('/game/stability-${exit}')`);
@@ -532,11 +558,11 @@ if (!process.versions.electron) {
             assert.equal(await js('combatCheck.events.listenerCount("passTurn")'), 1, 'Old matches must not receive new actions');
             assert(await js('combatCheck.arena.game.loop.running'));
             const rendererType = await js('combatCheck.arena.game.config.renderType');
-            assert(exit === 'canvas' ? rendererType === 1 : [1, 2].includes(rendererType));
+            assert(exit.startsWith('canvas') ? rendererType === 1 : [1, 2].includes(rendererType));
             const textures = await js(`Object.values(combatCheck.arena.textures.list).flatMap(t => t.source).reduce((bytes, s) => bytes + s.width*s.height*4, 0)`);
             assert(textures < 200 * 1024 * 1024, 'Combat decoded texture budget exceeded');
             console.log(`${exit}: decoded texture storage ${(textures/1024/1024).toFixed(0)} MiB`);
-            if (exit === 'canvas') assert(await js(`(() => {
+            if (exit.startsWith('canvas')) assert(await js(`(() => {
               let passed = false;
               combatCheck.arena.socket.once('passTurn', () => {passed = true;});
               document.querySelector('.player_bar_pass_turn').click();
@@ -556,6 +582,7 @@ if (!process.versions.electron) {
             await js('combatCheck.arena.game.canvas.dispatchEvent(new Event("webglcontextlost", {cancelable: true}))');
             await waitFor('Boolean(document.querySelector(".session-status__retry"))');
             assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+            assert.equal(await js('document.querySelector(".session-status h1").textContent'), 'Unable to start game graphics');
           } else if (exit !== 'loading') await js('combatCheck.close()');
           await js('combatCheck.route("/play")');
           await waitFor('!previousGame.loop.running');
@@ -622,6 +649,7 @@ if (!process.versions.electron) {
             }
             await waitFor('Boolean(document.querySelector(".session-status__retry"))');
             assert.equal(await js('document.querySelectorAll("#scene canvas").length'), 0);
+            if (scenario === 'socket-timeout') assert.equal(await js('document.querySelector(".session-status h1").textContent'), 'The game couldn’t finish loading');
             console.log(`${scenario}: actionable recovery, no abandoned canvas`);
             continue;
           }
@@ -732,6 +760,16 @@ if (!process.versions.electron) {
         })()`);
         await waitFor('Boolean(document.querySelector(".session-status__retry"))');
         assert.equal(await js('document.querySelector(".session-status__retry").textContent'), 'Reload game');
+        assert.equal(await js('document.querySelector(".session-status h1").textContent'), 'Unable to start game graphics');
+        assert.equal(await js('Boolean(document.querySelector(".loading-div, .waiting-container, #scene canvas"))'), false);
+        await ready();
+        fs.writeFileSync(path.join(dist, 'graphics-recovery.png'), (await win.webContents.capturePage()).toPNG());
+        await win.loadURL(`${PACKAGED_APP_URL}game/runtime-graphics-failure`);
+        await waitFor('combatCheck.arena.gameInitialized');
+        await js(`window.dispatchEvent(new ErrorEvent('error', {message: 'Cannot create WebGL context, aborting.'}))`);
+        await waitFor('Boolean(document.querySelector(".session-status__retry"))');
+        assert.equal(await js('document.querySelector(".session-status h1").textContent'), 'Unable to start game graphics');
+        assert.equal(await js('Boolean(document.querySelector(".loading-div, .waiting-container, #scene canvas"))'), false);
         console.log('Render exceptions and unavailable graphics show recovery rather than a blank page');
         assert(foreignDumps.every(file => fs.existsSync(file)), 'Never scan/delete foreign crash dumps');
         console.log('Native crash storage isolation passes');

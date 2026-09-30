@@ -48,10 +48,12 @@ interface State {
   sortAscending: boolean;
   tour: string | null;
   isLoading: boolean;
+  loadFailed: boolean;
 }
 
 class RankPage extends Component<{}, State> {
   static contextType = PlayerContext;
+  private leaderboardRequest = 0;
 
   state: State = {
     leaderboardData: null,
@@ -60,6 +62,7 @@ class RankPage extends Component<{}, State> {
     curr_tab: this.context.player.league,
     tour: null,
     isLoading: true,
+    loadFailed: false,
   };
 
   camelCaseToNormal = (text) => {
@@ -77,12 +80,23 @@ class RankPage extends Component<{}, State> {
   };
 
   async fetchLeaderboard() {
-    this.setState({ isLoading: true });
+    const request = ++this.leaderboardRequest;
+    this.setState({ isLoading: true, loadFailed: false });
 
-    const data = await apiFetch(`fetchLeaderboard?tab=${this.state.curr_tab}`);
-    if (data) {
+    try {
+      // This is a read-only request: retry once after a transient timeout or failure.
+      const data = await apiFetch(`fetchLeaderboard?tab=${this.state.curr_tab}`, {}, 2);
+      if (request !== this.leaderboardRequest) return;
+      if (!data) throw new Error('Leaderboard response was empty');
       this.setState({ leaderboardData: data, isLoading: false });
+    } catch {
+      if (request !== this.leaderboardRequest) return;
+      this.setState({ isLoading: false, loadFailed: true });
     }
+  }
+
+  componentWillUnmount() {
+    this.leaderboardRequest++;
   }
 
   async componentDidMount() {
@@ -118,8 +132,8 @@ class RankPage extends Component<{}, State> {
     }
 
     return (
-      <div className="rank-content">
-        <div className="flexContainer" style={{ alignItems: 'flex-end' }}>
+      <div className="rank-content" aria-busy={this.state.isLoading}>
+        {!this.state.loadFailed && <div className="flexContainer" style={{ alignItems: 'flex-end' }}>
           {!this.state.isLoading ? (
             <SeasonCard
               currTab={tabs[this.state.curr_tab]}
@@ -148,7 +162,7 @@ class RankPage extends Component<{}, State> {
               style={{ margin: '2px 0', width: '500px' }}
             />
           )}
-        </div>
+        </div>}
 
         <div className="flexContainer" style={{ gap: '24px' }}>
           <div className="rank-tab-container">
@@ -159,7 +173,13 @@ class RankPage extends Component<{}, State> {
             ))}
           </div>
 
-          {!this.state.isLoading ?
+          {this.state.loadFailed ? (
+            <section className="rank-load-error" role="alert">
+              <h2>Rank couldn’t load</h2>
+              <p>Check your connection and try again.</p>
+              <button type="button" className="session-status__retry" onClick={() => this.fetchLeaderboard()}>Retry</button>
+            </section>
+          ) : !this.state.isLoading ?
             <LeaderboardTable
               data={this.state.leaderboardData.ranking}
               league={this.state.leaderboardData.league}

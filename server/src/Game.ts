@@ -1329,6 +1329,7 @@ export abstract class Game
                 if (!isInSpellRange(player.x, player.y, x, y)) continue;
                 const otherTeam = this.getOtherTeam(player.team!.id);
                 const nbEnemies = this.nbPlayersInArea(otherTeam, x, y, radius);
+                if (nbEnemies === 0) continue;
                 const nbAllies = this.nbPlayersInArea(player.team!, x, y, radius);
                 const score = nbEnemies - nbAllies;
 
