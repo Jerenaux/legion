@@ -13,6 +13,7 @@ import { inventorySize } from '@legion/shared/utils';
 
 import Skeleton from 'react-loading-skeleton';
 import Spinner from '../spinner/Spinner';
+import { ItemTooltip } from '../ItemTooltipContent';
 
 import { Link } from 'preact-router';
 import Modal from 'react-modal';
@@ -133,6 +134,7 @@ class Inventory extends Component<InventoryProps> {
                     action={item}
                     index={i}
                     hideHotKey={true}
+                    tooltipId="inventory-item-details"
                     actionType={type}
                     handleItemEffect={this.props.handleItemEffect}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
@@ -216,6 +218,7 @@ class Inventory extends Component<InventoryProps> {
               </div>
             )}
           </div>
+          <ItemTooltip id="inventory-item-details" />
         </div>
         {/* Purchase Inventory Slots Dialog */}
         {(() => {
