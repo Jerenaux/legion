@@ -683,7 +683,7 @@ if (!process.versions.electron) {
           assert.equal(await js('Boolean(document.querySelector(".session-status__retry"))'), false);
           assert.deepEqual(rendererErrors, [], 'Live and replay socket events must not produce renderer errors');
           console.log('Real socket buffering, summoned sprite and preloaded enemy spell pass');
-          await js('combatCheck.assetLoads = 0; combatCheck.arena.load.on("start", () => combatCheck.assetLoads++)');
+          await js('combatCheck.assetLoads = 0; combatCheck.arena.load.on("start", () => combatCheck.assetLoads++); undefined');
           for (const {id, vfx} of await js('combatCheck.spellEffects')) {
             await js(`combatCheck.arena.socket.emit('spell-cycle', ${id}) && undefined`);
             await waitFor(`combatCheck.arena.turnee.turnNumber === ${100 + id} && combatCheck.arena.eventsQueue.length === 0`);
