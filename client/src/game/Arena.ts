@@ -870,6 +870,7 @@ export class Arena extends Phaser.Scene
     displayAttackImpact(gridX, gridY) {
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(gridX, gridY);
         this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
+            .setOrigin(0.5, 0.7)
             .setVisible(true)
             .setDepth(this.yToZ(gridY) + DEPTH_OFFSET)
             .setScale(0.5)
@@ -963,7 +964,6 @@ export class Arena extends Phaser.Scene
 
             const scale = config && 'scale' in config ? config.scale : LOCAL_ANIMATION_SCALE;
             let yScale = scale;
-            let yOrigin = 1;
 
             if (config && config.stretch) {
                 let distanceToTop = pixelY;
@@ -978,17 +978,13 @@ export class Arena extends Phaser.Scene
                     heightScale *= 1.2;
                 }
                 yScale = heightScale;
-                yOrigin = 1;
             }
             // Normal handling for other animations
             this.localAnimationSprite.setPosition(pixelX, pixelY)
+                .setOrigin(0.5, config?.stretch ? 1 : 0.7)
                 .setVisible(true)
                 .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
                 .setScale(scale * (config ? VFX_DISPLAY_SCALE : 1), yScale * (config ? VFX_DISPLAY_SCALE : 1));
-
-            if (config && config.stretch) {
-                this.localAnimationSprite.setOrigin(0.5, yOrigin);
-            }
 
             console.log(`[Arena:processLocalAnimation] spell.vfx: ${spell.vfx}`);
             this.localAnimationSprite.play(spell.vfx);
