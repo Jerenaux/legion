@@ -158,7 +158,7 @@ export class MusicManager {
     private trimCache() {
         if (!this.scene) return;
         for (const key of this.scene.cache.audio.getKeys()) {
-            const introFallback = !this.gameOver && !this.playingIntensity && key === 'bgm_loop_1';
+            const introFallback = !this.gameOver && !this.playingIntensity && (key === 'bgm_start' || key === 'bgm_loop_1');
             if (key.startsWith('bgm_') && !introFallback && key !== this.currentSound?.key && key !== this.nextKey()) this.scene.cache.audio.remove(key);
         }
     }

@@ -9,7 +9,7 @@ const code = ts.transpileModule(readFileSync(new URL('../MusicManager.ts', impor
   compilerOptions: {target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS},
 }).outputText;
 
-function setup() {
+function setup(deferBeginning = false) {
   const events = new EventEmitter();
   const settings = {musicVolume: 0};
   const exports = {} as {MusicManager: typeof import('../MusicManager').MusicManager};
@@ -46,7 +46,7 @@ function setup() {
   const complete = (times = 1) => {
     for (let i = 0; i < times; i++) manager.currentSound.emit('complete');
   };
-  manager.playBeginning();
+  if (!deferBeginning) manager.playBeginning();
   return {manager, complete, played, available, blocked, events, settings, scene};
 }
 
@@ -141,4 +141,13 @@ test('volume changes and cleanup still work, and completion cannot restart comba
   manager.destroy();
   expect(events.listenerCount('settingsChanged')).toBe(0);
   expect(scene.sound.removeAll).toHaveBeenCalledTimes(1);
+});
+
+
+test('combat updates during the menu fade retain the intro until playback begins', () => {
+  const {manager, available, played} = setup(true);
+  manager.updateMusicIntensity(0.5);
+  expect(available.has('bgm_start')).toBe(true);
+  manager.playBeginning();
+  expect(played).toEqual(['bgm_start']);
 });
