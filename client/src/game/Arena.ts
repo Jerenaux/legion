@@ -1423,8 +1423,8 @@ export class Arena extends Phaser.Scene
         if (isPlayer) {
             player.setDistance(character.distance);
             player.setInventory(character.inventory);
-            player.setSpells(character.spells);
         }
+        player.setSpells(character.spells ?? []);
         player.setStatuses(character.statuses);
 
         if (!isReconnect) {
