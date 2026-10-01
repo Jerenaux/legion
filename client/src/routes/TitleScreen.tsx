@@ -1,11 +1,8 @@
 import { h } from 'preact';
 
-import {useContext, useEffect} from "preact/hooks";
+import {useContext} from "preact/hooks";
 import {route} from "preact-router";
 import logoBig from "@assets/logo.png";
-import titleMusic from "@assets/music/title.wav";
-import {loadGameSettings} from "../settings";
-import {events} from "../components/HUD/GameHUD";
 import {PlayerContext} from "../contexts/PlayerContext";
 import Spinner from "../components/spinner/Spinner";
 import {STEAM_STORE_URL, titlePlayRoute} from "./titleScreenRoute";
@@ -15,29 +12,6 @@ const {version} = require("../../package.json");
 
 const TitleScreen = () => {
   const {loaded, player} = useContext(PlayerContext);
-  useEffect(() => {
-    const audio = new Audio(titleMusic);
-    audio.loop = true;
-    const updateVolume = () => { audio.volume = loadGameSettings().musicVolume / 100; };
-    const start = () => {
-      if (audio.paused) void audio.play().catch(() => {
-        // If autoplay is blocked, retry on the player's next interaction.
-      });
-    };
-    updateVolume();
-    start();
-    document.addEventListener('pointerdown', start);
-    document.addEventListener('keydown', start);
-    events.on('settingsChanged', updateVolume);
-    return () => {
-      document.removeEventListener('pointerdown', start);
-      document.removeEventListener('keydown', start);
-      events.off('settingsChanged', updateVolume);
-      audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-    };
-  }, []);
   const play = () => route(titlePlayRoute(player.engagementStats?.completedGames || 0));
 
   return (
