@@ -116,6 +116,11 @@ if (!process.versions.electron) {
       }
       if (scenario === 'socket-timeout') return;
       if (scenario === 'socket-invalid') snapshot.player.team = null;
+      // Old recordings omit enemy mana: keep one caster without it to check compatibility.
+      if (scenario === 'socket-valid' || scenario === 'socket-replay') {
+        delete snapshot.opponent.team[1].mp;
+        delete snapshot.opponent.team[1].maxMP;
+      }
       if (scenario === 'socket-replay') {
         socket.emit('replayData', {messages: [
           {event: 'gameStatus', data: snapshot, timestamp: 0},
@@ -681,12 +686,13 @@ if (!process.versions.electron) {
           assert(await js(effectsReady), 'Opponent spells and all consumable effects must be preloaded');
           await waitFor(`combatCheck.arena.getPlayer(2, 3).mp === ${scenario === 'socket-replay' ? 12 : 32}`);
           assert(await js('combatCheck.arena.getPlayer(2, 3).MPBar.visible'), 'Enemy caster mana bar must be visible');
+          assert(await js('combatCheck.arena.getPlayer(2, 2).MPBar === undefined'), 'Old snapshots must not invent enemy mana');
           assert.equal(await js('combatCheck.arena.getPlayer(2, 1).MPBar.visible'), false, 'Non-caster arena bars stay hidden');
           await js('combatCheck.arena.socket.emit("mana-change", {team: 2, num: 3, mp: 7}) && undefined');
           await waitFor('combatCheck.arena.getPlayer(2, 3).mp === 7 && combatCheck.arena.eventsQueue.length === 0');
           assert.equal(await js('combatCheck.arena.getPlayer(1, 3).mp'), 32, 'Enemy updates must not change the matching allied slot');
           assert.equal(await js('combatCheck.arena.getPlayer(2, 3).MPBar.list[2].scaleX'), 7 / 40);
-          await waitFor('document.querySelectorAll(".overview_right .char_stats_mp")[2]?.style.width === "17.5%"');
+          await waitFor('Array.from(document.querySelectorAll(".overview_right .char_stats_mp")).at(-1)?.style.width === "17.5%"');
           await js('combatCheck.arena.socket.emit("mana-change", {team: 2, num: 3, mp: 27}) && undefined');
           await waitFor('combatCheck.arena.getPlayer(2, 3).mp === 27');
           assert.equal(await js('combatCheck.arena.getPlayer(2, 3).MPBar.list[2].scaleX'), 27 / 40);
