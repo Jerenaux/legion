@@ -153,3 +153,27 @@ test('app starts route music before authentication and forwards navigation and t
   app.componentWillUnmount();
   expect(stops).toBe(1);
 });
+
+
+test('a match ending during the fade waits before its finale and cancels on teardown', async () => {
+  const source = ts.createSourceFile('Arena.ts', readFileSync(new URL('../../game/Arena.ts', import.meta.url), 'utf8'), ts.ScriptTarget.Latest, true);
+  const method = source.statements.find(ts.isClassDeclaration)!.members.find(member => member.name?.getText(source) === 'processGameEnd')!;
+  const code = ts.transpileModule(`new class {${method.getText(source)}}`, {compilerOptions: {target: ts.ScriptTarget.ESNext}}).outputText;
+  for (const disposed of [false, true]) {
+    let finishFade: () => void;
+    let finales = 0;
+    const fade = new Promise<void>(resolve => {finishFade = resolve;});
+    const arena = runInNewContext(code, {setRouteMusic: () => fade});
+    arena.playerTeamId = 1;
+    arena.musicManager = {gameOver: false, playEnd: () => {finales++;}};
+    arena.teamsMap = new Map();
+    arena.time = {delayedCall() {}};
+    arena.processGameEnd({isWinner: true});
+    expect(arena.musicManager.gameOver).toBe(true);
+    expect(finales).toBe(0);
+    arena.disposed = disposed;
+    finishFade!();
+    await fade;
+    expect(finales).toBe(disposed ? 0 : 1);
+  }
+});

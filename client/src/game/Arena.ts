@@ -1136,7 +1136,11 @@ export class Arena extends Phaser.Scene
 
     processGameEnd(data: OutcomeData) {
         this.gameEnded = true;
-        this.musicManager.playEnd();
+        const music = this.musicManager;
+        music.gameOver = true;
+        void setRouteMusic('/game').then(() => {
+            if (!this.disposed) music.playEnd();
+        });
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
         this.time.delayedCall(200, () => {
             winningTeam?.members.forEach((player) => {
