@@ -154,7 +154,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="controls">
             <h2 id="controls" tabIndex={-1}>Controls & quick help</h2>
-            <p>Music starts at {defaultGameSettings.musicVolume}%. Open <strong>Settings</strong> to adjust it from 0 (muted) to 100 (full volume). Your chosen volume is saved for future sessions.</p>
+            <p>Music starts while connecting and loops through the title screen until you leave it. Music starts at {defaultGameSettings.musicVolume}%. Open <strong>Settings</strong> to adjust it from 0 (muted) to 100 (full volume). Your chosen volume is saved for future sessions.</p>
             <dl className="guide-definitions">
               <div><dt>Mouse</dt><dd>Click tiles to move, enemies to attack, and action icons to use items or select spells.</dd></div>
               <div><dt>Action letters</dt><dd>Use the letters printed on the item and spell icons. Choose QWERTY or AZERTY in Settings; follow the labels for your layout.</dd></div>
