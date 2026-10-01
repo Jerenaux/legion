@@ -3,6 +3,7 @@ import { Player } from './Player';
 import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
+import {setRouteMusic} from '../routeMusic';
 import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
@@ -1483,7 +1484,10 @@ export class Arena extends Phaser.Scene
         this.input.mouse.disableContextMenu();
 
         this.musicManager = new MusicManager(this, 1, 12, [5, 6, 11]);
-        this.musicManager.playBeginning();
+        const music = this.musicManager;
+        void setRouteMusic('/game').then(() => {
+            if (!this.disposed && !music.gameOver) music.playBeginning();
+        });
         // this.playSound('crowd', 0.5, true);
 
         this.environmentalAudioSources = {

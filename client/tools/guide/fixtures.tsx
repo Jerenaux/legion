@@ -5,6 +5,7 @@ import { useContext, useState } from 'preact/hooks';
 import AuthContext from '../../src/contexts/AuthContext';
 import { PlayerContext } from '../../src/contexts/PlayerContext';
 import { Arena } from '../../src/game/Arena';
+import {MusicManager} from '../../src/game/MusicManager';
 import { EventEmitter } from 'eventemitter3';
 import { NewCharacter } from '../../../shared/NewCharacter';
 import { Class, League, PlayMode, StatusEffect, Terrain } from '../../../shared/enums';
@@ -15,6 +16,28 @@ import {route} from 'preact-router';
 import {GameHUD, events} from '../../src/components/HUD/GameHUD';
 import {spells} from '../../../shared/Spells';
 import {items} from '../../../shared/Items';
+
+// Observe real media playback while keeping CI silent.
+const routeAudio: HTMLAudioElement[] = [];
+const musicOverlaps: string[] = [];
+const routeAudioPlaying = () => routeAudio.some(audio => audio.loop && !audio.paused && audio.volume > 0);
+window.Audio = new Proxy(window.Audio, {construct(Target, args) {
+  const audio = Reflect.construct(Target, args) as HTMLAudioElement;
+  audio.muted = true;
+  const play = audio.play.bind(audio);
+  audio.play = () => {
+    if (audio.loop && routeAudio.some(other => other !== audio && other.loop && !other.paused && other.volume > 0)) musicOverlaps.push('route');
+    return play();
+  };
+  routeAudio.push(audio);
+  return audio;
+}});
+const playBeginning = MusicManager.prototype.playBeginning;
+MusicManager.prototype.playBeginning = function () {
+  if (routeAudioPlaying()) musicOverlaps.push('combat');
+  return playBeginning.call(this);
+};
+Object.assign(window, {routeAudio, musicOverlaps});
 
 Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId()},
   stabilityFreeze: function stabilityFreeze() {
