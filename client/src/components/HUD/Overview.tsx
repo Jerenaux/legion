@@ -128,7 +128,7 @@ class Overview extends Component<Props, State> {
                   <div className="char_stats_bar" style={position === 'left' && { justifyContent: 'flex-start' }}>
                     <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
                   </div>
-                  {this.props.isPlayerTeam && <div className="char_stats_bar" style={position === 'left' && { justifyContent: 'flex-start' }}>
+                  {Number.isFinite(member.mp) && member.maxMP > 0 && <div className="char_stats_bar" style={position === 'left' && { justifyContent: 'flex-start' }}>
                     <div className="char_stats_mp" style={{ width: `${(member.mp / member.maxMP) * 100}%` }}></div>
                   </div>}
                 </div>

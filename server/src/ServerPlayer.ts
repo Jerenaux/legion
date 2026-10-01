@@ -114,6 +114,8 @@ export class ServerPlayer {
             y: this.y,
             hp: this.hp,
             maxHP: this.getStat(Stat.HP),
+            mp: this.mp,
+            maxMP: this.getStat(Stat.MP),
             statuses: this.statuses,
             class: this.class,
             level: this.level,
@@ -121,8 +123,6 @@ export class ServerPlayer {
             spells: this.getNetworkSpells(),
         }
         if (includePersonal) {
-            data['mp'] = this.mp;
-            data['maxMP'] = this.getStat(Stat.MP);
             data['distance'] = this.distance;
             data['inventory'] = this.getNetworkInventory();
             data['xp'] = this.xp;

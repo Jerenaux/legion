@@ -87,7 +87,7 @@ afterEach(() => {
   finally {mock.restore();}
 });
 
-test('both teams disclose spell IDs in initial, reconnect, replay, and summoned-unit data', () => {
+test('both teams disclose spells and mana in initial, reconnect, replay, and summoned-unit data', () => {
   enemy.spells = [new Spell(getSpellById(8))];
   for (const reconnect of [false, true]) {
     for (const teamId of [1, 2]) {
@@ -95,12 +95,14 @@ test('both teams disclose spell IDs in initial, reconnect, replay, and summoned-
       expect(snapshot.player.team[0].spells).toEqual(teamId === 1 ? [0, 9] : [8]);
       expect(snapshot.opponent.team[0].spells).toEqual(teamId === 1 ? [8] : [0, 9]);
       expect(snapshot.opponent.team[0].inventory).toBeUndefined();
-      expect(snapshot.opponent.team[0].mp).toBeUndefined();
+      expect(snapshot.opponent.team[0].mp).toBe(100);
+      expect(snapshot.opponent.team[0].maxMP).toBe(100);
     }
   }
   game.saveInitialStateToReplay();
   expect(game.replayMessages[0].data.opponent.team[0].spells).toEqual([8]);
-  expect(enemy.getPlacementData(false).spells).toEqual([8]);
+  expect(enemy.getPlacementData(false)).toMatchObject({spells: [8], mp: 100, maxMP: 100});
+  expect(game.replayMessages[0].data.opponent.team[0]).toMatchObject({mp: 100, maxMP: 100});
 });
 
 const invalidActions = [
@@ -183,6 +185,8 @@ test('a valid spell spends MP once, locks the action during casting, and applies
   game.processAction('spell', data, socket);
   game.processAction('passTurn', null, socket);
   expect(player.getMP()).toBe(100 - player.spells[0].cost);
+  expect(game.replayMessages).toContainEqual(expect.objectContaining({event: 'manachange', data: {team: 1, num: 1, mp: player.getMP()}}));
+  expect(socket.emit).toHaveBeenCalledWith('mpchange', {num: 1, mp: player.getMP()});
   expect(player.hasActed).toBe(true);
   expect(player.team.actions).toBe(1);
   expect(player.team.spellCasts).toBe(1);
@@ -231,4 +235,25 @@ test('an attack that becomes movement and direct AI actions use the same accepta
   expect(enemy.hasActed).toBe(true);
   expect(enemy.team.actions).toBe(1);
   expect(game.turnSystem.processAction).toHaveBeenCalledTimes(2);
+});
+
+
+test('mana changes identify either team, reach the room and replay, and preserve legacy owner updates', () => {
+  const broadcast = spyOn(game, 'broadcast');
+  for (const team of [player.team, enemy.team]) {
+    game.emitMPchange(team, 1, 35);
+    expect(broadcast).toHaveBeenCalledWith('manachange', {team: team.id, num: 1, mp: 35});
+    expect(game.replayMessages.at(-1)).toMatchObject({event: 'manachange', data: {team: team.id, num: 1, mp: 35}});
+  }
+  expect(socket.emit).toHaveBeenCalledTimes(1);
+  expect(socket.emit).toHaveBeenCalledWith('mpchange', {num: 1, mp: 35});
+});
+
+test('Ether restoration is public and reconnect snapshots preserve the restored value', () => {
+  player.mp = 5;
+  player.inventory = [new Item(getConsumableById(1))];
+  game.processAction('useitem', {index: 0}, socket);
+  expect(player.mp).toBe(25);
+  expect(game.replayMessages).toContainEqual(expect.objectContaining({event: 'manachange', data: {team: 1, num: 1, mp: 25}}));
+  expect(game.getGameData(2, true).opponent.team[0]).toMatchObject({mp: 25, maxMP: 100});
 });

@@ -174,6 +174,7 @@ export class Arena extends Phaser.Scene
             hpchange: this.processHPChange,
             statuseffectchange: this.processStatusChange,
             mpchange: this.processMPChange,
+            manachange: this.processMPChange,
             useitem: this.processUseItem,
             cast: (data) => this.processCast(true, data),
             endcast: (data) => this.processCast(false, data),
@@ -787,10 +788,10 @@ export class Arena extends Phaser.Scene
         player?.setStatuses(statuses);
     }
 
-    processMPChange({num, mp}) {
+    processMPChange({team = this.playerTeamId, num, mp}) {
         if (this.gameEnded) return;
-        const player = this.getPlayer(this.playerTeamId, num);
-        player.setMP(mp);
+        const player = this.getPlayer(team, num);
+        player?.setMP(mp);
     }
 
     processUseItem({team, num, animation, name, sfx}) {
@@ -1422,8 +1423,8 @@ export class Arena extends Phaser.Scene
         if (isPlayer) {
             player.setDistance(character.distance);
             player.setInventory(character.inventory);
-            player.setSpells(character.spells);
         }
+        player.setSpells(character.spells ?? []);
         player.setStatuses(character.statuses);
 
         if (!isReconnect) {
