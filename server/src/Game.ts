@@ -1239,6 +1239,8 @@ export abstract class Game
     }
 
     emitMPchange(team: Team, num: number, mp: number) {
+        this.broadcast('manachange', {team: team.id, num, mp});
+        // Installed clients treat mpchange as own-team only. Keep that contract.
         team.socket?.emit('mpchange', {
             num,
             mp,

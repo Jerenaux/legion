@@ -102,7 +102,8 @@ export class Player extends Phaser.GameObjects.Container {
         this.add(this.healthBar);
         this.setHP(hp);
 
-        if (isPlayer) {
+        // Older snapshots/replays omit enemy mana; do not invent a bar for them.
+        if (Number.isFinite(mp) && Number.isFinite(maxMP) && maxMP > 0) {
             this.MPBar = new HealthBar(scene, 0, -40, 0x0099ff);
             this.add(this.MPBar);
             this.setMP(mp);
@@ -785,7 +786,7 @@ export class Player extends Phaser.GameObjects.Container {
     setMP(mp) {
         const _mp = this.mp
         this.mp = mp;
-        this.MPBar.setHpValue(mp / this.maxMP);
+        this.MPBar?.setHpValue(mp / this.maxMP);
 
         if(this.mp !== _mp) {
             this.arena.refreshUI(this.num);

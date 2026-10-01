@@ -121,12 +121,15 @@ if (!process.versions.electron) {
           {event: 'gameStatus', data: snapshot, timestamp: 0},
           {event: 'queueData', data: snapshot.queue, timestamp: 10},
           {event: 'turnee', data: snapshot.turnee, timestamp: 20},
+          {event: 'manachange', data: {team: 2, num: 3, mp: 12}, timestamp: 30},
         ]});
       } else {
         socket.emit('queueData', snapshot.queue); // Deliberately before the snapshot and preload completion.
         socket.emit('gameStatus', snapshot);
         socket.emit('turnee', snapshot.turnee);
       }
+      socket.on('mana-change', data => socket.emit('manachange', data));
+      socket.on('legacy-mana-change', data => socket.emit('mpchange', data));
       socket.on('late-assets', () => {
         socket.emit('addCharacter', {team: 2, character: {...snapshot.opponent.team[0], portrait: 'mil1_3', x: 11, y: 7}});
         socket.emit('cast', {team: 2, num: 4, id: 8}); // Enemy Ice III, absent from the local team's loadout.
@@ -676,6 +679,22 @@ if (!process.versions.electron) {
           assert(memory.textures < 400 * 1048576 && memory.audio < 35 * 1048576, 'Decoded texture/audio budget exceeded');
           console.log('Live-socket decoded memory (MiB):', {textures: Math.round(memory.textures / 1048576), audio: Math.round(memory.audio / 1048576)});
           assert(await js(effectsReady), 'Opponent spells and all consumable effects must be preloaded');
+          await waitFor(`combatCheck.arena.getPlayer(2, 3).mp === ${scenario === 'socket-replay' ? 12 : 32}`);
+          assert(await js('combatCheck.arena.getPlayer(2, 3).MPBar.visible'), 'Enemy caster mana bar must be visible');
+          assert.equal(await js('combatCheck.arena.getPlayer(2, 1).MPBar.visible'), false, 'Non-caster arena bars stay hidden');
+          await js('combatCheck.arena.socket.emit("mana-change", {team: 2, num: 3, mp: 7}) && undefined');
+          await waitFor('combatCheck.arena.getPlayer(2, 3).mp === 7 && combatCheck.arena.eventsQueue.length === 0');
+          assert.equal(await js('combatCheck.arena.getPlayer(1, 3).mp'), 32, 'Enemy updates must not change the matching allied slot');
+          assert.equal(await js('combatCheck.arena.getPlayer(2, 3).MPBar.list[2].scaleX'), 7 / 40);
+          await waitFor('document.querySelectorAll(".overview_right .char_stats_mp")[2]?.style.width === "17.5%"');
+          await js('combatCheck.arena.socket.emit("mana-change", {team: 2, num: 3, mp: 27}) && undefined');
+          await waitFor('combatCheck.arena.getPlayer(2, 3).mp === 27');
+          assert.equal(await js('combatCheck.arena.getPlayer(2, 3).MPBar.list[2].scaleX'), 27 / 40);
+          await js('combatCheck.arena.socket.emit("legacy-mana-change", {num: 3, mp: 22}) && undefined');
+          await waitFor('combatCheck.arena.getPlayer(1, 3).mp === 22');
+          assert.equal(await js('combatCheck.arena.getPlayer(2, 3).mp'), 27);
+          console.log(`${scenario}: enemy mana, restoration, HUD bars, and legacy own-team updates pass`);
+
           await js('combatCheck.arena.socket.emit("late-assets") && undefined');
           await waitFor('combatCheck.arena.teamsMap.get(2).members.length === 4 && combatCheck.arena.eventsQueue.length === 0');
           assert.equal(await js('combatCheck.arena.textures.exists("ice_3") && combatCheck.arena.anims.exists("charged_ice_2")'), true);

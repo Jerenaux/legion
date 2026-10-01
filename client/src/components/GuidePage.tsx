@@ -88,6 +88,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <img src={actions} width="960" height="110" loading="lazy" alt="The selected mage’s action bar with HP, MP, equipped Potion and Ether, learned spells, keyboard shortcuts, and the pass-turn hourglass." />
               <figcaption>Green is HP (health); blue is MP (magic). The bar shows what this character can use, not everything in your shared inventory.</figcaption>
             </figure>
+            <p>Blue mana bars show remaining MP for both teams. Watch enemy mana to judge which spells they can still afford; casting spends MP and Ether restores it.</p>
             <h3>A reliable opening plan</h3>
             <p>Let sturdy fighters approach first. Keep your healer out of easy melee range, leave space between allies against area spells, and concentrate damage on a vulnerable enemy.</p>
             <p>Check the order before committing: can an enemy finish your injured character before your healer acts? Sometimes a Potion now is worth more than another attack.</p>
