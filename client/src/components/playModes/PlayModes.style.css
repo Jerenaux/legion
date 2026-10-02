@@ -23,3 +23,5 @@
     width: 100%;
     padding: 0 48px;
 }
+.playModesRow {flex-wrap: wrap; row-gap: 100px; padding: 60px 28px 12px; box-sizing: border-box;}
+@media (max-width: 760px) {.playModesRow {gap: 90px 20px; padding-inline: 14px;} .playModesRow .buttonContainer {width: 180px;}}

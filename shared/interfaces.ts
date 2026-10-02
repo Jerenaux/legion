@@ -280,6 +280,7 @@ export interface APICharacterData extends DBCharacterData {
 }
 
 export interface PlayerNetworkData {
+    towerSpellCosts?: Record<number, number>;
     portrait: string;
     name: string;
     x: number;
@@ -324,6 +325,7 @@ export interface GameData {
         mode: PlayMode;
         combatStarted?: boolean;
         readyToken?: string;
+        tower?: {floor: number; tier: number; name: string; warning: {x: number; y: number}[]};
     },
     queue: TurnQueueEntry[];
     turnee: TurnState;

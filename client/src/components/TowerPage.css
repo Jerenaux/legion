@@ -1,0 +1,259 @@
+.homePage:has(.tower-page) .content, .homePage:has(.tower-page) .mainContent {min-height: 0;}
+.homePage:has(.tower-page) .mainContent {padding: 0;}
+.tower-page {
+  --tower-gold: oklch(85% .105 80); --tower-muted: oklch(77% .025 245); --tower-line: oklch(46% .035 245); --tower-panel: oklch(24% .025 250);
+  flex: 1; overflow-y: auto; min-height: 0; color: oklch(94% .02 85); font: 16px/1.4 Tahoma, Arial, sans-serif;
+  background: linear-gradient(oklch(13% .025 250 / .68), oklch(13% .025 250 / .88)), url('@assets/tower_hall.png') center / cover;
+}
+.tower-page *, .tower-page *::before, .tower-page *::after {box-sizing: border-box;}
+.tower-layout {max-width: 1480px; min-height: 100%; display: flex; flex-direction: column; padding: 12px 32px 0; margin: auto;}
+.tower-page h1, .tower-page h2, .tower-page h3, .tower-page h4 {font-family: Kim, sans-serif; font-weight: normal; line-height: 1.12; margin: 0;}
+.tower-page h1 {font-size: 32px; color: var(--tower-gold);}
+.tower-page h2 {font-size: 32px;}
+.tower-page h3 {font-size: 22px;}
+.tower-page h4 {font-size: 30px;}
+.tower-page p {font: inherit; margin: 8px 0; max-width: 65ch;}
+.tower-page button, .tower-page select {font: inherit; color: inherit; cursor: pointer;}
+.tower-page button {border: 1px solid var(--tower-line); background: var(--tower-panel); border-radius: 4px; padding: 10px 16px; transition: border-color 160ms ease-out, background-color 160ms ease-out, transform 160ms ease-out;}
+.tower-page button:hover:not(:disabled) {border-color: var(--tower-gold); background-color: oklch(30% .035 250);}
+.tower-page button:active:not(:disabled) {transform: translateY(1px);}
+.tower-page button:disabled {opacity: .5; cursor: wait;}
+.tower-page :is(button, a, select, summary):focus-visible, .tower-kit:has(input:focus-visible) {outline: 3px solid oklch(86% .09 195); outline-offset: 4px;}
+.tower-heading {display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; min-height: 56px; margin-bottom: 18px;}
+.tower-back {justify-self: start; display: inline-flex; align-items: center; gap: 12px; min-height: 42px; padding: 5px 18px 5px 12px; border: 1px solid oklch(51% .045 245); border-radius: 3px; background: linear-gradient(oklch(31% .025 250), oklch(22% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .4), 0 3px 0 oklch(10% .025 250 / .7); color: oklch(90% .025 85); text-decoration: none; font: 20px Kim, sans-serif;}
+.tower-back>span {color: var(--tower-gold); font: 28px/1 Tahoma, sans-serif;}
+.tower-back:hover {color: var(--tower-gold); border-color: var(--tower-gold);}
+.tower-back:active {transform: translateY(1px);}
+.tower-title {display: flex; align-items: center; gap: 10px; filter: drop-shadow(0 3px 3px oklch(10% .02 250));}
+.tower-title>img {width: 48px; height: 56px; object-fit: contain;}
+.tower-mode-label {justify-self: end; color: var(--tower-muted); font-size: 14px;}
+.tower-expedition {display: grid; grid-template-columns: 82px minmax(0,1fr); gap: 24px; align-items: start; flex: 1;}
+.is-preparing .tower-expedition {display: block; width: 100%; max-width: 1050px; margin: 0 auto 20px;}
+.tower-main {min-width: 0;}
+.tower-ascent {text-align: center; padding-top: 4px;}
+.tower-tier {font: 20px Kim, sans-serif; color: var(--tower-gold); margin-bottom: 14px;}
+.tower-floors {list-style: none; display: flex; flex-direction: column-reverse; gap: 17px; padding: 0; margin: 0;}
+.tower-floors li {position: relative; display: grid; justify-items: center; gap: 5px; color: oklch(72% .025 245);}
+.tower-floors li:not(:first-child)::after {content: ''; position: absolute; top: calc(100% + 3px); width: 1px; height: 11px; background: var(--tower-line);}
+.tower-floor-number {width: 40px; height: 40px; display: grid; place-items: center; font: 22px Kim, sans-serif; background: oklch(24% .025 250 / .9); border: 1px solid var(--tower-line); transform: rotate(-4deg); box-shadow: 0 3px 5px oklch(10% .025 250 / .35);}
+.tower-floor-label {font-size: 14px;}
+.tower-floors .current {color: var(--tower-gold);}
+.tower-floors .current .tower-floor-number {color: oklch(20% .035 60); background: var(--tower-gold); border-color: oklch(95% .07 85); box-shadow: 0 0 18px oklch(70% .1 70 / .25);}
+.tower-floors .cleared {color: oklch(80% .07 170);}
+.tower-floors .cleared .tower-floor-number {color: oklch(80% .07 170); border-color: oklch(50% .065 170);}
+.tower-kicker {font: bold 14px/1.3 Tahoma, sans-serif; letter-spacing: .06em; color: var(--tower-gold);}
+.tower-progress {display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 0 14px; border-bottom: 1px solid oklch(62% .06 80 / .4);}
+.tower-header-progress {justify-self: end; display: grid; justify-items: end; gap: 4px; padding: 0; border: 0;}
+.tower-header-progress>span:first-child {font-size: 14px; color: var(--tower-muted);}
+.tower-progress>div {display: flex; align-items: center; gap: 14px;}
+.tower-progress>div>strong {font: 22px Kim, sans-serif;}
+.tower-bank {text-align: right;}
+.tower-rewards {display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; color: var(--tower-muted); font: 15px Tahoma, sans-serif;}
+.tower-rewards>span:not(.tower-item-icon) {display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;}
+.tower-rewards img {width: 24px; height: 24px; object-fit: contain;}
+.tower-rewards b {color: oklch(94% .045 85); font-size: 20px; font-variant-numeric: tabular-nums;}
+.tower-preparation-heading {display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 0 16px;}
+.tower-preparation-heading h2 {font-size: 26px;}
+.tower-difficulty {display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--tower-muted);}
+.tower-difficulty-control {position: relative; display: inline-flex; align-items: center;}
+.tower-page .tower-difficulty select {appearance: none; min-width: 122px; max-width: 280px; min-height: 44px; padding: 9px 42px 9px 18px; border: 1px solid oklch(64% .07 80); border-radius: 3px; background: linear-gradient(oklch(34% .04 75), oklch(23% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .4), 0 3px 0 oklch(10% .025 250 / .7); color: var(--tower-gold); font: 20px Kim, sans-serif;}
+.tower-difficulty select:hover:not(:disabled) {border-color: var(--tower-gold);}
+.tower-difficulty select:disabled {opacity: .5; cursor: wait;}
+.tower-difficulty option {background: oklch(23% .025 250); color: oklch(94% .02 85); font: 16px Tahoma, sans-serif;}
+.tower-difficulty-control>span {position: absolute; right: 14px; top: 6px; color: var(--tower-gold); font: 24px Tahoma, sans-serif; pointer-events: none;}
+.tower-kits {display: flex; gap: 12px; margin-bottom: 18px;}
+.tower-kit {position: relative; flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 18px; border: 1px solid var(--tower-line); border-radius: 4px; cursor: pointer; background: oklch(22% .025 245 / .95); box-shadow: inset 0 1px oklch(80% .02 245 / .1), 0 3px 6px oklch(10% .02 250 / .25);}
+.tower-kit>input {position: absolute; opacity: 0; width: 1px; height: 1px;}
+.tower-kit.selected {border-color: var(--tower-gold); background: linear-gradient(115deg, oklch(36% .05 65 / .95), oklch(23% .025 245)); box-shadow: inset 0 0 0 2px oklch(60% .09 70 / .2), 0 3px 6px oklch(10% .02 250 / .3);}
+.tower-kit.locked {color: var(--tower-muted); cursor: not-allowed;}
+.tower-kit.locked>img, .tower-kit.locked>.tower-item-icon {opacity: .5;}
+.tower-kit>img {width: 40px; height: 40px; object-fit: contain;}
+.tower-kit>span:not(.tower-item-icon):not(.tower-kit-check) {display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;}
+.tower-kit strong {font: 24px Kim, sans-serif;}
+.tower-kit small {font-size: 15px; color: var(--tower-muted);}
+.tower-kit-check {margin-left: auto; color: var(--tower-gold); font-size: 20px;}
+.tower-kit-detail {color: var(--tower-muted); font-size: 15px !important; text-align: center; margin: -8px 0 12px !important; max-width: none !important;}
+.tower-squad-title {font-size: 22px; margin-bottom: 12px !important;}
+.is-preparing .tower-squad-title {position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;}
+.tower-squad-list {display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px;}
+.tower-unit {--hero-hue: 78; position: relative; min-width: 0; padding: 0 18px 16px; border: 1px solid oklch(61% .08 var(--hero-hue)); border-radius: 6px 6px 12px 12px; background: linear-gradient(165deg, oklch(34% .04 var(--hero-hue)), oklch(22% .025 250) 60%); box-shadow: inset 0 0 0 3px oklch(12% .02 250 / .55), inset 0 0 0 4px oklch(75% .05 var(--hero-hue) / .18), 0 9px 20px oklch(8% .02 250 / .55); overflow: hidden;}
+.tower-unit[data-class="1"] {--hero-hue: 170;}
+.tower-unit[data-class="2"] {--hero-hue: 300;}
+.tower-hero-art {position: relative; height: 164px; display: grid; grid-template-rows: minmax(0,1fr); place-items: center; margin: 0 -18px; background: radial-gradient(ellipse at 50% 80%, oklch(60% .1 var(--hero-hue) / .35), transparent 62%);}
+.tower-hero-art::before {content: ''; position: absolute; width: 130px; height: 130px; border: 1px solid oklch(72% .08 var(--hero-hue) / .18); transform: rotate(45deg);}
+.tower-hero-art::after {content: ''; position: absolute; bottom: 5px; width: 112px; height: 15px; background: oklch(10% .025 250 / .6); border: 1px solid oklch(60% .05 var(--hero-hue) / .25); border-radius: 50%;}
+.tower-portrait {z-index: 1; width: 88px; height: 104px; background-position: -28px -32px; background-repeat: no-repeat; image-rendering: pixelated; transform: scale(1.4); filter: drop-shadow(0 3px 1px oklch(9% .02 250 / .8));}
+.tower-unit-heading {position: relative; display: flex; align-items: center; gap: 12px; margin: 8px 0 16px;}
+.tower-crest {width: 38px; height: 43px; flex-shrink: 0;}
+.tower-unit-heading>div>span {font-size: 15px; color: oklch(83% .07 var(--hero-hue));}
+.tower-vitals {min-height: 50px;}
+.tower-resource {display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px;}
+.tower-resource>span {width: 23px; color: oklch(80% .1 20);}
+.tower-resource strong {font: bold 16px Tahoma, sans-serif; min-width: 67px; text-align: right; font-variant-numeric: tabular-nums;}
+.tower-resource strong>span {font-size: 14px; font-weight: normal; color: var(--tower-muted);}
+.tower-resource-track {height: 9px; flex: 1; background: oklch(14% .025 250); overflow: hidden; border-radius: 2px; box-shadow: 0 1px oklch(65% .03 250 / .2);}
+.tower-resource-track i {display: block; height: 100%; background: linear-gradient(oklch(74% .16 20), oklch(56% .18 20)); box-shadow: inset 0 1px oklch(88% .08 20 / .65);}
+.tower-resource.mana>span {color: oklch(79% .09 230);}
+.tower-resource.mana i {background: linear-gradient(oklch(73% .12 230), oklch(52% .12 240));}
+.tower-loadout {display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid oklch(60% .04 var(--hero-hue) / .3);}
+.tower-spells {display: flex; align-items: center; gap: 4px; flex-wrap: wrap;}
+.tower-spells>span {display: flex; align-items: center; gap: 6px;}
+.tower-spells>span>span:not(.tower-item-icon) {font-size: 14px; color: var(--tower-muted);}
+.tower-spells>span:not(:only-child)>span:not(.tower-item-icon) {display: none;}
+.tower-melee img {width: 28px; height: 32px; object-fit: contain;}
+.tower-item-icon {display: inline-block; width: 32px; height: 32px; flex: 0 0 32px; image-rendering: pixelated; background-repeat: no-repeat; vertical-align: middle;}
+.tower-supplies {display: flex; flex-wrap: wrap; gap: 2px;}
+.tower-supplies>span:not(.tower-item-icon) {font-size: 14px; color: var(--tower-muted);}
+.tower-page .tower-primary {display: inline-flex; justify-content: space-between; align-items: center; gap: 28px; min-height: 52px; min-width: 270px; font: 23px Kim, sans-serif; border: 1px solid oklch(88% .1 85); background: linear-gradient(oklch(83% .11 78), oklch(69% .12 65)); color: oklch(20% .035 65); box-shadow: inset 0 1px oklch(95% .05 85 / .65), inset 0 0 0 3px oklch(91% .07 80 / .2), 0 4px 0 oklch(36% .07 65); text-shadow: 0 1px oklch(95% .05 85 / .35);}
+.tower-page .tower-primary:hover:not(:disabled) {background: linear-gradient(oklch(89% .1 80), oklch(77% .11 68));}
+.tower-command-bar {position: sticky; bottom: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 82px; margin-top: auto; padding: 14px 0 18px; border-top: 1px solid oklch(64% .07 80 / .5); background: oklch(15% .025 250 / .97); box-shadow: 32px 0 oklch(15% .025 250 / .97), -32px 0 oklch(15% .025 250 / .97);}
+.tower-run-length {display: flex; align-items: center; gap: 16px; margin-left: auto; color: var(--tower-muted); font-size: 15px; white-space: nowrap;}
+.tower-run-length b {color: var(--tower-gold); font: 26px Kim, sans-serif;}
+.tower-run-track {position: relative; display: flex; align-items: center; gap: 14px; height: 40px;}
+.tower-run-track::before {content: ''; position: absolute; left: 0; right: 16px; top: 50%; height: 1px; background: oklch(62% .07 80 / .6);}
+.tower-run-track i {z-index: 1; width: 8px; height: 8px; border: 1px solid oklch(78% .08 80); background: oklch(35% .045 80); transform: rotate(45deg);}
+.tower-run-track img {z-index: 1; width: 32px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px oklch(8% .025 250));}
+.tower-rules {color: var(--tower-muted);}
+.tower-rules summary {cursor: pointer; padding: 10px 0; font-size: 16px; color: oklch(85% .03 245);}
+.tower-rules[open] {position: absolute; bottom: 100%; left: 0; max-width: 680px; padding: 16px 22px; border: 1px solid var(--tower-line); background: oklch(20% .025 250); box-shadow: 0 8px 32px oklch(7% .02 250 / .65); max-height: 60vh; overflow-y: auto;}
+.tower-rules p {font-size: 16px; margin-bottom: 16px;}
+.tower-main.active-run {display: grid; grid-template-columns: minmax(0,1fr) 274px; gap: 20px 24px; align-items: start;}
+.active-run .tower-progress {grid-column: 1/-1;}
+.active-run .tower-decision {grid-column: 1; grid-row: 1;}
+.active-run .tower-squad {grid-column: 2; grid-row: 1;}
+.active-run .tower-squad-list {grid-template-columns: 1fr; gap: 12px;}
+.active-run .tower-unit {display: grid; grid-template-columns: 64px 1fr; padding: 10px 14px 12px; column-gap: 10px;}
+.active-run .tower-hero-art {height: 86px; width: 64px; margin: 0; grid-column: 1; grid-row: 1/3; background: none;}
+.active-run .tower-hero-art::before {width: 56px; height: 56px;}
+.active-run .tower-hero-art::after {width: 60px; height: 8px; bottom: -1px;}
+.active-run .tower-portrait {transform: scale(.7); transform-origin: center; position: absolute;}
+.active-run .tower-unit-heading {grid-column: 2; grid-row: 1; min-height: 38px; gap: 8px; margin: 0;}
+.active-run .tower-crest {position: absolute; right: -7px; top: -6px; width: 25px; height: 29px;}
+.active-run .tower-unit h4 {font-size: 26px;}
+.active-run .tower-unit-heading>div>span {font-size: 14px;}
+.active-run .tower-vitals {grid-column: 2; grid-row: 2; min-height: 0;}
+.active-run .tower-resource {gap: 5px; margin: 3px 0;}
+.active-run .tower-resource strong {min-width: 61px;}
+.active-run .tower-loadout {grid-column: 1/-1; margin-top: 4px; padding-top: 5px;}
+.active-run .tower-spells>span>span:not(.tower-item-icon) {display: none;}
+.active-run .tower-spells .tower-item-icon, .active-run .tower-supplies .tower-item-icon {zoom: .85;}
+.tower-decision-heading {display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;}
+.tower-decision-heading h2 {margin-top: 7px;}
+.tower-choices {display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px;}
+.tower-page .tower-choice {position: relative; display: flex; flex-direction: column; align-items: start; gap: 12px; text-align: left; padding: 22px; border-color: oklch(55% .04 245); background: linear-gradient(155deg, oklch(33% .05 230 / .98), oklch(21% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .02 250 / .4), inset 0 0 0 4px oklch(70% .04 230 / .12), 0 6px 16px oklch(10% .02 250 / .4); overflow: hidden;}
+.tower-page .tower-choice:hover:not(:disabled) {border-color: var(--tower-gold); transform: translateY(-3px); box-shadow: inset 0 0 0 3px oklch(83% .1 80 / .12), 0 8px 22px oklch(8% .015 250 / .5);}
+.tower-page .tower-choice.elite, .tower-page .tower-choice.boss {background: linear-gradient(155deg, oklch(34% .075 40 / .98), oklch(21% .025 250)); border-color: oklch(58% .09 55);}
+.tower-choice>strong {font: 28px/1.12 Kim, sans-serif; color: oklch(94% .035 80);}
+.tower-choice-description {font-size: 17px; color: oklch(83% .025 245); line-height: 1.4;}
+.tower-encounter-top {width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;}
+.tower-bonus {font-size: 14px; color: oklch(87% .1 65);}
+.tower-enemy-lineup {display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; padding: 14px 0; width: 100%; min-height: 134px; background: radial-gradient(ellipse at center, oklch(65% .08 220 / .15), transparent 68%);}
+.elite .tower-enemy-lineup {background: radial-gradient(ellipse at center, oklch(67% .14 50 / .18), transparent 68%);}
+.tower-enemy-lineup>span {display: grid; justify-items: center; align-content: center; gap: 8px;}
+.tower-enemy-lineup img {width: 76px; height: 76px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 5px 3px oklch(10% .025 250 / .7));}
+.tower-enemy-lineup small {font-size: 14px; color: var(--tower-muted);}
+.tower-spoils {display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 10px; flex-wrap: wrap;}
+.tower-spoils>.tower-kicker {display: none;}
+.tower-choice-action {width: 100%; display: flex; justify-content: space-between; align-items: center; font: 21px Kim, sans-serif; color: var(--tower-gold); margin-top: 4px; padding-top: 14px; border-top: 1px solid oklch(62% .06 80 / .4);}
+.tower-page .tower-upgrade-choice {display: grid; grid-template-columns: 56px 1fr; gap: 10px 12px; padding: 20px;}
+.tower-upgrade-choice>strong {grid-column: 2; grid-row: 1; align-self: center; font-size: 24px;}
+.tower-upgrade-choice .tower-choice-description {grid-column: 1/-1; padding-right: 20px;}
+.tower-upgrade-choice .tower-choice-action {position: absolute; bottom: 18px; right: 18px; width: auto; padding: 0; border: 0; font-size: 22px;}
+.tower-choice-art {display: grid; place-items: center; width: 56px; height: 48px; grid-row: 1; background: radial-gradient(ellipse, oklch(70% .08 80 / .2), transparent 70%);}
+.tower-choice-art>img {width: 52px; height: 52px; object-fit: contain;}
+.tower-choice-art .tower-item-icon {transform: scale(1.4);}
+.tower-retire {display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 0 auto; color: var(--tower-muted); font-size: 14px;}
+.tower-retire button {font-size: 14px; background: oklch(20% .025 250); padding: 8px 12px;}
+.tower-resume {display: flex; align-items: center; gap: 24px; padding: 30px; border: 1px solid oklch(58% .07 70); background: var(--tower-panel);}
+.tower-resume>img {width: 100px; height: 150px; object-fit: contain;}
+.tower-resume h2 {margin: 10px 0 22px;}
+.tower-result {min-height: 205px; display: flex; align-items: center; justify-content: center; gap: 20px; padding: 14px 0 24px; text-align: left;}
+.tower-result>img {width: 132px; height: 156px; object-fit: contain;}
+.tower-result h2 {font-size: 38px; color: var(--tower-gold);}
+.tower-result p {color: var(--tower-muted);}
+.tower-progress.is-finished {margin-bottom: 20px;}
+.tower-loading {display: grid; place-items: center; flex: 1; min-height: 400px; align-content: center; color: var(--tower-gold);}
+.tower-loading img {width: 130px;}
+.tower-error {display: flex; justify-content: space-between; align-items: center; gap: 16px; border: 1px solid oklch(64% .12 30); background: oklch(30% .05 25); padding: 12px 18px; margin: 12px 0;}
+@media (min-width: 1101px) and (max-height: 800px) {
+  .tower-heading {margin-bottom: 12px; min-height: 46px;} .tower-title>img {height: 46px; width: 40px;}
+  .tower-hero-art {height: 130px;} .tower-portrait {transform: scale(1.2);} .tower-unit-heading {margin-bottom: 10px;}
+  .tower-floors {gap: 12px;} .tower-floors li:not(:first-child)::after {height: 7px;}
+  .tower-enemy-lineup {min-height: 110px; padding: 6px 0;} .tower-enemy-lineup img {width: 64px; height: 64px;}
+  .tower-page .tower-choice {padding: 18px;} .tower-choice>strong {font-size: 26px;}
+  .tower-page .tower-upgrade-choice {padding: 16px; gap: 8px 10px;} .tower-upgrade-choice>strong {font-size: 24px;}
+  .active-run .tower-unit {padding-block: 8px;} .active-run .tower-hero-art {height: 76px;}
+  .active-run .tower-squad-list {gap: 10px;} .tower-command-bar {min-height: 74px; padding-block: 10px 14px;}
+}
+@media (max-width: 1100px) {
+  .tower-layout {padding-inline: 20px;} .tower-expedition {grid-template-columns: 60px minmax(0,1fr); gap: 18px;}
+  .tower-main.active-run {grid-template-columns: minmax(0,1fr) 240px; gap: 18px;}
+  .tower-page .tower-choice {padding: 16px;} .tower-choice>strong {font-size: 24px;}
+  .tower-enemy-lineup {gap: 8px;} .tower-enemy-lineup img {width: 54px; height: 64px;}
+  .tower-enemy-lineup small {font-size: 14px;} .tower-choices {gap: 12px;}
+  .tower-squad-list {gap: 14px;} .tower-unit {padding-inline: 14px;} .tower-kit>span:not(.tower-item-icon):not(.tower-kit-check) {gap: 3px; flex-direction: column;}
+  .tower-loadout {flex-wrap: wrap;} .tower-hero-art {height: 140px;} .tower-portrait {transform: scale(1.2);}
+  .tower-page .tower-upgrade-choice {grid-template-columns: 40px 1fr;} .tower-choice-art {width: 40px;} .tower-choice-art>img {width: 40px;}
+}
+@media (max-width: 900px) {
+  .tower-layout {padding: 10px 18px 0;} .tower-heading {margin-bottom: 12px;} .tower-page h1 {font-size: 28px;} .tower-mode-label {display: none;}
+  .tower-heading {grid-template-columns: 1fr auto 1fr;} .tower-title>img {height: 42px; width: 36px;}
+  .tower-expedition {display: block;} .tower-ascent {display: flex; gap: 16px; align-items: center; margin-bottom: 20px; padding: 0;} .tower-tier {margin: 0; white-space: nowrap; font-size: 18px;}
+  .tower-floors {flex-direction: row; flex: 1; justify-content: space-between; gap: 8px;} .tower-floors li:not(:first-child)::after {display: none;} .tower-floor-label {display: none;} .tower-floor-number {width: 32px; height: 32px; font-size: 18px;}
+  .tower-main.active-run {display: flex; flex-direction: column; gap: 18px;} .active-run>.tower-progress {order: 0; width: 100%;} .active-run>.tower-decision {order: 1; width: 100%;} .active-run>.tower-squad {order: 2; width: 100%; margin-bottom: 20px;}
+  .active-run .tower-squad-list {grid-template-columns: repeat(3,minmax(0,1fr));} .active-run .tower-unit {display: block; padding: 10px;}
+  .active-run .tower-hero-art {width: 100%; height: 90px;} .active-run .tower-unit-heading {margin: 6px 0 12px;} .active-run .tower-crest {display: none;}
+  .tower-unit h4 {font-size: 26px;} .tower-crest {width: 30px; height: 34px;} .tower-unit-heading {gap: 8px;}
+  .tower-preparation-heading {margin-bottom: 12px;} .tower-preparation-heading h2 {font-size: 26px;}
+  .tower-command-bar {gap: 16px; box-shadow: 18px 0 oklch(15% .025 250 / .97), -18px 0 oklch(15% .025 250 / .97);} .tower-run-length {gap: 10px;} .tower-run-track {gap: 8px;}
+}
+@media (max-width: 600px) {
+  .tower-heading {grid-template-columns: auto 1fr;} .tower-title {justify-self: end;} .tower-page h1 {font-size: 24px;}
+  .tower-preparation-heading {align-items: start; flex-direction: column;} .tower-kits {gap: 8px;} .tower-kit {padding: 10px; gap: 8px;} .tower-kit>img {width: 28px; height: 32px;} .tower-kit strong {font-size: 22px;} .tower-kit small {font-size: 14px;}
+  .tower-squad-list, .active-run .tower-squad-list {grid-template-columns: 1fr;} .tower-unit, .active-run .tower-unit {display: grid; grid-template-columns: 90px 1fr; gap: 4px 12px; padding: 12px 16px;}
+  .tower-hero-art, .active-run .tower-hero-art {grid-column: 1; grid-row: 1/3; width: 90px; height: 120px; margin: 0;} .tower-portrait, .active-run .tower-portrait {transform: scale(1);}
+  .tower-unit-heading, .active-run .tower-unit-heading {grid-column: 2; margin: 0;} .tower-vitals, .active-run .tower-vitals {grid-column: 2;} .tower-loadout, .active-run .tower-loadout {grid-column: 1/-1;}
+  .tower-crest {display: none;} .tower-hero-art::before {width: 80px; height: 80px;} .tower-hero-art::after {width: 80px;}
+  .tower-choices {grid-template-columns: 1fr;} .tower-command-bar {gap: 10px; flex-wrap: wrap;} .tower-run-length {margin-left: 0;} .tower-command-bar:has(.tower-run-length)>.tower-primary {width: 100%;} .tower-page .tower-primary {min-width: 0; font-size: 20px; gap: 12px;}
+  .tower-progress, .tower-header-progress {justify-self: end; display: grid; justify-items: end; gap: 4px; padding: 0; border: 0;}
+.tower-header-progress>span:first-child {font-size: 14px; color: var(--tower-muted);}
+.tower-progress>div {flex-wrap: wrap; gap: 8px;} .tower-resume {padding: 18px; flex-wrap: wrap;} .tower-result h2 {font-size: 26px;}
+}
+@media (prefers-reduced-motion: reduce) {.tower-page button {transition: none;} .tower-page .tower-choice:hover:not(:disabled) {transform: none;}}
+.tower-combat-banner {position: absolute; z-index: 2; top: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: baseline; gap: 8px; padding: 5px 18px 7px; border: 1px solid oklch(65% .08 80); border-radius: 3px 3px 12px 12px; background: linear-gradient(oklch(30% .035 245 / .96), oklch(18% .025 250 / .96)); color: oklch(89% .08 80); pointer-events: none; box-shadow: inset 0 0 0 3px oklch(10% .025 250 / .45), 0 3px 10px oklch(10% .025 250 / .4);}
+.tower-combat-banner span {font: 16px Kim, sans-serif; color: oklch(83% .03 85);}
+.tower-combat-banner strong {font: 26px/1 Kim, sans-serif;}
+
+@media (max-width: 900px) {
+  .tower-header-progress {grid-column: 1/-1; display: flex; justify-self: stretch; justify-content: space-between; padding-bottom: 8px;}
+}
+@media (min-width: 601px) and (max-width: 900px) and (max-height: 700px) {
+  .is-preparing .tower-heading {min-height: 38px; margin-bottom: 8px;} .is-preparing .tower-title>img {height: 36px;}
+  .is-preparing .tower-preparation-heading {margin-bottom: 10px;} .is-preparing .tower-kits {margin-bottom: 12px;}
+  .is-preparing .tower-kit {padding: 8px 10px; gap: 8px;} .is-preparing .tower-kit>img {width: 28px; height: 32px;}
+  .is-preparing .tower-kit strong {font-size: 22px;} .is-preparing .tower-kit small {font-size: 14px;}
+  .is-preparing .tower-kit>span:not(.tower-item-icon):not(.tower-kit-check) {flex-direction: row; gap: 8px;}
+  .is-preparing .tower-hero-art {height: 88px;} .is-preparing .tower-portrait {transform: scale(.85);}
+  .is-preparing .tower-unit-heading {margin: 6px 0 8px;} .is-preparing .tower-unit {padding-bottom: 10px;}
+  .is-preparing .tower-loadout {padding-top: 8px; margin-top: 6px;} .is-preparing .tower-loadout .tower-item-icon {zoom: .8;}
+  .is-preparing .tower-spells>span>span:not(.tower-item-icon) {display: none;} .is-preparing .tower-command-bar {min-height: 64px; padding-block: 8px 12px;}
+}
+
+.tower-build ul {list-style: none; margin: 12px 0; padding: 0;}
+.tower-build li+li {border-top: 1px solid var(--tower-line); padding-top: 12px;}
+.tower-build strong {font: 20px Kim, sans-serif; color: var(--tower-gold);}
+.tower-choices:has(>.boss) {grid-template-columns: 1fr;}
+.tower-page .tower-choice.boss {display: grid; grid-template-columns: 180px minmax(0,1fr); gap: 16px 24px;}
+.tower-choice.boss .tower-encounter-top {grid-column: 1/-1;}
+.tower-choice.boss .tower-enemy-lineup {grid-column: 1; grid-row: 2/4; align-self: center; gap: 16px; padding: 12px 0;}
+.tower-choice.boss .tower-enemy-lineup>span:first-child {width: 100%;}
+.tower-choice.boss .tower-enemy-lineup>span:first-child img {width: 100px; height: 112px; image-rendering: auto;}
+.tower-choice.boss .tower-enemy-lineup img {width: 64px; height: 64px;}
+.tower-choice.boss>strong {grid-column: 2; grid-row: 2; align-self: end; font-size: 32px;}
+.tower-choice.boss .tower-spoils {grid-column: 2; grid-row: 3; align-self: start; margin: 0; padding: 0;}
+.tower-choice.boss .tower-choice-action {grid-column: 1/-1;}
+@media (max-width: 600px) {
+  .tower-page .tower-choice.boss {display: flex;} .tower-choice.boss .tower-enemy-lineup {align-self: stretch;}
+  .tower-choice.boss .tower-enemy-lineup>span:first-child {width: auto;} .tower-choice.boss .tower-enemy-lineup>span:first-child img {width: 70px; height: 70px;}
+  .tower-command-bar:has(.tower-build) {flex-wrap: wrap;} .tower-command-bar:has(.tower-build) .tower-retire {width: 100%;}
+}

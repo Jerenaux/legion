@@ -45,7 +45,9 @@ class PlayModes extends Component {
             lockIcon={!isRankedUnlocked ? lockIcon : undefined}
             gamesUntilUnlock={!isRankedUnlocked ? this.context.getGamesUntilFeature(LockedFeatures.RANKED_MODE) : 0}
           />
+          <PlayModeButton label="tower" mode={PlayMode.TOWER} data-playmode="tower" />
         </div>
+
       </div>
     );
   }

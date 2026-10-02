@@ -84,9 +84,11 @@ export enum PlayMode {
     CASUAL_VS_FRIEND,
     RANKED,
     RANKED_VS_AI,
+    TOWER,
 }
 
 export const PlayModeLabels = {
+    [PlayMode.TOWER]: 'Tower',
     [PlayMode.PRACTICE]: 'Practice',
     [PlayMode.TUTORIAL]: 'Tutorial',
     [PlayMode.CASUAL]: 'Casual',
