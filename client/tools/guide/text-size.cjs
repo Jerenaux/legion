@@ -47,8 +47,11 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
       await js(`(() => {const select = document.querySelector('#text-size'); select.value = '${size}'; select.dispatchEvent(new Event('change', {bubbles: true}));})()`);
       await waitFor(`JSON.parse(localStorage.getItem('gameSettings')).textSize === ${size}`);
       assert.equal(await js('getComputedStyle(document.documentElement).fontSize'), `${16 * size / 100}px`);
-      await fits('.settings-modal-container, .setting_menu, #text-size, .setting_menu_btn');
+      await fits('.settings-modal-container, #text-size');
+      assert(await js('document.querySelector(".setting_menu").scrollWidth <= document.querySelector(".setting_menu").clientWidth + 1'), 'Settings must not overflow horizontally');
       if (size === 130) await shot(`settings-${width}-130`);
+      await js('document.querySelector(".setting_menu [data-desktop-cancel]").scrollIntoView({block: "nearest"})');
+      await fits('.setting_menu [data-desktop-cancel]');
       await js('document.querySelector(".setting_menu [data-desktop-cancel]").click()');
       await waitFor('!document.querySelector("#text-size")');
       await openSP();
@@ -60,6 +63,7 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
       await waitFor(`document.querySelector('${count}').textContent === '1'`);
       if (size === 130) await shot(`sp-dialog-${width}-130`);
       await js('document.querySelector(".dialog-accept").click()');
+      await waitFor('Boolean(document.querySelector(".dialog-SP-modal"))');
       await fits('.ReactModal__Content, .dialog-SP-modal, .dialog-spell-modal-text, .dialog-button-container button');
       await cancelSP(); // Never submit permanent stat changes during layout checks.
     }

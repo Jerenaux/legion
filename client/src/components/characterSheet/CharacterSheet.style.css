@@ -31,8 +31,9 @@
     flex-direction: column;
     background-image: url('@assets/inventory/charinfo_bg.png');
     background-size: 100% 100%;
-    width: 382px;
-    height: 400px;
+    width: 23.875rem;
+    max-width: calc(100vw - 100px);
+    min-height: 25rem;
     position: relative;
 }
 
@@ -244,8 +245,8 @@
 }
 
 .character-info-bar {
-    width: 108px;
-    height: 24px;
+    width: 6.75rem;
+    min-height: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -264,7 +265,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 46px;
+    width: 2.875rem;
     height: 100%;
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
@@ -287,7 +288,7 @@
 }
 
 .character-info-bar .curr-info-container {
-    width: 60px;
+    width: 3.75rem;
     display: flex;
     justify-content: center;
     font-family: 'Kim', sans-serif;
