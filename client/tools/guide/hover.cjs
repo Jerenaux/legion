@@ -74,6 +74,17 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   assert.equal(await js('combatCheck.arena.getPlayer(2, 1).glowFx.active'), true, 'Inspection preserves area target highlight');
   await js(`window.dispatchEvent(new CustomEvent('characterOutOfSpellRadius', {detail: {x: 8, y: 4}}))`);
   assert.equal(await js('combatCheck.arena.getPlayer(2, 1).glowFx.active'), false);
+  await js(`(() => {
+    const a = combatCheck.arena;
+    combatCheck.hoverTrace = [];
+    const log = value => {combatCheck.hoverTrace.push(value); if (combatCheck.hoverTrace.length > 20) combatCheck.hoverTrace.shift();};
+    for (const method of ['clearCharacterHover', 'setCharacterHover']) {
+      const original = a[method];
+      a[method] = function (...args) {log({method, source: a.hoverSource, stack: new Error().stack.split('\\n').slice(1,5)}); return original.apply(this,args);};
+    }
+    a.input.on('gameout', () => log('gameout'));
+    window.addEventListener('blur', () => log('window blur'));
+  })()`);
 
   for (const [width, height] of [[1280, 720], [800, 600]]) {
     win.setContentSize(width, height);
@@ -89,6 +100,8 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
           camera: {zoom:a.cameras.main.zoom,worldView:a.cameras.main.worldView},
           hovered: a.hoveredPlayer && [a.hoveredPlayer.team.id,a.hoveredPlayer.num], source: a.hoverSource,
           element: document.elementFromPoint(x,y)?.outerHTML.slice(0,200),
+          over: a.input._over[p.id].map(o => [o.type,o.texture?.key,o.parentContainer?.num]),
+          trace: combatCheck.hoverTrace,
           hits: a.input.hitTestPointer(p).map(o => [o.type,o.texture?.key,o.parentContainer?.num])};
       })()`));
     }
