@@ -11,7 +11,7 @@ import { NewCharacter } from '../../../shared/NewCharacter';
 import { Class, League, PlayMode, StatusEffect, Terrain } from '../../../shared/enums';
 import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
-import {getReplay} from '@sentry/react';
+import {getClient, getReplay, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
 import {GameHUD, events} from '../../src/components/HUD/GameHUD';
 import {spells} from '../../../shared/Spells';
@@ -39,7 +39,9 @@ MusicManager.prototype.playBeginning = function () {
 };
 Object.assign(window, {routeAudio, musicOverlaps});
 
-Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId()},
+Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId(),
+  status: () => ({replay: Boolean(getReplay()), canvas: Boolean(getClient()?.getIntegrationByName('ReplayCanvas')),
+    rate: getClient<BrowserClient>()?.getOptions().replaysSessionSampleRate})},
   stabilityFreeze: function stabilityFreeze() {
     const until = performance.now() + 11500;
     while (performance.now() < until) { /* Deliberate local-only ANR for source-map verification. */ }
