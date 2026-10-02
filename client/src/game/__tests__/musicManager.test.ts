@@ -29,14 +29,21 @@ function setup(deferBeginning = false) {
     }, start() {},
   });
   const played: string[] = [];
+  type Fade = {targets: {musicGain: number}; duration: number; onUpdate: () => void; onComplete: () => void};
+  const fades: (Fade & {remove: () => void})[] = [];
   const scene = {
     load,
+    tweens: {add: (config: Fade) => {
+      const tween = {...config, remove: mock()};
+      fades.push(tween);
+      return tween;
+    }},
     cache: {audio: {has: (key: string) => available.has(key), getKeys: () => [...available], remove: (key: string) => available.delete(key)}},
     sound: {
-      add: (key: string) => {
+      add: (key: string, config: {volume: number}) => {
         expect(available.has(key)).toBe(true);
         return Object.assign(new EventEmitter(), {
-          key, play: () => played.push(key), stop: mock(), setVolume: mock(), destroy: mock(),
+          key, initialVolume: config.volume, play: () => played.push(key), stop: mock(), setVolume: mock(), destroy: mock(),
         });
       },
       removeAll: mock(),
@@ -47,7 +54,7 @@ function setup(deferBeginning = false) {
     for (let i = 0; i < times; i++) manager.currentSound.emit('complete');
   };
   if (!deferBeginning) manager.playBeginning();
-  return {manager, complete, played, available, blocked, events, settings, scene};
+  return {manager, complete, played, available, blocked, events, settings, scene, fades};
 }
 
 test('the intro is separate, and each combat track plays twice before advancing', () => {
@@ -150,4 +157,24 @@ test('combat updates during the menu fade retain the intro until playback begins
   expect(available.has('bgm_start')).toBe(true);
   manager.playBeginning();
   expect(played).toEqual(['bgm_start']);
+});
+
+
+test('combat intro fades in, respects live volume, and cancels the fade on cleanup', () => {
+  const {manager, fades, settings, events} = setup();
+  expect(manager.currentSound.initialVolume).toBe(0);
+  expect(fades[0].duration).toBe(500);
+  fades[0].targets.musicGain = .5;
+  settings.musicVolume = 50;
+  events.emit('settingsChanged');
+  expect(manager.currentSound.setVolume).toHaveBeenLastCalledWith(.25);
+  fades[0].targets.musicGain = 1;
+  fades[0].onUpdate();
+  expect(manager.currentSound.setVolume).toHaveBeenLastCalledWith(.5);
+  manager.playEnd();
+  expect(fades[0].remove).toHaveBeenCalledTimes(1);
+  expect(manager.currentSound.initialVolume).toBe(.5);
+  const next = setup();
+  next.manager.destroy();
+  expect(next.fades[0].remove).toHaveBeenCalledTimes(1);
 });

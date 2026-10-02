@@ -14,6 +14,8 @@ export class MusicManager {
     gameOver = false;
     soundConfig: { volume: number };
     volume: number;
+    private musicGain = 1;
+    private entryFade: Phaser.Tweens.Tween | null = null;
     private pending = new Map<string, () => void>();
 
     constructor(scene, startinIntensity, nbIntensities, bridges) {
@@ -44,7 +46,7 @@ export class MusicManager {
         this.volume = volume;
         this.soundConfig.volume = this.volume;
         if (this.currentSound) {
-            this.currentSound.setVolume(this.volume);
+            this.currentSound.setVolume(this.volume * this.musicGain);
         }
     }
 
@@ -76,9 +78,15 @@ export class MusicManager {
     playBeginning() {
         this.releaseCurrent();
         // Play the starting music
-        this.currentSound = this.scene.sound.add('bgm_start', this.soundConfig);
+        this.musicGain = 0;
+        this.currentSound = this.scene.sound.add('bgm_start', {...this.soundConfig, volume: 0});
         this.currentSound.once('complete', () => this.playNext(), this);
         this.currentSound.play();
+        this.entryFade = this.scene.tweens.add({
+            targets: this, musicGain: 1, duration: 500,
+            onUpdate: () => this.setVolume(this.volume),
+            onComplete: () => {this.entryFade = null;},
+        });
         this.prefetch();
     }
 
@@ -127,7 +135,14 @@ export class MusicManager {
         this.currentSound.play();
     }
 
+    private stopEntryFade() {
+        this.entryFade?.remove();
+        this.entryFade = null;
+        this.musicGain = 1;
+    }
+
     private releaseCurrent() {
+        this.stopEntryFade();
         this.currentSound?.destroy();
         this.currentSound = null;
     }
@@ -164,6 +179,7 @@ export class MusicManager {
     }
 
     stopAll() {
+        this.stopEntryFade();
         if (this.currentSound) {
             this.currentSound.stop();
             this.currentSound.removeAllListeners();

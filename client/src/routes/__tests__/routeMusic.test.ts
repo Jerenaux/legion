@@ -50,33 +50,42 @@ test('title fades before looping menus, menu navigation preserves playback, and 
   await music.setRouteMusic('/');
   const title = music.tracks[0];
   expect(title.loop).toBe(true);
-  expect(title.volume).toBe(.25);
+  expect(title.volume).toBe(0);
   music.document.emit('pointerdown');
+  await Promise.resolve();
   expect(title.paused).toBe(false);
+  music.advance(250);
+  expect(title.volume).toBe(.125);
+  music.advance(250);
+  expect(title.volume).toBe(.25);
   const menusReady = music.setRouteMusic('/play');
-  music.advance(300);
+  music.advance(1000);
   expect(title.volume).toBe(.125);
   expect(music.tracks).toHaveLength(1);
   music.settings.musicVolume = 50;
   music.events.emit('settingsChanged');
   expect(title.volume).toBe(.25); // Live volume changes preserve the fade gain.
-  music.advance(300);
+  music.advance(1000);
   await menusReady;
   const menus = music.tracks[1];
   expect(title.released).toBe(true);
   expect(title.paused).toBe(true);
   expect(menus.src).toEndWith('/menus.mp3');
   expect(menus.loop).toBe(true);
+  expect(menus.volume).toBe(0);
+  music.advance(250);
+  expect(menus.volume).toBe(.25);
+  music.advance(250);
   expect(menus.volume).toBe(.5);
   for (const route of ['/shop', '/team/1', '/rank', '/guide', '/queue/casual', '/lobby/1']) await music.setRouteMusic(route);
   expect(music.tracks).toHaveLength(2);
   let combatReady = false;
   const ready = music.setRouteMusic('/game/123').then(() => {combatReady = true;});
-  music.advance(300);
+  music.advance(1000);
   await Promise.resolve();
   expect(combatReady).toBe(false);
   expect(menus.paused).toBe(false);
-  music.advance(300);
+  music.advance(1000);
   await ready;
   expect(combatReady).toBe(true);
   expect(menus.paused).toBe(true);
@@ -92,17 +101,19 @@ test('title fades before looping menus, menu navigation preserves playback, and 
 test('rapid navigation uses the latest destination and unmount cancels pending playback', async () => {
   const music = setup();
   await music.setRouteMusic('/');
+  music.advance(500);
   const fade = music.setRouteMusic('/play');
   expect(music.setRouteMusic('/game/1')).toBe(fade);
-  music.advance(600);
+  music.advance(2000);
   await fade;
   expect(music.tracks).toHaveLength(1); // The skipped menu never starts.
   await music.setRouteMusic('/team');
   expect(music.tracks[1].paused).toBe(false);
+  music.advance(500);
   const leaving = music.setRouteMusic('/');
   music.stopRouteMusic();
   await leaving;
-  music.advance(600);
+  music.advance(2000);
   expect(music.tracks).toHaveLength(2);
   expect(music.tracks.every(track => track.paused && track.released)).toBe(true);
   expect(music.timers.size).toBe(0);
@@ -176,4 +187,23 @@ test('a match ending during the fade waits before its finale and cancels on tear
     await fade;
     expect(finales).toBe(disposed ? 0 : 1);
   }
+});
+
+
+test('leaving during fade-in fades from the current volume and cancels its timer', async () => {
+  const music = setup();
+  await music.setRouteMusic('/');
+  music.advance(250);
+  expect(music.tracks[0].volume).toBe(.125);
+  const ready = music.setRouteMusic('/game/1');
+  music.advance(1000);
+  expect(music.tracks[0].volume).toBe(.0625);
+  music.advance(1000);
+  await ready;
+  expect(music.tracks[0].released).toBe(true);
+  expect(music.timers.size).toBe(0);
+  await music.setRouteMusic('/play');
+  music.stopRouteMusic();
+  music.advance(500);
+  expect(music.timers.size).toBe(0);
 });

@@ -3,7 +3,8 @@ import menuMusic from "@assets/music/menus.mp3";
 import {loadGameSettings} from "./settings";
 import {events} from "./components/HUD/GameHUD";
 
-const FADE_MS = 600;
+const FADE_MS = 2000;
+const FADE_IN_MS = 500;
 type Track = 'title' | 'menus' | null;
 let audio: HTMLAudioElement | null = null;
 let playing: Track = null;
@@ -11,17 +12,33 @@ let desired: Track = null;
 let gain = 1;
 let transition: Promise<void> | null = null;
 let finishFade: (() => void) | null = null;
+let fadeInTimer: ReturnType<typeof setInterval> | null = null;
 
 const updateVolume = () => {
   if (audio) audio.volume = gain * loadGameSettings().musicVolume / 100;
 };
 const start = () => {
-  if (audio?.paused && !finishFade) void audio.play().catch(() => {
+  const track = audio;
+  if (track?.paused && !finishFade) void track.play().then(() => {
+    if (audio !== track || finishFade || fadeInTimer || gain === 1) return;
+    const started = performance.now();
+    fadeInTimer = setInterval(() => {
+      gain = Math.min(1, (performance.now() - started) / FADE_IN_MS);
+      updateVolume();
+      if (gain === 1) clearFadeIn();
+    }, 20);
+  }).catch(() => {
     // Retry blocked autoplay on the player's next interaction.
   });
 };
 
+function clearFadeIn() {
+  if (fadeInTimer !== null) clearInterval(fadeInTimer);
+  fadeInTimer = null;
+}
+
 function release() {
+  clearFadeIn();
   document.removeEventListener('pointerdown', start);
   document.removeEventListener('keydown', start);
   events.off('settingsChanged', updateVolume);
@@ -37,7 +54,7 @@ function playDesired() {
   playing = desired;
   audio = new Audio(desired === 'title' ? titleMusic : menuMusic);
   audio.loop = true;
-  gain = 1;
+  gain = 0;
   updateVolume();
   start();
   document.addEventListener('pointerdown', start);
@@ -55,10 +72,12 @@ export function setRouteMusic(pathname: string): Promise<void> {
     playDesired();
     return Promise.resolve();
   }
+  clearFadeIn();
+  const initialGain = gain;
   const started = performance.now();
   transition = new Promise(resolve => {
     const timer = setInterval(() => {
-      gain = Math.max(0, 1 - (performance.now() - started) / FADE_MS);
+      gain = initialGain * Math.max(0, 1 - (performance.now() - started) / FADE_MS);
       updateVolume();
       if (gain === 0) finishFade?.();
     }, 20);
