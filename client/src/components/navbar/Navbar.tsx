@@ -113,7 +113,7 @@ class Navbar extends Component<Props, State> {
     };
 
     toggleSettingsModal = () => {
-        this.setState(prevState => ({ isSettingsModalOpen: !prevState.isSettingsModalOpen }));
+        this.setState(prevState => ({ isSettingsModalOpen: !prevState.isSettingsModalOpen, openDropdown: false }));
     };
 
     render() {

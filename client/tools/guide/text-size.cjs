@@ -74,13 +74,13 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
       await fits('.ReactModal__Content, .dialog-SP-modal, .dialog-spell-modal-text, .dialog-button-container button');
       await cancelSP(); // Never submit permanent stat changes during layout checks.
     }
-    for (const route of ['play', 'shop', 'guide', 'game/guide-local']) {
+    for (const route of ['play', 'shop', 'shop/equipments', 'shop/spells', 'guide', 'game/guide-local']) {
       await win.loadURL(`app://legion/${route}`);
       await waitFor(route.startsWith('game') ? 'Boolean(document.querySelector(".player_bar_action"))' : 'Boolean(document.querySelector(".expand_btn_trigger"))');
       assert.equal(await js('getComputedStyle(document.documentElement).fontSize'), '20.8px', 'Text size survives reload');
-      await shot(`${route.split('/')[0]}-${width}-130`);
+      await shot(`${route.startsWith('game') ? 'game' : route.replace('/', '-')}-${width}-130`);
       if (route === 'guide') await fits('.guide-page');
-      if (route === 'shop') assert(await js('document.querySelector(".shop-container").scrollWidth <= innerWidth'), 'Shop must reflow within the window');
+      if (route.startsWith('shop')) assert(await js('document.querySelector(".shop-container").scrollWidth <= innerWidth'), 'Shop must reflow within the window');
       if (route.startsWith('game')) await fits('.player_bar_action, .player_bar_pass_turn, .player_bar_pass_turn span, .player_bar_stat_value, .player_bar_action_name');
     }
     await win.loadURL('app://legion/team/guide-2');
