@@ -79,6 +79,19 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
     win.setContentSize(width, height);
     await ready();
     await move(await fieldPoint(2, 3));
+    if (!await js('combatCheck.arena.hoveredPlayer === combatCheck.arena.getPlayer(2, 3)')) {
+      console.log('Resized pointer diagnostic', await js(`(() => {
+        const a = combatCheck.arena, p = a.input.activePointer, unit = a.getPlayer(2, 3), r = a.game.canvas.getBoundingClientRect();
+        const x = r.left + p.x * r.width / a.scale.gameSize.width, y = r.top + p.y * r.height / a.scale.gameSize.height;
+        return {viewport: [innerWidth, innerHeight], canvas: r.toJSON(), scaleBounds: a.scale.canvasBounds,
+          displayScale: a.scale.displayScale, pointer: {x:p.x,y:p.y,worldX:p.worldX,worldY:p.worldY,active:p.active},
+          unit: {x:unit.x,y:unit.y,scaleX:unit.scaleX,scaleY:unit.scaleY,frame:unit.sprite.frame.name},
+          camera: {zoom:a.cameras.main.zoom,worldView:a.cameras.main.worldView},
+          hovered: a.hoveredPlayer && [a.hoveredPlayer.team.id,a.hoveredPlayer.num], source: a.hoverSource,
+          element: document.elementFromPoint(x,y)?.outerHTML.slice(0,200),
+          hits: a.input.hitTestPointer(p).map(o => [o.type,o.texture?.key,o.parentContainer?.num])};
+      })()`));
+    }
     await expectHover(2, 3);
     await ready();
     assert(await js(`(() => {const r = document.querySelector('#character-hover-card').getBoundingClientRect();
