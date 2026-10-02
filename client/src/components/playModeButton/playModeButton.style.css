@@ -217,3 +217,16 @@
     letter-spacing: 0.5px;
     margin-top: -8px;
 }
+
+/* A fourth mode in the same family, with a warm expedition accent. */
+.buttonContainer.tower-mode {margin-left: 22px; border-color: oklch(71% .1 62); background: linear-gradient(160deg, oklch(27% .04 55), oklch(20% .018 250) 65%); box-shadow: 0 0 18px oklch(65% .12 65 / .1);}
+.buttonContainer.tower-mode::before {content: ''; position: absolute; left: -25px; top: 28px; bottom: 28px; width: 1px; background: linear-gradient(transparent, oklch(62% .035 65 / .6), transparent);}
+.buttonContainer.tower-mode .mode-icon {max-width: 106px; height: 116px; object-fit: contain; padding: 0; margin-top: -76px; filter: drop-shadow(0 5px 6px oklch(15% .025 60 / .55));}
+.buttonContainer.tower-mode .label {color: oklch(90% .075 80); line-height: 1.1; font-size: 1.35rem; margin: 7px 0 10px;}
+.buttonContainer.tower-mode .player {color: oklch(81% .085 65); font-size: .75rem; margin-bottom: 6px;}
+.buttonContainer.tower-mode .info-container {margin-top: 8px;}
+.tower-mode-tag {position: absolute; bottom: 10px; font: .65rem Arial, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: oklch(76% .035 75);}
+.info-value.scaling {color: oklch(86% .11 80);}
+.buttonContainer:focus-visible {outline: 3px solid oklch(90% .08 195); outline-offset: 5px;}
+@media (max-width: 760px) {.buttonContainer.tower-mode {margin-left: 0;} .buttonContainer.tower-mode::before {display: none;}}
+@media (prefers-reduced-motion: reduce) {.buttonContainer {transition: none;} .buttonContainer:hover {transform: none;}}

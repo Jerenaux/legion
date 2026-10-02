@@ -1,6 +1,4 @@
 import { h } from 'preact';
-import {Link} from 'preact-router';
-import '../TowerPage.css';
 import './PlayModes.style.css'
 import { Component } from 'preact';
 import PlayModeButton from '../playModeButton/playModeButton';
@@ -47,11 +45,9 @@ class PlayModes extends Component {
             lockIcon={!isRankedUnlocked ? lockIcon : undefined}
             gamesUntilUnlock={!isRankedUnlocked ? this.context.getGamesUntilFeature(LockedFeatures.RANKED_MODE) : 0}
           />
+          <PlayModeButton label="tower" mode={PlayMode.TOWER} data-playmode="tower" />
         </div>
-        <Link href="/tower" className="tower-entry" data-playmode="tower">
-          <div><strong>The Cinder Tower</strong><span>Solo expedition · Six encounters · Temporary builds · Account rewards</span></div>
-          <span>Explore →</span>
-        </Link>
+
       </div>
     );
   }

@@ -30,3 +30,9 @@ Floors do not grant match-count unlocks, ELO, league results, daily keys, or pra
 - `node tools/guide/capture.cjs --tower-images` in `client`: refresh only the tower guide crop using local fixtures. Fixtures never ship.
 
 Human playtests should check whether players want another run before rewards are emphasized, whether later milestones beat restarting easy floors for reward efficiency, which preparations are consistently skipped, and whether the Warden's warning leaves a useful response for each turn order. No win-rate or completion-time target has been verified with human playtests yet.
+
+## Visual presentation
+
+The Play screen uses the same mode-card component for Tower, immediately after Ranked. A warm gold rook and a fine divider distinguish solo expeditions. Inside the mode, the ascent track, squad resource bars, enemy lineups, illustrated preparations and banked spoils make the next decision visible. Keyboard focus, native kit radio inputs and difficulty selection, responsive layouts, and reduced-motion styles are retained.
+
+`client/public/tower_icon.png` was generated with the built-in Imagegen tool, using `practice_icon.png`, `casual_icon.png`, and `ranked_icon.png` as style references. Prompt: Create a fourth Legion game-mode icon, one chess rook on a transparent background. Match the existing bold, chunky silhouette and flat faceted shading, with ivory-gold upper-left highlights, antique-gold midtones, umber right-hand shadows, no outline or noisy texture. Use a crenellated crown, tapered column, broad stepped base and one small ember-lit arched opening. Front view with a slightly visible top. Center the complete piece on a square canvas; no text, ground, separate pedestal, cast shadow, frame or extra objects. It must read at 90 pixels high and resemble game UI artwork rather than realistic architecture or glossy 3D.

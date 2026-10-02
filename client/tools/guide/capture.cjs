@@ -272,15 +272,40 @@ if (!process.versions.electron) {
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
       } else if (process.argv.includes('--tower-images')) {
-        await win.loadURL(`${PACKAGED_APP_URL}tower`);
-        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        // Visual review only: keep every Tower state in the same packaged renderer.
+        for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
+          win.setContentSize(width, height);
+          await win.loadURL(`${PACKAGED_APP_URL}play`);
+          await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
+          await ready();
+          await js('Array.from(document.querySelectorAll("button")).find(el => el.textContent.trim() === "Dismiss")?.click()');
+          await js('document.querySelector(".playModesRow").scrollIntoView({block: "end"})'); await ready();
+          fs.writeFileSync(path.join(dist, `tower-play-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          await win.loadURL(`${PACKAGED_APP_URL}tower`);
+          await waitFor('Boolean(document.querySelector(".tower-primary"))');
+          await ready();
+          fs.writeFileSync(path.join(dist, `tower-prep-${width}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        win.setContentSize(1600, 900);
         await js('document.querySelector(".tower-primary").click()');
         await waitFor('Boolean(document.querySelector(".tower-choices"))');
         await ready();
-        fs.writeFileSync(path.join(dist, 'tower-full.png'), (await win.webContents.capturePage()).toPNG());
-        await js('document.querySelector(".tower-progress").scrollIntoView({block: "start"})');
-        await ready();
-        await capture('tower', {x: 230, y: 100, width: 1120, height: 700});
+        await capture('tower', {x: 100, y: 90, width: 1400, height: 780});
+        for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
+          win.setContentSize(width, height); await ready();
+          fs.writeFileSync(path.join(dist, `tower-route-${width}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        win.setContentSize(1280, 720);
+        await js('towerCheck.progress.run.phase="battle"; towerCheck.progress.run.path=["gate"]; towerCheck.win()');
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-choices"))'); await ready();
+        fs.writeFileSync(path.join(dist, 'tower-upgrades.png'), (await win.webContents.capturePage()).toPNG());
+        for (const phase of ['won', 'lost']) {
+          await js(`towerCheck.progress.run.phase=${JSON.stringify(phase)}; towerCheck.progress.run.floor=6; towerCheck.progress.highestClear=1; towerCheck.save()`);
+          await win.loadURL(`${PACKAGED_APP_URL}tower`);
+          await waitFor('Boolean(document.querySelector(".tower-primary"))'); await ready();
+          fs.writeFileSync(path.join(dist, `tower-${phase}.png`), (await win.webContents.capturePage()).toPNG());
+        }
       } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
