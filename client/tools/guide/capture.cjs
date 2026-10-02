@@ -234,7 +234,7 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover')) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -257,7 +257,10 @@ if (!process.versions.electron) {
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
         console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
       }
-      if (process.argv.includes('--text-size')) {
+      if (process.argv.includes('--hover')) {
+        await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
+        assert.deepEqual(rendererErrors, []);
+      } else if (process.argv.includes('--text-size')) {
         await require('./text-size.cjs')({win, js, waitFor, ready,
           output: process.env.TEXT_SIZE_SCREENSHOTS || path.join(dist, 'text-size'),
           baseline: process.argv.includes('--baseline')});
@@ -271,19 +274,214 @@ if (!process.versions.electron) {
         assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
+      } else if (process.argv.includes('--dock')) {
+        win.show();
+        await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        await ready();
+        await require('./command-dock.cjs')({js, waitFor, ready, win, dist});
+      } else if (process.argv.includes('--tower-images')) {
+        // Visual review only: keep every Tower state in the same packaged renderer.
+        for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
+          win.setContentSize(width, height);
+          await win.loadURL(`${PACKAGED_APP_URL}play`);
+          await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
+          await ready();
+          await js('Array.from(document.querySelectorAll("button")).find(el => el.textContent.trim() === "Dismiss")?.click()');
+          await js('document.querySelector(".playModesRow").scrollIntoView({block: "end"})'); await ready();
+          fs.writeFileSync(path.join(dist, `tower-play-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          await win.loadURL(`${PACKAGED_APP_URL}tower`);
+          await waitFor('Boolean(document.querySelector(".tower-primary"))');
+          await ready();
+          fs.writeFileSync(path.join(dist, `tower-prep-${width}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        win.setContentSize(1280, 720);
+        await js('towerCheck.progress.highestClear=1; towerCheck.save()');
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        await js('document.querySelector("input[value=control]").click()'); await ready();
+        fs.writeFileSync(path.join(dist, 'tower-control.png'), (await win.webContents.capturePage()).toPNG());
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        win.setContentSize(1600, 900);
+        await js('document.querySelector(".tower-primary").click()');
+        await waitFor('Boolean(document.querySelector(".tower-choices"))');
+        await ready();
+        await capture('tower', {x: 0, y: 60, width: 1600, height: 840});
+        for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
+          win.setContentSize(width, height); await ready();
+          fs.writeFileSync(path.join(dist, `tower-route-${width}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        win.setContentSize(1280, 720);
+        await js('towerCheck.progress.run.phase="battle"; towerCheck.progress.run.path=["gate"]; towerCheck.win()');
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-choices"))'); await ready();
+        fs.writeFileSync(path.join(dist, 'tower-upgrades.png'), (await win.webContents.capturePage()).toPNG());
+        for (const [name, state] of [
+          ['spell-upgrades', 'run.phase="choice"; run.offers=["rest","supplies","ice","frostcraft"]; run.squad[2].character.skills=[0,3,10]'],
+          ['late-route', 'run.phase="ready"; run.floor=4; run.upgrades=["guard","satchel","swift"]; run.squad[0].hp=42; run.squad[1].mp=15; run.squad[2].character.inventory=[1,1,1,1]'],
+          ['warden', 'run.phase="ready"; run.floor=5'],
+          ['resume', 'run.phase="battle"; run.floor=5; run.path[5]="warden"; run.gameId="guide-local"'],
+        ]) {
+          await js(`{const run=towerCheck.progress.run; ${state}; towerCheck.save()}`);
+          await win.loadURL(`${PACKAGED_APP_URL}tower`);
+          await waitFor('Boolean(document.querySelector(".tower-unit"))'); await ready();
+          fs.writeFileSync(path.join(dist, `tower-${name}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        for (const phase of ['won', 'lost']) {
+          await js(`towerCheck.progress.run.phase=${JSON.stringify(phase)}; towerCheck.progress.run.floor=${phase === "won" ? 6 : 3}; towerCheck.progress.highestClear=1; towerCheck.save()`);
+          await win.loadURL(`${PACKAGED_APP_URL}tower`);
+          await waitFor('Boolean(document.querySelector(".tower-primary"))'); await ready();
+          fs.writeFileSync(path.join(dist, `tower-${phase}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        await win.loadURL(`${PACKAGED_APP_URL}game/tower-embers`);
+        await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
       } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
         await ready();
         fs.writeFileSync(path.join(dist, 'battle-full.png'), (await win.webContents.capturePage()).toPNG());
         await capture('battle', {x: 340, y: 290, width: 840, height: 405});
-        await capture('actions', {x: 400, y: 790, width: 960, height: 110});
-        await capture('turn-order', {x: 570, y: 730, width: 460, height: 90});
+        for (const [name, rect] of [
+          ['combat-roster', {x: 8, y: 120, width: 290, height: 265}],
+          ['combat-timeline', {x: 570, y: 720, width: 460, height: 100}],
+        ]) {
+          fs.writeFileSync(path.join(dist, `${name}.png`), (await win.webContents.capturePage(rect)).toPNG());
+        }
+        win.setContentSize(1280, 720);
+        await ready();
+        fs.writeFileSync(path.join(dist, 'battle-1280.png'), (await win.webContents.capturePage()).toPNG());
+        win.setContentSize(1600, 900);
+        await ready();
+        await js('combatCheck.arena.inspectBattlefieldCharacter(combatCheck.arena.getPlayer(2, 3))');
+        await ready();
+        await capture('inspection', {x: 870, y: 485, width: 390, height: 255});
+        fs.writeFileSync(path.join(dist, 'combat-inspection.png'), (await win.webContents.capturePage()).toPNG());
+        win.setContentSize(1280, 720);
+        await ready();
+        fs.writeFileSync(path.join(dist, 'combat-inspection-1280.png'), (await win.webContents.capturePage()).toPNG());
+        win.setContentSize(1600, 900);
+        await js('combatCheck.arena.clearCharacterHover()');
+        await ready();
+        await capture('actions', {x: 400, y: 800, width: 800, height: 100});
+        await capture('turn-order', {x: 460, y: 730, width: 570, height: 70});
+        await js('combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells([9]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-empty-items.png'), (await win.webContents.capturePage()).toPNG());
+        await js('window.dockPreviewTurn = {...combatCheck.arena.turnee}; combatCheck.arena.processTurnee({...dockPreviewTurn, num: 1}); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-warrior.png'), (await win.webContents.capturePage()).toPNG());
+        // Review empty inventory with every class, including wrapped text and enlarged UI.
+        for (const [width, height, scale] of [[1600, 900, 100], [1280, 720, 130], [960, 540, 100]]) {
+          win.setContentSize(width, height);
+          await js(`document.documentElement.style.fontSize = '${scale}%'`);
+          for (const [name, num, spells] of [['warrior', 1, []], ['white-mage', 2, [9, 10, 11, 12]], ['black-mage', 3, [0, 3, 6, 1, 4]]]) {
+            await js(`combatCheck.arena.processTurnee({...dockPreviewTurn, num: ${num}}); combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells(${JSON.stringify(spells)}); combatCheck.arena.refreshBox()`);
+            await ready();
+            fs.writeFileSync(path.join(dist, `dock-empty-${name}-${width}-${scale}.png`),
+              (await win.webContents.capturePage({x: 0, y: height - 180, width, height: 180})).toPNG());
+          }
+        }
+        win.setContentSize(1600, 900);
+        await js('document.documentElement.style.fontSize = "100%"');
+        await js('combatCheck.arena.processTurnee(dockPreviewTurn); combatCheck.resync()');
+        await ready();
+        // Manual visual review: compact, full-loadout and enemy-turn states.
+        for (const [width, height, scale] of [[1280, 720, 100], [1280, 720, 130], [960, 540, 100]]) {
+          win.setContentSize(width, height);
+          await js(`document.documentElement.style.fontSize = '${scale}%'`);
+          await ready();
+          fs.writeFileSync(path.join(dist, `dock-${width}-${scale}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        win.setContentSize(1280, 720);
+        await js('document.documentElement.style.fontSize = "100%"; combatCheck.arena.selectedPlayer.useSkill(0)');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-targeting.png'), (await win.webContents.capturePage()).toPNG());
+        await js('combatCheck.arena.selectedPlayer.cancelSkill(); combatCheck.arena.selectedPlayer.statuses.Mute = 3; combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-silenced.png'), (await win.webContents.capturePage()).toPNG());
+        await js('combatCheck.arena.selectedPlayer.statuses.Mute = 0');
+        win.setContentSize(1600, 900);
+        await js('document.documentElement.style.fontSize = "100%"; combatCheck.arena.selectedPlayer.setSpells([0, 3, 6, 1, 2]); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-full-loadout.png'), (await win.webContents.capturePage()).toPNG());
+        win.show();
+        win.focus();
+        for (const type of ['spells', 'consumables']) {
+          await ready();
+          await js(`document.querySelector('#player_hud_${type}').focus()`);
+          await ready();
+          fs.writeFileSync(path.join(dist, `dock-${type}-tooltip.png`), (await win.webContents.capturePage()).toPNG());
+          await js('document.activeElement.blur()');
+        }
+        await js('combatCheck.arena.processTurnee({...combatCheck.arena.turnee, team: 2, num: 1, turnNumber: 9})');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-enemy.png'), (await win.webContents.capturePage()).toPNG());
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
-        await capture('loadout', {x: 270, y: 328, width: 1045, height: 428});
+        await js('document.querySelector(".character-inventory-container").scrollIntoView({block: "start"})');
+        await ready();
+        const loadoutY = await js('Math.round(document.querySelector(".character-inventory-container").getBoundingClientRect().top)');
+        await capture('loadout', {x: 270, y: loadoutY, width: 1045, height: 428});
       } else {
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
+        await js('document.querySelector("[data-playmode=tower]").click()');
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        await js('document.querySelector(".tower-primary").click()');
+        await waitFor('document.querySelectorAll(".tower-choice").length === 2');
+        assert.equal(await js('document.querySelectorAll(".tower-unit").length'), 3);
+        for (const width of [1280, 1600]) {
+          win.setContentSize(width, 900);
+          await ready();
+          fs.writeFileSync(path.join(dist, `tower-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          assert(await js('document.querySelector(".tower-page").scrollWidth <= document.querySelector(".tower-page").clientWidth'), 'Tower must not scroll horizontally');
+        }
+        await js('document.querySelector(".tower-choice").click()');
+        await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
+        assert.equal(await js('document.querySelector(".player_bar_controls").textContent.includes("Untimed") || Boolean(document.querySelector(".circular_timer"))'), false);
+        assert.equal(await js('combatCheck.arena.getPlayer(1, 3).spells.find(spell => spell.id === 6).cost'), 15);
+        assert.equal(await js('combatCheck.arena.towerWarningMarkers.length'), 2);
+        assert.equal(await js('document.querySelector(".tower-combat-banner").textContent.trim()'), 'Floor 6');
+        fs.writeFileSync(path.join(dist, 'tower-boss.png'), (await win.webContents.capturePage()).toPNG());
+        await js('towerCheck.win(); combatCheck.arena.socket.emit("towerEnd", {saved: true})');
+        await waitFor('document.querySelectorAll(".tower-choice").length === 4');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'tower-upgrades.png'), (await win.webContents.capturePage()).toPNG());
+        await js('document.querySelector(".tower-choice").focus()');
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Return'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Return'});
+        await waitFor('document.querySelectorAll(".tower-choice").length === 2');
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('document.querySelectorAll(".tower-choice").length === 2');
+        assert((await js('document.querySelector(".tower-progress").innerText')).includes('1/6 cleared'));
+        await js('towerCheck.fail = true; document.querySelector(".tower-choice").click()');
+        await waitFor('Boolean(document.querySelector(".tower-error"))');
+        assert.equal(await js('document.querySelector(".tower-choice").disabled'), true);
+        await js('towerCheck.fail = false; document.querySelector(".tower-error button").click()');
+        await waitFor('!document.querySelector(".tower-error") && !document.querySelector(".tower-choice").disabled');
+        console.log('Tower entry, choices, keyboard controls, saved progress, untimed combat, boss warnings, and recovery pass');
+        await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
+        for (const [games, size] of [[0, 3], [11, 3], [12, 3], [12, 5], [12, 6]]) {
+          await win.loadURL(`${PACKAGED_APP_URL}team?games=${games}&roster=${size}`);
+          await waitFor('Boolean(document.querySelector(".roster-heading"))');
+          assert.equal(await js('document.querySelectorAll(".rosters .endgame_character").length'), size);
+          assert.equal(await js('document.querySelectorAll(".roster-slot").length'), size < 6 ? 1 : 0);
+          assert.equal(await js('Boolean(document.querySelector(".roster-slot--available"))'), games >= 12 && size < 6);
+          assert.equal(await js('document.querySelector(".roster-unlock progress")?.value'), games < 12 ? games : undefined);
+          if (games === 11) assert((await js('document.querySelector(".roster-unlock-label").textContent')).includes('1 game'));
+          if (games < 12) assert.equal(await js('document.querySelectorAll(".rosterContainer a").length'), 0);
+          if (size === 6) assert.equal(await js('Boolean(document.querySelector(".roster-unlock"))'), false);
+        }
+        await win.loadURL(`${PACKAGED_APP_URL}team?games=12`);
+        await waitFor('Boolean(document.querySelector(".roster-slot--available"))');
+        await js('document.querySelector(".roster-slot--available").click()');
+        assert.equal(await js('location.pathname'), '/shop/characters');
+        assert.deepEqual(rendererErrors, []);
+        console.log('Team recruitment: locked progress, unlock boundary, partial/full roster and Shop navigation pass');
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
@@ -666,7 +864,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

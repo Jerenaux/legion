@@ -440,7 +440,7 @@ export abstract class Game
 
     private pauseForRecovery() {
         if (this.gameOver || !this.gameStarted) return;
-        if (!this.combatStarted || this.mode === PlayMode.PRACTICE || this.mode === PlayMode.TUTORIAL) {
+        if (!this.combatStarted || this.mode === PlayMode.PRACTICE || this.mode === PlayMode.TUTORIAL || this.mode === PlayMode.TOWER) {
             this.combatClock.pause();
             this.startLoadingDeadline();
         }
@@ -472,7 +472,7 @@ export abstract class Game
         }
     }
 
-    private clearTimers() {
+    protected clearTimers() {
         clearTimeout(this.loadingTimer!);
         this.loadingTimer = null;
         clearInterval(this.audienceTimer!);

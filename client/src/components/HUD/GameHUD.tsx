@@ -13,6 +13,7 @@ import { recordCompletedGame } from '../utils';
 import TutorialDialogue from './TutorialDialogue';
 import { combatTipsVisible, saveCombatTips, type TutorialMessage } from '../../game/TutorialManager';
 import PlayerBar from './PlayerBar';
+import CharacterHoverCard, { CharacterHover } from './CharacterHoverCard';
 
 
 interface GameHUDProps {
@@ -21,9 +22,11 @@ interface GameHUDProps {
 interface GameHUDState {
   playerVisible: boolean;
   player: PlayerProps;
+  commandPlayer: PlayerProps | null;
+  canCommand: boolean;
+  isPlayerTurn: boolean;
   pendingSpell: boolean;
   pendingItem: boolean;
-  showTargetBanner: boolean;
   team1: TeamOverview;
   team2: TeamOverview;
   gameOver: boolean;
@@ -32,6 +35,7 @@ interface GameHUDState {
   goldReward: number;
   characters: CharacterUpdate[];
   isSpectator: boolean;
+  tower: {floor: number; tier: number; name: string} | null;
   mode: PlayMode;
   game0: boolean;
   grade: string;
@@ -48,8 +52,8 @@ interface GameHUDState {
   turnDuration: number;
   timeLeft: number;
   turnNumber: number;
-  animate: boolean;
   isHUDVisible: boolean;
+  characterHover: CharacterHover | null;
 }
 
 const events = new EventEmitter();
@@ -59,9 +63,11 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   getInitialState = () => ({
     playerVisible: false,
     player: null,
+    commandPlayer: null,
+    canCommand: false,
+    isPlayerTurn: false,
     pendingSpell: false,
     pendingItem: false,
-    showTargetBanner: false,
     team1: null,
     team2: null,
     gameOver: false,
@@ -71,6 +77,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     characters: [],
     isSpectator: false,
     mode: null,
+    tower: null,
     game0: false,
     grade: null,
     chests: [],
@@ -86,13 +93,12 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     timeLeft: 0,
     turnNumber: 0,
     turnDuration: 0,
-    animate: false,
     isHUDVisible: true,
+    characterHover: null,
   });
 
   state = this.getInitialState();
 
-  lastPlayerKey = null;
   private lastPassTurnClick = 0;
   private feedbackTimer: ReturnType<typeof setTimeout>;
   private clearActionFeedback = () => {
@@ -102,8 +108,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   componentDidMount() {
     events.on('showPlayerBox', this.showPlayerBox);
+    events.on('characterHoverChanged', this.onCharacterHover);
     events.on('refreshOverview', this.updateOverview);
     events.on('gameEnd', this.endGame);
+    events.on('towerInfo', this.setTowerInfo);
     events.on('hoverCharacter', () => {
       if (this.state.pendingSpell || this.state.pendingItem) return;
       this.handleCursorChange('pointerCursor')
@@ -123,7 +131,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       this.setState({
         pendingSpell: true,
         pendingItem: false,
-        showTargetBanner: true
       });
       this.handleCursorChange('spellCursor')
     });
@@ -132,7 +139,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       this.setState({
         pendingSpell: false,
         pendingItem: true,
-        showTargetBanner: true
       });
       this.handleCursorChange('itemCursor')
     });
@@ -140,7 +146,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('clearPendingSpell', () => {
       this.setState({
         pendingSpell: false,
-        showTargetBanner: false
       });
       this.handleCursorChange('normalCursor')
     });
@@ -148,7 +153,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('clearPendingItem', () => {
       this.setState({
         pendingItem: false,
-        showTargetBanner: false
       });
       this.handleCursorChange('normalCursor')
     });
@@ -178,17 +182,20 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     window.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  showPlayerBox = (playerData: PlayerProps) => {
-    const playerKey = `${playerData.team}-${playerData.number}`;
-    const isCharacterSwitch = this.lastPlayerKey !== playerKey;
-    this.lastPlayerKey = playerKey;
-    if (isCharacterSwitch || playerData.pendingSpell !== this.state.player?.pendingSpell ||
-        playerData.pendingItem !== this.state.player?.pendingItem) this.clearActionFeedback();
+  onCharacterHover = (characterHover: CharacterHover | null) => {
+    this.setState({ characterHover });
+  }
 
-    this.setState({
-      player: playerData,
-      animate: !isCharacterSwitch
-    });
+  inspectCharacter = (team: number, num: number, element: HTMLElement | null) => {
+    events.emit('inspectCharacter', team, num, element?.getBoundingClientRect());
+  }
+
+  showPlayerBox = (player: PlayerProps | null, commandPlayer: PlayerProps | null, canCommand: boolean, isPlayerTurn: boolean) => {
+    if (player?.team !== this.state.player?.team || player?.number !== this.state.player?.number ||
+        player?.pendingSpell !== this.state.player?.pendingSpell || player?.pendingItem !== this.state.player?.pendingItem) {
+      this.clearActionFeedback();
+    }
+    this.setState({player, commandPlayer, canCommand, isPlayerTurn});
   }
 
   updateOverview = (
@@ -214,6 +221,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         turnNumber: turnee.turnNumber,
     })
   }
+
+  setTowerInfo = (tower: GameHUDState['tower']) => this.setState({tower});
 
   endGame = (data: OutcomeData) => {
     recordCompletedGame();
@@ -276,7 +285,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
     this.lastPassTurnClick = now;
 
-    if (this.state.pendingSpell || this.state.pendingItem) {
+    if (!this.state.canCommand || this.state.pendingSpell || this.state.pendingItem) {
       return;
     }
 
@@ -284,6 +293,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' || event.key.toLowerCase() === 'a') events.emit('clearCharacterHover');
     // Toggle HUD visibility when 'a' key is pressed
     if (event.key.toLowerCase() === 'a') {
       this.setState(prevState => ({ isHUDVisible: !prevState.isHUDVisible }));
@@ -293,7 +303,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   render() {
     const {
       player, team1, team2, isSpectator, mode, gameInitialized,
-      showOverview, isHUDVisible
+      showOverview, isHUDVisible, characterHover
     } = this.state;
     const ownMembers: TeamMember[] = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
     const score = team1?.members[0]?.isPlayer ? team1?.score : team2?.score;
@@ -303,48 +313,40 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
 
     const isTutorialMode = mode === PlayMode.TUTORIAL;
+    const inspected = characterHover && (characterHover.team === 1 ? team1 : team2)?.members[characterHover.num - 1];
 
     return (
       <div className="gamehud height_full flex flex_col justify_between padding_bottom_16"
         data-coach-focus={isHUDVisible && !this.state.gameOver && this.state.isTutorialVisible ? this.state.tutorialMessage?.focus : undefined}>
-        {isHUDVisible && this.state.showTargetBanner && (
-          <div className="target_selection_banner">
-            Select a target
-          </div>
-        )}
         {isHUDVisible && (
           <>
             {showOverview && (
               <div className="hud-container">
-                <Overview position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
-                <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
+                <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
+                <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
               </div>
             )}
           </>
         )}
+        {this.state.tower && <div className="tower-combat-banner" role="status">
+          <span>Floor</span> <strong>{this.state.tower.floor}</strong>
+        </div>}
         {isHUDVisible && (
           <PlayerBar
-            hp={player?.hp || 0}
-            maxHp={player?.maxHp || 0}
-            mp={player?.mp || 0}
-            maxMp={player?.maxMp || 0}
-            hasSpells={player?.spells?.length > 0}
-            statuses={player?.statuses}
-            isPlayerTurn={player?.isPlayer}
+            player={this.state.commandPlayer}
+            canAct={this.state.canCommand}
+            isPlayerTurn={this.state.isPlayerTurn}
             turnDuration={this.state.turnDuration}
             timeLeft={this.state.timeLeft}
             turnNumber={this.state.turnNumber}
             onPassTurn={this.handlePassTurn}
-            animate={this.state.animate}
-            pendingItem={player?.pendingItem}
-            pendingSpell={player?.pendingSpell}
-            items={player?.items}
-            spells={player?.spells}
             eventEmitter={events}
           />
         )}
         {isHUDVisible && (
           <Timeline
+            characterHover={characterHover}
+            onInspect={this.inspectCharacter}
             isTutorial={isTutorialMode}
             score={score}
             mode={mode}
@@ -355,6 +357,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
             team2={team2}
           />
         )}
+        {isHUDVisible && !this.state.gameOver && inspected && <CharacterHoverCard character={inspected} hover={characterHover} />}
         {isHUDVisible && this.state.gameOver && <Endgame
           members={ownMembers}
           grade={this.state.grade}

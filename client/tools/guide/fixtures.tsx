@@ -1,3 +1,4 @@
+import {createTowerRun, chooseTowerUpgrade, finishTowerBattle, TowerProgress, TOWER_ENCOUNTERS} from '@legion/shared/tower';
 // Screenshot-only providers. The release webpack config never imports this file.
 import 'phaser';
 import { h, ComponentChildren } from 'preact';
@@ -8,8 +9,8 @@ import { Arena } from '../../src/game/Arena';
 import {MusicManager} from '../../src/game/MusicManager';
 import { EventEmitter } from 'eventemitter3';
 import { NewCharacter } from '../../../shared/NewCharacter';
-import { Class, League, PlayMode, StatusEffect, Terrain } from '../../../shared/enums';
-import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE } from '../../../shared/config';
+import { Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures } from '../../../shared/enums';
+import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
 import {getClient, getReplay, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
@@ -105,13 +106,55 @@ Arena.prototype.connectToServer = async function () {
   }
   this.socket = Object.assign(new EventEmitter(), {disconnect() {}}) as typeof this.socket;
   this.enqueueMessage('queueData', battle.queue);
-  this.enqueueMessage('gameStatus', battle);
+  const snapshot = structuredClone(battle);
+  if (location.pathname.includes('/tower-fixture')) {
+    snapshot.general.mode = PlayMode.TOWER;
+    snapshot.general.tower = {floor: 6, tier: 1, name: 'The Cinder Warden', warning: [{x: 4, y: 4}, {x: 5, y: 4}]};
+    snapshot.turnee.turnDuration = 0; snapshot.turnee.timeLeft = 0;
+    snapshot.player.team[2].spells = [0, 6];
+    snapshot.player.team[2].towerSpellCosts = {0: 10, 6: 15};
+    this.socket.on('towerEnd', () => route('/tower'));
+  }
+  if (location.pathname.includes('/tower-embers')) {
+    const encounter = TOWER_ENCOUNTERS[0].find(entry => entry.id === 'embers')!;
+    snapshot.general.mode = PlayMode.TOWER;
+    snapshot.general.tower = {floor: 1, tier: 1, name: encounter.name, warning: []};
+    snapshot.turnee.turnDuration = 0; snapshot.turnee.timeLeft = 0;
+    snapshot.terrain = encounter.terrain;
+    snapshot.opponent.team = encounter.enemies.map(enemy => ({...snapshot.opponent.team[2],
+      name: enemy.name, class: enemy.class, x: enemy.x, y: enemy.y, hp: enemy.hp, maxHP: enemy.hp,
+      mp: 100, maxMP: 100, spells: enemy.spells}));
+    snapshot.queue = snapshot.queue.filter(unit => unit.team !== 2 || unit.num <= encounter.enemies.length);
+  }
+  this.enqueueMessage('gameStatus', snapshot);
 };
 
 export async function getFirebaseIdToken() { return 'guide-local-only'; }
 const rankCheck = {fail: true};
 Object.assign(window, {rankCheck});
-export async function apiFetch(endpoint: string) {
+const towerCheck = {
+  fail: false,
+  progress: JSON.parse(localStorage.getItem('tower-fixture') || '{"run":null,"highestClear":0}') as TowerProgress,
+  win() {
+    const run = this.progress.run!;
+    finishTowerBattle(run, {won: true, units: run.squad.map(unit => ({hp: unit.hp, mp: unit.mp, inventory: unit.character.inventory}))});
+    this.save();
+  },
+  save() { localStorage.setItem('tower-fixture', JSON.stringify(this.progress)); },
+};
+Object.assign(window, {towerCheck});
+export async function apiFetch(endpoint: string, options: {body?: {action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
+  if (endpoint === 'tower') {
+    if (towerCheck.fail) throw new Error('Expected tower timeout');
+    const body = options.body;
+    if (body?.action === 'create') towerCheck.progress.run = createTowerRun('fixture-run', body.tier, body.kit);
+    const run = towerCheck.progress.run;
+    if (body?.action === 'upgrade') chooseTowerUpgrade(run, body.upgrade);
+    if (body?.action === 'retire') run.phase = 'retired';
+    if (body?.action === 'battle') { run.phase = 'battle'; run.path.push(body.encounter); run.gameId = 'tower-fixture'; }
+    towerCheck.save();
+    return structuredClone(towerCheck.progress);
+  }
   if (endpoint === 'recordPlayerAction') return {};
   if (endpoint === 'listOnSaleCharacters') return [];
   if (endpoint.startsWith('fetchLeaderboard?tab=')) {
@@ -135,20 +178,27 @@ Object.assign(window, {queueCheck});
 
 export default function FixturePlayer({children}: {children: ComponentChildren}) {
   const defaults = useContext(PlayerContext);
+  const [preview] = useState(() => new URLSearchParams(location.search));
+  const completedGames = Math.max(0, Number(preview.get('games') ?? 12));
+  const rosterSize = Math.max(3, Math.min(MAX_CHARACTERS, Number(preview.get('roster') ?? 3)));
+  const roster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
+    : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]});
   const [activeId, setActiveId] = useState(characters[2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
   Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true), fail: () => setRenderFailed(true)}});
   if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
-    ...defaults, loaded, welcomeShown: true, characters, activeCharacterId: activeId,
+    ...defaults, loaded, welcomeShown: true, characters: roster, activeCharacterId: activeId,
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
-      isLoaded: loaded, completedGames: 12, engagementStats: profile.engagementStats, gold: 240, elo: 128, rank: 12,
+      isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
       carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
-    canAccessFeature: () => true, getCompletedGames: () => 12, checkEngagementFlag: () => true,
-    getCharacter: (id: string) => characters.find(character => character.id === id),
-    getActiveCharacter: () => characters.find(character => character.id === activeId),
+    canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
+    getCompletedGames: () => completedGames, checkEngagementFlag: () => true,
+    getGamesUntilFeature: (feature: LockedFeatures) => Math.max(0, LOCKED_FEATURES[feature] - completedGames),
+    getCharacter: (id: string) => roster.find(character => character.id === id),
+    getActiveCharacter: () => roster.find(character => character.id === activeId),
     updateActiveCharacter: (id: string) => {if (id) setActiveId(id);},
   };
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

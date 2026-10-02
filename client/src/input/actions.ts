@@ -4,19 +4,19 @@ export type DesktopAction =
   | "menu-up" | "menu-down" | "menu-left" | "menu-right"
   | "confirm" | "cancel" | "previous-unit" | "next-unit"
   | "select-unit-1" | "select-unit-2" | "select-unit-3"
-  | "end-turn" | "pause";
+  | "end-turn" | "pause" | "abandon-dialog";
 
 export type DesktopActionSource = "keyboard" | "gamepad";
 
-export function actionFromKeyboard(event: Pick<KeyboardEvent, "code" | "key" | "shiftKey">): DesktopAction | null {
+export function actionFromKeyboard(event: Pick<KeyboardEvent, "code" | "key" | "shiftKey">, inCombat = false): DesktopAction | null {
   const byCode: Record<string, DesktopAction> = {
     ArrowUp: "menu-up",
     ArrowDown: "menu-down",
     ArrowLeft: "menu-left",
     ArrowRight: "menu-right",
     Enter: "confirm",
-    Space: "confirm",
-    Escape: "cancel",
+    Space: inCombat ? "end-turn" : "confirm",
+    Escape: inCombat ? "abandon-dialog" : "cancel",
     Digit1: "select-unit-1",
     Digit2: "select-unit-2",
     Digit3: "select-unit-3",

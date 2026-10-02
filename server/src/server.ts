@@ -11,6 +11,7 @@ import cors from 'cors';
 import { apiFetch } from './API';
 import { Game } from './Game';
 import { AIGame } from './AIGame';
+import {TowerGame} from './TowerGame';
 import { PvPGame } from './PvPGame';
 import firebaseConfig from '@legion/shared/firebaseConfig';
 import { PlayMode } from '@legion/shared/enums';
@@ -193,14 +194,20 @@ io.on('connection', async (socket) => {
         return;
       }
 
+      if (gameData.mode === PlayMode.TOWER && gameData.towerSettled) {
+        socket.emit('towerEnd', {saved: true});
+        return;
+      }
       let game: Game;
       const previousGame = gamesMap.get(gameId);
-      if (previousGame?.gameOver && previousGame.gameOutcomes.size === 0) gamesMap.delete(gameId);
+      if (previousGame?.gameOver && previousGame.gameOutcomes.size === 0 && (!(previousGame instanceof TowerGame) || !previousGame.hasPendingResult)) gamesMap.delete(gameId);
       if (!gamesMap.has(gameId)) {
         // console.log(`[server:connection] Creating game ${gameId} with mode ${gameData.mode}`);
         const AImodes = [PlayMode.PRACTICE, PlayMode.CASUAL_VS_AI, PlayMode.RANKED_VS_AI, PlayMode.TUTORIAL];
         const gameType = AImodes.includes(gameData.mode) ? AIGame : PvPGame;
-        game = new gameType(gameId, gameData.mode, gameData.league, io);
+        game = gameData.mode === PlayMode.TOWER
+          ? new TowerGame(gameId, gameData.mode, gameData.league, io, gameData.tower)
+          : new gameType(gameId, gameData.mode, gameData.league, io);
         gamesMap.set(gameId, game);
       }
       game = gamesMap.get(gameId)!;

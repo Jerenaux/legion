@@ -39,3 +39,5 @@ export {
   updateNewsThumbnail, setUserAttributes, buyInventorySlots,
   createPlatformSession, linkPlatformIdentity,
 };
+
+export {tower, towerResult} from './towerAPI';

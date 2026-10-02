@@ -6,11 +6,14 @@ import {defaultGameSettings} from '../settings';
 import battle from '@assets/guide/battle.jpg';
 import actions from '@assets/guide/actions.jpg';
 import turnOrder from '@assets/guide/turn-order.jpg';
+import inspection from '@assets/guide/inspection.jpg';
 import loadout from '@assets/guide/loadout.jpg';
+import tower from '@assets/guide/tower.jpg';
 import './GuidePage.css';
 
 const sections = [
   ['first-match', 'Matches & modes'],
+  ['tower', 'The Cinder Tower'],
   ['combat', 'Taking your turn'],
   ['magic', 'Magic & terrain'],
   ['team', 'Build your team'],
@@ -67,26 +70,45 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             </dl>
           </section>
 
+          <section aria-labelledby="tower">
+            <h2 id="tower" tabIndex={-1}>The Cinder Tower</h2>
+            <p>On Play, choose the golden rook to the right of Ranked. Choose Balanced or Control, set the difficulty, and use Begin expedition in the bottom bar. Rules & rewards opens the full rules.</p>
+            <p>Choose <strong>The Cinder Tower</strong> on Play for an online solo expedition. A temporary Warrior, White Mage, and Black Mage climb six floors, ending with the Cinder Warden. Turns have no deadline, so the combat dock shows no timer. Enemies have boosted health, mana, attack, defenses, and speed. Your main roster and owned consumables are separate from this squad.</p>
+            <figure><img src={tower} width="1600" height="840" loading="lazy" alt="The tower route screen with the expedition squad, banked rewards, and a choice between the Broken Gate and the more dangerous Ember Approach." /><figcaption>Follow your ascent on the left. Check your squad, compare the enemy lineups, and choose your next encounter. Dangerous paths award 25% more gold and XP.</figcaption></figure>
+            <p>After each victory, choose one preparation: recover, refill supplies, or take an upgrade. Spell lessons fill up to three slots and replace the oldest spell when full. Upgrades last only for this expedition. Sculptor of Ice makes Ice cost 15 less MP but halves its damage; Light Footwork gives the Warrior an extra movement tile and 12 Speed.</p>
+            <p>Between victories, each ally is brought to at least 30% HP, then restores 15 HP and 15 MP, capped at their maximums. Knocked-out allies return and statuses clear. Sanctuary fully restores HP and MP; Quartermaster refills supplies. During Tower battles, ice traps thaw after two skipped turns, so a frozen squad can recover.</p>
+            <p>The combat badge shows your current floor. In Ember Approach, two fire mages stand beyond a wall of flame spanning the arena. Cast across it, or extinguish a section with Ice to cross safely.</p>
+            <p>The Warden marks tiles before its next turn. Move away from those warning symbols before the blast. It leaves fire behind; the turn order shows when it will act.</p>
+            <p>Gold, XP, and milestone items are banked after each victory. XP is shared across your permanent roster. Defeat or retirement ends the run but keeps everything already banked. Higher floors pay more. Clearing a tier unlocks the next, up to Tier 5; each tier adds 15% enemy HP and attack power and 20% account rewards. Your first clear also unlocks the Control starting kit.</p>
+            <p>Tower encounters do not increase ELO, league results, or completed-match unlock counters. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.</p>
+          </section>
+
           <section aria-labelledby="combat">
             <h2 id="combat" tabIndex={-1}>Make your turn count</h2>
             <p>When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <strong>one action</strong>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.</p>
-            <p>The standard turn timer is <strong>{TURN_DURATION} seconds</strong>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.</p>
+            <p>Outside the Tower, the standard turn timer is <strong>{TURN_DURATION} seconds</strong>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.</p>
             <p>Combat starts once everyone has loaded the arena and both teams’ spell and item effects. Practice matches pause if your connection drops and resume after the arena is ready again, keeping your remaining turn time. Once a match against another player has started, its clock keeps running if you disconnect.</p>
             <figure className="guide-figure-compact">
-              <img src={turnOrder} width="460" height="90" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act." />
+              <img src={turnOrder} width="570" height="70" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act." />
               <figcaption>The turn order is your planning tool. Speed and the recovery time of each action affect when a character acts again.</figcaption>
+            </figure>
+            <p>Class crests appear on both side rosters and the turn order: an amber sword for Warriors, a mint cross for White Mages, and a violet flame for Black Mages.</p>
+            <p>Hover a character on the battlefield, either side roster, or the turn order to highlight the same character in all three places. Their side card and turn-order portrait brighten and grow slightly, while their battlefield sprite glows. The inspection card shows their class, current and maximum HP and MP rounded to whole numbers, and active status effects with their remaining duration (∞ means permanent). You can also focus the side cards or turn-order portraits with the arrow keys or controller. Press Escape to dismiss the card.</p>
+            <figure className="guide-figure-compact">
+              <img src={inspection} width="390" height="255" loading="lazy" alt="A highlighted Black Mage beside an inspection card showing their class and exact HP and MP values." />
+              <figcaption>Inspect characters without changing your selected unit or spending an action.</figcaption>
             </figure>
             <dl className="guide-definitions">
               <div><dt>Move</dt><dd>Click an empty blue tile. Moving uses your action, so pick a position that sets up your next turn or gets a vulnerable character out of danger.</dd></div>
               <div><dt>Attack</dt><dd>Click an adjacent enemy for a melee attack. Clicking a distant enemy moves you toward them instead; it does not grant a free attack.</dd></div>
-              <div><dt>Cast</dt><dd>Choose a spell in the bottom action bar, check its highlighted area, then click a valid target or tile. Casting spends MP.</dd></div>
+              <div><dt>Cast</dt><dd>Choose a spell in the centre of the bottom command dock, check its highlighted area, then click a valid target or tile. Each spell shows its MP cost; casting spends MP.</dd></div>
               <div><dt>Use an item</dt><dd>Click an equipped consumable. Self-use items such as Potion and Ether activate immediately; targeted items ask you to choose a target.</dd></div>
-              <div><dt>Pass</dt><dd>Click <strong>Pass Turn</strong> beside the hourglass timer or press <kbd>E</kbd> / <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
+              <div><dt>Pass</dt><dd>Click <strong>Pass Turn</strong> beside the hourglass timer or press <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
             </dl>
             <p>Clicks outside the targeting range are ignored. Choose another target, or press <kbd>Esc</kbd> to cancel targeting and move or pass instead.</p>
             <figure>
-              <img src={actions} width="960" height="110" loading="lazy" alt="The selected mage’s action bar with HP, MP, equipped Potion and Ether, learned spells, keyboard shortcuts, and the pass-turn hourglass." />
-              <figcaption>Green is HP (health); blue is MP (magic). The bar shows what this character can use, not everything in your shared inventory.</figcaption>
+              <img src={actions} width="800" height="100" loading="lazy" alt="The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass." />
+              <figcaption>Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.</figcaption>
             </figure>
             <p>Blue mana bars show remaining MP for both teams. Watch enemy mana to judge which spells they can still afford; casting spends MP and Ether restores it.</p>
             <h3>A reliable opening plan</h3>
@@ -115,6 +137,8 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <img src={loadout} width="1045" height="428" loading="lazy" alt="The Team screen: Ember’s character stats and equipment slots on the left, equipped consumables and spells below, and the shared inventory on the right." />
               <figcaption>Owning an item is not enough: assign it to the character who needs it before queuing.</figcaption>
             </figure>
+            <h3>Grow your team</h3>
+            <p>The next recruit’s place in Team shows how your roster can grow to {MAX_CHARACTERS} characters. Recruitment unlocks after {LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES]} completed games, win or lose. Track your progress below the roster; once unlocked, choose <strong>Recruit character</strong> to buy a new teammate with gold in Shop.</p>
             <h3>Know your roles</h3>
             <p><strong>Warriors</strong> are sturdy melee fighters. <strong>White Mages</strong> start with healing magic and support the team. <strong>Black Mages</strong> start with offensive magic and can use damage, terrain, and status effects to disrupt an opponent. Check each character’s actual stats and spells before choosing their job.</p>
             <h3>Three different kinds of preparation</h3>
@@ -162,8 +186,8 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>Mouse</dt><dd>Click tiles to move, enemies to attack, and action icons to use items or select spells.</dd></div>
               <div><dt>Action letters</dt><dd>Use the letters printed on the item and spell icons. Choose QWERTY or AZERTY in Settings; follow the labels for your layout.</dd></div>
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Select your first three living characters. <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> cycle through living allies. Selection does not let a character act out of turn.</dd></div>
-              <div><dt><kbd>E</kbd> / <kbd>End</kbd></dt><dd>Pass the active turn.</dd></div>
-              <div><dt><kbd>Esc</kbd></dt><dd>Cancel spell targeting or selection in combat; close supported dialogs. From this guide, return to {onClose ? 'the queue' : 'Play'}.</dd></div>
+              <div><dt><kbd>Space</kbd> / <kbd>E</kbd> / <kbd>End</kbd></dt><dd>Pass the active turn.</dd></div>
+              <div><dt><kbd>Esc</kbd></dt><dd>Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {onClose ? 'the queue' : 'Play'}.</dd></div>
               <div><dt><kbd>P</kbd></dt><dd>Open the combat menu. <strong>The match keeps running:</strong> opening Settings does not pause the opponent or the turn timer.</dd></div>
               <div><dt>Menus</dt><dd><kbd>Tab</kbd> or arrow keys move focus; <kbd>Enter</kbd> or <kbd>Space</kbd> activates a focused control. You can use the mouse wheel to scroll this guide.</dd></div>
             </dl>

@@ -25,3 +25,10 @@ test("emits button edges again after a controller disconnects", () => {
   const disconnected = pollGamepads([null], first.pressed);
   expect(pollGamepads([gamepad([0]) as unknown as Gamepad], disconnected.pressed).actions).toEqual(["confirm"]);
 });
+
+test("Space and Escape use combat shortcuts only outside menus and dialogs", () => {
+  expect(actionFromKeyboard(keyboard("Space"), true)).toBe("end-turn");
+  expect(actionFromKeyboard(keyboard("Escape"), true)).toBe("abandon-dialog");
+  expect(actionFromKeyboard(keyboard("Space"))).toBe("confirm");
+  expect(actionFromKeyboard(keyboard("Escape"))).toBe("cancel");
+});

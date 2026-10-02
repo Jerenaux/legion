@@ -1,3 +1,4 @@
+import {route} from 'preact-router';
 import { io } from 'socket.io-client';
 import { Player } from './Player';
 import { GameHUD, events } from '../components/HUD/GameHUD';
@@ -66,6 +67,7 @@ import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels,
     healLevels, VFX_FRAME_SIZE, VFX_DISPLAY_SCALE } from './VFXconfig';
 import {loadGameSettings} from '../settings';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
+import type {CharacterHover} from '../components/HUD/CharacterHoverCard';
 
 const LOCAL_ANIMATION_SCALE = 2;
 const DEPTH_OFFSET = 0.01;
@@ -95,6 +97,9 @@ export class Arena extends Phaser.Scene
     gridMap: Map<string, Player> = new Map<string, Player>();
     teamsMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
+    hoveredPlayer: Player | null = null;
+    private hoverSource: 'battlefield' | 'hud' | null = null;
+    private characterHover: CharacterHover | null = null;
     localAnimationSprite: Phaser.GameObjects.Sprite;
     terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
     terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
@@ -157,6 +162,7 @@ export class Arena extends Phaser.Scene
     private targetModeSize: number = 1;
     private targetModeListener: ((pointer: Phaser.Input.Pointer) => void) | null = null;
     private disposed = false;
+    private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
 
     constructor() {
@@ -191,6 +197,7 @@ export class Arena extends Phaser.Scene
             },
             localanimation: this.processLocalAnimation,
             gameEnd: this.processGameEnd,
+            towerWarning: this.showTowerWarning,
             score: this.processScoreUpdate,
             addCharacter: this.processAddCharacter,
             queueData: this.processQueueData,
@@ -318,6 +325,7 @@ export class Arena extends Phaser.Scene
         this.eventHandlers.forEach((_handler, event) => {
             this.socket.on(event, data => this.enqueueMessage(event, data));
         });
+        this.socket.on('towerEnd', () => { route('/tower'); });
         this.socket.on('connect_error', error => {
             if (!this.socket.active) this.failCombat(error);
         });
@@ -461,6 +469,15 @@ export class Arena extends Phaser.Scene
        }, this);
 
         this.input.keyboard.on('keydown', this.handleKeyDown, this);
+        this.input.setPollAlways();
+        this.input.on('pointermove', (_pointer: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
+            // Phaser retains its over-object when DOM HUD elements cover the canvas.
+            const player = over[0]?.parentContainer;
+            if (player instanceof Player) this.inspectBattlefieldCharacter(player);
+        });
+        this.input.on('gameout', () => {
+            if (this.hoverSource === 'battlefield') this.clearCharacterHover();
+        });
     }
 
     toggleTargetMode(flag: boolean) {
@@ -571,6 +588,7 @@ export class Arena extends Phaser.Scene
             this.selectOwnUnit(members[(current + direction + members.length) % members.length]);
         } else if (action === 'cancel') {
             this.selectedPlayer?.cancelItem();
+            this.clearCharacterHover();
             this.selectedPlayer?.cancelSkill();
             this.selectTurnee();
         }
@@ -639,14 +657,72 @@ export class Arena extends Phaser.Scene
 
     handleTileHover(gridX, gridY, hover = true) {
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
-        if (player) {
-            if (hover) {
-                player.onPointerOver();
-            } else {
-                player.onPointerOut();
-            }
+        if (hover && player) {
+            this.inspectBattlefieldCharacter(player);
+        } else if (this.hoverSource === 'battlefield' && (!hover ? this.hoveredPlayer === player : true)) {
+            this.clearCharacterHover();
         }
     }
+
+    inspectBattlefieldCharacter(player: Player) {
+        this.setCharacterHover(player, 'battlefield');
+        this.updateTargetHighlight(this.input.activePointer);
+    }
+
+    clearBattlefieldCharacter(player: Player) {
+        if (this.hoverSource === 'battlefield' && this.hoveredPlayer === player) this.clearCharacterHover();
+    }
+
+    private inspectHUDCharacter = (team: number, num: number, anchor?: DOMRect) => {
+        if (anchor) this.setCharacterHover(this.teamsMap.get(team)?.getMember(num), 'hud', anchor);
+        else if (this.hoverSource === 'hud' && this.hoveredPlayer?.team.id === team && this.hoveredPlayer.num === num) {
+            this.clearCharacterHover();
+        }
+    };
+
+    private setCharacterHover(player: Player | undefined, source: 'battlefield' | 'hud', anchor?: DOMRect) {
+        if (!player || !this.gameInitialized || this.gameEnded) return;
+        if (this.hoveredPlayer === player && this.hoverSource === source && !anchor) return;
+        this.clearCharacterHover();
+        this.hoveredPlayer = player;
+        this.hoverSource = source;
+        player.setHovered(true);
+        if (source === 'battlefield') player.onPointerOver();
+        if (anchor) {
+            this.characterHover = {team: player.team.id, num: player.num,
+                left: anchor.left, right: anchor.right, top: anchor.top, bottom: anchor.bottom};
+            events.emit('characterHoverChanged', this.characterHover);
+        } else this.refreshCharacterHover();
+    }
+
+    clearCharacterHover = () => {
+        if (this.hoveredPlayer) {
+            this.hoveredPlayer.setHovered(false);
+            if (this.hoverSource === 'battlefield') this.hoveredPlayer.onPointerOut();
+        }
+        this.hoveredPlayer = null;
+        this.hoverSource = null;
+        this.characterHover = null;
+        events.emit('characterHoverChanged', null);
+    };
+
+    private refreshCharacterHover = () => {
+        const player = this.hoveredPlayer;
+        if (!player || this.hoverSource !== 'battlefield') return;
+        const camera = this.cameras.main;
+        const canvas = this.game.canvas.getBoundingClientRect();
+        const scaleX = canvas.width / this.scale.gameSize.width;
+        const scaleY = canvas.height / this.scale.gameSize.height;
+        const next = {team: player.team.id, num: player.num,
+            left: canvas.left + (camera.x + (player.x - 34 - camera.worldView.x) * camera.zoom) * scaleX,
+            right: canvas.left + (camera.x + (player.x + 34 - camera.worldView.x) * camera.zoom) * scaleX,
+            top: canvas.top + (camera.y + (player.y - 54 - camera.worldView.y) * camera.zoom) * scaleY,
+            bottom: canvas.top + (camera.y + (player.y + 62 - camera.worldView.y) * camera.zoom) * scaleY};
+        if (JSON.stringify(next) !== JSON.stringify(this.characterHover)) {
+            this.characterHover = next;
+            events.emit('characterHoverChanged', next);
+        }
+    };
 
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
         if (!isInSpellRange(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) return false;
@@ -678,9 +754,12 @@ export class Arena extends Phaser.Scene
     }
 
     refreshBox() {
-        if (this.selectedPlayer) {
-            events.emit('showPlayerBox', this.selectedPlayer.getProps());
-        }
+        const isPlayerTurn = Boolean(this.turnee && this.turnee.team === this.playerTeamId);
+        const commandPlayer = isPlayerTurn ? (this.selectedPlayer?.isPlayer ? this.selectedPlayer : this.getPlayer(this.playerTeamId, this.turnee.num)) : null;
+        const canCommand = !this.gameEnded && !this.gameSettings.spectator && commandPlayer === this.selectedPlayer && commandPlayer?.canAct() &&
+            this.turnee?.team === commandPlayer.team.id && this.turnee?.num === commandPlayer.num;
+        events.emit('showPlayerBox', this.selectedPlayer?.getProps() || null,
+            commandPlayer?.getProps() || null, Boolean(canCommand), isPlayerTurn);
         this.refreshTutorial();
     }
 
@@ -735,10 +814,8 @@ export class Arena extends Phaser.Scene
         events.emit(event, data);
     }
 
-    refreshUI(num) {
-        if (this.selectedPlayer && num === this.selectedPlayer.num) {
-            this.refreshBox();
-        }
+    refreshUI(_num) {
+        this.refreshBox();
         this.refreshOverview();
     }
 
@@ -763,6 +840,7 @@ export class Arena extends Phaser.Scene
             this.selectedPlayer.deselect();
             this.selectedPlayer.cancelSkill();
             this.selectedPlayer = null;
+            this.refreshBox();
             this.hexGridManager.clearHighlight();
         }
     }
@@ -1193,6 +1271,7 @@ export class Arena extends Phaser.Scene
     }
 
     processGameEnd(data: OutcomeData) {
+        this.clearCharacterHover();
         this.gameEnded = true;
         const music = this.musicManager;
         music.gameOver = true;
@@ -1222,6 +1301,15 @@ export class Arena extends Phaser.Scene
     processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
         const team = this.teamsMap.get(data.team);
         this.placeCharacter(data.character, team, false);
+    }
+
+    showTowerWarning(tiles: {x: number; y: number}[]) {
+        this.towerWarningMarkers.forEach(marker => { marker.destroy(); });
+        this.towerWarningMarkers = tiles.map(tile => {
+            const {x, y} = this.hexGridToPixelCoords(tile.x, tile.y);
+            return this.add.text(x, y + 15, '⚠', {fontFamily: 'Arial', fontSize: '34px', color: '#ffe3a1', backgroundColor: '#5b251c', padding: {x: 6, y: 2}})
+                .setOrigin(0.5).setDepth(10000);
+        });
     }
 
     processQueueData(data: TurnQueueEntry[]) {
@@ -1489,6 +1577,8 @@ export class Arena extends Phaser.Scene
             player.setInventory(character.inventory);
         }
         player.setSpells(character.spells ?? []);
+        if (character.towerSpellCosts) player.spells = player.spells.map(spell => Object.assign(Object.create(Object.getPrototypeOf(spell)), spell,
+            {cost: character.towerSpellCosts[spell.id] ?? spell.cost}));
         player.setStatuses(character.statuses);
 
         if (!isReconnect) {
@@ -1576,13 +1666,15 @@ export class Arena extends Phaser.Scene
 
         window.addEventListener('characterInSpellRadius', this.highlightCharacter);
         window.addEventListener('characterOutOfSpellRadius', this.unhighlightCharacter);
+        window.addEventListener('blur', this.clearCharacterHover);
+        this.game.events.on(Phaser.Core.Events.POST_RENDER, this.refreshCharacterHover);
     }
 
     private highlightCharacter = (e: CustomEvent) => {
-        this.gridMap.get(serializeCoords(e.detail.x, e.detail.y))?.onPointerOver();
+        this.gridMap.get(serializeCoords(e.detail.x, e.detail.y))?.setTargetHighlighted(true);
     };
     private unhighlightCharacter = (e: CustomEvent) => {
-        this.gridMap.get(serializeCoords(e.detail.x, e.detail.y))?.onPointerOut();
+        this.gridMap.get(serializeCoords(e.detail.x, e.detail.y))?.setTargetHighlighted(false);
     };
 
     enqueueMessage(event: string, data: unknown) {
@@ -1637,6 +1729,7 @@ export class Arena extends Phaser.Scene
         // progress skips the intro, never harmless messages buffered during loading.
         const isReconnect = data.general.combatStarted ?? data.turnee.turnNumber > 0;
         this.readyToken = data.general.readyToken ?? null;
+        events.emit('towerInfo', data.general.tower || null);
         this.legacyFirstMatch = !this.readyToken && data.player.player.completedGames === 0 && !this.isReplay;
         // console.log(`[Arena:initializeGame] Reconnecting to game: ${isReconnect}`);
 
@@ -1667,6 +1760,8 @@ export class Arena extends Phaser.Scene
 
         // Events from the HUD
         this.hudHandlers = {
+            inspectCharacter: this.inspectHUDCharacter,
+            clearCharacterHover: this.clearCharacterHover,
             itemClick: (keyIndex: number) => this.selectedPlayer?.onKey(keyIndex),
             passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
             abandonGame: () => this.abandonGame(),
@@ -1692,6 +1787,7 @@ export class Arena extends Phaser.Scene
         this.arenaDisplayed = true;
         this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
+        if (data.general.tower) this.showTowerWarning(data.general.tower.warning);
 
         this.hexGridManager.floatHexTiles(
             this.handleTileClick.bind(this),
@@ -2008,6 +2104,9 @@ export class Arena extends Phaser.Scene
     destroy() {
         this.game.events.off(Phaser.Core.Events.POST_RENDER, this.reportArenaReady, this);
         if (this.disposed) return;
+        this.clearCharacterHover();
+        this.game.events.off(Phaser.Core.Events.POST_RENDER, this.refreshCharacterHover);
+        window.removeEventListener('blur', this.clearCharacterHover);
         this.disposed = true;
         this.eventsQueue.length = 0;
         window.removeEventListener('characterInSpellRadius', this.highlightCharacter);
@@ -2331,7 +2430,8 @@ export class Arena extends Phaser.Scene
     updateTargetHighlight(pointer) {
         if (!this.isInTargetMode || !this.selectedPlayer) return;
 
-        const {gridX, gridY} = this.hexGridManager.pointerToHexGrid(pointer);
+        const {gridX, gridY} = this.hoverSource === 'battlefield' && this.hoveredPlayer
+            ? this.hoveredPlayer : this.hexGridManager.pointerToHexGrid(pointer);
 
         // Calculate distance from player to highlight center
         const playerX = this.selectedPlayer.gridX;

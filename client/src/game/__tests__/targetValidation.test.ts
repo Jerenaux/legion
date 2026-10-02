@@ -73,9 +73,13 @@ for (const action of ["spell", "item"]) {
     const player = Object.assign(runInNewContext(playerCode), {
       arena, pendingSpell: action === "spell" ? 0 : null, pendingItem: action === "item" ? 0 : null,
       inventory: [{id: 8}], canAct: () => true,
+      isPlayer: true, team: {id: 1}, num: 1,
       getProps() {return {pendingSpell: this.pendingSpell, pendingItem: this.pendingItem};},
     });
     arena.selectedPlayer = player;
+    arena.playerTeamId = 1;
+    arena.turnee = {team: 1, num: 1};
+    arena.gameSettings = {spectator: false};
     arena.send = mock();
     arena.refreshTutorial = mock();
     arena.toggleTargetMode = mock(() => expect(player.pendingSpell).toBeNull());
@@ -83,7 +87,8 @@ for (const action of ["spell", "item"]) {
     if (action === "spell") arena.sendSpell(3, 5, null);
     else arena.sendUseItem(0, 3, 5, null);
     expect(arena.send).toHaveBeenCalledTimes(1);
-    expect(events.emit).toHaveBeenCalledWith('showPlayerBox', {pendingSpell: null, pendingItem: null});
+    expect(events.emit).toHaveBeenCalledWith('showPlayerBox',
+      {pendingSpell: null, pendingItem: null}, {pendingSpell: null, pendingItem: null}, true, true);
     if (action === "spell") expect(events.emit).toHaveBeenCalledWith('playerCastSpell_0');
   });
 }
