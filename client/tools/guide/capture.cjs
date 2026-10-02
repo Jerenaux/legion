@@ -234,7 +234,7 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover')) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -257,7 +257,10 @@ if (!process.versions.electron) {
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
         console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
       }
-      if (process.argv.includes('--text-size')) {
+      if (process.argv.includes('--hover')) {
+        await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
+        assert.deepEqual(rendererErrors, []);
+      } else if (process.argv.includes('--text-size')) {
         await require('./text-size.cjs')({win, js, waitFor, ready,
           output: process.env.TEXT_SIZE_SCREENSHOTS || path.join(dist, 'text-size'),
           baseline: process.argv.includes('--baseline')});
@@ -289,11 +292,16 @@ if (!process.versions.electron) {
         await ready();
         fs.writeFileSync(path.join(dist, 'battle-1280.png'), (await win.webContents.capturePage()).toPNG());
         win.setContentSize(1600, 900);
+        await ready();
+        await js('combatCheck.arena.inspectBattlefieldCharacter(combatCheck.arena.getPlayer(2, 3))');
+        await ready();
+        await capture('inspection', {x: 870, y: 485, width: 390, height: 255});
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
         await capture('loadout', {x: 270, y: 328, width: 1045, height: 428});
       } else {
+        await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
@@ -676,7 +684,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

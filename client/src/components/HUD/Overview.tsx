@@ -3,6 +3,7 @@ import { Component } from 'preact';
 import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
 import PlayerInfo from './PlayerInfo';
 import ClassCrest from './ClassCrest';
+import { CharacterHover, InspectCharacter } from './CharacterHoverCard';
 import { PlayMode, StatusEffect } from '@legion/shared/enums';
 import { getSpritePath, statusIcons } from '../utils';
 import './Overview.style.css';
@@ -14,6 +15,9 @@ import charStatsBgActive from '@assets/HUD/char_stats_bg_Active.png';
 import charStatsBg from '@assets/HUD/char_stats_bg.png';
 import { EventEmitter } from 'eventemitter3';
 interface Props {
+  teamId: number;
+  characterHover: CharacterHover | null;
+  onInspect: InspectCharacter;
   members: TeamMember[];
   score: number;
   position: string;
@@ -81,6 +85,8 @@ class Overview extends Component<Props, State> {
           </div>
           {members.map((member, memberIndex) => {
             const isAlive = member.hp > 0;
+            const { teamId, characterHover, onInspect } = this.props;
+            const inspected = characterHover?.team === teamId && characterHover.num === memberIndex + 1;
 
             const portraitStyle = {
               backgroundImage: `url(${getSpritePath(member.portrait)})`,
@@ -112,8 +118,17 @@ class Overview extends Component<Props, State> {
             }
 
             return (
-              <div
+              <button type="button" data-game-control
                 key={memberIndex}
+                onClick={e => onInspect(teamId, memberIndex + 1, e.currentTarget)}
+                aria-label={`Inspect ${member.name}`}
+                aria-describedby={inspected ? 'character-hover-card' : undefined}
+                data-character={`${teamId}-${memberIndex + 1}`}
+                data-inspected={inspected}
+                onMouseEnter={e => onInspect(teamId, memberIndex + 1, e.currentTarget)}
+                onMouseLeave={e => { if (!e.currentTarget.contains(document.activeElement)) onInspect(teamId, memberIndex + 1, null); }}
+                onFocus={e => onInspect(teamId, memberIndex + 1, e.currentTarget)}
+                onBlur={() => onInspect(teamId, memberIndex + 1, null)}
                 className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`}
               >
                 <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
@@ -141,7 +156,7 @@ class Overview extends Component<Props, State> {
                     return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={statusIcons[status]}  alt="" />
                   })}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

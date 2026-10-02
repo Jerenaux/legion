@@ -1,0 +1,50 @@
+.character-hover-card {
+  position: fixed;
+  z-index: 30;
+  width: 244px;
+  max-width: calc(100vw - 24px);
+  padding: 16px;
+  border: 1px solid oklch(77% 0.07 85);
+  border-radius: 6px;
+  background: oklch(24% 0.025 255);
+  box-shadow: 0 8px 24px oklch(12% 0.01 255 / 0.5), inset 0 1px oklch(92% 0.03 85 / 0.12);
+  color: oklch(95% 0.01 85);
+  font-family: 'Kim', sans-serif;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.character-hover-card header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.character-hover-card__crest { width: 36px; height: 40px; flex-shrink: 0; }
+.character-hover-card header > div:last-child { min-width: 0; }
+.character-hover-card strong { display: block; font-size: 1rem; overflow-wrap: anywhere; }
+.character-hover-card header span { display: block; margin-top: 4px; font-size: 0.8125rem; color: oklch(81% 0.04 85); }
+.character-hover-card__resource + .character-hover-card__resource { margin-top: 10px; }
+.character-hover-card__resource > div:first-child { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 5px; }
+.character-hover-card__resource b { font-weight: 400; }
+.character-hover-card__resource > div:first-child > span { color: oklch(78% 0.02 250); }
+.character-hover-card__track { height: 8px; border-radius: 2px; overflow: hidden; background: oklch(16% 0.02 255); }
+.character-hover-card__track > div { height: 100%; background: oklch(72% 0.13 155); }
+.character-hover-card__resource[data-resource="MP"] .character-hover-card__track > div { background: oklch(72% 0.11 240); }
+.character-hover-card__statuses { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid oklch(38% 0.02 255); font-size: 0.6875rem; }
+.character-hover-card__statuses > span { display: flex; align-items: center; gap: 5px; }
+.character-hover-card__statuses img { width: 18px; height: 20px; object-fit: contain; }
+.character-hover-card__statuses b { color: oklch(83% 0.08 85); font-weight: 400; }
+.character-hover-card__no-status { color: oklch(73% 0.02 255); }
+
+.member[data-inspected="true"],
+.timeline_character[data-inspected="true"] .timeline_portrait_container,
+.member:focus-visible,
+.timeline_character:focus-visible .timeline_portrait_container {
+  outline: 2px solid oklch(85% 0.1 85);
+  outline-offset: 2px;
+  border-radius: 7px;
+}
+
+.timeline_character:focus-visible { outline: none; }
