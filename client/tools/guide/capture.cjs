@@ -289,11 +289,19 @@ if (!process.versions.electron) {
           await ready();
           fs.writeFileSync(path.join(dist, `tower-prep-${width}.png`), (await win.webContents.capturePage()).toPNG());
         }
+        win.setContentSize(1280, 720);
+        await js('towerCheck.progress.highestClear=1; towerCheck.save()');
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        await js('document.querySelector("input[value=control]").click()'); await ready();
+        fs.writeFileSync(path.join(dist, 'tower-control.png'), (await win.webContents.capturePage()).toPNG());
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
         win.setContentSize(1600, 900);
         await js('document.querySelector(".tower-primary").click()');
         await waitFor('Boolean(document.querySelector(".tower-choices"))');
         await ready();
-        await capture('tower', {x: 100, y: 90, width: 1400, height: 780});
+        await capture('tower', {x: 0, y: 70, width: 1600, height: 800});
         for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
           win.setContentSize(width, height); await ready();
           fs.writeFileSync(path.join(dist, `tower-route-${width}.png`), (await win.webContents.capturePage()).toPNG());
@@ -303,8 +311,19 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}tower`);
         await waitFor('Boolean(document.querySelector(".tower-choices"))'); await ready();
         fs.writeFileSync(path.join(dist, 'tower-upgrades.png'), (await win.webContents.capturePage()).toPNG());
+        for (const [name, state] of [
+          ['spell-upgrades', 'run.phase="choice"; run.offers=["rest","supplies","ice","frostcraft"]; run.squad[2].character.skills=[0,3,10]'],
+          ['late-route', 'run.phase="ready"; run.floor=4; run.upgrades=["guard","satchel","swift"]; run.squad[0].hp=42; run.squad[1].mp=15; run.squad[2].character.inventory=[1,1,1,1]'],
+          ['warden', 'run.phase="ready"; run.floor=5'],
+          ['resume', 'run.phase="battle"; run.floor=5; run.path[5]="warden"; run.gameId="guide-local"'],
+        ]) {
+          await js(`{const run=towerCheck.progress.run; ${state}; towerCheck.save()}`);
+          await win.loadURL(`${PACKAGED_APP_URL}tower`);
+          await waitFor('Boolean(document.querySelector(".tower-unit"))'); await ready();
+          fs.writeFileSync(path.join(dist, `tower-${name}.png`), (await win.webContents.capturePage()).toPNG());
+        }
         for (const phase of ['won', 'lost']) {
-          await js(`towerCheck.progress.run.phase=${JSON.stringify(phase)}; towerCheck.progress.run.floor=6; towerCheck.progress.highestClear=1; towerCheck.save()`);
+          await js(`towerCheck.progress.run.phase=${JSON.stringify(phase)}; towerCheck.progress.run.floor=${phase === "won" ? 6 : 3}; towerCheck.progress.highestClear=1; towerCheck.save()`);
           await win.loadURL(`${PACKAGED_APP_URL}tower`);
           await waitFor('Boolean(document.querySelector(".tower-primary"))'); await ready();
           fs.writeFileSync(path.join(dist, `tower-${phase}.png`), (await win.webContents.capturePage()).toPNG());
