@@ -113,7 +113,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 92px;
+    min-height: 112px;
     padding: 0 16px 0 52px;
 }
 
@@ -146,7 +146,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #ffffff;
     text-transform: capitalize;
@@ -154,14 +154,7 @@
 }
 
 .team-character-class {
-    max-width: 114px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.625rem;
-    font-weight: 500;
-    color: #ffa600;
-    text-transform: uppercase;
+    margin-bottom: 6px;
 }
 
 .team-exp-info span {

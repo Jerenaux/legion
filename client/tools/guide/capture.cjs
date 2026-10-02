@@ -245,7 +245,13 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
-        await capture('loadout', {x: 270, y: 328, width: 1045, height: 428});
+        fs.writeFileSync(path.join(dist, 'team-full.png'), (await win.webContents.capturePage()).toPNG());
+        await capture('loadout', {x: 270, y: 96, width: 1045, height: 636});
+        for (const [width, height] of [[1280, 720], [960, 540]]) {
+          win.setContentSize(width, height);
+          await ready();
+          fs.writeFileSync(path.join(dist, `team-${width}.png`), (await win.webContents.capturePage()).toPNG());
+        }
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
