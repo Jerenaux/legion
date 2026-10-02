@@ -438,11 +438,6 @@ class ShopContent extends Component<ShopContentProps> {
 
         return (
             <div className='shop-content'>
-                <ShopItemFilter
-                    curr_tab={this.state.curr_tab}
-                    shopItems={defaultShopItems}
-                    handleInventory={this.handleInventory} />
-
                 <div className='shop-tabs-container'>
                     {this.state.inventoryData && shopTabIcons.map((icon, index) => {
                         const isCharacterTab = index === ShopTab.CHARACTERS;
@@ -479,6 +474,10 @@ class ShopContent extends Component<ShopContentProps> {
                         );
                     })}
                 </div>
+                <ShopItemFilter
+                    curr_tab={this.state.curr_tab}
+                    shopItems={defaultShopItems}
+                    handleInventory={this.handleInventory} />
                 <ReactTooltip id="shop-unlock-details" place="bottom" positionStrategy="fixed" delayShow={150} style={tooltipStyle} />
                 <div className={`shop-items-container ${this.state.curr_tab === ShopTab.EQUIPMENTS ? 'equipment-view' : ''}`}>
                     {renderItems()}

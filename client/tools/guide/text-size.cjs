@@ -80,7 +80,10 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
       assert.equal(await js('getComputedStyle(document.documentElement).fontSize'), '20.8px', 'Text size survives reload');
       await shot(`${route.startsWith('game') ? 'game' : route.replace('/', '-')}-${width}-130`);
       if (route === 'guide') await fits('.guide-page');
-      if (route.startsWith('shop')) assert(await js('document.querySelector(".shop-container").scrollWidth <= innerWidth'), 'Shop must reflow within the window');
+      if (route.startsWith('shop')) {
+        assert(await js('document.querySelector(".shop-container").scrollWidth <= innerWidth'), 'Shop must reflow within the window');
+        assert(await js(`!document.querySelector('.shop-item-filter-container') || document.querySelector('.shop-item-filter-container').getBoundingClientRect().top >= document.querySelector('.shop-tabs-container').getBoundingClientRect().bottom`), 'Shop filter must not overlap tabs');
+      }
       if (route.startsWith('game')) await fits('.player_bar_action, .player_bar_pass_turn, .player_bar_pass_turn span, .player_bar_stat_value, .player_bar_action_name');
     }
     await win.loadURL('app://legion/team/guide-2');
