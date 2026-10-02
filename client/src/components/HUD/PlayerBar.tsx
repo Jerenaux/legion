@@ -104,11 +104,11 @@ class PlayerBar extends Component<PlayerBarProps> {
                 {player && <>
                   <div className="player_bar_stat">
                     <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />HP</span><meter min={0} max={player.maxHp || 1} value={player.hp} aria-label="Health" />
-                    <span>{player.hp}<span className="player_bar_max">/{player.maxHp}</span></span>
+                    <span>{Math.round(player.hp)}<span className="player_bar_max">/{Math.round(player.maxHp)}</span></span>
                   </div>
                   {spells.length > 0 && <div className="player_bar_stat player_bar_mana">
-                    <span className="player_bar_stat_icon"><img src={mpIcon} alt="" />MP</span><meter min={0} max={player.maxMp || 1} value={previewMP} aria-label="Mana after selected spell" />
-                    <span className={pending && 'cost' in pending ? 'player_bar_mana_preview' : ''}>{previewMP}<span className="player_bar_max">/{player.maxMp}</span></span>
+                    <span className="player_bar_stat_icon"><img src={mpIcon} alt="" />MP</span><meter min={0} max={player.maxMp || 1} value={Math.round(previewMP)} aria-label="Mana after selected spell" />
+                    <span className={pending && 'cost' in pending ? 'player_bar_mana_preview' : ''}>{Math.round(previewMP)}<span className="player_bar_max">/{Math.round(player.maxMp)}</span></span>
                   </div>}
                 </>}
                 <div className="player_bar_statuses">

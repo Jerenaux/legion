@@ -25,6 +25,8 @@ export class Player extends Phaser.GameObjects.Container {
     numKey: Phaser.GameObjects.Text;
     selectionOval: Phaser.GameObjects.Graphics;
     glowFx: Phaser.FX.Glow;
+    private hovered = false;
+    private targetHighlighted = false;
     name = 'Player 1';
     isPlayer = false;
     texture: string;
@@ -137,10 +139,12 @@ export class Player extends Phaser.GameObjects.Container {
         this.updatePos(gridX, gridY);
 
         this.playAnim('idle');
-        // this.sprite.setInteractive(new Phaser.Geom.Rectangle(35, 40, 70, 100), Phaser.Geom.Rectangle.Contains);
-        // this.sprite.on('pointerover', this.onPointerOver, this);
-        // this.sprite.on('pointerout', this.onPointerOut, this);
-        // this.sprite.on('pointerdown', this.onPointerDown, this);
+        this.sprite.setInteractive({ pixelPerfect: true, alphaTolerance: 64 });
+        this.sprite.on('pointerover', () => this.arena.inspectBattlefieldCharacter(this));
+        this.sprite.on('pointerout', () => this.arena.clearBattlefieldCharacter(this));
+        this.sprite.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            if (!pointer.rightButtonDown()) this.arena.handleTileClick(this.gridX, this.gridY);
+        });
 
         this.speechBubble = new SpeechBubble(this.scene, -15, (this.height / 2) - 10, '').setVisible(false);
         this.add(this.speechBubble);
@@ -392,8 +396,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     select() {
-        this.glowFx.color = GlowColors.Selected;
-        this.glowFx.setActive(true);
+        this.refreshHighlight(true);
 
         if (this.isPlayer) {
             this.displayMovementRange();
@@ -448,7 +451,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
         this.hideMovementRange();
         this.selected = false;
-        this.glowFx.setActive(false);
+        this.refreshHighlight(false);
         this.pendingSpell = null;
         this.pendingItem = null;
     }
@@ -484,6 +487,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     updatePos(x, y) {
+        this.arena.clearBattlefieldCharacter(this);
         this.gridX = x;
         this.gridY = y;
         this.setDepth(this.arena.yToZ(y));
@@ -495,28 +499,25 @@ export class Player extends Phaser.GameObjects.Container {
         } else if (this.isPlayer){
             this.arena.relayEvent('hoverCharacter');
         }
-        /**
-         * If `isPlayer` is false, glow in red
-         * Otherwise,
-         * if `isSelected()` is true, do nothing
-         * else, glow in green
-         */
-        let glowColor: GlowColors | undefined;
-        if (!this.isPlayer) {
-            glowColor = GlowColors.Enemy;
-        } else if (!this.isSelected()) {
-            glowColor = GlowColors.Ally;
-        }
-        if (glowColor) {
-            this.glowFx.color = glowColor;
-            this.glowFx.setActive(true);
-        }
     }
 
     onPointerOut() {
         this.arena.relayEvent('unhoverCharacter');
-        if (this.isSelected()) return;
-        this.glowFx.setActive(false);
+    }
+
+    setHovered(hovered: boolean) {
+        this.hovered = hovered;
+        this.refreshHighlight();
+    }
+
+    setTargetHighlighted(highlighted: boolean) {
+        this.targetHighlighted = highlighted;
+        this.refreshHighlight();
+    }
+
+    private refreshHighlight(selected = this.arena.selectedPlayer === this) {
+        this.glowFx.color = this.hovered ? 0xffd785 : selected ? GlowColors.Selected : this.isPlayer ? GlowColors.Ally : GlowColors.Enemy;
+        this.glowFx.setActive(this.hovered || this.targetHighlighted || selected);
     }
 
     onPointerDown() {
@@ -795,6 +796,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     die() {
+        if (this.arena.hoveredPlayer === this) this.arena.clearCharacterHover();
         this.healthBar.setVisible(false);
         this.MPBar?.setVisible(false);
         this.hideAllStatusAnimations();
@@ -1017,6 +1019,7 @@ export class Player extends Phaser.GameObjects.Container {
 
     destroy() {
         if (!this.scene) return;
+        if (this.arena.hoveredPlayer === this) this.arena.clearCharacterHover();
         // Cleanup charge sprite if it exists
         if (this.chargeSprite) {
             this.chargeSprite.destroy();

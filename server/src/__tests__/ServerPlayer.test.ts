@@ -289,6 +289,27 @@ describe('ServerPlayer', () => {
       expect(player.stats[Stat.SPEED]).toBe(18);
     });
 
+    it('keeps scaled HP and MP whole in state and network snapshots', () => {
+      player.setHP(151);
+      player.setMP(47);
+      player.scaleStats(1.2);
+      expect(player.getPlacementData()).toMatchObject({hp: 217, maxHP: 217, mp: 67, maxMP: 67});
+      player.consumeMP(10);
+      expect(player.mp).toBe(57);
+      player.restoreMP(2.6);
+      expect(player.mp).toBe(60);
+      player.consumeMP(1.6);
+      expect(player.mp).toBe(58);
+      player.restoreMP(100);
+      expect(player.mp).toBe(67);
+      player.consumeMP(100);
+      expect(player.mp).toBe(0);
+      player.setHP(151);
+      player.setMP(47);
+      player.scaleStats(0.5);
+      expect(player.getPlacementData()).toMatchObject({hp: 38, maxHP: 38, mp: 12, maxMP: 12});
+    });
+
     it('should access stats via Stat enum', () => {
       expect(player.stats[Stat.HP]).toBe(100);
       expect(player.stats[Stat.MP]).toBe(50);

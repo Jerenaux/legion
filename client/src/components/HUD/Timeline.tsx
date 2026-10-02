@@ -1,14 +1,16 @@
 import { h } from 'preact';
 // SpectatorFooter.tsx
 import { Component } from 'preact';
-import { PlayMode, Class } from '@legion/shared/enums';
+import { PlayMode } from '@legion/shared/enums';
 import { TeamOverview } from "@legion/shared/interfaces";
 import { getSpritePath } from '../utils';
 import './Timeline.style.css';
-import warriorIcon from '@assets/shop/warrior_icon.png';
-import mageIcon from '@assets/shop/mage_icon.png';
+import ClassCrest from './ClassCrest';
+import { CharacterHover, InspectCharacter } from './CharacterHoverCard';
 
 interface TimelineProps {
+  characterHover: CharacterHover | null;
+  onInspect: InspectCharacter;
   isTutorial: boolean;
   score: number;
   mode: PlayMode;
@@ -46,7 +48,7 @@ class Timeline extends Component<TimelineProps, TimelineState> {
   }
 
   render() {
-    const { queue, team1, team2 } = this.props;
+    const { queue, team1, team2, characterHover, onInspect } = this.props;
     const { positions } = this.state;
 
     const getCharacterFromQueue = (queueItem: { team: number; num: number }) => {
@@ -82,6 +84,7 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                   backgroundImage: `url(${getSpritePath(character.portrait)})`,
                 };
 
+                const inspected = characterHover?.team === queueItem.team && characterHover.num === queueItem.num;
                 const characterKey = `${queueItem.team}-${queueItem.num}`;
                 const position = positions[characterKey] || index;
 
@@ -91,8 +94,17 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                 };
 
                 return (
-                  <div
+                  <button type="button" data-game-control
                     key={characterKey}
+                    onClick={e => onInspect(queueItem.team, queueItem.num, e.currentTarget)}
+                    aria-label={`Inspect ${character.name}`}
+                    aria-describedby={inspected ? 'character-hover-card' : undefined}
+                    data-character={characterKey}
+                    data-inspected={inspected}
+                    onMouseEnter={e => onInspect(queueItem.team, queueItem.num, e.currentTarget)}
+                    onMouseLeave={e => { if (!e.currentTarget.contains(document.activeElement)) onInspect(queueItem.team, queueItem.num, null); }}
+                    onFocus={e => onInspect(queueItem.team, queueItem.num, e.currentTarget)}
+                    onBlur={() => onInspect(queueItem.team, queueItem.num, null)}
                     className={`timeline_character ${queueItem.team === 1 ? 'timeline_ally' : 'timeline_enemy'}`}
                     style={style}
                   >
@@ -103,21 +115,11 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                         className="timeline_portrait"
                         style={portraitStyle}
                       />
-                      <div className={`timeline_class_indicator ${
-                        character.class === Class.WARRIOR
-                          ? 'frame-warrior'
-                          : character.class === Class.BLACK_MAGE
-                          ? 'frame-black-mage'
-                          : 'frame-white-mage'
-                      }`}>
-                        <img
-                          src={character.class === Class.WARRIOR ? warriorIcon : mageIcon}
-                          className={`class-icon ${character.class === Class.WARRIOR ? 'warrior' : ''}`}
-                          alt={`${Class[character.class]} class`}
-                        />
+                      <div className="timeline_class_indicator">
+                        <ClassCrest characterClass={character.class} />
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>

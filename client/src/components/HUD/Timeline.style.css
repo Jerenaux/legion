@@ -188,45 +188,13 @@
   }
 }
 
+/* The compact crest shares the side roster's silhouette and class colors. */
 .timeline_class_indicator {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -12px;
+  right: -9px;
   width: 28px;
-  height: 28px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.frame-warrior {
-  background-image: url('@assets/HUD/class_icon_frame_w.png');
-}
-
-.frame-black-mage {
-  background-image: url('@assets/HUD/class_icon_frame_bm.png');
-}
-
-.frame-white-mage {
-  background-image: url('@assets/HUD/class_icon_frame_wm.png');
-}
-
-.timeline_class_indicator img {
-  width: 50%;
-  height: 50%;
-  object-fit: contain;
-}
-
-.timeline_class_indicator .warrior {
-  transform: scaleX(1.5);
-}
-
-/* Adjust the portrait container to accommodate the class indicator */
-.timeline_portrait_container {
-  position: relative;
-  margin: 3px;
+  height: 32px;
 }
 
 .ally_portrait {

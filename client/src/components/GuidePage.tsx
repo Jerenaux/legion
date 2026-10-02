@@ -6,6 +6,7 @@ import {defaultGameSettings} from '../settings';
 import battle from '@assets/guide/battle.jpg';
 import actions from '@assets/guide/actions.jpg';
 import turnOrder from '@assets/guide/turn-order.jpg';
+import inspection from '@assets/guide/inspection.jpg';
 import loadout from '@assets/guide/loadout.jpg';
 import './GuidePage.css';
 
@@ -75,6 +76,12 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <figure className="guide-figure-compact">
               <img src={turnOrder} width="570" height="70" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act." />
               <figcaption>The turn order is your planning tool. Speed and the recovery time of each action affect when a character acts again.</figcaption>
+            </figure>
+            <p>Class crests appear on both side rosters and the turn order: an amber sword for Warriors, a mint cross for White Mages, and a violet flame for Black Mages.</p>
+            <p>Hover a character on the battlefield, either side roster, or the turn order to highlight the same character in all three places. Their side card and turn-order portrait brighten and grow slightly, while their battlefield sprite glows. The inspection card shows their class, current and maximum HP and MP rounded to whole numbers, and active status effects with their remaining duration (∞ means permanent). You can also focus the side cards or turn-order portraits with the arrow keys or controller. Press Escape to dismiss the card.</p>
+            <figure className="guide-figure-compact">
+              <img src={inspection} width="390" height="255" loading="lazy" alt="A highlighted Black Mage beside an inspection card showing their class and exact HP and MP values." />
+              <figcaption>Inspect characters without changing your selected unit or spending an action.</figcaption>
             </figure>
             <dl className="guide-definitions">
               <div><dt>Move</dt><dd>Click an empty blue tile. Moving uses your action, so pick a position that sets up your next turn or gets a vulnerable character out of danger.</dd></div>
