@@ -175,6 +175,7 @@ test('a match ending during the fade waits before its finale and cancels on tear
     let finales = 0;
     const fade = new Promise<void>(resolve => {finishFade = resolve;});
     const arena = runInNewContext(code, {setRouteMusic: () => fade});
+    arena.clearCharacterHover = () => {};
     arena.playerTeamId = 1;
     arena.musicManager = {gameOver: false, playEnd: () => {finales++;}};
     arena.teamsMap = new Map();

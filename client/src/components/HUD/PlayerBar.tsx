@@ -164,7 +164,7 @@ class PlayerBar extends Component<PlayerBarProps> {
                     secondaryColor={'#4CAF50'}
                   />
                   <p className="player_bar_stat_value">
-                    <span style={{color: '#71deff'}}>{hp}</span> / <span>{maxHp}</span>
+                    <span style={{color: '#71deff'}}>{Math.round(hp)}</span> / <span>{Math.round(maxHp)}</span>
                   </p>
                   <div className="player_bar_statuses">
                     {Object.keys(statuses).map((status: string) => statuses[status] !== 0 && (
@@ -192,10 +192,10 @@ class PlayerBar extends Component<PlayerBarProps> {
                       <span style={{
                         color: pendingSpellCost > 0 ? '#ff6b6b' : '#71deff'
                       }}>
-                        {pendingSpellCost > 0 ? mp - pendingSpellCost : mp}
+                        {Math.round(pendingSpellCost > 0 ? mp - pendingSpellCost : mp)}
                       </span>
                       <span> / </span>
-                      <span>{maxMp}</span>
+                      <span>{Math.round(maxMp)}</span>
                     </p>
                   </div>
                 )}
