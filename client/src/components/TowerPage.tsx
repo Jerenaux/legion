@@ -72,7 +72,7 @@ export default function TowerPage() {
   return <main className={`tower-page ${run && !finished ? 'is-climbing' : 'is-preparing'}`} aria-busy={busy}>
     <div className="tower-layout">
       <header className="tower-heading">
-        <Link href="/play" className="tower-back">← Play</Link>
+        <Link href="/play" className="tower-back"><span aria-hidden="true">‹</span> Play</Link>
         <div className="tower-title"><img src={towerIcon} alt="" /><h1>Cinder Tower</h1></div>
         {run && !finished ? <section className="tower-progress tower-header-progress" aria-label="Banked rewards"><span>{completed}/6 cleared</span><Rewards reward={run.earned} /></section> : <span className="tower-mode-label">Solo · Untimed</span>}
       </header>
@@ -99,9 +99,9 @@ export default function TowerPage() {
             </div>}
 
 
-            <div className="tower-preparation-heading"><h2>{finished ? 'Next expedition' : 'Choose your squad'}</h2><label>Difficulty <select value={tier} disabled={busy} onChange={event => setTier(Number(event.currentTarget.value))}>
+            <div className="tower-preparation-heading"><h2>{finished ? 'Next expedition' : 'Choose your squad'}</h2><label className="tower-difficulty"><span>Difficulty</span><span className="tower-difficulty-control"><select value={tier} disabled={busy} onChange={event => setTier(Number(event.currentTarget.value))}>
               {Array.from({length: Math.min(TOWER_MAX_TIER, progress.highestClear + 1)}, (_, i) => <option key={i} value={i + 1}>Tier {i + 1}{i === 0 ? '' : ` · +${i * 15}% enemy power`}</option>)}
-            </select></label></div>
+            </select><span aria-hidden="true">⌄</span></span></label></div>
             <div className="tower-kits" role="radiogroup" aria-label="Starting kit">
               <label className={`tower-kit ${kit === 'balanced' ? 'selected' : ''}`}><input type="radio" name="tower-kit" value="balanced" checked={kit === 'balanced'} disabled={busy} onChange={() => setKit('balanced')} />
                 <img src={shieldIcon} alt="" /><span><strong>Balanced</strong><small>Fire & healing</small></span><span className="tower-kit-check" aria-hidden="true">{kit === 'balanced' ? '✓' : ''}</span></label>
@@ -140,7 +140,7 @@ export default function TowerPage() {
                 }) : TOWER_ENCOUNTERS[run.floor].map(encounter => <button key={encounter.id} type="button" className={`tower-choice tower-encounter ${encounter.elite ? 'elite' : ''} ${run.floor === 5 ? 'boss' : ''}`} disabled={disabled} onClick={() => act('battle', {encounter: encounter.id})}>
                   <span className="tower-encounter-top"><span className="tower-kicker">{run.floor === 5 ? 'BOSS' : encounter.elite ? 'ELITE' : 'STANDARD'}</span>{encounter.elite && <span className="tower-bonus">+25% gold / XP</span>}</span>
                   <span className="tower-enemy-lineup">{encounter.enemies.map((enemy, index) => <span key={index} title={`${enemy.name} · ${ClassLabels[enemy.class]}`}><img src={enemy.boss ? towerIcon : classIcons[enemy.class]} alt="" /><small>{enemy.boss ? 'Warden' : ClassLabels[enemy.class]}</small></span>)}</span>
-                  <strong>{encounter.name}</strong><span className="tower-choice-description">{encounter.description}</span>
+                  <strong>{encounter.name}</strong>
                   <span className="tower-spoils"><span className="tower-kicker">REWARDS</span><Rewards reward={towerReward(run.floor, run.tier, encounter.elite)} /></span>
                   <span className="tower-choice-action">{run.floor === 5 ? 'Challenge Warden' : 'Fight'} <span aria-hidden="true">→</span></span>
                 </button>)}
@@ -158,7 +158,7 @@ export default function TowerPage() {
             <p>Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. Tower battles do not count toward ranked results, ELO, or match-count unlocks.</p>
             <p>An internet connection is required. Close Legion between encounters and return later. A short disconnect pauses the battle. If the server can no longer resume it, restart that encounter from its saved entry state with no duplicate rewards.</p>
           </details>
-        {(!run || finished) && <><span className="tower-run-note">6 battles · Keep your rewards</span><button type="button" className="tower-primary" disabled={disabled} onClick={() => act('create', {tier, kit})}>{busy ? 'Preparing…' : 'Begin expedition'} <span aria-hidden="true">→</span></button></>}
+        {(!run || finished) && <><span className="tower-run-length"><span className="tower-run-track" aria-hidden="true">{Array.from({length: TOWER_FLOORS - 1}, (_, i) => <i key={i} />)}<img src={towerIcon} alt="" /></span><span><b>{TOWER_FLOORS}</b> battles</span></span><button type="button" className="tower-primary" disabled={disabled} onClick={() => act('create', {tier, kit})}>{busy ? 'Preparing…' : 'Begin expedition'} <span aria-hidden="true">→</span></button></>}
         {run && !finished && run.upgrades.length > 0 && <details name="tower-info" className="tower-rules tower-build"><summary>Build · {run.upgrades.length}</summary><ul>{run.upgrades.map((id, index) => {
           const upgrade = TOWER_UPGRADES.find(candidate => candidate.id === id)!;
           return <li key={index}><strong>{upgrade.name}</strong><p>{upgrade.description}</p></li>;

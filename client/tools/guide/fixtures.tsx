@@ -1,4 +1,4 @@
-import {createTowerRun, chooseTowerUpgrade, finishTowerBattle, TowerProgress} from '@legion/shared/tower';
+import {createTowerRun, chooseTowerUpgrade, finishTowerBattle, TowerProgress, TOWER_ENCOUNTERS} from '@legion/shared/tower';
 // Screenshot-only providers. The release webpack config never imports this file.
 import 'phaser';
 import { h, ComponentChildren } from 'preact';
@@ -110,6 +110,17 @@ Arena.prototype.connectToServer = async function () {
     snapshot.player.team[2].spells = [0, 6];
     snapshot.player.team[2].towerSpellCosts = {0: 10, 6: 15};
     this.socket.on('towerEnd', () => route('/tower'));
+  }
+  if (location.pathname.includes('/tower-embers')) {
+    const encounter = TOWER_ENCOUNTERS[0].find(entry => entry.id === 'embers')!;
+    snapshot.general.mode = PlayMode.TOWER;
+    snapshot.general.tower = {floor: 1, tier: 1, name: encounter.name, warning: []};
+    snapshot.turnee.turnDuration = 0; snapshot.turnee.timeLeft = 0;
+    snapshot.terrain = encounter.terrain;
+    snapshot.opponent.team = encounter.enemies.map(enemy => ({...snapshot.opponent.team[2],
+      name: enemy.name, class: enemy.class, x: enemy.x, y: enemy.y, hp: enemy.hp, maxHP: enemy.hp,
+      mp: 100, maxMP: 100, spells: enemy.spells}));
+    snapshot.queue = snapshot.queue.filter(unit => unit.team !== 2 || unit.num <= encounter.enemies.length);
   }
   this.enqueueMessage('gameStatus', snapshot);
 };

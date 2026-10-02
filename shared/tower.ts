@@ -1,4 +1,5 @@
 import {Class, Terrain, RewardType} from './enums';
+import {GRID_HEIGHT} from './config';
 import {NewCharacter} from './NewCharacter';
 import {DBCharacterData, ChestReward} from './interfaces';
 import {getXPThreshold} from './levelling';
@@ -45,8 +46,8 @@ export const TOWER_ENCOUNTERS: TowerEncounter[][] = [
   [
     {id: 'gate', name: 'The Broken Gate', description: 'Split the sentries. Fight one at a time.', elite: false,
       enemies: [fighter('Gate Sentry', 9, 4, 80), fighter('Gate Sentry', 10, 7, 80)], terrain: []},
-    {id: 'embers', name: 'Ember Approach', description: 'Fire mage behind a guard. Avoid burning tiles.', elite: true,
-      enemies: [fighter('Ash Guard', 9, 5, 85), mage('Ember Adept', [0], 11, 6, 65)], terrain: [fire(7, 5), fire(8, 5)]},
+    {id: 'embers', name: 'Ember Approach', description: 'Two fire mages across a wall of flame. Ice opens a crossing.', elite: true,
+      enemies: [mage('Ash Adept', [0], 9, 5, 65), mage('Ember Adept', [0], 11, 6, 65)], terrain: Array.from({length: GRID_HEIGHT}, (_, y) => fire(7, y))},
   ],
   [
     {id: 'sanctum', name: 'The Warded Sanctum', description: 'A healer sustains two guards. Focus your attacks.', elite: false,

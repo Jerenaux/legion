@@ -33,7 +33,6 @@ interface GameHUDState {
   characters: CharacterUpdate[];
   isSpectator: boolean;
   tower: {floor: number; tier: number; name: string} | null;
-  towerWarning: boolean;
   mode: PlayMode;
   game0: boolean;
   grade: string;
@@ -74,7 +73,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     isSpectator: false,
     mode: null,
     tower: null,
-    towerWarning: false,
     game0: false,
     grade: null,
     chests: [],
@@ -105,7 +103,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('refreshOverview', this.updateOverview);
     events.on('gameEnd', this.endGame);
     events.on('towerInfo', this.setTowerInfo);
-    events.on('towerWarning', this.setTowerWarning);
     events.on('hoverCharacter', () => {
       if (this.state.pendingSpell || this.state.pendingItem) return;
       this.handleCursorChange('pointerCursor')
@@ -216,7 +213,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   setTowerInfo = (tower: GameHUDState['tower']) => this.setState({tower});
-  setTowerWarning = (towerWarning: boolean) => this.setState({towerWarning});
 
   endGame = (data: OutcomeData) => {
     recordCompletedGame();
@@ -320,8 +316,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           </>
         )}
         {this.state.tower && <div className="tower-combat-banner" role="status">
-          <strong>Floor {this.state.tower.floor}/6 · {this.state.tower.name}</strong>
-          <span>{this.state.towerWarning ? 'Marked tiles erupt on the Warden’s turn. Move away!' : 'Expedition · Untimed turns · Rewards bank after each victory'}</span>
+          <span>Floor</span> <strong>{this.state.tower.floor}</strong>
         </div>}
         {isHUDVisible && (
           <PlayerBar

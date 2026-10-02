@@ -301,7 +301,7 @@ if (!process.versions.electron) {
         await js('document.querySelector(".tower-primary").click()');
         await waitFor('Boolean(document.querySelector(".tower-choices"))');
         await ready();
-        await capture('tower', {x: 0, y: 70, width: 1600, height: 800});
+        await capture('tower', {x: 0, y: 60, width: 1600, height: 840});
         for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
           win.setContentSize(width, height); await ready();
           fs.writeFileSync(path.join(dist, `tower-route-${width}.png`), (await win.webContents.capturePage()).toPNG());
@@ -328,6 +328,10 @@ if (!process.versions.electron) {
           await waitFor('Boolean(document.querySelector(".tower-primary"))'); await ready();
           fs.writeFileSync(path.join(dist, `tower-${phase}.png`), (await win.webContents.capturePage()).toPNG());
         }
+        await win.loadURL(`${PACKAGED_APP_URL}game/tower-embers`);
+        await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
       } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
@@ -380,7 +384,7 @@ if (!process.versions.electron) {
         await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-untimed"))');
         assert.equal(await js('combatCheck.arena.getPlayer(1, 3).spells.find(spell => spell.id === 6).cost'), 15);
         assert.equal(await js('combatCheck.arena.towerWarningMarkers.length'), 2);
-        assert((await js('document.querySelector(".tower-combat-banner").innerText')).includes('Marked tiles'));
+        assert.equal(await js('document.querySelector(".tower-combat-banner").textContent.trim()'), 'Floor 6');
         fs.writeFileSync(path.join(dist, 'tower-boss.png'), (await win.webContents.capturePage()).toPNG());
         await js('towerCheck.win(); combatCheck.arena.socket.emit("towerEnd", {saved: true})');
         await waitFor('document.querySelectorAll(".tower-choice").length === 4');

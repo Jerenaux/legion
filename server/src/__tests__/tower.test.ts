@@ -4,8 +4,10 @@ import {AIServerPlayer} from '../AIServerPlayer';
 import {TowerGame} from '../TowerGame';
 import {TurnSystem} from '../TurnSystem';
 import {createTowerRun, TOWER_ENCOUNTERS, TOWER_UPGRADES, chooseTowerUpgrade, finishTowerBattle, towerOffers} from '@legion/shared/tower';
-import {League, PlayMode, StatusEffect, Terrain} from '@legion/shared/enums';
+import {Class, League, PlayMode, StatusEffect, Terrain} from '@legion/shared/enums';
 import {getSpellById} from '@legion/shared/Spells';
+import {GRID_HEIGHT} from '@legion/shared/config';
+import {Spell} from '../Spell';
 import {isSkip} from '@legion/shared/utils';
 
 const games: TowerGame[] = [];
@@ -31,6 +33,28 @@ test('all authored encounters have valid, distinct spawns and traversable starti
       expect(game.listCellsInRange(unit.x, unit.y, unit.distance).length).toBeGreaterThan(0);
     }
   }
+});
+
+test('Ember Approach has a full-height fire wall, ranged enemies, and an Ice crossing', async () => {
+  const game = await battle(0, 1);
+  for (let y = 0; y < GRID_HEIGHT; y++) expect(game.checkIsOnFlame(7, y)).toBe(true);
+  expect(game.terrainManager.getNbBurning()).toBe(GRID_HEIGHT);
+  expect(game.getTeam(2)).toHaveLength(2);
+  for (const enemy of game.getTeam(2)) {
+    expect(enemy.class).toBe(Class.BLACK_MAGE);
+    expect(enemy.x).toBeGreaterThan(7);
+    expect(game.checkIsOnFlame(enemy.x, enemy.y)).toBe(false);
+    const fire = enemy.spells.find(spell => spell.id === 0)!;
+    expect(fire.cost).toBeLessThanOrEqual(enemy.mp);
+    const target = game.scanGridForAoE(enemy, fire.radius - 1);
+    expect(target).not.toBeNull();
+    expect(target!.x).toBeLessThan(7);
+  }
+  game.terrainManager.updateTerrainFromSpell(new Spell(getSpellById(6)!), 7, 5);
+  expect(game.terrainManager.getTerrain(7, 5)).toBe(Terrain.NONE);
+  expect(game.hasObstacle(7, 5)).toBe(false);
+  expect(game.checkIsOnFlame(7, 0)).toBe(true);
+  expect(game.checkIsOnFlame(7, GRID_HEIGHT - 1)).toBe(true);
 });
 
 test('temporary upgrade effects reach combat without mutating shared spells', async () => {

@@ -1250,7 +1250,6 @@ export class Arena extends Phaser.Scene
             return this.add.text(x, y + 15, '⚠', {fontFamily: 'Arial', fontSize: '34px', color: '#ffe3a1', backgroundColor: '#5b251c', padding: {x: 6, y: 2}})
                 .setOrigin(0.5).setDepth(10000);
         });
-        events.emit('towerWarning', tiles.length > 0);
     }
 
     processQueueData(data: TurnQueueEntry[]) {
