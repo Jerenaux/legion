@@ -8,8 +8,8 @@ import { Arena } from '../../src/game/Arena';
 import {MusicManager} from '../../src/game/MusicManager';
 import { EventEmitter } from 'eventemitter3';
 import { NewCharacter } from '../../../shared/NewCharacter';
-import { Class, League, PlayMode, StatusEffect, Terrain } from '../../../shared/enums';
-import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE } from '../../../shared/config';
+import { Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures } from '../../../shared/enums';
+import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
 import {getClient, getReplay, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
@@ -131,20 +131,27 @@ Object.assign(window, {queueCheck});
 
 export default function FixturePlayer({children}: {children: ComponentChildren}) {
   const defaults = useContext(PlayerContext);
+  const [preview] = useState(() => new URLSearchParams(location.search));
+  const completedGames = Math.max(0, Number(preview.get('games') ?? 12));
+  const rosterSize = Math.max(3, Math.min(MAX_CHARACTERS, Number(preview.get('roster') ?? 3)));
+  const roster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
+    : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]});
   const [activeId, setActiveId] = useState(characters[2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
   Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true), fail: () => setRenderFailed(true)}});
   if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
-    ...defaults, loaded, welcomeShown: true, characters, activeCharacterId: activeId,
+    ...defaults, loaded, welcomeShown: true, characters: roster, activeCharacterId: activeId,
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
-      isLoaded: loaded, completedGames: 12, engagementStats: profile.engagementStats, gold: 240, elo: 128, rank: 12,
+      isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
       carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
-    canAccessFeature: () => true, getCompletedGames: () => 12, checkEngagementFlag: () => true,
-    getCharacter: (id: string) => characters.find(character => character.id === id),
-    getActiveCharacter: () => characters.find(character => character.id === activeId),
+    canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
+    getCompletedGames: () => completedGames, checkEngagementFlag: () => true,
+    getGamesUntilFeature: (feature: LockedFeatures) => Math.max(0, LOCKED_FEATURES[feature] - completedGames),
+    getCharacter: (id: string) => roster.find(character => character.id === id),
+    getActiveCharacter: () => roster.find(character => character.id === activeId),
     updateActiveCharacter: (id: string) => {if (id) setActiveId(id);},
   };
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

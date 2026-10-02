@@ -3,38 +3,142 @@
     margin: auto;
 }
 
+.roster-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 6px 0 10px;
+    margin: 12px 0 16px;
+    border-bottom: 1px solid oklch(76% 0.14 78);
+}
+
+.roster-heading h1 {
+    margin: 0;
+    font: 1rem Kim, sans-serif;
+    text-transform: uppercase;
+    color: oklch(96% 0.008 220);
+}
+
+.roster-capacity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: oklch(69% 0.025 220);
+    font: 0.8125rem Arial, sans-serif;
+    white-space: nowrap;
+}
+.roster-capacity strong { color: oklch(92% 0.025 220); }
+.roster-capacity-marks { display: flex; gap: 5px; }
+.roster-capacity-marks span {
+    width: 9px;
+    height: 13px;
+    clip-path: polygon(0 0, 100% 0, 100% 65%, 50% 100%, 0 65%);
+    background: oklch(32% 0.025 220);
+}
+.roster-capacity-marks .is-filled { background: oklch(79% 0.12 80); }
+
 .rosters {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 50px;
+    gap: 14px;
 }
 
-.addCardContainer {
-    width: 304px;
-    height: 86px;
-    display: flex;
-    justify-content: flex-end;
-    cursor: pointer;
+.rosters .endgame_character,
+.roster-slot {
+    box-sizing: border-box;
+    width: 159px;
+    height: 168px;
 }
 
-.addCard {
-    width: 258px;
-    height: 76px;
-    background-color: #1c1f25;
-    border: 1px solid #000000;
-    border-radius: 6px;
-    margin-right: 5px;
+.roster-slot {
+    position: relative;
+    min-height: 168px;
+    box-sizing: border-box;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: flex-end;
+    padding: 14px 8px;
+    border: 1px dashed oklch(37% 0.03 220);
+    border-radius: 8px;
+    background: oklch(19% 0.025 240 / 0.45);
+    color: oklch(71% 0.025 220);
+    font: 0.8125rem Kim, sans-serif;
+    text-align: center;
+    text-decoration: none;
 }
 
-.addCard:hover {
-    background-color: #242830;
+.roster-future-portrait {
+    position: absolute;
+    top: 34px;
+    width: 80px;
+    height: 80px;
+    background-position: -40px -40px;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    filter: grayscale(1);
+    opacity: 0.2;
 }
 
-.addCard img {
-    width: 24px;
-    height: 24px;
+.roster-slot-plus {
+    position: absolute;
+    top: 57px;
+    font: 2rem/1 Arial, sans-serif;
+    color: oklch(63% 0.035 220);
+}
+
+.roster-slot--available {
+    border-color: oklch(55% 0.075 220);
+    color: oklch(83% 0.09 215);
+    transition: background-color 180ms ease-out, border-color 180ms ease-out;
+}
+
+.roster-slot--available:hover {
+    background: oklch(27% 0.035 230);
+    border-color: oklch(83% 0.09 215);
+}
+
+.roster-slot--available:focus-visible {
+    outline: 2px solid oklch(87% 0.09 215);
+    outline-offset: 4px;
+}
+
+.roster-unlock {
+    width: fit-content;
+    max-width: 100%;
+    margin: 16px auto 0;
+}
+.roster-unlock-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: oklch(71% 0.025 220);
+    font: 0.75rem/1.4 Arial, sans-serif;
+}
+.roster-unlock-label strong { color: oklch(85% 0.08 80); font-weight: 600; }
+.roster-unlock-label img { width: 11px; height: 13px; object-fit: contain; opacity: 0.75; }
+.roster-unlock progress {
+    display: block;
+    appearance: none;
+    border: 0;
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+    height: 4px;
+    margin: 8px 0 0;
+    background: oklch(28% 0.025 225);
+    color: oklch(76% 0.09 215);
+}
+.roster-unlock progress::-webkit-progress-bar { background: oklch(28% 0.025 225); }
+.roster-unlock progress::-webkit-progress-value { background: oklch(76% 0.09 215); }
+.roster-unlock progress::-moz-progress-bar { background: oklch(76% 0.09 215); }
+
+@media (max-width: 700px) {
+    .rosters { gap: 10px; }
+    .rosters .endgame_character, .roster-slot { width: calc((100% - 30px) / 4); min-width: 120px; }
+    .roster-heading { align-items: center; }
+    .roster-capacity { gap: 8px; }
+    .roster-capacity-marks { gap: 3px; }
 }

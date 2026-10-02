@@ -282,8 +282,28 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
-        await capture('loadout', {x: 270, y: 328, width: 1045, height: 428});
+        await js('document.querySelector(".character-inventory-container").scrollIntoView({block: "start"})');
+        await ready();
+        const loadoutY = await js('Math.round(document.querySelector(".character-inventory-container").getBoundingClientRect().top)');
+        await capture('loadout', {x: 270, y: loadoutY, width: 1045, height: 428});
       } else {
+        for (const [games, size] of [[0, 3], [11, 3], [12, 3], [12, 5], [12, 6]]) {
+          await win.loadURL(`${PACKAGED_APP_URL}team?games=${games}&roster=${size}`);
+          await waitFor('Boolean(document.querySelector(".roster-heading"))');
+          assert.equal(await js('document.querySelectorAll(".rosters .endgame_character").length'), size);
+          assert.equal(await js('document.querySelectorAll(".roster-slot").length'), size < 6 ? 1 : 0);
+          assert.equal(await js('Boolean(document.querySelector(".roster-slot--available"))'), games >= 12 && size < 6);
+          assert.equal(await js('document.querySelector(".roster-unlock progress")?.value'), games < 12 ? games : undefined);
+          if (games === 11) assert((await js('document.querySelector(".roster-unlock-label").textContent')).includes('1 game'));
+          if (games < 12) assert.equal(await js('document.querySelectorAll(".rosterContainer a").length'), 0);
+          if (size === 6) assert.equal(await js('Boolean(document.querySelector(".roster-unlock"))'), false);
+        }
+        await win.loadURL(`${PACKAGED_APP_URL}team?games=12`);
+        await waitFor('Boolean(document.querySelector(".roster-slot--available"))');
+        await js('document.querySelector(".roster-slot--available").click()');
+        assert.equal(await js('location.pathname'), '/shop/characters');
+        assert.deepEqual(rendererErrors, []);
+        console.log('Team recruitment: locked progress, unlock boundary, partial/full roster and Shop navigation pass');
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');

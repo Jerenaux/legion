@@ -115,6 +115,8 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <img src={loadout} width="1045" height="428" loading="lazy" alt="The Team screen: Ember’s character stats and equipment slots on the left, equipped consumables and spells below, and the shared inventory on the right." />
               <figcaption>Owning an item is not enough: assign it to the character who needs it before queuing.</figcaption>
             </figure>
+            <h3>Grow your team</h3>
+            <p>The next recruit’s place in Team shows how your roster can grow to {MAX_CHARACTERS} characters. Recruitment unlocks after {LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES]} completed games, win or lose. Track your progress below the roster; once unlocked, choose <strong>Recruit character</strong> to buy a new teammate with gold in Shop.</p>
             <h3>Know your roles</h3>
             <p><strong>Warriors</strong> are sturdy melee fighters. <strong>White Mages</strong> start with healing magic and support the team. <strong>Black Mages</strong> start with offensive magic and can use damage, terrain, and status effects to disrupt an opponent. Check each character’s actual stats and spells before choosing their job.</p>
             <h3>Three different kinds of preparation</h3>
