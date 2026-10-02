@@ -43,11 +43,10 @@
 .player_bar_body { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 100%; }
 .player_bar_character { flex: 0 1 190px; min-width: 154px; }
 .player_bar_stats { display: flex; flex-direction: column; gap: 7px; }
-.player_bar_heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; line-height: 1.1; }
-.player_bar_name { font-size: 1rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.player_bar_turn_label { color: var(--dock-muted); font-size: 0.6875rem; text-align: right; white-space: nowrap; }
+.player_bar_heading { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; line-height: 1.1; }
+.player_bar_name { max-width: 100%; text-align: center; font-size: 1rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player_bar_turn_label { color: var(--dock-muted); font-size: 0.6875rem; text-align: center; white-space: nowrap; }
 .player_bar_container[data-active="true"] .player_bar_turn_label { color: var(--dock-accent); }
-.player_bar_container[data-pending="true"] .player_bar_heading { flex-wrap: wrap; gap: 2px; }
 .player_bar_stat { display: grid; grid-template-columns: 36px minmax(24px, 1fr) auto; align-items: center; gap: 5px; font-size: 0.875rem; line-height: 1; white-space: nowrap; }
 .player_bar_stat_icon { display: flex; align-items: center; gap: 2px; }
 .player_bar_stat_icon img { width: 14px; height: 16px; object-fit: contain; }
@@ -160,3 +159,10 @@
   text-shadow: 0 0 10px oklch(55% 0.19 15 / 0.8), 0 1px 1px oklch(35% 0.13 15);
   background: linear-gradient(90deg, transparent 15%, oklch(55% 0.19 15 / 0.3) 35%, oklch(55% 0.19 15 / 0.4) 50%, oklch(55% 0.19 15 / 0.3) 65%, transparent 85%);
 }
+
+#combat-action-details { width: 320px; font-size: 1rem; }
+#combat-action-details .item-preview-name { font-size: 1.25rem; }
+#combat-action-details .item-preview-kind, #combat-action-details .item-preview-stat { font-size: 0.8125rem; }
+#combat-action-details .item-preview-facts { font-size: 0.9375rem; }
+
+#combat-action-details .item-preview-description { font-size: 1rem; }

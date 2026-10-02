@@ -87,7 +87,7 @@ class PlayerBar extends Component<PlayerBarProps> {
     const spellsIndex = layout.indexOf(this.state.keyboardLayout === 0 ? 'W' : 'Z');
     const pending = canAct && (player.pendingSpell != null ? spells[player.pendingSpell] : items[player.pendingItem]);
     const condition = player?.hp <= 0 ? 'Knocked out' : player?.isParalyzed ? 'Unable to act' : player?.casting ? 'Casting' : '';
-    const instruction = !isPlayerTurn ? 'Enemy turn' : condition || (pending ? 'Select a target' : canAct ? 'Your turn' : 'Inspecting');
+    const instruction = !isPlayerTurn ? 'Enemy turn' : condition || (pending ? 'Select a target' : canAct ? '' : 'Inspecting');
     const previewMP = pending && 'cost' in pending ? player.mp - pending.cost : player?.mp;
 
     return (
@@ -99,7 +99,7 @@ class PlayerBar extends Component<PlayerBarProps> {
               <div className="player_bar_stats">
                 <div className="player_bar_heading" key={turnNumber}>
                   <strong className="player_bar_name">{player?.name || 'Combat'}</strong>
-                  <span className="player_bar_turn_label" role="status">{instruction}</span>
+                  {instruction && <span className="player_bar_turn_label" role="status">{instruction}</span>}
                 </div>
                 {player && <>
                   <div className="player_bar_stat">
@@ -121,8 +121,8 @@ class PlayerBar extends Component<PlayerBarProps> {
               </div>
             </div>
             <div className="player_bar_actions_container">
-              {spells.length > 0 && this.renderActionRow(spells, spellsIndex, InventoryType.SPELLS)}
               {this.renderActionRow(items, 0, InventoryType.CONSUMABLES)}
+              {spells.length > 0 && this.renderActionRow(spells, spellsIndex, InventoryType.SPELLS)}
             </div>
             <div className="player_bar_controls">
               <CircularTimer turnDuration={turnDuration} timeLeft={timeLeft} turnNumber={turnNumber} size={36} strokeWidth={3} />

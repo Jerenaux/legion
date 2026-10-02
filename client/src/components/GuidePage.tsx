@@ -93,7 +93,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>Clicks outside the targeting range are ignored. Choose another target, or press <kbd>Esc</kbd> to cancel targeting and move or pass instead.</p>
             <figure>
               <img src={actions} width="800" height="100" loading="lazy" alt="The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass." />
-              <figcaption>Green is HP (health); blue is MP (magic). The dock shows the named character’s learned spells and equipped items. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.</figcaption>
+              <figcaption>Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.</figcaption>
             </figure>
             <p>Blue mana bars show remaining MP for both teams. Watch enemy mana to judge which spells they can still afford; casting spends MP and Ether restores it.</p>
             <h3>A reliable opening plan</h3>

@@ -336,6 +336,15 @@ if (!process.versions.electron) {
         await js('document.documentElement.style.fontSize = "100%"; combatCheck.arena.selectedPlayer.setSpells([0, 3, 6, 1, 2]); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-full-loadout.png'), (await win.webContents.capturePage()).toPNG());
+        win.show();
+        win.focus();
+        for (const type of ['spells', 'consumables']) {
+          await ready();
+          await js(`document.querySelector('#player_hud_${type}').focus()`);
+          await ready();
+          fs.writeFileSync(path.join(dist, `dock-${type}-tooltip.png`), (await win.webContents.capturePage()).toPNG());
+          await js('document.activeElement.blur()');
+        }
         await js('combatCheck.arena.processTurnee({...combatCheck.arena.turnee, team: 2, num: 1, turnNumber: 9})');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-enemy.png'), (await win.webContents.capturePage()).toPNG());
