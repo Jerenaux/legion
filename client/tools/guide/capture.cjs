@@ -285,6 +285,14 @@ if (!process.versions.electron) {
         await capture('battle', {x: 340, y: 290, width: 840, height: 405});
         await capture('actions', {x: 400, y: 800, width: 800, height: 100});
         await capture('turn-order', {x: 460, y: 730, width: 570, height: 70});
+        await js('combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells([9]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-empty-items.png'), (await win.webContents.capturePage()).toPNG());
+        await js('window.dockPreviewTurn = {...combatCheck.arena.turnee}; combatCheck.arena.processTurnee({...dockPreviewTurn, num: 1}); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-warrior.png'), (await win.webContents.capturePage()).toPNG());
+        await js('combatCheck.arena.processTurnee(dockPreviewTurn); combatCheck.resync()');
+        await ready();
         // Manual visual review: compact, full-loadout and enemy-turn states.
         for (const [width, height, scale] of [[1280, 720, 100], [1280, 720, 130], [960, 540, 100]]) {
           win.setContentSize(width, height);
@@ -301,7 +309,7 @@ if (!process.versions.electron) {
         fs.writeFileSync(path.join(dist, 'dock-silenced.png'), (await win.webContents.capturePage()).toPNG());
         await js('combatCheck.arena.selectedPlayer.statuses.Mute = 0');
         win.setContentSize(1600, 900);
-        await js('document.documentElement.style.fontSize = "100%"; combatCheck.arena.selectedPlayer.setSpells([0, 3, 6, 1, 2]); combatCheck.arena.selectedPlayer.setInventory([0, 1, 10]); combatCheck.arena.refreshBox()');
+        await js('document.documentElement.style.fontSize = "100%"; combatCheck.arena.selectedPlayer.setSpells([0, 3, 6, 1, 2]); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-full-loadout.png'), (await win.webContents.capturePage()).toPNG());
         await js('combatCheck.arena.processTurnee({...combatCheck.arena.turnee, team: 2, num: 1, turnNumber: 9})');

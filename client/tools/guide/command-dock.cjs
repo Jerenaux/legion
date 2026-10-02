@@ -1,4 +1,4 @@
-// Functional checks for persistent commands, using the real arena and HUD.
+// Functional checks for combat commands, using the real arena and HUD.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -17,21 +17,22 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.equal(await js('document.querySelector(".player_bar_pass_turn").disabled'), true);
   await js('combatCheck.arena.selectedPlayer.cancelSkill()');
   await js('combatCheck.arena.processTurnee({...dockTurn, team: 2, num: 1, turnNumber: 9})');
-  await waitFor('document.querySelector(".player_bar_turn_label").textContent.includes("Enemy turn")');
-  assert.equal(await js('document.querySelectorAll("button.player_bar_action").length'), 4);
-  await js(`document.querySelector('${fire}').click(); document.querySelector('#player_hud_consumables').click(); document.querySelector('.player_bar_pass_turn').click()`);
-  assert.deepEqual(await js('dockCommands'), [], 'Inspecting commands during an enemy turn must not send actions');
-  win.show();
-  win.focus();
-  await js(`document.querySelector('${fire}').focus()`);
-  await waitFor('document.querySelector("#combat-action-details .item-preview-name")?.textContent === "Fire"');
-  await ready();
-  fs.writeFileSync(path.join(dist, 'dock-enemy-tooltip.png'), (await win.webContents.capturePage()).toPNG());
-  await js('document.activeElement.blur()');
+  await waitFor('document.querySelector(".enemy_turn_banner")?.textContent === "Enemy Turn"');
+  assert.equal(await js('document.querySelectorAll("button.player_bar_action, .player_bar_character").length'), 0);
+  assert.deepEqual(await js('dockCommands'), [], 'Enemy turn must not send actions');
   await js('combatCheck.arena.getPlayer(1, 3).setHP(55)');
-  await waitFor('document.querySelector(".player_bar_stat meter").value === 55');
   await js('combatCheck.arena.processTurnee({...dockTurn, turnNumber: 10})');
   await waitFor('document.querySelector(".player_bar_container").dataset.active === "true"');
+  assert.equal(await js('document.querySelector(".player_bar_stat meter").value'), 55);
+  win.show();
+  win.focus();
+  await ready();
+  await js(`document.querySelector('${fire}').focus()`);
+  await waitFor('document.querySelector("#combat-action-details .item-preview-name")?.textContent === "Fire"');
+  assert.equal(await js('document.querySelectorAll("#combat-action-details .item-preview-classes").length'), 0);
+  await ready();
+  fs.writeFileSync(path.join(dist, 'dock-tooltip.png'), (await win.webContents.capturePage()).toPNG());
+  await js('document.activeElement.blur()');
   await js('combatCheck.arena.selectedPlayer.mp = 0; combatCheck.arena.refreshBox()');
   await waitFor(`document.querySelector('${fire}').getAttribute('aria-label').includes('Not enough MP')`);
   await js(`document.querySelector('${fire}').click()`);
@@ -52,7 +53,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Return'});
   await waitFor('combatCheck.arena.selectedPlayer.pendingSpell === 0');
   await js('combatCheck.arena.selectedPlayer.cancelSkill(); document.activeElement.blur()');
-  await js('combatCheck.arena.selectedPlayer.setSpells([0, 3, 6, 1, 2]); combatCheck.arena.selectedPlayer.setInventory([0, 1, 10]); combatCheck.arena.refreshBox()');
+  await js('combatCheck.arena.selectedPlayer.setSpells([0, 3, 6, 1, 2]); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
   // Captures are reviewed manually, not used as appearance assertions.
   for (const [width, height, scale] of [[1600, 900, 100], [1280, 720, 100], [1280, 720, 130], [960, 540, 100]]) {
     win.setContentSize(width, height);
@@ -62,6 +63,6 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   }
   await js('document.documentElement.style.fontSize = "100%"; combatCheck.resync()');
   await waitFor('document.querySelectorAll("button.player_bar_action").length === 4');
-  assert.equal(await js('document.querySelector(".player_bar_stat meter").value'), 80, 'Reconnect must replace the retained character');
+  assert.equal(await js('document.querySelector(".player_bar_stat meter").value'), 80, 'Reconnect must refresh the selected character');
   console.log('Command dock: targeting, mana preview, enemy-turn guards, live stats, silence, inspection, keyboard and reconnect pass');
 };

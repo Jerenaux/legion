@@ -92,9 +92,9 @@ class PlayerBar extends Component<PlayerBarProps> {
 
     return (
       <>
-      <section className="player_bar_container" aria-label="Combat commands" data-active={canAct} data-pending={Boolean(pending)} data-dense={spells.length + items.length > 6}>
+      <section className="player_bar_container" aria-label="Combat commands" data-active={canAct} data-pending={Boolean(pending)} data-dense={spells.length + items.length > 6} data-has-spells={spells.length > 0}>
         <div className="player_bar">
-          <div className="player_bar_body">
+          {isPlayerTurn ? <div className="player_bar_body">
             <div className="player_bar_character">
               <div className="player_bar_stats">
                 <div className="player_bar_heading" key={turnNumber}>
@@ -130,10 +130,10 @@ class PlayerBar extends Component<PlayerBarProps> {
                 <span>Pass</span><span>Turn</span><span className="player_bar_pass_key">End</span>
               </button>
             </div>
-          </div>
+          </div> : <div className="enemy_turn_banner" role="status">Enemy Turn</div>}
         </div>
       </section>
-      <ItemTooltip id="combat-action-details" />
+      {isPlayerTurn && <ItemTooltip id="combat-action-details" showClasses={false} />}
       </>
     );
   }

@@ -16,7 +16,7 @@ import speedIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 import './ItemTooltipContent.css';
 
-export function ItemTooltip({id}: {id: string}) {
+export function ItemTooltip({id, showClasses = true}: {id: string; showClasses?: boolean}) {
   return <ReactTooltip id={id} className="item-details-tooltip" place="top" positionStrategy="fixed" delayShow={0} delayHide={0}
     closeEvents={{mouseleave: true, blur: true, click: true}} globalCloseEvents={{escape: true}}
     render={({activeAnchor}) => {
@@ -25,11 +25,12 @@ export function ItemTooltip({id}: {id: string}) {
       const item = type === InventoryType.CONSUMABLES ? getConsumableById(itemId)
         : type === InventoryType.SPELLS ? getSpellById(itemId)
         : type === InventoryType.EQUIPMENTS ? getEquipmentById(itemId) : null;
-      return item ? <ItemTooltipContent item={item} /> : null;
+      return item ? <ItemTooltipContent item={item} showClasses={showClasses} /> : null;
     }} />;
 }
 
-function ItemTooltipContent({item}: {
+function ItemTooltipContent({item, showClasses}: {
+  showClasses: boolean;
   item: BaseItem | BaseSpell | BaseEquipment;
 }) {
   const spell = item instanceof BaseSpell;
@@ -64,7 +65,7 @@ function ItemTooltipContent({item}: {
         </div>;
       })}
     </div>}
-    {'classes' in item && item.classes.length > 0 &&
+    {showClasses && 'classes' in item && item.classes.length > 0 &&
       <p className="item-preview-classes">{item.classes.map(classEnumToString).join(' · ')}</p>}
   </div>;
 }

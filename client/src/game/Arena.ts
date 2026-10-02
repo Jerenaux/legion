@@ -95,7 +95,6 @@ export class Arena extends Phaser.Scene
     gridMap: Map<string, Player> = new Map<string, Player>();
     teamsMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
-    private commandPlayer: Player | null = null;
     localAnimationSprite: Phaser.GameObjects.Sprite;
     terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
     terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
@@ -663,12 +662,12 @@ export class Arena extends Phaser.Scene
     }
 
     refreshBox() {
-        if (this.selectedPlayer?.isPlayer) this.commandPlayer = this.selectedPlayer;
-        this.commandPlayer ??= this.teamsMap.get(this.playerTeamId)?.members.find(player => player.isAlive()) || null;
-        const canCommand = !this.gameEnded && !this.gameSettings.spectator && this.commandPlayer === this.selectedPlayer && this.commandPlayer?.canAct() &&
-            this.turnee?.team === this.commandPlayer.team.id && this.turnee?.num === this.commandPlayer.num;
+        const isPlayerTurn = Boolean(this.turnee && this.turnee.team === this.playerTeamId);
+        const commandPlayer = isPlayerTurn ? (this.selectedPlayer?.isPlayer ? this.selectedPlayer : this.getPlayer(this.playerTeamId, this.turnee.num)) : null;
+        const canCommand = !this.gameEnded && !this.gameSettings.spectator && commandPlayer === this.selectedPlayer && commandPlayer?.canAct() &&
+            this.turnee?.team === commandPlayer.team.id && this.turnee?.num === commandPlayer.num;
         events.emit('showPlayerBox', this.selectedPlayer?.getProps() || null,
-            this.commandPlayer?.getProps() || null, Boolean(canCommand), this.turnee?.team === this.playerTeamId);
+            commandPlayer?.getProps() || null, Boolean(canCommand), isPlayerTurn);
     }
 
     refreshOverview() {
@@ -1594,7 +1593,6 @@ export class Arena extends Phaser.Scene
         this.gameSettings.spectator = data.general.spectator;
         this.gameSettings.mode = data.general.mode;
         this.queue = data.queue;
-        this.commandPlayer = null;
         this.turnee = data.turnee;
         this.gameSettings.game0 = data.player.player.completedGames === 0;
 
