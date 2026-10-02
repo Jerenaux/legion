@@ -291,16 +291,16 @@ if (!process.versions.electron) {
           await win.loadURL(`${PACKAGED_APP_URL}team?games=${games}&roster=${size}`);
           await waitFor('Boolean(document.querySelector(".roster-heading"))');
           assert.equal(await js('document.querySelectorAll(".rosters .endgame_character").length'), size);
-          assert.equal(await js('document.querySelectorAll(".roster-slot").length'), 6 - size);
-          assert.equal(await js('Boolean(document.querySelector(".roster-recruit-link"))'), games >= 12 && size < 6);
+          assert.equal(await js('document.querySelectorAll(".roster-slot").length'), size < 6 ? 1 : 0);
+          assert.equal(await js('Boolean(document.querySelector(".roster-slot--available"))'), games >= 12 && size < 6);
           assert.equal(await js('document.querySelector(".roster-unlock progress")?.value'), games < 12 ? games : undefined);
-          if (games === 11) assert((await js('document.querySelector(".roster-unlock-detail").textContent')).includes('1 game to go'));
+          if (games === 11) assert((await js('document.querySelector(".roster-unlock-label").textContent')).includes('1 game'));
           if (games < 12) assert.equal(await js('document.querySelectorAll(".rosterContainer a").length'), 0);
-          if (size === 6) assert.equal(await js('Boolean(document.querySelector(".roster-recruitment"))'), false);
+          if (size === 6) assert.equal(await js('Boolean(document.querySelector(".roster-unlock"))'), false);
         }
         await win.loadURL(`${PACKAGED_APP_URL}team?games=12`);
-        await waitFor('Boolean(document.querySelector(".roster-recruit-link"))');
-        await js('document.querySelector(".roster-recruit-link").click()');
+        await waitFor('Boolean(document.querySelector(".roster-slot--available"))');
+        await js('document.querySelector(".roster-slot--available").click()');
         assert.equal(await js('location.pathname'), '/shop/characters');
         assert.deepEqual(rendererErrors, []);
         console.log('Team recruitment: locked progress, unlock boundary, partial/full roster and Shop navigation pass');

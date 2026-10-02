@@ -20,20 +20,35 @@
     color: oklch(96% 0.008 220);
 }
 
-.roster-heading > span {
-    color: oklch(76% 0.025 220);
-    font-size: 0.8125rem;
+.roster-capacity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: oklch(69% 0.025 220);
+    font: 0.8125rem Arial, sans-serif;
+    white-space: nowrap;
 }
+.roster-capacity strong { color: oklch(92% 0.025 220); }
+.roster-capacity-marks { display: flex; gap: 5px; }
+.roster-capacity-marks span {
+    width: 9px;
+    height: 13px;
+    clip-path: polygon(0 0, 100% 0, 100% 65%, 50% 100%, 0 65%);
+    background: oklch(32% 0.025 220);
+}
+.roster-capacity-marks .is-filled { background: oklch(79% 0.12 80); }
 
 .rosters {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 14px;
 }
 
-.rosters .endgame_character {
+.rosters .endgame_character,
+.roster-slot {
     box-sizing: border-box;
-    width: 100%;
+    width: 159px;
     height: 168px;
 }
 
@@ -55,18 +70,9 @@
     text-decoration: none;
 }
 
-.roster-slot-number {
-    position: absolute;
-    top: 12px;
-    font: 0.6875rem Arial, sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: oklch(65% 0.025 220);
-}
-
 .roster-future-portrait {
     position: absolute;
-    top: 42px;
+    top: 34px;
     width: 80px;
     height: 80px;
     background-position: -40px -40px;
@@ -78,7 +84,7 @@
 
 .roster-slot-plus {
     position: absolute;
-    top: 65px;
+    top: 57px;
     font: 2rem/1 Arial, sans-serif;
     color: oklch(63% 0.035 220);
 }
@@ -94,47 +100,25 @@
     border-color: oklch(83% 0.09 215);
 }
 
-.roster-slot--available:focus-visible,
-.roster-recruit-link:focus-visible {
+.roster-slot--available:focus-visible {
     outline: 2px solid oklch(87% 0.09 215);
     outline-offset: 4px;
 }
 
-.roster-recruitment {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-    padding: 18px 22px;
-    margin-top: 16px;
-    border: 1px solid oklch(34% 0.03 220);
-    border-radius: 8px;
-    background: oklch(22% 0.028 235);
+.roster-unlock {
+    width: fit-content;
+    max-width: 100%;
+    margin: 16px auto 0;
 }
-
-.roster-recruitment h2 {
-    margin: 0 0 7px;
-    font: 1.125rem Kim, sans-serif;
-    color: oklch(94% 0.015 215);
-}
-
-.roster-recruitment-copy { max-width: 420px; }
-.roster-recruitment p {
-    margin: 0;
-    color: oklch(76% 0.025 220);
-    font: 0.875rem/1.5 Arial, sans-serif;
-}
-
-.roster-unlock { flex: 0 0 320px; }
 .roster-unlock-label {
     display: flex;
     align-items: center;
     gap: 7px;
-    color: oklch(84% 0.105 80);
-    font-size: 0.8125rem;
-    font-weight: 600;
+    color: oklch(71% 0.025 220);
+    font: 0.75rem/1.4 Arial, sans-serif;
 }
-.roster-unlock-label img { width: 13px; height: 15px; object-fit: contain; }
+.roster-unlock-label strong { color: oklch(85% 0.08 80); font-weight: 600; }
+.roster-unlock-label img { width: 11px; height: 13px; object-fit: contain; opacity: 0.75; }
 .roster-unlock progress {
     display: block;
     appearance: none;
@@ -142,48 +126,19 @@
     border-radius: 3px;
     overflow: hidden;
     width: 100%;
-    height: 5px;
-    margin: 10px 0 7px;
-    background: oklch(32% 0.025 225);
-    color: oklch(79% 0.10 215);
+    height: 4px;
+    margin: 8px 0 0;
+    background: oklch(28% 0.025 225);
+    color: oklch(76% 0.09 215);
 }
-.roster-unlock progress::-webkit-progress-bar { background: oklch(32% 0.025 225); }
-.roster-unlock progress::-webkit-progress-value { background: oklch(79% 0.10 215); }
-.roster-unlock progress::-moz-progress-bar { background: oklch(79% 0.10 215); }
-.roster-unlock-detail {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    font-size: 0.75rem;
-    color: oklch(78% 0.025 220);
-}
-.roster-unlock-detail strong { color: oklch(91% 0.025 220); font-weight: 600; }
-.roster-unlock p { margin-top: 6px; font-size: 0.6875rem; }
+.roster-unlock progress::-webkit-progress-bar { background: oklch(28% 0.025 225); }
+.roster-unlock progress::-webkit-progress-value { background: oklch(76% 0.09 215); }
+.roster-unlock progress::-moz-progress-bar { background: oklch(76% 0.09 215); }
 
-.roster-recruit-link {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    gap: 18px;
-    padding: 13px 18px;
-    border: 1px solid oklch(72% 0.095 215);
-    border-radius: 5px;
-    background: oklch(33% 0.055 225);
-    color: oklch(94% 0.025 215);
-    font: 0.9375rem Kim, sans-serif;
-    text-decoration: none;
-    white-space: nowrap;
-}
-.roster-recruit-link:hover { background: oklch(40% 0.065 225); }
-
-@media (max-width: 800px) {
-    .rosters { gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .roster-slot { min-height: 94px; padding-bottom: 10px; }
-    .roster-slot-number { top: 8px; }
-    .roster-future-portrait { display: none; }
-    .roster-slot-plus { top: 26px; font-size: 1.75rem; }
-    .roster-recruitment { align-items: stretch; flex-direction: column; gap: 16px; padding: 16px; }
-    .roster-unlock { flex: auto; }
-    .roster-recruitment-copy { max-width: none; }
+@media (max-width: 700px) {
+    .rosters { gap: 10px; }
+    .rosters .endgame_character, .roster-slot { width: calc((100% - 30px) / 4); min-width: 120px; }
     .roster-heading { align-items: center; }
+    .roster-capacity { gap: 8px; }
+    .roster-capacity-marks { gap: 3px; }
 }

@@ -26,11 +26,22 @@ class Roster extends Component {
     const gamesLeft = this.context.getGamesUntilFeature(LockedFeatures.CHARACTER_PURCHASES);
     const completedGames = Math.min(requiredGames, this.context.getCompletedGames());
 
+    const recruitContent = <>
+      <span className="roster-future-portrait" aria-hidden="true" style={{backgroundImage: `url(${getSpritePath('1_1')})`}} />
+      <span className="roster-slot-plus" aria-hidden="true">+</span>
+      <span>{canRecruit ? 'Recruit character' : 'Next recruit'}</span>
+    </>;
+
     return (
       <div className="rosterContainer">
         <div className="roster-heading">
           <h1>Team composition</h1>
-          {this.context.player.isLoaded && <span>{characters.length} / {MAX_CHARACTERS} characters{!remainingSlots && ' · Team full'}</span>}
+          {this.context.player.isLoaded && <div className="roster-capacity" role="img" aria-label={`${characters.length} of ${MAX_CHARACTERS} characters${!remainingSlots ? ', team full' : ''}`}>
+            <span className="roster-capacity-marks" aria-hidden="true">
+              {Array.from({length: MAX_CHARACTERS}, (_, index) => <span key={index} className={index < characters.length ? 'is-filled' : ''} />)}
+            </span>
+            <span aria-hidden="true"><strong>{characters.length}</strong> / {MAX_CHARACTERS}{!remainingSlots && ' · Full'}</span>
+          </div>}
         </div>
         {characters.length > 0 ? (
           <div className="rosters">
@@ -43,19 +54,9 @@ class Roster extends Component {
                 showSPBadge={true}
               />
             ))}
-            {Array.from({length: remainingSlots}, (_, index) => {
-              const contents = <>
-                <span className="roster-slot-number">Slot {characters.length + index + 1}</span>
-                <span className="roster-future-portrait" aria-hidden="true"
-                  style={{backgroundImage: `url(${getSpritePath(['1_1', '1_7', '1_5'][index % 3])})`}} />
-                <span className="roster-slot-plus" aria-hidden="true">+</span>
-                <span>{canRecruit ? 'Add character' : 'Future recruit'}</span>
-              </>;
-              return canRecruit
-                ? <Link key={index} href="/shop/characters" className="roster-slot roster-slot--available" data-game-control
-                    aria-label={`Recruit character for slot ${characters.length + index + 1}`}>{contents}</Link>
-                : <div key={index} className="roster-slot">{contents}</div>;
-            })}
+            {remainingSlots > 0 && (canRecruit
+              ? <Link href="/shop/characters" className="roster-slot roster-slot--available" data-game-control>{recruitContent}</Link>
+              : <div className="roster-slot">{recruitContent}</div>)}
           </div>
         ) : (
           <Skeleton
@@ -66,21 +67,15 @@ class Roster extends Component {
             style={{margin: '2px 0', width: '1024px'}}
           />
         )}
-        {this.context.player.isLoaded && characters.length > 0 && remainingSlots > 0 && (
-          <section className="roster-recruitment" aria-labelledby="recruitment-title">
-            <div className="roster-recruitment-copy">
-              <h2 id="recruitment-title">{canRecruit ? 'Your next teammate awaits' : 'Grow your team'}</h2>
-              <p>Recruit warriors and mages with gold. Build a team of up to {MAX_CHARACTERS} characters.</p>
+        {this.context.player.isLoaded && characters.length > 0 && remainingSlots > 0 && !canRecruit && (
+          <div className="roster-unlock">
+            <div className="roster-unlock-label"><img src={lockIcon} alt="" />
+              <span>Recruitment unlocks in <strong>{gamesLeft} {gamesLeft === 1 ? 'game' : 'games'}</strong></span>
             </div>
-            {canRecruit ? <Link href="/shop/characters" className="roster-recruit-link" data-game-control>
-              Recruit characters <span aria-hidden="true">→</span>
-            </Link> : <div className="roster-unlock">
-              <div className="roster-unlock-label"><img src={lockIcon} alt="" /> Recruitment unlocks at {requiredGames} games</div>
-              <progress value={completedGames} max={requiredGames} aria-label="Completed games towards recruitment" />
-              <div className="roster-unlock-detail"><span>{completedGames} / {requiredGames} completed</span><strong>{gamesLeft} {gamesLeft === 1 ? 'game' : 'games'} to go</strong></div>
-              <p>Wins and losses both count.</p>
-            </div>}
-          </section>
+            <progress value={completedGames} max={requiredGames}
+              aria-label={`${completedGames} of ${requiredGames} games completed. Wins and losses both count.`}
+              title={`${completedGames} of ${requiredGames} games completed. Wins and losses both count.`} />
+          </div>
         )}
       </div>
     );
