@@ -44,6 +44,13 @@ module.exports = async ({win, js, waitFor, ready, output, locale}) => {
     ]) {
       await readyPage(route, selector, phrase, `${route.split(/[/?]/)[0] || 'title'}-${width}-${textSize}`);
       await fits('.rank-content, .highlights-container, .menu, .expand_btn, .shop-tabs-container, .roster-heading, .roster-slot, .language-select, .title-screen-button, .guide-page h1, .tower-primary, .tower-choices');
+      if (route === 'rank' && await js('document.querySelector(".rank-table-container").scrollWidth > document.querySelector(".rank-table-container").clientWidth')) {
+        await js('document.querySelector(".rank-table-container").focus()');
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Right'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Right'});
+        await waitFor('document.querySelector(".rank-table-container").scrollLeft > 0');
+        await js('document.querySelector(".rank-table-container").scrollLeft = 0');
+      }
     }
     await readyPage('game/guide-local', '.player_bar_action', 'Pass Turn', `combat-${width}-${textSize}`);
     assert.equal(await js('document.querySelector("#scene canvas").width > 0'), true);

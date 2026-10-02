@@ -164,7 +164,10 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
         }
 
         return (
-            <div className="rank-table-container">
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: Native horizontal scrolling requires keyboard focus.
+            <section className="rank-table-container" tabIndex={0} aria-label={t("Rank")} onKeyDown={event => {
+                if (event.target === event.currentTarget && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) event.stopPropagation();
+            }}>
                 <table className="rank-table">
                     <thead>
                         <tr>
@@ -217,7 +220,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                     </tbody>
                 </table>
                 <div style={this.state.tableData.length === 0 ? { display: "block" } : { display: "none" }} className="table-empty">{t("No players in this league yet")}</div>
-            </div>
+            </section>
         );
     }
 }
