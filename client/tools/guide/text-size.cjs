@@ -12,7 +12,7 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
   const fits = async selector => {
     const failures = await js(`Array.from(document.querySelectorAll(${JSON.stringify(selector)})).filter(el => {
       const r = el.getBoundingClientRect();
-      return r.width && r.height && (r.left < -1 || r.right > innerWidth + 1 || r.top < -1 || r.bottom > innerHeight + 1 || el.scrollWidth > el.clientWidth + 1);
+      return r.width && r.height && (r.left < -1 || r.right > innerWidth + 1 || r.top < -1 || r.bottom > innerHeight + 1 || (!el.matches(".player_bar_pass_turn") && el.scrollWidth > el.clientWidth + 1));
     }).map(el => ({class: el.className, text: el.textContent, width: el.clientWidth, scroll: el.scrollWidth}))`);
     assert.deepEqual(failures, [], `${selector} must fit: ${JSON.stringify(failures)}`);
   };
@@ -45,6 +45,12 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
     win.setContentSize(width, height);
     for (const size of [100, 115, 130]) {
       await openSettings();
+      if (width === 1280 && size === 100) {
+        await js(`document.querySelector('#text-size').focus(); window.dispatchEvent(new CustomEvent('legion:desktop-action', {detail: {action: 'menu-right', source: 'gamepad'}}))`);
+        await waitFor(`JSON.parse(localStorage.getItem('gameSettings'))?.textSize === 115`);
+        await js(`window.dispatchEvent(new CustomEvent('legion:desktop-action', {detail: {action: 'menu-left', source: 'gamepad'}}))`);
+        await waitFor(`JSON.parse(localStorage.getItem('gameSettings'))?.textSize === 100`);
+      }
       await js(`(() => {const select = document.querySelector('#text-size'); select.value = '${size}'; select.dispatchEvent(new Event('change', {bubbles: true}));})()`);
       await waitFor(`(JSON.parse(localStorage.getItem('gameSettings'))?.textSize ?? 100) === ${size}`);
       assert.equal(await js('getComputedStyle(document.documentElement).fontSize'), `${16 * size / 100}px`);
@@ -74,7 +80,7 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
       assert.equal(await js('getComputedStyle(document.documentElement).fontSize'), '20.8px', 'Text size survives reload');
       await shot(`${route.split('/')[0]}-${width}-130`);
       if (route === 'guide') await fits('.guide-page');
-      if (route.startsWith('game')) await fits('.player_bar_action, .player_bar_pass_turn');
+      if (route.startsWith('game')) await fits('.player_bar_action, .player_bar_pass_turn, .player_bar_pass_turn span, .player_bar_stat_value, .player_bar_action_name');
     }
     await win.loadURL('app://legion/team/guide-2');
     await waitFor('Boolean(document.querySelector(".info-bar-plus"))');

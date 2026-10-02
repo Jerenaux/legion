@@ -90,6 +90,12 @@ class App extends Component<{}, AppState> {
 
     handleDesktopAction = async (event: CustomEvent<{action: DesktopAction; source: string}>) => {
       const {action, source} = event.detail;
+      const focused = document.activeElement;
+      if (source === 'gamepad' && focused instanceof HTMLSelectElement && (action === 'menu-left' || action === 'menu-right')) {
+        focused.selectedIndex = Math.max(0, Math.min(focused.options.length - 1, focused.selectedIndex + (action === 'menu-right' ? 1 : -1)));
+        focused.dispatchEvent(new Event('change', {bubbles: true}));
+        return;
+      }
       if (action === 'menu-up' || action === 'menu-left') return this.focusMenu(-1);
       if (action === 'menu-down' || action === 'menu-right') return this.focusMenu(1);
       if (action === 'end-turn') return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();

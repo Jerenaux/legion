@@ -6,7 +6,7 @@
   width: 50%;
   min-width: 800px;
   height: 9vh;
-  min-height: 80px;
+  min-height: 5rem;
   max-height: 120px;
   z-index: 9;
 }
@@ -69,14 +69,14 @@
   gap: 8px;
   width: 100%;
   max-width: 400px;
-  height: 56px;
+  height: auto;
 }
 
 .player_bar_stat {
   display: flex;
   align-items: center;
   gap: 1px;
-  height: 24px;
+  min-height: 1.5rem;
   position: relative;
 }
 
@@ -111,7 +111,9 @@
   font-family: 'Kim', sans-serif;
   font-size: 1rem;
   color: #ffffff;
-  min-width: 70px;
+  min-width: max-content;
+  flex-shrink: 0;
+  white-space: nowrap;
   text-align: right;
 }
 
@@ -305,8 +307,8 @@
 }
 
 .player_bar_pass_turn {
-  width: 64px;
-  height: 64px;
+  width: 4rem;
+  height: 4rem;
   padding: 8px 0;
   font-family: 'Kim', sans-serif;
   font-size: 1rem;
@@ -395,8 +397,8 @@
 
 .player_bar_action {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   background: linear-gradient(135deg, #2a3746 0%, #1c1f25 100%);
   border: 1px solid #3c616c;
   border-radius: 4px;
@@ -423,7 +425,10 @@
   top: 2px;
   left: 50%;
   transform: translateX(-50%);
-  white-space: nowrap;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.1;
   font-family: 'Kim', sans-serif;
   font-size: 0.75rem;
   color: #ffffff;
@@ -555,3 +560,6 @@
     top: -30px;
   }
 }
+
+/* Keep the larger action buttons anchored above the window's lower edge. */
+.player_bar_actions_container { top: auto; bottom: 8px; }
