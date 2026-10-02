@@ -45,14 +45,14 @@ test('only the main store-release workflow can embed the Replay opt-in', () => {
   const storeEnv = {
     NODE_ENV: 'production', BUILD_TARGET: 'electron', SENTRY_REPLAY_ENABLED: 'true',
     GITHUB_ACTIONS: 'true', GITHUB_EVENT_NAME: 'workflow_dispatch',
-    GITHUB_WORKFLOW_REF: 'DynetisGames/legion/.github/workflows/release-desktop.yml@refs/heads/main',
+    GITHUB_WORKFLOW_REF: 'Jerenaux/legion/.github/workflows/release-desktop.yml@refs/heads/main',
     API_URL: 'https://api.example', GAME_SERVER_URL: 'https://game.example', MATCHMAKER_URL: 'https://match.example',
   };
   for (const overrides of [{}, {NODE_ENV: 'development'}, {BUILD_TARGET: 'web'},
     {SENTRY_REPLAY_ENABLED: ''}, {SENTRY_REPLAY_ENABLED: 'false'}, {GITHUB_ACTIONS: ''},
     {GITHUB_EVENT_NAME: 'pull_request'}, {GITHUB_WORKFLOW_REF: ''},
     {GITHUB_WORKFLOW_REF: storeEnv.GITHUB_WORKFLOW_REF.replace('main', 'feature')},
-    {GITHUB_WORKFLOW_REF: storeEnv.GITHUB_WORKFLOW_REF.replace('DynetisGames', 'fork')},
+    {GITHUB_WORKFLOW_REF: storeEnv.GITHUB_WORKFLOW_REF.replace('Jerenaux', 'fork')},
     {GITHUB_WORKFLOW_REF: storeEnv.GITHUB_WORKFLOW_REF.replace('release-desktop', 'ci')}]) {
     const module = {exports: {plugins: [] as {definitions?: Record<string, string>}[]}};
     runInNewContext(readFileSync(configPath, 'utf8'), {

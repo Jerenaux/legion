@@ -14,7 +14,7 @@ const isElectron = process.env.BUILD_TARGET === 'electron';
 const storeReplay = isProduction && isElectron
   && process.env.GITHUB_ACTIONS === 'true'
   && process.env.GITHUB_EVENT_NAME === 'workflow_dispatch'
-  && process.env.GITHUB_WORKFLOW_REF === 'DynetisGames/legion/.github/workflows/release-desktop.yml@refs/heads/main'
+  && process.env.GITHUB_WORKFLOW_REF === 'Jerenaux/legion/.github/workflows/release-desktop.yml@refs/heads/main'
   && process.env.SENTRY_REPLAY_ENABLED === 'true';
 const requiredElectronUrls = ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL'];
 
