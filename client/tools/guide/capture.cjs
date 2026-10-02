@@ -296,6 +296,11 @@ if (!process.versions.electron) {
         await js('combatCheck.arena.inspectBattlefieldCharacter(combatCheck.arena.getPlayer(2, 3))');
         await ready();
         await capture('inspection', {x: 870, y: 485, width: 390, height: 255});
+        fs.writeFileSync(path.join(dist, 'combat-inspection.png'), (await win.webContents.capturePage()).toPNG());
+        win.setContentSize(1280, 720);
+        await ready();
+        fs.writeFileSync(path.join(dist, 'combat-inspection-1280.png'), (await win.webContents.capturePage()).toPNG());
+        win.setContentSize(1600, 900);
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
