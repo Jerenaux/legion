@@ -315,6 +315,19 @@ if (!process.versions.electron) {
         await js('window.dockPreviewTurn = {...combatCheck.arena.turnee}; combatCheck.arena.processTurnee({...dockPreviewTurn, num: 1}); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-warrior.png'), (await win.webContents.capturePage()).toPNG());
+        // Review empty inventory with every class, including wrapped text and enlarged UI.
+        for (const [width, height, scale] of [[1600, 900, 100], [1280, 720, 130], [960, 540, 100]]) {
+          win.setContentSize(width, height);
+          await js(`document.documentElement.style.fontSize = '${scale}%'`);
+          for (const [name, num, spells] of [['warrior', 1, []], ['white-mage', 2, [9, 10, 11, 12]], ['black-mage', 3, [0, 3, 6, 1, 4]]]) {
+            await js(`combatCheck.arena.processTurnee({...dockPreviewTurn, num: ${num}}); combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells(${JSON.stringify(spells)}); combatCheck.arena.refreshBox()`);
+            await ready();
+            fs.writeFileSync(path.join(dist, `dock-empty-${name}-${width}-${scale}.png`),
+              (await win.webContents.capturePage({x: 0, y: height - 180, width, height: 180})).toPNG());
+          }
+        }
+        win.setContentSize(1600, 900);
+        await js('document.documentElement.style.fontSize = "100%"');
         await js('combatCheck.arena.processTurnee(dockPreviewTurn); combatCheck.resync()');
         await ready();
         // Manual visual review: compact, full-loadout and enemy-turn states.
