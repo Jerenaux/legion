@@ -336,6 +336,8 @@ export abstract class Game
         }, this);
     }
 
+    getOpeningTurnOrder(): ServerPlayer[] | undefined { return undefined; }
+
     startGame() {
         if (this.gameStarted || this.gameOver) return;
         console.log(`[Game:startGame]`)
@@ -344,7 +346,7 @@ export abstract class Game
 
         this.turnSystem = new TurnSystem();
         const allCharacters = this.getTeam(1).concat(this.getTeam(2));
-        this.turnSystem.initializeTurnOrder(allCharacters);
+        this.turnSystem.initializeTurnOrder(allCharacters, this.getOpeningTurnOrder());
         this.combatClock.pause();
         this.startLoadingDeadline();
 

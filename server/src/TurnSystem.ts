@@ -24,10 +24,10 @@ export class TurnSystem {
     }
 
     // When initializing combat, compute initial turn order
-    initializeTurnOrder(characters: ServerPlayer[]) {
+    initializeTurnOrder(characters: ServerPlayer[], openingOrder?: ServerPlayer[]) {
         this.turnQueue = characters.map(char => ({
             character: char,
-            nextActionTime: this.getInitialActionTime(char.getStat(Stat.SPEED)),
+            nextActionTime: openingOrder ? 1001 + openingOrder.indexOf(char) : this.getInitialActionTime(char.getStat(Stat.SPEED)),
             passCount: 0
         }));
         

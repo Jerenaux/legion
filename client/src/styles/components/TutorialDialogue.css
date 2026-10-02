@@ -3,62 +3,44 @@
   left: 16px;
   bottom: max(110px, 13vh);
   width: min(21rem, 30vw);
-  color: #edf4ef;
+  color: #f4f3e9;
   z-index: 12;
   pointer-events: none;
   font-family: Arial, sans-serif;
 }
-
+.combat-coach-panel {
+  background: rgba(19, 30, 39, .96);
+  border: 1px solid #527b83;
+  border-radius: 3px 14px 3px 3px;
+  box-shadow: 0 4px 16px #0005, inset 0 0 0 3px #a1e5e509;
+  padding: 12px 16px 16px;
+}
 .combat-coach-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 0.75rem;
-  color: #eac96a;
+  color: #9ed3d6;
+  font: .75rem/1.2 'Kim', sans-serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
 }
-
-.combat-coach-heading > span {
-  background: #17232e;
-  padding: 6px 8px;
-  border-radius: 4px;
-}
-
-.combat-coach-progress {
-  color: #c5d4dc;
-  margin-left: 8px;
-}
-
 .combat-coach button {
   pointer-events: auto;
-  background: #17232e;
-  color: #edf4ef;
-  border: 1px solid #657682;
-  border-radius: 4px;
-  padding: 6px 10px;
-  font: inherit;
+  color: #c2d9dc;
+  background: transparent;
+  border: 0;
   cursor: pointer;
-  min-height: 32px;
 }
-
-.combat-coach button:hover { background: #30434e; }
+.combat-coach-heading button { font: 1.5rem/1 Arial, sans-serif; width: 32px; height: 32px; margin: -6px -8px 0 0; }
+.combat-coach button:hover { color: #fff; background: #ffffff12; }
 .combat-coach button:focus-visible { outline: 2px solid #eac96a; outline-offset: 3px; }
-
-.combat-coach-instruction, .combat-action-feedback {
-  background: #17232e;
-  border: 1px solid #657682;
-  border-radius: 6px;
-  margin: 6px 0 0;
-  padding: 12px;
-  font-size: 1rem;
-  line-height: 1.4;
-  overflow-wrap: break-word;
-}
-
-.combat-coach-instruction strong { font-size: 1.125rem; }
-.combat-coach-instruction p { font-size: 1rem; margin: 6px 0 0; color: #d0dde4; }
-.combat-action-feedback { border-color: #eac96a; color: #f5df9b; }
-
+.combat-coach-instruction strong { display: block; font: 1.25rem/1.2 'Kim', sans-serif; font-weight: normal; }
+.combat-coach-instruction p { font-size: 1rem; line-height: 1.45; margin: 8px 0 0; color: #c8d6dc; overflow-wrap: break-word; }
+.combat-coach .combat-coach-reopen { background: #131e27ed; border: 1px solid #527b83; border-radius: 4px; padding: 9px 12px; font: 1rem Arial, sans-serif; }
+.combat-coach-reopen span { margin-left: 6px; }
+.combat-action-feedback { background: #29271eee; border: 1px solid #a28a4a; border-radius: 4px; padding: 10px 14px; margin: 8px 0 0; font-size: 1rem; line-height: 1.4; color: #f5df9b; }
 /* Point at existing controls without blocking their hit targets or animating the board. */
 .gamehud[data-coach-focus="spells"] #player_hud_spells:first-child,
 .gamehud[data-coach-focus="items"] #player_hud_consumables:first-child,
@@ -67,9 +49,7 @@
   outline-offset: 4px;
   border-radius: 4px;
 }
-
 @media (max-width: 1000px) {
-  .combat-coach { left: 8px; width: min(23rem, 39vw); }
-  .combat-coach-progress { display: none; }
-  .combat-coach-instruction, .combat-action-feedback { padding: 8px; }
+  .combat-coach { left: 8px; top: 12px; bottom: auto; width: min(21rem, 39vw); }
+  .combat-coach-panel { padding: 8px 12px 12px; }
 }

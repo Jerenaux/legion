@@ -8,7 +8,8 @@ export interface TutorialContext {
     selectedIsTurnee: boolean;
     canAct: boolean;
     hasEnemy: boolean;
-    spells: { name: string; cost: number }[];
+    spells: { name: string; cost: number; healing?: boolean }[];
+    hasWoundedAlly?: boolean;
     hasItem: boolean;
     mp: number;
     pendingSpell?: { name: string; cost: number; area: boolean };
@@ -74,10 +75,13 @@ export class TutorialManager {
         const show = (title: string, content: string, focus?: TutorialMessage['focus']) =>
             this.events.emit('showTutorialMessage', { title, content, focus, learned });
 
+        if (!c.ownTurn) {
+            this.events.emit('hideTutorialMessage');
+            return;
+        }
+        const healingOnly = c.spells.length > 0 && c.spells.every(spell => spell.healing);
         if (this.actionTurn === c.turn) {
             show('Action used', `${this.lastAction} The portraits show who acts next.`, 'timeline');
-        } else if (!c.ownTurn) {
-            show("Opponent’s turn", `${this.lastAction ? `${this.lastAction} ` : ''}Watch the turn order. Your next character is selected automatically.`, 'timeline');
         } else if (!c.selectedIsTurnee) {
             show(`${c.name} acts now`, 'Only the active character can act. Select them to choose your action.', 'timeline');
         } else if (c.pendingSpell) {
@@ -94,18 +98,24 @@ export class TutorialManager {
             show('Silenced', 'Spells are unavailable. You can still move, attack, use an item, or pass.');
         } else if (c.spells.length && c.spells.every(spell => spell.cost > c.mp)) {
             show('Low mana', 'You need more MP to cast these spells. Choose another action, or use an Ether if you have one.', c.hasItem ? 'items' : undefined);
+        } else if (healingOnly) {
+            if (c.hasWoundedAlly) {
+                show('Help an injured ally', 'Choose a healing spell below, then a wounded ally in range.', 'spells');
+            } else {
+                show('Keep your healer safe', 'Move closer to your team, or pass. Heal when an injured ally is in range.');
+            }
         } else if (c.hasEnemy && !this.stats.everAttacked) {
             show('Attack an adjacent enemy', 'Select the enemy beside you to attack. Attacking uses your action.');
         } else if (c.spells.length && !this.stats.everUsedSpell) {
-            show(`${c.name}: choose a spell`, 'Select a spell below, then aim it. Casting uses your action, so you cannot also move.', 'spells');
+            show('Try your magic', 'Choose a spell below, then a highlighted target. Casting uses your action.', 'spells');
         } else if (!this.stats.everMoved) {
-            show(`${c.name}: move into position`, 'Choose a blue tile. Moving uses your action, so you cannot also attack this turn.');
+            show('Move into position', 'Choose a blue tile. Moving uses your one action for this turn.');
         } else if (c.hasItem && !this.stats.everUsedItem) {
             show('Use an item', 'Select an item below when you need it. Using it takes your action.', 'items');
         } else if (c.poison) {
             show('Poisoned', 'Poison damages this character each turn. An Antidote removes it.');
         } else {
-            show(`${c.name}: choose one action`, learned === 3
+            show('Choose your next move', learned === 3
                 ? 'Basics learned. Move, attack, cast, or use an item. Pass if you prefer to wait.'
                 : 'Move toward the enemy, attack an adjacent enemy, or cast a spell. Each uses your action.');
         }

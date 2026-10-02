@@ -34,9 +34,11 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
   render() {
     return (
       <div className="team-reveal-overlay">
-        <h2 className="team-reveal-title">Your first battle</h2>
-        <p className="team-reveal-subtitle">Discover your champions, then defeat the enemy team.<br />
-          Each character takes <strong>one action per turn</strong>. We’ll guide you as you play.</p>
+        <header className="team-reveal-header">
+          <span className="team-reveal-eyebrow">Welcome to the arena</span>
+          <h2 className="team-reveal-title">Meet your champions</h2>
+        <p className="team-reveal-subtitle">Three champions. One team. Lead them to victory.</p>
+        </header>
         <div className="team-reveal-grid">
           {this.props.team.map((character, index) => (
             <button type="button" data-game-control
@@ -54,11 +56,13 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
                 character.class === Class.WARRIOR ? 'Close combat' :
                 character.class === Class.WHITE_MAGE ? 'Healing' : 'Ranged magic'
               }</span>}
+              {!this.state.revealedIndices[index] && <span className="team-reveal-role">Select to reveal</span>}
             </button>
           ))}
         </div>
         {this.state.allRevealed && (
           <div className="team-reveal-actions">
+            <p className="team-reveal-rule">One action per turn. A little guidance as you go.</p>
             <button type="button" data-game-control className="team-reveal-play-button"
               onClick={() => { events.emit('combatTipsVisibility', true); this.props.onComplete(); }}>
               Start guided match
@@ -67,7 +71,7 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
               onClick={() => { events.emit('combatTipsVisibility', false); this.props.onComplete(); }}>
               Play without tips
             </button>
-            <p>Take your time: {GAME_0_TURN_DURATION}-second turns here. Later matches are faster.</p>
+            <p className="team-reveal-time">{GAME_0_TURN_DURATION}-second turns · Time to learn, room to experiment</p>
           </div>
         )}
       </div>

@@ -10,19 +10,25 @@ interface TutorialDialogueProps {
 }
 
 export default function TutorialDialogue({ message, visible, onToggle, feedback }: TutorialDialogueProps) {
+  // Leave the battlefield quiet while the opponent acts, without changing the player's preference.
+  if (!message) return null;
   return (
-    <aside className="combat-coach" aria-label="Combat help">
-      <div className="combat-coach-heading">
-        {visible && <span>Training <span className="combat-coach-progress">{message?.learned ?? 0}/3 basics tried</span></span>}
-        <button type="button" data-game-control aria-expanded={visible} aria-controls="combat-coach-instruction" onClick={onToggle}>
-          {visible ? 'Hide tips' : '? Combat tips'}
-        </button>
-      </div>
-      {visible && message && (
-        <div id="combat-coach-instruction" className="combat-coach-instruction" role="status" aria-live="polite" aria-atomic="true">
-          <strong>{message.title}</strong>
-          <p>{message.content}</p>
+    <aside className="combat-coach" aria-label="Combat help" data-learned={message.learned}>
+      {visible ? (
+        <div className="combat-coach-panel">
+          <div className="combat-coach-heading">
+            <span>Combat tips</span>
+            <button type="button" data-game-control aria-label="Hide combat tips" aria-expanded="true"
+              aria-controls="combat-coach-instruction" onClick={onToggle}>×</button>
+          </div>
+          <div id="combat-coach-instruction" className="combat-coach-instruction" role="status" aria-live="polite" aria-atomic="true">
+            <strong>{message.title}</strong>
+            <p>{message.content}</p>
+          </div>
         </div>
+      ) : (
+        <button type="button" data-game-control className="combat-coach-reopen" aria-expanded="false"
+          aria-controls="combat-coach-instruction" onClick={onToggle}>? <span>Combat tips</span></button>
       )}
       {feedback && <p className="combat-action-feedback" role="status" aria-live="polite">{feedback}</p>}
     </aside>
