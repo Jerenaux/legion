@@ -244,6 +244,7 @@ if (!process.versions.electron) {
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
+        await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
         await waitFor('Boolean(replayCheck.id())');
         assert.equal(await js(`new Promise(resolve => {
           document.addEventListener('securitypolicyviolation', event => {
@@ -304,6 +305,10 @@ if (!process.versions.electron) {
         console.log('Title loading spinner, text, reduced motion, and transition to Play/Wishlist pass');
         await js('document.querySelector(".title-screen-button--play").click()');
         await waitFor('Boolean(document.querySelector("[data-playmode=practice]"))');
+        await waitFor('routeAudio.filter(audio => audio.loop).length === 2 && routeAudio.filter(audio => audio.loop).at(-1).currentTime > 0');
+        assert(await js('routeAudio[0].paused && !routeAudio[0].getAttribute("src")'), 'Title must stop before menus play');
+        assert.deepEqual(await js('musicOverlaps'), [], 'Title and menu music must not overlap');
+        console.log('Packaged title and menu MP3 playback and fade handoff pass');
         await js('document.querySelector(".expand_btn_trigger").click()');
         await waitFor('document.querySelector(".expand_btn_trigger").getAttribute("aria-expanded") === "true"');
         await js('document.querySelector("[data-report-problem]").click()');
@@ -432,12 +437,16 @@ if (!process.versions.electron) {
         assert.equal(await js('queueCheck.leaves'), 0);
         await js('document.querySelector(".queue-guide-card").click()');
         await waitFor('Boolean(document.querySelector("#guide-title"))');
+        assert.equal(await js('routeAudio.filter(audio => audio.loop).length'), 1, 'Menu navigation must keep one music instance');
         await js('queueCheck.socket.emit("matchFound", {gameId: "guide-local"})');
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
         assert.equal(await js('location.pathname'), '/game/guide-local');
         assert.equal(await js('queueCheck.leaves'), 1);
         assert.equal(await js('queueCheck.socket.listenerCount("matchFound")'), 0);
-        console.log('A match found while reading the guide opens combat and cleans up the queue');
+        await waitFor('Boolean(combatCheck.arena.musicManager.currentSound)');
+        assert(await js('routeAudio.filter(audio => audio.loop).every(audio => audio.paused)'), 'Menu music must stop before combat music');
+        assert.deepEqual(await js('musicOverlaps'), [], 'Menu and combat music must not overlap');
+        console.log('A match found while reading the guide opens combat, cleans up the queue, and hands off music');
         await js(`combatCheck.arena.tutorialManager.queueMessage('howToCastSpell')`);
         await waitFor('Boolean(document.querySelector(".tutorial-dialogue.spells"))');
         for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [600, 600], [1920, 1080]]) {

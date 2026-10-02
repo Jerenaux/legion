@@ -15,7 +15,7 @@ import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
 import {startGamepadInput} from './input/gamepad';
-import {startTitleMusic} from './titleMusic';
+import {setRouteMusic, stopRouteMusic} from './routeMusic';
 if (process.env.NODE_ENV === 'production') {
   // Set up auth state listener to update Sentry user info
   firebaseAuth.onAuthStateChanged((user) => {
@@ -37,14 +37,13 @@ interface AppState {
 
 class App extends Component<{}, AppState> {
     stopGamepadInput = () => undefined;
-    stopTitleMusic: (() => void) | null = null;
     state: AppState = {
         currentUrl: '/',
         currentMainRoute: '/'
     };
 
     componentDidMount() {
-        this.updateTitleMusic(location.pathname);
+        void setRouteMusic(location.pathname);
         document.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         this.stopGamepadInput = startGamepadInput(action => dispatchDesktopAction(action, 'gamepad'));
@@ -54,16 +53,7 @@ class App extends Component<{}, AppState> {
         document.removeEventListener('keydown', this.handleKeyDown);
         window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         this.stopGamepadInput();
-        this.stopTitleMusic?.();
-    }
-
-    updateTitleMusic(pathname: string) {
-        if (pathname === '/') {
-            this.stopTitleMusic ??= startTitleMusic();
-        } else {
-            this.stopTitleMusic?.();
-            this.stopTitleMusic = null;
-        }
+        stopRouteMusic();
     }
 
     handleKeyDown = (event: KeyboardEvent) => {
@@ -138,7 +128,7 @@ class App extends Component<{}, AppState> {
     }
 
     handleRoute = (e: RouterOnChangeArgs, refreshAllData: () => void, updateActiveCharacter: (id: string | null) => void) => {
-        this.updateTitleMusic(new URL(e.url, location.href).pathname);
+        void setRouteMusic(new URL(e.url, location.href).pathname);
         const newMainRoute = this.getMainRoute(e.url);
 
         if (this.state.currentMainRoute === '/') {
