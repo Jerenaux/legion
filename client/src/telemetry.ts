@@ -5,7 +5,8 @@ import {scrubTelemetry} from '@legion/shared/telemetryPrivacy';
 import {getElectronAPI} from './utils/electronUtils';
 import {telemetryConfig} from './telemetryConfig';
 
-const replayCanvas = Sentry.replayCanvasIntegration({enableManualSnapshot: true});
+const replayCanvas = telemetryConfig.sentryReplay
+  ? Sentry.replayCanvasIntegration({enableManualSnapshot: true}) : null;
 
 if (process.env.NODE_ENV === 'production') {
   const options = {
@@ -22,7 +23,7 @@ if (process.env.NODE_ENV === 'production') {
     replaysSessionSampleRate: telemetryConfig.sentryReplay ? 1 : 0,
     replaysOnErrorSampleRate: 0,
     integrations: [
-      ...(telemetryConfig.sentryReplay && !getElectronAPI()?.smokeTest ? [
+      ...(replayCanvas ? [
         Sentry.replayIntegration({
           maskAllText: false,
           maskAllInputs: false,
@@ -64,7 +65,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export function captureCombatFrame(canvas: HTMLCanvasElement) {
-  if (Sentry.getReplay()?.getReplayId()) {
+  if (replayCanvas && Sentry.getReplay()?.getReplayId()) {
     // Capture before WebGL clears the frame; the SDK throttles snapshots to 2 fps.
     void replayCanvas.snapshot(canvas, {skipRequestAnimationFrame: true}).catch(() => {});
   }

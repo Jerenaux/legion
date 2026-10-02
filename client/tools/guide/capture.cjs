@@ -13,10 +13,13 @@ if (!process.versions.electron) {
   process.env.NODE_ENV = 'production';
   process.env.BUILD_TARGET = 'electron';
   // Exercise store Replay against the loopback sink, never production ingestion.
-  process.env.SENTRY_REPLAY_ENABLED = process.argv.includes('--replay-off') ? '' : 'true';
+  delete process.env.SENTRY_REPLAY_ENABLED;
   for (const key of ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL']) process.env[key] = 'app://legion/__fixture';
   delete process.env.SENTRY_AUTH_TOKEN;
   const config = require('../../webpack.config');
+  // Test-only opt-in: production webpack still refuses local/CI non-store builds.
+  const defines = config.plugins.find(plugin => plugin.definitions?.['process.env.SENTRY_REPLAY_ENABLED']);
+  defines.definitions['process.env.SENTRY_REPLAY_ENABLED'] = JSON.stringify(process.argv.includes('--replay-off') ? '' : 'true');
   config.mode = 'production';
   config.devtool = 'hidden-source-map';
   config.output.path = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-'));
@@ -70,6 +73,15 @@ if (!process.versions.electron) {
   const envelopes = [];
   const replayEvents = [];
   const sink = require('node:http').createServer(async (request, response) => {
+    // Also serve the exact store fixture bundle as a local browser preview.
+    if (request.method === 'GET') {
+      let target = resolveAppPath(dist, `${PACKAGED_APP_URL}${request.url.slice(1)}`);
+      if (!fs.existsSync(target)) target = path.join(dist, 'index.html');
+      const file = await net.fetch(pathToFileURL(target).toString());
+      response.writeHead(file.status, Object.fromEntries(file.headers));
+      response.end(Buffer.from(await file.arrayBuffer()));
+      return;
+    }
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
     let body = Buffer.concat(chunks);
@@ -175,7 +187,8 @@ if (!process.versions.electron) {
       return net.fetch(pathToFileURL(target).toString());
     });
     const win = new BrowserWindow({width: 1600, height: 900, useContentSize: true, show: false,
-      webPreferences: {contextIsolation: true, sandbox: true, backgroundThrottling: false}});
+      webPreferences: {contextIsolation: true, sandbox: true, backgroundThrottling: false,
+        preload: path.join(client, 'preload.js'), additionalArguments: ['--legion-packaged']}});
     win.webContents.setAudioMuted(true);
     const rendererErrors = [];
     win.webContents.on('console-message', event => {
@@ -221,6 +234,29 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+        for (const [name, url, preload, additionalArguments] of [
+          ['browser preview of store bundle', sinkURL, undefined, []],
+          ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
+          ['missing preload', PACKAGED_APP_URL, undefined, []],
+          ['unpackaged Electron', PACKAGED_APP_URL, path.join(client, 'preload.js'), []],
+          ['packaged smoke check', PACKAGED_APP_URL, path.join(client, 'preload.js'), ['--legion-packaged', '--legion-smoke-test']],
+        ]) {
+          const preview = new BrowserWindow({show: false, webPreferences: {
+            contextIsolation: true, sandbox: true, preload, additionalArguments,
+          }});
+          preview.webContents.setAudioMuted(true);
+          try {
+            await preview.loadURL(url);
+            assert.deepEqual(await preview.webContents.executeJavaScript('replayCheck.status()'),
+              {replay: false, canvas: false, rate: 0}, `${name} must not install recorders or sample sessions`);
+            await preview.webContents.executeJavaScript('replayCheck.flush()');
+          } finally { preview.destroy(); }
+        }
+        assert.equal(replayEvents.length, 0, 'Excluded runtimes must not send Replay frames');
+        assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
+        console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
+      }
       if (process.argv.includes('--text-size')) {
         await require('./text-size.cjs')({win, js, waitFor, ready,
           output: process.env.TEXT_SIZE_SCREENSHOTS || path.join(dist, 'text-size'),
@@ -231,6 +267,7 @@ if (!process.versions.electron) {
         await waitFor('Boolean(document.querySelector("#scene canvas"))');
         await new Promise(resolve => setTimeout(resolve, 1200));
         assert.equal(await js('replayCheck.id()'), undefined, 'Local combat must not start a Replay session');
+        assert.deepEqual(await js('replayCheck.status()'), {replay: false, canvas: false, rate: 0});
         assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
@@ -261,6 +298,7 @@ if (!process.versions.electron) {
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
         await waitFor('Boolean(replayCheck.id())');
+        assert.deepEqual(await js('replayCheck.status()'), {replay: true, canvas: true, rate: 1});
         assert.equal(await js(`new Promise(resolve => {
           document.addEventListener('securitypolicyviolation', event => {
             if (event.blockedURI === 'https://blocked.invalid/__csp_probe__.js') resolve(event.effectiveDirective);
