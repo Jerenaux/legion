@@ -4,6 +4,7 @@ const path = require('node:path');
 
 module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
   fs.mkdirSync(output, {recursive: true});
+  win.showInactive();
   const shot = async name => {
     await ready();
     fs.writeFileSync(path.join(output, `${name}.png`), (await win.webContents.capturePage()).toPNG());
@@ -45,7 +46,7 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
     for (const size of [100, 115, 130]) {
       await openSettings();
       await js(`(() => {const select = document.querySelector('#text-size'); select.value = '${size}'; select.dispatchEvent(new Event('change', {bubbles: true}));})()`);
-      await waitFor(`JSON.parse(localStorage.getItem('gameSettings')).textSize === ${size}`);
+      await waitFor(`(JSON.parse(localStorage.getItem('gameSettings'))?.textSize ?? 100) === ${size}`);
       assert.equal(await js('getComputedStyle(document.documentElement).fontSize'), `${16 * size / 100}px`);
       await fits('.settings-modal-container, #text-size');
       assert(await js('document.querySelector(".setting_menu").scrollWidth <= document.querySelector(".setting_menu").clientWidth + 1'), 'Settings must not overflow horizontally');
