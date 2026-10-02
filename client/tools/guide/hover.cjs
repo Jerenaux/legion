@@ -46,7 +46,8 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   await expectHover(2, 3);
   assert(await js('document.querySelector("#character-hover-card").textContent.includes("Black Mage")'));
   await js(`(() => {const p = combatCheck.arena.getPlayer(2, 3);
-    p.statuses = {...p.statuses, Poison: 3, Haste: -1}; p.setMP(17); p.setHP(70); })()`);
+    p.statuses = {...p.statuses, Poison: 3, Haste: -1};
+    p.maxHP = 80.2; p.maxMP = 39.8; p.setMP(16.8); p.setHP(70.2); })()`);
   await waitFor('document.querySelector("#character-hover-card").textContent.includes("17 / 40")');
   await waitFor('document.querySelector("#character-hover-card").textContent.includes("70 / 80")');
   assert(await js('document.querySelector("#character-hover-card").textContent.includes("Poison3")'));
@@ -58,6 +59,10 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   await clear();
   assert.equal(await js('combatCheck.arena.getPlayer(2, 3).glowFx.active'), false);
   assert.equal(await js('combatCheck.arena.getPlayer(1, 3).glowFx.active'), true, 'Clearing inspection preserves selected unit');
+  await js(`(() => {const p = combatCheck.arena.getPlayer(1, 3);
+    p.maxHP = 80.2; p.maxMP = 39.8; p.setHP(79.8); p.setMP(31.8); })()`);
+  await waitFor(`document.querySelector('.player_bar_stat_value').textContent.trim() === '80 / 80'`);
+  assert.equal(await js(`document.querySelectorAll('.player_bar_stat_value')[1].textContent.trim()`), '32 / 40');
 
   // Area targeting highlights multiple sprites without opening inspection cards.
   await js(`window.dispatchEvent(new CustomEvent('characterInSpellRadius', {detail: {x: 8, y: 4}}))`);

@@ -45,7 +45,7 @@ export default function CharacterHoverCard({ character, hover }: { character: Te
         { label: 'MP', value: character.mp, max: character.maxMP },
       ].map(({ label, value, max }) => (
         <div key={label} className="character-hover-card__resource" data-resource={label}>
-          <div><span>{label}</span><b>{Number.isFinite(value) && Number.isFinite(max) ? `${value} / ${max}` : 'Unknown'}</b></div>
+          <div><span>{label}</span><b>{Number.isFinite(value) && Number.isFinite(max) ? `${Math.round(value)} / ${Math.round(max)}` : 'Unknown'}</b></div>
           <div className="character-hover-card__track">
             <div style={{ width: `${max > 0 && Number.isFinite(value) ? Math.min(100, Math.max(0, value / max * 100)) : 0}%` }} />
           </div>

@@ -223,7 +223,7 @@ export class ServerPlayer {
     updateHP(amount: number) {
         this._hp = this.hp;
         this.hp -= Math.round(amount);
-        this.hp = Math.max(Math.min(this.hp, this.getStat(Stat.HP)), 0);
+        this.hp = Math.max(Math.min(Math.round(this.hp), this.getStat(Stat.HP)), 0);
 
         if (this.HPHasChanged()){
             this.broadcastHPChange();
@@ -272,7 +272,7 @@ export class ServerPlayer {
 
     consumeMP(amount: number) {
         this._mp = this.mp;
-        this.mp -= amount;
+        this.mp = Math.round(this.mp - amount);
         if (this.mp < 0) {
             this.mp = 0;
         }
@@ -281,7 +281,7 @@ export class ServerPlayer {
 
     restoreMP(amount: number) {
         this._mp = this.mp;
-        this.mp += amount;
+        this.mp = Math.round(this.mp + amount);
         if (this.mp > this.getMaxMP()) {
             this.mp = this.getMaxMP();
         }
@@ -303,7 +303,7 @@ export class ServerPlayer {
 
     setHP(hp: number) {
         this.setStat(Stat.HP, hp);
-        this.hp = INJURED_MODE ? this.getMaxHP() / 2 : this.getMaxHP();
+        this.hp = Math.round(INJURED_MODE ? this.getMaxHP() / 2 : this.getMaxHP());
         this._hp = this.getMaxHP();
     }
 
@@ -365,7 +365,8 @@ export class ServerPlayer {
 
     getStat(stat: Stat) {
         if (stat === Stat.NONE) return 0;
-        return Math.min(this.stats[stat] * this.stats_modifiers[stat], getMaxStatValue(stat)) || 0;
+        const value = Math.min(this.stats[stat] * this.stats_modifiers[stat], getMaxStatValue(stat)) || 0;
+        return stat === Stat.HP || stat === Stat.MP ? Math.round(value) : value;
     }
 
     setTeam(team: Team) {
