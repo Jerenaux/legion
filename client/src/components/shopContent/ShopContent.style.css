@@ -281,3 +281,12 @@
     width: 60%;
     background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
 }
+/* Reflow cards and tabs as text grows instead of widening the whole page. */
+.shop-container { width: 100%; min-width: 0; box-sizing: border-box; padding: 0 16px; }
+.shop-content { min-width: 0; }
+.shop-tabs-container { flex-wrap: wrap; box-sizing: border-box; }
+.shop-items-container, .equipment-section, .spells-section, .consumables-section { box-sizing: border-box; }
+.shop-items-container, .equipment-grid, .spells-grid, .consumables-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+.shop-card-container, .spell-card-container { min-width: 0; max-width: 100%; box-sizing: border-box; }

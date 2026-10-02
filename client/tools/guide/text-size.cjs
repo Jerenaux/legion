@@ -80,10 +80,18 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
       assert.equal(await js('getComputedStyle(document.documentElement).fontSize'), '20.8px', 'Text size survives reload');
       await shot(`${route.split('/')[0]}-${width}-130`);
       if (route === 'guide') await fits('.guide-page');
+      if (route === 'shop') assert(await js('document.querySelector(".shop-container").scrollWidth <= innerWidth'), 'Shop must reflow within the window');
       if (route.startsWith('game')) await fits('.player_bar_action, .player_bar_pass_turn, .player_bar_pass_turn span, .player_bar_stat_value, .player_bar_action_name');
     }
     await win.loadURL('app://legion/team/guide-2');
     await waitFor('Boolean(document.querySelector(".info-bar-plus"))');
   }
+  // Refresh the guide's action-bar crop because the labels/buttons now reflow.
+  win.setContentSize(1600, 900);
+  await js(`localStorage.setItem('gameSettings', JSON.stringify({...JSON.parse(localStorage.getItem('gameSettings')), textSize: 100}))`);
+  await win.loadURL('app://legion/game/guide-local');
+  await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+  await ready();
+  fs.writeFileSync(path.join(output, 'guide-actions.jpg'), (await win.webContents.capturePage({x: 400, y: 790, width: 960, height: 110})).toJPEG(88));
   console.log('Text size persistence, SP controls, confirmation and compact layouts pass');
 };
