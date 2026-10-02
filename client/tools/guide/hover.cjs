@@ -6,12 +6,13 @@ const path = require('node:path');
 module.exports = async ({win, js, waitFor, ready, output}) => {
   await win.loadURL('app://legion/game/guide-local');
   await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".timeline_character"))');
-  win.show();
-  win.focus();
-  win.webContents.focus();
+  win.showInactive();
+  win.webContents.debugger.attach('1.3');
+  // Exercise browser input without depending on which desktop app has OS focus.
+  await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: true});
   await ready();
   const move = async point => {
-    win.webContents.sendInputEvent({type: 'mouseMove', x: Math.round(point.x), y: Math.round(point.y)});
+    await win.webContents.debugger.sendCommand('Input.dispatchMouseEvent', {type: 'mouseMoved', x: Math.round(point.x), y: Math.round(point.y)});
     await ready();
   };
   const domPoint = selector => js(`(() => { const r = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect(); return {x: r.x + r.width / 2, y: r.y + r.height / 2}; })()`);
@@ -108,10 +109,12 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   await move(target);
   await expectHover(2, 3);
   assert.deepEqual(await js('combatCheck.hoverArea'), [9, 8]);
-  for (const type of ['mouseDown', 'mouseUp']) win.webContents.sendInputEvent({type, x: Math.round(target.x), y: Math.round(target.y), button: 'left', clickCount: 1});
+  for (const type of ['mousePressed', 'mouseReleased']) await win.webContents.debugger.sendCommand('Input.dispatchMouseEvent', {type, x: Math.round(target.x), y: Math.round(target.y), button: 'left', clickCount: 1});
   await waitFor('Boolean(combatCheck.hoverSpell)');
   assert.deepEqual(await js('combatCheck.hoverSpell'), {x: 9, y: 8, index: 0, targetTeam: 2, target: 3});
   await js('combatCheck.restoreHighlight()');
   await clear();
+  await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: false});
+  win.webContents.debugger.detach();
   console.log('Combat inspection: native pointer routing on all three surfaces, team identity, live resources/statuses, focus, target/selection preservation, death/blur cleanup and viewport placement pass');
 };
