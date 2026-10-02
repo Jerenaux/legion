@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Legion desktop game client",
   "author": "Dynetis Games",
   "private": true,
@@ -17,7 +17,9 @@
     "electron:build:win": "BUILD_TARGET=electron bun run build && electron-builder --win",
     "electron:build:linux": "BUILD_TARGET=electron bun run build && electron-builder --linux",
     "electron:test": "BUILD_TARGET=electron bun run build && electron-builder --dir",
-    "release:validate": "../tools/validate_desktop_release.sh"
+    "release:validate": "../tools/validate_desktop_release.sh",
+    "locales:check": "node tools/localization/check.cjs",
+    "test:localization": "node tools/guide/capture.cjs --localization"
   },
   "license": "ISC",
   "dependencies": {
@@ -62,7 +64,9 @@
     "wait-on": "^8.0.5",
     "webpack": "^5.110.3",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.2.6"
+    "webpack-dev-server": "^5.2.6",
+    "i18next": "^26.4.2",
+    "react-i18next": "^17.0.15"
   },
   "overrides": {
     "i18next-http-backend": "^4.0.2",
@@ -78,7 +82,9 @@
       "electron.js",
       "preload.js",
       "electron/**/*",
-      "!electron/**/__tests__/**/*"
+      "!electron/**/__tests__/**/*",
+      "locales/**/*.json",
+      "locales/**/fonts/OFL.txt"
     ],
     "extraResources": [
       {

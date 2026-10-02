@@ -10,7 +10,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .team-equip-container {
@@ -95,7 +95,7 @@
     background-size: 100% 100%;
     width: 64px;
     height: 64px;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .team-level span {
@@ -150,7 +150,7 @@
     font-weight: 500;
     color: #ffffff;
     text-transform: capitalize;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .team-character-class {
@@ -272,7 +272,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -291,7 +291,7 @@
     width: 3.75rem;
     display: flex;
     justify-content: center;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 

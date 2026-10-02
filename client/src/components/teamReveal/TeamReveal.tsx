@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -37,8 +38,8 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
   render() {
     return (
       <div className="team-reveal-overlay">
-        <h2 className="team-reveal-title">Click to discover your champions!</h2>
-        <p className="team-reveal-subtitle">They will form your starting team of characters than you can use in the arena!</p>
+        <h2 className="team-reveal-title">{t("Click to discover your champions!")}</h2>
+        <p className="team-reveal-subtitle">{t("They will form your starting team of characters than you can use in the arena!")}</p>
         <div className="team-reveal-grid">
           {this.props.team.map((character, index) => (
             <button type="button" data-game-control
@@ -58,9 +59,7 @@ export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
           <button type="button"
             className="team-reveal-play-button"
             onClick={this.props.onComplete}
-          >
-            PLAY!
-          </button>
+          >{t("PLAY!")}</button>
         )}
       </div>
     );

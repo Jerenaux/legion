@@ -14,7 +14,7 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  font-family: Arial, sans-serif;
+  font-family: var(--locale-font, Arial), system-ui, sans-serif;
 }
 
 canvas {
@@ -109,7 +109,7 @@ canvas {
   margin-bottom: 5px;
   margin-left: 1px;
   font-weight: bold;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 1.25rem;
 }
 
@@ -137,7 +137,7 @@ canvas {
   background-color: #4a4947;
   font-weight: bold;
   width: 100px;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
@@ -254,7 +254,7 @@ canvas {
 }
 
 .slots-header {
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   border-top: 2px solid white;
   border-bottom: 2px solid white;
   background: linear-gradient(to right, rgba(0, 0, 139, 0.553), rgba(173, 216, 230, 0.498), transparent);
@@ -287,7 +287,7 @@ canvas {
     color: white;
     font-size: 0.875rem;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .item-qty {
@@ -482,7 +482,7 @@ canvas {
   margin-left: 10px;
   font-size: 4em;
   /* Adjust as needed */
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   text-shadow: -5px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
@@ -499,7 +499,7 @@ canvas {
   font-size: 1.875rem;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .gold-container::before,
@@ -666,12 +666,12 @@ canvas {
 .character-name {
   font-size: 1.2em;
   font-weight: bold;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .character-class {
   font-size: 0.9em;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   /* color: #666; */
 }
 
@@ -689,7 +689,7 @@ canvas {
   align-items: center;
   font-size: 0.8em;
   font-weight: bold;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   flex-direction: column;
   box-shadow: 0 0 0 5px #070507, 0 0 0 7px #CD853F;
   /* Creates a 10px transparent gap and a 2px border */
@@ -748,7 +748,7 @@ canvas {
 
 .rank-load-error h2 {
   color: white;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .leaderboard-table {
@@ -767,7 +767,7 @@ canvas {
 }
 
 .leaderboard-table th {
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   cursor: pointer;
 }
@@ -782,7 +782,7 @@ canvas {
 
 .leaderboard-table td {
   text-align: center;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   padding-right: 15px;
@@ -835,7 +835,7 @@ canvas {
   font-size: 1.875rem;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .button-container::before,
@@ -926,7 +926,7 @@ canvas {
 
 .character-header-name {
   position: absolute;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   font-size: 1.875rem;
   /* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */
@@ -939,7 +939,7 @@ canvas {
   position: absolute;
   top: -30px;
   left: 15px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   font-size: 5rem;
   opacity: 0.15;
@@ -949,7 +949,7 @@ canvas {
   position: absolute;
   top: 35px;
   left: 15px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   font-size: 0.9375rem;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
@@ -961,7 +961,7 @@ canvas {
   display: flex;
   justify-content: space-between;
   padding: 10px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
@@ -1075,7 +1075,7 @@ canvas {
   padding: 5px;
   padding-left: 15px;
   overflow: hidden;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .shop-item-card-name {
@@ -1091,7 +1091,7 @@ canvas {
   position: absolute;
   top: -30px;
   left: 15px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   font-size: 5rem;
   opacity: 0.15;
@@ -1198,7 +1198,7 @@ canvas {
   background-color: #F9F6EE;
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: #4a4947;
 }
 
@@ -1283,7 +1283,7 @@ canvas {
 
 .inventory-header-name {
   position: absolute;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   font-size: 2.8125rem;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
@@ -1298,7 +1298,7 @@ canvas {
   position: absolute;
   top: -30px;
   left: 15px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   font-size: 5rem;
   opacity: 0.15;
@@ -1317,7 +1317,7 @@ canvas {
 
 .inventory-full-content {
   padding: 10px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   display: grid;
@@ -1384,7 +1384,7 @@ canvas {
   background-color: gold;
   color: #fff;
   cursor: pointer;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-size: 1.25rem;
   border-radius: 5px;
@@ -1412,7 +1412,7 @@ canvas {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  font-family: "Kim", sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .endgame-head {
@@ -1426,11 +1426,11 @@ canvas {
   justify-content: center;
   color: white;
   font-size: 1.875rem;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .endgame-title {
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 3.125rem;
   color: white;
   font-style: italic;
@@ -1511,7 +1511,7 @@ canvas {
 .shepherd-button {
   background-color: #ffbf00;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
 }
 
@@ -1581,7 +1581,7 @@ canvas {
   cursor: pointer;
   z-index: 1;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .shepherd-cancel-icon:hover {
@@ -1632,7 +1632,7 @@ a:-webkit-any-link {
   text-align: center;
   padding: 10px;
   width: 400px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   color: white;
 }
@@ -1648,7 +1648,7 @@ a:-webkit-any-link {
   text-align: center;
   transition: all 0.3s ease;
   /* Smooth hover and active transition */
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   background-color: #ffcc00;
   /* Golden color */
@@ -1703,7 +1703,7 @@ a:-webkit-any-link {
   text-align: center;
   padding: 10px;
   width: 400px;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   color: white;
 }

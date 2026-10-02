@@ -1,3 +1,4 @@
+import {t} from './i18n/core';
 import * as Sentry from '@sentry/react';
 import {init as initElectron, eventLoopBlockIntegration} from '@sentry/electron/renderer';
 import {dsn, dataCollection} from '../electron/telemetry-options';
@@ -49,11 +50,7 @@ if (process.env.NODE_ENV === 'production') {
         showEmail: false,
         enableScreenshot: false,
         colorScheme: 'dark' as const,
-        formTitle: 'Report a problem',
-        messageLabel: 'What went wrong?',
-        messagePlaceholder: 'Describe what happened and what you expected. Do not include passwords or other private information.',
-        submitButtonLabel: 'Send report',
-        successMessageText: 'Report sent. Thank you for helping improve Legion.',
+
       }),
     ],
   };
@@ -74,7 +71,16 @@ export function captureCombatFrame(canvas: HTMLCanvasElement) {
 export async function reportProblem() {
   const feedback = Sentry.getFeedback();
   if (!feedback) throw new Error('Problem reporting is unavailable in this development build.');
-  const form = await feedback.createForm({onFormClose: () => form.removeFromDom()});
+  const form = await feedback.createForm({
+    formTitle: t('Report a problem'),
+    messageLabel: t('What went wrong?'),
+    messagePlaceholder: t('Describe what happened and what you expected. Do not include passwords or other private information.'),
+    submitButtonLabel: t('Send report'),
+    cancelButtonLabel: t('Cancel report'),
+    isRequiredLabel: t('Required'),
+    successMessageText: t('Report sent. Thank you for helping improve Legion.'),
+    onFormClose: () => form.removeFromDom(),
+  });
   form.appendToDom();
   form.open();
 }

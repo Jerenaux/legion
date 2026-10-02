@@ -13,14 +13,6 @@ interface BarProps {
     icon: string;
 }
 
-const leagueMap = new Map([
-    [League.BRONZE, 'Bronze'],
-    [League.SILVER, 'Silver'],
-    [League.GOLD, 'Gold'],
-    [League.ZENITH, 'Zenith'],
-    [League.APEX, 'Apex'],
-]);
-
 const iconsMap = {
     'gold': GoldIcon,
 };
@@ -28,15 +20,14 @@ const iconsMap = {
 class UserInfoBar extends Component<BarProps> {
 
     render() {
-        const leagueName = leagueMap.get(this.props.league);
-        const leagueIcon = getLeagueIcon(leagueName);
+        const leagueIcon = getLeagueIcon(this.props.league);
 
         return (
             <div className="userInfoBar">
                 <div className="barLogo">
                     <img
                         src={this.props.isLeague ? leagueIcon : iconsMap[this.props.icon]}
-                        alt=""
+                        alt={""}
                     />
                 </div>
                 <div className="userInfoLabel">

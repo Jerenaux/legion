@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import { avatarContext } from '../utils';
@@ -67,7 +68,7 @@ class SearchPlayers extends Component<Props, State> {
             });
         } catch (_error) {
             this.setState({
-                error: 'Failed to search players',
+                error: t("Failed to search players"),
                 isLoading: false
             });
         }
@@ -106,13 +107,13 @@ class SearchPlayers extends Component<Props, State> {
                 <div className="search-container">
                     <input
                         type="text"
-                        placeholder="Search for friend by nickname"
+                        placeholder={t("Search for friend by nickname")}
                         value={searchTerm}
                         onInput={this.handleSearchInput}
                         onBlur={this.handleBlur}
                         onFocus={() => this.setState({ showResults: true })}
                     />
-                    {isLoading && <div className="search-loading">Loading...</div>}
+                    {isLoading && <div className="search-loading">{t("Loading...")}</div>}
                 </div>
 
                 {showResults && searchTerm.length >= 3 && (
@@ -133,23 +134,19 @@ class SearchPlayers extends Component<Props, State> {
                                             <span className="player-name">{player.name}</span>
                                         </div>
                                         {this.isAlreadyFriend(player.id) ? (
-                                            <button type="button" className="add-friend-btn is-friend">
-                                                Already Friends
-                                            </button>
+                                            <button type="button" className="add-friend-btn is-friend">{t("Already Friends")}</button>
                                         ) : (
                                             <button type="button"
                                                 className="add-friend-btn"
                                                 onClick={() => this.props.onAddFriend(player.id)}
-                                            >
-                                                Add Friend
-                                            </button>
+                                            >{t("Add Friend")}</button>
                                         )}
                                     </div>
                                 ))}
                             </div>
                         ) : (
                             searchTerm.length >= 3 && !isLoading &&
-                            <div className="no-results">No players found</div>
+                            <div className="no-results">{t("No players found")}</div>
                         )}
                     </div>
                 )}

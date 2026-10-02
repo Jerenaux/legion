@@ -1,3 +1,5 @@
+import {t, i18n, localizedAsset, language} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
 // Navbar.tsx
@@ -16,14 +18,30 @@ import { PlayerContext } from '../../contexts/PlayerContext';
 import { LockedFeatures } from "@legion/shared/enums";
 
 import legionLogo from '@assets/logo.png';
-import playIcon from '@assets/play_btn_idle.png';
-import teamIcon from '@assets/team_btn_idle.png';
-import shopIcon from '@assets/shop_btn_idle.png';
-import rankIcon from '@assets/rank_btn_idle.png';
-import playActiveIcon from '@assets/play_btn_active.png';
-import teamActiveIcon from '@assets/team_btn_active.png';
-import shopActiveIcon from '@assets/shop_btn_active.png';
-import rankActiveIcon from '@assets/rank-btn-active.png';
+import playIconOriginal from '@assets/play_btn_idle.png';
+import playIconBlank from '@assets/localization/play_btn_idle.png';
+const playIcon = localizedAsset('play_btn_idle.png', language === 'en' ? playIconOriginal : playIconBlank);
+import teamIconOriginal from '@assets/team_btn_idle.png';
+import teamIconBlank from '@assets/localization/team_btn_idle.png';
+const teamIcon = localizedAsset('team_btn_idle.png', language === 'en' ? teamIconOriginal : teamIconBlank);
+import shopIconOriginal from '@assets/shop_btn_idle.png';
+import shopIconBlank from '@assets/localization/shop_btn_idle.png';
+const shopIcon = localizedAsset('shop_btn_idle.png', language === 'en' ? shopIconOriginal : shopIconBlank);
+import rankIconOriginal from '@assets/rank_btn_idle.png';
+import rankIconBlank from '@assets/localization/rank_btn_idle.png';
+const rankIcon = localizedAsset('rank_btn_idle.png', language === 'en' ? rankIconOriginal : rankIconBlank);
+import playActiveIconOriginal from '@assets/play_btn_active.png';
+import playActiveIconBlank from '@assets/localization/play_btn_active.png';
+const playActiveIcon = localizedAsset('play_btn_active.png', language === 'en' ? playActiveIconOriginal : playActiveIconBlank);
+import teamActiveIconOriginal from '@assets/team_btn_active.png';
+import teamActiveIconBlank from '@assets/localization/team_btn_active.png';
+const teamActiveIcon = localizedAsset('team_btn_active.png', language === 'en' ? teamActiveIconOriginal : teamActiveIconBlank);
+import shopActiveIconOriginal from '@assets/shop_btn_active.png';
+import shopActiveIconBlank from '@assets/localization/shop_btn_active.png';
+const shopActiveIcon = localizedAsset('shop_btn_active.png', language === 'en' ? shopActiveIconOriginal : shopActiveIconBlank);
+import rankActiveIconOriginal from '@assets/rank-btn-active.png';
+import rankActiveIconBlank from '@assets/localization/rank-btn-active.png';
+const rankActiveIcon = localizedAsset('rank-btn-active.png', language === 'en' ? rankActiveIconOriginal : rankActiveIconBlank);
 import expandBtn from '@assets/expand_btn.png';
 import helpIcon from '@assets/svg/help.svg';
 import copyIcon from '@assets/svg/copy.svg';
@@ -98,15 +116,14 @@ class Navbar extends Component<Props, State> {
     copyIDtoClipboard = () => {
         const textToCopy = this.props.playerData.uid;
         navigator.clipboard.writeText(textToCopy).then(() => {
-            successToast(`Player ID ${textToCopy} copied!`);
+            successToast(t("Player ID {{value0}} copied!", {value0: textToCopy}));
         }).catch(err => {
             console.error('Failed to copy text: ', err);
         });
     };
 
     formatNumber = (number) => {
-        const format = 'en-US';
-        return new Intl.NumberFormat(format, {
+        return new Intl.NumberFormat(i18n.resolvedLanguage, {
           useGrouping: true,
           maximumFractionDigits: 2
         }).format(number);
@@ -136,7 +153,7 @@ class Navbar extends Component<Props, State> {
                                     <div className="flexContainer">
                                         <div className="logoContainer">
                                             <Link href="/play" className="gameLogo">
-                                                <img src={legionLogo} alt="Legion Logo" />
+                                                <img src={legionLogo} alt={t("Legion Logo")} />
                                             </Link>
                                         </div>
                                         <Link href={`/profile/${this.props.playerData?.uid}`} className="avatarContainerLink">
@@ -150,16 +167,16 @@ class Navbar extends Component<Props, State> {
                                                 )}
                                                 <div className="userInfo">
                                                     {this.state.isLoading ? (
-                                                        <span className="loading-placeholder">Loading...</span>
+                                                        <span className="loading-placeholder">{t("Loading...")}</span>
                                                     ) : (
                                                         <span>{this.props.playerData?.name}</span>
                                                     )}
                                                     {ENABLE_PLAYER_LEVEL && (
                                                         <div className="userLevel">
                                                             {this.state.isLoading ? (
-                                                                <span className="loading-placeholder">Lvl. --</span>
+                                                                <span className="loading-placeholder">{t("Lvl. --")}</span>
                                                             ) : (
-                                                                <span>Lvl. {this.props.playerData?.lvl}</span>
+                                                                <span>{t("Lvl. {{value0}}", {value0: this.props.playerData?.lvl})}</span>
                                                             )}
                                                         </div>
                                                     )}
@@ -171,7 +188,7 @@ class Navbar extends Component<Props, State> {
                                     <div className="menuItems">
                                         <Link href="/play" onMouseOver={() => this.setState({ hovered: MenuItems.PLAY })} onMouseLeave={() => this.setState({ hovered: '' })}>
                                             <div className={`menuItemContainer ${currentPage(Routes.PLAY) ? 'activeFlag' : ''}`}>
-                                                <img className="menuItem" src={this.state.hovered === MenuItems.PLAY ? playActiveIcon : playIcon} alt="Play" />
+                                                <img className="menuItem" src={this.state.hovered === MenuItems.PLAY ? playActiveIcon : playIcon} alt={t("Play")} />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.PLAY ? "play_btn_active.png" : "play_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="48" lengthAdjust="spacingAndGlyphs">{t("Play")}</text></svg>}
                                             </div>
                                         </Link>
                                         <Link href="/team" onMouseOver={() => this.setState({ hovered: MenuItems.TEAM })} onMouseLeave={() => this.setState({ hovered: '' })}>
@@ -179,7 +196,7 @@ class Navbar extends Component<Props, State> {
                                                 className={`menuItemContainer ${currentPage(Routes.TEAM) ? 'activeFlag' : ''}`}
                                                 data-team-page
                                             >
-                                                <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} alt="Team" />
+                                                <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} alt={t("Team")} />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.TEAM ? "team_btn_active.png" : "team_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="50" lengthAdjust="spacingAndGlyphs">{t("Team")}</text></svg>}
                                             </div>
                                         </Link>
                                         <Link
@@ -197,13 +214,13 @@ class Navbar extends Component<Props, State> {
                                                 <img
                                                     className="menuItem"
                                                     src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon}
-                                                    alt="Shop"
-                                                />
+                                                    alt={t("Shop")}
+                                                />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.SHOP ? "shop_btn_active.png" : "shop_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="48" lengthAdjust="spacingAndGlyphs">{t("Shop")}</text></svg>}
                                                 {!playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) && (
                                                     <img
                                                         className="lock-overlay"
                                                         src={lockIcon}
-                                                        alt="Locked"
+                                                        alt={t("Locked")}
                                                     />
                                                 )}
                                             </div>
@@ -223,13 +240,13 @@ class Navbar extends Component<Props, State> {
                                                 <img
                                                     className="menuItem"
                                                     src={this.state.hovered === MenuItems.RANK ? rankActiveIcon : rankIcon}
-                                                    alt="Rank"
-                                                />
+                                                    alt={t("Rank")}
+                                                />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.RANK ? "rank-btn-active.png" : "rank_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="48" lengthAdjust="spacingAndGlyphs">{t("Rank")}</text></svg>}
                                                 {!playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
                                                     <img
                                                         className="lock-overlay"
                                                         src={lockIcon}
-                                                        alt="Locked"
+                                                        alt={t("Locked")}
                                                     />
                                                 )}
                                             </div>
@@ -237,11 +254,11 @@ class Navbar extends Component<Props, State> {
                                     </div>
 
                                     <div className="flexContainer" id="goldEloArea">
-                                        <UserInfoBar icon='gold' label={`${this.state.isLoading ? 'Loading...' : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
+                                        <UserInfoBar icon='gold' label={`${this.state.isLoading ? t("Loading...") : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
                                         {playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
                                             <UserInfoBar
                                                 icon='league'
-                                                label={this.state.isLoading ? 'Loading...' : `#${this.props.playerData?.rank}`}
+                                                label={this.state.isLoading ? t("Loading...") : `#${this.props.playerData?.rank}`}
                                                 isLeague={true}
                                                 bigLabel={!this.state.isLoading}
                                                 league={this.props.playerData?.league}
@@ -249,25 +266,17 @@ class Navbar extends Component<Props, State> {
                                         )}
                                         {/* biome-ignore lint/a11y/noStaticElementInteractions: Hover is a pointer shortcut; the nested button provides keyboard access. */}
                                         <div className="expand_btn" onMouseEnter={() => this.setState({ openDropdown: true })}>
-                                            <button type="button" className="expand_btn_trigger" aria-label="More options" aria-expanded={this.state.openDropdown} style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} />
+                                            <button type="button" className="expand_btn_trigger" aria-label={t("More options")} aria-expanded={this.state.openDropdown} style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} />
                                             {/* biome-ignore lint/a11y/noStaticElementInteractions: Pointer leave only dismisses a menu already controlled by a keyboard-accessible button. */}
                                             <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
-                                                <Link href="/guide" onClick={() => this.setState({ openDropdown: false })}>
-                                                    <img src={helpIcon} alt="" /> Guide
-                                                </Link>
+                                                <Link href="/guide" onClick={() => this.setState({ openDropdown: false })}><Trans i18n={i18n} i18nKey={"<0/> Guide"} components={[<img src={helpIcon} alt="" />]} /></Link>
                                                 <button type="button" data-report-problem onClick={() => {
                                                     this.setState({openDropdown: false});
-                                                    void reportProblem().catch(() => errorToast('Unable to open the report form. Please try again.'));
-                                                }}>
-                                                    <img src={helpIcon} alt="" /> Report a problem
-                                                </button>
-                                                <button type="button" onClick={this.copyIDtoClipboard}>
-                                                    <img src={copyIcon} alt="Copy" /> Player ID
-                                                </button>
-                                                <button type="button" onClick={this.toggleSettingsModal}>
-                                                    <img src={cogIcon} alt="Settings" /> Settings
-                                                </button>
-                                                <small className="dropdown-version">Version {version}</small>
+                                                    void reportProblem().catch(() => errorToast(t("Unable to open the report form. Please try again.")));
+                                                }}><Trans i18n={i18n} i18nKey={"<0/> Report a problem"} components={[<img src={helpIcon} alt="" />]} /></button>
+                                                <button type="button" onClick={this.copyIDtoClipboard}><Trans i18n={i18n} i18nKey={"<0/> Player ID"} components={[<img src={copyIcon} alt="" />]} /></button>
+                                                <button type="button" onClick={this.toggleSettingsModal}><Trans i18n={i18n} i18nKey={"<0/> Settings"} components={[<img src={cogIcon} alt="" />]} /></button>
+                                                <small className="dropdown-version">{t("Version {{value0}}", {value0: version})}</small>
                                             </div>
                                         </div>
                                     </div>

@@ -1,3 +1,4 @@
+import {t, formatNumber} from '../../i18n/core';
 
 import { h } from 'preact';
 import './ShopConsumableCard.style.css';
@@ -55,13 +56,13 @@ class ShopConsumableCard extends Component<ShopCardProps> {
   render() {
     const getRarityValue = (effort) => {
       if(effort < 10) {
-        return {val: "Common", clr: "cyan"};
+        return {val: t("Common"), clr: "cyan"};
       } else if(effort < 25) {
-        return {val: "Rare", clr: "tomato"};
+        return {val: t("Rare"), clr: "tomato"};
       } else if(effort < 50) {
-        return {val: "Epic", clr: "red"};
+        return {val: t("Epic"), clr: "red"};
       } else {
-        return {val: "Legendary", clr: "orange"};
+        return {val: t("Legendary"), clr: "orange"};
       }
     }
 
@@ -83,7 +84,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
 
     const getEffectValue = (effect: Effect) => {
       if(effect.value === -1) return '∞';
-      return `+${effect.value}`;
+      return formatNumber(effect.value, {signDisplay: 'always'});
     }
 
     return (
@@ -94,10 +95,10 @@ class ShopConsumableCard extends Component<ShopCardProps> {
         data-shop-item={`consumable-${data.id}`}
       >
         <div className="shop-card-title" style={titleStyle}>
-          <span>{data.name}</span>
+          <span>{t(data.name)}</span>
           <div className="consumable-card-info-box">
-            <img src={itemCountIcon} alt="count icon" />
-            <span>{this.props.getItemAmount(data.id, InventoryType.CONSUMABLES)}</span>
+            <img src={itemCountIcon} alt={t("count icon")} />
+            <span>{formatNumber(this.props.getItemAmount(data.id, InventoryType.CONSUMABLES))}</span>
           </div>
         </div>
         <div className="consumable-card-content">
@@ -106,42 +107,42 @@ class ShopConsumableCard extends Component<ShopCardProps> {
               backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
           }} />
         </div>
-        <p data-tooltip-id={`consumable-desc-tooltip-${data.id}`} className="consumable-card-description">{data.description}</p>
+        <p data-tooltip-id={`consumable-desc-tooltip-${data.id}`} className="consumable-card-description">{t(data.description)}</p>
         <div className="consumable-card-effect-container">
           {data.effects.map((effect, index) => (
             <div key={index} className="consumable-card-effect">
               <img
                 src={StatIcons[effect.stat]}
                 style={effect.stat === 1 ? {transform: 'scaleX(0.8)'} : {}}
-                alt=""
+                alt={""}
               />
               <span>{getEffectValue(effect)}</span>
             </div>
           ))}
           <div className="consumable-card-effect">
-            <img src={cdIcon} style={{transform: 'scaleX(0.8)'}} alt="cooldown" />
+            <img src={cdIcon} style={{transform: 'scaleX(0.8)'}} alt={t("cooldown")} />
             <span>{getSpeedClass(data.speedClass)}</span>
           </div>
           <div className="consumable-card-effect">
-            <img src={targetIcon} alt="target" />
-            <span>{Target[data.target]}</span>
+            <img src={targetIcon} alt={t("target")} />
+            <span>{t(Target[data.target])}</span>
           </div>
         </div>
         <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: 'Kim'}}>
+          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: "var(--locale-font, 'Kim'), system-ui, sans-serif"}}>
             {getRarityValue(data.effort).val}
           </span>
         </div>
         <div className="shop-card-price">
-          <img src={goldIcon} alt="gold" />
-          {data.price}
+          <img src={goldIcon} alt={t("gold")} />
+          {formatNumber(data.price)}
         </div>
 
         <ReactTooltip
           id={`consumable-desc-tooltip-${data.id}`}
           place="top-start"
           variant="light"
-          content={data.description}
+          content={t(data.description)}
           style={{maxWidth: '120px'}}
         />
       </button>

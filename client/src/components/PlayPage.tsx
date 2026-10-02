@@ -1,3 +1,4 @@
+import {t} from '../i18n/core';
 import { h } from 'preact';
 // PlayPage.tsx
 import { Component, createRef } from 'preact';
@@ -108,17 +109,17 @@ class PlayPage extends Component {
     const data = {
       dailyQuests: [
         {
-          name: "Use 5 fire spells",
+          name: t("Use 5 fire spells"),
           rewards: { gold: 500, xp: 2000 },
           completion: 0.8
         },
         {
-          name: "Win 3 games",
+          name: t("Win 3 games"),
           rewards: { gold: 700, xp: 1000 },
           completion: 1 // = completed
         },
         {
-          name: "Use 5 fire spells",
+          name: t("Use 5 fire spells"),
           rewards: { gold: 500, xp: 2000 },
           completion: 0.8
         },

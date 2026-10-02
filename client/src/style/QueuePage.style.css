@@ -175,7 +175,7 @@
     position: absolute;
     top: 4.2vw;
     left: 10vw;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   }
 
   .queue-detail-body > div {
@@ -240,7 +240,7 @@
   .queue-footer-text {
     text-align: center;
     margin-left: 3vw;
-    font-family: Tahoma, sans-serif;
+    font-family: var(--locale-font, Tahoma), sans-serif;
     font-size: calc(0.9vw * var(--text-scale, 1));
     color: white;
   }
@@ -265,7 +265,7 @@
     top: 18.75vw;
     width: 100%;
     font-size: calc(1.2vw * var(--text-scale, 1));
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-align: center;
     color: white;
   }
@@ -337,7 +337,7 @@
     display: flex;
     flex-flow: column;
     justify-content: space-between;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   }
 
   .queue-news-content {

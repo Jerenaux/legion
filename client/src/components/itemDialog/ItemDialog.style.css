@@ -52,7 +52,7 @@
     border: 1px solid #3c616c;
     border-radius: 16px;
     padding: 16px 24px;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .character-info-dialog-card-container {
@@ -364,7 +364,7 @@
     color: #71deff;
     text-align: center;
     margin-bottom: 8px;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 

@@ -148,7 +148,7 @@
   padding: 8px 16px 12px 36px;
   max-width: 320px;
   min-width: 260px;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .player_info_container_right {
@@ -178,7 +178,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .player_info_lv_right {
@@ -243,7 +243,7 @@
   margin-top: -2px;
   margin-right: 4px;
   font-style: italic;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -562,7 +562,7 @@
   margin-bottom: 4px;
   text-align: center;
   cursor: var(--game-pointer);
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -575,13 +575,13 @@
   margin-bottom: 4px;
   text-align: center;
   cursor: var(--game-pointer);
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
 .exit_game_menu {
   cursor: var(--game-pointer);
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -590,7 +590,7 @@
   padding: 16px;
   border: 2px solid #51fdff;
   border-radius: 8px;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
@@ -857,7 +857,7 @@
   border-radius: 4px;
 
   /* Text styling */
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 1.5rem;
   color: #ffffff;
   text-align: center;
@@ -957,7 +957,7 @@
   border-radius: 4px;
   min-width: clamp(160px, 20vw, 200px);
 
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: clamp(0.875rem, calc(2vw * var(--text-scale, 1)), 1.125rem);
   color: #ffffff;
   text-align: center;
@@ -1028,7 +1028,7 @@
   border-radius: 4px;
 
   /* Text styling */
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 1.25rem;
   color: #ffffff;
   text-align: center;
@@ -1064,3 +1064,7 @@
 .setting_text_size select { flex: 1; min-width: 0; max-width: 100%; font: inherit; color: #f4f5f7; background: #1c1f25; border: 1px solid #51fdff; border-radius: 4px; padding: 8px; }
 .setting_dialog_control_name { flex: 0 0 32%; overflow-wrap: anywhere; }
 .setting_dialog_control_bar { min-width: 0; flex: 1; }
+
+/* Translated labels and large text must keep every setting reachable. */
+.setting_menu { max-height: calc(100dvh - 24px); overflow-y: auto; }
+.setting_menu_btn { background-color: transparent; overflow-wrap: anywhere; }

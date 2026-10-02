@@ -1,3 +1,4 @@
+import {t, fontFamily} from '../i18n/core';
 import { HealthBar } from "./HealthBar";
 import { Team } from './Team';
 import { BaseItem } from "@legion/shared/BaseItem";
@@ -119,7 +120,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.add(this.animationSprite);
 
         if (isPlayer) {
-            this.numKey = scene.add.text(30, 70, num.toString(), { fontFamily: 'Kim', fontSize: 12 * loadGameSettings().textSize / 100, color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(1,1);
+            this.numKey = scene.add.text(30, 70, num.toString(), { fontFamily: fontFamily(), fontSize: 12 * loadGameSettings().textSize / 100, color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(1,1);
             this.add(this.numKey);
         }
 
@@ -613,14 +614,14 @@ export class Player extends Phaser.GameObjects.Container {
     useItemAnimation(animation: string, name: string) {
         this.playAnim('item', true);
         this.playSuperimposedAnim(animation);
-        this.displayOverheadText(name, 4000, '#fff');
+        this.displayOverheadText(t(name), 4000, '#fff');
     }
 
     castAnimation(flag: boolean, name: string, charge?: string) {
         if (flag) {
             this.playAnim('cast', false);
             this.animationSprite.setVisible(true).play('cast');
-            this.displayOverheadText(name, 4000, '#fff');
+            this.displayOverheadText(t(name), 4000, '#fff');
             this.arena.playSound('cast', 1);
 
             if (charge) {
@@ -688,10 +689,10 @@ export class Player extends Phaser.GameObjects.Container {
         if (!this.canAct() || spell.cost > this.mp || this.isMuted()) {
             this.arena.playSound('nope', 0.2);
             if (this.isMuted()) {
-                this.talk('I\'m silenced! I can\'t cast spells!');
+                this.talk(t("I’m silenced! I can’t cast spells!"));
             }
             if (this.mp < spell.cost) {
-                this.talk('Not enough MP!');
+                this.talk(t("Not enough MP!"));
             }
             return;
         }
@@ -838,7 +839,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         const textObject = this.scene.add.text(
             randomXOffset,( -this.sprite.height / 2) + 15 + randomYOffset, `${String(text)}`,
-            { fontSize: 24 * loadGameSettings().textSize / 100, color, stroke: '#000', strokeThickness: 3, fontFamily: 'Kim',}
+            { fontSize: 24 * loadGameSettings().textSize / 100, color, stroke: '#000', strokeThickness: 3, fontFamily: fontFamily(),}
             ).setOrigin(0.5).setDepth(10)   ;
         this.add(textObject);
         this.lastOverheadMessage = Date.now();
@@ -967,7 +968,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
 
         // await this.scene?.sleep(10);
-        this.speechBubble.setText(text);
+        this.speechBubble.setText(t(text));
         this.speechBubble.setVisible(true);
         const duration = this.speechBubble.setDuration(sticky);
         return duration;

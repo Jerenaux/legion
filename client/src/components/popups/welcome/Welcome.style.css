@@ -20,7 +20,7 @@
     text-align: center;
     padding: 90px 20px 20px; /* Increased top padding */
     width: 400px;
-    font-family: Kim, sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     color: white;
   }
@@ -66,7 +66,7 @@
     width: 80%; /* Adjust width as needed */
     text-align: center;
     transition: all 0.3s ease; /* Smooth hover and active transition */
-    font-family: Kim, sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 

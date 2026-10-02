@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import { events } from './GameHUD';
@@ -131,7 +132,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
       >
         {/* <img
           src={avatarSrc}
-          alt="Character Avatar"
+          alt=""
           className="tutorial-dialogue-avatar"
           onLoad={this.handleAvatarLoad}
         /> */}
@@ -141,7 +142,7 @@ class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogue
         </div>
         {messageIndex < messages.length - 1 && (
           <button type="button" className="tutorial-dialogue-next" onClick={this.handleNext}>
-            <span className="tutorial-dialogue-next-text">Next</span>
+            <span className="tutorial-dialogue-next-text">{t("Next")}</span>
             <span className="tutorial-dialogue-next-arrow"></span>
           </button>
         )}

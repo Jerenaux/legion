@@ -1,3 +1,5 @@
+import {t, i18n} from '../../../i18n/core';
+import {Trans} from '../../../i18n/Trans';
 import { Fragment } from 'preact';
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -49,9 +51,7 @@ export class UnlockedFeature extends Component<Props> {
     return (
       <div className="unlocked-feature">
         <div className="unlocked-feature-content">
-          <h2 className="unlocked-feature-header">
-            You unlocked <span className="highlight-text">{name}</span>!
-          </h2>
+          <h2 className="unlocked-feature-header"><Trans i18n={i18n} i18nKey={"You unlocked <0>{{value0}}</0>!"} components={[<span className="highlight-text" />]} values={{value0: name}} /></h2>
           <p className="unlocked-feature-description" dangerouslySetInnerHTML={{ __html: description }} />
 
           <div className="unlocked-feature-rewards">
@@ -64,23 +64,17 @@ export class UnlockedFeature extends Component<Props> {
                 <button type="button"
                   className="unlocked-feature-button primary"
                   onClick={this.handleCheckout}
-                >
-                  Check it out
-                </button>
+                >{t("Check it out")}</button>
                 <button type="button"
                   className="unlocked-feature-button secondary"
                   onClick={this.props.onHide}
-                >
-                  Dismiss
-                </button>
+                >{t("Dismiss")}</button>
               </>
             ) : (
               <button type="button"
                 className="unlocked-feature-button primary"
                 onClick={this.props.onHide}
-              >
-                Continue
-              </button>
+              >{t("Continue")}</button>
             )}
           </div>
         </div>

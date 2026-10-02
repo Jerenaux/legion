@@ -69,7 +69,7 @@
 }
 
 .login-header p {
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 1.5rem;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
@@ -83,7 +83,7 @@
   border: 2px solid #ffffff;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   border-radius: 8px;
   font-size: 1.25rem;
   cursor: pointer;
@@ -101,7 +101,7 @@
   border: 2px solid #ffffff;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   padding: 0.5rem 1.5rem;
   border-radius: 8px;
   font-size: 1.25rem;
@@ -155,7 +155,7 @@
   box-sizing: border-box;
   cursor: pointer;
   display: flex;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
   gap: 12px;

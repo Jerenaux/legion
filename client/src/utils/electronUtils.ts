@@ -5,6 +5,7 @@ import type { PlatformCredential } from '../services/platformSession';
 
 interface ElectronAPI {
   isPackaged?: boolean;
+  setLanguage?: (code: string) => Promise<boolean>;
   smokeTest?: boolean;
   isFullscreen: () => Promise<boolean>;
   toggleFullscreen: () => Promise<boolean>;

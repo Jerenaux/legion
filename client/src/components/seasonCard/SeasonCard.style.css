@@ -1,5 +1,5 @@
 .season-card-container {
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .season-card-header {

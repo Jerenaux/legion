@@ -101,7 +101,7 @@ module.exports = {
         use: ['style-loader', 'css-loader']
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        test: /\.(png|svg|jpg|jpeg|gif|webp|woff2?|ttf|otf)$/i,
         type: 'asset/resource',
       },
       {
@@ -150,6 +150,7 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         { from: 'public/favicon.ico', to: 'favicon.ico' },
+        { from: 'tools/localization/boot.js', to: 'localization-boot.js', transform: require('./tools/localization/build.cjs') },
       ]
     }),
     ...(process.env.SENTRY_AUTH_TOKEN ? [sentryWebpackPlugin({

@@ -2,12 +2,12 @@
 .homePage:has(.tower-page) .mainContent {padding: 0;}
 .tower-page {
   --tower-gold: oklch(85% .105 80); --tower-muted: oklch(77% .025 245); --tower-line: oklch(46% .035 245); --tower-panel: oklch(24% .025 250);
-  flex: 1; overflow-y: auto; min-height: 0; color: oklch(94% .02 85); font: 16px/1.4 Tahoma, Arial, sans-serif;
+  flex: 1; overflow-y: auto; min-height: 0; color: oklch(94% .02 85); font: 16px/1.4 var(--locale-font, Tahoma), Arial, sans-serif;
   background: linear-gradient(oklch(13% .025 250 / .68), oklch(13% .025 250 / .88)), url('@assets/tower_hall.png') center / cover;
 }
 .tower-page *, .tower-page *::before, .tower-page *::after {box-sizing: border-box;}
 .tower-layout {max-width: 1480px; min-height: 100%; display: flex; flex-direction: column; padding: 12px 32px 0; margin: auto;}
-.tower-page h1, .tower-page h2, .tower-page h3, .tower-page h4 {font-family: Kim, sans-serif; font-weight: normal; line-height: 1.12; margin: 0;}
+.tower-page h1, .tower-page h2, .tower-page h3, .tower-page h4 {font-family: var(--locale-font, Kim), system-ui, sans-serif; font-weight: normal; line-height: 1.12; margin: 0;}
 .tower-page h1 {font-size: 32px; color: var(--tower-gold);}
 .tower-page h2 {font-size: 32px;}
 .tower-page h3 {font-size: 22px;}
@@ -20,8 +20,8 @@
 .tower-page button:disabled {opacity: .5; cursor: wait;}
 .tower-page :is(button, a, select, summary):focus-visible, .tower-kit:has(input:focus-visible) {outline: 3px solid oklch(86% .09 195); outline-offset: 4px;}
 .tower-heading {display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; min-height: 56px; margin-bottom: 18px;}
-.tower-back {justify-self: start; display: inline-flex; align-items: center; gap: 12px; min-height: 42px; padding: 5px 18px 5px 12px; border: 1px solid oklch(51% .045 245); border-radius: 3px; background: linear-gradient(oklch(31% .025 250), oklch(22% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .4), 0 3px 0 oklch(10% .025 250 / .7); color: oklch(90% .025 85); text-decoration: none; font: 20px Kim, sans-serif;}
-.tower-back>span {color: var(--tower-gold); font: 28px/1 Tahoma, sans-serif;}
+.tower-back {justify-self: start; display: inline-flex; align-items: center; gap: 12px; min-height: 42px; padding: 5px 18px 5px 12px; border: 1px solid oklch(51% .045 245); border-radius: 3px; background: linear-gradient(oklch(31% .025 250), oklch(22% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .4), 0 3px 0 oklch(10% .025 250 / .7); color: oklch(90% .025 85); text-decoration: none; font: 20px var(--locale-font, Kim), system-ui, sans-serif;}
+.tower-back>span {color: var(--tower-gold); font: 28px/1 var(--locale-font, Tahoma), sans-serif;}
 .tower-back:hover {color: var(--tower-gold); border-color: var(--tower-gold);}
 .tower-back:active {transform: translateY(1px);}
 .tower-title {display: flex; align-items: center; gap: 10px; filter: drop-shadow(0 3px 3px oklch(10% .02 250));}
@@ -31,24 +31,24 @@
 .is-preparing .tower-expedition {display: block; width: 100%; max-width: 1050px; margin: 0 auto 20px;}
 .tower-main {min-width: 0;}
 .tower-ascent {text-align: center; padding-top: 4px;}
-.tower-tier {font: 20px Kim, sans-serif; color: var(--tower-gold); margin-bottom: 14px;}
+.tower-tier {font: 20px var(--locale-font, Kim), system-ui, sans-serif; color: var(--tower-gold); margin-bottom: 14px;}
 .tower-floors {list-style: none; display: flex; flex-direction: column-reverse; gap: 17px; padding: 0; margin: 0;}
 .tower-floors li {position: relative; display: grid; justify-items: center; gap: 5px; color: oklch(72% .025 245);}
 .tower-floors li:not(:first-child)::after {content: ''; position: absolute; top: calc(100% + 3px); width: 1px; height: 11px; background: var(--tower-line);}
-.tower-floor-number {width: 40px; height: 40px; display: grid; place-items: center; font: 22px Kim, sans-serif; background: oklch(24% .025 250 / .9); border: 1px solid var(--tower-line); transform: rotate(-4deg); box-shadow: 0 3px 5px oklch(10% .025 250 / .35);}
+.tower-floor-number {width: 40px; height: 40px; display: grid; place-items: center; font: 22px var(--locale-font, Kim), system-ui, sans-serif; background: oklch(24% .025 250 / .9); border: 1px solid var(--tower-line); transform: rotate(-4deg); box-shadow: 0 3px 5px oklch(10% .025 250 / .35);}
 .tower-floor-label {font-size: 14px;}
 .tower-floors .current {color: var(--tower-gold);}
 .tower-floors .current .tower-floor-number {color: oklch(20% .035 60); background: var(--tower-gold); border-color: oklch(95% .07 85); box-shadow: 0 0 18px oklch(70% .1 70 / .25);}
 .tower-floors .cleared {color: oklch(80% .07 170);}
 .tower-floors .cleared .tower-floor-number {color: oklch(80% .07 170); border-color: oklch(50% .065 170);}
-.tower-kicker {font: bold 14px/1.3 Tahoma, sans-serif; letter-spacing: .06em; color: var(--tower-gold);}
+.tower-kicker {font: bold 14px/1.3 var(--locale-font, Tahoma), sans-serif; letter-spacing: .06em; color: var(--tower-gold);}
 .tower-progress {display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 0 14px; border-bottom: 1px solid oklch(62% .06 80 / .4);}
 .tower-header-progress {justify-self: end; display: grid; justify-items: end; gap: 4px; padding: 0; border: 0;}
 .tower-header-progress>span:first-child {font-size: 14px; color: var(--tower-muted);}
 .tower-progress>div {display: flex; align-items: center; gap: 14px;}
-.tower-progress>div>strong {font: 22px Kim, sans-serif;}
+.tower-progress>div>strong {font: 22px var(--locale-font, Kim), system-ui, sans-serif;}
 .tower-bank {text-align: right;}
-.tower-rewards {display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; color: var(--tower-muted); font: 15px Tahoma, sans-serif;}
+.tower-rewards {display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; color: var(--tower-muted); font: 15px var(--locale-font, Tahoma), sans-serif;}
 .tower-rewards>span:not(.tower-item-icon) {display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;}
 .tower-rewards img {width: 24px; height: 24px; object-fit: contain;}
 .tower-rewards b {color: oklch(94% .045 85); font-size: 20px; font-variant-numeric: tabular-nums;}
@@ -56,11 +56,11 @@
 .tower-preparation-heading h2 {font-size: 26px;}
 .tower-difficulty {display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--tower-muted);}
 .tower-difficulty-control {position: relative; display: inline-flex; align-items: center;}
-.tower-page .tower-difficulty select {appearance: none; min-width: 122px; max-width: 280px; min-height: 44px; padding: 9px 42px 9px 18px; border: 1px solid oklch(64% .07 80); border-radius: 3px; background: linear-gradient(oklch(34% .04 75), oklch(23% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .4), 0 3px 0 oklch(10% .025 250 / .7); color: var(--tower-gold); font: 20px Kim, sans-serif;}
+.tower-page .tower-difficulty select {appearance: none; min-width: 122px; max-width: 280px; min-height: 44px; padding: 9px 42px 9px 18px; border: 1px solid oklch(64% .07 80); border-radius: 3px; background: linear-gradient(oklch(34% .04 75), oklch(23% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .4), 0 3px 0 oklch(10% .025 250 / .7); color: var(--tower-gold); font: 20px var(--locale-font, Kim), system-ui, sans-serif;}
 .tower-difficulty select:hover:not(:disabled) {border-color: var(--tower-gold);}
 .tower-difficulty select:disabled {opacity: .5; cursor: wait;}
-.tower-difficulty option {background: oklch(23% .025 250); color: oklch(94% .02 85); font: 16px Tahoma, sans-serif;}
-.tower-difficulty-control>span {position: absolute; right: 14px; top: 6px; color: var(--tower-gold); font: 24px Tahoma, sans-serif; pointer-events: none;}
+.tower-difficulty option {background: oklch(23% .025 250); color: oklch(94% .02 85); font: 16px var(--locale-font, Tahoma), sans-serif;}
+.tower-difficulty-control>span {position: absolute; right: 14px; top: 6px; color: var(--tower-gold); font: 24px var(--locale-font, Tahoma), sans-serif; pointer-events: none;}
 .tower-kits {display: flex; gap: 12px; margin-bottom: 18px;}
 .tower-kit {position: relative; flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 18px; border: 1px solid var(--tower-line); border-radius: 4px; cursor: pointer; background: oklch(22% .025 245 / .95); box-shadow: inset 0 1px oklch(80% .02 245 / .1), 0 3px 6px oklch(10% .02 250 / .25);}
 .tower-kit>input {position: absolute; opacity: 0; width: 1px; height: 1px;}
@@ -69,7 +69,7 @@
 .tower-kit.locked>img, .tower-kit.locked>.tower-item-icon {opacity: .5;}
 .tower-kit>img {width: 40px; height: 40px; object-fit: contain;}
 .tower-kit>span:not(.tower-item-icon):not(.tower-kit-check) {display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;}
-.tower-kit strong {font: 24px Kim, sans-serif;}
+.tower-kit strong {font: 24px var(--locale-font, Kim), system-ui, sans-serif;}
 .tower-kit small {font-size: 15px; color: var(--tower-muted);}
 .tower-kit-check {margin-left: auto; color: var(--tower-gold); font-size: 20px;}
 .tower-kit-detail {color: var(--tower-muted); font-size: 15px !important; text-align: center; margin: -8px 0 12px !important; max-width: none !important;}
@@ -89,7 +89,7 @@
 .tower-vitals {min-height: 50px;}
 .tower-resource {display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px;}
 .tower-resource>span {width: 23px; color: oklch(80% .1 20);}
-.tower-resource strong {font: bold 16px Tahoma, sans-serif; min-width: 67px; text-align: right; font-variant-numeric: tabular-nums;}
+.tower-resource strong {font: bold 16px var(--locale-font, Tahoma), sans-serif; min-width: 67px; text-align: right; font-variant-numeric: tabular-nums;}
 .tower-resource strong>span {font-size: 14px; font-weight: normal; color: var(--tower-muted);}
 .tower-resource-track {height: 9px; flex: 1; background: oklch(14% .025 250); overflow: hidden; border-radius: 2px; box-shadow: 0 1px oklch(65% .03 250 / .2);}
 .tower-resource-track i {display: block; height: 100%; background: linear-gradient(oklch(74% .16 20), oklch(56% .18 20)); box-shadow: inset 0 1px oklch(88% .08 20 / .65);}
@@ -104,11 +104,11 @@
 .tower-item-icon {display: inline-block; width: 32px; height: 32px; flex: 0 0 32px; image-rendering: pixelated; background-repeat: no-repeat; vertical-align: middle;}
 .tower-supplies {display: flex; flex-wrap: wrap; gap: 2px;}
 .tower-supplies>span:not(.tower-item-icon) {font-size: 14px; color: var(--tower-muted);}
-.tower-page .tower-primary {display: inline-flex; justify-content: space-between; align-items: center; gap: 28px; min-height: 52px; min-width: 270px; font: 23px Kim, sans-serif; border: 1px solid oklch(88% .1 85); background: linear-gradient(oklch(83% .11 78), oklch(69% .12 65)); color: oklch(20% .035 65); box-shadow: inset 0 1px oklch(95% .05 85 / .65), inset 0 0 0 3px oklch(91% .07 80 / .2), 0 4px 0 oklch(36% .07 65); text-shadow: 0 1px oklch(95% .05 85 / .35);}
+.tower-page .tower-primary {display: inline-flex; justify-content: space-between; align-items: center; gap: 28px; min-height: 52px; min-width: 270px; font: 23px var(--locale-font, Kim), system-ui, sans-serif; border: 1px solid oklch(88% .1 85); background: linear-gradient(oklch(83% .11 78), oklch(69% .12 65)); color: oklch(20% .035 65); box-shadow: inset 0 1px oklch(95% .05 85 / .65), inset 0 0 0 3px oklch(91% .07 80 / .2), 0 4px 0 oklch(36% .07 65); text-shadow: 0 1px oklch(95% .05 85 / .35);}
 .tower-page .tower-primary:hover:not(:disabled) {background: linear-gradient(oklch(89% .1 80), oklch(77% .11 68));}
 .tower-command-bar {position: sticky; bottom: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 82px; margin-top: auto; padding: 14px 0 18px; border-top: 1px solid oklch(64% .07 80 / .5); background: oklch(15% .025 250 / .97); box-shadow: 32px 0 oklch(15% .025 250 / .97), -32px 0 oklch(15% .025 250 / .97);}
 .tower-run-length {display: flex; align-items: center; gap: 16px; margin-left: auto; color: var(--tower-muted); font-size: 15px; white-space: nowrap;}
-.tower-run-length b {color: var(--tower-gold); font: 26px Kim, sans-serif;}
+.tower-run-length b {color: var(--tower-gold); font: 26px var(--locale-font, Kim), system-ui, sans-serif;}
 .tower-run-track {position: relative; display: flex; align-items: center; gap: 14px; height: 40px;}
 .tower-run-track::before {content: ''; position: absolute; left: 0; right: 16px; top: 50%; height: 1px; background: oklch(62% .07 80 / .6);}
 .tower-run-track i {z-index: 1; width: 8px; height: 8px; border: 1px solid oklch(78% .08 80); background: oklch(35% .045 80); transform: rotate(45deg);}
@@ -143,7 +143,7 @@
 .tower-page .tower-choice {position: relative; display: flex; flex-direction: column; align-items: start; gap: 12px; text-align: left; padding: 22px; border-color: oklch(55% .04 245); background: linear-gradient(155deg, oklch(33% .05 230 / .98), oklch(21% .025 250)); box-shadow: inset 0 0 0 3px oklch(12% .02 250 / .4), inset 0 0 0 4px oklch(70% .04 230 / .12), 0 6px 16px oklch(10% .02 250 / .4); overflow: hidden;}
 .tower-page .tower-choice:hover:not(:disabled) {border-color: var(--tower-gold); transform: translateY(-3px); box-shadow: inset 0 0 0 3px oklch(83% .1 80 / .12), 0 8px 22px oklch(8% .015 250 / .5);}
 .tower-page .tower-choice.elite, .tower-page .tower-choice.boss {background: linear-gradient(155deg, oklch(34% .075 40 / .98), oklch(21% .025 250)); border-color: oklch(58% .09 55);}
-.tower-choice>strong {font: 28px/1.12 Kim, sans-serif; color: oklch(94% .035 80);}
+.tower-choice>strong {font: 28px/1.12 var(--locale-font, Kim), system-ui, sans-serif; color: oklch(94% .035 80);}
 .tower-choice-description {font-size: 17px; color: oklch(83% .025 245); line-height: 1.4;}
 .tower-encounter-top {width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;}
 .tower-bonus {font-size: 14px; color: oklch(87% .1 65);}
@@ -154,7 +154,7 @@
 .tower-enemy-lineup small {font-size: 14px; color: var(--tower-muted);}
 .tower-spoils {display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 10px; flex-wrap: wrap;}
 .tower-spoils>.tower-kicker {display: none;}
-.tower-choice-action {width: 100%; display: flex; justify-content: space-between; align-items: center; font: 21px Kim, sans-serif; color: var(--tower-gold); margin-top: 4px; padding-top: 14px; border-top: 1px solid oklch(62% .06 80 / .4);}
+.tower-choice-action {width: 100%; display: flex; justify-content: space-between; align-items: center; font: 21px var(--locale-font, Kim), system-ui, sans-serif; color: var(--tower-gold); margin-top: 4px; padding-top: 14px; border-top: 1px solid oklch(62% .06 80 / .4);}
 .tower-page .tower-upgrade-choice {display: grid; grid-template-columns: 56px 1fr; gap: 10px 12px; padding: 20px;}
 .tower-upgrade-choice>strong {grid-column: 2; grid-row: 1; align-self: center; font-size: 24px;}
 .tower-upgrade-choice .tower-choice-description {grid-column: 1/-1; padding-right: 20px;}
@@ -221,8 +221,8 @@
 }
 @media (prefers-reduced-motion: reduce) {.tower-page button {transition: none;} .tower-page .tower-choice:hover:not(:disabled) {transform: none;}}
 .tower-combat-banner {position: absolute; z-index: 2; top: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: baseline; gap: 8px; padding: 5px 18px 7px; border: 1px solid oklch(65% .08 80); border-radius: 3px 3px 12px 12px; background: linear-gradient(oklch(30% .035 245 / .96), oklch(18% .025 250 / .96)); color: oklch(89% .08 80); pointer-events: none; box-shadow: inset 0 0 0 3px oklch(10% .025 250 / .45), 0 3px 10px oklch(10% .025 250 / .4);}
-.tower-combat-banner span {font: 16px Kim, sans-serif; color: oklch(83% .03 85);}
-.tower-combat-banner strong {font: 26px/1 Kim, sans-serif;}
+.tower-combat-banner span {font: 16px var(--locale-font, Kim), system-ui, sans-serif; color: oklch(83% .03 85);}
+.tower-combat-banner strong {font: 26px/1 var(--locale-font, Kim), system-ui, sans-serif;}
 
 @media (max-width: 900px) {
   .tower-header-progress {grid-column: 1/-1; display: flex; justify-self: stretch; justify-content: space-between; padding-bottom: 8px;}
@@ -241,7 +241,7 @@
 
 .tower-build ul {list-style: none; margin: 12px 0; padding: 0;}
 .tower-build li+li {border-top: 1px solid var(--tower-line); padding-top: 12px;}
-.tower-build strong {font: 20px Kim, sans-serif; color: var(--tower-gold);}
+.tower-build strong {font: 20px var(--locale-font, Kim), system-ui, sans-serif; color: var(--tower-gold);}
 .tower-choices:has(>.boss) {grid-template-columns: 1fr;}
 .tower-page .tower-choice.boss {display: grid; grid-template-columns: 180px minmax(0,1fr); gap: 16px 24px;}
 .tower-choice.boss .tower-encounter-top {grid-column: 1/-1;}

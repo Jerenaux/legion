@@ -1,3 +1,4 @@
+import {t, formatNumber} from '../../i18n/core';
 
 import { h } from 'preact';
 // ShopSpellCard.tsx
@@ -59,13 +60,13 @@ class ShopSpellCard extends Component<ShopCardProps> {
   render() {
     const getRarityValue = (effort) => {
       if(effort < 10) {
-        return {val: "Common", clr: "cyan"};
+        return {val: t("Common"), clr: "cyan"};
       } else if(effort < 25) {
-        return {val: "Rare", clr: "tomato"};
+        return {val: t("Rare"), clr: "tomato"};
       } else if(effort < 50) {
-        return {val: "Epic", clr: "red"};
+        return {val: t("Epic"), clr: "red"};
       } else {
-        return {val: "Legendary", clr: "orange"};
+        return {val: t("Legendary"), clr: "orange"};
       }
     }
 
@@ -99,15 +100,15 @@ class ShopSpellCard extends Component<ShopCardProps> {
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
       >
         <div className="spell-card-title" style={titleStyle}>
-          <span>{data.name}</span>
+          <span>{t(data.name)}</span>
           <div className="spell-card-info-container">
             {/* <div className="spell-card-info-box">
               <span className="spell-card-info-lv">Lvl</span>
               <span>{data.minLevel}</span>
             </div> */}
             <div className="spell-card-info-box">
-              <img src={itemCountIcon} alt="count icon" />
-              <span>{this.props.getItemAmount(data.id, InventoryType.SPELLS)}</span>
+              <img src={itemCountIcon} alt={t("count icon")} />
+              <span>{formatNumber(this.props.getItemAmount(data.id, InventoryType.SPELLS))}</span>
             </div>
           </div>
         </div>
@@ -119,34 +120,34 @@ class ShopSpellCard extends Component<ShopCardProps> {
           <div className="shop-card-class-container">
             {data.classes.map((classes, index) => (
               <div key={index} className="spell-card-class" style={classStyle(classes)}>
-                <img src={classes === Class.WARRIOR ? warriorIcon : mageIcon} alt="class icon" />
+                <img src={classes === Class.WARRIOR ? warriorIcon : mageIcon} alt={t("class icon")} />
               </div>
             ))}
           </div>
         </div>
-        <p data-tooltip-id={`spell-desc-tooltip-${data.id}`} className="spell-card-description">{data.description}</p>
+        <p data-tooltip-id={`spell-desc-tooltip-${data.id}`} className="spell-card-description">{t(data.description)}</p>
         <div className="spell-card-effect-container">
           <div className="spell-card-effect">
-            <img src={mpIcon} alt="cost" />
-            <span>{data.cost}</span>
+            <img src={mpIcon} alt={t("cost")} />
+            <span>{formatNumber(data.cost)}</span>
           </div>
           <div className="spell-card-effect">
-            <img src={cdIcon} alt="cooldown" />
+            <img src={cdIcon} alt={t("cooldown")} />
             <span>{getSpeedClass(data.speedClass)}</span>
           </div>
           <div className="spell-card-effect">
-            <img src={targetIcon} alt="target" />
-            <span>{Target[data.target]}</span>
+            <img src={targetIcon} alt={t("target")} />
+            <span>{t(Target[data.target])}</span>
           </div>
         </div>
         <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: 'Kim'}}>
+          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: "var(--locale-font, 'Kim'), system-ui, sans-serif"}}>
             {getRarityValue(data.effort).val}
           </span>
         </div>
         <div className="spell-card-price">
-          <img src={goldIcon} alt="gold" />
-          {data.price}
+          <img src={goldIcon} alt={t("gold")} />
+          {formatNumber(data.price)}
         </div>
       </button>
     );

@@ -22,6 +22,10 @@ function trustedIPC(event) {
 }
 
 function registerIPC() {
+  ipcMain.handle('set-language', (event, code) => {
+    if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
+    return require('./electron/localization').setLanguage(code);
+  });
   ipcMain.handle("is-fullscreen", event => trustedIPC(event) ? mainWindow.isFullScreen() : false);
   ipcMain.handle("toggle-fullscreen", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
@@ -72,7 +76,9 @@ function createWindow() {
       ],
     },
   });
-  require('./electron/recovery').installRendererRecovery(mainWindow);
+  const localization = require('./electron/localization');
+  localization.useSystemLanguages(app.getPreferredSystemLanguages());
+  require('./electron/recovery').installRendererRecovery(mainWindow, localization.t);
 
   if (smokeTest) {
     mainWindow.webContents.setAudioMuted(true);

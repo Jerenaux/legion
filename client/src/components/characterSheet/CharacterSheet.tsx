@@ -1,3 +1,5 @@
+import {t, formatNumber, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
 import { Component, ComponentChildren } from 'preact';
@@ -15,7 +17,7 @@ import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFie
     STATS_BG_COLOR, ItemDialogType, SPSPendingData
  } from '@legion/shared/enums';
 import { Effect } from '@legion/shared/interfaces';
-import { equipmentSlotFields } from '@legion/shared/enums';
+import { equipmentSlotFields, equipmentSlotLabels } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { StatLabels } from '@legion/shared/enums';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
@@ -110,16 +112,16 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             return rearrangedStats.map((item, index) => (
                 <div data-sp-plus="true" className="character-info-bar" key={index}>
                     <button type="button" className="info-class"
-                        aria-label={`${StatLabels[getStatEnum(item.key)]}: ${statExplanations[getStatEnum(item.key)]}`}
+                        aria-label={`${t(StatLabels[getStatEnum(item.key)])}: ${statExplanations[getStatEnum(item.key)]}`}
                         data-tooltip-id="character-sheet-details"
                         data-tooltip-content={statExplanations[getStatEnum(item.key)]}
                         style={{ backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(item.key)]] }}>
-                        <span>{StatLabels[getStatEnum(item.key)]}</span>
+                        <span>{t(StatLabels[getStatEnum(item.key)])}</span>
                     </button>
                     <div className="curr-info-container">
                         <p className="curr-info">
                             <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : effectVal(item.key) < 0 ? { color: '#c95a74' } : {}}>
-                                {totalStat(item.value, item.key)}
+                                {formatNumber(totalStat(item.value, item.key))}
                             </span>
                         </p>
                     </div>
@@ -207,7 +209,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 if (item.value < 0) {
                     // Handle the case where there is no item equipped in this slot
                     content = (
-                        <img src={getIconForSlot(item.key)} alt={item.key}
+                        <img src={getIconForSlot(item.key)} alt={t(equipmentSlotLabels[Object.keys(equipmentSlotFields).find(slot => equipmentSlotFields[slot] === item.key)])}
                             style={{ transform: isSpecialEquip ? 'scaleY(0.6)' : 'scale(0.8)' }} />
                     );
                 } else {
@@ -249,7 +251,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                             : ''
                       }`}
                       style={(itemData !== undefined) ? slotStyle : {}}
-                      aria-label={itemData ? itemTooltip(itemData) : item.key}
+                      aria-label={itemData ? itemTooltip(itemData) : t(equipmentSlotLabels[Object.keys(equipmentSlotFields).find(slot => equipmentSlotFields[slot] === item.key)])}
                       data-tooltip-id={itemData ? 'equipped-item-details' : undefined}
                       data-tooltip-item-type={InventoryType.EQUIPMENTS}
                       data-tooltip-item-id={itemData?.id}
@@ -303,7 +305,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
 
                     return (
                         <button type="button" data-game-control className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle}
-                            aria-label={item ? itemTooltip(item) : 'Unknown item'}
+                            aria-label={item ? itemTooltip(item) : t("Unknown item")}
                             data-tooltip-id={item ? 'equipped-item-details' : undefined}
                             data-tooltip-item-type={inventoryType}
                             data-tooltip-item-id={item?.id}
@@ -336,8 +338,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             <div className="team-content-card-container">
                 <div className="team-content-container">
                     <div className="team-level">
-                        <span>Lvl</span>
-                        <span className="level-span">{characterData?.level}</span>
+                        <span>{t("Lvl")}</span>
+                        <span className="level-span">{formatNumber(characterData.level)}</span>
                     </div>
                     <div className="team-info-container">
                         <div className="team-info">
@@ -347,12 +349,12 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                                 <div className="team-curr-exp-slider" style={sliderStyle}></div>
                             </div>
                             <div className="team-exp-info">
-                                <span>EXP <span className="team-curr-exp">{Math.round(characterData?.xp)}</span> / <span className="team-total-exp">{xpToLevel}</span></span>
+                                <span><Trans i18n={i18n} i18nKey={"EXP <0>{{value0}}</0> / <1>{{value1}}</1>"} components={[<span className="team-curr-exp" />, <span className="team-total-exp" />]} values={{value0: Math.round(characterData?.xp), value1: xpToLevel}} /></span>
                             </div>
                         </div>
                         <div className="team-sp-container">
-                            <span>SP</span>
-                            <span className="sp-span">{characterData?.sp}</span>
+                            <span>{t("SP")}</span>
+                            <span className="sp-span">{formatNumber(characterData.sp)}</span>
                         </div>
                     </div>
                     <div className="team-character-info-container">
@@ -368,13 +370,13 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                             {renderEquipmentItems('specialEquip')}
                         </div>
                         {characterData.skill_slots > 0 && <div className="team-item-container">
-                            <p className="team-item-heading">SPELLS</p>
+                            <p className="team-item-heading">{t("SPELLS")}</p>
                             <div className="team-items">
                                 {renderInventoryItems(InventoryType.SPELLS)}
                             </div>
                         </div>}
                         <div className="team-item-container">
-                            <p className="team-item-heading">ITEMS</p>
+                            <p className="team-item-heading">{t("ITEMS")}</p>
                             <div className="team-items">
                                 {renderInventoryItems(InventoryType.CONSUMABLES)}
                             </div>

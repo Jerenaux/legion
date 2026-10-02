@@ -1,3 +1,4 @@
+import {t} from '../i18n/core';
 import { events } from '../components/HUD/GameHUD';
 import { EngagementStats } from '@legion/shared/interfaces';
 
@@ -17,36 +18,36 @@ export class TutorialManager {
     // Map of events to their corresponding tutorial messages
     private readonly tutorialMessages: Record<string, TutorialMessage> = {
         howToMove: {
-            content: "Click on a blue tile to move!"
+            content: t("Click on a blue tile to move!")
         },
         howToAttack: {
-            content: "Click on an adjacent enemy to attack!"
+            content: t("Click on an adjacent enemy to attack!")
         },
         howToCastSpell: {
-            content: "Click on a spell icon to cast it!",
+            content: t("Click on a spell icon to cast it!"),
             position: 'spells'
         },
         howToUseItem: {
-            content: "Click an item icon to use it!",
+            content: t("Click an item icon to use it!"),
             position: 'items'
         },
         howToDealWithFlames: {
-            content: "Move away from flames to avoid repeated damage!"
+            content: t("Move away from flames to avoid repeated damage!")
         },
         howToBreakIce: {
-            content: "Attack ice with another character to break it!"
+            content: t("Attack ice with another character to break it!")
         },
         howToDealWithPoison: {
-            content: "Poison damages you every turn for several turns!"
+            content: t("Poison damages you every turn for several turns!")
         },
         howToDealWithSilence: {
-            content: "You cannot cast spells while silenced!"
+            content: t("You cannot cast spells while silenced!")
         },
         howToDealWithParalysis: {
-            content: "Paralysis prevents you from acting for several turns!"
+            content: t("Paralysis prevents you from acting for several turns!")
         },
         howToDealWithLowMP: {
-            content: "You can't cast spells without enough MP!",
+            content: t("You can't cast spells without enough MP!"),
             position: 'spells'
         }
     };

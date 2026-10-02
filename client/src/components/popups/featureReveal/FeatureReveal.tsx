@@ -1,3 +1,4 @@
+import {t} from '../../../i18n/core';
 import { Fragment } from 'preact';
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -87,23 +88,17 @@ export class FeatureReveal extends Component<Props, State> {
                 <button type="button"
                   className="feature-reveal-button primary"
                   onClick={this.handleCheckout}
-                >
-                  Check it out
-                </button>
+                >{t("Check it out")}</button>
                 <button type="button"
                   className="feature-reveal-button secondary"
                   onClick={this.props.onHide}
-                >
-                  Dismiss
-                </button>
+                >{t("Dismiss")}</button>
               </>
             ) : (
               <button type="button"
                 className="feature-reveal-button primary"
                 onClick={this.props.onHide}
-              >
-                Continue
-              </button>
+              >{t("Continue")}</button>
             )}
           </div>
         </div>

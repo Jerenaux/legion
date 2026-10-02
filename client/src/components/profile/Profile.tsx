@@ -1,3 +1,5 @@
+import {t, i18n, userError} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 
 import { Fragment } from 'preact';
 import { h } from 'preact';
@@ -138,14 +140,14 @@ class Profile extends Component<Props, State> {
         } catch (error) {
             console.error('Error loading profile:', error);
             this.setState({
-                error: 'Failed to load profile data',
+                error: t("Failed to load profile data"),
                 isLoading: false
             });
         }
     };
 
     formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleDateString(i18n.resolvedLanguage, {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -153,7 +155,7 @@ class Profile extends Component<Props, State> {
     };
 
     formatNumber = (number: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat(i18n.resolvedLanguage, {
             maximumFractionDigits: 1
         }).format(number);
     };
@@ -170,7 +172,7 @@ class Profile extends Component<Props, State> {
         this.setState({ isAddingFriend: true });
         try {
             await this.context.addFriend(this.getEffectiveId());
-            successToast('Friend added successfully!');
+            successToast(t("Friend added successfully!"));
         } catch (error) {
             console.error('Error adding friend:', error);
         } finally {
@@ -258,17 +260,17 @@ class Profile extends Component<Props, State> {
 
         switch(status) {
             case 'online':
-                statusMessage = `${this.state.profileData.name} is ready to play!`;
+                statusMessage = t("{{value0}} is ready to play!", {value0: this.state.profileData.name});
                 showChallengeButton = true;
                 break;
             case 'queuing':
-                statusMessage = `${this.state.profileData.name} is already queuing!`;
+                statusMessage = t("{{value0}} is already queuing!", {value0: this.state.profileData.name});
                 break;
             case 'offline':
-                statusMessage = `${this.state.profileData.name} is currently offline`;
+                statusMessage = t("{{value0}} is currently offline", {value0: this.state.profileData.name});
                 break;
             case 'ingame':
-                statusMessage = `${this.state.profileData.name} is currently in a game`;
+                statusMessage = t("{{value0}} is currently in a game", {value0: this.state.profileData.name});
                 break;
         }
 
@@ -282,9 +284,7 @@ class Profile extends Component<Props, State> {
                     <button type="button"
                         className="challenge-button"
                         onClick={this.handleChallenge}
-                    >
-                        Challenge to a Duel
-                    </button>
+                    >{t("Challenge to a Duel")}</button>
                 )}
             </div>
         );
@@ -329,7 +329,7 @@ class Profile extends Component<Props, State> {
             route(`/lobby/${lobbyId}`);
         } catch (error) {
             console.error('Error creating challenge:', error);
-            errorToast('Failed to create challenge: ' + (error.message || error));
+            errorToast(userError(error));
         } finally {
             this.setState({
                 isCreatingChallenge: false,
@@ -374,14 +374,14 @@ class Profile extends Component<Props, State> {
                 // Update PlayerContext
                 this.context.setPlayerInfo({ name: this.state.newName });
 
-                successToast('Name updated successfully!');
+                successToast(t("Name updated successfully!"));
             }
         } catch (error) {
             console.error('Error updating name:', error);
-            let message = error.message || 'Failed to update name';
+            let message = userError(error);
             // Check if 'profane' is in the error message
-            if (message.includes('profane')) {
-                message = 'Name contains profane words';
+            if (String(error.message).includes('profane')) {
+                message = t("Name contains profane words");
             }
             errorToast(message);
         } finally {
@@ -425,11 +425,11 @@ class Profile extends Component<Props, State> {
                 // Update PlayerContext
                 this.context.setPlayerInfo({ avatar: avatarId });
 
-                successToast('Avatar updated successfully!');
+                successToast(t("Avatar updated successfully!"));
             }
         } catch (error) {
             console.error('Error updating avatar:', error);
-            errorToast('Failed to update avatar');
+            errorToast(t("Failed to update avatar"));
         } finally {
             this.setState({
                 isUpdatingAvatar: false,
@@ -458,7 +458,7 @@ class Profile extends Component<Props, State> {
             <div className="avatar-gallery-modal">
                 <div className="avatar-gallery">
                     <div className="avatar-gallery-header">
-                        <h3>Choose your Avatar</h3>
+                        <h3>{t("Choose your Avatar")}</h3>
                         <button type="button"
                             className="avatar-gallery-close"
                             onClick={() => this.setState({ showAvatarGallery: false })}
@@ -485,7 +485,7 @@ class Profile extends Component<Props, State> {
         const isOwnProfile = this.isOwnProfile();
 
         if (isLoading) {
-            return <div className="profile-container loading">Loading profile...</div>;
+            return <div className="profile-container loading">{t("Loading profile...")}</div>;
         }
 
         if (error) {
@@ -493,7 +493,7 @@ class Profile extends Component<Props, State> {
         }
 
         if (!profileData) {
-            return <div className="profile-container error">No profile data found</div>;
+            return <div className="profile-container error">{t("No profile data found")}</div>;
         }
 
         return (
@@ -516,7 +516,7 @@ class Profile extends Component<Props, State> {
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                 >
-                                    <title>Edit avatar</title>
+                                    <title>{t("Edit avatar")}</title>
                                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                                 </svg>
                             </button>
@@ -537,13 +537,11 @@ class Profile extends Component<Props, State> {
                                         <div className="name-edit-spinner" />
                                     ) : (
                                         <>
-                                            <button type="submit">Save</button>
+                                            <button type="submit">{t("Save")}</button>
                                             <button
                                                 type="button"
                                                 onClick={() => this.setState({ isEditingName: false })}
-                                            >
-                                                Cancel
-                                            </button>
+                                            >{t("Cancel")}</button>
                                         </>
                                     )}
                                 </form>
@@ -554,7 +552,7 @@ class Profile extends Component<Props, State> {
                                         <button type="button" data-game-control
                                             className="edit-name-icon"
                                             onClick={this.handleEditNameClick}
-                                            aria-label="Edit name"
+                                            aria-label={t("Edit name")}
                                         >
                                             <svg
                                                 width="24"
@@ -566,7 +564,7 @@ class Profile extends Component<Props, State> {
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
                                             >
-                                                <title>Edit name</title>
+                                                <title>{t("Edit name")}</title>
                                                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                                             </svg>
                                         </button>
@@ -576,18 +574,14 @@ class Profile extends Component<Props, State> {
                         </div>
                         <div className="profile-details">
                             <div className="player-stats">
-                                <span className="elo-rating">ELO Rating: {profileData.elo}</span>
+                                <span className="elo-rating">{t("ELO Rating: {{value0}}", {value0: profileData.elo})}</span>
                                 <span className="rank-divider">•</span>
-                                <span className="all-time-rank">All-time Rank: #{profileData.allTimeStats.rank}</span>
+                                <span className="all-time-rank">{t("All-time Rank: #{{value0}}", {value0: profileData.allTimeStats.rank})}</span>
                             </div>
-                            <div className="profile-join-date">
-                                Member since {this.formatDate(profileData.joinDate)}
-                            </div>
+                            <div className="profile-join-date">{t("Member since {{value0}}", {value0: this.formatDate(profileData.joinDate)})}</div>
                             {this.UIDready() && !isOwnProfile && (
                                 this.isAlreadyFriend() ? (
-                                    <button type="button" className="profile-add-friend is-friend">
-                                        Friend
-                                    </button>
+                                    <button type="button" className="profile-add-friend is-friend">{t("Friend")}</button>
                                 ) : (
                                     <button type="button"
                                         className="profile-add-friend"
@@ -597,7 +591,7 @@ class Profile extends Component<Props, State> {
                                         {this.state.isAddingFriend ? (
                                             <div className="button-spinner"></div>
                                         ) : (
-                                            'Add Friend'
+                                            t("Add Friend")
                                         )}
                                     </button>
                                 )
@@ -610,9 +604,9 @@ class Profile extends Component<Props, State> {
 
                 <div className="stats-grid">
                     <div className="stats-card all-time">
-                        <h2>All Time Ranked Stats</h2>
+                        <h2>{t("All Time Ranked Stats")}</h2>
                         <div className="stat-row">
-                            <span>Games Played</span>
+                            <span>{t("Games Played")}</span>
                             <span className="value">
                                 {this.getMaxStats(
                                     profileData.allTimeStats.nbGames,
@@ -621,7 +615,7 @@ class Profile extends Component<Props, State> {
                             </span>
                         </div>
                         <div className="stat-row">
-                            <span>Total Wins</span>
+                            <span>{t("Total Wins")}</span>
                             <span className="value">
                                 {this.getMaxStats(
                                     profileData.allTimeStats.wins,
@@ -630,7 +624,7 @@ class Profile extends Component<Props, State> {
                             </span>
                         </div>
                         <div className="stat-row">
-                            <span>Win Rate</span>
+                            <span>{t("Win Rate")}</span>
                             <span className="value">
                                 {this.formatNumber(
                                     this.getMaxStats(
@@ -642,7 +636,7 @@ class Profile extends Component<Props, State> {
                             </span>
                         </div>
                         <div className="stat-row">
-                            <span>Best Win Streak</span>
+                            <span>{t("Best Win Streak")}</span>
                             <span className="value">
                                 {this.getMaxStats(
                                     profileData.allTimeStats.winStreak,
@@ -651,7 +645,7 @@ class Profile extends Component<Props, State> {
                             </span>
                         </div>
                         <div className="stat-row">
-                            <span>Worst Loss Streak</span>
+                            <span>{t("Worst Loss Streak")}</span>
                             <span className="value">
                                 {this.getMaxStats(
                                     profileData.allTimeStats.lossStreak,
@@ -663,43 +657,43 @@ class Profile extends Component<Props, State> {
 
                     <div className="stats-card season">
                         {/* <div className="league-icon">
-                            <img src={getLeagueIcon(profileData.leagueStats.league)} alt="League" />
+                            <img src={getLeagueIcon(profileData.leagueStats.league)} alt="" />
                         </div> */}
-                        <h2>{LeaguesNames[profileData.leagueStats.league]} League Stats</h2>
+                        <h2>{t("{{value0}} League Stats", {value0: t(LeaguesNames[profileData.leagueStats.league])})}</h2>
                         <div className="stat-row">
-                            <span>Games Played</span>
+                            <span>{t("Games Played")}</span>
                             <span className="value">{profileData.leagueStats.gamesPlayed}</span>
                         </div>
                         <div className="stat-row">
-                            <span>Wins</span>
+                            <span>{t("Wins")}</span>
                             <span className="value">{profileData.leagueStats.wins}</span>
                         </div>
                         <div className="stat-row">
-                            <span>Win Rate</span>
+                            <span>{t("Win Rate")}</span>
                             <span className="value">{this.formatNumber((profileData.leagueStats.wins / profileData.leagueStats.gamesPlayed * 100) || 0)}%</span>
                         </div>
                         <div className="stat-row">
-                            <span>Best Win Streak</span>
+                            <span>{t("Best Win Streak")}</span>
                             <span className="value">{profileData.leagueStats.winStreak}</span>
                         </div>
                         <div className="stat-row">
-                            <span>Worst Loss Streak</span>
+                            <span>{t("Worst Loss Streak")}</span>
                             <span className="value">{profileData.leagueStats.lossStreak}</span>
                         </div>
                     </div>
 
                     <div className="stats-card casual">
-                        <h2>Casual Mode Stats</h2>
+                        <h2>{t("Casual Mode Stats")}</h2>
                         <div className="stat-row">
-                            <span>Games Played</span>
+                            <span>{t("Games Played")}</span>
                             <span className="value">{profileData.casualStats.gamesPlayed}</span>
                         </div>
                         <div className="stat-row">
-                            <span>Wins</span>
+                            <span>{t("Wins")}</span>
                             <span className="value">{profileData.casualStats.wins}</span>
                         </div>
                         <div className="stat-row">
-                            <span>Win Rate</span>
+                            <span>{t("Win Rate")}</span>
                             <span className="value">
                                 {this.formatNumber(
                                     (profileData.casualStats.wins / profileData.casualStats.gamesPlayed) * 100 || 0
@@ -711,12 +705,12 @@ class Profile extends Component<Props, State> {
 
                 {isOwnProfile && (
                     <div className="friends-section">
-                        <h2>Friends</h2>
+                        <h2>{t("Friends")}</h2>
                         <SearchPlayers
                             onAddFriend={async (playerId) => {
                                 try {
                                     await this.context.addFriend(playerId);
-                                    successToast('Friend added successfully!');
+                                    successToast(t("Friend added successfully!"));
                                 } catch (error) {
                                     console.error('Error adding friend:', error);
                                 }
@@ -743,7 +737,7 @@ class Profile extends Component<Props, State> {
                                     </button>
                                 ))
                             ) : (
-                                <div className="no-friends">No friends yet</div>
+                                <div className="no-friends">{t("No friends yet")}</div>
                             )}
                         </div>
                     </div>
@@ -757,13 +751,9 @@ class Profile extends Component<Props, State> {
                                 className="challenger-avatar"
                                 style={{ backgroundImage: avatarUrl ? `url(${avatarUrl})` : 'none' }}
                             />
-                            <h3>Duel</h3>
+                            <h3>{t("Duel")}</h3>
                             <div className="challenge-description">
-                                <p>
-                                    Do you want to play against{' '}
-                                    <span className="highlight-name">{profileData.name}</span>
-                                    {' '}?
-                                </p>
+                                <p><Trans i18n={i18n} i18nKey={"Do you want to play against <0>{{value0}}</0> ?"} components={[<span className="highlight-name" />]} values={{value0: profileData.name}} /></p>
                             </div>
                             <div className="modal-footer">
                                 {this.state.isCreatingChallenge ? (
@@ -773,15 +763,11 @@ class Profile extends Component<Props, State> {
                                         <button type="button"
                                             onClick={() => this.setState({ showChallengeModal: false })}
                                             className="cancel-btn"
-                                        >
-                                            Cancel
-                                        </button>
+                                        >{t("Cancel")}</button>
                                         <button type="button"
                                             onClick={this.handleChallengeConfirm}
                                             className="confirm-btn"
-                                        >
-                                            Send Challenge
-                                        </button>
+                                        >{t("Send Challenge")}</button>
                                     </>
                                 )}
                             </div>

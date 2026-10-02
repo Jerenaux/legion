@@ -8,7 +8,7 @@
     align-items: center;
     gap: 6px;
     cursor: pointer;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .shop-character-card-container:hover {
@@ -163,7 +163,7 @@
     font-size: 0.875rem;
     width: 100%;
     margin-bottom: 4px;
-    font-family: "Kim", sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .shop-card-price img {

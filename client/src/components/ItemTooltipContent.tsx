@@ -1,3 +1,5 @@
+import {t, formatNumber, i18n} from '../i18n/core';
+import {Trans} from '../i18n/Trans';
 import {h} from 'preact';
 import {BaseEquipment} from '@legion/shared/BaseEquipment';
 import {BaseItem} from '@legion/shared/BaseItem';
@@ -43,24 +45,24 @@ function ItemTooltipContent({item, showClasses}: {
         <div className="item-preview-sprite" style={{backgroundImage: `url(${sprite})`, backgroundPosition: `-${x}px -${y}px`}} />
       </div>
       <div>
-        <span className="item-preview-kind">{spell ? 'Spell' : equipment ? 'Equipment' : 'Consumable'}</span>
-        <strong className="item-preview-name">{item.name}</strong>
+        <span className="item-preview-kind">{spell ? t("Spell") : equipment ? t("Equipment") : t("Consumable")}</span>
+        <strong className="item-preview-name">{t(item.name)}</strong>
       </div>
     </div>
-    {item.description && <p className="item-preview-description">{item.description}</p>}
+    {item.description && <p className="item-preview-description">{t(item.description)}</p>}
     {!equipment && <div className="item-preview-facts">
-      {spell && <span><img src={mpIcon} alt="" />{item.cost} MP</span>}
-      <span><img src={speedIcon} alt="" />{getSpeedClass(item.speedClass).toLowerCase()}</span>
-      <span><img src={targetIcon} alt="" />{item.target === Target.AOE ? 'Area' : item.target === Target.SELF ? 'Self' : 'Single'}</span>
+      {spell && <span><Trans i18n={i18n} i18nKey={"<0/>{{value0}} MP"} components={[<img src={mpIcon} alt="" />]} values={{value0: item.cost}} /></span>}
+      <span><img src={speedIcon} alt={""} />{getSpeedClass(item.speedClass).toLowerCase()}</span>
+      <span><img src={targetIcon} alt={""} />{item.target === Target.AOE ? t("Area") : item.target === Target.SELF ? t("Self") : t("Single")}</span>
     </div>}
     {item.effects.length > 0 && <div className="item-preview-effects">
       {item.effects.map((effect, index) => {
         const full = item instanceof BaseItem && effect.value === -1;
         const label = StatLabels[effect.stat];
         return <div className="item-preview-effect" key={index}>
-          <span className="item-preview-stat" style={{backgroundColor: STATS_BG_COLOR[label]}}>{label}</span>
+          <span className="item-preview-stat" style={{backgroundColor: STATS_BG_COLOR[label]}}>{t(label)}</span>
           <strong className={full || effect.value > 0 ? 'item-preview-positive' : 'item-preview-negative'}>
-            {full ? 'Full' : effect.value > 0 ? `+${effect.value}` : effect.value}
+            {full ? t("Full") : formatNumber(effect.value, {signDisplay: effect.value > 0 ? 'always' : 'auto'})}
           </strong>
         </div>;
       })}

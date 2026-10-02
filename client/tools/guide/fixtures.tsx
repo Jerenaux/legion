@@ -1,7 +1,9 @@
 import {createTowerRun, chooseTowerUpgrade, finishTowerBattle, TowerProgress, TOWER_ENCOUNTERS} from '@legion/shared/tower';
+import {i18n} from '../../src/i18n/core';
+import {Trans} from '../../src/i18n/Trans';
 // Screenshot-only providers. The release webpack config never imports this file.
 import 'phaser';
-import { h, ComponentChildren } from 'preact';
+import { h, render, ComponentChildren } from 'preact';
 import { useContext, useState } from 'preact/hooks';
 import AuthContext from '../../src/contexts/AuthContext';
 import { PlayerContext } from '../../src/contexts/PlayerContext';
@@ -152,10 +154,12 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
     return structuredClone(towerCheck.progress);
   }
   if (endpoint === 'recordPlayerAction') return {};
-  if (endpoint === 'listOnSaleCharacters') return [];
+  if (endpoint === 'listOnSaleCharacters') return characters.map(character => ({...character, price: 120}));
   if (endpoint.startsWith('fetchLeaderboard?tab=')) {
     if (rankCheck.fail) throw new Error('Expected leaderboard timeout');
-    return {league: Number(endpoint.split('=')[1]), seasonEnd: 3600, playerRank: 1, ranking: [], highlights: []};
+    return {league: Number(endpoint.split('=')[1]), seasonEnd: 3600, playerRank: 1, ranking: [], highlights: [
+      {id: 'guide-award', name: 'Arena Apprentice', avatar: 'default', title: 'Ace Player', description: 'Highest Game Grades'},
+    ]};
   }
   throw new Error(`Unexpected API call in guide smoke test: ${endpoint}`);
 }
@@ -199,3 +203,24 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   };
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
 }
+
+// Exercise player-name escaping and the profile without any external requests.
+Object.assign(window, {localizationProbe: () => {
+  const element = document.createElement('div');
+  document.body.appendChild(element);
+  render(<Trans i18n={i18n} i18nKey="Do you want to play against <0>{{value0}}</0> ?"
+    components={[<strong />]} values={{value0: '<img src=x onerror=alert(1)>&"'}} />, element);
+  const result = {text: element.textContent, images: element.querySelectorAll('img').length, strong: element.querySelectorAll('strong').length};
+  render(null, element);
+  element.remove();
+  return result;
+}});
+window.fetch = new Proxy(window.fetch, {apply(target, receiver, [input, init]) {
+  if (String(input).includes('/getProfileData?')) return Promise.resolve(Response.json({
+    name: 'Arena Apprentice', avatar: 'default', elo: 12345, joinDate: '2025-05-06T12:00:00Z',
+    allTimeStats: {nbGames: 123, wins: 82, losses: 41, winStreak: 7, lossStreak: 2, rank: 12},
+    leagueStats: {gamesPlayed: 15, wins: 10, winStreak: 3, lossStreak: 1, league: League.BRONZE},
+    casualStats: {gamesPlayed: 30, wins: 20},
+  }));
+  return Reflect.apply(target, receiver, [input, init]);
+}});

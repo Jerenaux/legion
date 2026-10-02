@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 // Button.tsx
 import { Component } from 'preact';
@@ -12,7 +13,7 @@ class BottomBorderDivider extends Component<DividerProps> {
   render() {
     return (
       <div className="dividerContainer">
-        <span>{this.props.label}</span>
+        <span>{t(this.props.label)}</span>
       </div>
     );
   }

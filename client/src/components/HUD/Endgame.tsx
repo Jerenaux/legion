@@ -1,3 +1,4 @@
+import {t, formatNumber, localizedAsset, language} from '../../i18n/core';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -17,8 +18,10 @@ import { EventEmitter } from 'eventemitter3';
 // Asset imports
 import victoryBg from '@assets/game_end/victory_bg.png';
 import defeatBg from '@assets/game_end/defeat_bg.png';
-import victoryTitle from '@assets/game_end/victory.png';
-import defeatTitle from '@assets/game_end/defeat.png';
+import victoryTitleOriginal from '@assets/game_end/victory.png';
+const victoryTitle = localizedAsset('game_end/victory.png', language === 'en' ? victoryTitleOriginal : '');
+import defeatTitleOriginal from '@assets/game_end/defeat.png';
+const defeatTitle = localizedAsset('game_end/defeat.png', language === 'en' ? defeatTitleOriginal : '');
 import gradeA from '@assets/game_end/A.png';
 import gradeB from '@assets/game_end/B.png';
 import gradeC from '@assets/game_end/C.png';
@@ -184,7 +187,9 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         return (
             <div className="endgame">
                 <div className="defeat_title" style={this.endGameTitleBg()}>
-                    <img className="defeat_title_bg" src={this.props.isWinner ? victoryTitle : defeatTitle} alt="End Title" />
+                    {(this.props.isWinner ? victoryTitle : defeatTitle)
+                      ? <img className="defeat_title_bg" src={this.props.isWinner ? victoryTitle : defeatTitle} alt={t(this.props.isWinner ? "Victory!" : "Defeat")} />
+                      : <div className="defeat_title_bg localized-result">{t(this.props.isWinner ? "Victory!" : "Defeat")}</div>}
                 </div>
 
                 <div className="endgame_characters_grid">
@@ -200,7 +205,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                 <div className="endgame_rewards_container">
                     <div className="endgame_rewards_heading_container">
                         <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
-                        <p className="endgame_rewards_heading">Rewards</p>
+                        <p className="endgame_rewards_heading">{t("Rewards")}</p>
                         <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                     </div>
                     <div className="flex items_center justify_center gap_4 endgame_rewards_items">
@@ -217,9 +222,9 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                                 )}
                                 <div className="streak_gold_list_amount">
                                     {reward.type === 'XP' || reward.type === 'GOLD' ? (
-                                        <CountUp end={reward.amount} duration={Math.min(reward.amount / 100, 2)} />
+                                        <CountUp end={reward.amount} duration={Math.min(reward.amount / 100, 2)} formattingFn={formatNumber} />
                                     ) : (
-                                        reward.amount
+                                        formatNumber(reward.amount)
                                     )}
                                 </div>
                             </div>
@@ -231,15 +236,15 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     {showPlayAgain && (
                         shouldShowUnlockMessage(this.props.mode, this.context.getCompletedGames()) ? (
                             <div className="endgame_unlock_message">
-                                <img src={_lockIcon} className="shaking-lock" alt="Lock icon" />
-                                <span>You unlocked something new in the main menu!</span>
+                                <img src={_lockIcon} className="shaking-lock" alt={t("Lock icon")} />
+                                <span>{t("You unlocked something new in the main menu!")}</span>
                             </div>
                         ) : (
                             <button type="button" data-game-control
                                 className="endgame_button endgame_button_primary"
                                 onClick={this.handlePlayAgain}
                             >
-                                <span>Play Again!</span>
+                                <span>{t("Play Again!")}</span>
                             </button>
                         )
                     )}
@@ -247,7 +252,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         className="endgame_button endgame_button_secondary"
                         onClick={this.props.closeGame}
                     >
-                        <span>Main Menu</span>
+                        <span>{t("Main Menu")}</span>
                     </button>
                 </div>
 

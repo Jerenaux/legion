@@ -1,3 +1,4 @@
+import {t} from './i18n/core';
 import { h, Component } from 'preact';
 import { Route, Router, RouterOnChangeArgs } from 'preact-router';
 import { PlayerContext } from './contexts/PlayerContext';
@@ -79,7 +80,7 @@ class App extends Component<{}, AppState> {
 
     showGamepadKeyboard = async (input: HTMLInputElement | HTMLTextAreaElement) => {
       const value = await getElectronAPI()?.showGamepadTextInput?.({
-        description: input.getAttribute('aria-label') || input.placeholder || 'Enter text',
+        description: input.getAttribute('aria-label') || input.placeholder || t("Enter text"),
         maxCharacters: input.maxLength > 0 ? input.maxLength : 256,
         existingText: input.value,
         password: input instanceof HTMLInputElement && input.type === 'password',
