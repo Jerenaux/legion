@@ -8,7 +8,9 @@ An online solo expedition, entered from Play → The Cinder Tower. It uses the e
 
 Ember Approach places two Fire mages beyond a continuous column of flame across all eleven arena rows. Ranged spells can cross it, and Ice extinguishes a section for passage.
 
-Turns are untimed for humans. AI retains a bounded fallback if it cannot find a legal action. Frozen characters thaw after two skipped turns in Tower only. The Warden marks a fixed area before its next activation; the warning is part of reconnect snapshots, and clears on death. Its blast deals 35 + 5 × tier damage and leaves fire.
+Enemies use the same `Team.scaleStats` path as Ranked AI, at 1.5 rather than Ranked’s 1.2 high-difficulty setting. This helper scales every stat once and HP/MP a second time: approximately 2.25× HP/MP and 1.5× attack, defenses, and speed, subject to rounding and existing caps. The existing 15% per-tier HP/attack increase is applied first. Tier 1 Gate Sentries have 180 HP and 13 ATK; the Warden has 540 HP. Authored lineups and player squad stats are unchanged.
+
+Turns are untimed for humans; the combat dock omits the timer and its label. AI retains a bounded fallback if it cannot find a legal action. Frozen characters thaw after two skipped turns in Tower only. The Warden marks a fixed area before its next activation; the warning is part of reconnect snapshots, and clears on death. Its blast deals 35 + 5 × tier damage and leaves fire.
 
 After victory, HP becomes min(maxHP, max(currentHP, ceil(0.3 × maxHP)) + 15); MP restores 15, capped at maxMP. This also revives fallen allies. Statuses clear for the next encounter. Sanctuary restores both resources fully. Quartermaster refills carrying capacity with Potions for the Warrior and Ether for mages. No passive in-combat recovery is added, so delaying victory cannot generate free resources.
 

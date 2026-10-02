@@ -4,7 +4,7 @@ import {AIServerPlayer} from '../AIServerPlayer';
 import {TowerGame} from '../TowerGame';
 import {TurnSystem} from '../TurnSystem';
 import {createTowerRun, TOWER_ENCOUNTERS, TOWER_UPGRADES, chooseTowerUpgrade, finishTowerBattle, towerOffers} from '@legion/shared/tower';
-import {Class, League, PlayMode, StatusEffect, Terrain} from '@legion/shared/enums';
+import {Class, League, PlayMode, Stat, StatusEffect, Terrain} from '@legion/shared/enums';
 import {getSpellById} from '@legion/shared/Spells';
 import {GRID_HEIGHT} from '@legion/shared/config';
 import {Spell} from '../Spell';
@@ -12,8 +12,8 @@ import {isSkip} from '@legion/shared/utils';
 
 const games: TowerGame[] = [];
 afterEach(() => { games.splice(0).forEach(game => { game.combatClock.dispose(); clearInterval(game.checkEndTimer!); clearInterval(game.audienceTimer!); }); mock.restore(); });
-async function battle(floor = 0, route = 0) {
-  const run = createTowerRun('run', 1, 'balanced');
+async function battle(floor = 0, route = 0, tier = 1) {
+  const run = createTowerRun('run', tier, 'balanced');
   run.floor = floor; run.phase = 'battle'; run.path[floor] = TOWER_ENCOUNTERS[floor][route].id;
   const game = new TowerGame('tower-test', PlayMode.TOWER, League.BRONZE, {in: () => ({emit: mock()})} as unknown as Server, run);
   games.push(game);
@@ -55,6 +55,28 @@ test('Ember Approach has a full-height fire wall, ranged enemies, and an Ice cro
   expect(game.hasObstacle(7, 5)).toBe(false);
   expect(game.checkIsOnFlame(7, 0)).toBe(true);
   expect(game.checkIsOnFlame(7, GRID_HEIGHT - 1)).toBe(true);
+});
+
+test('Tower uses stronger Ranked-style enemy scaling without changing the squad or lineup', async () => {
+  const game = await battle();
+  const sentry = game.getTeam(2)[0];
+  expect(game.getTeam(2)).toHaveLength(2);
+  expect(sentry.hp).toBe(180);
+  expect(sentry.hp).toBe(sentry.getMaxHP());
+  expect(sentry.mp).toBe(225);
+  expect(sentry.mp).toBe(sentry.getMaxMP());
+  expect(sentry.getStat(Stat.ATK)).toBe(13);
+  expect(sentry.getStat(Stat.DEF)).toBe(6);
+  expect(sentry.getStat(Stat.SPDEF)).toBe(7);
+  expect(sentry.getStat(Stat.SPEED)).toBe(24);
+  expect(game.getTeam(1)[0].hp).toBe(180);
+  expect(game.getTeam(1)[0].getStat(Stat.ATK)).toBe(14);
+  const higherTier = await battle(0, 0, 5);
+  expect(higherTier.getTeam(2)[0].hp).toBe(288);
+  expect(higherTier.getTeam(2)[0].getStat(Stat.ATK)).toBe(21);
+  const boss = (await battle(5)).getTeam(2)[0];
+  expect(boss.hp).toBe(540);
+  expect(boss.getStat(Stat.SPATK)).toBe(13);
 });
 
 test('temporary upgrade effects reach combat without mutating shared spells', async () => {

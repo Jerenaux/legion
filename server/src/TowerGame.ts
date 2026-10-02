@@ -66,6 +66,8 @@ export class TowerGame extends AIGame {
       player.setUpCharacter(data, true);
       enemies.addMember(player);
     });
+    // Same scaler as Ranked AI: 1.5× combat stats and roughly 2.25× HP/MP.
+    enemies.scaleStats(1.5);
     encounter.terrain.forEach(tile => { this.terrainManager.updateTerrainMap(tile.terrain, tile.x, tile.y); });
   }
 

@@ -381,7 +381,8 @@ if (!process.versions.electron) {
           assert(await js('document.querySelector(".tower-page").scrollWidth <= document.querySelector(".tower-page").clientWidth'), 'Tower must not scroll horizontally');
         }
         await js('document.querySelector(".tower-choice").click()');
-        await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-untimed"))');
+        await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
+        assert.equal(await js('document.querySelector(".player_bar_controls").textContent.includes("Untimed") || Boolean(document.querySelector(".circular_timer"))'), false);
         assert.equal(await js('combatCheck.arena.getPlayer(1, 3).spells.find(spell => spell.id === 6).cost'), 15);
         assert.equal(await js('combatCheck.arena.towerWarningMarkers.length'), 2);
         assert.equal(await js('document.querySelector(".tower-combat-banner").textContent.trim()'), 'Floor 6');
