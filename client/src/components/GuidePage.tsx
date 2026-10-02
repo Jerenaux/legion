@@ -8,10 +8,12 @@ import actions from '@assets/guide/actions.jpg';
 import turnOrder from '@assets/guide/turn-order.jpg';
 import inspection from '@assets/guide/inspection.jpg';
 import loadout from '@assets/guide/loadout.jpg';
+import tower from '@assets/guide/tower.jpg';
 import './GuidePage.css';
 
 const sections = [
   ['first-match', 'Matches & modes'],
+  ['tower', 'The Cinder Tower'],
   ['combat', 'Taking your turn'],
   ['magic', 'Magic & terrain'],
   ['team', 'Build your team'],
@@ -68,10 +70,23 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             </dl>
           </section>
 
+          <section aria-labelledby="tower">
+            <h2 id="tower" tabIndex={-1}>The Cinder Tower</h2>
+            <p>On Play, choose the golden rook to the right of Ranked. Choose Balanced or Control, set the difficulty, and use Begin expedition in the bottom bar. Rules & rewards opens the full rules.</p>
+            <p>Choose <strong>The Cinder Tower</strong> on Play for an online solo expedition. A temporary Warrior, White Mage, and Black Mage climb six floors, ending with the Cinder Warden. Turns have no deadline, so the combat dock shows no timer. Enemies have boosted health, mana, attack, defenses, and speed. Your main roster and owned consumables are separate from this squad.</p>
+            <figure><img src={tower} width="1600" height="840" loading="lazy" alt="The tower route screen with the expedition squad, banked rewards, and a choice between the Broken Gate and the more dangerous Ember Approach." /><figcaption>Follow your ascent on the left. Check your squad, compare the enemy lineups, and choose your next encounter. Dangerous paths award 25% more gold and XP.</figcaption></figure>
+            <p>After each victory, choose one preparation: recover, refill supplies, or take an upgrade. Spell lessons fill up to three slots and replace the oldest spell when full. Upgrades last only for this expedition. Sculptor of Ice makes Ice cost 15 less MP but halves its damage; Light Footwork gives the Warrior an extra movement tile and 12 Speed.</p>
+            <p>Between victories, each ally is brought to at least 30% HP, then restores 15 HP and 15 MP, capped at their maximums. Knocked-out allies return and statuses clear. Sanctuary fully restores HP and MP; Quartermaster refills supplies. During Tower battles, ice traps thaw after two skipped turns, so a frozen squad can recover.</p>
+            <p>The combat badge shows your current floor. In Ember Approach, two fire mages stand beyond a wall of flame spanning the arena. Cast across it, or extinguish a section with Ice to cross safely.</p>
+            <p>The Warden marks tiles before its next turn. Move away from those warning symbols before the blast. It leaves fire behind; the turn order shows when it will act.</p>
+            <p>Gold, XP, and milestone items are banked after each victory. XP is shared across your permanent roster. Defeat or retirement ends the run but keeps everything already banked. Higher floors pay more. Clearing a tier unlocks the next, up to Tier 5; each tier adds 15% enemy HP and attack power and 20% account rewards. Your first clear also unlocks the Control starting kit.</p>
+            <p>Tower encounters do not increase ELO, league results, or completed-match unlock counters. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.</p>
+          </section>
+
           <section aria-labelledby="combat">
             <h2 id="combat" tabIndex={-1}>Make your turn count</h2>
             <p>When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <strong>one action</strong>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.</p>
-            <p>The standard turn timer is <strong>{TURN_DURATION} seconds</strong>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.</p>
+            <p>Outside the Tower, the standard turn timer is <strong>{TURN_DURATION} seconds</strong>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.</p>
             <p>Combat starts once everyone has loaded the arena and both teams’ spell and item effects. Practice matches pause if your connection drops and resume after the arena is ready again, keeping your remaining turn time. Once a match against another player has started, its clock keeps running if you disconnect.</p>
             <figure className="guide-figure-compact">
               <img src={turnOrder} width="570" height="70" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act." />

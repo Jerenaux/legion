@@ -34,6 +34,7 @@ interface GameHUDState {
   goldReward: number;
   characters: CharacterUpdate[];
   isSpectator: boolean;
+  tower: {floor: number; tier: number; name: string} | null;
   mode: PlayMode;
   game0: boolean;
   grade: string;
@@ -74,6 +75,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     characters: [],
     isSpectator: false,
     mode: null,
+    tower: null,
     game0: false,
     grade: null,
     chests: [],
@@ -101,6 +103,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('characterHoverChanged', this.onCharacterHover);
     events.on('refreshOverview', this.updateOverview);
     events.on('gameEnd', this.endGame);
+    events.on('towerInfo', this.setTowerInfo);
     events.on('hoverCharacter', () => {
       if (this.state.pendingSpell || this.state.pendingItem) return;
       this.handleCursorChange('pointerCursor')
@@ -199,6 +202,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     })
   }
 
+  setTowerInfo = (tower: GameHUDState['tower']) => this.setState({tower});
+
   endGame = (data: OutcomeData) => {
     recordCompletedGame();
     const { isWinner, xp, gold, grade, chests, characters, key } = data;
@@ -295,6 +300,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
             )}
           </>
         )}
+        {this.state.tower && <div className="tower-combat-banner" role="status">
+          <span>Floor</span> <strong>{this.state.tower.floor}</strong>
+        </div>}
         {isHUDVisible && (
           <PlayerBar
             player={this.state.commandPlayer}
