@@ -101,7 +101,7 @@
 
 .userLevel span {
   font-size: 0.625rem;
-  line-height: 0.5rem;
+  line-height: 1.2;
   color: rgb(255, 170, 0);
 }
 
@@ -276,7 +276,7 @@ login-buttons {
 
 .avatarContainerLink .userLevel span {
     font-size: 0.625rem;
-    line-height: 0.5rem;
+    line-height: 1.2;
 }
 
 .avatarContainerLink:hover .avatarContainer {

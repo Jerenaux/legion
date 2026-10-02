@@ -27,7 +27,7 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
         // Create the DOM element for text
         const style = `
             font-family: Kim;
-            font-size: 14px;
+            font-size: 0.875rem;
             max-width: 130px;
             color: #fff;
             text-align: center;
