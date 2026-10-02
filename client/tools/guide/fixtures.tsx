@@ -1,3 +1,4 @@
+import {createTowerRun, chooseTowerUpgrade, finishTowerBattle, TowerProgress} from '@legion/shared/tower';
 // Screenshot-only providers. The release webpack config never imports this file.
 import 'phaser';
 import { h, ComponentChildren } from 'preact';
@@ -101,13 +102,44 @@ Arena.prototype.connectToServer = async function () {
   }
   this.socket = Object.assign(new EventEmitter(), {disconnect() {}}) as typeof this.socket;
   this.enqueueMessage('queueData', battle.queue);
-  this.enqueueMessage('gameStatus', battle);
+  const snapshot = structuredClone(battle);
+  if (location.pathname.includes('/tower-fixture')) {
+    snapshot.general.mode = PlayMode.TOWER;
+    snapshot.general.tower = {floor: 6, tier: 1, name: 'The Cinder Warden', warning: [{x: 4, y: 4}, {x: 5, y: 4}]};
+    snapshot.turnee.turnDuration = 0; snapshot.turnee.timeLeft = 0;
+    snapshot.player.team[2].spells = [0, 6];
+    snapshot.player.team[2].towerSpellCosts = {0: 10, 6: 15};
+    this.socket.on('towerEnd', () => route('/tower'));
+  }
+  this.enqueueMessage('gameStatus', snapshot);
 };
 
 export async function getFirebaseIdToken() { return 'guide-local-only'; }
 const rankCheck = {fail: true};
 Object.assign(window, {rankCheck});
-export async function apiFetch(endpoint: string) {
+const towerCheck = {
+  fail: false,
+  progress: JSON.parse(localStorage.getItem('tower-fixture') || '{"run":null,"highestClear":0}') as TowerProgress,
+  win() {
+    const run = this.progress.run!;
+    finishTowerBattle(run, {won: true, units: run.squad.map(unit => ({hp: unit.hp, mp: unit.mp, inventory: unit.character.inventory}))});
+    this.save();
+  },
+  save() { localStorage.setItem('tower-fixture', JSON.stringify(this.progress)); },
+};
+Object.assign(window, {towerCheck});
+export async function apiFetch(endpoint: string, options: {body?: {action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
+  if (endpoint === 'tower') {
+    if (towerCheck.fail) throw new Error('Expected tower timeout');
+    const body = options.body;
+    if (body?.action === 'create') towerCheck.progress.run = createTowerRun('fixture-run', body.tier, body.kit);
+    const run = towerCheck.progress.run;
+    if (body?.action === 'upgrade') chooseTowerUpgrade(run, body.upgrade);
+    if (body?.action === 'retire') run.phase = 'retired';
+    if (body?.action === 'battle') { run.phase = 'battle'; run.path.push(body.encounter); run.gameId = 'tower-fixture'; }
+    towerCheck.save();
+    return structuredClone(towerCheck.progress);
+  }
   if (endpoint === 'recordPlayerAction') return {};
   if (endpoint === 'listOnSaleCharacters') return [];
   if (endpoint.startsWith('fetchLeaderboard?tab=')) {

@@ -65,6 +65,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
 
   render() {
     const { size = 40, strokeWidth = 4 } = this.props;
+    if (this.props.turnDuration === 0) return <span class="tower-untimed" title="Take your time. There is no turn deadline.">Untimed</span>;
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (this.state.progress / 100) * circumference;

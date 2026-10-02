@@ -234,7 +234,7 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size')) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -271,6 +271,16 @@ if (!process.versions.electron) {
         assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
+      } else if (process.argv.includes('--tower-images')) {
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        await js('document.querySelector(".tower-primary").click()');
+        await waitFor('Boolean(document.querySelector(".tower-choices"))');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'tower-full.png'), (await win.webContents.capturePage()).toPNG());
+        await js('document.querySelector(".tower-progress").scrollIntoView({block: "start"})');
+        await ready();
+        await capture('tower', {x: 230, y: 100, width: 1120, height: 700});
       } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
@@ -287,6 +297,42 @@ if (!process.versions.electron) {
         const loadoutY = await js('Math.round(document.querySelector(".character-inventory-container").getBoundingClientRect().top)');
         await capture('loadout', {x: 270, y: loadoutY, width: 1045, height: 428});
       } else {
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
+        await js('document.querySelector("[data-playmode=tower]").click()');
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        await js('document.querySelector(".tower-primary").click()');
+        await waitFor('document.querySelectorAll(".tower-choice").length === 2');
+        assert.equal(await js('document.querySelectorAll(".tower-unit").length'), 3);
+        for (const width of [1280, 1600]) {
+          win.setContentSize(width, 900);
+          await ready();
+          fs.writeFileSync(path.join(dist, `tower-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          assert(await js('document.querySelector(".tower-page").scrollWidth <= document.querySelector(".tower-page").clientWidth'), 'Tower must not scroll horizontally');
+        }
+        await js('document.querySelector(".tower-choice").click()');
+        await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-untimed"))');
+        assert.equal(await js('combatCheck.arena.getPlayer(1, 3).spells.find(spell => spell.id === 6).cost'), 15);
+        assert.equal(await js('combatCheck.arena.towerWarningMarkers.length'), 2);
+        assert((await js('document.querySelector(".tower-combat-banner").innerText')).includes('Marked tiles'));
+        fs.writeFileSync(path.join(dist, 'tower-boss.png'), (await win.webContents.capturePage()).toPNG());
+        await js('towerCheck.win(); combatCheck.arena.socket.emit("towerEnd", {saved: true})');
+        await waitFor('document.querySelectorAll(".tower-choice").length === 4');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'tower-upgrades.png'), (await win.webContents.capturePage()).toPNG());
+        await js('document.querySelector(".tower-choice").focus()');
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Return'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Return'});
+        await waitFor('document.querySelectorAll(".tower-choice").length === 2');
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('document.querySelectorAll(".tower-choice").length === 2');
+        assert((await js('document.querySelector(".tower-progress").innerText')).includes('1/6 cleared'));
+        await js('towerCheck.fail = true; document.querySelector(".tower-choice").click()');
+        await waitFor('Boolean(document.querySelector(".tower-error"))');
+        assert.equal(await js('document.querySelector(".tower-choice").disabled'), true);
+        await js('towerCheck.fail = false; document.querySelector(".tower-error button").click()');
+        await waitFor('!document.querySelector(".tower-error") && !document.querySelector(".tower-choice").disabled');
+        console.log('Tower entry, choices, keyboard controls, saved progress, untimed combat, boss warnings, and recovery pass');
         for (const [games, size] of [[0, 3], [11, 3], [12, 3], [12, 5], [12, 6]]) {
           await win.loadURL(`${PACKAGED_APP_URL}team?games=${games}&roster=${size}`);
           await waitFor('Boolean(document.querySelector(".roster-heading"))');
@@ -686,7 +732,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

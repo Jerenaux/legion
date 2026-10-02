@@ -1,3 +1,4 @@
+import {route} from 'preact-router';
 import { io } from 'socket.io-client';
 import { Player } from './Player';
 import { GameHUD, events } from '../components/HUD/GameHUD';
@@ -157,6 +158,7 @@ export class Arena extends Phaser.Scene
     private targetModeSize: number = 1;
     private targetModeListener: ((pointer: Phaser.Input.Pointer) => void) | null = null;
     private disposed = false;
+    private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
 
     constructor() {
@@ -191,6 +193,7 @@ export class Arena extends Phaser.Scene
             },
             localanimation: this.processLocalAnimation,
             gameEnd: this.processGameEnd,
+            towerWarning: this.showTowerWarning,
             score: this.processScoreUpdate,
             addCharacter: this.processAddCharacter,
             queueData: this.processQueueData,
@@ -318,6 +321,7 @@ export class Arena extends Phaser.Scene
         this.eventHandlers.forEach((_handler, event) => {
             this.socket.on(event, data => this.enqueueMessage(event, data));
         });
+        this.socket.on('towerEnd', () => { route('/tower'); });
         this.socket.on('connect_error', error => {
             if (!this.socket.active) this.failCombat(error);
         });
@@ -1166,6 +1170,16 @@ export class Arena extends Phaser.Scene
         this.placeCharacter(data.character, team, false);
     }
 
+    showTowerWarning(tiles: {x: number; y: number}[]) {
+        this.towerWarningMarkers.forEach(marker => { marker.destroy(); });
+        this.towerWarningMarkers = tiles.map(tile => {
+            const {x, y} = this.hexGridToPixelCoords(tile.x, tile.y);
+            return this.add.text(x, y + 15, '⚠', {fontFamily: 'Arial', fontSize: '34px', color: '#ffe3a1', backgroundColor: '#5b251c', padding: {x: 6, y: 2}})
+                .setOrigin(0.5).setDepth(10000);
+        });
+        events.emit('towerWarning', tiles.length > 0);
+    }
+
     processQueueData(data: TurnQueueEntry[]) {
         this.queue = data;
         this.refreshOverview();
@@ -1431,6 +1445,8 @@ export class Arena extends Phaser.Scene
             player.setInventory(character.inventory);
         }
         player.setSpells(character.spells ?? []);
+        if (character.towerSpellCosts) player.spells = player.spells.map(spell => Object.assign(Object.create(Object.getPrototypeOf(spell)), spell,
+            {cost: character.towerSpellCosts[spell.id] ?? spell.cost}));
         player.setStatuses(character.statuses);
 
         if (!isReconnect) {
@@ -1579,6 +1595,7 @@ export class Arena extends Phaser.Scene
         // progress skips the intro, never harmless messages buffered during loading.
         const isReconnect = data.general.combatStarted ?? data.turnee.turnNumber > 0;
         this.readyToken = data.general.readyToken ?? null;
+        events.emit('towerInfo', data.general.tower || null);
         this.legacyFirstMatch = !this.readyToken && data.player.player.completedGames === 0 && !this.isReplay;
         // console.log(`[Arena:initializeGame] Reconnecting to game: ${isReconnect}`);
 
@@ -1631,6 +1648,7 @@ export class Arena extends Phaser.Scene
         this.arenaDisplayed = true;
         this.placeCharacters(data.player.team, this.teamsMap.get(data.player.teamId), isReconnect);
         this.placeCharacters(data.opponent.team, this.teamsMap.get(data.opponent.teamId), isReconnect);
+        if (data.general.tower) this.showTowerWarning(data.general.tower.warning);
 
         this.hexGridManager.floatHexTiles(
             this.handleTileClick.bind(this),
