@@ -96,5 +96,13 @@ module.exports = async ({win, js, waitFor, ready, output, baseline}) => {
   await waitFor('Boolean(document.querySelector(".player_bar_action"))');
   await ready();
   fs.writeFileSync(path.join(output, 'guide-actions.jpg'), (await win.webContents.capturePage({x: 400, y: 790, width: 960, height: 110})).toJPEG(88));
+  await win.loadURL('app://legion/team/guide-2');
+  await waitFor('Boolean(document.querySelector(".info-bar-plus"))');
+  // Capture the old and new number sizes on the same character for comparison.
+  await js(`(() => { const style = document.createElement('style'); style.id = 'previous-stat-size'; style.textContent = '.character-info-bar .curr-info {font-size: 0.75rem}'; document.head.appendChild(style); })()`);
+  await shot('character-stats-before');
+  await js(`document.getElementById('previous-stat-size').remove()`);
+  await shot('character-stats-after');
+  fs.writeFileSync(path.join(output, 'guide-loadout.jpg'), (await win.webContents.capturePage({x: 270, y: 328, width: 1045, height: 428})).toJPEG(88));
   console.log('Text size persistence, SP controls, confirmation and compact layouts pass');
 };
