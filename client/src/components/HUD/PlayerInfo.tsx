@@ -14,6 +14,7 @@ import donateIcon from '@assets/HUD/donate_icon.png';
 import settingsIcon from '@assets/HUD/settings_icon.png';
 import { SettingsModal } from '../settingsModal/SettingsModal';
 import { EventEmitter } from 'eventemitter3';
+import {DESKTOP_ACTION_EVENT, DesktopAction} from '../../input/actions';
 
 interface Props {
   player: PlayerProfileData;
@@ -36,6 +37,20 @@ class PlayerInfo extends Component<Props, State> {
     isSettingsModalOpen: false,
     modalPos: null,
   }
+
+  componentDidMount() {
+    window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+  }
+
+  handleDesktopAction = (event: CustomEvent<{action: DesktopAction}>) => {
+    if (event.detail.action === 'abandon-dialog' && this.props.isPlayerTeam) {
+      this.handleOpenModal(null, 'exit_modal');
+    }
+  };
 
   handleOpenModal = (e, modalType) => {
     if (modalType === "menu_modal") {
@@ -152,7 +167,8 @@ class PlayerInfo extends Component<Props, State> {
             </button>
           </div>
         </Modal>
-        <Modal isOpen={this.state.isExitModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1}>
+        <Modal contentLabel="Abandon game" isOpen={this.state.isExitModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1}
+          onAfterOpen={() => document.querySelector<HTMLButtonElement>('.exit_game_menu [data-desktop-cancel]')?.focus()}>
           <div className="exit_game_menu flex flex_col gap_4">
             <div className="game_leave_dialog">Are you sure you want to abandon the game? This will count as a loss.</div>
             <div className="flex gap_4">

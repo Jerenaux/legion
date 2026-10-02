@@ -46,7 +46,7 @@ class PlayerBar extends Component<PlayerBarProps> {
     const muted = isSpell && player?.statuses[StatusEffect.MUTE] !== 0;
     return (
       <section className="player_bar_action_group" aria-label={isSpell ? 'Spells' : 'Items'}>
-        <div className="player_bar_group_label">{pending != null && canAct ? 'Esc to cancel' : isSpell ? 'Spells' : 'Items'}{muted && <span>Silenced</span>}</div>
+        <div className="player_bar_group_label">{pending != null && canAct ? 'Click again' : isSpell ? 'Spells' : 'Items'}{muted && <span>Silenced</span>}</div>
         <div className="player_bar_actions">
           {actions.map((action, index) => {
             const cost = 'cost' in action ? action.cost : null;
@@ -127,7 +127,7 @@ class PlayerBar extends Component<PlayerBarProps> {
             <div className="player_bar_controls">
               <CircularTimer turnDuration={turnDuration} timeLeft={timeLeft} turnNumber={turnNumber} size={36} strokeWidth={3} />
               <button type="button" data-game-control className="player_bar_pass_turn" onClick={onPassTurn} disabled={!canAct || Boolean(pending)}>
-                <span>Pass</span><span>Turn</span><span className="player_bar_pass_key">End</span>
+                <span>Pass</span><span>Turn</span><span className="player_bar_pass_key">Space</span>
               </button>
             </div>
           </div> : <div className="enemy_turn_banner" role="status">Enemy Turn</div>}

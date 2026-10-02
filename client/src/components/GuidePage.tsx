@@ -170,8 +170,8 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>Mouse</dt><dd>Click tiles to move, enemies to attack, and action icons to use items or select spells.</dd></div>
               <div><dt>Action letters</dt><dd>Use the letters printed on the item and spell icons. Choose QWERTY or AZERTY in Settings; follow the labels for your layout.</dd></div>
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Select your first three living characters. <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> cycle through living allies. Selection does not let a character act out of turn.</dd></div>
-              <div><dt><kbd>E</kbd> / <kbd>End</kbd></dt><dd>Pass the active turn.</dd></div>
-              <div><dt><kbd>Esc</kbd></dt><dd>Cancel spell targeting or selection in combat; close supported dialogs. From this guide, return to {onClose ? 'the queue' : 'Play'}.</dd></div>
+              <div><dt><kbd>Space</kbd> / <kbd>E</kbd> / <kbd>End</kbd></dt><dd>Pass the active turn.</dd></div>
+              <div><dt><kbd>Esc</kbd></dt><dd>Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {onClose ? 'the queue' : 'Play'}.</dd></div>
               <div><dt><kbd>P</kbd></dt><dd>Open the combat menu. <strong>The match keeps running:</strong> opening Settings does not pause the opponent or the turn timer.</dd></div>
               <div><dt>Menus</dt><dd><kbd>Tab</kbd> or arrow keys move focus; <kbd>Enter</kbd> or <kbd>Space</kbd> activates a focused control. You can use the mouse wheel to scroll this guide.</dd></div>
             </dl>
