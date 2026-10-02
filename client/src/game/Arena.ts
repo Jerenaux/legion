@@ -466,6 +466,11 @@ export class Arena extends Phaser.Scene
 
         this.input.keyboard.on('keydown', this.handleKeyDown, this);
         this.input.setPollAlways();
+        this.input.on('pointermove', (_pointer: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
+            // Phaser retains its over-object when DOM HUD elements cover the canvas.
+            const player = over[0]?.parentContainer;
+            if (player instanceof Player) this.inspectBattlefieldCharacter(player);
+        });
         this.input.on('gameout', () => {
             if (this.hoverSource === 'battlefield') this.clearCharacterHover();
         });
