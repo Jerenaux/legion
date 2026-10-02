@@ -12,6 +12,7 @@ import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { recordCompletedGame } from '../utils';
 import TutorialDialogue from './TutorialDialogue';
 import PlayerBar from './PlayerBar';
+import CharacterHoverCard, { CharacterHover } from './CharacterHoverCard';
 
 
 interface GameHUDProps {
@@ -50,6 +51,7 @@ interface GameHUDState {
   tutorialPosition: 'bottom' | 'spells' | 'items';
   animate: boolean;
   isHUDVisible: boolean;
+  characterHover: CharacterHover | null;
 }
 
 const events = new EventEmitter();
@@ -89,6 +91,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     animate: false,
     tutorialPosition: 'bottom' as const,
     isHUDVisible: true,
+    characterHover: null,
   });
 
   state = this.getInitialState();
@@ -98,6 +101,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   componentDidMount() {
     events.on('showPlayerBox', this.showPlayerBox);
+    events.on('characterHoverChanged', this.onCharacterHover);
     events.on('refreshOverview', this.updateOverview);
     events.on('gameEnd', this.endGame);
     events.on('towerInfo', this.setTowerInfo);
@@ -166,6 +170,14 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.removeAllListeners();
     // Remove keyboard event listener
     window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  onCharacterHover = (characterHover: CharacterHover | null) => {
+    this.setState({ characterHover });
+  }
+
+  inspectCharacter = (team: number, num: number, element: HTMLElement | null) => {
+    events.emit('inspectCharacter', team, num, element?.getBoundingClientRect());
   }
 
   showPlayerBox = (playerData: PlayerProps) => {
@@ -268,6 +280,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' || event.key.toLowerCase() === 'a') events.emit('clearCharacterHover');
     // Toggle HUD visibility when 'a' key is pressed
     if (event.key.toLowerCase() === 'a') {
       this.setState(prevState => ({ isHUDVisible: !prevState.isHUDVisible }));
@@ -277,7 +290,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   render() {
     const {
       player, team1, team2, isSpectator, mode, gameInitialized,
-      showOverview, isHUDVisible
+      showOverview, isHUDVisible, characterHover
     } = this.state;
     const ownMembers: TeamMember[] = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
     const score = team1?.members[0]?.isPlayer ? team1?.score : team2?.score;
@@ -287,6 +300,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
 
     const isTutorialMode = mode === PlayMode.TUTORIAL;
+    const inspected = characterHover && (characterHover.team === 1 ? team1 : team2)?.members[characterHover.num - 1];
 
     return (
       <div className="gamehud height_full flex flex_col justify_between padding_bottom_16">
@@ -299,8 +313,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           <>
             {showOverview && (
               <div className="hud-container">
-                <Overview position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
-                <Overview position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
+                <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
+                <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
               </div>
             )}
           </>
@@ -332,6 +346,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         )}
         {isHUDVisible && (
           <Timeline
+            characterHover={characterHover}
+            onInspect={this.inspectCharacter}
             isTutorial={isTutorialMode}
             score={score}
             mode={mode}
@@ -342,6 +358,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
             team2={team2}
           />
         )}
+        {isHUDVisible && !this.state.gameOver && inspected && <CharacterHoverCard character={inspected} hover={characterHover} />}
         {isHUDVisible && this.state.gameOver && <Endgame
           members={ownMembers}
           grade={this.state.grade}

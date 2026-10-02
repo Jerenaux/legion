@@ -1,0 +1,60 @@
+.class-crest {
+  --crest-edge: oklch(76% 0.11 78);
+  --crest-field: oklch(29% 0.035 62);
+  --crest-ink: oklch(94% 0.05 85);
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 1px oklch(15% 0.01 250 / 0.65));
+}
+
+.class-crest[data-class="1"] {
+  --crest-edge: oklch(77% 0.09 166);
+  --crest-field: oklch(29% 0.035 170);
+  --crest-ink: oklch(96% 0.035 155);
+}
+
+.class-crest[data-class="2"] {
+  --crest-edge: oklch(73% 0.13 300);
+  --crest-field: oklch(29% 0.055 300);
+  --crest-ink: oklch(91% 0.06 305);
+}
+
+.class-crest[data-class="3"] {
+  --crest-edge: oklch(76% 0.09 230);
+  --crest-field: oklch(29% 0.035 230);
+  --crest-ink: oklch(94% 0.035 225);
+}
+
+.class-crest__rim {
+  fill: var(--crest-edge);
+  stroke: oklch(18% 0.015 250);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.class-crest__field,
+.class-crest__cutout {
+  fill: var(--crest-field);
+}
+
+.class-crest__bevel {
+  fill: none;
+  stroke: var(--crest-ink);
+  stroke-opacity: 0.5;
+}
+
+.class-crest__symbol {
+  fill: var(--crest-ink);
+}
+
+.class-crest__engraving {
+  stroke: var(--crest-edge);
+  stroke-width: 1;
+}
+
+.class-crest__rays {
+  stroke: var(--crest-ink);
+  stroke-width: 2;
+}
