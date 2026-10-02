@@ -221,7 +221,12 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (process.argv.includes('--replay-off')) {
+      if (process.argv.includes('--text-size')) {
+        await require('./text-size.cjs')({win, js, waitFor, ready,
+          output: process.env.TEXT_SIZE_SCREENSHOTS || path.join(dist, 'text-size'),
+          baseline: process.argv.includes('--baseline')});
+        assert.deepEqual(rendererErrors, []);
+      } else if (process.argv.includes('--replay-off')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector("#scene canvas"))');
         await new Promise(resolve => setTimeout(resolve, 1200));

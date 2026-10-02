@@ -15,7 +15,7 @@
   .queue-tips-container {
     width: 40vw;
     text-align: center;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   .queue-tips-container > div:first-child {
     margin-top: 0.2vw;
@@ -28,7 +28,7 @@
     position: absolute;
     top: 2vw;
     color: coral;
-    font-size: 1.5vw;
+    font-size: calc(1.5vw * var(--text-scale, 1));
     cursor: pointer;
   }
   .prev {
@@ -38,7 +38,7 @@
     right: 25vw;
   }
   .queue-tips-text {
-    font-size: 1.2vw;
+    font-size: calc(1.2vw * var(--text-scale, 1));
     font-family: 'Kim', sans-serif;
     text-align: center;
     color: cyan;

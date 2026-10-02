@@ -46,7 +46,7 @@
 }
 
 .shop-card-title span {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #FFFFFF;
 }
@@ -58,7 +58,7 @@
 }
 
 .equipment-card-info-box span {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #71deff;
 }
 
@@ -103,7 +103,7 @@
 
 .equipment-card-description {
     text-align: center;
-    font-size: 14px;
+    font-size: 0.875rem;
     max-width: 174px;
     /* height: 32px;
     display: -webkit-box;
@@ -136,7 +136,7 @@
 }
 
 .shop-card-effect span {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 .shop-card-effect-stat {
@@ -154,7 +154,7 @@
 
 .shop-card-effect-value {
     padding: 4px 12px;
-    line-height: 12px;
+    line-height: 0.75rem;
 }
 
 .shop-card-price {
@@ -166,7 +166,7 @@
     align-items: center;
     gap: 4px;
     color: #FFFFFF;
-    font-size: 14px;
+    font-size: 0.875rem;
     width: 100%;
     margin-bottom: 4px;
 }

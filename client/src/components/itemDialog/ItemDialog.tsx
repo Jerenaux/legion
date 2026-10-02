@@ -375,11 +375,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   renderSPSpendDialog(dialogData: SPSPendingData) {
+    if (this.state.dialogSPModalShow) return this.renderSPConfirmationModal(dialogData);
     const { dialogValue } = this.state;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
 
     return (
       <div className="character-info-dialog-container">
+        <h2 className="sp-dialog-title">Increase {StatLabels[dialogData.stat]}</h2>
         <div className="character-info-dialog-card-container">
           <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
             <span>{StatLabels[dialogData.stat]}</span>
@@ -397,7 +399,6 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, prevState.dialogValue + 1) }))}>+</button>
         </div>
         {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }))}
-        {this.renderSPConfirmationModal(dialogData)}
       </div>
     );
   }
@@ -467,18 +468,22 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   render() {
-    const { position, dialogOpen } = this.props;
+    const { position, dialogOpen, dialogType } = this.props;
+    const isSP = dialogType === ItemDialogType.SP;
 
     const customStyles = {
       content: {
-        top: position.top,
-        left: position.left,
+        top: isSP ? '50%' : position.top,
+        left: isSP ? '50%' : position.left,
+        transform: isSP ? 'translate(-50%, -50%)' : undefined,
         right: 'auto',
         bottom: 'auto',
         padding: 0,
         border: 'none',
         background: 'transparent',
-        overflow: 'visible'
+        overflow: isSP ? 'auto' : 'visible',
+        maxWidth: isSP ? 'calc(100vw - 32px)' : undefined,
+        maxHeight: isSP ? 'calc(100dvh - 32px)' : undefined,
       },
       overlay: {
         zIndex: 10,
@@ -487,7 +492,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     return (
-      <Modal isOpen={dialogOpen} style={customStyles} onRequestClose={this.handleClose}>
+      <Modal isOpen={dialogOpen} contentLabel={isSP ? "Spend stat points" : "Item details"} style={customStyles} onRequestClose={this.handleClose}>
         {this.renderDialogContent()}
         {this.renderSellConfirmationModal()}
       </Modal>

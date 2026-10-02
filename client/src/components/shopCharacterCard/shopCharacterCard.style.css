@@ -34,7 +34,7 @@
 
 .shop-character-card-title-name span {
     max-width: 100px;
-    font-size: 14px;
+    font-size: 0.875rem;
     text-transform: capitalize;
     overflow: hidden;
     /* text-overflow: ellipsis; */
@@ -42,13 +42,13 @@
 }
 
 .shop-character-card-title-name .character-class {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #ffa600;
     letter-spacing: 0.32px;
 }
 
 .shop-character-card-title span {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #FFFFFF;
 }
@@ -66,7 +66,7 @@
 .shop-character-card-info-box .shop-character-card-info-lv {
     font-weight: 400;
     color: #ffa600;
-    font-size: 10px;
+    font-size: 0.625rem;
 }
 
 .shop-character-card-info-container {
@@ -76,7 +76,7 @@
 }
 
 .shop-character-card-info-box span {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #FFFFFF;
 }
 
@@ -128,7 +128,7 @@
 }
 
 .shop-character-card-effect span {
-    font-size: 11px;
+    font-size: 0.6875rem;
 }
 
 .shop-character-card-effect-stat {
@@ -147,7 +147,7 @@
 
 .shop-character-card-effect-value {
     padding: 4px 12px;
-    line-height: 12px;
+    line-height: 0.75rem;
     color: #FFFFFF;
 }
 
@@ -160,7 +160,7 @@
     align-items: center;
     gap: 4px;
     color: #FFFFFF;
-    font-size: 14px;
+    font-size: 0.875rem;
     width: 100%;
     margin-bottom: 4px;
     font-family: "Kim", sans-serif;
@@ -266,7 +266,7 @@
 }
 
 .shop-character-card-dialog-container p {
-    font-size: 10px;
+    font-size: 0.625rem;
     text-align: center;
 }
 
@@ -303,7 +303,7 @@
 }
 
 .shop-character-card-dialog-info span {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #ffffff;
 }
 

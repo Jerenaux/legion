@@ -125,6 +125,38 @@ jobs:
         working-directory: client
         run: bun run test:guide
 
+  text-readability:
+    name: Text readability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: ".bun-version"
+      - run: bun ci --cwd client && bun ci --cwd server
+      - name: Capture previous SP dialogs
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.before }}
+          path: .text-baseline
+      - name: Compare text sizes in packaged routes
+        env:
+          BASELINE_SCREENSHOTS: ${{ runner.temp }}/legion-text-size/before
+          CURRENT_SCREENSHOTS: ${{ runner.temp }}/legion-text-size/after
+        run: |
+          ln -s "$GITHUB_WORKSPACE/client/node_modules" .text-baseline/client/node_modules
+          ln -s "$GITHUB_WORKSPACE/server/node_modules" .text-baseline/server/node_modules
+          cp client/tools/guide/capture.cjs client/tools/guide/text-size.cjs .text-baseline/client/tools/guide/
+          sudo chown root:root client/node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 client/node_modules/electron/dist/chrome-sandbox
+          TEXT_SIZE_SCREENSHOTS="$BASELINE_SCREENSHOTS" xvfb-run -a node .text-baseline/client/tools/guide/capture.cjs --text-size --baseline
+          TEXT_SIZE_SCREENSHOTS="$CURRENT_SCREENSHOTS" xvfb-run -a node client/tools/guide/capture.cjs --text-size
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: text-size-comparison
+          path: ${{ runner.temp }}/legion-text-size
+
   build-api:
     name: Build API
     runs-on: ubuntu-latest

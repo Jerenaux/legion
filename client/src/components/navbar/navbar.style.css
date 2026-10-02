@@ -83,7 +83,7 @@
 }
 
 .userInfo span {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 300;
   max-width: 140px;
   overflow: hidden;
@@ -100,8 +100,8 @@
 }
 
 .userLevel span {
-  font-size: 10px;
-  line-height: 8px;
+  font-size: 0.625rem;
+  line-height: 0.5rem;
   color: rgb(255, 170, 0);
 }
 
@@ -169,14 +169,14 @@
 }
 
 .dropdown-content button span {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .dropdown-version {
   display: block;
   padding: 8px 12px;
   color: #c8d8e4;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .menuItems {
@@ -238,7 +238,7 @@ login-buttons {
   /* Golden color */
   border: 2px solid #ffaa00;
   /* Slightly darker border for depth */
-  font-size: 16px;
+  font-size: 1rem;
   padding: 6px 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-right: 10px;
@@ -270,13 +270,13 @@ login-buttons {
 }
 
 .avatarContainerLink .userInfo span {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 300;
 }
 
 .avatarContainerLink .userLevel span {
-    font-size: 10px;
-    line-height: 8px;
+    font-size: 0.625rem;
+    line-height: 0.5rem;
 }
 
 .avatarContainerLink:hover .avatarContainer {

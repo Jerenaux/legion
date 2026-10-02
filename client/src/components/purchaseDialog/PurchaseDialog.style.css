@@ -19,7 +19,7 @@
 }
 
 .purchase-dialog-title span {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 400;
     color: #ffffff;
 }
@@ -47,7 +47,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 16px;
+    font-size: 1rem;
     color: #ffffff;
     min-width: 92px;
 }
@@ -75,7 +75,7 @@
 }
 
 .purchase-dialog-price span {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #ffffff;
 }
 
@@ -107,5 +107,5 @@
     justify-content: center;
     align-items: center;
     color: #ffffff;
-    font-size: 12px;
+    font-size: 0.75rem;
 }

@@ -14,7 +14,7 @@
   scrollbar-gutter: stable;
   background: #0c121d;
   color: #d3dbe4;
-  font: 17px/1.65 Arial, sans-serif;
+  font: 1.0625rem/1.65 Arial, sans-serif;
 }
 
 .guide-layout {
@@ -30,7 +30,7 @@
   position: sticky;
   top: 28px;
   align-self: start;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .guide-page a {
@@ -86,7 +86,7 @@
   content: counter(chapter, decimal-leading-zero) "  ";
   white-space: pre;
   color: #d4b177;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .guide-page h1,
@@ -98,18 +98,18 @@
 
 .guide-page h1 {
   margin: 0 0 18px;
-  font: 42px/1.15 'Kim', Arial, sans-serif;
+  font: 2.625rem/1.15 'Kim', Arial, sans-serif;
 }
 
 .guide-page h2 {
   margin: 0 0 22px;
-  font: 30px/1.25 'Kim', Arial, sans-serif;
+  font: 1.875rem/1.25 'Kim', Arial, sans-serif;
   scroll-margin-top: 64px;
 }
 
 .guide-page h3 {
   margin: 32px 0 12px;
-  font-size: 21px;
+  font-size: 1.3125rem;
   line-height: 1.35;
 }
 
@@ -125,7 +125,7 @@
 }
 
 .guide-page .guide-lead {
-  font-size: 21px;
+  font-size: 1.3125rem;
   line-height: 1.5;
   color: #e2e7ec;
 }
@@ -170,7 +170,7 @@
 .guide-page figcaption {
   margin-top: 10px;
   color: #aab9c9;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -227,13 +227,13 @@
   .guide-index { position: static; }
   .guide-return { margin-bottom: 12px; }
   .guide-index ol { display: flex; flex-wrap: wrap; gap: 0 24px; }
-  .guide-page h1 { font-size: 34px; }
+  .guide-page h1 { font-size: 2.125rem; }
 }
 
 @media (max-width: 540px) {
-  .guide-page { font-size: 16px; }
+  .guide-page { font-size: 1rem; }
   .guide-layout { padding-inline: 16px; }
   .guide-definitions > div { grid-template-columns: minmax(0, 1fr); gap: 5px; }
-  .guide-page h1 { font-size: 30px; }
-  .guide-page h2 { font-size: 26px; }
+  .guide-page h1 { font-size: 1.875rem; }
+  .guide-page h2 { font-size: 1.625rem; }
 }

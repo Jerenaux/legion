@@ -25,7 +25,7 @@
 
 .endgame_button_primary {
     height: clamp(44px, 8vh, 56px);
-    font-size: clamp(16px, 3vw, 20px);
+    font-size: clamp(1rem, calc(3vw * var(--text-scale, 1)), 1.25rem);
     background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
     color: #1c1f25;
     border: 2px solid #ffd700;
@@ -50,7 +50,7 @@
 .endgame_button_secondary {
     height: clamp(36px, 7vh, 48px);
     width: 90%;
-    font-size: clamp(14px, 2.5vw, 16px);
+    font-size: clamp(0.875rem, calc(2.5vw * var(--text-scale, 1)), 1rem);
     background: linear-gradient(to bottom, #2a3746 0%, #1c1f25 100%);
     color: #ffffff;
     border: 1px solid #3c616c;
@@ -195,7 +195,7 @@
     }
 
     .streak_gold_list_amount {
-        font-size: 12px;
+        font-size: 0.75rem;
     }
 }
 
@@ -248,7 +248,7 @@
     position: absolute;
     bottom: 6px;
     right: 8px;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: bold;
     color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -264,7 +264,7 @@
 }
 
 .endgame_rewards_heading {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     color: #ffffff;
     text-transform: uppercase;
@@ -274,7 +274,7 @@
     position: absolute;
     top: -46px;
     left: calc(50% + 234px);
-    font-size: 172px;
+    font-size: 10.75rem;
     font-weight: bolder;
     color: #ffffff;
     text-shadow: #afafaf 0px 4px;
@@ -311,7 +311,7 @@
   }
 
 .endgame_meet_team_msg {
-    font-size: 32px;
+    font-size: 2rem;
     font-weight: 600;
     color: #ffffff;
     text-align: center;
@@ -323,7 +323,7 @@
     width: 156px;
     height: 56px;
 
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     color: #ffffff;
 
@@ -367,12 +367,12 @@
 
     .endgame_button_primary {
         height: 44px;
-        font-size: 16px;
+        font-size: 1rem;
     }
 
     .endgame_button_secondary {
         height: 36px;
-        font-size: 14px;
+        font-size: 0.875rem;
     }
 }
 
@@ -384,7 +384,7 @@
     padding: 12px 24px;
     border-radius: 8px;
     color: #fff;
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 .shaking-lock {
