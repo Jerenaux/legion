@@ -39,3 +39,7 @@ The smoke test also checks combat recovery: press Z, click outside range, choose
 It also checks the queue card at desktop and compact window sizes, guide opening/closing and keyboard focus, preserved matchmaking and queue updates while reading, and automatic entry into combat when a match is found with the guide open. It uses the packaged app's shared protocol privileges, including media streaming for the match-found sound; do not replace those with separate test-only settings.
 
 Run the standard lint, TypeScript checks, and tests too. Guide-only changes (copy, presentation, or illustrations) do not require a product version bump. If the same batch also changes gameplay or other shipped behavior, follow the normal versioning rules in `AGENTS.md`.
+
+## Local web previews
+
+Run `node tools/guide/preview.cjs` from `client` to serve the fixture-backed client at `http://127.0.0.1:8084`. This uses development mode with Sentry disabled and blocks external requests. Open `/team?games=0`, `/team?games=11`, or `/team?games=12` to inspect recruitment before and after its unlock; add `&roster=6` for a full team. Query values are only read by the guide fixture provider, never the shipped client.
