@@ -77,14 +77,7 @@ if (!process.versions.electron) {
         throw new Error('No valid move available');
       })()`);
       await wait('document.querySelector(".combat-coach")?.dataset.learned === "1"');
-      for (let i = 0; i < 12; i++) {
-        await wait('combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');
-        const mage = await js('combatCheck.arena.selectedPlayer.spells.length > 0');
-        if (mage) break;
-        const turn = await js('combatCheck.arena.turnee.turnNumber');
-        await js('combatCheck.arena.socket.emit("passTurn")');
-        await wait(`combatCheck.arena.turnee.turnNumber > ${turn}`);
-      }
+      await wait(`combatCheck.arena.turnee.turnNumber > ${initialTurn} && combatCheck.arena.turnee.team === combatCheck.arena.playerTeamId`);
       assert.equal(await js('combatCheck.arena.selectedPlayer.class'), 2, 'Black Mage acts after Warrior');
       await js('combatCheck.arena.selectedPlayer.useSkill(0)');
       await wait('document.querySelector(".combat-coach-instruction strong")?.textContent.startsWith("Aim ")');
@@ -105,7 +98,7 @@ if (!process.versions.electron) {
       })()`);
       await wait('document.querySelector(".combat-coach")?.dataset.learned === "2"');
       await wait('combatCheck.arena.selectedPlayer?.class === 1 && combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');
-      await js('combatCheck.arena.socket.emit("passTurn")');
+      await js('void combatCheck.arena.socket.emit("passTurn")');
       await wait('combatCheck.arena.turnee?.team !== combatCheck.arena.playerTeamId');
       await wait('!document.querySelector(".combat-coach")');
       await wait('combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');

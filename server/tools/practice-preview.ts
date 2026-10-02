@@ -27,7 +27,10 @@ class PreviewGame extends AIGame {
     async updateGameInDB() {}
 }
 
-const http = createServer((_request, response) => { response.end('Local Legion practice preview'); });
+const http = createServer((_request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:8082');
+    response.end('Local Legion practice preview');
+});
 const io = new Server(http, { cors: { origin: 'http://127.0.0.1:8082' } });
 io.on('connection', socket => {
     const game = new PreviewGame(`preview-${socket.id}`, PlayMode.PRACTICE, League.BRONZE, io);
