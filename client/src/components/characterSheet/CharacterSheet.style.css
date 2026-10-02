@@ -27,10 +27,15 @@
 }
 
 .team-content-container {
+    align-self: stretch;
     display: flex;
     flex-direction: column;
-    background-image: url('@assets/inventory/charinfo_bg.png');
-    background-size: 100% 100%;
+    background: var(--team-surface);
+    border: 1px solid var(--team-edge);
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 3px oklch(0.21 0.025 250);
+    padding: 4px;
+    box-sizing: border-box;
     width: 23.875rem;
     max-width: calc(100vw - 100px);
     min-height: 25rem;
@@ -110,11 +115,20 @@
 }
 
 .team-info-container {
+    box-sizing: border-box;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 112px;
-    padding: 0 16px 0 52px;
+    min-height: 104px;
+    gap: 16px;
+    padding: 12px 12px 12px 44px;
+    background: var(--team-raised);
+    border-radius: 3px;
+}
+
+.team-info {
+    flex: 1;
+    min-width: 0;
 }
 
 .team-sp-container {
@@ -123,6 +137,7 @@
     background-size: 100% 100%;
     width: 60px;
     height: 60px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -142,11 +157,12 @@
 }
 
 .team-character-name {
-    max-width: 170px;
+    max-width: calc(100% - 38px);
+    margin-left: 38px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 500;
     color: #ffffff;
     text-transform: capitalize;
@@ -155,10 +171,11 @@
 
 .team-character-class {
     margin-bottom: 6px;
+    font-size: 1.25rem;
 }
 
 .team-exp-info span {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #ffffff;
 }
@@ -173,8 +190,8 @@
 }
 
 .team-exp-slider-container {
-    width: 214px;
-    height: 6px;
+    width: 100%;
+    height: 4px;
     background-color: #1c1f25;
     border-radius: 2px;
     margin-top: 8px;
@@ -196,7 +213,7 @@
     justify-content: center;
     align-items: center;
     gap: 24px;
-    padding: 24px 0 8px 0;
+    padding: 16px 0 12px;
 }
 
 .team-character-container {
@@ -211,7 +228,7 @@
     background-position: -40px -40px;
     background-repeat: no-repeat;
     animation: animate-sprite 0.7s steps(1) infinite;
-    transform: scale(.6);
+    image-rendering: pixelated;
 }
 
 .team-character-overlay {

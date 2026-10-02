@@ -3,7 +3,7 @@ import { h } from 'preact';
 import { Component } from 'preact';
 import { route, getCurrentUrl } from 'preact-router';
 
-import { Class, ClassLabels } from '@legion/shared/enums';
+import { ClassLabels } from '@legion/shared/enums';
 import { APICharacterData, CharacterUpdate, PlayerNetworkData, TeamMember } from '@legion/shared/interfaces';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { getSpritePath } from '../utils';
@@ -105,7 +105,6 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
             <button type="button" data-game-control
                 className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''} ${isClickable ? 'clickable' : ''} ${this.isSelected() ? 'selected' : ''}`}
                 data-character-id={member.id}
-                aria-pressed={isClickable ? this.isSelected() : undefined}
                 onClick={this.handleClick}
             >
                 {showSPBadge && member.sp > 0 && (
@@ -146,9 +145,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                 </div>
 
                 <div className="endgame_character_name">{member.name}</div>
-                <div className="endgame_character_class">
-                    <span className="team-class-label" data-class={Class[member.class]}>{ClassLabels[member.class]}</span>
-                </div>
+                <div className="endgame_character_class">{ClassLabels[member.class]}</div>
             </button>
         );
     }

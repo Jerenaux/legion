@@ -5,6 +5,23 @@
     padding: 4px;
 }
 
+.team-page .inventoryFullContainer {
+    box-sizing: border-box;
+    min-height: 25rem;
+    background: var(--team-surface);
+    border-color: var(--team-edge);
+}
+
+.team-page .inventoryContainer {
+    box-sizing: border-box;
+    border-color: oklch(0.21 0.025 250);
+    justify-content: flex-start;
+}
+
+.team-page .inventoryCategoryContainer {
+    background: var(--team-raised);
+}
+
 .inventoryContainer {
     padding: 4px;
     border-radius: 4px;

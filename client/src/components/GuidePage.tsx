@@ -112,7 +112,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h2 id="team" tabIndex={-1}>Build a team that works together</h2>
             <p>Open <strong>Team</strong> in the top navigation. Each roster card leads with the character’s class, followed by their name and level. Select a card to see their class, stats, equipment, carried consumables, and learned spells. Your shared inventory sits beside their sheet. Hover over or focus any item or learned spell, in your inventory or on the character sheet, for an instant preview of its effects, casting cost, and requirements. Hover over a stat label to learn what it does.</p>
             <figure>
-              <img src={loadout} width="1045" height="636" loading="lazy" alt="The Team screen: Warrior, White Mage, and Black Mage roster cards above Ember’s Black Mage character sheet and the shared inventory." />
+              <img src={loadout} width="1045" height="604" loading="lazy" alt="The Team screen: compact Warrior, White Mage, and Black Mage selectors with class crests above Ember’s Black Mage character sheet and the shared inventory." />
               <figcaption>Owning an item is not enough: assign it to the character who needs it before queuing.</figcaption>
             </figure>
             <h3>Know your roles</h3>

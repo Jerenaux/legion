@@ -333,7 +333,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         }
 
         return (
-            <div className="team-content-card-container">
+            <div className="team-content-card-container" data-class={Class[characterData.class]}>
                 <div className="team-content-container">
                     <div className="team-level">
                         <span>Lvl</span>

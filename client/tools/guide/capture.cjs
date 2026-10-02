@@ -246,12 +246,28 @@ if (!process.versions.electron) {
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
         fs.writeFileSync(path.join(dist, 'team-full.png'), (await win.webContents.capturePage()).toPNG());
-        await capture('loadout', {x: 270, y: 96, width: 1045, height: 636});
+        await capture('loadout', {x: 270, y: 96, width: 1045, height: 604});
         for (const [width, height] of [[1280, 720], [960, 540]]) {
           win.setContentSize(width, height);
           await ready();
           fs.writeFileSync(path.join(dist, `team-${width}.png`), (await win.webContents.capturePage()).toPNG());
         }
+        win.setContentSize(1280, 720);
+        for (const [index, name] of ['warrior', 'white-mage', 'black-mage'].entries()) {
+          await js(`document.querySelectorAll('.roster-character')[${index}].click()`);
+          await ready();
+          fs.writeFileSync(path.join(dist, `team-${name}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        win.showInactive();
+        win.webContents.focus();
+        await js(`document.querySelector('.roster-character').focus()`);
+        win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'TAB'});
+        win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'TAB'});
+        await ready();
+        fs.writeFileSync(path.join(dist, 'team-focus.png'), (await win.webContents.capturePage()).toPNG());
+        await js(`document.documentElement.style.fontSize = '20.8px'`);
+        await ready();
+        fs.writeFileSync(path.join(dist, 'team-large-text.png'), (await win.webContents.capturePage()).toPNG());
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');

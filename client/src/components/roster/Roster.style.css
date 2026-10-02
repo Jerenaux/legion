@@ -1,154 +1,187 @@
+.team-page {
+    --team-surface: oklch(0.27 0.025 250);
+    --team-raised: oklch(0.32 0.03 230);
+    --team-edge: oklch(0.44 0.035 230);
+    --team-muted: oklch(0.75 0.025 230);
+    --team-selection: oklch(0.85 0.12 205);
+}
+
+.team-page [data-class] {
+    --class-color: oklch(0.92 0.01 230);
+    --class-emblem: none;
+}
+
+.team-page [data-class="WARRIOR"] {
+    --class-emblem: '';
+    --class-color: oklch(0.85 0.12 78);
+    --class-frame: url('@assets/HUD/class_icon_frame_w.png');
+    --class-icon: url('@assets/shop/warrior_icon.png');
+}
+
+.team-page [data-class="WHITE_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.94 0.025 155);
+    --class-frame: url('@assets/HUD/class_icon_frame_wm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+.team-page [data-class="BLACK_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.83 0.10 300);
+    --class-frame: url('@assets/HUD/class_icon_frame_bm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+.team-class-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--class-color);
+    font-family: 'Kim', sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+.team-class-label::before {
+    content: var(--class-emblem);
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    background: var(--class-frame) center / contain no-repeat;
+}
+
+.team-class-label::after {
+    content: var(--class-emblem);
+    position: absolute;
+    left: 8px;
+    top: calc(50% - 8px);
+    width: 14px;
+    height: 16px;
+    background: oklch(0.2 0.02 250);
+    mask: var(--class-icon) center / contain no-repeat;
+}
+
 .rosterContainer {
     max-width: 1024px;
     margin: auto;
 }
 
+.rosterContainer .dividerContainer {
+    border-color: var(--team-edge);
+    margin-bottom: 12px;
+}
+
 .rosters {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 16px;
+    gap: 12px;
 }
 
-/* Class stays readable independently of portrait, selection, and color. */
-.team-page .team-class-label {
-    display: inline-flex;
+.roster-character {
+    position: relative;
+    isolation: isolate;
+    display: flex;
     align-items: center;
+    flex: 1 1 16rem;
     gap: 8px;
-    color: oklch(0.92 0.01 230);
-    font-family: 'Kim', sans-serif;
-    font-size: 1.125rem;
-    line-height: 1.3;
-    font-weight: 600;
-    text-transform: uppercase;
-    text-shadow: none;
+    min-width: 0;
+    min-height: 104px;
+    padding: 6px 16px 6px 8px;
+    border: 1px solid var(--team-edge);
+    border-radius: 4px;
+    background: var(--team-surface);
+    box-shadow: inset 0 0 0 3px oklch(0.21 0.025 250);
+    color: oklch(0.95 0.01 230);
+    cursor: pointer;
+    transition: background-color 160ms ease-out, border-color 160ms ease-out;
 }
 
-.team-page .team-class-label[data-class="WARRIOR"] {
-    --class-icon: url('@assets/shop/warrior_icon.png');
-    color: oklch(0.84 0.13 78);
+.roster-character:hover {
+    background: var(--team-raised);
+    border-color: var(--team-muted);
 }
 
-.team-page .team-class-label[data-class="WHITE_MAGE"] {
-    --class-icon: url('@assets/shop/mage_icon.png');
-    color: oklch(0.92 0.05 155);
+.roster-character[aria-pressed="true"] {
+    background: var(--team-raised);
+    border-color: var(--team-selection);
+    box-shadow: inset 0 0 0 3px oklch(0.21 0.025 250), inset 0 0 0 4px oklch(0.55 0.06 210);
 }
 
-.team-page .team-class-label[data-class="BLACK_MAGE"] {
-    --class-icon: url('@assets/shop/mage_icon.png');
-    color: oklch(0.83 0.10 300);
-}
-
-.team-page .team-class-label:is([data-class="WARRIOR"], [data-class="WHITE_MAGE"], [data-class="BLACK_MAGE"])::before {
+.roster-character[aria-pressed="true"]::after {
     content: '';
-    flex: 0 0 24px;
-    width: 24px;
-    height: 24px;
-    background: currentColor;
-    mask: var(--class-icon) center / contain no-repeat;
+    position: absolute;
+    bottom: -7px;
+    left: calc(50% - 6px);
+    width: 12px;
+    height: 12px;
+    background: var(--team-raised);
+    border-right: 1px solid var(--team-selection);
+    border-bottom: 1px solid var(--team-selection);
+    transform: rotate(45deg);
+}
+
+.roster-character:focus-visible {
+    outline: 2px solid oklch(0.88 0.12 85);
+    outline-offset: 4px;
+}
+
+.roster-character:active {
+    background: oklch(0.36 0.03 230);
+}
+
+.roster-portrait {
+    flex: 0 0 72px;
+    height: 88px;
+    position: relative;
+}
+
+.roster-portrait > span {
+    display: block;
+    width: 80px;
+    height: 96px;
+    transform: scale(0.9);
+    transform-origin: top left;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
     image-rendering: pixelated;
 }
 
-.rosters .endgame_character {
-    box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    grid-template-rows: auto 1fr auto;
-    column-gap: 12px;
-    flex: 1 1 15rem;
-    max-width: 20rem;
-    height: 148px;
-    padding: 16px;
-    background: oklch(0.23 0.02 250);
-    border: 1px solid oklch(0.39 0.03 230);
-    border-radius: 6px;
-    transition: border-color 160ms ease-out, background-color 160ms ease-out;
+.roster-identity {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: 'Kim', sans-serif;
 }
 
-.rosters .endgame_character::before,
-.rosters .endgame_character::after {
-    content: none;
-}
-
-.rosters .endgame_character:is(:hover, .selected) {
-    transform: none;
-    background: oklch(0.28 0.03 230);
-    border-color: oklch(0.85 0.12 205);
-    box-shadow: none;
-}
-
-.rosters .endgame_character.selected {
-    box-shadow: inset 0 0 0 1px oklch(0.85 0.12 205);
-}
-
-.rosters .endgame_character .endgame_character_class {
-    grid-area: 1 / 1 / 2 / -1;
-    margin: 0;
-    text-align: left;
-}
-
-.rosters .endgame_character_portrait {
-    grid-area: 2 / 1 / 4 / 2;
-    width: 64px;
-    height: 72px;
-    margin: 0;
-}
-
-.rosters .endgame_character .endgame_character_name {
-    grid-area: 2 / 2;
-    align-self: end;
-    margin: 0 0 4px;
+.roster-name {
+    max-width: calc(100% - 38px);
+    margin: 4px 0 2px 38px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    text-align: left;
-    font-size: 1rem;
-    color: oklch(0.95 0.01 230);
-    text-shadow: none;
+    font-size: 0.9375rem;
 }
 
-.rosters .endgame_character_level {
-    grid-area: 3 / 2;
-    position: static;
-    font-size: 0.875rem;
-    color: oklch(0.76 0.02 230);
-    text-shadow: none;
+.roster-level {
+    margin-left: 38px;
+    color: var(--team-muted);
+    font-size: 0.75rem;
 }
 
-.rosters .endgame_character_sp_badge {
-    top: auto;
-    left: auto;
-    bottom: 12px;
+.roster-sp {
+    position: absolute;
     right: 12px;
-    animation: none;
-    box-shadow: none;
+    bottom: 10px;
+    font-family: 'Kim', sans-serif;
+    font-size: 0.6875rem;
+    color: oklch(0.85 0.12 78);
 }
 
-.addCardContainer {
-    width: 304px;
-    height: 86px;
-    display: flex;
-    justify-content: flex-end;
-    cursor: pointer;
-}
-
-.addCard {
-    width: 258px;
-    height: 76px;
-    background-color: #1c1f25;
-    border: 1px solid #000000;
-    border-radius: 6px;
-    margin-right: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.addCard:hover {
-    background-color: #242830;
-}
-
-.addCard img {
-    width: 24px;
-    height: 24px;
+@media (prefers-reduced-motion: reduce) {
+    .roster-portrait > span { animation: none; background-position: -40px -40px; }
+    .roster-character { transition: none; }
 }
