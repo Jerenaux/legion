@@ -8,7 +8,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
+import { Target, Terrain, StatusEffect, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
@@ -418,7 +418,7 @@ export class Arena extends Phaser.Scene
         this.unlockInput();
         this.selectedPlayer?.cancelItem();
         this.selectTurnee();
-        silentErrorToast('That action is no longer valid. Choose another action.', 4000);
+        this.actionFeedback('That action is no longer valid. Choose another action.');
     }
 
     endTutorial() {
@@ -570,8 +570,9 @@ export class Arena extends Phaser.Scene
             const direction = action === 'next-unit' ? 1 : -1;
             this.selectOwnUnit(members[(current + direction + members.length) % members.length]);
         } else if (action === 'cancel') {
+            this.selectedPlayer?.cancelItem();
             this.selectedPlayer?.cancelSkill();
-            this.deselectPlayer();
+            this.selectTurnee();
         }
     };
 
@@ -599,16 +600,28 @@ export class Arena extends Phaser.Scene
         }
 
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
+        const unavailable = this.unavailableActionReason();
+        if (unavailable) {
+            // Let a player return to the active unit after inspecting another one.
+            if (player?.isPlayer && player === this.getPlayer(this.turnee?.team, this.turnee?.num) && player !== this.selectedPlayer) {
+                this.selectTurnee();
+            } else {
+                this.actionFeedback(unavailable);
+            }
+            return;
+        }
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
         if (pendingSpell != null) {
             if (!this.validateTarget(gridX, gridY, pendingSpell)) {
+                this.actionFeedback('Choose a highlighted target in range.');
                 this.playSound('nope', 0.2);
                 return;
             }
             this.sendSpell(gridX, gridY, player);
         } else if (pendingItem != null) {
             if (!this.validateTarget(gridX, gridY, pendingItem)) {
+                this.actionFeedback('Choose a highlighted target in range.');
                 this.playSound('nope', 0.2);
                 return;
             }
@@ -619,6 +632,8 @@ export class Arena extends Phaser.Scene
             this.handleMove(gridX, gridY);
         } else if (player){
             player.onClick();
+        } else {
+            this.actionFeedback('Outside movement range. Choose a blue tile.');
         }
     }
 
@@ -654,6 +669,7 @@ export class Arena extends Phaser.Scene
     handleMove(gridX, gridY) {
         if (!this.selectedPlayer.canMoveTo(gridX, gridY) || !this.hexGridManager.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY, this.isFree.bind(this))) {
             this.playSound('nope');
+            this.actionFeedback('You cannot reach that tile. Choose an empty blue tile.');
             return;
         }
         this.playSound('click');
@@ -665,6 +681,41 @@ export class Arena extends Phaser.Scene
         if (this.selectedPlayer) {
             events.emit('showPlayerBox', this.selectedPlayer.getProps());
         }
+        this.refreshTutorial();
+    }
+
+    refreshTutorial() {
+        if (!this.tutorialManager || !this.turnee) return;
+        const active = this.getPlayer(this.turnee.team, this.turnee.num);
+        if (!active) return;
+        const player = this.selectedPlayer;
+        const spell = player?.spells[player.pendingSpell];
+        events.emit('tutorialContext', {
+            turn: this.turnee.turnNumber, name: active.name, ownTurn: active.isPlayer,
+            selectedIsTurnee: player === active, canAct: active.canAct(),
+            hasEnemy: this.hasEnemyNextTo(active.gridX, active.gridY),
+            spells: active.spells, hasItem: active.hasUsableItem(), mp: active.mp,
+            pendingSpell: spell && {name: spell.name, cost: spell.cost, area: spell.radius > 1},
+            pendingItem: player?.inventory[player.pendingItem]?.name,
+            fire: this.hasFlame(active.gridX, active.gridY), ice: active.isInIce(),
+            poison: active.statuses[StatusEffect.POISON] !== 0,
+            muted: active.isMuted(), paralyzed: active.isParalyzed(),
+        });
+    }
+
+    actionFeedback(message: string) {
+        if (!this.gameEnded && !this.isReplay && !this.gameSettings?.spectator) {
+            events.emit('actionFeedback', message);
+        }
+    }
+
+    unavailableActionReason(player = this.selectedPlayer): string | undefined {
+        const active = this.turnee && this.getPlayer(this.turnee.team, this.turnee.num);
+        if (!active || !player) return 'Wait for your active character to be selected.';
+        if (!active.isPlayer) return 'It is your opponent’s turn.';
+        if (player !== active) return `${active.name} acts now. Select the active character.`;
+        if (player.isInIce()) return 'This character is frozen. Another character can break the ice.';
+        if (!player.canAct()) return 'This character cannot act right now.';
     }
 
     refreshOverview() {
@@ -787,12 +838,14 @@ export class Arena extends Phaser.Scene
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player?.setStatuses(statuses);
+        this.refreshTutorial();
     }
 
     processMPChange({team = this.playerTeamId, num, mp}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player?.setMP(mp);
+        this.refreshTutorial();
     }
 
     processUseItem({team, num, animation, name, sfx}) {
@@ -906,7 +959,7 @@ export class Arena extends Phaser.Scene
             }
         }
 
-        if (player?.isPlayer) {
+        if (flag && player?.isPlayer) {
             events.emit(`playerCastSpell`);
         }
     }
@@ -1470,7 +1523,7 @@ export class Arena extends Phaser.Scene
     hasEnemyNextTo(gridX, gridY) {
         const enemyTeam = this.teamsMap.get(this.getOtherTeam(this.playerTeamId))
         return enemyTeam.getMembers().some(member => {
-            return hexDistance(member.gridX, member.gridY, gridX, gridY) <= 1;
+            return member.isAlive() && hexDistance(member.gridX, member.gridY, gridX, gridY) <= 1;
         });
     }
 
@@ -1594,7 +1647,10 @@ export class Arena extends Phaser.Scene
         this.turnee = data.turnee;
         this.gameSettings.game0 = data.player.player.completedGames === 0;
 
-        this.tutorialManager = new TutorialManager(data.player.player.engagementStats);
+        if (!this.isReplay && !data.general.spectator) {
+            this.tutorialManager = new TutorialManager(events, data.player.player.engagementStats);
+            events.emit('combatTipsAvailable', data.player.player.completedGames < 3);
+        }
 
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));

@@ -452,13 +452,13 @@ if (!process.versions.electron) {
         assert(await js('routeAudio.filter(audio => audio.loop).every(audio => audio.paused)'), 'Menu music must stop before combat music');
         assert.deepEqual(await js('musicOverlaps'), [], 'Menu and combat music must not overlap');
         console.log('A match found while reading the guide opens combat, cleans up the queue, and hands off music');
-        await js(`combatCheck.arena.tutorialManager.queueMessage('howToCastSpell')`);
-        await waitFor('Boolean(document.querySelector(".tutorial-dialogue.spells"))');
+        await js(`combatCheck.events.emit('combatTipsVisibility', true); combatCheck.arena.refreshTutorial()`);
+        await waitFor('Boolean(document.querySelector(".combat-coach"))');
         for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [600, 600], [1920, 1080]]) {
           win.setContentSize(width, height);
           await ready();
           const spellTutorialLayout = await js(`(() => {
-            const dialogue = document.querySelector('.tutorial-dialogue.spells').getBoundingClientRect();
+            const dialogue = document.querySelector('.combat-coach').getBoundingClientRect();
             const spells = document.querySelector('#player_hud_spells').getBoundingClientRect();
             return {
               dialogue: {left: dialogue.left, top: dialogue.top, right: dialogue.right, bottom: dialogue.bottom},

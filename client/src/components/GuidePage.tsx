@@ -155,6 +155,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="controls">
             <h2 id="controls" tabIndex={-1}>Controls & quick help</h2>
+            <p>Open <strong>Combat tips</strong> during a match for guidance about the current character and available actions. Hide the tips whenever you like. If a target or move is invalid, a short explanation appears without spending your action.</p>
             <p>Use <strong>Settings → Text size</strong> to choose Standard (100%), Large (115%), or Extra large (130%). Menu, dialog, and combat HUD text update immediately, and the setting is saved for future sessions.</p>
             <p>Music starts while connecting and loops through the title screen. A separate track loops across the menus. Music fades out over two seconds before switching from the title screen to menus or from menus to combat, with a short fade-in for the next track. Music starts at {defaultGameSettings.musicVolume}%. Open <strong>Settings</strong> to adjust it from 0 (muted) to 100 (full volume). Your chosen volume is saved for future sessions.</p>
             <dl className="guide-definitions">

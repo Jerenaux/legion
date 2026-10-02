@@ -401,43 +401,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.selected = true;
 
             this.checkHeartbeat();
-            this.arena.relayEvent(`selectCharacter`);
-            this.arena.relayEvent(`selectCharacter_${this.class}`);
-            if (this.hasUsableItem()) {
-                this.arena.relayEvent(`selectCharacter_hasItem`);
-            }
 
-            if(this.hasSpells()) {
-                this.arena.relayEvent(`selectCharacter_hasSpells`);
-            }
-
-            // Iterate over statuses and emit events for each
-            Object.keys(this.statuses).forEach(status => {
-                if (this.statuses[status] > 0) {
-                    this.arena.relayEvent(`hasStatus_${status}`);
-                }
-            });
-
-            // Check if player on a flame
-            if (this.arena.hasFlame(this.gridX, this.gridY)) {
-                this.arena.relayEvent(`hasFlame`);
-            }
-
-            // Check if player on a ice
-            if (this.arena.hasIce(this.gridX, this.gridY)) {
-                this.arena.relayEvent(`hasIce`);
-            }
-
-            // Check if player has spells and if MP amount is too low for cheapest spell
-            const cheapestSpell = this.spells.reduce((cheapest, spell) => spell.cost < cheapest.cost ? spell : cheapest, this.spells[0]);
-            if (this.spells.length > 0 && this.mp < cheapestSpell.cost) {
-                this.arena.relayEvent(`hasLowMP`);
-            }
-
-            // Check if player is next to an enemy
-            if (this.arena.hasEnemyNextTo(this.gridX, this.gridY)) {
-                this.arena.relayEvent(`hasEnemy`);
-            }
         }
     }
 
@@ -593,7 +557,9 @@ export class Player extends Phaser.GameObjects.Container {
             return;
         }
         // console.log(`[Player:useItem] item: ${item.name}`);
-        if (!this.canAct()) {
+        const unavailable = this.arena.unavailableActionReason(this);
+        if (unavailable) {
+            this.arena.actionFeedback(unavailable);
             this.arena.playSound('nope', 0.2);
             return;
         }
@@ -682,15 +648,13 @@ export class Player extends Phaser.GameObjects.Container {
             this.cancelItem();
         }
 
-        // Check conditions for using a spell
-        if (!this.canAct() || spell.cost > this.mp || this.isMuted()) {
+        // Give the same feedback for mouse, keyboard, and controller actions.
+        const unavailable = this.arena.unavailableActionReason(this);
+        if (unavailable || spell.cost > this.mp || this.isMuted()) {
+            this.arena.actionFeedback(unavailable || (this.isMuted()
+                ? 'Silenced: choose another action.'
+                : `Not enough mana: needs ${spell.cost} MP, you have ${this.mp}.`));
             this.arena.playSound('nope', 0.2);
-            if (this.isMuted()) {
-                this.talk('I\'m silenced! I can\'t cast spells!');
-            }
-            if (this.mp < spell.cost) {
-                this.talk('Not enough MP!');
-            }
             return;
         }
 

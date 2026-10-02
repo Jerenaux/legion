@@ -78,6 +78,10 @@ Arena.prototype.connectToServer = async function () {
     itemEffects: items.map(({animation, sfx, name}) => ({animation, sfx, name})),
     resync: () => this.initializeGame(battle),
     close: () => new GameHUD({changeMainDivClass() {}}).closeGame()}});
+  if (location.pathname === '/game/practice-preview') {
+    await connectToLocalServer.call(this, location.origin);
+    return;
+  }
   const socketURL = new URLSearchParams(location.search).get('socketURL');
   if (location.pathname.includes('/timing-')) {
     // The smoke window stays offscreen. Electron reports it hidden on Windows
