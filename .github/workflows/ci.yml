@@ -99,6 +99,7 @@ jobs:
           sudo chown root:root node_modules/electron/dist/chrome-sandbox
           sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
           xvfb-run -a bun run test:guide
+          xvfb-run -a bun run test:guide --replay-off
           xvfb-run -a node ../website/smoke.cjs
 
       - name: Smoke-test actual packaged startup and clean shutdown offline

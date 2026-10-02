@@ -10,6 +10,12 @@ const webpack = require('webpack');
 const isDocker = process.env.IS_DOCKER;
 const isProduction = process.env.NODE_ENV === 'production';
 const isElectron = process.env.BUILD_TARGET === 'electron';
+// A leaked local opt-in must never turn a preview into a store recording.
+const storeReplay = isProduction && isElectron
+  && process.env.GITHUB_ACTIONS === 'true'
+  && process.env.GITHUB_EVENT_NAME === 'workflow_dispatch'
+  && process.env.GITHUB_WORKFLOW_REF === 'DynetisGames/legion/.github/workflows/release-desktop.yml@refs/heads/main'
+  && process.env.SENTRY_REPLAY_ENABLED === 'true';
 const requiredElectronUrls = ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL'];
 
 if (isProduction && isElectron) {
@@ -139,7 +145,7 @@ module.exports = {
       'process.env.BUILD_TARGET': JSON.stringify(process.env.BUILD_TARGET || 'web'),
       'process.env.SENTRY_RELEASE': JSON.stringify(`legion@${require('./package.json').version}`),
       'process.env.SENTRY_DIST': JSON.stringify(process.platform),
-      'process.env.SENTRY_REPLAY_ENABLED': JSON.stringify(process.env.SENTRY_REPLAY_ENABLED || ''),
+      'process.env.SENTRY_REPLAY_ENABLED': JSON.stringify(storeReplay ? 'true' : ''),
     }),
     new CopyWebpackPlugin({
       patterns: [
