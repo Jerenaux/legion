@@ -20,9 +20,11 @@ interface GameHUDProps {
 interface GameHUDState {
   playerVisible: boolean;
   player: PlayerProps;
+  commandPlayer: PlayerProps | null;
+  canCommand: boolean;
+  isPlayerTurn: boolean;
   pendingSpell: boolean;
   pendingItem: boolean;
-  showTargetBanner: boolean;
   team1: TeamOverview;
   team2: TeamOverview;
   gameOver: boolean;
@@ -46,7 +48,6 @@ interface GameHUDState {
   timeLeft: number;
   turnNumber: number;
   tutorialPosition: 'bottom' | 'spells' | 'items';
-  animate: boolean;
   isHUDVisible: boolean;
 }
 
@@ -57,9 +58,11 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   getInitialState = () => ({
     playerVisible: false,
     player: null,
+    commandPlayer: null,
+    canCommand: false,
+    isPlayerTurn: false,
     pendingSpell: false,
     pendingItem: false,
-    showTargetBanner: false,
     team1: null,
     team2: null,
     gameOver: false,
@@ -82,14 +85,12 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     timeLeft: 0,
     turnNumber: 0,
     turnDuration: 0,
-    animate: false,
     tutorialPosition: 'bottom' as const,
     isHUDVisible: true,
   });
 
   state = this.getInitialState();
 
-  lastPlayerKey = null;
   private lastPassTurnClick = 0;
 
   componentDidMount() {
@@ -115,7 +116,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       this.setState({
         pendingSpell: true,
         pendingItem: false,
-        showTargetBanner: true
       });
       this.handleCursorChange('spellCursor')
     });
@@ -124,7 +124,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       this.setState({
         pendingSpell: false,
         pendingItem: true,
-        showTargetBanner: true
       });
       this.handleCursorChange('itemCursor')
     });
@@ -132,7 +131,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('clearPendingSpell', () => {
       this.setState({
         pendingSpell: false,
-        showTargetBanner: false
       });
       this.handleCursorChange('normalCursor')
     });
@@ -140,7 +138,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     events.on('clearPendingItem', () => {
       this.setState({
         pendingItem: false,
-        showTargetBanner: false
       });
       this.handleCursorChange('normalCursor')
     });
@@ -162,15 +159,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     window.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  showPlayerBox = (playerData: PlayerProps) => {
-    const playerKey = `${playerData.team}-${playerData.number}`;
-    const isCharacterSwitch = this.lastPlayerKey !== playerKey;
-    this.lastPlayerKey = playerKey;
-
-    this.setState({
-      player: playerData,
-      animate: !isCharacterSwitch
-    });
+  showPlayerBox = (player: PlayerProps | null, commandPlayer: PlayerProps | null, canCommand: boolean, isPlayerTurn: boolean) => {
+    this.setState({player, commandPlayer, canCommand, isPlayerTurn});
   }
 
   updateOverview = (
@@ -251,7 +241,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
     this.lastPassTurnClick = now;
 
-    if (this.state.pendingSpell || this.state.pendingItem) {
+    if (!this.state.canCommand || this.state.pendingSpell || this.state.pendingItem) {
       return;
     }
 
@@ -281,11 +271,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
     return (
       <div className="gamehud height_full flex flex_col justify_between padding_bottom_16">
-        {isHUDVisible && this.state.showTargetBanner && (
-          <div className="target_selection_banner">
-            Select a target
-          </div>
-        )}
         {isHUDVisible && (
           <>
             {showOverview && (
@@ -298,22 +283,13 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         )}
         {isHUDVisible && (
           <PlayerBar
-            hp={player?.hp || 0}
-            maxHp={player?.maxHp || 0}
-            mp={player?.mp || 0}
-            maxMp={player?.maxMp || 0}
-            hasSpells={player?.spells?.length > 0}
-            statuses={player?.statuses}
-            isPlayerTurn={player?.isPlayer}
+            player={this.state.commandPlayer}
+            canAct={this.state.canCommand}
+            isPlayerTurn={this.state.isPlayerTurn}
             turnDuration={this.state.turnDuration}
             timeLeft={this.state.timeLeft}
             turnNumber={this.state.turnNumber}
             onPassTurn={this.handlePassTurn}
-            animate={this.state.animate}
-            pendingItem={player?.pendingItem}
-            pendingSpell={player?.pendingSpell}
-            items={player?.items}
-            spells={player?.spells}
             eventEmitter={events}
           />
         )}

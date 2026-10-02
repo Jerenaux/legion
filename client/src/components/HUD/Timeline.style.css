@@ -147,10 +147,9 @@
   border-radius: 2px;
   text-shadow: 0 0 10px rgba(113, 222, 255, 0.3);
   position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 4px;
+  top: 50%;
+  left: -110px;
+  transform: translateY(-50%);
   white-space: nowrap;
 }
 

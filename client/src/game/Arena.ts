@@ -95,6 +95,7 @@ export class Arena extends Phaser.Scene
     gridMap: Map<string, Player> = new Map<string, Player>();
     teamsMap: Map<number, Team> = new Map<number, Team>();
     selectedPlayer: Player | null = null;
+    private commandPlayer: Player | null = null;
     localAnimationSprite: Phaser.GameObjects.Sprite;
     terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
     terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
@@ -662,9 +663,12 @@ export class Arena extends Phaser.Scene
     }
 
     refreshBox() {
-        if (this.selectedPlayer) {
-            events.emit('showPlayerBox', this.selectedPlayer.getProps());
-        }
+        if (this.selectedPlayer?.isPlayer) this.commandPlayer = this.selectedPlayer;
+        this.commandPlayer ??= this.teamsMap.get(this.playerTeamId)?.members.find(player => player.isAlive()) || null;
+        const canCommand = !this.gameEnded && !this.gameSettings.spectator && this.commandPlayer === this.selectedPlayer && this.commandPlayer?.canAct() &&
+            this.turnee?.team === this.commandPlayer.team.id && this.turnee?.num === this.commandPlayer.num;
+        events.emit('showPlayerBox', this.selectedPlayer?.getProps() || null,
+            this.commandPlayer?.getProps() || null, Boolean(canCommand), this.turnee?.team === this.playerTeamId);
     }
 
     refreshOverview() {
@@ -680,10 +684,8 @@ export class Arena extends Phaser.Scene
         events.emit(event, data);
     }
 
-    refreshUI(num) {
-        if (this.selectedPlayer && num === this.selectedPlayer.num) {
-            this.refreshBox();
-        }
+    refreshUI(_num) {
+        this.refreshBox();
         this.refreshOverview();
     }
 
@@ -708,6 +710,7 @@ export class Arena extends Phaser.Scene
             this.selectedPlayer.deselect();
             this.selectedPlayer.cancelSkill();
             this.selectedPlayer = null;
+            this.refreshBox();
             this.hexGridManager.clearHighlight();
         }
     }
@@ -1591,6 +1594,7 @@ export class Arena extends Phaser.Scene
         this.gameSettings.spectator = data.general.spectator;
         this.gameSettings.mode = data.general.mode;
         this.queue = data.queue;
+        this.commandPlayer = null;
         this.turnee = data.turnee;
         this.gameSettings.game0 = data.player.player.completedGames === 0;
 

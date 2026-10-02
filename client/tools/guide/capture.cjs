@@ -234,7 +234,7 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock')) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -271,14 +271,20 @@ if (!process.versions.electron) {
         assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
+      } else if (process.argv.includes('--dock')) {
+        win.show();
+        await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        await ready();
+        await require('./command-dock.cjs')({js, waitFor, ready, win, dist});
       } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
         await ready();
         fs.writeFileSync(path.join(dist, 'battle-full.png'), (await win.webContents.capturePage()).toPNG());
         await capture('battle', {x: 340, y: 290, width: 840, height: 405});
-        await capture('actions', {x: 400, y: 790, width: 960, height: 110});
-        await capture('turn-order', {x: 570, y: 730, width: 460, height: 90});
+        await capture('actions', {x: 400, y: 800, width: 800, height: 100});
+        await capture('turn-order', {x: 460, y: 730, width: 570, height: 70});
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
@@ -686,7 +692,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.
