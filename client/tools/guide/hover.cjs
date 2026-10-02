@@ -6,9 +6,9 @@ const path = require('node:path');
 module.exports = async ({win, js, waitFor, ready, output}) => {
   await win.loadURL('app://legion/game/guide-local');
   await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".timeline_character"))');
-  win.showInactive();
   win.webContents.debugger.attach('1.3');
-  // Exercise browser input without depending on which desktop app has OS focus.
+  // Keep the window hidden so the host display cannot clamp test viewport sizes.
+  // CDP input and focus emulation do not require a visible desktop window.
   await win.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', {enabled: true});
   await ready();
   const move = async point => {
