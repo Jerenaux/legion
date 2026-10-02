@@ -370,3 +370,5 @@
 @media (prefers-reduced-motion: reduce) {
   .team-reveal-overlay *, .team-reveal-wrapper::before, .team-reveal-wrapper::after { animation: none !important; transition: none !important; }
 }
+.team-reveal-wrapper .endgame_character { height: auto; min-height: 180px; }
+.team-reveal-wrapper .endgame_character_portrait { flex-shrink: 0; }
