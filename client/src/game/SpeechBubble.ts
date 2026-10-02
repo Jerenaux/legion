@@ -9,6 +9,7 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
     private text: string;
     private timer: Phaser.Time.TimerEvent;
     private layoutFrame: number | null = null;
+    private resizeObserver: ResizeObserver;
 
     constructor(scene: Phaser.Scene, x: number, y: number, text: string) {
         super(scene, x, y);
@@ -27,7 +28,7 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
         // Create the DOM element for text
         const style = `
             font-family: Kim;
-            font-size: 14px;
+            font-size: 0.875rem;
             max-width: 130px;
             color: #fff;
             text-align: center;
@@ -38,6 +39,8 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
         this.content = scene.add.dom(0, 0, 'div', style, text);
         this.content.setOrigin(0.5);
         this.add(this.content);
+        this.resizeObserver = new ResizeObserver(() => this.layout());
+        this.resizeObserver.observe(this.content.node as HTMLElement);
 
         this.layout();
     }
@@ -72,6 +75,7 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
     }
 
     destroy(fromScene?: boolean) {
+        this.resizeObserver?.disconnect();
         if (this.layoutFrame !== null) cancelAnimationFrame(this.layoutFrame);
         this.layoutFrame = null;
         this.timer?.destroy();

@@ -10,7 +10,7 @@
 }
 
 .dialog-heading {
-    font-size: 12px;
+    font-size: 0.75rem;
     text-align: center;
 }
 
@@ -33,7 +33,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 8px;
+    font-size: 0.5rem;
     color: #ffffff;
 }
 
@@ -71,7 +71,7 @@
 }
 
 .character-info-dialog-card span {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #ffffff;
     padding: 2px;
@@ -82,7 +82,7 @@
     justify-content: space-between;
     /* min-width: 28px; */
     margin-right: 4px;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: white;
 }
 
@@ -144,7 +144,7 @@
 }
 
 .dialog-consumable-info span {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #ffffff;
 }
 
@@ -177,21 +177,21 @@
 }
 
 .equip-dialog-container .equip-dialog-name {
-    font-size: 12px;
+    font-size: 0.75rem;
     margin-bottom: -6px;
     text-transform: capitalize;
     text-align: center;
 }
 
 .equip-dialog-container .equip-dialog-lvl {
-    font-size: 10px;
+    font-size: 0.625rem;
     padding: 4px;
     border-radius: 4px;
     color: white;
 }
 
 .dialog-spell-container .equip-dialog-lvl {
-    font-size: 10px;
+    font-size: 0.625rem;
     padding: 4px;
     border-radius: 4px;
     color: white;
@@ -209,7 +209,7 @@
 
 
 .equip-dialog-container .equip-dialog-class {
-    font-size: 12px;
+    font-size: 0.75rem;
     padding: 4px 8px;
     border-radius: 8px;
     background-color: #303540;
@@ -219,7 +219,7 @@
 
 
 .dialog-spell-container .equip-dialog-class {
-    font-size: 12px;
+    font-size: 0.75rem;
     padding: 4px 8px;
     border-radius: 8px;
     background-color: #303540;
@@ -232,7 +232,7 @@
 }
 
 .equip-dialog-container .equip-dialog-desc {
-    font-size: 10px;
+    font-size: 0.625rem;
     text-align: center;
     color: #71deff;
 }
@@ -289,7 +289,7 @@
 }
 
 .dialog-spell-container p {
-    font-size: 10px;
+    font-size: 0.625rem;
     text-align: center;
 }
 
@@ -332,7 +332,7 @@
 }
 
 .dialog-spell-info span {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #ffffff;
 }
 
@@ -360,7 +360,7 @@
 }
 
 .dialog-spell-modal-text {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #71deff;
     text-align: center;
     margin-bottom: 8px;
@@ -374,7 +374,7 @@
 }
 
 .dialog-spell-modal-btns > button {
-    font-size: 10px;
+    font-size: 0.625rem;
     padding: 4px 6px;
     border: 1px solid #244752;
     border-radius: 4px;
@@ -449,7 +449,7 @@
 }
 
 .dialog-item-title span {
-    font-size: 11px;
+    font-size: 0.6875rem;
     color: #ffffff;
     text-transform: capitalize;
 }
@@ -461,7 +461,7 @@
 }
 
 .dialog-item-title .dialog-item-title-info {
-    font-size: 8px;
+    font-size: 0.5rem;
     color: #71deff;
 }
 
@@ -478,7 +478,7 @@
 }
 
 .dialog-item-info span {
-    font-size: 10px;
+    font-size: 0.625rem;
 }
 
 .dialog-item-info .character-info-dialog-card {
@@ -486,7 +486,7 @@
 }
 
 .dialog-item-info .character-info-dialog-card span {
-    font-size: 10px;
+    font-size: 0.625rem;
 }
 
 .dialog-sell {
@@ -500,7 +500,7 @@
     padding: 4px 8px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 8px !important;
+    font-size: 0.5rem !important;
 }
 
 .dialog-sell:hover {
@@ -510,4 +510,49 @@
 .dialog-sell img {
     width: 10px !important;
     height: 10px !important;
+}
+/* SP spending needs readable text and controls even at the default text size. */
+.character-info-dialog-container,
+.dialog-SP-modal {
+    box-sizing: border-box;
+    width: 22rem;
+    max-width: calc(100vw - 32px);
+    padding: 20px;
+    font-size: 1.125rem;
+    line-height: 1.45;
+}
+.sp-dialog-title {
+    margin: 0 0 16px;
+    color: #f4f5f7;
+    font-size: 1.25rem;
+    text-align: center;
+}
+.character-info-dialog-container .character-info-dialog-card span,
+.character-info-dialog-container .character-info-dialog-card-text {
+    font-size: 1.125rem;
+}
+.character-info-dialog-container .dialog-button-container button,
+.dialog-SP-modal .dialog-button-container button {
+    font: inherit;
+    font-size: 1rem;
+    min-height: 44px;
+    padding: 8px 12px;
+    flex: 1 1 auto;
+}
+.character-info-dialog-container .dialog-button-container button img,
+.dialog-SP-modal .dialog-button-container button img {
+    width: 1rem;
+    height: 1rem;
+}
+.character-info-dialog-control-btn {
+    min-width: 44px;
+    min-height: 44px;
+}
+.dialog-SP-modal {
+    position: static;
+    margin: 0;
+}
+.dialog-SP-modal .dialog-spell-modal-text {
+    font-size: 1.125rem;
+    margin-bottom: 20px;
 }

@@ -27,7 +27,7 @@
     right: 16px;
     bottom: 16px;
     color: oklch(0.78 0.01 85);
-    font: 14px/1.4 Arial, sans-serif;
+    font: 0.875rem/1.4 Arial, sans-serif;
     text-shadow: 0 1px 3px oklch(0.15 0.005 85);
 }
 
@@ -142,7 +142,7 @@
 
 .title-screen-loading p {
   margin: 0;
-  font: 18px/1.5 Arial, sans-serif;
+  font: 1.125rem/1.5 Arial, sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {

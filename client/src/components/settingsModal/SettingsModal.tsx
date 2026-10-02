@@ -2,7 +2,7 @@ import { h } from 'preact';
 import { Component } from 'preact';
 import { events } from '../HUD/GameHUD';
 import { isElectron, getElectronAPI } from '../../utils/electronUtils';
-import {defaultGameSettings, loadGameSettings} from '../../settings';
+import {applyTextSize, defaultGameSettings, loadGameSettings} from '../../settings';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -10,6 +10,7 @@ interface SettingsModalProps {
 
 export class SettingsModal extends Component<SettingsModalProps> {
     state = {
+      textSize: defaultGameSettings.textSize,
       musicCurrentValue: defaultGameSettings.musicVolume,
       musicMinValue: 0,
       musicMaxValue: 100,
@@ -23,6 +24,7 @@ export class SettingsModal extends Component<SettingsModalProps> {
     componentDidMount() {
       const settings = loadGameSettings();
       this.setState({
+        textSize: settings.textSize,
         musicCurrentValue: settings.musicVolume,
         sfxCurrentValue: settings.sfxVolume,
         selectedKeyboardLayout: localStorage.getItem('gameSettings') ? settings.keyboardLayout : this.detectKeyboardLayout(),
@@ -41,6 +43,9 @@ export class SettingsModal extends Component<SettingsModalProps> {
     }
 
     componentDidUpdate(_prevProps, prevState) {
+      if (prevState.textSize !== this.state.textSize) {
+        this.saveSettings();
+      }
       if (prevState.musicCurrentValue !== this.state.musicCurrentValue) {
         this.saveSettings();
       }
@@ -57,11 +62,13 @@ export class SettingsModal extends Component<SettingsModalProps> {
 
     saveSettings = () => {
       const settings = {
+        textSize: this.state.textSize,
         musicVolume: this.state.musicCurrentValue,
         sfxVolume: this.state.sfxCurrentValue,
         keyboardLayout: this.state.selectedKeyboardLayout,
         isFullscreen: this.state.isFullscreen,
       };
+      applyTextSize(settings.textSize);
       localStorage.setItem('gameSettings', JSON.stringify(settings));
       events.emit('settingsChanged', settings);  // Emit the settingsChanged event
     }
@@ -96,6 +103,14 @@ export class SettingsModal extends Component<SettingsModalProps> {
       return (
         <div className="setting_menu flex flex_col gap_4">
           <div className="setting_dialog">
+            <label className="setting_text_size" htmlFor="text-size">
+              Text size
+              <select id="text-size" value={this.state.textSize} onChange={event => this.setState({textSize: Number((event.target as HTMLSelectElement).value) as typeof this.state.textSize})}>
+                <option value="100">Standard (100%)</option>
+                <option value="115">Large (115%)</option>
+                <option value="130">Extra large (130%)</option>
+              </select>
+            </label>
             <div className="setting_dialog_keyboard">
               Keyboard layout:
             </div>

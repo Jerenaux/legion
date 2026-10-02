@@ -75,12 +75,12 @@
 }
 
 .season-recap-title {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #ffa600;
 }
 
 .season-recap-label {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #FFFFFF;
 }
 
@@ -96,7 +96,7 @@
 }
 
 .season-recap-img span {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #FFFFFF;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .season-share-button span {
-    font-size: 8px;
+    font-size: 0.5rem;
     color: #ffa600;
 }
 
@@ -148,7 +148,7 @@
 }
 
 .recap-season-timer-label span {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #ffa600;
 }
 
@@ -161,7 +161,7 @@
 }
 
 .recap-season-timer span {
-    font-size: 12px;
+    font-size: 0.75rem;
 }
 
 .season-timer-icon {

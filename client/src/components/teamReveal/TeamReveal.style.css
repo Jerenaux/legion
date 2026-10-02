@@ -16,7 +16,7 @@
 .team-reveal-title {
   color: #ffffff;
   font-family: 'Kim', sans-serif;
-  font-size: clamp(24px, 4vw, 36px);
+  font-size: clamp(1.5rem, calc(4vw * var(--text-scale, 1)), 2.25rem);
   text-align: center;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
   animation: fadeInDown 0.6s ease-out;
@@ -197,7 +197,7 @@
   background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
   color: #1c1f25;
   font-family: 'Kim', sans-serif;
-  font-size: clamp(18px, 3vw, 24px);
+  font-size: clamp(1.125rem, calc(3vw * var(--text-scale, 1)), 1.5rem);
   padding: clamp(12px, 2vh, 16px) clamp(32px, 4vw, 48px);
   border: none;
   border-radius: 4px;

@@ -31,8 +31,9 @@
     flex-direction: column;
     background-image: url('@assets/inventory/charinfo_bg.png');
     background-size: 100% 100%;
-    width: 382px;
-    height: 400px;
+    width: 23.875rem;
+    max-width: calc(100vw - 100px);
+    min-height: 25rem;
     position: relative;
 }
 
@@ -98,12 +99,12 @@
 }
 
 .team-level span {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #ffa600;
 }
 
 .team-level .level-span {
-    font-size: 16px;
+    font-size: 1rem;
     color: #ffffff;
     font-weight: 600;
 }
@@ -130,12 +131,12 @@
 }
 
 .team-sp-container span {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #ffffff;
 }
 
 .team-sp-container .sp-span {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     color: #71deff;
 }
@@ -145,7 +146,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
     color: #ffffff;
     text-transform: capitalize;
@@ -157,14 +158,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 10px;
+    font-size: 0.625rem;
     font-weight: 500;
     color: #ffa600;
     text-transform: uppercase;
 }
 
 .team-exp-info span {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #ffffff;
 }
@@ -244,8 +245,8 @@
 }
 
 .character-info-bar {
-    width: 108px;
-    height: 24px;
+    width: 6.75rem;
+    min-height: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -264,7 +265,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 46px;
+    width: 2.875rem;
     height: 100%;
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
@@ -281,13 +282,13 @@
 }
 
 .character-info-bar .info-class span {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #ffffff;
 }
 
 .character-info-bar .curr-info-container {
-    width: 60px;
+    width: 3.75rem;
     display: flex;
     justify-content: center;
     font-family: 'Kim', sans-serif;
@@ -298,7 +299,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 12px;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #ffffff;
 }

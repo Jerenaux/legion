@@ -67,7 +67,7 @@
 }
 
 .shop-tab-label {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -109,7 +109,7 @@
 
 .equipment-type-title {
     color: #e0f2ff;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
     text-transform: uppercase;
     padding: 8px 16px;
@@ -177,7 +177,7 @@
 
 .spells-type-title {
     color: #e0f2ff;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
     text-transform: uppercase;
     padding: 8px 16px;
@@ -221,13 +221,13 @@
 
 .locked-spells-notice h3 {
     color: #e0f2ff;
-    font-size: 18px;
+    font-size: 1.125rem;
     margin: 0;
 }
 
 .locked-spells-notice p {
     color: #add8e6;
-    font-size: 20px;
+    font-size: 1.25rem;
     margin: 0;
     line-height: 1.5;
 }
@@ -259,7 +259,7 @@
 
 .consumables-type-title {
     color: #e0f2ff;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
     text-transform: uppercase;
     padding: 8px 16px;
@@ -281,3 +281,12 @@
     width: 60%;
     background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
 }
+/* Reflow cards and tabs as text grows instead of widening the whole page. */
+.shop-container { width: 100%; min-width: 0; box-sizing: border-box; padding: 0 16px; }
+.shop-content { min-width: 0; }
+.shop-tabs-container { flex-wrap: wrap; box-sizing: border-box; }
+.shop-items-container, .equipment-section, .spells-section, .consumables-section { box-sizing: border-box; }
+.shop-items-container, .equipment-grid, .spells-grid, .consumables-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+.shop-card-container, .spell-card-container { min-width: 0; max-width: 100%; box-sizing: border-box; }

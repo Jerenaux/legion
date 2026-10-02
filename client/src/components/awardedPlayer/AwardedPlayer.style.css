@@ -46,7 +46,7 @@
 }
 
 .award-player-name {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #FFFFFF;
     position: absolute;
@@ -58,7 +58,7 @@
 }
 
 .award-player-title {
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #ffa600;
     position: absolute;
@@ -70,7 +70,7 @@
 }
 
 .award-player-desc {
-    font-size: 10px;
+    font-size: 0.625rem;
     color: #FFFFFF;
     position: absolute;
     bottom: 16px; 

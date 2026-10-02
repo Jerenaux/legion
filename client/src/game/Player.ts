@@ -117,7 +117,7 @@ export class Player extends Phaser.GameObjects.Container {
         this.add(this.animationSprite);
 
         if (isPlayer) {
-            this.numKey = scene.add.text(30, 70, num.toString(), { fontFamily: 'Kim', fontSize: '12px', color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(1,1);
+            this.numKey = scene.add.text(30, 70, num.toString(), { fontFamily: 'Kim', fontSize: 12 * loadGameSettings().textSize / 100, color: '#fff', stroke: '#000', strokeThickness: 3 }).setOrigin(1,1);
             this.add(this.numKey);
         }
 
@@ -835,7 +835,7 @@ export class Player extends Phaser.GameObjects.Container {
 
         const textObject = this.scene.add.text(
             randomXOffset,( -this.sprite.height / 2) + 15 + randomYOffset, `${String(text)}`,
-            { fontSize: '24px', color, stroke: '#000', strokeThickness: 3, fontFamily: 'Kim',}
+            { fontSize: 24 * loadGameSettings().textSize / 100, color, stroke: '#000', strokeThickness: 3, fontFamily: 'Kim',}
             ).setOrigin(0.5).setDepth(10)   ;
         this.add(textObject);
         this.lastOverheadMessage = Date.now();

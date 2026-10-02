@@ -51,7 +51,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #ffffff;
   text-transform: uppercase;
 }
@@ -130,7 +130,7 @@
 
 .turn_order_label {
   font-family: 'Kim', sans-serif;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -179,13 +179,13 @@
 
 @media screen and (max-width: 1500px) and (orientation: landscape) {
   .turn_order_label {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 }
 
 @media screen and (max-width: 1400px) and (orientation: landscape) {
   .turn_order_label {
-    font-size: 10px;
+    font-size: 0.625rem;
   }
 }
 

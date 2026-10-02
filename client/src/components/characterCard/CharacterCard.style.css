@@ -18,12 +18,12 @@
 }
 
 .characterLevel .level {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: #ffa600;
 }
 
 .characterLevel .levelVal {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
   color: #ffffff;
 }
@@ -42,7 +42,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
     color: #ffffff;
     text-transform: capitalize;
@@ -53,7 +53,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 10px;
+    font-size: 0.625rem;
     font-weight: 500;
     color: #ffa600;
     text-transform: uppercase;
@@ -83,7 +83,7 @@
   right: -4px;
   padding: 2px 4px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: white;
   animation: bgColorChange 0.5s ease-in-out infinite;
 

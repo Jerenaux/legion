@@ -1202,6 +1202,7 @@ export class Arena extends Phaser.Scene
 
     onSettingsChanged = (settings) => {
         this.sfxVolume = settings.sfxVolume / 100;
+        for (const player of this.gridMap.values()) player.numKey?.setFontSize(12 * settings.textSize / 100);
     }
 
     playSound(name, volume = 1, loop = false) {
@@ -1700,7 +1701,7 @@ export class Arena extends Phaser.Scene
             },
             onComplete: () => {
                 // Once band animation is complete, animate 'START' text
-                const startText = this.add.text(0, bandY + (bandHeight - 20) / 2, 'FIGHT!', { fontSize: '40px', color: '#FFFFFF', fontFamily: 'Kim' }).setAlpha(0).setDepth(11);
+                const startText = this.add.text(0, bandY + (bandHeight - 20) / 2, 'FIGHT!', { fontSize: 40 * loadGameSettings().textSize / 100, color: '#FFFFFF', fontFamily: 'Kim' }).setAlpha(0).setDepth(11);
                 startText.x = -startText.width; // Position text off-screen to the left
 
                 // Slide in animation for 'START' text

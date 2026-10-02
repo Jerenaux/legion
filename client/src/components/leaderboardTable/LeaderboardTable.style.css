@@ -9,7 +9,7 @@
     width: 400px; 
     left: calc(50% - 200px);  
     top: 30%;
-    font-size: 28px; 
+    font-size: 1.75rem; 
     text-align: center;
     color: antiquewhite;
 }
@@ -45,7 +45,7 @@
 .rank-table thead tr th { 
     width: 126px;
     padding: 4px 0;
-    font-size: 14px;
+    font-size: 0.875rem;
     text-transform: capitalize; 
     border-bottom: 1px solid #ffa600;
     cursor: pointer; 

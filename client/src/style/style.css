@@ -110,7 +110,7 @@ canvas {
   margin-left: 1px;
   font-weight: bold;
   font-family: 'Kim', sans-serif;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 .player-class {
@@ -285,7 +285,7 @@ canvas {
     bottom: 0px;
     right: 4px;
     color: white;
-    font-size: 14px;
+    font-size: 0.875rem;
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     font-family: 'Kim', sans-serif;
 }
@@ -294,7 +294,7 @@ canvas {
   position: absolute;
   bottom: -1px;
   left: 2px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background-color: rgba(0, 0, 0, 0.5);
   /* Black background with 50% opacity */
   border-radius: 10px;
@@ -327,7 +327,7 @@ canvas {
 .info-box-desc {
   margin-top: 3px;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .mini {
@@ -368,7 +368,7 @@ canvas {
 }
 
 .member-name {
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .member-index {
@@ -377,7 +377,7 @@ canvas {
   right: 0px;
   color: white;
   /* Or any color that matches your design */
-  font-size: 10px;
+  font-size: 0.625rem;
   /* Adjust as needed */
   background-color: rgba(0, 0, 0, 0.5);
   /* Black background with 50% opacity */
@@ -496,7 +496,7 @@ canvas {
   padding: 10px 20px;
   font-weight: bold;
   border: 1px solid #CD853F;
-  font-size: 30px;
+  font-size: 1.875rem;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-family: Kim, sans-serif;
@@ -537,7 +537,7 @@ canvas {
   color: lightgrey;
   padding: 5px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.875rem;
   background-color: #080c15;
   border-radius: 3px;
   margin-right: 5px;
@@ -562,7 +562,7 @@ canvas {
   border-radius: 50%;
   background-color: red;
   color: white;
-  font-size: 8px;
+  font-size: 0.5rem;
 }
 
 .notificationList {
@@ -832,7 +832,7 @@ canvas {
   font-weight: bold;
   box-shadow: 0 0 0 10px #070507, 0 0 0 12px #CD853F;
   /* Creates a 10px transparent gap and a 2px border */
-  font-size: 30px;
+  font-size: 1.875rem;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-family: Kim, sans-serif;
@@ -928,7 +928,7 @@ canvas {
   position: absolute;
   font-family: Kim, sans-serif;
   color: white;
-  font-size: 30px;
+  font-size: 1.875rem;
   /* text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; */
   top: 0;
   text-shadow: 2px 2px 4px black;
@@ -941,7 +941,7 @@ canvas {
   left: 15px;
   font-family: Kim, sans-serif;
   color: white;
-  font-size: 80px;
+  font-size: 5rem;
   opacity: 0.15;
 }
 
@@ -951,7 +951,7 @@ canvas {
   left: 15px;
   font-family: Kim, sans-serif;
   color: white;
-  font-size: 15px;
+  font-size: 0.9375rem;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-style: italic;
 }
@@ -967,7 +967,7 @@ canvas {
 }
 
 .character-full-level {
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 .level-area {
@@ -1023,12 +1023,12 @@ canvas {
 }
 
 .bigger-number {
-  font-size: 25px;
+  font-size: 1.5625rem;
   margin-left: 5px;
 }
 
 .smaller-number {
-  font-size: 12px;
+  font-size: 0.75rem;
   margin-left: 5px;
 }
 
@@ -1081,7 +1081,7 @@ canvas {
 .shop-item-card-name {
   position: absolute;
   top: 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   color: white;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
@@ -1093,7 +1093,7 @@ canvas {
   left: 15px;
   font-family: Kim, sans-serif;
   color: white;
-  font-size: 80px;
+  font-size: 5rem;
   opacity: 0.15;
 }
 
@@ -1213,7 +1213,7 @@ canvas {
   position: absolute;
   top: -10px;
   right: -8px;
-  font-size: 30px;
+  font-size: 1.875rem;
 }
 
 .closebtn:hover {
@@ -1254,7 +1254,7 @@ canvas {
   width: 60px;
   height: 30px;
   padding: 5px;
-  font-size: 25px;
+  font-size: 1.5625rem;
   box-shadow: 0 0 0 5px #070507, 0 0 0 6px #CD853F;
   /* Creates a 10px transparent gap and a 2px border */
 
@@ -1285,7 +1285,7 @@ canvas {
   position: absolute;
   font-family: Kim, sans-serif;
   color: white;
-  font-size: 45px;
+  font-size: 2.8125rem;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   top: 0;
   padding-left: 100px;
@@ -1300,12 +1300,12 @@ canvas {
   left: 15px;
   font-family: Kim, sans-serif;
   color: white;
-  font-size: 80px;
+  font-size: 5rem;
   opacity: 0.15;
 }
 
 /* .inventory-capacity {
-  font-size: 30px;
+  font-size: 1.875rem;
   vertical-align: middle;
 } */
 
@@ -1386,7 +1386,7 @@ canvas {
   cursor: pointer;
   font-family: 'Kim', sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-  font-size: 20px;
+  font-size: 1.25rem;
   border-radius: 5px;
 }
 
@@ -1425,13 +1425,13 @@ canvas {
   display: flex;
   justify-content: center;
   color: white;
-  font-size: 30px;
+  font-size: 1.875rem;
   font-family: 'Kim', sans-serif;
 }
 
 .endgame-title {
   font-family: 'Kim', sans-serif;
-  font-size: 50px;
+  font-size: 3.125rem;
   color: white;
   font-style: italic;
 }
@@ -1443,7 +1443,7 @@ canvas {
 }
 
 .endgame-gold-logo {
-  font-size: 35px;
+  font-size: 2.1875rem;
   color: gold;
   font-style: italic;
   /* text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; */
@@ -1471,7 +1471,7 @@ canvas {
 }
 
 .endgame-xp-logo {
-  font-size: 35px;
+  font-size: 2.1875rem;
   color: gold;
   font-style: italic;
   /* text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; */
@@ -1575,8 +1575,8 @@ canvas {
   background: rgb(255, 68, 68);
   border-radius: 50%;
   color: white;
-  font-size: 30px;
-  line-height: 22px;
+  font-size: 1.875rem;
+  line-height: 1.375rem;
   text-align: center;
   cursor: pointer;
   z-index: 1;
@@ -1623,7 +1623,7 @@ a:-webkit-any-link {
   left: 20px;
   z-index: 9999;
   max-width: 300px;
-  font-size: 14px;
+  font-size: 0.875rem;
 
   background-color: #242b37;
   border: 1px solid #0096a1;
@@ -1654,7 +1654,7 @@ a:-webkit-any-link {
   /* Golden color */
   border: 2px solid #ffaa00;
   /* Slightly darker border for depth */
-  font-size: 14px;
+  font-size: 0.875rem;
   padding: 6px 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   /* Depth effect */

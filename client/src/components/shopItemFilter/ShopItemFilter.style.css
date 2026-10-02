@@ -1,7 +1,7 @@
 .shop-item-filter-container {
-    position: absolute;
-    top: 2px;
-    right: 16px;
+    position: relative;
+    align-self: flex-end;
+    margin-right: 16px;
     z-index: 10;
 }
 
@@ -20,7 +20,7 @@
     background-image: url('@assets/shop/daily_bg_idle.png');
     background-size: 100% 100%;
     position: absolute;
-    top: 36px;
+    top: 100%;
     right: 10px;
     padding: 8px 6px;
     padding-bottom: 12px;
@@ -45,7 +45,7 @@
 
 .shop-filter-list ul li button {
     padding: 4px 8px;
-    font-size: 14px;
+    font-size: 0.875rem;
     display: flex;
     align-items: center;
     justify-content: space-between;

@@ -221,7 +221,12 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (process.argv.includes('--replay-off')) {
+      if (process.argv.includes('--text-size')) {
+        await require('./text-size.cjs')({win, js, waitFor, ready,
+          output: process.env.TEXT_SIZE_SCREENSHOTS || path.join(dist, 'text-size'),
+          baseline: process.argv.includes('--baseline')});
+        assert.deepEqual(rendererErrors, []);
+      } else if (process.argv.includes('--replay-off')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector("#scene canvas"))');
         await new Promise(resolve => setTimeout(resolve, 1200));
@@ -623,7 +628,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

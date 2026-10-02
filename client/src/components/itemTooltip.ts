@@ -19,7 +19,7 @@ export const tooltipStyle = {
   borderRadius: '6px',
   color: '#e8f4f6',
   fontFamily: 'Kim, sans-serif',
-  fontSize: '14px',
+  fontSize: '0.875rem',
   lineHeight: '1.45',
   maxWidth: '280px',
   opacity: 1,

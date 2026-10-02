@@ -6,7 +6,7 @@
   width: 50%;
   min-width: 800px;
   height: 9vh;
-  min-height: 80px;
+  min-height: 5rem;
   max-height: 120px;
   z-index: 9;
 }
@@ -69,14 +69,14 @@
   gap: 8px;
   width: 100%;
   max-width: 400px;
-  height: 56px;
+  height: auto;
 }
 
 .player_bar_stat {
   display: flex;
   align-items: center;
   gap: 1px;
-  height: 24px;
+  min-height: 1.5rem;
   position: relative;
 }
 
@@ -101,7 +101,7 @@
 
 .player_bar_stat_icon span {
   color: #ffffff;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
   text-shadow: 0 0 4px rgba(81, 253, 255, 0.5);
   font-family: 'Kim', sans-serif;
@@ -109,9 +109,11 @@
 
 .player_bar_stat_value {
   font-family: 'Kim', sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   color: #ffffff;
-  min-width: 70px;
+  min-width: max-content;
+  flex-shrink: 0;
+  white-space: nowrap;
   text-align: right;
 }
 
@@ -192,7 +194,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-family: 'Kim', sans-serif;
   color: #ffffff;
   background: rgba(28, 31, 37, 0.6);
@@ -238,7 +240,7 @@
 
   /* Text styling */
   font-family: 'Kim', sans-serif;
-  font-size: 24px;
+  font-size: 1.5rem;
   color: #ffffff;
   text-align: center;
   text-transform: uppercase;
@@ -287,7 +289,7 @@
   padding: 4px 16px;
   border-radius: 4px;
   font-family: 'Kim', sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   color: #ffffff;
   text-transform: uppercase;
   text-shadow:
@@ -305,11 +307,11 @@
 }
 
 .player_bar_pass_turn {
-  width: 64px;
-  height: 64px;
+  width: 4rem;
+  height: 4rem;
   padding: 8px 0;
   font-family: 'Kim', sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   text-transform: uppercase;
   color: #ffffff;
   background: linear-gradient(to bottom, #2a3746 0%, #1c1f25 100%);
@@ -395,8 +397,8 @@
 
 .player_bar_action {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   background: linear-gradient(135deg, #2a3746 0%, #1c1f25 100%);
   border: 1px solid #3c616c;
   border-radius: 4px;
@@ -423,9 +425,12 @@
   top: 2px;
   left: 50%;
   transform: translateX(-50%);
-  white-space: nowrap;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.1;
   font-family: 'Kim', sans-serif;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #ffffff;
   text-shadow:
     -1px -1px 0 #000,
@@ -477,7 +482,7 @@
   bottom: 0px;
   right: 4px;
   color: white;
-  font-size: 14px;
+  font-size: 0.875rem;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-family: 'Kim', sans-serif;
   pointer-events: none;
@@ -515,7 +520,7 @@
   );
   border-radius: 4px;
   font-family: 'Kim', sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   color: #ffffff;
   text-shadow:
     0 0 8px rgba(202, 48, 77, 0.8),
@@ -555,3 +560,6 @@
     top: -30px;
   }
 }
+
+/* Keep the larger action buttons anchored above the window's lower edge. */
+.player_bar_actions_container { top: auto; bottom: 8px; }

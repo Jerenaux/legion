@@ -17,13 +17,13 @@
 
 .questInfoContainer span,
 p {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: #ffffff;
   margin: 0;
 }
 
 .questInfoContainer .fireSpells {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -96,7 +96,7 @@ p {
 }
 
 .chartVal span {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #ffffff;
 }
