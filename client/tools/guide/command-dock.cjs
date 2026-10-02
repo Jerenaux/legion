@@ -12,12 +12,12 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
     ['spell', 'useitem', 'passTurn'].forEach(event => arena.socket.on(event, () => dockCommands.push(event)));
   })()`);
   await js(`document.querySelector('${fire}').click()`);
-  await waitFor('document.querySelector(".player_bar_turn_label").textContent.includes("Fire · Select a target")');
+  await waitFor('document.querySelector(".player_bar_turn_label").textContent.includes("Select a target")');
   assert.equal(await js('document.querySelector(".player_bar_mana meter").value'), 22);
   assert.equal(await js('document.querySelector(".player_bar_pass_turn").disabled'), true);
   await js('combatCheck.arena.selectedPlayer.cancelSkill()');
   await js('combatCheck.arena.processTurnee({...dockTurn, team: 2, num: 1, turnNumber: 9})');
-  await waitFor('document.querySelector(".player_bar_turn_label").textContent.includes("Enemy turn · Viewing Ember")');
+  await waitFor('document.querySelector(".player_bar_turn_label").textContent.includes("Enemy turn")');
   assert.equal(await js('document.querySelectorAll("button.player_bar_action").length'), 4);
   await js(`document.querySelector('${fire}').click(); document.querySelector('#player_hud_consumables').click(); document.querySelector('.player_bar_pass_turn').click()`);
   assert.deepEqual(await js('dockCommands'), [], 'Inspecting commands during an enemy turn must not send actions');

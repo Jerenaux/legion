@@ -105,7 +105,6 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
             className={!canAct ? 'player_bar_item-icon player_bar_item-icon-off' : 'player_bar_item-icon player_bar_item-icon-pointer'}
             style={{
               backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : 'none',
-              backgroundSize: '26px',
             }}
           />
         )}

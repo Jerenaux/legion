@@ -81,7 +81,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>Attack</dt><dd>Click an adjacent enemy for a melee attack. Clicking a distant enemy moves you toward them instead; it does not grant a free attack.</dd></div>
               <div><dt>Cast</dt><dd>Choose a spell in the centre of the bottom command dock, check its highlighted area, then click a valid target or tile. Each spell shows its MP cost; casting spends MP.</dd></div>
               <div><dt>Use an item</dt><dd>Click an equipped consumable. Self-use items such as Potion and Ether activate immediately; targeted items ask you to choose a target.</dd></div>
-              <div><dt>Pass</dt><dd>Click <strong>Pass</strong> beneath the hourglass timer or press <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
+              <div><dt>Pass</dt><dd>Click <strong>Pass Turn</strong> beside the hourglass timer or press <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
             </dl>
             <p>Clicks outside the targeting range are ignored. Choose another target, or press <kbd>Esc</kbd> to cancel targeting and move or pass instead.</p>
             <figure>

@@ -4,7 +4,9 @@ import { PlayerProps } from '@legion/shared/interfaces';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { loadGameSettings } from '../../settings';
-import { getSpritePath, statusIcons } from '../utils';
+import { statusIcons } from '../utils';
+import hpIcon from '@assets/stats_icons/hp_icon.png';
+import mpIcon from '@assets/stats_icons/mp_icon.png';
 import { ItemTooltip } from '../ItemTooltipContent';
 import { CircularTimer } from './CircularTimer';
 import ItemIcon from './NewItemIcon';
@@ -44,7 +46,7 @@ class PlayerBar extends Component<PlayerBarProps> {
     const muted = isSpell && player?.statuses[StatusEffect.MUTE] !== 0;
     return (
       <section className="player_bar_action_group" aria-label={isSpell ? 'Spells' : 'Items'}>
-        <div className="player_bar_group_label">{isSpell ? 'Spells' : 'Items'}{muted && <span>Silenced</span>}</div>
+        <div className="player_bar_group_label">{pending != null && canAct ? 'Esc to cancel' : isSpell ? 'Spells' : 'Items'}{muted && <span>Silenced</span>}</div>
         <div className="player_bar_actions">
           {actions.map((action, index) => {
             const cost = 'cost' in action ? action.cost : null;
@@ -69,7 +71,7 @@ class PlayerBar extends Component<PlayerBarProps> {
               >
                 <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type} keyboardLayout={this.state.keyboardLayout} />
                 <span className="player_bar_action_name">{action.name}</span>
-                <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}>{cost !== null ? `${cost} MP` : 'Use'}</span>
+                {cost !== null && <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}><img src={mpIcon} alt="MP" />{cost}</span>}
               </button>
             );
           })}
@@ -85,30 +87,28 @@ class PlayerBar extends Component<PlayerBarProps> {
     const spellsIndex = layout.indexOf(this.state.keyboardLayout === 0 ? 'W' : 'Z');
     const pending = canAct && (player.pendingSpell != null ? spells[player.pendingSpell] : items[player.pendingItem]);
     const condition = player?.hp <= 0 ? 'Knocked out' : player?.isParalyzed ? 'Unable to act' : player?.casting ? 'Casting' : '';
-    const instruction = !isPlayerTurn ? `Enemy turn${player ? ` · Viewing ${player.name}` : ''}` : condition || (pending ? `${pending.name} · Select a target` : canAct ? 'Your turn · Choose one action' : 'Viewing character');
+    const instruction = !isPlayerTurn ? 'Enemy turn' : condition || (pending ? 'Select a target' : canAct ? 'Your turn' : 'Inspecting');
     const previewMP = pending && 'cost' in pending ? player.mp - pending.cost : player?.mp;
 
     return (
       <>
-      <section className="player_bar_container" aria-label="Combat commands" data-active={canAct}>
+      <section className="player_bar_container" aria-label="Combat commands" data-active={canAct} data-pending={Boolean(pending)} data-dense={spells.length + items.length > 6}>
         <div className="player_bar">
-          <div className="player_bar_heading" key={turnNumber}>
-            <span className="player_bar_turn_label" role="status">{instruction}</span>
-            {pending && <span className="player_bar_cancel_hint">Esc to cancel</span>}
-          </div>
           <div className="player_bar_body">
             <div className="player_bar_character">
-              {player && <div className="player_bar_portrait" aria-hidden="true" style={{backgroundImage: `url(${getSpritePath(player.portrait)})`}} />}
               <div className="player_bar_stats">
-                <strong className="player_bar_name">{player?.name || 'Waiting for combat'}</strong>
+                <div className="player_bar_heading" key={turnNumber}>
+                  <strong className="player_bar_name">{player?.name || 'Combat'}</strong>
+                  <span className="player_bar_turn_label" role="status">{instruction}</span>
+                </div>
                 {player && <>
                   <div className="player_bar_stat">
-                    <span>HP</span><meter min={0} max={player.maxHp || 1} value={player.hp} aria-label="Health" />
+                    <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />HP</span><meter min={0} max={player.maxHp || 1} value={player.hp} aria-label="Health" />
                     <span>{player.hp}<span className="player_bar_max">/{player.maxHp}</span></span>
                   </div>
                   {spells.length > 0 && <div className="player_bar_stat player_bar_mana">
-                    <span>MP</span><meter min={0} max={player.maxMp || 1} value={previewMP} aria-label="Mana after selected spell" />
-                    <span>{previewMP}<span className="player_bar_max">/{player.maxMp}</span></span>
+                    <span className="player_bar_stat_icon"><img src={mpIcon} alt="" />MP</span><meter min={0} max={player.maxMp || 1} value={previewMP} aria-label="Mana after selected spell" />
+                    <span className={pending && 'cost' in pending ? 'player_bar_mana_preview' : ''}>{previewMP}<span className="player_bar_max">/{player.maxMp}</span></span>
                   </div>}
                 </>}
                 <div className="player_bar_statuses">
@@ -125,9 +125,9 @@ class PlayerBar extends Component<PlayerBarProps> {
               {this.renderActionRow(items, 0, InventoryType.CONSUMABLES)}
             </div>
             <div className="player_bar_controls">
-              <CircularTimer turnDuration={turnDuration} timeLeft={timeLeft} turnNumber={turnNumber} size={30} strokeWidth={3} />
+              <CircularTimer turnDuration={turnDuration} timeLeft={timeLeft} turnNumber={turnNumber} size={36} strokeWidth={3} />
               <button type="button" data-game-control className="player_bar_pass_turn" onClick={onPassTurn} disabled={!canAct || Boolean(pending)}>
-                Pass <span className="player_bar_pass_key">End</span>
+                <span>Pass</span><span>Turn</span><span className="player_bar_pass_key">End</span>
               </button>
             </div>
           </div>
