@@ -1,12 +1,11 @@
 import { h } from 'preact';
 // SpectatorFooter.tsx
 import { Component } from 'preact';
-import { PlayMode, Class } from '@legion/shared/enums';
+import { PlayMode } from '@legion/shared/enums';
 import { TeamOverview } from "@legion/shared/interfaces";
 import { getSpritePath } from '../utils';
 import './Timeline.style.css';
-import warriorIcon from '@assets/shop/warrior_icon.png';
-import mageIcon from '@assets/shop/mage_icon.png';
+import ClassCrest from './ClassCrest';
 
 interface TimelineProps {
   isTutorial: boolean;
@@ -103,18 +102,8 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                         className="timeline_portrait"
                         style={portraitStyle}
                       />
-                      <div className={`timeline_class_indicator ${
-                        character.class === Class.WARRIOR
-                          ? 'frame-warrior'
-                          : character.class === Class.BLACK_MAGE
-                          ? 'frame-black-mage'
-                          : 'frame-white-mage'
-                      }`}>
-                        <img
-                          src={character.class === Class.WARRIOR ? warriorIcon : mageIcon}
-                          className={`class-icon ${character.class === Class.WARRIOR ? 'warrior' : ''}`}
-                          alt={`${Class[character.class]} class`}
-                        />
+                      <div className="timeline_class_indicator">
+                        <ClassCrest characterClass={character.class} />
                       </div>
                     </div>
                   </div>

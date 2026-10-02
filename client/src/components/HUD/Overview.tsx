@@ -2,6 +2,7 @@ import { h } from 'preact';
 import { Component } from 'preact';
 import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
 import PlayerInfo from './PlayerInfo';
+import ClassCrest from './ClassCrest';
 import { PlayMode, StatusEffect } from '@legion/shared/enums';
 import { getSpritePath, statusIcons } from '../utils';
 import './Overview.style.css';
@@ -119,6 +120,9 @@ class Overview extends Component<Props, State> {
                   <div className={`char_portrait ${position === 'left' ? 'flip' : 'char_portrait_right'} ${member.hp > 0 ? 'char_alive_animation' : ''}`} style={portraitStyle} />
                 </div>
                 <div className={`char_stats ${position === 'right' && 'char_stats_right'}`} style={charStatStyle(memberIndex)}>
+                  <div className="overview_class_crest">
+                    <ClassCrest characterClass={member.class} />
+                  </div>
                   <div className="char_stats_player_name">
                     <div className="char_stats_player_index">
                       <span>{memberIndex + 1}</span>

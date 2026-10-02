@@ -241,7 +241,17 @@ if (!process.versions.electron) {
         fs.writeFileSync(path.join(dist, 'battle-full.png'), (await win.webContents.capturePage()).toPNG());
         await capture('battle', {x: 340, y: 290, width: 840, height: 405});
         await capture('actions', {x: 400, y: 790, width: 960, height: 110});
-        await capture('turn-order', {x: 570, y: 730, width: 460, height: 90});
+        await capture('turn-order', {x: 570, y: 720, width: 460, height: 100});
+        for (const [name, rect] of [
+          ['combat-roster', {x: 8, y: 120, width: 290, height: 265}],
+          ['combat-timeline', {x: 570, y: 720, width: 460, height: 100}],
+        ]) {
+          fs.writeFileSync(path.join(dist, `${name}.png`), (await win.webContents.capturePage(rect)).toPNG());
+        }
+        win.setContentSize(1280, 720);
+        await ready();
+        fs.writeFileSync(path.join(dist, 'battle-1280.png'), (await win.webContents.capturePage()).toPNG());
+        win.setContentSize(1600, 900);
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
