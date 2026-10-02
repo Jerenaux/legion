@@ -89,7 +89,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>Outside the Tower, the standard turn timer is <strong>{TURN_DURATION} seconds</strong>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.</p>
             <p>Combat starts once everyone has loaded the arena and both teams’ spell and item effects. Practice matches pause if your connection drops and resume after the arena is ready again, keeping your remaining turn time. Once a match against another player has started, its clock keeps running if you disconnect.</p>
             <figure className="guide-figure-compact">
-              <img src={turnOrder} width="460" height="100" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing class crests and the sequence of characters about to act." />
+              <img src={turnOrder} width="570" height="70" loading="lazy" alt="The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act." />
               <figcaption>The turn order is your planning tool. Speed and the recovery time of each action affect when a character acts again.</figcaption>
             </figure>
             <p>Class crests appear on both side rosters and the turn order: an amber sword for Warriors, a mint cross for White Mages, and a violet flame for Black Mages.</p>
@@ -101,14 +101,14 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <dl className="guide-definitions">
               <div><dt>Move</dt><dd>Click an empty blue tile. Moving uses your action, so pick a position that sets up your next turn or gets a vulnerable character out of danger.</dd></div>
               <div><dt>Attack</dt><dd>Click an adjacent enemy for a melee attack. Clicking a distant enemy moves you toward them instead; it does not grant a free attack.</dd></div>
-              <div><dt>Cast</dt><dd>Choose a spell in the bottom action bar, check its highlighted area, then click a valid target or tile. Casting spends MP.</dd></div>
+              <div><dt>Cast</dt><dd>Choose a spell in the centre of the bottom command dock, check its highlighted area, then click a valid target or tile. Each spell shows its MP cost; casting spends MP.</dd></div>
               <div><dt>Use an item</dt><dd>Click an equipped consumable. Self-use items such as Potion and Ether activate immediately; targeted items ask you to choose a target.</dd></div>
-              <div><dt>Pass</dt><dd>Click <strong>Pass Turn</strong> beside the hourglass timer or press <kbd>E</kbd> / <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
+              <div><dt>Pass</dt><dd>Click <strong>Pass Turn</strong> beside the hourglass timer or press <kbd>End</kbd> to give up this action. A deliberate pass recovers sooner than a timeout.</dd></div>
             </dl>
             <p>Clicks outside the targeting range are ignored. Choose another target, or press <kbd>Esc</kbd> to cancel targeting and move or pass instead.</p>
             <figure>
-              <img src={actions} width="960" height="110" loading="lazy" alt="The selected mage’s action bar with HP, MP, equipped Potion and Ether, learned spells, keyboard shortcuts, and the pass-turn hourglass." />
-              <figcaption>Green is HP (health); blue is MP (magic). The bar shows what this character can use, not everything in your shared inventory.</figcaption>
+              <img src={actions} width="800" height="100" loading="lazy" alt="The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass." />
+              <figcaption>Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.</figcaption>
             </figure>
             <p>Blue mana bars show remaining MP for both teams. Watch enemy mana to judge which spells they can still afford; casting spends MP and Ether restores it.</p>
             <h3>A reliable opening plan</h3>
@@ -185,8 +185,8 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>Mouse</dt><dd>Click tiles to move, enemies to attack, and action icons to use items or select spells.</dd></div>
               <div><dt>Action letters</dt><dd>Use the letters printed on the item and spell icons. Choose QWERTY or AZERTY in Settings; follow the labels for your layout.</dd></div>
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Select your first three living characters. <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> cycle through living allies. Selection does not let a character act out of turn.</dd></div>
-              <div><dt><kbd>E</kbd> / <kbd>End</kbd></dt><dd>Pass the active turn.</dd></div>
-              <div><dt><kbd>Esc</kbd></dt><dd>Cancel spell targeting or selection in combat; close supported dialogs. From this guide, return to {onClose ? 'the queue' : 'Play'}.</dd></div>
+              <div><dt><kbd>Space</kbd> / <kbd>E</kbd> / <kbd>End</kbd></dt><dd>Pass the active turn.</dd></div>
+              <div><dt><kbd>Esc</kbd></dt><dd>Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {onClose ? 'the queue' : 'Play'}.</dd></div>
               <div><dt><kbd>P</kbd></dt><dd>Open the combat menu. <strong>The match keeps running:</strong> opening Settings does not pause the opponent or the turn timer.</dd></div>
               <div><dt>Menus</dt><dd><kbd>Tab</kbd> or arrow keys move focus; <kbd>Enter</kbd> or <kbd>Space</kbd> activates a focused control. You can use the mouse wheel to scroll this guide.</dd></div>
             </dl>

@@ -66,8 +66,8 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   assert.equal(await js('combatCheck.arena.getPlayer(1, 3).glowFx.active'), true, 'Clearing inspection preserves selected unit');
   await js(`(() => {const p = combatCheck.arena.getPlayer(1, 3);
     p.maxHP = 80.2; p.maxMP = 39.8; p.setHP(79.8); p.setMP(31.8); })()`);
-  await waitFor(`document.querySelector('.player_bar_stat_value').textContent.trim() === '80 / 80'`);
-  assert.equal(await js(`document.querySelectorAll('.player_bar_stat_value')[1].textContent.trim()`), '32 / 40');
+  await waitFor(`document.querySelector('.player_bar_stat > span:last-child').textContent === '80/80'`);
+  assert.equal(await js(`document.querySelector('.player_bar_mana > span:last-child').textContent`), '32/40');
 
   // Area targeting highlights multiple sprites without opening inspection cards.
   await js(`window.dispatchEvent(new CustomEvent('characterInSpellRadius', {detail: {x: 8, y: 4}}))`);

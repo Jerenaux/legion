@@ -234,7 +234,7 @@ if (!process.versions.electron) {
       console.log('Captured', name, rect);
     };
     try {
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover')) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -274,6 +274,12 @@ if (!process.versions.electron) {
         assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
+      } else if (process.argv.includes('--dock')) {
+        win.show();
+        await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
+        await waitFor('Boolean(document.querySelector(".player_bar_action"))');
+        await ready();
+        await require('./command-dock.cjs')({js, waitFor, ready, win, dist});
       } else if (process.argv.includes('--tower-images')) {
         // Visual review only: keep every Tower state in the same packaged renderer.
         for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
@@ -338,8 +344,6 @@ if (!process.versions.electron) {
         await ready();
         fs.writeFileSync(path.join(dist, 'battle-full.png'), (await win.webContents.capturePage()).toPNG());
         await capture('battle', {x: 340, y: 290, width: 840, height: 405});
-        await capture('actions', {x: 400, y: 790, width: 960, height: 110});
-        await capture('turn-order', {x: 570, y: 720, width: 460, height: 100});
         for (const [name, rect] of [
           ['combat-roster', {x: 8, y: 120, width: 290, height: 265}],
           ['combat-timeline', {x: 570, y: 720, width: 460, height: 100}],
@@ -359,6 +363,62 @@ if (!process.versions.electron) {
         await ready();
         fs.writeFileSync(path.join(dist, 'combat-inspection-1280.png'), (await win.webContents.capturePage()).toPNG());
         win.setContentSize(1600, 900);
+        await js('combatCheck.arena.clearCharacterHover()');
+        await ready();
+        await capture('actions', {x: 400, y: 800, width: 800, height: 100});
+        await capture('turn-order', {x: 460, y: 730, width: 570, height: 70});
+        await js('combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells([9]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-empty-items.png'), (await win.webContents.capturePage()).toPNG());
+        await js('window.dockPreviewTurn = {...combatCheck.arena.turnee}; combatCheck.arena.processTurnee({...dockPreviewTurn, num: 1}); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-warrior.png'), (await win.webContents.capturePage()).toPNG());
+        // Review empty inventory with every class, including wrapped text and enlarged UI.
+        for (const [width, height, scale] of [[1600, 900, 100], [1280, 720, 130], [960, 540, 100]]) {
+          win.setContentSize(width, height);
+          await js(`document.documentElement.style.fontSize = '${scale}%'`);
+          for (const [name, num, spells] of [['warrior', 1, []], ['white-mage', 2, [9, 10, 11, 12]], ['black-mage', 3, [0, 3, 6, 1, 4]]]) {
+            await js(`combatCheck.arena.processTurnee({...dockPreviewTurn, num: ${num}}); combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells(${JSON.stringify(spells)}); combatCheck.arena.refreshBox()`);
+            await ready();
+            fs.writeFileSync(path.join(dist, `dock-empty-${name}-${width}-${scale}.png`),
+              (await win.webContents.capturePage({x: 0, y: height - 180, width, height: 180})).toPNG());
+          }
+        }
+        win.setContentSize(1600, 900);
+        await js('document.documentElement.style.fontSize = "100%"');
+        await js('combatCheck.arena.processTurnee(dockPreviewTurn); combatCheck.resync()');
+        await ready();
+        // Manual visual review: compact, full-loadout and enemy-turn states.
+        for (const [width, height, scale] of [[1280, 720, 100], [1280, 720, 130], [960, 540, 100]]) {
+          win.setContentSize(width, height);
+          await js(`document.documentElement.style.fontSize = '${scale}%'`);
+          await ready();
+          fs.writeFileSync(path.join(dist, `dock-${width}-${scale}.png`), (await win.webContents.capturePage()).toPNG());
+        }
+        win.setContentSize(1280, 720);
+        await js('document.documentElement.style.fontSize = "100%"; combatCheck.arena.selectedPlayer.useSkill(0)');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-targeting.png'), (await win.webContents.capturePage()).toPNG());
+        await js('combatCheck.arena.selectedPlayer.cancelSkill(); combatCheck.arena.selectedPlayer.statuses.Mute = 3; combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-silenced.png'), (await win.webContents.capturePage()).toPNG());
+        await js('combatCheck.arena.selectedPlayer.statuses.Mute = 0');
+        win.setContentSize(1600, 900);
+        await js('document.documentElement.style.fontSize = "100%"; combatCheck.arena.selectedPlayer.setSpells([0, 3, 6, 1, 2]); combatCheck.arena.selectedPlayer.setInventory([0, 1, 8, 10, 11]); combatCheck.arena.refreshBox()');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-full-loadout.png'), (await win.webContents.capturePage()).toPNG());
+        win.show();
+        win.focus();
+        for (const type of ['spells', 'consumables']) {
+          await ready();
+          await js(`document.querySelector('#player_hud_${type}').focus()`);
+          await ready();
+          fs.writeFileSync(path.join(dist, `dock-${type}-tooltip.png`), (await win.webContents.capturePage()).toPNG());
+          await js('document.activeElement.blur()');
+        }
+        await js('combatCheck.arena.processTurnee({...combatCheck.arena.turnee, team: 2, num: 1, turnNumber: 9})');
+        await ready();
+        fs.writeFileSync(path.join(dist, 'dock-enemy.png'), (await win.webContents.capturePage()).toPNG());
         await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
         await waitFor('document.body.innerText.includes("Ember")');
         await ready();
@@ -804,7 +864,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover')) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

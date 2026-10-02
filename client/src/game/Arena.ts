@@ -738,9 +738,12 @@ export class Arena extends Phaser.Scene
     }
 
     refreshBox() {
-        if (this.selectedPlayer) {
-            events.emit('showPlayerBox', this.selectedPlayer.getProps());
-        }
+        const isPlayerTurn = Boolean(this.turnee && this.turnee.team === this.playerTeamId);
+        const commandPlayer = isPlayerTurn ? (this.selectedPlayer?.isPlayer ? this.selectedPlayer : this.getPlayer(this.playerTeamId, this.turnee.num)) : null;
+        const canCommand = !this.gameEnded && !this.gameSettings.spectator && commandPlayer === this.selectedPlayer && commandPlayer?.canAct() &&
+            this.turnee?.team === commandPlayer.team.id && this.turnee?.num === commandPlayer.num;
+        events.emit('showPlayerBox', this.selectedPlayer?.getProps() || null,
+            commandPlayer?.getProps() || null, Boolean(canCommand), isPlayerTurn);
     }
 
     refreshOverview() {
@@ -756,10 +759,8 @@ export class Arena extends Phaser.Scene
         events.emit(event, data);
     }
 
-    refreshUI(num) {
-        if (this.selectedPlayer && num === this.selectedPlayer.num) {
-            this.refreshBox();
-        }
+    refreshUI(_num) {
+        this.refreshBox();
         this.refreshOverview();
     }
 
@@ -784,6 +785,7 @@ export class Arena extends Phaser.Scene
             this.selectedPlayer.deselect();
             this.selectedPlayer.cancelSkill();
             this.selectedPlayer = null;
+            this.refreshBox();
             this.hexGridManager.clearHighlight();
         }
     }

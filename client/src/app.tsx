@@ -59,9 +59,12 @@ class App extends Component<{}, AppState> {
     handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       const typing = target?.matches?.('input, textarea, select, [contenteditable="true"]');
-      const action = actionFromKeyboard(event);
-      if (!action || (typing && action !== 'cancel') || (event.code === 'Tab' && this.state.currentMainRoute !== 'game')) return;
+      const inCombat = this.state.currentMainRoute === 'game'
+        && !document.querySelector('[role="dialog"], [aria-modal="true"], .endgame');
+      const action = actionFromKeyboard(event, inCombat);
+      if (!action || (typing && action !== 'cancel' && action !== 'abandon-dialog') || (event.code === 'Tab' && this.state.currentMainRoute !== 'game')) return;
       event.preventDefault();
+      if (event.repeat && (event.code === 'Space' || event.code === 'Escape')) return;
       dispatchDesktopAction(action, 'keyboard');
     };
 
@@ -98,7 +101,10 @@ class App extends Component<{}, AppState> {
       }
       if (action === 'menu-up' || action === 'menu-left') return this.focusMenu(-1);
       if (action === 'menu-down' || action === 'menu-right') return this.focusMenu(1);
-      if (action === 'end-turn') return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();
+      if (action === 'end-turn') {
+        if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
+        return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();
+      }
       if (action === 'pause') return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
       if (action === 'confirm') {
         const active = document.activeElement as HTMLElement;
@@ -110,7 +116,10 @@ class App extends Component<{}, AppState> {
       if (action === 'cancel') {
         const cancel = Array.from(document.querySelectorAll<HTMLElement>('[data-desktop-cancel]'))
           .find(element => element.getClientRects().length > 0);
-        if (cancel) return cancel.click();
+        if (cancel) {
+          event.stopImmediatePropagation();
+          return cancel.click();
+        }
         if (isElectron()) {
           const electronAPI = getElectronAPI();
           try {

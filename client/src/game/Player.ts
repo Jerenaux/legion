@@ -566,6 +566,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     onKey(keyIndex) {
+        if (!this.isPlayer || this.arena.turnee?.team !== this.team.id || this.arena.turnee?.num !== this.num) return;
         this.arena.playSound('click');
         const { spellsIndex } = this.getLayoutAndSpellsIndex();
         if (keyIndex >= spellsIndex) {

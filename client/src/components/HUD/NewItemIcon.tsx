@@ -99,13 +99,12 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     }
 
     return (
-      <div className="player_bar_action">
+      <div className="player_bar_action_art" aria-hidden="true">
         {action.id > -1 && (
           <div
             className={!canAct ? 'player_bar_item-icon player_bar_item-icon-off' : 'player_bar_item-icon player_bar_item-icon-pointer'}
             style={{
               backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : 'none',
-              backgroundSize: '32px',
             }}
           />
         )}
