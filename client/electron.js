@@ -66,7 +66,10 @@ function createWindow() {
       sandbox: true,
       devTools: isDev,
       webSecurity: true,
-      additionalArguments: smokeTest ? ['--legion-smoke-test'] : [],
+      additionalArguments: [
+        ...(app.isPackaged ? ['--legion-packaged'] : []),
+        ...(smokeTest ? ['--legion-smoke-test'] : []),
+      ],
     },
   });
   require('./electron/recovery').installRendererRecovery(mainWindow);
