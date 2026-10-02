@@ -203,7 +203,7 @@
   border-radius: 3px;
   background: #1b2736;
   color: #fff;
-  font: 0.85em/1.6 Arial, sans-serif;
+  font: 0.85em/1.6 var(--locale-font, Arial), system-ui, sans-serif;
 }
 
 .guide-finish {

@@ -15,7 +15,7 @@
 
 .roster-heading h1 {
     margin: 0;
-    font: 1rem Kim, sans-serif;
+    font: 1rem var(--locale-font, Kim), system-ui, sans-serif;
     text-transform: uppercase;
     color: oklch(96% 0.008 220);
 }
@@ -25,7 +25,7 @@
     align-items: center;
     gap: 12px;
     color: oklch(69% 0.025 220);
-    font: 0.8125rem Arial, sans-serif;
+    font: 0.8125rem var(--locale-font, Arial), system-ui, sans-serif;
     white-space: nowrap;
 }
 .roster-capacity strong { color: oklch(92% 0.025 220); }
@@ -65,7 +65,7 @@
     border-radius: 8px;
     background: oklch(19% 0.025 240 / 0.45);
     color: oklch(71% 0.025 220);
-    font: 0.8125rem Kim, sans-serif;
+    font: 0.8125rem var(--locale-font, Kim), system-ui, sans-serif;
     text-align: center;
     text-decoration: none;
 }
@@ -85,7 +85,7 @@
 .roster-slot-plus {
     position: absolute;
     top: 57px;
-    font: 2rem/1 Arial, sans-serif;
+    font: 2rem/1 var(--locale-font, Arial), system-ui, sans-serif;
     color: oklch(63% 0.035 220);
 }
 
@@ -115,7 +115,7 @@
     align-items: center;
     gap: 7px;
     color: oklch(71% 0.025 220);
-    font: 0.75rem/1.4 Arial, sans-serif;
+    font: 0.75rem/1.4 var(--locale-font, Arial), system-ui, sans-serif;
 }
 .roster-unlock-label strong { color: oklch(85% 0.08 80); font-weight: 600; }
 .roster-unlock-label img { width: 11px; height: 13px; object-fit: contain; opacity: 0.75; }

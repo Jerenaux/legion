@@ -719,8 +719,22 @@ canvas {
   align-items: center;
   justify-content: center;
   gap: 32px;
-  width: 1024px;
+  width: min(1024px, 100%);
+  padding-inline: 16px;
+  box-sizing: border-box;
   margin: 0 auto;
+}
+
+.rank-content > .flexContainer:first-child {
+  flex-wrap: wrap;
+  gap: 40px 24px;
+}
+
+.rank-content .highlights-container {
+  max-width: 100%;
+  flex-wrap: wrap;
+  row-gap: 40px;
+  margin-right: 0;
 }
 
 .rank-content .flexContainer {

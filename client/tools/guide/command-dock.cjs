@@ -29,7 +29,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.deepEqual(await js('dockCommands'), [], 'Typing a space must not pass');
   await js('dockInput.remove()');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   await ready();
   press('End');
   await ready();
@@ -44,7 +44,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await ready();
   assert.deepEqual(await js('dockCommands'), [], 'Space respects targeting guards');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   await ready();
   assert.equal(await js('document.activeElement.textContent'), 'Cancel');
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), 0, 'Opening the dialog preserves targeting');
@@ -55,7 +55,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), 0, 'Space activates Cancel without passing the turn');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.deepEqual(await js('dockCommands'), []);
@@ -65,7 +65,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.equal(await js('document.querySelectorAll("button.player_bar_action, .player_bar_character").length'), 0);
   press('Space');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.deepEqual(await js('dockCommands'), [], 'Enemy turn must not send actions');

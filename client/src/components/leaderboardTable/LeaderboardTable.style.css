@@ -1,5 +1,7 @@
 .rank-table-container {
     flex: 1;
+    min-width: 0;
+    overflow-x: auto;
     height: 100%; 
     position: relative; 
 } 
@@ -16,6 +18,7 @@
 
 .rank-table {
     width: 100%;
+    min-width: 954px;
     border-collapse: collapse;
     color: #FFFFFF;
 }

@@ -43,7 +43,7 @@ module.exports = async ({win, js, waitFor, ready, output, locale}) => {
       ['guide', '.guide-page', 'How to play Legion'],
     ]) {
       await readyPage(route, selector, phrase, `${route.split(/[/?]/)[0] || 'title'}-${width}-${textSize}`);
-      await fits('.menu, .expand_btn, .shop-tabs-container, .roster-heading, .roster-slot, .language-select, .title-screen-button, .guide-page h1, .tower-primary, .tower-choices');
+      await fits('.rank-content, .highlights-container, .menu, .expand_btn, .shop-tabs-container, .roster-heading, .roster-slot, .language-select, .title-screen-button, .guide-page h1, .tower-primary, .tower-choices');
     }
     await readyPage('game/guide-local', '.player_bar_action', 'Pass Turn', `combat-${width}-${textSize}`);
     assert.equal(await js('document.querySelector("#scene canvas").width > 0'), true);
