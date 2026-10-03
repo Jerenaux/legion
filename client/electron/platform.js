@@ -1,22 +1,42 @@
 const STEAM_WEB_API_IDENTITY = "legion";
 let activeTicket;
 let activeSteamClient;
+let pendingAuth;
+
+function getSteamClient(env, loadSteamworks) {
+  if (env.ITCHIO_API_KEY || env.USE_DIRECT_AUTH === "true") return null;
+  const appId = Number(env.SteamAppId || env.STEAM_APP_ID);
+  if (!Number.isSafeInteger(appId) || appId <= 0 || appId > 0xffffffff) return null;
+  if (!activeSteamClient) activeSteamClient = loadSteamworks().init(appId);
+  return activeSteamClient;
+}
+
+function getPlatformLanguage(env = process.env, loadSteamworks = () => require("steamworks.js")) {
+  try {
+    const language = getSteamClient(env, loadSteamworks)?.apps?.currentGameLanguage();
+    return typeof language === "string" && /^[a-z-]{1,64}$/.test(language) ? language : null;
+  } catch { return null; }
+}
 
 async function getPlatformAuth(env = process.env, loadSteamworks = () => require("steamworks.js")) {
   if (env.ITCHIO_API_KEY) return {provider: "itch", credential: env.ITCHIO_API_KEY};
-  if (env.USE_DIRECT_AUTH === "true") return null;
-  const appId = Number(env.SteamAppId || env.STEAM_APP_ID);
-  if (!Number.isSafeInteger(appId) || appId <= 0 || appId > 0xffffffff) return null;
-
   try {
-    const steamworks = loadSteamworks();
-    const client = steamworks.init(appId);
-    activeSteamClient = client;
-    activeTicket?.cancel();
-    activeTicket = await client.auth.getAuthTicketForWebApi(
-      env.STEAM_WEB_API_IDENTITY || STEAM_WEB_API_IDENTITY,
-    );
-    return {provider: "steam", credential: activeTicket.getBytes().toString("hex")};
+    const client = getSteamClient(env, loadSteamworks);
+    if (!client) return null;
+    // Startup only reads the language. Concurrent renderer requests share one ticket request.
+    if (pendingAuth) return await pendingAuth;
+    const request = (async () => {
+      const ticket = await client.auth.getAuthTicketForWebApi(
+        env.STEAM_WEB_API_IDENTITY || STEAM_WEB_API_IDENTITY,
+      );
+      if (client !== activeSteamClient) { ticket.cancel(); return null; }
+      activeTicket?.cancel();
+      activeTicket = ticket;
+      return {provider: "steam", credential: ticket.getBytes().toString("hex")};
+    })();
+    pendingAuth = request;
+    try { return await request; }
+    finally { if (pendingAuth === request) pendingAuth = undefined; }
   } catch (_error) {
     if (env.NODE_ENV === "development") console.info("Steam is unavailable; using a direct session.");
     return null;
@@ -49,8 +69,9 @@ function getControllerType() {
 function shutdownPlatform() {
   activeTicket?.cancel();
   activeTicket = undefined;
+  pendingAuth = undefined;
   activeSteamClient?.input?.shutdown?.();
   activeSteamClient = undefined;
 }
 
-module.exports = {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform};
+module.exports = {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform};

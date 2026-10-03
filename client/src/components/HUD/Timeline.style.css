@@ -129,7 +129,7 @@
 }
 
 .turn_order_label {
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
@@ -148,9 +148,12 @@
   text-shadow: 0 0 10px rgba(113, 222, 255, 0.3);
   position: absolute;
   top: 50%;
-  left: -110px;
+  right: calc(100% + 24px);
   transform: translateY(-50%);
-  white-space: nowrap;
+  width: max-content;
+  max-width: 20ch;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .turn_order_label::before,

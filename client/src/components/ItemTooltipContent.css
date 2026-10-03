@@ -9,7 +9,7 @@
   background: #1c1f25;
   color: #e8f4f6;
   --rt-opacity: 1;
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 0.75rem;
   line-height: 1.5;
   text-shadow: none;

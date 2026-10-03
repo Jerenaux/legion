@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 
 import { h } from 'preact';
 // SeasonCard.tsx
@@ -69,8 +70,8 @@ class SeasonCard extends Component<SeasonCardProps> {
     }
 
     shareOnTwitter = async (rank: number | string, tab: string) => {
-        const leagueName = tab === 'alltime' ? 'All Time' : tab.charAt(0).toUpperCase() + tab.slice(1);
-        const tweetText = `I'm ranked #${rank} in the ${leagueName} league in #Legion! Can you beat me? https://www.play-legion.io ! #PvP`
+        const leagueName = tab === 'alltime' ? t("All Time") : t(tab.charAt(0).toUpperCase() + tab.slice(1));
+        const tweetText = t("shareRank", {rank, league: leagueName})
         const twitterUrl = `https://x.com/intent/post?text=${encodeURIComponent(tweetText)}`;
         const width = 550;
         const height = 300;
@@ -110,41 +111,41 @@ class SeasonCard extends Component<SeasonCardProps> {
             <div className="season-card-container">
                 <div className="season-card-header">
                     <div className="season-card-header-img">
-                        <img src={rankIcons[leagues.indexOf(this.props.currTab)]} alt={`${this.props.currTab} league`} />
+                        <img src={rankIcons[leagues.indexOf(this.props.currTab)]} alt={t(this.props.currTab)} />
                     </div>
                     <div className="season-card-header-title">
-                        <span>{this.props.currTab.toUpperCase()} </span>
-                        <span>LEAGUE</span>
+                        <span>{t(this.props.currTab)} </span>
+                        <span>{t("LEAGUE")}</span>
                     </div>
                     {/* <div className="categoryBtn" style={{ backgroundImage: `url(${infoIcon})` }} onClick={() => {}}></div> */}
                 </div>
                 <div className="season-card-body">
                     <div className="recap-single-container" ref={this.captureRef}>
                         <div className="season-recap">
-                            <p className="season-recap-title">CURRENT</p>
-                            <p className="season-recap-label">RANK</p>
+                            <p className="season-recap-title">{t("CURRENT")}</p>
+                            <p className="season-recap-label">{t("RANK")}</p>
                             <div className="season-recap-img" style={this.props.rankRowNumberStyle(Number(this.props.playerRanking.rank) || 0)}>
                                 <span>{this.props.playerRanking.rank}</span>
                             </div>
                         </div>
                         <div className="season-recap">
-                            <p className="season-recap-title">{isAllTime ? 'ELO' : 'NB'}</p>
-                            <p className="season-recap-label">{isAllTime ? 'RATING' : 'WINS'}</p>
+                            <p className="season-recap-title">{isAllTime ? 'ELO' : t("NB")}</p>
+                            <p className="season-recap-label">{isAllTime ? t("RATING") : t("WINS")}</p>
                             <div className="season-recap-img" style={eloBGStyle}>
                                 <span>{this.props.playerRanking.metric}</span>
                             </div>
                         </div>
                         <div className="season-recap">
-                            <p className="season-recap-title">SEASON</p>
-                            <p className="season-recap-label">ENDS IN</p>
+                            <p className="season-recap-title">{t("SEASON")}</p>
+                            <p className="season-recap-label">{t("ENDS IN")}</p>
                             <div className="recap-season-bg" style={seasonBGStyle}>
-                                {this.state.time === -1 ? <img src={infinityIcon} alt="infinity" /> : (
+                                {this.state.time === -1 ? <img src={infinityIcon} alt={t("infinity")} /> : (
                                     <div style={{ width: '78px' }}>
                                         <div className="recap-season-timer-label">
-                                            <span>D</span>
-                                            <span>H</span>
-                                            <span>M</span>
-                                            <span>S</span>
+                                            <span>{t("D")}</span>
+                                            <span>{t("H")}</span>
+                                            <span>{t("M")}</span>
+                                            <span>{t("S")}</span>
                                         </div>
                                         <div className="recap-season-timer">
                                             <span>{`${countDown.day}`.padStart(2, "0")}</span> :
@@ -155,13 +156,13 @@ class SeasonCard extends Component<SeasonCardProps> {
                                     </div>
                                 )}
                             </div>
-                            {this.state.time !== -1 && <div><img src={cdIcon} alt="timer" className="season-timer-icon" /></div>}
+                            {this.state.time !== -1 && <div><img src={cdIcon} alt={t("timer")} className="season-timer-icon" /></div>}
                         </div>
                     </div>
                     {!isElectron() && (
                         <button type="button" data-game-control className="season-share-button" onClick={() => this.shareOnTwitter(this.props.playerRanking.rank, this.props.currTab)}>
-                            <img src={shareIcon} alt="" />
-                            <span>SHARE</span>
+                            <img src={shareIcon} alt={""} />
+                            <span>{t("SHARE")}</span>
                         </button>
                     )}
                 </div>

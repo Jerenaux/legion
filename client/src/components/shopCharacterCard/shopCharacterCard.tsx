@@ -1,3 +1,5 @@
+import {t, formatNumber, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
 // ShopCharacterCard.tsx
@@ -88,8 +90,8 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
           </div>
           <div className="shop-character-card-info-container">
             <div className="shop-character-card-info-box">
-              <span className="shop-character-card-info-lv">Lvl&nbsp;</span>
-              <span>{data.level}</span>
+              <span className="shop-character-card-info-lv">{t("Lvl")}</span>
+              <span>{formatNumber(data.level)}</span>
             </div>
           </div>
         </div>
@@ -138,28 +140,28 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
             >
               <div className="shop-character-card-dialog-wrapper">
                 <div className="shop-character-card-dialog-container-image" style={{
-                  backgroundImage: `url(spells.png)`,
+                  backgroundImage: `url(${spellsSpritesheet})`,
                   backgroundPosition: `-${mapFrameToCoordinates(this.state.curItem?.frame).x}px -${mapFrameToCoordinates(this.state.curItem?.frame).y}px`,
                 }} />
               </div>
-              <p className="shop-character-card-dialog-name">{this.state.curItem?.name}</p>
-              <p className="shop-character-card-dialog-desc">{this.state.curItem?.description}</p>
+              <p className="shop-character-card-dialog-name">{t(this.state.curItem?.name || "")}</p>
+              <p className="shop-character-card-dialog-desc">{t(this.state.curItem?.description || "")}</p>
               <div className="shop-character-card-dialog-info-container">
                 <div className="shop-character-card-dialog-info">
-                  <img src={mpIcon} alt="mp" />
-                  <span>{this.state.curItem?.cost}</span>
+                  <img src={mpIcon} alt={t("mp")} />
+                  <span>{this.state.curItem ? formatNumber(this.state.curItem.cost) : ""}</span>
                 </div>
                 <div className="shop-character-card-dialog-info">
-                  <img src={cooldownIcon} alt="cd" />
+                  <img src={cooldownIcon} alt={t("cd")} />
                   <span>{getSpeedClass(this.state.curItem?.speedClass)}</span>
                 </div>
                 <div className="shop-character-card-dialog-info">
-                  <img src={targetIcon} alt="target" />
-                  <span>{Target[this.state.curItem?.target]}</span>
+                  <img src={targetIcon} alt={t("target")} />
+                  <span>{t(Target[this.state.curItem?.target] || "")}</span>
                 </div>
               </div>
               <div className="dialog-button-container">
-                <button type="button" className="dialog-decline" onClick={() => this.setState({ shopCharacterCardDialogShow: false })}><img src={cancelIcon} alt="decline" />Cancel</button>
+                <button type="button" className="dialog-decline" onClick={() => this.setState({ shopCharacterCardDialogShow: false })}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
               </div>
             </div>
           </div>
@@ -170,17 +172,17 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
           {statsArray.map((stat, index) => (
             <div key={index} className="shop-character-card-effect">
               <div className="shop-character-card-effect-stat" style={statColor(stat.key)}>
-                <span>{StatLabels[getStatEnum(stat.key)]}</span>
+                <span>{t(StatLabels[getStatEnum(stat.key)])}</span>
               </div>
               <div className="shop-character-card-effect-value">
-                <span>{stat.value}</span>
+                <span>{formatNumber(stat.value)}</span>
               </div>
             </div>
           ))}
         </div>
         <div className="shop-card-price">
-          <img src={goldIcon} alt="gold" />
-          {data.price}
+          <img src={goldIcon} alt={t("gold")} />
+          {formatNumber(data.price)}
         </div>
       </div>
     );

@@ -1,3 +1,4 @@
+import {t, formatNumber} from '../../i18n/core';
 import { h } from 'preact';
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import { ClassLabels } from '@legion/shared/enums';
@@ -38,14 +39,14 @@ export default function CharacterHoverCard({ character, hover }: { character: Te
     <div ref={card} id="character-hover-card" className="character-hover-card" role="tooltip">
       <header>
         <div className="character-hover-card__crest"><ClassCrest characterClass={character.class} /></div>
-        <div><strong>{character.name}</strong><span>{ClassLabels[character.class]}</span></div>
+        <div><strong>{character.name}</strong><span>{t(ClassLabels[character.class])}</span></div>
       </header>
       {[
         { label: 'HP', value: character.hp, max: character.maxHP },
         { label: 'MP', value: character.mp, max: character.maxMP },
       ].map(({ label, value, max }) => (
         <div key={label} className="character-hover-card__resource" data-resource={label}>
-          <div><span>{label}</span><b>{Number.isFinite(value) && Number.isFinite(max) ? `${Math.round(value)} / ${Math.round(max)}` : 'Unknown'}</b></div>
+          <div><span>{t(label)}</span><b>{Number.isFinite(value) && Number.isFinite(max) ? `${formatNumber(Math.round(value))} / ${formatNumber(Math.round(max))}` : t("Unknown")}</b></div>
           <div className="character-hover-card__track">
             <div style={{ width: `${max > 0 && Number.isFinite(value) ? Math.min(100, Math.max(0, value / max * 100)) : 0}%` }} />
           </div>
@@ -53,8 +54,8 @@ export default function CharacterHoverCard({ character, hover }: { character: Te
       ))}
       <div className="character-hover-card__statuses">
         {activeStatuses.length ? activeStatuses.map(([status, turns]) => (
-          <span key={status}><img src={statusIcons[status]} alt="" />{status}<b>{turns === -1 ? '∞' : turns}</b></span>
-        )) : <span className="character-hover-card__no-status">No status effects</span>}
+          <span key={status}><img src={statusIcons[status]} alt={""} />{t(status)}<b>{turns === -1 ? '∞' : turns}</b></span>
+        )) : <span className="character-hover-card__no-status">{t("No status effects")}</span>}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import {t} from '../i18n/core';
 import {Class, SpeedClass, Stat, StatFields} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
 import { guide } from './tips';
@@ -35,10 +36,10 @@ const leagueIconContext = require.context('@assets/icons', false, /_rank\.png$/)
 
 export function classEnumToString(characterClass: Class) {
     const classToName: { [key in Class]?: string } = {};
-    classToName[Class.WARRIOR] = "Warrior";
-    classToName[Class.WHITE_MAGE] = "White Mage";
-    classToName[Class.BLACK_MAGE] = "Black Mage";
-    classToName[Class.THIEF] = "Thief";
+    classToName[Class.WARRIOR] = t("Warrior");
+    classToName[Class.WHITE_MAGE] = t("White Mage");
+    classToName[Class.BLACK_MAGE] = t("Black Mage");
+    classToName[Class.THIEF] = t("Thief");
     return classToName[characterClass];
 }
 
@@ -124,7 +125,7 @@ export function fetchGuideTip() {
   }, 1, 300, true)
   .then((data) => {
       if (data.guideId === -1) return;
-      showGuideToast(guide[data.guideId], data.route);
+      showGuideToast(t(guide[data.guideId]), data.route);
       tipLock = false;
   })
   // .catch(error => console.error(`Fetching tip error: ${error}`));
@@ -258,7 +259,7 @@ export const getStatEnum = (key: string): Stat => {
 }
 
 export const getSpeedClass = (speedClass: SpeedClass): string => {
-  return SpeedClass[speedClass];
+  return t(SpeedClass[speedClass]);
 }
 
 export function getRewardObject(type: RewardType, id: number) {

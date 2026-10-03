@@ -1,3 +1,5 @@
+import {t, i18n, userError} from '../i18n/core';
+import {Trans} from '../i18n/Trans';
 
 import { h } from 'preact';
 import '../style/QueuePage.style.css';
@@ -88,7 +90,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
         }
 
         if (Number.isNaN(currentMode) || !validModes.includes(currentMode)) {
-            silentErrorToast('Invalid play mode, please select a mode from the home page');
+            silentErrorToast(t("Invalid play mode, please select a mode from the home page"));
             return false;
         }
 
@@ -125,9 +127,9 @@ class QueuePage extends Component<QPageProps, QpageState> {
     }
 
     getPendingMessage = () => {
-        if (this.props.matches.id !== undefined) return 'Connecting to lobby…';
-        if (Number(this.props.matches.mode) === PlayMode.PRACTICE) return 'Preparing your practice match…';
-        return 'Connecting to matchmaking…';
+        if (this.props.matches.id !== undefined) return t("Connecting to lobby…");
+        if (Number(this.props.matches.mode) === PlayMode.PRACTICE) return t("Preparing your practice match…");
+        return t("Connecting to matchmaking…");
     }
 
     startProgressTimer = (estimatedWaitingTime: number) => {
@@ -161,7 +163,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
         this.setState({
             progress: 0,
             queueDataLoaded: false,
-            statusMessage: 'Connection lost. Reconnecting…',
+            statusMessage: t("Connection lost. Reconnecting…"),
             statusIsError: false,
         });
     }
@@ -170,7 +172,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
         const sessionExpired = error?.message === 'Authentication failed';
         this.setState({
             queueDataLoaded: false,
-            statusMessage: sessionExpired ? 'Your session expired. Restart Legion to reconnect.' : 'Could not connect. Retrying…',
+            statusMessage: sessionExpired ? t("Your session expired. Restart Legion to reconnect.") : t("Could not connect. Retrying…"),
             statusIsError: true,
         });
     }
@@ -178,7 +180,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
     handleQueueError = (data?: { message?: string }) => {
         this.setState({
             queueDataLoaded: false,
-            statusMessage: data?.message || 'Matchmaking is unavailable. Please try again.',
+            statusMessage: data?.message ? userError(data.message) : t("Matchmaking is unavailable. Please try again."),
             statusIsError: true,
         });
     }
@@ -221,8 +223,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
         socket.on('lobbyJoined', (data) => {
             this.setState({
                 statusMessage: data.type === 'friend'
-                    ? `Waiting for ${data.opponentName} to join…`
-                    : 'Waiting for another player to join…',
+                    ? t("Waiting for {{value0}} to join…", {value0: data.opponentName})
+                    : t("Waiting for another player to join…"),
                 statusIsError: false,
                 lobbyDetails: {
                     type: data.type,
@@ -249,7 +251,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
 
         if (this.socketRetryCount >= this.maxSocketRetries) {
             this.setState({
-                statusMessage: 'Could not connect to matchmaking. Return to Play and try again.',
+                statusMessage: t("Could not connect to matchmaking. Return to Play and try again."),
                 statusIsError: true,
             });
             return;
@@ -355,10 +357,10 @@ class QueuePage extends Component<QPageProps, QpageState> {
             <Link href="/play" className="cancel-game-link">
                 <div className="queue-detail-footer centered">
                     <div className="queue-footer-exit">
-                        <img src={exitIcon} alt="Exit" />
+                        <img src={exitIcon} alt={t("Exit")} />
                     </div>
                     <div className="queue-footer-text">
-                        {isLobbyMode ? 'CANCEL GAME' : 'BACK TO PLAY'}
+                        {isLobbyMode ? t("CANCEL GAME") : t("BACK TO PLAY")}
                     </div>
                 </div>
             </Link>
@@ -384,7 +386,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                             <div className="queue-count">
                                 <div
                                     role="progressbar"
-                                    aria-label="Estimated matchmaking wait progress"
+                                    aria-label={t("Estimated matchmaking wait progress")}
                                     aria-valuemin={0}
                                     aria-valuemax={100}
                                     aria-valuenow={progress}
@@ -394,9 +396,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                         <div className="queue-count-number">
                                             {queueData.nbInQueue}
                                         </div>
-                                        <div className="queue-count-text">
-                                            Queueing
-                                        </div>
+                                        <div className="queue-count-text">{t("Queueing")}</div>
                                     </div>
                                 </div>
                             </div>
@@ -407,50 +407,36 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                             <button type="button" data-game-control
                                                 className={this.state.findState === 'quick' ? 'queue-detail-btn active' : 'queue-detail-btn'}
                                                 onClickCapture={this.handleQuickFind}
-                                            >
-                                                Quick find
-                                            </button>
+                                            >{t("Quick find")}</button>
                                             <button type="button" data-game-control
                                                 className={this.state.findState === 'accurate' ? 'queue-detail-btn active' : 'queue-detail-btn'}
                                                 onClick={this.handleAccurateFind}
-                                            >
-                                                Accurate find
-                                            </button>
+                                            >{t("Accurate find")}</button>
                                         </div>
                                     )}
                                     <div className="queue-detail-body">
                                         <div>
-                                            <div>EARNINGS</div>
+                                            <div>{t("EARNINGS")}</div>
                                             <div>
-                                                <div><img src={goldIcon} alt="" /></div>
-                                                <div>
-                                                    <span style={{ color: 'coral' }}>{queueData.goldReward}</span>/
-                                                    <span style={{ color: 'deepskyblue' }}>{queueData.goldRewardInterval}</span>&nbsp;Sec
-                                                </div>
+                                                <div><img src={goldIcon} alt={""} /></div>
+                                                <div><Trans i18n={i18n} i18nKey={"<0>{{value0}}</0>/<1>{{value1}}</1> Sec"} components={[<span style={{ color: 'coral' }} />, <span style={{ color: 'deepskyblue' }} />]} values={{value0: queueData.goldReward, value1: queueData.goldRewardInterval}} /></div>
                                             </div>
                                         </div>
                                         <div>
-                                            <div>EARNED</div>
+                                            <div>{t("EARNED")}</div>
                                             <div>
-                                                <div><img src={goldIcon} alt="" /></div>
+                                                <div><img src={goldIcon} alt={""} /></div>
                                                 <div><span style={{ color: 'coral' }}>{this.state.earnedGold}</span></div>
                                             </div>
                                         </div>
                                         <div>
-                                            <div>WAITED</div>
-                                            <div>
-                                                <span style={{ color: 'deepskyblue' }}>{this.state.waited}</span>&nbsp;Secs
-                                            </div>
+                                            <div>{t("WAITED")}</div>
+                                            <div><Trans i18n={i18n} i18nKey={"<0>{{value0}}</0> Secs"} components={[<span style={{ color: 'deepskyblue' }} />]} values={{value0: this.state.waited}} /></div>
                                         </div>
                                         {ENABLE_APPROX_WT && (
                                             <div>
-                                                <div>APPROX WAITING TIME</div>
-                                                <div>
-                                                    <span style={{ color: 'deepskyblue' }}>
-                                                        {this.state.queueData.estimatedWaitingTime === -1 ? '?' : this.state.queueData.estimatedWaitingTime}
-                                                    </span>&nbsp;
-                                                    {this.state.queueData.estimatedWaitingTime === -1 ? '' : 'Secs'}
-                                                </div>
+                                                <div>{t("APPROX WAITING TIME")}</div>
+                                                <div><Trans i18n={i18n} i18nKey={"<0>{{value0}}</0> {{value1}}"} components={[<span style={{ color: 'deepskyblue' }} />]} values={{value0: this.state.queueData.estimatedWaitingTime === -1 ? '?' : this.state.queueData.estimatedWaitingTime, value1: this.state.queueData.estimatedWaitingTime === -1 ? '' : t('Secs')}} /></div>
                                             </div>
                                         )}
                                     </div>
@@ -458,22 +444,18 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                     <Link href="/play">
                                         <div className="queue-detail-footer">
                                             <div className="queue-footer-exit">
-                                                <img src={exitIcon} alt="" />
+                                                <img src={exitIcon} alt={""} />
                                             </div>
-                                            <div className="queue-footer-text">
-                                                LEAVE QUEUE
-                                            </div>
+                                            <div className="queue-footer-text">{t("LEAVE QUEUE")}</div>
                                         </div>
                                     </Link>
                                     <div className="queue-detail-arrow">
-                                        <img src={blueTriangle} alt="" />
+                                        <img src={blueTriangle} alt={""} />
                                     </div>
                                 </div>
                             </div>
                             <div className="queue-number"></div>
-                            <div className="queue-text" role="status">
-                                Looking for a worthy opponent in {PlayModeLabels[this.props.matches.mode]} mode…
-                            </div>
+                            <div className="queue-text" role="status">{t("Looking for a worthy opponent in {{value0}} mode…", {value0: t(PlayModeLabels[this.props.matches.mode])})}</div>
                         </div>
                         )
                     ) : this.renderPendingState(isLobbyMode)}
@@ -488,11 +470,11 @@ class QueuePage extends Component<QPageProps, QpageState> {
                         <path d="M40 5 43 12 50 15 43 18 40 25 37 18 30 15 37 12Z" fill="oklch(0.85 0.09 85)" />
                     </svg>
                     <span className="queue-guide-copy">
-                        <strong>Prepare for the arena</strong>
-                        <span>Combat, spells, equipment and leagues.</span>
-                        <small>Keep your place in the queue while you read.</small>
+                        <strong>{t("Prepare for the arena")}</strong>
+                        <span>{t("Combat, spells, equipment and leagues.")}</span>
+                        <small>{t("Keep your place in the queue while you read.")}</small>
                     </span>
-                    <span className="queue-guide-action">Open guide <span aria-hidden="true">→</span></span>
+                    <span className="queue-guide-action"><Trans i18n={i18n} i18nKey={"Open guide <0>→</0>"} components={[<span aria-hidden="true" />]} /></span>
                 </button>
 
                 {ENABLE_Q_NEWS && (
@@ -510,9 +492,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                                     <button type="button" data-game-control
                                         className="queue-news-readmore"
                                         onClick={() => window.open(newsItem.link, '_blank')}
-                                    >
-                                        READ MORE &nbsp;&nbsp; <span style={{ color: 'coral' }}>▶</span>
-                                    </button>
+                                    ><Trans i18n={i18n} i18nKey={"READ MORE    <0>▶</0>"} components={[<span style={{ color: 'coral' }} />]} /></button>
                                 </div>
                             ))
                         ) : (
@@ -534,12 +514,12 @@ class QueuePage extends Component<QPageProps, QpageState> {
                 <div className="queue-btns">
                     <Link href={X_LINK} target="_blank">
                         <div className="btn-x">
-                            <img src={xIcon} alt="X" />
+                            <img src={xIcon} alt={t("X")} />
                         </div>
                     </Link>
                     <Link href={DISCORD_LINK} target="_blank">
                         <div className="btn-discord">
-                            <img src={discordIcon} alt="Discord" />
+                            <img src={discordIcon} alt={t("Discord")} />
                         </div>
                     </Link>
                 </div>

@@ -13,6 +13,6 @@ Open **http://127.0.0.1:8082/game/practice-preview**. The web server proxies its
 
 Reveal the three champions, choose **Start guided match** or **Play without tips**, and play normally. Try an out-of-range move, a spell target, cancellation with Escape, and the **Hide tips / Combat tips** control. Settings supports larger text for checking the coaching panel at small window sizes.
 
-With both servers running, `cd client && node tools/preview/check.cjs` runs a hidden Electron smoke check and saves screenshots under `build/guided-practice`. It covers accepted movement and spell progression, rejected targets, cancellation, hide/reopen, and layout at 1280×720 plus compact windows at 130% text size. It requires an environment able to launch Electron; on Linux use Xvfb.
+With both servers running, `cd client && node tools/preview/check.cjs` runs a hidden Electron smoke check and saves screenshots under `build/guided-practice/en`. Pass `--locale=ja` (or any folder name from `client/locales/`) to run the same flow in another language. It covers accepted movement and spell progression, rejected targets, cancellation, hide/reopen, and layout at 1280×720 plus 960×540 at 130% text size, including localized introductions, spell guidance, invalid-target feedback, and dock highlights. It requires an environment able to launch Electron; on Linux use Xvfb.
 
 These providers, preview server, and checks are development tools. The release webpack configuration never imports them. The preview blocks external requests and overrides every combat persistence method.

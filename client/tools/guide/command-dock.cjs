@@ -29,7 +29,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.deepEqual(await js('dockCommands'), [], 'Typing a space must not pass');
   await js('dockInput.remove()');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   await ready();
   press('End');
   await ready();
@@ -44,7 +44,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await ready();
   assert.deepEqual(await js('dockCommands'), [], 'Space respects targeting guards');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   await ready();
   assert.equal(await js('document.activeElement.textContent'), 'Cancel');
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), 0, 'Opening the dialog preserves targeting');
@@ -55,7 +55,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), 0, 'Space activates Cancel without passing the turn');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.deepEqual(await js('dockCommands'), []);
@@ -65,7 +65,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.equal(await js('document.querySelectorAll("button.player_bar_action, .player_bar_character").length'), 0);
   press('Space');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon game"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.deepEqual(await js('dockCommands'), [], 'Enemy turn must not send actions');
@@ -75,8 +75,12 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.equal(await js('document.querySelector(".player_bar_stat meter").value'), 55);
   win.show();
   win.focus();
+  // Focusing the native window alone can leave the renderer unfocused on macOS.
+  // In that state element.focus() changes activeElement without firing tooltip focus events.
+  win.webContents.focus();
+  await waitFor('document.hasFocus()');
   await ready();
-  await js(`document.querySelector('${fire}').focus()`);
+  await js(`document.activeElement?.blur(); document.querySelector('${fire}').focus()`);
   await waitFor('document.querySelector("#combat-action-details .item-preview-name")?.textContent === "Fire"');
   assert.equal(await js('document.querySelectorAll("#combat-action-details .item-preview-classes").length'), 0);
   await ready();
@@ -85,9 +89,15 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await js('combatCheck.arena.selectedPlayer.mp = 0; combatCheck.arena.refreshBox()');
   await waitFor(`document.querySelector('${fire}').getAttribute('aria-label').includes('Not enough MP')`);
   await js(`document.querySelector('${fire}').click()`);
+  await waitFor(`document.querySelector('.combat-action-feedback')?.textContent === 'Not enough mana: needs 10 MP, you have 0.'`);
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), null);
+  assert.deepEqual(await js('dockCommands'), [], 'A low-mana dock click explains the failure without sending an action');
   await js("combatCheck.arena.selectedPlayer.mp = 32; combatCheck.arena.selectedPlayer.statuses.Mute = 3; combatCheck.arena.refreshBox()");
   await waitFor(`document.querySelector('${fire}').getAttribute('aria-label').includes('Silenced')`);
+  await js(`document.querySelector('${fire}').click()`);
+  await waitFor(`document.querySelector('.combat-action-feedback')?.textContent === 'Silenced: choose another action.'`);
+  assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), null);
+  assert.deepEqual(await js('dockCommands'), [], 'A silenced dock click explains the failure without sending an action');
   assert.equal(await js('document.querySelectorAll("button[data-tooltip-item-type=spells]").length'), 2);
   await js("combatCheck.arena.selectedPlayer.statuses.Mute = 0; combatCheck.arena.refreshBox()");
   await js('combatCheck.arena.selectOwnUnit(combatCheck.arena.getPlayer(1, 2))');

@@ -1,3 +1,4 @@
+import {Trans} from '../../i18n/Trans';
 import { Fragment } from 'preact';
 import { h } from 'preact';
 // GameHUD.tsx
@@ -329,7 +330,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           </>
         )}
         {this.state.tower && <div className="tower-combat-banner" role="status">
-          <span>Floor</span> <strong>{this.state.tower.floor}</strong>
+          <Trans i18nKey="Floor <0>{{floor}}</0>" values={{floor: this.state.tower.floor}} components={[<strong />]} />
         </div>}
         {isHUDVisible && (
           <PlayerBar

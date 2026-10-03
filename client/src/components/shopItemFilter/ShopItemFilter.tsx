@@ -1,7 +1,8 @@
+import {t} from '../../i18n/core';
 
 import { h } from 'preact';
 // ShopItemFilter.tsx
-import { Class, ClassLabels, EquipmentSlot, ShopTab } from '@legion/shared/enums';
+import { Class, ClassLabels, EquipmentSlot, equipmentSlotLabels, ShopTab } from '@legion/shared/enums';
 import './ShopItemFilter.style.css'
 import { Component } from 'preact';
 import { ShopItems } from '@legion/shared/interfaces';
@@ -103,7 +104,7 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
             <div>
                 <button type="button" data-game-control className="shop-item-filter-container" onClick={() => this.setState(prevState => ({ isOpen: !prevState.isOpen }))}>
                     <div className="shop-item-filter-title">
-                        <span>Filter Items</span>
+                        <span>{t("Filter Items")}</span>
                     </div>
                 </button>
                 {this.state.isOpen && (
@@ -120,7 +121,7 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
                                                 checked={this.state.slotCheckbox[index]}
                                                 onChange={() => handleCheckboxChange(index)}
                                             />
-                                            <img src={equipmentSlotIcons[EquipmentSlot[slot]]} alt={slot as string} />
+                                            <img src={equipmentSlotIcons[EquipmentSlot[slot]]} alt={t(equipmentSlotLabels[EquipmentSlot[slot]])} />
                                         </div>
                                     ))}
                                 </div>
@@ -132,8 +133,8 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
                             {CharacterClasses.map(character_class => (
                                 <li key={character_class}>
                                     <button type="button" data-game-control onClick={() => handleCurrentClass(character_class)}>
-                                        {this.state.currClass === character_class && <img src={confirmIcon} alt="Selected" />}
-                                        <span>{ClassLabels[character_class]}</span>
+                                        {this.state.currClass === character_class && <img src={confirmIcon} alt={t("Selected")} />}
+                                        <span>{t(ClassLabels[character_class])}</span>
                                     </button>
                                 </li>
                             ))}

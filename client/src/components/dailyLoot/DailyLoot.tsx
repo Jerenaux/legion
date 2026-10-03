@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 // DailyLootBox.tsx
 import './DailyLoot.style.css';
@@ -47,11 +48,11 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
 
       // Check if countdown is over and if key is owned
       if (countdown > 0 && !IMMEDIATE_LOOT) {
-        silentErrorToast(`Chest locked, wait for the countdown to end!`);
+        silentErrorToast(t("Chest locked, wait for the countdown to end!"));
         return;
       }
       if (!hasKey && !IMMEDIATE_LOOT) {
-        silentErrorToast(`You need a key to open this chest, go play a casual or ranked game!`);
+        silentErrorToast(t("You need a key to open this chest, go play a casual or ranked game!"));
         return;
       }
 
@@ -78,7 +79,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
           chestContent: null,
           chestDailyLoot: null,
         });
-        console.error(`Error: ${error}`);
+        console.error(t("Error: {{value0}}", {value0: error}));
       }
     }
 

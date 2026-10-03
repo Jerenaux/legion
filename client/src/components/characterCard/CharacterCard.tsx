@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -49,7 +50,7 @@ class CharacterCard extends Component<APICharacterData> {
         data-character-id={this.props.id}
       >
         <div className="characterLevel">
-          <span className="level">Lvl</span>
+          <span className="level">{t("Lvl")}</span>
           <span className="levelVal">{level}</span>
         </div>
         <div className="characterName">
@@ -60,9 +61,7 @@ class CharacterCard extends Component<APICharacterData> {
           <div className="portrait" style={portraitStyle} />
         </div>
         {this.props?.sp > 0 && (
-          <div className="characterSp">
-            SP
-          </div>
+          <div className="characterSp">{t("SP")}</div>
         )}
       </button>
     );

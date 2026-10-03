@@ -3,7 +3,7 @@
     margin: 20px auto;
     padding: 20px;
     color: #fff;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .profile-container.loading,
@@ -241,7 +241,7 @@
     border: 2px solid #49d7d8;
     border-radius: 8px;
     color: white;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 1rem;
 }
 
@@ -311,7 +311,7 @@
     color: white;
     padding: 6px 12px;
     cursor: pointer;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.75rem;
     transition: all 0.2s ease;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
@@ -354,7 +354,7 @@
     color: white;
     padding: 8px 16px;
     cursor: pointer;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.875rem;
     transition: all 0.2s ease;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
@@ -479,7 +479,7 @@
     color: white;
     padding: 6px 12px;
     cursor: pointer;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.75rem;
     transition: all 0.2s ease;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
@@ -641,7 +641,7 @@
     color: white;
     padding: 8px 16px;
     cursor: pointer;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.875rem;
     transition: all 0.2s ease;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
@@ -910,7 +910,7 @@
     color: white;
     padding: 8px 16px;
     cursor: pointer;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.875rem;
     transition: all 0.2s ease;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;

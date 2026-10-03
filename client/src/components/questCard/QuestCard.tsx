@@ -1,3 +1,5 @@
+import {t, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 import { h } from 'preact';
 // QuestCard.tsx
 import CountUp from 'react-countup';
@@ -39,12 +41,12 @@ class QuestCard extends Component<CardProps> {
             <div className="questCardContainer" style={bgStyle} onMouseEnter={() => this.setState({ active: true })} onMouseLeave={() => this.setState({ active: false })}>
                 <div className="questInfoContainer">
                     <span className="fireSpells">{data.name}</span>
-                    <span>Rewards</span>
-                    <p><span className="questGold">{data.rewards.gold}</span> GOLD | <span className="questExp">{data.rewards.xp}</span> EXP</p>
+                    <span>{t("Rewards")}</span>
+                    <p><Trans i18n={i18n} i18nKey={"<0>{{value0}}</0> GOLD | <1>{{value1}}</1> EXP"} components={[<span className="questGold" />, <span className="questExp" />]} values={{value0: data.rewards.gold, value1: data.rewards.xp}} /></p>
                 </div>
                 {data.completion === 1 ? <div className="completion" style={{backgroundImage: `url(${completionMarker})`}}></div> : <div className="chartContainer">
                     <svg viewBox="0 0 63.6619772368 63.6619772368">
-                        <title>Quest progress</title>
+                        <title>{t("Quest progress")}</title>
                         <style>
                             {`
                                 @keyframes pie-chart {

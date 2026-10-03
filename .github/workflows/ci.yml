@@ -69,6 +69,7 @@ jobs:
       - name: Test and typecheck client
         run: |
           cd client
+          bun run locales:check
           bun run test --runInBand
           bunx tsc --noEmit
 

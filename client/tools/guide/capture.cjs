@@ -5,6 +5,9 @@ const os = require('node:os');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const client = path.resolve(__dirname, '../..');
+const locale = process.argv.find(arg => arg.startsWith('--locale='))?.slice(9) || 'en';
+const localization = process.argv.includes('--localization');
+assert(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale), 'Invalid locale');
 
 if (!process.versions.electron) {
   const webpack = require('webpack');
@@ -42,7 +45,10 @@ if (!process.versions.electron) {
     process.exitCode = result.status ?? 1;
   });
 } else {
-  const {app, BrowserWindow, protocol, net, session} = require('electron');
+  const {app, BrowserWindow, protocol, net, session, ipcMain} = require('electron');
+  ipcMain.handle('set-language', () => true);
+  ipcMain.handle('is-fullscreen', () => false);
+  ipcMain.handle('toggle-fullscreen', () => false);
   if ((process.env.CI && process.platform === 'linux') || process.argv.includes('--software-webgl')) {
     // Hosted runners have no GPU. These switches apply only to the fixture harness, never releases.
     app.commandLine.appendSwitch('use-angle', 'swiftshader');
@@ -205,6 +211,7 @@ if (!process.versions.electron) {
         if (typeof expression === 'function' ? expression() : await js(expression)) return;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
+      console.log('Captured exceptions:', envelopes.flatMap(body => body.split('\n').flatMap(line => {try {return JSON.parse(line).exception?.values || [];} catch {return [];}})));
       console.log('Visible text:', await js('document.body.innerText'));
       console.log('Combat readiness:', await js(`(() => {
         const arena = window.combatCheck?.arena;
@@ -228,13 +235,17 @@ if (!process.versions.electron) {
     const capture = async (name, rect) => {
       assert(rect.width > 0 && rect.height > 0 && rect.y >= 0 && rect.y + rect.height <= 900, `Invalid crop: ${JSON.stringify(rect)}`);
       const shot = await win.webContents.capturePage(rect);
-      const output = path.join(client, 'public/guide', `${name}.jpg`);
+      const output = locale === 'en' ? path.join(client, 'public/guide', `${name}.jpg`) : path.join(client, 'locales', locale, 'assets/guide', `${name}.jpg`);
       fs.mkdirSync(path.dirname(output), {recursive: true});
       fs.writeFileSync(output, shot.resize({width: rect.width}).toJPEG(88));
       console.log('Captured', name, rect);
     };
     try {
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover')) {
+      if (locale !== 'en' || localization) {
+        await win.loadURL(PACKAGED_APP_URL);
+        await js(`localStorage.setItem('legion.language', ${JSON.stringify(locale)})`);
+      }
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -338,6 +349,8 @@ if (!process.versions.electron) {
         await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
         await ready();
         fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
+      } else if (localization) {
+        await require(process.argv.includes('--live-localization') ? '../localization/live.cjs' : '../localization/smoke.cjs')({win, js, waitFor, ready, output: dist, locale});
       } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');
@@ -426,6 +439,12 @@ if (!process.versions.electron) {
         await ready();
         const loadoutY = await js('Math.round(document.querySelector(".character-inventory-container").getBoundingClientRect().top)');
         await capture('loadout', {x: 270, y: loadoutY, width: 1045, height: 428});
+        await win.loadURL(`${PACKAGED_APP_URL}tower`);
+        await waitFor('Boolean(document.querySelector(".tower-primary"))');
+        await js('document.querySelector(".tower-primary").click()');
+        await waitFor('Boolean(document.querySelector(".tower-choices"))');
+        await ready();
+        await capture('tower', {x: 0, y: 60, width: 1600, height: 840});
       } else {
         await win.loadURL(`${PACKAGED_APP_URL}play`);
         await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
@@ -457,7 +476,7 @@ if (!process.versions.electron) {
         await waitFor('document.querySelectorAll(".tower-choice").length === 2');
         await win.loadURL(`${PACKAGED_APP_URL}tower`);
         await waitFor('document.querySelectorAll(".tower-choice").length === 2');
-        assert((await js('document.querySelector(".tower-progress").innerText')).includes('1/6 cleared'));
+        assert.match(await js('document.querySelector(".tower-progress").innerText'), /1\s*\/\s*6 cleared/);
         await js('towerCheck.fail = true; document.querySelector(".tower-choice").click()');
         await waitFor('Boolean(document.querySelector(".tower-error"))');
         assert.equal(await js('document.querySelector(".tower-choice").disabled'), true);
@@ -864,7 +883,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover')) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

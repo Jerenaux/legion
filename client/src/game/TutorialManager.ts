@@ -1,3 +1,4 @@
+import { t } from '../i18n/core';
 import type { EventEmitter } from 'eventemitter3';
 import type { EngagementStats } from '@legion/shared/interfaces';
 
@@ -48,10 +49,10 @@ export class TutorialManager {
     private stats: Partial<EngagementStats>;
     private handlers = {
         tutorialContext: (context: TutorialContext) => { this.context = context; this.refresh(); },
-        playerMoved: () => this.acceptAction('everMoved', 'Movement used your action.'),
-        playerAttacked: () => this.acceptAction('everAttacked', 'Attack complete.'),
-        playerCastSpell: () => this.acceptAction('everUsedSpell', 'Spell cast.'),
-        playerUseItem: () => this.acceptAction('everUsedItem', 'Item used.'),
+        playerMoved: () => this.acceptAction('everMoved', 'Movement used your action. The portraits show who acts next.'),
+        playerAttacked: () => this.acceptAction('everAttacked', 'Attack complete. The portraits show who acts next.'),
+        playerCastSpell: () => this.acceptAction('everUsedSpell', 'Spell cast. The portraits show who acts next.'),
+        playerUseItem: () => this.acceptAction('everUsedItem', 'Item used. The portraits show who acts next.'),
         gameEnd: () => { this.ended = true; this.events.emit('hideTutorialMessage'); },
     };
 
@@ -81,43 +82,45 @@ export class TutorialManager {
         }
         const healingOnly = c.spells.length > 0 && c.spells.every(spell => spell.healing);
         if (this.actionTurn === c.turn) {
-            show('Action used', `${this.lastAction} The portraits show who acts next.`, 'timeline');
+            show(t('Action used'), t(this.lastAction), 'timeline');
         } else if (!c.selectedIsTurnee) {
-            show(`${c.name} acts now`, 'Only the active character can act. Select them to choose your action.', 'timeline');
+            show(t('{{name}} acts now', {name: c.name}), t('Only the active character can act. Select them to choose your action.'), 'timeline');
         } else if (c.pendingSpell) {
-            show(`Aim ${c.pendingSpell.name}`, `Choose a highlighted target. Costs ${c.pendingSpell.cost} MP.${c.pendingSpell.area ? ' The area can also hit allies.' : ''} Select the spell again to cancel.`);
+            show(t('Aim {{spell}}', {spell: t(c.pendingSpell.name)}), c.pendingSpell.area
+                ? t('Choose a highlighted target. Costs {{cost}} MP. The area can also hit allies. Select the spell again to cancel.', {cost: c.pendingSpell.cost})
+                : t('Choose a highlighted target. Costs {{cost}} MP. Select the spell again to cancel.', {cost: c.pendingSpell.cost}));
         } else if (c.pendingItem) {
-            show(`Use ${c.pendingItem}`, 'Choose a highlighted target. Select the item again to cancel.');
+            show(t('Use {{item}}', {item: t(c.pendingItem)}), t('Choose a highlighted target. Select the item again to cancel.'));
         } else if (c.ice) {
-            show('Frozen in ice', 'Another character can attack the ice to break it.');
+            show(t('Frozen in ice'), t('Another character can attack the ice to break it.'));
         } else if (c.paralyzed || !c.canAct) {
-            show('Unable to act', 'This character cannot act right now. Watch the turn order for your next character.', 'timeline');
+            show(t('Unable to act'), t('This character cannot act right now. Watch the turn order for your next character.'), 'timeline');
         } else if (c.fire) {
-            show('Move out of the flames', 'Choose a blue tile away from the fire to avoid repeated damage. Moving uses your action.');
+            show(t('Move out of the flames'), t('Choose a blue tile away from the fire to avoid repeated damage. Moving uses your action.'));
         } else if (c.muted) {
-            show('Silenced', 'Spells are unavailable. You can still move, attack, use an item, or pass.');
+            show(t('Silenced'), t('Spells are unavailable. You can still move, attack, use an item, or pass.'));
         } else if (c.spells.length && c.spells.every(spell => spell.cost > c.mp)) {
-            show('Low mana', 'You need more MP to cast these spells. Choose another action, or use an Ether if you have one.', c.hasItem ? 'items' : undefined);
+            show(t('Low mana'), t('You need more MP to cast these spells. Choose another action, or use an Ether if you have one.'), c.hasItem ? 'items' : undefined);
         } else if (healingOnly) {
             if (c.hasWoundedAlly) {
-                show('Help an injured ally', 'Choose a healing spell below, then a wounded ally in range.', 'spells');
+                show(t('Help an injured ally'), t('Choose a healing spell below, then a wounded ally in range.'), 'spells');
             } else {
-                show('Keep your healer safe', 'Move closer to your team, or pass. Heal when an injured ally is in range.');
+                show(t('Keep your healer safe'), t('Move closer to your team, or pass. Heal when an injured ally is in range.'));
             }
         } else if (c.hasEnemy && !this.stats.everAttacked) {
-            show('Attack an adjacent enemy', 'Select the enemy beside you to attack. Attacking uses your action.');
+            show(t('Attack an adjacent enemy'), t('Select the enemy beside you to attack. Attacking uses your action.'));
         } else if (c.spells.length && !this.stats.everUsedSpell) {
-            show('Try your magic', 'Choose a spell below, then a highlighted target. Casting uses your action.', 'spells');
+            show(t('Try your magic'), t('Choose a spell below, then a highlighted target. Casting uses your action.'), 'spells');
         } else if (!this.stats.everMoved) {
-            show('Move into position', 'Choose a blue tile. Moving uses your one action for this turn.');
+            show(t('Move into position'), t('Choose a blue tile. Moving uses your one action for this turn.'));
         } else if (c.hasItem && !this.stats.everUsedItem) {
-            show('Use an item', 'Select an item below when you need it. Using it takes your action.', 'items');
+            show(t('Use an item'), t('Select an item below when you need it. Using it takes your action.'), 'items');
         } else if (c.poison) {
-            show('Poisoned', 'Poison damages this character each turn. An Antidote removes it.');
+            show(t('Poisoned'), t('Poison damages this character each turn. An Antidote removes it.'));
         } else {
-            show('Choose your next move', learned === 3
-                ? 'Basics learned. Move, attack, cast, or use an item. Pass if you prefer to wait.'
-                : 'Move toward the enemy, attack an adjacent enemy, or cast a spell. Each uses your action.');
+            show(t('Choose your next move'), learned === 3
+                ? t('Basics learned. Move, attack, cast, or use an item. Pass if you prefer to wait.')
+                : t('Move toward the enemy, attack an adjacent enemy, or cast a spell. Each uses your action.'));
         }
     }
 

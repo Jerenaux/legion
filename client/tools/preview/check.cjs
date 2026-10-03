@@ -3,10 +3,15 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 if (!process.versions.electron) {
-  const result = require('node:child_process').spawnSync(require('electron'), [__filename], {stdio: 'inherit'});
+  const result = require('node:child_process').spawnSync(require('electron'), [__filename, ...process.argv.slice(2)], {stdio: 'inherit'});
   if (result.error || result.signal) console.error(result.error || `Electron exited with ${result.signal}`);
   process.exitCode = result.status ?? 1;
 } else {
+  const locale = process.argv.find(arg => arg.startsWith('--locale='))?.slice('--locale='.length) || 'en';
+  const localeRoot = path.resolve(__dirname, '../../locales');
+  assert(fs.readdirSync(localeRoot).includes(locale), `Unknown locale: ${locale}`);
+  const messages = JSON.parse(fs.readFileSync(path.join(localeRoot, locale, 'messages.json'), 'utf8'));
+  const text = (key, values = {}) => (messages[key] || key).replace(/{{(\w+)}}/g, (_match, name) => String(values[name]));
   const {app, BrowserWindow} = require('electron');
   app.on('window-all-closed', () => {});
   app.setPath('userData', fs.mkdtempSync('/tmp/legion-practice-check-profile-'));
@@ -23,35 +28,75 @@ if (!process.versions.electron) {
       while (Date.now() < until) { if (await js(expression)) return; await pause(100); }
       throw new Error(`Timed out: ${expression}\n${errors.join('\n')}`);
     };
-    const out = path.resolve(__dirname, '../../../build/guided-practice');
+    const out = path.resolve(__dirname, '../../../build/guided-practice', locale);
+    const measurements = [];
+    const sizes = [[1280, 720, 1], [960, 540, 1.3]];
     fs.mkdirSync(out, {recursive: true});
+    const resize = async (width, height, scale) => {
+      win.setContentSize(width, height);
+      await js(`document.documentElement.style.fontSize = '${scale * 100}%'; document.documentElement.style.setProperty('--text-scale', '${scale}')`);
+      await pause(400);
+    };
+    const screenshot = async name => {
+      await pause(200); // Wait for the compositor after Preact updates and resized layouts.
+      fs.writeFileSync(path.join(out, `${name}.png`), (await win.webContents.capturePage()).toPNG());
+    };
+    const checkLayout = async (kind, name) => {
+      const layout = await js(`(() => {
+        const intro = ${JSON.stringify(kind)} === 'introduction';
+        const panel = document.querySelector(intro ? '.team-reveal-overlay' : '.combat-coach');
+        const rect = panel.getBoundingClientRect();
+        const bar = document.querySelector('.player_bar_container')?.getBoundingClientRect();
+        const selectors = intro
+          ? '.team-reveal-header, .team-reveal-title, .team-reveal-subtitle, .team-reveal-wrapper, .team-reveal-role, .team-reveal-actions, .team-reveal-actions button, .team-reveal-actions p'
+          : '.combat-coach-panel, .combat-coach-heading span, .combat-coach-instruction, .combat-coach-instruction strong, .combat-coach-instruction p, .combat-action-feedback';
+        const overflow = [...panel.querySelectorAll(selectors)].filter(element => element.clientWidth && element.clientHeight &&
+          (element.scrollWidth > element.clientWidth + 1 ||
+            (element.matches('.team-reveal-wrapper, .team-reveal-actions, .combat-coach-panel, .combat-action-feedback') && element.scrollHeight > element.clientHeight + 1)))
+          .map(element => ({selector: element.className || element.tagName, text: element.textContent,
+            width: element.clientWidth, scrollWidth: element.scrollWidth, height: element.clientHeight, scrollHeight: element.scrollHeight}));
+        return {inside: rect.left >= -1 && rect.top >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1,
+          overlaps: !intro && bar && rect.left < bar.right && rect.right > bar.left && rect.top < bar.bottom && rect.bottom > bar.top,
+          overflow, width: panel.clientWidth, scrollWidth: panel.scrollWidth, height: panel.clientHeight, scrollHeight: panel.scrollHeight};
+      })()`);
+      measurements.push({name, ...layout});
+      fs.writeFileSync(path.join(out, 'layout.json'), JSON.stringify(measurements, null, 2));
+      await screenshot(name);
+      assert(layout.inside && !layout.overlaps && !layout.overflow.length && layout.scrollWidth <= layout.width + 1,
+        `${locale} ${name}: ${JSON.stringify(layout)}`);
+      if (kind !== 'introduction') assert(layout.scrollHeight <= layout.height + 1, `${name}: panel content overflows`);
+      // The introductory overlay intentionally scrolls on short screens; capture its reachable actions too.
+      if (kind === 'introduction' && layout.scrollHeight > layout.height + 1) {
+        await js("document.querySelector('.team-reveal-overlay').scrollTop = document.querySelector('.team-reveal-overlay').scrollHeight");
+        await screenshot(`${name}-actions`);
+        await js("document.querySelector('.team-reveal-overlay').scrollTop = 0");
+      }
+    };
     try {
+      await win.loadURL('http://127.0.0.1:8082/');
+      await js(`localStorage.setItem('legion.language', ${JSON.stringify(locale)})`);
       await win.loadURL('http://127.0.0.1:8082/game/practice-preview');
+      await wait(`document.documentElement.lang === ${JSON.stringify(locale)}`);
+      await js('document.fonts.ready.then(() => true)');
       await js(`Object.defineProperty(document, 'hidden', {configurable: true, value: false}); document.dispatchEvent(new Event('visibilitychange'));`);
       await wait('document.querySelectorAll(".team-reveal-wrapper").length === 3');
       await js('document.querySelectorAll(".team-reveal-wrapper").forEach(button => button.click())');
       await wait('Boolean(document.querySelector(".team-reveal-play-button"))');
       await pause(900);
-      fs.writeFileSync(path.join(out, 'introduction.png'), (await win.webContents.capturePage()).toPNG());
+      for (const size of sizes) {
+        await resize(...size);
+        await checkLayout('introduction', `introduction-${size[0]}`);
+      }
+      await resize(...sizes[0]);
       await js('document.querySelector(".team-reveal-play-button").click()');
       await wait('Boolean(document.querySelector(".combat-coach-instruction"))');
       await wait('combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');
       await pause(500);
-      for (const [width, height, scale] of [[1280,720,1], [800,600,1.3], [600,600,1.3]]) {
-        win.setContentSize(width, height);
-        await js(`document.documentElement.style.fontSize = '${scale * 100}%'; document.documentElement.style.setProperty('--text-scale', '${scale}')`);
-        await pause(400);
-        const layout = await js(`(() => {
-          const coach = document.querySelector('.combat-coach').getBoundingClientRect();
-          const bar = document.querySelector('.player_bar_container').getBoundingClientRect();
-          return {inside: coach.left >= 0 && coach.top >= 0 && coach.right <= innerWidth && coach.bottom <= innerHeight,
-            overlaps: coach.left < bar.right && coach.right > bar.left && coach.top < bar.bottom && coach.bottom > bar.top};
-        })()`);
-        assert(layout.inside && !layout.overlaps, JSON.stringify(layout));
-        fs.writeFileSync(path.join(out, `combat-${width}.png`), (await win.webContents.capturePage()).toPNG());
+      for (const size of sizes) {
+        await resize(...size);
+        await checkLayout('combat', `combat-${size[0]}`);
       }
-      win.setContentSize(1280,720);
-      await js(`document.documentElement.style.fontSize = '100%'; document.documentElement.style.setProperty('--text-scale', '1')`);
+      await resize(...sizes[0]);
       await js('document.querySelector(".combat-coach button").click()');
       await wait('!document.querySelector(".combat-coach-instruction")');
       await js('document.querySelector(".combat-coach button").click()');
@@ -63,9 +108,9 @@ if (!process.versions.electron) {
         a.handleTileClick(active.gridX, active.gridY);
         if (a.selectedPlayer !== active) throw new Error('Click did not restore the active character');
       })()`);
-      await js('combatCheck.arena.handleTileClick(100, 100)');
-      await wait('document.querySelector(".combat-action-feedback")?.textContent.includes("Outside movement range")');
       const initialTurn = await js('combatCheck.arena.turnee.turnNumber');
+      await js('combatCheck.arena.handleTileClick(100, 100)');
+      await wait(`document.querySelector(".combat-action-feedback")?.textContent === ${JSON.stringify(text('Outside movement range. Choose a blue tile.'))}`);
       assert.equal(await js('combatCheck.arena.turnee.turnNumber'), initialTurn);
       await js(`(() => {
         const a = combatCheck.arena, p = a.selectedPlayer;
@@ -77,13 +122,29 @@ if (!process.versions.electron) {
         throw new Error('No valid move available');
       })()`);
       await wait('document.querySelector(".combat-coach")?.dataset.learned === "1"');
+      await wait('document.querySelector(".gamehud")?.dataset.coachFocus === "timeline"');
+      assert(await js(`[...document.querySelectorAll('.timeline_character')].some(element => getComputedStyle(element).outlineStyle === 'solid' && getComputedStyle(element).outlineWidth === '2px')`), 'Turn portraits must highlight after an accepted action');
+      await checkLayout('combat', 'movement-confirmation');
       await wait(`combatCheck.arena.turnee.turnNumber > ${initialTurn} && combatCheck.arena.turnee.team === combatCheck.arena.playerTeamId`);
       assert.equal(await js('combatCheck.arena.selectedPlayer.class'), 2, 'Black Mage acts after Warrior');
+      await wait('document.querySelector(".gamehud")?.dataset.coachFocus === "spells"');
+      assert(await js(`(() => { const element = document.querySelector('.player_bar_action_group:has(#player_hud_spells)'); return element && getComputedStyle(element).outlineStyle === 'solid' && getComputedStyle(element).outlineWidth === '2px'; })()`), 'The spell action group must highlight before targeting');
+      await checkLayout('combat', 'spell-guidance');
       await js('combatCheck.arena.selectedPlayer.useSkill(0)');
-      await wait('document.querySelector(".combat-coach-instruction strong")?.textContent.startsWith("Aim ")');
-      fs.writeFileSync(path.join(out, 'spell-targeting.png'), (await win.webContents.capturePage()).toPNG());
+      const spellName = await js('combatCheck.arena.selectedPlayer.spells[0].name');
+      await wait(`document.querySelector(".combat-coach-instruction strong")?.textContent === ${JSON.stringify(text('Aim {{spell}}', {spell: text(spellName)}))}`);
+      for (const size of sizes) {
+        await resize(...size);
+        await checkLayout('combat', `spell-targeting-${size[0]}`);
+      }
+      await resize(...sizes[0]);
       await js('combatCheck.arena.handleTileClick(100,100)');
-      await wait('document.querySelector(".combat-action-feedback")?.textContent.includes("highlighted target")');
+      await wait(`document.querySelector(".combat-action-feedback")?.textContent === ${JSON.stringify(text('Choose a highlighted target in range.'))}`);
+      for (const size of sizes) {
+        await resize(...size);
+        await checkLayout('combat', `invalid-target-${size[0]}`);
+      }
+      await resize(...sizes[0]);
       assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), 0);
       await js("combatCheck.arena.handleDesktopAction(new CustomEvent('legion:desktop-action', {detail: {action: 'cancel', source: 'keyboard'}}))");
       await wait('combatCheck.arena.selectedPlayer.pendingSpell === null');
@@ -104,11 +165,12 @@ if (!process.versions.electron) {
       await wait('combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');
       await wait('Boolean(document.querySelector(".combat-coach"))');
       assert.equal(errors.length, 0, errors.join('\n'));
-      console.log(`Playable practice, invalid clicks, accepted movement/spell progress, cancel, hide/reopen, and responsive layout passed. Screenshots: ${out}`);
+      console.log(`${locale}: playable practice, invalid clicks, accepted movement/spell progress, cancel, hide/reopen, and responsive layout passed. Screenshots: ${out}`);
       win.destroy();
       app.exit(0);
     } catch (error) {
       console.error(error);
+      if (errors.length) console.error(`Renderer errors (${locale}):\n${errors.join("\n")}`);
       fs.writeFileSync(path.join(out, 'failure.png'), (await win.webContents.capturePage()).toPNG());
       win.destroy(); app.exit(1);
     }

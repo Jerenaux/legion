@@ -1,0 +1,8 @@
+{
+  "name": "日本語",
+  "direction": "ltr",
+  "fontFamily": "Legion JP",
+  "steamLanguages": [
+    "japanese"
+  ]
+}

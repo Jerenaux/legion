@@ -16,8 +16,11 @@
     background-image: url('@assets/rank/players_bg.png');
     background-size: 100% 100%;
     min-height: 118px;
-    min-width: 148px;
+    width: 148px;
+    padding: 42px 10px 16px;
+    box-sizing: border-box;
     margin-bottom: 4px;
+    text-align: center;
 }
 
 /* .award-player-container img {
@@ -49,10 +52,9 @@
     font-size: 0.75rem;
     font-weight: 500;
     color: #FFFFFF;
-    position: absolute;
-    top: 42px;
     text-transform: uppercase;
-    max-width: 130px;
+    max-width: 100%;
+    text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -61,19 +63,15 @@
     font-size: 0.75rem;
     font-weight: 500;
     color: #ffa600;
-    position: absolute;
-    top: 56px;
     text-transform: uppercase;
-    max-width: 120px;
-    overflow: hidden;
-    white-space: nowrap;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 .award-player-desc {
+    overflow-wrap: anywhere;
     font-size: 0.625rem;
     color: #FFFFFF;
-    position: absolute;
-    bottom: 16px; 
 }
 
 .award-player-container.clickable {

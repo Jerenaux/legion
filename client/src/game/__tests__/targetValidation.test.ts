@@ -5,6 +5,9 @@ import ts from "typescript";
 import {Target, TargetHighlight} from "@legion/shared/enums";
 import {isInSpellRange, serializeCoords} from "@legion/shared/utils";
 
+const t = (key: string, values: Record<string, unknown> = {}) =>
+  key.replace(/{{(\w+)}}/g, (_match, name) => String(values[name]));
+
 // Execute the real input methods without loading Phaser's browser/rendering dependencies.
 function inputMethods(file: string, names: string[]) {
   const source = ts.createSourceFile(file, readFileSync(new URL(`../${file}`, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -21,7 +24,7 @@ const playerCode = inputMethods("Player.ts", ["cancelSkill", "cancelItem"]);
 for (const mode of ["development", "production"]) {
   for (const action of ["spell", "item"]) {
     test(`${mode}: invalid ${action} targets send nothing and leave a valid follow-up possible`, () => {
-      const arena = runInNewContext(code, {
+      const arena = runInNewContext(code, {t,
         isInSpellRange, serializeCoords, Target, TargetHighlight,
         process: {env: {NODE_ENV: mode}},
         // Reproduce the former development switch: validation must not depend on it.
@@ -95,7 +98,7 @@ for (const action of ["spell", "item"]) {
 
 test('server rejection restores controls for the same turn, but never resets a later turn', () => {
   const toast = mock();
-  const arena = runInNewContext(code);
+  const arena = runInNewContext(code, {t});
   arena.actionFeedback = toast;
   arena.turnee = {team: 1, num: 1, turnNumber: 4};
   arena.inputLocked = true;
@@ -124,7 +127,7 @@ test('stale attack events with a missing actor or target are ignored', () => {
 
 const availabilityCode = inputMethods('Arena.ts', ['unavailableActionReason']);
 test('action feedback distinguishes the active unit, enemy turns, and disabled characters', () => {
-  const arena = runInNewContext(availabilityCode);
+  const arena = runInNewContext(availabilityCode, {t});
   const active = {name: 'Luna', isPlayer: true, isInIce: () => false, canAct: () => true};
   arena.turnee = {team: 1, num: 2};
   arena.getPlayer = () => active;

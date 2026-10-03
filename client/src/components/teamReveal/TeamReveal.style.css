@@ -13,14 +13,21 @@
   background: rgba(8, 17, 23, .94);
   color: #f4f3e9;
   text-align: center;
+  overflow-wrap: anywhere;
 }
-.team-reveal-header { max-width: 42rem; }
-.team-reveal-eyebrow { color: #9bd7da; font: .875rem/1.4 'Kim', sans-serif; text-transform: uppercase; letter-spacing: .15em; }
-.team-reveal-title { font: clamp(1.75rem, calc(4vw * var(--text-scale, 1)), 2.75rem)/1.1 'Kim', sans-serif; margin: 10px 0; }
-.team-reveal-subtitle { font: 1.0625rem/1.5 Arial, sans-serif; color: #b8cbd1; margin: 0; }
-.team-reveal-grid { display: flex; justify-content: center; gap: clamp(12px, 3vw, 40px); }
+.team-reveal-overlay > * { flex-shrink: 0; }
+.team-reveal-header { max-width: min(42rem, 100%); }
+.team-reveal-eyebrow { color: #9bd7da; font: .875rem/1.4 var(--locale-font, 'Kim'), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .15em; }
+.team-reveal-title { font: clamp(1.75rem, calc(4vw * var(--text-scale, 1)), 2.75rem)/1.1 var(--locale-font, 'Kim'), system-ui, sans-serif; margin: 10px 0; }
+.team-reveal-subtitle { font: 1.0625rem/1.5 var(--locale-font, Arial), system-ui, sans-serif; color: #b8cbd1; margin: 0; }
+.team-reveal-grid { display: flex; flex-wrap: wrap; max-width: 100%; justify-content: center; gap: clamp(12px, 3vw, 40px); }
 .team-reveal-wrapper {
   position: relative;
+  width: clamp(160px, 19vw, 224px);
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
   background: #23313a70;
   color: #e9f2ee;
   border: 1px solid #48616a;
@@ -31,17 +38,17 @@
 }
 .team-reveal-wrapper:hover { background: #30454e; border-color: #a0d7d8; }
 .team-reveal-wrapper.revealed { cursor: default; border-color: #64878d; background: #20323d; }
-.team-reveal-wrapper .endgame_character { height: auto; min-height: 180px; background: none; border: 0; box-shadow: none; }
+.team-reveal-wrapper .endgame_character { width: 100%; box-sizing: border-box; height: auto; min-height: 180px; background: none; border: 0; box-shadow: none; }
 .team-reveal-wrapper .endgame_character::before, .team-reveal-wrapper .endgame_character::after { display: none; }
 .team-reveal-wrapper .endgame_character_portrait { flex-shrink: 0; }
-.team-reveal-role { display: block; border-top: 1px solid #ffffff15; padding-top: 10px; margin: 10px 4px 0; color: #b8d1d5; font: .9375rem/1.35 Arial, sans-serif; }
-.team-reveal-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.team-reveal-actions p { margin: 0; font: 1rem/1.4 Arial, sans-serif; }
+.team-reveal-role { display: block; border-top: 1px solid #ffffff15; padding-top: 10px; margin: 10px 4px 0; color: #b8d1d5; font: .9375rem/1.35 var(--locale-font, Arial), system-ui, sans-serif; }
+.team-reveal-actions { max-width: min(42rem, 100%); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.team-reveal-actions p { margin: 0; font: 1rem/1.4 var(--locale-font, Arial), system-ui, sans-serif; }
 .team-reveal-actions .team-reveal-rule { color: #d9e5e6; margin-bottom: 4px; }
-.team-reveal-play-button { background: #dcaf35; border: 2px solid #f7d77d; border-radius: 5px; box-shadow: 0 3px 0 #916223; color: #141d22; padding: 12px 32px; cursor: pointer; font: 1.375rem/1.2 'Kim', sans-serif; }
+.team-reveal-play-button { max-width: 100%; overflow-wrap: anywhere; background: #dcaf35; border: 2px solid #f7d77d; border-radius: 5px; box-shadow: 0 3px 0 #916223; color: #141d22; padding: 12px 32px; cursor: pointer; font: 1.375rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif; }
 .team-reveal-play-button:hover { background: #ecc354; }
 .team-reveal-play-button:active { transform: translateY(2px); box-shadow: 0 1px 0 #916223; }
-.team-reveal-skip { background: none; border: 0; color: #b8cbd1; padding: 8px 16px; cursor: pointer; font: .9375rem/1.2 Arial, sans-serif; text-decoration: underline; text-underline-offset: 4px; }
+.team-reveal-skip { background: none; border: 0; color: #b8cbd1; padding: 8px 16px; cursor: pointer; font: .9375rem/1.2 var(--locale-font, Arial), system-ui, sans-serif; text-decoration: underline; text-underline-offset: 4px; }
 .team-reveal-skip:hover { color: #fff; }
 .team-reveal-actions .team-reveal-time { color: #91aab4; font-size: .8125rem; }
 .team-reveal-overlay button:focus-visible { outline: 2px solid #eac96a; outline-offset: 4px; }
@@ -50,5 +57,4 @@
   .team-reveal-actions { gap: 8px; }
   .team-reveal-wrapper { padding: 4px; }
 }
-@media (max-width: 480px) { .team-reveal-grid { flex-wrap: wrap; } }
 @media (prefers-reduced-motion: reduce) { .team-reveal-overlay * { animation: none !important; transition: none !important; } }

@@ -1,3 +1,4 @@
+import {t} from '../i18n/core';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -168,16 +169,16 @@ class RankPage extends Component<{}, State> {
           <div className="rank-tab-container">
             {rankIcons.map((icon, i) => (
               <button type="button" data-game-control key={i} style={getRankTabStyle(i)} onClick={() => this.handleCurrTab(i)}>
-                <img src={icon} alt={tabs[i]} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src={icon} alt={t(tabs[i])} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </button>
             ))}
           </div>
 
           {this.state.loadFailed ? (
             <section className="rank-load-error" role="alert">
-              <h2>Rank couldn’t load</h2>
-              <p>Check your connection and try again.</p>
-              <button type="button" className="session-status__retry" onClick={() => this.fetchLeaderboard()}>Retry</button>
+              <h2>{t("Rank couldn’t load")}</h2>
+              <p>{t("Check your connection and try again.")}</p>
+              <button type="button" className="session-status__retry" onClick={() => this.fetchLeaderboard()}>{t("Retry")}</button>
             </section>
           ) : !this.state.isLoading ?
             <LeaderboardTable

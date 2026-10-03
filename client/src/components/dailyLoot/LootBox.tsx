@@ -1,3 +1,5 @@
+import {t, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -70,9 +72,9 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
     getTitle() {
         const { color } = this.props;
         switch (color) {
-            case ChestColor.BRONZE: return "Bronze Chest";
-            case ChestColor.SILVER: return "Silver Chest";
-            case ChestColor.GOLD: return "Golden Chest";
+            case ChestColor.BRONZE: return t("Bronze Chest");
+            case ChestColor.SILVER: return t("Silver Chest");
+            case ChestColor.GOLD: return t("Golden Chest");
             default: return "";
         }
     }
@@ -101,24 +103,17 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
         if (timeRemaining > 0) {
             const { hour, minute, second } = this.computeTimeFields(timeRemaining);
             return (
-                <div>
-                    Available in
-                    <span className="loot-box-countdown">
-                        {`${hour}`.padStart(2, "0")}:
-                        {`${minute}`.padStart(2, "0")}:
-                        {`${second}`.padStart(2, "0")}
-                    </span>
-                </div>
+                <div><Trans i18n={i18n} i18nKey={"Available in<0>{{value0}}:{{value1}}:{{value2}}</0>"} components={[<span className="loot-box-countdown" />]} values={{value0: `${hour}`.padStart(2, "0"), value1: `${minute}`.padStart(2, "0"), value2: `${second}`.padStart(2, "0")}} /></div>
             );
         } else if (!ownsKey) {
             return (
                 <div>
-                    <img src={silverKeyIcon} alt="key icon" />
+                    <img src={silverKeyIcon} alt={t("key icon")} />
                     <span className="loot-box-key">0 / 1</span>
                 </div>
             );
         } else {
-            return <span className="loot-box-open">Open</span>;
+            return <span className="loot-box-open">{t("Open")}</span>;
         }
     }
 
@@ -127,7 +122,7 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
         return (
             <button type="button" data-game-control className="lootBoxContainer" onClick={onClick}>
                 <div className="loot-box-title"><span>{this.getTitle()}</span></div>
-                <img className="loot-box-image" src={this.getImageSrc()} alt={this.props.color} />
+                <img className="loot-box-image" src={this.getImageSrc()} alt="" />
                 <div className="loot-box-footer">{this.getFooterContent()}</div>
             </button>
         );

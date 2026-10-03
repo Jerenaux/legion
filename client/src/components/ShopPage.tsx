@@ -1,3 +1,4 @@
+import {t} from '../i18n/core';
 import { h } from 'preact';
 import { Component, createRef } from 'preact';
 import { apiFetch } from '../services/apiService';
@@ -73,7 +74,7 @@ class ShopPage extends Component<ShopPageProps, State> {
             characters: data
         });
     } catch (error) {
-        console.error(`Error: ${error}`);
+        console.error(t("Error: {{value0}}", {value0: error}));
     }
   }
 

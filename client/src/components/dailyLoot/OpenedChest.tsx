@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -75,17 +76,17 @@ class OpenedChest extends Component<OpenedChestProps> {
           <img
             src={this.getChestImage(this.props.color)}
             className={this.props.content === null ? 'shake-animation' : ''}
-            alt="Daily reward chest"
+            alt={t("Daily reward chest")}
           />
           </div>
           <div className="light_shining_bg">
-            <img src={shineBg} alt="" />
+            <img src={shineBg} alt={""} />
           </div>
           <div className="streak_gold_list_container">
             {this.renderRewards()}
           </div>
           <button type="button" data-game-control className="streak_cofirm_container" style={{ width: this.props.width * 0.8 }} onClick={this.props.onClick}>
-            <div className="streak_confirm_btn"><span>Confirm</span></div>
+            <div className="streak_confirm_btn"><span>{t("Confirm")}</span></div>
           </button>
         </div>
       </div>

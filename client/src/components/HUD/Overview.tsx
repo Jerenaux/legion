@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
@@ -81,7 +82,7 @@ class Overview extends Component<Props, State> {
         <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
         <div className="member_container">
           <div className="team_label">
-            {this.props.isPlayerTeam ? 'Your team' : 'Enemy team'}
+            {this.props.isPlayerTeam ? t("Your team") : t("Enemy team")}
           </div>
           {members.map((member, memberIndex) => {
             const isAlive = member.hp > 0;
@@ -121,7 +122,7 @@ class Overview extends Component<Props, State> {
               <button type="button" data-game-control
                 key={memberIndex}
                 onClick={e => onInspect(teamId, memberIndex + 1, e.currentTarget)}
-                aria-label={`Inspect ${member.name}`}
+                aria-label={t("Inspect {{value0}}", {value0: member.name})}
                 aria-describedby={inspected ? 'character-hover-card' : undefined}
                 data-character={`${teamId}-${memberIndex + 1}`}
                 data-inspected={inspected}
@@ -153,7 +154,7 @@ class Overview extends Component<Props, State> {
                 </div>
                 <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
                   {Object.keys(member?.statuses).map((status: StatusEffect) => {
-                    return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={statusIcons[status]}  alt="" />
+                    return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={statusIcons[status]}  alt={""} />
                   })}
                 </div>
               </button>

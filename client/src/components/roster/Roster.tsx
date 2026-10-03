@@ -1,3 +1,5 @@
+import {t, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 import { h, Fragment } from 'preact';
 // Roster.tsx
 import './Roster.style.css';
@@ -29,18 +31,18 @@ class Roster extends Component {
     const recruitContent = <>
       <span className="roster-future-portrait" aria-hidden="true" style={{backgroundImage: `url(${getSpritePath('1_1')})`}} />
       <span className="roster-slot-plus" aria-hidden="true">+</span>
-      <span>{canRecruit ? 'Recruit character' : 'Next recruit'}</span>
+      <span>{canRecruit ? t("Recruit character") : t("Next recruit")}</span>
     </>;
 
     return (
       <div className="rosterContainer">
         <div className="roster-heading">
-          <h1>Team composition</h1>
-          {this.context.player.isLoaded && <div className="roster-capacity" role="img" aria-label={`${characters.length} of ${MAX_CHARACTERS} characters${!remainingSlots ? ', team full' : ''}`}>
+          <h1>{t("Team composition")}</h1>
+          {this.context.player.isLoaded && <div className="roster-capacity" role="img" aria-label={t(remainingSlots ? "rosterCapacity" : "rosterFull", {count: characters.length, max: MAX_CHARACTERS})}>
             <span className="roster-capacity-marks" aria-hidden="true">
               {Array.from({length: MAX_CHARACTERS}, (_, index) => <span key={index} className={index < characters.length ? 'is-filled' : ''} />)}
             </span>
-            <span aria-hidden="true"><strong>{characters.length}</strong> / {MAX_CHARACTERS}{!remainingSlots && ' · Full'}</span>
+            <span aria-hidden="true"><strong>{characters.length}</strong> / {MAX_CHARACTERS}{!remainingSlots && t(' · Full')}</span>
           </div>}
         </div>
         {characters.length > 0 ? (
@@ -69,12 +71,12 @@ class Roster extends Component {
         )}
         {this.context.player.isLoaded && characters.length > 0 && remainingSlots > 0 && !canRecruit && (
           <div className="roster-unlock">
-            <div className="roster-unlock-label"><img src={lockIcon} alt="" />
-              <span>Recruitment unlocks in <strong>{gamesLeft} {gamesLeft === 1 ? 'game' : 'games'}</strong></span>
+            <div className="roster-unlock-label"><img src={lockIcon} alt={""} />
+              <span><Trans i18n={i18n} i18nKey="recruitmentUnlock" count={gamesLeft} components={[<strong />]} /></span>
             </div>
             <progress value={completedGames} max={requiredGames}
-              aria-label={`${completedGames} of ${requiredGames} games completed. Wins and losses both count.`}
-              title={`${completedGames} of ${requiredGames} games completed. Wins and losses both count.`} />
+              aria-label={t("{{value0}} of {{value1}} games completed. Wins and losses both count.", {value0: completedGames, value1: requiredGames})}
+              title={t("{{value0}} of {{value1}} games completed. Wins and losses both count.", {value0: completedGames, value1: requiredGames})} />
           </div>
         )}
       </div>

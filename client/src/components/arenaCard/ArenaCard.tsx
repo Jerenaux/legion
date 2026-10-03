@@ -1,3 +1,5 @@
+import {t, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 import { h } from 'preact';
 // ArenaCard.tsx
 import './ArenaCard.style.css'
@@ -69,15 +71,15 @@ class ArenaCard extends Component<CardProps> {
             {`${countDown.second}`.padStart(2, "0")}
           </span>
         </div>
-        <div className="vsSpan"><span>VS</span></div>
+        <div className="vsSpan"><span>{t("VS")}</span></div>
         <div className="team_b_info">
           <span>{data.teamB.name}</span>
-          <span className="spactators"><span>{data.spectators}</span> SPECTATORS</span>
+          <span className="spactators"><Trans i18n={i18n} i18nKey={"<0>{{value0}}</0> SPECTATORS"} components={[<span />]} values={{value0: data.spectators}} /></span>
         </div>
         <div className="team_b_members">
           <span><span>{data.teamB.aliveCharacters}</span>/{data.teamB.teamSize}</span>
         </div>
-        <div className="spectate"><span>SPECTATE</span></div>
+        <div className="spectate"><span>{t("SPECTATE")}</span></div>
       </div>
     );
   }

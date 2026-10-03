@@ -1,7 +1,7 @@
 .userInfoBar {
     display: flex;
     align-items: center;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .barLogo {

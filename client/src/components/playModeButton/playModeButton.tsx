@@ -1,5 +1,6 @@
-import { Fragment } from 'preact';
-import { h } from 'preact';
+import {t, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
+import { h, Fragment } from 'preact';
 import './playModeButton.style.css'
 import { Component } from 'preact';
 import { route } from 'preact-router';
@@ -77,46 +78,44 @@ class PlayModeButton extends Component<Props> {
                 disabled={disabled}
                 {...otherProps}
             >
-                {mode === PlayMode.TOWER && <span className="tower-mode-tag">6-floor adventure</span>}
+                {mode === PlayMode.TOWER && <span className="tower-mode-tag">{t("6-floor adventure")}</span>}
                 <img
                     src={btnIcons[label]}
-                    alt={label}
+                    alt={t(label)}
                     className="mode-icon"
                 />
                 <div className="labelContainer">
-                    <span className="label">{mode === PlayMode.TOWER ? <>Cinder<br />Tower</> : label}</span>
+                    <span className="label">{t(label)}</span>
                     {!disabled && (
-                        mode === PlayMode.TOWER ? <span className="player">Solo expedition</span> : mode === PlayMode.PRACTICE
-                            ? <span className="player">vs AI</span>
-                            : (players && <span className="player"><span className="count">{players}</span> {players === 1 ? 'Player' : 'Players'} Queuing</span>)
+                        mode === PlayMode.TOWER ? <span className="player">{t("Solo expedition")}</span> : mode === PlayMode.PRACTICE
+                            ? <span className="player">{t("vs AI")}</span>
+                            : (players && <span className="player"><Trans i18n={i18n} i18nKey="playersWaiting" count={players} components={[<span className="count" />]} /></span>)
                     )}
                     <div className="info-container">
                         {disabled ? (
                             <div className="lock-container">
                                 <img
                                     src={lockIcon}
-                                    alt="Locked"
+                                    alt={t("Locked")}
                                     className="lock-icon"
                                 />
                                 {gamesUntilUnlock > 0 && (
-                                    <div className="unlock-message">
-                                        Play {gamesUntilUnlock} more {gamesUntilUnlock === 1 ? 'game' : 'games'} to unlock
-                                    </div>
+                                    <div className="unlock-message">{t("gamesToUnlock", {count: gamesUntilUnlock})}</div>
                                 )}
                             </div>
                         ) : (
                             <>
                             <div className="info-row">
-                                <span className="info-label"><img src={xpIcon} alt="XP" className="reward-icon" />XP:</span>
-                                <span className={`info-value ${modeInfo?.xpRewards}`}>{modeInfo?.xpRewards?.charAt(0).toUpperCase() + modeInfo?.xpRewards?.slice(1)}</span>
+                                <span className="info-label"><Trans i18n={i18n} i18nKey={"<0/>XP:"} components={[<img src={xpIcon} alt="" className="reward-icon" />]} /></span>
+                                <span className={`info-value ${modeInfo?.xpRewards}`}>{t(modeInfo?.xpRewards)}</span>
                             </div>
                             <div className="info-row">
-                                <span className="info-label"><img src={goldIcon} alt="Gold" className="reward-icon" />Gold:</span>
-                                <span className={`info-value ${modeInfo?.goldRewards}`}>{modeInfo?.goldRewards?.charAt(0).toUpperCase() + modeInfo?.goldRewards?.slice(1)}</span>
+                                <span className="info-label"><Trans i18n={i18n} i18nKey={"<0/>Gold:"} components={[<img src={goldIcon} alt="" className="reward-icon" />]} /></span>
+                                <span className={`info-value ${modeInfo?.goldRewards}`}>{t(modeInfo?.goldRewards)}</span>
                             </div>
                             <div className="info-row">
-                                <span className="info-label"><img src={goldChest} alt="Items" className="reward-icon" />Items:</span>
-                                <span className={`info-value ${modeInfo?.itemRewards ? 'high' : 'low'}`}>{modeInfo?.itemRewards ? 'Yes' : 'No'}</span>
+                                <span className="info-label"><Trans i18n={i18n} i18nKey={"<0/>Items:"} components={[<img src={goldChest} alt="" className="reward-icon" />]} /></span>
+                                <span className={`info-value ${modeInfo?.itemRewards ? 'high' : 'low'}`}>{modeInfo?.itemRewards ? t('Yes') : t('No')}</span>
                             </div>
                             </>
                         )}

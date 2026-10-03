@@ -1,3 +1,5 @@
+import {t, i18n, userError} from '../i18n/core';
+import {Trans} from '../i18n/Trans';
 import { h } from 'preact';
 import { Component, } from 'preact';
 import { PlayerContextState, PlayerContext } from '../contexts/PlayerContext';
@@ -194,7 +196,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           });
       } catch (error) {
           if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== user.uid) return;
-          errorToast(`Error: ${error}`);
+          errorToast(userError(error));
       }
     }
 
@@ -250,7 +252,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.setState((prevState) => {
         const activeCharacter = prevState.characters.find(character => character.id === prevState.activeCharacterId) || prevState.characters[0];
         if (!activeCharacter) {
-          errorToast('No active character selected!');
+          errorToast(t("No active character selected!"));
           return prevState;
         }
 
@@ -305,13 +307,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           case ItemDialogType.CONSUMABLES:
             if (action === InventoryActionType.EQUIP) {
               if (!canEquipConsumable(updatedCharacter)) {
-                errorToast('Character inventory is full!');
+                errorToast(t("Character inventory is full!"));
                 return prevState;
               }
               result = equipConsumable(newState.player, updatedCharacter, index);
             } else {
               if (!roomInInventory(newState.player)) {
-                errorToast('Player inventory is full!');
+                errorToast(t("Player inventory is full!"));
                 return prevState;
               }
               result = unequipConsumable(newState.player, updatedCharacter, index);
@@ -320,13 +322,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           case ItemDialogType.EQUIPMENTS:
             if (action === InventoryActionType.EQUIP) {
               if (!canEquipEquipment(updatedCharacter, updatedInventory.equipment[index])) {
-                errorToast('Cannot equip this item!');
+                errorToast(t("Cannot equip this item!"));
                 return prevState;
               }
               result = equipEquipment(newState.player, updatedCharacter, index);
             } else {
               if (!roomInInventory(newState.player)) {
-                errorToast('Player inventory is full!');
+                errorToast(t("Player inventory is full!"));
                 return prevState;
               }
               result = unequipEquipment(newState.player, updatedCharacter, index);
@@ -335,7 +337,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           case ItemDialogType.SPELLS:
             if (action === InventoryActionType.EQUIP) {
               if (!canLearnSpell(updatedCharacter, updatedInventory.spells[index])) {
-                errorToast('Cannot learn this spell!');
+                errorToast(t("Cannot learn this spell!"));
                 return prevState;
               }
               result = learnSpell(newState.player, updatedCharacter, index);
@@ -503,7 +505,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       });
 
       socket.on('error', (e) => {
-        errorToast(e);
+        errorToast(userError(e));
       });
 
       socket.on('gameError', (data: { message: string }) => {
@@ -535,9 +537,9 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           console.log(`[matchmaker:challengeDeclined] Challenge was declined`);
           let playerName = data?.playerName;
           if (!playerName) {
-            playerName = 'another player';
+            playerName = t("another player");
           }
-          silentErrorToast(`Your challenge to ${playerName} was declined!`);
+          silentErrorToast(t("Your challenge to {{value0}} was declined!", {value0: playerName}));
           route('/profile');
       });
 
@@ -550,7 +552,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                     show: false
                 }
             });
-            silentErrorToast(`The challenge from ${data?.challengerName || 'Player'} was cancelled`);
+            silentErrorToast(t("The challenge from {{value0}} was cancelled", {value0: data?.challengerName || t("Player")}));
         }
       });
 
@@ -747,28 +749,19 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                               )})`
                           }}
                       />
-                      <h3>Duel</h3>
+                      <h3>{t("Duel")}</h3>
                       <div className="challenge-description">
-                          <p>
-                              <span className="highlight-name">
-                                  {this.state.challengeModal.challengerName}
-                              </span>
-                              {' '}has challenged you to a duel!
-                          </p>
+                          <p><Trans i18n={i18n} i18nKey={"<0>{{value0}}</0> has challenged you to a duel!"} components={[<span className="highlight-name" />]} values={{value0: this.state.challengeModal.challengerName}} /></p>
                       </div>
                       <div className="modal-footer">
                           <button type="button"
                               onClick={this.handleChallengeDecline}
                               className="cancel-btn"
-                          >
-                              Decline
-                          </button>
+                          >{t("Decline")}</button>
                           <button type="button"
                               onClick={this.handleChallengeAccept}
                               className="confirm-btn"
-                          >
-                              Accept
-                          </button>
+                          >{t("Accept")}</button>
                       </div>
                   </div>
               </div>

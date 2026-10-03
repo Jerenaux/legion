@@ -1,3 +1,5 @@
+import {t, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
 // PurchaseDialog.tsx
@@ -105,7 +107,7 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
       <Modal isOpen={dialogOpen} style={customStyles} onRequestClose={this.handleCloseDialog}>
         <div className="purchase-dialog-container">
           <div className="purchase-dialog-title">
-            <span>{dialogData.name}</span>
+            <span>{dialogData.isCharacter ? dialogData.name : t(dialogData.name)}</span>
           </div>
 
           <div className="purchase-dialog-frame" style={spriteStyle}></div>
@@ -121,7 +123,7 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
           )}
 
           <div className="purchase-dialog-price">
-            <img src={goldIcon} alt="cost" />
+            <img src={goldIcon} alt={t("cost")} />
             <span style={countStyle}>{dialogData.price * this.state.count}</span>
           </div>
 
@@ -131,12 +133,8 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
               onClick={() => this.props.purchase(dialogData.id, this.state.count, dialogData.price)}
               style={buyBtnStyle}
               disabled={!hasEnoughGold}
-            >
-              <img src={confirmIcon} alt="confirm" />Buy
-            </button>
-            <button type="button" className="purchase-dialog-decline" onClick={this.handleCloseDialog}>
-              <img src={cancelIcon} alt="decline" />Cancel
-            </button>
+            ><Trans i18n={i18n} i18nKey={"<0/>Buy"} components={[<img src={confirmIcon} alt="" />]} /></button>
+            <button type="button" className="purchase-dialog-decline" onClick={this.handleCloseDialog}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
           </div>
         </div>
       </Modal>
