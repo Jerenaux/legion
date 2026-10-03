@@ -5,6 +5,9 @@ import ts from "typescript";
 import {Target, TargetHighlight} from "@legion/shared/enums";
 import {isInSpellRange, serializeCoords} from "@legion/shared/utils";
 
+const t = (key: string, values: Record<string, unknown> = {}) =>
+  key.replace(/{{(\w+)}}/g, (_match, name) => String(values[name]));
+
 // Execute the real input methods without loading Phaser's browser/rendering dependencies.
 function inputMethods(file: string, names: string[]) {
   const source = ts.createSourceFile(file, readFileSync(new URL(`../${file}`, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -21,7 +24,7 @@ const playerCode = inputMethods("Player.ts", ["cancelSkill", "cancelItem"]);
 for (const mode of ["development", "production"]) {
   for (const action of ["spell", "item"]) {
     test(`${mode}: invalid ${action} targets send nothing and leave a valid follow-up possible`, () => {
-      const arena = runInNewContext(code, {t: (key: string) => key,
+      const arena = runInNewContext(code, {t,
         isInSpellRange, serializeCoords, Target, TargetHighlight,
         process: {env: {NODE_ENV: mode}},
         // Reproduce the former development switch: validation must not depend on it.
@@ -35,6 +38,8 @@ for (const mode of ["development", "production"]) {
         pendingItem: action === "item" ? 0 : null,
       };
       arena.playerTeamId = 1;
+      arena.unavailableActionReason = () => undefined;
+      arena.actionFeedback = mock();
       arena.gridMap = new Map([
         ["14,5", {team: {id: 2}}], // Enemy outside range.
         ["2,5", {team: {id: 1}}], // Ally inside range: also invalid.
@@ -79,6 +84,7 @@ for (const action of ["spell", "item"]) {
     arena.turnee = {team: 1, num: 1};
     arena.gameSettings = {spectator: false};
     arena.send = mock();
+    arena.refreshTutorial = mock();
     arena.toggleTargetMode = mock(() => expect(player.pendingSpell).toBeNull());
     arena.toggleItemMode = mock(() => expect(player.pendingItem).toBeNull());
     if (action === "spell") arena.sendSpell(3, 5, null);
@@ -92,7 +98,8 @@ for (const action of ["spell", "item"]) {
 
 test('server rejection restores controls for the same turn, but never resets a later turn', () => {
   const toast = mock();
-  const arena = runInNewContext(code, {t: (key: string) => key, silentErrorToast: toast});
+  const arena = runInNewContext(code, {t});
+  arena.actionFeedback = toast;
   arena.turnee = {team: 1, num: 1, turnNumber: 4};
   arena.inputLocked = true;
   arena.selectedPlayer = {cancelItem: mock()};
@@ -116,4 +123,38 @@ test('stale attack events with a missing actor or target are ignored', () => {
   expect(() => arena.processAttack({team: 1, num: 1, target: 2, hp: 0, isKill: true, sameTeam: false})).not.toThrow();
   expect(() => arena.processAttack({team: 2, num: 1, target: 1, hp: 0, isKill: true, sameTeam: false})).not.toThrow();
   expect(player.attack).not.toHaveBeenCalled();
+});
+
+const availabilityCode = inputMethods('Arena.ts', ['unavailableActionReason']);
+test('action feedback distinguishes the active unit, enemy turns, and disabled characters', () => {
+  const arena = runInNewContext(availabilityCode, {t});
+  const active = {name: 'Luna', isPlayer: true, isInIce: () => false, canAct: () => true};
+  arena.turnee = {team: 1, num: 2};
+  arena.getPlayer = () => active;
+  arena.selectedPlayer = active;
+  expect(arena.unavailableActionReason()).toBeUndefined();
+  expect(arena.unavailableActionReason({name: 'Roland'})).toContain('Luna acts now');
+  active.isPlayer = false;
+  expect(arena.unavailableActionReason()).toContain('opponent');
+  active.isPlayer = true;
+  active.canAct = () => false;
+  expect(arena.unavailableActionReason()).toContain('cannot act');
+  active.isInIce = () => true;
+  expect(arena.unavailableActionReason()).toContain('frozen');
+});
+
+test('clicking the active character restores selection after inspecting another unit', () => {
+  const arena = runInNewContext(code, {serializeCoords});
+  const active = {isPlayer: true};
+  arena.turnee = {team: 1, num: 2};
+  arena.selectedPlayer = {};
+  arena.gridMap = new Map([['3,5', active]]);
+  arena.getPlayer = () => active;
+  arena.unavailableActionReason = () => 'Luna acts now. Select the active character.';
+  arena.actionFeedback = mock();
+  arena.selectTurnee = mock(() => {arena.selectedPlayer = active;});
+  arena.handleTileClick(3, 5);
+  expect(arena.selectTurnee).toHaveBeenCalledTimes(1);
+  expect(arena.selectedPlayer).toBe(active);
+  expect(arena.actionFeedback).not.toHaveBeenCalled();
 });

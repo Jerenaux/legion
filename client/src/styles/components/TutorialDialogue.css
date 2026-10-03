@@ -1,283 +1,55 @@
-.tutorial-dialogue {
+.combat-coach {
   position: fixed;
-  left: 20px;
-  background-color: #242b37;
-  color: #e0e0e0;
-  padding: 1vh 1vw;
-  border-radius: 0.5vw;
-  width: 20vw;
-  max-width: 600px;
-  z-index: 1000;
+  left: 16px;
+  bottom: max(110px, 13vh);
+  width: min(21rem, 30vw);
+  color: #f4f3e9;
+  z-index: 12;
+  pointer-events: none;
+  font-family: var(--locale-font, Arial), sans-serif;
+}
+.combat-coach-panel {
+  background: rgba(19, 30, 39, .96);
+  border: 1px solid #527b83;
+  border-radius: 3px 14px 3px 3px;
+  box-shadow: 0 4px 16px #0005, inset 0 0 0 3px #a1e5e509;
+  padding: 12px 16px 16px;
+}
+.combat-coach-heading {
   display: flex;
   align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-  border: 0.1vw solid #00ffff;
-  box-shadow:
-    0 0 10px rgba(0, 255, 255, 0.3),
-    0 0 20px rgba(0, 255, 255, 0.2),
-    inset 0 0 8px rgba(0, 255, 255, 0.2);
-  box-sizing: border-box;
-  overflow-x: hidden;
-  animation: dialogueGlow 2s ease-in-out infinite;
-}
-
-.tutorial-dialogue.visible {
-  opacity: 1;
-}
-
-.tutorial-dialogue-avatar {
-  width: 5.5vw;
-  height: 5.5vw;
-  max-width: 66px;
-  max-height: 66px;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: 50%;
-  margin-right: 1.5vw;
-  flex-shrink: 0;
-  border: 0.2vw solid #00ffff;
-  box-shadow: 0 0.1vw 0.2vw rgba(0, 0, 0, 0.1);
-  animation: pulse 2s infinite;
-}
-
-@media (max-width: 768px) {
-  .tutorial-dialogue-avatar {
-    width: 10vw;
-    height: 10vw;
-    max-width: 72px;
-    max-height: 72px;
-    min-width: 48px;
-    min-height: 48px;
-  }
-}
-
-.tutorial-dialogue-content {
-  flex: 1;
-  min-width: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding: 0.5vw;
-}
-
-.tutorial-dialogue-speaker {
-  font-size: calc(0.9vw * var(--text-scale, 1));
-  font-weight: bold;
-  color: #00ffff;
-  margin-bottom: 0.1vw;
+  justify-content: space-between;
+  gap: 8px;
+  color: #9ed3d6;
+  font: .75rem/1.2 var(--locale-font, 'Kim'), sans-serif;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  letter-spacing: 0.03vw;
-  text-shadow: 0 0.03vw 0.03vw rgba(0, 0, 0, 0.2);
+  margin-bottom: 4px;
 }
-
-.tutorial-dialogue p {
-  margin: 0;
-  font-size: calc(1.2vw * var(--text-scale, 1));
-  line-height: 1.3;
-  color: #e0e0e0;
-  text-shadow: 0 0.03vw 0.03vw rgba(0, 0, 0, 0.1);
-  max-height: 15vh;
-  overflow-y: auto;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(0, 255, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
-  }
-}
-
-.tutorial-dialogue-next {
-  position: absolute;
-  bottom: 1vh;
-  right: 1vw;
-  background-color: rgba(0, 255, 255, 0.1);
-  color: #00ffff;
-  border: 1px solid #00ffff;
-  border-radius: 20px;
-  padding: 0.5vh 1vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.combat-coach button {
+  pointer-events: auto;
+  color: #c2d9dc;
+  background: transparent;
+  border: 0;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: calc(0.9vw * var(--text-scale, 1));
-  min-width: 60px;
-  z-index: 1;
-  animation: buttonPulse 1.5s ease-in-out infinite;
-  background-image: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.2));
 }
-
-.tutorial-dialogue-next:hover {
-  background-color: rgba(0, 255, 255, 0.2);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+.combat-coach-heading button { font: 1.5rem/1 Arial, sans-serif; width: 32px; height: 32px; margin: -6px -8px 0 0; }
+.combat-coach button:hover { color: #fff; background: #ffffff12; }
+.combat-coach button:focus-visible { outline: 2px solid #eac96a; outline-offset: 3px; }
+.combat-coach-instruction strong { display: block; font: 1.25rem/1.2 var(--locale-font, 'Kim'), sans-serif; font-weight: normal; }
+.combat-coach-instruction p { font-size: 1rem; line-height: 1.45; margin: 8px 0 0; color: #c8d6dc; overflow-wrap: break-word; }
+.combat-coach .combat-coach-reopen { background: #131e27ed; border: 1px solid #527b83; border-radius: 4px; padding: 9px 12px; font: 1rem var(--locale-font, Arial), sans-serif; }
+.combat-coach-reopen span { margin-left: 6px; }
+.combat-action-feedback { background: #29271eee; border: 1px solid #a28a4a; border-radius: 4px; padding: 10px 14px; margin: 8px 0 0; font-size: 1rem; line-height: 1.4; color: #f5df9b; }
+/* Point at existing controls without blocking their hit targets or animating the board. */
+.gamehud[data-coach-focus="spells"] .player_bar_action_group:has(#player_hud_spells),
+.gamehud[data-coach-focus="items"] .player_bar_action_group:has(#player_hud_consumables),
+.gamehud[data-coach-focus="timeline"] .timeline_character {
+  outline: 2px solid #eac96a;
+  outline-offset: 4px;
+  border-radius: 4px;
 }
-
-.tutorial-dialogue-next:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.5);
+@media (max-width: 1000px) {
+  .combat-coach { left: 8px; top: 12px; bottom: auto; width: min(21rem, 39vw); }
+  .combat-coach-panel { padding: 8px 12px 12px; }
 }
-
-.tutorial-dialogue-next-text {
-  margin-right: 0.5vw;
-}
-
-.tutorial-dialogue-next-arrow {
-  width: 0;
-  height: 0;
-  border-left: 0.5vw solid currentColor;
-  border-top: 0.3vw solid transparent;
-  border-bottom: 0.3vw solid transparent;
-  animation: arrowBounce 1s ease-in-out infinite;
-}
-
-@media (max-width: 768px) {
-  .tutorial-dialogue {
-    width: 40vw;
-    padding: 1.5vh 2vw;
-  }
-
-  .tutorial-dialogue-content {
-    padding-right: 1vw;
-  }
-
-  .tutorial-dialogue-speaker {
-    font-size: calc(2vw * var(--text-scale, 1));
-  }
-
-  .tutorial-dialogue p {
-    font-size: calc(2.5vw * var(--text-scale, 1));
-    max-height: 20vh;
-  }
-
-  .tutorial-dialogue-next {
-    font-size: calc(2.5vw * var(--text-scale, 1));
-    padding: 1vh 2vw;
-    min-width: 80px;
-  }
-
-  .tutorial-dialogue-next-arrow {
-    border-left: 1vw solid currentColor;
-    border-top: 0.7vw solid transparent;
-    border-bottom: 0.7vw solid transparent;
-  }
-}
-
-.tutorial-dialogue-message {
-  margin: 0;
-  line-height: 1.3;
-  color: #e0e0e0;
-  text-shadow: 0 0.03vw 0.03vw rgba(0, 0, 0, 0.1);
-  max-height: 15vh;
-  overflow-y: auto;
-  /* padding-right: 3vw; */
-  animation: textFadeIn 0.5s ease-out;
-}
-
-/* Add a custom scrollbar style for webkit browsers */
-.tutorial-dialogue-message::-webkit-scrollbar {
-  width: 0.5vw;
-}
-
-.tutorial-dialogue-message::-webkit-scrollbar-track {
-  background: rgba(0, 255, 255, 0.1);
-}
-
-.tutorial-dialogue-message::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 255, 255, 0.5);
-  border-radius: 0.25vw;
-}
-
-@media (max-width: 768px) {
-  .tutorial-dialogue-message {
-    font-size: calc(2.5vw * var(--text-scale, 1));
-    max-height: 20vh;
-    padding-right: 4vw;
-  }
-}
-
-/* Make the next button more compact on mobile */
-@media screen and (max-width: 768px) {
-  .tutorial-dialogue {
-    padding: 10px; /* Reduce padding on mobile if needed */
-  }
-
-  .tutorial-dialogue-next {
-    padding: 8px; /* Smaller padding for the button */
-  }
-}
-
-.tutorial-dialogue.bottom {
-  bottom: 20px;
-}
-
-.tutorial-dialogue.top {
-  position: fixed;
-  margin-left: 2vw;
-  margin-top: 4vw;
-}
-
-@keyframes dialogueGlow {
-  0% {
-    box-shadow:
-      0 0 10px rgba(0, 255, 255, 0.3),
-      0 0 20px rgba(0, 255, 255, 0.2),
-      inset 0 0 8px rgba(0, 255, 255, 0.2);
-  }
-  50% {
-    box-shadow:
-      0 0 15px rgba(0, 255, 255, 0.4),
-      0 0 30px rgba(0, 255, 255, 0.3),
-      inset 0 0 12px rgba(0, 255, 255, 0.3);
-  }
-  100% {
-    box-shadow:
-      0 0 10px rgba(0, 255, 255, 0.3),
-      0 0 20px rgba(0, 255, 255, 0.2),
-      inset 0 0 8px rgba(0, 255, 255, 0.2);
-  }
-}
-
-@keyframes buttonPulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-  }
-}
-
-@keyframes textFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes arrowBounce {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(3px);
-  }
-}
-

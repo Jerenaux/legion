@@ -102,8 +102,9 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
             );
         }
 
+        const Card = isClickable ? 'button' : 'div';
         return (
-            <button type="button" data-game-control
+            <Card type={isClickable ? 'button' : undefined} data-game-control={isClickable || undefined}
                 className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''} ${isClickable ? 'clickable' : ''} ${this.isSelected() ? 'selected' : ''}`}
                 data-character-id={member.id}
                 onClick={this.handleClick}
@@ -147,7 +148,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
 
                 <div className="endgame_character_name">{member.name}</div>
                 <div className="endgame_character_class">{t(ClassLabels[member.class])}</div>
-            </button>
+            </Card>
         );
     }
 }
