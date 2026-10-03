@@ -13,7 +13,7 @@ interface NewsItem extends FirebaseFirestore.DocumentData {
 }
 
 export async function createGameDocument(
-  gameId: string, players: string[], mode: PlayMode, league: League
+  gameId: string, players: string[], mode: PlayMode, league: League, storeBuild = false
 ) {
   const db = admin.firestore();
   const gameData = {
@@ -23,6 +23,7 @@ export async function createGameDocument(
     mode,
     league,
     status: GameStatus.ONGOING,
+    storeBuild,
   };
   await db.collection("games").doc(gameId).set(gameData);
   console.log(`[createGameDocument] Game ${gameId} created`);
@@ -44,7 +45,7 @@ export const createGame = onRequest({
       const players = request.body.players;
       const mode = request.body.mode;
       const league = request.body.league;
-      await createGameDocument(gameId, players, mode, league);
+      await createGameDocument(gameId, players, mode, league, request.body.storeBuild === true);
 
       for (const player of players) {
         logPlayerAction(player, "gameStart", {

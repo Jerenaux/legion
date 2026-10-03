@@ -29,14 +29,16 @@ test('records only a store bundle in the packaged app, never a browser or smoke 
         globalThis.window = {location: new URL(${JSON.stringify(url)}), process: {type: 'renderer'},
           electronAPI: ${JSON.stringify(bridge ? {isPackaged: packaged, smokeTest: smoke} : null)}};
         const {telemetryConfig} = await import('./src/telemetryConfig.ts');
-        console.log(telemetryConfig.sentryReplay);
+        const {createRefreshingSocketAuth} = await import('./src/services/socketPolicy.ts');
+        const auth = await new Promise(resolve => createRefreshingSocketAuth(async () => 'token', {storeBuild: !telemetryConfig.sentryReplay})(resolve));
+        console.log(telemetryConfig.sentryReplay, auth.storeBuild);
       `],
       cwd: resolve(import.meta.dir, '../..'),
       env: {...process.env, NODE_ENV: nodeEnv, BUILD_TARGET: target, SENTRY_REPLAY_ENABLED: enabled},
       stdout: 'pipe', stderr: 'pipe',
     });
     expect(result.exitCode, scenario.name).toBe(0);
-    expect(result.stdout.toString().trim(), scenario.name).toBe(String(scenario.expected));
+    expect(result.stdout.toString().trim(), scenario.name).toBe(`${scenario.expected} ${scenario.expected}`);
   }
 });
 
