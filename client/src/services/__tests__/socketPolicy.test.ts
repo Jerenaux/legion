@@ -14,6 +14,13 @@ test("gets fresh authentication for every socket connection attempt", async () =
   const auth = createRefreshingSocketAuth(async () => `token-${++tokenNumber}`, {gameId: "game-1"});
   const authenticate = () => new Promise<Record<string, unknown>>(resolve => auth(resolve));
 
-  await expect(authenticate()).resolves.toEqual({gameId: "game-1", token: "token-1"});
-  await expect(authenticate()).resolves.toEqual({gameId: "game-1", token: "token-2"});
+  await expect(authenticate()).resolves.toEqual({gameId: "game-1", storeBuild: false, token: "token-1"});
+  await expect(authenticate()).resolves.toEqual({gameId: "game-1", storeBuild: false, token: "token-2"});
+});
+
+
+test("failed token refresh keeps the build classification and clears the token", async () => {
+  const auth = createRefreshingSocketAuth(async () => {throw new Error("offline");}, {storeBuild: true});
+  const result = await new Promise<Record<string, unknown>>(resolve => auth(resolve));
+  expect(result).toEqual({token: "", storeBuild: false});
 });

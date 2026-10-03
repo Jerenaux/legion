@@ -4,6 +4,7 @@ import { firebaseAuth } from './firebaseService';
 import { errorToast } from '../components/utils';
 import {getTokenWithRetry} from "./firebaseToken";
 import {captureException} from '../telemetry';
+import {telemetryConfig} from '../telemetryConfig';
 
 const apiBaseUrl = process.env.API_URL;
 
@@ -59,6 +60,7 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
             }
 
             headers.set("Authorization", `Bearer ${idToken}`);
+            headers.set("X-Store-Build", String(telemetryConfig.sentryReplay));
             const body = options.body == null ? undefined : typeof options.body === "string" ? options.body : JSON.stringify(options.body);
 
             const fullEndpoint = `${apiBaseUrl}/${endpoint}`;
