@@ -67,11 +67,6 @@
     min-width: 0;
 }
 
-.title-screen .language-select button {
-    min-height: 40px;
-    cursor: pointer;
-}
-
 .title-screen-button--steam span,
 .title-screen .language-select small {
     text-wrap: balance;

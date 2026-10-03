@@ -68,7 +68,7 @@ class SearchPlayers extends Component<Props, State> {
             });
         } catch (_error) {
             this.setState({
-                error: t("Failed to search players"),
+                error: "Failed to search players",
                 isLoading: false
             });
         }
@@ -118,7 +118,7 @@ class SearchPlayers extends Component<Props, State> {
 
                 {showResults && searchTerm.length >= 3 && (
                     <div className="search-results">
-                        {error && <div className="search-error">{error}</div>}
+                        {error && <div className="search-error">{t(error)}</div>}
 
                         {results.length > 0 ? (
                             <div className="results-list">

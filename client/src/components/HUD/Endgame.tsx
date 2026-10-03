@@ -19,9 +19,7 @@ import { EventEmitter } from 'eventemitter3';
 import victoryBg from '@assets/game_end/victory_bg.png';
 import defeatBg from '@assets/game_end/defeat_bg.png';
 import victoryTitleOriginal from '@assets/game_end/victory.png';
-const victoryTitle = localizedAsset('game_end/victory.png', language === 'en' ? victoryTitleOriginal : '');
 import defeatTitleOriginal from '@assets/game_end/defeat.png';
-const defeatTitle = localizedAsset('game_end/defeat.png', language === 'en' ? defeatTitleOriginal : '');
 import gradeA from '@assets/game_end/A.png';
 import gradeB from '@assets/game_end/B.png';
 import gradeC from '@assets/game_end/C.png';
@@ -180,6 +178,8 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
     }
 
     render() {
+        const victoryTitle = localizedAsset('game_end/victory.png', language === 'en' ? victoryTitleOriginal : '');
+        const defeatTitle = localizedAsset('game_end/defeat.png', language === 'en' ? defeatTitleOriginal : '');
         const [width, height] = useWindowSize()
         const { members, characters } = this.props;
         const showPlayAgain = !this.props.game0 && this.props.mode !== PlayMode.CASUAL_VS_FRIEND;

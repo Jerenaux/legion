@@ -41,7 +41,7 @@ export class QueueTips extends Component<{}, QueueTipsState> {
                     <div style="font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;">{t("Tips")}</div>
                     <div>
                         <span className="queue-tips-text">
-                            {this.state.tips[this.state.tipCount]}
+                            {this.state.tips[this.state.tipCount] && t(this.state.tips[this.state.tipCount])}
                         </span>
                     </div>
                 </div>

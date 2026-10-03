@@ -140,7 +140,7 @@ class Profile extends Component<Props, State> {
         } catch (error) {
             console.error('Error loading profile:', error);
             this.setState({
-                error: t("Failed to load profile data"),
+                error: "Failed to load profile data",
                 isLoading: false
             });
         }
@@ -489,7 +489,7 @@ class Profile extends Component<Props, State> {
         }
 
         if (error) {
-            return <div className="profile-container error">{error}</div>;
+            return <div className="profile-container error">{t(error)}</div>;
         }
 
         if (!profileData) {

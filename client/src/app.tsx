@@ -1,4 +1,4 @@
-import {t} from './i18n/core';
+import {t, i18n, language} from './i18n/core';
 import { h, Component } from 'preact';
 import { Route, Router, RouterOnChangeArgs } from 'preact-router';
 import { PlayerContext } from './contexts/PlayerContext';
@@ -34,16 +34,19 @@ const AuthenticatedGamePage = withAuth(GamePage);
 interface AppState {
     currentUrl: string;
     currentMainRoute: string;
+    language: string;
 }
 
 class App extends Component<{}, AppState> {
     stopGamepadInput = () => undefined;
     state: AppState = {
         currentUrl: '/',
-        currentMainRoute: '/'
+        currentMainRoute: '/',
+        language,
     };
 
     componentDidMount() {
+        i18n.on('languageChanged', this.handleLanguageChange);
         void setRouteMusic(location.pathname);
         document.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
@@ -51,11 +54,15 @@ class App extends Component<{}, AppState> {
     }
 
     componentWillUnmount() {
+        i18n.off('languageChanged', this.handleLanguageChange);
         document.removeEventListener('keydown', this.handleKeyDown);
         window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
         this.stopGamepadInput();
         stopRouteMusic();
     }
+
+    // Re-render the existing tree so open dialogs, routes and account state survive.
+    handleLanguageChange = () => this.setState({language});
 
     handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
@@ -177,7 +184,8 @@ class App extends Component<{}, AppState> {
     shouldComponentUpdate(_nextProps: {}, nextState: AppState) {
         return (
             this.state.currentUrl !== nextState.currentUrl ||
-            this.state.currentMainRoute !== nextState.currentMainRoute
+            this.state.currentMainRoute !== nextState.currentMainRoute ||
+            this.state.language !== nextState.language
         );
     }
 

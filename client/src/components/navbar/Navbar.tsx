@@ -20,28 +20,20 @@ import { LockedFeatures } from "@legion/shared/enums";
 import legionLogo from '@assets/logo.png';
 import playIconOriginal from '@assets/play_btn_idle.png';
 import playIconBlank from '@assets/localization/play_btn_idle.png';
-const playIcon = localizedAsset('play_btn_idle.png', language === 'en' ? playIconOriginal : playIconBlank);
 import teamIconOriginal from '@assets/team_btn_idle.png';
 import teamIconBlank from '@assets/localization/team_btn_idle.png';
-const teamIcon = localizedAsset('team_btn_idle.png', language === 'en' ? teamIconOriginal : teamIconBlank);
 import shopIconOriginal from '@assets/shop_btn_idle.png';
 import shopIconBlank from '@assets/localization/shop_btn_idle.png';
-const shopIcon = localizedAsset('shop_btn_idle.png', language === 'en' ? shopIconOriginal : shopIconBlank);
 import rankIconOriginal from '@assets/rank_btn_idle.png';
 import rankIconBlank from '@assets/localization/rank_btn_idle.png';
-const rankIcon = localizedAsset('rank_btn_idle.png', language === 'en' ? rankIconOriginal : rankIconBlank);
 import playActiveIconOriginal from '@assets/play_btn_active.png';
 import playActiveIconBlank from '@assets/localization/play_btn_active.png';
-const playActiveIcon = localizedAsset('play_btn_active.png', language === 'en' ? playActiveIconOriginal : playActiveIconBlank);
 import teamActiveIconOriginal from '@assets/team_btn_active.png';
 import teamActiveIconBlank from '@assets/localization/team_btn_active.png';
-const teamActiveIcon = localizedAsset('team_btn_active.png', language === 'en' ? teamActiveIconOriginal : teamActiveIconBlank);
 import shopActiveIconOriginal from '@assets/shop_btn_active.png';
 import shopActiveIconBlank from '@assets/localization/shop_btn_active.png';
-const shopActiveIcon = localizedAsset('shop_btn_active.png', language === 'en' ? shopActiveIconOriginal : shopActiveIconBlank);
 import rankActiveIconOriginal from '@assets/rank-btn-active.png';
 import rankActiveIconBlank from '@assets/localization/rank-btn-active.png';
-const rankActiveIcon = localizedAsset('rank-btn-active.png', language === 'en' ? rankActiveIconOriginal : rankActiveIconBlank);
 import expandBtn from '@assets/expand_btn.png';
 import helpIcon from '@assets/svg/help.svg';
 import copyIcon from '@assets/svg/copy.svg';
@@ -134,6 +126,14 @@ class Navbar extends Component<Props, State> {
     };
 
     render() {
+        const playIcon = localizedAsset('play_btn_idle.png', language === 'en' ? playIconOriginal : playIconBlank);
+        const teamIcon = localizedAsset('team_btn_idle.png', language === 'en' ? teamIconOriginal : teamIconBlank);
+        const shopIcon = localizedAsset('shop_btn_idle.png', language === 'en' ? shopIconOriginal : shopIconBlank);
+        const rankIcon = localizedAsset('rank_btn_idle.png', language === 'en' ? rankIconOriginal : rankIconBlank);
+        const playActiveIcon = localizedAsset('play_btn_active.png', language === 'en' ? playActiveIconOriginal : playActiveIconBlank);
+        const teamActiveIcon = localizedAsset('team_btn_active.png', language === 'en' ? teamActiveIconOriginal : teamActiveIconBlank);
+        const shopActiveIcon = localizedAsset('shop_btn_active.png', language === 'en' ? shopActiveIconOriginal : shopActiveIconBlank);
+        const rankActiveIcon = localizedAsset('rank-btn-active.png', language === 'en' ? rankActiveIconOriginal : rankActiveIconBlank);
         const route = useRouter();
         const dropdownContentStyle = {
             display: `${this.state.openDropdown ? 'block' : 'none'}`

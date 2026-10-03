@@ -5,13 +5,13 @@ import {BaseSpell} from '@legion/shared/BaseSpell';
 import {Stat, StatLabels} from '@legion/shared/enums';
 
 export const statExplanations: Record<number, string> = {
-  [Stat.HP]: t("Maximum health. A character falls when HP reaches zero."),
-  [Stat.MP]: t("Maximum magic points available for casting spells."),
-  [Stat.ATK]: t("Increases damage dealt by physical attacks."),
-  [Stat.DEF]: t("Reduces damage taken from physical attacks."),
-  [Stat.SPATK]: t("Strengthens spell damage and healing."),
-  [Stat.SPDEF]: t("Reduces damage taken from hostile spells."),
-  [Stat.SPEED]: t("Helps this character act earlier and more often."),
+  [Stat.HP]: "Maximum health. A character falls when HP reaches zero.",
+  [Stat.MP]: "Maximum magic points available for casting spells.",
+  [Stat.ATK]: "Increases damage dealt by physical attacks.",
+  [Stat.DEF]: "Reduces damage taken from physical attacks.",
+  [Stat.SPATK]: "Strengthens spell damage and healing.",
+  [Stat.SPDEF]: "Reduces damage taken from hostile spells.",
+  [Stat.SPEED]: "Helps this character act earlier and more often.",
 };
 
 export const tooltipStyle = {

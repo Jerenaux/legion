@@ -58,7 +58,7 @@ function sortByRarityAndPrice(a: BaseItem | BaseSpell | BaseEquipment, b: BaseIt
     return a.rarity - b.rarity;
 }
 
-const TAB_LABELS = [t("Consumables"), t("Equipment"), t("Spells"), t("Characters")];
+const TAB_LABELS = ["Consumables", "Equipment", "Spells", "Characters"];
 const TAB_UNLOCKS = [
     LockedFeatures.CONSUMABLES_BATCH_1,
     LockedFeatures.EQUIPMENT_BATCH_1,
@@ -67,15 +67,15 @@ const TAB_UNLOCKS = [
 ];
 
 const EQUIP_CATEGORIES_GROUPPING = {
-    [EquipmentSlot.WEAPON]: t("Weapons"),
-    [EquipmentSlot.HELMET]: t("Protection"),
-    [EquipmentSlot.ARMOR]: t("Protection"),
-    [EquipmentSlot.BELT]: t("Accessories"),
-    [EquipmentSlot.GLOVES]: t("Protection"),
-    [EquipmentSlot.BOOTS]: t("Protection"),
-    [EquipmentSlot.LEFT_RING]: t("Accessories"),
-    [EquipmentSlot.RIGHT_RING]: t("Accessories"),
-    [EquipmentSlot.NECKLACE]: t("Accessories"),
+    [EquipmentSlot.WEAPON]: "Weapons",
+    [EquipmentSlot.HELMET]: "Protection",
+    [EquipmentSlot.ARMOR]: "Protection",
+    [EquipmentSlot.BELT]: "Accessories",
+    [EquipmentSlot.GLOVES]: "Protection",
+    [EquipmentSlot.BOOTS]: "Protection",
+    [EquipmentSlot.LEFT_RING]: "Accessories",
+    [EquipmentSlot.RIGHT_RING]: "Accessories",
+    [EquipmentSlot.NECKLACE]: "Accessories",
 }
 
 const groupEquipmentByType = (equipment: BaseEquipment[], useCategories: boolean) => {
@@ -365,7 +365,7 @@ class ShopContent extends Component<ShopContentProps> {
                                     <h3 className="equipment-type-title">
                                         {useDetailedCategories
                                             ? t(equipmentSlotLabelsPlural[category as unknown as EquipmentSlot])
-                                            : category}
+                                            : t(category)}
                                     </h3>
                                     <div className="equipment-grid">
                                         {items.map((item: BaseEquipment, index: number) =>
@@ -446,7 +446,7 @@ class ShopContent extends Component<ShopContentProps> {
                         const isDisabled = !this.context.canAccessFeature(feature);
                         const gamesLeft = isDisabled ? this.context.getGamesUntilFeature(feature) : 0;
                         const unlockHint = isDisabled
-                            ? t("unlockShopTab", {count: gamesLeft, tab: TAB_LABELS[index]})
+                            ? t("unlockShopTab", {count: gamesLeft, tab: t(TAB_LABELS[index])})
                             : undefined;
 
                         return (
@@ -464,13 +464,13 @@ class ShopContent extends Component<ShopContentProps> {
                                 }}
                                 key={index}
                                 aria-disabled={isDisabled}
-                                aria-label={unlockHint ?? TAB_LABELS[index]}
+                                aria-label={unlockHint ?? t(TAB_LABELS[index])}
                                 data-tooltip-id={isDisabled ? 'shop-unlock-details' : undefined}
                                 data-tooltip-content={unlockHint}
                                 className={`shop-tab-item ${index === this.state.curr_tab ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
                             >
                                 <img src={isDisabled ? lockIcon : icon} alt="" />
-                                <span className="shop-tab-label">{TAB_LABELS[index]}</span>
+                                <span className="shop-tab-label">{t(TAB_LABELS[index])}</span>
                             </Link>
                         );
                     })}

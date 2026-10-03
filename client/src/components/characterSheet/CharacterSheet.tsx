@@ -112,9 +112,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             return rearrangedStats.map((item, index) => (
                 <div data-sp-plus="true" className="character-info-bar" key={index}>
                     <button type="button" className="info-class"
-                        aria-label={`${t(StatLabels[getStatEnum(item.key)])}: ${statExplanations[getStatEnum(item.key)]}`}
+                        aria-label={`${t(StatLabels[getStatEnum(item.key)])}: ${t(statExplanations[getStatEnum(item.key)])}`}
                         data-tooltip-id="character-sheet-details"
-                        data-tooltip-content={statExplanations[getStatEnum(item.key)]}
+                        data-tooltip-content={t(statExplanations[getStatEnum(item.key)])}
                         style={{ backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(item.key)]] }}>
                         <span>{t(StatLabels[getStatEnum(item.key)])}</span>
                     </button>

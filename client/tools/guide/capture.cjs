@@ -350,7 +350,7 @@ if (!process.versions.electron) {
         await ready();
         fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
       } else if (localization) {
-        await require('../localization/smoke.cjs')({win, js, waitFor, ready, output: dist, locale});
+        await require(process.argv.includes('--live-localization') ? '../localization/live.cjs' : '../localization/smoke.cjs')({win, js, waitFor, ready, output: dist, locale});
       } else if (process.argv.includes('--images')) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector(".player_bar_action"))');

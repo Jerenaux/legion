@@ -35,10 +35,23 @@ export function localizedAsset(path: string, fallback: string): string {
   return fallback;
 }
 
-export function selectLanguage(code: string) {
-  if (!locales.some(locale => locale.code === code)) return;
-  localStorage.setItem(LANGUAGE_STORAGE_KEY, code);
-  window.location.reload();
+export const languageChangeBlocked = (pathname: string) => /^\/(game|replay|queue|lobby)(\/|$)/.test(pathname);
+let languageRequest = 0;
+
+export async function selectLanguage(code: string) {
+  const locale = locales.find(locale => locale.code === code);
+  if (!locale || languageChangeBlocked(window.location.pathname)) return;
+  const request = ++languageRequest;
+  // Load before updating text, including canvas text created after leaving the menu.
+  if (locale.fontFamily) await document.fonts.load(`16px "${locale.fontFamily}"`);
+  if (request !== languageRequest || languageChangeBlocked(window.location.pathname)) return;
+  language = code;
+  document.documentElement.lang = code;
+  document.documentElement.dir = locale.direction;
+  if (locale.fontFamily) document.documentElement.style.setProperty('--locale-font', locale.fontFamily);
+  else document.documentElement.style.removeProperty('--locale-font');
+  try { localStorage.setItem(LANGUAGE_STORAGE_KEY, code); } catch { /* A disabled store must not prevent switching. */ }
+  await i18n.changeLanguage(code);
 }
 
 export function initialize(resources: Record<string, {translation: Record<string, string>}>, language: string) {

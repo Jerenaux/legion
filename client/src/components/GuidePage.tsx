@@ -6,27 +6,21 @@ import { LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } f
 import { LockedFeatures } from '@legion/shared/enums';
 import {defaultGameSettings} from '../settings';
 import battleOriginal from '@assets/guide/battle.jpg';
-const battle = localizedAsset('guide/battle.jpg', battleOriginal);
 import actionsOriginal from '@assets/guide/actions.jpg';
-const actions = localizedAsset('guide/actions.jpg', actionsOriginal);
 import turnOrderOriginal from '@assets/guide/turn-order.jpg';
-const turnOrder = localizedAsset('guide/turn-order.jpg', turnOrderOriginal);
 import inspectionOriginal from '@assets/guide/inspection.jpg';
-const inspection = localizedAsset('guide/inspection.jpg', inspectionOriginal);
 import loadoutOriginal from '@assets/guide/loadout.jpg';
-const loadout = localizedAsset('guide/loadout.jpg', loadoutOriginal);
 import towerOriginal from '@assets/guide/tower.jpg';
-const tower = localizedAsset('guide/tower.jpg', towerOriginal);
 import './GuidePage.css';
 
 const sections = [
-  ['first-match', t("Matches & modes")],
-  ['tower', t("The Cinder Tower")],
-  ['combat', t("Taking your turn")],
-  ['magic', t("Magic & terrain")],
-  ['team', t("Build your team")],
-  ['progression', t("Rewards & leagues")],
-  ['controls', t("Controls & quick help")],
+  ['first-match', "Matches & modes"],
+  ['tower', "The Cinder Tower"],
+  ['combat', "Taking your turn"],
+  ['magic', "Magic & terrain"],
+  ['team', "Build your team"],
+  ['progression', "Rewards & leagues"],
+  ['controls', "Controls & quick help"],
 ];
 
 // Keep section jumps inside the scrollable guide, without creating router paths.
@@ -38,6 +32,12 @@ function jumpToSection(event: h.JSX.TargetedMouseEvent<HTMLAnchorElement>) {
 }
 
 export default function GuidePage({onClose}: {onClose?: () => void}) {
+  const battle = localizedAsset('guide/battle.jpg', battleOriginal);
+  const actions = localizedAsset('guide/actions.jpg', actionsOriginal);
+  const turnOrder = localizedAsset('guide/turn-order.jpg', turnOrderOriginal);
+  const inspection = localizedAsset('guide/inspection.jpg', inspectionOriginal);
+  const loadout = localizedAsset('guide/loadout.jpg', loadoutOriginal);
+  const tower = localizedAsset('guide/tower.jpg', towerOriginal);
   return (
     <main className="guide-page" aria-labelledby="guide-title">
       <div className="guide-layout">
@@ -49,7 +49,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
           )}
           <ol>
             {sections.map(([id, label]) => (
-              <li key={id}><a href={`#${id}`} onClick={jumpToSection}>{label}</a></li>
+              <li key={id}><a href={`#${id}`} onClick={jumpToSection}>{t(label)}</a></li>
             ))}
           </ol>
         </nav>
@@ -187,7 +187,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="controls">
             <h2 id="controls" tabIndex={-1}>{t("Controls & quick help")}</h2>
-            <p>{t("Choose Language on the title screen or in Settings. Apply it from the menus to reload in that language. Your choice is saved for future sessions.")}</p>
+            <p>{t("Change language on the title screen or in Settings. Text and artwork update immediately. During a match, replay, queue, or lobby, return to the main menu first.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Use <0>Settings → Text size</0> to choose Standard (100%), Large (115%), or Extra large (130%). Menu, dialog, and combat HUD text update immediately, and the setting is saved for future sessions."} components={[<strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Music starts while connecting and loops through the title screen. A separate track loops across the menus. Music fades out over two seconds before switching from the title screen to menus or from menus to combat, with a short fade-in for the next track. Music starts at {{value0}}%. Open <0>Settings</0> to adjust it from 0 (muted) to 100 (full volume). Your chosen volume is saved for future sessions."} components={[<strong />]} values={{value0: defaultGameSettings.musicVolume}} /></p>
             <dl className="guide-definitions">

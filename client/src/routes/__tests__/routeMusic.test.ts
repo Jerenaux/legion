@@ -149,6 +149,7 @@ test('app starts route music before authentication and forwards navigation and t
         setState(state: Record<string, unknown>) {Object.assign(this.state, state);}
       }};
       if (name === './routeMusic') return {setRouteMusic: (path: string) => {routes.push(path); return Promise.resolve();}, stopRouteMusic: () => {stops++;}};
+      if (name === './i18n/core') return {language: 'en', i18n: {on() {}, off() {}}};
       if (name === './services/firebaseService') return {firebaseAuth: {currentUser: null}};
       if (name === './components/withAuth') return {default: (component: unknown) => component};
       if (name === './input/gamepad') return {startGamepadInput: () => () => {}};

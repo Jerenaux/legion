@@ -1,7 +1,7 @@
 import {test, expect} from 'bun:test';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
-import {resolveLocale, configureLocales, localizedAsset, initialize, t, formatNumber, userError} from './core';
+import {resolveLocale, configureLocales, localizedAsset, initialize, t, formatNumber, userError, selectLanguage, language} from './core';
 
 const locales = ['en', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant', 'ja'].map(code => ({code, name: code, direction: 'ltr' as const}));
 
@@ -54,4 +54,60 @@ test('native dialog catalog accepts only discovered locales', () => {
   expect(native.t('Reload game')).toBe(require('../../locales/pt-PT/messages.json')['Reload game']);
   native.useSystemLanguages(['en-US']);
   expect(native.t('Reload game')).toBe('Reload game');
+});
+
+test('live language changes load fonts first, preserve the document, and reject unsafe or failed switches', async () => {
+  const globals = ['window', 'document', 'localStorage'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const);
+  const selected: string[] = [];
+  const style = new Map<string, string>();
+  const location = {pathname: '/play', reload: () => { throw new Error('Language switching must not reload'); }};
+  const root = {lang: 'en', dir: 'ltr', style: {setProperty: (k: string, v: string) => style.set(k, v), removeProperty: (k: string) => style.delete(k)}};
+  let loadFont: () => Promise<unknown> = () => Promise.resolve();
+  try {
+    Object.defineProperty(globalThis, 'window', {configurable: true, value: {location}});
+    Object.defineProperty(globalThis, 'document', {configurable: true, value: {documentElement: root, fonts: {load: () => loadFont()}}});
+    Object.defineProperty(globalThis, 'localStorage', {configurable: true, value: {setItem: (_key: string, value: string) => selected.push(value)}});
+    configureLocales([{code: 'en', name: 'English', direction: 'ltr'}, {code: 'ja', name: '日本語', direction: 'ltr', fontFamily: 'Noto Sans JP'}], 'en', {'ja/title.png': '/japanese.png'});
+    initialize({en: {translation: {Play: 'Play'}}, ja: {translation: {Play: 'プレイ'}}}, 'en');
+    let resolveFont: () => void;
+    loadFont = () => new Promise<void>(resolve => { resolveFont = resolve; });
+    const change = selectLanguage('ja');
+    expect(t('Play')).toBe('Play');
+    expect(selected).toEqual([]);
+    resolveFont!();
+    await change;
+    expect(t('Play')).toBe('プレイ');
+    expect(language).toBe('ja');
+    expect(root.lang).toBe('ja');
+    expect(style.get('--locale-font')).toBe('Noto Sans JP');
+    expect(localizedAsset('title.png', '/english.png')).toBe('/japanese.png');
+    expect(selected).toEqual(['ja']);
+    for (const path of ['/game/1', '/replay/1', '/queue/casual', '/lobby/1']) {
+      location.pathname = path;
+      await selectLanguage('en');
+      expect(language).toBe('ja');
+    }
+    location.pathname = '/play';
+    await selectLanguage('en');
+    expect(t('Play')).toBe('Play');
+    expect(style.has('--locale-font')).toBe(false);
+    loadFont = () => Promise.reject(new Error('Font unavailable'));
+    await expect(selectLanguage('ja')).rejects.toThrow('Font unavailable');
+    expect(language).toBe('en');
+    await selectLanguage('../../private');
+    expect(language).toBe('en');
+    loadFont = () => new Promise<void>(resolve => { resolveFont = resolve; });
+    const interrupted = selectLanguage('ja');
+    location.pathname = '/game/1';
+    resolveFont!();
+    await interrupted;
+    expect(language).toBe('en');
+  } finally {
+    for (const [key, descriptor] of globals) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else delete globalThis[key];
+    }
+    initialize({en: {translation: require('../../locales/en/messages.json')}}, 'en');
+    configureLocales([], 'en', {});
+  }
 });

@@ -1,5 +1,5 @@
 import {getElectronAPI} from '../utils/electronUtils';
-import {initialize, resolveLocale, configureLocales, LANGUAGE_STORAGE_KEY, type Locale} from './core';
+import {initialize, resolveLocale, configureLocales, i18n, LANGUAGE_STORAGE_KEY, type Locale} from './core';
 export {t, i18n, formatNumber, formatDate} from './core';
 
 const catalogs = require.context('../../locales', true, /\/messages\.json$/);
@@ -23,6 +23,7 @@ document.documentElement.dir = locale?.direction || 'ltr';
 if (locale?.fontFamily) document.documentElement.style.setProperty('--locale-font', locale.fontFamily);
 
 void getElectronAPI()?.setLanguage?.(language).catch(() => {});
+i18n.on('languageChanged', code => { void getElectronAPI()?.setLanguage?.(code).catch(() => {}); });
 
 // Wait before creating canvas text; changing a CSS font cannot redraw Phaser textures.
 const fonts = require.context('../../locales', true, /\/fonts\/.*\.(woff2?|otf|ttf)$/);

@@ -96,13 +96,7 @@ module.exports = async ({win, js, waitFor, ready, output, locale}) => {
     await capture(isWinner ? 'victory' : 'defeat');
   }
   if (locale === 'en') {
-    await win.loadURL('app://legion/');
-    await waitFor('Boolean(document.querySelector(".language-select select"))');
-    await js('const picker = document.querySelector(".language-select select"); picker.value="pt-BR"; picker.dispatchEvent(new Event("change", {bubbles:true}))');
-    await waitFor('Boolean(document.querySelector(".language-select button"))');
-    await js('document.querySelector(".language-select button").click()');
-    await waitFor('document.documentElement.lang === "pt-BR" && Boolean(document.querySelector(".title-screen-button"))');
-    assert.equal(await js('localStorage.getItem("legion.language")'), 'pt-BR');
+    await require('./live.cjs')({win, js, waitFor, ready, output});
   }
   console.log(`${locale}: menus, profile, rank, guide, large text, fonts, combat, settings, artwork and rich-text escaping pass`);
 };
