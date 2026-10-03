@@ -44,8 +44,8 @@ const TitleScreen = () => {
             <p>{t("Loading your game…")}</p>
           </div>
         )}
+        <LanguageSelect />
       </div>
-      <LanguageSelect />
       <small className="title-screen-version">{t("v{{value0}}", {value0: version})}</small>
     </div>
   );

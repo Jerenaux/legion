@@ -2,7 +2,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100dvh;
+    padding: 16px;
+    box-sizing: border-box;
     background-color: #0d0d0d;
     background-image: url('@assets/title/title.png');
     background-size: cover;
@@ -15,7 +17,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px;
+    padding: clamp(16px, 3vh, 40px);
+    width: 480px;
+    max-width: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
     border-radius: 10px;
     background-color: rgba(0, 0, 0, 0.7);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
@@ -32,8 +39,49 @@
 }
 
 .logo-big {
-    width: 400px;
+    width: min(400px, 70vw);
+    height: min(400px, 38dvh);
+    min-height: 80px;
+    object-fit: contain;
     margin-bottom: 20px;
+}
+
+.title-screen .language-select {
+    width: min(340px, 100%);
+    flex-shrink: 0;
+    margin: 24px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid oklch(0.52 0.025 85 / 0.5);
+    color: oklch(0.86 0.02 85);
+    font: 0.875rem/1.4 var(--locale-font, Arial), system-ui, sans-serif;
+}
+
+.title-screen .language-select label {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+}
+
+.title-screen .language-select select {
+    width: 100%;
+    min-width: 0;
+}
+
+.title-screen .language-select button {
+    min-height: 40px;
+    cursor: pointer;
+}
+
+.title-screen-button--steam span,
+.title-screen .language-select small {
+    text-wrap: balance;
+    line-break: strict;
+}
+
+@media (max-height: 600px) {
+    .title-screen .logo-big { margin-bottom: 12px; }
+    .title-screen .title-screen-actions { gap: 12px; }
+    .title-screen .language-select { margin-top: 16px; padding-top: 12px; }
 }
 
 #firebaseui-auth-container {
@@ -121,7 +169,8 @@
 .title-screen-actions {
   display: grid;
   gap: 16px;
-  width: min(300px, 72vw);
+  width: min(340px, 100%);
+  flex-shrink: 0;
 }
 
 .title-screen-loading {
@@ -132,6 +181,7 @@
   gap: 16px;
   min-height: 132px;
   width: min(300px, 72vw);
+  flex-shrink: 0;
   color: oklch(0.92 0.025 85);
 }
 
@@ -205,6 +255,8 @@
 }
 
 .title-screen-button--steam {
+  font-size: 1.125rem;
+  padding-inline: 1rem;
   background: linear-gradient(180deg, #2a475e, #1b2838);
   border: 2px solid #66c0f4;
   box-shadow: 0 6px 0 #0b141d, inset 0 1px 0 rgba(199, 213, 224, 0.3);
