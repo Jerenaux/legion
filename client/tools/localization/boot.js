@@ -4,7 +4,8 @@
   let saved;
   try { saved = localStorage.getItem('legion.language'); } catch { /* Storage disabled. */ }
   const resolveLocale = __RESOLVE_LOCALE__;
-  const selected = resolveLocale([saved, ...(navigator.languages || [navigator.language])], Object.keys(locales).map(code => ({code})));
+  const selected = resolveLocale([saved, window.electronAPI?.steamLanguage, ...(navigator.languages || [navigator.language])], Object.entries(locales).map(([code, metadata]) => ({...metadata, code})));
+  void window.electronAPI?.setLanguage?.(selected).catch(() => {});
   document.documentElement.lang = selected;
   document.documentElement.dir = locales[selected].direction;
   for (const element of document.querySelectorAll('[data-startup-message]')) {

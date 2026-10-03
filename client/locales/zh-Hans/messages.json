@@ -1015,5 +1015,6 @@
   "statusTurns_one": "{{status}}，{{count}} 回合",
   "statusTurns_other": "{{status}}，{{count}} 回合",
   "towerBattles_one": "<0>{{count}}</0> 场战斗",
-  "towerBattles_other": "<0>{{count}}</0> 场战斗"
+  "towerBattles_other": "<0>{{count}}</0> 场战斗",
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "在 Steam 上，默认使用你在 Steam 中设置的语言。在游戏内选择的语言优先。"
 }

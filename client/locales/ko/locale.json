@@ -1,5 +1,8 @@
 {
   "name": "한국어",
   "direction": "ltr",
-  "fontFamily": "Legion KR"
+  "fontFamily": "Legion KR",
+  "steamLanguages": [
+    "koreana"
+  ]
 }

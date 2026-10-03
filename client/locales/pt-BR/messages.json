@@ -1030,5 +1030,6 @@
   "towerBattles_one": "<0>{{count}}</0> batalha",
   "towerBattles_other": "<0>{{count}}</0> batalhas",
   "statusTurns_many": "{{status}}, {{count}} turnos",
-  "towerBattles_many": "<0>{{count}}</0> batalhas"
+  "towerBattles_many": "<0>{{count}}</0> batalhas",
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "No Steam, o idioma definido no Steam é usado por padrão. O idioma que você escolher no jogo tem prioridade."
 }

@@ -1015,5 +1015,6 @@
   "statusTurns_one": "{{status}}, {{count}} Zug",
   "statusTurns_other": "{{status}}, {{count}} Züge",
   "towerBattles_one": "<0>{{count}}</0> Kampf",
-  "towerBattles_other": "<0>{{count}}</0> Kämpfe"
+  "towerBattles_other": "<0>{{count}}</0> Kämpfe",
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Auf Steam wird standardmäßig die in Steam eingestellte Sprache verwendet. Eine Sprache, die du im Spiel auswählst, hat Vorrang."
 }

@@ -12,7 +12,7 @@ export const locales: Locale[] = metadata.keys().map(key => ({
 
 let saved = '';
 try { saved = localStorage.getItem(LANGUAGE_STORAGE_KEY) || ''; } catch { /* Storage may be disabled. */ }
-export const language = resolveLocale([saved, ...(navigator.languages || [navigator.language])], locales);
+export const language = resolveLocale([saved, getElectronAPI()?.steamLanguage || '', ...(navigator.languages || [navigator.language])], locales);
 const resources = Object.fromEntries(catalogs.keys().map(key => [key.split('/')[1], {translation: catalogs(key)}]));
 initialize(resources, language);
 configureLocales(locales, language, Object.fromEntries(artwork.keys().map(key => [key.slice(2).replace('/assets/', '/'), artwork(key)])));

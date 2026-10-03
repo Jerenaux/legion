@@ -1015,5 +1015,6 @@
   "statusTurns_one": "{{status}}, {{count}} turn",
   "statusTurns_other": "{{status}}, {{count}} turns",
   "towerBattles_one": "<0>{{count}}</0> battle",
-  "towerBattles_other": "<0>{{count}}</0> battles"
+  "towerBattles_other": "<0>{{count}}</0> battles",
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "On Steam, your Steam language is used by default. A language you choose in the game takes priority."
 }

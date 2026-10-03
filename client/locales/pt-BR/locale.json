@@ -1,4 +1,7 @@
 {
   "name": "Português (Brasil)",
-  "direction": "ltr"
+  "direction": "ltr",
+  "steamLanguages": [
+    "brazilian"
+  ]
 }

@@ -1,4 +1,7 @@
 {
   "name": "English",
-  "direction": "ltr"
+  "direction": "ltr",
+  "steamLanguages": [
+    "english"
+  ]
 }

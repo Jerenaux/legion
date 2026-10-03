@@ -1,4 +1,8 @@
 {
   "name": "Español",
-  "direction": "ltr"
+  "direction": "ltr",
+  "steamLanguages": [
+    "spanish",
+    "latam"
+  ]
 }

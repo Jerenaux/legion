@@ -188,6 +188,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
           <section aria-labelledby="controls">
             <h2 id="controls" tabIndex={-1}>{t("Controls & quick help")}</h2>
             <p>{t("Change language on the title screen or in Settings. Text and artwork update immediately. During a match, replay, queue, or lobby, return to the main menu first.")}</p>
+            <p>{t("On Steam, your Steam language is used by default. A language you choose in the game takes priority.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Use <0>Settings → Text size</0> to choose Standard (100%), Large (115%), or Extra large (130%). Menu, dialog, and combat HUD text update immediately, and the setting is saved for future sessions."} components={[<strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Music starts while connecting and loops through the title screen. A separate track loops across the menus. Music fades out over two seconds before switching from the title screen to menus or from menus to combat, with a short fade-in for the next track. Music starts at {{value0}}%. Open <0>Settings</0> to adjust it from 0 (muted) to 100 (full volume). Your chosen volume is saved for future sessions."} components={[<strong />]} values={{value0: defaultGameSettings.musicVolume}} /></p>
             <dl className="guide-definitions">

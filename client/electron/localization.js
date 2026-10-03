@@ -5,6 +5,9 @@ const root = path.join(__dirname, '../locales');
 const catalogs = new Map(fs.readdirSync(root, {withFileTypes: true})
   .filter(entry => entry.isDirectory() && fs.existsSync(path.join(root, entry.name, 'messages.json')))
   .map(entry => [entry.name, JSON.parse(fs.readFileSync(path.join(root, entry.name, 'messages.json'), 'utf8'))]));
+const locales = [...catalogs.keys()].map(code => ({
+  ...JSON.parse(fs.readFileSync(path.join(root, code, 'locale.json'), 'utf8')), code,
+}));
 let language = 'en';
 
 function setLanguage(code) {
@@ -14,7 +17,7 @@ function setLanguage(code) {
 }
 
 function useSystemLanguages(preferences) {
-  setLanguage(require('./locale').resolveLocale(preferences, [...catalogs.keys()].map(code => ({code}))));
+  setLanguage(require('./locale').resolveLocale(preferences, locales));
 }
 
 function t(key) {

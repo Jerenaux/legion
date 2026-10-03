@@ -8,6 +8,7 @@ const directories = fs.readdirSync(root).filter(code => fs.existsSync(path.join(
 const tokens = value => (value.match(/{{[^{}]+}}|<[^>]+>/g) || []).sort();
 const plural = /_(zero|one|two|few|many|other)$/;
 const errors = [];
+const steamAliases = new Set();
 function check(condition, message) { if (!condition) errors.push(message); }
 
 for (const code of directories) {
@@ -15,6 +16,14 @@ for (const code of directories) {
   const messages = JSON.parse(fs.readFileSync(path.join(root, code, 'messages.json'), 'utf8'));
   check(Intl.getCanonicalLocales(code)[0] === code, `${code}: use a canonical BCP 47 folder name`);
   check(typeof metadata.name === 'string' && metadata.name.length > 0 && ['ltr', 'rtl'].includes(metadata.direction), `${code}: invalid locale metadata`);
+  if (metadata.steamLanguages !== undefined) {
+    check(Array.isArray(metadata.steamLanguages), `${code}: steamLanguages must be an array`);
+    for (const alias of Array.isArray(metadata.steamLanguages) ? metadata.steamLanguages : []) {
+      check(typeof alias === 'string' && /^[a-z-]{1,64}$/.test(alias), `${code}: invalid Steam language alias`);
+      check(!steamAliases.has(alias), `${code}: duplicate Steam language alias ${alias}`);
+      steamAliases.add(alias);
+    }
+  }
   if (metadata.assetLanguage) check(directories.includes(metadata.assetLanguage) && metadata.assetLanguage !== code, `${code}: invalid assetLanguage`);
   for (const key of Object.keys(english)) {
     if (!plural.test(key)) check(typeof messages[key] === 'string' && messages[key].trim(), `${code}: missing ${key}`);

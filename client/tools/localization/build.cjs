@@ -6,7 +6,7 @@ module.exports = function(content) {
   const locales = Object.fromEntries(fs.readdirSync(root).filter(code => fs.existsSync(path.join(root, code, 'locale.json'))).map(code => {
     const metadata = JSON.parse(fs.readFileSync(path.join(root, code, 'locale.json'), 'utf8'));
     const messages = JSON.parse(fs.readFileSync(path.join(root, code, 'messages.json'), 'utf8'));
-    return [code, {direction: metadata.direction, messages: Object.fromEntries(keys.map(key => [key, messages[key]]))}];
+    return [code, {direction: metadata.direction, steamLanguages: metadata.steamLanguages, messages: Object.fromEntries(keys.map(key => [key, messages[key]]))}];
   }));
   return content.toString().replace('__LEGION_LOCALES__', JSON.stringify(locales)).replace('__RESOLVE_LOCALE__', require('../../electron/locale').resolveLocale.toString());
 };

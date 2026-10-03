@@ -6,6 +6,7 @@ export interface Locale {
   direction: 'ltr' | 'rtl';
   fontFamily?: string;
   assetLanguage?: string;
+  steamLanguages?: string[];
 }
 
 export const resolveLocale: (preferences: readonly string[], locales: readonly Locale[]) => string = require('../../electron/locale').resolveLocale;

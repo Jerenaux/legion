@@ -20,7 +20,7 @@ test('saved choice, language families, Chinese scripts and invalid preferences r
   for (const [preferences, expected] of cases) {
     expect(resolveLocale(preferences, locales)).toBe(expected);
     const document = {documentElement: {lang: ''}, querySelectorAll: () => []};
-    runInNewContext(script, {document, Intl, localStorage: {getItem: () => preferences[0]}, navigator: {languages: preferences.slice(1)}});
+    runInNewContext(script, {document, window: {}, Intl, localStorage: {getItem: () => preferences[0]}, navigator: {languages: preferences.slice(1)}});
     expect(document.documentElement.lang).toBe(expected);
   }
 });
@@ -110,4 +110,43 @@ test('live language changes load fonts first, preserve the document, and reject 
     initialize({en: {translation: require('../../locales/en/messages.json')}}, 'en');
     configureLocales([], 'en', {});
   }
+});
+
+
+test('Steam metadata aliases obey saved choice > Steam > OS in renderer, startup and native recovery', () => {
+  const codes = ['en', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'fr', 'de', 'es'];
+  const shipped = codes.map(code => ({...require(`../../locales/${code}/locale.json`), code}));
+  const script = require('../../tools/localization/build.cjs')(readFileSync(new URL('../../tools/localization/boot.js', import.meta.url)));
+  const native = require('../../electron/localization');
+  const cases = [
+    {saved: 'pt-BR', steam: 'portuguese', os: 'ja-JP', expected: 'pt-BR'},
+    {saved: '', steam: 'portuguese', os: 'pt-BR', expected: 'pt-PT'},
+    {saved: '', steam: 'brazilian', os: 'pt-PT', expected: 'pt-BR'},
+    {saved: 'zh-Hant', steam: 'schinese', os: 'en', expected: 'zh-Hant'},
+    {saved: '', steam: 'schinese', os: 'zh-TW', expected: 'zh-Hans'},
+    {saved: '', steam: 'tchinese', os: 'zh-CN', expected: 'zh-Hant'},
+    {saved: '', steam: 'koreana', os: 'en', expected: 'ko'},
+    {saved: '', steam: 'latam', os: 'en', expected: 'es'},
+    {saved: '', steam: 'english', os: 'ja', expected: 'en'},
+    {saved: '', steam: 'unsupported', os: 'ja-JP', expected: 'ja'},
+    {saved: 'invalid_tag', steam: '', os: 'pt-PT', expected: 'pt-PT'},
+    {saved: '', steam: '', os: 'zh-HK', expected: 'zh-Hant'},
+    {saved: '', steam: '', os: 'unsupported', expected: 'en'},
+  ];
+  for (const {saved, steam, os, expected} of cases) {
+    expect(resolveLocale([saved, steam, os], shipped)).toBe(expected);
+    const document = {documentElement: {lang: ''}, querySelectorAll: () => []};
+    const selected: string[] = [];
+    runInNewContext(script, {document, Intl, window: {electronAPI: {
+      steamLanguage: steam, setLanguage: (code: string) => { selected.push(code); return Promise.resolve(true); },
+    }}, localStorage: {getItem: () => saved}, navigator: {languages: [os]}});
+    expect(document.documentElement.lang).toBe(expected);
+    expect(selected).toEqual([expected]);
+    native.useSystemLanguages([saved, steam, os]);
+    expect(native.t('Reload game')).toBe(require(`../../locales/${expected}/messages.json`)['Reload game']);
+  }
+  for (const locale of shipped) {
+    for (const alias of locale.steamLanguages) expect(resolveLocale([alias, 'en'], shipped)).toBe(locale.code);
+  }
+  native.setLanguage('en');
 });

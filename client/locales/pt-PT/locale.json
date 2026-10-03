@@ -1,5 +1,8 @@
 {
   "name": "Português (Portugal)",
   "direction": "ltr",
-  "assetLanguage": "pt-BR"
+  "assetLanguage": "pt-BR",
+  "steamLanguages": [
+    "portuguese"
+  ]
 }

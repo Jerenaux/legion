@@ -1,4 +1,7 @@
 {
   "name": "Français",
-  "direction": "ltr"
+  "direction": "ltr",
+  "steamLanguages": [
+    "french"
+  ]
 }

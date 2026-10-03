@@ -6,7 +6,7 @@ const smokeTest = process.argv.includes('--smoke-test');
 if (smokeTest) app.setPath('userData', fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'legion-smoke-')));
 require('./electron/telemetry').initializeTelemetry(app);
 
-const {getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
+const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
 
@@ -19,6 +19,10 @@ protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
 
 function trustedIPC(event) {
   return event.sender === mainWindow?.webContents && isTrustedSender(event.senderFrame?.url || "", isDev);
+}
+
+function loadSteamworks() {
+  return require(app.isPackaged ? path.join(process.resourcesPath, "steamworks.js") : "steamworks.js");
 }
 
 function registerIPC() {
@@ -35,8 +39,7 @@ function registerIPC() {
   ipcMain.handle("get-platform-auth", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
     if (smokeTest) return null;
-    const modulePath = app.isPackaged ? path.join(process.resourcesPath, "steamworks.js") : "steamworks.js";
-    return getPlatformAuth(process.env, () => require(modulePath));
+    return getPlatformAuth(process.env, loadSteamworks);
   });
   ipcMain.handle("show-gamepad-text-input", (event, options) => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
@@ -58,6 +61,7 @@ function registerAppProtocol() {
 }
 
 function createWindow() {
+  const steamLanguage = smokeTest ? null : getPlatformLanguage(process.env, loadSteamworks);
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
@@ -72,12 +76,13 @@ function createWindow() {
       webSecurity: true,
       additionalArguments: [
         ...(app.isPackaged ? ['--legion-packaged'] : []),
+        ...(steamLanguage ? [`--legion-steam-language=${steamLanguage}`] : []),
         ...(smokeTest ? ['--legion-smoke-test'] : []),
       ],
     },
   });
   const localization = require('./electron/localization');
-  localization.useSystemLanguages(app.getPreferredSystemLanguages());
+  localization.useSystemLanguages([steamLanguage, ...app.getPreferredSystemLanguages()]);
   require('./electron/recovery').installRendererRecovery(mainWindow, localization.t);
 
   if (smokeTest) {

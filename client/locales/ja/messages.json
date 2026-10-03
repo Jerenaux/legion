@@ -1015,5 +1015,6 @@
   "statusTurns_one": "{{status}}、{{count}}ターン",
   "statusTurns_other": "{{status}}、{{count}}ターン",
   "towerBattles_one": "<0>{{count}}</0>戦",
-  "towerBattles_other": "<0>{{count}}</0>戦"
+  "towerBattles_other": "<0>{{count}}</0>戦",
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Steamでは、初期設定にSteamの言語が使われます。ゲーム内で選んだ言語が優先されます。"
 }

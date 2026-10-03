@@ -1,7 +1,9 @@
 // Shared by the renderer, native dialogs and the independent startup fallback.
 function resolveLocale(preferences, locales) {
   for (const preference of preferences) {
-    if (!preference) continue;
+    if (typeof preference !== 'string' || !preference) continue;
+    const steam = locales.find(locale => locale.steamLanguages?.includes(preference.toLowerCase()));
+    if (steam) return steam.code;
     try {
       const requested = new Intl.Locale(preference).maximize();
       const exact = locales.find(locale => locale.code.toLowerCase() === preference.toLowerCase());
