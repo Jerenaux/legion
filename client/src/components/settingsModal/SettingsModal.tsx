@@ -1,3 +1,5 @@
+import LanguageSelect from '../LanguageSelect';
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import { events } from '../HUD/GameHUD';
@@ -103,25 +105,23 @@ export class SettingsModal extends Component<SettingsModalProps> {
       return (
         <div className="setting_menu flex flex_col gap_4">
           <div className="setting_dialog">
+            <LanguageSelect />
             <label className="setting_text_size" htmlFor="text-size">
-              Text size
-              <select id="text-size" value={this.state.textSize} onChange={event => this.setState({textSize: Number((event.target as HTMLSelectElement).value) as typeof this.state.textSize})}>
-                <option value="100">Standard (100%)</option>
-                <option value="115">Large (115%)</option>
-                <option value="130">Extra large (130%)</option>
+              {t("Text size")}<select id="text-size" value={this.state.textSize} onChange={event => this.setState({textSize: Number((event.target as HTMLSelectElement).value) as typeof this.state.textSize})}>
+                <option value="100">{t("Standard (100%)")}</option>
+                <option value="115">{t("Large (115%)")}</option>
+                <option value="130">{t("Extra large (130%)")}</option>
               </select>
             </label>
-            <div className="setting_dialog_keyboard">
-              Keyboard layout:
-            </div>
+            <div className="setting_dialog_keyboard">{t("Keyboard layout:")}</div>
             <div className="setting_dialog_keyboard_btn_container flex justify_center gap_4">
-              <button type="button" className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>Azerty</button>
-              <button type="button" className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>Qwerty</button>
+              <button type="button" className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>{t("Azerty")}</button>
+              <button type="button" className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>{t("Qwerty")}</button>
             </div>
 
             {showElectronSettings && (
               <div className="setting_dialog_fullscreen_container padding_top_16 padding_bottom_16">
-                <div className="setting_dialog_fullscreen_label padding_y_4">Display mode:</div>
+                <div className="setting_dialog_fullscreen_label padding_y_4">{t("Display mode:")}</div>
                 <div className="setting_dialog_fullscreen_checkbox_container flex items_center gap_4 padding_4">
                   <input
                     type="checkbox"
@@ -130,28 +130,26 @@ export class SettingsModal extends Component<SettingsModalProps> {
                     checked={this.state.isFullscreen}
                     onChange={this.toggleFullscreen}
                   />
-                  <label htmlFor="fullscreen-toggle" className="setting_dialog_fullscreen_text">
-                    Fullscreen mode
-                  </label>
+                  <label htmlFor="fullscreen-toggle" className="setting_dialog_fullscreen_text">{t("Fullscreen mode")}</label>
                 </div>
               </div>
             )}
 
             <div className="setting_dialog_control_bar_container">
-              <div className="setting_dialog_control_name">Music volume: </div>
+              <div className="setting_dialog_control_name">{t("Music volume:")}</div>
               <div className="setting_dialog_contol_lable_start">{this.state.musicMinValue}</div>
-              <input className="setting_dialog_control_bar" type="range" aria-label="Music volume" min={this.state.musicMinValue} max={this.state.musicMaxValue} value={this.state.musicCurrentValue} onInput={(event) => this.setState({musicCurrentValue: Number((event.target as HTMLInputElement).value)})} />
+              <input className="setting_dialog_control_bar" type="range" aria-label={t("Music volume")} min={this.state.musicMinValue} max={this.state.musicMaxValue} value={this.state.musicCurrentValue} onInput={(event) => this.setState({musicCurrentValue: Number((event.target as HTMLInputElement).value)})} />
               <div className="setting_dialog_control_label_end">{this.state.musicMaxValue}</div>
             </div>
             <div className="setting_dialog_control_bar_container">
-              <div className="setting_dialog_control_name">SFX volume: </div>
+              <div className="setting_dialog_control_name">{t("SFX volume:")}</div>
               <div className="setting_dialog_contol_lable_start">{this.state.sfxMinValue}</div>
-              <input className="setting_dialog_control_bar" type="range" aria-label="SFX volume" min={this.state.sfxMinValue} max={this.state.sfxMaxValue} value={this.state.sfxCurrentValue} onInput={(event) => this.setState({sfxCurrentValue: Number((event.target as HTMLInputElement).value)})} />
+              <input className="setting_dialog_control_bar" type="range" aria-label={t("SFX volume")} min={this.state.sfxMinValue} max={this.state.sfxMaxValue} value={this.state.sfxCurrentValue} onInput={(event) => this.setState({sfxCurrentValue: Number((event.target as HTMLInputElement).value)})} />
               <div className="setting_dialog_contol_lable_end">{this.state.sfxMaxValue}</div>
             </div>
           </div>
           <div className="justify_center flex gap_4">
-            <button type="button" className="setting_menu_btn" data-desktop-cancel onClick={this.props.onClose}>Exit</button>
+            <button type="button" className="setting_menu_btn" data-desktop-cancel onClick={this.props.onClose}>{t("Exit")}</button>
           </div>
         </div>
       );

@@ -1,3 +1,4 @@
+import {t} from '../../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import goldChestImage from '@assets/shop/gold_chest.png';
@@ -16,7 +17,7 @@ export class SimplePopup extends Component<Props> {
         <div className="simple-popup-content">
           <img
             src={goldChestImage}
-            alt="Gold chest"
+            alt={t("Gold chest")}
             className="simple-popup-icon"
           />
           <div className="simple-popup-text-container">

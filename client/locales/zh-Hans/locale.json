@@ -1,0 +1,8 @@
+{
+  "name": "简体中文",
+  "direction": "ltr",
+  "fontFamily": "Legion SC",
+  "steamLanguages": [
+    "schinese"
+  ]
+}

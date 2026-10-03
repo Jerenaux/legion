@@ -1,3 +1,4 @@
+import {t, formatNumber} from '../../i18n/core';
 import { h, Component, Fragment } from 'preact';
 import { InventoryType, StatusEffect } from '@legion/shared/enums';
 import { PlayerProps } from '@legion/shared/interfaces';
@@ -45,8 +46,8 @@ class PlayerBar extends Component<PlayerBarProps> {
     const pending = isSpell ? player?.pendingSpell : player?.pendingItem;
     const muted = isSpell && player?.statuses[StatusEffect.MUTE] !== 0;
     return (
-      <section className="player_bar_action_group" aria-label={isSpell ? 'Spells' : 'Items'}>
-        <div className="player_bar_group_label">{pending != null && canAct ? 'Click again' : isSpell ? 'Spells' : 'Items'}{muted && <span>Silenced</span>}</div>
+      <section className="player_bar_action_group" aria-label={t(isSpell ? 'Spells' : 'Items')}>
+        <div className="player_bar_group_label">{t(pending != null && canAct ? 'Click again' : isSpell ? 'Spells' : 'Items')}{muted && <span>{t('Silenced')}</span>}</div>
         <div className="player_bar_actions">
           {actions.map((action, index) => {
             const cost = 'cost' in action ? action.cost : null;
@@ -58,7 +59,7 @@ class PlayerBar extends Component<PlayerBarProps> {
                 id={index === 0 ? `player_hud_${type}` : undefined}
                 key={`${action.id}-${index}`}
                 className={`player_bar_action ${pending === index && canAct ? 'pending-action' : ''}`}
-                aria-label={`${action.name}${cost !== null ? `, ${cost} MP` : ''}${reason ? `, ${reason}` : ''}`}
+                aria-label={[t(action.name), cost !== null ? t('{{cost}} MP', {cost}) : '', reason ? t(reason) : ''].filter(Boolean).join(', ')}
                 aria-disabled={unavailable}
                 aria-pressed={pending === index && canAct}
                 data-tooltip-id="combat-action-details"
@@ -70,12 +71,12 @@ class PlayerBar extends Component<PlayerBarProps> {
                 }}
               >
                 <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type} keyboardLayout={this.state.keyboardLayout} />
-                <span className="player_bar_action_name">{action.name}</span>
-                {cost !== null && <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}><img src={mpIcon} alt="MP" />{cost}</span>}
+                <span className="player_bar_action_name">{t(action.name)}</span>
+                {cost !== null && <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}><img src={mpIcon} alt={t("MP")} />{formatNumber(cost)}</span>}
               </button>
             );
           })}
-          {!actions.length && <span className="player_bar_empty">{isSpell ? 'No spells learned' : 'No items equipped'}</span>}
+          {!actions.length && <span className="player_bar_empty">{t(isSpell ? 'No spells learned' : 'No items equipped')}</span>}
         </div>
       </section>
     );
@@ -92,29 +93,29 @@ class PlayerBar extends Component<PlayerBarProps> {
 
     return (
       <>
-      <section className="player_bar_container" aria-label="Combat commands" data-active={canAct} data-pending={Boolean(pending)} data-dense={spells.length + items.length > 6} data-has-spells={spells.length > 0}>
+      <section className="player_bar_container" aria-label={t("Combat commands")} data-active={canAct} data-pending={Boolean(pending)} data-dense={spells.length + items.length > 6} data-has-spells={spells.length > 0}>
         <div className="player_bar">
           {isPlayerTurn ? <div className="player_bar_body">
             <div className="player_bar_character">
               <div className="player_bar_stats">
                 <div className="player_bar_heading" key={turnNumber}>
-                  <strong className="player_bar_name">{player?.name || 'Combat'}</strong>
-                  {instruction && <span className="player_bar_turn_label" role="status">{instruction}</span>}
+                  <strong className="player_bar_name">{player?.name || t('Combat')}</strong>
+                  {instruction && <span className="player_bar_turn_label" role="status">{t(instruction)}</span>}
                 </div>
                 {player && <>
                   <div className="player_bar_stat">
-                    <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />HP</span><meter min={0} max={player.maxHp || 1} value={player.hp} aria-label="Health" />
-                    <span>{Math.round(player.hp)}<span className="player_bar_max">/{Math.round(player.maxHp)}</span></span>
+                    <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />{t('HP')}</span><meter min={0} max={player.maxHp || 1} value={player.hp} aria-label={t("Health")} />
+                    <span>{formatNumber(Math.round(player.hp))}<span className="player_bar_max">/{formatNumber(Math.round(player.maxHp))}</span></span>
                   </div>
                   {spells.length > 0 && <div className="player_bar_stat player_bar_mana">
-                    <span className="player_bar_stat_icon"><img src={mpIcon} alt="" />MP</span><meter min={0} max={player.maxMp || 1} value={Math.round(previewMP)} aria-label="Mana after selected spell" />
-                    <span className={pending && 'cost' in pending ? 'player_bar_mana_preview' : ''}>{Math.round(previewMP)}<span className="player_bar_max">/{Math.round(player.maxMp)}</span></span>
+                    <span className="player_bar_stat_icon"><img src={mpIcon} alt="" />{t('MP')}</span><meter min={0} max={player.maxMp || 1} value={Math.round(previewMP)} aria-label={t("Mana after selected spell")} />
+                    <span className={pending && 'cost' in pending ? 'player_bar_mana_preview' : ''}>{formatNumber(Math.round(previewMP))}<span className="player_bar_max">/{formatNumber(Math.round(player.maxMp))}</span></span>
                   </div>}
                 </>}
                 <div className="player_bar_statuses">
                   {Object.entries(statuses || {}).filter(([, duration]) => duration !== 0).map(([status, duration]) => (
-                    <span key={status} role="img" aria-label={`${status}, ${duration === -1 ? 'indefinite' : duration} turns`}>
-                      <img src={statusIcons[status]} alt={status} /><span>{duration === -1 ? '∞' : duration}</span>
+                    <span key={status} role="img" aria-label={duration === -1 ? t('{{status}}, indefinite', {status: t(status)}) : t('statusTurns', {status: t(status), count: Number(duration)})}>
+                      <img src={statusIcons[status]} alt={t(status)} /><span>{duration === -1 ? '∞' : formatNumber(Number(duration))}</span>
                     </span>
                   ))}
                 </div>
@@ -127,10 +128,10 @@ class PlayerBar extends Component<PlayerBarProps> {
             <div className="player_bar_controls">
               <CircularTimer turnDuration={turnDuration} timeLeft={timeLeft} turnNumber={turnNumber} size={36} strokeWidth={3} />
               <button type="button" data-game-control className="player_bar_pass_turn" onClick={onPassTurn} disabled={!canAct || Boolean(pending)}>
-                <span>Pass</span><span>Turn</span><span className="player_bar_pass_key">Space</span>
+                <span>{t("Pass Turn")}</span><span className="player_bar_pass_key">{t("Space")}</span>
               </button>
             </div>
-          </div> : <div className="enemy_turn_banner" role="status">Enemy Turn</div>}
+          </div> : <div className="enemy_turn_banner" role="status">{t("Enemy Turn")}</div>}
         </div>
       </section>
       {isPlayerTurn && <ItemTooltip id="combat-action-details" showClasses={false} />}

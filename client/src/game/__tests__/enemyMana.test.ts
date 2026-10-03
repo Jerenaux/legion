@@ -12,13 +12,14 @@ const code = ts.transpileModule(`new class {${methods.map(method => method.getTe
 
 test('enemy placement retains its spells and mana updates target the correct team', () => {
   class Player {
+    constructor(_scene?, _arena?, _team?, public name?: string) {}
     spells: number[] = [];
     mp: number;
     setSpells(spells: number[]) {this.spells = spells;}
     setStatuses() {}
     setMP(mp: number) {this.mp = mp;}
   }
-  const arena = runInNewContext(code, {Player, serializeCoords: () => 'tile'});
+  const arena = runInNewContext(code, {Player, PlayMode: {TOWER: 'tower'}, t: key => `localized:${key}`, serializeCoords: () => 'tile'});
   arena.playerTeamId = 1;
   arena.hexGridToPixelCoords = () => ({x: 0, y: 0});
   arena.gridMap = new Map();
@@ -28,6 +29,12 @@ test('enemy placement retains its spells and mana updates target the correct tea
   expect(members[0].spells).toEqual([8]);
   arena.placeCharacter({}, enemyTeam, true); // Older snapshots have no enemy spells or mana.
   expect(members[1].spells).toEqual([]);
+  arena.gameSettings = {mode: 'tower'};
+  arena.placeCharacter({name: 'Sentry'}, enemyTeam, true);
+  expect(members[2].name).toBe('localized:Sentry');
+  arena.gameSettings = {mode: 'ranked'};
+  arena.placeCharacter({name: 'Sentry'}, enemyTeam, true);
+  expect(members[3].name).toBe('Sentry');
   const ally = new Player();
   arena.getPlayer = (team: number) => team === 1 ? ally : members[0];
   arena.processMPChange({team: 2, num: 1, mp: 7});

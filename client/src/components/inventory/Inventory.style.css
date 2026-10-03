@@ -48,7 +48,7 @@
     padding: 4px;
     font-size: 0.625rem;
     font-weight: 400;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     color: #ffffff;
     letter-spacing: 0.4px;
 }
@@ -62,7 +62,7 @@
 .inventoryLabel {
     font-size: 0.75rem;
     font-weight: 500;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     letter-spacing: 0.6px;
 }
 
@@ -190,7 +190,7 @@
     color: #ffffff;
     font-size: 0.75rem;
     font-weight: 500;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     letter-spacing: 0.6px;
     background-color: #2f404d;
     padding: 4px 8px;
@@ -253,7 +253,7 @@
 
 .info-bar-plus:before {
     content: '+';
-    font-family: 'Kim', monospace;
+    font-family: var(--locale-font, 'Kim'), monospace;
     line-height: 1;
 }
 
@@ -307,7 +307,7 @@
 .purchase-dialog-heading {
     color: #71deff;
     font-size: 1.125rem;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     margin: 0 0 16px 0;
     text-align: center;
     letter-spacing: 0.5px;
@@ -329,7 +329,7 @@
 .quantity-selector label {
     color: #ffffff;
     font-size: 0.875rem;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-weight: 500;
 }
 
@@ -340,7 +340,7 @@
     padding: 8px 12px;
     color: #ffffff;
     font-size: 0.875rem;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     width: 80px;
 }
 
@@ -373,7 +373,7 @@
     align-items: center;
     font-size: 0.875rem;
     color: #ffffff;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .price-total {
@@ -413,7 +413,7 @@
 .purchase-dialog-confirm {
     padding: 10px 16px;
     font-size: 0.875rem;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -463,7 +463,7 @@
     align-items: center;
     gap: 8px;
     color: #71deff;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     justify-content: center;
     width: 100%;
 }

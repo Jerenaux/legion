@@ -1,3 +1,4 @@
+import {language} from '../i18n/core';
 import Phaser from 'phaser';
 
 const ALPHA = 0.7;
@@ -27,7 +28,7 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
 
         // Create the DOM element for text
         const style = `
-            font-family: Kim;
+            font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
             font-size: 0.875rem;
             max-width: 130px;
             color: #fff;
@@ -100,7 +101,7 @@ export class SpeechBubble extends Phaser.GameObjects.Container {
 
     private calculateDisplayDuration() {
         const wordsPerMinute = 100; // Average reading speed
-        const words = this.text.split(' ').length;
+        const words = [...new Intl.Segmenter(language, {granularity: 'word'}).segment(this.text)].filter(part => part.isWordLike).length;
         const minutes = words / wordsPerMinute;
         const duration = minutes * 60 * 1000; // Convert minutes to milliseconds
         return Math.max(2500, duration);

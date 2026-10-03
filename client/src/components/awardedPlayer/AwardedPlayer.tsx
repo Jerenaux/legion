@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 
 import { h } from 'preact';
 // AwardedPlayer.tsx
@@ -31,8 +32,8 @@ class AwardedPlayer extends Component<Props> {
                             <img src={loadAvatar(player.avatar)} alt={player.name} />
                         </div>
                         <div className="award-player-name">{player.name}</div>
-                        {player.title && <div className="award-player-title">{player.title}</div>}
-                        {player.description && <div className="award-player-desc">{player.description}</div>}
+                        {player.title && <div className="award-player-title">{t(player.title)}</div>}
+                        {player.description && <div className="award-player-desc">{t(player.description)}</div>}
                     </button>
                 ))}
             </div>

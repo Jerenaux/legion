@@ -23,6 +23,8 @@ function setup(completedGames = 2, kind = enums.Class.WARRIOR) {
     const requests: ((data: unknown) => void)[] = [];
     const modules = {
         preact,
+        '../i18n/core': {t: (key: string) => key},
+        '../i18n/Trans': {},
         '../contexts/PlayerContext': {PlayerContext: {}},
         '../services/apiService': {apiFetch: () => new Promise(resolve => { requests.push(resolve); })},
         '../services/firebaseService': {firebaseAuth: auth},

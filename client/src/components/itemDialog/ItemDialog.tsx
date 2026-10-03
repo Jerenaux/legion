@@ -1,3 +1,5 @@
+import {t, i18n, userError} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
 // ItemDialog.tsx
@@ -7,7 +9,7 @@ import { Component } from 'preact';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat, Target, statFieldsByIndex, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
+import { InventoryActionType, Stat, Target, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
 import { errorToast, successToast, mapFrameToCoordinates, classEnumToString, cropFrame, getSpeedClass } from '../utils';
 import { getMaxStatValue, getSPIncrement } from '@legion/shared/levelling';
@@ -158,16 +160,16 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     this.props.handleClose();
 
     if (type === ItemDialogType.SPELLS && actionType === InventoryActionType.EQUIP) {
-      successToast('Spell learned!');
+      successToast(t("Spell learned!"));
     } else if (payload.action === InventoryActionType.SELL) {
-      successToast('Item sold!');
+      successToast(t("Item sold!"));
     }
 
     apiFetch('inventoryTransaction', {
       method: 'POST',
       body: payload
     })
-      .catch(error => console.error(`Error: ${error}`));
+      .catch(error => console.error(error));
   }
 
   spendSP = async (stat: Stat, amount: number) => {
@@ -178,29 +180,29 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     if (!canIncreaseStat(this.context.getActiveCharacter(), stat, amount)) {
-      errorToast(`The maximum value of ${StatLabels[stat]} is ${getMaxStatValue(stat)}`);
+      errorToast(t("The maximum value of {{value0}} is {{value1}}", {value0: t(StatLabels[stat]), value1: getMaxStatValue(stat)}));
       return;
     }
     this.context.updateCharacterStats(this.context.getActiveCharacter().id, stat, amount);
 
     this.props.updateCharacterData();
     this.props.handleClose();
-    successToast(`${statFieldsByIndex[stat].toUpperCase()} increased by ${getSPIncrement(stat)*amount}!`);
+    successToast(t("{{value0}} increased by {{value1}}!", {value0: t(StatLabels[stat]), value1: getSPIncrement(stat)*amount}));
 
     apiFetch('spendSP', {
       method: 'POST',
       body: payload
     })
-      .catch(error => errorToast(`Error: ${error}`));
+      .catch(error => errorToast(userError(error)));
   }
 
   renderDialogButtons(acceptAction: () => void, isDisabled: boolean = false) {
     const { actionType, dialogType } = this.props;
-    let acceptLabel = actionType === InventoryActionType.UNEQUIP ? 'Remove' : 'Equip';
+    let acceptLabel = actionType === InventoryActionType.UNEQUIP ? t('Remove') : t("Equip");
     if (this.props.dialogType === ItemDialogType.SPELLS) {
-      acceptLabel = 'Learn';
+      acceptLabel = t("Learn");
     } else if (this.props.dialogType === ItemDialogType.SP) {
-      acceptLabel = 'Spend';
+      acceptLabel = t('Spend');
     }
 
     // Don't show sell button for SP dialog or equipped items
@@ -214,22 +216,16 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           onClick={acceptAction}
           style={isDisabled ? { backgroundColor: "grey", opacity: "0.5" } : {}}
         >
-          <img src={confirmIcon} alt="confirm" />
+          <img src={confirmIcon} alt={t("confirm")} />
           {acceptLabel}
         </button>
         {showSellButton && (
           <button type="button"
             className="dialog-sell"
             onClick={() => this.setState({ sellModalShow: true })}
-          >
-            <img src={cancelIcon} alt="sell" />
-            Sell
-          </button>
+          ><Trans i18n={i18n} i18nKey={"<0/>Sell"} components={[<img src={cancelIcon} alt="" />]} /></button>
         )}
-        <button type="button" className="dialog-decline" onClick={this.handleClose}>
-          <img src={cancelIcon} alt="decline" />
-          Cancel
-        </button>
+        <button type="button" className="dialog-decline" onClick={this.handleClose}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
       </div>
     );
   }
@@ -247,7 +243,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           backgroundImage: `url(${this.state.croppedImages[ItemDialogType.EQUIPMENTS] || ''})`,
           backgroundSize: 'cover',
         }} />
-        <p className="equip-dialog-name">{dialogData.name}</p>
+        <p className="equip-dialog-name">{t(dialogData.name)}</p>
         {/* <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
           Lvl <span>{dialogData.minLevel}</span>
         </div> */}
@@ -258,7 +254,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             </div>
           ))}
         </div>
-        {dialogData.description && <p className="equip-dialog-desc">{dialogData.description}</p>}
+        {dialogData.description && <p className="equip-dialog-desc">{t(dialogData.description)}</p>}
         {this.renderDialogButtons(() => this.AcceptAction(ItemDialogType.EQUIPMENTS, index), isDisabled)}
       </div>
     );
@@ -282,25 +278,25 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             backgroundSize: 'cover',
           }} />
           <div className="dialog-item-title">
-            <span>{dialogData.name}</span>
-            <span className="dialog-item-title-info">Self</span>
+            <span>{t(dialogData.name)}</span>
+            <span className="dialog-item-title-info">{t("Self")}</span>
           </div>
         </div>
-        <p className="dialog-item-desc">{dialogData.description}</p>
+        <p className="dialog-item-desc">{t(dialogData.description)}</p>
         <div className="dialog-consumable-info-container">
           <div className="dialog-consumable-info">
-            <img src={cdIcon} alt="cd" />
+            <img src={cdIcon} alt={t("cd")} />
             <span>{getSpeedClass(dialogData.speedClass)}</span>
           </div>
           <div className="dialog-consumable-info">
-            <img src={targetIcon} alt="target" />
-            <span>{Target[dialogData.target]}</span>
+            <img src={targetIcon} alt={t("target")} />
+            <span>{t(Target[dialogData.target])}</span>
           </div>
         </div>
         <div className="dialog-item-info-container">
           {dialogData.effects.map(effect => (
             <div className="dialog-item-info">
-              <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[Stat[effect.stat]] }}><span>{Stat[effect.stat]}</span></div>
+              <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[Stat[effect.stat]] }}><span>{t(Stat[effect.stat])}</span></div>
               <span style={{ color: effect.value > 0 || effect.value === -1 ? '#9ed94c' : '#c95a74' }}>
                 {effect.value > 0 ? `+${effect.value}` : (effect.value === -1 ? '∞' : effect.value)}
               </span>
@@ -328,20 +324,20 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             backgroundSize: 'cover',
           }} />
         </div>
-        <p className="dialog-spell-name">{dialogData.name}</p>
-        <p className="dialog-spell-desc">{dialogData.description}</p>
+        <p className="dialog-spell-name">{t(dialogData.name)}</p>
+        <p className="dialog-spell-desc">{t(dialogData.description)}</p>
         <div className="dialog-spell-info-container">
           <div className="dialog-spell-info">
-            <img src={mpIcon} alt="mp" />
+            <img src={mpIcon} alt={t("mp")} />
             <span>{dialogData.cost}</span>
           </div>
           <div className="dialog-spell-info">
-            <img src={cdIcon} alt="cd" />
+            <img src={cdIcon} alt={t("cd")} />
             <span>{getSpeedClass(dialogData.speedClass)}</span>
           </div>
           <div className="dialog-spell-info">
-            <img src={targetIcon} alt="target" />
-            <span>{Target[dialogData.target]}</span>
+            <img src={targetIcon} alt={t("target")} />
+            <span>{t(Target[dialogData.target])}</span>
           </div>
         </div>
         {/* <div style={{ backgroundColor: hasMinLevel(activeCharacter, dialogData.minLevel) ? "#2f404d" : "darkred" }} className="equip-dialog-lvl">
@@ -363,9 +359,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   renderSpellConfirmationModal(dialogData: BaseSpell, characterName: string) {
     return (
       <div style={{ display: this.state.dialogSpellModalShow ? 'block' : 'none' }} className="dialog-spell-modal">
-        <div className="dialog-spell-modal-text">
-          Are you sure you want to teach {dialogData.name} to {characterName}?
-        </div>
+        <div className="dialog-spell-modal-text">{t("Are you sure you want to teach {{value0}} to {{value1}}?", {value0: t(dialogData.name), value1: characterName})}</div>
         {this.renderDialogButtons(() => {
           this.AcceptAction(ItemDialogType.SPELLS, this.props.index);
           this.setState({ dialogSpellModalShow: false });
@@ -381,16 +375,14 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     return (
       <div className="character-info-dialog-container">
-        <h2 className="sp-dialog-title">Increase {StatLabels[dialogData.stat]}</h2>
+        <h2 className="sp-dialog-title">{t("Increase {{value0}}", {value0: t(StatLabels[dialogData.stat])})}</h2>
         <div className="character-info-dialog-card-container">
           <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
-            <span>{StatLabels[dialogData.stat]}</span>
+            <span>{t(StatLabels[dialogData.stat])}</span>
           </div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}
-            <span className='character-info-addition' style={{ color: '#9ed94c' }}>
-              &nbsp; + {getSPIncrement(dialogData.stat) * dialogValue}
-            </span>
+            <span className='character-info-addition' style={{ color: '#9ed94c' }}>{t("+ {{value0}}", {value0: getSPIncrement(dialogData.stat) * dialogValue})}</span>
           </div>
         </div>
         <div className="character-info-dialog-control">
@@ -406,9 +398,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   renderSPConfirmationModal(dialogData: SPSPendingData) {
     return (
       <div style={{ display: this.state.dialogSPModalShow ? 'block' : 'none' }} className="dialog-spell-modal dialog-SP-modal">
-        <div className="dialog-spell-modal-text">
-          Are you sure you want to spend {this.state.dialogValue} SP?
-        </div>
+        <div className="dialog-spell-modal-text">{t("Are you sure you want to spend {{value0}} SP?", {value0: this.state.dialogValue})}</div>
         {this.renderDialogButtons(() => {
           this.spendSP(dialogData.stat, this.state.dialogValue);
           this.setState({ dialogSPModalShow: false });
@@ -424,9 +414,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     const sellPrice = getSellPrice(dialogData.id, dialogType);
     return (
       <div style={{ display: this.state.sellModalShow ? 'block' : 'none' }} className="dialog-spell-modal">
-        <div className="dialog-spell-modal-text">
-          Are you sure you want to sell this item for {sellPrice} gold?
-        </div>
+        <div className="dialog-spell-modal-text">{t("Are you sure you want to sell this item for {{value0}} gold?", {value0: sellPrice})}</div>
         <div className="dialog-button-container">
           <button type="button"
             className="dialog-accept"
@@ -434,17 +422,11 @@ class ItemDialog extends Component<DialogProps, DialogState> {
               this.AcceptAction(dialogType, index);
               this.setState({ sellModalShow: false });
             }}
-          >
-            <img src={confirmIcon} alt="confirm" />
-            Confirm
-          </button>
+          ><Trans i18n={i18n} i18nKey={"<0/>Confirm"} components={[<img src={confirmIcon} alt="" />]} /></button>
           <button type="button"
             className="dialog-decline"
             onClick={() => this.setState({ sellModalShow: false })}
-          >
-            <img src={cancelIcon} alt="decline" />
-            Cancel
-          </button>
+          ><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
         </div>
       </div>
     );
@@ -492,7 +474,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     return (
-      <Modal isOpen={dialogOpen} contentLabel={isSP ? "Spend stat points" : "Item details"} style={customStyles} onRequestClose={this.handleClose}>
+      <Modal isOpen={dialogOpen} contentLabel={isSP ? t("Spend stat points") : t("Item details")} style={customStyles} onRequestClose={this.handleClose}>
         {this.renderDialogContent()}
         {this.renderSellConfirmationModal()}
       </Modal>

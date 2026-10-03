@@ -1,3 +1,4 @@
+import {t, formatNumber} from '../../i18n/core';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -108,22 +109,22 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                 onClick={this.handleClick}
             >
                 {showSPBadge && member.sp > 0 && (
-                    <div className="endgame_character_sp_badge">SP</div>
+                    <div className="endgame_character_sp_badge">{t("SP")}</div>
                 )}
 
                 {isLevelingUp &&
-                    <div className="endgame_character_lvlup">LVL UP!</div>
+                    <div className="endgame_character_lvlup">{t("LVL UP!")}</div>
                 }
 
                 <div className="endgame_character_level">
-                    <span>Lvl</span> {member.level + this.state.isLevelUp}
+                    <span>{t("Lvl")}</span> {formatNumber(member.level + this.state.isLevelUp)}
                 </div>
 
                 {!hideXP && (
                     <div className="endgame_character_level_container">
                         {isReceivingXP && (
                             <div className="endgame_character_xp_container">
-                                <div className="endgame_character_xp_label">XP</div>
+                                <div className="endgame_character_xp_label">{t("XP")}</div>
                                 <div className="endgame_character_xp_bar">
                                     <div
                                         className={`endgame_character_xp_fill ${isResettingXP ? 'reset' : ''}`}
@@ -145,7 +146,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                 </div>
 
                 <div className="endgame_character_name">{member.name}</div>
-                <div className="endgame_character_class">{ClassLabels[member.class]}</div>
+                <div className="endgame_character_class">{t(ClassLabels[member.class])}</div>
             </button>
         );
     }

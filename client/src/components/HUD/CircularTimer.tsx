@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import cdIcon from '@assets/inventory/cd_icon.png';
@@ -73,7 +74,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
     return (
       <div class="circular_timer">
         <svg width={size} height={size}>
-          <title>Turn time remaining</title>
+          <title>{t("Turn time remaining")}</title>
           <circle
             class="circular_timer_bg"
             cx={size / 2}
@@ -94,7 +95,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
             transform={`rotate(180 ${size / 2} ${size / 2})`}
           />
         </svg>
-        <img src={cdIcon} class="circular_timer_icon" alt="CD Icon" />
+        <img src={cdIcon} class="circular_timer_icon" alt={t("CD Icon")} />
       </div>
     );
   }

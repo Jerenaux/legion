@@ -1,3 +1,4 @@
+import {t} from '../i18n/core';
 import { h } from 'preact';
 import { Component, Fragment } from 'preact';
 import { GameHUD, events } from '../components/HUD/GameHUD';
@@ -245,7 +246,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
           )}
           {!this.state.loading && (!this.state.initialized || this.state.reconnecting) && (
             <div className='waiting-container'>
-              <div className='waiting-div'>{this.state.reconnecting ? 'Reconnecting to your match' : WAITING_MESSAGES[this.state.currentMessageIndex]}</div>
+              <div className='waiting-div'>{this.state.reconnecting ? t("Reconnecting to your match") : t(WAITING_MESSAGES[this.state.currentMessageIndex])}</div>
               <QueueTips />
             </div>
           )}
@@ -268,7 +269,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
 function OrientationOverlay() {
   return (
     <div className="orientation-overlay">
-      <p className="orientation-overlay__text">Please rotate your device to landscape mode</p>
+      <p className="orientation-overlay__text">{t("Please rotate your device to landscape mode")}</p>
     </div>
   );
 }

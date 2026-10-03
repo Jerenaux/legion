@@ -38,7 +38,7 @@
     border-radius: 4px;
     background: rgba(173, 216, 230, 0.1);
     border: 1px solid transparent;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .shop-tab-item:hover {
@@ -119,7 +119,7 @@
     text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
     letter-spacing: 1px;
     position: relative;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .equipment-type-title::after {
@@ -187,7 +187,7 @@
     text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
     letter-spacing: 1px;
     position: relative;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .spells-type-title::after {
@@ -269,7 +269,7 @@
     text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
     letter-spacing: 1px;
     position: relative;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .consumables-type-title::after {

@@ -16,7 +16,7 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-transform: uppercase;
     transition: all 0.2s ease;
     position: relative;
@@ -432,3 +432,5 @@
         transform: scale(0.8);
     }
 }
+
+.localized-result { font: 900 clamp(1.5rem, 6vw, 4rem)/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif; color: #f1e0a0; text-shadow: 2px 3px #301d10, -1px -1px #301d10; text-align: center; overflow-wrap: anywhere; }

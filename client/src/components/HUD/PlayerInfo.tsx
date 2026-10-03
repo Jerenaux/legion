@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import { route } from 'preact-router';
@@ -123,11 +124,11 @@ class PlayerInfo extends Component<Props, State> {
     return (
       <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`}>
         {ENABLE_PLAYER_LEVEL && <div className={`player_info_lv ${position === 'right' && 'player_info_lv_right'}`}>
-          <span>Lvl</span>
+          <span>{t("Lvl")}</span>
           <span className="player_info_lvalue">{player.playerLevel}</span>
         </div>}
         <div className="player_info_player_profile">
-          <img src={player.playerAvatar ? loadAvatar(player.playerAvatar) : loadAvatar('default')} alt={`${player.playerName} avatar`} />
+          <img src={player.playerAvatar ? loadAvatar(player.playerAvatar) : loadAvatar('default')} alt={t("{{value0}} avatar", {value0: player.playerName})} />
         </div>
         <div className="player_info">
           <div
@@ -140,40 +141,40 @@ class PlayerInfo extends Component<Props, State> {
             </div>}
           </div>
           <div className={`player_info_rank ${position === 'right' && 'row_reverse'}`}>
-            <img src={getLeagueIcon(player.playerLeague)} alt="" />
+            <img src={getLeagueIcon(player.playerLeague)} alt={""} />
             <span>{!isBot ? `# ${player.playerRank}` : ''}</span>
           </div>
         </div>
         {isPlayerTeam && <div className={position === 'right' ? "spectator_container_right" : "spectator_container"}>
           {isSpectator && <div className="spectator_div">
             <div className="spectator">
-              <img src={applauseIcon} alt="" />
+              <img src={applauseIcon} alt={""} />
             </div>
             <div className="spectator">
-              <img src={donateIcon} alt="" />
+              <img src={donateIcon} alt={""} />
             </div>
           </div>}
-          <button type="button" className="spectator" data-game-menu aria-label="Game menu" onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
-            <img src={settingsIcon} alt="" />
+          <button type="button" className="spectator" data-game-menu aria-label={t("Game menu")} onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
+            <img src={settingsIcon} alt={""} />
           </button>
         </div>}
         <Modal isOpen={this.state.isMenuModalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
           <div>
             {ENABLE_SETTINGS && <button type="button" className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
-              <p>Settings</p>
+              <p>{t("Settings")}</p>
             </button>}
             <button type="button" className="exit_game_label" onClick={(e) => this.handleOpenModal(e, "exit_modal")}>
-              <p>Abandon Game!</p>
+              <p>{t("Abandon Game!")}</p>
             </button>
           </div>
         </Modal>
-        <Modal contentLabel="Abandon game" isOpen={this.state.isExitModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1}
+        <Modal contentLabel={t("Abandon Game!")} isOpen={this.state.isExitModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1}
           onAfterOpen={() => document.querySelector<HTMLButtonElement>('.exit_game_menu [data-desktop-cancel]')?.focus()}>
           <div className="exit_game_menu flex flex_col gap_4">
-            <div className="game_leave_dialog">Are you sure you want to abandon the game? This will count as a loss.</div>
+            <div className="game_leave_dialog">{t("Are you sure you want to abandon the game? This will count as a loss.")}</div>
             <div className="flex gap_4">
-              <button type="button" className="game_leave_btn" onClick={this.handleExit}>Leave</button>
-              <button type="button" className="game_leave_btn" data-desktop-cancel onClick={this.handleCloseModal}>Cancel</button>
+              <button type="button" className="game_leave_btn" onClick={this.handleExit}>{t("Leave")}</button>
+              <button type="button" className="game_leave_btn" data-desktop-cancel onClick={this.handleCloseModal}>{t("Cancel")}</button>
             </div>
           </div>
         </Modal>

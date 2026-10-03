@@ -1,3 +1,4 @@
+import {t} from '../i18n/core';
 import { h } from 'preact';
 import {Component, ComponentChildren, } from "preact";
 import firebase from "firebase/compat/app";
@@ -53,7 +54,7 @@ export default class AuthProvider extends Component<Props, State> {
       console.error("Desktop session failed:", error);
       this.setState({
         isLoading: false,
-        error: "We couldn't reach Legion's services. Check your connection, then try again.",
+        error: t("We couldn't reach Legion's services. Check your connection, then try again."),
       });
     } finally {
       this.authenticating = false;
@@ -66,10 +67,10 @@ export default class AuthProvider extends Component<Props, State> {
       return (
         <main className="session-screen">
           <section className="session-status" aria-live="polite" aria-busy="true">
-            <img className="session-status__logo" src={logo} alt="Legion" />
-            <p className="session-status__eyebrow">Connecting</p>
-            <h1>Preparing your arena</h1>
-            <p className="session-status__message">Securing your session…</p>
+            <img className="session-status__logo" src={logo} alt={t("Legion")} />
+            <p className="session-status__eyebrow">{t("Connecting")}</p>
+            <h1>{t("Preparing your arena")}</h1>
+            <p className="session-status__message">{t("Securing your session…")}</p>
             <div className="session-status__progress" aria-hidden="true"><span /></div>
           </section>
         </main>
@@ -79,15 +80,13 @@ export default class AuthProvider extends Component<Props, State> {
       return (
         <main className="session-screen session-screen--error">
           <section className="session-status" role="alert">
-            <img className="session-status__logo" src={logo} alt="Legion" />
+            <img className="session-status__logo" src={logo} alt={t("Legion")} />
             <div className="session-status__error-mark" aria-hidden="true">!</div>
-            <p className="session-status__eyebrow">Connection interrupted</p>
-            <h1>The arena is out of reach</h1>
-            <p className="session-status__message">{error || "Your Legion session could not be started."}</p>
-            <button className="session-status__retry" type="button" onClick={this.startSession}>
-              Try again
-            </button>
-            <p className="session-status__hint">Press Enter or controller A to retry</p>
+            <p className="session-status__eyebrow">{t("Connection interrupted")}</p>
+            <h1>{t("The arena is out of reach")}</h1>
+            <p className="session-status__message">{error || t("Your Legion session could not be started.")}</p>
+            <button className="session-status__retry" type="button" onClick={this.startSession}>{t("Try again")}</button>
+            <p className="session-status__hint">{t("Press Enter or controller A to retry")}</p>
           </section>
         </main>
       );

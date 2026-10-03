@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 // SpectatorFooter.tsx
 import { Component } from 'preact';
@@ -68,7 +69,7 @@ class Timeline extends Component<TimelineProps, TimelineState> {
       <div className="spectator_footer_wrapper">
         <div className="spectator_footer_container">
           <div className="turn_timeline_wrapper">
-            <div className="turn_order_label">Turn Order</div>
+            <div className="turn_order_label">{t("Turn Order")}</div>
             <div
               className="turn_timeline"
               style={{
@@ -97,7 +98,7 @@ class Timeline extends Component<TimelineProps, TimelineState> {
                   <button type="button" data-game-control
                     key={characterKey}
                     onClick={e => onInspect(queueItem.team, queueItem.num, e.currentTarget)}
-                    aria-label={`Inspect ${character.name}`}
+                    aria-label={t("Inspect {{value0}}", {value0: character.name})}
                     aria-describedby={inspected ? 'character-hover-card' : undefined}
                     data-character={characterKey}
                     data-inspected={inspected}

@@ -1,3 +1,4 @@
+import {t, formatNumber} from '../../i18n/core';
 import { h } from 'preact';
 import { ChestColor, } from "@legion/shared/enums";
 import { LeaderboardRow} from "@legion/shared/interfaces";
@@ -147,7 +148,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
     }
 
     render() {
-        const { rankRowNumberStyle, camelCaseToNormal } = this.props;
+        const { rankRowNumberStyle } = this.props;
         const columns = ['rank', 'player name', 'elo', 'wins', 'losses', 'wins ratio', 'rewards'];
 
         const rankRowAvatar = (index: number) => {
@@ -163,15 +164,18 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
         }
 
         return (
-            <div className="rank-table-container">
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: Native horizontal scrolling requires keyboard focus.
+            <section className="rank-table-container" tabIndex={0} aria-label={t("Rank")} onKeyDown={event => {
+                if (event.target === event.currentTarget && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) event.stopPropagation();
+            }}>
                 <table className="rank-table">
                     <thead>
                         <tr>
                             {columns.map((column, i) => (
                                 <th key={i} onClick={() => this.handleSort(columnType[column], i)}>
                                     <div>
-                                        <span>{camelCaseToNormal(column)}</span>
-                                        {(i !== 1 && i < 6) && <img className="thead-sort-icon" src={arrowIcon} alt="" style={sortIconStyle(i)} />}
+                                        <span>{t(column)}</span>
+                                        {(i !== 1 && i < 6) && <img className="thead-sort-icon" src={arrowIcon} alt={""} style={sortIconStyle(i)} />}
                                     </div>
                                 </th>
                             ))}
@@ -188,7 +192,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                                 onClick={() => this.handleRowClick(item.playerId)}
                             >
                                 <td className="rank-row">
-                                    <div className="rank-row-number" style={rankRowNumberStyle(item.rank)}>{item.rank}</div>
+                                    <div className="rank-row-number" style={rankRowNumberStyle(item.rank)}>{formatNumber(item.rank)}</div>
                                     <div className="rank-row-avatar" style={rankRowAvatar(index)}></div>
                                     <div
                                         className="rank-row-upgrade"
@@ -196,13 +200,13 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                                     ></div>
                                 </td>
                                 <td>{item.player}</td>
-                                <td>{item.elo}</td>
-                                <td className="rank-row-win">{item.wins}</td>
-                                <td>{item.losses}</td>
-                                <td className="rank-row-winRatio">{item.winsRatio}</td>
+                                <td>{formatNumber(item.elo)}</td>
+                                <td className="rank-row-win">{formatNumber(item.wins)}</td>
+                                <td>{formatNumber(item.losses)}</td>
+                                <td className="rank-row-winRatio">{formatNumber(Number.parseFloat(item.winsRatio) / 100, {style: 'percent', maximumFractionDigits: 0})}</td>
                                 <td className="rank-row-reward">
                                     {item.chestColor && rewardImage[item.chestColor] &&
-                                        <img src={rewardImage[item.chestColor]} alt={`${ChestColor[item.chestColor]} chest`} />
+                                        <img src={rewardImage[item.chestColor]} alt={t(`${item.chestColor} chest`)} />
                                     }
                                 </td>
                             </tr>
@@ -215,10 +219,8 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                         />}
                     </tbody>
                 </table>
-                <div style={this.state.tableData.length === 0 ? { display: "block" } : { display: "none" }} className="table-empty">
-                    No players in this league yet
-                </div>
-            </div>
+                <div style={this.state.tableData.length === 0 ? { display: "block" } : { display: "none" }} className="table-empty">{t("No players in this league yet")}</div>
+            </section>
         );
     }
 }

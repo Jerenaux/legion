@@ -16,7 +16,7 @@
   max-height: 120px;
   z-index: 9;
   color: var(--dock-text);
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   pointer-events: auto;
 }
 .player_bar {
@@ -166,3 +166,9 @@
 #combat-action-details .item-preview-facts { font-size: 0.9375rem; }
 
 #combat-action-details .item-preview-description { font-size: 1rem; }
+
+/* Keep translated command labels within the dock. */
+.player_bar_pass_turn { width: auto; min-width: 3.375rem; max-width: 8rem; height: auto; min-height: 3.625rem; overflow-wrap: anywhere; }
+.player_bar_container[data-dense="true"] .player_bar_pass_turn { width: auto; min-width: 46px; }
+.player_bar_group_label { flex-wrap: wrap; text-align: center; line-height: 1.25; }
+.player_bar_turn_label { white-space: normal; overflow-wrap: anywhere; }

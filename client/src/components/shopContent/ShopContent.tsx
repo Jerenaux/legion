@@ -1,3 +1,4 @@
+import {t, userError} from '../../i18n/core';
 import { h } from 'preact';
 import './ShopContent.style.css';
 import 'react-loading-skeleton/dist/skeleton.css'
@@ -57,7 +58,7 @@ function sortByRarityAndPrice(a: BaseItem | BaseSpell | BaseEquipment, b: BaseIt
     return a.rarity - b.rarity;
 }
 
-const TAB_LABELS = ['Consumables', 'Equipment', 'Spells', 'Characters'];
+const TAB_LABELS = ["Consumables", "Equipment", "Spells", "Characters"];
 const TAB_UNLOCKS = [
     LockedFeatures.CONSUMABLES_BATCH_1,
     LockedFeatures.EQUIPMENT_BATCH_1,
@@ -66,15 +67,15 @@ const TAB_UNLOCKS = [
 ];
 
 const EQUIP_CATEGORIES_GROUPPING = {
-    [EquipmentSlot.WEAPON]: 'Weapons',
-    [EquipmentSlot.HELMET]: 'Protection',
-    [EquipmentSlot.ARMOR]: 'Protection',
-    [EquipmentSlot.BELT]: 'Accessories',
-    [EquipmentSlot.GLOVES]: 'Protection',
-    [EquipmentSlot.BOOTS]: 'Protection',
-    [EquipmentSlot.LEFT_RING]: 'Accessories',
-    [EquipmentSlot.RIGHT_RING]: 'Accessories',
-    [EquipmentSlot.NECKLACE]: 'Accessories',
+    [EquipmentSlot.WEAPON]: "Weapons",
+    [EquipmentSlot.HELMET]: "Protection",
+    [EquipmentSlot.ARMOR]: "Protection",
+    [EquipmentSlot.BELT]: "Accessories",
+    [EquipmentSlot.GLOVES]: "Protection",
+    [EquipmentSlot.BOOTS]: "Protection",
+    [EquipmentSlot.LEFT_RING]: "Accessories",
+    [EquipmentSlot.RIGHT_RING]: "Accessories",
+    [EquipmentSlot.NECKLACE]: "Accessories",
 }
 
 const groupEquipmentByType = (equipment: BaseEquipment[], useCategories: boolean) => {
@@ -150,7 +151,7 @@ class ShopContent extends Component<ShopContentProps> {
             await this.props.fetchCharactersOnSale();
         } catch (error) {
             console.error("Error fetching characters:", error);
-            errorToast("Failed to load characters. Please try again.");
+            errorToast(t("Failed to load characters. Please try again."));
         } finally {
             this.setState({ isLoadingCharacters: false });
         }
@@ -181,12 +182,12 @@ class ShopContent extends Component<ShopContentProps> {
 
     purchase = async (id: string | number, quantity: number, price: number) => {
         if (!id && id !== 0) {
-            errorToast('No article selected!');
+            errorToast(t("No article selected!"));
             return;
         }
 
         if (!this.hasEnoughGold(quantity)) {
-            silentErrorToast('Not enough gold!');
+            silentErrorToast(t("Not enough gold!"));
             return;
         }
 
@@ -194,12 +195,12 @@ class ShopContent extends Component<ShopContentProps> {
 
         if (purchasingCharacter) {
             if (this.context.characters.length >= MAX_CHARACTERS) {
-                silentErrorToast('Character limit reached!');
+                silentErrorToast(t("Character limit reached!"));
                 return;
             }
         } else {
             if (inventorySize(this.context.player.inventory) + quantity > this.context.player.carrying_capacity) {
-                silentErrorToast('Not enough room in inventory!');
+                silentErrorToast(t("Not enough room in inventory!"));
                 return;
             }
         }
@@ -212,7 +213,7 @@ class ShopContent extends Component<ShopContentProps> {
 
         if (!purchasingCharacter) this.context.applyPurchase(id, price, quantity, this.state.curr_tab);
         playSoundEffect(purchaseSfx);
-        successToast('Purchase successful!');
+        successToast(t("Purchase successful!"));
         this.handleCloseModal();
 
         await apiFetch(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', {
@@ -224,7 +225,7 @@ class ShopContent extends Component<ShopContentProps> {
                     this.props.fetchCharactersOnSale();
                 }
             })
-            .catch(error => errorToast(`Error: ${error}`));
+            .catch(error => errorToast(userError(error)));
 
         if (purchasingCharacter) this.context.applyPurchase(id, price, quantity, this.state.curr_tab);
     }
@@ -268,7 +269,7 @@ class ShopContent extends Component<ShopContentProps> {
                             {Object.entries(groupedSpells).map(([category, spells]) => (
                                 <div key={category} className="spells-section">
                                     <h3 className="spells-type-title">
-                                        {category.charAt(0) + category.slice(1).toLowerCase()}
+                                        {t(category)}
                                     </h3>
                                     <div className="spells-grid">
                                         {spells.map((spell, index) =>
@@ -286,15 +287,15 @@ class ShopContent extends Component<ShopContentProps> {
                             {(!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) ||
                               !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_3)) && (
                                 <div className="locked-spells-notice">
-                                    <img src={lockIcon} alt="Locked content" />
-                                    <h3>More Spells Await!</h3>
+                                    <img src={lockIcon} alt={t("Locked content")} />
+                                    <h3>{t("More Spells Await!")}</h3>
                                     <p>
                                         {!this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_2)} more games to unlock more powerful spells!`
+                                            t("unlock more powerful spells!", {count: this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_2)})
                                         )}
                                         {this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_2) &&
                                          !this.context.canAccessFeature(LockedFeatures.SPELLS_BATCH_3) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_3)} more games to unlock more powerful spells!`
+                                            t("unlock more powerful spells!", {count: this.context.getGamesUntilFeature(LockedFeatures.SPELLS_BATCH_3)})
                                         )}
                                     </p>
                                 </div>
@@ -314,7 +315,7 @@ class ShopContent extends Component<ShopContentProps> {
                             {Object.entries(groupedConsumables).map(([category, items]) => (
                                 <div key={category} className="consumables-section">
                                     <h3 className="consumables-type-title">
-                                        {category.charAt(0) + category.slice(1).toLowerCase()}
+                                        {t(category)}
                                     </h3>
                                     <div className="consumables-grid">
                                         {items.map((item, index) =>
@@ -332,15 +333,15 @@ class ShopContent extends Component<ShopContentProps> {
                             {(!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) ||
                               !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_3)) && (
                                 <div className="locked-spells-notice">
-                                    <img src={lockIcon} alt="Locked content" />
-                                    <h3>More Consumables Await!</h3>
+                                    <img src={lockIcon} alt={t("Locked content")} />
+                                    <h3>{t("More Consumables Await!")}</h3>
                                     <p>
                                         {!this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_2)} more games to unlock better consumables!`
+                                            t("unlock better consumables!", {count: this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_2)})
                                         )}
                                         {this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_2) &&
                                          !this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_3) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_3)} more games to unlock the final consumables tier!`
+                                            t("unlock the final consumables tier!", {count: this.context.getGamesUntilFeature(LockedFeatures.CONSUMABLES_BATCH_3)})
                                         )}
                                     </p>
                                 </div>
@@ -363,8 +364,8 @@ class ShopContent extends Component<ShopContentProps> {
                                 <div key={category} className="equipment-section">
                                     <h3 className="equipment-type-title">
                                         {useDetailedCategories
-                                            ? equipmentSlotLabelsPlural[category as unknown as EquipmentSlot]
-                                            : category}
+                                            ? t(equipmentSlotLabelsPlural[category as unknown as EquipmentSlot])
+                                            : t(category)}
                                     </h3>
                                     <div className="equipment-grid">
                                         {items.map((item: BaseEquipment, index: number) =>
@@ -382,15 +383,15 @@ class ShopContent extends Component<ShopContentProps> {
                             {(!this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) ||
                               !this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_3)) && (
                                 <div className="locked-spells-notice">
-                                    <img src={lockIcon} alt="Locked content" />
-                                    <h3>More Equipment Awaits!</h3>
+                                    <img src={lockIcon} alt={t("Locked content")} />
+                                    <h3>{t("More Equipment Awaits!")}</h3>
                                     <p>
                                         {!this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.EQUIPMENT_BATCH_2)} more games to unlock better equipment!`
+                                            t("unlock better equipment!", {count: this.context.getGamesUntilFeature(LockedFeatures.EQUIPMENT_BATCH_2)})
                                         )}
                                         {this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_2) &&
                                          !this.context.canAccessFeature(LockedFeatures.EQUIPMENT_BATCH_3) && (
-                                            `Play ${this.context.getGamesUntilFeature(LockedFeatures.EQUIPMENT_BATCH_3)} more games to unlock the final equipment tier!`
+                                            t("unlock the final equipment tier!", {count: this.context.getGamesUntilFeature(LockedFeatures.EQUIPMENT_BATCH_3)})
                                         )}
                                     </p>
                                 </div>
@@ -445,7 +446,7 @@ class ShopContent extends Component<ShopContentProps> {
                         const isDisabled = !this.context.canAccessFeature(feature);
                         const gamesLeft = isDisabled ? this.context.getGamesUntilFeature(feature) : 0;
                         const unlockHint = isDisabled
-                            ? `Play ${gamesLeft} more ${gamesLeft === 1 ? 'game' : 'games'} to unlock ${TAB_LABELS[index]}.`
+                            ? t("unlockShopTab", {count: gamesLeft, tab: t(TAB_LABELS[index])})
                             : undefined;
 
                         return (
@@ -463,13 +464,13 @@ class ShopContent extends Component<ShopContentProps> {
                                 }}
                                 key={index}
                                 aria-disabled={isDisabled}
-                                aria-label={unlockHint ?? TAB_LABELS[index]}
+                                aria-label={unlockHint ?? t(TAB_LABELS[index])}
                                 data-tooltip-id={isDisabled ? 'shop-unlock-details' : undefined}
                                 data-tooltip-content={unlockHint}
                                 className={`shop-tab-item ${index === this.state.curr_tab ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
                             >
-                                <img src={isDisabled ? lockIcon : icon} alt={`${ShopTab[index]} icon`} />
-                                <span className="shop-tab-label">{TAB_LABELS[index]}</span>
+                                <img src={isDisabled ? lockIcon : icon} alt="" />
+                                <span className="shop-tab-label">{t(TAB_LABELS[index])}</span>
                             </Link>
                         );
                     })}

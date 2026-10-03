@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import Welcome from './welcome/Welcome';
@@ -94,8 +95,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
       '[data-playmode="casual"]'
     ],
     props: {
-      header: 'Unlocking the Shop',
-      text: 'Play two <span class="highlight-text">Practice</span> or <span class="highlight-text">Casual</span> games to unlock the <span class="highlight-text">Shop</span>!',
+      header: "Unlocking the Shop",
+      text: "Play two <span class=\"highlight-text\">Practice</span> or <span class=\"highlight-text\">Casual</span> games to unlock the <span class=\"highlight-text\">Shop</span>!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_1]
     }
   },
@@ -107,8 +108,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
       '[data-playmode="casual"]'
     ],
     props: {
-      header: 'Unlocking the Shop',
-      text: 'Play one <span class="highlight-text">Practice</span> or <span class="highlight-text">Casual</span> game to earn <span class="highlight-text">Gold</span>, <span class="highlight-text">Potions</span> and unlock the <span class="highlight-text">Shop</span>!',
+      header: "Unlocking the Shop",
+      text: "Play one <span class=\"highlight-text\">Practice</span> or <span class=\"highlight-text\">Casual</span> game to earn <span class=\"highlight-text\">Gold</span>, <span class=\"highlight-text\">Potions</span> and unlock the <span class=\"highlight-text\">Shop</span>!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_1]
     }
   },
@@ -116,8 +117,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'The shop',
-      description: 'You can now buy <span class="highlight-text">Consumables</span> for your characters in the <span class="highlight-text">Shop</span>! Here\'s some gold and potions to get you started.',
+      name: "The shop",
+      description: "You can now buy <span class=\"highlight-text\">Consumables</span> for your characters in the <span class=\"highlight-text\">Shop</span>! Here's some gold and potions to get you started.",
       rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_1],
       route: '/shop'
     }
@@ -127,8 +128,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 3,
     highlightSelectors: ['[data-shop-item="consumable-0"]'],
     props: {
-      header: 'Your first purchase',
-      text: 'Click on the <span class="highlight-text">Potion</span> to buy one!',
+      header: "Your first purchase",
+      text: "Click on the <span class=\"highlight-text\">Potion</span> to buy one!",
     }
   },
   [Popup.GoTeamPage]: {
@@ -136,7 +137,7 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 4,
     highlightSelectors: ['[data-team-page]'],
     props: {
-      text: 'Go to the <span class="highlight-text">Team Page</span> to check your inventory and equip something you bought!',
+      text: "Go to the <span class=\"highlight-text\">Team Page</span> to check your inventory and equip something you bought!",
     }
   },
   [Popup.EquipConsumable]: {
@@ -144,15 +145,15 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 5,
     highlightSelectors: ['[data-item-icon="consumables-0"]'],
     props: {
-      text: 'Click on a <span class="highlight-text">Potion</span> to equip it on the current character so they can use it in combat!',
+      text: "Click on a <span class=\"highlight-text\">Potion</span> to equip it on the current character so they can use it in combat!",
     }
   },
   [Popup.UnlockedSpells]: {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'The Spells Shop',
-      description: 'You can now buy <span class="highlight-text">Spells</span> for your mages from the shop! Here is some gold, and some <span class="highlight-text">Ethers</span> to replenish <span class="highlight-text">MP</span> after casting spells.',
+      name: "The Spells Shop",
+      description: "You can now buy <span class=\"highlight-text\">Spells</span> for your mages from the shop! Here is some gold, and some <span class=\"highlight-text\">Ethers</span> to replenish <span class=\"highlight-text\">MP</span> after casting spells.",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_1],
       route: `/shop/spells`
     }
@@ -161,8 +162,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'The Equipment Shop',
-      description: 'You can now buy <span class="highlight-text">Equipment</span> for your characters from the shop! Here is some gold, and a <span class="highlight-text">Golden Ring</span> to start your collection!',
+      name: "The Equipment Shop",
+      description: "You can now buy <span class=\"highlight-text\">Equipment</span> for your characters from the shop! Here is some gold, and a <span class=\"highlight-text\">Golden Ring</span> to start your collection!",
       rewards: UNLOCK_REWARDS[LockedFeatures.EQUIPMENT_BATCH_1],
       route: `/shop/equipments`
     }
@@ -171,8 +172,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'Ranked Mode',
-      description: 'You can now compete against other players in <span class="highlight-text">Ranked Mode</span> for the top spot on the leaderboard! Here is some more gold, and two <span class="highlight-text">Clovers</span> to help you a bit!',
+      name: "Ranked Mode",
+      description: "You can now compete against other players in <span class=\"highlight-text\">Ranked Mode</span> for the top spot on the leaderboard! Here is some more gold, and two <span class=\"highlight-text\">Clovers</span> to help you a bit!",
       rewards: UNLOCK_REWARDS[LockedFeatures.RANKED_MODE],
       route: '/rank'
     }
@@ -181,8 +182,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'More Consumables',
-      description: 'New <span class="highlight-text">Consumables</span> are available! Here is a sample for you!',
+      name: "More Consumables",
+      description: "New <span class=\"highlight-text\">Consumables</span> are available! Here is a sample for you!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_2],
       route: `/shop`
     }
@@ -191,8 +192,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'More Spells',
-      description: 'New <span class="highlight-text">Spells</span> are available in the shop!',
+      name: "More Spells",
+      description: "New <span class=\"highlight-text\">Spells</span> are available in the shop!",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_2],
       route: `/shop/spells`
     }
@@ -201,8 +202,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'More Equipment',
-      description: 'New <span class="highlight-text">Equipment</span> is available in the shop!',
+      name: "More Equipment",
+      description: "New <span class=\"highlight-text\">Equipment</span> is available in the shop!",
       rewards: UNLOCK_REWARDS[LockedFeatures.EQUIPMENT_BATCH_2],
       route: `/shop/equipments`
     }
@@ -211,8 +212,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'Daily Rewards',
-      description: 'From now on, you can get a daily rewards, every 6, 12 and 24 hours! Play <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> games to get keys to open the chests!',
+      name: "Daily Rewards",
+      description: "From now on, you can get a daily rewards, every 6, 12 and 24 hours! Play <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> games to get keys to open the chests!",
       rewards: UNLOCK_REWARDS[LockedFeatures.DAILY_LOOT],
     }
   },
@@ -220,8 +221,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'All Equipment',
-      description: 'All <span class="highlight-text">Equipment</span> pieces are now available in the shop!',
+      name: "All Equipment",
+      description: "All <span class=\"highlight-text\">Equipment</span> pieces are now available in the shop!",
       rewards: UNLOCK_REWARDS[LockedFeatures.EQUIPMENT_BATCH_3],
       route: `/shop/equipments`
     }
@@ -230,8 +231,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'All Consumables',
-      description: 'All <span class="highlight-text">Consumables</span> are now available in the shop!',
+      name: "All Consumables",
+      description: "All <span class=\"highlight-text\">Consumables</span> are now available in the shop!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_3],
       route: `/shop`
     }
@@ -240,8 +241,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'All Spells',
-      description: 'All <span class="highlight-text">Spells</span> are now available in the shop!',
+      name: "All Spells",
+      description: "All <span class=\"highlight-text\">Spells</span> are now available in the shop!",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_3],
       route: `/shop/spells`
     }
@@ -250,8 +251,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: 'Characters',
-      description: 'You can now increase your team size by purchasing additional <span class="highlight-text">Characters</span> in the shop!',
+      name: "Characters",
+      description: "You can now increase your team size by purchasing additional <span class=\"highlight-text\">Characters</span> in the shop!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CHARACTER_PURCHASES],
       route: `/shop/characters`
     }
@@ -261,7 +262,7 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 15,
     highlightSelectors: ['[data-character-canequip]'],
     props: {
-      text: 'One of your <span class="highlight-text">Characters</span> can equip a new piece of equipment! Click on the character to switch to it!',
+      text: "One of your <span class=\"highlight-text\">Characters</span> can equip a new piece of equipment! Click on the character to switch to it!",
     }
   },
   [Popup.SwitchCharacterForSpell]: {
@@ -269,7 +270,7 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 16,
     highlightSelectors: ['[data-character-canlearnspell]'],
     props: {
-      text: 'One of your <span class="highlight-text">Characters</span> can learn a new spell! Click on the character to switch to it!',
+      text: "One of your <span class=\"highlight-text\">Characters</span> can learn a new spell! Click on the character to switch to it!",
     }
   },
   [Popup.EquipSpell]: {
@@ -277,7 +278,7 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 17,
     highlightSelectors: ['[data-item-learnable]'],
     props: {
-      text: 'Click on a <span class="highlight-text">Spell</span> to teach it to the current character; they will then be able to use it in combat! But be careful, teaching a spell will take a spell slot and cannot be undone!',
+      text: "Click on a <span class=\"highlight-text\">Spell</span> to teach it to the current character; they will then be able to use it in combat! But be careful, teaching a spell will take a spell slot and cannot be undone!",
     }
   },
   [Popup.EquipEquipment]: {
@@ -285,15 +286,15 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 18,
     highlightSelectors: ['[data-item-equipable]'],
     props: {
-      text: 'Click on a <span class="highlight-text">Equipment</span> to equip it on the current character to boost their stats as long as it is equipped!',
+      text: "Click on a <span class=\"highlight-text\">Equipment</span> to equip it on the current character to boost their stats as long as it is equipped!",
     }
   },
   [Popup.PlayToUnlockSpells]: {
     component: PlayOneGameNotification,
     priority: 19,
     props: {
-      header: 'Unlocking Spells',
-      text: 'Play one <span class="highlight-text">Practice</span> or <span class="highlight-text">Casual</span> game to unlock <span class="highlight-text">Spells</span> in the shop and earn these rewards!',
+      header: "Unlocking Spells",
+      text: "Play one <span class=\"highlight-text\">Practice</span> or <span class=\"highlight-text\">Casual</span> game to unlock <span class=\"highlight-text\">Spells</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_1]
     },
     highlightSelectors: [
@@ -305,8 +306,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 20,
     props: {
-      header: 'Unlocking Equipment',
-      text: 'Play one <span class="highlight-text">Practice</span> or <span class="highlight-text">Casual</span> game to unlock <span class="highlight-text">Equipment</span> in the shop and earn these rewards!',
+      header: "Unlocking Equipment",
+      text: "Play one <span class=\"highlight-text\">Practice</span> or <span class=\"highlight-text\">Casual</span> game to unlock <span class=\"highlight-text\">Equipment</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.EQUIPMENT_BATCH_1]
     },
     highlightSelectors: [
@@ -318,8 +319,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 21,
     props: {
-      header: 'Unlocking Ranked Mode',
-      text: 'Play one <span class="highlight-text">Practice</span> or <span class="highlight-text">Casual</span> game to unlock <span class="highlight-text">Ranked Mode</span> and earn these rewards!',
+      header: "Unlocking Ranked Mode",
+      text: "Play one <span class=\"highlight-text\">Practice</span> or <span class=\"highlight-text\">Casual</span> game to unlock <span class=\"highlight-text\">Ranked Mode</span> and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.RANKED_MODE]
     },
     highlightSelectors: [
@@ -331,8 +332,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 22,
     props: {
-      header: 'Unlocking more Consumables',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">more Consumables</span> in the shop and earn these rewards!',
+      header: "Unlocking more Consumables",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">more Consumables</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_2]
     },
     highlightSelectors: [
@@ -344,8 +345,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 23,
     props: {
-      header: 'Unlocking more Spells',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">more Spells</span> in the shop and earn these rewards!',
+      header: "Unlocking more Spells",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">more Spells</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_2]
     },
     highlightSelectors: [
@@ -357,8 +358,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 24,
     props: {
-      header: 'Unlocking more Equipment',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">more Equipment</span> in the shop and earn these rewards!',
+      header: "Unlocking more Equipment",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">more Equipment</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.EQUIPMENT_BATCH_2]
     },
     highlightSelectors: [
@@ -370,8 +371,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 25,
     props: {
-      header: 'Unlocking Daily Rewards',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">Daily Rewards</span> and earn these rewards!',
+      header: "Unlocking Daily Rewards",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">Daily Rewards</span> and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.DAILY_LOOT]
     },
     highlightSelectors: [
@@ -383,8 +384,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 26,
     props: {
-      header: 'Unlocking Characters',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">Characters</span> in the shop and earn these rewards!',
+      header: "Unlocking Characters",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">Characters</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CHARACTER_PURCHASES]
     },
     highlightSelectors: [
@@ -396,8 +397,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 27,
     props: {
-      header: 'Unlocking all Consumables',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">all Consumables</span> in the shop and earn these rewards!',
+      header: "Unlocking all Consumables",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">all Consumables</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.CONSUMABLES_BATCH_3]
     },
     highlightSelectors: [
@@ -409,8 +410,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 28,
     props: {
-      header: 'Unlocking all Spells',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">all Spells</span> in the shop and earn these rewards!',
+      header: "Unlocking all Spells",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">all Spells</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_3]
     },
     highlightSelectors: [
@@ -422,8 +423,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: PlayOneGameNotification,
     priority: 29,
     props: {
-      header: 'Unlocking all Equipment',
-      text: 'Play one <span class="highlight-text">Casual</span> or <span class="highlight-text">Ranked</span> game to unlock <span class="highlight-text">all Equipment</span> in the shop and earn these rewards!',
+      header: "Unlocking all Equipment",
+      text: "Play one <span class=\"highlight-text\">Casual</span> or <span class=\"highlight-text\">Ranked</span> game to unlock <span class=\"highlight-text\">all Equipment</span> in the shop and earn these rewards!",
       rewards: UNLOCK_REWARDS[LockedFeatures.EQUIPMENT_BATCH_3]
     },
     highlightSelectors: [
@@ -436,8 +437,8 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 31,
     highlightSelectors: ['[data-sp-plus="true"]'],
     props: {
-      header: 'SP Available',
-      text: 'You have <span class="highlight-text">SP</span> to spend! Click on the <span class="highlight-text">+</span> button next to a stat to increase it and make your character stronger!',
+      header: "SP Available",
+      text: "You have <span class=\"highlight-text\">SP</span> to spend! Click on the <span class=\"highlight-text\">+</span> button next to a stat to increase it and make your character stronger!",
     }
   },
   [Popup.SwitchCharacterForSP]: {
@@ -445,15 +446,15 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 30,
     highlightSelectors: ['[data-character-canspendsp]'],
     props: {
-      text: 'One of your <span class="highlight-text">Characters</span> has SP to spend! Click on the character to switch to it!',
+      text: "One of your <span class=\"highlight-text\">Characters</span> has SP to spend! Click on the character to switch to it!",
     }
   },
   [Popup.FeatureReveal]: {
     component: FeatureReveal,
     priority: 0, // Higher than Guest (-1) but lower than others
     props: {
-      title: 'New spell: Revive!',
-      description: 'The Revive spell is now available in the shop! Use it to revive a character in combat!',
+      title: "New spell: Revive!",
+      description: "The Revive spell is now available in the shop! Use it to revive a character in combat!",
       contentCategory: InventoryType.SPELLS,
       frame: 33,
       route: '/shop/spells/12',
@@ -631,9 +632,12 @@ export class PopupManager extends Component<Props, State> {
 
     const config = POPUP_CONFIGS[activePopup];
     const PopupComponent = config.component;
+    const localizedProps = Object.fromEntries(Object.entries(config.props || {}).map(([key, value]) => [
+      key, typeof value === 'string' && ['name', 'description', 'header', 'text', 'title'].includes(key) ? t(value) : value,
+    ]));
     return <PopupComponent
       onHide={this.handlePopupClosed}
-      {...config.props}
+      {...localizedProps}
     />;
   }
 }

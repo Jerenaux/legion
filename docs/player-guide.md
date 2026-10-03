@@ -43,3 +43,8 @@ Run the standard lint, TypeScript checks, and tests too. Guide-only changes (cop
 ## Local web previews
 
 Run `node tools/guide/preview.cjs` from `client` to serve the fixture-backed client at `http://127.0.0.1:8084`. This uses development mode with Sentry disabled and blocks external requests. Open `/team?games=0`, `/team?games=11`, or `/team?games=12` to inspect recruitment before and after its unlock; add `&roster=6` for a full team. Query values are only read by the guide fixture provider, never the shipped client.
+
+Translated guide prose lives in `client/locales/<code>/messages.json`. Run
+`bun run guide:screenshots --locale=<code>` to capture the same cropped images
+with translated UI into that locale’s `assets/guide/` directory. The game selects
+these images automatically; see [localization.md](localization.md).

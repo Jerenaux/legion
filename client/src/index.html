@@ -19,9 +19,10 @@
     <div id="root"></div>
     <!-- Works even when the JavaScript bundle cannot load or fails during imports. -->
     <main id="startup-recovery" role="status">
-        <h1>Loading Legion</h1>
-        <p>If the arena doesn’t appear, reload the game. If it still won’t open, restart Legion or check for an update.</p>
-        <form method="get"><button type="submit">Reload game</button></form>
+        <h1 data-startup-message="Loading Legion">Loading Legion</h1>
+        <p data-startup-message="If the arena doesn’t appear, reload the game. If it still won’t open, restart Legion or check for an update.">If the arena doesn’t appear, reload the game. If it still won’t open, restart Legion or check for an update.</p>
+        <form method="get"><button type="submit" data-startup-message="Reload game">Reload game</button></form>
     </main>
+    <script src="localization-boot.js"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 import {route} from 'preact-router';
+import {t, userError, localizedAsset, language, fontFamily} from '../i18n/core';
 import { io } from 'socket.io-client';
 import { Player } from './Player';
 import { GameHUD, events } from '../components/HUD/GameHUD';
@@ -9,7 +10,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
+import { PlayMode, Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
@@ -143,13 +144,13 @@ export class Arena extends Phaser.Scene
     private isZoomedForSpellCast: boolean = false;
 
     private static readonly GEN_CONFIGS = {
-        [GEN.COMBAT_BEGINS]: { text1: 'combat', text2: 'begins' },
-        [GEN.MULTI_KILL]: { text1: 'multi', text2: 'kill' },
-        [GEN.MULTI_HIT]: { text1: 'multi', text2: 'hit' },
-        [GEN.ONE_SHOT]: { text1: 'one', text2: 'shot' },
-        [GEN.FROZEN]: { text1: 'frozen', text2: null },
-        [GEN.BURNING]: { text1: 'stuff-is', text2: 'on-fire' },
-        [GEN.TUTORIAL]: { text1: 'tutorial', text2: null },
+        [GEN.COMBAT_BEGINS]: { label: 'Combat begins!', asset: 'announcements/combat-begins.png', text1: 'combat', text2: 'begins' },
+        [GEN.MULTI_KILL]: { label: 'Multi-kill!', asset: 'announcements/multi-kill.png', text1: 'multi', text2: 'kill' },
+        [GEN.MULTI_HIT]: { label: 'Multi-hit!', asset: 'announcements/multi-hit.png', text1: 'multi', text2: 'hit' },
+        [GEN.ONE_SHOT]: { label: 'One shot!', asset: 'announcements/one-shot.png', text1: 'one', text2: 'shot' },
+        [GEN.FROZEN]: { label: 'Frozen!', asset: 'announcements/frozen.png', text1: 'frozen', text2: null },
+        [GEN.BURNING]: { label: 'Burning!', asset: 'announcements/burning.png', text1: 'stuff-is', text2: 'on-fire' },
+        [GEN.TUTORIAL]: { label: 'Tutorial!', asset: 'announcements/tutorial.png', text1: 'tutorial', text2: null },
     };
 
     private static readonly SOUND_NAMES = [
@@ -281,6 +282,11 @@ export class Arena extends Phaser.Scene
             this.load.image(name, require(`@assets/GEN/${name}.png`));
         });
 
+        for (const [id, config] of Object.entries(Arena.GEN_CONFIGS)) {
+            const localized = localizedAsset(config.asset, '');
+            if (localized) this.load.image(`announcement_${id}`, localized);
+        }
+
         this.load.on('progress', (value) => {
             events.emit('progressUpdate', Math.floor(value * 100));
         });
@@ -338,7 +344,7 @@ export class Arena extends Phaser.Scene
         this.socket.on('disconnect', (reason) => {
             if (shouldAbandonGame(reason)) {
                 console.error(`Server disconnect during game: ${reason}`);
-                silentErrorToast('Disconnected from server');
+                silentErrorToast(t("Disconnected from server"));
                 events.emit('serverDisconnect');
                 this.destroy();
             } else if (!this.disposed) {
@@ -356,7 +362,7 @@ export class Arena extends Phaser.Scene
 
         this.socket.on('error', (error) => {
             console.error('Error:', error);
-            errorToast(`An error occurred: ${error}`);
+            errorToast(userError(error));
         });
 
     }
@@ -426,7 +432,7 @@ export class Arena extends Phaser.Scene
         this.unlockInput();
         this.selectedPlayer?.cancelItem();
         this.selectTurnee();
-        silentErrorToast('That action is no longer valid. Choose another action.', 4000);
+        silentErrorToast(t("That action is no longer valid. Choose another action."), 4000);
     }
 
     endTutorial() {
@@ -1508,7 +1514,7 @@ export class Arena extends Phaser.Scene
         const {x, y} = this.hexGridToPixelCoords(character.x, character.y);
 
         const player = new Player(
-            this, this, team, character.name, character.x, character.y, x, y,
+            this, this, team, this.gameSettings?.mode === PlayMode.TOWER && !isPlayer ? t(character.name) : character.name, character.x, character.y, x, y,
             team.getMembers().length + 1, character.portrait, isPlayer, character.class,
             character.hp, character.maxHP, character.mp, character.maxMP,
             character.level, character.xp,
@@ -1690,7 +1696,7 @@ export class Arena extends Phaser.Scene
         this.tutorialManager = new TutorialManager(data.player.player.engagementStats);
 
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
-        this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.opponent.player));
+        this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.general.mode === PlayMode.TOWER ? {...data.opponent.player, playerName: t(data.opponent.player.playerName)} : data.opponent.player));
 
         // Set up holes in the grid
         if (data.holes && this.hexGridManager) {
@@ -1797,7 +1803,7 @@ export class Arena extends Phaser.Scene
             },
             onComplete: () => {
                 // Once band animation is complete, animate 'START' text
-                const startText = this.add.text(0, bandY + (bandHeight - 20) / 2, 'FIGHT!', { fontSize: 40 * loadGameSettings().textSize / 100, color: '#FFFFFF', fontFamily: 'Kim' }).setAlpha(0).setDepth(11);
+                const startText = this.add.text(0, bandY + (bandHeight - 20) / 2, t("FIGHT!"), { fontSize: 40 * loadGameSettings().textSize / 100, color: '#FFFFFF', fontFamily: fontFamily() }).setAlpha(0).setDepth(11);
                 startText.x = -startText.width; // Position text off-screen to the left
 
                 // Slide in animation for 'START' text
@@ -1888,8 +1894,25 @@ export class Arena extends Phaser.Scene
                 ease: 'Power2',
             });
 
-            // Setup GEN Texts
-            const targets = [
+            // Whole-phrase artwork lets translators change word order and line breaks.
+            const localizedKey = `announcement_${gen}`;
+            const localized = this.textures.exists(localizedKey);
+            const targets: (Phaser.GameObjects.Image | Phaser.GameObjects.Text)[] = [];
+            if (localized) {
+                const title = this.add.image(-350, yPosition, localizedKey)
+                    .setScrollFactor(0).setDepth(10);
+                title.setScale(Math.min(640 / title.width, 180 / title.height, (this.cameras.main.width - 32) / title.width));
+                targets.push(title);
+            } else if (language !== 'en') {
+                const title = this.add.text(-350, yPosition, t(config.label), {
+                    fontFamily: fontFamily(), fontSize: 48, fontStyle: 'bold', color: '#d9f5ff',
+                    stroke: '#17384e', strokeThickness: 5, align: 'center',
+                    wordWrap: {width: Math.min(640, this.cameras.main.width - 32), useAdvancedWrap: true},
+                }).setOrigin(0.5).setScrollFactor(0).setDepth(10);
+                title.setScale(Math.min(1, 180 / title.height));
+                targets.push(title);
+            } else {
+            targets.push(
                 this.add.image(-350, yPosition, config.text1)
                     .setScrollFactor(0) // Make it stick to camera
                     .setDepth(10)
@@ -1898,7 +1921,7 @@ export class Arena extends Phaser.Scene
                     .setScrollFactor(0) // Make it stick to camera
                     .setDepth(10)
                     .setScale(scale)
-            ];
+            );
 
             if (config.text2) {
                 targets.push(
@@ -1907,6 +1930,8 @@ export class Arena extends Phaser.Scene
                         .setDepth(10)
                         .setScale(scale)
                 );
+            }
+
             }
 
             // Animate GEN Texts into View
@@ -2035,7 +2060,7 @@ export class Arena extends Phaser.Scene
     }
 
     private handleReconnectFailure = () => {
-        silentErrorToast('Could not reconnect to server');
+        silentErrorToast(t("Could not reconnect to server"));
         events.emit('serverDisconnect');
         this.destroy();
     };

@@ -1,0 +1,8 @@
+{
+  "name": "繁體中文",
+  "direction": "ltr",
+  "fontFamily": "Legion TC",
+  "steamLanguages": [
+    "tchinese"
+  ]
+}

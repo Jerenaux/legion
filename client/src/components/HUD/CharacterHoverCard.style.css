@@ -9,7 +9,7 @@
   background: oklch(24% 0.025 255);
   box-shadow: 0 8px 24px oklch(12% 0.01 255 / 0.5), inset 0 1px oklch(92% 0.03 85 / 0.12);
   color: oklch(95% 0.01 85);
-  font-family: 'Kim', sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   pointer-events: none;
   visibility: hidden;
 }

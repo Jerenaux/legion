@@ -42,7 +42,7 @@
   color: #00ffff;
   font-size: 1rem;
   margin: 0;
-  font-family: Kim, sans-serif;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);

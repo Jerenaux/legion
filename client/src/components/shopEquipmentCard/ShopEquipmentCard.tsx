@@ -1,3 +1,4 @@
+import {t, formatNumber} from '../../i18n/core';
 
 import { h } from 'preact';
 // ShopEquipmentCard.tsx
@@ -39,13 +40,13 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
   render() {
     const getRarityValue = (effort) => {
       if(effort < 10) {
-        return {val: "Common", clr: "cyan"};
+        return {val: t("Common"), clr: "cyan"};
       } else if(effort < 25) {
-        return {val: "Rare", clr: "tomato"};
+        return {val: t("Rare"), clr: "tomato"};
       } else if(effort < 50) {
-        return {val: "Epic", clr: "red"};
+        return {val: t("Epic"), clr: "red"};
       } else {
-        return {val: "Legendary", clr: "orange"};
+        return {val: t("Legendary"), clr: "orange"};
       }
     }
 
@@ -72,7 +73,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
     const coordinates = mapFrameToCoordinates(data.frame);
 
     const getEffectValue = (effect: Effect) => {
-      return effect.value > 0 && effect.stat !== 1 ? `+${effect.value}` : `+${effect.value}`;
+      return formatNumber(effect.value, {signDisplay: 'always'});
     }
 
     return (
@@ -82,15 +83,15 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
       >
         <div className="shop-card-title" style={titleStyle}>
-          <span className="shop-card-title-name">{data.name}</span>
+          <span className="shop-card-title-name">{t(data.name)}</span>
           <div className="equipment-card-info-container">
             {/* <div className="equipment-card-info-box">
               <span className="equipment-card-info-lv">Lvl</span>
               <span>{data.minLevel}</span>
             </div> */}
             <div className="equipment-card-info-box">
-              <img src={itemCountIcon} alt="count icon" />
-              <span>{this.props.getItemAmount(data.id, InventoryType.EQUIPMENTS)}</span>
+              <img src={itemCountIcon} alt={t("count icon")} />
+              <span>{formatNumber(this.props.getItemAmount(data.id, InventoryType.EQUIPMENTS))}</span>
             </div>
           </div>
         </div>
@@ -105,39 +106,39 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
                 <img
                   src={classes === Class.WARRIOR ? warriorIcon : mageIcon}
                   style={classes === Class.WARRIOR ? {transform: 'scaleX(1.5)'} : {}}
-                  alt={classes === Class.WARRIOR ? "warrior" : "mage"}
+                  alt={t(classes === Class.WARRIOR ? "Warrior" : "Mage")}
                 />
               </div>
             ))}
           </div>
           <div className="equipment-card-class-badge">
-            <img src={require(`@assets/inventory/${equipmentSlotFields[data.slot]}_icon.png`)} alt="" />
+            <img src={require(`@assets/inventory/${equipmentSlotFields[data.slot]}_icon.png`)} alt={""} />
           </div>
         </div>
-        <p data-tooltip-id={`equipment-desc-tooltip-${data.id}`} className="equipment-card-description">{data.description}</p>
+        <p data-tooltip-id={`equipment-desc-tooltip-${data.id}`} className="equipment-card-description">{t(data.description)}</p>
         <div className="consumable-card-effect-container">
           {data.effects.map((effect, index) => (
             <div key={index} className="consumable-card-effect">
-              <img src={StatIcons[effect.stat]} alt="" />
+              <img src={StatIcons[effect.stat]} alt={""} />
               <span>{getEffectValue(effect)}</span>
             </div>
           ))}
         </div>
         <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: 'Kim'}}>
+          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: "var(--locale-font, 'Kim'), system-ui, sans-serif"}}>
             {getRarityValue(data.effort).val}
           </span>
         </div>
         <div className="shop-card-price">
-          <img src={goldIcon} alt="gold" />
-          {data.price}
+          <img src={goldIcon} alt={t("gold")} />
+          {formatNumber(data.price)}
         </div>
 
         <ReactTooltip
           id={`equipment-desc-tooltip-${data.id}`}
           place="top-start"
           variant="light"
-          content={data.description}
+          content={t(data.description)}
           style={{maxWidth: '120px'}}
         />
       </button>

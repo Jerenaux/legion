@@ -21,7 +21,7 @@ const playerCode = inputMethods("Player.ts", ["cancelSkill", "cancelItem"]);
 for (const mode of ["development", "production"]) {
   for (const action of ["spell", "item"]) {
     test(`${mode}: invalid ${action} targets send nothing and leave a valid follow-up possible`, () => {
-      const arena = runInNewContext(code, {
+      const arena = runInNewContext(code, {t: (key: string) => key,
         isInSpellRange, serializeCoords, Target, TargetHighlight,
         process: {env: {NODE_ENV: mode}},
         // Reproduce the former development switch: validation must not depend on it.
@@ -92,7 +92,7 @@ for (const action of ["spell", "item"]) {
 
 test('server rejection restores controls for the same turn, but never resets a later turn', () => {
   const toast = mock();
-  const arena = runInNewContext(code, {silentErrorToast: toast});
+  const arena = runInNewContext(code, {t: (key: string) => key, silentErrorToast: toast});
   arena.turnee = {team: 1, num: 1, turnNumber: 4};
   arena.inputLocked = true;
   arena.selectedPlayer = {cancelItem: mock()};

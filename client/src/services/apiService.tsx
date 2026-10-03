@@ -1,3 +1,4 @@
+import {userError} from '../i18n/core';
 // apiService.js
 import { firebaseAuth } from './firebaseService';
 import { errorToast } from '../components/utils';
@@ -105,7 +106,7 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
                     captureException(failure, {tags: {operation: 'api', endpoint: endpoint.split(/[?#]/)[0]}});
                 }
                 if (!invisibleErrors) {
-                    errorToast(`${error.message}`);
+                    errorToast(userError(error));
                 }
                 throw error;
             }

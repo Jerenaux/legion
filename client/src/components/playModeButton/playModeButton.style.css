@@ -72,7 +72,7 @@
     font-weight: 700;
     color: #FFFFFF;
     text-transform: uppercase;
-    font-family: "Kim", sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     margin-bottom: 16px;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     letter-spacing: 2px;
@@ -225,7 +225,7 @@
 .buttonContainer.tower-mode .label {color: oklch(90% .075 80); line-height: 1.1; font-size: 1.35rem; margin: 7px 0 10px;}
 .buttonContainer.tower-mode .player {color: oklch(81% .085 65); font-size: .75rem; margin-bottom: 6px;}
 .buttonContainer.tower-mode .info-container {margin-top: 8px;}
-.tower-mode-tag {position: absolute; bottom: 10px; font: .65rem Arial, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: oklch(76% .035 75);}
+.tower-mode-tag {position: absolute; bottom: 10px; font: .65rem var(--locale-font, Arial), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: oklch(76% .035 75);}
 .info-value.scaling {color: oklch(86% .11 80);}
 .buttonContainer:focus-visible {outline: 3px solid oklch(90% .08 195); outline-offset: 5px;}
 @media (max-width: 760px) {.buttonContainer.tower-mode {margin-left: 0;} .buttonContainer.tower-mode::before {display: none;}}

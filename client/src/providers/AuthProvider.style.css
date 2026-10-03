@@ -42,7 +42,7 @@
 
 .session-status__eyebrow {
   color: var(--session-gold);
-  font-family: Kim, Arial, sans-serif;
+  font-family: var(--locale-font, 'Kim'), Arial, sans-serif;
   font-size: 0.875rem;
   letter-spacing: 0.18em;
   margin: 0 0 0.55rem;
@@ -50,7 +50,7 @@
 }
 
 .session-status h1 {
-  font-family: Kim, Arial, sans-serif;
+  font-family: var(--locale-font, 'Kim'), Arial, sans-serif;
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.1;
@@ -91,7 +91,7 @@
   box-shadow: 0 0 0 0.35rem oklch(59% 0.19 34 / 0.18);
   color: oklch(96% 0.01 85);
   display: flex;
-  font-family: Kim, Arial, sans-serif;
+  font-family: var(--locale-font, 'Kim'), Arial, sans-serif;
   font-size: 1.5rem;
   height: 2.65rem;
   justify-content: center;
@@ -106,7 +106,7 @@
   box-shadow: 0 0.3rem 0 var(--session-gold-active);
   color: var(--session-ink);
   cursor: pointer;
-  font-family: Kim, Arial, sans-serif;
+  font-family: var(--locale-font, 'Kim'), Arial, sans-serif;
   font-size: 1.125rem;
   font-weight: 700;
   margin-top: 1.6rem;

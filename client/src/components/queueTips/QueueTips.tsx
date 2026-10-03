@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 
 import { h } from 'preact';
 import { Component } from 'preact';
@@ -37,10 +38,10 @@ export class QueueTips extends Component<{}, QueueTipsState> {
         return (
             <div className="queue-tips">
                 <div className="queue-tips-container">
-                    <div style="font-family: Kim;">Tips</div>
+                    <div style="font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;">{t("Tips")}</div>
                     <div>
                         <span className="queue-tips-text">
-                            {this.state.tips[this.state.tipCount]}
+                            {this.state.tips[this.state.tipCount] && t(this.state.tips[this.state.tipCount])}
                         </span>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 import './telemetry';
+import {fontsReady} from './i18n';
 import { h } from 'preact';
 import { render } from 'preact';
 
@@ -10,7 +11,9 @@ import {applyTextSize, loadGameSettings} from './settings';
 import {ErrorBoundary} from '@sentry/react';
 import {CombatRecovery} from './components/CombatRecovery';
 
+async function start() {
 try {
+  await Promise.all([fontsReady, document.fonts.load('16px Kim')]);
   applyTextSize(loadGameSettings().textSize);
   render(<ErrorBoundary fallback={({error}) => <CombatRecovery error={error} />}><App /></ErrorBoundary>, document.getElementById('root'));
   // console.log('React index.tsx: App rendered successfully');
@@ -18,5 +21,8 @@ try {
   console.error('React index.tsx: Error rendering app:', error);
   render(<CombatRecovery error={error} />, document.getElementById('root'));
 }
+
+}
+void start();
 
 export default App;

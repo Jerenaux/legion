@@ -58,7 +58,7 @@
     position: absolute;
     top: clamp(4px, 0.8vh, 8px);
     right: clamp(8px, 1vw, 12px);
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: clamp(0.75rem, calc(1.5vh * var(--text-scale, 1)), 1rem);
     font-weight: 600;
     color: #ffa600;
@@ -144,7 +144,7 @@
 }
 
 .endgame_character_name {
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: clamp(0.75rem, calc(1.5vh * var(--text-scale, 1)), 1rem);
     font-weight: 600;
     color: #ffffff;
@@ -154,7 +154,7 @@
 }
 
 .endgame_character_class {
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: clamp(0.625rem, calc(2vh * var(--text-scale, 1)), 0.875rem);
     color: #71deff;
     text-transform: uppercase;
@@ -338,7 +338,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: clamp(3rem, calc(8vw * var(--text-scale, 1)), 4.5rem);
     color: #3c616c;
     text-shadow: 0 0 20px rgba(81, 253, 255, 0.2);
@@ -475,7 +475,7 @@
     left: clamp(8px, 1vw, 12px);
     background: linear-gradient(135deg, #ff4646, #ff0000);
     color: white;
-    font-family: 'Kim', sans-serif;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: clamp(0.625rem, calc(1.2vh * var(--text-scale, 1)), 0.875rem);
     font-weight: 600;
     padding: 2px clamp(4px, 0.5vw, 6px);

@@ -1,3 +1,4 @@
+import {t} from '../../i18n/core';
 import { h, Fragment } from 'preact';
 import { Class, ClassLabels } from '@legion/shared/enums';
 import './ClassCrest.style.css';
@@ -25,8 +26,8 @@ const symbols = {
 
 export default function ClassCrest({ characterClass }: { characterClass: Class }) {
   return (
-    <svg className="class-crest" data-class={characterClass} viewBox="0 0 32 36" role="img" aria-label={ClassLabels[characterClass]}>
-      <title>{ClassLabels[characterClass]}</title>
+    <svg className="class-crest" data-class={characterClass} viewBox="0 0 32 36" role="img" aria-label={t(ClassLabels[characterClass])}>
+      <title>{t(ClassLabels[characterClass])}</title>
       <path d="M7 2h18l5 5v20L16 34 2 27V7Z" className="class-crest__rim" />
       <path d="M8 5h16l3 3v17l-11 6L5 25V8Z" className="class-crest__field" />
       <path d="M5 14V8l3-3h16l3 3" className="class-crest__bevel" />

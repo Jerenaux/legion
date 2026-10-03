@@ -1,3 +1,4 @@
+import {t} from '../../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import goldChestImage from '@assets/shop/gold_chest.png';
@@ -50,14 +51,14 @@ export class PlayOneGameNotification extends Component<Props> {
         <button type="button"
           className="game-notification-close"
           onClick={onHide}
-          aria-label="Close notification"
+          aria-label={t("Close notification")}
         >
           ×
         </button>
         <div className="game-notification-content">
           <img
             src={goldChestImage}
-            alt="Gold chest"
+            alt={t("Gold chest")}
             className="game-notification-icon"
           />
           <div className="game-notification-text-container">

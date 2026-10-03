@@ -1,3 +1,5 @@
+import {t, i18n} from '../../i18n/core';
+import {Trans} from '../../i18n/Trans';
 import { Fragment } from 'preact';
 import { h } from 'preact';
 // Inventory.tsx
@@ -85,11 +87,11 @@ class Inventory extends Component<InventoryProps> {
 
     try {
       await this.context.buyInventorySlots(this.state.slotsQuantity);
-      successToast(`Successfully purchased ${this.state.slotsQuantity} inventory slot${this.state.slotsQuantity > 1 ? 's' : ''}!`);
+      successToast(t("inventoryPurchased", {count: this.state.slotsQuantity}));
       this.handleClosePurchaseDialog();
     } catch (error) {
       console.error('Error purchasing inventory slots:', error);
-      errorToast('Failed to purchase inventory slots. Please try again.');
+      errorToast(t("Failed to purchase inventory slots. Please try again."));
     } finally {
       this.setState({ isPurchasing: false });
     }
@@ -115,7 +117,7 @@ class Inventory extends Component<InventoryProps> {
 
       return (
         <div className="inventory-section">
-          <h3 className="section-title">{label}</h3>
+          <h3 className="section-title">{t(label)}</h3>
           <div className="section-items">
             {inventory.map((itemId: number, i: number) => {
               const item = getItem(itemId);
@@ -151,7 +153,7 @@ class Inventory extends Component<InventoryProps> {
       <div className="inventoryFullContainer">
         <div className="inventoryContainer">
           <div className="inventoryCategoryContainer">
-            <p className="inventoryLabel">INVENTORY</p>
+            <p className="inventoryLabel">{t("INVENTORY")}</p>
             <div className="inventoryCategories">
               {(() => {
                 console.log('Rendering inventory categories. Feature accessible:', this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1));
@@ -163,10 +165,7 @@ class Inventory extends Component<InventoryProps> {
               })() && (
                 <>
                   <Link href='/shop' className="categoryBtn" style={{ backgroundImage: `url(${shopIcon})` }}></Link>
-                  <div className="categoryCount">
-                    <span>{inventorySize(this.context.player.inventory)} </span>
-                    &nbsp;/&nbsp;{this.context.player.carrying_capacity}
-                  </div>
+                  <div className="categoryCount"><Trans i18n={i18n} i18nKey={"<0>{{value0}} </0> / {{value1}}"} components={[<span />]} values={{value0: inventorySize(this.context.player.inventory), value1: this.context.player.carrying_capacity}} /></div>
                   {this.state.isPurchasing ? (
                     <div className="info-bar-plus-loading">
                       <Spinner />
@@ -209,9 +208,9 @@ class Inventory extends Component<InventoryProps> {
                   this.context.player.inventory[type]?.length > 0
                 ) && (
                   <div className='empty-slots-container'>
-                    <p>Your inventory is empty{this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) ? ', take a look at the shop!' : '!'}</p>
+                    <p>{t(this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) ? "Your inventory is empty, take a look at the shop!" : "Your inventory is empty!")}</p>
                     {this.context.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) && (
-                      <Link href='/shop'>Go to shop <img src={shopIcon} alt="shop" /></Link>
+                      <Link href='/shop'><Trans i18n={i18n} i18nKey={"Go to shop <0/>"} components={[<img src={shopIcon} alt="" />]} /></Link>
                     )}
                   </div>
                 )}
@@ -248,11 +247,11 @@ class Inventory extends Component<InventoryProps> {
           }}
         >
           <div className="purchase-dialog-container">
-            <h3 className="purchase-dialog-heading">Buy Inventory Slots</h3>
+            <h3 className="purchase-dialog-heading">{t("Buy Inventory Slots")}</h3>
 
             <div className="purchase-dialog-content">
               <div className="quantity-selector">
-                <label htmlFor="slot-quantity">Number of slots:</label>
+                <label htmlFor="slot-quantity">{t("Number of slots:")}</label>
                 <input
                   id="slot-quantity"
                   type="number"
@@ -267,23 +266,23 @@ class Inventory extends Component<InventoryProps> {
 
               <div className="price-display">
                 <div className="price-breakdown">
-                  <span>Price per slot:</span>
+                  <span>{t("Price per slot:")}</span>
                   <span className="price-value">
-                    <img src={goldIcon} alt="gold" className="gold-icon" />
+                    <img src={goldIcon} alt={t("gold")} className="gold-icon" />
                     {INVENTORY_SLOT_PRICE}
                   </span>
                 </div>
                 <div className="price-total">
-                  <span>Total cost:</span>
+                  <span>{t("Total cost:")}</span>
                   <span className="price-value total">
-                    <img src={goldIcon} alt="gold" className="gold-icon" />
+                    <img src={goldIcon} alt={t("gold")} className="gold-icon" />
                     {this.state.slotsQuantity * INVENTORY_SLOT_PRICE}
                   </span>
                 </div>
                 <div className="remaining-gold">
-                  <span>Remaining gold:</span>
+                  <span>{t("Remaining gold:")}</span>
                   <span className={`price-value ${(this.context.player.gold - (this.state.slotsQuantity * INVENTORY_SLOT_PRICE)) < 0 ? 'insufficient' : ''}`}>
-                    <img src={goldIcon} alt="gold" className="gold-icon" />
+                    <img src={goldIcon} alt={t("gold")} className="gold-icon" />
                     {this.context.player.gold - (this.state.slotsQuantity * INVENTORY_SLOT_PRICE)}
                   </span>
                 </div>
@@ -294,25 +293,19 @@ class Inventory extends Component<InventoryProps> {
               {this.state.isPurchasing ? (
                 <div className="purchase-loading">
                   <Spinner />
-                  <span>Purchasing...</span>
+                  <span>{t("Purchasing...")}</span>
                 </div>
               ) : (
                 <>
                   <button type="button"
                     className="purchase-dialog-cancel"
                     onClick={this.handleClosePurchaseDialog}
-                  >
-                    <img src={cancelIcon} alt="cancel" />
-                    Cancel
-                  </button>
+                  ><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
                   <button type="button"
                     className="purchase-dialog-confirm"
                     onClick={this.handleConfirmPurchase}
                     disabled={this.context.player.gold < (this.state.slotsQuantity * INVENTORY_SLOT_PRICE)}
-                  >
-                    <img src={confirmIcon} alt="confirm" />
-                    Purchase
-                  </button>
+                  ><Trans i18n={i18n} i18nKey={"<0/>Purchase"} components={[<img src={confirmIcon} alt="" />]} /></button>
                 </>
               )}
             </div>
@@ -321,9 +314,9 @@ class Inventory extends Component<InventoryProps> {
 
         <Modal isOpen={this.state.openModal}  onRequestClose={this.handleCloseModal}>
           <div className="hint-modal-container">
-            <p className="hint-modal-heading">Hint Modal</p>
+            <p className="hint-modal-heading">{t("Hint Modal")}</p>
             <div className="hint-modal-button-container">
-              <button type="button" className="hint-modal-decline" onClick={this.handleCloseModal}>Close</button>
+              <button type="button" className="hint-modal-decline" onClick={this.handleCloseModal}>{t("Close")}</button>
             </div>
           </div>
         </Modal>

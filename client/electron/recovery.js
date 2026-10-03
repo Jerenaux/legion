@@ -1,6 +1,6 @@
 const {dialog} = require('electron');
 
-function installRendererRecovery(window) {
+function installRendererRecovery(window, translate = key => key) {
   let prompting = false;
   let restarting = false;
   const recover = async (reason) => {
@@ -8,10 +8,10 @@ function installRendererRecovery(window) {
     prompting = true;
     try {
       const {response} = await dialog.showMessageBox(window, {
-        type: 'error', title: 'Legion was interrupted',
-        message: 'The game stopped unexpectedly.',
-        detail: 'Reload to reconnect if your match is still running.',
-        buttons: ['Reload game', 'Close Legion'], defaultId: 0, cancelId: 1,
+        type: 'error', title: translate('Legion was interrupted'),
+        message: translate('The game stopped unexpectedly.'),
+        detail: translate('Reload to reconnect if your match is still running.'),
+        buttons: [translate('Reload game'), translate('Close Legion')], defaultId: 0, cancelId: 1,
       });
       if (window.isDestroyed()) return;
       if (response === 0) {
