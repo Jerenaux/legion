@@ -1,3 +1,5 @@
+import {telemetryConfig} from '../telemetryConfig';
+
 export const socketReconnectOptions = {
   reconnection: true,
   reconnectionAttempts: Infinity,
@@ -11,8 +13,8 @@ export const createRefreshingSocketAuth = (
   payload: Record<string, unknown> = {},
 ) => (callback: (auth: Record<string, unknown>) => void) => {
   void getToken()
-    .then(token => callback({...payload, token}))
-    .catch(() => callback({...payload, token: ""}));
+    .then(token => callback({...payload, token, storeBuild: telemetryConfig.sentryReplay}))
+    .catch(() => callback({...payload, token: "", storeBuild: telemetryConfig.sentryReplay}));
 };
 
 export const shouldAbandonGame = (reason: string) => reason === "io server disconnect";

@@ -268,7 +268,7 @@ export const getPlayerData = onRequest({
           throw new Error("playerData is null");
         }
 
-        await recordPlayerActivity(db, uid, playerData.lastActiveDate);
+        await recordPlayerActivity(db, uid, playerData.lastActiveDate, request.headers["x-store-build"] === "true");
 
         // Check if dailyloot exists, if not create it
         if (!playerData.dailyloot) {
