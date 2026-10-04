@@ -113,7 +113,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>{t("Use an item")}</dt><dd>{t("Click an equipped consumable. Self-use items such as Potion and Ether activate immediately; targeted items ask you to choose a target.")}</dd></div>
               <div><dt>{t("Pass")}</dt><dd><Trans i18n={i18n} i18nKey={"Click <0>Pass Turn</0> beside the hourglass timer or press <1>End</1> to give up this action. A deliberate pass recovers sooner than a timeout."} components={[<strong />, <kbd />]} /></dd></div>
             </dl>
-            <p><Trans i18n={i18n} i18nKey={"Clicks outside the targeting range are ignored. Choose another target, or press <0>Esc</0> to cancel targeting and move or pass instead."} components={[<kbd />]} /></p>
+            <p><kbd>{t("Esc")}</kbd> — {t("Abandon Game!")}</p>
             <figure>
               <img src={actions} width="800" height="100" loading="lazy" alt={t("The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass.")} />
               <figcaption>{t("Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.")}</figcaption>

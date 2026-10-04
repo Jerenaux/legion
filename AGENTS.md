@@ -24,6 +24,10 @@ Make the bump after syncing the latest `main`, so concurrent branches do not reu
 
 If explicitly requested, release tags must be `v<version>`, for example `v0.2.0`, and must exactly match `client/package.json`. Tags do not trigger desktop builds. Manual desktop releases publish the package version from `main` to every selected Itch channel.
 
+## App verification cleanup
+
+When opening the app to check your work, close the app instance you opened as soon as verification is finished, including after failed or interrupted checks. Do not close an app instance Jerome already had open.
+
 ## Static analysis
 
 Run `bun run lint` from the repository root for functional Biome diagnostics. The command deliberately skips the `style` and `complexity` rule groups and does not run the formatter. Do not replace it with `biome check`, which also checks formatting.
