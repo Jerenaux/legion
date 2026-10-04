@@ -18,18 +18,18 @@ export function dailyAnalyticsRange(startDate: unknown, endDate: unknown, now = 
   return {startDate: start, endDate: end};
 }
 
-export async function recordPlayerActivity(db: Firestore, uid: string, lastActiveDate: unknown, now = new Date()) {
+export async function recordPlayerActivity(db: Firestore, uid: string, lastActiveDate: unknown, storeBuild = false, now = new Date()) {
   const timestamp = now.toISOString().replace("T", " ").slice(0, 19);
   const dailyRef = db.collection("dailyActiveUsers").doc(timestamp.slice(0, 10));
-  // Always check DAU: a new account or a game-server update can have the same lastActiveDate.
+  // Always check eligible DAU: a new account or a game-server update can have the same lastActiveDate.
   // ponytail: retain the existing one-document/day array; shard if it approaches Firestore's 1 MiB limit.
   await Promise.all([
     lastActiveDate === timestamp ? Promise.resolve() : db.collection("players").doc(uid).update({lastActiveDate: timestamp}),
-    db.runTransaction(async transaction => {
+    storeBuild ? db.runTransaction(async transaction => {
       const snapshot = await transaction.get(dailyRef);
-      const users: string[] = snapshot.data()?.users ?? [];
-      if (!users.includes(uid)) transaction.set(dailyRef, {users: [...users, uid]}, {merge: true});
-    }),
+      const users: string[] = snapshot.data()?.storeUsers ?? [];
+      if (!users.includes(uid)) transaction.set(dailyRef, {storeUsers: [...users, uid]}, {merge: true});
+    }) : Promise.resolve(),
   ]);
 }
 
@@ -37,7 +37,7 @@ export async function getDailyAnalytics(db: Firestore, range: ReturnType<typeof 
   const {startDate, endDate} = range;
   const activity = await db.collection("dailyActiveUsers")
     .where(FieldPath.documentId(), ">=", startDate).where(FieldPath.documentId(), "<=", endDate).get();
-  const activeCounts = new Map(activity.docs.map(doc => [doc.id, (doc.data().users ?? []).length as number]));
+  const activeCounts = new Map(activity.docs.map(doc => [doc.id, (doc.data().storeUsers ?? []).length as number]));
   const DAU: {date: string; userCount: number}[] = [];
   const newPlayersPerDay: Record<string, number> = {};
   const matchesCreatedPerDay: Record<string, number> = {};
@@ -51,9 +51,9 @@ export async function getDailyAnalytics(db: Firestore, range: ReturnType<typeof 
     const nextDay = end.toISOString().slice(0, 10);
     const [players, created, completed] = await Promise.all([
       db.collection("players").where("joinDate", ">=", day).where("joinDate", "<", nextDay).count().get(),
-      db.collection("games").where("mode", "in", MATCH_MODES)
+      db.collection("games").where("storeBuild", "==", true).where("mode", "in", MATCH_MODES)
         .where("date", ">=", start).where("date", "<", end).count().get(),
-      db.collection("games").where("mode", "in", MATCH_MODES).where("status", "==", GameStatus.COMPLETED)
+      db.collection("games").where("storeBuild", "==", true).where("mode", "in", MATCH_MODES).where("status", "==", GameStatus.COMPLETED)
         .where("end", ">=", start).where("end", "<", end).count().get(),
     ]);
     DAU.push({date: day, userCount: activeCounts.get(day) ?? 0});

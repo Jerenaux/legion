@@ -286,6 +286,7 @@ async function createGame(
                     gameId,
                     // @ts-expect-error
                     players: [player1.uid, player2?.uid],
+                    storeBuild: [player1, player2].some(socket => socket?.handshake.auth.storeBuild === true),
                     mode,
                     league,
                 },
