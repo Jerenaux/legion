@@ -42,7 +42,9 @@ export function captureLogRocketFrame(canvas: HTMLCanvasElement) {
       left: `${canvas.offsetLeft}px`, top: `${canvas.offsetTop}px`,
       width: `${canvas.clientWidth}px`, height: `${canvas.clientHeight}px`,
     });
-    frame.image.src = frame.buffer.toDataURL('image/webp', 0.7);
+    const source = frame.buffer.toDataURL('image/webp', 0.7);
+    // Idle arenas must not produce duplicate DOM mutations/uploads.
+    if (frame.image.src !== source) frame.image.src = source;
   } catch { /* Recording failures must never interrupt combat. */ }
 }
 

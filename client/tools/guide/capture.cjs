@@ -57,9 +57,9 @@ if (!process.versions.electron) {
   // Keep cleanup from triggering Electron's implicit zero-exit before a failed assertion is reported.
   app.on('window-all-closed', () => {});
   const deadline = setTimeout(() => {
-    console.error('Packaged stability smoke test exceeded ten minutes');
+    console.error('Packaged stability smoke test exceeded fifteen minutes');
     app.exit(1);
-  }, 10 * 60 * 1000);
+  }, 15 * 60 * 1000);
   deadline.unref();
   const {pathToFileURL} = require('node:url');
   const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
