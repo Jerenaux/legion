@@ -28,11 +28,11 @@ function page(apiFetch: (...args: unknown[]) => Promise<unknown>) {
   return new Page();
 }
 
-function realApi(fetch: () => Promise<Response>) {
+function realApi(fetch: (url: string, options: RequestInit) => Promise<Response>, sentryReplay = false) {
   return runInNewContext(apiCode, {
     process: {env: {API_URL: 'https://fixture.invalid', NODE_ENV: 'production'}},
     Headers, Error, fetch, getFirebaseIdToken: async () => 'fixture-token',
-    captureException() {}, errorToast() {},
+    captureException() {}, errorToast() {}, telemetryConfig: {sentryReplay},
     // Exercise the real timeout/retry logic without waiting ten seconds per attempt.
     setTimeout: (callback: () => void) => setTimeout(callback, 0),
   });
@@ -91,5 +91,20 @@ for (const staleFailure of [false, true]) {
     rank.setState = () => {throw new Error('Updated an unmounted page');};
     requests[2].resolve(result);
     await expect(last).resolves.toBeUndefined();
+  });
+}
+
+
+for (const storeBuild of [false, true]) {
+  test(`API sends store-build=${storeBuild} through an authentication refresh`, async () => {
+    let attempts = 0;
+    const api = realApi(async (_url, options) => {
+      const headers = new Headers(options.headers);
+      expect(headers.get('X-Store-Build')).toBe(String(storeBuild));
+      expect(headers.get('Authorization')).toBe('Bearer fixture-token');
+      return ++attempts === 1 ? new Response('', {status: 401}) : Response.json(result);
+    }, storeBuild);
+    await expect(api('getLeaderboard', {headers: {'X-Store-Build': String(!storeBuild)}})).resolves.toEqual(result);
+    expect(attempts).toBe(2);
   });
 }
