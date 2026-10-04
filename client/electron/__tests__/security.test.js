@@ -2,12 +2,12 @@ const path = require("node:path");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("../protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("../security");
 
-test("permits only bundled scripts and local workers for Sentry replay", () => {
+test("permits bundled scripts, the LogRocket recorder and local replay workers", () => {
   const directives = Object.fromEntries(PACKAGED_CSP.split(';').map(value => {
     const [name, ...sources] = value.trim().split(/\s+/);
     return [name, sources];
   }));
-  expect(directives['script-src']).toEqual(["'self'"]);
+  expect(directives['script-src']).toEqual(["'self'", "https://cdn.logr-in.com"]);
   expect(directives['worker-src']).toEqual(["'self'", 'blob:']);
   expect(directives['frame-src']).toEqual(["'none'"]);
 });

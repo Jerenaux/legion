@@ -12,3 +12,25 @@ export const telemetryConfig = {
     && window.location.protocol === 'app:'
     && window.location.host === 'legion',
 } as const;
+
+function sanitizeURL(value: string): string {
+  try {
+    const url = new URL(value, window.location.href);
+    url.username = url.password = url.search = url.hash = '';
+    return url.toString();
+  } catch { return '[Filtered]'; }
+}
+
+export const logRocketOptions: NonNullable<Parameters<typeof import('logrocket').init>[1]> = {
+  release: process.env.SENTRY_RELEASE,
+  shouldCaptureIP: false,
+  dom: {textSanitizer: false, inputSanitizer: false, imageSanitizer: false},
+  // Sentry owns scrubbed errors; never send a second, unsanitized console/exception copy.
+  console: {isEnabled: false},
+  shouldDetectExceptions: false,
+  browser: {urlSanitizer: sanitizeURL},
+  network: {
+    requestSanitizer: request => ({...request, url: sanitizeURL(request.url), headers: {}, body: undefined, referrer: undefined}),
+    responseSanitizer: response => ({...response, url: response.url ? sanitizeURL(response.url) : undefined, headers: {}, body: undefined}),
+  },
+};

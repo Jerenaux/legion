@@ -1,3 +1,4 @@
+import {logRocket, captureLogRocketFrame, clearLogRocketFrame} from './logrocketSetup';
 import {t} from './i18n/core';
 import * as Sentry from '@sentry/react';
 import {init as initElectron, eventLoopBlockIntegration} from '@sentry/electron/renderer';
@@ -62,6 +63,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export function captureCombatFrame(canvas: HTMLCanvasElement) {
+  captureLogRocketFrame(canvas);
   if (replayCanvas && Sentry.getReplay()?.getReplayId()) {
     // Capture before WebGL clears the frame; the SDK throttles snapshots to 2 fps.
     void replayCanvas.snapshot(canvas, {skipRequestAnimationFrame: true}).catch(() => {});
@@ -85,4 +87,15 @@ export async function reportProblem() {
   form.open();
 }
 
-export {captureException, setUser} from '@sentry/react';
+export {captureException} from '@sentry/react';
+export {clearLogRocketFrame};
+
+export function setUser(user: Parameters<typeof Sentry.setUser>[0]) {
+  Sentry.setUser(user);
+  try {
+    if (user?.id) logRocket?.identify(String(user.id));
+    else logRocket?.startNewSession();
+  } catch { /* Optional recording must not interrupt authentication. */ }
+}
+
+try { logRocket?.getSessionURL(url => Sentry.setContext('logrocket', {sessionURL: url})); } catch { /* Sentry remains available. */ }
