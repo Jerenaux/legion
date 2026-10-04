@@ -11,9 +11,11 @@ module.exports = async ({logrocket, js}) => {
     assert(recorded.includes(value), `LogRocket must upload ${value} to the local sink`);
   }
   assert(!recorded.includes('private-replay-'), 'LogRocket must redact passwords and private network data');
+  const pixels = recorded.match(/data:image\/webp;base64,[A-Za-z0-9+/=]+/)?.[0];
+  assert(pixels, 'LogRocket uploads must include encoded combat pixels');
   assert(await js(`(async () => {
-    const image = document.querySelector('[data-logrocket-canvas]');
-    if (!image) return false;
+    const image = new Image();
+    image.src = ${JSON.stringify(pixels)};
     await image.decode();
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 32;
