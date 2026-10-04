@@ -57,9 +57,9 @@ if (!process.versions.electron) {
   // Keep cleanup from triggering Electron's implicit zero-exit before a failed assertion is reported.
   app.on('window-all-closed', () => {});
   const deadline = setTimeout(() => {
-    console.error('Packaged stability smoke test exceeded ten minutes');
+    console.error('Packaged stability smoke test exceeded fifteen minutes');
     app.exit(1);
-  }, 10 * 60 * 1000);
+  }, 15 * 60 * 1000);
   deadline.unref();
   const {pathToFileURL} = require('node:url');
   const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
@@ -176,8 +176,9 @@ if (!process.versions.electron) {
   Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
-    // Fail closed: all telemetry and game traffic must stay local.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`)}));
+    const logrocket = await require('./logrocket.cjs').installLogRocketSink(session.defaultSession);
+    // Fail closed: the recorder is served from memory, and its uploads are intercepted locally.
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`) && !logrocket.allows(details.url)}));
     session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
       responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP.replace("connect-src 'self'", `connect-src 'self' ${sinkURL} ${sinkURL.replace('http:', 'ws:')}`)],
         'Document-Policy': ['include-js-call-stacks-in-crash-reports']},
@@ -261,9 +262,11 @@ if (!process.versions.electron) {
             await preview.loadURL(url);
             assert.deepEqual(await preview.webContents.executeJavaScript('replayCheck.status()'),
               {replay: false, canvas: false, rate: 0}, `${name} must not install recorders or sample sessions`);
+            assert.equal(await preview.webContents.executeJavaScript('Boolean(window.LogRocket)'), false, `${name} must not load LogRocket`);
             await preview.webContents.executeJavaScript('replayCheck.flush()');
           } finally { preview.destroy(); }
         }
+        assert.equal(logrocket.uploads.length, 0, 'Excluded runtimes must not send LogRocket recordings');
         assert.equal(replayEvents.length, 0, 'Excluded runtimes must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
         console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
@@ -280,8 +283,10 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector("#scene canvas"))');
         await new Promise(resolve => setTimeout(resolve, 1200));
+        assert.equal(await js('Boolean(window.LogRocket)'), false, 'Local combat must not initialize LogRocket');
         assert.equal(await js('replayCheck.id()'), undefined, 'Local combat must not start a Replay session');
         assert.deepEqual(await js('replayCheck.status()'), {replay: false, canvas: false, rate: 0});
+        assert.equal(logrocket.uploads.length, 0, 'Excluded runtimes must not send LogRocket recordings');
         assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
@@ -813,6 +818,7 @@ if (!process.versions.electron) {
           return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
         })()`), 'Recorded combat pixels must not be blank');
         console.log(`Sentry Replay: visible DOM, inputs, media, and ${frames.length} canvas updates delivered; passwords and network data scrubbed`);
+        await require('./logrocket-check.cjs')({logrocket, js, waitFor});
         const cleanup = await js(`(() => {
           window.previousGame = combatCheck.arena.game;
           const player = combatCheck.arena.selectedPlayer;
@@ -825,6 +831,7 @@ if (!process.versions.electron) {
         await waitFor('!previousGame.loop.running');
         assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
         assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
+        assert.equal(await js('document.querySelectorAll("[data-logrocket-canvas]").length'), 0, 'Teardown must remove replay snapshots');
         assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
         for (const exit of ['normal', 'loading', 'animation', 'sleeping', 'context-loss', 'canvas', 'canvas-throws']) {
           if (exit.startsWith('canvas')) await js(`(() => {
