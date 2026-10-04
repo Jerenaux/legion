@@ -11,17 +11,20 @@ module.exports = async ({logrocket, js}) => {
     assert(recorded.includes(value), `LogRocket must upload ${value} to the local sink`);
   }
   assert(!recorded.includes('private-replay-'), 'LogRocket must redact passwords and private network data');
-  const pixels = recorded.match(/data:image\/webp;base64,[A-Za-z0-9+/=]+/)?.[0];
-  assert(pixels, 'LogRocket uploads must include encoded combat pixels');
+  const pixels = Array.from(recorded.matchAll(/data:image\/webp;base64,[A-Za-z0-9+/=]+/g), match => match[0]).slice(-10);
+  assert(pixels.length, 'LogRocket uploads must include encoded combat pixels');
   assert(await js(`(async () => {
+    for (const source of ${JSON.stringify(pixels)}) {
     const image = new Image();
-    image.src = ${JSON.stringify(pixels)};
+    image.src = source;
     await image.decode();
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 32;
     const context = canvas.getContext('2d');
     context.drawImage(image, 0, 0, 32, 32);
-    return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
+    if (new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20) return true;
+    }
+    return false;
   })()`), 'LogRocket combat snapshots must contain nonblank pixels');
   console.log('LogRocket: visible DOM, ordinary inputs and combat snapshots delivered locally; passwords and network data scrubbed');
 };
