@@ -44,6 +44,12 @@ Run the standard lint, TypeScript checks, and tests too. Guide-only changes (cop
 
 Run `node tools/guide/preview.cjs` from `client` to serve the fixture-backed client at `http://127.0.0.1:8084`. This uses development mode with Sentry disabled and blocks external requests. Open `/team?games=0`, `/team?games=11`, or `/team?games=12` to inspect recruitment before and after its unlock; add `&roster=6` for a full team. Query values are only read by the guide fixture provider, never the shipped client.
 
+For a roster-only refresh, run `bun run test:guide --roster-images --locale=<code>`.
+This refreshes the cropped loadout image and saves Team/Play previews at compact
+window sizes and 130% text size in the temporary fixture directory. It also
+checks character selection, keyboard activation, recruitment progress, capacity,
+and the unlocked recruitment link. Inspect the previews manually.
+
 Translated guide prose lives in `client/locales/<code>/messages.json`. Run
 `bun run guide:screenshots --locale=<code>` to capture the same cropped images
 with translated UI into that locale’s `assets/guide/` directory. The game selects

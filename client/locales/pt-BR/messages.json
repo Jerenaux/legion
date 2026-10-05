@@ -1030,6 +1030,7 @@
   "statusTurns_many": "{{status}}, {{count}} turnos",
   "towerBattles_many": "<0>{{count}}</0> batalhas",
   "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "No Steam, o idioma definido no Steam é usado por padrão. O idioma que você escolher no jogo tem prioridade.",
+  "Roster cards show each character’s class, name, level and unspent SP.": "Os cartões da equipe mostram a classe, o nome, o nível e os pontos de atributo não gastos de cada personagem.",
   "Unlocks after {{required}} completed matches · {{completed}}/{{required}}": "Desbloqueia após {{required}} partidas concluídas · {{completed}}/{{required}}",
   "Unlocks after {{required}} completed matches.": "Desbloqueia após {{required}} partidas concluídas.",
   "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "Explore uma expedição solo opcional com um grupo temporário e turnos sem limite de tempo. Mais magias também estão disponíveis na loja.",

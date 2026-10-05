@@ -1015,6 +1015,7 @@
   "towerBattles_one": "전투 <0>{{count}}</0>회",
   "towerBattles_other": "전투 <0>{{count}}</0>회",
   "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Steam에서는 Steam에 설정된 언어가 기본으로 사용됩니다. 게임 내에서 선택한 언어가 우선 적용됩니다.",
+  "Roster cards show each character’s class, name, level and unspent SP.": "편성 카드에는 각 캐릭터의 클래스, 이름, 레벨, 사용하지 않은 능력치 포인트가 표시됩니다.",
   "Unlocks after {{required}} completed matches · {{completed}}/{{required}}": "경기 {{required}}회 완료 시 해제 · {{completed}}/{{required}}",
   "Unlocks after {{required}} completed matches.": "경기 {{required}}회 완료 시 해제됩니다.",
   "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "임시 분대와 함께 턴 시간제한 없이 선택형 솔로 원정에 도전하세요. 상점에서 새로운 주문도 구매할 수 있습니다.",

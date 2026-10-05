@@ -1,4 +1,4 @@
-import {t, i18n} from '../../i18n/core';
+import {t, i18n, formatNumber} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 import { h, Fragment } from 'preact';
 // Roster.tsx
@@ -6,13 +6,12 @@ import './Roster.style.css';
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import { Component } from 'preact';
-import CharacterCard from '../HUD/CharacterCard';
-import { Link } from 'preact-router';
-import { LockedFeatures } from '@legion/shared/enums';
+import { Link, route, getCurrentUrl } from 'preact-router';
+import { Class, LockedFeatures } from '@legion/shared/enums';
 import { APICharacterData } from '@legion/shared/interfaces';
 import Skeleton from 'react-loading-skeleton';
 import {LOCKED_FEATURES, MAX_CHARACTERS} from '@legion/shared/config';
-import {getSpritePath} from '../utils';
+import {getSpritePath, classEnumToString} from '../utils';
 import lockIcon from '@assets/lock.png';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
@@ -22,6 +21,7 @@ class Roster extends Component {
 
   render() {
     const characters = this.context.characters as APICharacterData[];
+    const activeCharacter = getCurrentUrl().startsWith('/team') ? this.context.getActiveCharacter() : null;
     const remainingSlots = Math.max(0, MAX_CHARACTERS - characters.length);
     const canRecruit = this.context.canAccessFeature(LockedFeatures.CHARACTER_PURCHASES);
     const requiredGames = LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES];
@@ -48,13 +48,24 @@ class Roster extends Component {
         {characters.length > 0 ? (
           <div className="rosters">
             {characters.map(character => (
-              <CharacterCard
+              <button type="button" data-game-control
                 key={character.id}
-                member={character}
-                hideXP={true}
-                isClickable={true}
-                showSPBadge={true}
-              />
+                className="roster-character"
+                data-character-id={character.id}
+                data-class={Class[character.class]}
+                aria-pressed={activeCharacter?.id === character.id}
+                onClick={() => route(`/team/${character.id}`)}
+              >
+                <span className="roster-portrait" aria-hidden="true">
+                  <span style={{backgroundImage: `url(${getSpritePath(character.portrait)})`}} />
+                </span>
+                <span className="roster-identity">
+                  <span className="team-class-label">{classEnumToString(character.class)}</span>
+                  <span className="roster-name" title={character.name}>{character.name}</span>
+                  <span className="roster-level">{t("Lvl")} {formatNumber(character.level)}</span>
+                  {character.sp > 0 && <span className="roster-sp" title={t("Spend stat points")}>+{formatNumber(character.sp)} {t("SP")}</span>}
+                </span>
+              </button>
             ))}
             {remainingSlots > 0 && (canRecruit
               ? <Link href="/shop/characters" className="roster-slot roster-slot--available" data-game-control>{recruitContent}</Link>
@@ -66,7 +77,7 @@ class Roster extends Component {
             count={1}
             highlightColor='#0000004d'
             baseColor='#0f1421'
-            style={{margin: '2px 0', width: '1024px'}}
+            style={{margin: '2px 0', width: '100%'}}
           />
         )}
         {this.context.player.isLoaded && characters.length > 0 && remainingSlots > 0 && !canRecruit && (

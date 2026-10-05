@@ -1015,6 +1015,7 @@
   "towerBattles_one": "<0>{{count}}</0>戦",
   "towerBattles_other": "<0>{{count}}</0>戦",
   "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Steamでは、初期設定にSteamの言語が使われます。ゲーム内で選んだ言語が優先されます。",
+  "Roster cards show each character’s class, name, level and unspent SP.": "編成カードには各キャラクターのクラス、名前、レベル、未使用のステータスポイントが表示されます。",
   "Unlocks after {{required}} completed matches · {{completed}}/{{required}}": "{{required}}試合完了で解放 · {{completed}}/{{required}}",
   "Unlocks after {{required}} completed matches.": "{{required}}試合完了で解放されます。",
   "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "一時的な部隊を率いて、ターンの時間制限がないソロ遠征に挑戦できます。ショップでは新たな魔法も購入できます。",
