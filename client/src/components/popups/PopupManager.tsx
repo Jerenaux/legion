@@ -192,10 +192,10 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: "More Spells",
-      description: "New <span class=\"highlight-text\">Spells</span> are available in the shop!",
+      name: "Cinder Tower & more spells",
+      description: "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_2],
-      route: `/shop/spells`
+      route: `/tower`
     }
   },
   [Popup.UnlockedEquipment2]: {

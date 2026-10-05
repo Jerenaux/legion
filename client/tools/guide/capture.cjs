@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 const client = path.resolve(__dirname, '../..');
 const locale = process.argv.find(arg => arg.startsWith('--locale='))?.slice(9) || 'en';
 const localization = process.argv.includes('--localization');
+const towerUnlock = process.argv.includes('--tower-unlock');
 assert(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale), 'Invalid locale');
 
 if (!process.versions.electron) {
@@ -246,7 +247,7 @@ if (!process.versions.electron) {
         await win.loadURL(PACKAGED_APP_URL);
         await js(`localStorage.setItem('legion.language', ${JSON.stringify(locale)})`);
       }
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization && !towerUnlock) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -354,6 +355,8 @@ if (!process.versions.electron) {
         await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
         await ready();
         fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
+      } else if (towerUnlock) {
+        await require('./tower-unlock.cjs')({win, js, waitFor, ready, output: dist, locale});
       } else if (localization) {
         await require(process.argv.includes('--live-localization') ? '../localization/live.cjs' : '../localization/smoke.cjs')({win, js, waitFor, ready, output: dist, locale});
       } else if (process.argv.includes('--images')) {
@@ -451,6 +454,7 @@ if (!process.versions.electron) {
         await ready();
         await capture('tower', {x: 0, y: 60, width: 1600, height: 840});
       } else {
+        await require('./tower-unlock.cjs')({win, js, waitFor, ready, output: dist, locale});
         await win.loadURL(`${PACKAGED_APP_URL}play`);
         await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
         await js('document.querySelector("[data-playmode=tower]").click()');
@@ -890,7 +894,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization && !towerUnlock) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

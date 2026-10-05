@@ -131,6 +131,7 @@ export async function getFirebaseIdToken() { return 'guide-local-only'; }
 const rankCheck = {fail: true};
 Object.assign(window, {rankCheck});
 const towerCheck = {
+  requests: [] as string[],
   fail: false,
   progress: JSON.parse(localStorage.getItem('tower-fixture') || '{"run":null,"highestClear":0}') as TowerProgress,
   win() {
@@ -143,6 +144,7 @@ const towerCheck = {
 Object.assign(window, {towerCheck});
 export async function apiFetch(endpoint: string, options: {body?: {action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
   if (endpoint === 'tower') {
+    towerCheck.requests.push(options.body?.action || 'read');
     if (towerCheck.fail) throw new Error('Expected tower timeout');
     const body = options.body;
     if (body?.action === 'create') towerCheck.progress.run = createTowerRun('fixture-run', body.tier, body.kit);

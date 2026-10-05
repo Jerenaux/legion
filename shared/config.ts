@@ -104,6 +104,7 @@ export const LOCKED_FEATURES = {
     [LockedFeatures.SPELLS_BATCH_1]: 2,
     [LockedFeatures.EQUIPMENT_BATCH_1]: 3,
     [LockedFeatures.RANKED_MODE]: 4,
+    [LockedFeatures.TOWER_MODE]: 6,
     [LockedFeatures.CONSUMABLES_BATCH_2]: 5,
     [LockedFeatures.SPELLS_BATCH_2]: 6,
     [LockedFeatures.EQUIPMENT_BATCH_2]: 7,
@@ -121,6 +122,7 @@ export const EQUIPMENT_BATCH_GOLD = {
 }
 
 export const UNLOCK_REWARDS = {
+    [LockedFeatures.TOWER_MODE]: [],
     [LockedFeatures.CONSUMABLES_BATCH_1]: [
         { type: RewardType.CONSUMABLES, id: 0, amount: 5 },
         { type: RewardType.GOLD, id: -1, amount: 100 },

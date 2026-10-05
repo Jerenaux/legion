@@ -266,6 +266,7 @@ export enum LockedFeatures {
     CONSUMABLES_BATCH_3,
     DAILY_LOOT,
     RANKED_MODE,
+    TOWER_MODE,
 }
 
 export enum RewardType {

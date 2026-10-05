@@ -1,7 +1,7 @@
 .buttonContainer {
     background-color: #1A1A1A;
     width: 200px;
-    height: 280px;
+    min-height: 280px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -68,6 +68,9 @@
 }
 
 .labelContainer .label {
+    width: 100%;
+    overflow-wrap: anywhere;
+    hyphens: auto;
     font-size: 1.5rem;
     font-weight: 700;
     color: #FFFFFF;
@@ -96,6 +99,7 @@
 }
 
 .info-container {
+    box-sizing: border-box;
     width: 100%;
     margin-top: 16px;
     background: rgba(0, 0, 0, 0.2);
@@ -112,6 +116,8 @@
 
 .info-row {
     display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
     justify-content: space-between;
     margin-bottom: 8px;
     font-size: 0.875rem;
@@ -124,6 +130,8 @@
 }
 
 .info-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
     color: #999999;
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -140,6 +148,7 @@
 }
 
 .info-value {
+    margin-left: auto;
     color: #FFFFFF;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -225,7 +234,10 @@
 .buttonContainer.tower-mode .label {color: oklch(90% .075 80); line-height: 1.1; font-size: 1.35rem; margin: 7px 0 10px;}
 .buttonContainer.tower-mode .player {color: oklch(81% .085 65); font-size: .75rem; margin-bottom: 6px;}
 .buttonContainer.tower-mode .info-container {margin-top: 8px;}
-.tower-mode-tag {position: absolute; bottom: 10px; font: .65rem var(--locale-font, Arial), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: oklch(76% .035 75);}
+.buttonContainer.tower-mode.disabled .info-container {box-sizing: border-box; padding: 8px 0;}
+.buttonContainer.tower-mode .lock-icon {width: 40px; height: 40px;}
+.buttonContainer.tower-mode .unlock-message {line-height: 1.4; text-transform: none; overflow-wrap: anywhere;}
+.tower-mode-tag {order: 1; margin-top: auto; padding-top: 10px; font: .65rem var(--locale-font, Arial), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: oklch(76% .035 75);}
 .info-value.scaling {color: oklch(86% .11 80);}
 .buttonContainer:focus-visible {outline: 3px solid oklch(90% .08 195); outline-offset: 5px;}
 @media (max-width: 760px) {.buttonContainer.tower-mode {margin-left: 0;} .buttonContainer.tower-mode::before {display: none;}}

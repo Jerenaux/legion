@@ -963,7 +963,6 @@
   "Unable to act": "행동 불가",
   "BOSS": "보스",
   "Gate Sentry": "관문 보초",
-  "Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. Tower battles do not count toward ranked results, ELO, or match-count unlocks.": "단계마다 적의 HP와 공격력이 15%, 골드와 XP가 20% 증가합니다. 단계를 완료하면 다음 단계가 해제되며 최대 5단계까지 있습니다. 탑 전투는 랭크 결과, ELO, 경기 수에 따른 해제에 포함되지 않습니다.",
   "Mana after selected spell": "선택한 주문 사용 후 마나",
   "+25% gold / XP": "골드 / XP +25%",
   "Sculptor of Ice": "얼음 조각가",
@@ -1000,7 +999,6 @@
   "The combat badge shows your current floor. In Ember Approach, two fire mages stand beyond a wall of flame spanning the arena. Cast across it, or extinguish a section with Ice to cross safely.": "전투 배지는 현재 층을 보여 줍니다. 잿불 진입로에서는 전장을 가로지르는 불의 장벽 너머에 화염 마법사 둘이 서 있습니다. 장벽 너머로 주문을 쓰거나 얼음으로 일부를 꺼서 안전하게 건너세요.",
   "The Warden marks tiles before its next turn. Move away from those warning symbols before the blast. It leaves fire behind; the turn order shows when it will act.": "파수꾼은 다음 차례 전에 칸에 표시를 남깁니다. 폭발 전에 경고 표시에서 벗어나세요. 폭발 후에는 불이 남습니다. 행동 순서에서 파수꾼의 차례를 확인하세요.",
   "Gold, XP, and milestone items are banked after each victory. XP is shared across your permanent roster. Defeat or retirement ends the run but keeps everything already banked. Higher floors pay more. Clearing a tier unlocks the next, up to Tier 5; each tier adds 15% enemy HP and attack power and 20% account rewards. Your first clear also unlocks the Control starting kit.": "승리할 때마다 골드, XP, 주요 단계 아이템을 확보합니다. XP는 영구 보유 명단에 나누어 지급됩니다. 패배하거나 중단하면 원정은 끝나지만 이미 확보한 보상은 모두 유지됩니다. 높은 층일수록 보상이 큽니다. 단계를 완료하면 다음 단계가 해제되며 최대 5단계까지 있습니다. 단계마다 적의 HP와 공격력이 15%, 계정 보상이 20% 증가합니다. 처음 완료하면 제어 시작 장비 구성도 해제됩니다.",
-  "Tower encounters do not increase ELO, league results, or completed-match unlock counters. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.": "탑 전투는 ELO, 리그 성적, 경기 완료 횟수에 따른 해제 수치를 높이지 않습니다. 입장료와 일일 제한은 없습니다. 전투 사이에 떠났다가 돌아올 수 있습니다. 짧은 연결 끊김은 전투를 일시 정지하며, 재개할 수 없으면 해당 전투 시작 시 저장된 상태에서 다시 시작합니다. 인터넷 연결이 필요합니다.",
   "Outside the Tower, the standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.": "탑 밖에서 기본 차례 제한 시간은 <0>{{value0}}초</0>입니다. 다른 캐릭터가 행동할 때 계획을 세우고 모래시계로 남은 시간을 확인하세요. 시간이 다 되면 행동 기회를 잃습니다.",
   "The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act.": "전장 하단의 행동 순서 초상화로, 다음에 행동할 캐릭터의 순서를 보여 줍니다.",
   "Choose a spell in the centre of the bottom command dock, check its highlighted area, then click a valid target or tile. Each spell shows its MP cost; casting spends MP.": "하단 명령창 중앙에서 주문을 고르고 강조된 범위를 확인한 뒤 유효한 대상이나 칸을 클릭하세요. 각 주문에는 MP 소모량이 표시되며 시전할 때 MP를 소모합니다.",
@@ -1016,5 +1014,13 @@
   "statusTurns_other": "{{status}}, {{count}}턴",
   "towerBattles_one": "전투 <0>{{count}}</0>회",
   "towerBattles_other": "전투 <0>{{count}}</0>회",
-  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Steam에서는 Steam에 설정된 언어가 기본으로 사용됩니다. 게임 내에서 선택한 언어가 우선 적용됩니다."
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Steam에서는 Steam에 설정된 언어가 기본으로 사용됩니다. 게임 내에서 선택한 언어가 우선 적용됩니다.",
+  "Unlocks after {{required}} completed matches · {{completed}}/{{required}}": "경기 {{required}}회 완료 시 해제 · {{completed}}/{{required}}",
+  "Unlocks after {{required}} completed matches.": "경기 {{required}}회 완료 시 해제됩니다.",
+  "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "임시 분대와 함께 턴 시간제한 없이 선택형 솔로 원정에 도전하세요. 상점에서 새로운 주문도 구매할 수 있습니다.",
+  "Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.": "임시 분대를 지휘하세요. 기존 명단은 바뀌지 않습니다. HP, MP와 보급품은 다음 층으로 이어지며 턴에 시간제한이 없습니다.",
+  "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "이번 원정의 준비 항목을 하나 선택하세요. 다음 층에 앞서 분대를 회복하거나, 보급품을 채우거나, 주문을 배우세요.",
+  "Cinder Tower & more spells": "잿불 탑 · 추가 주문",
+  "One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.": "승리나 패배로 끝난 원정 한 번은 해제 조건에 필요한 경기 한 번으로 계산됩니다. 철수하거나 전투를 포기하면 계산되지 않습니다. 탑은 랭크 결과나 ELO에 영향을 주지 않습니다. 입장료와 일일 제한은 없습니다. 전투 사이에 떠났다가 돌아올 수 있습니다. 짧은 연결 끊김은 전투를 일시 정지하며, 재개할 수 없으면 해당 전투 시작 시 저장된 상태에서 다시 시작합니다. 인터넷 연결이 필요합니다.",
+  "Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO.": "단계마다 적의 HP와 공격력이 15%, 골드와 XP가 20% 증가합니다. 단계를 완료하면 다음 단계가 해제되며 최대 5단계까지 있습니다. 승리나 패배로 끝난 원정 한 번은 해제 조건에 필요한 경기 한 번으로 계산됩니다. 철수하거나 전투를 포기하면 계산되지 않습니다. 탑은 랭크 결과나 ELO에 영향을 주지 않습니다."
 }
