@@ -387,7 +387,13 @@ if (!process.versions.electron) {
         await js('combatCheck.arena.clearCharacterHover()');
         await ready();
         await capture('actions', {x: 400, y: 800, width: 800, height: 100});
-        await capture('turn-order', {x: 460, y: 730, width: 570, height: 70});
+        // Translated labels and the protruding class crests must fit inside the crop.
+        await capture('turn-order', await js(`(() => {
+          const bounds = Array.from(document.querySelectorAll('.turn_order_label, .timeline_portrait_container, .timeline_class_indicator')).map(element => element.getBoundingClientRect());
+          const x = Math.floor(Math.min(...bounds.map(r => r.left))) - 8;
+          const y = Math.floor(Math.min(...bounds.map(r => r.top))) - 8;
+          return {x, y, width: Math.ceil(Math.max(...bounds.map(r => r.right))) - x + 8, height: Math.ceil(Math.max(...bounds.map(r => r.bottom))) - y + 8};
+        })()`));
         await js('combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells([9]); combatCheck.arena.refreshBox()');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-empty-items.png'), (await win.webContents.capturePage()).toPNG());

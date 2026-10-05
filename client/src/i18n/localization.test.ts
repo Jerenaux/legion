@@ -1,5 +1,5 @@
 import {test, expect} from 'bun:test';
-import {readFileSync} from 'node:fs';
+import {readFileSync, readdirSync, existsSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import {resolveLocale, configureLocales, localizedAsset, initialize, t, formatNumber, userError, selectLanguage, language} from './core';
 
@@ -54,6 +54,20 @@ test('native dialog catalog accepts only discovered locales', () => {
   expect(native.t('Reload game')).toBe(require('../../locales/pt-PT/messages.json')['Reload game']);
   native.useSystemLanguages(['en-US']);
   expect(native.t('Reload game')).toBe('Reload game');
+});
+
+test('Russian plurals distinguish one, few, many and fractional counts', () => {
+  initialize({ru: {translation: require('../../locales/ru/messages.json')}}, 'ru');
+  try {
+    for (const [count, noun] of [[0, 'матчей'], [1, 'матч'], [2, 'матча'], [5, 'матчей'], [11, 'матчей'], [21, 'матч'], [22, 'матча'], [25, 'матчей'], [101, 'матч'], [1.5, 'матча']] as const) {
+      expect(t('gameCount', {count})).toBe(`${formatNumber(count)} ${noun}`);
+    }
+    expect(t('statusTurns', {status: 'Яд', count: 5})).toBe('Яд, 5 ходов');
+    expect(t('recruitmentUnlock', {count: 2})).toBe('Найм откроется через <0>2 матча</0>');
+    expect(t('inventoryPurchased', {count: 21})).toBe('Куплена 21 ячейка инвентаря!');
+  } finally {
+    initialize({en: {translation: require('../../locales/en/messages.json')}}, 'en');
+  }
 });
 
 test('live language changes load fonts first, preserve the document, and reject unsafe or failed switches', async () => {
@@ -114,7 +128,7 @@ test('live language changes load fonts first, preserve the document, and reject 
 
 
 test('Steam metadata aliases obey saved choice > Steam > OS in renderer, startup and native recovery', () => {
-  const codes = ['en', 'pt-BR', 'pt-PT', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'fr', 'de', 'es'];
+  const codes = readdirSync(new URL('../../locales/', import.meta.url)).filter(code => existsSync(new URL(`../../locales/${code}/locale.json`, import.meta.url)));
   const shipped = codes.map(code => ({...require(`../../locales/${code}/locale.json`), code}));
   const script = require('../../tools/localization/build.cjs')(readFileSync(new URL('../../tools/localization/boot.js', import.meta.url)));
   const native = require('../../electron/localization');
@@ -128,6 +142,9 @@ test('Steam metadata aliases obey saved choice > Steam > OS in renderer, startup
     {saved: '', steam: 'koreana', os: 'en', expected: 'ko'},
     {saved: '', steam: 'latam', os: 'en', expected: 'es'},
     {saved: '', steam: 'english', os: 'ja', expected: 'en'},
+    {saved: '', steam: 'russian', os: 'en', expected: 'ru'},
+    {saved: 'en', steam: 'russian', os: 'ru-RU', expected: 'en'},
+    {saved: '', steam: '', os: 'ru-RU', expected: 'ru'},
     {saved: '', steam: 'unsupported', os: 'ja-JP', expected: 'ja'},
     {saved: 'invalid_tag', steam: '', os: 'pt-PT', expected: 'pt-PT'},
     {saved: '', steam: '', os: 'zh-HK', expected: 'zh-Hant'},
