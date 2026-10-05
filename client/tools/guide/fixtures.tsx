@@ -68,7 +68,8 @@ const team = characters.map((character, i) => ({
 }));
 const battle = {
   general: {reconnect: true, spectator: false, mode: PlayMode.CASUAL},
-  player: {teamId: 1, player: profile, team, score: 0},
+  // Keep one unlearned action so the fixture exercises contextual spell coaching.
+  player: {teamId: 1, player: {...profile, engagementStats: {...profile.engagementStats, everUsedSpell: false}}, team, score: 0},
   opponent: {teamId: 2, player: {...profile, playerName: 'Training Rival', playerRank: -1},
     team: team.map((unit, i) => ({...unit, x: [8, 10, 9][i], y: [4, 6, 8][i]})), score: 0},
   queue: [[3, 1], [1, 2], [2, 1], [3, 2], [1, 1], [2, 2]].map(([num, team], position) => ({num, team, position})),

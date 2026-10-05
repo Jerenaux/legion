@@ -1,81 +1,63 @@
-import {t} from '../../i18n/core';
-
-import { h } from 'preact';
-import { Component } from 'preact';
-import { PlayerNetworkData } from '@legion/shared/interfaces';
-import CharacterCard from '../HUD/CharacterCard';
+import {t, formatNumber} from '../../i18n/core';
+import {h} from 'preact';
+import {useRef, useEffect, useState} from 'preact/hooks';
+import type {PlayerNetworkData} from '@legion/shared/interfaces';
+import {Class, ClassLabels} from '@legion/shared/enums';
+import {GAME_0_TURN_DURATION} from '@legion/shared/config';
+import ClassCrest from '../HUD/ClassCrest';
+import {events} from '../HUD/GameHUD';
+import {combatTipsVisible} from '../../game/TutorialManager';
+import {getSpritePath, playSoundEffect} from '../utils';
+import hourglass from '@assets/HUD/hourglass.png';
+import sword from '@assets/stats_icons/attack_icon.png';
+import enterSound from '@assets/sfx/equip.wav';
 import './TeamReveal.style.css';
-import { Class } from '@legion/shared/enums';
-import { GAME_0_TURN_DURATION } from '@legion/shared/config';
-import { events } from '../HUD/GameHUD';
 
 interface TeamRevealProps {
   team: PlayerNetworkData[];
   onComplete: () => void;
 }
 
-interface TeamRevealState {
-  revealedIndices: boolean[];
-  allRevealed: boolean;
-}
-
-export class TeamReveal extends Component<TeamRevealProps, TeamRevealState> {
-  state = {
-    revealedIndices: [false, false, false],
-    allRevealed: false,
+export function TeamReveal({team, onComplete}: TeamRevealProps) {
+  const [tips, setTips] = useState(() => combatTipsVisible(true));
+  const startButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => { startButton.current?.focus(); }, []);
+  const start = () => {
+    events.emit('combatTipsVisibility', tips);
+    playSoundEffect(enterSound);
+    onComplete();
   };
-
-  handleRevealCharacter = (index: number) => {
-    this.setState(previous => {
-      const revealedIndices = previous.revealedIndices.map((revealed, i) => revealed || i === index);
-      return { revealedIndices, allRevealed: revealedIndices.every(Boolean) };
-    });
-  };
-
-  render() {
-    return (
-      <div className="team-reveal-overlay">
-        <header className="team-reveal-header">
-          <span className="team-reveal-eyebrow">{t("Welcome to the arena")}</span>
-          <h2 className="team-reveal-title">{t("Meet your champions")}</h2>
-          <p className="team-reveal-subtitle">{t("Three champions. One team. Lead them to victory.")}</p>
-        </header>
-        <div className="team-reveal-grid">
-          {this.props.team.map((character, index) => (
-            <button type="button" data-game-control
-              key={index}
-              className={`team-reveal-wrapper ${this.state.revealedIndices[index] ? 'revealed' : ''}`}
-              aria-label={this.state.revealedIndices[index] ? character.name : t("Reveal champion {{number}}", {number: index + 1})}
-              onClick={() => this.handleRevealCharacter(index)}
-            >
-              <CharacterCard
-                member={character}
-                hideXP={true}
-                isQuestionMark={!this.state.revealedIndices[index]}
-              />
-              {this.state.revealedIndices[index] && <span className="team-reveal-role">{
-                t(character.class === Class.WARRIOR ? 'Close combat' :
-                character.class === Class.WHITE_MAGE ? 'Healing' : 'Ranged magic')
-              }</span>}
-              {!this.state.revealedIndices[index] && <span className="team-reveal-role">{t("Select to reveal")}</span>}
-            </button>
-          ))}
+  return <section className="team-reveal-overlay" role="dialog" aria-modal="true" aria-labelledby="team-reveal-title">
+    <h2 id="team-reveal-title" className="team-reveal-title">{t('Your team')}</h2>
+    <div className="team-reveal-stage">
+      {team.map((character, index) => <article className="team-reveal-champion" data-class={character.class}
+        key={character.id || index} style={{'--arrival': `${index * 90}ms`}}>
+        <div className="team-reveal-figure" aria-hidden="true">
+          <div className="team-reveal-aura" />
+          <div className="team-reveal-sprite" style={{backgroundImage: `url(${getSpritePath(character.portrait)})`}} />
+          <div className="team-reveal-plinth" />
         </div>
-        {this.state.allRevealed && (
-          <div className="team-reveal-actions">
-            <p className="team-reveal-rule">{t("One action per turn. A little guidance as you go.")}</p>
-            <button type="button" data-game-control className="team-reveal-play-button"
-              onClick={() => { events.emit('combatTipsVisibility', true); this.props.onComplete(); }}>
-              {t("Start guided match")}
-            </button>
-            <button type="button" data-game-control className="team-reveal-skip"
-              onClick={() => { events.emit('combatTipsVisibility', false); this.props.onComplete(); }}>
-              {t("Play without tips")}
-            </button>
-            <p className="team-reveal-time">{t("{{seconds}}-second turns · Time to learn, room to experiment", {seconds: GAME_0_TURN_DURATION})}</p>
-          </div>
-        )}
+        <div className="team-reveal-nameplate">
+          <span className="team-reveal-crest" aria-hidden="true"><ClassCrest characterClass={character.class} /></span>
+          <h3>{character.name}</h3>
+          <span className="team-reveal-class">{t(ClassLabels[character.class])}</span>
+        </div>
+        <p className="team-reveal-role">{t(character.class === Class.WARRIOR ? 'Close combat'
+          : character.class === Class.WHITE_MAGE ? 'Healing' : 'Ranged magic')}</p>
+      </article>)}
+    </div>
+    <div className="team-reveal-actions">
+      <div className="team-reveal-options">
+        <label className="team-reveal-tips">
+          <input type="checkbox" data-game-control checked={tips} onChange={event => setTips(event.currentTarget.checked)} />
+          <span className="team-reveal-check" aria-hidden="true">{tips ? '✓' : ''}</span>
+          <span>{t('Combat tips')}</span>
+        </label>
+        <span className="team-reveal-time"><img src={hourglass} alt="" />{t('{{seconds}} seconds per turn', {seconds: formatNumber(GAME_0_TURN_DURATION)})}</span>
       </div>
-    );
-  }
+      <button ref={startButton} type="button" data-game-control className="team-reveal-play-button" onClick={start}>
+        <img src={sword} alt="" />{t('Start battle')}
+      </button>
+    </div>
+  </section>;
 }

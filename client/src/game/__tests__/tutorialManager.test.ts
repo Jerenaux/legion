@@ -22,21 +22,21 @@ function setup(stats = {}) {
 
 test('hints stay until accepted actions; rejected/submitted clicks never count as learned', () => {
     const s = setup();
-    expect(s.show().content).toContain('Moving uses your one action');
+    expect(s.show().content).toContain('Moving ends your turn');
     s.events.emit('performAction');
     s.events.emit('actionRejected');
     expect(s.message().learned).toBe(0);
     s.events.emit('playerMoved');
-    expect(s.message()).toMatchObject({title: 'Action used', learned: 1, focus: 'timeline'});
-    expect(s.show().title).toBe('Action used'); // HUD refresh cannot resurrect the old instruction.
+    expect(s.message()).toMatchObject({title: 'Turn over', learned: 1, focus: 'timeline'});
+    expect(s.show().title).toBe('Turn over'); // HUD refresh cannot resurrect the old instruction.
     expect(s.show({turn: 2, ownTurn: false})).toBeUndefined();
-    expect(s.show({turn: 3}).learned).toBe(1);
+    expect(s.show({turn: 3, hasEnemy: true}).learned).toBe(1);
     s.manager.destroy();
 });
 
 test('melee is taught even if movement was learned in a previous match', () => {
     const s = setup({everMoved: true});
-    expect(s.show({hasEnemy: true}).title).toBe('Attack an adjacent enemy');
+    expect(s.show({hasEnemy: true}).title).toBe('Attack');
     s.events.emit('playerAttacked');
     expect(s.message().learned).toBe(2);
     s.manager.destroy();
@@ -47,12 +47,13 @@ test('casters of either class get targeting, cost, area warning, and cancel guid
     s.show();
     const spell = {name: 'Fire', cost: 8};
     expect(s.show({spells: [spell]}).focus).toBe('spells');
-    expect(s.show({spells: [spell], pendingSpell: {...spell, area: true}}).content)
-        .toBe('Choose a highlighted target. Costs 8 MP. The area can also hit allies. Select the spell again to cancel.');
+    expect(s.show({spells: [spell], pendingSpell: {...spell, area: true}}))
+        .toMatchObject({content: 'Select a highlighted target. Select the spell again to cancel.', cost: 8, warning: 'Can hit allies'});
+    expect(s.show({spells: [spell], pendingSpell: {...spell, area: false}}).warning).toBeUndefined();
     expect(s.show({spells: [{name: 'Cure', cost: 8}]}).focus).toBe('spells');
     s.events.emit('playerCastSpell');
     expect(s.message().learned).toBe(1); // Casting first never requires repeating movement first.
-    expect(s.show({turn: 2, spells: [spell]}).content).toContain('Moving uses your one action');
+    expect(s.show({turn: 2, spells: [spell]}).content).toContain('Moving ends your turn');
     s.manager.destroy();
 });
 
@@ -63,7 +64,16 @@ test('current hazards and unavailable actions take priority over generic movemen
     expect(s.show({muted: true}).title).toBe('Silenced');
     expect(s.show({mp: 0, spells: [{name: 'Fire', cost: 8}]}).title).toBe('Low mana');
     expect(s.show({selectedIsTurnee: false}).title).toBe('Roland acts now');
-    expect(s.show().title).toContain('Move into position'); // Old warnings aren't queued after they stop applying.
+    expect(s.show().title).toBe('Move'); // Old warnings aren't queued after they stop applying.
+    s.manager.destroy();
+});
+
+test('learned actions stop generic hints while targeting and hazards remain available', () => {
+    const s = setup({everMoved: true, everAttacked: true, everUsedSpell: true, everUsedItem: true});
+    expect(s.show({hasEnemy: true, spells: [{name: 'Fire', cost: 8}], hasItem: true})).toBeUndefined();
+    expect(s.show({fire: true}).icon).toBe('move');
+    expect(s.show({pendingSpell: {name: 'Fire', cost: 8, area: true}}).cost).toBe(8);
+    expect(s.show()).toBeUndefined();
     s.manager.destroy();
 });
 

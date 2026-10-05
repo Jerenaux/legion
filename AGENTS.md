@@ -61,3 +61,7 @@ Follow `docs/match-timing.md`. Sending a snapshot is not permission to start com
 ## Player guide
 
 When changing player-facing rules, controls, unlocks, or the illustrated UI, update the bundled guide in `client/src/components/GuidePage.tsx` in the same batch. The implemented game—not the legacy external guide—is authoritative. Follow `docs/player-guide.md` to refresh its cropped screenshots; run `bun run test:guide` from `client` when changing functional flows or guide routing, not for presentation-only edits. Never ship the screenshot fixtures in the release bundle.
+
+## Game UI and writing
+
+Read `docs/game-ui-writing.md` before changing player-facing copy or UI. Its rejected tutorial examples are regression examples: do not reintroduce slogan chains, balanced reassurance, redundant introductions, or vague promises of ease. Give each line a concrete gameplay purpose. Use the game's characters, icons, action controls and feedback to teach; remove text that merely describes what the UI already makes clear. Design game screens, not website landing pages. Follow `DESIGN.md` for the game's visual vocabulary, and inspect the result in context with long translations and enlarged text. Close any app opened to verify your work when the check is finished.

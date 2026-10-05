@@ -48,11 +48,11 @@ if (!process.versions.electron) {
         const rect = panel.getBoundingClientRect();
         const bar = document.querySelector('.player_bar_container')?.getBoundingClientRect();
         const selectors = intro
-          ? '.team-reveal-header, .team-reveal-title, .team-reveal-subtitle, .team-reveal-wrapper, .team-reveal-role, .team-reveal-actions, .team-reveal-actions button, .team-reveal-actions p'
-          : '.combat-coach-panel, .combat-coach-heading span, .combat-coach-instruction, .combat-coach-instruction strong, .combat-coach-instruction p, .combat-action-feedback';
+          ? '.team-reveal-title, .team-reveal-champion, .team-reveal-role, .team-reveal-actions, .team-reveal-actions button, .team-reveal-actions p'
+          : '.combat-coach-panel, .combat-coach-instruction, .combat-coach-instruction strong, .combat-coach-instruction p, .combat-action-feedback';
         const overflow = [...panel.querySelectorAll(selectors)].filter(element => element.clientWidth && element.clientHeight &&
           (element.scrollWidth > element.clientWidth + 1 ||
-            (element.matches('.team-reveal-wrapper, .team-reveal-actions, .combat-coach-panel, .combat-action-feedback') && element.scrollHeight > element.clientHeight + 1)))
+            (element.matches('.team-reveal-champion, .team-reveal-actions, .combat-coach-panel, .combat-action-feedback') && element.scrollHeight > element.clientHeight + 1)))
           .map(element => ({selector: element.className || element.tagName, text: element.textContent,
             width: element.clientWidth, scrollWidth: element.scrollWidth, height: element.clientHeight, scrollHeight: element.scrollHeight}));
         return {inside: rect.left >= -1 && rect.top >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1,
@@ -79,8 +79,7 @@ if (!process.versions.electron) {
       await wait(`document.documentElement.lang === ${JSON.stringify(locale)}`);
       await js('document.fonts.ready.then(() => true)');
       await js(`Object.defineProperty(document, 'hidden', {configurable: true, value: false}); document.dispatchEvent(new Event('visibilitychange'));`);
-      await wait('document.querySelectorAll(".team-reveal-wrapper").length === 3');
-      await js('document.querySelectorAll(".team-reveal-wrapper").forEach(button => button.click())');
+      await wait('document.querySelectorAll(".team-reveal-champion").length === 3');
       await wait('Boolean(document.querySelector(".team-reveal-play-button"))');
       await pause(900);
       for (const size of sizes) {
