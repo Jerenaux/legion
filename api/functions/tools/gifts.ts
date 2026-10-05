@@ -32,7 +32,7 @@ try {
     await gifts.doc(id).create({label: values.label.trim(), rewards, createdAt: Date.now(), expiresAt, revokedAt: null, claimedAt: null, claimedBy: null});
     // The token is printed once; Firestore stores only its hash. Deliver privately.
     console.log(JSON.stringify({id, token,
-      steamURL: `steam://run/3996730//?gift=${token}`,
+      steamURL: `steam://run/3996730/?gift=${token}`,
       emailURL: `https://us-central1-${values.project}.cloudfunctions.net/giftLink?token=${token}`,
       localURL: `legion://gift/${token}`,
     }, null, 2));

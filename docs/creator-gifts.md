@@ -59,7 +59,7 @@ Gifts never advance unlock progression or equip themselves.
 
 ## Desktop links and local testing
 
-Steam URL: `steam://run/3996730//?gift=TOKEN`. Only the Demo is targeted.
+Steam URL: `steam://run/3996730/?gift=TOKEN`. Only the Demo is targeted.
 Legion reads Steam's `GetLaunchQueryParam("gift")` at startup and once per second
 while running. This is an in-process SDK read, not network polling. Koffi bridges
 this API because steamworks.js 0.4 does not expose it. It loads the exact same
