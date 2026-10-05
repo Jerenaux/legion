@@ -1,6 +1,8 @@
 import {randomUUID} from 'node:crypto';
 import admin from 'firebase-admin';
-import {PlayMode, GameStatus} from '@legion/shared/enums';
+import {LOCKED_FEATURES} from '@legion/shared/config';
+import {checkFeatureUnlock, getUnlockRewards} from './inventoryUtils';
+import {PlayMode, GameStatus, LockedFeatures, RewardType} from '@legion/shared/enums';
 import {createTowerRun, chooseTowerUpgrade, finishTowerBattle, towerTerminal, towerXP,
   TOWER_ENCOUNTERS, TOWER_MAX_TIER, TowerRun, TowerBattleResult} from '@legion/shared/tower';
 
@@ -12,6 +14,8 @@ export async function towerAction(db: FirebaseFirestore.Firestore, uid: string, 
   return db.runTransaction(async transaction => {
     const [playerDoc, runDoc] = await Promise.all([transaction.get(playerRef), transaction.get(runRef)]);
     if (!playerDoc.exists) throw new TowerActionError('Player not found.');
+    const completedGames = Math.max(0, (playerDoc.data()!.engagementStats?.completedGames || 0) - 1);
+    if (completedGames < LOCKED_FEATURES[LockedFeatures.TOWER_MODE]) throw new TowerActionError('Complete more matches to unlock the Cinder Tower.');
     const highestClear = playerDoc.get('towerHighestClear') || 0;
     let run = (runDoc.data() as TowerRun) || null;
     if (body === null) return {run, highestClear};
@@ -67,15 +71,21 @@ export async function settleTowerBattle(db: FirebaseFirestore.Firestore, gameId:
     const player = playerDoc.data()!;
     const refs: FirebaseFirestore.DocumentReference[] = player.characters || [];
     const characters = refs.length && reward.xp ? await transaction.getAll(...refs) : [];
-    // No match count, league result, ELO, daily keys, or main-roster consumable write.
+    // One progression credit per finished expedition, never per floor or retirement.
+    // Requiring a defeated squad also excludes abandonments sent by older servers.
+    const completed = run.phase === 'won' || (run.phase === 'lost' && result.units.every(unit => unit.hp === 0));
+    const unlockRewards = completed ? getUnlockRewards(checkFeatureUnlock(player.engagementStats?.completedGames || 0)) : [];
+    const unlockGold = unlockRewards.filter(item => item.type === RewardType.GOLD).reduce((sum, item) => sum + item.amount, 0);
+    // No league result, ELO, daily keys, or main-roster consumable consumption.
     transaction.update(playerRef, {
-      gold: admin.firestore.FieldValue.increment(reward.gold),
+      gold: admin.firestore.FieldValue.increment(reward.gold + unlockGold),
       xp: admin.firestore.FieldValue.increment(reward.xp),
+      ...(completed ? {'engagementStats.completedGames': admin.firestore.FieldValue.increment(1)} : {}),
       towerHighestClear: run.phase === 'won' ? Math.max(player.towerHighestClear || 0, run.tier) : player.towerHighestClear || 0,
     });
     const inventory = player.inventory || {};
     for (const type of ['consumable', 'spell', 'equipment'] as const) {
-      const ids = reward.items.filter(item => item.type === type).map(item => item.id);
+      const ids = [...reward.items, ...unlockRewards].filter(item => item.type === type).flatMap(item => Array(item.amount).fill(item.id));
       if (ids.length) {
         const field = type === 'consumable' ? 'consumables' : type === 'spell' ? 'spells' : 'equipment';
         transaction.update(playerRef, {[`inventory.${field}`]: [...(inventory[field] || []), ...ids]});

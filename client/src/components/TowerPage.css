@@ -257,3 +257,8 @@
   .tower-choice.boss .tower-enemy-lineup>span:first-child {width: auto;} .tower-choice.boss .tower-enemy-lineup>span:first-child img {width: 70px; height: 70px;}
   .tower-command-bar:has(.tower-build) {flex-wrap: wrap;} .tower-command-bar:has(.tower-build) .tower-retire {width: 100%;}
 }
+
+.tower-introduction { max-width: 65ch; line-height: 1.5; color: var(--tower-muted); }
+.tower-locked { max-width: 38rem; margin: 3rem auto; text-align: center; }
+.tower-locked > img { width: 5rem; }
+.tower-locked .tower-primary { display: inline-flex; margin-top: 1rem; }

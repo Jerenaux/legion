@@ -1077,5 +1077,14 @@
   "Reveal champion {{number}}": "揭曉第{{number}}位英雄",
   "Close combat": "近身戰鬥",
   "Ranged magic": "遠程法術",
-  "{{seconds}}-second turns · Time to learn, room to experiment": "每回合{{seconds}}秒 · 慢慢學習，盡情嘗試"
+  "{{seconds}}-second turns · Time to learn, room to experiment": "每回合{{seconds}}秒 · 慢慢學習，盡情嘗試",
+  "Roster cards show each character’s class, name, level and unspent SP.": "隊伍卡片顯示每名角色的職業、姓名、等級和未使用的屬性點。",
+  "Unlocks after {{required}} completed matches · {{completed}}/{{required}}": "完成 {{required}} 場對局後解鎖 · {{completed}}/{{required}}",
+  "Unlocks after {{required}} completed matches.": "完成 {{required}} 場對局後解鎖。",
+  "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "率領臨時小隊，自由挑戰回合不限時的單人遠征。商店也已開放更多法術。",
+  "Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.": "率領臨時小隊，你的原有陣容不受影響。HP、MP 和補給會延續到下一層，回合沒有時間限制。",
+  "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "為本次遠征選擇一項準備。在進入下一層之前，恢復小隊、補充物資或學習法術。",
+  "Cinder Tower & more spells": "餘燼之塔 · 更多法術",
+  "One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.": "每次以勝利或失敗結束的遠征，均計為解鎖進度中的一場對局。撤離或放棄戰鬥不計入。塔樓不會影響積分戰績或 ELO。無入場費，也無每日次數限制。可以在戰鬥間隙離開，之後再回來。短暫斷線會暫停戰鬥；若無法繼續，則從該場戰鬥儲存的初始狀態重新開始。需要連線網際網路。",
+  "Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO.": "每階敵人的 HP 和攻擊力增加 15%，金幣和經驗增加 20%。通關後解鎖下一階，最高為第 5 階。每次以勝利或失敗結束的遠征，均計為解鎖進度中的一場對局。撤離或放棄戰鬥不計入。塔樓不會影響積分戰績或 ELO。"
 }

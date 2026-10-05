@@ -15,6 +15,27 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
     window.dockCommands = [];
     ['spell', 'useitem', 'passTurn', 'abandonGame'].forEach(event => arena.socket.on(event, () => dockCommands.push(event)));
   })()`);
+  await js(`(() => {
+    const {arena} = combatCheck;
+    window.originalSettings = {...arena.gameSettings};
+    arena.gameSettings.game0 = true;
+    arena.gameSettings.mode = 1; // PlayMode.TUTORIAL
+    arena.refreshOverview();
+  })()`);
+  await ready();
+  assert.equal(await js('Boolean(document.querySelector(".hud-container")?.getClientRects().length)'), false,
+    'The initial tutorial overview stays hidden');
+  press('Escape');
+  await ready();
+  assert.equal(await js(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`), true, 'Escape must open the tutorial exit dialog while the overview is hidden');
+  assert.deepEqual(await js('dockCommands'), [], 'Opening the tutorial exit dialog must not abandon');
+  await ready();
+  assert.equal(await js('document.activeElement.textContent'), 'Cancel');
+  press('Escape');
+  await waitFor(`!document.querySelector('[role="dialog"]')`);
+  assert.deepEqual(await js('dockCommands'), [], 'Cancelling must preserve the tutorial');
+  await js('Object.assign(combatCheck.arena.gameSettings, originalSettings); combatCheck.arena.refreshOverview()');
+  await ready();
   await js(`document.querySelector('${fire}').focus()`);
   press('Space');
   await waitFor('dockCommands.length === 1');
@@ -123,5 +144,13 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await js('document.documentElement.style.fontSize = "100%"; combatCheck.resync()');
   await waitFor('document.querySelectorAll("button.player_bar_action").length === 4');
   assert.equal(await js('document.querySelector(".player_bar_stat meter").value'), 80, 'Reconnect must refresh the selected character');
+  await js('window.exitCommands = []; combatCheck.arena.socket.on("abandonGame", () => exitCommands.push("abandonGame")); combatCheck.arena.gameSettings.game0 = true; combatCheck.arena.gameSettings.mode = 1; combatCheck.arena.refreshOverview(); window.exitingGame = combatCheck.arena.game; void 0');
+  await ready();
+  press('Escape');
+  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
+  await js('document.querySelector(".exit_game_menu .game_leave_btn").click()');
+  await waitFor('location.pathname === "/play" && !document.querySelector("#scene canvas") && !exitingGame.loop.running');
+  assert.deepEqual(await js('exitCommands'), ['abandonGame'], 'Confirming must abandon exactly once and stop the tutorial');
+  console.log('Tutorial Escape: hidden overview, safe cancel, confirmed exit and engine cleanup pass');
   console.log('Command dock: targeting, mana preview, enemy-turn guards, live stats, silence, inspection, keyboard and reconnect pass');
 };

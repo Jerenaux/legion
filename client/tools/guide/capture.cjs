@@ -7,6 +7,8 @@ const assert = require('node:assert/strict');
 const client = path.resolve(__dirname, '../..');
 const locale = process.argv.find(arg => arg.startsWith('--locale='))?.slice(9) || 'en';
 const localization = process.argv.includes('--localization');
+const towerUnlock = process.argv.includes('--tower-unlock');
+const rosterImages = process.argv.includes('--roster-images');
 assert(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale), 'Invalid locale');
 
 if (!process.versions.electron) {
@@ -57,9 +59,9 @@ if (!process.versions.electron) {
   // Keep cleanup from triggering Electron's implicit zero-exit before a failed assertion is reported.
   app.on('window-all-closed', () => {});
   const deadline = setTimeout(() => {
-    console.error('Packaged stability smoke test exceeded ten minutes');
+    console.error('Packaged stability smoke test exceeded fifteen minutes');
     app.exit(1);
-  }, 10 * 60 * 1000);
+  }, 15 * 60 * 1000);
   deadline.unref();
   const {pathToFileURL} = require('node:url');
   const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require('../../electron/protocol');
@@ -176,8 +178,9 @@ if (!process.versions.electron) {
   Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
-    // Fail closed: all telemetry and game traffic must stay local.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`)}));
+    const logrocket = await require('./logrocket.cjs').installLogRocketSink(session.defaultSession);
+    // Fail closed: the recorder is served from memory, and its uploads are intercepted locally.
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`) && !logrocket.allows(details.url)}));
     session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
       responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP.replace("connect-src 'self'", `connect-src 'self' ${sinkURL} ${sinkURL.replace('http:', 'ws:')}`)],
         'Document-Policy': ['include-js-call-stacks-in-crash-reports']},
@@ -245,7 +248,7 @@ if (!process.versions.electron) {
         await win.loadURL(PACKAGED_APP_URL);
         await js(`localStorage.setItem('legion.language', ${JSON.stringify(locale)})`);
       }
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization && !towerUnlock && !rosterImages) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -261,9 +264,11 @@ if (!process.versions.electron) {
             await preview.loadURL(url);
             assert.deepEqual(await preview.webContents.executeJavaScript('replayCheck.status()'),
               {replay: false, canvas: false, rate: 0}, `${name} must not install recorders or sample sessions`);
+            assert.equal(await preview.webContents.executeJavaScript('Boolean(window.LogRocket)'), false, `${name} must not load LogRocket`);
             await preview.webContents.executeJavaScript('replayCheck.flush()');
           } finally { preview.destroy(); }
         }
+        assert.equal(logrocket.uploads.length, 0, 'Excluded runtimes must not send LogRocket recordings');
         assert.equal(replayEvents.length, 0, 'Excluded runtimes must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
         console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
@@ -280,8 +285,10 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}game/guide-local`);
         await waitFor('Boolean(document.querySelector("#scene canvas"))');
         await new Promise(resolve => setTimeout(resolve, 1200));
+        assert.equal(await js('Boolean(window.LogRocket)'), false, 'Local combat must not initialize LogRocket');
         assert.equal(await js('replayCheck.id()'), undefined, 'Local combat must not start a Replay session');
         assert.deepEqual(await js('replayCheck.status()'), {replay: false, canvas: false, rate: 0});
+        assert.equal(logrocket.uploads.length, 0, 'Excluded runtimes must not send LogRocket recordings');
         assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
@@ -349,6 +356,10 @@ if (!process.versions.electron) {
         await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
         await ready();
         fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
+      } else if (towerUnlock) {
+        await require('./tower-unlock.cjs')({win, js, waitFor, ready, output: dist, locale});
+      } else if (rosterImages) {
+        await require('./roster.cjs')({win, js, waitFor, ready, output: dist, locale, capture});
       } else if (localization) {
         await require(process.argv.includes('--live-localization') ? '../localization/live.cjs' : '../localization/smoke.cjs')({win, js, waitFor, ready, output: dist, locale});
       } else if (process.argv.includes('--images')) {
@@ -379,7 +390,13 @@ if (!process.versions.electron) {
         await js('combatCheck.arena.clearCharacterHover()');
         await ready();
         await capture('actions', {x: 400, y: 800, width: 800, height: 100});
-        await capture('turn-order', {x: 460, y: 730, width: 570, height: 70});
+        // Translated labels and the protruding class crests must fit inside the crop.
+        await capture('turn-order', await js(`(() => {
+          const bounds = Array.from(document.querySelectorAll('.turn_order_label, .timeline_portrait_container, .timeline_class_indicator')).map(element => element.getBoundingClientRect());
+          const x = Math.floor(Math.min(...bounds.map(r => r.left))) - 8;
+          const y = Math.floor(Math.min(...bounds.map(r => r.top))) - 8;
+          return {x, y, width: Math.ceil(Math.max(...bounds.map(r => r.right))) - x + 8, height: Math.ceil(Math.max(...bounds.map(r => r.bottom))) - y + 8};
+        })()`));
         await js('combatCheck.arena.selectedPlayer.setInventory([]); combatCheck.arena.selectedPlayer.setSpells([9]); combatCheck.arena.refreshBox()');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-empty-items.png'), (await win.webContents.capturePage()).toPNG());
@@ -432,13 +449,7 @@ if (!process.versions.electron) {
         await js('combatCheck.arena.processTurnee({...combatCheck.arena.turnee, team: 2, num: 1, turnNumber: 9})');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-enemy.png'), (await win.webContents.capturePage()).toPNG());
-        await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
-        await waitFor('document.body.innerText.includes("Ember")');
-        await ready();
-        await js('document.querySelector(".character-inventory-container").scrollIntoView({block: "start"})');
-        await ready();
-        const loadoutY = await js('Math.round(document.querySelector(".character-inventory-container").getBoundingClientRect().top)');
-        await capture('loadout', {x: 270, y: loadoutY, width: 1045, height: 428});
+        await require('./roster.cjs').captureLoadout({win, js, waitFor, ready, capture});
         await win.loadURL(`${PACKAGED_APP_URL}tower`);
         await waitFor('Boolean(document.querySelector(".tower-primary"))');
         await js('document.querySelector(".tower-primary").click()');
@@ -446,6 +457,7 @@ if (!process.versions.electron) {
         await ready();
         await capture('tower', {x: 0, y: 60, width: 1600, height: 840});
       } else {
+        await require('./tower-unlock.cjs')({win, js, waitFor, ready, output: dist, locale});
         await win.loadURL(`${PACKAGED_APP_URL}play`);
         await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
         await js('document.querySelector("[data-playmode=tower]").click()');
@@ -484,23 +496,7 @@ if (!process.versions.electron) {
         await waitFor('!document.querySelector(".tower-error") && !document.querySelector(".tower-choice").disabled');
         console.log('Tower entry, choices, keyboard controls, saved progress, untimed combat, boss warnings, and recovery pass');
         await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
-        for (const [games, size] of [[0, 3], [11, 3], [12, 3], [12, 5], [12, 6]]) {
-          await win.loadURL(`${PACKAGED_APP_URL}team?games=${games}&roster=${size}`);
-          await waitFor('Boolean(document.querySelector(".roster-heading"))');
-          assert.equal(await js('document.querySelectorAll(".rosters .endgame_character").length'), size);
-          assert.equal(await js('document.querySelectorAll(".roster-slot").length'), size < 6 ? 1 : 0);
-          assert.equal(await js('Boolean(document.querySelector(".roster-slot--available"))'), games >= 12 && size < 6);
-          assert.equal(await js('document.querySelector(".roster-unlock progress")?.value'), games < 12 ? games : undefined);
-          if (games === 11) assert((await js('document.querySelector(".roster-unlock-label").textContent')).includes('1 game'));
-          if (games < 12) assert.equal(await js('document.querySelectorAll(".rosterContainer a").length'), 0);
-          if (size === 6) assert.equal(await js('Boolean(document.querySelector(".roster-unlock"))'), false);
-        }
-        await win.loadURL(`${PACKAGED_APP_URL}team?games=12`);
-        await waitFor('Boolean(document.querySelector(".roster-slot--available"))');
-        await js('document.querySelector(".roster-slot--available").click()');
-        assert.equal(await js('location.pathname'), '/shop/characters');
-        assert.deepEqual(rendererErrors, []);
-        console.log('Team recruitment: locked progress, unlock boundary, partial/full roster and Shop navigation pass');
+        await require('./roster.cjs')({win, js, waitFor, ready, output: dist, locale});
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
@@ -813,6 +809,7 @@ if (!process.versions.electron) {
           return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
         })()`), 'Recorded combat pixels must not be blank');
         console.log(`Sentry Replay: visible DOM, inputs, media, and ${frames.length} canvas updates delivered; passwords and network data scrubbed`);
+        await require('./logrocket-check.cjs')({logrocket, js, waitFor});
         const cleanup = await js(`(() => {
           window.previousGame = combatCheck.arena.game;
           const player = combatCheck.arena.selectedPlayer;
@@ -825,6 +822,7 @@ if (!process.versions.electron) {
         await waitFor('!previousGame.loop.running');
         assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
         assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
+        assert.equal(await js('document.querySelectorAll("[data-logrocket-canvas]").length'), 0, 'Teardown must remove replay snapshots');
         assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
         for (const exit of ['normal', 'loading', 'animation', 'sleeping', 'context-loss', 'canvas', 'canvas-throws']) {
           if (exit.startsWith('canvas')) await js(`(() => {
@@ -883,7 +881,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization && !towerUnlock && !rosterImages) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

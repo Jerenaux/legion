@@ -24,6 +24,10 @@ Make the bump after syncing the latest `main`, so concurrent branches do not reu
 
 If explicitly requested, release tags must be `v<version>`, for example `v0.2.0`, and must exactly match `client/package.json`. Tags do not trigger desktop builds. Manual desktop releases publish the package version from `main` to every selected Itch channel.
 
+## App verification cleanup
+
+When opening the app to check your work, close the app instance you opened as soon as verification is finished, including after failed or interrupted checks. Do not close an app instance Jerome already had open.
+
 ## Static analysis
 
 Run `bun run lint` from the repository root for functional Biome diagnostics. The command deliberately skips the `style` and `complexity` rule groups and does not run the formatter. Do not replace it with `biome check`, which also checks formatting.
@@ -48,7 +52,7 @@ Keep every production composite index in `firestore.indexes.json`; the API deplo
 
 Preserve early Sentry initialization in Electron, Bun services, and Firebase. Register Firebase HTTP/scheduled handlers through `api/functions/src/telemetry.ts` so reports flush before serverless execution ends. Follow `docs/error-reporting.md`; do not log credentials, bundle upload tokens/source maps, or enable backend tracing/profiling by default. Keep the real SDK loopback smoke test in `bun run test:guide` passing.
 
-Sentry is the sole session recorder; do not reintroduce LogRocket. Preserve the shared `PACKAGED_CSP`: bundled scripts only, with local/blob workers for Sentry Replay. The guide smoke test must verify real replay envelopes, nonblank combat canvas frames, and input/network redaction using local ingestion only. Never send CI recordings to production. Replay frame rate and private `app://` assets have the limitations documented in `docs/error-reporting.md`.
+Sentry and LogRocket record the same eligible store sessions; preserve their shared gate and privacy policy. Preserve the shared `PACKAGED_CSP`: bundled scripts plus the exact LogRocket CDN origin, with local/blob replay workers. The guide smoke test must verify real replay envelopes, nonblank combat canvas frames, and input/network redaction using local ingestion only. Never send CI recordings to production. Replay frame rate and private `app://` assets have the limitations documented in `docs/error-reporting.md`.
 
 ## Match timing
 

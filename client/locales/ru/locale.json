@@ -1,0 +1,8 @@
+{
+  "name": "Русский",
+  "direction": "ltr",
+  "steamLanguages": [
+    "russian"
+  ],
+  "fontFamily": "Noto Sans RU"
+}

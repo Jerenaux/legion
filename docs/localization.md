@@ -48,3 +48,12 @@ Rich messages use fixed application components through `Trans`; interpolation is
 The packaged localization smoke test uses local fixtures and local telemetry ingestion. It checks the title screen, team, shop, rank, Tower, profile, guide, combat and settings at 1280 × 720 and 960 × 540 with standard text, and at 1280 × 720 with 130% text. It also checks recruitment previews, Tower routes and upgrades, result titles, combat announcements, artwork loading, script fonts, live language changes without reloading, locale persistence, the disabled in-match language picker and rich-text interpolation. Horizontal overflow assertions cover key controls; manually inspect the screenshots for vertical clipping, overlaps and legibility. Screenshot fixtures and test instrumentation are never release assets; only the cropped guide images are bundled.
 
 The supplied CJK fonts are Noto Sans JP/SC/TC/KR from the [Google Fonts repository](https://github.com/google/fonts), distributed with their SIL Open Font License. Full font files are compressed to WOFF2 without subsetting.
+
+Russian (`ru`, **Русский**) includes the full Noto Sans variable font from
+[Google Fonts](https://github.com/google/fonts/tree/main/ofl/notosans), compressed
+to WOFF2 without subsetting, with its SIL Open Font License. Its catalog includes
+all four Russian plural categories (`one`, `few`, `many`, `other`). Flags and
+combat/result titles use the translated live labels; the six guide screenshots
+are captured from the Russian interface. Steam's `russian` alias and regional
+OS preferences such as `ru-RU` select it automatically unless the player has
+saved another choice.

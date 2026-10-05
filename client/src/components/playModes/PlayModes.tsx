@@ -1,3 +1,4 @@
+import {LOCKED_FEATURES} from '@legion/shared/config';
 import { h } from 'preact';
 import './PlayModes.style.css'
 import { Component } from 'preact';
@@ -17,6 +18,7 @@ class PlayModes extends Component {
   static contextType = PlayerContext;
 
   render() {
+    const isTowerUnlocked = this.context.canAccessFeature(LockedFeatures.TOWER_MODE);
     const isRankedUnlocked = this.context.canAccessFeature(LockedFeatures.RANKED_MODE);
 
     return (
@@ -45,7 +47,9 @@ class PlayModes extends Component {
             lockIcon={!isRankedUnlocked ? lockIcon : undefined}
             gamesUntilUnlock={!isRankedUnlocked ? this.context.getGamesUntilFeature(LockedFeatures.RANKED_MODE) : 0}
           />
-          <PlayModeButton label="tower" mode={PlayMode.TOWER} data-playmode="tower" />
+          <PlayModeButton label="tower" mode={PlayMode.TOWER} data-playmode="tower"
+            disabled={!isTowerUnlocked} lockIcon={!isTowerUnlocked ? lockIcon : undefined}
+            unlockProgress={!isTowerUnlocked ? {completed: this.context.getCompletedGames(), required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]} : undefined} />
         </div>
 
       </div>

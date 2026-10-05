@@ -1,10 +1,12 @@
+import {LOCKED_FEATURES} from '@legion/shared/config';
+import {PlayerContext} from '../contexts/PlayerContext';
 import {t, formatNumber} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
 import {h, Fragment} from 'preact';
-import {useEffect, useState, useMemo} from 'preact/hooks';
+import {useEffect, useState, useMemo, useContext} from 'preact/hooks';
 import {Link, route} from 'preact-router';
 import {apiFetch} from '../services/apiService';
-import {Class, ClassLabels, RewardType} from '@legion/shared/enums';
+import {Class, ClassLabels, RewardType, LockedFeatures} from '@legion/shared/enums';
 import {getSpellById} from '@legion/shared/Spells';
 import {getConsumableById} from '@legion/shared/Items';
 import {getEquipmentById} from '@legion/shared/Equipments';
@@ -35,6 +37,8 @@ function Rewards({reward}: {reward: TowerReward}) {
 }
 
 export default function TowerPage() {
+  const {loaded, canAccessFeature, getCompletedGames, refreshPlayerData} = useContext(PlayerContext);
+  const unlocked = canAccessFeature(LockedFeatures.TOWER_MODE);
   const [progress, setProgress] = useState<TowerProgress | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -46,11 +50,11 @@ export default function TowerPage() {
 
   const refresh = async () => {
     setBusy(true); setError('');
-    try { setProgress(await apiFetch('tower')); }
+    try { setProgress(await apiFetch('tower')); refreshPlayerData(); }
     catch { setError('Could not load your expedition. Your saved progress is safe.'); }
     finally { setBusy(false); }
   };
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => { if (loaded && unlocked) void refresh(); }, [loaded, unlocked]);
 
   const act = async (action: string, extra: Record<string, unknown> = {}) => {
     if (busy) return;
@@ -70,6 +74,13 @@ export default function TowerPage() {
   const disabled = busy || !!error;
   const completed = run?.floor || 0;
   const lessonIcons: Record<string, number> = {rest: 9, ice: 6, thunder: 3, poison: 10, silence: 11, 'fire-plus': 1, frostcraft: 6};
+
+  if (!loaded) return <main className="tower-page" role="status">{t("Preparing your expedition…")}</main>;
+  if (!unlocked) return <main className="tower-page"><section className="tower-start tower-locked">
+    <img src={towerIcon} alt="" /><h1>{t("Cinder Tower")}</h1>
+    <p>{t("Unlocks after {{required}} completed matches · {{completed}}/{{required}}", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE], completed: getCompletedGames()})}</p>
+    <Link href="/play" className="tower-primary">{t("Play")}</Link>
+  </section></main>;
 
   return <main className={`tower-page ${run && !finished ? 'is-climbing' : 'is-preparing'}`} aria-busy={busy}>
     <div className="tower-layout">
@@ -101,6 +112,7 @@ export default function TowerPage() {
             </div>}
 
 
+            {!run && <p className="tower-introduction">{t("Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.")}</p>}
             <div className="tower-preparation-heading"><h2>{t(finished ? 'Next expedition' : 'Choose your squad')}</h2><label className="tower-difficulty"><span>{t("Difficulty")}</span><span className="tower-difficulty-control"><select value={tier} disabled={busy} onChange={event => setTier(Number(event.currentTarget.value))}>
               {Array.from({length: Math.min(TOWER_MAX_TIER, progress.highestClear + 1)}, (_, i) => <option key={i} value={i + 1}>{i === 0 ? t('Tier {{tier}}', {tier: i + 1}) : t('Tier {{tier}} · +{{power}} enemy power', {tier: i + 1, power: formatNumber(i * .15, {style: 'percent'})})}</option>)}
             </select><span aria-hidden="true">⌄</span></span></label></div>
@@ -129,6 +141,7 @@ export default function TowerPage() {
           </section>}
 
           {run && !finished && <section className="tower-decision">
+            {run.phase === 'choice' && run.floor === 1 && <p className="tower-introduction">{t("Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.")}</p>}
             {run.phase === 'battle' ? <div className="tower-resume"><img src={towerIcon} alt="" /><div><span className="tower-kicker">{t('FLOOR {{floor}} · IN BATTLE', {floor: run.floor + 1})}</span><h2>{t(TOWER_ENCOUNTERS[run.floor].find(encounter => encounter.id === run.path[run.floor])?.name || '')}</h2><button type="button" className="tower-primary" disabled={disabled} onClick={() => route(`/game/${run.gameId}`)}>{t("Continue battle")}<span aria-hidden="true">→</span></button></div></div> : <>
               <div className="tower-decision-heading"><div><span className="tower-kicker">{run.phase === 'choice' ? t('FLOOR {{floor}} CLEARED', {floor: run.floor}) : t('FLOOR {{floor}} OF {{total}}', {floor: run.floor + 1, total: TOWER_FLOORS})}</span><h2>{t(run.phase === 'choice' ? 'Choose one upgrade' : run.floor === 5 ? 'The final battle' : 'Choose your battle')}</h2></div>{run.phase === 'choice' && <Rewards reward={run.lastReward} />}</div>
               <div className={`tower-choices ${run.phase === 'choice' ? 'preparations' : 'encounters'}`}>
@@ -157,7 +170,7 @@ export default function TowerPage() {
           <details name="tower-info" className="tower-rules"><summary>{t("Rules & rewards")}</summary>
             <p>{t("Entry is free. Every run starts with a temporary squad; your roster and owned items stay untouched. Turns have no time limit. After a victory, each character is brought to at least 30% HP, then restores 15 HP and 15 MP, up to their maximums. Knocked-out allies return; statuses clear. Ice traps thaw after two skipped turns. Supplies stay used until refilled.")}</p>
             <p>{t("Sanctuary fully restores HP and MP; Quartermaster refills supplies. Defeat ends the run. Banked gold, items, and XP remain yours. XP is shared across your permanent roster. Temporary stats and spells never overwrite it.")}</p>
-            <p>{t("Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. Tower battles do not count toward ranked results, ELO, or match-count unlocks.")}</p>
+            <p>{t("Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO.")}</p>
             <p>{t("An internet connection is required. Close Legion between encounters and return later. A short disconnect pauses the battle. If the server can no longer resume it, restart that encounter from its saved entry state with no duplicate rewards.")}</p>
           </details>
         {(!run || finished) && <><span className="tower-run-length"><span className="tower-run-track" aria-hidden="true">{Array.from({length: TOWER_FLOORS - 1}, (_, i) => <i key={i} />)}<img src={towerIcon} alt="" /></span><span><Trans i18nKey="towerBattles" count={TOWER_FLOORS} components={[<b />]} /></span></span><button type="button" className="tower-primary" disabled={disabled} onClick={() => act('create', {tier, kit})}>{t(busy ? 'Preparing…' : 'Begin expedition')} <span aria-hidden="true">→</span></button></>}

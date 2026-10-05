@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 module.exports = async ({win, js, waitFor, ready, output}) => {
+  const locales = fs.readdirSync(path.join(__dirname, '../../locales')).filter(code => fs.existsSync(path.join(__dirname, '../../locales', code, 'locale.json')));
   const catalog = code => JSON.parse(fs.readFileSync(path.join(__dirname, '../../locales', code, 'messages.json'), 'utf8'));
   const capture = async name => fs.writeFileSync(path.join(output, `live-${name}.png`), (await win.webContents.capturePage()).toPNG());
   const switchTo = async code => {
@@ -32,7 +33,7 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   await win.loadURL('app://legion/');
   await waitFor('Boolean(document.querySelector(".title-screen-button"))');
   await js('window.liveDocument = document; true');
-  for (const code of ['pt-BR', 'pt-PT', 'ja', 'zh-Hans', 'zh-Hant', 'ko', 'fr', 'de', 'es', 'en']) {
+  for (const code of [...locales.filter(code => code !== 'en'), 'en']) {
     await switchTo(code);
     assert.equal(await js('document.querySelector(".title-screen-button").textContent'), catalog(code).Play);
     assert(!(await js('Boolean(document.querySelector(".language-select button"))')), 'Obsolete Apply button');
@@ -44,7 +45,7 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   await openSettings();
   await js('window.liveDocument = document; window.liveSettings = document.querySelector(".setting_menu"); window.liveTab = document.querySelector(".shop-content"); true');
   const englishArt = await js('document.querySelector(".menuItem").src');
-  for (const code of ['pt-BR', 'ja', 'en']) {
+  for (const code of ['pt-BR', 'ja', 'ru', 'en']) {
     await switchTo(code);
     assert(await js('liveSettings === document.querySelector(".setting_menu") && liveTab === document.querySelector(".shop-content")'), 'Open settings or shop state was reset');
     assert((await js('document.querySelector(".setting_menu").textContent')).includes(catalog(code)['Text size']));
@@ -76,5 +77,5 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   await capture('victory-pt-BR');
   await win.loadURL('app://legion/');
   await waitFor('document.documentElement.lang === "pt-BR"');
-  console.log('Live language switching: all 10 locales, preserved document/focus/dialogs, fonts, menu/guide/result artwork and saved choice pass');
+  console.log(`Live language switching: all ${locales.length} locales, preserved document/focus/dialogs, fonts, menu/guide/result artwork and saved choice pass`);
 };

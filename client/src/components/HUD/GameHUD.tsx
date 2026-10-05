@@ -319,16 +319,11 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     return (
       <div className="gamehud height_full flex flex_col justify_between padding_bottom_16"
         data-coach-focus={isHUDVisible && !this.state.gameOver && this.state.isTutorialVisible ? this.state.tutorialMessage?.focus : undefined}>
-        {isHUDVisible && (
-          <>
-            {showOverview && (
-              <div className="hud-container">
-                <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
-                <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
-              </div>
-            )}
-          </>
-        )}
+        {/* Keep the exit-dialog owner mounted while tutorial/HUD chrome is hidden. */}
+        <div className="hud-container" style={!isHUDVisible || !showOverview ? {display: 'none'} : undefined}>
+          <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
+          <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
+        </div>
         {this.state.tower && <div className="tower-combat-banner" role="status">
           <Trans i18nKey="Floor <0>{{floor}}</0>" values={{floor: this.state.tower.floor}} components={[<strong />]} />
         </div>}

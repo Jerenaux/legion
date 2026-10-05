@@ -21,6 +21,7 @@ interface Props {
     lockIcon?: string;
     'data-playmode'?: string;
     gamesUntilUnlock?: number;
+    unlockProgress?: {completed: number; required: number};
 }
 
 interface ModeInfo {
@@ -58,7 +59,7 @@ class PlayModeButton extends Component<Props> {
     }
 
     render() {
-        const { label, players, mode, disabled, lockIcon, gamesUntilUnlock, ...otherProps } = this.props;
+        const { label, players, mode, disabled, lockIcon, gamesUntilUnlock, unlockProgress, ...otherProps } = this.props;
         const modeInfo = modeInfoMap[mode];
 
         const btnIcons = {
@@ -78,7 +79,7 @@ class PlayModeButton extends Component<Props> {
                 disabled={disabled}
                 {...otherProps}
             >
-                {mode === PlayMode.TOWER && <span className="tower-mode-tag">{t("6-floor adventure")}</span>}
+                {mode === PlayMode.TOWER && !disabled && <span className="tower-mode-tag">{t("6-floor adventure")}</span>}
                 <img
                     src={btnIcons[label]}
                     alt={t(label)}
@@ -99,6 +100,7 @@ class PlayModeButton extends Component<Props> {
                                     alt={t("Locked")}
                                     className="lock-icon"
                                 />
+                                {unlockProgress && <div className="unlock-message">{t("Unlocks after {{required}} completed matches · {{completed}}/{{required}}", unlockProgress)}</div>}
                                 {gamesUntilUnlock > 0 && (
                                     <div className="unlock-message">{t("gamesToUnlock", {count: gamesUntilUnlock})}</div>
                                 )}

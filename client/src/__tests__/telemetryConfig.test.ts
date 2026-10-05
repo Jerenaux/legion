@@ -29,14 +29,16 @@ test('records only a store bundle in the packaged app, never a browser or smoke 
         globalThis.window = {location: new URL(${JSON.stringify(url)}), process: {type: 'renderer'},
           electronAPI: ${JSON.stringify(bridge ? {isPackaged: packaged, smokeTest: smoke} : null)}};
         const {telemetryConfig} = await import('./src/telemetryConfig.ts');
-        console.log(telemetryConfig.sentryReplay);
+        const {createRefreshingSocketAuth} = await import('./src/services/socketPolicy.ts');
+        const auth = await new Promise(resolve => createRefreshingSocketAuth(async () => 'token', {storeBuild: !telemetryConfig.sentryReplay})(resolve));
+        console.log(telemetryConfig.sentryReplay, auth.storeBuild);
       `],
       cwd: resolve(import.meta.dir, '../..'),
       env: {...process.env, NODE_ENV: nodeEnv, BUILD_TARGET: target, SENTRY_REPLAY_ENABLED: enabled},
       stdout: 'pipe', stderr: 'pipe',
     });
     expect(result.exitCode, scenario.name).toBe(0);
-    expect(result.stdout.toString().trim(), scenario.name).toBe(String(scenario.expected));
+    expect(result.stdout.toString().trim(), scenario.name).toBe(`${scenario.expected} ${scenario.expected}`);
   }
 });
 
@@ -82,4 +84,22 @@ test('redacts telemetry credentials without throwing on complex console argument
   expect(result).toContain('https://example.test/game');
   expect(result).toContain('[Circular]');
   expect(scrubTelemetry<unknown>({toJSON() {throw new Error('unserializable');}})).toBeNull();
+});
+
+test('LogRocket matches replay visibility and removes network credentials', () => {
+  const result = Bun.spawnSync({cmd: [process.execPath, '-e', `
+    globalThis.window = {location: new URL('app://legion/'), process: {type: 'renderer'}};
+    const {logRocketOptions: options} = await import('./src/telemetryConfig.ts');
+    const request = options.network.requestSanitizer({url:'https://user:secret@example.test/path?token=secret#secret',headers:{Authorization:'secret'},body:'secret',referrer:'secret'});
+    const response = options.network.responseSanitizer({url:'/path?token=secret',headers:{'Set-Cookie':'secret'},body:'secret'});
+    console.log(JSON.stringify({dom:options.dom,console:options.console,ip:options.shouldCaptureIP,exceptions:options.shouldDetectExceptions,request,response}));
+  `], cwd: resolve(import.meta.dir, '../..')});
+  expect(result.exitCode).toBe(0);
+  const options = JSON.parse(result.stdout.toString());
+  expect(options.dom).toEqual({textSanitizer:false,inputSanitizer:false,imageSanitizer:false});
+  expect(options.console).toEqual({isEnabled:false});
+  expect(options.ip).toBe(false);
+  expect(options.exceptions).toBe(false);
+  expect(options.request).toEqual({url:'https://example.test/path',headers:{}});
+  expect(options.response).toEqual({url:'app://legion/path',headers:{}});
 });
