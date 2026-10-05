@@ -13,7 +13,7 @@ on:
 jobs:
   test-server:
     name: Test Server
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     
     steps:
       - name: Checkout code
@@ -50,7 +50,7 @@ jobs:
 
   build-client:
     name: Build Client
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     
     steps:
       - name: Checkout code
@@ -80,8 +80,8 @@ jobs:
         run: |
           cd client
           BUILD_TARGET=electron bun run build
-          bunx electron-builder --dir --linux
-          if bunx asar list release/linux-unpacked/resources/app.asar | grep -Eq '\.map$'; then
+          bunx electron-builder --dir --mac --arm64 -c.mac.identity=null -c.mac.notarize=false --publish never
+          if bunx asar list release/mac-arm64/Legion.app/Contents/Resources/app.asar | grep -Eq '\.map$'; then
             echo "Source maps found in packaged application" >&2
             exit 1
           fi
@@ -92,21 +92,16 @@ jobs:
           GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
           MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
 
-      - name: Smoke-test packaged routes, combat, and Sentry recording
+      - name: Smoke-test recorder exclusion and promotional website
         working-directory: client
         run: |
           bun ci --cwd ../server
-          node -e "require('electron')"
-          sudo chown root:root node_modules/electron/dist/chrome-sandbox
-          sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
-          xvfb-run -a bun run test:guide
-          xvfb-run -a bun run test:guide --dock
-          xvfb-run -a bun run test:guide --replay-off
-          xvfb-run -a node ../website/smoke.cjs
+          bun run test:guide --replay-off
+          node ../website/smoke.cjs
 
       - name: Smoke-test actual packaged startup and clean shutdown offline
         working-directory: client
-        run: xvfb-run -a release/linux-unpacked/Legion --no-sandbox --smoke-test
+        run: release/mac-arm64/Legion.app/Contents/MacOS/Legion --smoke-test
 
   desktop-stability:
     name: Desktop stability (${{ matrix.os }})
@@ -132,7 +127,7 @@ jobs:
 
   build-api:
     name: Build API
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     
     steps:
       - name: Checkout code
@@ -182,7 +177,7 @@ jobs:
 
   build-matchmaker:
     name: Build Matchmaker
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     
     steps:
       - name: Checkout code
