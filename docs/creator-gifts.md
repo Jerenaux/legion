@@ -4,6 +4,9 @@ Install the Steam demo, then click the personal gift link. Steam passes the toke
 to Legion; after platform authentication and player loading, Legion redeems it
 and shows the received items. During a match, replay, queue or lobby, redemption
 waits until returning to a menu. No code-entry widget or website login is needed.
+The reward reveal uses the game's chest art, rarity-colored loot slots and sound
+settings. Hovering or focusing a reward shows its inventory card, including
+effects, classes and level requirements; gold explains its use in Shop.
 
 ## Manage gifts
 

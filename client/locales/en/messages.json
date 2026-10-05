@@ -1033,5 +1033,8 @@
   "We couldn’t claim your gift. Check your connection and try again.": "We couldn’t claim your gift. Check your connection and try again.",
   "Open Team to equip your gear. Normal class and level requirements still apply.": "Open Team to equip your gear. Normal class and level requirements still apply.",
   "Later": "Later",
-  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply."
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Hover over or focus a reward to inspect it. Equip your gear in Team.",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.",
+  "Requires level {{level}}": "Requires level {{level}}"
 }

@@ -1048,5 +1048,8 @@
   "We couldn’t claim your gift. Check your connection and try again.": "No se ha podido canjear tu regalo. Comprueba tu conexión e inténtalo de nuevo.",
   "Open Team to equip your gear. Normal class and level requirements still apply.": "Abre Equipo para equipar a tus personajes. Se siguen aplicando los requisitos habituales de clase y nivel.",
   "Later": "Más tarde",
-  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "¿Has recibido un enlace de regalo personal? Primero instala Legion y luego abre el enlace para iniciar el juego y canjear tu regalo. Los regalos se asignan a la cuenta que está jugando y solo se pueden canjear una vez. Encontrarás tus objetos en Equipo; se siguen aplicando los requisitos habituales del equipo."
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "¿Has recibido un enlace de regalo personal? Primero instala Legion y luego abre el enlace para iniciar el juego y canjear tu regalo. Los regalos se asignan a la cuenta que está jugando y solo se pueden canjear una vez. Encontrarás tus objetos en Equipo; se siguen aplicando los requisitos habituales del equipo.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Pasa el cursor sobre una recompensa o enfócala para inspeccionarla. Equipa a tus personajes en Equipo.",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Gasta oro en la Tienda para comprar consumibles, hechizos, equipo y nuevos reclutas a medida que se desbloquean.",
+  "Requires level {{level}}": "Requiere nivel {{level}}"
 }

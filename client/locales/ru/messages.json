@@ -1063,5 +1063,8 @@
   "We couldn’t claim your gift. Check your connection and try again.": "Не удалось получить подарок. Проверьте подключение и повторите попытку.",
   "Open Team to equip your gear. Normal class and level requirements still apply.": "Откройте раздел «Команда», чтобы надеть снаряжение. Обычные требования к классу и уровню сохраняются.",
   "Later": "Позже",
-  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Получили личную ссылку на подарок? Сначала установите Legion, затем откройте ссылку, чтобы запустить игру и получить подарок. Подарок выдаётся текущей игровой учётной записи и может быть получен только один раз. Снаряжение находится в разделе «Команда»; обычные требования к его использованию сохраняются."
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Получили личную ссылку на подарок? Сначала установите Legion, затем откройте ссылку, чтобы запустить игру и получить подарок. Подарок выдаётся текущей игровой учётной записи и может быть получен только один раз. Снаряжение находится в разделе «Команда»; обычные требования к его использованию сохраняются.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Наведите курсор на награду или выберите её с клавиатуры, чтобы узнать подробности. Наденьте снаряжение в разделе «Команда».",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Тратьте золото в магазине на расходуемые предметы, заклинания, снаряжение и новых бойцов по мере их открытия.",
+  "Requires level {{level}}": "Требуется уровень {{level}}"
 }

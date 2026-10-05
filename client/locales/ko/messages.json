@@ -1033,5 +1033,8 @@
   "We couldn’t claim your gift. Check your connection and try again.": "선물을 받지 못했습니다. 연결을 확인하고 다시 시도해 주세요.",
   "Open Team to equip your gear. Normal class and level requirements still apply.": "팀을 열어 장비를 장착하세요. 일반적인 직업 및 레벨 조건이 적용됩니다.",
   "Later": "나중에",
-  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "개인 선물 링크를 받으셨나요? 먼저 Legion을 설치한 뒤 링크를 열어 게임을 실행하고 선물을 받으세요. 선물은 현재 플레이 중인 계정에 지급되며 한 번만 받을 수 있습니다. 팀에서 장비를 확인하세요. 일반적인 장비 조건이 적용됩니다."
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "개인 선물 링크를 받으셨나요? 먼저 Legion을 설치한 뒤 링크를 열어 게임을 실행하고 선물을 받으세요. 선물은 현재 플레이 중인 계정에 지급되며 한 번만 받을 수 있습니다. 팀에서 장비를 확인하세요. 일반적인 장비 조건이 적용됩니다.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "보상에 마우스를 올리거나 키보드로 선택하면 자세히 볼 수 있습니다. 팀에서 장비를 장착하세요.",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "골드로 상점에서 해금된 소모품, 주문, 장비, 새로운 동료를 구매할 수 있습니다.",
+  "Requires level {{level}}": "필요 레벨: {{level}}"
 }

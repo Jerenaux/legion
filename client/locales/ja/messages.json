@@ -1033,5 +1033,8 @@
   "We couldn’t claim your gift. Check your connection and try again.": "ギフトを受け取れませんでした。接続を確認して、もう一度お試しください。",
   "Open Team to equip your gear. Normal class and level requirements still apply.": "「チーム」を開いて装備してください。通常のクラス・レベル条件が適用されます。",
   "Later": "後で",
-  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "個人向けのギフトリンクを受け取りましたか？まずLegionをインストールしてから、リンクを開いてゲームを起動し、ギフトを受け取ってください。ギフトは現在プレイ中のアカウントに付与され、受け取りは一度限りです。装備は「チーム」で確認できます。通常の装備条件が適用されます。"
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "個人向けのギフトリンクを受け取りましたか？まずLegionをインストールしてから、リンクを開いてゲームを起動し、ギフトを受け取ってください。ギフトは現在プレイ中のアカウントに付与され、受け取りは一度限りです。装備は「チーム」で確認できます。通常の装備条件が適用されます。",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "報酬にカーソルを合わせるか、キーボードで選択すると詳細を確認できます。「チーム」で装備しましょう。",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "ゴールドはショップで、解放された消耗品、魔法、装備、新しい仲間の購入に使えます。",
+  "Requires level {{level}}": "必要レベル：{{level}}"
 }

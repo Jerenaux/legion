@@ -24,6 +24,10 @@ export function ItemTooltip({id, showClasses = true}: {id: string; showClasses?:
     render={({activeAnchor}) => {
       const itemId = Number(activeAnchor?.getAttribute('data-tooltip-item-id'));
       const type = activeAnchor?.getAttribute('data-tooltip-item-type');
+      if (type === 'gold') return <div className="item-preview">
+        <strong className="item-preview-name">{t('Gold')}</strong>
+        <p className="item-preview-description">{t('Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.')}</p>
+      </div>;
       const item = type === InventoryType.CONSUMABLES ? getConsumableById(itemId)
         : type === InventoryType.SPELLS ? getSpellById(itemId)
         : type === InventoryType.EQUIPMENTS ? getEquipmentById(itemId) : null;
@@ -69,5 +73,6 @@ function ItemTooltipContent({item, showClasses}: {
     </div>}
     {showClasses && 'classes' in item && item.classes.length > 0 &&
       <p className="item-preview-classes">{item.classes.map(classEnumToString).join(' · ')}</p>}
+    {'minLevel' in item && <p className="item-preview-classes">{t('Requires level {{level}}', {level: item.minLevel})}</p>}
   </div>;
 }

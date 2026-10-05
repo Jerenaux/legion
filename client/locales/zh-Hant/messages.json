@@ -1033,5 +1033,8 @@
   "We couldn’t claim your gift. Check your connection and try again.": "未能領取禮物。請檢查網路連線後重試。",
   "Open Team to equip your gear. Normal class and level requirements still apply.": "開啟隊伍頁面以穿戴裝備。一般的職業和等級要求仍然適用。",
   "Later": "稍後",
-  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "收到了專屬禮物連結？請先安裝 Legion，再開啟連結啟動遊戲並領取禮物。禮物會發放到目前遊玩的帳號，且只能領取一次。在隊伍頁面查看裝備；一般的裝備要求仍然適用。"
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "收到了專屬禮物連結？請先安裝 Legion，再開啟連結啟動遊戲並領取禮物。禮物會發放到目前遊玩的帳號，且只能領取一次。在隊伍頁面查看裝備；一般的裝備要求仍然適用。",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "將滑鼠移至獎勵上，或用鍵盤選取獎勵，即可查看詳情。在隊伍頁面穿戴裝備。",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "在商店花費金幣，購買已解鎖的消耗品、法術、裝備和新隊員。",
+  "Requires level {{level}}": "需要等級 {{level}}"
 }

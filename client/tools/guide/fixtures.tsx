@@ -148,7 +148,7 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
   if (endpoint === 'redeemGift') {
     giftCheck.requests++;
     if (giftCheck.status === 'error') throw new Error('Expected gift timeout');
-    return {status: giftCheck.status, rewards: [{type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 2}, {type: RewardType.GOLD, id: 0, amount: 500}]};
+    return {status: giftCheck.status, rewards: [{type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 2}, {type: RewardType.CONSUMABLES, id: 0, amount: 3}, {type: RewardType.GOLD, id: 0, amount: 500}]};
   }
   if (endpoint === 'tower') {
     towerCheck.requests.push(options.body?.action || 'read');
