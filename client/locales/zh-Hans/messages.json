@@ -845,7 +845,6 @@
   "The combat badge shows your current floor. In Ember Approach, two fire mages stand beyond a wall of flame spanning the arena. Cast across it, or extinguish a section with Ice to cross safely.": "战斗徽章显示当前楼层。在余烬之径，两名火焰法师站在横贯竞技场的火墙后。你可以隔着火墙施法，或用寒冰熄灭一段火焰，安全通过。",
   "The Warden marks tiles before its next turn. Move away from those warning symbols before the blast. It leaves fire behind; the turn order shows when it will act.": "守卫会在下个回合前标记格子。爆炸前，请离开带有警告标记的位置。攻击后会留下火焰；通过行动顺序可以判断它何时出手。",
   "Gold, XP, and milestone items are banked after each victory. XP is shared across your permanent roster. Defeat or retirement ends the run but keeps everything already banked. Higher floors pay more. Clearing a tier unlocks the next, up to Tier 5; each tier adds 15% enemy HP and attack power and 20% account rewards. Your first clear also unlocks the Control starting kit.": "每次获胜后，金币、经验和阶段物品奖励都会入账。经验分配给常驻队伍。失败或撤退会结束远征，但已入账的奖励全部保留。楼层越高，奖励越多。通关一个难度阶级会解锁下一级，最高为第 5 阶；每阶敌人的 HP 和攻击力增加 15%，账号奖励增加 20%。首次通关还会解锁控制型初始配置。",
-  "Tower encounters do not increase ELO, league results, or completed-match unlock counters. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.": "塔楼遭遇战不增加 ELO、联赛战绩或解锁所需的完成对局数。无入场费，也无每日次数限制。可以在战斗间隙离开，之后再回来。短暂断线会暂停战斗；若无法继续，则从该场战斗保存的初始状态重新开始。需要连接互联网。",
   "Outside the Tower, the standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.": "塔楼以外，标准回合时间为<0>{{value0}} 秒</0>。在其他角色行动时规划策略，并通过沙漏查看剩余时间。超时后，你将失去本次行动机会。",
   "The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act.": "竞技场底部的行动顺序头像，展示即将行动的角色顺序。",
   "Choose a spell in the centre of the bottom command dock, check its highlighted area, then click a valid target or tile. Each spell shows its MP cost; casting spends MP.": "在底部操作栏中央选择法术，确认高亮范围，再点击有效目标或格子。每个法术均显示 MP 消耗，施法会消耗 MP。",
@@ -985,7 +984,6 @@
   "Unable to act": "无法行动",
   "BOSS": "首领",
   "Gate Sentry": "门口哨兵",
-  "Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. Tower battles do not count toward ranked results, ELO, or match-count unlocks.": "每阶敌人的 HP 和攻击力增加 15%，金币和经验增加 20%。通关后解锁下一阶，最高为第 5 阶。塔楼战斗不计入排位战绩、ELO 或按对局数解锁的进度。",
   "Mana after selected spell": "所选法术施放后的魔力",
   "+25% gold / XP": "金币 / 经验 +25%",
   "Sculptor of Ice": "冰之雕塑家",
@@ -1017,5 +1015,13 @@
   "towerBattles_one": "<0>{{count}}</0> 场战斗",
   "towerBattles_other": "<0>{{count}}</0> 场战斗",
   "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "在 Steam 上，默认使用你在 Steam 中设置的语言。在游戏内选择的语言优先。",
-  "Roster cards show each character’s class, name, level and unspent SP.": "队伍卡片显示每名角色的职业、姓名、等级和未使用的属性点。"
+  "Roster cards show each character’s class, name, level and unspent SP.": "队伍卡片显示每名角色的职业、姓名、等级和未使用的属性点。",
+  "Unlocks after {{required}} completed matches · {{completed}}/{{required}}": "完成 {{required}} 场对局后解锁 · {{completed}}/{{required}}",
+  "Unlocks after {{required}} completed matches.": "完成 {{required}} 场对局后解锁。",
+  "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "率领临时小队，自由挑战回合不限时的单人远征。商店也已开放更多法术。",
+  "Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.": "率领临时小队，你的原有阵容不受影响。HP、MP 和补给会延续到下一层，回合没有时间限制。",
+  "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "为本次远征选择一项准备。在进入下一层之前，恢复小队、补充物资或学习法术。",
+  "Cinder Tower & more spells": "余烬之塔 · 更多法术",
+  "One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.": "每次以胜利或失败结束的远征，均计为解锁进度中的一场对局。撤离或放弃战斗不计入。塔楼不会影响排位战绩或 ELO。无入场费，也无每日次数限制。可以在战斗间隙离开，之后再回来。短暂断线会暂停战斗；若无法继续，则从该场战斗保存的初始状态重新开始。需要连接互联网。",
+  "Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO.": "每阶敌人的 HP 和攻击力增加 15%，金币和经验增加 20%。通关后解锁下一阶，最高为第 5 阶。每次以胜利或失败结束的远征，均计为解锁进度中的一场对局。撤离或放弃战斗不计入。塔楼不会影响排位战绩或 ELO。"
 }

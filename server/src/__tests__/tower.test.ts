@@ -173,3 +173,21 @@ test('an expired reconnect can restart its checkpoint without a normal match res
   expect(game.hasPendingResult).toBe(false);
   expect(game.gameOutcomes.size).toBe(0);
 });
+
+test('giving up reports retirement while a natural defeat remains eligible for progression', async () => {
+  const request = spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"saved":true}'));
+  for (const abandoned of [true, false]) {
+    const game = await battle();
+    game.combatStarted = true;
+    const connection = {uid: 'p1'} as unknown as Socket;
+    game.socketMap.set(connection, game.teams.get(1)!);
+    if (abandoned) game.abandonGame(connection);
+    else { game.getTeam(1).forEach(unit => {unit.hp = 0;}); game.endGame(2); }
+    const body = JSON.parse(request.mock.calls.at(-1)![1]!.body as string);
+    expect(body.result.abandoned).toBe(abandoned);
+    expect(body.result.won).toBe(false);
+    const run = structuredClone(game.run);
+    finishTowerBattle(run, body.result);
+    expect(run.phase).toBe(abandoned ? 'retired' : 'lost');
+  }
+});

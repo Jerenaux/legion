@@ -13,6 +13,7 @@ export class TowerGame extends AIGame {
   private result: TowerBattleResult | null = null;
   private saving: Promise<void> | null = null;
   private saved = false;
+  private abandoned = false;
   private warning: {x: number; y: number}[] = [];
 
   constructor(id: string, mode: PlayMode, league: League, io: Server, readonly run: TowerRun) {
@@ -111,13 +112,19 @@ export class TowerGame extends AIGame {
     super.startGame();
   }
 
+  abandonGame(socket: Socket) {
+    if (this.socketMap.get(socket)?.id !== 1) return;
+    this.abandoned = true;
+    super.abandonGame(socket);
+  }
+
   endGame(winner: number) {
     if (this.gameOver) return;
     if (!this.combatStarted) { super.endGame(winner); return; }
     this.gameOver = true;
     this.endedAt = Date.now();
     this.clearTimers();
-    this.result = {won: winner === 1, units: this.getTeam(1).map(unit => ({hp: unit.hp, mp: unit.mp, inventory: unit.getNetworkInventory()}))};
+    this.result = {won: winner === 1, abandoned: this.abandoned, units: this.getTeam(1).map(unit => ({hp: unit.hp, mp: unit.mp, inventory: unit.getNetworkInventory()}))};
     void this.saveResult();
   }
 

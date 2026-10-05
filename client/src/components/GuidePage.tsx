@@ -80,6 +80,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="tower">
             <h2 id="tower" tabIndex={-1}>{t("The Cinder Tower")}</h2>
+            <p>{t("Unlocks after {{required}} completed matches.", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</p>
             <p>{t("On Play, choose the golden rook to the right of Ranked. Choose Balanced or Control, set the difficulty, and use Begin expedition in the bottom bar. Rules & rewards opens the full rules.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Choose <0>The Cinder Tower</0> on Play for an online solo expedition. A temporary Warrior, White Mage, and Black Mage climb six floors, ending with the Cinder Warden. Turns have no deadline, so the combat dock shows no timer. Enemies have boosted health, mana, attack, defenses, and speed. Your main roster and owned consumables are separate from this squad."} components={[<strong />]} /></p>
             <figure><img src={tower} width="1600" height="840" loading="lazy" alt={t("The tower route screen with the expedition squad, banked rewards, and a choice between the Broken Gate and the more dangerous Ember Approach.")} /><figcaption>{t("Follow your ascent on the left. Check your squad, compare the enemy lineups, and choose your next encounter. Dangerous paths award 25% more gold and XP.")}</figcaption></figure>
@@ -88,7 +89,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t("The combat badge shows your current floor. In Ember Approach, two fire mages stand beyond a wall of flame spanning the arena. Cast across it, or extinguish a section with Ice to cross safely.")}</p>
             <p>{t("The Warden marks tiles before its next turn. Move away from those warning symbols before the blast. It leaves fire behind; the turn order shows when it will act.")}</p>
             <p>{t("Gold, XP, and milestone items are banked after each victory. XP is shared across your permanent roster. Defeat or retirement ends the run but keeps everything already banked. Higher floors pay more. Clearing a tier unlocks the next, up to Tier 5; each tier adds 15% enemy HP and attack power and 20% account rewards. Your first clear also unlocks the Control starting kit.")}</p>
-            <p>{t("Tower encounters do not increase ELO, league results, or completed-match unlock counters. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.")}</p>
+            <p>{t("One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.")}</p>
           </section>
 
           <section aria-labelledby="combat">
@@ -177,6 +178,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.SPELLS_BATCH_1]})}</dt><dd>{t("The first spell purchases.")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.EQUIPMENT_BATCH_1]})}</dt><dd>{t("The first equipment purchases.")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.RANKED_MODE]})}</dt><dd>{t("Ranked mode and the league leaderboard.")}</dd></div>
+              <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</dt><dd>{t("The Cinder Tower")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.DAILY_LOOT]})}</dt><dd>{t("Daily loot. Check its keys and countdowns on Play.")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES]})}</dt><dd>{t("Character purchases to expand your roster.")}</dd></div>
             </dl>

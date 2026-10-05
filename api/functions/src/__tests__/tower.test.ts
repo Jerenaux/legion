@@ -77,11 +77,12 @@ test('concurrent/retried settlement banks each milestone once and never overwrit
     const result = victory(run!);
     await Promise.all([settleTowerBattle(db, gameId, result), settleTowerBattle(db, gameId, result)]);
     ({run} = await towerAction(db, 'p1', null));
+    expect(rows.get('players/p1').engagementStats.completedGames).toBe(floor < 5 ? 7 : 8);
     if (floor < 5) ({run} = await towerAction(db, 'p1', action(run!, 'upgrade', {upgrade: 'rest'})));
   }
   const player = rows.get('players/p1');
-  expect(player.gold).toBe(655); expect(player.xp).toBe(900); expect(player.towerHighestClear).toBe(1);
-  expect(player.elo).toBe(500); expect(player.engagementStats.completedGames).toBe(7);
+  expect(player.gold).toBe(855); expect(player.xp).toBe(900); expect(player.towerHighestClear).toBe(1);
+  expect(player.elo).toBe(500); expect(player.engagementStats.completedGames).toBe(8);
   expect(player.inventory.consumables).toEqual([8, 0, 1]); expect(player.inventory.spells).toEqual([6]);
   expect(run!.phase).toBe('won');
   for (const id of ['a', 'b']) {
@@ -104,7 +105,52 @@ test('invalid results roll back, and defeat preserves earlier rewards', async ()
   ({run} = await towerAction(db, 'p1', null));
   ({run} = await towerAction(db, 'p1', action(run!, 'upgrade', {upgrade: 'rest'})));
   ({run} = await towerAction(db, 'p1', action(run!, 'battle', {encounter: 'sanctum'})));
-  await settleTowerBattle(db, run!.gameId!, {...victory(run!), won: false});
+  await settleTowerBattle(db, run!.gameId!, {won: false, units: victory(run!).units.map(unit => ({...unit, hp: 0}))});
   ({run} = await towerAction(db, 'p1', null));
-  expect(run!.phase).toBe('lost'); expect(run!.earned.gold).toBe(20); expect(rows.get('players/p1').gold).toBe(120);
+  expect(run!.phase).toBe('lost'); expect(run!.earned.gold).toBe(20); expect(rows.get('players/p1').gold).toBe(320);
+  expect(rows.get('players/p1').engagementStats.completedGames).toBe(8);
+});
+
+
+test('Tower requires six completed matches after the introductory tutorial, including direct API calls', async () => {
+  const {db, rows} = store();
+  for (const count of [0, 1, 6]) {
+    rows.get('players/p1').engagementStats.completedGames = count;
+    await expect(towerAction(db, 'p1', null)).rejects.toThrow('Complete more matches');
+    for (const action of ['create', 'battle', 'upgrade']) {
+      await expect(towerAction(db, 'p1', {action, tier: 1, kit: 'balanced'})).rejects.toThrow('Complete more matches');
+    }
+    expect(rows.has('players/p1/tower/current')).toBe(false);
+  }
+  rows.get('players/p1').engagementStats.completedGames = 7;
+  expect((await towerAction(db, 'p1', {action: 'create', tier: 1, kit: 'balanced'})).run?.phase).toBe('ready');
+});
+
+test('retirement, giving up, and legacy abandonments never earn progression credit', async () => {
+  const {db, rows} = store();
+  let {run} = await towerAction(db, 'p1', {action: 'create', tier: 1, kit: 'balanced'});
+  await towerAction(db, 'p1', action(run!, 'retire'));
+  expect(rows.get('players/p1').engagementStats.completedGames).toBe(7);
+  for (const abandoned of [true, undefined]) {
+    ({run} = await towerAction(db, 'p1', {action: 'create', tier: 1, kit: 'balanced'}));
+    ({run} = await towerAction(db, 'p1', action(run!, 'battle', {encounter: 'gate'})));
+    const result = {...victory(run!), won: false, abandoned};
+    await Promise.all([settleTowerBattle(db, run!.gameId!, result), settleTowerBattle(db, run!.gameId!, result)]);
+    expect(rows.get('players/p1').engagementStats.completedGames).toBe(7);
+    expect(rows.get('players/p1').gold).toBe(100);
+  }
+});
+
+test('a defeated expedition grants the matching unlock reward once without consuming owned items', async () => {
+  const {db, rows} = store();
+  rows.get('players/p1').engagementStats.completedGames = 9;
+  let {run} = await towerAction(db, 'p1', {action: 'create', tier: 1, kit: 'balanced'});
+  ({run} = await towerAction(db, 'p1', action(run!, 'battle', {encounter: 'gate'})));
+  const result = {won: false, units: victory(run!).units.map(unit => ({...unit, hp: 0}))};
+  await Promise.all([settleTowerBattle(db, run!.gameId!, result), settleTowerBattle(db, run!.gameId!, result)]);
+  const player = rows.get('players/p1');
+  expect(player.engagementStats.completedGames).toBe(10);
+  expect(player.inventory.consumables).toEqual([8, 11]);
+  expect(player.gold).toBe(300);
+  expect(player.elo).toBe(500);
 });

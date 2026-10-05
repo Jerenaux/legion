@@ -1,6 +1,6 @@
 # The Cinder Tower
 
-An online solo expedition, entered from Play → The Cinder Tower. It uses the existing authoritative combat server and six authored encounters per run. Five branching floors lead to the Cinder Warden. Difficulty tiers 1–5 unlock in order; the first clear also unlocks a Control starting kit. No desktop release or deployment is triggered by this feature itself.
+An online solo expedition, unlocked after six completed matches beyond the introductory tutorial and entered from Play → The Cinder Tower. The Play card shows progress while locked; the API enforces the same threshold. It uses the existing authoritative combat server and six authored encounters per run. Five branching floors lead to the Cinder Warden. Difficulty tiers 1–5 unlock in order; the first clear also unlocks a Control starting kit. No desktop release or deployment is triggered by this feature itself.
 
 ## Rules and content
 
@@ -24,7 +24,7 @@ Only the game server can call `towerResult` using the API key. It validates reso
 
 Tier 1 standard routes award 555 gold, 900 total XP, Potion, Ether, Ice scroll and Dagger across a complete run. Higher floors award progressively more; elite routes add 25% gold/XP and each tier adds 20%. Final scroll alternates between Ice and Thunder by tier. XP is shared across the current permanent roster. Main-roster inventory, spells and combat stats are never replaced. These are initial balance values to tune against observed run duration and completion rate.
 
-Floors do not grant match-count unlocks, ELO, league results, daily keys, or practice/adaptive-AI statistics. Account rewards already earned remain after defeat or retirement. There is no entry charge, ticket limit, or exclusive competitive equipment.
+One expedition ending in victory or natural defeat grants one completed-match credit and its milestone unlock rewards, atomically with the final encounter receipt. Individual floors, retirement and giving up grant no credit. Defeat from older servers only qualifies when all squad members have zero HP, preventing their unmarked abandonments from earning credit. ELO, league results, daily keys and practice/adaptive-AI statistics are unchanged. Account rewards already earned remain after defeat or retirement. There is no entry charge, ticket limit, or exclusive competitive equipment.
 
 ## Validation and playtesting
 
@@ -34,6 +34,8 @@ Floors do not grant match-count unlocks, ELO, league results, daily keys, or pra
 - `node tools/guide/capture.cjs --tower-images` in `client`: refresh only the tower guide crop using local fixtures. Fixtures never ship.
 
 Human playtests should check whether players want another run before rewards are emphasized, whether later milestones beat restarting easy floors for reward efficiency, which preparations are consistently skipped, and whether the Warden's warning leaves a useful response for each turn order. No win-rate or completion-time target has been verified with human playtests yet.
+
+First entry explains the temporary squad and persistent HP/MP/supplies inline. The first preparation choice explains upgrades when they become relevant. Match six combines the Tower and spell announcement into one optional invitation.
 
 ## Visual presentation
 

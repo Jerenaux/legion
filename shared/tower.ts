@@ -152,9 +152,10 @@ export function towerReward(floor: number, tier: number, elite: boolean): TowerR
     items: floor === 2 ? [{type: RewardType.CONSUMABLES, id: 0, amount: 1}, {type: RewardType.CONSUMABLES, id: 1, amount: 1}] : floor === 5 ? [{type: RewardType.SPELL, id: tier % 2 ? 6 : 3, amount: 1}, {type: RewardType.EQUIPMENT, id: 5, amount: 1}] : []};
 }
 
-export interface TowerBattleResult {won: boolean; units: {hp: number; mp: number; inventory: number[]}[]}
+export interface TowerBattleResult {won: boolean; abandoned?: boolean; units: {hp: number; mp: number; inventory: number[]}[]}
 export function finishTowerBattle(run: TowerRun, result: TowerBattleResult): TowerReward {
   if (run.phase !== 'battle' || typeof result?.won !== 'boolean' || !Array.isArray(result.units) || result.units.length !== run.squad.length) throw new Error('Invalid tower result.');
+  if ((result.abandoned !== undefined && typeof result.abandoned !== 'boolean') || (result.abandoned && result.won)) throw new Error('Invalid tower outcome.');
   result.units.forEach((state, index) => {
     const unit = run.squad[index];
     if (!Number.isInteger(state.hp) || state.hp < 0 || state.hp > unit.character.stats.hp || !Number.isInteger(state.mp) || state.mp < 0 || state.mp > unit.character.stats.mp || !Array.isArray(state.inventory)) throw new Error('Invalid tower resources.');
@@ -185,7 +186,7 @@ export function finishTowerBattle(run: TowerRun, result: TowerBattleResult): Tow
     }
     run.phase = run.floor === TOWER_FLOORS ? 'won' : 'choice';
     run.offers = run.phase === 'choice' ? towerOffers(run) : [];
-  } else run.phase = 'lost';
+  } else run.phase = result.abandoned ? 'retired' : 'lost';
   run.revision++;
   return reward;
 }
