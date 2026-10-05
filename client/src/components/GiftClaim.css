@@ -1,0 +1,31 @@
+.gift-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 75%);
+}
+.gift-dialog {
+  box-sizing: border-box;
+  width: min(100%, 480px);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  padding: clamp(16px, 3vw, 28px);
+  border: 1px solid #ba9958;
+  border-radius: 8px;
+  background: #1c252f;
+  color: #edf1f5;
+  font-size: 1rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.gift-dialog h2 { margin: 0 0 16px; color: #efd184; font-size: 1.5rem; }
+.gift-rewards { list-style: none; padding: 0; margin: 20px 0; }
+.gift-rewards li { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
+.gift-rewards strong { margin-left: auto; flex-shrink: 0; }
+.gift-icon { width: 32px; height: 32px; flex-shrink: 0; background-repeat: no-repeat; }
+.gift-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+.gift-actions button { padding: 10px 18px; border: 1px solid #e9c66d; border-radius: 4px; background: #e9c66d; color: #151d27; font: inherit; cursor: pointer; }
+.gift-actions button:focus-visible { outline: 3px solid white; outline-offset: 3px; }

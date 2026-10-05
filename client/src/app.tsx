@@ -9,6 +9,7 @@ import PlayerProvider from './providers/PlayerProvider';
 import HomePage from './routes/HomePage';
 import GamePage from './routes/GamePage';
 import Root from './routes/Root';
+import GiftClaim from './components/GiftClaim';
 import withAuth from './components/withAuth';
 
 import {setUser} from './telemetry';
@@ -193,6 +194,7 @@ class App extends Component<{}, AppState> {
         return (
             <AuthProvider>
                 <PlayerProvider>
+                    <GiftClaim blocked={['game', 'replay', 'queue', 'lobby'].includes(this.state.currentMainRoute)} />
                     <PlayerContext.Consumer>
                         {({ refreshAllData, updateActiveCharacter }) => (
                                 <Router onChange={(e: RouterOnChangeArgs) => this.handleRoute(e, refreshAllData, updateActiveCharacter)}>

@@ -1023,5 +1023,15 @@
   "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "為本次遠征選擇一項準備。在進入下一層之前，恢復小隊、補充物資或學習法術。",
   "Cinder Tower & more spells": "餘燼之塔 · 更多法術",
   "One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.": "每次以勝利或失敗結束的遠征，均計為解鎖進度中的一場對局。撤離或放棄戰鬥不計入。塔樓不會影響積分戰績或 ELO。無入場費，也無每日次數限制。可以在戰鬥間隙離開，之後再回來。短暫斷線會暫停戰鬥；若無法繼續，則從該場戰鬥儲存的初始狀態重新開始。需要連線網際網路。",
-  "Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO.": "每階敵人的 HP 和攻擊力增加 15%，金幣和經驗增加 20%。通關後解鎖下一階，最高為第 5 階。每次以勝利或失敗結束的遠征，均計為解鎖進度中的一場對局。撤離或放棄戰鬥不計入。塔樓不會影響積分戰績或 ELO。"
+  "Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO.": "每階敵人的 HP 和攻擊力增加 15%，金幣和經驗增加 20%。通關後解鎖下一階，最高為第 5 階。每次以勝利或失敗結束的遠征，均計為解鎖進度中的一場對局。撤離或放棄戰鬥不計入。塔樓不會影響積分戰績或 ELO。",
+  "Your gift": "你的禮物",
+  "Your gear is ready": "裝備已就緒",
+  "Claiming your gift…": "正在領取禮物…",
+  "Your gift has been added to your shared inventory.": "禮物已加入共用物品欄。",
+  "You already claimed this gift. Your gear is in your shared inventory.": "你已領取過這份禮物。裝備在共用物品欄中。",
+  "This gift link is invalid, expired, revoked, or already used by another player.": "此禮物連結無效、已過期、已撤銷，或已被其他玩家使用。",
+  "We couldn’t claim your gift. Check your connection and try again.": "未能領取禮物。請檢查網路連線後重試。",
+  "Open Team to equip your gear. Normal class and level requirements still apply.": "開啟隊伍頁面以穿戴裝備。一般的職業和等級要求仍然適用。",
+  "Later": "稍後",
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "收到了專屬禮物連結？請先安裝 Legion，再開啟連結啟動遊戲並領取禮物。禮物會發放到目前遊玩的帳號，且只能領取一次。在隊伍頁面查看裝備；一般的裝備要求仍然適用。"
 }

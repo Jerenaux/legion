@@ -40,8 +40,8 @@ test.each(["", "invalid", "-1", "1.5", "4294967296"])("ignores invalid Steam App
   expect(loadSteamworks).not.toHaveBeenCalled();
 });
 
-test("falls back to a direct session when Steam initialization fails", async () => {
-  await expect(getPlatformAuth({SteamAppId: "3996730"}, () => { throw new Error("Steam is not running"); })).resolves.toBeNull();
+test("does not silently switch a Steam player to a device account when Steam is unavailable", async () => {
+  await expect(getPlatformAuth({SteamAppId: "3996730"}, () => { throw new Error("Steam is not running"); })).rejects.toThrow('Steam authentication is unavailable');
 });
 
 test("can force a direct session for local development", async () => {
