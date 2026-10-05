@@ -1,3 +1,71 @@
+.team-page, .rosterContainer {
+    --team-surface: oklch(0.27 0.025 250);
+    --team-raised: oklch(0.32 0.03 230);
+    --team-edge: oklch(0.44 0.035 230);
+    --team-muted: oklch(0.75 0.025 230);
+    --team-selection: oklch(0.85 0.12 205);
+}
+
+:is(.team-page, .rosterContainer) [data-class] {
+    --class-color: oklch(0.92 0.01 230);
+    --class-emblem: none;
+}
+
+:is(.team-page, .rosterContainer) [data-class="WARRIOR"] {
+    --class-emblem: '';
+    --class-color: oklch(0.85 0.12 78);
+    --class-frame: url('@assets/HUD/class_icon_frame_w.png');
+    --class-icon: url('@assets/shop/warrior_icon.png');
+}
+
+:is(.team-page, .rosterContainer) [data-class="WHITE_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.94 0.025 155);
+    --class-frame: url('@assets/HUD/class_icon_frame_wm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+:is(.team-page, .rosterContainer) [data-class="BLACK_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.83 0.10 300);
+    --class-frame: url('@assets/HUD/class_icon_frame_bm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+.team-class-label {
+    position: relative;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--class-color);
+    font-family: var(--locale-font, Kim), system-ui, sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.25;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+
+.team-class-label::before {
+    content: var(--class-emblem);
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    background: var(--class-frame) center / contain no-repeat;
+}
+
+.team-class-label::after {
+    content: var(--class-emblem);
+    position: absolute;
+    left: 8px;
+    top: calc(50% - 8px);
+    width: 14px;
+    height: 16px;
+    background: oklch(0.2 0.02 250);
+    mask: var(--class-icon) center / contain no-repeat;
+}
+
 .rosterContainer {
     max-width: 1024px;
     margin: auto;
@@ -39,40 +107,33 @@
 .roster-capacity-marks .is-filled { background: oklch(79% 0.12 80); }
 
 .rosters {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
     gap: 14px;
-}
-
-.rosters .endgame_character,
-.roster-slot {
-    box-sizing: border-box;
-    width: 159px;
-    height: 168px;
 }
 
 .roster-slot {
     position: relative;
-    min-height: 168px;
+    min-height: 104px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 14px 8px;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 14px 12px 14px 88px;
     border: 1px dashed oklch(37% 0.03 220);
     border-radius: 8px;
     background: oklch(19% 0.025 240 / 0.45);
     color: oklch(71% 0.025 220);
     font: 0.8125rem var(--locale-font, Kim), system-ui, sans-serif;
-    text-align: center;
+    text-align: left;
     text-decoration: none;
 }
 
 .roster-future-portrait {
     position: absolute;
-    top: 34px;
+    top: calc(50% - 40px);
+    left: 8px;
     width: 80px;
     height: 80px;
     background-position: -40px -40px;
@@ -84,7 +145,8 @@
 
 .roster-slot-plus {
     position: absolute;
-    top: 57px;
+    top: calc(50% - 16px);
+    left: 38px;
     font: 2rem/1 var(--locale-font, Arial), system-ui, sans-serif;
     color: oklch(63% 0.035 220);
 }
@@ -137,8 +199,113 @@
 
 @media (max-width: 700px) {
     .rosters { gap: 10px; }
-    .rosters .endgame_character, .roster-slot { width: calc((100% - 30px) / 4); min-width: 120px; }
-    .roster-heading { align-items: center; }
+    .roster-heading { align-items: center; flex-wrap: wrap; }
     .roster-capacity { gap: 8px; }
     .roster-capacity-marks { gap: 3px; }
+}
+
+.roster-character {
+    position: relative;
+    isolation: isolate;
+    text-align: left;
+    font: inherit;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    min-height: 104px;
+    padding: 6px 16px 6px 8px;
+    border: 1px solid var(--team-edge);
+    border-radius: 4px;
+    background: var(--team-surface);
+    box-shadow: inset 0 0 0 3px oklch(0.21 0.025 250);
+    color: oklch(0.95 0.01 230);
+    cursor: pointer;
+    transition: background-color 160ms ease-out, border-color 160ms ease-out;
+}
+
+.roster-character:hover {
+    background: var(--team-raised);
+    border-color: var(--team-muted);
+}
+
+.roster-character[aria-pressed="true"] {
+    background: var(--team-raised);
+    border-color: var(--team-selection);
+    box-shadow: inset 0 0 0 3px oklch(0.21 0.025 250), inset 0 0 0 4px oklch(0.55 0.06 210);
+}
+
+.roster-character[aria-pressed="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    left: calc(50% - 6px);
+    width: 12px;
+    height: 12px;
+    background: var(--team-raised);
+    border-right: 1px solid var(--team-selection);
+    border-bottom: 1px solid var(--team-selection);
+    transform: rotate(45deg);
+}
+
+.roster-character:focus-visible {
+    outline: 2px solid oklch(0.88 0.12 85);
+    outline-offset: 4px;
+}
+
+.roster-character:active {
+    background: oklch(0.36 0.03 230);
+}
+
+.roster-portrait {
+    flex: 0 0 72px;
+    height: 88px;
+    position: relative;
+}
+
+.roster-portrait > span {
+    display: block;
+    width: 80px;
+    height: 96px;
+    transform: scale(0.9);
+    transform-origin: top left;
+    background-repeat: no-repeat;
+    animation: animate-sprite 0.7s steps(1) infinite;
+    image-rendering: pixelated;
+}
+
+.roster-identity {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: var(--locale-font, Kim), system-ui, sans-serif;
+}
+
+.roster-name {
+    max-width: calc(100% - 38px);
+    margin: 4px 0 2px 38px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9375rem;
+}
+
+.roster-level {
+    margin-left: 38px;
+    color: var(--team-muted);
+    font-size: 0.75rem;
+}
+
+.roster-sp {
+    margin: 4px 0 0 38px;
+    font-family: var(--locale-font, Kim), system-ui, sans-serif;
+    font-size: 0.6875rem;
+    color: oklch(0.85 0.12 78);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .roster-portrait > span { animation: none; background-position: -40px -40px; }
+    .roster-character { transition: none; }
 }

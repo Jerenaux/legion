@@ -1343,7 +1343,7 @@ canvas {
 .character-inventory-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 8px;
   padding: 24px 0;
   flex-wrap: wrap;
