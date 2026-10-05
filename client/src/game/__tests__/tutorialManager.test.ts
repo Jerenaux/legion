@@ -4,8 +4,7 @@ import { TutorialManager, type TutorialContext, type TutorialMessage } from '../
 
 const warrior: TutorialContext = {
     turn: 1, name: 'Roland', ownTurn: true, selectedIsTurnee: true, canAct: true,
-    hasEnemy: false, spells: [], hasItem: false, mp: 20,
-    fire: false, ice: false, poison: false, muted: false, paralyzed: false,
+    hasEnemy: false, hasSpells: false, spellInRange: false, pendingItem: false, ice: false,
 };
 
 function setup(stats = {}) {
@@ -20,60 +19,63 @@ function setup(stats = {}) {
     }, message: () => message };
 }
 
-test('hints stay until accepted actions; rejected/submitted clicks never count as learned', () => {
+test('one-action rule comes first; only an accepted action advances to turn order', () => {
     const s = setup();
-    expect(s.show().content).toContain('Moving ends your turn');
+    expect(s.show({hasSpells: true, spellInRange: true}).title).toBe('One action per turn');
     s.events.emit('performAction');
     s.events.emit('actionRejected');
     expect(s.message().learned).toBe(0);
     s.events.emit('playerMoved');
-    expect(s.message()).toMatchObject({title: 'Turn over', learned: 1, focus: 'timeline'});
-    expect(s.show().title).toBe('Turn over'); // HUD refresh cannot resurrect the old instruction.
+    expect(s.message()).toMatchObject({title: 'Turn order', learned: 1, focus: 'timeline'});
+    expect(s.show().title).toBe('Turn order');
     expect(s.show({turn: 2, ownTurn: false})).toBeUndefined();
-    expect(s.show({turn: 3, hasEnemy: true}).learned).toBe(1);
+    expect(s.show({turn: 3, hasSpells: true, spellInRange: true}).focus).toBe('spells');
+    s.events.emit('playerCastSpell');
+    expect(s.message()).toBeUndefined(); // No repeated action confirmations.
     s.manager.destroy();
 });
 
-test('melee is taught even if movement was learned in a previous match', () => {
+test('distant targets get positioning guidance, never an invitation to cast', () => {
     const s = setup({everMoved: true});
+    expect(s.show({hasSpells: true, spellInRange: false})).toMatchObject({title: 'Out of range', icon: 'move'});
+    expect(s.message().focus).toBeUndefined();
+    expect(s.show({hasSpells: true, spellInRange: true})).toMatchObject({title: 'Spell controls', focus: 'spells'});
+    expect(s.show({pendingSpell: {name: 'Fire', hasTarget: false}}).content).toContain('No target in range');
+    const targeting = s.show({pendingSpell: {name: 'Fire', hasTarget: true}});
+    expect(targeting.content).toContain('colored tiles show range');
+    expect(targeting.content).toContain('again to cancel');
+    expect(targeting).not.toHaveProperty('cost');
+    expect(s.show({hasSpells: false})).toBeUndefined(); // Mana/silence stay in normal action feedback.
+    s.manager.destroy();
+});
+
+test('casting first still teaches turn order and avoids repeating the one-action lesson', () => {
+    const s = setup();
+    s.show({hasSpells: true, spellInRange: true});
+    s.events.emit('playerCastSpell');
+    expect(s.message()).toMatchObject({title: 'Turn order', learned: 1});
+    expect(s.show({turn: 2, hasSpells: true, spellInRange: true})).toBeUndefined();
+    s.manager.destroy();
+});
+
+test('spell controls transfer to the healer and do not repeat targeting or item lessons', () => {
+    const s = setup({everMoved: true, everUsedSpell: true});
+    expect(s.show({hasSpells: true, spellInRange: true})).toBeUndefined();
+    expect(s.show({pendingSpell: {name: 'Heal', hasTarget: true}})).toBeUndefined();
+    expect(s.show({pendingItem: true})).toBeUndefined();
     expect(s.show({hasEnemy: true}).title).toBe('Attack');
     s.events.emit('playerAttacked');
-    expect(s.message().learned).toBe(2);
+    expect(s.message()).toBeUndefined();
+    expect(s.show({turn: 2, hasEnemy: true})).toBeUndefined();
     s.manager.destroy();
 });
 
-test('casters of either class get targeting, cost, area warning, and cancel guidance without cooldown loss', () => {
-    const s = setup();
-    s.show();
-    const spell = {name: 'Fire', cost: 8};
-    expect(s.show({spells: [spell]}).focus).toBe('spells');
-    expect(s.show({spells: [spell], pendingSpell: {...spell, area: true}}))
-        .toMatchObject({content: 'Select a highlighted target. Select the spell again to cancel.', cost: 8, warning: 'Can hit allies'});
-    expect(s.show({spells: [spell], pendingSpell: {...spell, area: false}}).warning).toBeUndefined();
-    expect(s.show({spells: [{name: 'Cure', cost: 8}]}).focus).toBe('spells');
-    s.events.emit('playerCastSpell');
-    expect(s.message().learned).toBe(1); // Casting first never requires repeating movement first.
-    expect(s.show({turn: 2, spells: [spell]}).content).toContain('Moving ends your turn');
-    s.manager.destroy();
-});
-
-test('current hazards and unavailable actions take priority over generic movement', () => {
-    const s = setup();
-    expect(s.show({ice: true}).title).toBe('Frozen in ice');
-    expect(s.show({fire: true}).title).toBe('Move out of the flames');
-    expect(s.show({muted: true}).title).toBe('Silenced');
-    expect(s.show({mp: 0, spells: [{name: 'Fire', cost: 8}]}).title).toBe('Low mana');
+test('selection and breakable ice explain Legion controls; enemy turns stay quiet', () => {
+    const s = setup({everMoved: true});
+    expect(s.show({ice: true, canAct: false}).title).toBe('Frozen in ice');
+    expect(s.show({canAct: false})).toBeUndefined();
     expect(s.show({selectedIsTurnee: false}).title).toBe('Roland acts now');
-    expect(s.show().title).toBe('Move'); // Old warnings aren't queued after they stop applying.
-    s.manager.destroy();
-});
-
-test('learned actions stop generic hints while targeting and hazards remain available', () => {
-    const s = setup({everMoved: true, everAttacked: true, everUsedSpell: true, everUsedItem: true});
-    expect(s.show({hasEnemy: true, spells: [{name: 'Fire', cost: 8}], hasItem: true})).toBeUndefined();
-    expect(s.show({fire: true}).icon).toBe('move');
-    expect(s.show({pendingSpell: {name: 'Fire', cost: 8, area: true}}).cost).toBe(8);
-    expect(s.show()).toBeUndefined();
+    expect(s.show({ownTurn: false, selectedIsTurnee: false})).toBeUndefined();
     s.manager.destroy();
 });
 
@@ -83,24 +85,11 @@ test('ending and destroying guidance removes only its own listeners', () => {
     s.events.on('playerMoved', () => { external++; });
     s.show();
     s.events.emit('gameEnd');
-    const final = s.message();
     s.events.emit('playerMoved');
-    expect(s.message()).toBe(final);
+    expect(s.message()).toBeUndefined();
     s.manager.destroy();
     s.events.emit('playerMoved');
     expect(external).toBe(2);
     expect(s.events.listenerCount('playerMoved')).toBe(1);
     expect(s.events.listenerCount('tutorialContext')).toBe(0);
-});
-
-
-test('healing guidance waits for an injured ally; enemy turns hide even accepted-action hints', () => {
-    const s = setup();
-    const healer = {spells: [{name: 'Heal', cost: 15, healing: true}]};
-    expect(s.show(healer).title).toBe('Keep your healer safe');
-    expect(s.show({...healer, hasWoundedAlly: true}).focus).toBe('spells');
-    s.events.emit('playerMoved');
-    expect(s.show({ownTurn: false})).toBeUndefined();
-    expect(s.show({...healer, turn: 2}).title).toBe('Keep your healer safe');
-    s.manager.destroy();
 });

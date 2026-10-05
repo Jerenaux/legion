@@ -10,9 +10,9 @@ same game before, during and after battle. Read `docs/game-ui-writing.md` for co
 - Use the existing gold beveled buttons for the main action, dark ink-blue
   backing where contrast is needed, and the class crest palette: gold warrior,
   green white mage, violet black mage. Do not apply a generic web-app design kit.
-- Reuse real character sprites, class crests, item sprites and HUD icons. Enlarge
-  pixel art with nearest-neighbor rendering. Use the same symbols for the same
-  action everywhere.
+- Reuse real character sprites, class crests, item sprites and HUD icons. Keep
+  character sprites at game scale or smaller; enlarging them exposes edge artifacts.
+  Use nearest-neighbor rendering and the same symbols for the same action everywhere.
 - Present a party as characters occupying a shared scene. Present rewards as
   loot. Use framed panels for inspection or a short instruction, not as a default
   wrapper around every object.

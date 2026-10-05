@@ -42,6 +42,13 @@ moment caused the problem here.
   competing start buttons. Keep necessary warnings next to the affected choice.
 - Teach one immediate action at a time. Highlight the real control and use its
   existing icon. Avoid repeating a title in the explanatory sentence.
+- Assume familiarity with RPGs. Teach Legion's action limit, turn order and
+  controls; skip separate lessons on healing, HP, MP, and familiar status effects.
+  Keep spell costs in the action bar and spell details, not tutorial hints.
+- Match guidance to the live battle. Do not mention highlighted targets before
+  targeting is enabled, or suggest casting when nothing is in range. Check the
+  authoritative server layout too: a local client build still uses production
+  formation rules until the server changes are deployed.
 - Let success be visible in the game. Do not narrate every completed action or
   repeatedly announce that the player is learning.
 - Keep flavor where it adds a specific voice or a memorable game moment. Do not

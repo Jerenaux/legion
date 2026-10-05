@@ -18,16 +18,19 @@
 .combat-coach-instruction { min-width: 0; overflow-wrap: anywhere; }
 .combat-coach-instruction strong { display: block; font: 1.125rem/1.25 var(--locale-font, 'Kim'), sans-serif; color: oklch(91% .055 85); }
 .combat-coach-instruction p { font-size: .875rem; line-height: 1.4; margin: 6px 0 0; color: oklch(83% .02 245); }
-.combat-coach-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; font-size: .8125rem; }
-.combat-coach-facts span { display: flex; align-items: center; gap: 4px; }
-.combat-coach-facts img { width: 18px; height: 18px; object-fit: contain; }
-.combat-coach-warning { color: oklch(86% .12 75); }
 .combat-coach .combat-coach-reopen { display: flex; align-items: center; gap: 8px; background: oklch(18% .025 250 / .95); border: 1px solid oklch(61% .075 85); border-radius: 4px; padding: 8px 12px; font: .875rem/1.2 var(--locale-font, 'Kim'), sans-serif; }
 .combat-coach-reopen span { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid oklch(61% .075 85); border-radius: 50%; color: oklch(88% .12 85); }
 .combat-action-feedback { background: oklch(22% .035 80 / .97); border: 1px solid oklch(66% .08 85); border-radius: 4px; padding: 10px 14px; margin: 8px 0 0; font-size: .875rem; line-height: 1.4; color: oklch(91% .07 85); }
-.gamehud[data-coach-focus="spells"] .player_bar_action_group:has(#player_hud_spells),
-.gamehud[data-coach-focus="items"] .player_bar_action_group:has(#player_hud_consumables),
-.gamehud[data-coach-focus="timeline"] .timeline_character { outline: 2px solid oklch(88% .12 85); outline-offset: 4px; border-radius: 4px; }
+.gamehud[data-coach-focus="spells"] .player_bar_action_group:has(#player_hud_spells) .player_bar_action[aria-disabled="false"],
+.gamehud[data-coach-focus="timeline"] .timeline_character {
+  animation: highlight-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(0, 255, 255, .65), inset 0 0 8px rgba(0, 255, 255, .25);
+  border-color: #7fffff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gamehud[data-coach-focus="spells"] .player_bar_action_group:has(#player_hud_spells) .player_bar_action[aria-disabled="false"],
+  .gamehud[data-coach-focus="timeline"] .timeline_character { animation: none; }
+}
 @media (max-width: 1000px) {
   .combat-coach { left: 50%; transform: translateX(-50%); top: 12px; bottom: auto; width: min(28rem, 55vw); }
   .combat-coach-panel { padding: 12px 30px 12px 10px; gap: 8px; }

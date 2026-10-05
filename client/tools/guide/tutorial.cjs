@@ -57,7 +57,8 @@ module.exports = async ({win, js, waitFor, ready, output, locale, sinkURL, timin
   assert.equal(await js('localStorage.getItem("legion-combat-tips")'), 'shown');
   win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Z'});
   win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Z'});
-  await waitFor('Boolean(document.querySelector(".combat-coach-facts"))');
+  await waitFor('combatCheck.arena.selectedPlayer.pendingSpell === 0');
+  assert.equal(await js('Boolean(document.querySelector(".combat-coach-facts"))'), false, "Tutorial hints must not duplicate spell costs");
   await shot('960-130-targeting');
   console.log(`${locale}: party, saved tips preference, keyboard start, ready acknowledgement, and in-battle toggle pass`);
 };

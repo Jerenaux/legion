@@ -158,3 +158,28 @@ test('clicking the active character restores selection after inspecting another 
   expect(arena.selectedPlayer).toBe(active);
   expect(arena.actionFeedback).not.toHaveBeenCalled();
 });
+
+test('tutorial spell availability follows real range, team targeting, and usable spells', () => {
+  const events = {emit: mock()};
+  const arena = runInNewContext(inputMethods('Arena.ts', ['refreshTutorial', 'validateTarget']), {
+    events, isInSpellRange, serializeCoords, Target, TargetHighlight,
+  });
+  const active = {gridX: 1, gridY: 5, name: 'Ember', isPlayer: true, mp: 30,
+    spells: [{name: 'Fire', cost: 10, target: Target.SINGLE, targetHighlight: TargetHighlight.ENEMY}],
+    pendingSpell: null, pendingItem: null, isMuted: () => false, canAct: () => true, isInIce: () => false};
+  Object.assign(arena, {tutorialManager: {}, turnee: {turnNumber: 1, team: 1, num: 3},
+    playerTeamId: 1, selectedPlayer: active, getPlayer: () => active, hasEnemyNextTo: () => false,
+    gridMap: new Map([['14,5', {gridX: 14, gridY: 5, team: {id: 2}}], ['2,5', {gridX: 2, gridY: 5, team: {id: 1}}]])});
+  const context = () => {arena.refreshTutorial(); return events.emit.mock.calls.at(-1)[1];};
+  expect(context().spellInRange).toBe(false);
+  active.pendingSpell = 0;
+  expect(context().pendingSpell.hasTarget).toBe(false);
+  arena.gridMap.set('3,5', {gridX: 3, gridY: 5, team: {id: 2}});
+  expect(context().spellInRange).toBe(true);
+  expect(context().pendingSpell.hasTarget).toBe(true);
+  active.mp = 0;
+  expect(context().hasSpells).toBe(false);
+  active.mp = 30;
+  active.isMuted = () => true;
+  expect(context().hasSpells).toBe(false);
+});

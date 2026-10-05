@@ -33,7 +33,7 @@ export class AIGame extends Game {
         // if (mode === PlayMode.TUTORIAL) this.temporaryFrozen = true;
     }
 
-    // Teach movement, offensive magic, then support. Later matches use normal placement/speed.
+    // Introduce movement and spell controls before the enemy acts. Later matches use normal placement/speed.
     getOpeningTurnOrder() {
         if (this.mode !== PlayMode.PRACTICE || !this.isGame0()) return undefined;
         const order = [Class.WARRIOR, Class.BLACK_MAGE, Class.WHITE_MAGE];
@@ -45,8 +45,8 @@ export class AIGame extends Game {
         if (this.mode === PlayMode.PRACTICE && this.isGame0()) {
             const positions = {
                 [Class.WARRIOR]: {x: flip ? 8 : 5, y: 5},
-                [Class.BLACK_MAGE]: {x: flip ? 9 : 4, y: 7},
-                [Class.WHITE_MAGE]: {x: flip ? 10 : 3, y: 5},
+                [Class.BLACK_MAGE]: {x: flip ? 8 : 5, y: 7},
+                [Class.WHITE_MAGE]: {x: flip ? 9 : 4, y: 6},
             };
             const position = positions[characterClass];
             if (position && this.isFree(position.x, position.y)) return position;

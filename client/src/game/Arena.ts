@@ -10,7 +10,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { PlayMode, Target, Terrain, Stat, StatusEffect, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
+import { PlayMode, Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
@@ -775,20 +775,18 @@ export class Arena extends Phaser.Scene
         if (!active) return;
         const player = this.selectedPlayer;
         const spell = player?.spells[player.pendingSpell];
+        const availableSpells = active.isMuted() ? [] : active.spells.filter(spell => spell.cost <= active.mp);
+        const hasTarget = (spell: BaseSpell) => [...this.gridMap.values()].some(target =>
+            this.validateTarget(target.gridX, target.gridY, spell));
         events.emit('tutorialContext', {
             turn: this.turnee.turnNumber, name: active.name, ownTurn: active.isPlayer,
             selectedIsTurnee: player === active, canAct: active.canAct(),
             hasEnemy: this.hasEnemyNextTo(active.gridX, active.gridY),
-            spells: active.spells.map(spell => ({name: spell.name, cost: spell.cost,
-                healing: spell.effects.some(effect => effect.stat === Stat.HP && effect.value > 0)})),
-            hasWoundedAlly: active.team.getMembers().some(ally => ally.isAlive() && ally.hp < ally.maxHP
-                && isInSpellRange(active.gridX, active.gridY, ally.gridX, ally.gridY)),
-            hasItem: active.hasUsableItem(), mp: active.mp,
-            pendingSpell: spell && {name: spell.name, cost: spell.cost, area: spell.radius > 1},
-            pendingItem: player?.inventory[player.pendingItem]?.name,
-            fire: this.hasFlame(active.gridX, active.gridY), ice: active.isInIce(),
-            poison: active.statuses[StatusEffect.POISON] !== 0,
-            muted: active.isMuted(), paralyzed: active.isParalyzed(),
+            hasSpells: availableSpells.length > 0,
+            spellInRange: player === active && availableSpells.some(hasTarget),
+            pendingSpell: spell && {name: spell.name, hasTarget: hasTarget(spell)},
+            pendingItem: player?.pendingItem != null,
+            ice: active.isInIce(),
         });
     }
 

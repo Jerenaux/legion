@@ -1,15 +1,13 @@
-import {t, formatNumber} from '../../i18n/core';
+import {t} from '../../i18n/core';
 import {h} from 'preact';
 import type {TutorialMessage} from '../../game/TutorialManager';
 import moveIcon from '@assets/stats_icons/move_range_icon.png';
 import attackIcon from '@assets/stats_icons/attack_icon.png';
 import spellIcon from '@assets/shop/spells_icon.png';
-import itemIcon from '@assets/shop/consumables_icon.png';
 import turnIcon from '@assets/HUD/hourglass.png';
-import mpIcon from '@assets/stats_icons/mp_icon.png';
 import '../../styles/components/TutorialDialogue.css';
 
-const icons = {move: moveIcon, attack: attackIcon, spell: spellIcon, item: itemIcon, turn: turnIcon};
+const icons = {move: moveIcon, attack: attackIcon, spell: spellIcon, turn: turnIcon};
 interface TutorialDialogueProps {
   message?: TutorialMessage;
   visible: boolean;
@@ -25,10 +23,7 @@ export default function TutorialDialogue({message, visible, onToggle, feedback}:
       <div id="combat-coach-instruction" className="combat-coach-instruction" role="status" aria-live="polite" aria-atomic="true">
         <strong>{message.title}</strong>
         <p>{message.content}</p>
-        {(message.cost !== undefined || message.warning) && <div className="combat-coach-facts">
-          {message.cost !== undefined && <span><img src={mpIcon} alt={t('MP')} />{formatNumber(message.cost)}</span>}
-          {message.warning && <span className="combat-coach-warning">{message.warning}</span>}
-        </div>}
+
       </div>
       <button type="button" data-game-control className="combat-coach-close" aria-label={t('Hide combat tips')}
         aria-expanded="true" aria-controls="combat-coach-instruction" onClick={onToggle}>×</button>

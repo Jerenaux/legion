@@ -122,12 +122,10 @@ if (!process.versions.electron) {
       })()`);
       await wait('document.querySelector(".combat-coach")?.dataset.learned === "1"');
       await wait('document.querySelector(".gamehud")?.dataset.coachFocus === "timeline"');
-      assert(await js(`[...document.querySelectorAll('.timeline_character')].some(element => getComputedStyle(element).outlineStyle === 'solid' && getComputedStyle(element).outlineWidth === '2px')`), 'Turn portraits must highlight after an accepted action');
       await checkLayout('combat', 'movement-confirmation');
       await wait(`combatCheck.arena.turnee.turnNumber > ${initialTurn} && combatCheck.arena.turnee.team === combatCheck.arena.playerTeamId`);
       assert.equal(await js('combatCheck.arena.selectedPlayer.class'), 2, 'Black Mage acts after Warrior');
       await wait('document.querySelector(".gamehud")?.dataset.coachFocus === "spells"');
-      assert(await js(`(() => { const element = document.querySelector('.player_bar_action_group:has(#player_hud_spells)'); return element && getComputedStyle(element).outlineStyle === 'solid' && getComputedStyle(element).outlineWidth === '2px'; })()`), 'The spell action group must highlight before targeting');
       await checkLayout('combat', 'spell-guidance');
       await js('combatCheck.arena.selectedPlayer.useSkill(0)');
       const spellName = await js('combatCheck.arena.selectedPlayer.spells[0].name');
@@ -156,13 +154,13 @@ if (!process.versions.electron) {
         }
         throw new Error('No spell target in range');
       })()`);
-      await wait('document.querySelector(".combat-coach")?.dataset.learned === "2"');
+      await wait('combatCheck.arena.tutorialManager.stats.everUsedSpell === true');
       await wait('combatCheck.arena.selectedPlayer?.class === 1 && combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');
+      assert.equal(await js('Boolean(document.querySelector(".combat-coach-instruction"))'), false, 'Healing needs no separate lesson after spell controls');
       await js('void combatCheck.arena.socket.emit("passTurn")');
       await wait('combatCheck.arena.turnee?.team !== combatCheck.arena.playerTeamId');
       await wait('!document.querySelector(".combat-coach")');
       await wait('combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');
-      await wait('Boolean(document.querySelector(".combat-coach"))');
       assert.equal(errors.length, 0, errors.join('\n'));
       console.log(`${locale}: playable practice, invalid clicks, accepted movement/spell progress, cancel, hide/reopen, and responsive layout passed. Screenshots: ${out}`);
       win.destroy();

@@ -190,7 +190,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="controls">
             <h2 id="controls" tabIndex={-1}>{t("Controls & quick help")}</h2>
-            <p>{t("Combat tips can be switched on or off before the battle starts.")}</p>
+            <p>{t("Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Open <0>Combat tips</0> on your turn for guidance about the current character and available actions. Hide the tips whenever you like. Tips pause during enemy turns. If a target or move is invalid, a short explanation appears without spending your action."} components={[<strong />]} /></p>
             <p>{t("Change language on the title screen or in Settings. Text and artwork update immediately. During a match, replay, queue, or lobby, return to the main menu first.")}</p>
             <p>{t("On Steam, your Steam language is used by default. A language you choose in the game takes priority.")}</p>

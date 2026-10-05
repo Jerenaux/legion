@@ -2,7 +2,7 @@ import {expect, test} from 'bun:test';
 import type {Server} from 'socket.io';
 import {Class, League, PlayMode, SpeedClass, Stat} from '@legion/shared/enums';
 import {NewCharacter} from '@legion/shared/NewCharacter';
-import {isInSpellRange} from '@legion/shared/utils';
+import {hexDistance, isInSpellRange} from '@legion/shared/utils';
 import type {CharacterData} from '@legion/shared/interfaces';
 import {AIGame} from '../AIGame';
 import {TurnSystem} from '../TurnSystem';
@@ -21,8 +21,11 @@ test('first practice opens warrior, offensive mage, healer with reachable enemie
     const characters = game.getTeam(1).concat(game.getTeam(2));
     expect(new Set(characters.map(p => `${p.x},${p.y}`)).size).toBe(characters.length);
     for (const player of characters) expect(game.isHole(player.x, player.y)).toBe(false);
-    const mage = game.getTeam(1).find(p => p.class === Class.BLACK_MAGE)!;
-    expect(game.getTeam(2).some(enemy => isInSpellRange(mage.x, mage.y, enemy.x, enemy.y))).toBe(true);
+    for (const player of game.getTeam(1)) {
+        expect(game.getTeam(2).every(enemy => isInSpellRange(player.x, player.y, enemy.x, enemy.y))).toBe(true);
+        // Leave room for movement without immediately losing every spell target.
+        expect(Math.min(...game.getTeam(2).map(enemy => hexDistance(player.x, player.y, enemy.x, enemy.y)))).toBeLessThanOrEqual(4);
+    }
     for (const action of [SpeedClass.PASS, SpeedClass.FAST, SpeedClass.NORMAL, SpeedClass.SLOW]) {
         const turns = new TurnSystem();
         turns.initializeTurnOrder(characters, game.getOpeningTurnOrder());
