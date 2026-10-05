@@ -1,6 +1,6 @@
 .buttonContainer {
     background-color: #1A1A1A;
-    width: 200px;
+    width: 12.5rem;
     min-height: 280px;
     display: flex;
     flex-direction: column;
@@ -132,6 +132,7 @@
 .info-label {
     min-width: 0;
     overflow-wrap: anywhere;
+    hyphens: auto;
     color: #999999;
     font-size: 0.75rem;
     text-transform: uppercase;
