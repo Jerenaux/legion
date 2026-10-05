@@ -1016,5 +1016,6 @@
   "statusTurns_other": "{{status}}, {{count}}턴",
   "towerBattles_one": "전투 <0>{{count}}</0>회",
   "towerBattles_other": "전투 <0>{{count}}</0>회",
-  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Steam에서는 Steam에 설정된 언어가 기본으로 사용됩니다. 게임 내에서 선택한 언어가 우선 적용됩니다."
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "Steam에서는 Steam에 설정된 언어가 기본으로 사용됩니다. 게임 내에서 선택한 언어가 우선 적용됩니다.",
+  "Roster cards show each character’s class, name, level and unspent SP.": "편성 카드에는 각 캐릭터의 클래스, 이름, 레벨, 사용하지 않은 능력치 포인트가 표시됩니다."
 }

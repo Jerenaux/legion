@@ -1016,5 +1016,6 @@
   "statusTurns_other": "{{status}}，{{count}} 回合",
   "towerBattles_one": "<0>{{count}}</0> 场战斗",
   "towerBattles_other": "<0>{{count}}</0> 场战斗",
-  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "在 Steam 上，默认使用你在 Steam 中设置的语言。在游戏内选择的语言优先。"
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "在 Steam 上，默认使用你在 Steam 中设置的语言。在游戏内选择的语言优先。",
+  "Roster cards show each character’s class, name, level and unspent SP.": "队伍卡片显示每名角色的职业、姓名、等级和未使用的属性点。"
 }

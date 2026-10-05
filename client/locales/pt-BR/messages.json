@@ -1031,5 +1031,6 @@
   "towerBattles_other": "<0>{{count}}</0> batalhas",
   "statusTurns_many": "{{status}}, {{count}} turnos",
   "towerBattles_many": "<0>{{count}}</0> batalhas",
-  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "No Steam, o idioma definido no Steam é usado por padrão. O idioma que você escolher no jogo tem prioridade."
+  "On Steam, your Steam language is used by default. A language you choose in the game takes priority.": "No Steam, o idioma definido no Steam é usado por padrão. O idioma que você escolher no jogo tem prioridade.",
+  "Roster cards show each character’s class, name, level and unspent SP.": "Os cartões da equipe mostram a classe, o nome, o nível e os pontos de atributo não gastos de cada personagem."
 }

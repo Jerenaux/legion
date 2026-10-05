@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 const client = path.resolve(__dirname, '../..');
 const locale = process.argv.find(arg => arg.startsWith('--locale='))?.slice(9) || 'en';
 const localization = process.argv.includes('--localization');
+const rosterImages = process.argv.includes('--roster-images');
 assert(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale), 'Invalid locale');
 
 if (!process.versions.electron) {
@@ -246,7 +247,7 @@ if (!process.versions.electron) {
         await win.loadURL(PACKAGED_APP_URL);
         await js(`localStorage.setItem('legion.language', ${JSON.stringify(locale)})`);
       }
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization && !rosterImages) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -354,6 +355,8 @@ if (!process.versions.electron) {
         await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
         await ready();
         fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
+      } else if (rosterImages) {
+        await require('./roster.cjs')({win, js, waitFor, ready, output: dist, locale, capture});
       } else if (localization) {
         await require(process.argv.includes('--live-localization') ? '../localization/live.cjs' : '../localization/smoke.cjs')({win, js, waitFor, ready, output: dist, locale});
       } else if (process.argv.includes('--images')) {
@@ -437,13 +440,7 @@ if (!process.versions.electron) {
         await js('combatCheck.arena.processTurnee({...combatCheck.arena.turnee, team: 2, num: 1, turnNumber: 9})');
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-enemy.png'), (await win.webContents.capturePage()).toPNG());
-        await win.loadURL(`${PACKAGED_APP_URL}team/guide-2`);
-        await waitFor('document.body.innerText.includes("Ember")');
-        await ready();
-        await js('document.querySelector(".character-inventory-container").scrollIntoView({block: "start"})');
-        await ready();
-        const loadoutY = await js('Math.round(document.querySelector(".character-inventory-container").getBoundingClientRect().top)');
-        await capture('loadout', {x: 270, y: loadoutY, width: 1045, height: 428});
+        await require('./roster.cjs').captureLoadout({win, js, waitFor, ready, capture});
         await win.loadURL(`${PACKAGED_APP_URL}tower`);
         await waitFor('Boolean(document.querySelector(".tower-primary"))');
         await js('document.querySelector(".tower-primary").click()');
@@ -489,23 +486,7 @@ if (!process.versions.electron) {
         await waitFor('!document.querySelector(".tower-error") && !document.querySelector(".tower-choice").disabled');
         console.log('Tower entry, choices, keyboard controls, saved progress, untimed combat, boss warnings, and recovery pass');
         await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
-        for (const [games, size] of [[0, 3], [11, 3], [12, 3], [12, 5], [12, 6]]) {
-          await win.loadURL(`${PACKAGED_APP_URL}team?games=${games}&roster=${size}`);
-          await waitFor('Boolean(document.querySelector(".roster-heading"))');
-          assert.equal(await js('document.querySelectorAll(".rosters .endgame_character").length'), size);
-          assert.equal(await js('document.querySelectorAll(".roster-slot").length'), size < 6 ? 1 : 0);
-          assert.equal(await js('Boolean(document.querySelector(".roster-slot--available"))'), games >= 12 && size < 6);
-          assert.equal(await js('document.querySelector(".roster-unlock progress")?.value'), games < 12 ? games : undefined);
-          if (games === 11) assert((await js('document.querySelector(".roster-unlock-label").textContent')).includes('1 game'));
-          if (games < 12) assert.equal(await js('document.querySelectorAll(".rosterContainer a").length'), 0);
-          if (size === 6) assert.equal(await js('Boolean(document.querySelector(".roster-unlock"))'), false);
-        }
-        await win.loadURL(`${PACKAGED_APP_URL}team?games=12`);
-        await waitFor('Boolean(document.querySelector(".roster-slot--available"))');
-        await js('document.querySelector(".roster-slot--available").click()');
-        assert.equal(await js('location.pathname'), '/shop/characters');
-        assert.deepEqual(rendererErrors, []);
-        console.log('Team recruitment: locked progress, unlock boundary, partial/full roster and Shop navigation pass');
+        await require('./roster.cjs')({win, js, waitFor, ready, output: dist, locale});
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
@@ -890,7 +871,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization && !rosterImages) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

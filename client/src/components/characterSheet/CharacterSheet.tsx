@@ -13,7 +13,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { getConsumableById } from '@legion/shared/Items';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFieldsByIndex,
+import { Class, EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFieldsByIndex,
     STATS_BG_COLOR, ItemDialogType, SPSPendingData
  } from '@legion/shared/enums';
 import { Effect } from '@legion/shared/interfaces';
@@ -335,7 +335,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         }
 
         return (
-            <div className="team-content-card-container">
+            <div className="team-content-card-container" data-class={Class[characterData.class]}>
                 <div className="team-content-container">
                     <div className="team-level">
                         <span>{t("Lvl")}</span>
@@ -343,8 +343,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     </div>
                     <div className="team-info-container">
                         <div className="team-info">
-                            <p className="team-character-name">{characterData?.name}</p>
-                            <p className="team-character-class">{classEnumToString(characterData?.class)}</p>
+                            <p className="team-character-class team-class-label" data-class={Class[characterData.class]}>{classEnumToString(characterData.class)}</p>
+                            <p className="team-character-name" title={characterData.name}>{characterData.name}</p>
                             <div className="team-exp-slider-container">
                                 <div className="team-curr-exp-slider" style={sliderStyle}></div>
                             </div>
