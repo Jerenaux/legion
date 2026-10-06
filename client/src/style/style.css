@@ -753,7 +753,22 @@ canvas {
 
 .rank-content > .flexContainer:first-child {
   flex-wrap: wrap;
-  gap: 40px 24px;
+  gap: 40px 32px;
+  justify-content: center;
+}
+
+/* League crests: lift on hover, glow when selected, visible keyboard focus. */
+.rank-tab-container button {
+  border: 0;
+  transition: transform 140ms ease-out, filter 140ms ease-out;
+}
+.rank-tab-container button:hover { transform: translateX(3px); }
+.rank-tab-container button[aria-pressed="true"] { filter: drop-shadow(0 0 8px oklch(86% .1 200 / .5)); }
+.rank-tab-container button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.rank-ghost-rows { flex: 1; gap: 6px; padding-top: 44px; }
+@media (prefers-reduced-motion: reduce) {
+  .rank-tab-container button { transition: none; }
+  .rank-tab-container button:hover { transform: none; }
 }
 
 .rank-content .highlights-container {

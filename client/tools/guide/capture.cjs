@@ -643,7 +643,7 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}rank`);
         await waitFor('Boolean(document.querySelector(".rank-load-error"))');
         assert.equal(await js('document.querySelector(".rank-content").getAttribute("aria-busy")'), 'false');
-        assert.equal(await js('document.querySelectorAll(".rank-content .react-loading-skeleton").length'), 0);
+        assert.equal(await js('document.querySelectorAll(".rank-content .ghost").length'), 0);
         assert.equal(await js('document.querySelector(".rank-load-error").getAttribute("role")'), 'alert');
         await ready();
         fs.writeFileSync(path.join(dist, 'rank-recovery.png'), (await win.webContents.capturePage()).toPNG());

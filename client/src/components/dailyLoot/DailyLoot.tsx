@@ -4,8 +4,7 @@ import { h } from 'preact';
 import './DailyLoot.style.css';
 import { Component } from 'preact';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import Ghost from '../ghost/Ghost';
 
 import { useWindowSize } from '@react-hook/window-size';
 
@@ -116,12 +115,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
             }
             return null;
           })}
-        </div> : <Skeleton
-          height={100}
-          count={1}
-          highlightColor='#0000004d'
-          baseColor='#0f1421'
-          style={{ margin: '2px 0', width: '100%' }} />}
+        </div> : <Ghost height={100} />}
         {this.state.chestColor &&
           <OpenedChest
                 width={width}

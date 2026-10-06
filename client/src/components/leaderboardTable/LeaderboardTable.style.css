@@ -6,14 +6,19 @@
     position: relative; 
 } 
 
-.table-empty { 
-    position: absolute; 
-    width: 400px; 
-    left: calc(50% - 200px);  
+.table-empty {
+    position: absolute;
+    width: min(400px, 90%);
+    left: 50%;
     top: 30%;
-    font-size: 1.75rem; 
+    transform: translateX(-50%);
+    padding: 18px 20px;
+    border: 1px dashed var(--ink-edge);
+    border-radius: 6px;
+    background: oklch(15% .028 250 / .75);
+    color: var(--text-muted);
+    font-size: 1.0625rem;
     text-align: center;
-    color: antiquewhite;
 }
 
 .rank-table {

@@ -3,13 +3,12 @@ import {Trans} from '../../i18n/Trans';
 import { h, Fragment } from 'preact';
 // Roster.tsx
 import './Roster.style.css';
-import 'react-loading-skeleton/dist/skeleton.css'
 
 import { Component } from 'preact';
 import { Link, route, getCurrentUrl } from 'preact-router';
 import { Class, LockedFeatures } from '@legion/shared/enums';
 import { APICharacterData } from '@legion/shared/interfaces';
-import Skeleton from 'react-loading-skeleton';
+import Ghost from '../ghost/Ghost';
 import {LOCKED_FEATURES, MAX_CHARACTERS} from '@legion/shared/config';
 import {getSpritePath, classEnumToString} from '../utils';
 import lockIcon from '@assets/lock.png';
@@ -72,13 +71,7 @@ class Roster extends Component {
               : <div className="roster-slot">{recruitContent}</div>)}
           </div>
         ) : (
-          <Skeleton
-            height={100}
-            count={1}
-            highlightColor='#0000004d'
-            baseColor='#0f1421'
-            style={{margin: '2px 0', width: '100%'}}
-          />
+          <Ghost height={104} count={4} className="ghost-grid" />
         )}
         {this.context.player.isLoaded && characters.length > 0 && remainingSlots > 0 && !canRecruit && (
           <div className="roster-unlock">

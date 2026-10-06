@@ -7,8 +7,7 @@ import LeaderboardTable from './leaderboardTable/LeaderboardTable';
 import SeasonCard from './seasonCard/SeasonCard';
 import AwardedPlayer from './awardedPlayer/AwardedPlayer';
 import { PlayerContext } from '../contexts/PlayerContext';
-import 'react-loading-skeleton/dist/skeleton.css'
-import Skeleton from 'react-loading-skeleton';
+import Ghost from './ghost/Ghost';
 import { APILeaderboardResponse } from "@legion/shared/interfaces";
 
 
@@ -143,32 +142,20 @@ class RankPage extends Component<{}, State> {
               seasonEnd={this.state.leaderboardData?.seasonEnd}
             />
           ) : (
-            <Skeleton
-              height={152}
-              count={1}
-              highlightColor='#0000004d'
-              baseColor='#0f1421'
-              style={{ margin: '2px 0', width: '472px' }}
-            />
+            <Ghost height={180} width="310px" className="ghost-inline" />
           )}
 
           {!this.state.isLoading ? (
             <AwardedPlayer players={this.state.leaderboardData.highlights} />
           ) : (
-            <Skeleton
-              height={74}
-              count={2}
-              highlightColor='#0000004d'
-              baseColor='#0f1421'
-              style={{ margin: '2px 0', width: '500px' }}
-            />
+            <Ghost height={150} width="150px" className="ghost-inline" />
           )}
         </div>}
 
         <div className="flexContainer" style={{ gap: '24px' }}>
           <div className="rank-tab-container">
             {rankIcons.map((icon, i) => (
-              <button type="button" data-game-control key={i} style={getRankTabStyle(i)} onClick={() => this.handleCurrTab(i)}>
+              <button type="button" data-game-control key={i} style={getRankTabStyle(i)} title={t(tabs[i])} aria-pressed={i === this.state.curr_tab} onClick={() => this.handleCurrTab(i)}>
                 <img src={icon} alt={t(tabs[i])} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </button>
             ))}
@@ -187,13 +174,7 @@ class RankPage extends Component<{}, State> {
               camelCaseToNormal={this.camelCaseToNormal}
               rankRowNumberStyle={rankRowNumberStyle}
             /> :
-            <Skeleton
-              height={46}
-              count={12}
-              highlightColor='#0000004d'
-              baseColor='#0f1421'
-              style={{ margin: '2px 0', width: '940px' }}
-            />
+            <Ghost height={54} count={8} className="rank-ghost-rows" />
           }
         </div>
       </div>

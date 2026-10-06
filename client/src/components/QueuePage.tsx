@@ -6,7 +6,7 @@ import '../style/QueuePage.style.css';
 import { Component } from 'preact';
 import { route } from 'preact-router';
 import { Link, } from 'preact-router';
-import Skeleton from 'react-loading-skeleton';
+import Ghost from './ghost/Ghost';
 
 import { apiFetch, } from '../services/apiService';
 import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS, DISCORD_LINK, X_LINK } from '@legion/shared/config';
@@ -497,13 +497,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                             ))
                         ) : (
                             <div className="queue-news-loading">
-                                <Skeleton
-                                    height={100}
-                                    width={300}
-                                    count={1}
-                                    highlightColor="#0000004d"
-                                    baseColor="#0f1421"
-                                />
+                                <Ghost height={100} width="300px" />
                             </div>
                         )}
                     </div>
