@@ -4,6 +4,8 @@ const path = require('node:path');
 
 module.exports = async ({win, js, waitFor, ready, output, locale}) => {
   const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '../../locales', locale, 'messages.json'), 'utf8'));
+  // Ranked and the Tower share one locked phrasing: "Play N more games to unlock".
+  const gamesToUnlock = count => catalog[`gamesToUnlock_${new Intl.PluralRules(locale).select(count)}`].replace('{{count}}', String(count));
   const capture = async name => fs.writeFileSync(path.join(output, `${locale}-tower-unlock-${name}.png`), (await win.webContents.capturePage()).toPNG());
   for (const [width, height, textSize] of [[1280, 720, 100], [960, 540, 100], [1280, 720, 130]]) {
     win.setContentSize(width, height);
@@ -16,7 +18,7 @@ module.exports = async ({win, js, waitFor, ready, output, locale}) => {
       assert.equal(await js('document.querySelector("[data-playmode=tower]").disabled'), locked);
       if (locked) {
         const text = await js('document.querySelector("[data-playmode=tower]").textContent');
-        assert(text.includes(`${games}/6`), 'Locked card must show completed-match progress');
+        assert(text.includes(gamesToUnlock(6 - games)), 'Locked card must show the games left, worded like Ranked');
         await js('document.querySelector("[data-playmode=tower]").click()');
         assert.equal(await js('location.pathname'), '/play', 'Locked card must not navigate');
         await js('document.querySelector("[data-playmode=tower]").scrollIntoView({block:"center"})');
@@ -32,6 +34,7 @@ module.exports = async ({win, js, waitFor, ready, output, locale}) => {
     await win.loadURL('app://legion/tower?games=5');
     await waitFor('Boolean(document.querySelector(".tower-locked"))');
     assert.deepEqual(await js('towerCheck.requests'), [], 'Locked direct route must not load/start an expedition');
+    assert((await js('document.querySelector(".tower-locked").textContent')).includes(gamesToUnlock(1)), 'Locked Tower page must use the shared unlock wording');
     assert.equal(await js('Boolean(document.querySelector("button.tower-primary"))'), false);
     await ready(); await capture(`direct-${width}-${textSize}`);
     await win.loadURL('app://legion/tower?games=6');
