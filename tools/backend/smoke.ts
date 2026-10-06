@@ -126,17 +126,30 @@ try {
     const completed = (await db.collection('games').doc(gameId).get()).data();
     assert.equal(completed.status, GameStatus.COMPLETED);
     assert.deepEqual(completed.results, results);
-    assert.equal(completed.winner, winnerUID || -1);
+    assert.equal(completed.winner, winnerUID || null);
     assert(completed.end);
     for (const uid of [one.uid, two.uid]) {
       const logs = await db.collection('players').doc(uid).collection('actions').where('actionType', '==', 'gameComplete').get();
       const action = logs.docs.map(doc => doc.data()).find(action => action.details.gameId === gameId);
       assert(action, 'Completion response arrived before its action record');
-      assert.equal(action.details.winner, winnerUID === uid);
+      assert.equal(action.details.winner, winnerUID ? winnerUID === uid : null);
       assert.deepEqual(action.details.results, results[uid]);
       assert.equal(Object.hasOwn(action.details, 'results'), Object.hasOwn(results, uid));
     }
   }
+  // An old match can omit league; even a corrupt analytics recipient must not
+  // prevent the authoritative match from completing or leave a rejected promise.
+  const oldGameId = `legacy-complete-${run}`;
+  await db.collection('games').doc(oldGameId).set({players: [one.uid, 'invalid/player'], mode: PlayMode.CASUAL_VS_AI});
+  const aiResults = {[one.uid]: {audience: 10, score: 1}};
+  await http('completeGame', {gameId: oldGameId, winnerUID: '', results: aiResults});
+  const oldGame = (await db.collection('games').doc(oldGameId).get()).data();
+  assert.equal(oldGame.status, GameStatus.COMPLETED);
+  assert.equal(oldGame.winner, -1, 'An actual AI victory retains its existing winner value');
+  const oldActions = await db.collection('players').doc(one.uid).collection('actions').where('actionType', '==', 'gameComplete').get();
+  const oldAction = oldActions.docs.map(doc => doc.data()).find(action => action.details.gameId === oldGameId);
+  assert.equal(oldAction.details.league, null);
+  assert.equal(oldAction.details.winner, false);
   assert.equal((await db.collection('players').doc(one.uid).get()).data().completedGames, completedBefore);
   console.log('Backend integration passed:',JSON.stringify(timings));
 } finally {

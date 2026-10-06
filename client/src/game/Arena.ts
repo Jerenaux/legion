@@ -1760,7 +1760,8 @@ export class Arena extends Phaser.Scene
             this.hexGridManager.setHoles(data.holes);
         }
 
-        this.tutorialIntroPending = this.gameSettings.game0 && !isReconnect && !this.isReplay && !data.general.spectator;
+        this.tutorialIntroPending = this.gameSettings.game0 && !isReconnect && !this.isReplay && !data.general.spectator
+            && (data.general.mode === PlayMode.PRACTICE || data.general.mode === PlayMode.TUTORIAL);
 
         // Events from the HUD
         this.hudHandlers = {
@@ -1784,7 +1785,7 @@ export class Arena extends Phaser.Scene
         events.emit('gameInitialized', {game0: this.gameSettings.game0});
 
         events.emit('combatWaiting', !isReconnect);
-        if (this.gameSettings.game0 && !isReconnect && !this.isReplay) {
+        if (this.tutorialIntroPending) {
             events.emit('revealTeam', data.player.team);
         } else {
             this.displayGame(data, isReconnect);

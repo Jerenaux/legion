@@ -248,6 +248,22 @@ test('onboarding renewal cannot extend other modes, later matches, or use a stal
     }
 });
 
+test('onboarding expires at fifteen minutes even with continuous valid renewals', () => {
+    const {game, sockets: [connection]} = createGame();
+    const token = snapshot(connection).general.readyToken;
+    for (let i = 0; i < 29; i++) {
+        advance(30_000);
+        game.handleTutorialWaiting(connection, token);
+    }
+    advance(29_999);
+    expect(game.gameOver).toBe(false);
+    advance(1);
+    expect(game.gameOver).toBe(true);
+    expect(game.turnNumber).toBe(0);
+    expect(game.incrementStartedGames).not.toHaveBeenCalled();
+    expect(game.writeOutcomesToDb).not.toHaveBeenCalled();
+});
+
 test('a stalled or disconnected introduction still expires and superseded sockets cannot renew it', () => {
     for (const disconnect of [false, true]) {
         const {game, sockets: [old]} = createGame();

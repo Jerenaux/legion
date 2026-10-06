@@ -444,10 +444,10 @@ export abstract class Game
             || !team?.isGame0() || team.getSocket() !== socket || socket.connected === false
             || typeof token !== 'string' || token !== this.readyTokens.get(socket)) return;
         // Reading the reveal/briefing is not a stalled load. Keep combat paused,
-        // but retain a bounded deadline if rendering or the connection stops.
+        // with two minutes of inactivity and a fifteen-minute overall ceiling.
         clearTimeout(this.loadingTimer!);
-        this.loadingTimer = null;
-        this.startLoadingDeadline();
+        const remaining = Math.max(0, this.startTime + 15 * 60_000 - Date.now());
+        this.loadingTimer = setTimeout(() => this.cancelWaitingGame(), Math.min(120_000, remaining));
     }
 
     private markReady(socket: Socket) {

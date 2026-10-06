@@ -69,13 +69,14 @@ export const completeGame = onRequest({
         return;
       }
       const gameId = request.body.gameId;
-      const winnerUID = request.body.winnerUID || -1; // -1 for AI
       const rawResults: EndGameDataResults = request.body.results;
       console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(rawResults)}`);
       // Filter out the results object to remove keys that are empty strings or undefined
       const results = Object.fromEntries(
         Object.entries(rawResults).filter(([key, value]) => key !== '' && value !== undefined)
       );
+      // No outcomes means loading was canceled, not an AI victory.
+      const winnerUID = Object.keys(results).length ? (request.body.winnerUID || -1) : null;
       console.log(`[completeGame] Filtered results: ${JSON.stringify(results)}`);
 
       const gameDoc = await db.collection("games").doc(gameId).get();
@@ -90,34 +91,25 @@ export const completeGame = onRequest({
         throw new Error("gameData is null");
       }
 
-      const batch = db.batch();
-      for (const player of gameData.players) {
-        if (player) {
-          const result = results[player];
-          batch.set(db.collection('players').doc(player).collection('actions').doc(), {
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            actionType: 'gameComplete',
-            details: {
-              gameId,
-              winner: winnerUID === player,
-              // Loading cancellations and disconnected players can have no outcome.
-              ...(result === undefined ? {} : {results: result}),
-              league: gameData.league,
-              mode: gameData.mode,
-            },
-          });
-        }
-      }
-
-      batch.update(gameDoc.ref, {
+      await gameDoc.ref.update({
         status: GameStatus.COMPLETED,
         winner: winnerUID,
         results,
         end: new Date(),
       });
-      // Finish all writes before responding; rejected action writes must not escape
-      // the handler and race a second HTTP response from the Functions runtime.
-      await batch.commit();
+      // Analytics must neither veto completion nor reject after the response.
+      const actions = await Promise.allSettled(gameData.players.filter(Boolean).map((player: string) =>
+        logPlayerAction(player, 'gameComplete', {
+          gameId,
+          winner: winnerUID === null ? null : winnerUID === player,
+          ...(results[player] === undefined ? {} : {results: results[player]}),
+          league: gameData.league ?? null,
+          mode: gameData.mode,
+        })
+      ));
+      for (const action of actions) {
+        if (action.status === 'rejected') console.error('[completeGame] Action log failed:', action.reason);
+      }
       response.status(200).send({status: 0});
     } catch (error) {
       console.error("[completeGame] Error:", error);

@@ -124,18 +124,16 @@ if (!process.versions.electron) {
       if (scenario.startsWith('timing-')) {
         const resume = scenario === 'timing-resume';
         snapshot.general = {...snapshot.general, reconnect: true, combatStarted: resume, readyToken: socket.id};
-        snapshot.player.player.completedGames = scenario === 'timing-first' || resume ? 0 : 12;
+        snapshot.player.player.completedGames = scenario === 'timing-first' || scenario === 'timing-first-competitive' || resume ? 0 : 12;
         snapshot.turnee = resume ? {...snapshot.turnee, timeLeft: 4} : {turnDuration: 7, timeLeft: 0, turnNumber: 0};
-        const timing = {acks: 0, waiting: 0, sentAt: Date.now(), readyAt: 0};
+        const timing = {acks: 0, waiting: 0, errors: [], sentAt: Date.now(), readyAt: 0};
         timingChecks.set(scenario, timing);
         socket.on('tutorialWaiting', token => {
-          assert.equal(scenario, 'timing-first');
-          assert.equal(token, socket.id);
-          assert.equal(timing.acks, 0, 'Onboarding renewals must stop once combat starts');
+          if (scenario !== 'timing-first' || token !== socket.id || timing.acks !== 0) timing.errors.push('Invalid onboarding renewal');
           timing.waiting++;
         });
         socket.on('arenaReady', token => {
-          assert.equal(token, socket.id);
+          if (token !== socket.id) timing.errors.push('Invalid readiness token');
           timing.acks++;
           timing.readyAt = Date.now();
           socket.emit('turnee', {num: 3, team: 1, turnDuration: 7, timeLeft: resume ? 4 : 7, turnNumber: resume ? 8 : 1});
@@ -220,8 +218,8 @@ if (!process.versions.electron) {
     const effectsReady = `combatCheck.spellEffects.every(({vfx, charge}) => [vfx, charge].filter(Boolean)
       .every(key => combatCheck.arena.textures.exists(key) && combatCheck.arena.anims.exists(key))) &&
       combatCheck.itemEffects.every(({animation, sfx}) => combatCheck.arena.anims.exists(animation) && combatCheck.arena.cache.audio.exists(sfx))`;
-    const waitFor = async expression => {
-      for (let i = 0; i < 300; i++) {
+    const waitFor = async (expression, timeoutMs = 30_000) => {
+      for (let i = 0; i < timeoutMs / 100; i++) {
         if (typeof expression === 'function' ? expression() : await js(expression)) return;
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -901,7 +899,7 @@ if (!process.versions.electron) {
         // that fits its display. Keep oversized layout captures and local runs hidden.
         win.setContentSize(1280, 720);
         if (process.env.CI) win.show();
-        for (const scenario of ['timing-first', 'timing-next', 'timing-resume', 'timing-hidden', 'timing-entrance', 'timing-portrait']) {
+        for (const scenario of ['timing-first', 'timing-first-competitive', 'timing-next', 'timing-resume', 'timing-hidden', 'timing-entrance', 'timing-portrait']) {
           if (scenario === 'timing-portrait') win.setContentSize(600, 900);
           await win.loadURL(`${PACKAGED_APP_URL}game/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
           if (scenario === 'timing-first') {
@@ -918,7 +916,7 @@ if (!process.versions.electron) {
             // Keep reading until the next real post-render renewal, without changing
             // the clock used by Phaser and the renderer freeze detector.
             const waiting = timingChecks.get(scenario).waiting;
-            await waitFor(() => timingChecks.get(scenario).waiting > waiting);
+            await waitFor(() => timingChecks.get(scenario).waiting > waiting, 45_000);
             await js('document.querySelector(".tutorial-intro-skip").click()');
           }
           if (scenario === 'timing-hidden') {
@@ -936,6 +934,7 @@ if (!process.versions.electron) {
           // Resumed snapshots already contain the turn; wait for the emitted token to reach the server.
           await waitFor(() => timingChecks.get(scenario).acks > 0);
           assert.equal(timingChecks.get(scenario).acks, 1, 'Exactly one readiness acknowledgement per snapshot');
+          assert.deepEqual(timingChecks.get(scenario).errors, []);
           assert(await js(effectsReady), 'Both teams’ spell effects and every item effect must be ready before combat');
           assert.equal(await js('Boolean(document.querySelector(".team-reveal-overlay"))'), false, 'A running first match must not reveal champions again');
           assert.equal(await js('combatCheck.arena.turnee.timeLeft'), scenario === 'timing-resume' ? 4 : 7);

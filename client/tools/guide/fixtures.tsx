@@ -101,7 +101,9 @@ Arena.prototype.connectToServer = async function () {
     if (!socketURL.startsWith('http://127.0.0.1:')) throw new Error('Smoke sockets must stay on loopback');
     await connectToLocalServer.call(this, socketURL);
     // Exercise every spell, including effects absent from the local team's loadout.
-    const snapshot = {...battle, opponent: {...battle.opponent, team: battle.opponent.team.map((unit, i) => ({
+    const snapshot = {...battle,
+      general: {...battle.general, mode: location.pathname.endsWith('/timing-first') ? PlayMode.PRACTICE : battle.general.mode},
+      opponent: {...battle.opponent, team: battle.opponent.team.map((unit, i) => ({
       ...unit, spells: i === 2 ? spells.map(spell => spell.id) : unit.spells,
     }))}};
     this.socket.on('connect', () => this.socket.emit('fixture-ready', snapshot));
