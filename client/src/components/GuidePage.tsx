@@ -197,14 +197,16 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t("On Steam, your Steam language is used by default. A language you choose in the game takes priority.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Use <0>Settings → Text size</0> to choose Standard (100%), Large (115%), or Extra large (130%). Menu, dialog, and combat HUD text update immediately, and the setting is saved for future sessions."} components={[<strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Music starts while connecting and loops through the title screen. A separate track loops across the menus. Music fades out over two seconds before switching from the title screen to menus or from menus to combat, with a short fade-in for the next track. Music starts at {{value0}}%. Open <0>Settings</0> to adjust it from 0 (muted) to 100 (full volume). Your chosen volume is saved for future sessions."} components={[<strong />]} values={{value0: defaultGameSettings.musicVolume}} /></p>
+            <p><Trans i18n={i18n} i18nKey={"<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange."} components={[<strong />, <strong />]} /></p>
             <dl className="guide-definitions">
               <div><dt>{t("Mouse")}</dt><dd>{t("Click tiles to move, enemies to attack, and action icons to use items or select spells.")}</dd></div>
-              <div><dt>{t("Action letters")}</dt><dd>{t("Use the letters printed on the item and spell icons. Choose QWERTY or AZERTY in Settings; follow the labels for your layout.")}</dd></div>
+              <div><dt>{t("Action letters")}</dt><dd>{t("Use the keys printed on the item and spell icons. Change any key or controller button in Settings, under Controls.")}</dd></div>
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Select your first three living characters. <0>Tab</0> / <1>Shift</1> + <2>Tab</2> cycle through living allies. Selection does not let a character act out of turn."} components={[<kbd />, <kbd />, <kbd />]} /></dd></div>
-              <div><dt><kbd>{t("Space")}</kbd> / <kbd>{t("E")}</kbd> / <kbd>{t("End")}</kbd></dt><dd>{t("Pass the active turn.")}</dd></div>
+              <div><dt><kbd>{t("Space")}</kbd> / <kbd>{t("End")}</kbd></dt><dd>{t("Pass the active turn.")}</dd></div>
               <div><dt><kbd>{t("Esc")}</kbd></dt><dd>{t("Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.", {value0: onClose ? 'the queue' : 'Play'})}</dd></div>
               <div><dt><kbd>F11</kbd> / <kbd>{t("Alt")}</kbd> + <kbd>{t("Enter")}</kbd></dt><dd>{t("Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.")}</dd></div>
               <div><dt><kbd>{t("P")}</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Open the combat menu. <0>The match keeps running:</0> opening Settings does not pause the opponent or the turn timer."} components={[<strong />]} /></dd></div>
+              <div><dt>{t("Controller")}</dt><dd>{t("A confirms, B cancels, Y passes the turn, LB and RB switch characters, and Menu opens the game menu. The D-pad or left stick moves focus.")}</dd></div>
               <div><dt>{t("Menus")}</dt><dd><Trans i18n={i18n} i18nKey={"<0>Tab</0> or arrow keys move focus; <1>Enter</1> or <2>Space</2> activates a focused control. You can use the mouse wheel to scroll this guide."} components={[<kbd />, <kbd />, <kbd />]} /></dd></div>
             </dl>
             <h3>{t("“Why can’t I act?”")}</h3>

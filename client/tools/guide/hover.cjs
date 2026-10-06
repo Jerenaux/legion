@@ -113,7 +113,7 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
     const highlight = a.hexGridManager.highlightSpellRadius;
     combatCheck.restoreHighlight = () => {a.hexGridManager.highlightSpellRadius = highlight;};
     a.hexGridManager.highlightSpellRadius = function (...args) {combatCheck.hoverArea = args.slice(0, 2); return highlight.apply(this, args);};
-    a.getPlayer(1, 3).onLetterKey('Z');
+    a.getPlayer(1, 3).onKey(a.getPlayer(1, 3).getSpellsIndex());
   })()`);
   const target = await fieldPoint(2, 3);
   await move(target);

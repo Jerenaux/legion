@@ -18,6 +18,17 @@ if (!hasSingleInstanceLock) app.quit();
 
 protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
 
+// When Steam launches the game, enable its overlay so Shift+Tab and Steam's screenshot key
+// (F12 by default, saved and uploadable from the Steam library) work. This must run before
+// the app is ready; it is skipped for Itch, direct launches and smoke tests.
+if (!smokeTest && hasSingleInstanceLock && (process.env.SteamAppId || process.env.SteamGameId)) {
+  try {
+    loadSteamworks().electronEnableSteamOverlay();
+  } catch (error) {
+    console.error("Steam overlay unavailable:", error);
+  }
+}
+
 function trustedIPC(event) {
   return event.sender === mainWindow?.webContents && isTrustedSender(event.senderFrame?.url || "", isDev);
 }

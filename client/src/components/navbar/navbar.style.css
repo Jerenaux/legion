@@ -368,3 +368,11 @@ login-buttons {
   .menuItemContainer { transition: none; }
   .menuItems a:hover .menuItemContainer:not(.disabled):not(.activeFlag) { transform: none; }
 }
+
+/* On ultra-wide screens the bar spans the full width; its contents stay in the 16:9 safe area. */
+.homePage > .menu {
+  margin-inline: calc(-1 * var(--desktop-safe-inline, 0px));
+  padding-inline: var(--desktop-safe-inline, 0px);
+  width: auto;
+  box-sizing: content-box;
+}

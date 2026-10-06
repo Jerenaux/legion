@@ -15,7 +15,7 @@ function setup(deferBeginning = false) {
   const exports = {} as {MusicManager: typeof import('../MusicManager').MusicManager};
   runInNewContext(code, {exports, require: (name: string) => {
     if (name === '../components/HUD/GameHUD') return {events};
-    if (name === '../settings') return {loadGameSettings: () => settings};
+    if (name === '../settings') return {loadGameSettings: () => settings, musicGain: () => settings.musicVolume / 100};
     if (name.startsWith('@assets/music/')) return name;
     throw new Error(`Unexpected music dependency: ${name}`);
   }});

@@ -17,7 +17,8 @@ interface ItemIconProps {
   index: number;
   canAct: boolean;
   actionType: InventoryType;
-  keyboardLayout: number;
+  /** Key shown in the corner; empty when the slot has no key. */
+  keyLabel: string;
 }
 
 interface ItemIconState {
@@ -72,24 +73,6 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     }
   }
 
-  getKeyBinding = () => {
-    const { index, actionType, keyboardLayout } = this.props;
-
-    const qwertyLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const azertyLayout = 'AZERTYUIOPQSDFGHJKLMWXCVBN';
-
-    const layout = keyboardLayout === 0 ? azertyLayout : qwertyLayout;
-
-    let startPosition: number;
-    if (actionType === InventoryType.CONSUMABLES) {
-      startPosition = keyboardLayout === 0 ? layout.indexOf('A') : layout.indexOf('Q');
-    } else { // For spells
-      startPosition = keyboardLayout === 0 ? layout.indexOf('W') : layout.indexOf('Z');
-    }
-
-    return layout.charAt(startPosition + index);
-  }
-
   render() {
     const { action, canAct, actionType } = this.props;
     const { croppedImageUrl } = this.state;
@@ -108,7 +91,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
             }}
           />
         )}
-        <span className="player_bar_key-binding">{this.getKeyBinding()}</span>
+        {this.props.keyLabel && <span className="player_bar_key-binding">{this.props.keyLabel}</span>}
       </div>
     );
   }

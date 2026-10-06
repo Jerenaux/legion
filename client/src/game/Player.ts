@@ -14,6 +14,8 @@ import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE, GRID_WIDTH } from '@legion/shared
 import { hexDistance } from '@legion/shared/utils';
 import {loadGameSettings} from '../settings';
 import {VFX_DISPLAY_SCALE} from './VFXconfig';
+import {SPELL_SLOT_OFFSET} from '../input/bindings';
+import {displayTint} from './palette';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -481,7 +483,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     private refreshHighlight(selected = this.arena.selectedPlayer === this) {
-        this.glowFx.color = this.hovered ? 0xffd785 : selected ? GlowColors.Selected : this.isPlayer ? GlowColors.Ally : GlowColors.Enemy;
+        this.glowFx.color = this.hovered ? 0xffd785 : selected ? GlowColors.Selected : displayTint(this.isPlayer ? GlowColors.Ally : GlowColors.Enemy);
         this.glowFx.setActive(this.hovered || this.targetHighlighted || selected);
     }
 
@@ -515,25 +517,14 @@ export class Player extends Phaser.GameObjects.Container {
         }
     }
 
-    getLayoutAndSpellsIndex() {
-        const qwertyLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-        const azertyLayout = 'AZERTYUIOPQSDFGHJKLMWXCVBN';
-        const settings = loadGameSettings();
-        const layout = settings.keyboardLayout === 0 ? azertyLayout : qwertyLayout;
-        const spellsIndex = settings.keyboardLayout === 0 ? layout.indexOf('W') : layout.indexOf('Z');
-        return { layout, spellsIndex };
-    }
-
-    onLetterKey(keyCode) {
-        const { layout } = this.getLayoutAndSpellsIndex();
-        const index = layout.indexOf(keyCode);
-        this.onKey(index);
+    getSpellsIndex() {
+        return SPELL_SLOT_OFFSET;
     }
 
     onKey(keyIndex) {
         if (!this.isPlayer || this.arena.turnee?.team !== this.team.id || this.arena.turnee?.num !== this.num) return;
         this.arena.playSound('click');
-        const { spellsIndex } = this.getLayoutAndSpellsIndex();
+        const spellsIndex = this.getSpellsIndex();
         if (keyIndex >= spellsIndex) {
             this.useSkill(keyIndex - spellsIndex);
         } else {

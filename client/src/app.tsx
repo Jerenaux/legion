@@ -16,6 +16,8 @@ import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
 import {startGamepadInput} from './input/gamepad';
+import {loadGameSettings} from './settings';
+import {silentErrorToast, successToast} from './components/utils';
 import {setRouteMusic, stopRouteMusic} from './routeMusic';
 if (process.env.NODE_ENV === 'production') {
   // Set up auth state listener to update Sentry user info
@@ -50,13 +52,27 @@ class App extends Component<{}, AppState> {
         void setRouteMusic(location.pathname);
         document.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
-        this.stopGamepadInput = startGamepadInput(action => dispatchDesktopAction(action, 'gamepad'));
+        this.stopGamepadInput = startGamepadInput(action => dispatchDesktopAction(action, 'gamepad'), () => loadGameSettings().controls);
+        window.addEventListener('gamepadconnected', this.handleGamepadConnected);
+        window.addEventListener('gamepaddisconnected', this.handleGamepadDisconnected);
     }
+
+    // Matches run on a server clock and cannot pause, so a lost controller is reported at once.
+    handleGamepadDisconnected = () => {
+      silentErrorToast(t("Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse."), 6000);
+    };
+
+    handleGamepadConnected = (event: GamepadEvent) => {
+      // Browsers report already-plugged controllers at startup too; only announce later connections.
+      if (performance.now() > 5000 && event.gamepad) successToast(t("Controller connected."));
+    };
 
     componentWillUnmount() {
         i18n.off('languageChanged', this.handleLanguageChange);
         document.removeEventListener('keydown', this.handleKeyDown);
         window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+        window.removeEventListener('gamepadconnected', this.handleGamepadConnected);
+        window.removeEventListener('gamepaddisconnected', this.handleGamepadDisconnected);
         this.stopGamepadInput();
         stopRouteMusic();
     }
@@ -69,10 +85,11 @@ class App extends Component<{}, AppState> {
       const typing = target?.matches?.('input, textarea, select, [contenteditable="true"]');
       const inCombat = this.state.currentMainRoute === 'game'
         && !document.querySelector('[role="dialog"], [aria-modal="true"], .endgame');
-      const action = actionFromKeyboard(event, inCombat);
+      const action = actionFromKeyboard(event, inCombat, loadGameSettings().controls);
       if (!action || (typing && action !== 'cancel' && action !== 'abandon-dialog') || (event.code === 'Tab' && this.state.currentMainRoute !== 'game')) return;
       event.preventDefault();
-      if (event.repeat && (event.code === 'Space' || event.code === 'Escape')) return;
+      // Holding a key repeats focus movement only; every other action fires once per press.
+      if (event.repeat && !action.startsWith('menu-')) return;
       dispatchDesktopAction(action, 'keyboard');
     };
 

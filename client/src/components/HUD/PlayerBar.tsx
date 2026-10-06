@@ -5,6 +5,8 @@ import { PlayerProps } from '@legion/shared/interfaces';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { loadGameSettings } from '../../settings';
+import { CONTROLS_CHANGED_EVENT, DesktopAction } from '../../input/actions';
+import { SPELL_SLOT_OFFSET, primaryKeyLabel } from '../../input/bindings';
 import { statusIcons } from '../utils';
 import hpIcon from '@assets/stats_icons/hp_icon.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
@@ -28,18 +30,18 @@ interface PlayerBarProps {
 }
 
 class PlayerBar extends Component<PlayerBarProps> {
-  state = {keyboardLayout: loadGameSettings().keyboardLayout};
+  state = {controls: loadGameSettings().controls};
 
   componentDidMount() {
-    this.props.eventEmitter.on('settingsChanged', this.handleSettingsChanged);
+    window.addEventListener(CONTROLS_CHANGED_EVENT, this.handleControlsChanged);
   }
 
   componentWillUnmount() {
-    this.props.eventEmitter.off('settingsChanged', this.handleSettingsChanged);
+    window.removeEventListener(CONTROLS_CHANGED_EVENT, this.handleControlsChanged);
   }
 
-  handleSettingsChanged = (settings) => {
-    this.setState({keyboardLayout: settings.keyboardLayout});
+  handleControlsChanged = () => {
+    this.setState({controls: loadGameSettings().controls});
   };
 
   renderActionRow(actions: Array<BaseItem | BaseSpell>, startIndex: number, type: InventoryType) {
@@ -73,7 +75,8 @@ class PlayerBar extends Component<PlayerBarProps> {
                   this.props.eventEmitter.emit('itemClick', startIndex + index);
                 }}
               >
-                <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type} keyboardLayout={this.state.keyboardLayout} />
+                <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type}
+                  keyLabel={primaryKeyLabel(`${isSpell ? 'spell' : 'item'}-${index + 1}` as DesktopAction, this.state.controls)} />
                 <span className="player_bar_action_name">{t(action.name)}</span>
                 {cost !== null && <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}><img src={mpIcon} alt={t("MP")} />{formatNumber(cost)}</span>}
               </button>
@@ -87,8 +90,7 @@ class PlayerBar extends Component<PlayerBarProps> {
 
   render({player, inspectedName, canAct, isPlayerTurn, turnDuration, timeLeft, turnNumber, onPassTurn}: PlayerBarProps) {
     const {items = [], spells = [], statuses} = player || {};
-    const layout = this.state.keyboardLayout === 0 ? 'AZERTYUIOPQSDFGHJKLMWXCVBN' : 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const spellsIndex = layout.indexOf(this.state.keyboardLayout === 0 ? 'W' : 'Z');
+    const spellsIndex = SPELL_SLOT_OFFSET;
     const pending = canAct && (player.pendingSpell != null ? spells[player.pendingSpell] : items[player.pendingItem]);
     const condition = player?.hp <= 0 ? 'Knocked out' : player?.isParalyzed ? 'Unable to act' : player?.casting ? 'Casting' : '';
     // One status at a time, shown above the arena so the dock layout never changes.

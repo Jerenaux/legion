@@ -124,7 +124,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await js('combatCheck.arena.selectOwnUnit(combatCheck.arena.getPlayer(1, 2))');
   await waitFor('document.querySelector(".player_bar_container").dataset.active === "false"');
   await js(`document.querySelector('${fire}').click()`);
-  await js("combatCheck.arena.selectedPlayer.onLetterKey('Z')");
+  await js("combatCheck.arena.selectedPlayer.onKey(combatCheck.arena.selectedPlayer.getSpellsIndex())");
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), null, 'An inspected ally cannot act out of turn');
   await js('combatCheck.arena.selectTurnee()');
   await waitFor('document.querySelector(".player_bar_container").dataset.active === "true"');

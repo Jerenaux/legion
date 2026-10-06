@@ -1,0 +1,119 @@
+/* Tabs, toggles and the controls table share the settings panel vocabulary in HUD.style.css. */
+.setting_menu.is-wide .setting_dialog { width: min(44rem, calc(100vw - 80px)); }
+
+.setting_tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--ink-edge-soft);
+}
+
+.setting_tab {
+  position: relative;
+  min-height: 40px;
+  padding: 6px 16px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: 1rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+  cursor: pointer;
+}
+.setting_tab[aria-selected="true"] { color: var(--gold); }
+.setting_tab[aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--gold);
+}
+.setting_tab:hover { color: var(--text-strong); }
+.setting_tab:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+
+.setting_check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 2px 10px;
+  margin: 14px 0;
+}
+.setting_check input { width: 18px; height: 18px; margin: 0; accent-color: var(--gold); }
+.setting_check label { color: var(--text-strong); }
+.setting_check small { grid-column: 2; color: var(--text-muted); font-size: .8125rem; line-height: 1.35; }
+
+.setting_dialog_control_bar_container { gap: 10px; }
+.setting_volume_value { min-width: 2.5ch; text-align: end; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+.setting_dialog_control_bar_container[data-muted="true"] .setting_dialog_control_bar { opacity: .45; }
+.setting_mute {
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 1px solid var(--ink-edge);
+  border-radius: 4px;
+  background: oklch(14% .025 250 / .8);
+  color: var(--text-muted);
+  font: .875rem var(--locale-font, Arial), system-ui, sans-serif;
+  cursor: pointer;
+}
+.setting_mute[aria-pressed="true"] { border-color: oklch(70% .1 80); color: var(--gold); background: oklch(24% .04 70 / .6); }
+.setting_mute:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+
+.controls-help { margin: 4px 0 10px; color: var(--text-muted); font-size: .875rem; line-height: 1.4; }
+.controls-table-wrap { max-height: max(180px, calc(100dvh - 380px)); overflow: auto; border: 1px solid var(--ink-edge-soft); border-radius: 4px; }
+.controls-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: .9375rem; }
+.controls-table thead th:first-child { width: 34%; }
+.controls-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 6px;
+  background: oklch(19% .03 245);
+  color: var(--text-muted);
+  font-weight: 400;
+  text-align: start;
+}
+.controls-table tbody th[scope="row"] { padding: 4px 8px; overflow-wrap: anywhere; color: var(--text-strong); font-weight: 400; text-align: start; }
+.controls-table td { padding: 3px 4px; }
+.controls-table tbody tr:not(:first-child):hover { background: oklch(100% 0 0 / .03); }
+.controls-group {
+  padding: 10px 8px 4px;
+  color: var(--gold);
+  font: .8125rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-align: start;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.controls-binding {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--ink-edge);
+  border-radius: 4px;
+  background: linear-gradient(oklch(27% .03 242), oklch(20% .028 248));
+  box-shadow: 0 2px 0 oklch(10% .025 250);
+  color: var(--text-strong);
+  font: .875rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+  cursor: pointer;
+}
+.controls-binding.is-empty { color: var(--text-muted); }
+.controls-binding:hover { border-color: var(--text-muted); }
+.controls-binding.is-listening { border-color: var(--gold); color: var(--gold); background: oklch(24% .04 70 / .6); }
+.controls-binding:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.controls-notice { min-height: 1.4em; margin: 6px 0 2px; color: var(--gold); font-size: .875rem; }
+.controls-reset { min-width: 0; }
+.controls-settings .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* The wide Controls tab must still fit narrow windows without sideways scrolling. */
+.setting_menu.is-wide { width: min(48rem, 100%); }
+.settings-modal-container:has(.setting_menu.is-wide) { width: min(48rem, calc(100vw - 32px)); max-width: none; }
+.setting_menu.is-wide .setting_dialog { width: 100%; }
