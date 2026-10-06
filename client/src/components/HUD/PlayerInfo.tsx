@@ -56,9 +56,10 @@ class PlayerInfo extends Component<Props, State> {
   handleOpenModal = (e, modalType) => {
     if (modalType === "menu_modal") {
       const elementRect = e.currentTarget.getBoundingClientRect();
+      // Open beside the gear so the menu never covers the player's own name and rank.
       const modalPosition = {
-        top: elementRect.top + elementRect.height,
-        left: elementRect.left - 56,
+        top: elementRect.top,
+        left: elementRect.right + 10,
       };
       this.setState({ isMenuModalOpen: true, modalPos: modalPosition });
     } else if (modalType === "exit_modal") {
@@ -158,8 +159,9 @@ class PlayerInfo extends Component<Props, State> {
             <img src={settingsIcon} alt={""} />
           </button>
         </div>}
-        <Modal isOpen={this.state.isMenuModalOpen} style={customStyles} onRequestClose={this.handleCloseModal}>
-          <div>
+        <Modal contentLabel={t("Game menu")} isOpen={this.state.isMenuModalOpen} style={customStyles} onRequestClose={this.handleCloseModal}
+          onAfterOpen={() => document.querySelector<HTMLButtonElement>('.game_menu_panel button')?.focus()}>
+          <div className="game_menu_panel">
             {ENABLE_SETTINGS && <button type="button" className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
               <p>{t("Settings")}</p>
             </button>}
@@ -172,8 +174,8 @@ class PlayerInfo extends Component<Props, State> {
           onAfterOpen={() => document.querySelector<HTMLButtonElement>('.exit_game_menu [data-desktop-cancel]')?.focus()}>
           <div className="exit_game_menu flex flex_col gap_4">
             <div className="game_leave_dialog">{t("Are you sure you want to abandon the game? This will count as a loss.")}</div>
-            <div className="flex gap_4">
-              <button type="button" className="game_leave_btn" onClick={this.handleExit}>{t("Leave")}</button>
+            <div className="game_leave_actions">
+              <button type="button" className="game_leave_btn game_leave_btn_danger" onClick={this.handleExit}>{t("Leave")}</button>
               <button type="button" className="game_leave_btn" data-desktop-cancel onClick={this.handleCloseModal}>{t("Cancel")}</button>
             </div>
           </div>

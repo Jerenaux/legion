@@ -1100,3 +1100,80 @@
 .setting_menu_btn_active { color: var(--gold); }
 .setting_menu_btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .setting_menu .setting_close { width: auto; min-width: 160px; min-height: 46px; background-image: linear-gradient(oklch(30% .035 240), oklch(22% .03 245)); }
+
+/* In-match menu: a compact panel beside the gear, styled like the menus outside combat. */
+.game_menu_panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+  padding: 6px;
+  border: 1px solid var(--ink-edge);
+  border-radius: 4px;
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+}
+.game_menu_panel :is(.game_setting, .exit_game_label) {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: var(--text-strong);
+  text-align: left;
+  text-shadow: none;
+}
+.game_menu_panel :is(.game_setting, .exit_game_label) p { margin: 0; }
+.game_menu_panel :is(.game_setting, .exit_game_label):is(:hover, :focus-visible) {
+  outline: none;
+  background: oklch(31% .04 238);
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+.game_menu_panel .exit_game_label { color: oklch(80% .12 25); }
+.game_menu_panel .exit_game_label:is(:hover, :focus-visible) { box-shadow: inset 3px 0 0 oklch(65% .19 25); }
+
+/* Abandon confirmation: one panel; leaving is the destructive choice, Cancel keeps focus. */
+.exit_game_menu {
+  width: min(420px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 24px 24px 22px;
+  border: 1px solid oklch(58% .14 25);
+  border-radius: 6px;
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow), 0 0 0 4px oklch(12% .025 250 / .8), 0 24px 60px oklch(4% .02 255 / .7);
+  color: var(--text-strong);
+  text-shadow: none;
+}
+.exit_game_menu .game_leave_dialog {
+  width: auto;
+  height: auto;
+  padding: 0 0 18px;
+  background: none;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+.game_leave_actions { display: flex; gap: 12px; }
+.exit_game_menu .game_leave_btn {
+  flex: 1;
+  min-height: 46px;
+  height: auto;
+  padding: 8px 12px;
+  border: 1px solid var(--ink-edge);
+  border-radius: 6px;
+  background: linear-gradient(oklch(30% .035 240), oklch(22% .03 245));
+  box-shadow: 0 4px 0 oklch(12% .025 250), inset 0 1px 0 oklch(100% 0 0 / .08);
+  color: var(--text-strong);
+  font: 1.0625rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+  cursor: var(--game-pointer);
+}
+.exit_game_menu .game_leave_btn:hover { border-color: var(--text-muted); }
+.exit_game_menu .game_leave_btn_danger {
+  border-color: oklch(62% .16 25);
+  background: linear-gradient(oklch(44% .13 25), oklch(32% .1 22));
+  box-shadow: 0 4px 0 oklch(20% .06 20), inset 0 1px 0 oklch(100% 0 0 / .12);
+}
+.exit_game_menu .game_leave_btn_danger:hover { border-color: oklch(75% .14 25); }
+.exit_game_menu .game_leave_btn:active { transform: translateY(3px); box-shadow: 0 1px 0 oklch(12% .025 250); }
+.exit_game_menu .game_leave_btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+.game_menu_panel :is(.game_setting, .exit_game_label) p { color: inherit; }
