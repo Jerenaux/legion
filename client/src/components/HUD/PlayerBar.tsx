@@ -16,6 +16,8 @@ import './PlayerBar.style.css';
 type EventEmitter = {on: Function; off: Function; emit: Function};
 interface PlayerBarProps {
   player: PlayerProps | null;
+  /** Name of the character selected for inspection, when it is not the acting one. */
+  inspectedName?: string;
   canAct: boolean;
   isPlayerTurn: boolean;
   turnDuration: number;
@@ -83,13 +85,17 @@ class PlayerBar extends Component<PlayerBarProps> {
     );
   }
 
-  render({player, canAct, isPlayerTurn, turnDuration, timeLeft, turnNumber, onPassTurn}: PlayerBarProps) {
+  render({player, inspectedName, canAct, isPlayerTurn, turnDuration, timeLeft, turnNumber, onPassTurn}: PlayerBarProps) {
     const {items = [], spells = [], statuses} = player || {};
     const layout = this.state.keyboardLayout === 0 ? 'AZERTYUIOPQSDFGHJKLMWXCVBN' : 'QWERTYUIOPASDFGHJKLZXCVBNM';
     const spellsIndex = layout.indexOf(this.state.keyboardLayout === 0 ? 'W' : 'Z');
     const pending = canAct && (player.pendingSpell != null ? spells[player.pendingSpell] : items[player.pendingItem]);
     const condition = player?.hp <= 0 ? 'Knocked out' : player?.isParalyzed ? 'Unable to act' : player?.casting ? 'Casting' : '';
-    const instruction = !isPlayerTurn ? 'Enemy turn' : condition || (canAct ? '' : 'Inspecting');
+    // One status at a time, shown above the arena so the dock layout never changes.
+    const status = !isPlayerTurn ? null
+      : condition ? {tone: 'warning', subject: player.name, text: condition}
+      : pending ? {tone: 'targeting', subject: pending.name, text: 'Select a target'}
+      : !canAct ? {tone: 'muted', subject: inspectedName ?? player?.name, text: 'Inspecting'} : null;
     const previewMP = pending && 'cost' in pending ? player.mp - pending.cost : player?.mp;
 
     return (
@@ -101,7 +107,6 @@ class PlayerBar extends Component<PlayerBarProps> {
               <div className="player_bar_stats">
                 <div className="player_bar_heading" key={turnNumber}>
                   <strong className="player_bar_name">{player?.name || t('Combat')}</strong>
-                  {instruction && <span className="player_bar_turn_label" role="status">{t(instruction)}</span>}
                 </div>
                 {player && <>
                   <div className="player_bar_stat">
@@ -135,9 +140,10 @@ class PlayerBar extends Component<PlayerBarProps> {
           </div> : <div className="enemy_turn_banner" role="status">{t("Enemy Turn")}</div>}
         </div>
       </section>
-      {/* Floats over the arena so arming an action never shifts the dock. */}
-      <div className="targeting-hint" role="status" aria-live="polite">
-        {isPlayerTurn && pending && <span key={pending.name}><strong>{t(pending.name)}</strong><em>{t('Select a target')}</em></span>}
+      <div className="combat-status-banner" role="status" aria-live="polite">
+        {status && <span key={`${status.text}-${status.subject}`} data-tone={status.tone}>
+          {status.subject && <strong>{status.tone === 'targeting' ? t(status.subject) : status.subject}</strong>}<em>{t(status.text)}</em>
+        </span>}
       </div>
       {isPlayerTurn && <ItemTooltip id="combat-action-details" showClasses={false} />}
       </>

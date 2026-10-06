@@ -330,6 +330,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         {isHUDVisible && (
           <PlayerBar
             player={this.state.commandPlayer}
+            inspectedName={this.state.player && this.state.player !== this.state.commandPlayer ? this.state.player.name : undefined}
             canAct={this.state.canCommand}
             isPlayerTurn={this.state.isPlayerTurn}
             turnDuration={this.state.turnDuration}
