@@ -88,6 +88,9 @@ if (!process.versions.electron) {
       }
       await resize(...sizes[0]);
       await js('document.querySelector(".team-reveal-play-button").click()');
+      await wait('Boolean(document.querySelector(".tutorial-intro[open]"))');
+      assert.equal(await js('combatCheck.arena.turnee.turnNumber'), 0);
+      await js('document.querySelector(".tutorial-intro-skip").click()');
       await wait('Boolean(document.querySelector(".combat-coach-instruction"))');
       await wait('combatCheck.arena.turnee?.team === combatCheck.arena.playerTeamId');
       await pause(500);
@@ -120,19 +123,17 @@ if (!process.versions.electron) {
         }
         throw new Error('No valid move available');
       })()`);
-      await wait('document.querySelector(".combat-coach")?.dataset.learned === "1"');
-      await wait('document.querySelector(".gamehud")?.dataset.coachFocus === "timeline"');
-      await checkLayout('combat', 'movement-confirmation');
+      await wait('combatCheck.arena.tutorialManager.stats.everMoved === true');
       await wait(`combatCheck.arena.turnee.turnNumber > ${initialTurn} && combatCheck.arena.turnee.team === combatCheck.arena.playerTeamId`);
       assert.equal(await js('combatCheck.arena.selectedPlayer.class'), 2, 'Black Mage acts after Warrior');
       await wait('document.querySelector(".gamehud")?.dataset.coachFocus === "spells"');
       await checkLayout('combat', 'spell-guidance');
       await js('combatCheck.arena.selectedPlayer.useSkill(0)');
-      const spellName = await js('combatCheck.arena.selectedPlayer.spells[0].name');
-      await wait(`document.querySelector(".combat-coach-instruction strong")?.textContent === ${JSON.stringify(text('Aim {{spell}}', {spell: text(spellName)}))}`);
+      await wait('combatCheck.arena.selectedPlayer.pendingSpell === 0');
+      assert.equal(await js('Boolean(document.querySelector(".combat-coach-instruction"))'), false);
       for (const size of sizes) {
         await resize(...size);
-        await checkLayout('combat', `spell-targeting-${size[0]}`);
+        await screenshot(`spell-targeting-${size[0]}`);
       }
       await resize(...sizes[0]);
       await js('combatCheck.arena.handleTileClick(100,100)');

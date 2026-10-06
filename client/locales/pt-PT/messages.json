@@ -1076,5 +1076,17 @@
   "Move closer this turn to bring a target into spell range.": "Aproxima-te neste turno para colocares um alvo ao alcance dos feitiços.",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "As casas coloridas mostram o alcance. Seleciona um alvo ou seleciona o feitiço novamente para cancelar.",
   "No target in range. Select the spell again to cancel, then move closer.": "Nenhum alvo ao alcance. Seleciona o feitiço novamente para cancelar e depois aproxima-te.",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "As dicas de combate explicam o limite de ações, a ordem dos turnos e os controlos da arena. Ativa ou desativa as dicas antes da batalha."
+  "Flames": "Chamas",
+  "Low mana": "Pouca mana",
+  "Move and target": "Mover e apontar",
+  "Fire changes the battlefield": "O fogo transforma o terreno",
+  "Characters take turns. Choose one action, then the next character acts.": "As personagens jogam à vez. Escolhe uma ação e depois será a vez da personagem seguinte.",
+  "Item": "Objeto",
+  "or": "ou",
+  "Action bar": "Barra de ações",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "Seleciona uma casa azul para te moveres ou um inimigo adjacente para atacar. Para apontar um feitiço, seleciona o ícone na barra de ações e depois uma casa realçada.",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Fogo atinge uma casa, mesmo vazia, e deixa chamas. Atravessar as chamas ou permanecer nelas causa dano.",
+  "Skip tutorial": "Saltar tutorial",
+  "Tutorial steps": "Passos do tutorial",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "As dicas de combate explicam ações e perigos novos. Ativa ou desativa as dicas antes da batalha."
 }

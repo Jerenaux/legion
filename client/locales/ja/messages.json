@@ -1061,5 +1061,17 @@
   "Move closer this turn to bring a target into spell range.": "このターンは近づいて、対象を呪文の射程に入れましょう。",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "色のついたマスは射程を示します。対象を選ぶか、もう一度呪文を選んでキャンセルしてください。",
   "No target in range. Select the spell again to cancel, then move closer.": "射程内に対象がいません。もう一度呪文を選んでキャンセルし、近づいてください。",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "戦闘のヒントでは、行動回数の制限、行動順、アリーナの操作を説明します。戦闘前に表示を切り替えられます。"
+  "Flames": "炎",
+  "Low mana": "MP不足",
+  "Move and target": "移動と狙い方",
+  "Fire changes the battlefield": "炎で地形が変わる",
+  "Characters take turns. Choose one action, then the next character acts.": "キャラクターは順番に行動します。行動を1つ選ぶと、次のキャラクターの番になります。",
+  "Item": "アイテム",
+  "or": "または",
+  "Action bar": "アクションバー",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "青いマスを選ぶと移動し、隣の敵を選ぶと攻撃します。呪文を使うには、アクションバーのアイコンを選び、光っているマスを選んでください。",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "ファイアは誰もいないマスにも撃てて、その場に炎が残ります。炎を通ったり、その上に留まったりするとダメージを受けます。",
+  "Skip tutorial": "説明をスキップ",
+  "Tutorial steps": "説明のステップ",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "戦闘ヒントは、まだ経験していない行動や危険を説明します。戦闘前に表示のオン・オフを切り替えられます。"
 }

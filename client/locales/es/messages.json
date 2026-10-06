@@ -1076,5 +1076,17 @@
   "Move closer this turn to bring a target into spell range.": "Acércate este turno para poner un objetivo al alcance de tus hechizos.",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "Las casillas de colores indican el alcance. Selecciona un objetivo o vuelve a seleccionar el hechizo para cancelar.",
   "No target in range. Select the spell again to cancel, then move closer.": "No hay objetivos al alcance. Vuelve a seleccionar el hechizo para cancelar y luego acércate.",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "Los consejos de combate explican el límite de acciones, el orden de turnos y los controles de la arena. Actívalos o desactívalos antes del combate."
+  "Flames": "Llamas",
+  "Low mana": "Poco maná",
+  "Move and target": "Moverse y apuntar",
+  "Fire changes the battlefield": "El fuego cambia el terreno",
+  "Characters take turns. Choose one action, then the next character acts.": "Los personajes actúan por turnos. Elige una acción y después actuará el siguiente personaje.",
+  "Item": "Objeto",
+  "or": "o",
+  "Action bar": "Barra de acciones",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "Selecciona una casilla azul para moverte o un enemigo adyacente para atacar. Para apuntar con un hechizo, selecciona su icono en la barra de acciones y luego una casilla resaltada.",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Fuego golpea una casilla, aunque esté vacía, y deja llamas. Atravesarlas o permanecer en ellas causa daño.",
+  "Skip tutorial": "Omitir tutorial",
+  "Tutorial steps": "Pasos del tutorial",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Los consejos de combate explican acciones y peligros nuevos. Actívalos o desactívalos antes de la batalla."
 }

@@ -1076,5 +1076,17 @@
   "Move closer this turn to bring a target into spell range.": "Rapprochez-vous ce tour-ci pour mettre une cible à portée de sort.",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "Les cases colorées indiquent la portée. Sélectionnez une cible, ou à nouveau le sort pour annuler.",
   "No target in range. Select the spell again to cancel, then move closer.": "Aucune cible à portée. Sélectionnez à nouveau le sort pour annuler, puis rapprochez-vous.",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "Les astuces de combat expliquent la limite d’actions, l’ordre des tours et les commandes de l’arène. Activez-les ou désactivez-les avant le combat."
+  "Flames": "Flammes",
+  "Low mana": "Mana faible",
+  "Move and target": "Se déplacer et viser",
+  "Fire changes the battlefield": "Le feu transforme le terrain",
+  "Characters take turns. Choose one action, then the next character acts.": "Les personnages jouent à tour de rôle. Choisissez une action, puis le personnage suivant joue.",
+  "Item": "Objet",
+  "or": "ou",
+  "Action bar": "Barre d’actions",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "Sélectionnez une case bleue pour vous déplacer, ou un ennemi adjacent pour attaquer. Pour viser avec un sort, sélectionnez son icône dans la barre d’actions, puis une case en surbrillance.",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Feu frappe une case, même vide, et y laisse des flammes. Les traverser ou y rester inflige des dégâts.",
+  "Skip tutorial": "Passer le tutoriel",
+  "Tutorial steps": "Étapes du tutoriel",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Les conseils de combat expliquent les actions et dangers encore inconnus. Activez-les ou désactivez-les avant le combat."
 }

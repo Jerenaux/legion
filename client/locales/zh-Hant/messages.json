@@ -1061,5 +1061,17 @@
   "Move closer this turn to bring a target into spell range.": "本回合向目標靠近，使其進入法術射程。",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "彩色格子表示射程。選擇目標，或再次選擇法術以取消施法。",
   "No target in range. Select the spell again to cancel, then move closer.": "射程內沒有目標。再次選擇法術以取消施法，然後向目標靠近。",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "戰鬥提示介紹行動次數限制、行動順序和競技場操作。可在戰鬥前開啟或關閉。"
+  "Flames": "火焰",
+  "Low mana": "魔力不足",
+  "Move and target": "移動與瞄準",
+  "Fire changes the battlefield": "火焰會改變地形",
+  "Characters take turns. Choose one action, then the next character acts.": "角色依序行動。選擇一個行動後，就輪到下一個角色。",
+  "Item": "道具",
+  "or": "或",
+  "Action bar": "行動列",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "選擇藍色格子即可移動，選擇相鄰敵人即可攻擊。施放法術時，先選擇行動列中的法術圖示，再選擇醒目標示的格子。",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "火焰會命中一個格子，即使該格為空，也會留下火焰。穿過火焰或停留在火焰中都會受到傷害。",
+  "Skip tutorial": "略過教學",
+  "Tutorial steps": "教學步驟",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "戰鬥提示會說明尚未遇到的行動與危險。可在戰鬥前開啟或關閉。"
 }

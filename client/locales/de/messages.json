@@ -1061,5 +1061,17 @@
   "Move closer this turn to bring a target into spell range.": "Bewege dich in diesem Zug näher heran, bis ein Ziel in Zauberreichweite ist.",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "Die farbigen Felder zeigen die Reichweite. Wähle ein Ziel oder wähle den Zauber erneut, um abzubrechen.",
   "No target in range. Select the spell again to cancel, then move closer.": "Kein Ziel in Reichweite. Wähle den Zauber erneut, um abzubrechen, und bewege dich dann näher heran.",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "Kampftipps erklären das Aktionslimit, die Zugfolge und die Steuerung in der Arena. Du kannst sie vor dem Kampf ein- oder ausschalten."
+  "Flames": "Flammen",
+  "Low mana": "Wenig Mana",
+  "Move and target": "Bewegen und Zielen",
+  "Fire changes the battlefield": "Feuer verändert das Schlachtfeld",
+  "Characters take turns. Choose one action, then the next character acts.": "Die Charaktere sind nacheinander am Zug. Wähle eine Aktion, dann ist der nächste Charakter dran.",
+  "Item": "Gegenstand",
+  "or": "oder",
+  "Action bar": "Aktionsleiste",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "Wähle ein blaues Feld zum Bewegen oder einen benachbarten Gegner zum Angreifen. Für einen Zauber wählst du sein Symbol in der Aktionsleiste und dann ein markiertes Feld.",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Feuer trifft ein Feld, auch wenn es leer ist, und hinterlässt Flammen. Wer sie durchquert oder darin stehen bleibt, erleidet Schaden.",
+  "Skip tutorial": "Tutorial überspringen",
+  "Tutorial steps": "Tutorial-Schritte",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Kampftipps erklären unbekannte Aktionen und Gefahren. Du kannst sie vor dem Kampf ein- oder ausschalten."
 }

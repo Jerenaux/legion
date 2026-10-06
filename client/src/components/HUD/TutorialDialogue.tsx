@@ -4,10 +4,11 @@ import type {TutorialMessage} from '../../game/TutorialManager';
 import moveIcon from '@assets/stats_icons/move_range_icon.png';
 import attackIcon from '@assets/stats_icons/attack_icon.png';
 import spellIcon from '@assets/shop/spells_icon.png';
+import itemIcon from '@assets/shop/consumables_icon.png';
 import turnIcon from '@assets/HUD/hourglass.png';
 import '../../styles/components/TutorialDialogue.css';
 
-const icons = {move: moveIcon, attack: attackIcon, spell: spellIcon, turn: turnIcon};
+const icons = {move: moveIcon, attack: attackIcon, spell: spellIcon, item: itemIcon, turn: turnIcon};
 interface TutorialDialogueProps {
   message?: TutorialMessage;
   visible: boolean;

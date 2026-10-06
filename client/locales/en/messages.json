@@ -1061,5 +1061,17 @@
   "Move closer this turn to bring a target into spell range.": "Move closer this turn to bring a target into spell range.",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "The colored tiles show range. Select a target, or select the spell again to cancel.",
   "No target in range. Select the spell again to cancel, then move closer.": "No target in range. Select the spell again to cancel, then move closer.",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle."
+  "Flames": "Flames",
+  "Low mana": "Low mana",
+  "Move and target": "Move and target",
+  "Fire changes the battlefield": "Fire changes the battlefield",
+  "Characters take turns. Choose one action, then the next character acts.": "Characters take turns. Choose one action, then the next character acts.",
+  "Item": "Item",
+  "or": "or",
+  "Action bar": "Action bar",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.",
+  "Skip tutorial": "Skip tutorial",
+  "Tutorial steps": "Tutorial steps",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle."
 }

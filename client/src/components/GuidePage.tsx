@@ -129,6 +129,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h2 id="magic" tabIndex={-1}>{t("Magic changes the battlefield")}</h2>
             <p>{t("Read item and spell details in Team or Shop before a match: check the effect, MP cost, and action speed. Fast actions bring your next turn around sooner than slow ones. A bigger spell is not always the better choice.")}</p>
             <p><Trans i18n={i18n} i18nKey={"<0>Check the whole target area.</0> Area spells can affect allies as well as enemies, and healing can help an opponent caught in the area. Aim carefully before confirming."} components={[<strong />]} /></p>
+            <p>{t("Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.")}</p>
             <dl className="guide-definitions">
               <div><dt>{t("Fire")}</dt><dd>{t("Leaves burning ground. Crossing flames or remaining on them causes damage. Move out of the fire; an ice spell can extinguish it.")}</dd></div>
               <div><dt>{t("Ice")}</dt><dd>{t("Creates obstacles and can freeze a character in place. Break the ice with a melee attack from another character or melt it with fire. Attacking an occupied ice tile can also hurt its captive.")}</dd></div>
@@ -190,7 +191,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="controls">
             <h2 id="controls" tabIndex={-1}>{t("Controls & quick help")}</h2>
-            <p>{t("Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.")}</p>
+            <p>{t("Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Open <0>Combat tips</0> on your turn for guidance about the current character and available actions. Hide the tips whenever you like. Tips pause during enemy turns. If a target or move is invalid, a short explanation appears without spending your action."} components={[<strong />]} /></p>
             <p>{t("Change language on the title screen or in Settings. Text and artwork update immediately. During a match, replay, queue, or lobby, return to the main menu first.")}</p>
             <p>{t("On Steam, your Steam language is used by default. A language you choose in the game takes priority.")}</p>

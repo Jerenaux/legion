@@ -42,9 +42,11 @@ moment caused the problem here.
   competing start buttons. Keep necessary warnings next to the affected choice.
 - Teach one immediate action at a time. Highlight the real control and use its
   existing icon. Avoid repeating a title in the explanatory sentence.
-- Assume familiarity with RPGs. Teach Legion's action limit, turn order and
-  controls; skip separate lessons on healing, HP, MP, and familiar status effects.
-  Keep spell costs in the action bar and spell details, not tutorial hints.
+- Keep the opening briefing brief: turns and the action limit, controls, then
+  tile-based Fire and terrain, illustrated with real cropped game screenshots.
+  Situational combat tips may explain an unfamiliar status or hazard when it
+  actually occurs and has not been seen before. Do not turn those tips into a
+  forced lesson sequence. Keep spell costs in the action bar and spell details.
 - Match guidance to the live battle. Do not mention highlighted targets before
   targeting is enabled, or suggest casting when nothing is in range. Check the
   authoritative server layout too: a local client build still uses production
@@ -69,7 +71,9 @@ clicks or wait for decorative animations before allowing the player to continue.
 Never hide meaning behind unlabeled icons: pair unfamiliar controls with short
 labels, tooltips or accessible names. Keep keyboard/controller navigation and
 focus visible. Check 1280×720 and compact layouts, enlarged text and long/CJK
-translations. Combat guidance must not obscure its target or block input.
+translations. Contextual combat tips must not obscure their target or block input. The opening
+briefing is deliberately modal: keep combat stopped until it is completed or
+skipped, and contain keyboard/controller input inside it.
 
 ## Review before shipping
 

@@ -162,24 +162,51 @@ test('clicking the active character restores selection after inspecting another 
 test('tutorial spell availability follows real range, team targeting, and usable spells', () => {
   const events = {emit: mock()};
   const arena = runInNewContext(inputMethods('Arena.ts', ['refreshTutorial', 'validateTarget']), {
-    events, isInSpellRange, serializeCoords, Target, TargetHighlight,
+    events, isInSpellRange, serializeCoords, Target, TargetHighlight, StatusEffect: {POISON: 0}, GRID_WIDTH: 15, GRID_HEIGHT: 12,
   });
   const active = {gridX: 1, gridY: 5, name: 'Ember', isPlayer: true, mp: 30,
     spells: [{name: 'Fire', cost: 10, target: Target.SINGLE, targetHighlight: TargetHighlight.ENEMY}],
-    pendingSpell: null, pendingItem: null, isMuted: () => false, canAct: () => true, isInIce: () => false};
+    statuses: [0], hasUsableItem: () => false, isParalyzed: () => false, pendingSpell: null, pendingItem: null, isMuted: () => false, canAct: () => true, isInIce: () => false};
   Object.assign(arena, {tutorialManager: {}, turnee: {turnNumber: 1, team: 1, num: 3},
-    playerTeamId: 1, selectedPlayer: active, getPlayer: () => active, hasEnemyNextTo: () => false,
+    playerTeamId: 1, selectedPlayer: active, getPlayer: () => active, hasEnemyNextTo: () => false, hasFlame: () => false, hexGridManager: {getTile: () => true},
     gridMap: new Map([['14,5', {gridX: 14, gridY: 5, team: {id: 2}}], ['2,5', {gridX: 2, gridY: 5, team: {id: 1}}]])});
   const context = () => {arena.refreshTutorial(); return events.emit.mock.calls.at(-1)[1];};
   expect(context().spellInRange).toBe(false);
   active.pendingSpell = 0;
-  expect(context().pendingSpell.hasTarget).toBe(false);
+  expect(context().pendingSpell).toBe(true);
   arena.gridMap.set('3,5', {gridX: 3, gridY: 5, team: {id: 2}});
   expect(context().spellInRange).toBe(true);
-  expect(context().pendingSpell.hasTarget).toBe(true);
+  expect(context().pendingSpell).toBe(true);
+  arena.gridMap.delete('3,5');
+  active.spells[0].target = Target.AOE;
+  expect(context().spellInRange).toBe(true); // Fire can target empty ground.
   active.mp = 0;
   expect(context().hasSpells).toBe(false);
   active.mp = 30;
   active.isMuted = () => true;
   expect(context().hasSpells).toBe(false);
+});
+
+test('illustrated briefing holds readiness once, including the legacy first-match path', () => {
+  const emitted: string[] = [];
+  const arena = runInNewContext(inputMethods('Arena.ts', ['reportArenaReady']), {
+    events: {emit: (event: string) => emitted.push(event)},
+    document: {hidden: false}, window: {matchMedia: () => ({matches: false})},
+  });
+  const socket = {connected: true, emit: mock()};
+  Object.assign(arena, {gameInitialized: true, pendingEntrances: 0, socket,
+    tutorialIntroPending: true, tutorialIntroShown: false, readyToken: 'first-render'});
+  arena.reportArenaReady(); arena.reportArenaReady();
+  expect(emitted).toEqual(['showTutorialIntro']);
+  expect(socket.emit).not.toHaveBeenCalled();
+  arena.tutorialIntroPending = false;
+  arena.reportArenaReady(); arena.reportArenaReady();
+  expect(socket.emit.mock.calls).toEqual([['arenaReady', 'first-render']]);
+  socket.emit.mockClear();
+  arena.legacyFirstMatch = true; arena.tutorialIntroPending = true;
+  arena.reportArenaReady();
+  expect(socket.emit).not.toHaveBeenCalled();
+  arena.tutorialIntroPending = false;
+  arena.reportArenaReady(); arena.reportArenaReady();
+  expect(socket.emit.mock.calls).toEqual([['teamRevealed']]);
 });

@@ -902,6 +902,9 @@ if (!process.versions.electron) {
             timingChecks.get(scenario).sentAt = Date.now();
             await js('document.querySelector(".team-reveal-play-button").click()');
             assert.equal(timingChecks.get(scenario).acks, 0, 'Play must wait for the arena intro to finish');
+            await waitFor('Boolean(document.querySelector(".tutorial-intro[open]"))');
+            assert.equal(timingChecks.get(scenario).acks, 0, 'The illustrated briefing must hold combat readiness');
+            await js('document.querySelector(".tutorial-intro-skip").click()');
           }
           if (scenario === 'timing-hidden') {
             await waitFor('combatCheck.arena.gameInitialized');

@@ -1091,5 +1091,17 @@
   "Move closer this turn to bring a target into spell range.": "В этот ход подойдите ближе, чтобы цель оказалась в пределах дальности заклинаний.",
   "The colored tiles show range. Select a target, or select the spell again to cancel.": "Цветные клетки показывают дальность. Выберите цель или выберите заклинание ещё раз, чтобы отменить.",
   "No target in range. Select the spell again to cancel, then move closer.": "В пределах дальности нет целей. Выберите заклинание ещё раз, чтобы отменить, затем подойдите ближе.",
-  "Combat tips cover the action limit, turn order, and arena controls. Switch them on or off before battle.": "Подсказки в бою объясняют ограничение действий, порядок ходов и управление на арене. Включите или выключите их перед боем."
+  "Flames": "Пламя",
+  "Low mana": "Мало маны",
+  "Move and target": "Передвижение и выбор цели",
+  "Fire changes the battlefield": "Огонь меняет поле боя",
+  "Characters take turns. Choose one action, then the next character acts.": "Персонажи ходят по очереди. Выберите одно действие, затем ход перейдёт к следующему персонажу.",
+  "Item": "Предмет",
+  "or": "или",
+  "Action bar": "Панель действий",
+  "Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.": "Выберите синюю клетку, чтобы переместиться, или соседнего врага, чтобы атаковать. Для заклинания выберите его значок на панели действий, затем подсвеченную клетку.",
+  "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Огонь поражает клетку, даже пустую, и оставляет на ней пламя. Проходя через пламя или оставаясь в нём, персонаж получает урон.",
+  "Skip tutorial": "Пропустить обучение",
+  "Tutorial steps": "Шаги обучения",
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Боевые подсказки объясняют незнакомые действия и опасности. Их можно включить или выключить перед боем."
 }

@@ -11,17 +11,23 @@ export interface TutorialContext {
     hasEnemy: boolean;
     hasSpells: boolean;
     spellInRange: boolean;
-    pendingSpell?: { name: string; hasTarget: boolean };
+    pendingSpell?: boolean;
     pendingItem: boolean;
     ice: boolean;
+    fire?: boolean;
+    poison?: boolean;
+    muted?: boolean;
+    paralyzed?: boolean;
+    lowMP?: boolean;
+    hasItem?: boolean;
 }
 
 export interface TutorialMessage {
     title: string;
     content: string;
-    focus?: 'spells' | 'timeline';
+    focus?: 'spells' | 'items' | 'timeline';
     learned: number;
-    icon?: 'move' | 'attack' | 'spell' | 'turn';
+    icon?: 'move' | 'attack' | 'spell' | 'item' | 'turn';
 }
 
 // Store the player's choice, not progress. Learned actions come from the match/account.
@@ -39,7 +45,7 @@ export function saveCombatTips(visible: boolean) {
 export class TutorialManager {
     private context?: TutorialContext;
     private actionTurn = -1;
-    private timelineTurn = -1;
+    private shownThisTurn = new Map<keyof EngagementStats, number>();
     private ended = false;
     private stats: Partial<EngagementStats>;
     private handlers = {
@@ -58,9 +64,6 @@ export class TutorialManager {
 
     private acceptAction(flag: keyof EngagementStats) {
         if (this.ended) return;
-        if (!this.stats.everMoved && !this.stats.everAttacked && !this.stats.everUsedSpell && !this.stats.everUsedItem) {
-            this.timelineTurn = this.context?.turn ?? -1;
-        }
         this.stats = { ...this.stats, [flag]: true };
         this.actionTurn = this.context?.turn ?? -1;
         this.refresh();
@@ -77,32 +80,41 @@ export class TutorialManager {
             this.events.emit('hideTutorialMessage');
             return;
         }
+        // Keep a newly seen situation visible for this turn, without repeating it in later turns.
+        const unseen = (flag: keyof EngagementStats) => !this.stats[flag] || this.shownThisTurn.get(flag) === c.turn;
+        const situation = (flag: keyof EngagementStats, title: string, content: string, detail: Partial<TutorialMessage> = {}) => {
+            this.stats = {...this.stats, [flag]: true};
+            this.shownThisTurn.set(flag, c.turn);
+            show(title, content, detail);
+        };
         if (this.actionTurn === c.turn) {
-            if (this.timelineTurn === c.turn) {
-                show(t('Turn order'), t('The portraits show who acts next. Faster actions bring your next turn sooner.'), {focus: 'timeline', icon: 'turn'});
-            } else this.events.emit('hideTutorialMessage');
+            this.events.emit('hideTutorialMessage');
         } else if (!c.selectedIsTurnee) {
             show(t('{{name}} acts now', {name: c.name}), t('Select the active character.'), {focus: 'timeline', icon: 'turn'});
-        } else if (c.pendingSpell && !this.stats.everUsedSpell) {
-            show(t('Aim {{spell}}', {spell: t(c.pendingSpell.name)}), c.pendingSpell.hasTarget
-                ? t('The colored tiles show range. Select a target, or select the spell again to cancel.')
-                : t('No target in range. Select the spell again to cancel, then move closer.'), {icon: 'spell'});
         } else if (c.pendingSpell || c.pendingItem) {
             this.events.emit('hideTutorialMessage');
-        } else if (c.ice) {
-            show(t('Frozen in ice'), t('Another character can attack the ice to break it.'));
+        } else if (c.ice && unseen('everSawIce')) {
+            situation('everSawIce', t('Frozen in ice'), t('Attack ice with another character to break it!'), {icon: 'attack'});
+        } else if (c.paralyzed && unseen('everParalyzed')) {
+            situation('everParalyzed', t('Paralysis'), t('Paralysis prevents you from acting for several turns!'));
         } else if (!c.canAct) {
             this.events.emit('hideTutorialMessage');
-        } else if (!this.stats.everMoved && !this.stats.everAttacked && !this.stats.everUsedSpell && !this.stats.everUsedItem) {
-            show(t('One action per turn'), t('Select a blue tile. Moving ends your turn.'), {icon: 'move'});
-        } else if (c.hasSpells && !this.stats.everUsedSpell) {
-            if (c.spellInRange) {
-                show(t('Spell controls'), t('Select a spell in the bar below to show its range.'), {focus: 'spells', icon: 'spell'});
-            } else {
-                show(t('Out of range'), t('Move closer this turn to bring a target into spell range.'), {icon: 'move'});
-            }
+        } else if (c.fire && unseen('everSawFlames')) {
+            situation('everSawFlames', t('Flames'), t('Move away from flames to avoid repeated damage!'), {icon: 'move'});
+        } else if (c.poison && unseen('everPoisoned')) {
+            situation('everPoisoned', t('Poison'), t('Poison damages you every turn for several turns!'));
+        } else if (c.muted && unseen('everSilenced')) {
+            situation('everSilenced', t('Silence'), t('You cannot cast spells while silenced!'));
+        } else if (c.lowMP && unseen('everLowMP')) {
+            situation('everLowMP', t('Low mana'), t("You can't cast spells without enough MP!"), {focus: 'spells', icon: 'spell'});
         } else if (c.hasEnemy && !this.stats.everAttacked) {
-            show(t('Attack'), t('Select an adjacent enemy. Attacking ends your turn.'), {icon: 'attack'});
+            show(t('Attack'), t('Click on an adjacent enemy to attack!'), {icon: 'attack'});
+        } else if (c.hasSpells && c.spellInRange && !this.stats.everUsedSpell) {
+            show(t('Spells'), t('Click on a spell icon to cast it!'), {focus: 'spells', icon: 'spell'});
+        } else if (!this.stats.everMoved) {
+            show(t('Move'), t('Click on a blue tile to move!'), {icon: 'move'});
+        } else if (c.hasItem && !this.stats.everUsedItem) {
+            show(t('Items'), t('Click an item icon to use it!'), {focus: 'items', icon: 'item'});
         } else {
             this.events.emit('hideTutorialMessage');
         }

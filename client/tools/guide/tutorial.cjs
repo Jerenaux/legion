@@ -32,6 +32,19 @@ module.exports = async ({win, js, waitFor, ready, output, locale, sinkURL, timin
   win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Return'});
   await waitFor('!document.querySelector(".team-reveal-overlay")');
   assert.equal(await js('localStorage.getItem("legion-combat-tips")'), 'hidden');
+  await waitFor('Boolean(document.querySelector(".tutorial-intro[open]"))');
+  assert.equal(timingChecks.get('timing-first').acks, 0, 'The briefing must hold combat readiness regardless of the tips preference');
+  for (let step = 0; step < 3; step++) {
+    await js(`document.querySelectorAll('.tutorial-intro-steps button')[${step}].click()`);
+    await waitFor('Array.from(document.querySelectorAll(".tutorial-intro img")).every(image => image.complete && image.naturalWidth > 0)');
+    assert.equal(timingChecks.get('timing-first').acks, 0, 'Changing briefing steps must not start the timer');
+    await shot(`briefing-${step}`);
+  }
+  await js('document.querySelector(".tutorial-intro-back").click()');
+  win.webContents.sendInputEvent({type: 'keyDown', keyCode: 'Z'});
+  win.webContents.sendInputEvent({type: 'keyUp', keyCode: 'Z'});
+  assert.equal(timingChecks.get('timing-first').acks, 0, 'Combat shortcuts must not escape the briefing');
+  await js('document.querySelector(".tutorial-intro-skip").click()');
   await waitFor(() => timingChecks.get('timing-first').acks === 1);
   assert.equal(await js('Boolean(document.querySelector(".combat-coach-panel"))'), false, 'Unchecked tips stay hidden when combat starts');
 
@@ -42,6 +55,9 @@ module.exports = async ({win, js, waitFor, ready, output, locale, sinkURL, timin
   await js('document.querySelector(".team-reveal-tips input").click()');
   await waitFor('document.querySelector(".team-reveal-check").textContent === "✓"');
   await js('document.querySelector(".team-reveal-play-button").click()');
+  await waitFor('Boolean(document.querySelector(".tutorial-intro[open]"))');
+  assert.equal(timingChecks.get('timing-first').acks, 0, 'The briefing must hold combat readiness regardless of the tips preference');
+  await js('document.querySelector(".tutorial-intro-skip").click()');
   await waitFor(() => timingChecks.get('timing-first').acks === 1);
   assert.equal(await js('localStorage.getItem("legion-combat-tips")'), 'shown');
   await win.loadURL('app://legion/game/guide-local');
