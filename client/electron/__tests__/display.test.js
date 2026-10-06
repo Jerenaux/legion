@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const {readDisplayMode, writeDisplayMode, isFullscreenShortcut} = require("../display");
+const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions} = require("../display");
 
 const directory = () => fs.mkdtempSync(path.join(os.tmpdir(), "legion-display-"));
 
@@ -36,4 +36,14 @@ test("toggles with the platform's fullscreen shortcut, never Escape", () => {
   expect(isFullscreenShortcut(key("F11", {isAutoRepeat: true}), "win32")).toBe(false);
   expect(isFullscreenShortcut({type: "keyUp", key: "F11"}, "win32")).toBe(false);
   for (const platform of ["win32", "darwin", "linux"]) expect(isFullscreenShortcut(key("Escape"), platform)).toBe(false);
+});
+
+test("never marks the macOS window as unable to go fullscreen", () => {
+  for (const start of [true, false]) {
+    const options = displayWindowOptions(start, "darwin");
+    expect(options.fullscreenable).toBe(true);
+    expect("fullscreen" in options).toBe(false);
+  }
+  expect(displayWindowOptions(true, "win32")).toEqual({fullscreenable: true, fullscreen: true});
+  expect(displayWindowOptions(false, "win32")).toEqual({fullscreenable: true});
 });

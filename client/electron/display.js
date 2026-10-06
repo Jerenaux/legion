@@ -31,4 +31,11 @@ function isFullscreenShortcut(input, platform = process.platform) {
   return input.key === "F11" || Boolean(input.alt && !input.control && !input.meta && input.key === "Enter");
 }
 
-module.exports = {readDisplayMode, writeDisplayMode, isFullscreenShortcut};
+// Window options for the saved mode. On macOS, an explicit `fullscreen: false` makes the
+// window permanently non-fullscreenable, so fullscreen is requested after showing instead
+// and the option is never set there.
+function displayWindowOptions(startFullscreen, platform = process.platform) {
+  return {fullscreenable: true, ...(startFullscreen && platform !== "darwin" ? {fullscreen: true} : {})};
+}
+
+module.exports = {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions};

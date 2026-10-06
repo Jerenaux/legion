@@ -18,6 +18,9 @@
   --cyan: oklch(86% .1 200);
   --text-strong: oklch(96% .01 230);
   --text-muted: oklch(76% .025 230);
+  /* Better / worse values outside combat; colour-blind mode swaps them for blue / orange. */
+  --stat-up: #9ed94c;
+  --stat-down: #f18fa6;
   --panel-bg: linear-gradient(oklch(24% .03 245 / .94), oklch(17% .028 250 / .96));
   --panel-shadow: inset 0 1px 0 oklch(100% 0 0 / .07), inset 0 0 0 3px oklch(11% .025 250 / .45), 0 12px 30px oklch(5% .02 255 / .45);
 }
@@ -1984,3 +1987,14 @@ a:-webkit-any-link {
   .loot-popup-scrim, .loot-popup.loot-popup { animation: none; }
   .game-btn { transition: none; }
 }
+
+:root[data-colorblind] {
+  --stat-up: oklch(74% .14 245);
+  --stat-down: oklch(76% .15 60);
+}
+
+.stat-up { color: var(--stat-up); }
+.stat-down { color: var(--stat-down); }
+.stat-up::after, .stat-down::after { margin-left: 3px; font-size: .75em; }
+.stat-up::after { content: '▲'; }
+.stat-down::after { content: '▼'; }

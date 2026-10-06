@@ -9,7 +9,7 @@ require('./electron/telemetry').initializeTelemetry(app);
 const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
-const {readDisplayMode, writeDisplayMode, isFullscreenShortcut} = require("./electron/display");
+const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions} = require("./electron/display");
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
@@ -45,8 +45,10 @@ function registerIPC() {
   ipcMain.handle("is-fullscreen", event => trustedIPC(event) ? mainWindow.isFullScreen() : false);
   ipcMain.handle("toggle-fullscreen", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
-    mainWindow.setFullScreen(!mainWindow.isFullScreen());
-    return mainWindow.isFullScreen();
+    // macOS animates the switch, so report the requested mode rather than the current one.
+    const fullscreen = !mainWindow.isFullScreen();
+    mainWindow.setFullScreen(fullscreen);
+    return fullscreen;
   });
   ipcMain.handle("get-platform-auth", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
@@ -80,8 +82,7 @@ function createWindow() {
     width: 1280,
     height: 720,
     show: false,
-    // macOS can only enter fullscreen once the window is shown; see ready-to-show below.
-    fullscreen: startFullscreen && process.platform !== "darwin",
+    ...displayWindowOptions(startFullscreen),
     autoHideMenuBar: !isDev,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),

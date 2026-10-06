@@ -18,7 +18,14 @@ export class SettingsModal extends Component<SettingsModalProps, {settings: Game
     state = {settings: loadGameSettings(), isFullscreen: false, tab: 'general' as Tab};
 
     componentDidMount() {
-      if (isElectron()) this.checkFullscreenStatus();
+      if (!isElectron()) return;
+      this.checkFullscreenStatus();
+      // F11, the macOS window button and the checkbox all resize the window; keep the box in sync.
+      window.addEventListener('resize', this.checkFullscreenStatus);
+    }
+
+    componentWillUnmount() {
+      window.removeEventListener('resize', this.checkFullscreenStatus);
     }
 
     update = (change: Partial<GameSettings>) => {
