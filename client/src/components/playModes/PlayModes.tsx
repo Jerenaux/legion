@@ -35,10 +35,12 @@ class PlayModes extends Component {
           <PlayModeButton
             label={MiddleBtns.CASUAL}
             mode={PlayMode.CASUAL}
+            players={Math.floor(Math.random() * 4) + 1}
             data-playmode="casual"
           />
           <PlayModeButton
             label={MiddleBtns.RANKED}
+            players={Math.floor(Math.random() * 2) + 1}
             data-playmode="ranked"
             mode={PlayMode.RANKED}
             disabled={!isRankedUnlocked}

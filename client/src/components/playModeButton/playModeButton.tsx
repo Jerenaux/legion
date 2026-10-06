@@ -15,6 +15,7 @@ import goldChest from '@assets/shop/gold_chest.png';
 
 interface Props {
     label: string;
+    players?: number;
     mode: PlayMode;
     disabled?: boolean;
     lockIcon?: string;
@@ -74,7 +75,7 @@ class PlayModeButton extends Component<Props> {
     }
 
     render() {
-        const { label, mode, disabled, lockIcon, gamesUntilUnlock, unlockProgress, ...otherProps } = this.props;
+        const { label, players, mode, disabled, lockIcon, gamesUntilUnlock, unlockProgress, ...otherProps } = this.props;
         const modeInfo = modeInfoMap[mode];
 
         const btnIcons = {
@@ -105,7 +106,7 @@ class PlayModeButton extends Component<Props> {
                     {!disabled && (
                         mode === PlayMode.TOWER ? <span className="player">{t("Solo expedition")}</span> : mode === PlayMode.PRACTICE
                             ? <span className="player">{t("vs AI")}</span>
-                            : <span className="player">{t("vs players")}</span>
+                            : (players && <span className="player"><Trans i18n={i18n} i18nKey="playersWaiting" count={players} components={[<span className="count" />]} /></span>)
                     )}
                     <div className="info-container">
                         {disabled ? (

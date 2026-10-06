@@ -1090,6 +1090,5 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Les conseils de combat expliquent les actions et dangers encore inconnus. Activez-les ou désactivez-les avant le combat.",
   "Elemental spells change the battlefield": "Les sorts élémentaires transforment le terrain",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} secondes par tour dans le tutoriel ; {{regular}} secondes dans les parties normales.",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Feu laisse des flammes sur la case visée, même vide. Les traverser ou y rester inflige des dégâts. Vous pourrez débloquer d’autres sorts élémentaires en jouant.",
-  "vs players": "contre des joueurs"
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Feu laisse des flammes sur la case visée, même vide. Les traverser ou y rester inflige des dégâts. Vous pourrez débloquer d’autres sorts élémentaires en jouant."
 }

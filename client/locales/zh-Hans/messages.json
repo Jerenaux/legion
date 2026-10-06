@@ -1075,6 +1075,5 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "战斗提示会说明尚未遇到的行动和危险。可在战斗前开启或关闭。",
   "Elemental spells change the battlefield": "元素法术会改变地形",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "教程中每回合{{tutorial}}秒，普通对局中每回合{{regular}}秒。",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "火焰会在目标格留下火，即使该格为空也能施放。穿过火焰或停留在火焰中都会受到伤害。随着游戏进度推进，你还可以解锁其他元素法术。",
-  "vs players": "对战玩家"
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "火焰会在目标格留下火，即使该格为空也能施放。穿过火焰或停留在火焰中都会受到伤害。随着游戏进度推进，你还可以解锁其他元素法术。"
 }

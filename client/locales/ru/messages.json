@@ -1105,6 +1105,5 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Боевые подсказки объясняют незнакомые действия и опасности. Их можно включить или выключить перед боем.",
   "Elemental spells change the battlefield": "Стихийные заклинания меняют поле боя",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} секунд на ход в обучении; {{regular}} секунд в обычных матчах.",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Огонь оставляет пламя на выбранной клетке, даже если она пуста. Проходя через пламя или оставаясь в нём, персонаж получает урон. По мере игры можно открыть другие стихийные заклинания.",
-  "vs players": "против игроков"
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Огонь оставляет пламя на выбранной клетке, даже если она пуста. Проходя через пламя или оставаясь в нём, персонаж получает урон. По мере игры можно открыть другие стихийные заклинания."
 }

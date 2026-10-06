@@ -1075,6 +1075,5 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "전투 팁은 아직 경험하지 않은 행동과 위험을 설명합니다. 전투 전에 켜거나 끌 수 있습니다.",
   "Elemental spells change the battlefield": "원소 주문으로 지형 바꾸기",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "턴 제한 시간은 튜토리얼에서 {{tutorial}}초, 일반 경기에서 {{regular}}초입니다.",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "화염은 빈칸을 포함해 지정한 칸에 불길을 남깁니다. 불길을 지나가거나 그 위에 머무르면 피해를 받습니다. 게임을 진행하며 다른 원소 주문도 해금할 수 있습니다.",
-  "vs players": "플레이어 대전"
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "화염은 빈칸을 포함해 지정한 칸에 불길을 남깁니다. 불길을 지나가거나 그 위에 머무르면 피해를 받습니다. 게임을 진행하며 다른 원소 주문도 해금할 수 있습니다."
 }

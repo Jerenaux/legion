@@ -130,6 +130,10 @@
     letter-spacing: .08em;
 }
 
+.labelContainer .player .count {
+    color: var(--gold);
+}
+
 .info-container {
     box-sizing: border-box;
     width: 100%;
