@@ -1,6 +1,6 @@
 import titleMusic from "@assets/music/title.mp3";
 import menuMusic from "@assets/music/menus.mp3";
-import {loadGameSettings} from "./settings";
+import {musicGain} from "./settings";
 import {events} from "./components/HUD/GameHUD";
 
 const FADE_MS = 2000;
@@ -15,7 +15,7 @@ let finishFade: (() => void) | null = null;
 let fadeInTimer: ReturnType<typeof setInterval> | null = null;
 
 const updateVolume = () => {
-  if (audio) audio.volume = gain * loadGameSettings().musicVolume / 100;
+  if (audio) audio.volume = gain * musicGain();
 };
 const start = () => {
   const track = audio;

@@ -228,10 +228,13 @@ class Profile extends Component<Props, State> {
         this.statusInterval = setInterval(fetchStatuses, 5000);
     }
 
-    renderPlayerStatus = (status: string) => {
+    // The dot's colour is backed by a tooltip and screen-reader text naming the status.
+    renderPlayerStatus = (status: string, name?: string) => {
+        const label = this.statusLabel(status, name);
         return (
             <>
-                <div className={`status-dot ${status}`} />
+                <div className={`status-dot ${status}`} title={label} />
+                <span className="visually-hidden">{label}</span>
                 {/* {status === 'ingame' && gameId && (
                     <div
                         className="spectate-badge"
@@ -250,6 +253,12 @@ class Profile extends Component<Props, State> {
     UIDready = () => {
         return !!this.context.player.uid;
     }
+
+    statusLabel = (status: string, value0 = this.state.profileData?.name) => ({
+        online: t("{{value0}} is ready to play!", {value0}),
+        queuing: t("{{value0}} is already queuing!", {value0}),
+        ingame: t("{{value0}} is currently in a game", {value0}),
+    }[status] ?? t("{{value0}} is currently offline", {value0}));
 
     renderStatusBox = () => {
         if (!this.UIDready() || this.isOwnProfile()) return null;
@@ -731,7 +740,7 @@ class Profile extends Component<Props, State> {
                                                 backgroundImage: `url(${avatarContext(`./${friend.avatar}.png`)})`
                                             }}
                                         >
-                                            {this.renderPlayerStatus(this.state.friendStatuses[friend.id]?.status || 'offline')}
+                                            {this.renderPlayerStatus(this.state.friendStatuses[friend.id]?.status || 'offline', friend.name)}
                                         </div>
                                         <span className="friend-name">{friend.name}</span>
                                     </button>

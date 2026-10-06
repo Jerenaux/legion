@@ -26,58 +26,50 @@
 .endgame_button_primary {
     height: clamp(44px, 8vh, 56px);
     font-size: clamp(1rem, calc(3vw * var(--text-scale, 1)), 1.25rem);
-    background: linear-gradient(180deg, #ffd700 0%, #ffa600 100%);
-    color: #1c1f25;
-    border: 2px solid #ffd700;
-    box-shadow:
-        0 0 20px rgba(255, 166, 0, 0.3),
-        inset 0 0 10px rgba(255, 255, 255, 0.5);
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    border: 2px solid oklch(91% .1 92);
+    background: linear-gradient(oklch(87% .15 88), oklch(78% .16 75));
+    box-shadow: 0 5px 0 oklch(50% .11 60), inset 0 1px 0 oklch(100% 0 0 / .45), 0 0 24px oklch(80% .15 80 / .35);
+    color: oklch(22% .04 60);
+    text-shadow: 0 1px 0 oklch(100% 0 0 / .35);
 }
 
 .endgame_button_primary:hover {
     transform: translateY(-2px);
-    box-shadow:
-        0 0 30px rgba(255, 166, 0, 0.5),
-        inset 0 0 15px rgba(255, 255, 255, 0.7);
+    background: linear-gradient(oklch(91% .14 90), oklch(82% .16 78));
+    box-shadow: 0 7px 0 oklch(50% .11 60), inset 0 1px 0 oklch(100% 0 0 / .55), 0 0 30px oklch(84% .15 85 / .5);
 }
 
 .endgame_button_primary:active {
-    transform: translateY(1px);
-    background: linear-gradient(180deg, #ffa600 0%, #ffd700 100%);
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 oklch(50% .11 60), inset 0 1px 0 oklch(100% 0 0 / .3);
+    transition-duration: 40ms;
 }
 
 .endgame_button_secondary {
     height: clamp(36px, 7vh, 48px);
     width: 90%;
     font-size: clamp(0.875rem, calc(2.5vw * var(--text-scale, 1)), 1rem);
-    background: linear-gradient(to bottom, #2a3746 0%, #1c1f25 100%);
-    color: #ffffff;
-    border: 1px solid #3c616c;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-.endgame_button_secondary:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 3px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    border: 1px solid var(--ink-edge);
+    background: linear-gradient(oklch(30% .035 240), oklch(22% .03 245));
+    box-shadow: 0 4px 0 oklch(12% .025 250), inset 0 1px 0 oklch(100% 0 0 / .08);
+    color: var(--text-strong);
 }
 
 .endgame_button_secondary:hover {
-    border-color: #51fdff;
-    box-shadow: 0 0 10px rgba(81, 253, 255, 0.3);
+    border-color: var(--text-muted);
+    background: linear-gradient(oklch(34% .04 238), oklch(25% .035 243));
+    transform: translateY(-1px);
 }
 
 .endgame_button_secondary:active {
-    transform: scale(0.98);
-    background: linear-gradient(to bottom, #1c1f25 0%, #2a3746 100%);
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 oklch(12% .025 250);
+    transition-duration: 40ms;
+}
+
+.endgame_button:focus-visible {
+    outline: 3px solid var(--cyan);
+    outline-offset: 3px;
 }
 
 .defeat_title {
@@ -434,3 +426,117 @@
 }
 
 .localized-result { font: 900 clamp(1.5rem, 6vw, 4rem)/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif; color: #f1e0a0; text-shadow: 2px 3px #301d10, -1px -1px #301d10; text-align: center; overflow-wrap: anywhere; }
+
+/* Result reveal: party first, then each reward lands in turn. Buttons are usable throughout. */
+.endgame_characters_grid > .endgame_character {
+    animation: endgame-card-in 420ms cubic-bezier(.2, .9, .3, 1.15) both;
+}
+.endgame_characters_grid > .endgame_character:nth-child(2) { animation-delay: 110ms; }
+.endgame_characters_grid > .endgame_character:nth-child(3) { animation-delay: 220ms; }
+.endgame_characters_grid > .endgame_character:nth-child(4) { animation-delay: 330ms; }
+.endgame_characters_grid > .endgame_character:nth-child(5) { animation-delay: 440ms; }
+.endgame_characters_grid > .endgame_character:nth-child(6) { animation-delay: 550ms; }
+
+.endgame .endgame_character[data-class] {
+    --class-color: oklch(92% .01 230);
+}
+.endgame .endgame_character[data-class="WARRIOR"] { --class-color: oklch(85% .12 78); }
+.endgame .endgame_character[data-class="WHITE_MAGE"] { --class-color: oklch(90% .09 155); }
+.endgame .endgame_character[data-class="BLACK_MAGE"] { --class-color: oklch(80% .12 300); }
+.endgame .endgame_character_class { color: var(--class-color); }
+.endgame .endgame_character::after {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--class-color), transparent);
+    opacity: .7;
+}
+
+.endgame .endgame_character_xp_container { gap: 3px; }
+.endgame .endgame_character_xp_label {
+    align-self: flex-start;
+    font-size: .75rem;
+    color: var(--cyan);
+    text-transform: none;
+}
+.endgame .endgame_character_xp_bar {
+    height: 7px;
+    box-sizing: border-box;
+    border: 1px solid oklch(40% .05 220);
+    border-radius: 4px;
+    background: oklch(12% .025 250 / .85);
+    overflow: hidden;
+}
+.endgame .endgame_character_xp_fill {
+    border-radius: 3px;
+    background: linear-gradient(90deg, oklch(70% .12 220), oklch(88% .1 200));
+}
+.endgame .endgame_character.leveling-up .endgame_character_xp_bar {
+    border-color: oklch(80% .13 80);
+}
+
+.endgame_rewards_heading {
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: .06em;
+}
+
+.streak_gold_list {
+    isolation: isolate;
+    border: 1px solid oklch(72% .11 80);
+    border-radius: 6px;
+    background: radial-gradient(circle, oklch(32% .06 75), oklch(16% .03 250) 75%);
+    box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .6), 0 0 18px oklch(80% .13 80 / .3);
+    animation: reward-land 460ms cubic-bezier(.2, .9, .3, 1.35) both;
+    animation-delay: calc(600ms + var(--reveal-index, 0) * 160ms);
+}
+.streak_gold_list::before {
+    content: '';
+    position: absolute;
+    inset: -18px;
+    z-index: -1;
+    border-radius: 50%;
+    background: repeating-conic-gradient(oklch(88% .12 85 / .2) 0deg 10deg, transparent 10deg 30deg);
+    mask: radial-gradient(circle, black 30%, transparent 70%);
+    animation: loot-shine 14s linear infinite;
+    pointer-events: none;
+}
+.streak_gold_list:hover {
+    border-color: var(--gold);
+    box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .6), 0 0 22px oklch(84% .13 82 / .5);
+}
+.streak_gold_list_amount {
+    right: -6px;
+    bottom: -8px;
+    min-width: 22px;
+    padding: 1px 6px;
+    border: 1px solid oklch(72% .11 80);
+    border-radius: 4px;
+    background: oklch(14% .025 250);
+    color: var(--gold);
+    font: .875rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+    text-align: center;
+    text-shadow: none;
+}
+/* A loss still pays out, but without the celebratory rays. */
+.endgame.is-defeat .streak_gold_list::before { display: none; }
+
+@keyframes endgame-card-in {
+    from { opacity: 0; transform: translateY(18px) scale(.94); }
+}
+@keyframes reward-land {
+    from { opacity: 0; transform: translateY(-14px) scale(.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .endgame_characters_grid > .endgame_character,
+    .streak_gold_list,
+    .streak_gold_list::before { animation: none; }
+}
+
+/* The XP label and bar are taller here; let the card grow rather than squeeze the sprite. */
+.endgame .endgame_character {
+    height: auto;
+    min-height: clamp(120px, 15vw, 180px);
+}
+.endgame .endgame_character_portrait {
+    flex-shrink: 0;
+}

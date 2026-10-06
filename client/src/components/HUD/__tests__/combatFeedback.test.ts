@@ -15,7 +15,7 @@ const t = (key: string, values: Record<string, unknown> = {}) =>
   key.replace(/{{(\w+)}}/g, (_match, name) => String(values[name]));
 const dockSource = source('../PlayerBar.tsx');
 const Dock = runInNewContext(compile(`${dockSource.statements.find(ts.isClassDeclaration)!.getText(dockSource)}\nPlayerBar;`), {
-  h, Component, t, InventoryType, StatusEffect, loadGameSettings: () => ({keyboardLayout: 1}),
+  h, Component, t, InventoryType, StatusEffect, loadGameSettings: () => ({controls: {}}), primaryKeyLabel: () => '', SPELL_SLOT_OFFSET: 6, CONTROLS_CHANGED_EVENT: 'controls',
   ItemIcon: () => null, formatNumber: String, mpIcon: '',
 });
 const dialogueSource = source('../TutorialDialogue.tsx');
@@ -52,7 +52,7 @@ for (const muted of [false, true]) {
       isPlayer: true, team: {id: 1}, num: 1, mp: muted ? 30 : 0,
       spells: [{id: 1, name: 'Fire', cost: 8}], pendingSpell: null, pendingItem: null,
       statuses: {[StatusEffect.MUTE]: muted ? 1 : 0}, isMuted: () => muted,
-      getLayoutAndSpellsIndex: () => ({spellsIndex: 19}),
+      getSpellsIndex: () => 19,
       arena: {turnee: {team: 1, num: 1}, playSound: mock(), unavailableActionReason: () => undefined,
         actionFeedback: feedback, toggleTargetMode: targetMode, refreshBox: mock(), relayEvent: mock()},
     });

@@ -38,6 +38,9 @@ export class UnlockedFeature extends Component<Props> {
     });
   }
 
+  // Put keyboard and controller focus on the main choice as soon as the reveal appears.
+  focusOnMount = (button: HTMLButtonElement | null) => button?.focus({preventScroll: true});
+
   handleCheckout = () => {
     if (this.props.route) {
       route(this.props.route);
@@ -49,33 +52,39 @@ export class UnlockedFeature extends Component<Props> {
     const { name, description, route } = this.props;
 
     return (
-      <div className="unlocked-feature">
-        <div className="unlocked-feature-content">
-          <h2 className="unlocked-feature-header"><Trans i18n={i18n} i18nKey={"You unlocked <0>{{value0}}</0>!"} components={[<span className="highlight-text" />]} values={{value0: name}} /></h2>
-          <p className="unlocked-feature-description" dangerouslySetInnerHTML={{ __html: description }} />
+      <div className="loot-popup-scrim">
+        <div className="unlocked-feature loot-popup" role="dialog" aria-modal="true" aria-labelledby="unlocked-feature-title">
+          <div className="unlocked-feature-content">
+            <h2 className="unlocked-feature-header" id="unlocked-feature-title"><Trans i18n={i18n} i18nKey={"You unlocked <0>{{value0}}</0>!"} components={[<span className="highlight-text" />]} values={{value0: name}} /></h2>
+            <p className="unlocked-feature-description" dangerouslySetInnerHTML={{ __html: description }} />
 
-          <div className="unlocked-feature-rewards">
-            {this.renderRewards()}
-          </div>
+            <div className="unlocked-feature-rewards">
+              {this.renderRewards()}
+            </div>
 
-          <div className="unlocked-feature-buttons">
-            {route ? (
-              <>
+            <div className="unlocked-feature-buttons">
+              {route ? (
+                <>
+                  <button type="button"
+                    className="unlocked-feature-button primary game-btn game-btn--gold"
+                    ref={this.focusOnMount}
+                    onClick={this.handleCheckout}
+                  >{t("Check it out")}</button>
+                  <button type="button"
+                    className="unlocked-feature-button secondary game-btn game-btn--ink"
+                    data-desktop-cancel
+                    onClick={this.props.onHide}
+                  >{t("Dismiss")}</button>
+                </>
+              ) : (
                 <button type="button"
-                  className="unlocked-feature-button primary"
-                  onClick={this.handleCheckout}
-                >{t("Check it out")}</button>
-                <button type="button"
-                  className="unlocked-feature-button secondary"
+                  className="unlocked-feature-button primary game-btn game-btn--gold"
+                  ref={this.focusOnMount}
+                  data-desktop-cancel
                   onClick={this.props.onHide}
-                >{t("Dismiss")}</button>
-              </>
-            ) : (
-              <button type="button"
-                className="unlocked-feature-button primary"
-                onClick={this.props.onHide}
-              >{t("Continue")}</button>
-            )}
+                >{t("Continue")}</button>
+              )}
+            </div>
           </div>
         </div>
       </div>

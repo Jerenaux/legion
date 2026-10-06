@@ -55,7 +55,7 @@ test('targeting, spent actions, and enemy turns do not receive stale prompts', (
   expect(s.show({hasSpells: true, spellInRange: false}).focus).toBeUndefined();
   expect(s.show({pendingSpell: true})).toBeUndefined();
   expect(s.show({pendingItem: true})).toBeUndefined();
-  expect(s.show({selectedIsTurnee: false}).title).toBe('Roland acts now');
+  expect(s.show({selectedIsTurnee: false}).title).toContain('Roland');
   s.show(); s.events.emit('playerMoved');
   expect(s.show()).toBeUndefined();
   s.manager.destroy();

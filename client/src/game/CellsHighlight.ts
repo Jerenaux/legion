@@ -1,3 +1,4 @@
+import { displayTint } from './palette';
 interface GridCorners {
     startX: number;
     startY: number;
@@ -35,13 +36,13 @@ export class CellsHighlight extends Phaser.GameObjects.Graphics {
 
     setTargetMode(size: number, refresh?: boolean) {
         this.size = size;
-        this.color = 0xff0000;
+        this.color = displayTint(0xff0000);
         if (refresh) this.move(this.lastX, this.lastY);
     }
 
     setItemMode(refresh?: boolean) {
         this.size = 1;
-        this.color = 0x00ff00;
+        this.color = displayTint(0x00ff00);
         if (refresh) this.move(this.lastX, this.lastY);
     }
 

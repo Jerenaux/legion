@@ -1,0 +1,44 @@
+.ghost-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.ghost {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--ink-edge-soft);
+  border-radius: 6px;
+  background: linear-gradient(oklch(23% .03 244 / .7), oklch(17% .028 250 / .78));
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .05), inset 0 0 0 3px oklch(11% .025 250 / .35);
+}
+
+.ghost::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, oklch(86% .06 200 / .07) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: ghost-sweep 1.8s ease-in-out infinite;
+}
+
+/* Wrapper layouts that mirror common loaded content. */
+.ghost-group.ghost-row { flex-direction: row; flex-wrap: wrap; }
+.ghost-group.ghost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13.5rem), 1fr)); gap: 14px; }
+.ghost-group.ghost-slots { flex-direction: row; gap: 6px; }
+.ghost-slots .ghost { border-radius: 4px; }
+
+@keyframes ghost-sweep {
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost::after { animation: none; opacity: 0; }
+}
+
+/* A placeholder that sits beside its siblings instead of taking the full row. */
+.ghost-group.ghost-inline { width: auto; flex: 0 1 auto; }

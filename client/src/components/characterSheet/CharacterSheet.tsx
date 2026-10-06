@@ -120,7 +120,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     </button>
                     <div className="curr-info-container">
                         <p className="curr-info">
-                            <span style={effectVal(item.key) > 0 ? { color: '#9ed94c' } : effectVal(item.key) < 0 ? { color: '#c95a74' } : {}}>
+                            <span className={effectVal(item.key) > 0 ? 'stat-up' : effectVal(item.key) < 0 ? 'stat-down' : undefined}>
                                 {formatNumber(totalStat(item.value, item.key))}
                             </span>
                         </p>

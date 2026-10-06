@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld("electronAPI", Object.freeze({
   setLanguage: code => ipcRenderer.invoke("set-language", code),
   isFullscreen: () => ipcRenderer.invoke("is-fullscreen"),
   toggleFullscreen: () => ipcRenderer.invoke("toggle-fullscreen"),
+  quitApp: () => ipcRenderer.invoke("quit-app"),
   getPlatformAuth: () => ipcRenderer.invoke("get-platform-auth"),
   showGamepadTextInput: options => ipcRenderer.invoke("show-gamepad-text-input", options),
   getControllerType: () => ipcRenderer.invoke("get-controller-type"),

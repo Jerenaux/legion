@@ -1,4 +1,3 @@
-import {LOCKED_FEATURES} from '@legion/shared/config';
 import {PlayerContext} from '../contexts/PlayerContext';
 import {t, formatNumber} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
@@ -37,7 +36,7 @@ function Rewards({reward}: {reward: TowerReward}) {
 }
 
 export default function TowerPage() {
-  const {loaded, canAccessFeature, getCompletedGames, refreshPlayerData} = useContext(PlayerContext);
+  const {loaded, canAccessFeature, getGamesUntilFeature, refreshPlayerData} = useContext(PlayerContext);
   const unlocked = canAccessFeature(LockedFeatures.TOWER_MODE);
   const [progress, setProgress] = useState<TowerProgress | null>(null);
   const [busy, setBusy] = useState(false);
@@ -78,7 +77,7 @@ export default function TowerPage() {
   if (!loaded) return <main className="tower-page" role="status">{t("Preparing your expedition…")}</main>;
   if (!unlocked) return <main className="tower-page"><section className="tower-start tower-locked">
     <img src={towerIcon} alt="" /><h1>{t("Cinder Tower")}</h1>
-    <p>{t("Unlocks after {{required}} completed matches · {{completed}}/{{required}}", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE], completed: getCompletedGames()})}</p>
+    <p>{t("gamesToUnlock", {count: getGamesUntilFeature(LockedFeatures.TOWER_MODE)})}</p>
     <Link href="/play" className="tower-primary">{t("Play")}</Link>
   </section></main>;
 

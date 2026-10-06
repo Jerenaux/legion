@@ -5,7 +5,7 @@ import { LeaderboardRow} from "@legion/shared/interfaces";
 import './LeaderboardTable.style.css';
 import { Component } from 'preact';
 import { loadAvatar } from '../utils';
-import Skeleton from 'react-loading-skeleton';
+import Ghost from '../ghost/Ghost';
 import { route } from 'preact-router';
 
 // Import image assets
@@ -210,13 +210,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                                     }
                                 </td>
                             </tr>
-                        )) : <Skeleton
-                            height={46}
-                            count={6}
-                            highlightColor='#0000004d'
-                            baseColor='#0f1421'
-                            style={{ margin: '4px 0 0px', width: '940px' }}
-                        />}
+                        )) : <tr><td colSpan={7}><Ghost height={54} count={6} /></td></tr>}
                     </tbody>
                 </table>
                 <div style={this.state.tableData.length === 0 ? { display: "block" } : { display: "none" }} className="table-empty">{t("No players in this league yet")}</div>

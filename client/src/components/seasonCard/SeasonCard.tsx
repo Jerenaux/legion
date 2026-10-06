@@ -129,7 +129,7 @@ class SeasonCard extends Component<SeasonCardProps> {
                             </div>
                         </div>
                         <div className="season-recap">
-                            <p className="season-recap-title">{isAllTime ? 'ELO' : t("NB")}</p>
+                            <p className="season-recap-title">{isAllTime ? 'ELO' : t("LEAGUE")}</p>
                             <p className="season-recap-label">{isAllTime ? t("RATING") : t("WINS")}</p>
                             <div className="season-recap-img" style={eloBGStyle}>
                                 <span>{this.props.playerRanking.metric}</span>

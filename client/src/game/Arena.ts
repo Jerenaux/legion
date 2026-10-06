@@ -66,7 +66,7 @@ import hexTileImage from '@assets/tile.png';
 import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels,
     chargedIceLevels, chargedThunderLevels, iceLevels, thunderLevels,
     healLevels, VFX_FRAME_SIZE, VFX_DISPLAY_SCALE } from './VFXconfig';
-import {loadGameSettings} from '../settings';
+import {loadGameSettings, sfxGain} from '../settings';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 import type {CharacterHover} from '../components/HUD/CharacterHoverCard';
 
@@ -141,7 +141,6 @@ export class Arena extends Phaser.Scene
     hexGridManager: HexGridManager;
 
     // Add to the class properties at the top of the file
-    private lastKeyTime: number = 0;
     // Add this class property at the top of the Arena class
     private isZoomedForSpellCast: boolean = false;
 
@@ -223,7 +222,7 @@ export class Arena extends Phaser.Scene
     }
 
     getSFXVolumeFromLocalStorage(): number {
-        return loadGameSettings().sfxVolume / 100;
+        return sfxGain();
     }
 
     preload()
@@ -477,7 +476,6 @@ export class Arena extends Phaser.Scene
            }
        }, this);
 
-        this.input.keyboard.on('keydown', this.handleKeyDown, this);
         this.input.setPollAlways();
         this.input.on('pointermove', (_pointer: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) => {
             // Phaser retains its over-object when DOM HUD elements cover the canvas.
@@ -563,31 +561,17 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    handleKeyDown(event) {
-        // Prevent key event handling if input is locked
-        if (this.tutorialIntroPending || this.inputLocked) return;
-
-        // Simple debouncing - prevent multiple rapid triggers of the same key
-        if (this.lastKeyTime && (Date.now() - this.lastKeyTime < 100)) {
-            return;
-        }
-        this.lastKeyTime = Date.now();
-
-        // Check if the pressed key is a number
-        const isNumberKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NINE) || (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.NUMPAD_ZERO && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.NUMPAD_NINE);
-        if (!isNumberKey) {
-            const isLetterKey = (event.keyCode >= Phaser.Input.Keyboard.KeyCodes.A && event.keyCode <= Phaser.Input.Keyboard.KeyCodes.Z);
-            if (isLetterKey) {
-                // Get the letter corresponding to the keyCode
-                const letter = String.fromCharCode(event.keyCode);
-                this.selectedPlayer?.onLetterKey(letter);
-            }
-        }
-    }
-
     handleDesktopAction = (event: CustomEvent<{action: DesktopAction}>) => {
         if (this.tutorialIntroPending || this.inputLocked || !this.gameInitialized) return;
         const {action} = event.detail;
+        const slot = /^(item|spell)-(\d)$/.exec(action);
+        if (slot) {
+            // Like the other combat shortcuts, slot keys stay inactive while a dialog is open.
+            if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
+            const index = Number(slot[2]) - 1;
+            this.selectedPlayer?.onKey(slot[1] === 'spell' ? this.selectedPlayer.getSpellsIndex() + index : index);
+            return;
+        }
         const members = this.teamsMap.get(this.playerTeamId)?.members.filter(player => player.isAlive()) || [];
         if (action.startsWith('select-unit-')) {
             this.selectOwnUnit(members[Number(action.at(-1)) - 1]);
@@ -1363,7 +1347,7 @@ export class Arena extends Phaser.Scene
     }
 
     onSettingsChanged = (settings) => {
-        this.sfxVolume = settings.sfxVolume / 100;
+        this.sfxVolume = sfxGain(settings);
         for (const player of this.gridMap.values()) player.numKey?.setFontSize(12 * settings.textSize / 100);
     }
 
@@ -1676,7 +1660,8 @@ export class Arena extends Phaser.Scene
         this.game.events.on(Phaser.Core.Events.POST_RENDER, this.reportArenaReady, this);
         this.emptyQueue();
 
-        this.input.keyboard.on('keydown-D', () => {
+        // Debug overlay for developers only; D is a bindable key for players.
+        if (process.env.NODE_ENV !== 'production') this.input.keyboard.on('keydown-D', () => {
             this.hexGridManager.toggleCoordinateDisplay();
         });
 

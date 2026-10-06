@@ -185,7 +185,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         const showPlayAgain = !this.props.game0 && this.props.mode !== PlayMode.CASUAL_VS_FRIEND;
 
         return (
-            <div className="endgame">
+            <div className={`endgame ${this.props.isWinner ? 'is-victory' : 'is-defeat'}`}>
                 <div className="defeat_title" style={this.endGameTitleBg()}>
                     {(this.props.isWinner ? victoryTitle : defeatTitle)
                       ? <img className="defeat_title_bg" src={this.props.isWinner ? victoryTitle : defeatTitle} alt={t(this.props.isWinner ? "Victory!" : "Defeat")} />
@@ -210,7 +210,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     </div>
                     <div className="flex items_center justify_center gap_4 endgame_rewards_items">
                         {this.getRewardsList().map((reward, idx) => (
-                            <div key={idx} className="streak_gold_list">
+                            <div key={idx} className="streak_gold_list" style={{'--reveal-index': idx}}>
                                 {reward.type === 'XP' || reward.type === 'GOLD' ? (
                                     <div style={{ backgroundImage: `url(${reward.icon})`, backgroundSize: '100% 100%' }}></div>
                                 ) : (
