@@ -1131,5 +1131,8 @@
   "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.": "Геймпад отключён. Подключите его снова или продолжайте с клавиатурой и мышью.",
   "Controller connected.": "Геймпад подключён.",
   "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.": "Кнопка <0>Без звука</0> рядом с каждым ползунком громкости выключает музыку или звуковые эффекты, а повторное нажатие возвращает прежний уровень. <1>Режим для дальтоников</1> заменяет зелёный и красный на поле боя синим и оранжевым.",
-  "muteButton": "Без звука"
+  "muteButton": "Без звука",
+  "Resume": "Продолжить",
+  "Quit game": "Выйти из игры",
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Вне боя, если закрывать нечего, Esc или кнопка «Меню» на геймпаде открывают игровое меню с настройками и выходом из игры."
 }

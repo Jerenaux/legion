@@ -50,6 +50,10 @@ function registerIPC() {
     mainWindow.setFullScreen(fullscreen);
     return fullscreen;
   });
+  ipcMain.handle("quit-app", event => {
+    if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
+    app.quit();
+  });
   ipcMain.handle("get-platform-auth", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
     if (smokeTest) return null;

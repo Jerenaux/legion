@@ -1116,5 +1116,8 @@
   "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.": "Controle desconectado. Reconecte-o ou continue com teclado e mouse.",
   "Controller connected.": "Controle conectado.",
   "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.": "<0>Silenciar</0>, ao lado de cada controle de volume, desliga a música ou os efeitos e restaura o mesmo nível ao ser pressionado de novo. O <1>modo daltônico</1> troca o verde e o vermelho do campo de batalha por azul e laranja.",
-  "muteButton": "Silenciar"
+  "muteButton": "Silenciar",
+  "Resume": "Continuar",
+  "Quit game": "Sair do jogo",
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Fora do combate, sem nada para fechar, Esc ou o botão Menu do controle abrem o menu do jogo, com Configurações e Sair do jogo."
 }

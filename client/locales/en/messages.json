@@ -1101,5 +1101,8 @@
   "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.": "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.",
   "Controller connected.": "Controller connected.",
   "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.": "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.",
-  "muteButton": "Mute"
+  "muteButton": "Mute",
+  "Resume": "Resume",
+  "Quit game": "Quit game",
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game."
 }

@@ -1101,5 +1101,8 @@
   "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.": "コントローラーが切断されました。再接続するか、キーボードとマウスで続けてください。",
   "Controller connected.": "コントローラーが接続されました。",
   "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.": "各音量スライダー横の<0>ミュート</0>で音楽または効果音を消し、もう一度押すと同じ音量に戻ります。<1>色覚サポート</1>は戦場の緑と赤を青とオレンジに置き換えます。",
-  "muteButton": "ミュート"
+  "muteButton": "ミュート",
+  "Resume": "再開",
+  "Quit game": "ゲームを終了",
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "戦闘外で閉じるものがない場合、Escまたはコントローラーのメニューボタンで、設定とゲーム終了があるゲームメニューを開きます。"
 }

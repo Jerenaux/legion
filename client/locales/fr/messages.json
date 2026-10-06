@@ -1116,5 +1116,8 @@
   "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.": "Manette déconnectée. Reconnectez-la ou continuez au clavier et à la souris.",
   "Controller connected.": "Manette connectée.",
   "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.": "<0>Muet</0>, à côté de chaque réglage de volume, coupe la musique ou les effets sonores et rétablit le même niveau d’un nouvel appui. Le <1>mode daltonien</1> remplace le vert et le rouge du champ de bataille par du bleu et de l’orange.",
-  "muteButton": "Muet"
+  "muteButton": "Muet",
+  "Resume": "Reprendre",
+  "Quit game": "Quitter le jeu",
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Hors combat, s’il n’y a rien à fermer, Échap ou le bouton Menu de la manette ouvre le menu de jeu, avec Paramètres et Quitter le jeu."
 }

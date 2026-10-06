@@ -1101,5 +1101,8 @@
   "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.": "控制器已中斷連線。請重新連接，或繼續使用鍵盤和滑鼠。",
   "Controller connected.": "控制器已連線。",
   "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.": "每個音量滑桿旁的<0>靜音</0>可關閉音樂或音效，再按一次即恢復原音量。<1>色盲模式</1>會把戰場上的綠色和紅色換成藍色和橘色。",
-  "muteButton": "靜音"
+  "muteButton": "靜音",
+  "Resume": "繼續",
+  "Quit game": "結束遊戲",
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "戰鬥以外沒有可關閉的視窗時，按 Esc 或控制器的選單鍵會開啟遊戲選單，其中有設定與結束遊戲。"
 }

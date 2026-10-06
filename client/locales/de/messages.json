@@ -1101,5 +1101,8 @@
   "Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse.": "Controller getrennt. Schließe ihn wieder an oder spiele mit Tastatur und Maus weiter.",
   "Controller connected.": "Controller verbunden.",
   "<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange.": "<0>Stumm</0> neben jedem Lautstärkeregler schaltet Musik oder Soundeffekte aus; ein erneuter Druck stellt dieselbe Lautstärke wieder her. Der <1>Farbenblind-Modus</1> ersetzt Grün und Rot auf dem Schlachtfeld durch Blau und Orange.",
-  "muteButton": "Stumm"
+  "muteButton": "Stumm",
+  "Resume": "Fortsetzen",
+  "Quit game": "Spiel beenden",
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Gibt es außerhalb des Kampfes nichts zu schließen, öffnen Esc oder die Menütaste des Controllers das Spielmenü mit Einstellungen und Spiel beenden."
 }

@@ -1,5 +1,5 @@
 import {t, i18n, language} from './i18n/core';
-import { h, Component } from 'preact';
+import { h, Fragment, Component } from 'preact';
 import { Route, Router, RouterOnChangeArgs } from 'preact-router';
 import { PlayerContext } from './contexts/PlayerContext';
 import { getElectronAPI } from './utils/electronUtils';
@@ -16,6 +16,7 @@ import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
 import {startGamepadInput} from './input/gamepad';
+import SystemMenu, {openSystemMenu} from './components/systemMenu/SystemMenu';
 import {loadGameSettings} from './settings';
 import {silentErrorToast, successToast} from './components/utils';
 import {setRouteMusic, stopRouteMusic} from './routeMusic';
@@ -130,7 +131,10 @@ class App extends Component<{}, AppState> {
         if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
         return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();
       }
-      if (action === 'pause') return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
+      if (action === 'pause') {
+        if (this.state.currentMainRoute !== 'game') return this.openSystemMenu();
+        return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
+      }
       if (action === 'confirm') {
         const active = document.activeElement as HTMLElement;
         if (source === 'gamepad' && active?.matches('input:not([type="range"]):not([type="checkbox"]), textarea')) {
@@ -145,7 +149,15 @@ class App extends Component<{}, AppState> {
           event.stopImmediatePropagation();
           return cancel.click();
         }
+        // Esc with nothing to close opens the menu; B on a controller only ever goes back.
+        if (source === 'keyboard') this.openSystemMenu();
       }
+    };
+
+    // Outside combat only; combat has its own menu and Esc opens the abandon confirmation there.
+    openSystemMenu = () => {
+      if (this.state.currentMainRoute === 'game' || document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
+      openSystemMenu();
     };
 
     warmUpMatchmaker = () => {
@@ -204,6 +216,8 @@ class App extends Component<{}, AppState> {
                 <PlayerProvider>
                     <PlayerContext.Consumer>
                         {({ refreshAllData, updateActiveCharacter }) => (
+                            <>
+                                <SystemMenu />
                                 <Router onChange={(e: RouterOnChangeArgs) => this.handleRoute(e, refreshAllData, updateActiveCharacter)}>
                                     <Route path="/" component={Root} />
                                     <Route path="/game/:id" component={AuthenticatedGamePage} />
@@ -219,6 +233,7 @@ class App extends Component<{}, AppState> {
                                     <Route path="/profile/:id?" component={AuthenticatedHomePage} />
                                     <Route default component={AuthenticatedHomePage} />
                                 </Router>
+                            </>
                         )}
                     </PlayerContext.Consumer>
                 </PlayerProvider>
