@@ -12,6 +12,7 @@ import Timeline from './Timeline';
 import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { recordCompletedGame } from '../utils';
 import TutorialDialogue from './TutorialDialogue';
+import { combatTipsVisible, saveCombatTips, type TutorialMessage } from '../../game/TutorialManager';
 import PlayerBar from './PlayerBar';
 import CharacterHoverCard, { CharacterHover } from './CharacterHoverCard';
 
@@ -42,7 +43,9 @@ interface GameHUDState {
   chests: GameOutcomeReward[];
   key: ChestColor;
   gameInitialized: boolean;
-  tutorialMessages: string[];
+  tutorialMessage: TutorialMessage | null;
+  tipsAvailable: boolean;
+  actionFeedback: string;
   isTutorialVisible: boolean;
   showTopMenu: boolean;
   showOverview: boolean;
@@ -50,7 +53,6 @@ interface GameHUDState {
   turnDuration: number;
   timeLeft: number;
   turnNumber: number;
-  tutorialPosition: 'bottom' | 'spells' | 'items';
   isHUDVisible: boolean;
   characterHover: CharacterHover | null;
 }
@@ -82,15 +84,16 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     chests: [],
     key: null,
     gameInitialized: false,
-    tutorialMessages: [],
-    isTutorialVisible: true,
+    tutorialMessage: null,
+    tipsAvailable: false,
+    actionFeedback: '',
+    isTutorialVisible: false,
     showTopMenu: false,
     showOverview: false,
     queue: [],
     timeLeft: 0,
     turnNumber: 0,
     turnDuration: 0,
-    tutorialPosition: 'bottom' as const,
     isHUDVisible: true,
     characterHover: null,
   });
@@ -98,6 +101,11 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   state = this.getInitialState();
 
   private lastPassTurnClick = 0;
+  private feedbackTimer: ReturnType<typeof setTimeout>;
+  private clearActionFeedback = () => {
+    clearTimeout(this.feedbackTimer);
+    this.setState({actionFeedback: ''});
+  };
 
   componentDidMount() {
     events.on('showPlayerBox', this.showPlayerBox);
@@ -153,6 +161,13 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     // Add a new event listener for tutorial messages
     events.on('showTutorialMessage', this.handleTutorialMessage);
     events.on('hideTutorialMessage', this.hideTutorialMessage);
+    events.on('combatTipsAvailable', this.handleTipsAvailable);
+    events.on('combatTipsVisibility', this.handleTipsVisibility);
+    events.on('actionFeedback', this.handleActionFeedback);
+    events.on('turnStarted', this.clearActionFeedback);
+    for (const event of ['playerMoved', 'playerAttacked', 'playerCastSpell', 'playerUseItem']) {
+      events.on(event, this.clearActionFeedback);
+    }
     // Add new event listener for revealing top menu
     events.on('revealTopMenu', this.revealTopMenu);
     events.on('revealOverview', this.revealOverview);
@@ -162,6 +177,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   componentWillUnmount() {
+    clearTimeout(this.feedbackTimer);
     events.removeAllListeners();
     // Remove keyboard event listener
     window.removeEventListener('keydown', this.handleKeyDown);
@@ -176,6 +192,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   }
 
   showPlayerBox = (player: PlayerProps | null, commandPlayer: PlayerProps | null, canCommand: boolean, isPlayerTurn: boolean) => {
+    if (player?.team !== this.state.player?.team || player?.number !== this.state.player?.number ||
+        player?.pendingSpell !== this.state.player?.pendingSpell || player?.pendingItem !== this.state.player?.pendingItem) {
+      this.clearActionFeedback();
+    }
     this.setState({player, commandPlayer, canCommand, isPlayerTurn});
   }
 
@@ -229,17 +249,24 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     route('/play');
   }
 
-  handleTutorialMessage = (message: {content: string; position?: 'bottom' | 'spells' | 'items'}) => {
-    this.setState({
-        tutorialMessages: [message.content],
-        isTutorialVisible: true,
-        tutorialPosition: message.position || 'bottom'
-    });
-  }
+  handleTutorialMessage = (tutorialMessage: TutorialMessage) => this.setState({tutorialMessage});
 
-  hideTutorialMessage = () => {
-    this.setState({ isTutorialVisible: false });
-  }
+  handleTipsAvailable = (defaultVisible: boolean) => {
+    this.setState({tipsAvailable: true, isTutorialVisible: combatTipsVisible(defaultVisible)});
+  };
+
+  handleTipsVisibility = (visible: boolean) => {
+    saveCombatTips(visible);
+    this.setState({isTutorialVisible: visible});
+  };
+
+  handleActionFeedback = (message: string) => {
+    clearTimeout(this.feedbackTimer);
+    this.setState({actionFeedback: message});
+    this.feedbackTimer = setTimeout(this.clearActionFeedback, 5000);
+  };
+
+  hideTutorialMessage = () => this.setState({tutorialMessage: null});
 
   revealTopMenu = () => {
     this.setState({ showTopMenu: true });
@@ -290,7 +317,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     const inspected = characterHover && (characterHover.team === 1 ? team1 : team2)?.members[characterHover.num - 1];
 
     return (
-      <div className="gamehud height_full flex flex_col justify_between padding_bottom_16">
+      <div className="gamehud height_full flex flex_col justify_between padding_bottom_16"
+        data-coach-focus={isHUDVisible && !this.state.gameOver && this.state.isTutorialVisible ? this.state.tutorialMessage?.focus : undefined}>
         {/* Keep the exit-dialog owner mounted while tutorial/HUD chrome is hidden. */}
         <div className="hud-container" style={!isHUDVisible || !showOverview ? {display: 'none'} : undefined}>
           <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
@@ -340,10 +368,12 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           closeGame={this.closeGame}
           eventEmitter={events}
         />}
-        {isHUDVisible && this.state.isTutorialVisible && this.state.tutorialMessages.length > 0 && (
+        {isHUDVisible && !this.state.gameOver && this.state.tipsAvailable && (
           <TutorialDialogue
-            messages={this.state.tutorialMessages}
-            position={this.state.tutorialPosition}
+            message={this.state.tutorialMessage}
+            visible={this.state.isTutorialVisible}
+            onToggle={() => this.handleTipsVisibility(!this.state.isTutorialVisible)}
+            feedback={this.state.actionFeedback}
           />
         )}
       </div>

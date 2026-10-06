@@ -4,6 +4,7 @@
 
 - Start each independent, coherent work batch on a new branch from the latest `main`. Do not accumulate unrelated requests on one branch or reuse a merged branch.
 - Commit and push each completed batch. Merge through its own PR when authorized; keep later independent work separate.
+- Rebuild the local macOS ARM64 app after every completed work batch, without waiting for Jerome to ask. Build from the branch being tested and always replace `client/release/mac-arm64/Legion.app` in the main `~/Code/legion` checkout. Report any build failure before considering the batch complete. This local test build does not authorize a store release or launching the app; respect any request for headless-only verification.
 - Desktop release builds are manual-only and must use `main`, after all intended changes have been merged. Never release from a feature branch, and do not add automatic desktop release triggers on merges, pushes, or tags.
 - Use `gh workflow run release-desktop.yml --ref main` with the explicitly requested store-upload inputs. Do not trigger a release merely because work was merged. Normal CI checks and backend deployment workflows remain automatic.
 - Steam releases target **Legion Demo (`3996730`)** only: macOS depot `3996731`, Windows depot `3996732`, no Linux depot. Never target the full game (`3729580`) or the separate Playtest app. **Update the public/default Demo by default**, unless Jerome explicitly requests a private-only release or otherwise excludes public Steam publication. Follow `STEAM_DEPLOYMENT.md`: the workflow stages the build on `playtest`, then promote that exact verified Build ID through Steamworks or the publisher API. Do not stop at the private upload or ask for separate publication approval; request any confirmation Valve requires and verify the public branch actually changed. Preserve the previous public Build ID for rollback.
@@ -61,3 +62,7 @@ Follow `docs/match-timing.md`. Sending a snapshot is not permission to start com
 ## Player guide
 
 When changing player-facing rules, controls, unlocks, or the illustrated UI, update the bundled guide in `client/src/components/GuidePage.tsx` in the same batch. The implemented game—not the legacy external guide—is authoritative. Follow `docs/player-guide.md` to refresh its cropped screenshots; run `bun run test:guide` from `client` when changing functional flows or guide routing, not for presentation-only edits. Never ship the screenshot fixtures in the release bundle.
+
+## Game UI and writing
+
+Read `docs/game-ui-writing.md` before changing player-facing copy or UI. Its rejected tutorial examples are regression examples: do not reintroduce slogan chains, balanced reassurance, redundant introductions, or vague promises of ease. Give each line a concrete gameplay purpose. Use the game's characters, icons, action controls and feedback to teach; remove text that merely describes what the UI already makes clear. Design game screens, not website landing pages. Follow `DESIGN.md` for the game's visual vocabulary, and inspect the result in context with long translations and enlarged text. Close any app opened to verify your work when the check is finished.

@@ -67,7 +67,8 @@ class PlayerBar extends Component<PlayerBarProps> {
                 data-tooltip-item-type={type}
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (!unavailable) this.props.eventEmitter.emit('itemClick', startIndex + index);
+                  // Validation also explains unavailable actions without spending the turn.
+                  this.props.eventEmitter.emit('itemClick', startIndex + index);
                 }}
               >
                 <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type} keyboardLayout={this.state.keyboardLayout} />

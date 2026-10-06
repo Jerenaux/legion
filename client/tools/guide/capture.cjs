@@ -9,6 +9,7 @@ const locale = process.argv.find(arg => arg.startsWith('--locale='))?.slice(9) |
 const localization = process.argv.includes('--localization');
 const towerUnlock = process.argv.includes('--tower-unlock');
 const rosterImages = process.argv.includes('--roster-images');
+const tutorial = process.argv.includes('--tutorial');
 assert(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale), 'Invalid locale');
 
 if (!process.versions.electron) {
@@ -248,7 +249,7 @@ if (!process.versions.electron) {
         await win.loadURL(PACKAGED_APP_URL);
         await js(`localStorage.setItem('legion.language', ${JSON.stringify(locale)})`);
       }
-      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization && !towerUnlock && !rosterImages) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--text-size') && !process.argv.includes('--hover') && !process.argv.includes('--tower-images') && !process.argv.includes('--dock') && !localization && !towerUnlock && !rosterImages && !tutorial) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -273,7 +274,10 @@ if (!process.versions.electron) {
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
         console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
       }
-      if (process.argv.includes('--hover')) {
+      if (tutorial) {
+        await require('./tutorial.cjs')({win, js, waitFor, ready, output: dist, locale, sinkURL, timingChecks});
+        assert.deepEqual(rendererErrors, []);
+      } else if (process.argv.includes('--hover')) {
         await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
         assert.deepEqual(rendererErrors, []);
       } else if (process.argv.includes('--text-size')) {
@@ -703,13 +707,13 @@ if (!process.versions.electron) {
         assert(await js('routeAudio.filter(audio => audio.loop).every(audio => audio.paused)'), 'Menu music must stop before combat music');
         assert.deepEqual(await js('musicOverlaps'), [], 'Menu and combat music must not overlap');
         console.log('A match found while reading the guide opens combat, cleans up the queue, and hands off music');
-        await js(`combatCheck.arena.tutorialManager.queueMessage('howToCastSpell')`);
-        await waitFor('Boolean(document.querySelector(".tutorial-dialogue.spells"))');
+        await js(`combatCheck.events.emit('combatTipsVisibility', true); combatCheck.arena.refreshTutorial()`);
+        await waitFor('Boolean(document.querySelector(".combat-coach"))');
         for (const [width, height] of [[1280, 720], [960, 540], [800, 600], [600, 600], [1920, 1080]]) {
           win.setContentSize(width, height);
           await ready();
           const spellTutorialLayout = await js(`(() => {
-            const dialogue = document.querySelector('.tutorial-dialogue.spells').getBoundingClientRect();
+            const dialogue = document.querySelector('.combat-coach').getBoundingClientRect();
             const spells = document.querySelector('#player_hud_spells').getBoundingClientRect();
             return {
               dialogue: {left: dialogue.left, top: dialogue.top, right: dialogue.right, bottom: dialogue.bottom},
@@ -881,7 +885,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization && !towerUnlock && !rosterImages) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !process.argv.includes('--text-size') && !process.argv.includes('--dock') && !process.argv.includes('--hover') && !localization && !towerUnlock && !rosterImages && !tutorial) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.
@@ -893,14 +897,14 @@ if (!process.versions.electron) {
           if (scenario === 'timing-first') {
             await waitFor('Boolean(document.querySelector(".team-reveal-overlay"))');
             assert.equal(timingChecks.get(scenario).acks, 0, 'Champion reveal must not start combat');
-            for (let index = 0; index < 3; index++) {
-              await js(`document.querySelectorAll('.team-reveal-wrapper')[${index}].click()`);
-              await waitFor(`document.querySelectorAll('.team-reveal-wrapper')[${index}].classList.contains('revealed')`);
-            }
+            assert.equal(await js('document.querySelectorAll(".team-reveal-champion").length'), 3);
             await waitFor('Boolean(document.querySelector(".team-reveal-play-button"))');
             timingChecks.get(scenario).sentAt = Date.now();
             await js('document.querySelector(".team-reveal-play-button").click()');
             assert.equal(timingChecks.get(scenario).acks, 0, 'Play must wait for the arena intro to finish');
+            await waitFor('Boolean(document.querySelector(".tutorial-intro[open]"))');
+            assert.equal(timingChecks.get(scenario).acks, 0, 'The illustrated briefing must hold combat readiness');
+            await js('document.querySelector(".tutorial-intro-skip").click()');
           }
           if (scenario === 'timing-hidden') {
             await waitFor('combatCheck.arena.gameInitialized');
@@ -978,7 +982,7 @@ if (!process.versions.electron) {
           await js('combatCheck.assetLoads = []; combatCheck.arena.load.on("addfile", (key, type) => combatCheck.assetLoads.push({key, type})); undefined');
           for (const {id, vfx} of await js('combatCheck.spellEffects')) {
             await js(`combatCheck.arena.socket.emit('spell-cycle', ${id}) && undefined`);
-            await waitFor(`combatCheck.arena.turnee.turnNumber === ${100 + id} && combatCheck.arena.eventsQueue.length === 0`);
+            await waitFor(`combatCheck.arena.turnee?.turnNumber === ${100 + id} && combatCheck.arena.eventsQueue.length === 0`);
             assert(await js(`(() => {const player = combatCheck.arena.getPlayer(2, 4);
               return !player.casting && !player.chargeSprite && !player.animationSprite.visible;
             })()`), 'Spell completion must stop casting and remove charge graphics');

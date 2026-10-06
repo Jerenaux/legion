@@ -33,6 +33,27 @@ export class AIGame extends Game {
         // if (mode === PlayMode.TUTORIAL) this.temporaryFrozen = true;
     }
 
+    // Introduce movement and spell controls before the enemy acts. Later matches use normal placement/speed.
+    getOpeningTurnOrder() {
+        if (this.mode !== PlayMode.PRACTICE || !this.isGame0()) return undefined;
+        const order = [Class.WARRIOR, Class.BLACK_MAGE, Class.WHITE_MAGE];
+        return [...this.getTeam(1)].sort((a, b) => order.indexOf(a.class) - order.indexOf(b.class))
+            .concat(this.getTeam(2));
+    }
+
+    getPosition(index: number, flip: boolean, characterClass: Class) {
+        if (this.mode === PlayMode.PRACTICE && this.isGame0()) {
+            const positions = {
+                [Class.WARRIOR]: {x: flip ? 8 : 5, y: 5},
+                [Class.BLACK_MAGE]: {x: flip ? 8 : 5, y: 7},
+                [Class.WHITE_MAGE]: {x: flip ? 9 : 4, y: 6},
+            };
+            const position = positions[characterClass];
+            if (position && this.isFree(position.x, position.y)) return position;
+        }
+        return super.getPosition(index, flip, characterClass);
+    }
+
     summonAlly(data: {x: number, y: number, className: Class}) {
         console.log('[AIGame:summonAlly] Summoning ally...');
         const team = this.teams.get(1);

@@ -10,7 +10,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { PlayMode, Target, Terrain, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
+import { PlayMode, Target, Terrain, StatusEffect, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
@@ -118,6 +118,8 @@ export class Arena extends Phaser.Scene
     isDisplayingGEN: boolean = false;
     eventsQueue = [];
     private readyToken: string | null = null;
+    private tutorialIntroPending = false;
+    private tutorialIntroShown = false;
     private legacyFirstMatch = false;
     private arenaDisplayed = false;
     private pendingEntrances = 0;
@@ -432,7 +434,7 @@ export class Arena extends Phaser.Scene
         this.unlockInput();
         this.selectedPlayer?.cancelItem();
         this.selectTurnee();
-        silentErrorToast(t("That action is no longer valid. Choose another action."), 4000);
+        this.actionFeedback(t("That action is no longer valid. Choose another action."));
     }
 
     endTutorial() {
@@ -562,7 +564,7 @@ export class Arena extends Phaser.Scene
 
     handleKeyDown(event) {
         // Prevent key event handling if input is locked
-        if (this.inputLocked) return;
+        if (this.tutorialIntroPending || this.inputLocked) return;
 
         // Simple debouncing - prevent multiple rapid triggers of the same key
         if (this.lastKeyTime && (Date.now() - this.lastKeyTime < 100)) {
@@ -583,7 +585,7 @@ export class Arena extends Phaser.Scene
     }
 
     handleDesktopAction = (event: CustomEvent<{action: DesktopAction}>) => {
-        if (this.inputLocked || !this.gameInitialized) return;
+        if (this.tutorialIntroPending || this.inputLocked || !this.gameInitialized) return;
         const {action} = event.detail;
         const members = this.teamsMap.get(this.playerTeamId)?.members.filter(player => player.isAlive()) || [];
         if (action.startsWith('select-unit-')) {
@@ -593,9 +595,10 @@ export class Arena extends Phaser.Scene
             const direction = action === 'next-unit' ? 1 : -1;
             this.selectOwnUnit(members[(current + direction + members.length) % members.length]);
         } else if (action === 'cancel') {
+            this.selectedPlayer?.cancelItem();
             this.clearCharacterHover();
             this.selectedPlayer?.cancelSkill();
-            this.deselectPlayer();
+            this.selectTurnee();
         }
     };
 
@@ -616,6 +619,7 @@ export class Arena extends Phaser.Scene
     }
 
     handleTileClick(gridX, gridY) {
+        if (this.tutorialIntroPending) return;
         console.log(`[Arena:handleTileClick] Clicked on tile: ${gridX}, ${gridY}`);
         if (this.inputLocked) {
             this.unlockInput();
@@ -623,16 +627,28 @@ export class Arena extends Phaser.Scene
         }
 
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
+        const unavailable = this.unavailableActionReason();
+        if (unavailable) {
+            // Let a player return to the active unit after inspecting another one.
+            if (player?.isPlayer && player === this.getPlayer(this.turnee?.team, this.turnee?.num) && player !== this.selectedPlayer) {
+                this.selectTurnee();
+            } else {
+                this.actionFeedback(unavailable);
+            }
+            return;
+        }
         const pendingSpell = this.selectedPlayer?.spells[this.selectedPlayer?.pendingSpell];
         const pendingItem = this.selectedPlayer?.inventory[this.selectedPlayer?.pendingItem];
         if (pendingSpell != null) {
             if (!this.validateTarget(gridX, gridY, pendingSpell)) {
+                this.actionFeedback(t("Choose a highlighted target in range."));
                 this.playSound('nope', 0.2);
                 return;
             }
             this.sendSpell(gridX, gridY, player);
         } else if (pendingItem != null) {
             if (!this.validateTarget(gridX, gridY, pendingItem)) {
+                this.actionFeedback(t("Choose a highlighted target in range."));
                 this.playSound('nope', 0.2);
                 return;
             }
@@ -643,6 +659,8 @@ export class Arena extends Phaser.Scene
             this.handleMove(gridX, gridY);
         } else if (player){
             player.onClick();
+        } else {
+            this.actionFeedback(t("Outside movement range. Choose a blue tile."));
         }
     }
 
@@ -736,6 +754,7 @@ export class Arena extends Phaser.Scene
     handleMove(gridX, gridY) {
         if (!this.selectedPlayer.canMoveTo(gridX, gridY) || !this.hexGridManager.isValidCell(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY, this.isFree.bind(this))) {
             this.playSound('nope');
+            this.actionFeedback(t("You cannot reach that tile. Choose an empty blue tile."));
             return;
         }
         this.playSound('click');
@@ -750,6 +769,51 @@ export class Arena extends Phaser.Scene
             this.turnee?.team === commandPlayer.team.id && this.turnee?.num === commandPlayer.num;
         events.emit('showPlayerBox', this.selectedPlayer?.getProps() || null,
             commandPlayer?.getProps() || null, Boolean(canCommand), isPlayerTurn);
+        this.refreshTutorial();
+    }
+
+    refreshTutorial() {
+        if (!this.tutorialManager || !this.turnee) return;
+        const active = this.getPlayer(this.turnee.team, this.turnee.num);
+        if (!active) return;
+        const player = this.selectedPlayer;
+        const availableSpells = active.isMuted() ? [] : active.spells.filter(spell => spell.cost <= active.mp);
+        const hasTarget = (spell: BaseSpell) => {
+            // Fire targets tiles, including empty ground, not just characters.
+            for (let x = 0; x < GRID_WIDTH; x++) for (let y = 0; y < GRID_HEIGHT; y++) {
+                if (this.hexGridManager.getTile(x, y) && this.validateTarget(x, y, spell)) return true;
+            }
+            return false;
+        };
+        events.emit('tutorialContext', {
+            turn: this.turnee.turnNumber, name: active.name, ownTurn: active.isPlayer,
+            selectedIsTurnee: player === active, canAct: active.canAct(),
+            hasEnemy: this.hasEnemyNextTo(active.gridX, active.gridY),
+            hasSpells: availableSpells.length > 0,
+            spellInRange: player === active && availableSpells.some(hasTarget),
+            pendingSpell: player?.pendingSpell != null,
+            pendingItem: player?.pendingItem != null,
+            ice: active.isInIce(), fire: this.hasFlame(active.gridX, active.gridY),
+            poison: active.statuses[StatusEffect.POISON] !== 0,
+            muted: active.isMuted(), paralyzed: active.isParalyzed(),
+            lowMP: active.spells.length > 0 && active.spells.every(spell => spell.cost > active.mp),
+            hasItem: active.hasUsableItem(),
+        });
+    }
+
+    actionFeedback(message: string) {
+        if (!this.gameEnded && !this.isReplay && !this.gameSettings?.spectator) {
+            events.emit('actionFeedback', message);
+        }
+    }
+
+    unavailableActionReason(player = this.selectedPlayer): string | undefined {
+        const active = this.turnee && this.getPlayer(this.turnee.team, this.turnee.num);
+        if (!active || !player) return t("Wait for your active character to be selected.");
+        if (!active.isPlayer) return t("It is your opponent’s turn.");
+        if (player !== active) return t("{{name}} acts now. Select the active character.", {name: active.name});
+        if (player.isInIce()) return t("This character is frozen. Another character can break the ice.");
+        if (!player.canAct()) return t("This character cannot act right now.");
     }
 
     refreshOverview() {
@@ -865,18 +929,21 @@ export class Arena extends Phaser.Scene
         player.setHP(hp);
         if (damage) player.displayDamage(damage);
         if (player.isPlayer) events.emit('hpChange', {num, hp});
+        this.refreshTutorial();
     }
 
     processStatusChange({team, num, statuses}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player?.setStatuses(statuses);
+        this.refreshTutorial();
     }
 
     processMPChange({team = this.playerTeamId, num, mp}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         player?.setMP(mp);
+        this.refreshTutorial();
     }
 
     processUseItem({team, num, animation, name, sfx}) {
@@ -990,7 +1057,7 @@ export class Arena extends Phaser.Scene
             }
         }
 
-        if (player?.isPlayer) {
+        if (flag && player?.isPlayer) {
             events.emit(`playerCastSpell`);
         }
     }
@@ -1566,7 +1633,7 @@ export class Arena extends Phaser.Scene
     hasEnemyNextTo(gridX, gridY) {
         const enemyTeam = this.teamsMap.get(this.getOtherTeam(this.playerTeamId))
         return enemyTeam.getMembers().some(member => {
-            return hexDistance(member.gridX, member.gridY, gridX, gridY) <= 1;
+            return member.isAlive() && hexDistance(member.gridX, member.gridY, gridX, gridY) <= 1;
         });
     }
 
@@ -1693,7 +1760,10 @@ export class Arena extends Phaser.Scene
         this.turnee = data.turnee;
         this.gameSettings.game0 = data.player.player.completedGames === 0;
 
-        this.tutorialManager = new TutorialManager(data.player.player.engagementStats);
+        if (!this.isReplay && !data.general.spectator) {
+            this.tutorialManager = new TutorialManager(events, data.player.player.engagementStats);
+            events.emit('combatTipsAvailable', data.player.player.completedGames < 3);
+        }
 
         this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.general.mode === PlayMode.TOWER ? {...data.opponent.player, playerName: t(data.opponent.player.playerName)} : data.opponent.player));
@@ -1703,6 +1773,8 @@ export class Arena extends Phaser.Scene
             this.hexGridManager.setHoles(data.holes);
         }
 
+        this.tutorialIntroPending = this.gameSettings.game0 && !isReconnect && !this.isReplay && !data.general.spectator;
+
         // Events from the HUD
         this.hudHandlers = {
             inspectCharacter: this.inspectHUDCharacter,
@@ -1711,6 +1783,11 @@ export class Arena extends Phaser.Scene
             passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
             abandonGame: () => this.abandonGame(),
             exitGame: () => this.destroy(),
+            tutorialIntroComplete: () => {
+                if (!this.tutorialIntroPending) return;
+                this.tutorialIntroPending = false;
+                this.displayGEN(GEN.COMBAT_BEGINS);
+            },
             teamRevealed: () => {
                 this.displayGame(data, isReconnect);
             },
@@ -1753,7 +1830,7 @@ export class Arena extends Phaser.Scene
             const delay = 3000;
             this.time.delayedCall(delay + 1000, this.refreshOverview, [], this);
             this.time.delayedCall(delay, () => {
-                this.displayGEN(GEN.COMBAT_BEGINS);
+                if (!this.tutorialIntroPending) this.displayGEN(GEN.COMBAT_BEGINS);
                 this.setGameInitialized();
                 this.selectTurnee();
             });
@@ -1769,6 +1846,13 @@ export class Arena extends Phaser.Scene
     private reportArenaReady() {
         if (this.disposed || this.isReplay || !this.gameInitialized || this.pendingEntrances > 0 || document.hidden || !this.socket?.connected) return;
         if (window.matchMedia('(orientation: portrait)').matches) return;
+        if (this.tutorialIntroPending) {
+            if (!this.tutorialIntroShown) {
+                this.tutorialIntroShown = true;
+                events.emit('showTutorialIntro');
+            }
+            return;
+        }
         // POST_RENDER runs after the intro and the first complete arena frame.
         if (this.readyToken) {
             this.socket.emit('arenaReady', this.readyToken);
