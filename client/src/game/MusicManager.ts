@@ -1,5 +1,5 @@
 import { events } from '../components/HUD/GameHUD';
-import {loadGameSettings} from '../settings';
+import {musicGain} from '../settings';
 
 export class MusicManager {
     scene: Phaser.Scene;
@@ -34,7 +34,7 @@ export class MusicManager {
     }
 
     getMusicVolumeFromLocalStorage(): number {
-        return loadGameSettings().musicVolume / 100;
+        return musicGain();
     }
 
     onSettingsChanged = () => {

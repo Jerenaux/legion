@@ -1,4 +1,7 @@
 import {t} from '../../i18n/core';
+import { primaryKeyLabel } from '../../input/bindings';
+import type { DesktopAction } from '../../input/actions';
+import { loadGameSettings } from '../../settings';
 
 import { h } from 'preact';
 import './ItemIcon.style.css';
@@ -153,9 +156,9 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
     const { action, index, actionType, hideHotKey } = this.props;
     const { croppedImageUrl } = this.state;
 
-    const keyboardLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const startPosition = keyboardLayout.indexOf(actionType === InventoryType.CONSUMABLES ? 'Z' : 'Q');
-    const keyBinding = keyboardLayout.charAt(startPosition + index);
+    // The same key the combat action bar uses for this slot.
+    const keyBinding = actionType === InventoryType.EQUIPMENTS ? '' :
+      primaryKeyLabel(`${actionType === InventoryType.SPELLS ? 'spell' : 'item'}-${index + 1}` as DesktopAction, loadGameSettings().controls);
 
     const handleOnClickAction = (e: Event) => {
       const pathArray = window.location.pathname.split('/');
@@ -199,7 +202,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
             }}
           />
         )}
-        {!hideHotKey && <span className="key-binding">{keyBinding}</span>}
+        {!hideHotKey && keyBinding && <span className="key-binding">{keyBinding}</span>}
 
         <ItemDialog
           index={index}

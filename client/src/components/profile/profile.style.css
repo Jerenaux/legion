@@ -19,9 +19,12 @@
     display: flex;
     align-items: flex-start;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
-    border: 2px solid #cd853f;
+    background:
+        radial-gradient(ellipse 60% 120% at 0% 0%, oklch(70% .12 75 / .14), transparent 70%),
+        var(--panel-bg);
+    border-radius: 6px;
+    border: 1px solid oklch(62% .09 70);
+    box-shadow: var(--panel-shadow);
     margin-bottom: 20px;
     position: relative;
 }
@@ -29,16 +32,16 @@
 .profile-avatar {
     width: 128px;
     height: 128px;
-    border-radius: 8px;
+    border-radius: 6px;
     background-size: cover;
     background-position: center;
-    border: 2px solid #cd853f;
-    box-shadow: 0 0 15px rgba(205, 133, 63, 0.3);
+    border: 2px solid oklch(72% .11 75);
+    box-shadow: 0 0 0 4px oklch(12% .025 250 / .8), 0 8px 20px oklch(5% .02 255 / .5);
     position: relative;
 }
 
 .profile-info {
-    margin-left: 20px;
+    margin-left: 24px;
     padding-right: 120px;
     min-height: 80px;
 }
@@ -46,13 +49,13 @@
 .profile-info h1 {
     margin: 0;
     font-size: 2rem;
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    color: var(--text-strong);
+    text-shadow: 0 2px 0 oklch(8% .02 250 / .9);
 }
 
 .profile-join-date {
-    color: #aaa;
-    font-size: 0.875rem;
+    color: var(--text-muted);
+    font: 0.875rem var(--locale-font, Arial), system-ui, sans-serif;
     margin-top: 5px;
 }
 
@@ -63,23 +66,31 @@
     margin-top: 20px;
 }
 
+/* One panel family; each mode keeps only an accent bar and heading color. */
 .stats-card {
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #49d7d8;
-}
-
-/* All Time Stats card - blue gradient */
-.stats-card.all-time {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(73, 215, 216, 0.1));
-    border: 2px solid #49d7d8;
-}
-
-/* Current Season Stats card - gold/orange gradient */
-.stats-card.season {
+    --stats-accent: oklch(84% .1 200);
     position: relative;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(205, 133, 63, 0.1));
-    border: 2px solid #cd853f;
+    border-radius: 6px;
+    padding: 20px 22px 14px;
+    border: 1px solid var(--ink-edge-soft);
+    background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, color-mix(in oklch, var(--stats-accent) 14%, transparent), transparent 70%),
+        var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 18px auto;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--stats-accent);
+    box-shadow: 0 0 10px var(--stats-accent);
+}
+
+.stats-card.season {
+    --stats-accent: oklch(74% .11 60);
 }
 
 .league-icon {
@@ -97,45 +108,28 @@
     object-fit: contain;
 }
 
-/* Casual Mode Stats card - green gradient */
 .stats-card.casual {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(73, 216, 116, 0.1));
-    border: 2px solid #49d874;
-}
-
-/* Update the h2 color for each card to match its border */
-.stats-card.season h2 {
-    position: relative;
-    z-index: 0;
-    color: #cd853f;
-}
-
-.stats-card.casual h2 {
-    color: #49d874;
-}
-
-/* Update the value color for each card to match its theme */
-.stats-card.season .value {
-    color: #cd853f;
-}
-
-.stats-card.casual .value {
-    color: #49d874;
+    --stats-accent: oklch(78% .11 245);
 }
 
 .stats-card h2 {
-    margin: 0 0 20px 0;
-    color: #49d7d8;
-    font-size: 1.5rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    position: relative;
+    margin: 0 0 12px 0;
+    color: color-mix(in oklch, var(--stats-accent) 70%, white);
+    font-size: 1.25rem;
+    font-weight: 400;
+    text-shadow: 0 2px 0 oklch(8% .02 250 / .8);
 }
 
 .stat-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(73, 215, 216, 0.2);
+    align-items: baseline;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid oklch(100% 0 0 / .07);
+    color: var(--text-muted);
+    font: 0.9375rem var(--locale-font, Arial), system-ui, sans-serif;
 }
 
 .stat-row:last-child {
@@ -143,8 +137,9 @@
 }
 
 .stat-row .value {
-    font-weight: bold;
-    color: #49d7d8;
+    color: var(--text-strong);
+    font: 1.0625rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
 }
 
 .profile-details {
@@ -236,19 +231,25 @@
 
 .search-players input {
     width: 100%;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid #49d7d8;
-    border-radius: 8px;
-    color: white;
-    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
-    font-size: 1rem;
+    box-sizing: border-box;
+    min-height: 46px;
+    padding: 12px 14px;
+    background: oklch(12% .025 250 / .8);
+    border: 1px solid var(--ink-edge);
+    border-radius: 4px;
+    box-shadow: inset 0 2px 6px oklch(5% .02 255 / .6);
+    color: var(--text-strong);
+    font: 1rem var(--locale-font, Arial), system-ui, sans-serif;
+}
+
+.search-players input::placeholder {
+    color: oklch(62% .025 235);
 }
 
 .search-players input:focus {
     outline: none;
-    border-color: #49d7d8;
-    box-shadow: 0 0 10px rgba(73, 215, 216, 0.3);
+    border-color: var(--cyan);
+    box-shadow: inset 0 2px 6px oklch(5% .02 255 / .6), 0 0 0 3px oklch(86% .1 200 / .25);
 }
 
 .search-results {
@@ -256,9 +257,10 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.9);
-    border: 2px solid #49d7d8;
-    border-radius: 8px;
+    background: oklch(15% .028 250 / .98);
+    border: 1px solid var(--ink-edge);
+    border-radius: 4px;
+    box-shadow: var(--panel-shadow);
     margin-top: 5px;
     max-height: 300px;
     overflow-y: auto;
@@ -465,10 +467,13 @@
 }
 
 .friends-section h2 {
-    margin-bottom: 20px;
-    color: #49d7d8;
-    font-size: 1.5rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    margin: 0 0 16px;
+    padding: 6px 0 10px;
+    border-bottom: 1px solid oklch(76% .14 78);
+    color: var(--text-strong);
+    font-size: 1rem;
+    font-weight: 400;
+    text-transform: uppercase;
 } 
 
 /* Update the add friend button styles in search results */

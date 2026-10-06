@@ -1,9 +1,8 @@
 import {t, userError} from '../../i18n/core';
 import { h } from 'preact';
 import './ShopContent.style.css';
-import 'react-loading-skeleton/dist/skeleton.css'
 
-import Skeleton from 'react-loading-skeleton';
+import Ghost from '../ghost/Ghost';
 import { Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiFetch } from '../../services/apiService';
@@ -414,24 +413,10 @@ class ShopContent extends Component<ShopContentProps> {
             }
         }
 
+        // Same grid as the item cards, so the shop keeps its shape while stock loads.
         const renderSkeletons = () => (
-            <div className="shop-items-container"
-            style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '16px',
-                }}
-            >
-                {[...Array(12)].map((_, index) => (
-                    <div key={index} >
-                        <Skeleton
-                            height={320}
-                            width={200}
-                            highlightColor="#0000004d"
-                            baseColor="#0f1421"
-                        />
-                    </div>
-                ))}
+            <div className="shop-items-container">
+                <Ghost height={340} count={6} className="ghost-grid shop-ghost-grid" />
             </div>
         )
 

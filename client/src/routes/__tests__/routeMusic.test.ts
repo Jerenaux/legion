@@ -36,7 +36,7 @@ function setup(blockAutoplay = false) {
     clearInterval: (callback: () => void) => timers.delete(callback),
     document: {addEventListener: document.on.bind(document), removeEventListener: document.off.bind(document)},
     require: (name: string) => {
-      if (name === './settings') return {loadGameSettings: () => settings};
+      if (name === './settings') return {loadGameSettings: () => settings, musicGain: () => settings.musicVolume / 100};
       if (name === './components/HUD/GameHUD') return {events};
       return {default: name};
     },

@@ -1,6 +1,7 @@
 import { lineOfSight, serializeCoords, isSkip, getTilesInHexRadius } from '@legion/shared/utils';
 import { GRID_WIDTH, GRID_HEIGHT, SPELL_RANGE } from '@legion/shared/config';
 import { Player } from './Player';
+import { displayTint } from './palette';
 
 // Add tile color constants
 export enum TileColors {
@@ -184,10 +185,10 @@ export class HexGridManager {
                 tile.previousTint = color; // Store the intended color
                 tile.setTint(TileColors.DARKENED);
             } else {
-                tile.setTint(color);
+                tile.setTint(displayTint(color));
             }
         } else {
-            tile.setTint(color);
+            tile.setTint(displayTint(color));
         }
     }
 
@@ -550,7 +551,7 @@ export class HexGridManager {
                 this.applyTileColor(tile, color);
             } else {
                 // @ts-expect-error
-                tile.setTint(tile.previousTint || TileColors.NORMAL);
+                tile.setTint(displayTint(tile.previousTint || TileColors.NORMAL));
             }
         });
     }

@@ -51,6 +51,6 @@
 .item-preview-effects { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 10px; }
 .item-preview-effect { display: flex; align-items: center; gap: 6px; }
 .item-preview-stat { padding: 1px 5px; border-radius: 2px; font-size: 0.625rem; }
-.item-preview-positive { color: #9ed94c; }
-.item-preview-negative { color: #f18fa6; }
+.item-preview-positive { color: var(--stat-up); }
+.item-preview-negative { color: var(--stat-down); }
 .item-preview-classes { margin: 10px 0 0; color: #b7c9d4; font-size: 0.625rem; }

@@ -9,6 +9,7 @@ require('./electron/telemetry').initializeTelemetry(app);
 const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
+const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions} = require("./electron/display");
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
@@ -16,6 +17,17 @@ const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) app.quit();
 
 protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
+
+// When Steam launches the game, enable its overlay so Shift+Tab and Steam's screenshot key
+// (F12 by default, saved and uploadable from the Steam library) work. This must run before
+// the app is ready; it is skipped for Itch, direct launches and smoke tests.
+if (!smokeTest && hasSingleInstanceLock && (process.env.SteamAppId || process.env.SteamGameId)) {
+  try {
+    loadSteamworks().electronEnableSteamOverlay();
+  } catch (error) {
+    console.error("Steam overlay unavailable:", error);
+  }
+}
 
 function trustedIPC(event) {
   return event.sender === mainWindow?.webContents && isTrustedSender(event.senderFrame?.url || "", isDev);
@@ -33,8 +45,14 @@ function registerIPC() {
   ipcMain.handle("is-fullscreen", event => trustedIPC(event) ? mainWindow.isFullScreen() : false);
   ipcMain.handle("toggle-fullscreen", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
-    mainWindow.setFullScreen(!mainWindow.isFullScreen());
-    return mainWindow.isFullScreen();
+    // macOS animates the switch, so report the requested mode rather than the current one.
+    const fullscreen = !mainWindow.isFullScreen();
+    mainWindow.setFullScreen(fullscreen);
+    return fullscreen;
+  });
+  ipcMain.handle("quit-app", event => {
+    if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
+    app.quit();
   });
   ipcMain.handle("get-platform-auth", event => {
     if (!trustedIPC(event)) throw new Error("Untrusted IPC sender");
@@ -62,10 +80,13 @@ function registerAppProtocol() {
 
 function createWindow() {
   const steamLanguage = smokeTest ? null : getPlatformLanguage(process.env, loadSteamworks);
+  // Hidden smoke tests stay windowed; players get the mode they last chose (fullscreen at first).
+  const startFullscreen = !smokeTest && readDisplayMode(app.getPath("userData")).fullscreen;
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
     show: false,
+    ...displayWindowOptions(startFullscreen),
     autoHideMenuBar: !isDev,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -114,7 +135,22 @@ function createWindow() {
   mainWindow.once("ready-to-show", () => {
     if (!mainWindow) return;
     mainWindow.maximize();
-    if (!smokeTest) mainWindow.show();
+    if (smokeTest) return;
+    mainWindow.show();
+    if (startFullscreen && !mainWindow.isFullScreen()) mainWindow.setFullScreen(true);
+  });
+  // Every route (shortcut, Settings, the macOS window button) is remembered for the next launch.
+  mainWindow.on("enter-full-screen", () => { if (!smokeTest) writeDisplayMode(app.getPath("userData"), {fullscreen: true}); });
+  mainWindow.on("leave-full-screen", () => {
+    if (smokeTest || !mainWindow) return;
+    writeDisplayMode(app.getPath("userData"), {fullscreen: false});
+    mainWindow.maximize();
+  });
+  mainWindow.webContents.on("before-input-event", (event, input) => {
+    if (!isFullscreenShortcut(input)) return;
+    // Also stops the default menu's accelerator from toggling a second time.
+    event.preventDefault();
+    mainWindow?.setFullScreen(!mainWindow.isFullScreen());
   });
   mainWindow.on("closed", () => { mainWindow = undefined; });
 

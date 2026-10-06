@@ -1,4 +1,4 @@
-import {t} from '../../i18n/core';
+import {t, formatNumber} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
 import { PlayerProps, TeamMember, PlayerProfileData } from "@legion/shared/interfaces";
@@ -122,7 +122,7 @@ class Overview extends Component<Props, State> {
               <button type="button" data-game-control
                 key={memberIndex}
                 onClick={e => onInspect(teamId, memberIndex + 1, e.currentTarget)}
-                aria-label={t("Inspect {{value0}}", {value0: member.name})}
+                aria-label={[t("Inspect {{value0}}", {value0: member.name}), Number.isFinite(member.level) ? `${t("Lvl")} ${formatNumber(member.level)}` : ''].filter(Boolean).join(', ')}
                 aria-describedby={inspected ? 'character-hover-card' : undefined}
                 data-character={`${teamId}-${memberIndex + 1}`}
                 data-inspected={inspected}
@@ -134,6 +134,7 @@ class Overview extends Component<Props, State> {
               >
                 <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
                   <div className={`char_portrait ${position === 'left' ? 'flip' : 'char_portrait_right'} ${member.hp > 0 ? 'char_alive_animation' : ''}`} style={portraitStyle} />
+                  {Number.isFinite(member.level) && <span className="char_level_tag"><small>{t("Lvl")}</small>{formatNumber(member.level)}</span>}
                 </div>
                 <div className={`char_stats ${position === 'right' && 'char_stats_right'}`} style={charStatStyle(memberIndex)}>
                   <div className="overview_class_crest">

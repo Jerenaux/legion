@@ -1,24 +1,14 @@
 import {DesktopAction} from "./actions";
-
-const BUTTON_ACTIONS: Record<number, DesktopAction> = {
-  0: "confirm",
-  1: "cancel",
-  3: "end-turn",
-  4: "previous-unit",
-  5: "next-unit",
-  9: "pause",
-  12: "menu-up",
-  13: "menu-down",
-  14: "menu-left",
-  15: "menu-right",
-};
+import {ControlBindings, resolveButtonActions} from "./bindings";
 
 type GamepadLike = Pick<Gamepad, "index" | "buttons" | "axes">;
 
-export function gamepadActions(gamepad: GamepadLike): DesktopAction[] {
-  const actions = Object.entries(BUTTON_ACTIONS)
-    .filter(([button]) => gamepad.buttons[Number(button)]?.pressed)
-    .map(([, action]) => action);
+const pressedButtons = (gamepad: GamepadLike) =>
+  Array.from(gamepad.buttons, (button, index) => (button?.pressed ? index : -1)).filter(index => index >= 0);
+
+// The left stick always moves focus, so the D-pad can carry other actions.
+export function gamepadActions(gamepad: GamepadLike, controls: ControlBindings = {}): DesktopAction[] {
+  const actions = resolveButtonActions(pressedButtons(gamepad), controls);
   const [x = 0, y = 0] = gamepad.axes;
   if (x < -0.6) actions.push("menu-left");
   if (x > 0.6) actions.push("menu-right");
@@ -27,29 +17,49 @@ export function gamepadActions(gamepad: GamepadLike): DesktopAction[] {
   return [...new Set(actions)];
 }
 
-export function pollGamepads(gamepads: ArrayLike<GamepadLike | null>, previous = new Set<string>()) {
+export function pollGamepads(gamepads: ArrayLike<GamepadLike | null>, previous = new Set<string>(), controls: ControlBindings = {}) {
   const pressed = new Set<string>();
   const actions: DesktopAction[] = [];
+  const newButtons: number[] = [];
   Array.from(gamepads).forEach(gamepad => {
     if (!gamepad) return;
-    gamepadActions(gamepad).forEach(action => {
+    pressedButtons(gamepad).forEach(button => {
+      const key = `${gamepad.index}:button:${button}`;
+      pressed.add(key);
+      if (!previous.has(key)) newButtons.push(button);
+    });
+    gamepadActions(gamepad, controls).forEach(action => {
       const key = `${gamepad.index}:${action}`;
       pressed.add(key);
       if (!previous.has(key)) actions.push(action);
     });
   });
-  return {actions, pressed};
+  return {actions, pressed, newButtons};
 }
 
-export function startGamepadInput(onAction: (action: DesktopAction) => void) {
+// While rebinding, the next new button press goes to the settings screen instead of the game.
+let captureButton: ((button: number) => void) | null = null;
+export function captureNextButton(onButton: ((button: number) => void) | null) {
+  captureButton = onButton;
+}
+
+export function startGamepadInput(onAction: (action: DesktopAction) => void, getControls: () => ControlBindings = () => ({})) {
   if (typeof navigator === "undefined" || !navigator.getGamepads) return () => undefined;
   let previous = new Set<string>();
   let frame = 0;
   let running = true;
   const poll = () => {
-    const next = pollGamepads(navigator.getGamepads(), previous);
+    const next = pollGamepads(navigator.getGamepads(), previous, getControls());
     previous = next.pressed;
-    next.actions.forEach(onAction);
+    if (captureButton) {
+      if (next.newButtons.length) {
+        const deliver = captureButton;
+        captureButton = null;
+        deliver(next.newButtons[0]);
+      }
+    } else {
+      next.actions.forEach(onAction);
+    }
     if (running) frame = requestAnimationFrame(poll);
   };
   frame = requestAnimationFrame(poll);

@@ -11,7 +11,7 @@ import { Arena } from '../../src/game/Arena';
 import {MusicManager} from '../../src/game/MusicManager';
 import { EventEmitter } from 'eventemitter3';
 import { NewCharacter } from '../../../shared/NewCharacter';
-import { Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures } from '../../../shared/enums';
+import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures } from '../../../shared/enums';
 import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
 import {getClient, getReplay, type BrowserClient} from '@sentry/react';
@@ -161,10 +161,23 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
     return structuredClone(towerCheck.progress);
   }
   if (endpoint === 'recordPlayerAction') return {};
-  if (endpoint === 'listOnSaleCharacters') return characters.map(character => ({...character, price: 120}));
+  if (endpoint === 'listOnSaleCharacters') {
+    if (new URLSearchParams(location.search).has('slow')) await new Promise(resolve => setTimeout(resolve, 60_000));
+    return characters.map(character => ({...character, price: 120}));
+  }
   if (endpoint.startsWith('fetchLeaderboard?tab=')) {
     if (rankCheck.fail) throw new Error('Expected leaderboard timeout');
-    return {league: Number(endpoint.split('=')[1]), seasonEnd: 3600, playerRank: 1, ranking: [], highlights: [
+    const preview = new URLSearchParams(location.search);
+    // Preview-only: ?slow holds the response to show loading states, ?ranking fills the table.
+    if (preview.has('slow')) await new Promise(resolve => setTimeout(resolve, 60_000));
+    const names = ['Arena Apprentice', 'Kestrel', 'Morrow', 'Vale of Ash', 'Brightwind', 'Oduya', 'Sable Fox', 'Tamsin', 'Quillon', 'Northmark', 'Ivo', 'Ember Lark'];
+    const ranking = preview.has('ranking') ? names.map((player, i) => {
+      const wins = 30 - i * 2, losses = 6 + i;
+      return {rank: i + 1, player, playerId: `fixture-${i}`, avatar: String(i % 8 + 1), elo: 1680 - i * 37, wins, losses,
+        winsRatio: `${Math.round(wins / (wins + losses) * 100)}%`, isPlayer: i === 3, isFriend: i === 6,
+        isPromoted: i < 3, isDemoted: i > 9, chestColor: [ChestColor.GOLD, ChestColor.SILVER, ChestColor.BRONZE][i] ?? null};
+    }) : [];
+    return {league: Number(endpoint.split('=')[1]), seasonEnd: 3600 * 52, playerRank: 4, ranking, highlights: [
       {id: 'guide-award', name: 'Arena Apprentice', avatar: 'default', title: 'Ace Player', description: 'Highest Game Grades'},
     ]};
   }

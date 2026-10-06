@@ -1,7 +1,7 @@
 .shop-container {
     display: flex;
     flex-direction: column;
-    gap: 48px;
+    gap: 20px;
     max-width: 1024px;
     margin: 0 auto;
 }
@@ -26,32 +26,50 @@
 }
 
 .shop-tab-item {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
     box-sizing: border-box;
-    padding: 8px 16px;
+    min-height: 44px;
+    padding: 8px 18px;
     cursor: pointer;
     text-decoration: none;
-    color: #add8e6;
-    transition: all 0.2s ease;
+    color: var(--text-muted);
+    transition: background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;
     border-radius: 4px;
-    background: rgba(173, 216, 230, 0.1);
-    border: 1px solid transparent;
+    background: linear-gradient(oklch(26% .03 242 / .9), oklch(19% .028 248 / .92));
+    border: 1px solid var(--ink-edge-soft);
+    box-shadow: inset 0 1px 0 oklch(100% 0 0 / .06), 0 3px 0 oklch(10% .025 250 / .7);
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .shop-tab-item:hover {
-    transform: translateY(-2px);
-    color: #e0f2ff;
-    background: rgba(173, 216, 230, 0.2);
+    color: var(--text-strong);
+    border-color: var(--ink-edge);
 }
 
 .shop-tab-item.active {
-    color: #e0f2ff;
-    background: rgba(173, 216, 230, 0.2);
-    border-color: rgba(173, 216, 230, 0.5);
-    box-shadow: 0 0 12px rgba(173, 216, 230, 0.3);
+    color: var(--gold);
+    border-color: oklch(70% .1 80);
+    background: linear-gradient(oklch(31% .04 238), oklch(22% .032 245));
+}
+
+.shop-tab-item.active::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--gold);
+    box-shadow: 0 0 10px oklch(84% .13 82 / .6);
+}
+
+.shop-tab-item:focus-visible {
+    outline: 3px solid var(--cyan);
+    outline-offset: 3px;
 }
 
 .shop-tab-item img {
@@ -84,10 +102,45 @@
     padding: 0 16px;
 }
 
+/* Items sit in an inventory-style slot at 1.5x, keeping pixel edges crisp. */
 .shop-portrait {
     width: 32px;
     height: 32px;
-    margin: 10px;
+    margin: 20px 10px 16px;
+    border-radius: 3px;
+    background-color: oklch(17% .025 250);
+    box-shadow: 0 0 0 5px oklch(17% .025 250), 0 0 0 6px oklch(46% .045 235), 0 4px 10px 6px oklch(5% .02 255 / .45);
+    transform: scale(1.5);
+    image-rendering: pixelated;
+    transition: transform 160ms ease-out;
+}
+
+:is(.shop-card-container, .spell-card-container):hover .shop-portrait {
+    transform: scale(1.5) translateY(-2px);
+}
+
+:is(.shop-card-container, .spell-card-container) {
+    transition: transform 160ms ease-out, filter 160ms ease-out;
+}
+
+:is(.shop-card-container, .spell-card-container):hover {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 8px 14px oklch(5% .02 255 / .55));
+}
+
+:is(.shop-card-container, .spell-card-container):active {
+    transform: translateY(0);
+}
+
+:is(.shop-card-container, .spell-card-container):focus-visible {
+    outline: 3px solid var(--cyan);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shop-portrait, .shop-card-container, .spell-card-container { transition: none; }
+    :is(.shop-card-container, .spell-card-container):hover { transform: none; }
+    :is(.shop-card-container, .spell-card-container):hover .shop-portrait { transform: scale(1.5); }
 }
 
 .equipment-sections {
@@ -108,15 +161,15 @@
 }
 
 .equipment-type-title {
-    color: #e0f2ff;
-    font-size: 1.25rem;
-    font-weight: 600;
+    color: var(--text-strong);
+    font-size: 1.125rem;
+    font-weight: 400;
     text-transform: uppercase;
     padding: 8px 16px;
     margin-bottom: 8px;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
-    border-left: 4px solid #add8e6;
-    text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
+    background: linear-gradient(90deg, oklch(30% .04 240 / .85), transparent 75%);
+    border-left: 4px solid var(--gold);
+    text-shadow: 0 2px 0 oklch(8% .02 250 / .8);
     letter-spacing: 1px;
     position: relative;
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
@@ -129,7 +182,7 @@
     top: 50%;
     height: 1px;
     width: 60%;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
+    background: linear-gradient(90deg, oklch(70% .1 80 / .5), transparent);
 }
 
 .equipment-grid {
@@ -176,15 +229,15 @@
 }
 
 .spells-type-title {
-    color: #e0f2ff;
-    font-size: 1.25rem;
-    font-weight: 600;
+    color: var(--text-strong);
+    font-size: 1.125rem;
+    font-weight: 400;
     text-transform: uppercase;
     padding: 8px 16px;
     margin-bottom: 8px;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
-    border-left: 4px solid #add8e6;
-    text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
+    background: linear-gradient(90deg, oklch(30% .04 240 / .85), transparent 75%);
+    border-left: 4px solid var(--gold);
+    text-shadow: 0 2px 0 oklch(8% .02 250 / .8);
     letter-spacing: 1px;
     position: relative;
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
@@ -197,7 +250,7 @@
     top: 50%;
     height: 1px;
     width: 60%;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
+    background: linear-gradient(90deg, oklch(70% .1 80 / .5), transparent);
 }
 
 .locked-spells-notice {
@@ -258,15 +311,15 @@
 }
 
 .consumables-type-title {
-    color: #e0f2ff;
-    font-size: 1.25rem;
-    font-weight: 600;
+    color: var(--text-strong);
+    font-size: 1.125rem;
+    font-weight: 400;
     text-transform: uppercase;
     padding: 8px 16px;
     margin-bottom: 8px;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.3), transparent);
-    border-left: 4px solid #add8e6;
-    text-shadow: 0 0 10px rgba(173, 216, 230, 0.5);
+    background: linear-gradient(90deg, oklch(30% .04 240 / .85), transparent 75%);
+    border-left: 4px solid var(--gold);
+    text-shadow: 0 2px 0 oklch(8% .02 250 / .8);
     letter-spacing: 1px;
     position: relative;
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
@@ -279,7 +332,7 @@
     top: 50%;
     height: 1px;
     width: 60%;
-    background: linear-gradient(90deg, rgba(173, 216, 230, 0.5), transparent);
+    background: linear-gradient(90deg, oklch(70% .1 80 / .5), transparent);
 }
 /* Reflow cards and tabs as text grows instead of widening the whole page. */
 .shop-container { width: 100%; min-width: 0; box-sizing: border-box; padding: 0 16px; }

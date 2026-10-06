@@ -37,6 +37,8 @@ Biome complements rather than replaces TypeScript. Run `bunx tsc --noEmit` in `c
 
 For presentation-only UI work (for example card hover effects, tooltip styling, spacing, or colors), do not add or run automated tests just to verify appearance. Inspect screenshots manually when useful or requested. Keep focused tests for behavior such as gameplay, navigation, accessibility, error handling, and security.
 
+Do not write tests that assert player-facing wording: exact headings, labels, messages, sentences, translated catalog strings, or banned phrases. Copy changes must not break tests. Check behavior instead: an element exists or is focused, a state changes, a number or name is shown, distinct situations get distinct messages, or nothing renders unresolved (`{{`, `undefined`). Review copy by reading the screen and following `docs/game-ui-writing.md`.
+
 ## Electron startup routing
 
 Packaged builds must open `app://legion/`, using `PACKAGED_APP_URL` from `client/electron/protocol.js`. Do not load `app://legion/index.html`: Preact Router reads that as the `/index.html` application route, which bypasses the title screen and leaves the authenticated home content empty. The custom protocol already maps `/` to the bundled `index.html` file.

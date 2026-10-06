@@ -14,6 +14,8 @@ import { successToast, errorToast, avatarContext, lockIcon } from '../utils';
 import {reportProblem} from '../../telemetry';
 import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
 import { SettingsModal } from '../settingsModal/SettingsModal';
+import { quitGame } from '../systemMenu/SystemMenu';
+import { isElectron } from '../../utils/electronUtils';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { LockedFeatures } from "@legion/shared/enums";
 
@@ -276,6 +278,7 @@ class Navbar extends Component<Props, State> {
                                                 }}><Trans i18n={i18n} i18nKey={"<0/> Report a problem"} components={[<img src={helpIcon} alt="" />]} /></button>
                                                 <button type="button" onClick={this.copyIDtoClipboard}><Trans i18n={i18n} i18nKey={"<0/> Player ID"} components={[<img src={copyIcon} alt="" />]} /></button>
                                                 <button type="button" onClick={this.toggleSettingsModal}><Trans i18n={i18n} i18nKey={"<0/> Settings"} components={[<img src={cogIcon} alt="" />]} /></button>
+                                                {isElectron() && <button type="button" className="dropdown-quit" onClick={quitGame}><span>{t("Quit game")}</span></button>}
                                                 <small className="dropdown-version">{t("Version {{value0}}", {value0: version})}</small>
                                             </div>
                                         </div>
@@ -283,7 +286,7 @@ class Navbar extends Component<Props, State> {
                                     {this.state.isSettingsModalOpen && (
                                         <div className="settings-modal-wrapper">
                                             <button type="button" data-game-control className="settings-modal-overlay" onClick={this.toggleSettingsModal}></button>
-                                            <div className="settings-modal-container">
+                                            <div className="settings-modal-container" role="dialog" aria-modal="true" aria-labelledby="settings-title">
                                                 <SettingsModal onClose={this.toggleSettingsModal} />
                                             </div>
                                         </div>

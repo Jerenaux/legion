@@ -133,14 +133,18 @@ test('action feedback distinguishes the active unit, enemy turns, and disabled c
   arena.getPlayer = () => active;
   arena.selectedPlayer = active;
   expect(arena.unavailableActionReason()).toBeUndefined();
-  expect(arena.unavailableActionReason({name: 'Roland'})).toContain('Luna acts now');
+  const otherUnit = arena.unavailableActionReason({name: 'Roland'});
+  expect(otherUnit).toContain('Luna');
   active.isPlayer = false;
-  expect(arena.unavailableActionReason()).toContain('opponent');
+  const enemyTurn = arena.unavailableActionReason();
   active.isPlayer = true;
   active.canAct = () => false;
-  expect(arena.unavailableActionReason()).toContain('cannot act');
+  const disabled = arena.unavailableActionReason();
   active.isInIce = () => true;
-  expect(arena.unavailableActionReason()).toContain('frozen');
+  const frozen = arena.unavailableActionReason();
+  // Each situation gets its own explanation; the wording itself is not under test.
+  expect([enemyTurn, disabled, frozen].every(Boolean)).toBe(true);
+  expect(new Set([otherUnit, enemyTurn, disabled, frozen]).size).toBe(4);
 });
 
 test('clicking the active character restores selection after inspecting another unit', () => {
