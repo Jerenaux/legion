@@ -43,6 +43,23 @@ async function stop() {
   await Promise.race([Promise.allSettled(children.map(child=>child.done)),new Promise(resolve=>setTimeout(resolve,5000))]);
   for(const child of children) if(child.exitCode===null && child.signalCode===null) {try {process.kill(process.platform==='win32'?child.pid:-child.pid,'SIGKILL');} catch {}}
   if(secretsWritten) previousSecrets===undefined?fs.rmSync(secretPath,{force:true}):fs.writeFileSync(secretPath,previousSecrets);
+  stopStrayEmulators();
+}
+// firebase-tools starts the Java emulators in their own process group, so the group kill above
+// can miss them. Stop any Firebase emulator still listening on this runner's ports, and nothing else.
+function stopStrayEmulators() {
+  if(process.platform==='win32') return;
+  const {execFileSync}=require('node:child_process');
+  for(const port of [18090,9150,19099,15001,14400,14500]) {
+    let pids=[];
+    try {pids=execFileSync('lsof',['-t',`-iTCP:${port}`,'-sTCP:LISTEN'],{encoding:'utf8'}).split('\n').filter(Boolean);} catch {continue;}
+    for(const pid of pids) {
+      try {
+        const command=execFileSync('ps',['-o','command=','-p',pid],{encoding:'utf8'});
+        if(/firebase|emulator/i.test(command)) process.kill(Number(pid),'SIGKILL');
+      } catch {}
+    }
+  }
 }
 async function main() {
   for(const port of [19099,18090,15001,14400,14500,13123,13000,9150]) await portFree(port);
