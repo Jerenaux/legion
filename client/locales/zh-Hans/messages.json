@@ -36,7 +36,6 @@
   "Casual": "休闲",
   "Play against other players for normal rewards without putting your ELO or league record on the line.": "与其他玩家对战，获得正常奖励，不影响 ELO 或联赛战绩。",
   "Ranked": "排位",
-  "Play against other players for higher rewards, with results counting toward ELO and the weekly league. Unlocks after {{value0}} completed games.": "与其他玩家对战，获得更丰厚的奖励。结果计入 ELO 和每周联赛。完成 {{value0}} 场对局后解锁。",
   "Make your turn count": "把握每个回合",
   "When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <0>one action</0>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.": "轮到你时，当前行动角色会自动选中。蓝色格子表示可移动范围。你只能选择<0>一个行动</0>：移动、攻击、施法、使用物品或跳过。不能在同一回合先移动再攻击。",
   "The standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.": "标准回合时间为<0>{{value0}} 秒</0>。在其他角色行动时规划策略，并通过沙漏查看剩余时间。超时后，你将失去本次行动机会。",
@@ -1038,7 +1037,6 @@
   "Close combat": "近身战斗",
   "Ranged magic": "远程法术",
   "Roster cards show each character’s class, name, level and unspent SP.": "队伍卡片显示每名角色的职业、姓名、等级和未使用的属性点。",
-  "Unlocks after {{required}} completed matches.": "完成 {{required}} 场对局后解锁。",
   "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "率领临时小队，自由挑战回合不限时的单人远征。商店也已开放更多法术。",
   "Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.": "率领临时小队，你的原有阵容不受影响。HP、MP 和补给会延续到下一层，回合没有时间限制。",
   "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "为本次远征选择一项准备。在进入下一层之前，恢复小队、补充物资或学习法术。",
@@ -1074,5 +1072,7 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "战斗提示会说明尚未遇到的行动和危险。可在战斗前开启或关闭。",
   "Elemental spells change the battlefield": "元素法术会改变地形",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "教程中每回合{{tutorial}}秒，普通对局中每回合{{regular}}秒。",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "火焰会在目标格留下火，即使该格为空也能施放。穿过火焰或停留在火焰中都会受到伤害。随着游戏进度推进，你还可以解锁其他元素法术。"
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "火焰会在目标格留下火，即使该格为空也能施放。穿过火焰或停留在火焰中都会受到伤害。随着游戏进度推进，你还可以解锁其他元素法术。",
+  "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "与其他玩家对战，获得更丰厚的奖励。结果计入 ELO 和每周联赛。",
+  "Unlocks after {{required}} completed games.": "完成 {{required}} 场对局后解锁。"
 }

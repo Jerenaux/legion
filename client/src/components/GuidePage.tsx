@@ -74,13 +74,13 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <dl className="guide-definitions">
               <div><dt>{t("Practice")}</dt><dd>{t("Fight AI and learn your loadout. Reduced XP and gold; no item rewards or ELO changes. Equipped consumables are still used up.")}</dd></div>
               <div><dt>{t("Casual")}</dt><dd>{t("Play against other players for normal rewards without putting your ELO or league record on the line.")}</dd></div>
-              <div><dt>{t("Ranked")}</dt><dd>{t("Play against other players for higher rewards, with results counting toward ELO and the weekly league. Unlocks after {{value0}} completed games.", {value0: LOCKED_FEATURES[LockedFeatures.RANKED_MODE]})}</dd></div>
+              <div><dt>{t("Ranked")}</dt><dd>{t("Play against other players for higher rewards, with results counting toward ELO and the weekly league.")}<br />{t("Unlocks after {{required}} completed games.", {required: LOCKED_FEATURES[LockedFeatures.RANKED_MODE]})}</dd></div>
             </dl>
           </section>
 
           <section aria-labelledby="tower">
             <h2 id="tower" tabIndex={-1}>{t("The Cinder Tower")}</h2>
-            <p>{t("Unlocks after {{required}} completed matches.", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</p>
+            <p>{t("Unlocks after {{required}} completed games.", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</p>
             <p>{t("On Play, choose the golden rook to the right of Ranked. Choose Balanced or Control, set the difficulty, and use Begin expedition in the bottom bar. Rules & rewards opens the full rules.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Choose <0>The Cinder Tower</0> on Play for an online solo expedition. A temporary Warrior, White Mage, and Black Mage climb six floors, ending with the Cinder Warden. Turns have no deadline, so the combat dock shows no timer. Enemies have boosted health, mana, attack, defenses, and speed. Your main roster and owned consumables are separate from this squad."} components={[<strong />]} /></p>
             <figure><img src={tower} width="1600" height="840" loading="lazy" alt={t("The tower route screen with the expedition squad, banked rewards, and a choice between the Broken Gate and the more dangerous Ember Approach.")} /><figcaption>{t("Follow your ascent on the left. Check your squad, compare the enemy lineups, and choose your next encounter. Dangerous paths award 25% more gold and XP.")}</figcaption></figure>

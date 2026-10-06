@@ -27,10 +27,10 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
     'The initial tutorial overview stays hidden');
   press('Escape');
   await ready();
-  assert.equal(await js(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`), true, 'Escape must open the tutorial exit dialog while the overview is hidden');
+  assert.equal(await js(`Boolean(document.querySelector('[role="dialog"] .exit_game_menu'))`), true, 'Escape must open the tutorial exit dialog while the overview is hidden');
   assert.deepEqual(await js('dockCommands'), [], 'Opening the tutorial exit dialog must not abandon');
   await ready();
-  assert.equal(await js('document.activeElement.textContent'), 'Cancel');
+  assert.equal(await js('document.activeElement.matches(".exit_game_menu [data-desktop-cancel]")'), true);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.deepEqual(await js('dockCommands'), [], 'Cancelling must preserve the tutorial');
@@ -50,7 +50,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.deepEqual(await js('dockCommands'), [], 'Typing a space must not pass');
   await js('dockInput.remove()');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"] .exit_game_menu'))`);
   await ready();
   press('End');
   await ready();
@@ -65,9 +65,9 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await ready();
   assert.deepEqual(await js('dockCommands'), [], 'Space respects targeting guards');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"] .exit_game_menu'))`);
   await ready();
-  assert.equal(await js('document.activeElement.textContent'), 'Cancel');
+  assert.equal(await js('document.activeElement.matches(".exit_game_menu [data-desktop-cancel]")'), true);
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), 0, 'Opening the dialog preserves targeting');
   press('End');
   await ready();
@@ -76,7 +76,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.equal(await js('combatCheck.arena.selectedPlayer.pendingSpell'), 0, 'Space activates Cancel without passing the turn');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"] .exit_game_menu'))`);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.deepEqual(await js('dockCommands'), []);
@@ -86,7 +86,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.equal(await js('document.querySelectorAll("button.player_bar_action, .player_bar_character").length'), 0);
   press('Space');
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"] .exit_game_menu'))`);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   assert.deepEqual(await js('dockCommands'), [], 'Enemy turn must not send actions');
@@ -147,7 +147,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   await js('window.exitCommands = []; combatCheck.arena.socket.on("abandonGame", () => exitCommands.push("abandonGame")); combatCheck.arena.gameSettings.game0 = true; combatCheck.arena.gameSettings.mode = 1; combatCheck.arena.refreshOverview(); window.exitingGame = combatCheck.arena.game; void 0');
   await ready();
   press('Escape');
-  await waitFor(`Boolean(document.querySelector('[role="dialog"][aria-label="Abandon Game!"]'))`);
+  await waitFor(`Boolean(document.querySelector('[role="dialog"] .exit_game_menu'))`);
   await js('document.querySelector(".exit_game_menu .game_leave_btn").click()');
   await waitFor('location.pathname === "/play" && !document.querySelector("#scene canvas") && !exitingGame.loop.running');
   assert.deepEqual(await js('exitCommands'), ['abandonGame'], 'Confirming must abandon exactly once and stop the tutorial');

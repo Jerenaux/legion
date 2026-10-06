@@ -36,7 +36,6 @@
   "Casual": "カジュアル",
   "Play against other players for normal rewards without putting your ELO or league record on the line.": "他のプレイヤーと対戦し、通常の報酬を獲得できます。ELOやリーグの戦績には影響しません。",
   "Ranked": "ランク",
-  "Play against other players for higher rewards, with results counting toward ELO and the weekly league. Unlocks after {{value0}} completed games.": "他のプレイヤーと対戦して、より多くの報酬を獲得できます。結果はELOと週間リーグに反映されます。{{value0}}試合を完了すると解放されます。",
   "Make your turn count": "1ターンを大切に",
   "When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <0>one action</0>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.": "自分のターンになると、行動するキャラクターが自動で選択されます。青いマスは移動できる範囲です。移動、攻撃、魔法、アイテム、パスのうち<0>1つの行動</0>を選びます。同じターンに移動と攻撃を両方行うことはできません。",
   "The standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.": "通常の制限時間は<0>{{value0}}秒</0>です。他のキャラクターが行動している間に作戦を考え、砂時計で残り時間を確認しましょう。時間切れになると、そのターンは行動できません。",
@@ -1038,7 +1037,6 @@
   "Close combat": "近接戦闘",
   "Ranged magic": "遠距離魔法",
   "Roster cards show each character’s class, name, level and unspent SP.": "編成カードには各キャラクターのクラス、名前、レベル、未使用のステータスポイントが表示されます。",
-  "Unlocks after {{required}} completed matches.": "{{required}}試合完了で解放されます。",
   "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "一時的な部隊を率いて、ターンの時間制限がないソロ遠征に挑戦できます。ショップでは新たな魔法も購入できます。",
   "Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.": "遠征専用の部隊を指揮します。通常の編成には影響しません。HP・MP・物資は次の階に引き継がれ、ターンに時間制限はありません。",
   "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "この遠征の準備を1つ選びましょう。次の階に進む前に、部隊の回復、物資の補充、魔法の習得ができます。",
@@ -1074,5 +1072,7 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "戦闘ヒントは、まだ経験していない行動や危険を説明します。戦闘前に表示のオン・オフを切り替えられます。",
   "Elemental spells change the battlefield": "属性呪文で地形が変わる",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "1ターンの制限時間はチュートリアルでは{{tutorial}}秒、通常の対戦では{{regular}}秒です。",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "ファイアは狙ったマスに炎を残します。誰もいないマスにも撃てます。炎を通ったり、その上に留まったりするとダメージを受けます。ゲームを進めると、ほかの属性呪文も解放できます。"
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "ファイアは狙ったマスに炎を残します。誰もいないマスにも撃てます。炎を通ったり、その上に留まったりするとダメージを受けます。ゲームを進めると、ほかの属性呪文も解放できます。",
+  "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "他のプレイヤーと対戦して、より多くの報酬を獲得できます。結果はELOと週間リーグに反映されます。",
+  "Unlocks after {{required}} completed games.": "{{required}}試合完了で解放されます。"
 }

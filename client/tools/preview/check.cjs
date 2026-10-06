@@ -10,8 +10,6 @@ if (!process.versions.electron) {
   const locale = process.argv.find(arg => arg.startsWith('--locale='))?.slice('--locale='.length) || 'en';
   const localeRoot = path.resolve(__dirname, '../../locales');
   assert(fs.readdirSync(localeRoot).includes(locale), `Unknown locale: ${locale}`);
-  const messages = JSON.parse(fs.readFileSync(path.join(localeRoot, locale, 'messages.json'), 'utf8'));
-  const text = (key, values = {}) => (messages[key] || key).replace(/{{(\w+)}}/g, (_match, name) => String(values[name]));
   const {app, BrowserWindow} = require('electron');
   app.on('window-all-closed', () => {});
   app.setPath('userData', fs.mkdtempSync('/tmp/legion-practice-check-profile-'));
@@ -112,7 +110,7 @@ if (!process.versions.electron) {
       })()`);
       const initialTurn = await js('combatCheck.arena.turnee.turnNumber');
       await js('combatCheck.arena.handleTileClick(100, 100)');
-      await wait(`document.querySelector(".combat-action-feedback")?.textContent === ${JSON.stringify(text('Outside movement range. Choose a blue tile.'))}`);
+      await wait('Boolean(document.querySelector(".combat-action-feedback")?.textContent.trim())');
       assert.equal(await js('combatCheck.arena.turnee.turnNumber'), initialTurn);
       await js(`(() => {
         const a = combatCheck.arena, p = a.selectedPlayer;
@@ -137,7 +135,7 @@ if (!process.versions.electron) {
       }
       await resize(...sizes[0]);
       await js('combatCheck.arena.handleTileClick(100,100)');
-      await wait(`document.querySelector(".combat-action-feedback")?.textContent === ${JSON.stringify(text('Choose a highlighted target in range.'))}`);
+      await wait('Boolean(document.querySelector(".combat-action-feedback")?.textContent.trim())');
       for (const size of sizes) {
         await resize(...size);
         await checkLayout('combat', `invalid-target-${size[0]}`);

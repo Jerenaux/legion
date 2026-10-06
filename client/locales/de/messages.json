@@ -36,7 +36,6 @@
   "Casual": "Ungewertet",
   "Play against other players for normal rewards without putting your ELO or league record on the line.": "Spiele gegen andere Spieler und erhalte normale Belohnungen, ohne deine ELO oder Ligabilanz zu riskieren.",
   "Ranked": "Rangliste",
-  "Play against other players for higher rewards, with results counting toward ELO and the weekly league. Unlocks after {{value0}} completed games.": "Spiele gegen andere Spieler um höhere Belohnungen. Ergebnisse zählen für ELO und die wöchentliche Liga. Wird nach {{value0}} abgeschlossenen Partien freigeschaltet.",
   "Make your turn count": "Nutze deinen Zug",
   "When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <0>one action</0>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.": "Wenn du am Zug bist, wird die aktive Figur automatisch ausgewählt. Blaue Felder zeigen, wohin sie sich bewegen kann. Wähle <0>eine Aktion</0>: bewegen, angreifen, zaubern, einen Gegenstand nutzen oder passen. Bewegen und anschließend angreifen ist im selben Zug nicht möglich.",
   "The standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.": "Ein normaler Zug dauert <0>{{value0}} Sekunden</0>. Plane, während andere Figuren handeln, und behalte die Sanduhr im Blick. Läuft die Zeit ab, verfällt deine Aktion.",
@@ -1038,7 +1037,6 @@
   "Close combat": "Nahkampf",
   "Ranged magic": "Fernkampfmagie",
   "Roster cards show each character’s class, name, level and unspent SP.": "Die Teamkarten zeigen Klasse, Namen, Stufe und ungenutzte Attributpunkte jeder Figur.",
-  "Unlocks after {{required}} completed matches.": "Nach {{required}} abgeschlossenen Partien verfügbar.",
   "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "Erkunde eine optionale Soloexpedition mit einem vorübergehenden Trupp und Zügen ohne Zeitlimit. Im Laden sind außerdem neue Zauber verfügbar.",
   "Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.": "Führe einen vorübergehenden Trupp. Dein Kader bleibt unverändert. LP, MP und Vorräte bleiben zwischen den Etagen erhalten; Züge haben kein Zeitlimit.",
   "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "Wähle eine Vorbereitung für diese Expedition. Heile deinen Trupp, fülle Vorräte auf oder erlerne vor der nächsten Etage einen Zauber.",
@@ -1074,5 +1072,7 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Kampftipps erklären unbekannte Aktionen und Gefahren. Du kannst sie vor dem Kampf ein- oder ausschalten.",
   "Elemental spells change the battlefield": "Elementarzauber verändern das Schlachtfeld",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} Sekunden pro Zug im Tutorial; {{regular}} Sekunden in regulären Kämpfen.",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Feuer hinterlässt Flammen auf dem Zielfeld, auch wenn es leer ist. Wer sie durchquert oder darin stehen bleibt, erleidet Schaden. Im Spielverlauf schaltest du weitere Elementarzauber frei."
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Feuer hinterlässt Flammen auf dem Zielfeld, auch wenn es leer ist. Wer sie durchquert oder darin stehen bleibt, erleidet Schaden. Im Spielverlauf schaltest du weitere Elementarzauber frei.",
+  "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "Spiele gegen andere Spieler um höhere Belohnungen. Ergebnisse zählen für ELO und die wöchentliche Liga.",
+  "Unlocks after {{required}} completed games.": "Nach {{required}} abgeschlossenen Partien verfügbar."
 }

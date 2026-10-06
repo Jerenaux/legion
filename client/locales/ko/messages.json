@@ -36,7 +36,6 @@
   "Casual": "일반",
   "Play against other players for normal rewards without putting your ELO or league record on the line.": "ELO나 리그 기록에 영향을 주지 않고 다른 플레이어와 대결해 기본 보상을 받습니다.",
   "Ranked": "랭크",
-  "Play against other players for higher rewards, with results counting toward ELO and the weekly league. Unlocks after {{value0}} completed games.": "다른 플레이어와 대결해 더 많은 보상을 받습니다. 결과는 ELO와 주간 리그에 반영됩니다. {{value0}}경기를 완료하면 해제됩니다.",
   "Make your turn count": "한 턴을 알차게",
   "When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <0>one action</0>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn.": "자신의 턴이 되면 행동할 캐릭터가 자동으로 선택됩니다. 파란 칸은 이동 가능한 위치입니다. 이동, 공격, 주문 시전, 아이템 사용, 턴 넘기기 중 <0>한 가지 행동</0>을 선택하세요. 같은 턴에 이동한 뒤 공격할 수는 없습니다.",
   "The standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act.": "기본 턴 제한 시간은 <0>{{value0}}초</0>입니다. 다른 캐릭터가 행동하는 동안 계획을 세우고 모래시계로 남은 시간을 확인하세요. 시간이 끝나면 행동 기회를 잃습니다.",
@@ -1038,7 +1037,6 @@
   "Close combat": "근접 전투",
   "Ranged magic": "원거리 마법",
   "Roster cards show each character’s class, name, level and unspent SP.": "편성 카드에는 각 캐릭터의 클래스, 이름, 레벨, 사용하지 않은 능력치 포인트가 표시됩니다.",
-  "Unlocks after {{required}} completed matches.": "경기 {{required}}회 완료 시 해제됩니다.",
   "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.": "임시 분대와 함께 턴 시간제한 없이 선택형 솔로 원정에 도전하세요. 상점에서 새로운 주문도 구매할 수 있습니다.",
   "Lead a temporary squad. Your roster stays untouched. HP, MP and supplies carry between floors; turns have no time limit.": "임시 분대를 지휘하세요. 기존 명단은 바뀌지 않습니다. HP, MP와 보급품은 다음 층으로 이어지며 턴에 시간제한이 없습니다.",
   "Choose one preparation for this expedition. Restore your squad, refill supplies or learn a spell before the next floor.": "이번 원정의 준비 항목을 하나 선택하세요. 다음 층에 앞서 분대를 회복하거나, 보급품을 채우거나, 주문을 배우세요.",
@@ -1074,5 +1072,7 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "전투 팁은 아직 경험하지 않은 행동과 위험을 설명합니다. 전투 전에 켜거나 끌 수 있습니다.",
   "Elemental spells change the battlefield": "원소 주문으로 지형 바꾸기",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "턴 제한 시간은 튜토리얼에서 {{tutorial}}초, 일반 경기에서 {{regular}}초입니다.",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "화염은 빈칸을 포함해 지정한 칸에 불길을 남깁니다. 불길을 지나가거나 그 위에 머무르면 피해를 받습니다. 게임을 진행하며 다른 원소 주문도 해금할 수 있습니다."
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "화염은 빈칸을 포함해 지정한 칸에 불길을 남깁니다. 불길을 지나가거나 그 위에 머무르면 피해를 받습니다. 게임을 진행하며 다른 원소 주문도 해금할 수 있습니다.",
+  "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "다른 플레이어와 대결해 더 많은 보상을 받습니다. 결과는 ELO와 주간 리그에 반영됩니다.",
+  "Unlocks after {{required}} completed games.": "경기 {{required}}회 완료 시 해제됩니다."
 }
