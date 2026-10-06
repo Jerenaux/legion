@@ -1443,9 +1443,9 @@ canvas {
   background: linear-gradient(rgba(10, 10, 10, 0.9), rgba(20, 20, 20, 0.9));
   /* Dark grey, almost black background with slight transparency */
   position: fixed;
+  inset: 0;
   z-index: 20;
-  width: 100%;
-  height: 100%;
+  box-sizing: border-box;
   padding: 10px;
 
   display: flex;
