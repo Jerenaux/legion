@@ -47,7 +47,7 @@ class PlayerBar extends Component<PlayerBarProps> {
     const muted = isSpell && player?.statuses[StatusEffect.MUTE] !== 0;
     return (
       <section className="player_bar_action_group" aria-label={t(isSpell ? 'Spells' : 'Items')}>
-        <div className="player_bar_group_label">{t(pending != null && canAct ? 'Click again' : isSpell ? 'Spells' : 'Items')}{muted && <span>{t('Silenced')}</span>}</div>
+        <div className="player_bar_group_label">{t(isSpell ? 'Spells' : 'Items')}{muted && <span>{t('Silenced')}</span>}</div>
         <div className="player_bar_actions">
           {actions.map((action, index) => {
             const cost = 'cost' in action ? action.cost : null;
@@ -89,7 +89,7 @@ class PlayerBar extends Component<PlayerBarProps> {
     const spellsIndex = layout.indexOf(this.state.keyboardLayout === 0 ? 'W' : 'Z');
     const pending = canAct && (player.pendingSpell != null ? spells[player.pendingSpell] : items[player.pendingItem]);
     const condition = player?.hp <= 0 ? 'Knocked out' : player?.isParalyzed ? 'Unable to act' : player?.casting ? 'Casting' : '';
-    const instruction = !isPlayerTurn ? 'Enemy turn' : condition || (pending ? 'Select a target' : canAct ? '' : 'Inspecting');
+    const instruction = !isPlayerTurn ? 'Enemy turn' : condition || (canAct ? '' : 'Inspecting');
     const previewMP = pending && 'cost' in pending ? player.mp - pending.cost : player?.mp;
 
     return (
@@ -135,6 +135,10 @@ class PlayerBar extends Component<PlayerBarProps> {
           </div> : <div className="enemy_turn_banner" role="status">{t("Enemy Turn")}</div>}
         </div>
       </section>
+      {/* Floats over the arena so arming an action never shifts the dock. */}
+      <div className="targeting-hint" role="status" aria-live="polite">
+        {isPlayerTurn && pending && <span key={pending.name}><strong>{t(pending.name)}</strong><em>{t('Select a target')}</em></span>}
+      </div>
       {isPlayerTurn && <ItemTooltip id="combat-action-details" showClasses={false} />}
       </>
     );

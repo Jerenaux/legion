@@ -184,3 +184,39 @@
 @media (prefers-reduced-motion: reduce) {
   .player_bar_container[data-active="true"] .player_bar_name { animation: none; }
 }
+
+.targeting-hint {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 9;
+  transform: translateX(-50%);
+  /* Fits between the two player panels at every supported size. */
+  max-width: max(230px, min(420px, calc(100vw - 560px)));
+  pointer-events: none;
+}
+.targeting-hint:empty { display: none; }
+/* Sit below the Tower floor banner when it is shown. */
+.gamehud:has(.tower-combat-banner) .targeting-hint { top: 72px; }
+.targeting-hint > span {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 6px 18px 7px;
+  border: 1px solid oklch(78% 0.13 185 / .7);
+  border-radius: 3px 3px 12px 12px;
+  background: linear-gradient(oklch(30% .04 245 / .94), oklch(19% .03 250 / .94));
+  box-shadow: inset 0 0 0 3px oklch(10% .025 250 / .45), 0 3px 10px oklch(10% .025 250 / .4), 0 0 14px oklch(78% 0.13 185 / .25);
+  color: var(--text-strong);
+  font: 0.9375rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-align: center;
+  animation: targeting-hint-in 180ms ease-out;
+}
+.targeting-hint :is(strong, em) { white-space: nowrap; }
+.targeting-hint strong { color: var(--dock-accent, oklch(86% 0.12 195)); font-weight: 400; }
+@keyframes targeting-hint-in { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .targeting-hint > span { animation: none; } }
+@media (max-width: 960px) { .targeting-hint > span { font-size: .8125rem; padding: 5px 12px 6px; } }
+.targeting-hint em { font-style: normal; }

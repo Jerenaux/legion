@@ -58,7 +58,7 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   await js(`document.querySelector('${fire}').click()`);
-  await waitFor('document.querySelector(".player_bar_turn_label").textContent.includes("Select a target")');
+  await waitFor('Boolean(document.querySelector(".targeting-hint > span"))');
   assert.equal(await js('document.querySelector(".player_bar_mana meter").value'), 22);
   assert.equal(await js('document.querySelector(".player_bar_pass_turn").disabled'), true);
   press('Space');
