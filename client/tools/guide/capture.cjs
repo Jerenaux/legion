@@ -915,13 +915,9 @@ if (!process.versions.electron) {
             assert.equal(timingChecks.get(scenario).acks, 0, 'Play must wait for the arena intro to finish');
             await waitFor('Boolean(document.querySelector(".tutorial-intro[open]"))');
             assert.equal(timingChecks.get(scenario).acks, 0, 'The illustrated briefing must hold combat readiness');
-            // Advance the renderer's monotonic clock so a second real post-render
-            // renewal is exercised without spending 30 seconds reading in CI.
+            // Keep reading until the next real post-render renewal, without changing
+            // the clock used by Phaser and the renderer freeze detector.
             const waiting = timingChecks.get(scenario).waiting;
-            await js(`(() => {
-              const now = performance.now.bind(performance);
-              performance.now = () => now() + 30_000;
-            })()`);
             await waitFor(() => timingChecks.get(scenario).waiting > waiting);
             await js('document.querySelector(".tutorial-intro-skip").click()');
           }
@@ -1043,6 +1039,7 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}play`);
         // A hidden test window intentionally does not arm the SDK visibility watchdog.
         // Enable its real main-process watcher explicitly, then block the actual renderer.
+        const beforeFreeze = envelopes.length;
         Sentry.getClient().getIntegrationByName('RendererEventLoopBlock')
           .createRendererEventLoopBlockStatusHandler()({status: 'visible', config: {
             anrThreshold: 10000, pollInterval: 1000, captureStackTrace: true,
@@ -1050,7 +1047,7 @@ if (!process.versions.electron) {
         await js('stabilityFreeze()');
         await Sentry.flush(2000);
         const {parseEnvelope} = require('@sentry/core');
-        const anr = envelopes.flatMap(body => {
+        const anr = envelopes.slice(beforeFreeze).flatMap(body => {
           try { return parseEnvelope(new TextEncoder().encode(body))[1].filter(([header]) => header.type === 'event').map(([, event]) => event); }
           catch { return []; }
         }).find(event => event.exception?.values?.some(value => value.type === 'ApplicationNotResponding'));
