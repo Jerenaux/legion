@@ -1064,7 +1064,6 @@
   "Flames": "불길",
   "Low mana": "마나 부족",
   "Move and target": "이동과 조준",
-  "Fire changes the battlefield": "불로 지형 바꾸기",
   "Characters take turns. Choose one action, then the next character acts.": "캐릭터는 차례대로 행동합니다. 행동을 하나 선택하면 다음 캐릭터의 차례가 됩니다.",
   "Item": "아이템",
   "or": "또는",
@@ -1073,5 +1072,8 @@
   "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "화염은 빈칸에도 시전할 수 있으며, 해당 칸에 불길을 남깁니다. 불길을 지나가거나 그 위에 머무르면 피해를 받습니다.",
   "Skip tutorial": "튜토리얼 건너뛰기",
   "Tutorial steps": "튜토리얼 단계",
-  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "전투 팁은 아직 경험하지 않은 행동과 위험을 설명합니다. 전투 전에 켜거나 끌 수 있습니다."
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "전투 팁은 아직 경험하지 않은 행동과 위험을 설명합니다. 전투 전에 켜거나 끌 수 있습니다.",
+  "Elemental spells change the battlefield": "원소 주문으로 지형 바꾸기",
+  "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "턴 제한 시간은 튜토리얼에서 {{tutorial}}초, 일반 경기에서 {{regular}}초입니다.",
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "화염은 빈칸을 포함해 지정한 칸에 불길을 남깁니다. 불길을 지나가거나 그 위에 머무르면 피해를 받습니다. 게임을 진행하며 다른 원소 주문도 해금할 수 있습니다."
 }

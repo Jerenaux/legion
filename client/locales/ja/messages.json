@@ -1064,7 +1064,6 @@
   "Flames": "炎",
   "Low mana": "MP不足",
   "Move and target": "移動と狙い方",
-  "Fire changes the battlefield": "炎で地形が変わる",
   "Characters take turns. Choose one action, then the next character acts.": "キャラクターは順番に行動します。行動を1つ選ぶと、次のキャラクターの番になります。",
   "Item": "アイテム",
   "or": "または",
@@ -1073,5 +1072,8 @@
   "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "ファイアは誰もいないマスにも撃てて、その場に炎が残ります。炎を通ったり、その上に留まったりするとダメージを受けます。",
   "Skip tutorial": "説明をスキップ",
   "Tutorial steps": "説明のステップ",
-  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "戦闘ヒントは、まだ経験していない行動や危険を説明します。戦闘前に表示のオン・オフを切り替えられます。"
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "戦闘ヒントは、まだ経験していない行動や危険を説明します。戦闘前に表示のオン・オフを切り替えられます。",
+  "Elemental spells change the battlefield": "属性呪文で地形が変わる",
+  "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "1ターンの制限時間はチュートリアルでは{{tutorial}}秒、通常の対戦では{{regular}}秒です。",
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "ファイアは狙ったマスに炎を残します。誰もいないマスにも撃てます。炎を通ったり、その上に留まったりするとダメージを受けます。ゲームを進めると、ほかの属性呪文も解放できます。"
 }

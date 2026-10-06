@@ -1094,7 +1094,6 @@
   "Flames": "Пламя",
   "Low mana": "Мало маны",
   "Move and target": "Передвижение и выбор цели",
-  "Fire changes the battlefield": "Огонь меняет поле боя",
   "Characters take turns. Choose one action, then the next character acts.": "Персонажи ходят по очереди. Выберите одно действие, затем ход перейдёт к следующему персонажу.",
   "Item": "Предмет",
   "or": "или",
@@ -1103,5 +1102,8 @@
   "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Огонь поражает клетку, даже пустую, и оставляет на ней пламя. Проходя через пламя или оставаясь в нём, персонаж получает урон.",
   "Skip tutorial": "Пропустить обучение",
   "Tutorial steps": "Шаги обучения",
-  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Боевые подсказки объясняют незнакомые действия и опасности. Их можно включить или выключить перед боем."
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Боевые подсказки объясняют незнакомые действия и опасности. Их можно включить или выключить перед боем.",
+  "Elemental spells change the battlefield": "Стихийные заклинания меняют поле боя",
+  "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} секунд на ход в обучении; {{regular}} секунд в обычных матчах.",
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Огонь оставляет пламя на выбранной клетке, даже если она пуста. Проходя через пламя или оставаясь в нём, персонаж получает урон. По мере игры можно открыть другие стихийные заклинания."
 }

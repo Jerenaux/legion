@@ -1064,7 +1064,6 @@
   "Flames": "Flames",
   "Low mana": "Low mana",
   "Move and target": "Move and target",
-  "Fire changes the battlefield": "Fire changes the battlefield",
   "Characters take turns. Choose one action, then the next character acts.": "Characters take turns. Choose one action, then the next character acts.",
   "Item": "Item",
   "or": "or",
@@ -1073,5 +1072,8 @@
   "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.",
   "Skip tutorial": "Skip tutorial",
   "Tutorial steps": "Tutorial steps",
-  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle."
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.",
+  "Elemental spells change the battlefield": "Elemental spells change the battlefield",
+  "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.",
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play."
 }

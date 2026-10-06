@@ -1064,7 +1064,6 @@
   "Flames": "Flammen",
   "Low mana": "Wenig Mana",
   "Move and target": "Bewegen und Zielen",
-  "Fire changes the battlefield": "Feuer verändert das Schlachtfeld",
   "Characters take turns. Choose one action, then the next character acts.": "Die Charaktere sind nacheinander am Zug. Wähle eine Aktion, dann ist der nächste Charakter dran.",
   "Item": "Gegenstand",
   "or": "oder",
@@ -1073,5 +1072,8 @@
   "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Feuer trifft ein Feld, auch wenn es leer ist, und hinterlässt Flammen. Wer sie durchquert oder darin stehen bleibt, erleidet Schaden.",
   "Skip tutorial": "Tutorial überspringen",
   "Tutorial steps": "Tutorial-Schritte",
-  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Kampftipps erklären unbekannte Aktionen und Gefahren. Du kannst sie vor dem Kampf ein- oder ausschalten."
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Kampftipps erklären unbekannte Aktionen und Gefahren. Du kannst sie vor dem Kampf ein- oder ausschalten.",
+  "Elemental spells change the battlefield": "Elementarzauber verändern das Schlachtfeld",
+  "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} Sekunden pro Zug im Tutorial; {{regular}} Sekunden in regulären Kämpfen.",
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Feuer hinterlässt Flammen auf dem Zielfeld, auch wenn es leer ist. Wer sie durchquert oder darin stehen bleibt, erleidet Schaden. Im Spielverlauf schaltest du weitere Elementarzauber frei."
 }

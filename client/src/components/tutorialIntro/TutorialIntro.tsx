@@ -1,7 +1,7 @@
 import {h, Fragment} from 'preact';
 import {useEffect, useRef, useState} from 'preact/hooks';
 import {t, formatNumber, localizedAsset} from '../../i18n/core';
-import {GAME_0_TURN_DURATION} from '@legion/shared/config';
+import {GAME_0_TURN_DURATION, TURN_DURATION} from '@legion/shared/config';
 import {DESKTOP_ACTION_EVENT, type DesktopAction} from '../../input/actions';
 import turnOrder from '@assets/guide/turn-order.jpg';
 import actions from '@assets/guide/actions.jpg';
@@ -18,7 +18,7 @@ export function TutorialIntro({onComplete}: {onComplete: () => void}) {
   const [step, setStep] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const next = useRef<HTMLButtonElement>(null);
-  const titles = [t('One action per turn'), t('Move and target'), t('Fire changes the battlefield')];
+  const titles = [t('One action per turn'), t('Move and target'), t('Elemental spells change the battlefield')];
   useEffect(() => {
     const element = dialog.current;
     element.showModal();
@@ -72,7 +72,7 @@ export function TutorialIntro({onComplete}: {onComplete: () => void}) {
               <img src={icon} alt="" /><span>{label}</span>
             </div>)}
         </div>
-        <div className="tutorial-intro-timer"><img src={hourglass} alt="" />{t('{{seconds}} seconds per turn', {seconds: formatNumber(GAME_0_TURN_DURATION)})}</div>
+        <div className="tutorial-intro-timer"><img src={hourglass} alt="" />{t('{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.', {tutorial: formatNumber(GAME_0_TURN_DURATION), regular: formatNumber(TURN_DURATION)})}</div>
         <img className="tutorial-intro-dock" src={localizedAsset('guide/actions.jpg', actions)} alt={t('Action bar')} />
       </> : <>
         <div className="tutorial-intro-scene">
@@ -80,7 +80,7 @@ export function TutorialIntro({onComplete}: {onComplete: () => void}) {
         </div>
         <p id="tutorial-intro-copy">{step === 1
           ? t('Select a blue tile to move, or an adjacent enemy to attack. To aim a spell, select its icon in the action bar, then a highlighted tile.')
-          : t('Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.')}</p>
+          : t('Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.')}</p>
       </>}
     </div>
     <footer className="tutorial-intro-footer">

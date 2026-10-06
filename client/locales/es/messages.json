@@ -1079,7 +1079,6 @@
   "Flames": "Llamas",
   "Low mana": "Poco maná",
   "Move and target": "Moverse y apuntar",
-  "Fire changes the battlefield": "El fuego cambia el terreno",
   "Characters take turns. Choose one action, then the next character acts.": "Los personajes actúan por turnos. Elige una acción y después actuará el siguiente personaje.",
   "Item": "Objeto",
   "or": "o",
@@ -1088,5 +1087,8 @@
   "Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.": "Fuego golpea una casilla, aunque esté vacía, y deja llamas. Atravesarlas o permanecer en ellas causa daño.",
   "Skip tutorial": "Omitir tutorial",
   "Tutorial steps": "Pasos del tutorial",
-  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Los consejos de combate explican acciones y peligros nuevos. Actívalos o desactívalos antes de la batalla."
+  "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Los consejos de combate explican acciones y peligros nuevos. Actívalos o desactívalos antes de la batalla.",
+  "Elemental spells change the battlefield": "Los hechizos elementales cambian el terreno",
+  "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} segundos por turno en el tutorial; {{regular}} segundos en las partidas normales.",
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Fuego deja llamas en la casilla elegida, aunque esté vacía. Atravesarlas o permanecer en ellas causa daño. Puedes desbloquear otros hechizos elementales a medida que juegas."
 }
