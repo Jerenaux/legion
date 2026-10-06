@@ -1,7 +1,6 @@
 import { Socket, Server } from 'socket.io';
 import { getFirestore, DocumentReference } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import { getRemoteConfig } from 'firebase-admin/remote-config';
+import {loadRemoteConfig} from './remoteConfig';
 
 import { ServerPlayer } from './ServerPlayer';
 import { Team } from './Team';
@@ -159,14 +158,15 @@ export abstract class Game
 
     abstract populateTeams(): void;
 
+    readonly rosterReferences = new Map<string, DocumentReference[]>();
+
     async start() {
         if (this.starting || this.gameStarted || this.gameOver) return;
         this.starting = true;
         console.log(`[Game:start]`);
         try {
-            await this.getRemoteConfig();
             this.generateHoles();
-            await this.populateTeams();
+            await Promise.all([this.getRemoteConfig(), this.populateTeams()]);
             this.populateGrid();
             this.startGame();
         } catch (error) {
@@ -182,21 +182,7 @@ export abstract class Game
     }
 
     protected async getRemoteConfigFromRemoteConfig(retries = 10, delay = 500) {
-        return withRetry(async () => {
-            const remoteConfig = getRemoteConfig();
-            const template = await remoteConfig.getTemplate();
-
-            // Extract parameter values from the template
-            const configValues: Record<string, string | boolean | undefined> = {};
-            for (const [key, parameter] of Object.entries(template.parameters)) {
-                let value: string | boolean | undefined = parameter.defaultValue && "value" in parameter.defaultValue ? parameter.defaultValue.value : undefined;
-                if (value === "true") value = true;
-                if (value === "false") value = false;
-                configValues[key] = value;
-            }
-
-            return configValues;
-        }, retries, delay, 'getRemoteConfig');
+        return withRetry(loadRemoteConfig, retries, delay, 'getRemoteConfig');
     }
 
     getPosition(index, flip, characterClass: Class) {
@@ -1679,18 +1665,12 @@ export abstract class Game
         }
     }
 
-    protected async getRosterData(token: string, retries = 10, delay = 500): Promise<{characters: CharacterData[]}> {
+    protected async getRosterData(uid: string, retries = 10, delay = 500): Promise<{characters: CharacterData[]}> {
         return withRetry(async () => {
             const db = getFirestore();
-            const decodedToken = await getAuth().verifyIdToken(token);
-            const uid = decodedToken.uid;
-
-            const docSnap = await db.collection("players").doc(uid).get();
-            if (!docSnap.exists) {
-                throw new Error('Player not found');
-            }
-
-            const characters = docSnap.data()?.characters as DocumentReference[];
+            const characters = this.rosterReferences.get(uid);
+            if (!characters) throw new Error('Authenticated roster references missing');
+            if (!characters.length) return {characters: []};
 
             // Batch get operation with field mask for optimization
             const characterDocs = await db.getAll(...characters, {

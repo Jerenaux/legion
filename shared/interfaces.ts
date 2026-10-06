@@ -215,6 +215,8 @@ export interface DBPlayerData<CharacterReference = unknown> {
     friends: string[];
     engagementStats?: EngagementStats;
     joinDate?: string;
+    lastActiveDate?: string;
+    lastStoreActiveDay?: string;
     guideTipsShown?: number[];
     casualStats?: {nbGames: number; wins: number};
     tours?: Record<string, boolean>;

@@ -1,0 +1,13 @@
+{
+  "functions": {"source": "api/functions", "runtime": "nodejs20"},
+  "firestore": {"rules": "firestore.rules", "indexes": "firestore.indexes.json"},
+  "emulators": {
+    "auth": {"host": "127.0.0.1", "port": 19099},
+    "functions": {"host": "127.0.0.1", "port": 15001},
+    "firestore": {"host": "127.0.0.1", "port": 18090},
+    "hub": {"host": "127.0.0.1", "port": 14400},
+    "logging": {"host": "127.0.0.1", "port": 14500},
+    "ui": {"enabled": false},
+    "singleProjectMode": true
+  }
+}

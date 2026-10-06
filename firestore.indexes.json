@@ -191,6 +191,70 @@
         {"fieldPath": "leagueStats.wins", "order": "ASCENDING"},
         {"fieldPath": "leagueStats.losses", "order": "ASCENDING"}
       ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "elo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastActiveDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "elo",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "lastActiveDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "league",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "elo",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastActiveDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "league",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "elo",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "lastActiveDate",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
