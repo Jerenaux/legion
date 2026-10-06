@@ -2,7 +2,7 @@ import {matchDocument} from "@legion/shared/matchData";
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, storage, isDevelopment} from "./APIsetup";
-import {EndGameData, GameReplayMessage} from "@legion/shared/interfaces";
+import {EndGameDataResults, GameReplayMessage} from "@legion/shared/interfaces";
 import {GameStatus, League, PlayMode} from "@legion/shared/enums";
 import {logPlayerAction} from "./dashboardAPI";
 import Busboy from 'busboy';
@@ -70,7 +70,7 @@ export const completeGame = onRequest({
       }
       const gameId = request.body.gameId;
       const winnerUID = request.body.winnerUID || -1; // -1 for AI
-      const rawResults: EndGameData = request.body.results;
+      const rawResults: EndGameDataResults = request.body.results;
       console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(rawResults)}`);
       // Filter out the results object to remove keys that are empty strings or undefined
       const results = Object.fromEntries(
@@ -90,31 +90,34 @@ export const completeGame = onRequest({
         throw new Error("gameData is null");
       }
 
+      const batch = db.batch();
       for (const player of gameData.players) {
-        if (player) { // Add a check to ensure player is not undefined or empty string
-          logPlayerAction(player, "gameComplete", {
-            gameId,
-            winner: winnerUID === player,
-            results: results[player as keyof EndGameData],
-            league: gameData.league,
-            mode: gameData.mode,
+        if (player) {
+          const result = results[player];
+          batch.set(db.collection('players').doc(player).collection('actions').doc(), {
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            actionType: 'gameComplete',
+            details: {
+              gameId,
+              winner: winnerUID === player,
+              // Loading cancellations and disconnected players can have no outcome.
+              ...(result === undefined ? {} : {results: result}),
+              league: gameData.league,
+              mode: gameData.mode,
+            },
           });
         }
       }
 
-      const newGameData = {
+      batch.update(gameDoc.ref, {
         status: GameStatus.COMPLETED,
         winner: winnerUID,
         results,
         end: new Date(),
-      };
-
-      // Only add results to newGameData if it's not empty
-      if (Object.keys(results).length > 0) {
-        newGameData['results'] = results;
-      }
-
-      await gameDoc.ref.update(newGameData);
+      });
+      // Finish all writes before responding; rejected action writes must not escape
+      // the handler and race a second HTTP response from the Functions runtime.
+      await batch.commit();
       response.status(200).send({status: 0});
     } catch (error) {
       console.error("[completeGame] Error:", error);

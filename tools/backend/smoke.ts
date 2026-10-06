@@ -10,7 +10,7 @@ process.env.FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:19099';
 const {initializeApp} = requireAPI('firebase-admin/app');
 const {getFirestore} = requireAPI('firebase-admin/firestore');
 const {io} = requireClient('socket.io-client');
-const {PlayMode} = await import('../../shared/enums');
+const {GameStatus, PlayMode} = await import('../../shared/enums');
 initializeApp({projectId: 'legion-32c6d'});
 const db = getFirestore();
 const api = 'http://127.0.0.1:15001/legion-32c6d/us-central1';
@@ -113,6 +113,31 @@ try {
   const aiId=`ai-${run}`;await http('createGame',{gameId:aiId,players:[one.uid],mode:PlayMode.CASUAL_VS_AI,league:0});
   const ai=socket(13123,{token:one.token,gameId:aiId,combatReady:1});const aiState=event(ai,'gameStatus');const aiStart=performance.now();ai.connect();
   const aiSnapshot=await aiState;timings.aiSnapshotMs=Math.round(performance.now()-aiStart);assert.equal(aiSnapshot.opponent.team.length,3);
+  // Completion must accept canceled/partial matches and persist every action before
+  // the HTTP response. Previously an undefined result rejected after the response.
+  const completedBefore = (await db.collection('players').doc(one.uid).get()).data().completedGames;
+  for (const results of [{}, {[one.uid]: {audience: 100, score: 10}}, {
+    [one.uid]: {audience: 100, score: 10}, [two.uid]: {audience: 50, score: 5},
+  }]) {
+    const gameId = `complete-${crypto.randomUUID()}`;
+    await http('createGame', {gameId, players: [one.uid, two.uid], mode: PlayMode.CASUAL, league: 0});
+    const winnerUID = Object.keys(results).length ? one.uid : '';
+    await http('completeGame', {gameId, winnerUID, results});
+    const completed = (await db.collection('games').doc(gameId).get()).data();
+    assert.equal(completed.status, GameStatus.COMPLETED);
+    assert.deepEqual(completed.results, results);
+    assert.equal(completed.winner, winnerUID || -1);
+    assert(completed.end);
+    for (const uid of [one.uid, two.uid]) {
+      const logs = await db.collection('players').doc(uid).collection('actions').where('actionType', '==', 'gameComplete').get();
+      const action = logs.docs.map(doc => doc.data()).find(action => action.details.gameId === gameId);
+      assert(action, 'Completion response arrived before its action record');
+      assert.equal(action.details.winner, winnerUID === uid);
+      assert.deepEqual(action.details.results, results[uid]);
+      assert.equal(Object.hasOwn(action.details, 'results'), Object.hasOwn(results, uid));
+    }
+  }
+  assert.equal((await db.collection('players').doc(one.uid).get()).data().completedGames, completedBefore);
   console.log('Backend integration passed:',JSON.stringify(timings));
 } finally {
   sockets.forEach(s=>{s.disconnect();});

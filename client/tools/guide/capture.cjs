@@ -126,8 +126,14 @@ if (!process.versions.electron) {
         snapshot.general = {...snapshot.general, reconnect: true, combatStarted: resume, readyToken: socket.id};
         snapshot.player.player.completedGames = scenario === 'timing-first' || resume ? 0 : 12;
         snapshot.turnee = resume ? {...snapshot.turnee, timeLeft: 4} : {turnDuration: 7, timeLeft: 0, turnNumber: 0};
-        const timing = {acks: 0, sentAt: Date.now(), readyAt: 0};
+        const timing = {acks: 0, waiting: 0, sentAt: Date.now(), readyAt: 0};
         timingChecks.set(scenario, timing);
+        socket.on('tutorialWaiting', token => {
+          assert.equal(scenario, 'timing-first');
+          assert.equal(token, socket.id);
+          assert.equal(timing.acks, 0, 'Onboarding renewals must stop once combat starts');
+          timing.waiting++;
+        });
         socket.on('arenaReady', token => {
           assert.equal(token, socket.id);
           timing.acks++;
@@ -900,6 +906,7 @@ if (!process.versions.electron) {
           await win.loadURL(`${PACKAGED_APP_URL}game/${scenario}?socketURL=${encodeURIComponent(sinkURL)}`);
           if (scenario === 'timing-first') {
             await waitFor('Boolean(document.querySelector(".team-reveal-overlay"))');
+            await waitFor(() => timingChecks.get(scenario).waiting > 0);
             assert.equal(timingChecks.get(scenario).acks, 0, 'Champion reveal must not start combat');
             assert.equal(await js('document.querySelectorAll(".team-reveal-champion").length'), 3);
             await waitFor('Boolean(document.querySelector(".team-reveal-play-button"))');
@@ -908,6 +915,14 @@ if (!process.versions.electron) {
             assert.equal(timingChecks.get(scenario).acks, 0, 'Play must wait for the arena intro to finish');
             await waitFor('Boolean(document.querySelector(".tutorial-intro[open]"))');
             assert.equal(timingChecks.get(scenario).acks, 0, 'The illustrated briefing must hold combat readiness');
+            // Advance the renderer's monotonic clock so a second real post-render
+            // renewal is exercised without spending 30 seconds reading in CI.
+            const waiting = timingChecks.get(scenario).waiting;
+            await js(`(() => {
+              const now = performance.now.bind(performance);
+              performance.now = () => now() + 30_000;
+            })()`);
+            await waitFor(() => timingChecks.get(scenario).waiting > waiting);
             await js('document.querySelector(".tutorial-intro-skip").click()');
           }
           if (scenario === 'timing-hidden') {

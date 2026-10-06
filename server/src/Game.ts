@@ -437,6 +437,19 @@ export abstract class Game
         this.markReady(socket);
     }
 
+    handleTutorialWaiting(socket: Socket, token: unknown) {
+        const team = this.socketMap.get(socket);
+        if (this.gameOver || !this.gameStarted || this.combatStarted
+            || (this.mode !== PlayMode.PRACTICE && this.mode !== PlayMode.TUTORIAL)
+            || !team?.isGame0() || team.getSocket() !== socket || socket.connected === false
+            || typeof token !== 'string' || token !== this.readyTokens.get(socket)) return;
+        // Reading the reveal/briefing is not a stalled load. Keep combat paused,
+        // but retain a bounded deadline if rendering or the connection stops.
+        clearTimeout(this.loadingTimer!);
+        this.loadingTimer = null;
+        this.startLoadingDeadline();
+    }
+
     private markReady(socket: Socket) {
         const team = this.socketMap.get(socket);
         if (this.gameOver || !this.gameStarted || !team || team.getSocket() !== socket || socket.connected === false || this.readySockets.has(socket)) return;

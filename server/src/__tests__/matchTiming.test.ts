@@ -213,6 +213,60 @@ test('abandoned readiness times out without granting rewards or advancing onboar
     expect(timers.size).toBe(0);
 });
 
+test('reading first-match onboarding for several minutes keeps combat paused until ready', () => {
+    for (const mode of [PlayMode.PRACTICE, PlayMode.TUTORIAL]) {
+        const {game, sockets: [connection]} = createGame(mode);
+        const token = snapshot(connection).general.readyToken;
+        for (let i = 0; i < 10; i++) {
+            advance(30_000);
+            game.handleTutorialWaiting(connection, token);
+        }
+        expect(game.gameOver).toBe(false);
+        expect(game.turnNumber).toBe(0);
+        expect(game.combatClock.paused).toBe(true);
+        expect(game.incrementStartedGames).not.toHaveBeenCalled();
+        ready(game, connection);
+        advance(0);
+        expect(game.turnNumber).toBe(1);
+        expect(game.getTurneeData().timeLeft).toBe(60);
+        expect(game.incrementStartedGames).toHaveBeenCalledTimes(1);
+        game.combatClock.dispose();
+    }
+});
+
+test('onboarding renewal cannot extend other modes, later matches, or use a stale token', () => {
+    for (const [mode, completed, stale] of [
+        [PlayMode.CASUAL, 0, false], [PlayMode.RANKED_VS_AI, 0, false],
+        [PlayMode.PRACTICE, 12, false], [PlayMode.PRACTICE, 0, true],
+    ] as const) {
+        const {game, sockets: [connection]} = createGame(mode, completed);
+        advance(90_000);
+        game.handleTutorialWaiting(connection, stale ? 'stale' : snapshot(connection).general.readyToken);
+        advance(30_000);
+        expect(game.gameOver).toBe(true);
+        expect(game.turnNumber).toBe(0);
+    }
+});
+
+test('a stalled or disconnected introduction still expires and superseded sockets cannot renew it', () => {
+    for (const disconnect of [false, true]) {
+        const {game, sockets: [old]} = createGame();
+        const token = snapshot(old).general.readyToken;
+        advance(90_000);
+        game.handleTutorialWaiting(old, token);
+        if (disconnect) {
+            game.handleDisconnect(old);
+            game.reconnectPlayer(socket('player-1'));
+            advance(90_000);
+            game.handleTutorialWaiting(old, token);
+            advance(30_000);
+        } else advance(120_000);
+        expect(game.gameOver).toBe(true);
+        expect(game.writeOutcomesToDb).not.toHaveBeenCalled();
+        expect(game.incrementStartedGames).not.toHaveBeenCalled();
+    }
+});
+
 test('a loading reconnect uses a new snapshot token and still starts only once', () => {
     const {game, sockets: [old]} = createGame();
     const replacement = socket('player-1');

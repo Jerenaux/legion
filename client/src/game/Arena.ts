@@ -120,6 +120,7 @@ export class Arena extends Phaser.Scene
     private readyToken: string | null = null;
     private tutorialIntroPending = false;
     private tutorialIntroShown = false;
+    private nextTutorialWaitingAt = 0;
     private legacyFirstMatch = false;
     private arenaDisplayed = false;
     private pendingEntrances = 0;
@@ -1830,8 +1831,15 @@ export class Arena extends Phaser.Scene
     }
 
     private reportArenaReady() {
-        if (this.disposed || this.isReplay || !this.gameInitialized || this.pendingEntrances > 0 || document.hidden || !this.socket?.connected) return;
+        if (this.disposed || this.isReplay || document.hidden || !this.socket?.connected) return;
         if (window.matchMedia('(orientation: portrait)').matches) return;
+        // POST_RENDER also runs behind the champion reveal, before gameInitialized.
+        // Renew only while the loaded first-match introduction is being displayed.
+        if (this.tutorialIntroPending && this.readyToken && performance.now() >= this.nextTutorialWaitingAt) {
+            this.socket.emit('tutorialWaiting', this.readyToken);
+            this.nextTutorialWaitingAt = performance.now() + 30_000;
+        }
+        if (!this.gameInitialized || this.pendingEntrances > 0) return;
         if (this.tutorialIntroPending) {
             if (!this.tutorialIntroShown) {
                 this.tutorialIntroShown = true;

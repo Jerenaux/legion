@@ -193,13 +193,28 @@ test('tutorial spell availability follows real range, team targeting, and usable
 
 test('illustrated briefing holds readiness once, including the legacy first-match path', () => {
   const emitted: string[] = [];
+  let now = 0;
+  const document = {hidden: false};
   const arena = runInNewContext(inputMethods('Arena.ts', ['reportArenaReady']), {
     events: {emit: (event: string) => emitted.push(event)},
-    document: {hidden: false}, window: {matchMedia: () => ({matches: false})},
+    document, window: {matchMedia: () => ({matches: false})}, performance: {now: () => now},
   });
   const socket = {connected: true, emit: mock()};
-  Object.assign(arena, {gameInitialized: true, pendingEntrances: 0, socket,
+  Object.assign(arena, {gameInitialized: false, pendingEntrances: 0, socket, nextTutorialWaitingAt: 0,
     tutorialIntroPending: true, tutorialIntroShown: false, readyToken: 'first-render'});
+  arena.reportArenaReady(); arena.reportArenaReady();
+  expect(emitted).toEqual([]);
+  expect(socket.emit.mock.calls).toEqual([['tutorialWaiting', 'first-render']]);
+  now = 29_999; arena.reportArenaReady();
+  expect(socket.emit).toHaveBeenCalledTimes(1);
+  now = 30_000; arena.reportArenaReady();
+  expect(socket.emit).toHaveBeenCalledTimes(2);
+  document.hidden = true; now = 60_000; arena.reportArenaReady();
+  expect(socket.emit).toHaveBeenCalledTimes(2);
+  document.hidden = false; arena.reportArenaReady();
+  expect(socket.emit).toHaveBeenCalledTimes(3);
+  socket.emit.mockClear();
+  arena.gameInitialized = true;
   arena.reportArenaReady(); arena.reportArenaReady();
   expect(emitted).toEqual(['showTutorialIntro']);
   expect(socket.emit).not.toHaveBeenCalled();
