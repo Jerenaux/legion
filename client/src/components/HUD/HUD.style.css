@@ -1068,3 +1068,35 @@
 /* Translated labels and large text must keep every setting reachable. */
 .setting_menu { max-height: calc(100dvh - 24px); overflow-y: auto; }
 .setting_menu_btn { background-color: transparent; overflow-wrap: anywhere; }
+
+/* Settings share the menu panel vocabulary, in menus and during a match. */
+.setting_menu {
+  padding: 20px 22px 22px;
+  border: 1px solid oklch(62% .09 70);
+  border-radius: 6px;
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow), 0 0 0 4px oklch(12% .025 250 / .8), 0 24px 60px oklch(4% .02 255 / .7);
+  color: var(--text-strong);
+  text-shadow: none;
+}
+.setting_title {
+  margin: 0 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid oklch(76% .14 78);
+  font: 1.25rem var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-transform: uppercase;
+}
+.setting_dialog { padding: 8px 0; color: var(--text-strong); font-family: var(--locale-font, Arial), system-ui, sans-serif; }
+.setting_dialog_keyboard, .setting_dialog_control_name, .setting_dialog_fullscreen_label, .setting_text_size { color: var(--text-muted); }
+.setting_text_size select {
+  min-height: 40px;
+  color: var(--text-strong);
+  background: oklch(12% .025 250 / .85);
+  border-color: var(--ink-edge);
+}
+.setting_text_size select:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.setting_dialog_control_bar { accent-color: var(--gold); }
+.setting_menu_btn_inactive { opacity: .6; }
+.setting_menu_btn_active { color: var(--gold); }
+.setting_menu_btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.setting_menu .setting_close { width: auto; min-width: 160px; min-height: 46px; background-image: linear-gradient(oklch(30% .035 240), oklch(22% .03 245)); }

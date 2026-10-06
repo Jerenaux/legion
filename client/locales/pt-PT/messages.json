@@ -1090,5 +1090,6 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "As dicas de combate explicam ações e perigos novos. Ativa ou desativa as dicas antes da batalha.",
   "Elemental spells change the battlefield": "Feitiços elementais transformam o terreno",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} segundos por turno no tutorial; {{regular}} segundos nas partidas normais.",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Fogo deixa chamas na casa escolhida, mesmo vazia. Atravessar as chamas ou permanecer nelas causa dano. Podes desbloquear outros feitiços elementais à medida que jogas."
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Fogo deixa chamas na casa escolhida, mesmo vazia. Atravessar as chamas ou permanecer nelas causa dano. Podes desbloquear outros feitiços elementais à medida que jogas.",
+  "vs players": "contra jogadores"
 }

@@ -1075,5 +1075,6 @@
   "Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.": "Kampftipps erklären unbekannte Aktionen und Gefahren. Du kannst sie vor dem Kampf ein- oder ausschalten.",
   "Elemental spells change the battlefield": "Elementarzauber verändern das Schlachtfeld",
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} Sekunden pro Zug im Tutorial; {{regular}} Sekunden in regulären Kämpfen.",
-  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Feuer hinterlässt Flammen auf dem Zielfeld, auch wenn es leer ist. Wer sie durchquert oder darin stehen bleibt, erleidet Schaden. Im Spielverlauf schaltest du weitere Elementarzauber frei."
+  "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Feuer hinterlässt Flammen auf dem Zielfeld, auch wenn es leer ist. Wer sie durchquert oder darin stehen bleibt, erleidet Schaden. Im Spielverlauf schaltest du weitere Elementarzauber frei.",
+  "vs players": "gegen Spieler"
 }

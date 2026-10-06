@@ -104,6 +104,7 @@ export class SettingsModal extends Component<SettingsModalProps> {
 
       return (
         <div className="setting_menu flex flex_col gap_4">
+          <h2 className="setting_title" id="settings-title">{t("Settings")}</h2>
           <div className="setting_dialog">
             <LanguageSelect />
             <label className="setting_text_size" htmlFor="text-size">
@@ -115,8 +116,8 @@ export class SettingsModal extends Component<SettingsModalProps> {
             </label>
             <div className="setting_dialog_keyboard">{t("Keyboard layout:")}</div>
             <div className="setting_dialog_keyboard_btn_container flex justify_center gap_4">
-              <button type="button" className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>{t("Azerty")}</button>
-              <button type="button" className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>{t("Qwerty")}</button>
+              <button type="button" aria-pressed={this.state.selectedKeyboardLayout === 0} className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>{t("Azerty")}</button>
+              <button type="button" aria-pressed={this.state.selectedKeyboardLayout === 1} className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>{t("Qwerty")}</button>
             </div>
 
             {showElectronSettings && (
@@ -149,7 +150,7 @@ export class SettingsModal extends Component<SettingsModalProps> {
             </div>
           </div>
           <div className="justify_center flex gap_4">
-            <button type="button" className="setting_menu_btn" data-desktop-cancel onClick={this.props.onClose}>{t("Exit")}</button>
+            <button type="button" className="setting_menu_btn setting_close game-btn game-btn--ink" data-desktop-cancel onClick={this.props.onClose}>{t("Close")}</button>
           </div>
         </div>
       );

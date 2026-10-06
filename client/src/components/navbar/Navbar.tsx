@@ -283,7 +283,7 @@ class Navbar extends Component<Props, State> {
                                     {this.state.isSettingsModalOpen && (
                                         <div className="settings-modal-wrapper">
                                             <button type="button" data-game-control className="settings-modal-overlay" onClick={this.toggleSettingsModal}></button>
-                                            <div className="settings-modal-container">
+                                            <div className="settings-modal-container" role="dialog" aria-modal="true" aria-labelledby="settings-title">
                                                 <SettingsModal onClose={this.toggleSettingsModal} />
                                             </div>
                                         </div>

@@ -85,9 +85,9 @@
 .userInfo span {
   font-size: 0.875rem;
   font-weight: 300;
-  max-width: 140px;
+  max-width: min(180px, calc(50vw - var(--desktop-safe-inline, 0px) - 340px));
   overflow: hidden;
-  /* text-overflow: ellipsis; */
+  text-overflow: ellipsis;
   white-space: nowrap;
   color: #fff;
 }
@@ -132,15 +132,16 @@
 .dropdown-content {
   display: none;
   position: absolute;
-  top: 36px;
-  right: 4px;
-  border-radius: 6px;
-  border: 1px solid #49d7d8;
-  background-color: #253644;
+  top: 40px;
+  right: 0;
+  border-radius: 4px;
+  border: 1px solid var(--ink-edge);
+  background: var(--panel-bg);
   overflow: hidden;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  min-width: 190px;
+  padding: 4px 0;
+  box-shadow: var(--panel-shadow);
+  z-index: 3;
 }
 
 .dropdown-content img {
@@ -164,8 +165,12 @@
 }
 
 .dropdown-content button:hover,
-.dropdown-content a:hover {
-  background-color: #2e4556;
+.dropdown-content a:hover,
+.dropdown-content button:focus-visible,
+.dropdown-content a:focus-visible {
+  background-color: oklch(31% .04 238);
+  box-shadow: inset 3px 0 0 var(--gold);
+  outline: none;
 }
 
 .dropdown-content button span {
@@ -174,8 +179,10 @@
 
 .dropdown-version {
   display: block;
-  padding: 8px 12px;
-  color: #c8d8e4;
+  margin-top: 4px;
+  padding: 8px 12px 6px;
+  border-top: 1px solid var(--ink-edge-soft);
+  color: var(--text-muted);
   font-size: 0.75rem;
 }
 
@@ -193,6 +200,31 @@
   width: 72px;
   height: 84px;
   position: relative;
+  transition: transform 140ms ease-out, filter 140ms ease-out;
+}
+
+/* Banners hang from the top bar: hovering pulls one down, the current page hangs lowest and glows. */
+.menuItems a:hover .menuItemContainer:not(.disabled):not(.activeFlag) {
+  transform: translateY(4px);
+}
+
+.menuItems a:active .menuItemContainer:not(.disabled) {
+  transform: translateY(7px);
+  filter: brightness(.9);
+}
+
+.activeFlag .menuItem {
+  filter: drop-shadow(0 0 2px oklch(92% .1 85 / .9)) drop-shadow(0 8px 12px oklch(78% .13 80 / .45));
+}
+
+.menuItems a:focus-visible {
+  outline: none;
+}
+
+.menuItems a:focus-visible .menuItemContainer {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .menuItemContainer img {
@@ -327,3 +359,12 @@ login-buttons {
 .flag-label text { font-family: var(--locale-font, 'Kim'), system-ui, sans-serif; font-size: 12px; font-weight: 900; fill: #cce7ee; stroke: #152b3e; stroke-width: 0.8px; paint-order: stroke; }
 .activeFlag .flag-label { top: 10px; }
 .menuItemContainer.disabled .flag-label { filter: grayscale(100%); }
+
+@media (max-width: 880px) {
+  .userInfo { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menuItemContainer { transition: none; }
+  .menuItems a:hover .menuItemContainer:not(.disabled):not(.activeFlag) { transform: none; }
+}

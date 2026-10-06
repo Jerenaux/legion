@@ -1,128 +1,162 @@
+/* Each mode is a framed game panel with its own accent; the icon breaks out of the frame top. */
 .buttonContainer {
-    background-color: #1A1A1A;
-    width: 12.5rem;
-    min-height: 280px;
+    --mode-accent: oklch(84% .1 195);
+    --mode-glow: oklch(80% .1 195 / .22);
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    width: 13rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
-    cursor: pointer;
-    border: 2px solid #00FFFF;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
-    color: inherit;
+    padding: 0 14px 14px;
+    border: 1px solid color-mix(in oklch, var(--mode-accent) 55%, var(--ink-edge-soft));
+    border-radius: 6px;
+    background:
+        radial-gradient(ellipse 90% 55% at 50% 0%, var(--mode-glow), transparent 70%),
+        var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    color: var(--text-strong);
     font: inherit;
+    cursor: pointer;
+    transition: transform 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out;
 }
 
-.buttonContainer:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+.buttonContainer::before {
+    content: '';
+    position: absolute;
+    inset: 0 16px auto;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--mode-accent);
+    box-shadow: 0 0 12px var(--mode-accent);
+    opacity: .85;
+}
+
+.buttonContainer[data-playmode="casual"] {
+    --mode-accent: oklch(78% .11 245);
+    --mode-glow: oklch(70% .12 245 / .24);
+}
+
+.buttonContainer.ranked {
+    --mode-accent: oklch(84% .13 82);
+    --mode-glow: oklch(80% .13 80 / .22);
+}
+
+.buttonContainer.tower-mode {
+    --mode-accent: oklch(74% .13 55);
+    --mode-glow: oklch(68% .15 45 / .28);
+    margin-left: 22px;
+}
+
+.buttonContainer:hover:not(:disabled) {
+    transform: translateY(-4px);
+    border-color: var(--mode-accent);
+    box-shadow: var(--panel-shadow), 0 0 0 1px var(--mode-accent), 0 10px 30px var(--mode-glow);
+}
+
+.buttonContainer:active:not(:disabled) {
+    transform: translateY(-1px);
+    transition-duration: 60ms;
+}
+
+.buttonContainer:focus-visible {
+    outline: 3px solid var(--cyan);
+    outline-offset: 5px;
 }
 
 .buttonContainer.disabled {
     cursor: not-allowed;
-    filter: grayscale(100%);
-    opacity: 0.7;
+    --mode-accent: oklch(52% .02 240);
+    --mode-glow: transparent;
+    background: linear-gradient(oklch(20% .02 245 / .9), oklch(15% .02 250 / .94));
 }
 
-.buttonContainer.disabled:hover {
-    transform: none;
-}
-
-.buttonContainer.disabled .lock-overlay {
-    filter: none; /* Keep the lock icon colorful */
+.buttonContainer.disabled .mode-icon {
+    filter: grayscale(1) brightness(.75);
 }
 
 .buttonContainer img.mode-icon {
-    width: auto;
-    height: auto;
-    max-width: 80px;
-    margin-top: -48px;
-    padding: 8px;
+    box-sizing: content-box;
+    width: 100%;
+    max-width: 96px;
+    height: 88px;
+    margin-top: -50px;
+    object-fit: contain;
+    object-position: center bottom;
+    filter: drop-shadow(0 6px 6px oklch(8% .02 250 / .65));
+    transition: transform 160ms ease-out;
 }
 
-.buttonContainer.ranked img.mode-icon {
-    margin-top: -90px;
+.buttonContainer:hover:not(:disabled) img.mode-icon {
+    transform: translateY(-3px) scale(1.04);
+}
+
+.buttonContainer.tower-mode img.mode-icon {
+    height: 96px;
+    margin-top: -58px;
 }
 
 .labelContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 0px;
     width: 100%;
-}
-
-.buttonContainer.ranked .labelContainer {
-    margin-top: -5px;
-}
-
-.buttonContainer[data-playmode="practice"] .labelContainer {
-    margin-top: 15px;
-}
-
-.buttonContainer[data-playmode="casual"] .labelContainer {
-    margin-top: 10px;
+    flex: 1;
 }
 
 .labelContainer .label {
     width: 100%;
+    margin: 8px 0 2px;
     overflow-wrap: anywhere;
     hyphens: auto;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #FFFFFF;
+    font: 1.5rem/1.1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+    color: color-mix(in oklch, var(--mode-accent) 35%, white);
     text-transform: uppercase;
-    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
-    margin-bottom: 16px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 0 oklch(8% .02 250 / .8);
 }
 
-.buttonContainer.ranked .labelContainer .label {
-    color: #FFB000;
+.buttonContainer.tower-mode .labelContainer .label {
+    font-size: 1.35rem;
 }
 
 .labelContainer .player {
-    font-size: 0.875rem;
-    color: #4ff4f6;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+    font-size: .75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.labelContainer .player .count {
-    color: #FFB653;
+    letter-spacing: .08em;
 }
 
 .info-container {
     box-sizing: border-box;
     width: 100%;
-    margin-top: 16px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 12px;
+    margin-top: auto;
+    padding: 6px 10px;
+    border: 1px solid oklch(30% .03 240 / .8);
     border-radius: 4px;
+    background: oklch(10% .02 250 / .45);
 }
 
 .buttonContainer.disabled .info-container {
     display: flex;
     align-items: center;
     justify-content: center;
+    border-color: transparent;
     background: none;
 }
 
 .info-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 8px;
+    align-items: center;
+    gap: 2px 8px;
     justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 0.875rem;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 5px 0;
+    font-size: .8125rem;
+    border-bottom: 1px solid oklch(100% 0 0 / .07);
 }
 
 .info-row:last-child {
@@ -131,15 +165,15 @@
 
 .info-label {
     min-width: 0;
-    overflow-wrap: anywhere;
-    hyphens: auto;
-    color: #999999;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    color: var(--text-muted);
+    font-size: .6875rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
 }
 
 .info-label .reward-icon {
@@ -150,96 +184,90 @@
 
 .info-value {
     margin-left: auto;
-    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-strong);
     font-weight: 600;
-    letter-spacing: 0.5px;
 }
 
-.info-value.high {
-    color: #00FF66;
-    text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+.info-value.scaling {
+    color: var(--gold);
 }
 
-.info-value.medium {
-    color: #FFE666;
-    text-shadow: 0 0 8px rgba(255, 230, 102, 0.3);
+.info-value.no {
+    color: var(--text-muted);
+    font-weight: 400;
 }
 
-.info-value.low {
-    color: #FF9966;
-    text-shadow: 0 0 8px rgba(255, 153, 102, 0.3);
+.reward-pips {
+    display: inline-flex;
+    gap: 2px;
 }
 
-.playModeButton.disabled {
-    cursor: not-allowed;
-    pointer-events: all;
+.reward-pips i {
+    width: 5px;
+    height: 9px;
+    transform: skewX(-12deg);
+    border-radius: 1px;
+    background: oklch(36% .03 240);
 }
 
-.playModeButton.disabled:hover {
-    transform: none;
-}
-
-.playModeButton img.grayscale {
-    filter: grayscale(100%);
-}
-
-.playModeButton .lock-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 48px;
-    height: 48px;
-    pointer-events: none;
-}
-
-.buttonContainer.ranked {
-    border-color: #FFB000;
-    box-shadow: 0 0 15px rgba(255, 176, 0, 0.1);
-}
-
-.buttonContainer.ranked:hover {
-    box-shadow: 0 0 25px rgba(255, 176, 0, 0.2);
+.reward-pips i.is-on {
+    background: var(--gold);
+    box-shadow: 0 0 4px oklch(84% .13 82 / .5);
 }
 
 .lock-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    padding: 8px 0 0 0;
     flex-direction: column;
-    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 0 0;
 }
 
 .lock-container .lock-icon {
-    width: 64px;
-    height: 64px;
+    width: 40px;
+    height: 40px;
     pointer-events: none;
 }
 
 .lock-container .unlock-message {
-    color: #FFB653;
-    font-size: 0.875rem;
+    color: oklch(82% .1 75);
+    font-size: .8125rem;
+    line-height: 1.4;
     text-align: center;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: -8px;
+    overflow-wrap: anywhere;
 }
 
-/* A fourth mode in the same family, with a warm expedition accent. */
-.buttonContainer.tower-mode {margin-left: 22px; border-color: oklch(71% .1 62); background: linear-gradient(160deg, oklch(27% .04 55), oklch(20% .018 250) 65%); box-shadow: 0 0 18px oklch(65% .12 65 / .1);}
-.buttonContainer.tower-mode::before {content: ''; position: absolute; left: -25px; top: 28px; bottom: 28px; width: 1px; background: linear-gradient(transparent, oklch(62% .035 65 / .6), transparent);}
-.buttonContainer.tower-mode .mode-icon {max-width: 106px; height: 116px; object-fit: contain; padding: 0; margin-top: -76px; filter: drop-shadow(0 5px 6px oklch(15% .025 60 / .55));}
-.buttonContainer.tower-mode .label {color: oklch(90% .075 80); line-height: 1.1; font-size: 1.35rem; margin: 7px 0 10px;}
-.buttonContainer.tower-mode .player {color: oklch(81% .085 65); font-size: .75rem; margin-bottom: 6px;}
-.buttonContainer.tower-mode .info-container {margin-top: 8px;}
-.buttonContainer.tower-mode.disabled .info-container {box-sizing: border-box; padding: 8px 0;}
-.buttonContainer.tower-mode .lock-icon {width: 40px; height: 40px;}
-.buttonContainer.tower-mode .unlock-message {line-height: 1.4; text-transform: none; overflow-wrap: anywhere;}
-.tower-mode-tag {order: 1; margin-top: auto; padding-top: 10px; font: .65rem var(--locale-font, Arial), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .09em; color: oklch(76% .035 75);}
-.info-value.scaling {color: oklch(86% .11 80);}
-.buttonContainer:focus-visible {outline: 3px solid oklch(90% .08 195); outline-offset: 5px;}
-@media (max-width: 760px) {.buttonContainer.tower-mode {margin-left: 0;} .buttonContainer.tower-mode::before {display: none;}}
-@media (prefers-reduced-motion: reduce) {.buttonContainer {transition: none;} .buttonContainer:hover {transform: none;}}
+/* A fourth mode in the same family, set slightly apart as a solo expedition. */
+.buttonContainer.tower-mode::after {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 28px;
+    bottom: 28px;
+    width: 1px;
+    background: linear-gradient(transparent, oklch(62% .035 65 / .6), transparent);
+}
+
+.tower-mode-tag {
+    order: 1;
+    margin-top: 8px;
+    font: .65rem var(--locale-font, Arial), system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: oklch(76% .035 75);
+}
+
+@media (max-width: 760px) {
+    .buttonContainer.tower-mode { margin-left: 0; }
+    .buttonContainer.tower-mode::after { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .buttonContainer, .buttonContainer img.mode-icon { transition: none; }
+    .buttonContainer:hover:not(:disabled), .buttonContainer:hover:not(:disabled) img.mode-icon { transform: none; }
+}
