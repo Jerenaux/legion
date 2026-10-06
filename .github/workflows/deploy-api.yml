@@ -9,6 +9,7 @@ on:
       - 'shared/**'
       - 'firebase.json'
       - 'firestore.indexes.json'
+      - 'tools/backend/wait-for-indexes.cjs'
       - '.bun-version'
       - '.github/workflows/deploy-api.yml'
   workflow_dispatch:  # Allow manual trigger
@@ -42,6 +43,9 @@ jobs:
 
       - name: Deploy Firestore indexes
         run: node api/functions/node_modules/firebase-tools/lib/bin/firebase.js deploy --only firestore:indexes --project legion-32c6d --non-interactive
+
+      - name: Wait for opponent indexes
+        run: node tools/backend/wait-for-indexes.cjs legion-32c6d
 
       - name: Deploy to Firebase Functions
         # firebase.json's predeploy hook builds and uploads maps exactly once.
