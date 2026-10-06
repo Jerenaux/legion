@@ -1119,5 +1119,18 @@
   "muteButton": "Muet",
   "Resume": "Reprendre",
   "Quit game": "Quitter le jeu",
-  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Hors combat, s’il n’y a rien à fermer, Échap ou le bouton Menu de la manette ouvre le menu de jeu, avec Paramètres et Quitter le jeu."
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Hors combat, s’il n’y a rien à fermer, Échap ou le bouton Menu de la manette ouvre le menu de jeu, avec Paramètres et Quitter le jeu.",
+  "Your gift": "Votre cadeau",
+  "Your gear is ready": "Votre équipement est prêt",
+  "Claiming your gift…": "Récupération de votre cadeau…",
+  "Your gift has been added to your shared inventory.": "Votre cadeau a été ajouté à votre inventaire partagé.",
+  "You already claimed this gift. Your gear is in your shared inventory.": "Vous avez déjà récupéré ce cadeau. Votre équipement est dans votre inventaire partagé.",
+  "This gift link is invalid, expired, revoked, or already used by another player.": "Ce lien cadeau est invalide, expiré, révoqué ou déjà utilisé par un autre joueur.",
+  "We couldn’t claim your gift. Check your connection and try again.": "Impossible de récupérer votre cadeau. Vérifiez votre connexion et réessayez.",
+  "Open Team to equip your gear. Normal class and level requirements still apply.": "Ouvrez Équipe pour équiper vos personnages. Les conditions de classe et de niveau habituelles s’appliquent.",
+  "Later": "Plus tard",
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Vous avez reçu un lien cadeau personnel ? Installez d’abord Legion, puis ouvrez le lien pour lancer le jeu et récupérer votre cadeau. Les cadeaux sont attribués au compte qui joue actuellement et ne peuvent être récupérés qu’une seule fois. Retrouvez votre équipement dans Équipe ; les conditions habituelles d’équipement s’appliquent.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Survolez une récompense ou sélectionnez-la au clavier pour l’inspecter. Équipez vos personnages dans Équipe.",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Dépensez votre or dans la Boutique pour acheter des consommables, des sorts, de l’équipement et de nouvelles recrues au fil des déblocages.",
+  "Requires level {{level}}": "Niveau {{level}} requis"
 }

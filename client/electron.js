@@ -6,7 +6,7 @@ const smokeTest = process.argv.includes('--smoke-test');
 if (smokeTest) app.setPath('userData', fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'legion-smoke-')));
 require('./electron/telemetry').initializeTelemetry(app);
 
-const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform} = require("./electron/platform");
+const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamGiftToken} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
 const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions} = require("./electron/display");
@@ -15,6 +15,12 @@ const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) app.quit();
+const {giftFromArguments, createGiftQueue} = require('./electron/gifts');
+const gifts = hasSingleInstanceLock ? createGiftQueue(path.join(app.getPath('userData'), 'pending-gifts.json'), () => {
+  mainWindow?.webContents.send('gift-available');
+}) : null;
+gifts?.add(giftFromArguments(process.argv));
+let giftPoll;
 
 protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
 
@@ -38,6 +44,14 @@ function loadSteamworks() {
 }
 
 function registerIPC() {
+  ipcMain.handle('get-pending-gift', event => {
+    if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
+    return gifts.peek();
+  });
+  ipcMain.handle('acknowledge-gift', (event, token) => {
+    if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
+    gifts.acknowledge(token);
+  });
   ipcMain.handle('set-language', (event, code) => {
     if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
     return require('./electron/localization').setLanguage(code);
@@ -186,9 +200,31 @@ if (hasSingleInstanceLock) app.whenReady().then(async () => {
     }
   }
   createWindow();
+  if (!smokeTest) {
+    if (app.isPackaged) app.setAsDefaultProtocolClient('legion');
+    let lastSteamToken;
+    const poll = () => {
+      try {
+        const root = app.isPackaged ? path.join(process.resourcesPath, 'steamworks.js') : path.dirname(require.resolve('steamworks.js'));
+        const token = getSteamGiftToken(root);
+        if (token !== lastSteamToken) { lastSteamToken = token; gifts.add(token); }
+      } catch {
+        // Do not print launch arguments/tokens. Retry when Steam becomes available.
+      }
+    };
+    poll();
+    giftPoll = setInterval(poll, 1000);
+  }
 });
 
-app.on("second-instance", () => {
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  gifts?.add(giftFromArguments([url]));
+  mainWindow?.focus();
+});
+
+app.on("second-instance", (_event, argv) => {
+  gifts?.add(giftFromArguments(argv));
   if (!mainWindow) return;
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
@@ -200,4 +236,4 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
-app.on("before-quit", shutdownPlatform);
+app.on("before-quit", () => { clearInterval(giftPoll); shutdownPlatform(); });

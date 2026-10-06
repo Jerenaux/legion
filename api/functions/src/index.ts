@@ -41,3 +41,4 @@ export {
 };
 
 export {tower, towerResult} from './towerAPI';
+export {redeemGift, giftLink} from './giftAPI';

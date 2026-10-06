@@ -1104,5 +1104,18 @@
   "muteButton": "ミュート",
   "Resume": "再開",
   "Quit game": "ゲームを終了",
-  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "戦闘外で閉じるものがない場合、Escまたはコントローラーのメニューボタンで、設定とゲーム終了があるゲームメニューを開きます。"
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "戦闘外で閉じるものがない場合、Escまたはコントローラーのメニューボタンで、設定とゲーム終了があるゲームメニューを開きます。",
+  "Your gift": "あなたへのギフト",
+  "Your gear is ready": "装備を受け取りました",
+  "Claiming your gift…": "ギフトを受け取り中…",
+  "Your gift has been added to your shared inventory.": "ギフトを共有インベントリに追加しました。",
+  "You already claimed this gift. Your gear is in your shared inventory.": "このギフトは受け取り済みです。装備は共有インベントリにあります。",
+  "This gift link is invalid, expired, revoked, or already used by another player.": "このギフトリンクは無効、期限切れ、取り消し済み、または他のプレイヤーが使用済みです。",
+  "We couldn’t claim your gift. Check your connection and try again.": "ギフトを受け取れませんでした。接続を確認して、もう一度お試しください。",
+  "Open Team to equip your gear. Normal class and level requirements still apply.": "「チーム」を開いて装備してください。通常のクラス・レベル条件が適用されます。",
+  "Later": "後で",
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "個人向けのギフトリンクを受け取りましたか？まずLegionをインストールしてから、リンクを開いてゲームを起動し、ギフトを受け取ってください。ギフトは現在プレイ中のアカウントに付与され、受け取りは一度限りです。装備は「チーム」で確認できます。通常の装備条件が適用されます。",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "報酬にカーソルを合わせるか、キーボードで選択すると詳細を確認できます。「チーム」で装備しましょう。",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "ゴールドはショップで、解放された消耗品、魔法、装備、新しい仲間の購入に使えます。",
+  "Requires level {{level}}": "必要レベル：{{level}}"
 }

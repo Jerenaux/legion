@@ -9,6 +9,13 @@ contextBridge.exposeInMainWorld("electronAPI", Object.freeze({
   toggleFullscreen: () => ipcRenderer.invoke("toggle-fullscreen"),
   quitApp: () => ipcRenderer.invoke("quit-app"),
   getPlatformAuth: () => ipcRenderer.invoke("get-platform-auth"),
+  getPendingGift: () => ipcRenderer.invoke('get-pending-gift'),
+  acknowledgeGift: token => ipcRenderer.invoke('acknowledge-gift', token),
+  onGiftAvailable: callback => {
+    const listener = () => callback();
+    ipcRenderer.on('gift-available', listener);
+    return () => ipcRenderer.removeListener('gift-available', listener);
+  },
   showGamepadTextInput: options => ipcRenderer.invoke("show-gamepad-text-input", options),
   getControllerType: () => ipcRenderer.invoke("get-controller-type"),
 }));

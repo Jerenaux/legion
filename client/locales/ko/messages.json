@@ -1104,5 +1104,18 @@
   "muteButton": "음소거",
   "Resume": "계속하기",
   "Quit game": "게임 종료",
-  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "전투 밖에서 닫을 창이 없으면 Esc나 컨트롤러의 메뉴 버튼으로 설정과 게임 종료가 있는 게임 메뉴를 엽니다."
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "전투 밖에서 닫을 창이 없으면 Esc나 컨트롤러의 메뉴 버튼으로 설정과 게임 종료가 있는 게임 메뉴를 엽니다.",
+  "Your gift": "내 선물",
+  "Your gear is ready": "장비가 준비되었습니다",
+  "Claiming your gift…": "선물 받는 중…",
+  "Your gift has been added to your shared inventory.": "선물이 공용 인벤토리에 추가되었습니다.",
+  "You already claimed this gift. Your gear is in your shared inventory.": "이미 받은 선물입니다. 장비는 공용 인벤토리에 있습니다.",
+  "This gift link is invalid, expired, revoked, or already used by another player.": "유효하지 않거나 만료 또는 취소된 선물 링크이거나, 다른 플레이어가 이미 사용한 링크입니다.",
+  "We couldn’t claim your gift. Check your connection and try again.": "선물을 받지 못했습니다. 연결을 확인하고 다시 시도해 주세요.",
+  "Open Team to equip your gear. Normal class and level requirements still apply.": "팀을 열어 장비를 장착하세요. 일반적인 직업 및 레벨 조건이 적용됩니다.",
+  "Later": "나중에",
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "개인 선물 링크를 받으셨나요? 먼저 Legion을 설치한 뒤 링크를 열어 게임을 실행하고 선물을 받으세요. 선물은 현재 플레이 중인 계정에 지급되며 한 번만 받을 수 있습니다. 팀에서 장비를 확인하세요. 일반적인 장비 조건이 적용됩니다.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "보상에 마우스를 올리거나 키보드로 선택하면 자세히 볼 수 있습니다. 팀에서 장비를 장착하세요.",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "골드로 상점에서 해금된 소모품, 주문, 장비, 새로운 동료를 구매할 수 있습니다.",
+  "Requires level {{level}}": "필요 레벨: {{level}}"
 }

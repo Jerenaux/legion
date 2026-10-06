@@ -1134,5 +1134,18 @@
   "muteButton": "Без звука",
   "Resume": "Продолжить",
   "Quit game": "Выйти из игры",
-  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Вне боя, если закрывать нечего, Esc или кнопка «Меню» на геймпаде открывают игровое меню с настройками и выходом из игры."
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Вне боя, если закрывать нечего, Esc или кнопка «Меню» на геймпаде открывают игровое меню с настройками и выходом из игры.",
+  "Your gift": "Ваш подарок",
+  "Your gear is ready": "Ваше снаряжение готово",
+  "Claiming your gift…": "Получение подарка…",
+  "Your gift has been added to your shared inventory.": "Подарок добавлен в ваш общий инвентарь.",
+  "You already claimed this gift. Your gear is in your shared inventory.": "Вы уже получили этот подарок. Снаряжение находится в вашем общем инвентаре.",
+  "This gift link is invalid, expired, revoked, or already used by another player.": "Ссылка на подарок недействительна, просрочена, отозвана или уже использована другим игроком.",
+  "We couldn’t claim your gift. Check your connection and try again.": "Не удалось получить подарок. Проверьте подключение и повторите попытку.",
+  "Open Team to equip your gear. Normal class and level requirements still apply.": "Откройте раздел «Команда», чтобы надеть снаряжение. Обычные требования к классу и уровню сохраняются.",
+  "Later": "Позже",
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Получили личную ссылку на подарок? Сначала установите Legion, затем откройте ссылку, чтобы запустить игру и получить подарок. Подарок выдаётся текущей игровой учётной записи и может быть получен только один раз. Снаряжение находится в разделе «Команда»; обычные требования к его использованию сохраняются.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Наведите курсор на награду или выберите её с клавиатуры, чтобы узнать подробности. Наденьте снаряжение в разделе «Команда».",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Тратьте золото в магазине на расходуемые предметы, заклинания, снаряжение и новых бойцов по мере их открытия.",
+  "Requires level {{level}}": "Требуется уровень {{level}}"
 }

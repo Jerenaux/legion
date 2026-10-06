@@ -1104,5 +1104,18 @@
   "muteButton": "Stumm",
   "Resume": "Fortsetzen",
   "Quit game": "Spiel beenden",
-  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Gibt es außerhalb des Kampfes nichts zu schließen, öffnen Esc oder die Menütaste des Controllers das Spielmenü mit Einstellungen und Spiel beenden."
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "Gibt es außerhalb des Kampfes nichts zu schließen, öffnen Esc oder die Menütaste des Controllers das Spielmenü mit Einstellungen und Spiel beenden.",
+  "Your gift": "Dein Geschenk",
+  "Your gear is ready": "Deine Ausrüstung ist bereit",
+  "Claiming your gift…": "Dein Geschenk wird eingelöst…",
+  "Your gift has been added to your shared inventory.": "Dein Geschenk wurde deinem gemeinsamen Inventar hinzugefügt.",
+  "You already claimed this gift. Your gear is in your shared inventory.": "Du hast dieses Geschenk bereits eingelöst. Die Ausrüstung befindet sich in deinem gemeinsamen Inventar.",
+  "This gift link is invalid, expired, revoked, or already used by another player.": "Dieser Geschenklink ist ungültig, abgelaufen, widerrufen oder wurde bereits von jemand anderem eingelöst.",
+  "We couldn’t claim your gift. Check your connection and try again.": "Dein Geschenk konnte nicht eingelöst werden. Prüfe deine Verbindung und versuche es erneut.",
+  "Open Team to equip your gear. Normal class and level requirements still apply.": "Öffne Team, um deine Ausrüstung anzulegen. Die üblichen Klassen- und Stufenanforderungen gelten weiterhin.",
+  "Later": "Später",
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Du hast einen persönlichen Geschenklink erhalten? Installiere zuerst Legion und öffne dann den Link, um das Spiel zu starten und dein Geschenk einzulösen. Geschenke werden dem aktuell spielenden Konto zugewiesen und können nur einmal eingelöst werden. Du findest deine Ausrüstung unter Team; die üblichen Ausrüstungsanforderungen gelten weiterhin.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Fahre über eine Belohnung oder fokussiere sie, um sie anzusehen. Lege deine Ausrüstung unter Team an.",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Gib Gold im Shop für Verbrauchsgegenstände, Zauber, Ausrüstung und neue Rekruten aus, sobald sie freigeschaltet sind.",
+  "Requires level {{level}}": "Erfordert Stufe {{level}}"
 }

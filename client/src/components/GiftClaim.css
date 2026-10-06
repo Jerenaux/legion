@@ -1,0 +1,90 @@
+.gift-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: radial-gradient(ellipse at center, oklch(0.18 0.025 255 / 75%), oklch(0.1 0.015 255 / 94%));
+}
+.gift-dialog {
+  box-sizing: border-box;
+  position: relative;
+  width: min(100%, 680px);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  padding: 28px 32px;
+  border: 2px solid oklch(0.65 0.09 85);
+  border-radius: 4px;
+  background: radial-gradient(ellipse at 50% 0%, oklch(0.3 0.045 250), transparent 65%), oklch(0.2 0.025 255);
+  color: oklch(0.95 0.008 85);
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 0 0 5px oklch(0.13 0.015 255), 0 0 0 6px oklch(0.5 0.07 85 / 70%), 0 24px 80px oklch(0.08 0.008 255 / 80%), inset 0 0 35px oklch(0.09 0.015 255 / 70%);
+  animation: gift-arrive 260ms cubic-bezier(.16, 1, .3, 1);
+}
+.gift-dialog:focus { outline: none; }
+.gift-dialog::before, .gift-dialog::after {
+  content: '';
+  display: block;
+  height: 5px;
+  width: 70%;
+  margin: 0 auto;
+  background: linear-gradient(90deg, transparent, oklch(0.72 0.12 85), transparent);
+  clip-path: polygon(0 40%, 46% 40%, 48% 0, 52% 0, 54% 40%, 100% 40%, 100% 60%, 54% 60%, 52% 100%, 48% 100%, 46% 60%, 0 60%);
+}
+.gift-dialog::after { margin-top: 22px; }
+.gift-emblem { position: relative; display: grid; place-items: center; width: 140px; height: 110px; margin: 8px auto 12px; isolation: isolate; }
+.gift-rays { position: absolute; width: 170px; height: 170px; opacity: .12; z-index: -1; }
+.gift-chest { width: 108px; height: auto; filter: drop-shadow(0 6px 8px oklch(0.1 0.015 255 / 80%)); }
+.gift-dialog--received .gift-chest { animation: gift-arrive 450ms cubic-bezier(.16, 1, .3, 1); }
+.gift-dialog h2 { margin: 0 0 8px; color: oklch(0.88 0.13 90); font-size: 1.875rem; line-height: 1.15; text-transform: uppercase; text-shadow: 0 3px 0 oklch(0.12 0.015 255); }
+.gift-message { margin: 0 auto; max-width: 48ch; font-size: .875rem; color: oklch(0.82 0.018 250); }
+.gift-rewards { display: flex; flex-wrap: wrap; gap: 22px 16px; justify-content: center; list-style: none; padding: 4px; margin: 28px 0 20px; }
+.gift-rewards li { width: 128px; max-width: 100%; animation: gift-arrive 400ms cubic-bezier(.16, 1, .3, 1) backwards; animation-delay: calc(var(--loot-order) * 60ms); }
+.gift-reward { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: help; }
+.gift-loot-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border: 2px solid var(--loot-color);
+  border-radius: 5px;
+  background: radial-gradient(ellipse at center, color-mix(in oklch, var(--loot-color) 20%, oklch(0.2 0.03 250)), oklch(0.12 0.02 255));
+  box-shadow: inset 0 0 0 3px oklch(0.14 0.02 255), 0 5px 0 oklch(0.1 0.01 255), 0 0 18px color-mix(in oklch, var(--loot-color) 15%, transparent);
+  transition: transform 180ms ease-out, box-shadow 180ms ease-out;
+}
+.gift-icon { width: 32px; height: 32px; background-repeat: no-repeat; transform: scale(2); image-rendering: pixelated; }
+.gift-quantity { position: absolute; right: -8px; bottom: -7px; padding: 0 7px; min-width: 24px; border: 1px solid oklch(0.6 0.08 85); border-radius: 3px; background: oklch(0.12 0.018 255); color: oklch(0.94 0.06 90); font-size: 1rem; text-shadow: 0 2px oklch(0.08 0.008 255); }
+.gift-item-name { font-size: .8125rem; line-height: 1.3; color: oklch(0.9 0.018 85); }
+.gift-reward:hover .gift-loot-slot, .gift-reward:focus-visible .gift-loot-slot { transform: translateY(-3px); box-shadow: inset 0 0 0 3px oklch(0.14 0.02 255), 0 6px 0 oklch(0.1 0.01 255), 0 0 24px color-mix(in oklch, var(--loot-color) 40%, transparent); }
+.gift-reward:focus-visible { outline: 2px solid oklch(0.93 0.07 90); outline-offset: 8px; border-radius: 4px; }
+.gift-hint { margin: 0 auto; max-width: 45ch; color: oklch(0.7 0.025 250); font-size: .75rem; }
+.gift-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 24px; }
+.gift-actions button { min-width: min(210px, 100%); max-width: 100%; padding: 10px 24px; border: 2px solid oklch(0.86 0.14 90); border-radius: 4px; background: linear-gradient(oklch(0.86 0.15 90), oklch(0.73 0.15 75)); color: oklch(0.2 0.035 60); font: inherit; text-transform: uppercase; cursor: pointer; box-shadow: inset 0 2px oklch(0.97 0.04 95 / 60%), 0 4px 0 oklch(0.4 0.09 65); transition: transform 150ms ease-out, filter 150ms ease-out; }
+.gift-actions button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.gift-actions button:active { transform: translateY(2px); }
+.gift-actions button:focus-visible { outline: 3px solid oklch(0.97 0.02 90); outline-offset: 5px; }
+.gift-dialog .item-details-tooltip { z-index: 2; text-align: left; }
+@keyframes gift-arrive { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-height: 650px), (max-width: 600px) {
+  .gift-dialog { padding: 16px 20px; }
+  .gift-emblem { height: 66px; margin: 4px auto 8px; }
+  .gift-chest { width: 76px; }
+  .gift-rays { width: 110px; height: 110px; }
+  .gift-dialog h2 { font-size: 1.5rem; }
+  .gift-rewards { margin: 20px 0 14px; gap: 18px 14px; }
+  .gift-rewards li { width: 110px; }
+  .gift-loot-slot { width: 76px; height: 76px; }
+  .gift-icon { transform: scale(1.75); }
+  .gift-actions { margin-top: 18px; }
+  .gift-dialog::after { margin-top: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gift-dialog, .gift-dialog--received .gift-chest, .gift-rewards li { animation: none; }
+  .gift-reward .gift-loot-slot, .gift-actions button { transition: none; }
+}

@@ -11,7 +11,7 @@ import { Arena } from '../../src/game/Arena';
 import {MusicManager} from '../../src/game/MusicManager';
 import { EventEmitter } from 'eventemitter3';
 import { NewCharacter } from '../../../shared/NewCharacter';
-import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures } from '../../../shared/enums';
+import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures, RewardType } from '../../../shared/enums';
 import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
 import {getClient, getReplay, type BrowserClient} from '@sentry/react';
@@ -147,7 +147,14 @@ const towerCheck = {
   save() { localStorage.setItem('tower-fixture', JSON.stringify(this.progress)); },
 };
 Object.assign(window, {towerCheck});
+const giftCheck = {status: 'claimed', requests: 0};
+Object.assign(window, {giftCheck});
 export async function apiFetch(endpoint: string, options: {body?: {action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
+  if (endpoint === 'redeemGift') {
+    giftCheck.requests++;
+    if (giftCheck.status === 'error') throw new Error('Expected gift timeout');
+    return {status: giftCheck.status, rewards: [{type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 2}, {type: RewardType.CONSUMABLES, id: 0, amount: 3}, {type: RewardType.GOLD, id: 0, amount: 500}]};
+  }
   if (endpoint === 'tower') {
     towerCheck.requests.push(options.body?.action || 'read');
     if (towerCheck.fail) throw new Error('Expected tower timeout');

@@ -1104,5 +1104,18 @@
   "muteButton": "Mute",
   "Resume": "Resume",
   "Quit game": "Quit game",
-  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game."
+  "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.": "With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.",
+  "Your gift": "Your gift",
+  "Your gear is ready": "Your gear is ready",
+  "Claiming your gift…": "Claiming your gift…",
+  "Your gift has been added to your shared inventory.": "Your gift has been added to your shared inventory.",
+  "You already claimed this gift. Your gear is in your shared inventory.": "You already claimed this gift. Your gear is in your shared inventory.",
+  "This gift link is invalid, expired, revoked, or already used by another player.": "This gift link is invalid, expired, revoked, or already used by another player.",
+  "We couldn’t claim your gift. Check your connection and try again.": "We couldn’t claim your gift. Check your connection and try again.",
+  "Open Team to equip your gear. Normal class and level requirements still apply.": "Open Team to equip your gear. Normal class and level requirements still apply.",
+  "Later": "Later",
+  "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.",
+  "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Hover over or focus a reward to inspect it. Equip your gear in Team.",
+  "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.",
+  "Requires level {{level}}": "Requires level {{level}}"
 }

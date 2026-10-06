@@ -2,6 +2,13 @@ const STEAM_WEB_API_IDENTITY = "legion";
 let activeTicket;
 let activeSteamClient;
 let pendingAuth;
+let giftReader;
+
+function getSteamGiftToken(steamworksRoot) {
+  if (!activeSteamClient) return null;
+  giftReader ||= require('./steam-launch').createSteamGiftReader(steamworksRoot);
+  return giftReader();
+}
 
 function getSteamClient(env, loadSteamworks) {
   if (env.ITCHIO_API_KEY || env.USE_DIRECT_AUTH === "true") return null;
@@ -38,8 +45,9 @@ async function getPlatformAuth(env = process.env, loadSteamworks = () => require
     try { return await request; }
     finally { if (pendingAuth === request) pendingAuth = undefined; }
   } catch (_error) {
-    if (env.NODE_ENV === "development") console.info("Steam is unavailable; using a direct session.");
-    return null;
+    // An installed Steam build must not silently claim a gift on a device account
+    // when Steam is temporarily unavailable. Let the connection screen retry.
+    throw new Error('Steam authentication is unavailable. Please restart Steam and retry.');
   }
 }
 
@@ -72,6 +80,7 @@ function shutdownPlatform() {
   pendingAuth = undefined;
   activeSteamClient?.input?.shutdown?.();
   activeSteamClient = undefined;
+  giftReader = undefined;
 }
 
-module.exports = {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform};
+module.exports = {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamGiftToken};

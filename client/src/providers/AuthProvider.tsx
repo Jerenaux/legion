@@ -24,13 +24,18 @@ export default class AuthProvider extends Component<Props, State> {
   state: State = {user: null, isLoading: true, error: null};
   private unsubscribe?: firebase.Unsubscribe;
   private authenticating = false;
+  private sessionReady = false;
 
   componentDidMount() {
     this.unsubscribe = firebaseAuth.onAuthStateChanged(user => {
       this.setState({user});
-      if (user) this.setState({isLoading: false, error: null});
-      else this.startSession();
+      if (this.sessionReady && user) this.setState({isLoading: false, error: null});
+      else if (this.sessionReady) this.startSession();
     });
+    // Revalidate the platform each launch: a cached Firebase user may belong to
+    // another Steam account (or a previous direct build). Gifts must follow the
+    // account actually launching the game.
+    void this.startSession();
   }
 
   componentWillUnmount() {
@@ -40,6 +45,7 @@ export default class AuthProvider extends Component<Props, State> {
   startSession = async () => {
     if (this.authenticating) return;
     this.authenticating = true;
+    this.sessionReady = false;
     this.setState({isLoading: true, error: null});
     try {
       if (!process.env.API_URL) throw new Error("API_URL is not configured");
@@ -50,6 +56,8 @@ export default class AuthProvider extends Component<Props, State> {
       );
       const customToken = await exchangePlatformCredential(process.env.API_URL, credential);
       await firebaseAuth.signInWithCustomToken(customToken);
+      this.sessionReady = true;
+      this.setState({user: firebaseAuth.currentUser, isLoading: false, error: null});
     } catch (error) {
       console.error("Desktop session failed:", error);
       this.setState({

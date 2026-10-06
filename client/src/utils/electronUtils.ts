@@ -12,6 +12,9 @@ interface ElectronAPI {
   toggleFullscreen: () => Promise<boolean>;
   quitApp: () => Promise<void>;
   getPlatformAuth: () => Promise<PlatformCredential | null>;
+  getPendingGift?: () => Promise<string | null>;
+  acknowledgeGift?: (token: string) => Promise<void>;
+  onGiftAvailable?: (callback: () => void) => () => void;
   showGamepadTextInput: (options: unknown) => Promise<unknown>;
   getControllerType: () => Promise<string>;
 }
