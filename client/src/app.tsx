@@ -2,7 +2,7 @@ import {t, i18n, language} from './i18n/core';
 import { h, Component } from 'preact';
 import { Route, Router, RouterOnChangeArgs } from 'preact-router';
 import { PlayerContext } from './contexts/PlayerContext';
-import { isElectron, getElectronAPI } from './utils/electronUtils';
+import { getElectronAPI } from './utils/electronUtils';
 
 import AuthProvider from './providers/AuthProvider';
 import PlayerProvider from './providers/PlayerProvider';
@@ -127,14 +127,6 @@ class App extends Component<{}, AppState> {
         if (cancel) {
           event.stopImmediatePropagation();
           return cancel.click();
-        }
-        if (isElectron()) {
-          const electronAPI = getElectronAPI();
-          try {
-            if (await electronAPI?.isFullscreen?.()) await electronAPI.toggleFullscreen();
-          } catch (error) {
-            console.error('App: Error leaving fullscreen:', error);
-          }
         }
       }
     };

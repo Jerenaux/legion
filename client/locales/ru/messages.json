@@ -1102,5 +1102,8 @@
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} секунд на ход в обучении; {{regular}} секунд в обычных матчах.",
   "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Огонь оставляет пламя на выбранной клетке, даже если она пуста. Проходя через пламя или оставаясь в нём, персонаж получает урон. По мере игры можно открыть другие стихийные заклинания.",
   "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "Играйте с другими игроками за повышенные награды. Результаты влияют на Эло и еженедельную лигу.",
-  "Unlocks after {{required}} completed games.": "Откроется после {{required}} завершённых матчей."
+  "Unlocks after {{required}} completed games.": "Откроется после {{required}} завершённых матчей.",
+  "Alt": "Alt",
+  "Enter": "Enter",
+  "Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.": "Переключение между полноэкранным и оконным режимом. Legion запускается в последнем выбранном режиме. На Mac: Control + Command + F."
 }

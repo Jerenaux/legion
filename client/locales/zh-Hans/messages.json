@@ -1072,5 +1072,8 @@
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "教程中每回合{{tutorial}}秒，普通对局中每回合{{regular}}秒。",
   "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "火焰会在目标格留下火，即使该格为空也能施放。穿过火焰或停留在火焰中都会受到伤害。随着游戏进度推进，你还可以解锁其他元素法术。",
   "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "与其他玩家对战，获得更丰厚的奖励。结果计入 ELO 和每周联赛。",
-  "Unlocks after {{required}} completed games.": "完成 {{required}} 场对局后解锁。"
+  "Unlocks after {{required}} completed games.": "完成 {{required}} 场对局后解锁。",
+  "Alt": "Alt",
+  "Enter": "Enter",
+  "Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.": "在全屏和窗口模式之间切换。Legion 会以你上次使用的模式启动。在 Mac 上，请使用 Control + Command + F。"
 }

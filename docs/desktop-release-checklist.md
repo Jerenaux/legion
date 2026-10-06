@@ -48,6 +48,7 @@ The comparable local macOS arm64 package fell from 694 MB before the desktop cle
 - [ ] Install the Itch `windows`, `mac`, and `linux` channels through the Itch app and verify platform authentication.
 - [ ] Upload to a private beta inside Legion Demo (`3996730`) and verify Steam ticket authentication on Windows and macOS. Follow `STEAM_DEPLOYMENT.md`; the Demo has no Linux depot.
 - [ ] On each store build: create/join matchmaking, complete a match, reconnect after a transport drop, and confirm rewards are applied once.
+- [ ] On Windows and macOS: a fresh install opens fullscreen; F11 / Alt+Enter (Control+Command+F on Mac) and the Settings checkbox switch modes; Escape does not leave fullscreen; relaunching reopens in the last mode, maximized when windowed.
 - [ ] On Steam Deck/controller: navigate menus, confirm/cancel, switch units, pass turn, open the game menu, enter text with the Steam keyboard, toggle fullscreen, and exit cleanly.
 - [ ] Unless explicitly excluded, promote the verified Steam Build ID to the Demo's public/default branch, complete any Valve confirmation, and verify the public Build ID. Record the previous Build ID for rollback.
 

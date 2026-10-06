@@ -1072,5 +1072,8 @@
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "1ターンの制限時間はチュートリアルでは{{tutorial}}秒、通常の対戦では{{regular}}秒です。",
   "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "ファイアは狙ったマスに炎を残します。誰もいないマスにも撃てます。炎を通ったり、その上に留まったりするとダメージを受けます。ゲームを進めると、ほかの属性呪文も解放できます。",
   "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "他のプレイヤーと対戦して、より多くの報酬を獲得できます。結果はELOと週間リーグに反映されます。",
-  "Unlocks after {{required}} completed games.": "{{required}}試合完了で解放されます。"
+  "Unlocks after {{required}} completed games.": "{{required}}試合完了で解放されます。",
+  "Alt": "Alt",
+  "Enter": "Enter",
+  "Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.": "フルスクリーンとウィンドウを切り替えます。Legionは前回使ったモードで起動します。Macでは Control + Command + F を使います。"
 }

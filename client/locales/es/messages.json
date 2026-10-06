@@ -1087,5 +1087,8 @@
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} segundos por turno en el tutorial; {{regular}} segundos en las partidas normales.",
   "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Fuego deja llamas en la casilla elegida, aunque esté vacía. Atravesarlas o permanecer en ellas causa daño. Puedes desbloquear otros hechizos elementales a medida que juegas.",
   "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "Juega contra otros jugadores para obtener mejores recompensas. Los resultados cuentan para el ELO y la liga semanal.",
-  "Unlocks after {{required}} completed games.": "Se desbloquea tras {{required}} partidas completadas."
+  "Unlocks after {{required}} completed games.": "Se desbloquea tras {{required}} partidas completadas.",
+  "Alt": "Alt",
+  "Enter": "Intro",
+  "Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.": "Cambia entre pantalla completa y ventana. Legion se abre en el último modo que usaste. En Mac, usa Control + Comando + F."
 }

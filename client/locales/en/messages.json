@@ -1072,5 +1072,8 @@
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.",
   "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.",
   "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "Play against other players for higher rewards, with results counting toward ELO and the weekly league.",
-  "Unlocks after {{required}} completed games.": "Unlocks after {{required}} completed games."
+  "Unlocks after {{required}} completed games.": "Unlocks after {{required}} completed games.",
+  "Alt": "Alt",
+  "Enter": "Enter",
+  "Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.": "Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F."
 }

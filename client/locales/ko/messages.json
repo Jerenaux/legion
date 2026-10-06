@@ -1072,5 +1072,8 @@
   "{{tutorial}} seconds per turn in the tutorial; {{regular}} seconds in regular matches.": "턴 제한 시간은 튜토리얼에서 {{tutorial}}초, 일반 경기에서 {{regular}}초입니다.",
   "Fire leaves flames on the targeted tile, even if it is empty. Crossing flames or standing in them causes damage. You can unlock other elemental spells as you play.": "화염은 빈칸을 포함해 지정한 칸에 불길을 남깁니다. 불길을 지나가거나 그 위에 머무르면 피해를 받습니다. 게임을 진행하며 다른 원소 주문도 해금할 수 있습니다.",
   "Play against other players for higher rewards, with results counting toward ELO and the weekly league.": "다른 플레이어와 대결해 더 많은 보상을 받습니다. 결과는 ELO와 주간 리그에 반영됩니다.",
-  "Unlocks after {{required}} completed games.": "경기 {{required}}회 완료 시 해제됩니다."
+  "Unlocks after {{required}} completed games.": "경기 {{required}}회 완료 시 해제됩니다.",
+  "Alt": "Alt",
+  "Enter": "Enter",
+  "Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.": "전체 화면과 창 모드를 전환합니다. Legion은 마지막으로 사용한 모드로 실행됩니다. Mac에서는 Control + Command + F를 사용하세요."
 }
