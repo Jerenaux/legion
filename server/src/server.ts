@@ -179,7 +179,9 @@ io.on('connection', async (socket) => {
       const isGame0 = gameId === '0';
       if (isGame0) gameId = gameSocket.uid;
 
-      const [gameData, loadedPlayer] = await Promise.all([getGameData(gameId), getPlayerData(gameSocket.uid)]);
+      // Membership first, and player data only for a first join: reconnecting to a running
+      // match must depend on nothing but the match itself.
+      const gameData = await getGameData(gameId);
       if (!socket.connected) return;
 
       // Check if firebase UID is in gameData.players
@@ -212,6 +214,8 @@ io.on('connection', async (socket) => {
         game.reconnectPlayer(socket);
       } else {
         console.log(`[server:connection] Fetching player data for ${gameSocket.uid}`);
+        const loadedPlayer = await getPlayerData(gameSocket.uid);
+        if (!socket.connected) return;
         const playerData = loadedPlayer.player;
         game.rosterReferences.set(gameSocket.uid, loadedPlayer.characters);
         if (!socket.connected) return;

@@ -5,7 +5,7 @@ import {getFirestore, FieldValue} from 'firebase-admin/firestore';
 import {matchDocument} from '@legion/shared/matchData';
 import { apiFetch } from "./API";
 import {eloRangeIncreaseInterval, eloRangeStart, eloRangeStep, goldRewardInterval,
-    goldReward, casualModeThresholdTime, maxWaitTimeForPractice, ALLOW_SWITCHEROO_RANKED} from '@legion/shared/config';
+    goldReward, casualModeThresholdTime, maxWaitTimeForPractice, ALLOW_SWITCHEROO_RANKED, STARTING_ELO} from '@legion/shared/config';
 import { PlayMode, League } from '@legion/shared/enums';
 
 export type MatchmakingSocket = Socket & {uid: string; firebaseToken: string};
@@ -295,31 +295,62 @@ function sendQData(player: QueuingPlayer) {
     });
 }
 
-async function addToQueue(socket: MatchmakingSocket, mode: PlayMode) {
-    try {
-        const snapshot = await getFirestore().collection('players').doc(socket.uid).get();
-        const queuingData = snapshot.data();
-        if (!queuingData || !Number.isFinite(queuingData.elo)) throw new Error('Player queue data missing');
-        if (!socket.connected || playersQueue.some(player => player.socket.uid === socket.uid)) return;
-
-        const player: QueuingPlayer = {
-            socket,
-            elo: queuingData.elo,
-            range: eloRangeStart,
-            mode,
-            league: queuingData.league as League,
-            waitingTime: 0,
-            gold: 0,
-        };
-        playersQueue.push(player);
-        sendQData(player);
-        emitQueueCount();
-        updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
-        await runMatchmakingPass();
-        console.log(`Player ${socket.id} joined queue  in mode ${mode} with elo ${player.elo} and league ${player.league}`);
-    } catch (error) {
-        console.error(`Error adding player to queue: ${error}`);
+// Player data for queueing: a direct read (with one retry), then the long-standing API
+// endpoint. A queue entry must never be lost to a transient read failure.
+async function loadQueuingData(socket: MatchmakingSocket): Promise<{elo: number; league: League} | null> {
+    for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+            const snapshot = await getFirestore().collection('players').doc(socket.uid).get();
+            const data = snapshot.data();
+            if (!data) break;
+            return {elo: Number.isFinite(data.elo) ? data.elo : STARTING_ELO, league: (data.league ?? League.BRONZE) as League};
+        } catch (error) {
+            console.warn(`[matchmaker:addToQueue] Player read failed (attempt ${attempt + 1})`, error);
+        }
     }
+    try {
+        const data = await apiFetch('queuingData', socket.firebaseToken);
+        return {elo: Number.isFinite(data?.elo) ? data.elo : STARTING_ELO, league: (data?.league ?? League.BRONZE) as League};
+    } catch (error) {
+        console.error('[matchmaker:addToQueue] queuingData fallback failed', error);
+        return null;
+    }
+}
+
+async function addToQueue(socket: MatchmakingSocket, mode: PlayMode) {
+    let queuingData: {elo: number; league: League} | null;
+    try {
+        queuingData = await loadQueuingData(socket);
+    } catch (error) {
+        queuingData = null;
+        console.error(`Error loading queue data: ${error}`);
+    }
+    if (!socket.connected) return;
+    if (!queuingData) {
+        socket.emit('queueError', {message: 'Matchmaking is unavailable. Please try again.'});
+        return;
+    }
+    if (playersQueue.some(player => player.socket.id === socket.id)) return;
+    // An entry for the same player on another socket is left over from a dropped connection:
+    // replace it rather than refusing the new one.
+    for (const stale of playersQueue.filter(player => player.socket.uid === socket.uid)) removePlayerFromQ(stale);
+
+    const player: QueuingPlayer = {
+        socket,
+        elo: queuingData.elo,
+        range: eloRangeStart,
+        mode,
+        league: queuingData.league,
+        waitingTime: 0,
+        gold: 0,
+    };
+    playersQueue.push(player);
+    sendQData(player);
+    emitQueueCount();
+    updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
+    console.log(`Player ${socket.id} joined queue  in mode ${mode} with elo ${player.elo} and league ${player.league}`);
+    // Match right away when possible; the one-second loop remains the fallback.
+    runMatchmakingPass().catch(error => console.error('Error in immediate matchmaking pass:', error));
 }
 
 async function savePlayerGold(player: QueuingPlayer) {
@@ -446,7 +477,6 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
 
             // Update player status
             updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
-        await runMatchmakingPass();
 
             // Send lobby details along with the join confirmation
             socket.emit('lobbyJoined', {
@@ -471,7 +501,6 @@ export async function processJoinLobby(socket, data: { lobbyId: string }) {
 
         // Update player status
         updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
-        await runMatchmakingPass();
 
         socket.emit('lobbyJoined', { lobbyId: data.lobbyId });
 
@@ -736,7 +765,6 @@ export async function processSendChallenge(socket: MatchmakingSocket, data: { op
 
             // Update both players' status
             updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
-        await runMatchmakingPass();
 
             // Log the activity
             await logQueuingActivity(socket.uid, 'sendChallenge', data.opponentUID);

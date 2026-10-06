@@ -228,23 +228,23 @@ export async function ensurePlayer(uid: string): Promise<void> {
     friends: [] as string[], // Just store the IDs
   } as DBPlayerData;
 
-  const batch = db.batch();
+  // A transaction rather than create-only writes: leftovers from a reset account (starter
+  // characters or the practice game, which use fixed IDs) are overwritten instead of blocking
+  // the player document forever. Concurrent provisioning retries and then sees the player.
   const classes = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
-  for (let i = 0; i < NB_START_CHARACTERS; i++) {
-    const characterRef = db.collection("characters").doc(starterCharacterId(uid, i));
-    playerData.characters.push(characterRef);
-    batch.create(characterRef, new NewCharacter(classes[i]).getCharacterData());
-  }
-  batch.create(playerRef, playerData);
-  batch.create(db.collection("games").doc(uid), matchDocument(uid, [uid], PlayMode.PRACTICE, League.BRONZE));
-
-  try {
-    await batch.commit();
-  } catch (error) {
-    const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
-    if (code === 6 || code === "already-exists") return;
-    throw error;
-  }
+  const created = await db.runTransaction(async transaction => {
+    if ((await transaction.get(playerRef)).exists) return false;
+    const characters = [];
+    for (let i = 0; i < NB_START_CHARACTERS; i++) {
+      const characterRef = db.collection("characters").doc(starterCharacterId(uid, i));
+      characters.push(characterRef);
+      transaction.set(characterRef, new NewCharacter(classes[i]).getCharacterData());
+    }
+    transaction.set(playerRef, {...playerData, characters});
+    transaction.set(db.collection("games").doc(uid), matchDocument(uid, [uid], PlayMode.PRACTICE, League.BRONZE));
+    return true;
+  });
+  if (!created) return;
   logger.info("New player and characters created for user:", user.uid);
 }
 

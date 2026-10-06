@@ -61,6 +61,13 @@ try {
   assert.equal(daily.storeUsers.filter((uid: string)=>uid===one.uid).length,1);
   assert.equal((await db.collection('players').doc(one.uid).get()).data().lastStoreActiveDay,new Date().toISOString().slice(0,10));
   const denied=await fetch(`${api}/bootstrapPlayer`); assert.equal(denied.status,401);
+  // A reset account keeps its fixed-ID characters and practice match; signing in again must
+  // still recreate a loadable player rather than fail on those leftovers.
+  const reset=await login(`reset-${run}`);
+  await db.collection('players').doc(reset.uid).delete();
+  const restored=await login(`reset-${run}`);
+  assert((await db.collection('players').doc(restored.uid).get()).exists, 'Reset account was not recreated');
+  assert.equal((await http('bootstrapPlayer',undefined,restored.token,true)).characters.length,3);
   const invalid=socket(13000,{token:'invalid'}); const rejection=event(invalid,'connect_error'); invalid.connect(); await rejection;
   // First practice uses the provisioned match and requires the render acknowledgement.
   const practice=socket(13123,{token:one.token,gameId:'0',combatReady:1});

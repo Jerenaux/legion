@@ -334,7 +334,7 @@ export class Arena extends Phaser.Scene
         });
         this.socket.on('towerEnd', () => { route('/tower'); });
         this.socket.on('connect_error', error => {
-            if (retrySocketAuthentication(this.socket, error, getFirebaseIdToken)) return;
+            if (retrySocketAuthentication(this.socket, error, getFirebaseIdToken, () => !this.gameEnded)) return;
             if (!this.socket.active) this.failCombat(error);
         });
 

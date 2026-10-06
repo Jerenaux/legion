@@ -35,3 +35,12 @@ test('forces one token refresh on authentication rejection, never on transport e
   expect(refreshes).toBe(1); expect(connects).toBe(1);
   expect(retrySocketAuthentication(socket, new Error('Authentication failed'), getToken)).toBe(false);
 });
+
+test("does not reopen a socket that was closed while its token refreshed", async () => {
+  let connects = 0;
+  let wanted = true;
+  const socket = {connect: () => { connects++; }};
+  expect(retrySocketAuthentication(socket, new Error('Authentication failed'), async () => { wanted = false; return 'token'; }, () => wanted)).toBe(true);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(connects).toBe(0);
+});

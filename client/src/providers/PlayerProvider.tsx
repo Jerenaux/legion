@@ -38,7 +38,16 @@ import { LOCKED_FEATURES } from '@legion/shared/config';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private bootstrapRequest: Promise<void> | undefined;
-    private playerFetchGeneration = 0;
+    /** Invalidates in-flight loads on sign-out or account switch. */
+    private session = 0;
+    /** Player data is applied only from a request started after the one last applied. */
+    private playerRequestSeq = 0;
+    private playerAppliedSeq = 0;
+    private bootstrapDone = false;
+    private refreshQueued = false;
+    private retryDelay = 0;
+    private retryTimer: ReturnType<typeof setTimeout> | undefined;
+    private failureNotified = false;
 
     constructor(props: {}) {
       super(props);
@@ -111,8 +120,14 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     resetState = () => {
-      this.playerFetchGeneration++;
+      this.session++;
       this.bootstrapRequest = undefined;
+      this.bootstrapDone = false;
+      this.refreshQueued = false;
+      this.retryDelay = 0;
+      this.failureNotified = false;
+      clearTimeout(this.retryTimer);
+      this.retryTimer = undefined;
       if (this.state.socket) {
         this.state.socket.disconnect();
       }
@@ -121,7 +136,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     componentDidMount() {
       if (firebaseAuth.currentUser) {
-        this.fetchAllData();
+        this.ensureLoaded();
         this.setupSocket();
       }
     }
@@ -130,24 +145,46 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       const user = firebaseAuth.currentUser;
       if (!user && this.state.player.isLoaded) {
         this.resetState();
-      } else if (user && !this.state.player.isLoaded) {
-        this.fetchAllData();
-        this.setupSocket();
+      } else if (user && !this.bootstrapDone) {
+        this.ensureLoaded();
+        if (!this.state.player.isLoaded) this.setupSocket();
       }
     }
 
+    // Automatic loading: at most one request at a time, and after a failure only the
+    // scheduled retry runs, so state updates during an outage cannot cause a request storm.
+    ensureLoaded() {
+      if (this.bootstrapRequest || this.retryTimer || this.bootstrapDone) return;
+      void this.startBootstrap();
+    }
+
     componentWillUnmount(): void {
+      clearTimeout(this.retryTimer);
       this.resetState();
       if (this.state.socket) {
         this.state.socket.disconnect();
       }
     }
 
-    fetchAllData() {
+    // Explicit refresh (after rewards, purchases, matches). A refresh requested while a load is
+    // in flight runs again afterwards, so callers always end up with data fetched after their change.
+    fetchAllData(): Promise<void> {
+      if (!firebaseAuth.currentUser) return Promise.resolve();
+      if (this.bootstrapRequest) {
+        this.refreshQueued = true;
+        return this.bootstrapRequest.then(() => (this.refreshQueued ? this.fetchAllData() : undefined));
+      }
+      clearTimeout(this.retryTimer);
+      this.retryTimer = undefined;
+      return this.startBootstrap();
+    }
+
+    private startBootstrap(): Promise<void> {
       const user = firebaseAuth.currentUser;
-      if (!user || this.bootstrapRequest) return this.bootstrapRequest;
-      const generation = ++this.playerFetchGeneration;
-      const request = this.loadBootstrap(user.uid, generation).finally(() => {
+      if (!user) return Promise.resolve();
+      this.refreshQueued = false;
+      const session = this.session;
+      const request = this.loadBootstrap(user.uid, session).finally(() => {
         if (this.bootstrapRequest === request) this.bootstrapRequest = undefined;
       });
       this.bootstrapRequest = request;
@@ -155,32 +192,57 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       return request;
     }
 
-    async loadBootstrap(uid: string, generation: number) {
+    private async loadBootstrap(uid: string, session: number) {
+      const seq = ++this.playerRequestSeq;
+      const current = () => session === this.session && firebaseAuth.currentUser?.uid === uid;
       try {
         let data: {player: PlayerContextData; characters: APICharacterData[]};
         try {
           data = await apiFetch('bootstrapPlayer', {}, 3);
         } catch (error) {
-          // A newly installed client can still meet the previous backend during rollout.
-          if (error?.status !== 404) throw error;
+          // Any bootstrap failure falls back to the long-standing endpoints: being able to play
+          // matters more than saving a round trip.
+          console.warn('bootstrapPlayer failed; using legacy player endpoints', error);
           const [player, roster] = await Promise.all([apiFetch('getPlayerData', {}, 3), apiFetch('rosterData', {}, 3)]);
           data = {player, characters: roster.characters};
         }
-        if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== uid) return;
-        this.setState({player: {...data.player, uid, isLoaded: true}, characters: data.characters});
+        if (!current()) return;
+        this.bootstrapDone = true;
+        this.retryDelay = 0;
+        this.failureNotified = false;
+        // Keep player data that a newer refresh already applied; the roster is still needed.
+        if (seq > this.playerAppliedSeq) {
+          this.playerAppliedSeq = seq;
+          this.setState({player: {...data.player, uid, isLoaded: true}, characters: data.characters});
+        } else {
+          this.setState({characters: data.characters});
+        }
       } catch (error) {
-        if (generation === this.playerFetchGeneration && firebaseAuth.currentUser?.uid === uid) errorToast(userError(error));
+        if (!current()) return;
+        if (!this.failureNotified) {
+          this.failureNotified = true;
+          errorToast(userError(error));
+        }
+        this.retryDelay = Math.min(30_000, this.retryDelay ? this.retryDelay * 2 : 1_000);
+        clearTimeout(this.retryTimer);
+        this.retryTimer = setTimeout(() => {
+          this.retryTimer = undefined;
+          if (current() && !this.bootstrapDone) this.ensureLoaded();
+        }, this.retryDelay);
       }
     }
 
     async fetchPlayerData() {
       const user = firebaseAuth.currentUser;
       if (!user) return;
-      const generation = ++this.playerFetchGeneration;
+      const session = this.session;
+      const seq = ++this.playerRequestSeq;
 
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
-          if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== user.uid) return;
+          // Ignore if signed out, or if a newer player load already landed.
+          if (session !== this.session || seq <= this.playerAppliedSeq || firebaseAuth.currentUser?.uid !== user.uid) return;
+          this.playerAppliedSeq = seq;
           this.setState({
               player: {
                   uid: user.uid,
@@ -201,7 +263,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
               }
           });
       } catch (error) {
-          if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== user.uid) return;
+          if (session !== this.session || firebaseAuth.currentUser?.uid !== user.uid) return;
           errorToast(userError(error));
       }
     }
@@ -505,7 +567,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       });
 
       socket.on('connect_error', (error) => {
-        if (retrySocketAuthentication(socket, error, getFirebaseIdToken)) return;
+        if (retrySocketAuthentication(socket, error, getFirebaseIdToken, () => this.state.socket === socket && Boolean(firebaseAuth.currentUser))) return;
         console.error('Connection error:', error);
         // errorToast('Connection error, attempting to reconnect...');
 
