@@ -14,6 +14,8 @@ import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE, GRID_WIDTH } from '@legion/shared
 import { hexDistance } from '@legion/shared/utils';
 import {loadGameSettings} from '../settings';
 import {VFX_DISPLAY_SCALE} from './VFXconfig';
+import {SPELL_SLOT_OFFSET} from '../input/bindings';
+import {displayTint} from './palette';
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -405,43 +407,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.selected = true;
 
             this.checkHeartbeat();
-            this.arena.relayEvent(`selectCharacter`);
-            this.arena.relayEvent(`selectCharacter_${this.class}`);
-            if (this.hasUsableItem()) {
-                this.arena.relayEvent(`selectCharacter_hasItem`);
-            }
 
-            if(this.hasSpells()) {
-                this.arena.relayEvent(`selectCharacter_hasSpells`);
-            }
-
-            // Iterate over statuses and emit events for each
-            Object.keys(this.statuses).forEach(status => {
-                if (this.statuses[status] > 0) {
-                    this.arena.relayEvent(`hasStatus_${status}`);
-                }
-            });
-
-            // Check if player on a flame
-            if (this.arena.hasFlame(this.gridX, this.gridY)) {
-                this.arena.relayEvent(`hasFlame`);
-            }
-
-            // Check if player on a ice
-            if (this.arena.hasIce(this.gridX, this.gridY)) {
-                this.arena.relayEvent(`hasIce`);
-            }
-
-            // Check if player has spells and if MP amount is too low for cheapest spell
-            const cheapestSpell = this.spells.reduce((cheapest, spell) => spell.cost < cheapest.cost ? spell : cheapest, this.spells[0]);
-            if (this.spells.length > 0 && this.mp < cheapestSpell.cost) {
-                this.arena.relayEvent(`hasLowMP`);
-            }
-
-            // Check if player is next to an enemy
-            if (this.arena.hasEnemyNextTo(this.gridX, this.gridY)) {
-                this.arena.relayEvent(`hasEnemy`);
-            }
         }
     }
 
@@ -517,7 +483,7 @@ export class Player extends Phaser.GameObjects.Container {
     }
 
     private refreshHighlight(selected = this.arena.selectedPlayer === this) {
-        this.glowFx.color = this.hovered ? 0xffd785 : selected ? GlowColors.Selected : this.isPlayer ? GlowColors.Ally : GlowColors.Enemy;
+        this.glowFx.color = this.hovered ? 0xffd785 : selected ? GlowColors.Selected : displayTint(this.isPlayer ? GlowColors.Ally : GlowColors.Enemy);
         this.glowFx.setActive(this.hovered || this.targetHighlighted || selected);
     }
 
@@ -551,25 +517,14 @@ export class Player extends Phaser.GameObjects.Container {
         }
     }
 
-    getLayoutAndSpellsIndex() {
-        const qwertyLayout = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-        const azertyLayout = 'AZERTYUIOPQSDFGHJKLMWXCVBN';
-        const settings = loadGameSettings();
-        const layout = settings.keyboardLayout === 0 ? azertyLayout : qwertyLayout;
-        const spellsIndex = settings.keyboardLayout === 0 ? layout.indexOf('W') : layout.indexOf('Z');
-        return { layout, spellsIndex };
-    }
-
-    onLetterKey(keyCode) {
-        const { layout } = this.getLayoutAndSpellsIndex();
-        const index = layout.indexOf(keyCode);
-        this.onKey(index);
+    getSpellsIndex() {
+        return SPELL_SLOT_OFFSET;
     }
 
     onKey(keyIndex) {
         if (!this.isPlayer || this.arena.turnee?.team !== this.team.id || this.arena.turnee?.num !== this.num) return;
         this.arena.playSound('click');
-        const { spellsIndex } = this.getLayoutAndSpellsIndex();
+        const spellsIndex = this.getSpellsIndex();
         if (keyIndex >= spellsIndex) {
             this.useSkill(keyIndex - spellsIndex);
         } else {
@@ -596,7 +551,9 @@ export class Player extends Phaser.GameObjects.Container {
             return;
         }
         // console.log(`[Player:useItem] item: ${item.name}`);
-        if (!this.canAct()) {
+        const unavailable = this.arena.unavailableActionReason(this);
+        if (unavailable) {
+            this.arena.actionFeedback(unavailable);
             this.arena.playSound('nope', 0.2);
             return;
         }
@@ -685,15 +642,13 @@ export class Player extends Phaser.GameObjects.Container {
             this.cancelItem();
         }
 
-        // Check conditions for using a spell
-        if (!this.canAct() || spell.cost > this.mp || this.isMuted()) {
+        // Give the same feedback for mouse, keyboard, and controller actions.
+        const unavailable = this.arena.unavailableActionReason(this);
+        if (unavailable || spell.cost > this.mp || this.isMuted()) {
+            this.arena.actionFeedback(unavailable || (this.isMuted()
+                ? t("Silenced: choose another action.")
+                : t("Not enough mana: needs {{cost}} MP, you have {{mp}}.", {cost: spell.cost, mp: this.mp})));
             this.arena.playSound('nope', 0.2);
-            if (this.isMuted()) {
-                this.talk(t("I’m silenced! I can’t cast spells!"));
-            }
-            if (this.mp < spell.cost) {
-                this.talk(t("Not enough MP!"));
-            }
             return;
         }
 

@@ -1,24 +1,14 @@
 import { Server, Socket } from "socket.io";
 import { initializeApp } from 'firebase-admin/app';
-import {
-    Client,
-    GatewayIntentBits,
-  } from 'discord.js';
-
 import firebaseConfig from '@legion/shared/firebaseConfig';
+import {getFirestore, FieldValue} from 'firebase-admin/firestore';
+import {matchDocument} from '@legion/shared/matchData';
 import { apiFetch } from "./API";
 import {eloRangeIncreaseInterval, eloRangeStart, eloRangeStep, goldRewardInterval,
-    goldReward, casualModeThresholdTime, maxWaitTimeForPractice, ALLOW_SWITCHEROO_RANKED} from '@legion/shared/config';
+    goldReward, casualModeThresholdTime, maxWaitTimeForPractice, ALLOW_SWITCHEROO_RANKED, STARTING_ELO} from '@legion/shared/config';
 import { PlayMode, League } from '@legion/shared/enums';
-import { sendMessageToAdmin } from '@legion/shared/utils';
 
 export type MatchmakingSocket = Socket & {uid: string; firebaseToken: string};
-
-const discordEnabled = false; //(process.env.DISCORD_TOKEN !== undefined);
-const discordClient = new Client({intents: [GatewayIntentBits.Guilds]});
-if (discordEnabled) {
-    discordClient.login(process.env.DISCORD_TOKEN);
-}
 
 initializeApp({projectId: firebaseConfig.projectId});
 
@@ -81,23 +71,6 @@ export function parseQueueMode(value: unknown): PlayMode | null {
     return isQueueMode(mode) ? mode : null;
 }
 let matchmakingInProgress = false;
-
-async function notifyAdmin(uid1: string, uid2: string | null, mode: PlayMode, action: 'left' | 'joined' | 'matched') {
-    if (!discordEnabled) return;
-    try {
-        let message: string;
-        if (action === 'left') {
-            message = `Player ${uid1} has left the queue.`;
-        } else if(action === 'joined') {
-            message = `Player ${uid1} has joined the queue in ${PlayMode[mode]} mode!`;
-        } else if (action === 'matched') {
-            message = `Players ${uid1} and ${uid2} have been matched in ${PlayMode[mode]} mode!`;
-        }
-        sendMessageToAdmin(discordClient, message);
-    } catch (error) {
-        console.error('Failed to send DM:', error);
-    }
-}
 
 export function setupMatchmaking(ioInstance: Server) {
     io = ioInstance;
@@ -277,24 +250,15 @@ async function createGame(
         if (player2) declinePendingChallenge(player2.uid);
 
         const gameId = crypto.randomUUID();
-        await apiFetch(
-            'createGame',
-            '',
-            {
-                method: 'POST',
-                body: {
-                    gameId,
-                    // @ts-expect-error
-                    players: [player1.uid, player2?.uid],
-                    storeBuild: [player1, player2].some(socket => socket?.handshake.auth.storeBuild === true),
-                    mode,
-                    league,
-                },
-                headers: {
-                    'x-api-key': process.env.API_KEY,
-                }
-            }
-        );
+        const db = getFirestore();
+        const players = [player1, player2].filter(Boolean) as MatchmakingSocket[];
+        const storeBuild = players.some(player => player.handshake.auth.storeBuild === true);
+        const batch = db.batch();
+        batch.create(db.collection('games').doc(gameId), matchDocument(gameId, players.map(player => player.uid), mode, league, storeBuild));
+        for (const player of players) batch.set(db.collection('players').doc(player.uid).collection('actions').doc(), {
+            timestamp: FieldValue.serverTimestamp(), actionType: 'gameStart', details: {gameId, league, mode},
+        });
+        await batch.commit();
 
         // Update status for both players
         // @ts-expect-error
@@ -308,8 +272,6 @@ async function createGame(
         if (player2)
             player2.nsp.to(player2.id).emit("matchFound", { gameId });
 
-        // @ts-expect-error
-        notifyAdmin(player1?.uid, player2?.uid, mode, 'matched');
         return true;
     } catch (error) {
         console.error(`Error creating game: ${error}`);
@@ -333,30 +295,62 @@ function sendQData(player: QueuingPlayer) {
     });
 }
 
-async function addToQueue(socket: MatchmakingSocket, mode: PlayMode) {
-    try {
-        const queuingData = await apiFetch(
-            'queuingData',
-            socket.firebaseToken,
-        );
-
-        const player: QueuingPlayer = {
-            socket,
-            elo: queuingData.elo,
-            range: eloRangeStart,
-            mode,
-            league: queuingData.league as League,
-            waitingTime: 0,
-            gold: 0,
-        };
-        playersQueue.push(player);
-        sendQData(player);
-        emitQueueCount();
-        updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
-        console.log(`Player ${socket.id} joined queue  in mode ${mode} with elo ${player.elo} and league ${player.league}`);
-    } catch (error) {
-        console.error(`Error adding player to queue: ${error}`);
+// Player data for queueing: a direct read (with one retry), then the long-standing API
+// endpoint. A queue entry must never be lost to a transient read failure.
+async function loadQueuingData(socket: MatchmakingSocket): Promise<{elo: number; league: League} | null> {
+    for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+            const snapshot = await getFirestore().collection('players').doc(socket.uid).get();
+            const data = snapshot.data();
+            if (!data) break;
+            return {elo: Number.isFinite(data.elo) ? data.elo : STARTING_ELO, league: (data.league ?? League.BRONZE) as League};
+        } catch (error) {
+            console.warn(`[matchmaker:addToQueue] Player read failed (attempt ${attempt + 1})`, error);
+        }
     }
+    try {
+        const data = await apiFetch('queuingData', socket.firebaseToken);
+        return {elo: Number.isFinite(data?.elo) ? data.elo : STARTING_ELO, league: (data?.league ?? League.BRONZE) as League};
+    } catch (error) {
+        console.error('[matchmaker:addToQueue] queuingData fallback failed', error);
+        return null;
+    }
+}
+
+async function addToQueue(socket: MatchmakingSocket, mode: PlayMode) {
+    let queuingData: {elo: number; league: League} | null;
+    try {
+        queuingData = await loadQueuingData(socket);
+    } catch (error) {
+        queuingData = null;
+        console.error(`Error loading queue data: ${error}`);
+    }
+    if (!socket.connected) return;
+    if (!queuingData) {
+        socket.emit('queueError', {message: 'Matchmaking is unavailable. Please try again.'});
+        return;
+    }
+    if (playersQueue.some(player => player.socket.id === socket.id)) return;
+    // An entry for the same player on another socket is left over from a dropped connection:
+    // replace it rather than refusing the new one.
+    for (const stale of playersQueue.filter(player => player.socket.uid === socket.uid)) removePlayerFromQ(stale);
+
+    const player: QueuingPlayer = {
+        socket,
+        elo: queuingData.elo,
+        range: eloRangeStart,
+        mode,
+        league: queuingData.league,
+        waitingTime: 0,
+        gold: 0,
+    };
+    playersQueue.push(player);
+    sendQData(player);
+    emitQueueCount();
+    updatePlayerStatus(socket.uid, PlayerStatus.QUEUING);
+    console.log(`Player ${socket.id} joined queue  in mode ${mode} with elo ${player.elo} and league ${player.league}`);
+    // Match right away when possible; the one-second loop remains the fallback.
+    runMatchmakingPass().catch(error => console.error('Error in immediate matchmaking pass:', error));
 }
 
 async function savePlayerGold(player: QueuingPlayer) {
@@ -418,7 +412,6 @@ export async function processJoinQueue(socket, data: { mode: unknown }) {
         console.log(`[matchmaker:processJoinQueue] Player ${socket.id} joining queue in mode ${mode} ...`);
 
         if (mode === PlayMode.PRACTICE) {
-            notifyAdmin(socket.uid, null, mode, 'joined');
             createGame(socket, null, PlayMode.PRACTICE);
             return;
         }
@@ -428,7 +421,6 @@ export async function processJoinQueue(socket, data: { mode: unknown }) {
             return;
         }
 
-        notifyAdmin(socket.uid, null, mode, 'joined');
         addToQueue(socket, mode);
         logQueuingActivity(socket.uid, 'joinQueue', mode);
     } catch (error) {
@@ -583,7 +575,7 @@ async function leaveQueueOrLobby(socket) {
 }
 
 async function handleQueueDisconnect(player: QueuingPlayer) {
-    notifyAdmin(player.socket.uid, null, player.mode, 'left');
+
     removePlayerFromQ(player);
     await logQueuingActivity(player.socket.uid, 'leaveQueue', null);
 }

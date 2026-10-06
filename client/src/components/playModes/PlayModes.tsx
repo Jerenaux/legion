@@ -1,4 +1,3 @@
-import {LOCKED_FEATURES} from '@legion/shared/config';
 import { h } from 'preact';
 import './PlayModes.style.css'
 import { Component } from 'preact';
@@ -49,7 +48,7 @@ class PlayModes extends Component {
           />
           <PlayModeButton label="tower" mode={PlayMode.TOWER} data-playmode="tower"
             disabled={!isTowerUnlocked} lockIcon={!isTowerUnlocked ? lockIcon : undefined}
-            unlockProgress={!isTowerUnlocked ? {completed: this.context.getCompletedGames(), required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]} : undefined} />
+            gamesUntilUnlock={!isTowerUnlocked ? this.context.getGamesUntilFeature(LockedFeatures.TOWER_MODE) : 0} />
         </div>
 
       </div>

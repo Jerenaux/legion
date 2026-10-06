@@ -5,6 +5,8 @@ import { PlayerProps } from '@legion/shared/interfaces';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { loadGameSettings } from '../../settings';
+import { CONTROLS_CHANGED_EVENT, DesktopAction } from '../../input/actions';
+import { SPELL_SLOT_OFFSET, primaryKeyLabel } from '../../input/bindings';
 import { statusIcons } from '../utils';
 import hpIcon from '@assets/stats_icons/hp_icon.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
@@ -16,6 +18,8 @@ import './PlayerBar.style.css';
 type EventEmitter = {on: Function; off: Function; emit: Function};
 interface PlayerBarProps {
   player: PlayerProps | null;
+  /** Name of the character selected for inspection, when it is not the acting one. */
+  inspectedName?: string;
   canAct: boolean;
   isPlayerTurn: boolean;
   turnDuration: number;
@@ -26,18 +30,18 @@ interface PlayerBarProps {
 }
 
 class PlayerBar extends Component<PlayerBarProps> {
-  state = {keyboardLayout: loadGameSettings().keyboardLayout};
+  state = {controls: loadGameSettings().controls};
 
   componentDidMount() {
-    this.props.eventEmitter.on('settingsChanged', this.handleSettingsChanged);
+    window.addEventListener(CONTROLS_CHANGED_EVENT, this.handleControlsChanged);
   }
 
   componentWillUnmount() {
-    this.props.eventEmitter.off('settingsChanged', this.handleSettingsChanged);
+    window.removeEventListener(CONTROLS_CHANGED_EVENT, this.handleControlsChanged);
   }
 
-  handleSettingsChanged = (settings) => {
-    this.setState({keyboardLayout: settings.keyboardLayout});
+  handleControlsChanged = () => {
+    this.setState({controls: loadGameSettings().controls});
   };
 
   renderActionRow(actions: Array<BaseItem | BaseSpell>, startIndex: number, type: InventoryType) {
@@ -47,7 +51,7 @@ class PlayerBar extends Component<PlayerBarProps> {
     const muted = isSpell && player?.statuses[StatusEffect.MUTE] !== 0;
     return (
       <section className="player_bar_action_group" aria-label={t(isSpell ? 'Spells' : 'Items')}>
-        <div className="player_bar_group_label">{t(pending != null && canAct ? 'Click again' : isSpell ? 'Spells' : 'Items')}{muted && <span>{t('Silenced')}</span>}</div>
+        <div className="player_bar_group_label">{t(isSpell ? 'Spells' : 'Items')}{muted && <span>{t('Silenced')}</span>}</div>
         <div className="player_bar_actions">
           {actions.map((action, index) => {
             const cost = 'cost' in action ? action.cost : null;
@@ -67,10 +71,12 @@ class PlayerBar extends Component<PlayerBarProps> {
                 data-tooltip-item-type={type}
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (!unavailable) this.props.eventEmitter.emit('itemClick', startIndex + index);
+                  // Validation also explains unavailable actions without spending the turn.
+                  this.props.eventEmitter.emit('itemClick', startIndex + index);
                 }}
               >
-                <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type} keyboardLayout={this.state.keyboardLayout} />
+                <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type}
+                  keyLabel={primaryKeyLabel(`${isSpell ? 'spell' : 'item'}-${index + 1}` as DesktopAction, this.state.controls)} />
                 <span className="player_bar_action_name">{t(action.name)}</span>
                 {cost !== null && <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}><img src={mpIcon} alt={t("MP")} />{formatNumber(cost)}</span>}
               </button>
@@ -82,13 +88,16 @@ class PlayerBar extends Component<PlayerBarProps> {
     );
   }
 
-  render({player, canAct, isPlayerTurn, turnDuration, timeLeft, turnNumber, onPassTurn}: PlayerBarProps) {
+  render({player, inspectedName, canAct, isPlayerTurn, turnDuration, timeLeft, turnNumber, onPassTurn}: PlayerBarProps) {
     const {items = [], spells = [], statuses} = player || {};
-    const layout = this.state.keyboardLayout === 0 ? 'AZERTYUIOPQSDFGHJKLMWXCVBN' : 'QWERTYUIOPASDFGHJKLZXCVBNM';
-    const spellsIndex = layout.indexOf(this.state.keyboardLayout === 0 ? 'W' : 'Z');
+    const spellsIndex = SPELL_SLOT_OFFSET;
     const pending = canAct && (player.pendingSpell != null ? spells[player.pendingSpell] : items[player.pendingItem]);
     const condition = player?.hp <= 0 ? 'Knocked out' : player?.isParalyzed ? 'Unable to act' : player?.casting ? 'Casting' : '';
-    const instruction = !isPlayerTurn ? 'Enemy turn' : condition || (pending ? 'Select a target' : canAct ? '' : 'Inspecting');
+    // One status at a time, shown above the arena so the dock layout never changes.
+    const status = !isPlayerTurn ? null
+      : condition ? {tone: 'warning', subject: player.name, text: condition}
+      : pending ? {tone: 'targeting', subject: pending.name, text: 'Select a target'}
+      : !canAct ? {tone: 'muted', subject: inspectedName ?? player?.name, text: 'Inspecting'} : null;
     const previewMP = pending && 'cost' in pending ? player.mp - pending.cost : player?.mp;
 
     return (
@@ -100,7 +109,6 @@ class PlayerBar extends Component<PlayerBarProps> {
               <div className="player_bar_stats">
                 <div className="player_bar_heading" key={turnNumber}>
                   <strong className="player_bar_name">{player?.name || t('Combat')}</strong>
-                  {instruction && <span className="player_bar_turn_label" role="status">{t(instruction)}</span>}
                 </div>
                 {player && <>
                   <div className="player_bar_stat">
@@ -134,6 +142,11 @@ class PlayerBar extends Component<PlayerBarProps> {
           </div> : <div className="enemy_turn_banner" role="status">{t("Enemy Turn")}</div>}
         </div>
       </section>
+      <div className="combat-status-banner" role="status" aria-live="polite">
+        {status && <span key={`${status.text}-${status.subject}`} data-tone={status.tone}>
+          {status.subject && <strong>{status.tone === 'targeting' ? t(status.subject) : status.subject}</strong>}<em>{t(status.text)}</em>
+        </span>}
+      </div>
       {isPlayerTurn && <ItemTooltip id="combat-action-details" showClasses={false} />}
       </>
     );

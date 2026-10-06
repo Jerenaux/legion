@@ -311,3 +311,22 @@
     font-size: 0.625rem;
   }
 }
+
+/* Level in the portrait's lower outer corner: plain off-white text with a dark outline. */
+.char_profile_container { position: relative; }
+.char_level_tag {
+  position: absolute;
+  left: 7px;
+  bottom: 5px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  color: oklch(95% .015 85);
+  font: 0.75rem/1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-shadow: -1px 0 oklch(10% .02 250), 1px 0 oklch(10% .02 250), 0 -1px oklch(10% .02 250), 0 1px oklch(10% .02 250), 0 1px 3px oklch(5% .02 250 / .8);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.char_level_tag small { font-size: 0.625rem; }
+.overview_right .char_level_tag { left: auto; right: 7px; }

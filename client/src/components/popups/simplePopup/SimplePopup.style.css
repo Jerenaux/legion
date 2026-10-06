@@ -3,16 +3,15 @@
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #242b37;
-  border: 0.1vw solid #00ffff;
-  border-radius: 8px;
-  padding: 16px 24px;
-  box-shadow:
-    0 0 10px rgba(0, 255, 255, 0.3),
-    0 0 20px rgba(0, 255, 255, 0.2),
-    inset 0 0 8px rgba(0, 255, 255, 0.2);
+  max-width: min(640px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 14px 22px 14px 16px;
+  border: 1px solid oklch(70% .1 80);
+  border-radius: 6px;
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow), 0 16px 40px oklch(4% .02 255 / .6);
   z-index: 1000;
-  animation: slideUp 0.3s ease-out, dialogueGlow 2s ease-in-out infinite;
+  animation: slideUp 0.3s ease-out;
 }
 
 .simple-popup-content {
@@ -25,11 +24,10 @@
   width: 40px;
   height: 40px;
   object-fit: contain;
-  border: 2px solid #00ffff;
-  border-radius: 50%;
-  padding: 4px;
-  padding-left: 6px;
-  animation: pulse 2s infinite;
+  padding: 6px;
+  border: 1px solid oklch(72% .11 80);
+  border-radius: 6px;
+  background: radial-gradient(circle, oklch(36% .06 75), oklch(18% .03 250) 75%);
 }
 
 .simple-popup-text-container {
@@ -39,7 +37,7 @@
 }
 
 .simple-popup-header {
-  color: #00ffff;
+  color: var(--gold);
   font-size: 1rem;
   margin: 0;
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
@@ -116,13 +114,6 @@
   .simple-popup-text {
     font-size: 1rem;
   }
-}
-
-/* Add a subtle hover effect */
-.simple-popup:hover {
-  transform: translate(-50%, -2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  transition: all 0.2s ease;
 }
 
 .highlight-text {

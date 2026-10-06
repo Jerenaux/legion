@@ -1,3 +1,4 @@
+import {matchDocument} from "@legion/shared/matchData";
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, storage, isDevelopment} from "./APIsetup";
@@ -16,15 +17,7 @@ export async function createGameDocument(
   gameId: string, players: string[], mode: PlayMode, league: League, storeBuild = false
 ) {
   const db = admin.firestore();
-  const gameData = {
-    date: new Date(),
-    gameId,
-    players,
-    mode,
-    league,
-    status: GameStatus.ONGOING,
-    storeBuild,
-  };
+  const gameData = matchDocument(gameId, players, mode, league, storeBuild);
   await db.collection("games").doc(gameId).set(gameData);
   console.log(`[createGameDocument] Game ${gameId} created`);
 }

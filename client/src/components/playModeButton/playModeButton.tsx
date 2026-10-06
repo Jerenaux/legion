@@ -2,7 +2,7 @@ import {t, i18n} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 import { h, Fragment } from 'preact';
 import './playModeButton.style.css'
-import { Component } from 'preact';
+import { Component, ComponentChildren } from 'preact';
 import { route } from 'preact-router';
 import PracticeIcon from '@assets/practice_icon.png';
 import CasualIcon from '@assets/casual_icon.png';
@@ -21,7 +21,6 @@ interface Props {
     lockIcon?: string;
     'data-playmode'?: string;
     gamesUntilUnlock?: number;
-    unlockProgress?: {completed: number; required: number};
 }
 
 interface ModeInfo {
@@ -53,13 +52,29 @@ const modeInfoMap: Partial<Record<PlayMode, ModeInfo>> = {
     }
 };
 
+const PIPS = {low: 1, medium: 2, high: 3};
+
+// Reward level as text plus a pip meter, so the comparison reads without relying on color.
+function RewardRow({label, level}: {label: ComponentChildren; level?: ModeInfo['xpRewards']}) {
+    const pips = PIPS[level];
+    return (
+        <div className="info-row">
+            <span className="info-label">{label}</span>
+            <span className={`info-value ${level}`}>
+                {pips && <span className="reward-pips" aria-hidden="true">{[1, 2, 3].map(pip => <i key={pip} className={pip <= pips ? 'is-on' : ''} />)}</span>}
+                {t(level)}
+            </span>
+        </div>
+    );
+}
+
 class PlayModeButton extends Component<Props> {
     handleCardClick = () => {
         route(this.props.mode === PlayMode.TOWER ? '/tower' : `/queue/${this.props.mode}`);
     }
 
     render() {
-        const { label, players, mode, disabled, lockIcon, gamesUntilUnlock, unlockProgress, ...otherProps } = this.props;
+        const { label, players, mode, disabled, lockIcon, gamesUntilUnlock, ...otherProps } = this.props;
         const modeInfo = modeInfoMap[mode];
 
         const btnIcons = {
@@ -100,24 +115,17 @@ class PlayModeButton extends Component<Props> {
                                     alt={t("Locked")}
                                     className="lock-icon"
                                 />
-                                {unlockProgress && <div className="unlock-message">{t("Unlocks after {{required}} completed matches · {{completed}}/{{required}}", unlockProgress)}</div>}
                                 {gamesUntilUnlock > 0 && (
                                     <div className="unlock-message">{t("gamesToUnlock", {count: gamesUntilUnlock})}</div>
                                 )}
                             </div>
                         ) : (
                             <>
-                            <div className="info-row">
-                                <span className="info-label"><Trans i18n={i18n} i18nKey={"<0/>XP:"} components={[<img src={xpIcon} alt="" className="reward-icon" />]} /></span>
-                                <span className={`info-value ${modeInfo?.xpRewards}`}>{t(modeInfo?.xpRewards)}</span>
-                            </div>
-                            <div className="info-row">
-                                <span className="info-label"><Trans i18n={i18n} i18nKey={"<0/>Gold:"} components={[<img src={goldIcon} alt="" className="reward-icon" />]} /></span>
-                                <span className={`info-value ${modeInfo?.goldRewards}`}>{t(modeInfo?.goldRewards)}</span>
-                            </div>
+                            <RewardRow label={<Trans i18n={i18n} i18nKey={"<0/>XP:"} components={[<img src={xpIcon} alt="" className="reward-icon" />]} />} level={modeInfo?.xpRewards} />
+                            <RewardRow label={<Trans i18n={i18n} i18nKey={"<0/>Gold:"} components={[<img src={goldIcon} alt="" className="reward-icon" />]} />} level={modeInfo?.goldRewards} />
                             <div className="info-row">
                                 <span className="info-label"><Trans i18n={i18n} i18nKey={"<0/>Items:"} components={[<img src={goldChest} alt="" className="reward-icon" />]} /></span>
-                                <span className={`info-value ${modeInfo?.itemRewards ? 'high' : 'low'}`}>{modeInfo?.itemRewards ? t('Yes') : t('No')}</span>
+                                <span className={`info-value ${modeInfo?.itemRewards ? 'yes' : 'no'}`}>{modeInfo?.itemRewards ? t('Yes') : t('No')}</span>
                             </div>
                             </>
                         )}

@@ -4,8 +4,7 @@ import './OnGoingArena.style.css';
 import { Component } from 'preact';
 import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 import ArenaCard from '../arenaCard/ArenaCard';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css'
+import Ghost from '../ghost/Ghost';
 
 type Team = {
   name: string;
@@ -32,12 +31,7 @@ class OnGoingArena extends Component<ArenaProps> {
         <BottomBorderDivider label="ONGOING GAMES" />
         {this.props.ongoingGameData ? <div className="arenas">
           {this.props.ongoingGameData.map((game) => <ArenaCard gameData={game} />)}
-        </div> : <Skeleton
-          height={100}
-          count={1}
-          highlightColor='#0000004d'
-          baseColor='#0f1421'
-          style={{ margin: '2px 0', width: '1024px' }} />}
+        </div> : <Ghost height={100} />}
       </div>
     );
   }

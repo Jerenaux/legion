@@ -4,7 +4,7 @@ import { h } from 'preact';
 import { Component } from 'preact';
 import { route, getCurrentUrl } from 'preact-router';
 
-import { ClassLabels } from '@legion/shared/enums';
+import { Class, ClassLabels } from '@legion/shared/enums';
 import { APICharacterData, CharacterUpdate, PlayerNetworkData, TeamMember } from '@legion/shared/interfaces';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { getSpritePath } from '../utils';
@@ -102,10 +102,12 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
             );
         }
 
+        const Card = isClickable ? 'button' : 'div';
         return (
-            <button type="button" data-game-control
+            <Card type={isClickable ? 'button' : undefined} data-game-control={isClickable || undefined}
                 className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''} ${isClickable ? 'clickable' : ''} ${this.isSelected() ? 'selected' : ''}`}
                 data-character-id={member.id}
+                data-class={Class[member.class]}
                 onClick={this.handleClick}
             >
                 {showSPBadge && member.sp > 0 && (
@@ -124,7 +126,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                     <div className="endgame_character_level_container">
                         {isReceivingXP && (
                             <div className="endgame_character_xp_container">
-                                <div className="endgame_character_xp_label">{t("XP")}</div>
+                                <div className="endgame_character_xp_label">+{formatNumber(update.earnedXP)} {t("XP")}</div>
                                 <div className="endgame_character_xp_bar">
                                     <div
                                         className={`endgame_character_xp_fill ${isResettingXP ? 'reset' : ''}`}
@@ -147,7 +149,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
 
                 <div className="endgame_character_name">{member.name}</div>
                 <div className="endgame_character_class">{t(ClassLabels[member.class])}</div>
-            </button>
+            </Card>
         );
     }
 }

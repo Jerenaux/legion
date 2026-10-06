@@ -4,152 +4,128 @@ import { h } from 'preact';
 import { Component } from 'preact';
 import { events } from '../HUD/GameHUD';
 import { isElectron, getElectronAPI } from '../../utils/electronUtils';
-import {applyTextSize, defaultGameSettings, loadGameSettings} from '../../settings';
+import {GameSettings, loadGameSettings, saveGameSettings} from '../../settings';
+import ControlsSettings from './ControlsSettings';
+import './SettingsModal.css';
 
 interface SettingsModalProps {
   onClose: () => void;
 }
 
-export class SettingsModal extends Component<SettingsModalProps> {
-    state = {
-      textSize: defaultGameSettings.textSize,
-      musicCurrentValue: defaultGameSettings.musicVolume,
-      musicMinValue: 0,
-      musicMaxValue: 100,
-      sfxCurrentValue: 50,
-      sfxMinValue: 0,
-      sfxMaxValue: 100,
-      selectedKeyboardLayout: 1,
-      isFullscreen: false,
-    }
+type Tab = 'general' | 'controls';
+
+export class SettingsModal extends Component<SettingsModalProps, {settings: GameSettings; isFullscreen: boolean; tab: Tab}> {
+    state = {settings: loadGameSettings(), isFullscreen: false, tab: 'general' as Tab};
 
     componentDidMount() {
-      const settings = loadGameSettings();
-      this.setState({
-        textSize: settings.textSize,
-        musicCurrentValue: settings.musicVolume,
-        sfxCurrentValue: settings.sfxVolume,
-        selectedKeyboardLayout: localStorage.getItem('gameSettings') ? settings.keyboardLayout : this.detectKeyboardLayout(),
-        isFullscreen: settings.isFullscreen,
-      });
-      if (isElectron()) this.checkFullscreenStatus();
+      if (!isElectron()) return;
+      this.checkFullscreenStatus();
+      // F11, the macOS window button and the checkbox all resize the window; keep the box in sync.
+      window.addEventListener('resize', this.checkFullscreenStatus);
     }
 
-    detectKeyboardLayout = () => {
-      // This is a simple heuristic and may not be 100% accurate
-      const isAZERTY = navigator.language.startsWith('fr') ||
-                       navigator.language.startsWith('be') ||
-                       navigator.language.startsWith('dz');
-
-      return isAZERTY ? 0 : 1; // 0 for AZERTY, 1 for QWERTY
+    componentWillUnmount() {
+      window.removeEventListener('resize', this.checkFullscreenStatus);
     }
 
-    componentDidUpdate(_prevProps, prevState) {
-      if (prevState.textSize !== this.state.textSize) {
-        this.saveSettings();
-      }
-      if (prevState.musicCurrentValue !== this.state.musicCurrentValue) {
-        this.saveSettings();
-      }
-      if (prevState.sfxCurrentValue !== this.state.sfxCurrentValue) {
-        this.saveSettings();
-      }
-      if (prevState.selectedKeyboardLayout !== this.state.selectedKeyboardLayout) {
-        this.saveSettings();
-      }
-      if (prevState.isFullscreen !== this.state.isFullscreen) {
-        this.saveSettings();
-      }
-    }
-
-    saveSettings = () => {
-      const settings = {
-        textSize: this.state.textSize,
-        musicVolume: this.state.musicCurrentValue,
-        sfxVolume: this.state.sfxCurrentValue,
-        keyboardLayout: this.state.selectedKeyboardLayout,
-        isFullscreen: this.state.isFullscreen,
-      };
-      applyTextSize(settings.textSize);
-      localStorage.setItem('gameSettings', JSON.stringify(settings));
-      events.emit('settingsChanged', settings);  // Emit the settingsChanged event
-    }
+    update = (change: Partial<GameSettings>) => {
+      const settings = saveGameSettings(change);
+      this.setState({settings});
+      events.emit('settingsChanged', settings);
+    };
 
     checkFullscreenStatus = async () => {
-      const electronAPI = getElectronAPI();
-      if (electronAPI && electronAPI.isFullscreen) {
-        try {
-          const fullscreenStatus = await electronAPI.isFullscreen();
-          this.setState({ isFullscreen: fullscreenStatus });
-        } catch (error) {
-          console.error('SettingsModal: Error checking fullscreen status:', error);
-        }
+      try {
+        const isFullscreen = await getElectronAPI()?.isFullscreen?.();
+        this.setState({isFullscreen: Boolean(isFullscreen)});
+      } catch (error) {
+        console.error('SettingsModal: Error checking fullscreen status:', error);
       }
+    };
+
+    // The desktop shell saves the display mode itself, so it survives restarts.
+    toggleFullscreen = async () => {
+      try {
+        const isFullscreen = await getElectronAPI()?.toggleFullscreen?.();
+        this.setState({isFullscreen: Boolean(isFullscreen)});
+      } catch (error) {
+        console.error('SettingsModal: Error toggling fullscreen:', error);
+      }
+    };
+
+    renderVolume(kind: 'music' | 'sfx') {
+      const {settings} = this.state;
+      const value = kind === 'music' ? settings.musicVolume : settings.sfxVolume;
+      const muted = kind === 'music' ? settings.musicMuted : settings.sfxMuted;
+      return (
+        <div className="setting_dialog_control_bar_container" data-muted={muted}>
+          <div className="setting_dialog_control_name">{kind === 'music' ? t("Music volume:") : t("SFX volume:")}</div>
+          <input className="setting_dialog_control_bar" type="range" aria-label={kind === 'music' ? t("Music volume") : t("SFX volume")}
+            min={0} max={100} value={value}
+            onInput={event => this.update(kind === 'music'
+              ? {musicVolume: Number((event.target as HTMLInputElement).value), musicMuted: false}
+              : {sfxVolume: Number((event.target as HTMLInputElement).value), sfxMuted: false})} />
+          <span className="setting_volume_value">{muted ? '0' : value}</span>
+          <button type="button" className="setting_mute" aria-pressed={muted}
+            aria-label={kind === 'music' ? t("Mute music") : t("Mute sound effects")}
+            onClick={() => this.update(kind === 'music' ? {musicMuted: !muted} : {sfxMuted: !muted})}>{t("muteButton")}</button>
+        </div>
+      );
     }
 
-    toggleFullscreen = async () => {
-      const electronAPI = getElectronAPI();
-      if (electronAPI && electronAPI.toggleFullscreen) {
-        try {
-          const newFullscreenState = await electronAPI.toggleFullscreen();
-          this.setState({ isFullscreen: newFullscreenState });
-        } catch (error) {
-          console.error('SettingsModal: Error toggling fullscreen:', error);
-        }
-      }
+    renderGeneral() {
+      const {settings} = this.state;
+      return (
+        <div className="setting_dialog" role="tabpanel" id="settings-panel-general" aria-labelledby="settings-tab-general">
+          <LanguageSelect />
+          <label className="setting_text_size" htmlFor="text-size">
+            {t("Text size")}<select id="text-size" value={settings.textSize} onChange={event => this.update({textSize: Number((event.target as HTMLSelectElement).value) as GameSettings['textSize']})}>
+              <option value="100">{t("Standard (100%)")}</option>
+              <option value="115">{t("Large (115%)")}</option>
+              <option value="130">{t("Extra large (130%)")}</option>
+            </select>
+          </label>
+
+          {isElectron() && (
+            <div className="setting_check">
+              <input type="checkbox" id="fullscreen-toggle" checked={this.state.isFullscreen} onChange={this.toggleFullscreen} />
+              <label htmlFor="fullscreen-toggle">{t("Fullscreen mode")}</label>
+            </div>
+          )}
+
+          <div className="setting_check">
+            <input type="checkbox" id="colorblind-toggle" aria-describedby="colorblind-help" checked={settings.colorblind}
+              onChange={() => this.update({colorblind: !settings.colorblind})} />
+            <label htmlFor="colorblind-toggle">{t("Colorblind mode")}</label>
+            <small id="colorblind-help">{t("Blue and orange replace green and red on the battlefield.")}</small>
+          </div>
+
+          {this.renderVolume('music')}
+          {this.renderVolume('sfx')}
+        </div>
+      );
     }
 
     render() {
-      const showElectronSettings = isElectron();
-
+      const {tab} = this.state;
+      const tabButton = (id: Tab, label: string) => (
+        <button type="button" role="tab" id={`settings-tab-${id}`} aria-selected={tab === id} aria-controls={`settings-panel-${id}`}
+          className="setting_tab" onClick={() => this.setState({tab: id})}>{label}</button>
+      );
       return (
-        <div className="setting_menu flex flex_col gap_4">
-          <div className="setting_dialog">
-            <LanguageSelect />
-            <label className="setting_text_size" htmlFor="text-size">
-              {t("Text size")}<select id="text-size" value={this.state.textSize} onChange={event => this.setState({textSize: Number((event.target as HTMLSelectElement).value) as typeof this.state.textSize})}>
-                <option value="100">{t("Standard (100%)")}</option>
-                <option value="115">{t("Large (115%)")}</option>
-                <option value="130">{t("Extra large (130%)")}</option>
-              </select>
-            </label>
-            <div className="setting_dialog_keyboard">{t("Keyboard layout:")}</div>
-            <div className="setting_dialog_keyboard_btn_container flex justify_center gap_4">
-              <button type="button" className={this.state.selectedKeyboardLayout === 0 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 0 })}>{t("Azerty")}</button>
-              <button type="button" className={this.state.selectedKeyboardLayout === 1 ? "setting_menu_btn setting_menu_btn_active" : "setting_menu_btn setting_menu_btn_inactive"} onClick={() => this.setState({ selectedKeyboardLayout: 1 })}>{t("Qwerty")}</button>
-            </div>
-
-            {showElectronSettings && (
-              <div className="setting_dialog_fullscreen_container padding_top_16 padding_bottom_16">
-                <div className="setting_dialog_fullscreen_label padding_y_4">{t("Display mode:")}</div>
-                <div className="setting_dialog_fullscreen_checkbox_container flex items_center gap_4 padding_4">
-                  <input
-                    type="checkbox"
-                    id="fullscreen-toggle"
-                    className="setting_dialog_fullscreen_checkbox"
-                    checked={this.state.isFullscreen}
-                    onChange={this.toggleFullscreen}
-                  />
-                  <label htmlFor="fullscreen-toggle" className="setting_dialog_fullscreen_text">{t("Fullscreen mode")}</label>
-                </div>
-              </div>
-            )}
-
-            <div className="setting_dialog_control_bar_container">
-              <div className="setting_dialog_control_name">{t("Music volume:")}</div>
-              <div className="setting_dialog_contol_lable_start">{this.state.musicMinValue}</div>
-              <input className="setting_dialog_control_bar" type="range" aria-label={t("Music volume")} min={this.state.musicMinValue} max={this.state.musicMaxValue} value={this.state.musicCurrentValue} onInput={(event) => this.setState({musicCurrentValue: Number((event.target as HTMLInputElement).value)})} />
-              <div className="setting_dialog_control_label_end">{this.state.musicMaxValue}</div>
-            </div>
-            <div className="setting_dialog_control_bar_container">
-              <div className="setting_dialog_control_name">{t("SFX volume:")}</div>
-              <div className="setting_dialog_contol_lable_start">{this.state.sfxMinValue}</div>
-              <input className="setting_dialog_control_bar" type="range" aria-label={t("SFX volume")} min={this.state.sfxMinValue} max={this.state.sfxMaxValue} value={this.state.sfxCurrentValue} onInput={(event) => this.setState({sfxCurrentValue: Number((event.target as HTMLInputElement).value)})} />
-              <div className="setting_dialog_contol_lable_end">{this.state.sfxMaxValue}</div>
-            </div>
+        <div className={`setting_menu flex flex_col gap_4 ${tab === 'controls' ? 'is-wide' : ''}`}>
+          <h2 className="setting_title" id="settings-title">{t("Settings")}</h2>
+          <div className="setting_tabs" role="tablist" aria-label={t("Settings")}>
+            {tabButton('general', t("General"))}
+            {tabButton('controls', t("Controls"))}
           </div>
+          {tab === 'general' ? this.renderGeneral() : (
+            <div className="setting_dialog" role="tabpanel" id="settings-panel-controls" aria-labelledby="settings-tab-controls">
+              <ControlsSettings />
+            </div>
+          )}
           <div className="justify_center flex gap_4">
-            <button type="button" className="setting_menu_btn" data-desktop-cancel onClick={this.props.onClose}>{t("Exit")}</button>
+            <button type="button" className="setting_menu_btn setting_close game-btn game-btn--ink" data-desktop-cancel onClick={this.props.onClose}>{t("Close")}</button>
           </div>
         </div>
       );

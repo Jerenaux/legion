@@ -13,7 +13,7 @@ import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { inventorySize } from '@legion/shared/utils';
 
-import Skeleton from 'react-loading-skeleton';
+import Ghost from '../ghost/Ghost';
 import Spinner from '../spinner/Spinner';
 import { ItemTooltip } from '../ItemTooltipContent';
 
@@ -186,19 +186,7 @@ class Inventory extends Component<InventoryProps> {
           </div>
           <div className="inventoryWrapper">
             {!this.context.player.isLoaded ? (
-              <div style={{ position: "absolute", display: "flex", gap: '6px' }}>
-                {[...Array(6)].map((_, index) => (
-                  <Skeleton
-                    key={index}
-                    height={48}
-                    highlightColor="#0000004d"
-                    baseColor="#0f1421"
-                    style={{
-                      width: '48px',
-                    }}
-                  />
-                ))}
-              </div>
+              <Ghost height={48} width="48px" count={6} className="ghost-slots" />
             ) : (
               <div className="inventory-sections">
                 {renderInventorySection(InventoryType.CONSUMABLES, "CONSUMABLES")}

@@ -1,154 +1,35 @@
 import {t} from '../../i18n/core';
-import { h } from 'preact';
-import { Component } from 'preact';
-import { events } from './GameHUD';
+import {h} from 'preact';
+import type {TutorialMessage} from '../../game/TutorialManager';
+import moveIcon from '@assets/stats_icons/move_range_icon.png';
+import attackIcon from '@assets/stats_icons/attack_icon.png';
+import spellIcon from '@assets/shop/spells_icon.png';
+import itemIcon from '@assets/shop/consumables_icon.png';
+import turnIcon from '@assets/HUD/hourglass.png';
 import '../../styles/components/TutorialDialogue.css';
 
-import { InventoryType } from '@legion/shared/enums';
+const icons = {move: moveIcon, attack: attackIcon, spell: spellIcon, item: itemIcon, turn: turnIcon};
 interface TutorialDialogueProps {
-  messages: string[];
-  position?: 'bottom' | 'spells' | 'items';
+  message?: TutorialMessage;
+  visible: boolean;
+  onToggle: () => void;
+  feedback?: string;
 }
 
-interface TutorialDialogueState {
-  messageIndex: number;
-  displayedMessage: string;
-  dialoguePosition: { bottom: number; right: number; left: 'auto' } | null;
-}
+export default function TutorialDialogue({message, visible, onToggle, feedback}: TutorialDialogueProps) {
+  if (!message && !feedback) return null;
+  return <aside className="combat-coach" aria-label={t('Combat help')} data-learned={message?.learned}>
+    {message && (visible ? <div className="combat-coach-panel">
+      <span className="combat-coach-icon" aria-hidden="true">{message.icon ? <img src={icons[message.icon]} alt="" /> : '!'}</span>
+      <div id="combat-coach-instruction" className="combat-coach-instruction" role="status" aria-live="polite" aria-atomic="true">
+        <strong>{message.title}</strong>
+        <p>{message.content}</p>
 
-class TutorialDialogue extends Component<TutorialDialogueProps, TutorialDialogueState> {
-  private typingTimer: number | null = null;
-  private typingSpeed: number = 30; // milliseconds per character
-  private handleResize = () => {
-    if (this.props.position === 'spells' || this.props.position === 'items') {
-      this.updateDialoguePosition(this.props.position);
-    }
-  };
-
-  state: TutorialDialogueState = {
-    messageIndex: 0,
-    displayedMessage: '',
-    dialoguePosition: null
-  };
-
-  componentDidMount() {
-    if (this.props.messages) {
-      this.resetTyping();
-    }
-    if (this.props.position === 'spells' || this.props.position === 'items') {
-      this.updateDialoguePosition(this.props.position);
-    }
-    window.addEventListener('resize', this.handleResize);
-  }
-
-  componentDidUpdate(prevProps: TutorialDialogueProps, prevState: TutorialDialogueState) {
-    if (this.props.messages !== prevProps.messages) {
-      this.setState({ messageIndex: 0 });
-    }
-    if (this.props.messages !== prevProps.messages || this.state.messageIndex !== prevState.messageIndex) {
-      this.resetTyping();
-    }
-    if (this.props.position !== prevProps.position) {
-      this.handleResize();
-    }
-  }
-
-  componentWillUnmount() {
-    this.clearTypingTimer();
-    window.removeEventListener('resize', this.handleResize);
-  }
-
-  resetTyping() {
-    this.clearTypingTimer();
-    this.setState({ displayedMessage: '' }, () => {
-      this.typeMessage();
-    });
-  }
-
-  clearTypingTimer() {
-    if (this.typingTimer !== null) {
-      clearTimeout(this.typingTimer);
-      this.typingTimer = null;
-    }
-  }
-
-  typeMessage() {
-    const { messages } = this.props;
-    const { displayedMessage } = this.state;
-
-    if (displayedMessage.length < messages[this.state.messageIndex].length) {
-      this.setState(
-        { displayedMessage: messages[this.state.messageIndex].slice(0, displayedMessage.length + 1) },
-        () => {
-          this.typingTimer = window.setTimeout(() => this.typeMessage(), this.typingSpeed);
-        }
-      );
-    }
-  }
-
-  handleNext = () => {
-    events.emit('nextTutorialMessage');
-    // If we're switching to the last message, emit a corresponding event
-    if (this.state.messageIndex === this.props.messages.length - 2) {
-      events.emit('lastTutorialMessage');
-    }
-    this.setState(
-      { messageIndex: this.state.messageIndex + 1 },
-      () => {
-        this.resetTyping();
-      }
-    );
-  }
-
-  updateDialoguePosition = (position: 'spells' | 'items') => {
-    const anchor = position === 'spells' ? InventoryType.SPELLS : InventoryType.CONSUMABLES;
-    const firstIcon = document.querySelector(`#player_hud_${anchor}`);
-    if (firstIcon) {
-      const rect = firstIcon.getBoundingClientRect();
-      this.setState({
-        dialoguePosition: {
-          bottom: window.innerHeight - rect.top + 12,
-          right: Math.max(12, window.innerWidth - rect.right),
-          left: 'auto',
-        }
-      });
-    }
-  };
-
-  render() {
-    const { displayedMessage, messageIndex, dialoguePosition } = this.state;
-    const { messages, position = 'bottom' } = this.props;
-
-    if (displayedMessage.length === 0) return null;
-
-    const style = (position === 'spells' || position === 'items') && dialoguePosition
-      ? dialoguePosition
-      : undefined;
-
-    return (
-      <div
-        className={`tutorial-dialogue ${position} visible`}
-        style={style}
-      >
-        {/* <img
-          src={avatarSrc}
-          alt=""
-          className="tutorial-dialogue-avatar"
-          onLoad={this.handleAvatarLoad}
-        /> */}
-        <div className="tutorial-dialogue-content">
-          {/* <div className="tutorial-dialogue-speaker">{DEFAULT_SPEAKER_NAME}</div> */}
-          <p className="tutorial-dialogue-message">{displayedMessage}</p>
-        </div>
-        {messageIndex < messages.length - 1 && (
-          <button type="button" className="tutorial-dialogue-next" onClick={this.handleNext}>
-            <span className="tutorial-dialogue-next-text">{t("Next")}</span>
-            <span className="tutorial-dialogue-next-arrow"></span>
-          </button>
-        )}
       </div>
-    );
-  }
+      <button type="button" data-game-control className="combat-coach-close" aria-label={t('Hide combat tips')}
+        aria-expanded="true" aria-controls="combat-coach-instruction" onClick={onToggle}>×</button>
+    </div> : <button type="button" data-game-control className="combat-coach-reopen" aria-expanded="false"
+      onClick={onToggle}><span aria-hidden="true">?</span> {t('Combat tips')}</button>)}
+    {feedback && <p className="combat-action-feedback" role="status" aria-live="polite">{feedback}</p>}
+  </aside>;
 }
-
-export default TutorialDialogue;

@@ -35,6 +35,7 @@
 
 .season-card-header-title {
     color: white;
+    text-transform: uppercase;
 }
 
 .season-card-header-title>span:first-child {

@@ -1,221 +1,127 @@
-import {t} from '../i18n/core';
-import { events } from '../components/HUD/GameHUD';
-import { EngagementStats } from '@legion/shared/interfaces';
+import { t } from '../i18n/core';
+import type { EventEmitter } from 'eventemitter3';
+import type { EngagementStats } from '@legion/shared/interfaces';
 
-interface TutorialMessage {
+export interface TutorialContext {
+    turn: number;
+    name: string;
+    ownTurn: boolean;
+    selectedIsTurnee: boolean;
+    canAct: boolean;
+    hasEnemy: boolean;
+    hasSpells: boolean;
+    spellInRange: boolean;
+    pendingSpell?: boolean;
+    pendingItem: boolean;
+    ice: boolean;
+    fire?: boolean;
+    poison?: boolean;
+    muted?: boolean;
+    paralyzed?: boolean;
+    lowMP?: boolean;
+    hasItem?: boolean;
+}
+
+export interface TutorialMessage {
+    title: string;
     content: string;
-    position?: 'bottom' | 'spells' | 'items';
+    focus?: 'spells' | 'items' | 'timeline';
+    learned: number;
+    icon?: 'move' | 'attack' | 'spell' | 'item' | 'turn';
+}
+
+// Store the player's choice, not progress. Learned actions come from the match/account.
+export function combatTipsVisible(defaultVisible: boolean): boolean {
+    try {
+        const preference = localStorage.getItem('legion-combat-tips');
+        return preference === null ? defaultVisible : preference === 'shown';
+    } catch { return defaultVisible; }
+}
+
+export function saveCombatTips(visible: boolean) {
+    try { localStorage.setItem('legion-combat-tips', visible ? 'shown' : 'hidden'); } catch { /* Storage can be unavailable. */ }
 }
 
 export class TutorialManager {
-    private engagementStats: Partial<EngagementStats>;
-    private messageQueue: TutorialMessage[] = [];
-    private isProcessingQueue = false;
-    private lastMessageTime: number = 0;
-    private readonly MESSAGE_COOLDOWN = 1000;
-    private gameEnded = false;
-
-    // Map of events to their corresponding tutorial messages
-    private readonly tutorialMessages: Record<string, TutorialMessage> = {
-        howToMove: {
-            content: t("Click on a blue tile to move!")
-        },
-        howToAttack: {
-            content: t("Click on an adjacent enemy to attack!")
-        },
-        howToCastSpell: {
-            content: t("Click on a spell icon to cast it!"),
-            position: 'spells'
-        },
-        howToUseItem: {
-            content: t("Click an item icon to use it!"),
-            position: 'items'
-        },
-        howToDealWithFlames: {
-            content: t("Move away from flames to avoid repeated damage!")
-        },
-        howToBreakIce: {
-            content: t("Attack ice with another character to break it!")
-        },
-        howToDealWithPoison: {
-            content: t("Poison damages you every turn for several turns!")
-        },
-        howToDealWithSilence: {
-            content: t("You cannot cast spells while silenced!")
-        },
-        howToDealWithParalysis: {
-            content: t("Paralysis prevents you from acting for several turns!")
-        },
-        howToDealWithLowMP: {
-            content: t("You can't cast spells without enough MP!"),
-            position: 'spells'
-        }
+    private context?: TutorialContext;
+    private actionTurn = -1;
+    private shownThisTurn = new Map<keyof EngagementStats, number>();
+    private ended = false;
+    private stats: Partial<EngagementStats>;
+    private handlers = {
+        tutorialContext: (context: TutorialContext) => { this.context = context; this.refresh(); },
+        playerMoved: () => this.acceptAction('everMoved'),
+        playerAttacked: () => this.acceptAction('everAttacked'),
+        playerCastSpell: () => this.acceptAction('everUsedSpell'),
+        playerUseItem: () => this.acceptAction('everUsedItem'),
+        gameEnd: () => { this.ended = true; this.events.emit('hideTutorialMessage'); },
     };
 
-    constructor(engagementStats: Partial<EngagementStats>) {
-        this.engagementStats = engagementStats || {};
-        this.setupEventListeners();
+    constructor(private events: EventEmitter, stats: Partial<EngagementStats>) {
+        this.stats = { ...stats };
+        for (const [event, handler] of Object.entries(this.handlers)) events.on(event, handler);
     }
 
-    private setupEventListeners() {
-        events.on('performAction', () => {
-            events.emit('hideTutorialMessage');
-        });
-        events.on('turnStarted', () => {
-            events.emit('hideTutorialMessage');
-        });
-        events.on('gameEnd', () => {
-            this.gameEnded = true;
-            events.emit('hideTutorialMessage');
-        });
-
-        if (!this.engagementStats.everMoved) {
-            events.on('selectCharacter', () => {
-                this.queueMessage('howToMove');
-            });
-            events.on('playerMoved', () => {
-                this.engagementStats.everMoved = true;
-                events.removeAllListeners('selectCharacter');
-
-                if (!this.engagementStats.everAttacked) {
-                    events.on('hasEnemy', () => {
-                        this.queueMessage('howToAttack');
-                        events.removeAllListeners('hasEnemy');
-                    });
-                    events.on('playerAttacked', () => {
-                        this.engagementStats.everAttacked = true;
-                    });
-                }
-
-                events.removeAllListeners('playerMoved');
-            });
-        }
-
-        // Spells and items
-        if (!this.engagementStats.everUsedSpell) {
-            events.on('selectCharacter_2', () => {
-                this.queueMessage('howToCastSpell');
-            });
-            events.on('playerCastSpell', () => {
-                this.engagementStats.everUsedSpell = true;
-                events.removeAllListeners('selectCharacter_2');
-            });
-        }
-
-        if (!this.engagementStats.everUsedItem && this.engagementStats.completedGames < 4) {
-            events.on('selectCharacter_hasItem', () => {
-                this.queueMessage('howToUseItem');
-            });
-            events.on('playerUseItem', () => {
-                this.engagementStats.everUsedItem = true;
-                events.removeAllListeners('selectCharacter_hasItem');
-            });
-        }
-
-        // Environmental effects
-        if (!this.engagementStats.everSawFlames) {
-            events.on('hasFlame', () => {
-                if (this.queueMessage('howToDealWithFlames')) {
-                    this.engagementStats.everSawFlames = true;
-                    events.removeAllListeners('hasFlame');
-                }
-            });
-        }
-
-        if (!this.engagementStats.everSawIce) {
-            events.on('hasIce', () => {
-                if (this.queueMessage('howToDealWithIce')) {
-                    this.engagementStats.everSawIce = true;
-                    events.removeAllListeners('hasIce');
-                }
-            });
-        }
-
-        if (!this.engagementStats.everPoisoned) {
-            events.on('hasStatus_Poison', () => {
-                if (this.queueMessage('howToDealWithPoison')) {
-                    this.engagementStats.everPoisoned = true;
-                    events.removeAllListeners('hasStatus_Poison');
-                }
-            });
-        }
-
-        if (!this.engagementStats.everSilenced) {
-            events.on('hasStatus_Mute', () => {
-                if (this.queueMessage('howToDealWithSilence')) {
-                    this.engagementStats.everSilenced = true;
-                    events.removeAllListeners('hasStatus_Mute');
-                }
-            });
-        }
-
-        if (!this.engagementStats.everParalyzed) {
-            events.on('hasStatus_Paralyze', () => {
-                if (this.queueMessage('howToDealWithParalysis')) {
-                    this.engagementStats.everParalyzed = true;
-                    events.removeAllListeners('hasStatus_Paralyze');
-                }
-            });
-        }
-
-        if (!this.engagementStats.everLowMP) {
-            events.on('hasLowMP', () => {
-                if (this.queueMessage('howToDealWithLowMP')) {
-                    this.engagementStats.everLowMP = true;
-                    events.removeAllListeners('hasLowMP');
-                }
-            });
-        }
+    private acceptAction(flag: keyof EngagementStats) {
+        if (this.ended) return;
+        this.stats = { ...this.stats, [flag]: true };
+        this.actionTurn = this.context?.turn ?? -1;
+        this.refresh();
     }
 
-    private queueMessage(messageKey: string) {
-        if (this.gameEnded) return false;
-        // console.log(`[TutorialManager:queueMessage] Attempting to queue message: ${messageKey}`);
-        const now = Date.now();
+    private refresh() {
+        const c = this.context;
+        if (!c || this.ended) return;
+        const learned = [this.stats.everMoved, this.stats.everAttacked, this.stats.everUsedSpell].filter(Boolean).length;
+        const show = (title: string, content: string, detail: Partial<TutorialMessage> = {}) =>
+            this.events.emit('showTutorialMessage', {title, content, learned, ...detail});
 
-        // Check if enough time has passed since the last message
-        if (now - this.lastMessageTime < this.MESSAGE_COOLDOWN) {
-            // console.log(`[TutorialManager:queueMessage] Skipping message: too soon after last message`);
-            return false; // Return false to indicate message wasn't queued
+        if (!c.ownTurn) {
+            this.events.emit('hideTutorialMessage');
+            return;
         }
-
-        const message = this.tutorialMessages[messageKey];
-        if (message) {
-            this.messageQueue.push(message);
-            this.lastMessageTime = now;
-            this.processMessageQueue();
-            // console.log(`[TutorialManager:queueMessage] Queued message: ${messageKey}`);
-            return true; // Return true to indicate message was queued
+        // Keep a newly seen situation visible for this turn, without repeating it in later turns.
+        const unseen = (flag: keyof EngagementStats) => !this.stats[flag] || this.shownThisTurn.get(flag) === c.turn;
+        const situation = (flag: keyof EngagementStats, title: string, content: string, detail: Partial<TutorialMessage> = {}) => {
+            this.stats = {...this.stats, [flag]: true};
+            this.shownThisTurn.set(flag, c.turn);
+            show(title, content, detail);
+        };
+        if (this.actionTurn === c.turn) {
+            this.events.emit('hideTutorialMessage');
+        } else if (!c.selectedIsTurnee) {
+            show(t('{{name}} acts now', {name: c.name}), t('Select the active character.'), {focus: 'timeline', icon: 'turn'});
+        } else if (c.pendingSpell || c.pendingItem) {
+            this.events.emit('hideTutorialMessage');
+        } else if (c.ice && unseen('everSawIce')) {
+            situation('everSawIce', t('Frozen in ice'), t('Attack ice with another character to break it!'), {icon: 'attack'});
+        } else if (c.paralyzed && unseen('everParalyzed')) {
+            situation('everParalyzed', t('Paralysis'), t('Paralysis prevents you from acting for several turns!'));
+        } else if (!c.canAct) {
+            this.events.emit('hideTutorialMessage');
+        } else if (c.fire && unseen('everSawFlames')) {
+            situation('everSawFlames', t('Flames'), t('Move away from flames to avoid repeated damage!'), {icon: 'move'});
+        } else if (c.poison && unseen('everPoisoned')) {
+            situation('everPoisoned', t('Poison'), t('Poison damages you every turn for several turns!'));
+        } else if (c.muted && unseen('everSilenced')) {
+            situation('everSilenced', t('Silence'), t('You cannot cast spells while silenced!'));
+        } else if (c.lowMP && unseen('everLowMP')) {
+            situation('everLowMP', t('Low mana'), t("You can't cast spells without enough MP!"), {focus: 'spells', icon: 'spell'});
+        } else if (c.hasEnemy && !this.stats.everAttacked) {
+            show(t('Attack'), t('Click on an adjacent enemy to attack!'), {icon: 'attack'});
+        } else if (c.hasSpells && c.spellInRange && !this.stats.everUsedSpell) {
+            show(t('Spells'), t('Click on a spell icon to cast it!'), {focus: 'spells', icon: 'spell'});
+        } else if (!this.stats.everMoved) {
+            show(t('Move'), t('Click on a blue tile to move!'), {icon: 'move'});
+        } else if (c.hasItem && !this.stats.everUsedItem) {
+            show(t('Items'), t('Click an item icon to use it!'), {focus: 'items', icon: 'item'});
+        } else {
+            this.events.emit('hideTutorialMessage');
         }
-        return false;
-    }
-
-    private async processMessageQueue() {
-        if (this.isProcessingQueue || this.messageQueue.length === 0) return;
-
-        this.isProcessingQueue = true;
-        const message = this.messageQueue.shift();
-        events.emit('showTutorialMessage', message);
-
-        this.isProcessingQueue = false;
-        this.processMessageQueue();
     }
 
     destroy() {
-        events.removeAllListeners('selectCharacter_hasItem');
-        events.removeAllListeners('selectCharacter_2');
-        events.removeAllListeners('selectCharacter');
-        events.removeAllListeners('hasEnemy');
-        events.removeAllListeners('playerMoved');
-        events.removeAllListeners('playerCastSpell');
-        events.removeAllListeners('playerAttacked');
-        events.removeAllListeners('selectedSpell');
-        events.removeAllListeners('playerUseItem');
-        events.removeAllListeners('flamesAppeared');
-        events.removeAllListeners('iceAppeared');
-        events.removeAllListeners('hasStatus_POISON');
-        events.removeAllListeners('hasStatus_MUTE');
-        events.removeAllListeners('hasStatus_PARALYZE');
-
+        this.ended = true;
+        for (const [event, handler] of Object.entries(this.handlers)) this.events.off(event, handler);
     }
 }

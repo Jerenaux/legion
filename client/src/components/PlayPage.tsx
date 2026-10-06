@@ -7,8 +7,7 @@ import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
 import DailyQuest from './dailyQuest/DailyQuest';
 import DailyLoot from './dailyLoot/DailyLoot';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css'
+import Ghost from './ghost/Ghost';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
 import { firebaseAuth } from '../services/firebaseService';
@@ -177,12 +176,7 @@ class PlayPage extends Component {
           onPopupResolved={this.handlePopupResolved}
         />
         <Roster/>
-        {data ? <PlayModes /> : <Skeleton
-          height={50}
-          count={2}
-          highlightColor='#0000004d'
-          baseColor='#0f1421'
-          style={{ margin: '2px 146px', width: '1024px'}} />}
+        {data ? <PlayModes /> : <Ghost height={280} count={4} className="ghost-row" width="13rem" />}
         {this.context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={this.context.player.dailyloot} />}
         {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}
         {ENABLE_SPECTATOR_MODE && <OnGoingArena ongoingGameData={data.ongoingGames} />}

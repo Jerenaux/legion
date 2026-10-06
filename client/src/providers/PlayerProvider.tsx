@@ -15,7 +15,7 @@ import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
 import { route } from 'preact-router';
-import {createRefreshingSocketAuth, socketReconnectOptions} from '../services/socketPolicy';
+import {createRefreshingSocketAuth, retrySocketAuthentication, socketReconnectOptions} from '../services/socketPolicy';
 
 import {
   canEquipConsumable,
@@ -37,9 +37,17 @@ import { getEquipmentById } from "@legion/shared/Equipments";
 import { LOCKED_FEATURES } from '@legion/shared/config';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
-    private fetchAllDataTimeout: NodeJS.Timeout | null = null;
-    private fetchAllDataDelay: number = 400;
-    private playerFetchGeneration = 0;
+    private bootstrapRequest: Promise<void> | undefined;
+    /** Invalidates in-flight loads on sign-out or account switch. */
+    private session = 0;
+    /** Player data is applied only from a request started after the one last applied. */
+    private playerRequestSeq = 0;
+    private playerAppliedSeq = 0;
+    private bootstrapDone = false;
+    private refreshQueued = false;
+    private retryDelay = 0;
+    private retryTimer: ReturnType<typeof setTimeout> | undefined;
+    private failureNotified = false;
 
     constructor(props: {}) {
       super(props);
@@ -112,7 +120,14 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     resetState = () => {
-      this.playerFetchGeneration++;
+      this.session++;
+      this.bootstrapRequest = undefined;
+      this.bootstrapDone = false;
+      this.refreshQueued = false;
+      this.retryDelay = 0;
+      this.failureNotified = false;
+      clearTimeout(this.retryTimer);
+      this.retryTimer = undefined;
       if (this.state.socket) {
         this.state.socket.disconnect();
       }
@@ -121,7 +136,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     componentDidMount() {
       if (firebaseAuth.currentUser) {
-        this.debouncedFetchAllData();
+        this.ensureLoaded();
         this.setupSocket();
       }
     }
@@ -130,51 +145,104 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       const user = firebaseAuth.currentUser;
       if (!user && this.state.player.isLoaded) {
         this.resetState();
-      } else if (user && !this.state.player.isLoaded) {
-        this.debouncedFetchAllData();
-        this.setupSocket();
+      } else if (user && !this.bootstrapDone) {
+        this.ensureLoaded();
+        if (!this.state.player.isLoaded) this.setupSocket();
       }
     }
 
+    // Automatic loading: at most one request at a time, and after a failure only the
+    // scheduled retry runs, so state updates during an outage cannot cause a request storm.
+    ensureLoaded() {
+      if (this.bootstrapRequest || this.retryTimer || this.bootstrapDone) return;
+      void this.startBootstrap();
+    }
+
     componentWillUnmount(): void {
+      clearTimeout(this.retryTimer);
       this.resetState();
-      if (this.fetchAllDataTimeout !== null) {
-        clearTimeout(this.fetchAllDataTimeout);
-      }
       if (this.state.socket) {
         this.state.socket.disconnect();
       }
     }
 
-    debouncedFetchAllData = () => {
-      if (this.fetchAllDataTimeout !== null) {
-        clearTimeout(this.fetchAllDataTimeout);
+    // Explicit refresh (after rewards, purchases, matches). A refresh requested while a load is
+    // in flight runs again afterwards, so callers always end up with data fetched after their change.
+    fetchAllData(): Promise<void> {
+      if (!firebaseAuth.currentUser) return Promise.resolve();
+      if (this.bootstrapRequest) {
+        this.refreshQueued = true;
+        return this.bootstrapRequest.then(() => (this.refreshQueued ? this.fetchAllData() : undefined));
       }
-      this.fetchAllDataTimeout = setTimeout(() => {
-        this.fetchAllData();
-        this.fetchAllDataTimeout = null;
-      }, this.fetchAllDataDelay);
+      clearTimeout(this.retryTimer);
+      this.retryTimer = undefined;
+      return this.startBootstrap();
     }
 
-    fetchAllData() {
+    private startBootstrap(): Promise<void> {
       const user = firebaseAuth.currentUser;
-      if (!user) {
-        return;
-      }
+      if (!user) return Promise.resolve();
+      this.refreshQueued = false;
+      const session = this.session;
+      const request = this.loadBootstrap(user.uid, session).finally(() => {
+        if (this.bootstrapRequest === request) this.bootstrapRequest = undefined;
+      });
+      this.bootstrapRequest = request;
+      void this.fetchFriends();
+      return request;
+    }
 
-      this.fetchPlayerData();
-      this.fetchRosterData();
-      this.fetchFriends();
+    private async loadBootstrap(uid: string, session: number) {
+      const seq = ++this.playerRequestSeq;
+      const current = () => session === this.session && firebaseAuth.currentUser?.uid === uid;
+      try {
+        let data: {player: PlayerContextData; characters: APICharacterData[]};
+        try {
+          data = await apiFetch('bootstrapPlayer', {}, 3);
+        } catch (error) {
+          // Any bootstrap failure falls back to the long-standing endpoints: being able to play
+          // matters more than saving a round trip.
+          console.warn('bootstrapPlayer failed; using legacy player endpoints', error);
+          const [player, roster] = await Promise.all([apiFetch('getPlayerData', {}, 3), apiFetch('rosterData', {}, 3)]);
+          data = {player, characters: roster.characters};
+        }
+        if (!current()) return;
+        this.bootstrapDone = true;
+        this.retryDelay = 0;
+        this.failureNotified = false;
+        // Keep player data that a newer refresh already applied; the roster is still needed.
+        if (seq > this.playerAppliedSeq) {
+          this.playerAppliedSeq = seq;
+          this.setState({player: {...data.player, uid, isLoaded: true}, characters: data.characters});
+        } else {
+          this.setState({characters: data.characters});
+        }
+      } catch (error) {
+        if (!current()) return;
+        if (!this.failureNotified) {
+          this.failureNotified = true;
+          errorToast(userError(error));
+        }
+        this.retryDelay = Math.min(30_000, this.retryDelay ? this.retryDelay * 2 : 1_000);
+        clearTimeout(this.retryTimer);
+        this.retryTimer = setTimeout(() => {
+          this.retryTimer = undefined;
+          if (current() && !this.bootstrapDone) this.ensureLoaded();
+        }, this.retryDelay);
+      }
     }
 
     async fetchPlayerData() {
       const user = firebaseAuth.currentUser;
       if (!user) return;
-      const generation = ++this.playerFetchGeneration;
+      const session = this.session;
+      const seq = ++this.playerRequestSeq;
 
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
-          if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== user.uid) return;
+          // Ignore if signed out, or if a newer player load already landed.
+          if (session !== this.session || seq <= this.playerAppliedSeq || firebaseAuth.currentUser?.uid !== user.uid) return;
+          this.playerAppliedSeq = seq;
           this.setState({
               player: {
                   uid: user.uid,
@@ -195,7 +263,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
               }
           });
       } catch (error) {
-          if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== user.uid) return;
+          if (session !== this.session || firebaseAuth.currentUser?.uid !== user.uid) return;
           errorToast(userError(error));
       }
     }
@@ -485,7 +553,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       // console.log(`Connecting to ${process.env.MATCHMAKER_URL} ...`);
 
       const socket = io(process.env.MATCHMAKER_URL, {
-        auth: createRefreshingSocketAuth(() => getFirebaseIdToken(true)),
+        auth: createRefreshingSocketAuth(() => getFirebaseIdToken()),
         ...socketReconnectOptions,
       });
 
@@ -499,6 +567,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       });
 
       socket.on('connect_error', (error) => {
+        if (retrySocketAuthentication(socket, error, getFirebaseIdToken, () => this.state.socket === socket && Boolean(firebaseAuth.currentUser))) return;
         console.error('Connection error:', error);
         // errorToast('Connection error, attempting to reconnect...');
 

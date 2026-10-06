@@ -1,12 +1,11 @@
 import { h } from 'preact';
 // PlayPage.tsx
-import 'react-loading-skeleton/dist/skeleton.css'
 
 import { Component, createRef } from 'preact';
 
 import Roster from './roster/Roster';
 import Inventory from './inventory/Inventory';
-import Skeleton from 'react-loading-skeleton';
+import Ghost from './ghost/Ghost';
 
 import CharacterSheet from './characterSheet/CharacterSheet';
 import { APICharacterData, Effect } from '@legion/shared/interfaces';
@@ -177,22 +176,12 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             selectedEquipmentSlot={this.state.selectedEquipmentSlot}
             handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot}
             updateCharacterData={this.updateCharacterData}
-          /> : <Skeleton
-          height={400}
-          count={1}
-          highlightColor='#0000004d'
-          baseColor='#0f1421'
-          className="character-sheet-skeleton"/>}
+          /> : <Ghost height={420} className="character-sheet-skeleton" />}
 
           {this.context.player.isLoaded ? <Inventory
             handleItemEffect={this.handleItemEffect}
             handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot}
-          /> : <Skeleton
-          height={297}
-          count={1}
-          highlightColor='#0000004d'
-          baseColor='#0f1421'
-          className="inventory-skeleton"/>}
+          /> : <Ghost height={420} className="inventory-skeleton" />}
         </div>
       </div>
     );

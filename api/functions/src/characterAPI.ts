@@ -14,6 +14,41 @@ import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpd
 import {applyRankedResult, currentSeasonId} from "./ranking";
 import {gameResultReceiptId} from "./gameResults";
 
+export async function readRoster(characters: admin.firestore.DocumentReference[]) {
+  if (!characters.length) return [];
+  const db = admin.firestore();
+
+  const characterDocs = await db.getAll(...characters, {
+    fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
+      'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
+      'skills',
+    ],
+  });
+
+  return characterDocs.map((characterDoc) => {
+    return {
+      id: characterDoc.id,
+      name: characterDoc.get('name'),
+      level: characterDoc.get('level'),
+      class: characterDoc.get('class'),
+      experience: characterDoc.get('experience'),
+      portrait: characterDoc.get('portrait'),
+      xp: characterDoc.get('xp'),
+      sp: characterDoc.get('sp'),
+      stats: characterDoc.get('stats'),
+      carrying_capacity: characterDoc.get('carrying_capacity'),
+      carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
+      skill_slots: characterDoc.get('skill_slots'),
+      inventory: characterDoc.get('inventory'),
+      equipment: characterDoc.get('equipment'),
+      equipment_bonuses: characterDoc.get('equipment_bonuses'),
+      sp_bonuses: characterDoc.get('sp_bonuses'),
+      skills: characterDoc.get('skills'),
+    };
+  });
+
+}
+
 export const rosterData = onRequest({
   memory: '512MiB',
 }, async (request, response) => {
@@ -26,35 +61,7 @@ export const rosterData = onRequest({
       if (docSnap.exists) {
         const characters = docSnap.data()?.characters as admin.firestore.DocumentReference[];
 
-        // Batch get operation
-        const characterDocs = await db.getAll(...characters, {
-          fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
-            'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
-            'skills',
-          ],
-        });
-
-        const rosterData = characterDocs.map((characterDoc) => {
-          return {
-            id: characterDoc.id,
-            name: characterDoc.get('name'),
-            level: characterDoc.get('level'),
-            class: characterDoc.get('class'),
-            experience: characterDoc.get('experience'),
-            portrait: characterDoc.get('portrait'),
-            xp: characterDoc.get('xp'),
-            sp: characterDoc.get('sp'),
-            stats: characterDoc.get('stats'),
-            carrying_capacity: characterDoc.get('carrying_capacity'),
-            carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
-            skill_slots: characterDoc.get('skill_slots'),
-            inventory: characterDoc.get('inventory'),
-            equipment: characterDoc.get('equipment'),
-            equipment_bonuses: characterDoc.get('equipment_bonuses'),
-            sp_bonuses: characterDoc.get('sp_bonuses'),
-            skills: characterDoc.get('skills'),
-          };
-        });
+        const rosterData = await readRoster(characters);
 
         response.send({
           characters: rosterData,

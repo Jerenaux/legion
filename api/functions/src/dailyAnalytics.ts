@@ -1,4 +1,4 @@
-import {FieldPath, type Firestore} from "firebase-admin/firestore";
+import {FieldPath, FieldValue, type Firestore} from "firebase-admin/firestore";
 import {GameStatus, PlayMode} from "@legion/shared/enums";
 
 const DAY_MS = 86_400_000;
@@ -18,19 +18,22 @@ export function dailyAnalyticsRange(startDate: unknown, endDate: unknown, now = 
   return {startDate: start, endDate: end};
 }
 
-export async function recordPlayerActivity(db: Firestore, uid: string, lastActiveDate: unknown, storeBuild = false, now = new Date()) {
+export async function recordPlayerActivity(db: Firestore, uid: string, lastActiveDate: unknown, storeBuild = false, now = new Date(), lastStoreActiveDay?: string) {
   const timestamp = now.toISOString().replace("T", " ").slice(0, 19);
-  const dailyRef = db.collection("dailyActiveUsers").doc(timestamp.slice(0, 10));
-  // Always check eligible DAU: a new account or a game-server update can have the same lastActiveDate.
-  // ponytail: retain the existing one-document/day array; shard if it approaches Firestore's 1 MiB limit.
-  await Promise.all([
-    lastActiveDate === timestamp ? Promise.resolve() : db.collection("players").doc(uid).update({lastActiveDate: timestamp}),
-    storeBuild ? db.runTransaction(async transaction => {
-      const snapshot = await transaction.get(dailyRef);
-      const users: string[] = snapshot.data()?.storeUsers ?? [];
-      if (!users.includes(uid)) transaction.set(dailyRef, {storeUsers: [...users, uid]}, {merge: true});
-    }) : Promise.resolve(),
-  ]);
+  const day = timestamp.slice(0, 10);
+  const lastActive = typeof lastActiveDate === 'string' ? Date.parse(lastActiveDate.replace(' ', 'T') + 'Z') : NaN;
+  const updateActivity = !Number.isFinite(lastActive) || now.getTime() - lastActive >= 5 * 60_000;
+  const updateDAU = storeBuild && lastStoreActiveDay !== day;
+  if (!updateActivity && !updateDAU) return;
+  const batch = db.batch();
+  batch.update(db.collection('players').doc(uid), {
+    ...(updateActivity ? {lastActiveDate: timestamp} : {}),
+    ...(updateDAU ? {lastStoreActiveDay: day} : {}),
+  });
+  // Atomic arrayUnion deduplicates concurrent arrivals without a read/transaction.
+  // ponytail: keep the existing day document; shard when it approaches Firestore's 1 MiB limit.
+  if (updateDAU) batch.set(db.collection('dailyActiveUsers').doc(day), {storeUsers: FieldValue.arrayUnion(uid)}, {merge: true});
+  await batch.commit();
 }
 
 export async function getDailyAnalytics(db: Firestore, range: ReturnType<typeof dailyAnalyticsRange>) {

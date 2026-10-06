@@ -10,6 +10,7 @@ interface ElectronAPI {
   smokeTest?: boolean;
   isFullscreen: () => Promise<boolean>;
   toggleFullscreen: () => Promise<boolean>;
+  quitApp: () => Promise<void>;
   getPlatformAuth: () => Promise<PlatformCredential | null>;
   getPendingGift?: () => Promise<string | null>;
   acknowledgeGift?: (token: string) => Promise<void>;

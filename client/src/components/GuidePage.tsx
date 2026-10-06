@@ -74,13 +74,13 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <dl className="guide-definitions">
               <div><dt>{t("Practice")}</dt><dd>{t("Fight AI and learn your loadout. Reduced XP and gold; no item rewards or ELO changes. Equipped consumables are still used up.")}</dd></div>
               <div><dt>{t("Casual")}</dt><dd>{t("Play against other players for normal rewards without putting your ELO or league record on the line.")}</dd></div>
-              <div><dt>{t("Ranked")}</dt><dd>{t("Play against other players for higher rewards, with results counting toward ELO and the weekly league. Unlocks after {{value0}} completed games.", {value0: LOCKED_FEATURES[LockedFeatures.RANKED_MODE]})}</dd></div>
+              <div><dt>{t("Ranked")}</dt><dd>{t("Play against other players for higher rewards, with results counting toward ELO and the weekly league.")}<br />{t("Unlocks after {{required}} completed games.", {required: LOCKED_FEATURES[LockedFeatures.RANKED_MODE]})}</dd></div>
             </dl>
           </section>
 
           <section aria-labelledby="tower">
             <h2 id="tower" tabIndex={-1}>{t("The Cinder Tower")}</h2>
-            <p>{t("Unlocks after {{required}} completed matches.", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</p>
+            <p>{t("Unlocks after {{required}} completed games.", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</p>
             <p>{t("On Play, choose the golden rook to the right of Ranked. Choose Balanced or Control, set the difficulty, and use Begin expedition in the bottom bar. Rules & rewards opens the full rules.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Choose <0>The Cinder Tower</0> on Play for an online solo expedition. A temporary Warrior, White Mage, and Black Mage climb six floors, ending with the Cinder Warden. Turns have no deadline, so the combat dock shows no timer. Enemies have boosted health, mana, attack, defenses, and speed. Your main roster and owned consumables are separate from this squad."} components={[<strong />]} /></p>
             <figure><img src={tower} width="1600" height="840" loading="lazy" alt={t("The tower route screen with the expedition squad, banked rewards, and a choice between the Broken Gate and the more dangerous Ember Approach.")} /><figcaption>{t("Follow your ascent on the left. Check your squad, compare the enemy lineups, and choose your next encounter. Dangerous paths award 25% more gold and XP.")}</figcaption></figure>
@@ -129,6 +129,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h2 id="magic" tabIndex={-1}>{t("Magic changes the battlefield")}</h2>
             <p>{t("Read item and spell details in Team or Shop before a match: check the effect, MP cost, and action speed. Fast actions bring your next turn around sooner than slow ones. A bigger spell is not always the better choice.")}</p>
             <p><Trans i18n={i18n} i18nKey={"<0>Check the whole target area.</0> Area spells can affect allies as well as enemies, and healing can help an opponent caught in the area. Aim carefully before confirming."} components={[<strong />]} /></p>
+            <p>{t("Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.")}</p>
             <dl className="guide-definitions">
               <div><dt>{t("Fire")}</dt><dd>{t("Leaves burning ground. Crossing flames or remaining on them causes damage. Move out of the fire; an ice spell can extinguish it.")}</dd></div>
               <div><dt>{t("Ice")}</dt><dd>{t("Creates obstacles and can freeze a character in place. Break the ice with a melee attack from another character or melt it with fire. Attacking an occupied ice tile can also hurt its captive.")}</dd></div>
@@ -192,17 +193,22 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="controls">
             <h2 id="controls" tabIndex={-1}>{t("Controls & quick help")}</h2>
+            <p>{t("Combat tips respond to unfamiliar actions and hazards. Switch them on or off before battle.")}</p>
+            <p><Trans i18n={i18n} i18nKey={"Open <0>Combat tips</0> on your turn for guidance about the current character and available actions. Hide the tips whenever you like. Tips pause during enemy turns. If a target or move is invalid, a short explanation appears without spending your action."} components={[<strong />]} /></p>
             <p>{t("Change language on the title screen or in Settings. Text and artwork update immediately. During a match, replay, queue, or lobby, return to the main menu first.")}</p>
             <p>{t("On Steam, your Steam language is used by default. A language you choose in the game takes priority.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Use <0>Settings → Text size</0> to choose Standard (100%), Large (115%), or Extra large (130%). Menu, dialog, and combat HUD text update immediately, and the setting is saved for future sessions."} components={[<strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Music starts while connecting and loops through the title screen. A separate track loops across the menus. Music fades out over two seconds before switching from the title screen to menus or from menus to combat, with a short fade-in for the next track. Music starts at {{value0}}%. Open <0>Settings</0> to adjust it from 0 (muted) to 100 (full volume). Your chosen volume is saved for future sessions."} components={[<strong />]} values={{value0: defaultGameSettings.musicVolume}} /></p>
+            <p><Trans i18n={i18n} i18nKey={"<0>Mute</0> beside each volume slider silences music or sound effects and restores the same level when pressed again. <1>Colorblind mode</1> replaces green and red on the battlefield with blue and orange."} components={[<strong />, <strong />]} /></p>
             <dl className="guide-definitions">
               <div><dt>{t("Mouse")}</dt><dd>{t("Click tiles to move, enemies to attack, and action icons to use items or select spells.")}</dd></div>
-              <div><dt>{t("Action letters")}</dt><dd>{t("Use the letters printed on the item and spell icons. Choose QWERTY or AZERTY in Settings; follow the labels for your layout.")}</dd></div>
+              <div><dt>{t("Action letters")}</dt><dd>{t("Use the keys printed on the item and spell icons. Change any key or controller button in Settings, under Controls.")}</dd></div>
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Select your first three living characters. <0>Tab</0> / <1>Shift</1> + <2>Tab</2> cycle through living allies. Selection does not let a character act out of turn."} components={[<kbd />, <kbd />, <kbd />]} /></dd></div>
-              <div><dt><kbd>{t("Space")}</kbd> / <kbd>{t("E")}</kbd> / <kbd>{t("End")}</kbd></dt><dd>{t("Pass the active turn.")}</dd></div>
-              <div><dt><kbd>{t("Esc")}</kbd></dt><dd>{t("Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.", {value0: onClose ? 'the queue' : 'Play'})}</dd></div>
+              <div><dt><kbd>{t("Space")}</kbd> / <kbd>{t("End")}</kbd></dt><dd>{t("Pass the active turn.")}</dd></div>
+              <div><dt><kbd>{t("Esc")}</kbd></dt><dd>{t("Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.", {value0: onClose ? 'the queue' : 'Play'})} {t("With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.")}</dd></div>
+              <div><dt><kbd>F11</kbd> / <kbd>{t("Alt")}</kbd> + <kbd>{t("Enter")}</kbd></dt><dd>{t("Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.")}</dd></div>
               <div><dt><kbd>{t("P")}</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Open the combat menu. <0>The match keeps running:</0> opening Settings does not pause the opponent or the turn timer."} components={[<strong />]} /></dd></div>
+              <div><dt>{t("Controller")}</dt><dd>{t("A confirms, B cancels, Y passes the turn, LB and RB switch characters, and Menu opens the game menu. The D-pad or left stick moves focus.")}</dd></div>
               <div><dt>{t("Menus")}</dt><dd><Trans i18n={i18n} i18nKey={"<0>Tab</0> or arrow keys move focus; <1>Enter</1> or <2>Space</2> activates a focused control. You can use the mouse wheel to scroll this guide."} components={[<kbd />, <kbd />, <kbd />]} /></dd></div>
             </dl>
             <h3>{t("“Why can’t I act?”")}</h3>

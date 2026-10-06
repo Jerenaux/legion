@@ -21,6 +21,7 @@ test('enemy placement retains its spells and mana updates target the correct tea
   }
   const arena = runInNewContext(code, {Player, PlayMode: {TOWER: 'tower'}, t: key => `localized:${key}`, serializeCoords: () => 'tile'});
   arena.playerTeamId = 1;
+  arena.refreshTutorial = () => {};
   arena.hexGridToPixelCoords = () => ({x: 0, y: 0});
   arena.gridMap = new Map();
   const members: Player[] = [];

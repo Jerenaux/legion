@@ -65,52 +65,32 @@ describe("daily analytics", () => {
     expect(aggregates).toBe(6);
   });
 
-  test("records same-second arrivals once, awaits both writes, and propagates failures", async () => {
-    const days = new Map<string, {storeUsers: string[]}>();
-    let updates = 0;
-    let releaseUpdate!: () => void;
-    let releaseActivity!: () => void;
-    let updateGate = Promise.resolve();
-    let activityGate = Promise.resolve();
+  test("throttles activity, records store days durably, awaits commits, and propagates failures", async () => {
+    let commits = 0;
+    let sets = 0;
+    let release!: () => void;
+    let gate = Promise.resolve();
     const db = {
-      collection: () => ({doc: (id: string) => ({id, update: async () => {await updateGate; updates++;}})}),
-      runTransaction: async (callback: (transaction: unknown) => Promise<void>) => {
-        await activityGate;
-        return callback({
-          get: async (ref: {id: string}) => ({data: () => days.get(ref.id)}),
-          set: (ref: {id: string}, data: {storeUsers: string[]}) => days.set(ref.id, data),
-        });
-      },
+      collection: (name: string) => ({doc: (id: string) => ({name, id})}),
+      batch: () => ({update: () => {}, set: () => {sets++;}, commit: async () => {await gate; commits++;}}),
     } as unknown as Firestore;
-    const now = new Date("2026-09-24T12:00:00Z");
-    await recordPlayerActivity(db, "a", "2026-09-24 12:00:00", true, now);
-    await recordPlayerActivity(db, "a", "2026-09-24 12:00:00", true, now);
-    expect(days.get("2026-09-24")?.storeUsers).toEqual(["a"]);
-    expect(updates).toBe(0);
-
-    await recordPlayerActivity(db, "preview", "old", false, now);
-    await recordPlayerActivity(db, "legacy", "old", undefined, now);
-    expect(days.get("2026-09-24")?.storeUsers).toEqual(["a"]);
-    expect(updates).toBe(2);
-
-    updateGate = new Promise(resolve => {releaseUpdate = resolve;});
-    activityGate = new Promise(resolve => {releaseActivity = resolve;});
+    const now = new Date('2026-09-24T12:00:00Z');
+    await recordPlayerActivity(db, 'a', '2026-09-24 11:59:00', false, now);
+    await recordPlayerActivity(db, 'a', '2026-09-24 11:59:00', true, now, '2026-09-24');
+    expect(commits).toBe(0);
+    await recordPlayerActivity(db, 'a', '2026-09-24 11:54:59', true, now, '2026-09-24');
+    expect(commits).toBe(1);
+    expect(sets).toBe(0);
+    gate = new Promise(resolve => {release = resolve;});
     let finished = false;
-    const pending = recordPlayerActivity(db, "b", "old", true, now).then(() => {finished = true;});
+    const pending = recordPlayerActivity(db, 'a', '2026-09-24 12:00:00', true, now).then(() => {finished = true;});
     await Promise.resolve();
     expect(finished).toBe(false);
-    releaseUpdate();
-    await Promise.resolve();
-    expect(finished).toBe(false);
-    releaseActivity();
-    await pending;
-    expect(days.get("2026-09-24")?.storeUsers).toEqual(["a", "b"]);
-    expect(updates).toBe(3);
-    await recordPlayerActivity(db, "a", "old", true, new Date("2026-09-25T00:00:00Z"));
-    expect(days.get("2026-09-25")?.storeUsers).toEqual(["a"]);
-    const failingUpdate = {collection: () => ({doc: () => ({update: async () => {throw new Error("activity failed");}})})} as unknown as Firestore;
-    await expect(recordPlayerActivity(failingUpdate, "preview", "old", false, now)).rejects.toThrow("activity failed");
-    const failing = {...db, runTransaction: async () => {throw new Error("write failed");}} as unknown as Firestore;
-    await expect(recordPlayerActivity(failing, "a", "2026-09-24 12:00:00", true, now)).rejects.toThrow("write failed");
+    release(); await pending;
+    expect(sets).toBe(1);
+    await recordPlayerActivity(db, 'a', '2026-09-24 23:59:59', true, new Date('2026-09-25T00:00:00Z'), '2026-09-24');
+    expect(sets).toBe(2);
+    const failing = {...db, batch: () => ({update: () => {}, commit: async () => {throw new Error('write failed');}})} as unknown as Firestore;
+    await expect(recordPlayerActivity(failing, 'a', 'old', false, now)).rejects.toThrow('write failed');
   });
 });

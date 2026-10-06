@@ -1,8 +1,8 @@
 import {t, i18n, language} from './i18n/core';
-import { h, Component } from 'preact';
+import { h, Fragment, Component } from 'preact';
 import { Route, Router, RouterOnChangeArgs } from 'preact-router';
 import { PlayerContext } from './contexts/PlayerContext';
-import { isElectron, getElectronAPI } from './utils/electronUtils';
+import { getElectronAPI } from './utils/electronUtils';
 
 import AuthProvider from './providers/AuthProvider';
 import PlayerProvider from './providers/PlayerProvider';
@@ -17,6 +17,9 @@ import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
 import {startGamepadInput} from './input/gamepad';
+import SystemMenu, {openSystemMenu} from './components/systemMenu/SystemMenu';
+import {loadGameSettings} from './settings';
+import {silentErrorToast, successToast} from './components/utils';
 import {setRouteMusic, stopRouteMusic} from './routeMusic';
 if (process.env.NODE_ENV === 'production') {
   // Set up auth state listener to update Sentry user info
@@ -51,13 +54,27 @@ class App extends Component<{}, AppState> {
         void setRouteMusic(location.pathname);
         document.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
-        this.stopGamepadInput = startGamepadInput(action => dispatchDesktopAction(action, 'gamepad'));
+        this.stopGamepadInput = startGamepadInput(action => dispatchDesktopAction(action, 'gamepad'), () => loadGameSettings().controls);
+        window.addEventListener('gamepadconnected', this.handleGamepadConnected);
+        window.addEventListener('gamepaddisconnected', this.handleGamepadDisconnected);
     }
+
+    // Matches run on a server clock and cannot pause, so a lost controller is reported at once.
+    handleGamepadDisconnected = () => {
+      silentErrorToast(t("Controller disconnected. Reconnect it, or keep playing with the keyboard and mouse."), 6000);
+    };
+
+    handleGamepadConnected = (event: GamepadEvent) => {
+      // Browsers report already-plugged controllers at startup too; only announce later connections.
+      if (performance.now() > 5000 && event.gamepad) successToast(t("Controller connected."));
+    };
 
     componentWillUnmount() {
         i18n.off('languageChanged', this.handleLanguageChange);
         document.removeEventListener('keydown', this.handleKeyDown);
         window.removeEventListener(DESKTOP_ACTION_EVENT, this.handleDesktopAction as EventListener);
+        window.removeEventListener('gamepadconnected', this.handleGamepadConnected);
+        window.removeEventListener('gamepaddisconnected', this.handleGamepadDisconnected);
         this.stopGamepadInput();
         stopRouteMusic();
     }
@@ -70,10 +87,11 @@ class App extends Component<{}, AppState> {
       const typing = target?.matches?.('input, textarea, select, [contenteditable="true"]');
       const inCombat = this.state.currentMainRoute === 'game'
         && !document.querySelector('[role="dialog"], [aria-modal="true"], .endgame');
-      const action = actionFromKeyboard(event, inCombat);
+      const action = actionFromKeyboard(event, inCombat, loadGameSettings().controls);
       if (!action || (typing && action !== 'cancel' && action !== 'abandon-dialog') || (event.code === 'Tab' && this.state.currentMainRoute !== 'game')) return;
       event.preventDefault();
-      if (event.repeat && (event.code === 'Space' || event.code === 'Escape')) return;
+      // Holding a key repeats focus movement only; every other action fires once per press.
+      if (event.repeat && !action.startsWith('menu-')) return;
       dispatchDesktopAction(action, 'keyboard');
     };
 
@@ -114,7 +132,10 @@ class App extends Component<{}, AppState> {
         if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
         return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();
       }
-      if (action === 'pause') return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
+      if (action === 'pause') {
+        if (this.state.currentMainRoute !== 'game') return this.openSystemMenu();
+        return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
+      }
       if (action === 'confirm') {
         const active = document.activeElement as HTMLElement;
         if (source === 'gamepad' && active?.matches('input:not([type="range"]):not([type="checkbox"]), textarea')) {
@@ -129,15 +150,15 @@ class App extends Component<{}, AppState> {
           event.stopImmediatePropagation();
           return cancel.click();
         }
-        if (isElectron()) {
-          const electronAPI = getElectronAPI();
-          try {
-            if (await electronAPI?.isFullscreen?.()) await electronAPI.toggleFullscreen();
-          } catch (error) {
-            console.error('App: Error leaving fullscreen:', error);
-          }
-        }
+        // Esc with nothing to close opens the menu; B on a controller only ever goes back.
+        if (source === 'keyboard') this.openSystemMenu();
       }
+    };
+
+    // Outside combat only; combat has its own menu and Esc opens the abandon confirmation there.
+    openSystemMenu = () => {
+      if (this.state.currentMainRoute === 'game' || document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
+      openSystemMenu();
     };
 
     warmUpMatchmaker = () => {
@@ -197,6 +218,8 @@ class App extends Component<{}, AppState> {
                     <GiftClaim blocked={['game', 'replay', 'queue', 'lobby'].includes(this.state.currentMainRoute)} />
                     <PlayerContext.Consumer>
                         {({ refreshAllData, updateActiveCharacter }) => (
+                            <>
+                                <SystemMenu />
                                 <Router onChange={(e: RouterOnChangeArgs) => this.handleRoute(e, refreshAllData, updateActiveCharacter)}>
                                     <Route path="/" component={Root} />
                                     <Route path="/game/:id" component={AuthenticatedGamePage} />
@@ -212,6 +235,7 @@ class App extends Component<{}, AppState> {
                                     <Route path="/profile/:id?" component={AuthenticatedHomePage} />
                                     <Route default component={AuthenticatedHomePage} />
                                 </Router>
+                            </>
                         )}
                     </PlayerContext.Consumer>
                 </PlayerProvider>

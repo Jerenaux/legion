@@ -5,6 +5,9 @@ import ts from "typescript";
 import {Target, TargetHighlight} from "@legion/shared/enums";
 import {isInSpellRange, serializeCoords} from "@legion/shared/utils";
 
+const t = (key: string, values: Record<string, unknown> = {}) =>
+  key.replace(/{{(\w+)}}/g, (_match, name) => String(values[name]));
+
 // Execute the real input methods without loading Phaser's browser/rendering dependencies.
 function inputMethods(file: string, names: string[]) {
   const source = ts.createSourceFile(file, readFileSync(new URL(`../${file}`, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -21,7 +24,7 @@ const playerCode = inputMethods("Player.ts", ["cancelSkill", "cancelItem"]);
 for (const mode of ["development", "production"]) {
   for (const action of ["spell", "item"]) {
     test(`${mode}: invalid ${action} targets send nothing and leave a valid follow-up possible`, () => {
-      const arena = runInNewContext(code, {t: (key: string) => key,
+      const arena = runInNewContext(code, {t,
         isInSpellRange, serializeCoords, Target, TargetHighlight,
         process: {env: {NODE_ENV: mode}},
         // Reproduce the former development switch: validation must not depend on it.
@@ -35,6 +38,8 @@ for (const mode of ["development", "production"]) {
         pendingItem: action === "item" ? 0 : null,
       };
       arena.playerTeamId = 1;
+      arena.unavailableActionReason = () => undefined;
+      arena.actionFeedback = mock();
       arena.gridMap = new Map([
         ["14,5", {team: {id: 2}}], // Enemy outside range.
         ["2,5", {team: {id: 1}}], // Ally inside range: also invalid.
@@ -79,6 +84,7 @@ for (const action of ["spell", "item"]) {
     arena.turnee = {team: 1, num: 1};
     arena.gameSettings = {spectator: false};
     arena.send = mock();
+    arena.refreshTutorial = mock();
     arena.toggleTargetMode = mock(() => expect(player.pendingSpell).toBeNull());
     arena.toggleItemMode = mock(() => expect(player.pendingItem).toBeNull());
     if (action === "spell") arena.sendSpell(3, 5, null);
@@ -92,7 +98,8 @@ for (const action of ["spell", "item"]) {
 
 test('server rejection restores controls for the same turn, but never resets a later turn', () => {
   const toast = mock();
-  const arena = runInNewContext(code, {t: (key: string) => key, silentErrorToast: toast});
+  const arena = runInNewContext(code, {t});
+  arena.actionFeedback = toast;
   arena.turnee = {team: 1, num: 1, turnNumber: 4};
   arena.inputLocked = true;
   arena.selectedPlayer = {cancelItem: mock()};
@@ -116,4 +123,94 @@ test('stale attack events with a missing actor or target are ignored', () => {
   expect(() => arena.processAttack({team: 1, num: 1, target: 2, hp: 0, isKill: true, sameTeam: false})).not.toThrow();
   expect(() => arena.processAttack({team: 2, num: 1, target: 1, hp: 0, isKill: true, sameTeam: false})).not.toThrow();
   expect(player.attack).not.toHaveBeenCalled();
+});
+
+const availabilityCode = inputMethods('Arena.ts', ['unavailableActionReason']);
+test('action feedback distinguishes the active unit, enemy turns, and disabled characters', () => {
+  const arena = runInNewContext(availabilityCode, {t});
+  const active = {name: 'Luna', isPlayer: true, isInIce: () => false, canAct: () => true};
+  arena.turnee = {team: 1, num: 2};
+  arena.getPlayer = () => active;
+  arena.selectedPlayer = active;
+  expect(arena.unavailableActionReason()).toBeUndefined();
+  const otherUnit = arena.unavailableActionReason({name: 'Roland'});
+  expect(otherUnit).toContain('Luna');
+  active.isPlayer = false;
+  const enemyTurn = arena.unavailableActionReason();
+  active.isPlayer = true;
+  active.canAct = () => false;
+  const disabled = arena.unavailableActionReason();
+  active.isInIce = () => true;
+  const frozen = arena.unavailableActionReason();
+  // Each situation gets its own explanation; the wording itself is not under test.
+  expect([enemyTurn, disabled, frozen].every(Boolean)).toBe(true);
+  expect(new Set([otherUnit, enemyTurn, disabled, frozen]).size).toBe(4);
+});
+
+test('clicking the active character restores selection after inspecting another unit', () => {
+  const arena = runInNewContext(code, {serializeCoords});
+  const active = {isPlayer: true};
+  arena.turnee = {team: 1, num: 2};
+  arena.selectedPlayer = {};
+  arena.gridMap = new Map([['3,5', active]]);
+  arena.getPlayer = () => active;
+  arena.unavailableActionReason = () => 'Luna acts now. Select the active character.';
+  arena.actionFeedback = mock();
+  arena.selectTurnee = mock(() => {arena.selectedPlayer = active;});
+  arena.handleTileClick(3, 5);
+  expect(arena.selectTurnee).toHaveBeenCalledTimes(1);
+  expect(arena.selectedPlayer).toBe(active);
+  expect(arena.actionFeedback).not.toHaveBeenCalled();
+});
+
+test('tutorial spell availability follows real range, team targeting, and usable spells', () => {
+  const events = {emit: mock()};
+  const arena = runInNewContext(inputMethods('Arena.ts', ['refreshTutorial', 'validateTarget']), {
+    events, isInSpellRange, serializeCoords, Target, TargetHighlight, StatusEffect: {POISON: 0}, GRID_WIDTH: 15, GRID_HEIGHT: 12,
+  });
+  const active = {gridX: 1, gridY: 5, name: 'Ember', isPlayer: true, mp: 30,
+    spells: [{name: 'Fire', cost: 10, target: Target.SINGLE, targetHighlight: TargetHighlight.ENEMY}],
+    statuses: [0], hasUsableItem: () => false, isParalyzed: () => false, pendingSpell: null, pendingItem: null, isMuted: () => false, canAct: () => true, isInIce: () => false};
+  Object.assign(arena, {tutorialManager: {}, turnee: {turnNumber: 1, team: 1, num: 3},
+    playerTeamId: 1, selectedPlayer: active, getPlayer: () => active, hasEnemyNextTo: () => false, hasFlame: () => false, hexGridManager: {getTile: () => true},
+    gridMap: new Map([['14,5', {gridX: 14, gridY: 5, team: {id: 2}}], ['2,5', {gridX: 2, gridY: 5, team: {id: 1}}]])});
+  const context = () => {arena.refreshTutorial(); return events.emit.mock.calls.at(-1)[1];};
+  expect(context().spellInRange).toBe(false);
+  active.pendingSpell = 0;
+  expect(context().pendingSpell).toBe(true);
+  arena.gridMap.set('3,5', {gridX: 3, gridY: 5, team: {id: 2}});
+  expect(context().spellInRange).toBe(true);
+  expect(context().pendingSpell).toBe(true);
+  arena.gridMap.delete('3,5');
+  active.spells[0].target = Target.AOE;
+  expect(context().spellInRange).toBe(true); // Fire can target empty ground.
+  active.mp = 0;
+  expect(context().hasSpells).toBe(false);
+  active.mp = 30;
+  active.isMuted = () => true;
+  expect(context().hasSpells).toBe(false);
+});
+
+test('illustrated briefing holds readiness once, including the legacy first-match path', () => {
+  const emitted: string[] = [];
+  const arena = runInNewContext(inputMethods('Arena.ts', ['reportArenaReady']), {
+    events: {emit: (event: string) => emitted.push(event)},
+    document: {hidden: false}, window: {matchMedia: () => ({matches: false})},
+  });
+  const socket = {connected: true, emit: mock()};
+  Object.assign(arena, {gameInitialized: true, pendingEntrances: 0, socket,
+    tutorialIntroPending: true, tutorialIntroShown: false, readyToken: 'first-render'});
+  arena.reportArenaReady(); arena.reportArenaReady();
+  expect(emitted).toEqual(['showTutorialIntro']);
+  expect(socket.emit).not.toHaveBeenCalled();
+  arena.tutorialIntroPending = false;
+  arena.reportArenaReady(); arena.reportArenaReady();
+  expect(socket.emit.mock.calls).toEqual([['arenaReady', 'first-render']]);
+  socket.emit.mockClear();
+  arena.legacyFirstMatch = true; arena.tutorialIntroPending = true;
+  arena.reportArenaReady();
+  expect(socket.emit).not.toHaveBeenCalled();
+  arena.tutorialIntroPending = false;
+  arena.reportArenaReady(); arena.reportArenaReady();
+  expect(socket.emit.mock.calls).toEqual([['teamRevealed']]);
 });

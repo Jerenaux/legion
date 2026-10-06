@@ -28,15 +28,9 @@ if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
         projectId: firebaseConfig.projectId,
     });
 
-    // Connect to local emulator
-    const db = getFirestore();
-    db.settings({
-        host: 'api:8090',
-        ssl: false
-    });
+    // The Admin SDK honors emulator hosts; Docker supplies its own hostname.
+    process.env.FIRESTORE_EMULATOR_HOST ||= 'api:8090';
 
-    process.env["FIREBASE_AUTH_EMULATOR_HOST"] = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-    process.env["FIRESTORE_EMULATOR_HOST"] = "api:8090";
 } else {
     // We're running in production
     initializeApp(firebaseConfig);
@@ -69,7 +63,7 @@ const socketMap = new Map<Socket, Game>();
 const gamesMap = new Map<string, Game>();
 type GameSocket = Socket & {uid: string; firebaseToken: string};
 
-async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<PlayerDataForGame> {
+async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<{player: PlayerDataForGame; characters: FirebaseFirestore.DocumentReference[]}> {
   return withRetry(async () => {
     const db = getFirestore();
     const playerDoc = await db.collection('players').doc(uid).get();
@@ -85,10 +79,11 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<Pl
 
     // Update last active date if needed
     const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
-    if (playerData.lastActiveDate !== today) {
+    const lastActive = Date.parse(String(playerData.lastActiveDate).replace(' ', 'T') + 'Z');
+    if (!Number.isFinite(lastActive) || Date.now() - lastActive >= 5 * 60_000) {
       db.collection("players").doc(uid).update({
         lastActiveDate: today,
-      });
+      }).catch(error => console.error('Unable to record match activity', error));
     }
 
     // Transform dailyloot data
@@ -99,7 +94,7 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<Pl
         (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
         0;
 
-    return {
+    return {characters: playerData.characters || [], player: {
       uid,
       lvl: playerData.lvl || 1,
       elo: playerData.elo || 100,
@@ -112,7 +107,7 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<Pl
       AIwinRatio,
       completedGames: playerData.engagementStats?.completedGames || 0,
       engagementStats: playerData.engagementStats || {},
-    };
+    }};
   }, retries, delay, 'getPlayerData');
 }
 
@@ -184,6 +179,8 @@ io.on('connection', async (socket) => {
       const isGame0 = gameId === '0';
       if (isGame0) gameId = gameSocket.uid;
 
+      // Membership first, and player data only for a first join: reconnecting to a running
+      // match must depend on nothing but the match itself.
       const gameData = await getGameData(gameId);
       if (!socket.connected) return;
 
@@ -217,7 +214,10 @@ io.on('connection', async (socket) => {
         game.reconnectPlayer(socket);
       } else {
         console.log(`[server:connection] Fetching player data for ${gameSocket.uid}`);
-        const playerData = await getPlayerData(gameSocket.uid);
+        const loadedPlayer = await getPlayerData(gameSocket.uid);
+        if (!socket.connected) return;
+        const playerData = loadedPlayer.player;
+        game.rosterReferences.set(gameSocket.uid, loadedPlayer.characters);
         if (!socket.connected) return;
         await game.addPlayer(socket, playerData);
       }

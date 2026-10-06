@@ -28,7 +28,7 @@ import Toastify from 'toastify-js'
 import { getConsumableById } from "@legion/shared/Items";
 import { getSpellById } from "@legion/shared/Spells";
 import { getEquipmentById } from "@legion/shared/Equipments";
-import {loadGameSettings} from "../settings";
+import {sfxGain} from "../settings";
 
 const spriteContext = require.context('@assets/sprites', false, /\.(png|jpe?g|svg)$/);
 export const avatarContext = require.context('@assets/avatars', false, /\.(png|jpe?g|svg)$/);
@@ -59,7 +59,7 @@ function showToast(text: string, duration: number = 3000, avatar: string) {
     className: "toast",
     avatar,
     style: {
-      background: "#242b37",
+      background: "var(--panel-bg)",
     }
     // onClick: function(){} // Callback after click
   }).showToast();
@@ -76,7 +76,7 @@ export function showGuideToast(text: string, destination: string, duration: numb
     className: "toast",
     destination,
     style: {
-      background: `#242b37 url(${guideIcon}) 12px center no-repeat`,
+      background: `url(${guideIcon}) 12px center no-repeat, var(--panel-bg)`,
       maxWidth: '300px',
       backgroundRepeat: "no-repeat",
       backgroundPosition: "12px center",
@@ -109,7 +109,7 @@ export function mapFrameToCoordinates(frame: number) {
 }
 
 export function playSoundEffect(src: string, volume: number = 1.0) {
-  const sfxVolume = loadGameSettings().sfxVolume / 100;
+  const sfxVolume = sfxGain();
   const audio = new Audio(src);
   audio.volume = Math.min(Math.max(volume * sfxVolume, 0), 1); // Adjust volume based on SFX setting
   audio.play().catch(error => console.error('Error playing sound:', error));

@@ -5,7 +5,7 @@ import { Component } from 'preact';
 import { route } from 'preact-router';
 import { InventoryType } from "@legion/shared/enums";
 import { mapFrameToCoordinates, cropFrame } from '../../utils';
-import './FeatureReveal.style.css';
+import '../unlockedFeature/UnlockedFeature.style.css';
 
 import consumablesSpritesheet from '@assets/consumables.png';
 import equipmentSpritesheet from '@assets/equipment.png';
@@ -53,6 +53,9 @@ export class FeatureReveal extends Component<Props, State> {
     }
   }
 
+  // Put keyboard and controller focus on the main choice as soon as the reveal appears.
+  focusOnMount = (button: HTMLButtonElement | null) => button?.focus({preventScroll: true});
+
   handleCheckout = () => {
     if (this.props.route) {
       route(this.props.route);
@@ -65,41 +68,47 @@ export class FeatureReveal extends Component<Props, State> {
     const { croppedImageUrl } = this.state;
 
     return (
-      <div className="feature-reveal">
-        <div className="feature-reveal-content">
-          <h2 className="feature-reveal-header">
-            {title}
-          </h2>
+      <div className="loot-popup-scrim">
+        <div className="feature-reveal loot-popup" role="dialog" aria-modal="true" aria-labelledby="feature-reveal-title">
+          <div className="feature-reveal-content">
+            <h2 className="feature-reveal-header" id="feature-reveal-title">
+              {title}
+            </h2>
 
-          <div className="feature-reveal-icon">
-            <div
-                className="feature-icon"
-                style={{
-                    backgroundImage: `url(${croppedImageUrl})`,
-            }}
-            />
-          </div>
+            <div className="feature-reveal-icon">
+              <div
+                  className="feature-icon"
+                  style={{
+                      backgroundImage: `url(${croppedImageUrl})`,
+              }}
+              />
+            </div>
 
-          <p className="feature-reveal-description" dangerouslySetInnerHTML={{ __html: description }} />
+            <p className="feature-reveal-description" dangerouslySetInnerHTML={{ __html: description }} />
 
-          <div className="feature-reveal-buttons">
-            {route ? (
-              <>
+            <div className="feature-reveal-buttons">
+              {route ? (
+                <>
+                  <button type="button"
+                    className="feature-reveal-button primary game-btn game-btn--gold"
+                    ref={this.focusOnMount}
+                    onClick={this.handleCheckout}
+                  >{t("Check it out")}</button>
+                  <button type="button"
+                    className="feature-reveal-button secondary game-btn game-btn--ink"
+                    data-desktop-cancel
+                    onClick={this.props.onHide}
+                  >{t("Dismiss")}</button>
+                </>
+              ) : (
                 <button type="button"
-                  className="feature-reveal-button primary"
-                  onClick={this.handleCheckout}
-                >{t("Check it out")}</button>
-                <button type="button"
-                  className="feature-reveal-button secondary"
+                  className="feature-reveal-button primary game-btn game-btn--gold"
+                  ref={this.focusOnMount}
+                  data-desktop-cancel
                   onClick={this.props.onHide}
-                >{t("Dismiss")}</button>
-              </>
-            ) : (
-              <button type="button"
-                className="feature-reveal-button primary"
-                onClick={this.props.onHide}
-              >{t("Continue")}</button>
-            )}
+                >{t("Continue")}</button>
+              )}
+            </div>
           </div>
         </div>
       </div>
