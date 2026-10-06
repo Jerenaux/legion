@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from "../socketPolicy";
+import {createRefreshingSocketAuth, retrySocketAuthentication, shouldAbandonGame, socketReconnectOptions} from "../socketPolicy";
 
 test("keeps retrying transient realtime disconnects", () => {
   expect(socketReconnectOptions.reconnection).toBe(true);
@@ -23,4 +23,15 @@ test("failed token refresh keeps the build classification and clears the token",
   const auth = createRefreshingSocketAuth(async () => {throw new Error("offline");}, {storeBuild: true});
   const result = await new Promise<Record<string, unknown>>(resolve => auth(resolve));
   expect(result).toEqual({token: "", storeBuild: false});
+});
+
+test('forces one token refresh on authentication rejection, never on transport errors', async () => {
+  let refreshes = 0, connects = 0;
+  const socket = {connect: () => {connects++;}};
+  const getToken = async (force?: boolean) => {expect(force).toBe(true); refreshes++; return 'new';};
+  expect(retrySocketAuthentication(socket, new Error('offline'), getToken)).toBe(false);
+  expect(retrySocketAuthentication(socket, new Error('Authentication failed'), getToken)).toBe(true);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(refreshes).toBe(1); expect(connects).toBe(1);
+  expect(retrySocketAuthentication(socket, new Error('Authentication failed'), getToken)).toBe(false);
 });

@@ -25,3 +25,6 @@ coverage
 *.lcov
 
 .github/SETUP.md
+
+# Local emulator secret overrides
+**/.secret.local

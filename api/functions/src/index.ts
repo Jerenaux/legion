@@ -5,7 +5,7 @@ import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getRew
 import {rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters,
   deleteOnSaleCharacters, purchaseCharacter, spendSP} from "./characterAPI";
-import {createPlayer, getPlayerData, queuingData,
+import {createPlayer, getPlayerData, bootstrapPlayer, queuingData,
   saveGoldReward, claimChest, completeTour, fetchGuideTip,
   setPlayerOnSteroids, zombieData, recordPlayerAction, updateInactivePlayersStats,
   getProfileData, searchPlayers, listFriends, addFriend,
@@ -24,7 +24,7 @@ export {
   fetchLeaderboard, leaguesUpdate, inventoryData, purchaseItem,
   createPlayer, rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters, deleteOnSaleCharacters,
-  purchaseCharacter, getPlayerData, queuingData, createGame,
+  purchaseCharacter, getPlayerData, bootstrapPlayer, queuingData, createGame,
   inventorySave, inventoryTransaction, saveGoldReward, spendSP,
   getReward, claimChest,
   completeGame, getDashboardData, getActionLog, logQueuingActivity, insertGameAction,

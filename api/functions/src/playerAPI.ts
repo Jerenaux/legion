@@ -26,8 +26,10 @@ import {recordPlayerActivity} from "./dailyAnalytics";
 import {currentSeasonId, getEmptyLeagueStats} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
 import { onSchedule } from "./telemetry";
-import { createGameDocument } from "./gameAPI";
+import {matchDocument} from "@legion/shared/matchData";
 import { transformDailyLoot } from "@legion/shared/utils";
+import {findZombieOpponent, readZombieRoster} from "./zombieOpponents";
+import {readRoster} from "./characterAPI";
 import {starterCharacterId} from "./playerProvisioning";
 
 export const buyInventorySlots = onRequest({
@@ -163,6 +165,7 @@ export async function ensurePlayer(uid: string): Promise<void> {
   const user = {uid};
   const db = admin.firestore();
   const playerRef = db.collection("players").doc(user.uid);
+  if ((await playerRef.get()).exists) return;
   const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const startLeague = League.BRONZE;
   const isAdmin = (process.env.ADMIN_MODE === 'true');
@@ -233,6 +236,7 @@ export async function ensurePlayer(uid: string): Promise<void> {
     batch.create(characterRef, new NewCharacter(classes[i]).getCharacterData());
   }
   batch.create(playerRef, playerData);
+  batch.create(db.collection("games").doc(uid), matchDocument(uid, [uid], PlayMode.PRACTICE, League.BRONZE));
 
   try {
     await batch.commit();
@@ -241,7 +245,6 @@ export async function ensurePlayer(uid: string): Promise<void> {
     if (code === 6 || code === "already-exists") return;
     throw error;
   }
-  await createGameDocument(user.uid, [user.uid], PlayMode.PRACTICE, League.BRONZE);
   logger.info("New player and characters created for user:", user.uid);
 }
 
@@ -251,86 +254,90 @@ export const createPlayer = functions.runWith({
   maxInstances: 10,
 }).auth.user().onCreate((user) => ensurePlayer(user.uid));
 
-export const getPlayerData = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
+async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: boolean) {
   const db = admin.firestore();
+  const docSnap = await db.collection('players').doc(uid).get();
+  if (!docSnap.exists) return undefined;
+  const playerData = docSnap.data();
+  if (!playerData) {
+    throw new Error("playerData is null");
+  }
 
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
+  const [characters] = await Promise.all([
+    includeRoster ? readRoster(playerData.characters || []) : Promise.resolve(undefined),
+    recordPlayerActivity(db, uid, playerData.lastActiveDate, storeBuild, undefined, playerData.lastStoreActiveDay),
+  ]);
 
-      const docSnap = await db.collection('players').doc(uid).get();
+  // Check if dailyloot exists, if not create it
+  if (!playerData.dailyloot) {
+    const defaultDailyLoot = getDefaultDailyLoot();
+    await db.collection("players").doc(uid).update({
+      dailyloot: defaultDailyLoot,
+    });
+    playerData.dailyloot = defaultDailyLoot;
+  }
 
-      if (docSnap.exists) {
-        const playerData = docSnap.data();
-        if (!playerData) {
-          throw new Error("playerData is null");
-        }
+  // Transform the chest field so that the `time` field becomes
+  // a `countdown` field
+  playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
 
-        await recordPlayerActivity(db, uid, playerData.lastActiveDate, request.headers["x-store-build"] === "true");
+  // Ensure inventory fields exist and are arrays
+  const inventory = playerData.inventory || {};
+  const sortedInventory: PlayerInventory = {
+    consumables: Array.isArray(inventory.consumables) ? inventory.consumables.sort(numericalSort) : [],
+    spells: Array.isArray(inventory.spells) ? inventory.spells.sort(numericalSort) : [],
+    equipment: Array.isArray(inventory.equipment) ? inventory.equipment.sort(numericalSort) : [],
+  };
 
-        // Check if dailyloot exists, if not create it
-        if (!playerData.dailyloot) {
-          const defaultDailyLoot = getDefaultDailyLoot();
-          await db.collection("players").doc(uid).update({
-            dailyloot: defaultDailyLoot,
-          });
-          playerData.dailyloot = defaultDailyLoot;
-        }
+  const inventorySize = (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER + (playerData.purchasedInventorySlots || 0);
 
-        // Transform the chest field so that the `time` field becomes
-        // a `countdown` field
-        playerData.dailyloot = transformDailyLoot(playerData.dailyloot);
+  const AIwinRatio =
+    playerData.AIstats && playerData.AIstats.nbGames > 0 ?
+      (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
+      0;
 
-        // Ensure inventory fields exist and are arrays
-        const inventory = playerData.inventory || {};
-        const sortedInventory: PlayerInventory = {
-          consumables: Array.isArray(inventory.consumables) ? inventory.consumables.sort(numericalSort) : [],
-          spells: Array.isArray(inventory.spells) ? inventory.spells.sort(numericalSort) : [],
-          equipment: Array.isArray(inventory.equipment) ? inventory.equipment.sort(numericalSort) : [],
-        };
+  const player = {
+    uid,
+    gold: playerData.gold || 0,
+    elo: playerData.elo || STARTING_ELO,
+    lvl: playerData.lvl || 1,
+    name: playerData.name || '',
+    teamName: "teamName",
+    avatar: playerData.avatar || '1',
+    league: playerData.league || 0,
+    rank: playerData.leagueStats?.rank || 0,
+    wins: playerData.leagueStats?.wins || 0,
+    allTimeRank: playerData.allTimeStats?.rank || 0,
+    dailyloot: playerData.dailyloot,
+    inventory: sortedInventory,
+    carrying_capacity: inventorySize,
+    isLoaded: false,
+    AIwinRatio,
+    completedGames: playerData.engagementStats?.completedGames || 0,
+    engagementStats: playerData.engagementStats || {},
+  } as PlayerContextData;
+  return {player, characters};
+}
 
-        const inventorySize = (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER + (playerData.purchasedInventorySlots || 0);
-
-        const AIwinRatio =
-          playerData.AIstats && playerData.AIstats.nbGames > 0 ?
-            (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
-            0;
-
-        response.send({
-          uid,
-          gold: playerData.gold || 0,
-          elo: playerData.elo || STARTING_ELO,
-          lvl: playerData.lvl || 1,
-          name: playerData.name || '',
-          teamName: "teamName",
-          avatar: playerData.avatar || '1',
-          league: playerData.league || 0,
-          rank: playerData.leagueStats?.rank || 0,
-          wins: playerData.leagueStats?.wins || 0,
-          allTimeRank: playerData.allTimeStats?.rank || 0,
-          dailyloot: playerData.dailyloot,
-          inventory: sortedInventory,
-          carrying_capacity: inventorySize,
-          isLoaded: false,
-          AIwinRatio,
-          completedGames: playerData.engagementStats?.completedGames || 0,
-          engagementStats: playerData.engagementStats || {},
-        } as PlayerContextData);
-      } else {
-        response.status(404).send(`Player ID ${uid} not found`);
+function playerDataHandler(includeRoster: boolean) {
+  return onRequest({memory: '512MiB'}, (request, response) => {
+    corsMiddleware(request, response, async () => {
+      try {
+        const uid = await getUID(request);
+        const data = await loadPlayerData(uid, request.headers['x-store-build'] === 'true', includeRoster);
+        if (!data) {response.status(404).send('Player not found'); return;}
+        response.send(includeRoster ? data : data.player);
+      } catch (error) {
+        console.error('playerData error:', error);
+        response.status(401).send('Unauthorized');
       }
-    } catch (error) {
-      console.error("playerData error:", error);
-      if (error instanceof Error && error.message === "No UID provided") {
-        response.status(400).send("No player ID provided");
-      } else {
-        response.status(401).send("Unauthorized");
-      }
-    }
+    });
   });
-});
+}
+
+// Keep the legacy endpoint for installed clients; new clients share one player read.
+export const getPlayerData = playerDataHandler(false);
+export const bootstrapPlayer = playerDataHandler(true);
 
 export const queuingData = onRequest({
   memory: '512MiB',
@@ -937,117 +944,29 @@ export const zombieData = onRequest(
       return;
     }
 
-    // Calculate date 7 days ago
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const cutoffDate = oneWeekAgo.toISOString().replace('T', ' ').slice(0, 19);
-
-    // Prepare the query
-    let playersQuery = db.collection('players')
-      .where('lastActiveDate', '<', cutoffDate);
-
-    if (league !== -1) {
-      playersQuery = playersQuery.where('league', '==', league);
-    }
-
-    // Get all matching player documents
-    const playersSnapshot = await playersQuery.get();
-    const playerDocs = playersSnapshot.docs;
-
-    console.log(`[zombieData] Found ${playerDocs.length} inactive players`);
-
-    if (playerDocs.length === 0) {
-      res.json({});
-      return;
-    }
-
-    // Shuffle the array of player documents
-    for (let i = playerDocs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [playerDocs[i], playerDocs[j]] = [playerDocs[j], playerDocs[i]];
-    }
-
-    // Select up to 10 random players
-    const selectedPlayers = playerDocs.slice(0, 10);
-
-    // Find the player with the closest ELO
-    let closestPlayer = null;
-    let closestEloDiff = Infinity;
-
-    for (const playerDoc of selectedPlayers) {
-      const playerData = playerDoc.data();
-      if (playerData) {
-        const eloDiff = Math.abs(playerData.elo - targetElo);
-        if (eloDiff < closestEloDiff) {
-          closestEloDiff = eloDiff;
-          closestPlayer = { id: playerDoc.id, data: playerData };
-        }
-      }
-    }
-
+    const closestPlayer = await findZombieOpponent(db, targetElo, league);
     if (closestPlayer) {
-      const { id: playerId, data: playerData } = closestPlayer;
+      const {id: playerId, data: playerData} = closestPlayer;
 
-      // Get character data
-      const characterRefs = playerData.characters || [];
-      const characterDocs = await db.getAll(...characterRefs, {
-        fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats',
-          'carrying_capacity', 'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment',
-          'equipment_bonuses', 'sp_bonuses', 'skills',
-        ],
-      });
-
-      const rosterData = characterDocs.map((characterDoc) => ({
-        id: characterDoc.id,
-        name: characterDoc.get('name'),
-        level: characterDoc.get('level'),
-        class: characterDoc.get('class'),
-        experience: characterDoc.get('experience'),
-        portrait: characterDoc.get('portrait'),
-        xp: characterDoc.get('xp'),
-        sp: characterDoc.get('sp'),
-        stats: characterDoc.get('stats'),
-        carrying_capacity: characterDoc.get('carrying_capacity'),
-        carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
-        skill_slots: characterDoc.get('skill_slots'),
-        inventory: characterDoc.get('inventory'),
-        equipment: characterDoc.get('equipment'),
-        equipment_bonuses: characterDoc.get('equipment_bonuses'),
-        sp_bonuses: characterDoc.get('sp_bonuses'),
-        skills: characterDoc.get('skills'),
-      }));
+      const rosterData = await readZombieRoster(playerId, playerData.characters || []);
 
       // Transform dailyloot
-      const transformedDailyLoot = transformDailyLoot(playerData.dailyloot);
-
-      // Prepare tours data
-      const tours = Object.keys(playerData.tours || {}).filter((tour) => !playerData.tours[tour]);
-
-      // Sort inventory
-      const sortedInventory = {
-        consumables: playerData.inventory.consumables.sort(numericalSort),
-        spells: playerData.inventory.spells.sort(numericalSort),
-        equipment: playerData.inventory.equipment.sort(numericalSort),
-      };
+      const transformedDailyLoot = transformDailyLoot(playerData.dailyloot || getDefaultDailyLoot());
 
       // Prepare the response object
       const responseData = {
         playerData: {
           uid: playerId,
-          gold: playerData.gold,
           elo: playerData.elo,
           lvl: playerData.lvl,
           name: playerData.name,
           teamName: "teamName",
           avatar: playerData.avatar,
           league: playerData.league,
-          rank: playerData.leagueStats.rank,
-          wins: playerData.leagueStats.wins,
-          allTimeRank: playerData.allTimeStats.rank,
+          rank: playerData.leagueStats?.rank || 0,
+          wins: playerData.leagueStats?.wins || 0,
+          allTimeRank: playerData.allTimeStats?.rank || 0,
           dailyloot: transformedDailyLoot,
-          tours,
-          inventory: sortedInventory,
-          carrying_capacity: playerData.carrying_capacity,
           isLoaded: false,
         },
         rosterData: {

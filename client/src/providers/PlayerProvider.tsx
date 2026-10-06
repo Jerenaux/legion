@@ -15,7 +15,7 @@ import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
 import { route } from 'preact-router';
-import {createRefreshingSocketAuth, socketReconnectOptions} from '../services/socketPolicy';
+import {createRefreshingSocketAuth, retrySocketAuthentication, socketReconnectOptions} from '../services/socketPolicy';
 
 import {
   canEquipConsumable,
@@ -37,8 +37,7 @@ import { getEquipmentById } from "@legion/shared/Equipments";
 import { LOCKED_FEATURES } from '@legion/shared/config';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
-    private fetchAllDataTimeout: NodeJS.Timeout | null = null;
-    private fetchAllDataDelay: number = 400;
+    private bootstrapRequest: Promise<void> | undefined;
     private playerFetchGeneration = 0;
 
     constructor(props: {}) {
@@ -113,6 +112,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     resetState = () => {
       this.playerFetchGeneration++;
+      this.bootstrapRequest = undefined;
       if (this.state.socket) {
         this.state.socket.disconnect();
       }
@@ -121,7 +121,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     componentDidMount() {
       if (firebaseAuth.currentUser) {
-        this.debouncedFetchAllData();
+        this.fetchAllData();
         this.setupSocket();
       }
     }
@@ -131,40 +131,46 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       if (!user && this.state.player.isLoaded) {
         this.resetState();
       } else if (user && !this.state.player.isLoaded) {
-        this.debouncedFetchAllData();
+        this.fetchAllData();
         this.setupSocket();
       }
     }
 
     componentWillUnmount(): void {
       this.resetState();
-      if (this.fetchAllDataTimeout !== null) {
-        clearTimeout(this.fetchAllDataTimeout);
-      }
       if (this.state.socket) {
         this.state.socket.disconnect();
       }
     }
 
-    debouncedFetchAllData = () => {
-      if (this.fetchAllDataTimeout !== null) {
-        clearTimeout(this.fetchAllDataTimeout);
-      }
-      this.fetchAllDataTimeout = setTimeout(() => {
-        this.fetchAllData();
-        this.fetchAllDataTimeout = null;
-      }, this.fetchAllDataDelay);
-    }
-
     fetchAllData() {
       const user = firebaseAuth.currentUser;
-      if (!user) {
-        return;
-      }
+      if (!user || this.bootstrapRequest) return this.bootstrapRequest;
+      const generation = ++this.playerFetchGeneration;
+      const request = this.loadBootstrap(user.uid, generation).finally(() => {
+        if (this.bootstrapRequest === request) this.bootstrapRequest = undefined;
+      });
+      this.bootstrapRequest = request;
+      void this.fetchFriends();
+      return request;
+    }
 
-      this.fetchPlayerData();
-      this.fetchRosterData();
-      this.fetchFriends();
+    async loadBootstrap(uid: string, generation: number) {
+      try {
+        let data: {player: PlayerContextData; characters: APICharacterData[]};
+        try {
+          data = await apiFetch('bootstrapPlayer', {}, 3);
+        } catch (error) {
+          // A newly installed client can still meet the previous backend during rollout.
+          if (error?.status !== 404) throw error;
+          const [player, roster] = await Promise.all([apiFetch('getPlayerData', {}, 3), apiFetch('rosterData', {}, 3)]);
+          data = {player, characters: roster.characters};
+        }
+        if (generation !== this.playerFetchGeneration || firebaseAuth.currentUser?.uid !== uid) return;
+        this.setState({player: {...data.player, uid, isLoaded: true}, characters: data.characters});
+      } catch (error) {
+        if (generation === this.playerFetchGeneration && firebaseAuth.currentUser?.uid === uid) errorToast(userError(error));
+      }
     }
 
     async fetchPlayerData() {
@@ -485,7 +491,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       // console.log(`Connecting to ${process.env.MATCHMAKER_URL} ...`);
 
       const socket = io(process.env.MATCHMAKER_URL, {
-        auth: createRefreshingSocketAuth(() => getFirebaseIdToken(true)),
+        auth: createRefreshingSocketAuth(() => getFirebaseIdToken()),
         ...socketReconnectOptions,
       });
 
@@ -499,6 +505,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       });
 
       socket.on('connect_error', (error) => {
+        if (retrySocketAuthentication(socket, error, getFirebaseIdToken)) return;
         console.error('Connection error:', error);
         // errorToast('Connection error, attempting to reconnect...');
 

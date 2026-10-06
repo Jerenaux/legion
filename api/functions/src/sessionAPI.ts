@@ -36,6 +36,13 @@ async function resolveUID(
   const key = identityKey(provider, externalId);
   const identityRef = db.collection("platformIdentities").doc(key);
 
+  const known = await identityRef.get();
+  if (known.exists) {
+    const uid = known.get("uid") as string;
+    if (linkToUID && uid !== linkToUID) throw new PlatformIdentityConflictError("Platform identity is already linked");
+    return uid;
+  }
+
   return db.runTransaction(async (transaction) => {
     const existing = await transaction.get(identityRef);
     if (existing.exists) {
@@ -62,7 +69,10 @@ async function ensureAuthUser(uid: string): Promise<void> {
     await admin.auth().getUser(uid);
   } catch (error) {
     if (!error || typeof error !== "object" || !("code" in error) || error.code !== "auth/user-not-found") throw error;
-    await admin.auth().createUser({uid});
+    try { await admin.auth().createUser({uid}); }
+    catch (creationError) {
+      if (!creationError || typeof creationError !== 'object' || !('code' in creationError) || creationError.code !== 'auth/uid-already-exists') throw creationError;
+    }
   }
 }
 
@@ -79,8 +89,7 @@ export const createPlatformSession = onRequest(sessionOptions, (request, respons
       const credential = request.body?.credential as string;
       const externalId = await validateProvider(provider, credential);
       const uid = await resolveUID(provider, externalId);
-      await ensureAuthUser(uid);
-      await ensurePlayer(uid);
+      await Promise.all([ensureAuthUser(uid), ensurePlayer(uid)]);
       const customToken = await admin.auth().createCustomToken(uid, {platform: provider});
       response.send({customToken, provider, uid});
     } catch (error) {

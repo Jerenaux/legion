@@ -168,7 +168,7 @@ export class AIGame extends Game {
     }
 
     async createPlayerTeam(playerTeam: Team) {
-        const teamData = await this.getRosterData(playerTeam.getFirebaseToken());
+        const teamData = await this.getRosterData(playerTeam.teamData.playerUID);
         let characters = [];
         teamData.characters.forEach((character: CharacterData, index) => {
             const position = this.getPosition(index, false, character.class);
@@ -193,18 +193,17 @@ export class AIGame extends Game {
             TURN_DURATION
         );
 
-        if (AI_VS_AI) {
-            this.createAITeam(playerTeam!);
-        } else {
-            await this.createPlayerTeam(playerTeam);
-        }
+        const useZombie = this.mode === PlayMode.CASUAL_VS_AI || this.mode === PlayMode.RANKED_VS_AI;
+        const [, opponent] = await Promise.all([
+            AI_VS_AI ? this.createAITeam(playerTeam!) : this.createPlayerTeam(playerTeam),
+            useZombie ? this.fetchZombieData(playerTeam.teamData.elo) : Promise.resolve(undefined),
+        ]);
 
         const nb = Math.min(playerTeam.getMembers().length, MAX_AI_CHARACTERS);
         const levels = playerTeam.getMembers().map(player => player.level);
         let isVsZombie = false;
-        if (this.mode === PlayMode.CASUAL_VS_AI || this.mode === PlayMode.RANKED_VS_AI) {
-            const zombieData = await this.fetchZombieData(playerTeam.teamData.elo);
-            console.log(`[AIGame:populateTeams] Fetched zombie data: ${JSON.stringify(zombieData)}`);
+        if (useZombie) {
+            const zombieData = opponent;
             // Check if the zombieData is not empty
             if (Object.keys(zombieData).length > 0 && zombieData?.playerData && zombieData?.rosterData) {
                 await this.createZombieTeam(aiTeam!, zombieData);

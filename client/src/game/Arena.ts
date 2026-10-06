@@ -12,7 +12,7 @@ import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
 import { PlayMode, Target, Terrain, StatusEffect, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
-import {createRefreshingSocketAuth, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
+import {createRefreshingSocketAuth, retrySocketAuthentication, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
      SPELL_RANGE, PROJECTILE_DURATION, CAST_ZOOM } from '@legion/shared/config';
 
@@ -324,7 +324,7 @@ export class Arena extends Phaser.Scene
                 ...socketReconnectOptions,
                 forceNew: true, // The global Socket.IO manager cache must not retain a finished Arena.
                 auth: createRefreshingSocketAuth(
-                    () => getFirebaseIdToken(true),
+                    () => getFirebaseIdToken(),
                     {gameId, isReplay, combatReady: 1},
                 ),
             }
@@ -335,6 +335,7 @@ export class Arena extends Phaser.Scene
         });
         this.socket.on('towerEnd', () => { route('/tower'); });
         this.socket.on('connect_error', error => {
+            if (retrySocketAuthentication(this.socket, error, getFirebaseIdToken)) return;
             if (!this.socket.active) this.failCombat(error);
         });
 

@@ -18,3 +18,13 @@ export const createRefreshingSocketAuth = (
 };
 
 export const shouldAbandonGame = (reason: string) => reason === "io server disconnect";
+
+// One forced refresh after a rejected token; transport failures keep normal backoff.
+const refreshedSockets = new WeakSet<object>();
+export function retrySocketAuthentication(socket: {connect: () => unknown; once?: (event: string, callback: () => void) => unknown}, error: Error, getToken: (force?: boolean) => Promise<string>) {
+  if (error.message !== 'Authentication failed' || refreshedSockets.has(socket)) return false;
+  refreshedSockets.add(socket);
+  socket.once?.('connect', () => refreshedSockets.delete(socket));
+  void getToken(true).then(() => socket.connect()).catch(() => socket.connect());
+  return true;
+}

@@ -142,14 +142,6 @@ export function inventorySize(inventory: PlayerInventory): number {
     .reduce((acc, curr) => acc + curr, 0);
 }
 
-export async function sendMessageToAdmin(
-  client: {users: {fetch: (id: string) => Promise<{send: (content: string) => unknown}>}},
-  message: string,
-) {
-    const adminUser = await client.users.fetch('272906141728505867');
-    adminUser.send(message);
-}
-
 export const paralyzingStatuses = [StatusEffect.FREEZE, StatusEffect.PARALYZE, StatusEffect.SLEEP];
 
 export const transformDailyLoot = (dailyloot: DailyLootAllDBData): DailyLootAllAPIData => {
