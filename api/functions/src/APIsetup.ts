@@ -4,11 +4,16 @@ import cors from "cors";
 import {Request} from "express";
 import firebaseConfig from '@legion/shared/firebaseConfig';
 import { getStorage } from 'firebase-admin/storage';
+import { getFirestore } from 'firebase-admin/firestore';
+import {FIRESTORE_DATABASE_ID} from '@legion/shared/config';
 import {hasValidAPIKey, isDevelopmentEnvironment, verifyUID} from "./authPolicy";
 
 admin.initializeApp(firebaseConfig);
 
 export const storage = getStorage();
+
+/** The game's Firestore database. Always use this rather than firestore(), which is the retired EU default database. */
+export const firestore = () => getFirestore(FIRESTORE_DATABASE_ID);
 
 const LOCK_TIMEOUT = 10000;
 
@@ -28,7 +33,7 @@ export const checkAPIKey = (request: Request): boolean => {
 };
 
 async function acquireLock(uid: string) {
-  const db = admin.firestore();
+  const db = firestore();
   const lockRef = db.collection('locks').doc(uid);
   const lockTimestamp = Date.now();
 
@@ -54,7 +59,7 @@ async function acquireLock(uid: string) {
 }
 
 async function releaseLock(uid: string) {
-  const db = admin.firestore();
+  const db = firestore();
   const lockRef = db.collection('locks').doc(uid);
   try {
       await lockRef.delete();

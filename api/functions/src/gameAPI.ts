@@ -1,7 +1,7 @@
 import {matchDocument} from "@legion/shared/matchData";
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
-import admin, {checkAPIKey, corsMiddleware, storage, isDevelopment} from "./APIsetup";
+import {checkAPIKey, corsMiddleware, storage, isDevelopment, firestore} from "./APIsetup";
 import {EndGameDataResults, GameReplayMessage} from "@legion/shared/interfaces";
 import {GameStatus, League, PlayMode} from "@legion/shared/enums";
 import {logPlayerAction} from "./dashboardAPI";
@@ -16,7 +16,7 @@ interface NewsItem extends FirebaseFirestore.DocumentData {
 export async function createGameDocument(
   gameId: string, players: string[], mode: PlayMode, league: League, storeBuild = false
 ) {
-  const db = admin.firestore();
+  const db = firestore();
   const gameData = matchDocument(gameId, players, mode, league, storeBuild);
   await db.collection("games").doc(gameId).set(gameData);
   console.log(`[createGameDocument] Game ${gameId} created`);
@@ -60,7 +60,7 @@ export const completeGame = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -121,7 +121,7 @@ export const completeGame = onRequest({
 export const getNews = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
   corsMiddleware(request, response, async () => {
     try {
       const limit = parseInt(request.query.limit as string, 10) || 3;
@@ -218,7 +218,7 @@ export const addNews = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -324,7 +324,7 @@ export const updateNewsThumbnail = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -421,7 +421,7 @@ export const saveReplay = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -470,7 +470,7 @@ export const saveReplay = onRequest({
 export const getReplay = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {

@@ -5,7 +5,7 @@ import {getFirestore, FieldValue} from 'firebase-admin/firestore';
 import {matchDocument} from '@legion/shared/matchData';
 import { apiFetch } from "./API";
 import {eloRangeIncreaseInterval, eloRangeStart, eloRangeStep, goldRewardInterval,
-    goldReward, casualModeThresholdTime, maxWaitTimeForPractice, ALLOW_SWITCHEROO_RANKED, STARTING_ELO} from '@legion/shared/config';
+    goldReward, casualModeThresholdTime, maxWaitTimeForPractice, ALLOW_SWITCHEROO_RANKED, STARTING_ELO, FIRESTORE_DATABASE_ID} from '@legion/shared/config';
 import { PlayMode, League } from '@legion/shared/enums';
 
 export type MatchmakingSocket = Socket & {uid: string; firebaseToken: string};
@@ -250,7 +250,7 @@ async function createGame(
         if (player2) declinePendingChallenge(player2.uid);
 
         const gameId = crypto.randomUUID();
-        const db = getFirestore();
+        const db = getFirestore(FIRESTORE_DATABASE_ID);
         const players = [player1, player2].filter(Boolean) as MatchmakingSocket[];
         const storeBuild = players.some(player => player.handshake.auth.storeBuild === true);
         const batch = db.batch();
@@ -300,7 +300,7 @@ function sendQData(player: QueuingPlayer) {
 async function loadQueuingData(socket: MatchmakingSocket): Promise<{elo: number; league: League} | null> {
     for (let attempt = 0; attempt < 2; attempt++) {
         try {
-            const snapshot = await getFirestore().collection('players').doc(socket.uid).get();
+            const snapshot = await getFirestore(FIRESTORE_DATABASE_ID).collection('players').doc(socket.uid).get();
             const data = snapshot.data();
             if (!data) break;
             return {elo: Number.isFinite(data.elo) ? data.elo : STARTING_ELO, league: (data.league ?? League.BRONZE) as League};

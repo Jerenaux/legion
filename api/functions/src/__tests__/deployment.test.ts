@@ -27,3 +27,19 @@ test('opponent index gate waits for every required index and fails closed', asyn
   await expect(waitForIndexes(async () => ready.map((index: object) => ({...index, state: 'CREATING'})), async () => {}, 1)).rejects.toThrow('not ready');
   await expect(waitForIndexes(async () => ready.map((index: object) => ({...index, state: 'NEEDS_REPAIR'})), async () => {}, 1)).rejects.toThrow('needs repair');
 });
+
+test('every Firestore consumer targets the same named database', async () => {
+  const root = resolve(import.meta.dir, '../../../..');
+  const {FIRESTORE_DATABASE_ID} = await import('@legion/shared/config');
+  const {DATABASE_ID} = require('../../../../tools/backend/wait-for-indexes.cjs');
+  expect(DATABASE_ID).toBe(FIRESTORE_DATABASE_ID);
+  for (const file of ['firebase.json', 'firebase.emulators.json']) {
+    const config = JSON.parse(readFileSync(resolve(root, file), 'utf8'));
+    expect(config.firestore.map((entry: {database: string}) => entry.database)).toEqual([FIRESTORE_DATABASE_ID]);
+  }
+  // The retired EU (default) database must not be reached through the bare accessors.
+  for (const file of ['api/functions/src/APIsetup.ts', 'server/src/server.ts', 'server/src/Game.ts', 'matchmaker/src/matchmaking.ts']) {
+    const source = readFileSync(resolve(root, file), 'utf8');
+    expect(source).not.toMatch(/admin\.firestore\(\)|getFirestore\(\)/);
+  }
+});

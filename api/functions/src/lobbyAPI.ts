@@ -1,8 +1,8 @@
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
-import admin, {corsMiddleware, getUID, performLockedOperation} from "./APIsetup";
+import admin, {corsMiddleware, getUID, performLockedOperation, firestore} from "./APIsetup";
 
-const db = admin.firestore();
+const db = firestore();
 
 export const createLobby = onRequest({memory: "512MiB"}, (request, response) =>
   corsMiddleware(request, response, async () => {
