@@ -10,9 +10,10 @@ process.env.FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:19099';
 const {initializeApp} = require('firebase-admin/app');
 const {getFirestore} = require('firebase-admin/firestore');
 const {NewCharacter} = await import('../../shared/NewCharacter');
+const {FIRESTORE_DATABASE_ID} = await import('../../shared/config');
 const {Class} = await import('../../shared/enums');
 initializeApp({projectId: 'legion-32c6d'});
-const db = getFirestore();
+const db = getFirestore(FIRESTORE_DATABASE_ID);
 const base = 'http://127.0.0.1:15001/legion-32c6d/us-central1';
 const phase = process.argv[2] || 'optimized';
 async function request(endpoint: string, body?: unknown, token?: string) {

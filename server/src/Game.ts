@@ -16,7 +16,7 @@ import { AVERAGE_GOLD_REWARD_PER_GAME, XP_PER_LEVEL, CAST_DELAY,
     PRACTICE_XP_COEF, PRACTICE_GOLD_COEF, RANKED_XP_COEF, RANKED_GOLD_COEF, remoteConfig,
     TURN_DURATION, KILL_CAM_DURATION, MOVE_DELAY, ATTACK_DELAY, SPELL_DELAY,
     ITEM_DELAY, KILL_CAM_DELAY, FIRST_TURN_DELAY, KILLALL_BM, KILLALL_WM, KILLALL_W,
-    GRID_WIDTH, GRID_HEIGHT, PROJECTILE_DURATION } from '@legion/shared/config';
+    GRID_WIDTH, GRID_HEIGHT, PROJECTILE_DURATION, FIRESTORE_DATABASE_ID } from '@legion/shared/config';
 import { TerrainManager } from './TerrainManager';
 import { TurnSystem } from './TurnSystem';
 import { withRetry } from './utils';
@@ -1680,7 +1680,7 @@ export abstract class Game
 
     protected async getRosterData(uid: string, retries = 10, delay = 500): Promise<{characters: CharacterData[]}> {
         return withRetry(async () => {
-            const db = getFirestore();
+            const db = getFirestore(FIRESTORE_DATABASE_ID);
             const characters = this.rosterReferences.get(uid);
             if (!characters) throw new Error('Authenticated roster references missing');
             if (!characters.length) return {characters: []};

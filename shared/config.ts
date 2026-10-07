@@ -30,6 +30,8 @@ export const INVENTORY_SLOT_PRICE = 200;
 export const MAX_PURCHASABLE_SLOTS = 40;
 export const BASE_CHARACTER_CARRYING_CAPACITY = 3;
 export const STARTING_ELO = 100;
+/** Named Firestore database (nam5, alongside the us-central1 compute). The EU (default) database is retained as a fallback. */
+export const FIRESTORE_DATABASE_ID = 'legion';
 export const STARTING_GOLD = 50;
 export const STARTING_CONSUMABLES = [];
 export const STARTING_WHITE_MAGE_SPELLS = [9];

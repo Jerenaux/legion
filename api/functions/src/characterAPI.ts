@@ -2,7 +2,7 @@ import {Transaction} from "firebase-admin/firestore";
 
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
-import admin, {checkAPIKey, corsMiddleware, getUID} from "./APIsetup";
+import admin, {checkAPIKey, corsMiddleware, getUID, firestore} from "./APIsetup";
 import {getMaxStatValue, getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFieldsByIndex, PlayMode, Stat, RewardType} from "@legion/shared/enums";
@@ -16,7 +16,7 @@ import {gameResultReceiptId} from "./gameResults";
 
 export async function readRoster(characters: admin.firestore.DocumentReference[]) {
   if (!characters.length) return [];
-  const db = admin.firestore();
+  const db = firestore();
 
   const characterDocs = await db.getAll(...characters, {
     fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
@@ -52,7 +52,7 @@ export async function readRoster(characters: admin.firestore.DocumentReference[]
 export const rosterData = onRequest({
   memory: '512MiB',
 }, async (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
@@ -80,7 +80,7 @@ export const characterData = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Fetching characterData");
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -154,7 +154,7 @@ export const postGameUpdate = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -423,7 +423,7 @@ export const generateOnSaleCharacters = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Generating on sale characters");
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -443,7 +443,7 @@ export const listOnSaleCharacters = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Listing on sale characters");
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -481,7 +481,7 @@ export const deleteOnSaleCharacters = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Deleting on sale characters");
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -505,7 +505,7 @@ export const purchaseCharacter = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Purchasing character");
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -584,7 +584,7 @@ export const purchaseCharacter = onRequest({
 export const spendSP = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {

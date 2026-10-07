@@ -5,6 +5,7 @@ import { Socket, Server } from 'socket.io';
 import { createServer } from 'http';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { FIRESTORE_DATABASE_ID } from '@legion/shared/config';
 import { getAuth } from 'firebase-admin/auth';
 import cors from 'cors';
 
@@ -66,7 +67,7 @@ type GameSocket = Socket & {uid: string; firebaseToken: string};
 
 async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<{player: PlayerDataForGame; characters: FirebaseFirestore.DocumentReference[]}> {
   return withRetry(async () => {
-    const db = getFirestore();
+    const db = getFirestore(FIRESTORE_DATABASE_ID);
     const playerDoc = await db.collection('players').doc(uid).get();
 
     if (!playerDoc.exists) {
@@ -114,7 +115,7 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<{p
 
 async function getGameData(gameId: string, retries = 10, delay = 500) {
   return withRetry(async () => {
-    const db = getFirestore();
+    const db = getFirestore(FIRESTORE_DATABASE_ID);
     const direct = await db.collection("games").doc(gameId).get();
     if (direct.exists) return direct.data();
     const querySnapshot = await db.collection("games")

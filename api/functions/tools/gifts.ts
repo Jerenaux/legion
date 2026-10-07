@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {Firestore} from 'firebase-admin/firestore';
 import {OAuth2Client} from 'google-auth-library';
 import {giftId, giftTokenPattern, validateGiftRewards} from '../src/gifts';
+import {FIRESTORE_DATABASE_ID} from '@legion/shared/config';
 
 const {values, positionals} = parseArgs({args: process.argv.slice(2), allowPositionals: true, options: {
   project: {type: 'string'}, label: {type: 'string'}, rewards: {type: 'string'}, expires: {type: 'string'}, id: {type: 'string'},
@@ -19,7 +20,7 @@ try {
     access_token: execFileSync('gcloud', ['auth', 'print-access-token'], {encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe']}).trim(),
     expiry_date: Date.now() + 3600000,
   });
-  const db = new Firestore({projectId: values.project, ...(authClient ? {authClient} : {})});
+  const db = new Firestore({projectId: values.project, databaseId: FIRESTORE_DATABASE_ID, ...(authClient ? {authClient} : {})});
   const gifts = db.collection('creatorGifts');
   const command = positionals[0];
   if (command === 'create') {

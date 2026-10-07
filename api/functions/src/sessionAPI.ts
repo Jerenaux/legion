@@ -1,6 +1,6 @@
 import {onRequest} from "./telemetry";
 
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, {corsMiddleware, getUID, firestore} from "./APIsetup";
 import {
   PlatformProvider,
   STEAM_DEMO_APP_ID,
@@ -32,7 +32,7 @@ async function resolveUID(
   externalId: string,
   linkToUID?: string,
 ): Promise<string> {
-  const db = admin.firestore();
+  const db = firestore();
   const key = identityKey(provider, externalId);
   const identityRef = db.collection("platformIdentities").doc(key);
 
