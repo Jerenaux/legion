@@ -54,3 +54,20 @@ Translated guide prose lives in `client/locales/<code>/messages.json`. Run
 `bun run guide:screenshots --locale=<code>` to capture the same cropped images
 with translated UI into that locale’s `assets/guide/` directory. The game selects
 these images automatically; see [localization.md](localization.md).
+
+## Cinder Tower availability
+
+`ENABLE_CINDER_TOWER` in `shared/config.ts` controls the mode across client,
+Functions and game server; it is currently false. It hides the Play card, guide
+chapter/index/milestone and Tower-specific timer wording, redirects `/tower` to
+Play, and refuses Tower API actions and combat joins. Deploy backend changes as
+well as rebuilding clients to enforce the flag for older installations. Existing
+saves remain intact; in-flight battle results can still bank earned rewards.
+
+Tower shares the six-completed-game milestone with the second spell batch.
+Disabling it keeps the spell unlock, three Ethers and 200 gold, and sends the
+unlock dialog to the spell shop. No milestones move and no save migration is
+needed. Re-enabling the flag restores Tower for players already past six games;
+it does not replay a previously dismissed milestone dialog. Deploy all consumers
+when changing the flag. `bun run test:guide --tower-unlock` verifies availability
+and the six-game dialog in the packaged renderer.

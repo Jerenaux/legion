@@ -2,7 +2,7 @@ import {t, i18n, localizedAsset} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
 import { h } from 'preact';
 import { Link } from 'preact-router/match';
-import { LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
+import { ENABLE_CINDER_TOWER, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
 import { LockedFeatures } from '@legion/shared/enums';
 import {defaultGameSettings} from '../settings';
 import battleOriginal from '@assets/guide/battle.jpg';
@@ -15,7 +15,7 @@ import './GuidePage.css';
 
 const sections = [
   ['first-match', "Matches & modes"],
-  ['tower', "The Cinder Tower"],
+  ...(ENABLE_CINDER_TOWER ? [['tower', "The Cinder Tower"]] : []),
   ['combat', "Taking your turn"],
   ['magic', "Magic & terrain"],
   ['team', "Build your team"],
@@ -78,7 +78,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             </dl>
           </section>
 
-          <section aria-labelledby="tower">
+          {ENABLE_CINDER_TOWER && <section aria-labelledby="tower">
             <h2 id="tower" tabIndex={-1}>{t("The Cinder Tower")}</h2>
             <p>{t("Unlocks after {{required}} completed games.", {required: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</p>
             <p>{t("On Play, choose the golden rook to the right of Ranked. Choose Balanced or Control, set the difficulty, and use Begin expedition in the bottom bar. Rules & rewards opens the full rules.")}</p>
@@ -90,12 +90,14 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t("The Warden marks tiles before its next turn. Move away from those warning symbols before the blast. It leaves fire behind; the turn order shows when it will act.")}</p>
             <p>{t("Gold, XP, and milestone items are banked after each victory. XP is shared across your permanent roster. Defeat or retirement ends the run but keeps everything already banked. Higher floors pay more. Clearing a tier unlocks the next, up to Tier 5; each tier adds 15% enemy HP and attack power and 20% account rewards. Your first clear also unlocks the Control starting kit.")}</p>
             <p>{t("One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO. There is no entry fee or daily limit. You can leave and return between encounters. A short disconnect pauses combat; if the battle can no longer resume, it restarts from that encounter’s saved entry state. An internet connection is required.")}</p>
-          </section>
+          </section>}
 
           <section aria-labelledby="combat">
             <h2 id="combat" tabIndex={-1}>{t("Make your turn count")}</h2>
             <p><Trans i18n={i18n} i18nKey={"When it is your turn, the active character is selected for you. The blue tiles show where they can move. Choose <0>one action</0>: move, attack, cast a spell, use an item, or pass. You do not move and then attack in the same turn."} components={[<strong />]} /></p>
-            <p><Trans i18n={i18n} i18nKey={"Outside the Tower, the standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act."} components={[<strong />]} values={{value0: TURN_DURATION}} /></p>
+            <p><Trans i18n={i18n} i18nKey={ENABLE_CINDER_TOWER
+              ? "Outside the Tower, the standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act."
+              : "The standard turn timer is <0>{{value0}} seconds</0>. Plan while other characters act and watch the hourglass for your remaining time. If the timer runs out, you lose that opportunity to act."} components={[<strong />]} values={{value0: TURN_DURATION}} /></p>
             <p>{t("Combat starts once everyone has loaded the arena and both teams’ spell and item effects. Practice matches pause if your connection drops and resume after the arena is ready again, keeping your remaining turn time. Once a match against another player has started, its clock keeps running if you disconnect.")}</p>
             <figure className="guide-figure-compact">
               <img src={turnOrder} width="570" height="70" loading="lazy" alt={t("The turn-order portraits along the bottom of the arena, showing the sequence of characters about to act.")} />
@@ -181,7 +183,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.SPELLS_BATCH_1]})}</dt><dd>{t("The first spell purchases.")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.EQUIPMENT_BATCH_1]})}</dt><dd>{t("The first equipment purchases.")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.RANKED_MODE]})}</dt><dd>{t("Ranked mode and the league leaderboard.")}</dd></div>
-              <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</dt><dd>{t("The Cinder Tower")}</dd></div>
+              {ENABLE_CINDER_TOWER && <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</dt><dd>{t("The Cinder Tower")}</dd></div>}
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.DAILY_LOOT]})}</dt><dd>{t("Daily loot. Check its keys and countdowns on Play.")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES]})}</dt><dd>{t("Character purchases to expand your roster.")}</dd></div>
             </dl>

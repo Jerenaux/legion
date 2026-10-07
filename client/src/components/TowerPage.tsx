@@ -1,3 +1,4 @@
+import {ENABLE_CINDER_TOWER} from '@legion/shared/config';
 import {PlayerContext} from '../contexts/PlayerContext';
 import {t, formatNumber} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
@@ -37,7 +38,7 @@ function Rewards({reward}: {reward: TowerReward}) {
 
 export default function TowerPage() {
   const {loaded, canAccessFeature, getGamesUntilFeature, refreshPlayerData} = useContext(PlayerContext);
-  const unlocked = canAccessFeature(LockedFeatures.TOWER_MODE);
+  const unlocked = ENABLE_CINDER_TOWER && canAccessFeature(LockedFeatures.TOWER_MODE);
   const [progress, setProgress] = useState<TowerProgress | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -53,7 +54,10 @@ export default function TowerPage() {
     catch { setError('Could not load your expedition. Your saved progress is safe.'); }
     finally { setBusy(false); }
   };
-  useEffect(() => { if (loaded && unlocked) void refresh(); }, [loaded, unlocked]);
+  useEffect(() => {
+    if (!ENABLE_CINDER_TOWER) route('/play', true);
+    else if (loaded && unlocked) void refresh();
+  }, [loaded, unlocked]);
 
   const act = async (action: string, extra: Record<string, unknown> = {}) => {
     if (busy) return;
@@ -74,6 +78,7 @@ export default function TowerPage() {
   const completed = run?.floor || 0;
   const lessonIcons: Record<string, number> = {rest: 9, ice: 6, thunder: 3, poison: 10, silence: 11, 'fire-plus': 1, frostcraft: 6};
 
+  if (!ENABLE_CINDER_TOWER) return null;
   if (!loaded) return <main className="tower-page" role="status">{t("Preparing your expedition…")}</main>;
   if (!unlocked) return <main className="tower-page"><section className="tower-start tower-locked">
     <img src={towerIcon} alt="" /><h1>{t("Cinder Tower")}</h1>
