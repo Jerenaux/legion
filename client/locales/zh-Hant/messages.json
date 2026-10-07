@@ -1117,5 +1117,6 @@
   "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "收到了專屬禮物連結？請先安裝 Legion，再開啟連結啟動遊戲並領取禮物。禮物會發放到目前遊玩的帳號，且只能領取一次。在隊伍頁面查看裝備；一般的裝備要求仍然適用。",
   "Hover over or focus a reward to inspect it. Equip your gear in Team.": "將滑鼠移至獎勵上，或用鍵盤選取獎勵，即可查看詳情。在隊伍頁面穿戴裝備。",
   "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "在商店花費金幣，購買已解鎖的消耗品、法術、裝備和新隊員。",
-  "Requires level {{level}}": "需要等級 {{level}}"
+  "Requires level {{level}}": "需要等級 {{level}}",
+  "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "禮物連結會將獎勵發放給目前遊玩的帳號。個人連結總共只能使用一次；社群連結每個帳號可使用一次。你可以領取不同活動的禮物。先安裝 Legion，再開啟連結。獎勵可在「隊伍」中查看，仍須符合正常的裝備條件。"
 }

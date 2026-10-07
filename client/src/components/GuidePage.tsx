@@ -171,7 +171,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="progression">
             <h2 id="progression" tabIndex={-1}>{t("Rewards, unlocks & weekly leagues")}</h2>
-            <p>{t('Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.')}</p>
+            <p>{t('Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.')}</p>
             <p>{t('Hover over or focus a reward to inspect it. Equip your gear in Team.')}</p>
             <p><Trans i18n={i18n} i18nKey={"The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use."} components={[<strong />]} /></p>
             <h3>{t("What unlocks when?")}</h3>

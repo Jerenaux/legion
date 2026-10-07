@@ -1117,5 +1117,6 @@
   "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "個人向けのギフトリンクを受け取りましたか？まずLegionをインストールしてから、リンクを開いてゲームを起動し、ギフトを受け取ってください。ギフトは現在プレイ中のアカウントに付与され、受け取りは一度限りです。装備は「チーム」で確認できます。通常の装備条件が適用されます。",
   "Hover over or focus a reward to inspect it. Equip your gear in Team.": "報酬にカーソルを合わせるか、キーボードで選択すると詳細を確認できます。「チーム」で装備しましょう。",
   "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "ゴールドはショップで、解放された消耗品、魔法、装備、新しい仲間の購入に使えます。",
-  "Requires level {{level}}": "必要レベル：{{level}}"
+  "Requires level {{level}}": "必要レベル：{{level}}",
+  "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "ギフトリンクの報酬は、現在プレイ中のアカウントに付与されます。個人用リンクは全体で1回、コミュニティ用リンクはアカウントごとに1回使えます。異なるキャンペーンのギフトも受け取れます。Legionをインストールしてからリンクを開いてください。報酬は「チーム」で確認できます。通常の装備条件は引き続き適用されます。"
 }
