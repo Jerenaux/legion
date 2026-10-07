@@ -1076,3 +1076,8 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }   
+.friend-sigil {
+    position: absolute;
+    right: -8px;
+    bottom: -8px;
+}

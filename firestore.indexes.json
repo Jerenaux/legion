@@ -255,6 +255,31 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "communitySeasons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "seasonId", "order": "ASCENDING"},
+        {"fieldPath": "wins", "order": "DESCENDING"},
+        {"fieldPath": "games", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "communitySeasons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "seasonId", "order": "ASCENDING"},
+        {"fieldPath": "wins", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "community.id", "order": "ASCENDING"},
+        {"fieldPath": "elo", "order": "DESCENDING"}
+      ]
     }
   ],
   "fieldOverrides": []

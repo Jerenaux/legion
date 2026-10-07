@@ -28,6 +28,8 @@ interface Props {
   isPlayerTeam: boolean;
   player: PlayerProfileData;
   mode: PlayMode;
+  /** Both players belong to the same creator community. */
+  sharedCommunity?: boolean;
 }
 
 interface State {
@@ -79,7 +81,7 @@ class Overview extends Component<Props, State> {
 
     return (
       <div className={`overview ${this.props.isPlayerTeam && 'overview_playerteam'} ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} />
+        <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} sharedCommunity={this.props.sharedCommunity} />
         <div className="member_container">
           <div className="team_label">
             {this.props.isPlayerTeam ? t("Your team") : t("Enemy team")}

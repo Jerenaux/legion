@@ -2,12 +2,13 @@ const STEAM_WEB_API_IDENTITY = "legion";
 let activeTicket;
 let activeSteamClient;
 let pendingAuth;
-let giftReader;
+let launchReader;
 
-function getSteamGiftToken(steamworksRoot) {
+/** Reads a `steam://run/<app>/?key=value` launch parameter ("gift", "community"). */
+function getSteamLaunchParam(steamworksRoot, key) {
   if (!activeSteamClient) return null;
-  giftReader ||= require('./steam-launch').createSteamGiftReader(steamworksRoot);
-  return giftReader();
+  launchReader ||= require('./steam-launch').createSteamLaunchReader(steamworksRoot);
+  return launchReader(key);
 }
 
 function getSteamClient(env, loadSteamworks) {
@@ -80,7 +81,7 @@ function shutdownPlatform() {
   pendingAuth = undefined;
   activeSteamClient?.input?.shutdown?.();
   activeSteamClient = undefined;
-  giftReader = undefined;
+  launchReader = undefined;
 }
 
-module.exports = {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamGiftToken};
+module.exports = {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamLaunchParam};

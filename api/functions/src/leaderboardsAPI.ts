@@ -22,7 +22,7 @@ interface LeagueRollover {
   outcomes: LeagueOutcome[];
 }
 
-function secondsUntilNextSeason(now = new Date()): number {
+export function secondsUntilNextSeason(now = new Date()): number {
   const next = new Date(now);
   const daysUntilFriday = (5 - now.getUTCDay() + 7) % 7;
   next.setUTCDate(now.getUTCDate() + daysUntilFriday);

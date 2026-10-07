@@ -1,3 +1,4 @@
+import {communitySummary} from "@legion/shared/communities";
 import {ChestColor, League} from "@legion/shared/enums";
 import {LeaderboardRow} from "@legion/shared/interfaces";
 import {DEMOTION_RATIO, PROMOTION_RATIO} from "@legion/shared/config";
@@ -24,6 +25,7 @@ export interface RankedPlayer {
   leagueStats: RankStats;
   allTimeStats: RankStats;
   isSynthetic?: boolean;
+  community?: unknown;
 }
 
 export function currentSeasonId(now = new Date()): string {
@@ -122,6 +124,7 @@ export function rankPlayers(
       isFriend: false,
       isPromoted,
       isDemoted,
+      community: communitySummary(player.community),
     };
   });
 }

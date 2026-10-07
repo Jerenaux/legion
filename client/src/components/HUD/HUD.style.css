@@ -1177,3 +1177,22 @@
 .exit_game_menu .game_leave_btn:active { transform: translateY(3px); box-shadow: 0 1px 0 oklch(12% .025 250); }
 .exit_game_menu .game_leave_btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 .game_menu_panel :is(.game_setting, .exit_game_label) p { color: inherit; }
+
+/* Creator community: sigil and tag after the league rank. */
+.player_info_community {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.player_info_rank .player_info_community_tag {
+  font-size: 1.1rem;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  color: #eec858;
+  margin: 0;
+}
+
+.player_info_community_shared .sigil {
+  filter: drop-shadow(0 0 4px rgba(238, 200, 88, 0.9));
+}

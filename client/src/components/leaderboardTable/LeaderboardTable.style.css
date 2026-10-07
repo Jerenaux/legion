@@ -176,3 +176,8 @@
     background-repeat: no-repeat;
     background-position: center;
 }
+.rank-row-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

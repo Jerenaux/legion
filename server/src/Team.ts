@@ -176,6 +176,7 @@ export class Team {
         this.teamData.AIwinRatio = playerData.AIwinRatio;
         this.teamData.engagementStats = playerData.engagementStats;
         this.teamData.completedGames = playerData.completedGames;
+        this.teamData.community = playerData.community ?? null;
     }
 
     getPlayerData() {
@@ -188,6 +189,7 @@ export class Team {
             playerLeague: this.teamData.league,
             completedGames: this.teamData.completedGames,
             engagementStats: this.teamData.engagementStats,
+            community: this.teamData.community ?? null,
         }
     }
 

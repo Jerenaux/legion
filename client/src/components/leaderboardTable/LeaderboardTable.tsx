@@ -6,6 +6,7 @@ import './LeaderboardTable.style.css';
 import { Component } from 'preact';
 import { loadAvatar } from '../utils';
 import Ghost from '../ghost/Ghost';
+import Sigil from '../sigil/Sigil';
 import { route } from 'preact-router';
 
 // Import image assets
@@ -199,7 +200,12 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                                         style={{ backgroundImage: this.getUpgradeImage(item.isPromoted, item.isDemoted) }}
                                     ></div>
                                 </td>
-                                <td>{item.player}</td>
+                                <td>
+                                    <span className="rank-row-player">
+                                        {item.community && <Sigil sigil={item.community.sigil} size={24} label={item.community.name} />}
+                                        {item.player}
+                                    </span>
+                                </td>
                                 <td>{formatNumber(item.elo)}</td>
                                 <td className="rank-row-win">{formatNumber(item.wins)}</td>
                                 <td>{formatNumber(item.losses)}</td>

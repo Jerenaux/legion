@@ -1,6 +1,7 @@
 import { Player } from './Player';
 import { Arena } from './Arena';
 import { PlayerProfileData, TeamOverview, TeamMember } from '@legion/shared/interfaces';
+import type { CommunitySummary } from '@legion/shared/communities';
 
 
 export class Team {
@@ -17,6 +18,7 @@ export class Team {
     playerRank: number;
     playerLeague: number;
     completedGames: number;
+    community: CommunitySummary | null;
     score = 0;
 
     constructor(scene, number: number, isPlayerTeam: boolean, teamData: PlayerProfileData, score = 0) {
@@ -29,6 +31,7 @@ export class Team {
         this.playerLevel = teamData.playerLevel;
         this.playerRank = teamData.playerRank;
         this.playerLeague = teamData.playerLeague;
+        this.community = teamData.community ?? null;
         this.score = score;
     }   
 
@@ -98,6 +101,7 @@ export class Team {
                 playerRank: this.playerRank,
                 playerLeague: this.playerLeague,
                 completedGames: this.completedGames,
+                community: this.community,
             },
             score: this.score,
             isPlayerTeam: this.isPlayerTeam

@@ -9,6 +9,9 @@ import AwardedPlayer from './awardedPlayer/AwardedPlayer';
 import { PlayerContext } from '../contexts/PlayerContext';
 import Ghost from './ghost/Ghost';
 import { APILeaderboardResponse } from "@legion/shared/interfaces";
+import CommunityRanking from './community/CommunityRanking';
+import Sigil from './sigil/Sigil';
+
 
 
 // Import image assets
@@ -53,13 +56,15 @@ interface State {
 
 class RankPage extends Component<{}, State> {
   static contextType = PlayerContext;
+  static COMMUNITY_TAB = 6;
+  static COMMUNITY_TAB_SIGIL = {shape: 0, pattern: 7, palette: 0, symbol: 2};
   private leaderboardRequest = 0;
 
   state: State = {
     leaderboardData: null,
     sortColumn: 'elo',
     sortAscending: false,
-    curr_tab: this.context.player.league,
+    curr_tab: /[?&]tab=communities\b/.test(globalThis.location?.search ?? '') ? RankPage.COMMUNITY_TAB : this.context.player.league,
     tour: null,
     isLoading: true,
     loadFailed: false,
@@ -81,6 +86,10 @@ class RankPage extends Component<{}, State> {
 
   async fetchLeaderboard() {
     const request = ++this.leaderboardRequest;
+    if (this.state.curr_tab === RankPage.COMMUNITY_TAB) {
+      this.setState({ isLoading: false, loadFailed: false });
+      return;
+    }
     this.setState({ isLoading: true, loadFailed: false });
 
     try {
@@ -133,7 +142,7 @@ class RankPage extends Component<{}, State> {
 
     return (
       <div className="rank-content" aria-busy={this.state.isLoading}>
-        {!this.state.loadFailed && <div className="flexContainer" style={{ alignItems: 'flex-end' }}>
+        {!this.state.loadFailed && this.state.curr_tab !== RankPage.COMMUNITY_TAB && <div className="flexContainer" style={{ alignItems: 'flex-end' }}>
           {!this.state.isLoading ? (
             <SeasonCard
               currTab={tabs[this.state.curr_tab]}
@@ -159,9 +168,12 @@ class RankPage extends Component<{}, State> {
                 <img src={icon} alt={t(tabs[i])} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </button>
             ))}
+            <button type="button" data-game-control style={getRankTabStyle(RankPage.COMMUNITY_TAB)} title={t('Communities')} aria-pressed={this.state.curr_tab === RankPage.COMMUNITY_TAB} onClick={() => this.handleCurrTab(RankPage.COMMUNITY_TAB)}>
+              <Sigil sigil={RankPage.COMMUNITY_TAB_SIGIL} size={36} label={t('Communities')} />
+            </button>
           </div>
 
-          {this.state.loadFailed ? (
+          {this.state.curr_tab === RankPage.COMMUNITY_TAB ? <CommunityRanking /> : this.state.loadFailed ? (
             <section className="rank-load-error" role="alert">
               <h2>{t("Rank couldn’t load")}</h2>
               <p>{t("Check your connection and try again.")}</p>

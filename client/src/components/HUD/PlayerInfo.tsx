@@ -5,6 +5,7 @@ import { route } from 'preact-router';
 import Modal from 'react-modal';
 import { PlayerProfileData } from "@legion/shared/interfaces";
 import { getLeagueIcon, loadAvatar } from "../utils";
+import Sigil from '../sigil/Sigil';
 
 import { ENABLE_PLAYER_LEVEL, ENABLE_SETTINGS } from '@legion/shared/config';
 
@@ -23,6 +24,7 @@ interface Props {
   isSpectator: boolean;
   eventEmitter: EventEmitter;
   isPlayerTeam: boolean;
+  sharedCommunity?: boolean;
 }
 interface State {
   isMenuModalOpen: boolean;
@@ -148,6 +150,13 @@ class PlayerInfo extends Component<Props, State> {
           <div className={`player_info_rank ${position === 'right' && 'row_reverse'}`}>
             <img src={getLeagueIcon(player.playerLeague)} alt={""} />
             <span>{!isBot ? `# ${player.playerRank}` : ''}</span>
+            {player.community && <span
+              className={`player_info_community ${this.props.sharedCommunity ? 'player_info_community_shared' : ''}`}
+              title={this.props.sharedCommunity ? t("{{value0}} · same community", {value0: player.community.name}) : player.community.name}
+            >
+              <Sigil sigil={player.community.sigil} size={30} label={player.community.name} />
+              <span className="player_info_community_tag">{player.community.tag}</span>
+            </span>}
           </div>
         </div>
         {isPlayerTeam && <div className={position === 'right' ? "spectator_container_right" : "spectator_container"}>
