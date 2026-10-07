@@ -11,6 +11,7 @@ import { Link, useRouter } from 'preact-router';
 import UserInfoBar from '../userInfoBar/UserInfoBar';
 import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, errorToast, avatarContext, lockIcon } from '../utils';
+import Sigil from '../sigil/Sigil';
 import {reportProblem} from '../../telemetry';
 import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
 import { SettingsModal } from '../settingsModal/SettingsModal';
@@ -171,7 +172,10 @@ class Navbar extends Component<Props, State> {
                                                     {this.state.isLoading ? (
                                                         <span className="loading-placeholder">{t("Loading...")}</span>
                                                     ) : (
-                                                        <span>{this.props.playerData?.name}</span>
+                                                        <span className="userName">
+                                                            {this.props.playerData?.community && <Sigil sigil={this.props.playerData.community.sigil} size={20} label={this.props.playerData.community.name} />}
+                                                            {this.props.playerData?.name}
+                                                        </span>
                                                     )}
                                                     {ENABLE_PLAYER_LEVEL && (
                                                         <div className="userLevel">

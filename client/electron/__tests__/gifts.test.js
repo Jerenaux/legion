@@ -32,6 +32,6 @@ test('pending gifts survive restarts, deduplicate, and are removed only after ac
 
 test('native Steam launch reader binds the packaged SDK exports on this platform', () => {
   // Loads the real library without calling Steam before it is initialized.
-  const {createSteamGiftReader} = require('../steam-launch');
-  expect(typeof createSteamGiftReader(path.dirname(require.resolve('steamworks.js')))).toBe('function');
+  const {createSteamLaunchReader} = require('../steam-launch');
+  expect(typeof createSteamLaunchReader(path.dirname(require.resolve('steamworks.js')))).toBe('function');
 });

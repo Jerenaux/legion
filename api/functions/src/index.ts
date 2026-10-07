@@ -42,3 +42,4 @@ export {
 
 export {tower, towerResult} from './towerAPI';
 export {redeemGift, giftLink} from './giftAPI';
+export {joinCommunity, getCommunity, getCommunityRanking, communityLink} from './communityAPI';

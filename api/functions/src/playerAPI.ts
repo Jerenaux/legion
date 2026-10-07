@@ -1,3 +1,4 @@
+import {communitySummary} from '@legion/shared/communities';
 import { onRequest } from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions/v1";
@@ -315,6 +316,7 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     AIwinRatio,
     completedGames: playerData.engagementStats?.completedGames || 0,
     engagementStats: playerData.engagementStats || {},
+    community: playerData.community ?? null,
   } as PlayerContextData;
   return {player, characters};
 }
@@ -968,6 +970,7 @@ export const zombieData = onRequest(
           allTimeRank: playerData.allTimeStats?.rank || 0,
           dailyloot: transformedDailyLoot,
           isLoaded: false,
+          community: communitySummary(playerData.community),
         },
         rosterData: {
           characters: rosterData,
@@ -1129,6 +1132,8 @@ export const getProfileData = onRequest({
             const profileData = {
                 name: playerData?.name || '',
                 avatar: playerData?.avatar || '',
+                community: communitySummary(playerData?.community),
+                communityJoinedAt: playerData?.community?.joinedAt ?? null,
                 allTimeStats: {
                     losses: allTimeStats?.losses || 0,
                     lossStreak: allTimeStats?.lossesStreak || 0,
@@ -1287,6 +1292,7 @@ export const listFriends = onRequest({
                     id: doc.id,
                     name: doc.data().name,
                     avatar: doc.data().avatar,
+                    community: communitySummary(doc.data().community),
                 }));
 
             response.send(friends);

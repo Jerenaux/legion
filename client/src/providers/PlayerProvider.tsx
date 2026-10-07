@@ -260,6 +260,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   inventory: data.inventory,
                   carrying_capacity: data.carrying_capacity,
                   engagementStats: data.engagementStats || {},
+                  community: data.community ?? null,
               }
           });
       } catch (error) {

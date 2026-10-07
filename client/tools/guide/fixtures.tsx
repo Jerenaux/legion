@@ -56,6 +56,16 @@ const characters = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind
   id: `guide-${i}`, name: ['Roland', 'Luna', 'Ember'][i], portrait: ['1_1', '1_7', '1_5'][i],
   sp: 2, inventory: [0, 1], skills: [[], [9], [0, 3]][i],
 }));
+// Preview-only: ?community gives the player, rivals and leaderboard rows creator communities.
+const previewCommunities = new URLSearchParams(location.search).has('community');
+const fixtureCommunities = [
+  {id: 'kestrel', name: 'Kestrel Guild', tag: 'KES', sigil: {shape: 0, pattern: 4, palette: 0, symbol: 24}},
+  {id: 'iron-wolves', name: 'Iron Wolves', tag: 'IRON', sigil: {shape: 1, pattern: 5, palette: 6, symbol: 23}},
+  {id: 'emberfall', name: 'Emberfall', tag: 'EMBR', sigil: {shape: 3, pattern: 1, palette: 1, symbol: 7}},
+  {id: 'tidecallers', name: 'The Tidecallers', tag: 'TIDE', sigil: {shape: 2, pattern: 7, palette: 9, symbol: 29}},
+  {id: 'verdant', name: 'Verdant Oath', tag: 'VRD', sigil: {shape: 0, pattern: 3, palette: 2, symbol: 10}},
+  {id: 'nightglass', name: 'Nightglass', tag: 'NGT', sigil: {shape: 1, pattern: 9, palette: 3, symbol: 6}},
+];
 const profile = {
   playerName: 'Arena Apprentice', teamName: '', playerAvatar: 'default',
   playerLevel: 1, playerRank: 12, playerLeague: League.BRONZE, completedGames: 12,
@@ -69,8 +79,10 @@ const team = characters.map((character, i) => ({
 const battle = {
   general: {reconnect: true, spectator: false, mode: PlayMode.CASUAL},
   // Keep one unlearned action so the fixture exercises contextual spell coaching.
-  player: {teamId: 1, player: {...profile, engagementStats: {...profile.engagementStats, everUsedSpell: false}}, team, score: 0},
-  opponent: {teamId: 2, player: {...profile, playerName: 'Training Rival', playerRank: -1},
+  player: {teamId: 1, player: {...profile, engagementStats: {...profile.engagementStats, everUsedSpell: false},
+    community: previewCommunities ? fixtureCommunities[0] : null}, team, score: 0},
+  opponent: {teamId: 2, player: {...profile, playerName: 'Training Rival', playerRank: previewCommunities ? 7 : -1,
+    community: previewCommunities ? fixtureCommunities[0] : null},
     team: team.map((unit, i) => ({...unit, x: [8, 10, 9][i], y: [4, 6, 8][i]})), score: 0},
   queue: [[3, 1], [1, 2], [2, 1], [3, 2], [1, 1], [2, 2]].map(([num, team], position) => ({num, team, position})),
   turnee: {num: 3, team: 1, turnDuration: 7, timeLeft: 7, turnNumber: 8},
@@ -171,6 +183,21 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
     return structuredClone(towerCheck.progress);
   }
   if (endpoint === 'recordPlayerAction') return {};
+  if (endpoint.startsWith('getCommunity?id=')) {
+    const id = decodeURIComponent(endpoint.split('=')[1]);
+    const community = fixtureCommunities.find(entry => entry.id === id);
+    if (!community) throw Object.assign(new Error('Community not found'), {status: 404});
+    const names = ['Kestrel', 'Arena Apprentice', 'Morrow', 'Brightwind', 'Oduya', 'Sable Fox', 'Tamsin', 'Quillon'];
+    return {...community, members: 1284, createdAt: Date.parse('2026-09-01'), seasonEnd: 3600 * 52,
+      season: {seasonId: 'fixture', wins: 214, games: 377, rank: 1},
+      topMembers: names.map((name, i) => ({id: i === 1 ? 'guide-local-only' : `fixture-${i}`, name, avatar: String(i % 8 + 1),
+        elo: 1720 - i * 41, league: Math.max(0, 4 - Math.floor(i / 2)), weeklyWins: 31 - i * 3}))};
+  }
+  if (endpoint === 'getCommunityRanking') {
+    const ranking = fixtureCommunities.map((community, i) => ({...community, rank: i + 1, wins: 214 - i * 29, games: 377 - i * 41, members: 1284 - i * 170}));
+    return {seasonId: 'fixture', seasonEnd: 3600 * 52, ranking, own: previewCommunities ? ranking[0] : null};
+  }
+  if (endpoint === 'joinCommunity') return {...fixtureCommunities[0], joinedAt: Date.now(), via: 'code'};
   if (endpoint === 'listOnSaleCharacters') {
     if (new URLSearchParams(location.search).has('slow')) await new Promise(resolve => setTimeout(resolve, 60_000));
     return characters.map(character => ({...character, price: 120}));
@@ -185,7 +212,8 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
       const wins = 30 - i * 2, losses = 6 + i;
       return {rank: i + 1, player, playerId: `fixture-${i}`, avatar: String(i % 8 + 1), elo: 1680 - i * 37, wins, losses,
         winsRatio: `${Math.round(wins / (wins + losses) * 100)}%`, isPlayer: i === 3, isFriend: i === 6,
-        isPromoted: i < 3, isDemoted: i > 9, chestColor: [ChestColor.GOLD, ChestColor.SILVER, ChestColor.BRONZE][i] ?? null};
+        isPromoted: i < 3, isDemoted: i > 9, chestColor: [ChestColor.GOLD, ChestColor.SILVER, ChestColor.BRONZE][i] ?? null,
+        community: previewCommunities && i % 3 !== 2 ? fixtureCommunities[i % fixtureCommunities.length] : null};
     }) : [];
     return {league: Number(endpoint.split('=')[1]), seasonEnd: 3600 * 52, playerRank: 4, ranking, highlights: [
       {id: 'guide-award', name: 'Arena Apprentice', avatar: 'default', title: 'Ace Player', description: 'Highest Game Grades'},
@@ -223,6 +251,7 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
       isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
+      community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
       carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
     getCompletedGames: () => completedGames, checkEngagementFlag: () => true,

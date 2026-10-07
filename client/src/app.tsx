@@ -10,6 +10,7 @@ import HomePage from './routes/HomePage';
 import GamePage from './routes/GamePage';
 import Root from './routes/Root';
 import GiftClaim from './components/GiftClaim';
+import CommunityInvite from './components/community/CommunityInvite';
 import withAuth from './components/withAuth';
 
 import {setUser} from './telemetry';
@@ -216,6 +217,7 @@ class App extends Component<{}, AppState> {
             <AuthProvider>
                 <PlayerProvider>
                     <GiftClaim blocked={['game', 'replay', 'queue', 'lobby'].includes(this.state.currentMainRoute)} />
+                    <CommunityInvite blocked={['game', 'replay', 'queue', 'lobby'].includes(this.state.currentMainRoute)} />
                     <PlayerContext.Consumer>
                         {({ refreshAllData, updateActiveCharacter }) => (
                             <>
@@ -233,6 +235,7 @@ class App extends Component<{}, AppState> {
                                     <Route path="/queue/:mode" component={AuthenticatedHomePage} />
                                     <Route path="/lobby/:id" component={AuthenticatedHomePage} />
                                     <Route path="/profile/:id?" component={AuthenticatedHomePage} />
+                                    <Route path="/community/:id" component={AuthenticatedHomePage} />
                                     <Route default component={AuthenticatedHomePage} />
                                 </Router>
                             </>

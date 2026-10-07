@@ -191,6 +191,9 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h3>{t("Your league is not your ELO")}</h3>
             <p><Trans i18n={i18n} i18nKey={"<0>ELO</0> changes with ranked results and measures your rating. The <1>weekly league</1> is a separate competition: current-season ranked wins determine the order, with fewer losses breaking ties."} components={[<strong />, <strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Promotion, demotion, and podium rewards happen <0>Friday at 19:00 UTC</0>. Check Rank for your position and the promotion/demotion zones. Only players who participated in that season’s ranked games are considered; sitting out a season does not demote you. Crossing an ELO threshold does not change your league immediately."} components={[<strong />]} /></p>
+            <h3>{t("Creator communities")}</h3>
+            <p><Trans i18n={i18n} i18nKey={"Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Legion. You can belong to one community, and joining is permanent."} components={[<strong />]} /></p>
+            <p>{t("The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.")}</p>
           </section>
 
           <section aria-labelledby="controls">
@@ -207,7 +210,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>{t("Action letters")}</dt><dd>{t("Use the keys printed on the item and spell icons. Change any key or controller button in Settings, under Controls.")}</dd></div>
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Select your first three living characters. <0>Tab</0> / <1>Shift</1> + <2>Tab</2> cycle through living allies. Selection does not let a character act out of turn."} components={[<kbd />, <kbd />, <kbd />]} /></dd></div>
               <div><dt><kbd>{t("Space")}</kbd> / <kbd>{t("End")}</kbd></dt><dd>{t("Pass the active turn.")}</dd></div>
-              <div><dt><kbd>{t("Esc")}</kbd></dt><dd>{t("Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.", {value0: onClose ? 'the queue' : 'Play'})} {t("With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.")}</dd></div>
+              <div><dt><kbd>{t("Esc")}</kbd></dt><dd>{t("In combat, open the game menu, with Settings and Abandon Game; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.", {value0: onClose ? 'the queue' : 'Play'})} {t("With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.")}</dd></div>
               <div><dt><kbd>F11</kbd> / <kbd>{t("Alt")}</kbd> + <kbd>{t("Enter")}</kbd></dt><dd>{t("Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.")}</dd></div>
               <div><dt><kbd>{t("P")}</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Open the combat menu. <0>The match keeps running:</0> opening Settings does not pause the opponent or the turn timer."} components={[<strong />]} /></dd></div>
               <div><dt>{t("Controller")}</dt><dd>{t("A confirms, B cancels, Y passes the turn, LB and RB switch characters, and Menu opens the game menu. The D-pad or left stick moves focus.")}</dd></div>

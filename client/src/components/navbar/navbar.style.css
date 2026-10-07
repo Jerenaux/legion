@@ -377,3 +377,9 @@ login-buttons {
   box-sizing: content-box;
 }
 .dropdown-content .dropdown-quit { border-top: 1px solid var(--ink-edge-soft); color: oklch(84% .1 28); }
+
+.userName {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}

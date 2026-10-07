@@ -18,6 +18,7 @@ import firebaseConfig from '@legion/shared/firebaseConfig';
 import {ENABLE_CINDER_TOWER} from '@legion/shared/config';
 import { PlayMode } from '@legion/shared/enums';
 import { transformDailyLoot } from '@legion/shared/utils';
+import { communitySummary } from '@legion/shared/communities';
 import { PlayerDataForGame } from '@legion/shared/interfaces';
 import { withRetry } from './utils';
 import {authenticateSocket} from '@legion/shared/socketAuth';
@@ -109,6 +110,7 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<{p
       AIwinRatio,
       completedGames: playerData.engagementStats?.completedGames || 0,
       engagementStats: playerData.engagementStats || {},
+      community: communitySummary(playerData.community),
     }};
   }, retries, delay, 'getPlayerData');
 }
