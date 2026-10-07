@@ -846,7 +846,6 @@
   "The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass.": "所選魔法師的操作欄，包含緊湊的 HP 和 MP 顯示、中央的法術與物品按鈕、MP 消耗、快捷鍵及跳過回合的沙漏。",
   "Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.": "綠色代表 HP（生命），藍色代表 MP（魔力）。操作欄左側顯示所標示角色裝備的物品，右側顯示已學法術，與快捷鍵順序一致。將滑鼠或焦點移到行動上可檢視詳情。敵人行動時，操作欄顯示「敵方回合」。被沉默或 MP 不足的法術仍會顯示，但會標為不可用。",
   "Space": "Space",
-  "Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "戰鬥中開啟放棄對局確認；關閉支援此操作的對話方塊。再次點選已選法術或物品可取消目標選擇。在指南中則返回{{value0}}。",
   "Solo expedition": "單人遠征",
   "6-floor adventure": "六層冒險",
   "tower": "餘燼之塔",
@@ -1117,5 +1116,6 @@
   "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "收到了專屬禮物連結？請先安裝 Legion，再開啟連結啟動遊戲並領取禮物。禮物會發放到目前遊玩的帳號，且只能領取一次。在隊伍頁面查看裝備；一般的裝備要求仍然適用。",
   "Hover over or focus a reward to inspect it. Equip your gear in Team.": "將滑鼠移至獎勵上，或用鍵盤選取獎勵，即可查看詳情。在隊伍頁面穿戴裝備。",
   "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "在商店花費金幣，購買已解鎖的消耗品、法術、裝備和新隊員。",
-  "Requires level {{level}}": "需要等級 {{level}}"
+  "Requires level {{level}}": "需要等級 {{level}}",
+  "In combat, open the game menu, with Settings and Abandon Game; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "戰鬥中開啟遊戲選單（含設定與放棄對局），並關閉支援的對話框。再次點選已選法術或物品可取消目標選擇。在指南中則返回{{value0}}。"
 }

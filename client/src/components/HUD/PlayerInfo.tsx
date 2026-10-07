@@ -48,14 +48,18 @@ class PlayerInfo extends Component<Props, State> {
   }
 
   handleDesktopAction = (event: CustomEvent<{action: DesktopAction}>) => {
+    // Esc in combat offers the game menu (Settings or Abandon) rather than jumping straight
+    // to the abandon confirmation; Abandon there still asks for confirmation.
     if (event.detail.action === 'abandon-dialog' && this.props.isPlayerTeam) {
-      this.handleOpenModal(null, 'exit_modal');
+      this.handleOpenModal(null, 'menu_modal');
     }
   };
 
   handleOpenModal = (e, modalType) => {
     if (modalType === "menu_modal") {
-      const elementRect = e.currentTarget.getBoundingClientRect();
+      // Anchor to the gear; the tutorial can hide it, so fall back to the top-left corner.
+      const gear = (e?.currentTarget ?? document.querySelector('[data-game-menu]')) as HTMLElement | null;
+      const elementRect = gear?.getClientRects().length ? gear.getBoundingClientRect() : {top: 16, right: 6} as DOMRect;
       // Open beside the gear so the menu never covers the player's own name and rank.
       const modalPosition = {
         top: elementRect.top,

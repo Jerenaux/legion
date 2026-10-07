@@ -846,7 +846,6 @@
   "The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass.": "選択中の魔道士のコマンド欄。小さくまとまったHPとMP、中央の魔法・アイテムボタン、消費MP、ショートカットキー、ターンをパスする砂時計を表示しています。",
   "Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.": "緑はHP（体力）、青はMP（魔力）です。コマンド欄には、名前が表示されているキャラクターの装備アイテムが左、習得済み魔法が右に並び、ショートカットキーの順序と対応しています。アクションにカーソルやフォーカスを合わせると詳細を確認できます。敵のターンには「敵のターン」と表示されます。沈黙中やMP不足の魔法も、使えないことがわかる表示で残ります。",
   "Space": "Space",
-  "Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "戦闘中は対戦放棄の確認を開き、対応するダイアログを閉じます。対象選択を取り消すには、選択中の魔法やアイテムをもう一度クリックします。このガイドからは{{value0}}に戻ります。",
   "Solo expedition": "ソロ遠征",
   "6-floor adventure": "全6階の冒険",
   "tower": "熾火の塔",
@@ -1117,5 +1116,6 @@
   "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "個人向けのギフトリンクを受け取りましたか？まずLegionをインストールしてから、リンクを開いてゲームを起動し、ギフトを受け取ってください。ギフトは現在プレイ中のアカウントに付与され、受け取りは一度限りです。装備は「チーム」で確認できます。通常の装備条件が適用されます。",
   "Hover over or focus a reward to inspect it. Equip your gear in Team.": "報酬にカーソルを合わせるか、キーボードで選択すると詳細を確認できます。「チーム」で装備しましょう。",
   "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "ゴールドはショップで、解放された消耗品、魔法、装備、新しい仲間の購入に使えます。",
-  "Requires level {{level}}": "必要レベル：{{level}}"
+  "Requires level {{level}}": "必要レベル：{{level}}",
+  "In combat, open the game menu, with Settings and Abandon Game; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "戦闘中は設定と対戦放棄があるゲームメニューを開き、対応するダイアログを閉じます。対象選択を取り消すには、選択中の魔法やアイテムをもう一度クリックします。このガイドからは{{value0}}に戻ります。"
 }
