@@ -152,6 +152,53 @@ try {
   assert.equal(oldAction.details.league, null);
   assert.equal(oldAction.details.winner, false);
   assert.equal((await db.collection('players').doc(one.uid).get()).data().completedGames, completedBefore);
+  // Operator CLI -> real HTTP redemption -> real Firestore transactions, all on loopback.
+  const {execFileSync, spawnSync} = await import('node:child_process');
+  const {mkdtempSync, writeFileSync, rmSync} = await import('node:fs');
+  const {tmpdir} = await import('node:os');
+  const {join} = await import('node:path');
+  const giftFiles = mkdtempSync(join(tmpdir(), 'legion-gift-smoke-'));
+  try {
+    const rewards = [{type: 'equipment', id: 2, amount: 1}, {type: 'gold', id: 0, amount: 50}];
+    const rewardsFile = join(giftFiles, 'rewards.json');
+    writeFileSync(rewardsFile, JSON.stringify(rewards));
+    const cliOptions = {cwd: new URL('../../api/functions/', import.meta.url), encoding: 'utf8' as const};
+    const cli = (...args: string[]) => JSON.parse(execFileSync('bun', ['tools/gifts.ts', ...args, '--project', 'legion-32c6d'], cliOptions));
+    for (const usage of [[], ['--usage', 'invalid']]) {
+      const invalid = spawnSync('bun', ['tools/gifts.ts', 'create', '--project', 'legion-32c6d', '--label', 'local', '--rewards', rewardsFile, ...usage], cliOptions);
+      assert.equal(invalid.status, 1, 'Creation must require an explicit supported usage');
+      assert.equal(invalid.stdout, '');
+    }
+    const audience = await Promise.all([0, 1, 2].map(n => login(`gift-${n}-${run}`)));
+    const before = await Promise.all(audience.map(async account => (await db.collection('players').doc(account.uid).get()).data()));
+    const create = (usage: string) => cli('create', '--usage', usage, '--label', `local-${run}`, '--rewards', rewardsFile);
+    const single = create('single'), unlimited = create('unlimited'), other = create('unlimited');
+    assert.equal(single.usage, 'single'); assert.equal(unlimited.usage, 'unlimited');
+    const singles = await Promise.all(audience.slice(0, 2).map(account => http('redeemGift', {token: single.token, usage: 'unlimited'}, account.token)));
+    assert.deepEqual(singles.map(result => result.status).sort(), ['claimed', 'unavailable']);
+    const winner = singles.findIndex(result => result.status === 'claimed');
+    assert.equal((await http('redeemGift', {token: single.token}, audience[winner].token)).status, 'already_claimed');
+    const results = await Promise.all(audience.slice(0, 2).flatMap(account => [0, 1, 2].map(() => http('redeemGift', {token: unlimited.token}, account.token))));
+    assert.equal(results.filter(result => result.status === 'claimed').length, 2);
+    assert.equal(results.filter(result => result.status === 'already_claimed').length, 4);
+    const campaign = await db.collection('creatorGifts').doc(unlimited.id).get();
+    assert.equal(campaign.get('claimedBy'), null);
+    assert.equal((await campaign.ref.collection('claims').get()).size, 2);
+    assert.equal(cli('inspect', '--id', unlimited.id).usage, 'unlimited');
+    assert(cli('list').some((gift: {id: string}) => gift.id === unlimited.id));
+    assert.equal(cli('revoke', '--id', unlimited.id).revokedAt > 0, true);
+    assert.equal((await http('redeemGift', {token: unlimited.token}, audience[2].token)).status, 'unavailable');
+    assert.deepEqual(await http('redeemGift', {token: unlimited.token}, audience[0].token), {status: 'already_claimed', rewards});
+    assert.equal((await http('redeemGift', {token: other.token}, audience[0].token)).status, 'claimed');
+    const after = await Promise.all(audience.map(async account => (await db.collection('players').doc(account.uid).get()).data()));
+    for (let i = 0; i < audience.length; i++) {
+      const claims = (i === winner ? 1 : 0) + (i < 2 ? 1 : 0) + (i === 0 ? 1 : 0);
+      assert.equal(after[i].gold, before[i].gold + 50 * claims);
+      assert.equal(after[i].inventory.equipment.length, before[i].inventory.equipment.length + claims);
+      assert.deepEqual(after[i].engagementStats, before[i].engagementStats);
+    }
+    console.log('Gift CLI usage, concurrent single/unlimited redemption, per-account receipts, independent campaigns and revocation pass');
+  } finally { rmSync(giftFiles, {recursive: true, force: true}); }
   console.log('Backend integration passed:',JSON.stringify(timings));
 } finally {
   sockets.forEach(s=>{s.disconnect();});

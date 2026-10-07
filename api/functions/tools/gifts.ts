@@ -5,16 +5,17 @@ import {readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {Firestore} from 'firebase-admin/firestore';
 import {OAuth2Client} from 'google-auth-library';
-import {giftId, giftTokenPattern, validateGiftRewards} from '../src/gifts';
+import {giftId, giftTokenPattern, isGiftUsage, validateGiftRewards} from '../src/gifts';
 import {FIRESTORE_DATABASE_ID} from '@legion/shared/config';
 
 const {values, positionals} = parseArgs({args: process.argv.slice(2), allowPositionals: true, options: {
   project: {type: 'string'}, label: {type: 'string'}, rewards: {type: 'string'}, expires: {type: 'string'}, id: {type: 'string'},
-  gcloud: {type: 'boolean'},
+  gcloud: {type: 'boolean'}, usage: {type: 'string'},
 }});
-const usage = 'bun tools/gifts.ts <create|list|inspect|revoke> --project PROJECT [--label NAME --rewards FILE.json --expires ISO_DATE | --id GIFT_ID]';
+const usage = 'bun tools/gifts.ts <create|list|inspect|revoke> --project PROJECT [--usage single|unlimited --label NAME --rewards FILE.json --expires ISO_DATE | --id GIFT_ID]';
 try {
   if (!values.project || !['create', 'list', 'inspect', 'revoke'].includes(positionals[0])) throw new Error(usage);
+  if (positionals[0] === 'create' && !isGiftUsage(values.usage)) throw new Error('Creation requires --usage single or --usage unlimited');
   const authClient = values.gcloud ? new OAuth2Client() : undefined;
   if (authClient) authClient.setCredentials({
     access_token: execFileSync('gcloud', ['auth', 'print-access-token'], {encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe']}).trim(),
@@ -30,9 +31,9 @@ try {
     if (expiresAt !== null && (!Number.isSafeInteger(expiresAt) || expiresAt <= Date.now())) throw new Error('Expiry must be in the future');
     const token = randomBytes(32).toString('hex');
     const id = giftId(token);
-    await gifts.doc(id).create({label: values.label.trim(), rewards, createdAt: Date.now(), expiresAt, revokedAt: null, claimedAt: null, claimedBy: null});
-    // The token is printed once; Firestore stores only its hash. Deliver privately.
-    console.log(JSON.stringify({id, token,
+    await gifts.doc(id).create({usage: values.usage, label: values.label.trim(), rewards, createdAt: Date.now(), expiresAt, revokedAt: null, claimedAt: null, claimedBy: null});
+    // Printed once; keep personal links private and share unlimited links with the intended audience.
+    console.log(JSON.stringify({id, token, usage: values.usage,
       steamURL: `steam://run/3996730/?gift=${token}`,
       emailURL: `https://us-central1-${values.project}.cloudfunctions.net/giftLink?token=${token}`,
       localURL: `legion://gift/${token}`,

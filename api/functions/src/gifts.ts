@@ -7,6 +7,9 @@ import {getConsumableById} from '@legion/shared/Items';
 import {getSpellById} from '@legion/shared/Spells';
 import {addItemsToInventory} from './inventoryUtils';
 
+export type GiftUsage = 'single' | 'unlimited';
+export const isGiftUsage = (value: unknown): value is GiftUsage => value === 'single' || value === 'unlimited';
+
 export const giftTokenPattern = /^[a-f0-9]{64}$/;
 export const giftId = (token: string) => createHash('sha256').update(token).digest('hex');
 
@@ -39,10 +42,15 @@ export async function redeemGiftToken(db: Firestore, uid: string, token: unknown
   const playerRef = db.collection('players').doc(uid);
   return db.runTransaction(async transaction => {
     const gift = (await transaction.get(giftRef)).data();
-    if (!gift) return {status: 'unavailable'};
+    if (!gift || (gift.usage !== undefined && !isGiftUsage(gift.usage))) return {status: 'unavailable'};
     // Retrying a successful claim returns its receipt, even after expiry/revocation.
     if (gift.claimedBy) return gift.claimedBy === uid
       ? {status: 'already_claimed', rewards: validateGiftRewards(gift.rewards)} : {status: 'unavailable'};
+    const claimRef = giftRef.collection('claims').doc(uid);
+    if (gift.usage === 'unlimited') {
+      const claim = (await transaction.get(claimRef)).data();
+      if (claim) return {status: 'already_claimed', rewards: validateGiftRewards(claim.rewards)};
+    }
     if (gift.revokedAt || (gift.expiresAt != null && (!Number.isSafeInteger(gift.expiresAt) || gift.expiresAt <= Date.now()))) return {status: 'unavailable'};
     const rewards = validateGiftRewards(gift.rewards);
     const player = (await transaction.get(playerRef)).data() as DBPlayerData | undefined;
@@ -55,7 +63,10 @@ export async function redeemGiftToken(db: Firestore, uid: string, token: unknown
     }
     // Gifts may exceed carrying capacity, like chest rewards. Never discard paid-for/personal gifts.
     transaction.update(playerRef, {inventory, gold});
-    transaction.update(giftRef, {claimedBy: uid, claimedAt: Date.now()});
+    if (gift.usage === 'unlimited') {
+      // No shared counter/write: audience members contend only on their own account/receipt.
+      transaction.create(claimRef, {claimedAt: Date.now(), rewards});
+    } else transaction.update(giftRef, {claimedBy: uid, claimedAt: Date.now()});
     return {status: 'claimed', rewards};
   });
 }

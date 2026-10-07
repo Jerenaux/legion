@@ -1153,5 +1153,6 @@
   "communityMembers_other": "멤버 {{count}}명",
   "Creator communities": "크리에이터 커뮤니티",
   "Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Legion. You can belong to one community, and joining is permanent.": "크리에이터는 코드나 링크를 공유합니다. 프로필의 <0>커뮤니티 가입</0>에 코드를 입력하거나 링크를 열어 Legion을 실행하세요. 커뮤니티는 하나만 소속될 수 있으며 가입은 영구적입니다.",
-  "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.": "커뮤니티 문장이 경기, 프로필, 순위표에서 이름 옆에 표시됩니다. 랭크 승리는 순위의 커뮤니티 탭 주간 합계에 더해지며 리그와 함께 초기화됩니다. 커뮤니티는 전투에 영향을 주지 않습니다."
+  "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.": "커뮤니티 문장이 경기, 프로필, 순위표에서 이름 옆에 표시됩니다. 랭크 승리는 순위의 커뮤니티 탭 주간 합계에 더해지며 리그와 함께 초기화됩니다. 커뮤니티는 전투에 영향을 주지 않습니다.",
+  "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "선물 링크의 보상은 현재 플레이 중인 계정에 지급됩니다. 개인용 링크는 전체에서 한 번만, 커뮤니티용 링크는 계정당 한 번씩 사용할 수 있습니다. 서로 다른 캠페인의 선물도 받을 수 있습니다. Legion을 설치한 뒤 링크를 여세요. 보상은 팀에서 확인할 수 있으며, 일반 장비 착용 조건은 그대로 적용됩니다."
 }
