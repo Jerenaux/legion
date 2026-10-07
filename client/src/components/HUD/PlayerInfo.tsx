@@ -17,6 +17,7 @@ import settingsIcon from '@assets/HUD/settings_icon.png';
 import { SettingsModal } from '../settingsModal/SettingsModal';
 import { EventEmitter } from 'eventemitter3';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../../input/actions';
+import '../systemMenu/SystemMenu.css';
 
 interface Props {
   player: PlayerProfileData;
@@ -30,7 +31,6 @@ interface State {
   isMenuModalOpen: boolean;
   isExitModalOpen: boolean;
   isSettingsModalOpen: boolean;
-  modalPos: {top: number; left: number} | null;
 }
 
 class PlayerInfo extends Component<Props, State> {
@@ -38,7 +38,6 @@ class PlayerInfo extends Component<Props, State> {
     isMenuModalOpen: false,
     isExitModalOpen: false,
     isSettingsModalOpen: false,
-    modalPos: null,
   }
 
   componentDidMount() {
@@ -53,21 +52,13 @@ class PlayerInfo extends Component<Props, State> {
     // Esc in combat offers the game menu (Settings or Abandon) rather than jumping straight
     // to the abandon confirmation; Abandon there still asks for confirmation.
     if (event.detail.action === 'abandon-dialog' && this.props.isPlayerTeam) {
-      this.handleOpenModal(null, 'menu_modal');
+      this.handleOpenModal('menu_modal');
     }
   };
 
-  handleOpenModal = (e, modalType) => {
+  handleOpenModal = (modalType) => {
     if (modalType === "menu_modal") {
-      // Anchor to the gear; the tutorial can hide it, so fall back to the top-left corner.
-      const gear = (e?.currentTarget ?? document.querySelector('[data-game-menu]')) as HTMLElement | null;
-      const elementRect = gear?.getClientRects().length ? gear.getBoundingClientRect() : {top: 16, right: 6} as DOMRect;
-      // Open beside the gear so the menu never covers the player's own name and rank.
-      const modalPosition = {
-        top: elementRect.top,
-        left: elementRect.right + 10,
-      };
-      this.setState({ isMenuModalOpen: true, modalPos: modalPosition });
+      this.setState({ isMenuModalOpen: true });
     } else if (modalType === "exit_modal") {
       this.setState({ isMenuModalOpen: false, isExitModalOpen: true, isSettingsModalOpen: false });
     } else if (modalType === "setting_modal") {
@@ -90,23 +81,6 @@ class PlayerInfo extends Component<Props, State> {
 
   render() {
     const { player, position, isSpectator, isPlayerTeam } = this.props;
-
-    const customStyles = {
-      content: {
-        top: this.state.modalPos?.top,
-        left: this.state.modalPos?.left,
-        right: 'auto',
-        bottom: 'auto',
-        padding: 0,
-        border: 'none',
-        background: 'transparent',
-        overflow: 'visible'
-      },
-      overlay: {
-        zIndex: 10,
-        backgroundColor: 'transparent',
-      }
-    };
 
     const customStyles1 = {
       content: {
@@ -168,19 +142,28 @@ class PlayerInfo extends Component<Props, State> {
               <img src={donateIcon} alt={""} />
             </div>
           </div>}
-          <button type="button" className="spectator" data-game-menu aria-label={t("Game menu")} onClick={(e) => this.handleOpenModal(e, "menu_modal")}>
+          <button type="button" className="spectator" data-game-menu aria-label={t("Game menu")} onClick={() => this.handleOpenModal("menu_modal")}>
             <img src={settingsIcon} alt={""} />
           </button>
         </div>}
-        <Modal contentLabel={t("Game menu")} isOpen={this.state.isMenuModalOpen} style={customStyles} onRequestClose={this.handleCloseModal}
-          onAfterOpen={() => document.querySelector<HTMLButtonElement>('.game_menu_panel button')?.focus()}>
+        <Modal contentLabel={t("Game menu")} isOpen={this.state.isMenuModalOpen}
+          className="system-menu loot-popup" overlayClassName="loot-popup-scrim"
+          shouldReturnFocusAfterClose={!this.state.isExitModalOpen && !this.state.isSettingsModalOpen}
+          onRequestClose={this.handleCloseModal}
+          onAfterOpen={() => document.querySelector<HTMLButtonElement>('.game_menu_panel [data-desktop-cancel]')?.focus()}>
           <div className="game_menu_panel">
-            {ENABLE_SETTINGS && <button type="button" className="game_setting" onClick={(e) => this.handleOpenModal(e, "setting_modal")}>
-              <p>{t("Settings")}</p>
-            </button>}
-            <button type="button" className="exit_game_label" onClick={(e) => this.handleOpenModal(e, "exit_modal")}>
-              <p>{t("Abandon Game!")}</p>
-            </button>
+            <h2>{t("Game menu")}</h2>
+            <div className="system-menu-actions">
+              <button type="button" className="game-btn game-btn--gold" data-desktop-cancel onClick={this.handleCloseModal}>
+                {t("Resume")}
+              </button>
+              {ENABLE_SETTINGS && <button type="button" className="game-btn game-btn--ink" onClick={() => this.handleOpenModal("setting_modal")}>
+                {t("Settings")}
+              </button>}
+              <button type="button" className="game-btn game-btn--ink system-menu-quit exit_game_label" onClick={() => this.handleOpenModal("exit_modal")}>
+                {t("Abandon Game!")}
+              </button>
+            </div>
           </div>
         </Modal>
         <Modal contentLabel={t("Abandon Game!")} isOpen={this.state.isExitModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1}

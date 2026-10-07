@@ -37,6 +37,14 @@ module.exports = async ({js, waitFor, ready, win, dist}) => {
   assert.equal(await js(`Boolean(document.querySelector('[role="dialog"] .exit_game_menu'))`), false, 'Escape offers the menu, not the abandon confirmation');
   assert.equal(await js('document.querySelectorAll(".game_menu_panel button").length >= 2'), true, 'The menu offers settings and abandon');
   assert.deepEqual(await js('dockCommands'), [], 'Opening the menu must not abandon');
+  await ready();
+  assert.equal(await js('document.activeElement.matches(".game_menu_panel [data-desktop-cancel]")'), true,
+    'The combat menu focuses Resume');
+  await js('document.querySelector(".game_menu_panel [data-desktop-cancel]").click()');
+  await waitFor(`!document.querySelector('[role="dialog"]')`);
+  assert.deepEqual(await js('dockCommands'), [], 'Resume closes the menu without sending a combat action');
+  press('Escape');
+  await waitFor(`Boolean(document.querySelector('[role="dialog"] .game_menu_panel'))`);
   press('Escape');
   await waitFor(`!document.querySelector('[role="dialog"]')`);
   await openAbandonDialog();
