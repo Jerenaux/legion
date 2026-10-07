@@ -392,7 +392,8 @@ export interface EndGameDataResults {
 }
 
 export interface EndGameData {
-    winner: string,
+    // Winning player UID; -1 when the AI won; null for a canceled match.
+    winner: string | -1 | null,
     results: EndGameDataResults,
 }
 
