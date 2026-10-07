@@ -49,7 +49,7 @@ The comparable local macOS arm64 package fell from 694 MB before the desktop cle
 - [ ] Upload to a private beta inside Legion Demo (`3996730`) and verify Steam ticket authentication on Windows and macOS. Follow `STEAM_DEPLOYMENT.md`; the Demo has no Linux depot.
 - [ ] On each store build: create/join matchmaking, complete a match, reconnect after a transport drop, and confirm rewards are applied once.
 - [ ] On Windows and macOS: a fresh install opens fullscreen; F11 / Alt+Enter (Control+Command+F on Mac) and the Settings checkbox switch modes; Escape does not leave fullscreen; relaunching reopens in the last mode, maximized when windowed.
-- [ ] Launched from Steam: Shift+Tab opens the overlay and F12 saves a screenshot that appears in the Steam screenshot manager; combat and menus still render smoothly with the overlay enabled.
+- [ ] Launched from Steam on each platform: Shift+Tab does not open the overlay. Steam authentication, language selection, gift/community launch links and normal rendering still work. The Steam overlay and its screenshot shortcut are intentionally unsupported; use OS screenshot tools.
 - [ ] Settings › Controls: rebind a combat key and a controller button (including a D-pad direction), use both in a match, relaunch to confirm they persist, then Reset controls. Unplug a controller mid-match and check the notice.
 - [ ] On Steam Deck/controller: navigate menus, confirm/cancel, switch units, pass turn, open the game menu, enter text with the Steam keyboard, toggle fullscreen, and exit cleanly.
 - [ ] Unless explicitly excluded, promote the verified Steam Build ID to the Demo's public/default branch, complete any Valve confirmation, and verify the public Build ID. Record the previous Build ID for rollback.
