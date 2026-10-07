@@ -1,9 +1,11 @@
+import {ENABLE_CINDER_TOWER} from '@legion/shared/config';
 import {onRequest} from './telemetry';
 import {corsMiddleware, getUID, checkAPIKey, firestore} from './APIsetup';
 import {towerAction, settleTowerBattle, TowerActionError} from './towerStore';
 
 export const tower = onRequest({memory: '512MiB'}, (request, response) => {
   corsMiddleware(request, response, async () => {
+    if (!ENABLE_CINDER_TOWER) { response.status(404).send('Not available'); return; }
     let uid: string;
     try { uid = await getUID(request); } catch { response.status(401).send('Unauthorized'); return; }
     if (!['GET', 'POST'].includes(request.method)) { response.status(405).send('Method not allowed'); return; }
