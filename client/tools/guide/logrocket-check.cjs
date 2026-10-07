@@ -11,6 +11,11 @@ module.exports = async ({logrocket, js}) => {
     assert(recorded.includes(value), `LogRocket must upload ${value} to the local sink`);
   }
   assert(!recorded.includes('private-replay-'), 'LogRocket must redact passwords and private network data');
+  // Players must not see stale snapshots through the transparent canvas (motion trails),
+  // while replays must: the hiding attribute stays live-only.
+  assert.equal(await js(`(images => images.length > 0 && images.every(image => getComputedStyle(image).visibility === 'hidden'))([...document.querySelectorAll('[data-logrocket-canvas]')])`), true,
+    'Combat snapshots must be invisible to the player');
+  assert(!/data-replay-only[\s\S]{1,4}\["live"\]/.test(recorded), 'Recorded snapshots must not carry the live-only hiding attribute');
   const pixels = Array.from(recorded.matchAll(/data:image\/webp;base64,[A-Za-z0-9+/=]+/g), match => match[0]).slice(-10);
   assert(pixels.length, 'LogRocket uploads must include encoded combat pixels');
   assert(await js(`(async () => {

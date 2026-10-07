@@ -24,7 +24,8 @@ function sanitizeURL(value: string): string {
 export const logRocketOptions: NonNullable<Parameters<typeof import('logrocket').init>[1]> = {
   release: process.env.SENTRY_RELEASE,
   shouldCaptureIP: false,
-  dom: {textSanitizer: false, inputSanitizer: false, imageSanitizer: false},
+  // `data-replay-only` hides combat snapshots from players; replays must not inherit it.
+  dom: {textSanitizer: false, inputSanitizer: false, imageSanitizer: false, hiddenAttributes: ['data-replay-only']},
   // Sentry owns scrubbed errors; never send a second, unsanitized console/exception copy.
   console: {isEnabled: false},
   shouldDetectExceptions: false,
