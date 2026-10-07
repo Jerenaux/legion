@@ -68,10 +68,10 @@ The desktop shell takes its App ID from Steam's `SteamAppId` launch environment.
 The overlay is intentionally disabled on every platform. Do not call
 `electronEnableSteamOverlay()`: it forces in-process GPU rendering, disables
 DirectComposition and attaches a repaint timer. Steam authentication, language
-selection and launch parameters still use the SDK independently. Keep the Demo
-application’s overlay disabled in Steamworks General Installation settings too;
-Steam can otherwise inject it when launching a game. Shift+Tab and Steam overlay
-screenshots are not supported.
+selection and launch parameters still use the SDK independently. Shift+Tab and
+Steam overlay screenshots are not supported. The Demo does not expose the
+software-only overlay checkbox in Steamworks General Installation settings;
+the Electron integration is controlled in `client/electron.js`.
 
 ## Release and verification
 
