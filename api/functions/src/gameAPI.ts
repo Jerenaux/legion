@@ -2,7 +2,7 @@ import {matchDocument} from "@legion/shared/matchData";
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, storage, isDevelopment} from "./APIsetup";
-import {EndGameData, GameReplayMessage} from "@legion/shared/interfaces";
+import {EndGameDataResults, GameReplayMessage} from "@legion/shared/interfaces";
 import {GameStatus, League, PlayMode} from "@legion/shared/enums";
 import {logPlayerAction} from "./dashboardAPI";
 import Busboy from 'busboy';
@@ -69,13 +69,14 @@ export const completeGame = onRequest({
         return;
       }
       const gameId = request.body.gameId;
-      const winnerUID = request.body.winnerUID || -1; // -1 for AI
-      const rawResults: EndGameData = request.body.results;
+      const rawResults: EndGameDataResults = request.body.results;
       console.log(`[completeGame] Game ${gameId} completed, results: ${JSON.stringify(rawResults)}`);
       // Filter out the results object to remove keys that are empty strings or undefined
       const results = Object.fromEntries(
         Object.entries(rawResults).filter(([key, value]) => key !== '' && value !== undefined)
       );
+      // No outcomes means loading was canceled, not an AI victory.
+      const winnerUID = Object.keys(results).length ? (request.body.winnerUID || -1) : null;
       console.log(`[completeGame] Filtered results: ${JSON.stringify(results)}`);
 
       const gameDoc = await db.collection("games").doc(gameId).get();
@@ -90,31 +91,25 @@ export const completeGame = onRequest({
         throw new Error("gameData is null");
       }
 
-      for (const player of gameData.players) {
-        if (player) { // Add a check to ensure player is not undefined or empty string
-          logPlayerAction(player, "gameComplete", {
-            gameId,
-            winner: winnerUID === player,
-            results: results[player as keyof EndGameData],
-            league: gameData.league,
-            mode: gameData.mode,
-          });
-        }
-      }
-
-      const newGameData = {
+      await gameDoc.ref.update({
         status: GameStatus.COMPLETED,
         winner: winnerUID,
         results,
         end: new Date(),
-      };
-
-      // Only add results to newGameData if it's not empty
-      if (Object.keys(results).length > 0) {
-        newGameData['results'] = results;
+      });
+      // Analytics must neither veto completion nor reject after the response.
+      const actions = await Promise.allSettled(gameData.players.filter(Boolean).map((player: string) =>
+        logPlayerAction(player, 'gameComplete', {
+          gameId,
+          winner: winnerUID === null ? null : winnerUID === player,
+          ...(results[player] === undefined ? {} : {results: results[player]}),
+          league: gameData.league ?? null,
+          mode: gameData.mode,
+        })
+      ));
+      for (const action of actions) {
+        if (action.status === 'rejected') console.error('[completeGame] Action log failed:', action.reason);
       }
-
-      await gameDoc.ref.update(newGameData);
       response.status(200).send({status: 0});
     } catch (error) {
       console.error("[completeGame] Error:", error);

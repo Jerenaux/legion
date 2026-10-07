@@ -437,6 +437,19 @@ export abstract class Game
         this.markReady(socket);
     }
 
+    handleTutorialWaiting(socket: Socket, token: unknown) {
+        const team = this.socketMap.get(socket);
+        if (this.gameOver || !this.gameStarted || this.combatStarted
+            || (this.mode !== PlayMode.PRACTICE && this.mode !== PlayMode.TUTORIAL)
+            || !team?.isGame0() || team.getSocket() !== socket || socket.connected === false
+            || typeof token !== 'string' || token !== this.readyTokens.get(socket)) return;
+        // Reading the reveal/briefing is not a stalled load. Keep combat paused,
+        // with two minutes of inactivity and a fifteen-minute overall ceiling.
+        clearTimeout(this.loadingTimer!);
+        const remaining = Math.max(0, this.startTime + 15 * 60_000 - Date.now());
+        this.loadingTimer = setTimeout(() => this.cancelWaitingGame(), Math.min(120_000, remaining));
+    }
+
     private markReady(socket: Socket) {
         const team = this.socketMap.get(socket);
         if (this.gameOver || !this.gameStarted || !team || team.getSocket() !== socket || socket.connected === false || this.readySockets.has(socket)) return;

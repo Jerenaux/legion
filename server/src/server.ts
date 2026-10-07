@@ -269,6 +269,10 @@ io.on('connection', async (socket) => {
         socketMap.get(socket)?.handleArenaReady(socket, token);
       });
 
+      socket.on('tutorialWaiting', (token: unknown) => {
+        socketMap.get(socket)?.handleTutorialWaiting(socket, token);
+      });
+
       socket.on('passTurn', () => {
         const game = socketMap.get(socket);
         game?.processAction('passTurn', null, socket);
