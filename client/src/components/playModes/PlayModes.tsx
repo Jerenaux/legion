@@ -1,3 +1,4 @@
+import {ENABLE_CINDER_TOWER} from '@legion/shared/config';
 import { h } from 'preact';
 import './PlayModes.style.css'
 import { Component } from 'preact';
@@ -46,9 +47,9 @@ class PlayModes extends Component {
             lockIcon={!isRankedUnlocked ? lockIcon : undefined}
             gamesUntilUnlock={!isRankedUnlocked ? this.context.getGamesUntilFeature(LockedFeatures.RANKED_MODE) : 0}
           />
-          <PlayModeButton label="tower" mode={PlayMode.TOWER} data-playmode="tower"
+          {ENABLE_CINDER_TOWER && <PlayModeButton label="tower" mode={PlayMode.TOWER} data-playmode="tower"
             disabled={!isTowerUnlocked} lockIcon={!isTowerUnlocked ? lockIcon : undefined}
-            gamesUntilUnlock={!isTowerUnlocked ? this.context.getGamesUntilFeature(LockedFeatures.TOWER_MODE) : 0} />
+            gamesUntilUnlock={!isTowerUnlocked ? this.context.getGamesUntilFeature(LockedFeatures.TOWER_MODE) : 0} />}
         </div>
 
       </div>

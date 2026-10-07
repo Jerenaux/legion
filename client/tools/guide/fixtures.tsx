@@ -12,7 +12,7 @@ import {MusicManager} from '../../src/game/MusicManager';
 import { EventEmitter } from 'eventemitter3';
 import { NewCharacter } from '../../../shared/NewCharacter';
 import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures, RewardType } from '../../../shared/enums';
-import { BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
+import { ENABLE_CINDER_TOWER, BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
 import {getClient, getReplay, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
@@ -138,6 +138,7 @@ export async function getFirebaseIdToken() { return 'guide-local-only'; }
 const rankCheck = {fail: true};
 Object.assign(window, {rankCheck});
 const towerCheck = {
+  enabled: ENABLE_CINDER_TOWER,
   requests: [] as string[],
   fail: false,
   progress: JSON.parse(localStorage.getItem('tower-fixture') || '{"run":null,"highestClear":0}') as TowerProgress,
