@@ -1,5 +1,5 @@
 import {onRequest} from './telemetry';
-import admin, {corsMiddleware, getUID} from './APIsetup';
+import {corsMiddleware, getUID, firestore} from './APIsetup';
 import {giftTokenPattern, redeemGiftToken} from './gifts';
 import {STEAM_DEMO_APP_ID} from './platformIdentity';
 
@@ -9,7 +9,7 @@ export const redeemGift = onRequest({memory: '512MiB', invoker: 'public'}, (requ
     let uid: string;
     try { uid = await getUID(request); } catch { response.status(401).send('Unauthorized'); return; }
     try {
-      response.set('Cache-Control', 'no-store').json(await redeemGiftToken(admin.firestore(), uid, request.body?.token));
+      response.set('Cache-Control', 'no-store').json(await redeemGiftToken(firestore(), uid, request.body?.token));
     } catch {
       // Never log the bearer gift token or request body.
       console.error('Gift redemption failed');

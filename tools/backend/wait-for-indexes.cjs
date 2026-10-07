@@ -15,14 +15,17 @@ async function waitForIndexes(list, pause = () => delay(10_000), attempts = 60) 
   }
   throw new Error('Opponent indexes are not ready; Functions deployment stopped');
 }
-module.exports = {waitForIndexes, specifications};
+const DATABASE_ID = 'legion';
+module.exports = {waitForIndexes, specifications, DATABASE_ID};
 if (require.main === module) {
   const {FirestoreAdminClient} = require('../../api/functions/node_modules/@google-cloud/firestore').v1;
   const client = new FirestoreAdminClient();
   const project = process.argv[2];
+  // Must match FIRESTORE_DATABASE_ID in shared/config.ts (checked by api deployment tests).
+  const database = process.argv[3] || DATABASE_ID;
   if (!project) throw new Error('Project ID required');
   waitForIndexes(async () => {
-    const [indexes] = await client.listIndexes({parent: `projects/${project}/databases/(default)/collectionGroups/players`});
+    const [indexes] = await client.listIndexes({parent: `projects/${project}/databases/${database}/collectionGroups/players`});
     return indexes;
   }).catch(error => {console.error(error); process.exitCode = 1;}).finally(() => client.close());
 }

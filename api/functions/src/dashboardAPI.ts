@@ -1,5 +1,5 @@
 import {onRequest, HttpsFunction, HttpsOptions} from "./telemetry";
-import admin, {checkAPIKey, corsMiddleware, } from "./APIsetup";
+import admin, {checkAPIKey, corsMiddleware, firestore} from "./APIsetup";
 import {Request, Response} from "express";
 import {dailyAnalyticsRange, getDailyAnalytics} from "./dailyAnalytics";
 
@@ -58,7 +58,7 @@ interface DailyVisitor {
 export async function updateDailyVisits(visitorId?: string, referrer?: string, isMobile?: boolean) {
     if (!visitorId) return;
 
-    const db = admin.firestore();
+    const db = firestore();
     const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
     const docRef = db.collection("dailyVisits").doc(today);
 
@@ -98,7 +98,7 @@ export async function updateDailyVisits(visitorId?: string, referrer?: string, i
 export async function logPlayerAction(playerId: string, actionType: string, details: unknown) {
     if (!playerId || playerId === '' || playerId === undefined || playerId === null) return;
     console.log(`[logPlayerAction] playerId: ${playerId}, actionType: ${actionType}, details: ${JSON.stringify(details)}`);
-    const db = admin.firestore();
+    const db = firestore();
     const actionRef = db.collection('players').doc(playerId).collection('actions').doc();
     await actionRef.set({
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -109,7 +109,7 @@ export async function logPlayerAction(playerId: string, actionType: string, deta
 
 export async function logGameAction(gameId: string, playerId: string, actionType: string, details: unknown) {
     console.log(`Logging game action: ${gameId}, ${playerId}, ${actionType}, ${details}`);
-    const db = admin.firestore();
+    const db = firestore();
 
     // Query for the document where the field gameId matches the provided gameId
     const gameQuerySnapshot = await db.collection('games').where('gameId', '==', gameId).limit(1).get();
@@ -157,7 +157,7 @@ export const getDashboardData = adminOnRequest(async (request, response) => {
             return;
         }
         try {
-            response.send(await getDailyAnalytics(admin.firestore(), range));
+            response.send(await getDailyAnalytics(firestore(), range));
         } catch (error) {
             console.error("DashboardData error:", error);
             response.status(500).send("Error");
@@ -168,7 +168,7 @@ export const getDashboardData = adminOnRequest(async (request, response) => {
 export const getActionLog = adminOnRequest(
     { memory: '512MiB' },
     async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -254,7 +254,7 @@ export const getActionLog = adminOnRequest(
 });
 
 export const getGameLog = adminOnRequest(async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -292,7 +292,7 @@ export const getGameLog = adminOnRequest(async (request, response) => {
 export const listPlayerIDs = adminOnRequest(
     { memory: '512MiB' },
     async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
     corsMiddleware(request, response, async () => {
         // if (!checkAPIKey(request)) {
         //     response.status(401).send('Unauthorized');
@@ -309,7 +309,7 @@ export const listPlayerIDs = adminOnRequest(
 });
 
 export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -526,7 +526,7 @@ export const getEngagementMetrics = adminOnRequest({ memory: '512MiB' }, async (
 });
 
 export const getTutorialDropoffStats = adminOnRequest(async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -613,7 +613,7 @@ export const getTutorialDropoffStats = adminOnRequest(async (request, response) 
 });
 
 export const migrateEngagementMetrics = adminOnRequest(async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -713,7 +713,7 @@ export const migrateEngagementMetrics = adminOnRequest(async (request, response)
 });
 
 export const migrateMetricsToStats = adminOnRequest(async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -765,7 +765,7 @@ export const migrateMetricsToStats = adminOnRequest(async (request, response) =>
 export const getPlayerGameHistory = adminOnRequest(
     { memory: '512MiB' },
     async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -818,7 +818,7 @@ export const getPlayerGameHistory = adminOnRequest(
 });
 
 export const getActivePlayers = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -853,7 +853,7 @@ export const getActivePlayers = adminOnRequest({ memory: '512MiB' }, async (requ
 });
 
 export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -918,7 +918,7 @@ export const migrateMobileFlag = adminOnRequest({ memory: '512MiB' }, async (req
 });
 
 export const getPlayerActionsReport = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -991,7 +991,7 @@ function getSpeedForClass(classId: number): number {
 }
 
 export const migrateCharacterSpeed = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1039,7 +1039,7 @@ export const migrateCharacterSpeed = adminOnRequest({ memory: '512MiB' }, async 
 });
 
 export const markPlayerContacted = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1062,7 +1062,7 @@ export const markPlayerContacted = adminOnRequest({ memory: '512MiB' }, async (r
 });
 
 export const markPlayerExcluded = adminOnRequest({ memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {

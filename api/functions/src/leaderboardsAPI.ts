@@ -1,7 +1,7 @@
 import {onRequest, onSchedule} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, {corsMiddleware, getUID, firestore} from "./APIsetup";
 import {currentSeasonId, LEADERBOARD_LIMIT, RankedPlayer, rankPlayers, seasonEndingAt} from "./ranking";
 import {processChestRewards} from "./characterAPI";
 import {ChestColor, League} from "@legion/shared/enums";
@@ -66,7 +66,7 @@ function getHighlights(players: RankedPlayer[], isAllTime: boolean): Leaderboard
 }
 
 async function getPersonalRank(leagueID: number, uid: string): Promise<number | null> {
-  const db = admin.firestore();
+  const db = firestore();
   const playerDoc = await db.collection("players").doc(uid).get();
   if (!playerDoc.exists) return null;
   const player = playerDoc.data()!;
@@ -91,7 +91,7 @@ async function getPersonalRank(leagueID: number, uid: string): Promise<number | 
 }
 
 async function getLeaderboard(leagueID: number, uid: string) {
-  const db = admin.firestore();
+  const db = firestore();
   const isAllTime = leagueID === 5;
   const seasonId = currentSeasonId();
   let query: FirebaseFirestore.Query = db.collection("players");
@@ -125,7 +125,7 @@ async function getLeaderboard(leagueID: number, uid: string) {
 }
 
 async function getLeagueOutcomes(seasonId: string): Promise<{participants: number; outcomes: LeagueOutcome[]}> {
-  const db = admin.firestore();
+  const db = firestore();
   const leagues = [League.BRONZE, League.SILVER, League.GOLD, League.ZENITH, League.APEX];
   const snapshots = await Promise.all(leagues.map((league) => db.collection("players")
     .where("league", "==", league)
@@ -155,7 +155,7 @@ async function getLeagueOutcomes(seasonId: string): Promise<{participants: numbe
 }
 
 async function applyLeagueOutcome(outcome: LeagueOutcome, seasonId: string): Promise<boolean> {
-  const db = admin.firestore();
+  const db = firestore();
   const playerRef = db.collection("players").doc(outcome.playerId);
   const content = outcome.chestColor === null ? [] : getChestContent(outcome.chestColor);
   return db.runTransaction(async (transaction) => {
@@ -183,7 +183,7 @@ async function applyLeagueOutcome(outcome: LeagueOutcome, seasonId: string): Pro
 }
 
 async function getOrCreateRollover(seasonId: string): Promise<LeagueRollover> {
-  const db = admin.firestore();
+  const db = firestore();
   const runRef = db.collection("leagueRollovers").doc(seasonId);
   const existing = await runRef.get();
   if (existing.exists) return existing.data() as LeagueRollover;
@@ -211,7 +211,7 @@ export const leaguesUpdate = onSchedule({
   concurrency: 1,
   retryCount: 2,
 }, async (event) => {
-  const db = admin.firestore();
+  const db = firestore();
   const seasonId = seasonEndingAt(new Date(event.scheduleTime));
   const rollover = await getOrCreateRollover(seasonId);
   if (rollover.status === "completed") {

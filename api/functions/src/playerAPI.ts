@@ -1,7 +1,7 @@
 import { onRequest } from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import * as functions from "firebase-functions/v1";
-import admin, { corsMiddleware, getUID, checkAPIKey, } from "./APIsetup";
+import admin, { corsMiddleware, getUID, checkAPIKey, firestore} from "./APIsetup";
 
 import { uniqueNamesGenerator } from "unique-names-generator";
 
@@ -35,7 +35,7 @@ import {starterCharacterId} from "./playerProvisioning";
 export const buyInventorySlots = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -163,7 +163,7 @@ function generateName() {
 
 export async function ensurePlayer(uid: string): Promise<void> {
   const user = {uid};
-  const db = admin.firestore();
+  const db = firestore();
   const playerRef = db.collection("players").doc(user.uid);
   if ((await playerRef.get()).exists) return;
   const today = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -255,7 +255,7 @@ export const createPlayer = functions.runWith({
 }).auth.user().onCreate((user) => ensurePlayer(user.uid));
 
 async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: boolean) {
-  const db = admin.firestore();
+  const db = firestore();
   const docSnap = await db.collection('players').doc(uid).get();
   if (!docSnap.exists) return undefined;
   const playerData = docSnap.data();
@@ -342,7 +342,7 @@ export const bootstrapPlayer = playerDataHandler(true);
 export const queuingData = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -374,7 +374,7 @@ export const saveGoldReward = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Saving gold reward");
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -478,7 +478,7 @@ export async function awardChestContent(
 export const claimChest = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -551,7 +551,7 @@ export const claimChest = onRequest({
 export const completeTour = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -724,7 +724,7 @@ const figureOutCombatTip = (playerData: FirestorePlayerData) => {
 export const fetchGuideTip = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -766,7 +766,7 @@ export const setPlayerOnSteroids = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -930,7 +930,7 @@ export const zombieData = onRequest(
       return;
     }
 
-    const db = admin.firestore();
+    const db = firestore();
 
     // Get the league and elo parameters from the request
     const league = parseInt(req.query.league as string, 10);
@@ -1005,7 +1005,7 @@ export const recordPlayerAction = onRequest({
 });
 
 export const incrementStartedGames = onRequest({ secrets: ["API_KEY"], memory: '512MiB' }, async (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1034,7 +1034,7 @@ export const updateInactivePlayersStats = onSchedule(
     memory: "512MiB",
   },
   async (_event) => {
-  const db = admin.firestore();
+  const db = firestore();
   const now = new Date();
 
   // Calculate the timestamp for 48 hours ago
@@ -1104,7 +1104,7 @@ export const updateInactivePlayersStats = onSchedule(
 export const getProfileData = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1174,7 +1174,7 @@ interface PlayerSearchResult {
 export const searchPlayers = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1214,7 +1214,7 @@ export const migrateLowercaseNames = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
 }, (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1250,7 +1250,7 @@ export const migrateLowercaseNames = onRequest({
 export const listFriends = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1301,7 +1301,7 @@ export const listFriends = onRequest({
 export const addFriend = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {
@@ -1374,7 +1374,7 @@ export const addFriend = onRequest({
 export const updatePlayerName = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -1427,7 +1427,7 @@ export const updatePlayerName = onRequest({
 export const updatePlayerAvatar = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -1468,7 +1468,7 @@ export const updatePlayerAvatar = onRequest({
 export const setUserAttributes = onRequest({
     memory: '512MiB',
 }, (request, response) => {
-    const db = admin.firestore();
+    const db = firestore();
 
     corsMiddleware(request, response, async () => {
         try {

@@ -1,6 +1,6 @@
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
-import admin, {corsMiddleware, getUID} from "./APIsetup";
+import admin, {corsMiddleware, getUID, firestore} from "./APIsetup";
 import {getConsumableById} from "@legion/shared/Items";
 import {getSpellById} from "@legion/shared/Spells";
 import {getEquipmentById} from "@legion/shared/Equipments";
@@ -28,7 +28,7 @@ export const inventoryData = onRequest({
   memory: '512MiB',
 }, (request, response) => {
   logger.info("Fetching inventoryData");
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -55,7 +55,7 @@ export const inventoryData = onRequest({
 export const purchaseItem = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -140,7 +140,7 @@ export const purchaseItem = onRequest({
 export const inventoryTransaction = onRequest({
   memory: '512MiB',
 }, async (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
@@ -286,7 +286,7 @@ export const inventoryTransaction = onRequest({
 export const inventorySave = onRequest({
   memory: '512MiB',
 }, (request, response) => {
-  const db = admin.firestore();
+  const db = firestore();
 
   corsMiddleware(request, response, async () => {
     try {
