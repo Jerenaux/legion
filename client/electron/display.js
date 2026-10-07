@@ -38,4 +38,28 @@ function displayWindowOptions(startFullscreen, platform = process.platform) {
   return {fullscreenable: true, ...(startFullscreen && platform !== "darwin" ? {fullscreen: true} : {})};
 }
 
-module.exports = {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions};
+// Shows the window only once it has its final size, so the first frames are not drawn at a
+// smaller size and then jump (the loading screen flashing in a corner). macOS can enter
+// fullscreen only once the window is shown, so the window stays transparent until then;
+// the timeout reveals it even if fullscreen never arrives.
+function revealWindow(window, startFullscreen, platform = process.platform, wait = setTimeout) {
+  window.maximize();
+  if (!startFullscreen || platform !== "darwin" || window.isFullScreen()) {
+    window.show();
+    return;
+  }
+  let revealed = false;
+  const reveal = () => {
+    if (revealed || window.isDestroyed()) return;
+    revealed = true;
+    window.setOpacity(1);
+  };
+  window.setOpacity(0);
+  // Leave a moment for the page to lay out at the fullscreen size.
+  window.once("enter-full-screen", () => wait(reveal, 150));
+  wait(reveal, 2500);
+  window.show();
+  window.setFullScreen(true);
+}
+
+module.exports = {revealWindow, readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions};
