@@ -63,6 +63,16 @@ After selecting General permissions in Steamworks, click Save Changes **and conf
 
 The desktop shell takes its App ID from Steam's `SteamAppId` launch environment. `STEAM_APP_ID` is only an explicit local-test override. Itch launcher sessions keep their Itch identity, and direct downloads do not initialize Steam just because it happens to be installed.
 
+## Steam overlay
+
+The overlay is intentionally disabled on every platform. Do not call
+`electronEnableSteamOverlay()`: it forces in-process GPU rendering, disables
+DirectComposition and attaches a repaint timer. Steam authentication, language
+selection and launch parameters still use the SDK independently. Shift+Tab and
+Steam overlay screenshots are not supported. The Demo does not expose the
+software-only overlay checkbox in Steamworks General Installation settings;
+the Electron integration is controlled in `client/electron.js`.
+
 ## Release and verification
 
 1. Run the checks in `docs/desktop-release-checklist.md`, including `tools/validate_desktop_release.sh`.

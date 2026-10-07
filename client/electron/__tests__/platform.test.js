@@ -125,3 +125,28 @@ test("preload exposes Steam language synchronously without requesting authentica
     expect(invoke).not.toHaveBeenCalled();
   }
 });
+
+test.each(['win32', 'darwin', 'linux'])('Steam startup leaves overlay hooks and GPU settings untouched on %s', platform => {
+  const {runInNewContext} = require('node:vm');
+  const path = require('node:path');
+  const entry = path.join(__dirname, '../../electron.js');
+  const nativeRequire = require('node:module').createRequire(entry);
+  const enableOverlay = jest.fn();
+  const appendSwitch = jest.fn();
+  const app = {
+    isPackaged: true, requestSingleInstanceLock: () => true, getPath: () => __dirname,
+    whenReady: () => new Promise(() => {}), on: jest.fn(), commandLine: {appendSwitch},
+  };
+  runInNewContext(require('node:fs').readFileSync(entry, 'utf8'), {
+    process: {platform, argv: ['Legion'], env: {SteamAppId: '3996730', SteamGameId: '3996730'}, resourcesPath: __dirname},
+    console,
+    require: id => {
+      if (id === 'electron') return {app, protocol: {registerSchemesAsPrivileged() {}}};
+      if (id === './electron/telemetry') return {initializeTelemetry() {}};
+      if (id.endsWith('steamworks.js')) return {electronEnableSteamOverlay: enableOverlay};
+      return nativeRequire(id);
+    },
+  });
+  expect(enableOverlay).not.toHaveBeenCalled();
+  expect(appendSwitch).not.toHaveBeenCalled();
+});
