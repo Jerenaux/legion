@@ -998,7 +998,6 @@
   "Click <0>Pass Turn</0> beside the hourglass timer or press <1>End</1> to give up this action. A deliberate pass recovers sooner than a timeout.": "모래시계 옆의 <0>차례 넘기기</0>를 클릭하거나 <1>End</1>를 눌러 이번 행동을 포기하세요. 직접 차례를 넘기면 시간 초과보다 다음 차례가 빨리 돌아옵니다.",
   "The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass.": "선택한 마법사의 명령창으로, 간결한 HP와 MP 표시, 중앙의 주문·아이템 버튼, MP 소모량, 단축키, 차례 넘기기 모래시계를 보여 줍니다.",
   "Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.": "초록색은 HP(체력), 파란색은 MP(마력)입니다. 명령창에는 표시된 캐릭터의 장착 아이템이 왼쪽, 배운 주문이 오른쪽에 단축키 순서대로 나타납니다. 행동에 마우스를 올리거나 포커스를 맞추면 자세한 정보를 확인할 수 있습니다. 적의 차례에는 명령창에 적의 차례 배너가 표시됩니다. 침묵 상태이거나 MP가 부족한 주문도 사용 불가 상태로 계속 표시됩니다.",
-  "Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "전투 중에는 게임 포기 확인창을 열고, 지원되는 대화상자는 닫습니다. 선택한 주문이나 아이템을 다시 클릭하면 대상 지정을 취소합니다. 이 가이드에서는 {{value0}}(으)로 돌아갑니다.",
   "Solo expedition": "1인 원정",
   "6-floor adventure": "6층 모험",
   "tower": "잿불 탑",
@@ -1117,5 +1116,6 @@
   "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "개인 선물 링크를 받으셨나요? 먼저 Legion을 설치한 뒤 링크를 열어 게임을 실행하고 선물을 받으세요. 선물은 현재 플레이 중인 계정에 지급되며 한 번만 받을 수 있습니다. 팀에서 장비를 확인하세요. 일반적인 장비 조건이 적용됩니다.",
   "Hover over or focus a reward to inspect it. Equip your gear in Team.": "보상에 마우스를 올리거나 키보드로 선택하면 자세히 볼 수 있습니다. 팀에서 장비를 장착하세요.",
   "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "골드로 상점에서 해금된 소모품, 주문, 장비, 새로운 동료를 구매할 수 있습니다.",
-  "Requires level {{level}}": "필요 레벨: {{level}}"
+  "Requires level {{level}}": "필요 레벨: {{level}}",
+  "In combat, open the game menu, with Settings and Abandon Game; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "전투 중에는 설정과 게임 포기가 있는 게임 메뉴를 열고, 지원되는 대화 상자를 닫습니다. 선택한 주문이나 아이템을 다시 클릭하면 대상 지정을 취소합니다. 이 가이드에서는 {{value0}}(으)로 돌아갑니다."
 }

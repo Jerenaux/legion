@@ -859,7 +859,6 @@
   "The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass.": "La barra de órdenes del mago seleccionado con PV y PM compactos, botones centrales de hechizos y objetos, costes de PM, atajos y reloj de arena para pasar turno.",
   "Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.": "El verde indica PV (vida) y el azul PM (magia). La barra muestra los objetos equipados del personaje indicado a la izquierda y sus hechizos aprendidos a la derecha, en el orden de los atajos. Pasa el cursor o enfoca una acción para ver sus detalles. Durante los turnos enemigos aparece un aviso de Turno enemigo. Los hechizos bloqueados por Silencio o falta de PM siguen visibles con aspecto de no disponibles.",
   "Space": "Espacio",
-  "Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "Abre la confirmación de abandono en combate; cierra los diálogos compatibles. Haz clic otra vez en el hechizo u objeto seleccionado para cancelar el objetivo. Desde esta guía, vuelve a {{value0}}.",
   "Solo expedition": "Expedición individual",
   "6-floor adventure": "Aventura de 6 pisos",
   "tower": "Torre de Ceniza",
@@ -1132,5 +1131,6 @@
   "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "¿Has recibido un enlace de regalo personal? Primero instala Legion y luego abre el enlace para iniciar el juego y canjear tu regalo. Los regalos se asignan a la cuenta que está jugando y solo se pueden canjear una vez. Encontrarás tus objetos en Equipo; se siguen aplicando los requisitos habituales del equipo.",
   "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Pasa el cursor sobre una recompensa o enfócala para inspeccionarla. Equipa a tus personajes en Equipo.",
   "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Gasta oro en la Tienda para comprar consumibles, hechizos, equipo y nuevos reclutas a medida que se desbloquean.",
-  "Requires level {{level}}": "Requiere nivel {{level}}"
+  "Requires level {{level}}": "Requiere nivel {{level}}",
+  "In combat, open the game menu, with Settings and Abandon Game; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "En combate, abre el menú de partida, con Ajustes y Abandonar partida; cierra los diálogos compatibles. Haz clic otra vez en el hechizo u objeto seleccionado para cancelar el objetivo. Desde esta guía, vuelve a {{value0}}."
 }

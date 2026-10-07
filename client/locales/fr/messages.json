@@ -859,7 +859,6 @@
   "The selected mage’s command dock with compact HP and MP, central spell and item buttons, MP costs, keyboard shortcuts, and the pass-turn hourglass.": "La barre de commandes du mage sélectionné, avec PV et PM compacts, boutons de sorts et d’objets au centre, coûts en PM, raccourcis clavier et sablier pour passer le tour.",
   "Green is HP (health); blue is MP (magic). The dock shows the named character’s equipped items on the left and learned spells on the right, matching the keyboard shortcut order. Hover over or focus an action for its details. During enemy turns, the dock displays an Enemy Turn banner. Silenced and unaffordable spells remain visible with unavailable styling.": "Le vert indique les PV (santé), le bleu les PM (magie). La barre affiche les objets équipés du personnage nommé à gauche et ses sorts appris à droite, dans l’ordre des raccourcis clavier. Survolez ou sélectionnez une action pour ses détails. Pendant le tour adverse, une bannière Tour adverse s’affiche. Les sorts bloqués par Silence ou un manque de PM restent visibles mais apparaissent indisponibles.",
   "Space": "Espace",
-  "Open the abandon-game confirmation in combat; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "Ouvre la confirmation d’abandon en combat ; ferme les fenêtres compatibles. Recliquez sur le sort ou l’objet sélectionné pour annuler le ciblage. Depuis ce guide, revenez à {{value0}}.",
   "Solo expedition": "Expédition solo",
   "6-floor adventure": "Aventure en 6 étages",
   "tower": "Tour des cendres",
@@ -1132,5 +1131,6 @@
   "Received a personal gift link? Install Legion first, then open the link to launch the game and claim your gift. Gifts go to the account currently playing and can only be claimed once. Find your gear in Team; normal equipment requirements still apply.": "Vous avez reçu un lien cadeau personnel ? Installez d’abord Legion, puis ouvrez le lien pour lancer le jeu et récupérer votre cadeau. Les cadeaux sont attribués au compte qui joue actuellement et ne peuvent être récupérés qu’une seule fois. Retrouvez votre équipement dans Équipe ; les conditions habituelles d’équipement s’appliquent.",
   "Hover over or focus a reward to inspect it. Equip your gear in Team.": "Survolez une récompense ou sélectionnez-la au clavier pour l’inspecter. Équipez vos personnages dans Équipe.",
   "Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.": "Dépensez votre or dans la Boutique pour acheter des consommables, des sorts, de l’équipement et de nouvelles recrues au fil des déblocages.",
-  "Requires level {{level}}": "Niveau {{level}} requis"
+  "Requires level {{level}}": "Niveau {{level}} requis",
+  "In combat, open the game menu, with Settings and Abandon Game; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.": "En combat, ouvre le menu de partie, avec Paramètres et Abandonner la partie ; ferme les fenêtres compatibles. Recliquez sur le sort ou l’objet sélectionné pour annuler le ciblage. Depuis ce guide, revenez à {{value0}}."
 }
