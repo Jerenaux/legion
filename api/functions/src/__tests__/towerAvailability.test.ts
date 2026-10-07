@@ -20,7 +20,7 @@ test('disabled Tower rejects reads and all actions before authentication or data
     onRequest: (_options: unknown, handler: Function) => handler,
     corsMiddleware: (_request: unknown, _response: unknown, handler: Function) => {handled = handler();},
     getUID: authenticate, checkAPIKey: () => true,
-    admin: {firestore: () => ({})}, towerAction: action, settleTowerBattle: settle,
+    firestore: () => ({}), towerAction: action, settleTowerBattle: settle,
   });
   for (const body of [null, {action: 'create'}, {action: 'battle'}, {action: 'upgrade'}, {action: 'retire'}]) {
     const response = {status: mock(() => response), send: mock(), json: mock()};
