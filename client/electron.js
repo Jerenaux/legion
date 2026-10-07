@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain, net, protocol, session, shell} = require("electron");
+const {app, BrowserWindow, ipcMain, net, protocol, screen, session, shell} = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 const {pathToFileURL} = require("node:url");
@@ -9,7 +9,7 @@ require('./electron/telemetry').initializeTelemetry(app);
 const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamLaunchParam} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
-const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions} = require("./electron/display");
+const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions, revealWindow} = require("./electron/display");
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
@@ -101,9 +101,10 @@ function createWindow() {
   const steamLanguage = smokeTest ? null : getPlatformLanguage(process.env, loadSteamworks);
   // Hidden smoke tests stay windowed; players get the mode they last chose (fullscreen at first).
   const startFullscreen = !smokeTest && readDisplayMode(app.getPath("userData")).fullscreen;
+  // Start at the maximized size so the first paint already fills the screen.
+  const {x, y, width, height} = screen.getPrimaryDisplay().workArea;
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    x, y, width, height,
     show: false,
     ...displayWindowOptions(startFullscreen),
     autoHideMenuBar: !isDev,
@@ -153,10 +154,11 @@ function createWindow() {
   });
   mainWindow.once("ready-to-show", () => {
     if (!mainWindow) return;
-    mainWindow.maximize();
-    if (smokeTest) return;
-    mainWindow.show();
-    if (startFullscreen && !mainWindow.isFullScreen()) mainWindow.setFullScreen(true);
+    if (smokeTest) {
+      mainWindow.maximize();
+      return;
+    }
+    revealWindow(mainWindow, startFullscreen);
   });
   // Every route (shortcut, Settings, the macOS window button) is remembered for the next launch.
   mainWindow.on("enter-full-screen", () => { if (!smokeTest) writeDisplayMode(app.getPath("userData"), {fullscreen: true}); });

@@ -96,7 +96,7 @@ test('LogRocket matches replay visibility and removes network credentials', () =
   `], cwd: resolve(import.meta.dir, '../..')});
   expect(result.exitCode).toBe(0);
   const options = JSON.parse(result.stdout.toString());
-  expect(options.dom).toEqual({textSanitizer:false,inputSanitizer:false,imageSanitizer:false});
+  expect(options.dom).toEqual({textSanitizer:false,inputSanitizer:false,imageSanitizer:false,hiddenAttributes:['data-replay-only']});
   expect(options.console).toEqual({isEnabled:false});
   expect(options.ip).toBe(false);
   expect(options.exceptions).toBe(false);
