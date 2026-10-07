@@ -7,7 +7,7 @@ import { UnlockedFeature } from './unlockedFeature/UnlockedFeature';
 import { ChestReward } from "@legion/shared/interfaces";
 import { InventoryType, LockedFeatures, } from "@legion/shared/enums";
 import { SimplePopup } from './simplePopup/SimplePopup';
-import { UNLOCK_REWARDS } from '@legion/shared/config';
+import { ENABLE_CINDER_TOWER, UNLOCK_REWARDS } from '@legion/shared/config';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { FeatureReveal } from './featureReveal/FeatureReveal';
 
@@ -192,10 +192,12 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     component: UnlockedFeature,
     priority: 100,
     props: {
-      name: "Cinder Tower & more spells",
-      description: "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop.",
+      name: ENABLE_CINDER_TOWER ? "Cinder Tower & more spells" : "More Spells",
+      description: ENABLE_CINDER_TOWER
+        ? "Explore an optional solo expedition with a temporary squad and untimed turns. More spells are also available in the shop."
+        : "New <span class=\"highlight-text\">Spells</span> are available in the shop!",
       rewards: UNLOCK_REWARDS[LockedFeatures.SPELLS_BATCH_2],
-      route: `/tower`
+      route: ENABLE_CINDER_TOWER ? '/tower' : '/shop/spells'
     }
   },
   [Popup.UnlockedEquipment2]: {

@@ -311,6 +311,10 @@ if (!process.versions.electron) {
         await ready();
         await require('./command-dock.cjs')({js, waitFor, ready, win, dist});
       } else if (process.argv.includes('--tower-images')) {
+        await win.loadURL(`${PACKAGED_APP_URL}play`);
+        if (!await js('towerCheck.enabled')) {
+          await require('./tower-unlock.cjs')({win, js, waitFor, ready, output: dist, locale});
+        } else {
         // Visual review only: keep every Tower state in the same packaged renderer.
         for (const [width, height] of [[1600, 900], [1280, 720], [800, 600]]) {
           win.setContentSize(width, height);
@@ -368,6 +372,7 @@ if (!process.versions.electron) {
         await waitFor('combatCheck.arena.gameInitialized && Boolean(document.querySelector(".tower-combat-banner"))');
         await ready();
         fs.writeFileSync(path.join(dist, 'tower-embers.png'), (await win.webContents.capturePage()).toPNG());
+        }
       } else if (giftsCheck) {
         await require('./gifts.cjs')({win, js, waitFor, ready, output: dist, locale, giftQueue});
       } else if (towerUnlock) {
@@ -464,14 +469,17 @@ if (!process.versions.electron) {
         await ready();
         fs.writeFileSync(path.join(dist, 'dock-enemy.png'), (await win.webContents.capturePage()).toPNG());
         await require('./roster.cjs').captureLoadout({win, js, waitFor, ready, capture});
+        if (await js('towerCheck.enabled')) {
         await win.loadURL(`${PACKAGED_APP_URL}tower`);
         await waitFor('Boolean(document.querySelector(".tower-primary"))');
         await js('document.querySelector(".tower-primary").click()');
         await waitFor('Boolean(document.querySelector(".tower-choices"))');
         await ready();
         await capture('tower', {x: 0, y: 60, width: 1600, height: 840});
+        }
       } else {
         await require('./tower-unlock.cjs')({win, js, waitFor, ready, output: dist, locale});
+        if (await js('towerCheck.enabled')) {
         await win.loadURL(`${PACKAGED_APP_URL}play`);
         await waitFor('Boolean(document.querySelector("[data-playmode=tower]"))');
         await js('document.querySelector("[data-playmode=tower]").click()');
@@ -509,6 +517,7 @@ if (!process.versions.electron) {
         await js('towerCheck.fail = false; document.querySelector(".tower-error button").click()');
         await waitFor('!document.querySelector(".tower-error") && !document.querySelector(".tower-choice").disabled');
         console.log('Tower entry, choices, keyboard controls, saved progress, untimed combat, boss warnings, and recovery pass');
+        }
         await require('./hover.cjs')({win, js, waitFor, ready, output: dist});
         await require('./roster.cjs')({win, js, waitFor, ready, output: dist, locale});
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);

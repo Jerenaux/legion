@@ -14,6 +14,7 @@ import { AIGame } from './AIGame';
 import {TowerGame} from './TowerGame';
 import { PvPGame } from './PvPGame';
 import firebaseConfig from '@legion/shared/firebaseConfig';
+import {ENABLE_CINDER_TOWER} from '@legion/shared/config';
 import { PlayMode } from '@legion/shared/enums';
 import { transformDailyLoot } from '@legion/shared/utils';
 import { PlayerDataForGame } from '@legion/shared/interfaces';
@@ -191,6 +192,11 @@ io.on('connection', async (socket) => {
         return;
       }
 
+      if (gameData.mode === PlayMode.TOWER && !ENABLE_CINDER_TOWER) {
+        socket.emit('joinError', {message: 'Game mode unavailable'});
+        socket.disconnect();
+        return;
+      }
       if (gameData.mode === PlayMode.TOWER && gameData.towerSettled) {
         socket.emit('towerEnd', {saved: true});
         return;

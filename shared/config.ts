@@ -69,6 +69,7 @@ export const maxWaitTimeForPractice = isDev ? 5 : 60; // maximum wait time after
 export let ALLOW_SWITCHEROO_RANKED = true;
 
 // Feature flags
+export const ENABLE_CINDER_TOWER = false;
 export const ENABLE_PLAYER_LEVEL = false;
 export const ENABLE_TEAM_NAME = false;
 export const ENABLE_APPROX_WT = false;
