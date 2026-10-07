@@ -314,6 +314,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     }
 
     const isTutorialMode = mode === PlayMode.TUTORIAL;
+    const community1 = team1?.player?.community?.id;
+    const sharedCommunity = !!community1 && community1 === team2?.player?.community?.id;
     const inspected = characterHover && (characterHover.team === 1 ? team1 : team2)?.members[characterHover.num - 1];
 
     return (
@@ -321,8 +323,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         data-coach-focus={isHUDVisible && !this.state.gameOver && this.state.isTutorialVisible ? this.state.tutorialMessage?.focus : undefined}>
         {/* Keep the exit-dialog owner mounted while tutorial/HUD chrome is hidden. */}
         <div className="hud-container" style={!isHUDVisible || !showOverview ? {display: 'none'} : undefined}>
-          <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team1} />
-          <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} {...team2} />
+          <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} sharedCommunity={sharedCommunity} {...team1} />
+          <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} sharedCommunity={sharedCommunity} {...team2} />
         </div>
         {this.state.tower && <div className="tower-combat-banner" role="status">
           <Trans i18nKey="Floor <0>{{floor}}</0>" values={{floor: this.state.tower.floor}} components={[<strong />]} />

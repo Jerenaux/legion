@@ -16,6 +16,13 @@ contextBridge.exposeInMainWorld("electronAPI", Object.freeze({
     ipcRenderer.on('gift-available', listener);
     return () => ipcRenderer.removeListener('gift-available', listener);
   },
+  getPendingCommunity: () => ipcRenderer.invoke('get-pending-community'),
+  acknowledgeCommunity: code => ipcRenderer.invoke('acknowledge-community', code),
+  onCommunityAvailable: callback => {
+    const listener = () => callback();
+    ipcRenderer.on('community-invite-available', listener);
+    return () => ipcRenderer.removeListener('community-invite-available', listener);
+  },
   showGamepadTextInput: options => ipcRenderer.invoke("show-gamepad-text-input", options),
   getControllerType: () => ipcRenderer.invoke("get-controller-type"),
 }));

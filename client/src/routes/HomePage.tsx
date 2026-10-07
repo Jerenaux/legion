@@ -12,6 +12,7 @@ import ShopPage from "../components/ShopPage";
 import TeamPage from "../components/TeamPage";
 import TowerPage from "../components/TowerPage";
 import GuidePage from "../components/GuidePage";
+import CommunityPage from "../components/community/CommunityPage";
 
 export default class HomePage extends Component {
   render() {
@@ -32,6 +33,7 @@ export default class HomePage extends Component {
                   <Route path="/shop/:category?/:id?" component={ShopPage} />
                   <Route path="/rank" component={RankPage} />
                   <Route path="/profile/:id?" component={Profile} />
+                  <Route path="/community/:id" component={CommunityPage} />
                 </Router>
               </div>
             </div>

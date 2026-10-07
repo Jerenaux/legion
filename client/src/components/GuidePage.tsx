@@ -191,6 +191,9 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h3>{t("Your league is not your ELO")}</h3>
             <p><Trans i18n={i18n} i18nKey={"<0>ELO</0> changes with ranked results and measures your rating. The <1>weekly league</1> is a separate competition: current-season ranked wins determine the order, with fewer losses breaking ties."} components={[<strong />, <strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Promotion, demotion, and podium rewards happen <0>Friday at 19:00 UTC</0>. Check Rank for your position and the promotion/demotion zones. Only players who participated in that season’s ranked games are considered; sitting out a season does not demote you. Crossing an ELO threshold does not change your league immediately."} components={[<strong />]} /></p>
+            <h3>{t("Creator communities")}</h3>
+            <p><Trans i18n={i18n} i18nKey={"Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Legion. You can belong to one community, and joining is permanent."} components={[<strong />]} /></p>
+            <p>{t("The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.")}</p>
           </section>
 
           <section aria-labelledby="controls">

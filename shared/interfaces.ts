@@ -1,3 +1,4 @@
+import type {CommunitySummary, PlayerCommunity} from "./communities";
 import { BaseEquipment } from "./BaseEquipment";
 import { BaseItem } from "./BaseItem";
 import { BaseSpell } from "./BaseSpell";
@@ -247,6 +248,7 @@ export interface TeamData {
     AIwinRatio: number;
     completedGames: number;
     engagementStats: Partial<EngagementStats>;
+    community?: CommunitySummary | null;
 }
 
 export interface GameOutcomeReward {
@@ -312,6 +314,7 @@ export interface PlayerProfileData {
     playerLeague: number;
     completedGames: number;
     engagementStats?: Partial<EngagementStats>;
+    community?: CommunitySummary | null;
 }
 interface GamePlayerData {
     teamId: number;
@@ -416,6 +419,7 @@ export interface PlayerContextData {
     friends?: FriendData[];
     completedGames?: number;
     engagementStats?: Partial<EngagementStats>;
+    community?: PlayerCommunity | null;
 }
 
 export interface PlayerDataForGame {
@@ -431,6 +435,7 @@ export interface PlayerDataForGame {
     AIwinRatio?: number;
     completedGames?: number;
     engagementStats?: Partial<EngagementStats>;
+    community?: CommunitySummary | null;
 }
 
 export interface TurnQueueEntry {
@@ -475,6 +480,7 @@ export interface LeaderboardRow {
     isPromoted: boolean;
     isDemoted: boolean;
     playerId?: string | null;
+    community?: CommunitySummary | null;
 }
 
 export interface APILeaderboardResponse {
@@ -489,6 +495,7 @@ export interface FriendData {
     id: string;
     name: string;
     avatar: string;
+    community?: CommunitySummary | null;
 }
 
 export interface EngagementStats {

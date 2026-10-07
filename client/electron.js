@@ -6,7 +6,7 @@ const smokeTest = process.argv.includes('--smoke-test');
 if (smokeTest) app.setPath('userData', fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'legion-smoke-')));
 require('./electron/telemetry').initializeTelemetry(app);
 
-const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamGiftToken} = require("./electron/platform");
+const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamLaunchParam} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
 const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions} = require("./electron/display");
@@ -20,6 +20,11 @@ const gifts = hasSingleInstanceLock ? createGiftQueue(path.join(app.getPath('use
   mainWindow?.webContents.send('gift-available');
 }) : null;
 gifts?.add(giftFromArguments(process.argv));
+const {communityFromArguments, createCommunityInvite} = require('./electron/communities');
+const communityInvite = hasSingleInstanceLock ? createCommunityInvite(() => {
+  mainWindow?.webContents.send('community-invite-available');
+}) : null;
+communityInvite?.add(communityFromArguments(process.argv));
 let giftPoll;
 
 protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
@@ -51,6 +56,14 @@ function registerIPC() {
   ipcMain.handle('acknowledge-gift', (event, token) => {
     if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
     gifts.acknowledge(token);
+  });
+  ipcMain.handle('get-pending-community', event => {
+    if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
+    return communityInvite.peek();
+  });
+  ipcMain.handle('acknowledge-community', (event, code) => {
+    if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
+    communityInvite.acknowledge(code);
   });
   ipcMain.handle('set-language', (event, code) => {
     if (!trustedIPC(event)) throw new Error('Untrusted IPC sender');
@@ -203,11 +216,14 @@ if (hasSingleInstanceLock) app.whenReady().then(async () => {
   if (!smokeTest) {
     if (app.isPackaged) app.setAsDefaultProtocolClient('legion');
     let lastSteamToken;
+    let lastSteamCommunity;
     const poll = () => {
       try {
         const root = app.isPackaged ? path.join(process.resourcesPath, 'steamworks.js') : path.dirname(require.resolve('steamworks.js'));
-        const token = getSteamGiftToken(root);
+        const token = getSteamLaunchParam(root, 'gift');
         if (token !== lastSteamToken) { lastSteamToken = token; gifts.add(token); }
+        const community = getSteamLaunchParam(root, 'community');
+        if (community !== lastSteamCommunity) { lastSteamCommunity = community; communityInvite.add(community); }
       } catch {
         // Do not print launch arguments/tokens. Retry when Steam becomes available.
       }
@@ -220,11 +236,13 @@ if (hasSingleInstanceLock) app.whenReady().then(async () => {
 app.on('open-url', (event, url) => {
   event.preventDefault();
   gifts?.add(giftFromArguments([url]));
+  communityInvite?.add(communityFromArguments([url]));
   mainWindow?.focus();
 });
 
 app.on("second-instance", (_event, argv) => {
   gifts?.add(giftFromArguments(argv));
+  communityInvite?.add(communityFromArguments(argv));
   if (!mainWindow) return;
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();

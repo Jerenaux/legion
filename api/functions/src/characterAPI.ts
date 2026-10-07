@@ -1,3 +1,4 @@
+import {communitySeasonDocId, communitySummary} from '@legion/shared/communities';
 import {Transaction} from "firebase-admin/firestore";
 
 import {onRequest} from "./telemetry";
@@ -317,6 +318,18 @@ export const postGameUpdate = onRequest({
 
           if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) {
             const seasonId = currentSeasonId();
+            // Weekly community standings: one counter document per community and season,
+            // updated in this receipt-guarded transaction so a result is never counted twice.
+            const community = communitySummary(playerData.community);
+            if (community) {
+              transaction.set(db.collection("communitySeasons").doc(communitySeasonDocId(seasonId, community.id)), {
+                ...community,
+                communityId: community.id,
+                seasonId,
+                wins: admin.firestore.FieldValue.increment(isWinner ? 1 : 0),
+                games: admin.firestore.FieldValue.increment(1),
+              }, {merge: true});
+            }
             updates.leagueStats = applyRankedResult(
               playerData.leagueStats,
               isWinner,

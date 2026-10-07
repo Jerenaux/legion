@@ -12,6 +12,9 @@ import SearchPlayers from './SearchPlayers';
 import { route } from 'preact-router';
 import { apiFetch } from '../../services/apiService';
 import { MAX_AVATAR_ID } from '@legion/shared/config';
+import type { CommunitySummary } from '@legion/shared/communities';
+import ProfileCommunity from '../community/ProfileCommunity';
+import Sigil from '../sigil/Sigil';
 
 interface Props {
     id?: string;
@@ -36,6 +39,8 @@ interface ProfileData {
     allTimeStats: ProfileStats;
     casualStats: ProfileStats;
     leagueStats: ProfileStats;
+    community?: CommunitySummary | null;
+    communityJoinedAt?: number | null;
 }
 
 interface State {
@@ -588,6 +593,11 @@ class Profile extends Component<Props, State> {
                                 <span className="all-time-rank">{t("All-time Rank: #{{value0}}", {value0: profileData.allTimeStats.rank})}</span>
                             </div>
                             <div className="profile-join-date">{t("Member since {{value0}}", {value0: this.formatDate(profileData.joinDate)})}</div>
+                            <ProfileCommunity
+                                community={isOwnProfile ? this.context.player.community : profileData.community}
+                                joinedAt={isOwnProfile ? this.context.player.community?.joinedAt : profileData.communityJoinedAt}
+                                isOwn={isOwnProfile}
+                            />
                             {this.UIDready() && !isOwnProfile && (
                                 this.isAlreadyFriend() ? (
                                     <button type="button" className="profile-add-friend is-friend">{t("Friend")}</button>
@@ -741,6 +751,7 @@ class Profile extends Component<Props, State> {
                                             }}
                                         >
                                             {this.renderPlayerStatus(this.state.friendStatuses[friend.id]?.status || 'offline', friend.name)}
+                                            {friend.community && <Sigil sigil={friend.community.sigil} size={26} label={friend.community.name} className="friend-sigil" />}
                                         </div>
                                         <span className="friend-name">{friend.name}</span>
                                     </button>
