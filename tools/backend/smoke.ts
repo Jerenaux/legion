@@ -188,7 +188,7 @@ try {
     assert(cli('list').some((gift: {id: string}) => gift.id === unlimited.id));
     assert.equal(cli('revoke', '--id', unlimited.id).revokedAt > 0, true);
     assert.equal((await http('redeemGift', {token: unlimited.token}, audience[2].token)).status, 'unavailable');
-    assert.deepEqual(await http('redeemGift', {token: unlimited.token}, audience[0].token), {status: 'already_claimed', rewards});
+    assert.deepEqual(await http('redeemGift', {token: unlimited.token}, audience[0].token), {status: 'already_claimed', rewards, community: null});
     assert.equal((await http('redeemGift', {token: other.token}, audience[0].token)).status, 'claimed');
     const after = await Promise.all(audience.map(async account => (await db.collection('players').doc(account.uid).get()).data()));
     for (let i = 0; i < audience.length; i++) {
@@ -198,6 +198,47 @@ try {
       assert.deepEqual(after[i].engagementStats, before[i].engagementStats);
     }
     console.log('Gift CLI usage, concurrent single/unlimited redemption, per-account receipts, independent campaigns and revocation pass');
+
+    // One audience link: gift + community invitation, through both operator CLIs and the share page.
+    const code = `smoke-${run.slice(0, 8)}`;
+    execFileSync('bun', ['tools/communities.ts', 'create', '--project', 'legion-32c6d', '--id', code, '--name', 'Smoke Guild', '--tag', 'SMK'], cliOptions);
+    const missing = spawnSync('bun', ['tools/gifts.ts', 'create', '--project', 'legion-32c6d', '--usage', 'unlimited', '--label', 'local', '--rewards', rewardsFile, '--community', 'no-such-community'], cliOptions);
+    assert.equal(missing.status, 1, 'A gift cannot invite to an unknown community');
+    const invite = cli('create', '--usage', 'unlimited', '--label', `community-${run}`, '--rewards', rewardsFile, '--community', code.toUpperCase());
+    assert.equal(invite.communityId, code);
+    assert(invite.shareURL.endsWith(`/invite?gift=${invite.token}`));
+    const fan = await login(`gift-fan-${run}`);
+    const claim = await http('redeemGift', {token: invite.token}, fan.token);
+    assert.equal(claim.status, 'claimed');
+    assert.equal(claim.community?.id, code);
+    // The gift never joins on its own: membership still needs the player's confirmation.
+    assert.equal((await db.collection('players').doc(fan.uid).get()).get('community'), undefined);
+    assert.equal((await http('joinCommunity', {code, via: 'link'}, fan.token)).id, code);
+    assert.equal((await http('redeemGift', {token: invite.token}, fan.token)).community?.id, code);
+
+    const page = async (query: string) => {
+      const response = await fetch(`${api}/invite?${query}`, {redirect: 'manual'});
+      return {status: response.status, csp: response.headers.get('content-security-policy') || '', html: await response.text()};
+    };
+    const giftPage = await page(`gift=${invite.token}`);
+    assert.equal(giftPage.status, 200);
+    assert(giftPage.html.includes(`steam://run/3996730/?gift=${invite.token}`) && giftPage.html.includes('class="sigil"'));
+    assert.equal(giftPage.html.split('class="reward ').length - 1, rewards.length);
+    assert(!/<script|\sstyle=|\son\w+=/.test(giftPage.html), 'The share page must work under the site CSP');
+    assert(giftPage.csp.includes("style-src 'self'") && !giftPage.csp.includes('unsafe'));
+    const communityPage = await page(`community=${code}`);
+    assert.equal(communityPage.status, 200);
+    assert(communityPage.html.includes(`steam://run/3996730/?community=${code}`));
+    assert.equal((await page(`gift=${'0'.repeat(64)}`)).status, 404);
+    assert.equal((await page('community=x')).status, 404);
+    const revoked = (await page(`gift=${unlimited.token}`)).html;
+    assert(!revoked.includes(`?gift=${unlimited.token}`), 'Unavailable gifts must not offer a claim button');
+    for (const [endpoint, query, target] of [['giftLink', `token=${invite.token}`, `gift=${invite.token}`], ['communityLink', `code=${code}`, `community=${code}`]]) {
+      const legacy = await fetch(`${api}/${endpoint}?${query}`, {redirect: 'manual'});
+      assert.equal(legacy.status, 302);
+      assert.equal(legacy.headers.get('location'), `https://www.play-legion.io/invite?${target}`);
+    }
+    console.log('Gift community invitations, explicit join, invite page states and legacy link redirects pass');
   } finally { rmSync(giftFiles, {recursive: true, force: true}); }
   console.log('Backend integration passed:',JSON.stringify(timings));
 } finally {

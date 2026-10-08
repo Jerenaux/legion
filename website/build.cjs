@@ -10,11 +10,13 @@ assert(!/<script|<form|\son\w+\s*=|\/game\/|\/play["']|firebase|socket\.io|bundl
 assert(html.includes('https://store.steampowered.com/app/3729580/Legion/'));
 assert(html.includes('https://dikaryon.itch.io/legion'));
 fs.mkdirSync(path.join(output, 'assets'), {recursive: true});
-for (const file of ['index.html', 'style.css']) fs.copyFileSync(path.join(__dirname, file), path.join(output, file));
-const assets = ['logo.png', 'steam.png', 'warrior.png', 'blackmage.png', 'whitemage.png', 'kim.otf', 'favicon.ico'];
+for (const file of ['index.html', 'style.css', 'invite.css']) fs.copyFileSync(path.join(__dirname, file), path.join(output, file));
+// The invite page (/invite, rendered by a Function) also uses the reward sprite sheets.
+const assets = ['logo.png', 'steam.png', 'warrior.png', 'blackmage.png', 'whitemage.png', 'kim.otf', 'favicon.ico',
+  'equipment.png', 'consumables.png', 'spells.png', 'gold_icon.png', 'shop/gold_chest.png'];
 for (const asset of assets) {
-  fs.copyFileSync(path.join(__dirname, '../client/public', asset), path.join(output, 'assets', asset));
+  fs.copyFileSync(path.join(__dirname, '../client/public', asset), path.join(output, 'assets', path.basename(asset)));
 }
-assert.deepEqual(fs.readdirSync(output).sort(), ['assets', 'index.html', 'style.css']);
-assert.deepEqual(fs.readdirSync(path.join(output, 'assets')).sort(), assets.sort());
+assert.deepEqual(fs.readdirSync(output).sort(), ['assets', 'index.html', 'invite.css', 'style.css']);
+assert.deepEqual(fs.readdirSync(path.join(output, 'assets')).sort(), assets.map(asset => path.basename(asset)).sort());
 console.log('Built standalone promotional website (no game bundle, auth, telemetry or backend requests)');

@@ -1197,5 +1197,7 @@
   "HP already full": "ОЗ уже полны",
   "MP already full": "ОМ уже полны",
   "Only revives a fallen ally": "Только для павшего союзника",
-  "Nothing to cure": "Нечего лечить"
+  "Nothing to cure": "Нечего лечить",
+  "From {{value0}}": "От {{value0}}",
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "Подарок от автора может также пригласить вас в его сообщество. Получив подарок, вы сами решаете, вступать ли."
 }

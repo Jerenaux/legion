@@ -47,7 +47,7 @@ try {
       status: 'active', members: 0, createdAt: Date.now()});
     console.log(JSON.stringify({...community,
       code: community.id.toUpperCase(),
-      linkURL: `https://us-central1-${values.project}.cloudfunctions.net/communityLink?code=${community.id}`,
+      shareURL: `https://www.play-legion.io/invite?community=${community.id}`,
       steamURL: `steam://run/3996730/?community=${community.id}`,
       localURL: `legion://community/${community.id}`,
     }, null, 2));

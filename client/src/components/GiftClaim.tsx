@@ -1,4 +1,4 @@
-import {h} from 'preact';
+import {h, Fragment} from 'preact';
 import {useContext, useEffect, useRef, useState} from 'preact/hooks';
 import Modal from 'react-modal';
 import {PlayerContext} from '../contexts/PlayerContext';
@@ -6,6 +6,9 @@ import {getElectronAPI} from '../utils/electronUtils';
 import {apiFetch} from '../services/apiService';
 import {t} from '../i18n/core';
 import type {ChestReward} from '@legion/shared/interfaces';
+import type {CommunitySummary} from '@legion/shared/communities';
+import Sigil from './sigil/Sigil';
+import JoinCommunityDialog from './community/JoinCommunityDialog';
 import {RewardType, InventoryType, RarityColor} from '@legion/shared/enums';
 import {getRewardObject, getRewardBgImage, mapFrameToCoordinates, playSoundEffect} from './utils';
 import {ItemTooltip} from './ItemTooltipContent';
@@ -14,11 +17,13 @@ import shine from '@assets/game_end/shine_bg.png';
 import rewardSound from '@assets/sfx/purchase.wav';
 import './GiftClaim.css';
 
-type Receipt = {status: 'claimed' | 'already_claimed' | 'unavailable' | 'error' | 'loading'; rewards?: ChestReward[]};
+type Receipt = {status: 'claimed' | 'already_claimed' | 'unavailable' | 'error' | 'loading'; rewards?: ChestReward[]; community?: CommunitySummary | null};
 
 export default function GiftClaim({blocked}: {blocked: boolean}) {
   const {player, refreshAllData} = useContext(PlayerContext);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  // A creator's gift can also invite to their community: offered after the gift dialog closes.
+  const [communityInvite, setCommunityInvite] = useState<string | null>(null);
   const token = useRef<string | null>(null);
   const busy = useRef(false);
   const postponed = useRef(false);
@@ -73,16 +78,22 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
     }
     token.current = null;
     busy.current = false;
+    const community = receipt.community;
     setReceipt(null);
+    if (community && !player.community) setCommunityInvite(community.id);
   };
 
   const success = receipt?.status === 'claimed' || receipt?.status === 'already_claimed';
-  return <Modal isOpen={!!receipt && !blocked} onRequestClose={close} contentLabel={t('Your gift')}
+  return <>
+  <Modal isOpen={!!receipt && !blocked} onRequestClose={close} contentLabel={t('Your gift')}
     className={`gift-dialog${success ? ' gift-dialog--received' : ''}`} overlayClassName="gift-overlay" shouldCloseOnOverlayClick={false}>
     <div className="gift-emblem" aria-hidden="true">
       <img className="gift-rays" src={shine} alt="" />
       <img className="gift-chest" src={goldChest} alt="" />
     </div>
+    {success && receipt?.community && <p className="gift-from">
+      <Sigil sigil={receipt.community.sigil} size={28} />{t('From {{value0}}', {value0: receipt.community.name})}
+    </p>}
     <h2>{t(success ? 'Your gear is ready' : 'Your gift')}</h2>
     <div aria-live="polite" aria-busy={receipt?.status === 'loading'}>
       <p className="gift-message">{receipt?.status === 'loading' ? t('Claiming your gift…')
@@ -115,5 +126,7 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
       <button type="button" data-desktop-cancel onClick={close}>{t(receipt?.status === 'error' ? 'Later' : 'Continue')}</button>
     </div>}
     <ItemTooltip id="gift-item-details" />
-  </Modal>;
+  </Modal>
+  {communityInvite && !receipt && !blocked && <JoinCommunityDialog code={communityInvite} via="link" onClose={() => setCommunityInvite(null)} />}
+  </>;
 }

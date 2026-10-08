@@ -1181,5 +1181,7 @@
   "HP already full": "PV déjà au max",
   "MP already full": "PM déjà au max",
   "Only revives a fallen ally": "Ne ranime qu’un allié tombé",
-  "Nothing to cure": "Rien à soigner"
+  "Nothing to cure": "Rien à soigner",
+  "From {{value0}}": "De la part de {{value0}}",
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "Le cadeau d’un créateur peut aussi t’inviter dans sa communauté. Après l’avoir récupéré, tu choisis de la rejoindre ou non."
 }
