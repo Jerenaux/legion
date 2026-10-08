@@ -60,7 +60,7 @@ import { errorToast, recordLoadingStep, silentErrorToast } from '../components/u
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseItem } from '@legion/shared/BaseItem';
 
-import { HexGridManager, HighlightType } from './HexGridManager';
+import { HexGridManager, HighlightType, TileColors } from './HexGridManager';
 import { TutorialManager } from './TutorialManager';
 
 import hexTileImage from '@assets/tile.png';
@@ -168,6 +168,7 @@ export class Arena extends Phaser.Scene
     private disposed = false;
     private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
+    private selfItemPreview: {x: number; y: number} | null = null;
 
     constructor() {
         super({ key: 'Arena' });
@@ -1626,6 +1627,19 @@ export class Arena extends Phaser.Scene
         });
     }
 
+    /** Hovering a self-target consumable highlights the acting character, the only one it affects. */
+    previewSelfItem(index: number | null) {
+        if (this.selfItemPreview) {
+            this.hexGridManager.removeHighlight(this.selfItemPreview.x, this.selfItemPreview.y, HighlightType.SPELL);
+            this.selfItemPreview = null;
+        }
+        const player = this.selectedPlayer;
+        const item = index == null ? null : player?.getItemAtSlot(index);
+        if (!player || item?.target !== Target.SELF || this.unavailableActionReason(player)) return;
+        this.selfItemPreview = {x: player.gridX, y: player.gridY};
+        this.hexGridManager.applyHighlight(player.gridX, player.gridY, TileColors.TARGET_RANGE_ALLY, HighlightType.SPELL);
+    }
+
     highlightCells(gridX, gridY, radius) {
         // Clear any existing highlights
         this.hexGridManager.clearHighlight();
@@ -1792,6 +1806,7 @@ export class Arena extends Phaser.Scene
             inspectCharacter: this.inspectHUDCharacter,
             clearCharacterHover: this.clearCharacterHover,
             itemClick: (keyIndex: number) => this.selectedPlayer?.onKey(keyIndex),
+            itemPreview: (index: number | null) => this.previewSelfItem(index),
             passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
             abandonGame: () => this.abandonGame(),
             exitGame: () => this.destroy(),
