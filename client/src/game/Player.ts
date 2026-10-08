@@ -30,6 +30,7 @@ export class Player extends Phaser.GameObjects.Container {
     glowFx: Phaser.FX.Glow;
     private hovered = false;
     private targetHighlighted = false;
+    private itemPreviewed = false;
     name = 'Player 1';
     isPlayer = false;
     texture: string;
@@ -477,14 +478,21 @@ export class Player extends Phaser.GameObjects.Container {
         this.refreshHighlight();
     }
 
+    /** A hovered consumable in the dock would affect this character. */
+    setItemPreviewed(previewed: boolean) {
+        this.itemPreviewed = previewed;
+        this.refreshHighlight();
+    }
+
     setTargetHighlighted(highlighted: boolean) {
         this.targetHighlighted = highlighted;
         this.refreshHighlight();
     }
 
     private refreshHighlight(selected = this.arena.selectedPlayer === this) {
-        this.glowFx.color = this.hovered ? 0xffd785 : selected ? GlowColors.Selected : displayTint(this.isPlayer ? GlowColors.Ally : GlowColors.Enemy);
-        this.glowFx.setActive(this.hovered || this.targetHighlighted || selected);
+        this.glowFx.color = this.itemPreviewed ? displayTint(GlowColors.Ally)
+            : this.hovered ? 0xffd785 : selected ? GlowColors.Selected : displayTint(this.isPlayer ? GlowColors.Ally : GlowColors.Enemy);
+        this.glowFx.setActive(this.itemPreviewed || this.hovered || this.targetHighlighted || selected);
     }
 
     onPointerDown() {

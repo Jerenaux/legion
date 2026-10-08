@@ -70,6 +70,7 @@ class PlayerBar extends Component<PlayerBarProps> {
         <div className="player_bar_actions">
           {actions.map((action, index) => {
             const cost = 'cost' in action ? action.cost : null;
+            const self = !isSpell && action.target === Target.SELF;
             const lowMP = cost !== null && cost > player.mp;
             const unavailable = !canAct || muted || lowMP;
             const reason = muted ? 'Silenced' : lowMP ? 'Not enough MP' : !canAct ? 'Not available this turn' : '';
@@ -78,7 +79,7 @@ class PlayerBar extends Component<PlayerBarProps> {
                 id={index === 0 ? `player_hud_${type}` : undefined}
                 key={`${action.id}-${index}`}
                 className={`player_bar_action ${pending === index && canAct ? 'pending-action' : ''}`}
-                aria-label={[t(action.name), cost !== null ? t('{{cost}} MP', {cost}) : '', reason ? t(reason) : ''].filter(Boolean).join(', ')}
+                aria-label={[t(action.name), cost !== null ? t('{{cost}} MP', {cost}) : '', self ? t('Self') : '', reason ? t(reason) : ''].filter(Boolean).join(', ')}
                 aria-disabled={unavailable}
                 aria-pressed={pending === index && canAct}
                 data-tooltip-id="combat-action-details"
@@ -97,6 +98,9 @@ class PlayerBar extends Component<PlayerBarProps> {
                 <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type}
                   keyLabel={primaryKeyLabel(`${isSpell ? 'spell' : 'item'}-${index + 1}` as DesktopAction, this.state.controls)} />
                 <span className="player_bar_action_name">{t(action.name)}</span>
+                {self && <span className="player_bar_action_self" aria-hidden="true">
+                  <svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="3" r="2.2" /><path d="M1 10c0-2.6 1.8-4.2 4-4.2S9 7.4 9 10Z" /></svg>
+                </span>}
                 {cost !== null && <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}><img src={mpIcon} alt={t("MP")} />{formatNumber(cost)}</span>}
               </button>
             );

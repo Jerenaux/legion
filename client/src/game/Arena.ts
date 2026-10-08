@@ -168,7 +168,7 @@ export class Arena extends Phaser.Scene
     private disposed = false;
     private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
-    private selfItemPreview: {x: number; y: number} | null = null;
+    private selfItemPreview: {x: number; y: number; player: Player} | null = null;
 
     constructor() {
         super({ key: 'Arena' });
@@ -1631,12 +1631,14 @@ export class Arena extends Phaser.Scene
     previewSelfItem(index: number | null) {
         if (this.selfItemPreview) {
             this.hexGridManager.removeHighlight(this.selfItemPreview.x, this.selfItemPreview.y, HighlightType.SPELL);
+            this.selfItemPreview.player.setItemPreviewed(false);
             this.selfItemPreview = null;
         }
         const player = this.selectedPlayer;
         const item = index == null ? null : player?.getItemAtSlot(index);
         if (!player || item?.target !== Target.SELF || this.unavailableActionReason(player)) return;
-        this.selfItemPreview = {x: player.gridX, y: player.gridY};
+        this.selfItemPreview = {x: player.gridX, y: player.gridY, player};
+        player.setItemPreviewed(true);
         this.hexGridManager.applyHighlight(player.gridX, player.gridY, TileColors.TARGET_RANGE_ALLY, HighlightType.SPELL);
     }
 
@@ -1805,7 +1807,7 @@ export class Arena extends Phaser.Scene
         this.hudHandlers = {
             inspectCharacter: this.inspectHUDCharacter,
             clearCharacterHover: this.clearCharacterHover,
-            itemClick: (keyIndex: number) => this.selectedPlayer?.onKey(keyIndex),
+            itemClick: (keyIndex: number) => { this.previewSelfItem(null); this.selectedPlayer?.onKey(keyIndex); },
             itemPreview: (index: number | null) => this.previewSelfItem(index),
             passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
             abandonGame: () => this.abandonGame(),
