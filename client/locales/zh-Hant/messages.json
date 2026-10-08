@@ -1154,5 +1154,16 @@
   "Creator communities": "創作者社群",
   "Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Legion. You can belong to one community, and joining is permanent.": "創作者會分享代碼或連結。在個人檔案的<0>加入社群</0>中輸入代碼，或開啟連結啟動 Legion。你只能屬於一個社群，且加入後不可更改。",
   "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.": "社群紋章會顯示在你在對戰、個人檔案和排行榜中的名字旁。你的排位勝場計入排名頁「社群」分頁中的每週總數，並隨聯賽一同重置。社群不影響戰鬥。",
-  "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "禮物連結會將獎勵發放給目前遊玩的帳號。個人連結總共只能使用一次；社群連結每個帳號可使用一次。你可以領取不同活動的禮物。先安裝 Legion，再開啟連結。獎勵可在「隊伍」中查看，仍須符合正常的裝備條件。"
+  "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "禮物連結會將獎勵發放給目前遊玩的帳號。個人連結總共只能使用一次；社群連結每個帳號可使用一次。你可以領取不同活動的禮物。先安裝 Legion，再開啟連結。獎勵可在「隊伍」中查看，仍須符合正常的裝備條件。",
+  "Health Points": "生命值",
+  "Magic Points": "魔法值",
+  "Defense": "防禦",
+  "Special Attack": "特殊攻擊",
+  "Special Defense": "特殊防禦",
+  "Experience": "經驗值",
+  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "按每個角色攻擊或協助的目標數量分配給你的角色。每升一級都會獲得可在隊伍中分配的屬性點。",
+  "HP already full": "HP已滿",
+  "MP already full": "MP已滿",
+  "Only revives a fallen ally": "只能復活倒下的隊友",
+  "Nothing to cure": "沒有可治療的狀態"
 }

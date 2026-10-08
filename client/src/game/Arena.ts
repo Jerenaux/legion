@@ -1,4 +1,5 @@
 import {route} from 'preact-router';
+import { itemNoEffectReason, type ItemNoEffectReason } from '@legion/shared/itemUse';
 import {t, userError, localizedAsset, language, fontFamily} from '../i18n/core';
 import { io } from 'socket.io-client';
 import { Player } from './Player';
@@ -59,7 +60,7 @@ import { errorToast, recordLoadingStep, silentErrorToast } from '../components/u
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseItem } from '@legion/shared/BaseItem';
 
-import { HexGridManager, HighlightType } from './HexGridManager';
+import { HexGridManager, HighlightType, TileColors } from './HexGridManager';
 import { TutorialManager } from './TutorialManager';
 
 import hexTileImage from '@assets/tile.png';
@@ -167,6 +168,7 @@ export class Arena extends Phaser.Scene
     private disposed = false;
     private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
+    private selfItemPreview: {x: number; y: number; player: Player} | null = null;
 
     constructor() {
         super({ key: 'Arena' });
@@ -429,13 +431,35 @@ export class Arena extends Phaser.Scene
         events.emit('performAction');
     }
 
-    processActionRejected(turn: TurnState) {
+    processActionRejected(turn: TurnState & {reason?: ItemNoEffectReason}) {
         if (this.gameEnded || turn.turnNumber !== this.turnee?.turnNumber ||
             turn.team !== this.turnee.team || turn.num !== this.turnee.num) return;
         this.unlockInput();
         this.selectedPlayer?.cancelItem();
         this.selectTurnee();
-        this.actionFeedback(t("That action is no longer valid. Choose another action."));
+        if (turn.reason && this.selectedPlayer) this.showNoEffect(this.selectedPlayer, turn.reason);
+        else this.actionFeedback(t("That action is no longer valid. Choose another action."));
+    }
+
+    /** In-world hint above the target when a consumable would do nothing; returns true if shown. */
+    showItemNoEffect(item: BaseItem, target: Player): boolean {
+        const reason = itemNoEffectReason(item, {
+            alive: target.isAlive(), hp: target.hp, maxHP: target.maxHP, mp: target.mp, maxMP: target.maxMP,
+            hasStatus: status => Boolean(target.statuses?.[status]),
+        });
+        if (reason) this.showNoEffect(target, reason);
+        return reason !== null;
+    }
+
+    private showNoEffect(target: Player, reason: ItemNoEffectReason) {
+        const message = {
+            'hp-full': t("HP already full"),
+            'mp-full': t("MP already full"),
+            'not-knocked-out': t("Only revives a fallen ally"),
+            'no-status': t("Nothing to cure"),
+        }[reason];
+        target.displayOverheadText(message, 1800, '#ffe3a1');
+        this.playSound('nope', 0.2);
     }
 
     endTutorial() {
@@ -638,6 +662,7 @@ export class Arena extends Phaser.Scene
                 this.playSound('nope', 0.2);
                 return;
             }
+            if (player && pendingItem.target === Target.SINGLE && this.showItemNoEffect(pendingItem, player)) return;
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
         } else if ((!player || !player.isAlive()) && this.hexGridManager.hasObstacle(gridX, gridY)) {
             this.sendObstacleAttack(gridX, gridY);
@@ -1602,6 +1627,21 @@ export class Arena extends Phaser.Scene
         });
     }
 
+    /** Hovering a self-target consumable highlights the acting character, the only one it affects. */
+    previewSelfItem(index: number | null) {
+        if (this.selfItemPreview) {
+            this.hexGridManager.removeHighlight(this.selfItemPreview.x, this.selfItemPreview.y, HighlightType.SPELL);
+            this.selfItemPreview.player.setItemPreviewed(false);
+            this.selfItemPreview = null;
+        }
+        const player = this.selectedPlayer;
+        const item = index == null ? null : player?.getItemAtSlot(index);
+        if (!player || item?.target !== Target.SELF || this.unavailableActionReason(player)) return;
+        this.selfItemPreview = {x: player.gridX, y: player.gridY, player};
+        player.setItemPreviewed(true);
+        this.hexGridManager.applyHighlight(player.gridX, player.gridY, TileColors.TARGET_RANGE_ALLY, HighlightType.SPELL);
+    }
+
     highlightCells(gridX, gridY, radius) {
         // Clear any existing highlights
         this.hexGridManager.clearHighlight();
@@ -1767,7 +1807,8 @@ export class Arena extends Phaser.Scene
         this.hudHandlers = {
             inspectCharacter: this.inspectHUDCharacter,
             clearCharacterHover: this.clearCharacterHover,
-            itemClick: (keyIndex: number) => this.selectedPlayer?.onKey(keyIndex),
+            itemClick: (keyIndex: number) => { this.previewSelfItem(null); this.selectedPlayer?.onKey(keyIndex); },
+            itemPreview: (index: number | null) => this.previewSelfItem(index),
             passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
             abandonGame: () => this.abandonGame(),
             exitGame: () => this.destroy(),

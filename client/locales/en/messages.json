@@ -1154,5 +1154,16 @@
   "Creator communities": "Creator communities",
   "Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Legion. You can belong to one community, and joining is permanent.": "Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Legion. You can belong to one community, and joining is permanent.",
   "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.": "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.",
-  "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply."
+  "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.",
+  "Health Points": "Health Points",
+  "Magic Points": "Magic Points",
+  "Defense": "Defense",
+  "Special Attack": "Special Attack",
+  "Special Defense": "Special Defense",
+  "Experience": "Experience",
+  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.",
+  "HP already full": "HP already full",
+  "MP already full": "MP already full",
+  "Only revives a fallen ally": "Only revives a fallen ally",
+  "Nothing to cure": "Nothing to cure"
 }

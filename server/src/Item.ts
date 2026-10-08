@@ -2,6 +2,7 @@ import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
 import { Stat, Target } from "@legion/shared/enums";
 import { BaseItem } from "@legion/shared/BaseItem";
+import { itemNoEffectReason, ItemNoEffectReason } from "@legion/shared/itemUse";
 
 export class Item extends BaseItem {
 
@@ -42,23 +43,15 @@ export class Item extends BaseItem {
         });
     }
 
-    effectsAreApplicable(target: ServerPlayer) {
-        if (this.effects.length === 0 && (!this.statusRemovals || this.statusRemovals.length === 0)) return true;
-        const mainEffectsApplicable = this.effects.length > 0 && this.effects.every(effect => {
-            if (effect.onKO && target.isAlive()) return false;
-            switch (effect.stat) {
-                case Stat.HP:
-                    return target.hp < target.getMaxHP();
-                case Stat.MP:
-                    // console.log(`[Item:effectsAreApplicable] ${this.name} is applicable for ${target.name}? MP: ${target.mp} < ${target.getMaxMP()}`);
-                    return target.mp < target.getMaxMP();
-                default:
-                    return false;
-            }
+    noEffectReason(target: ServerPlayer): ItemNoEffectReason | null {
+        return itemNoEffectReason(this, {
+            alive: target.isAlive(), hp: target.hp, maxHP: target.getMaxHP(), mp: target.mp, maxMP: target.getMaxMP(),
+            hasStatus: status => target.hasStatusEffect(status),
         });
-        const statusRemovalsApplicable = this.statusRemovals.some(effect => target.hasStatusEffect(effect));
-        // console.log(`[Item:effectsAreApplicable] ${this.name} is applicable for ${target.name}? Main effects: ${mainEffectsApplicable}, status removals: ${statusRemovalsApplicable}`);
-        return mainEffectsApplicable || statusRemovalsApplicable;
+    }
+
+    effectsAreApplicable(target: ServerPlayer) {
+        return this.noEffectReason(target) === null;
     }
 
     isHealing() {

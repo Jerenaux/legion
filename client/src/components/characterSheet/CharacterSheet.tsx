@@ -21,7 +21,7 @@ import { equipmentSlotFields, equipmentSlotLabels } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { StatLabels } from '@legion/shared/enums';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
-import { itemTooltip, statExplanations, tooltipStyle } from '../itemTooltip';
+import { itemTooltip, statExplanations, statNames } from '../itemTooltip';
 import { ItemTooltip } from '../ItemTooltipContent';
 
 import helmetIcon from '@assets/inventory/helmet_icon.png';
@@ -112,9 +112,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             return rearrangedStats.map((item, index) => (
                 <div data-sp-plus="true" className="character-info-bar" key={index}>
                     <button type="button" className="info-class"
-                        aria-label={`${t(StatLabels[getStatEnum(item.key)])}: ${t(statExplanations[getStatEnum(item.key)])}`}
+                        aria-label={`${t(statNames[getStatEnum(item.key)])}: ${t(statExplanations[getStatEnum(item.key)])}`}
                         data-tooltip-id="character-sheet-details"
-                        data-tooltip-content={t(statExplanations[getStatEnum(item.key)])}
+                        data-tooltip-stat={getStatEnum(item.key)}
                         style={{ backgroundColor: STATS_BG_COLOR[StatLabels[getStatEnum(item.key)]] }}>
                         <span>{t(StatLabels[getStatEnum(item.key)])}</span>
                     </button>
@@ -399,8 +399,19 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
                 <ItemTooltip id="equipped-item-details" />
-                <ReactTooltip id="character-sheet-details" place="top" positionStrategy="fixed" delayShow={150}
-                    closeEvents={{ mouseleave: true, blur: true, click: true }} style={tooltipStyle} />
+                <ReactTooltip id="character-sheet-details" className="item-details-tooltip" place="top" positionStrategy="fixed" delayShow={150}
+                    closeEvents={{ mouseleave: true, blur: true, click: true }} globalCloseEvents={{ escape: true }}
+                    render={({ activeAnchor }) => {
+                        const stat = Number(activeAnchor?.getAttribute('data-tooltip-stat'));
+                        if (!(stat in statNames)) return null;
+                        return <div className="item-preview stat-preview">
+                            <div className="item-preview-heading">
+                                <span className="stat-preview-badge" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[stat]] }}>{t(StatLabels[stat])}</span>
+                                <strong className="item-preview-name">{t(statNames[stat])}</strong>
+                            </div>
+                            <p className="item-preview-description">{t(statExplanations[stat])}</p>
+                        </div>;
+                    }} />
             </div>
         );
     }

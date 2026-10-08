@@ -1,6 +1,6 @@
 import {t, formatNumber} from '../../i18n/core';
 import { h, Component, Fragment } from 'preact';
-import { InventoryType, StatusEffect } from '@legion/shared/enums';
+import { InventoryType, Stat, StatusEffect, Target } from '@legion/shared/enums';
 import { PlayerProps } from '@legion/shared/interfaces';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
@@ -29,8 +29,23 @@ interface PlayerBarProps {
   eventEmitter: EventEmitter;
 }
 
+// What a self-target consumable would restore, for the hover preview in the dock bars.
+function selfRestore(item: BaseItem | undefined, stat: Stat, current: number, max: number) {
+  if (!item || item.target !== Target.SELF) return null;
+  const effect = item.effects.find(effect => effect.stat === stat && !effect.onKO && (effect.value > 0 || effect.value === -1));
+  if (!effect || current >= max) return null;
+  return effect.value === -1 ? max : Math.min(max, current + effect.value);
+}
+
 class PlayerBar extends Component<PlayerBarProps> {
-  state = {controls: loadGameSettings().controls};
+  state = {controls: loadGameSettings().controls, previewItem: null as number | null};
+
+  previewItem(index: number | null) {
+    if (this.state.previewItem === index) return;
+    this.setState({previewItem: index});
+    // The arena highlights who the item affects: always the acting character.
+    this.props.eventEmitter.emit('itemPreview', index);
+  }
 
   componentDidMount() {
     window.addEventListener(CONTROLS_CHANGED_EVENT, this.handleControlsChanged);
@@ -55,6 +70,7 @@ class PlayerBar extends Component<PlayerBarProps> {
         <div className="player_bar_actions">
           {actions.map((action, index) => {
             const cost = 'cost' in action ? action.cost : null;
+            const self = !isSpell && action.target === Target.SELF;
             const lowMP = cost !== null && cost > player.mp;
             const unavailable = !canAct || muted || lowMP;
             const reason = muted ? 'Silenced' : lowMP ? 'Not enough MP' : !canAct ? 'Not available this turn' : '';
@@ -63,12 +79,16 @@ class PlayerBar extends Component<PlayerBarProps> {
                 id={index === 0 ? `player_hud_${type}` : undefined}
                 key={`${action.id}-${index}`}
                 className={`player_bar_action ${pending === index && canAct ? 'pending-action' : ''}`}
-                aria-label={[t(action.name), cost !== null ? t('{{cost}} MP', {cost}) : '', reason ? t(reason) : ''].filter(Boolean).join(', ')}
+                aria-label={[t(action.name), cost !== null ? t('{{cost}} MP', {cost}) : '', self ? t('Self') : '', reason ? t(reason) : ''].filter(Boolean).join(', ')}
                 aria-disabled={unavailable}
                 aria-pressed={pending === index && canAct}
                 data-tooltip-id="combat-action-details"
                 data-tooltip-item-id={action.id}
                 data-tooltip-item-type={type}
+                onMouseEnter={() => { if (!isSpell && canAct) this.previewItem(index); }}
+                onFocus={() => { if (!isSpell && canAct) this.previewItem(index); }}
+                onMouseLeave={() => { if (!isSpell) this.previewItem(null); }}
+                onBlur={() => { if (!isSpell) this.previewItem(null); }}
                 onClick={(event) => {
                   event.stopPropagation();
                   // Validation also explains unavailable actions without spending the turn.
@@ -98,7 +118,10 @@ class PlayerBar extends Component<PlayerBarProps> {
       : condition ? {tone: 'warning', subject: player.name, text: condition}
       : pending ? {tone: 'targeting', subject: pending.name, text: 'Select a target'}
       : !canAct ? {tone: 'muted', subject: inspectedName ?? player?.name, text: 'Inspecting'} : null;
-    const previewMP = pending && 'cost' in pending ? player.mp - pending.cost : player?.mp;
+    const hovered = canAct && this.state.previewItem != null ? items[this.state.previewItem] : undefined;
+    const restoredHP = player ? selfRestore(hovered, Stat.HP, player.hp, player.maxHp) : null;
+    const restoredMP = player ? selfRestore(hovered, Stat.MP, player.mp, player.maxMp) : null;
+    const previewMP = restoredMP ?? (pending && 'cost' in pending ? player.mp - pending.cost : player?.mp);
 
     return (
       <>
@@ -112,12 +135,12 @@ class PlayerBar extends Component<PlayerBarProps> {
                 </div>
                 {player && <>
                   <div className="player_bar_stat">
-                    <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />{t('HP')}</span><meter min={0} max={player.maxHp || 1} value={player.hp} aria-label={t("Health")} />
-                    <span>{formatNumber(Math.round(player.hp))}<span className="player_bar_max">/{formatNumber(Math.round(player.maxHp))}</span></span>
+                    <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />{t('HP')}</span><meter min={0} max={player.maxHp || 1} value={restoredHP ?? player.hp} aria-label={t("Health")} />
+                    <span className={restoredHP != null ? 'player_bar_restore_preview' : ''}>{formatNumber(Math.round(restoredHP ?? player.hp))}<span className="player_bar_max">/{formatNumber(Math.round(player.maxHp))}</span></span>
                   </div>
                   {spells.length > 0 && <div className="player_bar_stat player_bar_mana">
                     <span className="player_bar_stat_icon"><img src={mpIcon} alt="" />{t('MP')}</span><meter min={0} max={player.maxMp || 1} value={Math.round(previewMP)} aria-label={t("Mana after selected spell")} />
-                    <span className={pending && 'cost' in pending ? 'player_bar_mana_preview' : ''}>{formatNumber(Math.round(previewMP))}<span className="player_bar_max">/{formatNumber(Math.round(player.maxMp))}</span></span>
+                    <span className={restoredMP != null ? 'player_bar_restore_preview' : pending && 'cost' in pending ? 'player_bar_mana_preview' : ''}>{formatNumber(Math.round(previewMP))}<span className="player_bar_max">/{formatNumber(Math.round(player.maxMp))}</span></span>
                   </div>}
                 </>}
                 <div className="player_bar_statuses">

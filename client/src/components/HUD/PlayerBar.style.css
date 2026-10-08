@@ -57,6 +57,7 @@
 .player_bar_stat meter::-moz-meter-bar { background: linear-gradient(90deg, oklch(48% 0.13 145), oklch(67% 0.16 145)); }
 .player_bar_mana meter::-moz-meter-bar { background: linear-gradient(90deg, oklch(48% 0.16 255), oklch(66% 0.16 245)); }
 .player_bar_stat > span.player_bar_mana_preview { color: oklch(78% 0.14 25); }
+.player_bar_stat > span.player_bar_restore_preview { color: var(--stat-up); }
 .player_bar_statuses { display: flex; flex-wrap: wrap; gap: 4px; }
 .player_bar_statuses:empty { display: none; }
 .player_bar_statuses > span { display: inline-flex; align-items: center; gap: 2px; font-size: 0.6875rem; }

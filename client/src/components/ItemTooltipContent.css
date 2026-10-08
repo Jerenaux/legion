@@ -54,3 +54,5 @@
 .item-preview-positive { color: var(--stat-up); }
 .item-preview-negative { color: var(--stat-down); }
 .item-preview-classes { margin: 10px 0 0; color: #b7c9d4; font-size: 0.625rem; }
+.stat-preview .item-preview-description { margin-top: 8px; color: #d6e6ec; font-size: 0.8125rem; }
+.stat-preview-badge { flex: none; padding: 2px 7px; border-radius: 3px; color: #fff; font-size: 0.6875rem; letter-spacing: 0.04em; text-shadow: 0 1px 0 rgb(0 0 0 / 0.4); }
