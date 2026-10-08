@@ -18,16 +18,6 @@ test('Firebase builds once in predeploy, with source-map credentials in the actu
 });
 
 
-test('opponent index gate waits for every required index and fails closed', async () => {
-  const {waitForIndexes, specifications} = require('../../../../tools/backend/wait-for-indexes.cjs');
-  const ready = specifications.map((spec: {fields: unknown[]}) => ({...spec, state: 'READY'}));
-  let polls = 0;
-  await waitForIndexes(async () => ++polls === 1 ? ready.slice(1) : ready, async () => {}, 2);
-  expect(polls).toBe(2);
-  await expect(waitForIndexes(async () => ready.map((index: object) => ({...index, state: 'CREATING'})), async () => {}, 1)).rejects.toThrow('not ready');
-  await expect(waitForIndexes(async () => ready.map((index: object) => ({...index, state: 'NEEDS_REPAIR'})), async () => {}, 1)).rejects.toThrow('needs repair');
-});
-
 test('every Firestore consumer targets the same named database', async () => {
   const root = resolve(import.meta.dir, '../../../..');
   const {FIRESTORE_DATABASE_ID} = await import('@legion/shared/config');

@@ -16,12 +16,11 @@ Then promote the verified Steam Build ID to the **public Legion Demo by default*
 
 ## Automated checks
 
-- [x] Client: 8 suites, 16 tests; TypeScript check; production Electron bundle.
-- [x] Electron shell: protocol traversal, trusted IPC/navigation, Steam/Itch session, native gamepad keyboard, and direct-session fallback tests.
-- [x] Server: 6 suites, 115 tests; TypeScript build.
-- [x] Matchmaker: 4 files, 7 tests; TypeScript build.
-- [x] Functions: lint with 0 errors (56 existing warnings), 16 tests, webpack build.
-- [x] Release definitions: `actionlint`, JSON parsing, release policy script, and official Butler validation.
+Run the integration, smoke, deployment-contract, lint and type checks listed in
+[testing.md](testing.md). Unit-test suites have been removed; do not restore them
+or use TDD. CI retains combat/HTTP integration checks, real Sentry transport,
+native Steam binding, packaged startup, browser flows and desktop stability.
+The package measurements below are historical, not verification of the current build.
 
 ## Packaged application
 
@@ -37,8 +36,8 @@ The comparable local macOS arm64 package fell from 694 MB before the desktop cle
 
 ## Preserved product behavior
 
-- [x] Fake queue numbers remain enabled and regression-tested.
-- [x] Synthetic/fake players and fake league ranking remain enabled and regression-tested.
+- [x] Fake queue numbers remain enabled.
+- [x] Synthetic/fake players and fake league ranking remain enabled.
 - [x] Sentry Replay DOM/canvas uploads and input/network redaction are tested under the production CSP with local ingestion (`bun run test:guide`). Canvas capture is limited to 2 fps and private assets remain a playback limitation; see `docs/error-reporting.md`. LogRocket and Hotjar are removed.
 - [x] Friend challenges remain; wager/blockchain paths are removed.
 

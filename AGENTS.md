@@ -29,13 +29,21 @@ If explicitly requested, release tags must be `v<version>`, for example `v0.2.0`
 
 When opening the app to check your work, close the app instance you opened as soon as verification is finished, including after failed or interrupted checks. Do not close an app instance Jerome already had open.
 
+## Testing policy
+
+Do not use test-driven development (TDD), write unit tests, or restore the removed unit-test suites. Implement the change first, then validate it through the smallest relevant integration, end-to-end, smoke, or deployment-contract check.
+
+Tests must exercise interactions between real production components or an actual system boundary: HTTP/Socket.IO, Firestore emulators, native libraries, a packaged app, a browser, or a CLI process. Mock external services or control time when needed for an integration scenario; do not replace the collaborating game logic with mocks and call it an integration test. Do not add isolated helper/class/component tests, even for regressions or security fixes; cover those behaviors through an appropriate integrated flow instead.
+
+Keep the existing integration and smoke suites, lint, type checks, and build checks. Do not add tests solely for presentation or exact player-facing wording. See `docs/testing.md` for the retained suites and commands. This policy supersedes test-first instructions in historical plans and generic skill workflows.
+
 ## Static analysis
 
 Run `bun run lint` from the repository root for functional Biome diagnostics. The command deliberately skips the `style` and `complexity` rule groups and does not run the formatter. Do not replace it with `biome check`, which also checks formatting.
 
 Biome complements rather than replaces TypeScript. Run `bunx tsc --noEmit` in `client`, `server`, `matchmaker`, and `api/functions` when validating types.
 
-For presentation-only UI work (for example card hover effects, tooltip styling, spacing, or colors), do not add or run automated tests just to verify appearance. Inspect screenshots manually when useful or requested. Keep focused tests for behavior such as gameplay, navigation, accessibility, error handling, and security.
+For presentation-only UI work (for example card hover effects, tooltip styling, spacing, or colors), do not add or run automated tests just to verify appearance. Inspect screenshots manually when useful or requested. Keep focused integration checks for behavior such as gameplay, navigation, accessibility, error handling, and security.
 
 Do not write tests that assert player-facing wording: exact headings, labels, messages, sentences, translated catalog strings, or banned phrases. Copy changes must not break tests. Check behavior instead: an element exists or is focused, a state changes, a number or name is shown, distinct situations get distinct messages, or nothing renders unresolved (`{{`, `undefined`). Review copy by reading the screen and following `docs/game-ui-writing.md`.
 
@@ -43,7 +51,7 @@ Do not write tests that assert player-facing wording: exact headings, labels, me
 
 Packaged builds must open `app://legion/`, using `PACKAGED_APP_URL` from `client/electron/protocol.js`. Do not load `app://legion/index.html`: Preact Router reads that as the `/index.html` application route, which bypasses the title screen and leaves the authenticated home content empty. The custom protocol already maps `/` to the bundled `index.html` file.
 
-Local development starts at `http://localhost:8080/`, so it cannot catch a packaged-only entry-path regression by itself. When changing the Electron entry URL, custom protocol, or top-level routes, keep the packaged-root assertion in `client/electron/__tests__/security.test.js` passing and smoke-test a packaged build.
+Local development starts at `http://localhost:8080/`, so it cannot catch a packaged-only entry-path regression by itself. When changing the Electron entry URL, custom protocol, or top-level routes, verify the packaged-root flow with `bun run test:guide` and smoke-test a packaged build.
 
 ## Weekly leagues
 

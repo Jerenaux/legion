@@ -45,7 +45,7 @@ Authentication rejection, malformed match messages, asset failures, unhandled re
 
 Graphics failures and loading timeouts show specific explanations and recovery steps. Handle runtime error events even when only their message is available, and show recovery even if engine cleanup throws. WebGL context creation failure is not Linux-specific: drivers, disabled or blocked acceleration, GPU-process failures, and resource exhaustion can affect other platforms too. Keep the Canvas fallback and context disposal; do not force unsafe GPU flags in release builds. A player's release, desktop runtime (native or Proton), and graphics diagnostics are needed to identify their particular cause.
 
-Server startup is guarded before its first asynchronous operation. Repeated joins for the same authenticated UID replace that player's socket, never consume another team slot. A superseded socket cannot clear the replacement on disconnect. Keep the AI and PvP lifecycle regression tests when changing connection setup.
+Server startup is guarded before its first asynchronous operation. Repeated joins for the same authenticated UID replace that player's socket, never consume another team slot. A superseded socket cannot clear the replacement on disconnect. Use the local backend and packaged Socket.IO recovery integration checks when changing connection setup.
 
 ## Privacy and cost
 
@@ -63,7 +63,7 @@ Both projects enable server-side sensitive-data and IP-address scrubbing. Their 
 
 ## Verification
 
-Run `bun run lint`, the four services' test/type checks, and `bun run test:guide` from `client`. The guide smoke test is muted, uses local fixtures only, exercises the real SDK transport, and runs in CI. Do not send deliberate production exceptions through live gameplay endpoints. For account-level verification, send a clearly tagged event in the `verification` environment and confirm its receipt/release/source context in Sentry; do not claim dashboard delivery based only on an accepted envelope.
+Run `bun run lint`, the four services' type checks, and the relevant integration checks in `docs/testing.md`, including `bun run test:guide` from `client`. The guide smoke test is muted, uses local fixtures only, exercises the real SDK transport, and runs in CI. Do not send deliberate production exceptions through live gameplay endpoints. For account-level verification, send a clearly tagged event in the `verification` environment and confirm its receipt/release/source context in Sentry; do not claim dashboard delivery based only on an accepted envelope.
 
 Native packages support `Legion --smoke-test`: an isolated temporary profile, muted/hidden window, disabled Sentry, blocked remote renderer requests, no Steam authentication, and normal window close after the real `app://legion/` offline-recovery screen renders. A fresh offline profile cannot reach the authenticated title; the guide harness separately checks that full flow. CI and release workflows run this instead of killing the executable after ten seconds. This startup check complements, not replaces, the guide harness's fixture gameplay and real-SDK loopback/crash tests. Never mark synthetic CI sessions as production or send CI recordings to live ingestion.
 
