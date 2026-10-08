@@ -40,6 +40,7 @@ for (const mode of ["development", "production"]) {
       arena.playerTeamId = 1;
       arena.unavailableActionReason = () => undefined;
       arena.actionFeedback = mock();
+      arena.showItemNoEffect = () => false;
       arena.gridMap = new Map([
         ["14,5", {team: {id: 2}}], // Enemy outside range.
         ["2,5", {team: {id: 1}}], // Ally inside range: also invalid.

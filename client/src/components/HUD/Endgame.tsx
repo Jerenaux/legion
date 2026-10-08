@@ -6,7 +6,8 @@ import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
 import { CharacterUpdate, GameOutcomeReward, TeamMember } from '@legion/shared/interfaces';
 import CharacterCard from './CharacterCard';
-import { ChestColor, PlayMode, RewardType } from '@legion/shared/enums';
+import { ChestColor, InventoryType, PlayMode, RewardType } from '@legion/shared/enums';
+import { ItemTooltip } from '../ItemTooltipContent';
 import OpenedChest from '../dailyLoot/OpenedChest';
 import { route } from 'preact-router';
 import { events } from './GameHUD';
@@ -62,10 +63,21 @@ interface EndgameProps {
 
 interface Reward {
     type: string;
+    id?: number;
     amount: number;
     icon: string;
     backgroundImage?: string;
     coordinates?: { x: number; y: number };
+}
+
+// Reward tiles share the inventory tooltip; XP and gold have their own short explanations.
+function rewardTooltipType(type: string) {
+    if (type === 'XP') return 'xp';
+    if (type === 'GOLD' || type === RewardType.GOLD) return 'gold';
+    if (type === RewardType.EQUIPMENT) return InventoryType.EQUIPMENTS;
+    if (type === RewardType.SPELL) return InventoryType.SPELLS;
+    if (type === RewardType.CONSUMABLES) return InventoryType.CONSUMABLES;
+    return undefined;
 }
 
 export class Endgame extends Component<EndgameProps, EndgameState> {
@@ -165,6 +177,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         const backgroundImageUrl = getRewardBgImage(reward.type);
                         rewards.push({
                             type: reward.type,
+                            id: reward.id,
                             amount: reward.amount,
                             icon: backgroundImageUrl,
                             coordinates: rewardObject ? mapFrameToCoordinates(rewardObject.frame) : { x: 0, y: 0 }
@@ -204,13 +217,16 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
 
                 <div className="endgame_rewards_container">
                     <div className="endgame_rewards_heading_container">
-                        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
+                        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24" style={{ transform: 'scaleX(-1)' }}><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                         <p className="endgame_rewards_heading">{t("Rewards")}</p>
                         <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" height="24" width="24"><path d="M18.353 10.252L6.471 3.65c-1.323-.736-1.985-1.103-2.478-.813S3.5 3.884 3.5 5.398V18.6c0 1.514 0 2.271.493 2.561s1.155-.077 2.478-.813l11.882-6.6c1.392-.774 2.088-1.16 2.088-1.749 0-.588-.696-.975-2.088-1.748z" fill="#FFA600" /></svg>
                     </div>
                     <div className="flex items_center justify_center gap_4 endgame_rewards_items">
                         {this.getRewardsList().map((reward, idx) => (
-                            <div key={idx} className="streak_gold_list" style={{'--reveal-index': idx}}>
+                            <button type="button" key={idx} className="streak_gold_list" style={{'--reveal-index': idx}}
+                                data-tooltip-id="endgame-reward-details"
+                                data-tooltip-item-type={rewardTooltipType(reward.type)}
+                                data-tooltip-item-id={reward.id}>
                                 {reward.type === 'XP' || reward.type === 'GOLD' ? (
                                     <div style={{ backgroundImage: `url(${reward.icon})`, backgroundSize: '100% 100%' }}></div>
                                 ) : (
@@ -227,9 +243,10 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                                         formatNumber(reward.amount)
                                     )}
                                 </div>
-                            </div>
+                            </button>
                         ))}
                     </div>
+                    <ItemTooltip id="endgame-reward-details" />
                 </div>
 
                 <div className="endgame_buttons">

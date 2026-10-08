@@ -24,6 +24,10 @@ export function ItemTooltip({id, showClasses = true}: {id: string; showClasses?:
     render={({activeAnchor}) => {
       const itemId = Number(activeAnchor?.getAttribute('data-tooltip-item-id'));
       const type = activeAnchor?.getAttribute('data-tooltip-item-type');
+      if (type === 'xp') return <div className="item-preview">
+        <strong className="item-preview-name">{t('Experience')}</strong>
+        <p className="item-preview-description">{t('Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.')}</p>
+      </div>;
       if (type === 'gold') return <div className="item-preview">
         <strong className="item-preview-name">{t('Gold')}</strong>
         <p className="item-preview-description">{t('Spend gold in Shop to buy consumables, spells, equipment, and new recruits as they unlock.')}</p>

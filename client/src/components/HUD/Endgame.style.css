@@ -540,3 +540,15 @@
 .endgame .endgame_character_portrait {
     flex-shrink: 0;
 }
+
+/* Reward tiles are buttons so their tooltips also open on keyboard focus. */
+button.streak_gold_list {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: help;
+}
+button.streak_gold_list:focus-visible {
+    outline: 2px solid #51fdff;
+    outline-offset: 3px;
+}

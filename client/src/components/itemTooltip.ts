@@ -4,6 +4,17 @@ import {BaseItem} from '@legion/shared/BaseItem';
 import {BaseSpell} from '@legion/shared/BaseSpell';
 import {Stat, StatLabels} from '@legion/shared/enums';
 
+/** Full names for the abbreviated stat labels (HP, SP.ATK...). */
+export const statNames: Record<number, string> = {
+  [Stat.HP]: "Health Points",
+  [Stat.MP]: "Magic Points",
+  [Stat.ATK]: "Attack",
+  [Stat.DEF]: "Defense",
+  [Stat.SPATK]: "Special Attack",
+  [Stat.SPDEF]: "Special Defense",
+  [Stat.SPEED]: "Speed",
+};
+
 export const statExplanations: Record<number, string> = {
   [Stat.HP]: "Maximum health. A character falls when HP reaches zero.",
   [Stat.MP]: "Maximum magic points available for casting spells.",

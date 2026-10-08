@@ -1,4 +1,5 @@
 import {route} from 'preact-router';
+import { itemNoEffectReason, type ItemNoEffectReason } from '@legion/shared/itemUse';
 import {t, userError, localizedAsset, language, fontFamily} from '../i18n/core';
 import { io } from 'socket.io-client';
 import { Player } from './Player';
@@ -429,13 +430,35 @@ export class Arena extends Phaser.Scene
         events.emit('performAction');
     }
 
-    processActionRejected(turn: TurnState) {
+    processActionRejected(turn: TurnState & {reason?: ItemNoEffectReason}) {
         if (this.gameEnded || turn.turnNumber !== this.turnee?.turnNumber ||
             turn.team !== this.turnee.team || turn.num !== this.turnee.num) return;
         this.unlockInput();
         this.selectedPlayer?.cancelItem();
         this.selectTurnee();
-        this.actionFeedback(t("That action is no longer valid. Choose another action."));
+        if (turn.reason && this.selectedPlayer) this.showNoEffect(this.selectedPlayer, turn.reason);
+        else this.actionFeedback(t("That action is no longer valid. Choose another action."));
+    }
+
+    /** In-world hint above the target when a consumable would do nothing; returns true if shown. */
+    showItemNoEffect(item: BaseItem, target: Player): boolean {
+        const reason = itemNoEffectReason(item, {
+            alive: target.isAlive(), hp: target.hp, maxHP: target.maxHP, mp: target.mp, maxMP: target.maxMP,
+            hasStatus: status => Boolean(target.statuses?.[status]),
+        });
+        if (reason) this.showNoEffect(target, reason);
+        return reason !== null;
+    }
+
+    private showNoEffect(target: Player, reason: ItemNoEffectReason) {
+        const message = {
+            'hp-full': t("HP already full"),
+            'mp-full': t("MP already full"),
+            'not-knocked-out': t("Only revives a fallen ally"),
+            'no-status': t("Nothing to cure"),
+        }[reason];
+        target.displayOverheadText(message, 1800, '#ffe3a1');
+        this.playSound('nope', 0.2);
     }
 
     endTutorial() {
@@ -638,6 +661,7 @@ export class Arena extends Phaser.Scene
                 this.playSound('nope', 0.2);
                 return;
             }
+            if (player && pendingItem.target === Target.SINGLE && this.showItemNoEffect(pendingItem, player)) return;
             this.sendUseItem(this.selectedPlayer?.pendingItem, gridX, gridY, player);
         } else if ((!player || !player.isAlive()) && this.hexGridManager.hasObstacle(gridX, gridY)) {
             this.sendObstacleAttack(gridX, gridY);

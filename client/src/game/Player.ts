@@ -559,6 +559,7 @@ export class Player extends Phaser.GameObjects.Container {
         }
         if (item) {
             if (item.target === Target.SELF) {
+                if (this.arena.showItemNoEffect(item, this)) return;
                 this.arena.sendUseItem(index, this.x, this.y, this);
             } else {
                 this.pendingItem = index;

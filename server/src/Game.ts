@@ -1,4 +1,5 @@
 import { Socket, Server } from 'socket.io';
+import type { ItemNoEffectReason } from '@legion/shared/itemUse';
 import { getFirestore, DocumentReference } from 'firebase-admin/firestore';
 import {loadRemoteConfig} from './remoteConfig';
 
@@ -37,6 +38,8 @@ export abstract class Game
     nbExpectedPlayers = 2;
     league: League;
     teams: Map<number, Team> = new Map<number, Team>();
+    /** Why the current action was refused, sent with `actionRejected` so the player gets a precise hint. */
+    rejectionReason?: ItemNoEffectReason;
     gridMap: Map<string, ServerPlayer> = new Map<string, ServerPlayer>();
     terrainManager = new TerrainManager(this);
     io: Server;
@@ -694,6 +697,7 @@ export abstract class Game
             return;
         }
 
+        this.rejectionReason = undefined;
         let recordedAction: GameAction | undefined;
         switch (action) {
             case 'move':
@@ -720,7 +724,8 @@ export abstract class Game
                 break;
         }
         if (!player.hasActed) {
-            socket?.emit('actionRejected', this.getTurneeData());
+            // Older clients ignore the reason and show their generic message.
+            socket?.emit('actionRejected', {...this.getTurneeData(), reason: this.rejectionReason});
         } else if (recordedAction !== undefined) {
             this.saveGameAction(team.teamData.playerUID, recordedAction, data);
         }
@@ -990,10 +995,11 @@ export abstract class Game
         const targets = targetPlayer ? [targetPlayer] : item.getTargets(this, player, x, y);
 
         // Only check if the item is applicable if there is a single target
-        if (targets.length === 1 && !item.effectsAreApplicable(targets[0])) {
-            console.log(`[Game:processUseItem] Item ${item.name} is not applicable!`);
+        const noEffect = targets.length === 1 ? item.noEffectReason(targets[0]) : null;
+        if (noEffect) {
+            this.rejectionReason = noEffect;
             return;
-        };
+        }
         if (!this.beginAction(player)) return;
 
         // Add all targets to the list of interacted targets
