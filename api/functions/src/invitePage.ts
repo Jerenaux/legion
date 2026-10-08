@@ -92,7 +92,7 @@ export function renderInvitePage({gift, community, invalid}: InvitePageInput): s
       <li class="step"><span class="step-number">2</span><div><h2>${giftOpen && community ? 'Claim and join' : giftOpen ? 'Claim your gear' : 'Join the community'}</h2><p>Steam opens Legion${giftOpen ? ' and adds the gear to your account' : ''}${community ? `. Confirm to join ${name}` : ''}.</p>
         <a class="button button-primary" href="${escapeHTML(steamLaunch(launchQuery))}">Open in Legion</a></div></li>
     </ol>` : `<p class="actions"><a class="button button-primary" href="${STORE_URL}"><img src="/assets/steam.png" alt="" width="24" height="24">Play the free demo on Steam</a></p>`;
-  const code = community ? `<p class="code-hint">Already playing? Enter <code>${escapeHTML(community.id.toUpperCase())}</code> on your profile under Join a community.</p>` : '';
+  const code = community ? `<p class="code-hint">Link not working? Enter <code>${escapeHTML(community.id.toUpperCase())}</code> on your profile under Join a community.</p>` : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title} · Legion</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/invite.css"></head>
 <body><header class="bar"><a href="/" aria-label="Legion home"><img src="/assets/logo.png" alt="Legion" class="logo" width="120" height="50"></a></header>
