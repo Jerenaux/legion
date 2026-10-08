@@ -47,3 +47,48 @@ test("never marks the macOS window as unable to go fullscreen", () => {
   expect(displayWindowOptions(true, "win32")).toEqual({fullscreenable: true, fullscreen: true});
   expect(displayWindowOptions(false, "win32")).toEqual({fullscreenable: true});
 });
+
+function fakeWindow({fullscreen = false} = {}) {
+  const events = {};
+  const calls = [];
+  return {
+    calls, events,
+    maximize: () => calls.push('maximize'),
+    show: () => calls.push('show'),
+    setFullScreen: value => calls.push(`fullscreen:${value}`),
+    setOpacity: value => calls.push(`opacity:${value}`),
+    isFullScreen: () => fullscreen,
+    isDestroyed: () => false,
+    once: (name, callback) => { events[name] = callback; },
+  };
+}
+
+test("a macOS fullscreen launch stays transparent until fullscreen is reached", () => {
+  const {revealWindow} = require("../display");
+  const timers = [];
+  const window = fakeWindow();
+  revealWindow(window, true, "darwin", (callback, delay) => timers.push({callback, delay}));
+  expect(window.calls).toEqual(['maximize', 'opacity:0', 'show', 'fullscreen:true']);
+  window.events['enter-full-screen']();
+  timers.find(timer => timer.delay < 1000).callback();
+  for (const timer of timers) timer.callback();
+  expect(window.calls.filter(call => call === 'opacity:1')).toHaveLength(1);
+});
+
+test("a macOS fullscreen launch is revealed even if fullscreen never arrives", () => {
+  const {revealWindow} = require("../display");
+  const timers = [];
+  const window = fakeWindow();
+  revealWindow(window, true, "darwin", (callback, delay) => timers.push({callback, delay}));
+  timers.find(timer => timer.delay >= 1000).callback();
+  expect(window.calls.at(-1)).toBe('opacity:1');
+});
+
+test("windowed and non-macOS launches show at their final size without opacity changes", () => {
+  const {revealWindow} = require("../display");
+  for (const [fullscreen, platform] of [[false, "darwin"], [true, "win32"], [false, "linux"]]) {
+    const window = fakeWindow();
+    revealWindow(window, fullscreen, platform, () => { throw new Error('no timers expected'); });
+    expect(window.calls).toEqual(['maximize', 'show']);
+  }
+});
