@@ -98,9 +98,6 @@ class PlayerBar extends Component<PlayerBarProps> {
                 <ItemIcon action={action} index={index} canAct={!unavailable} actionType={type}
                   keyLabel={primaryKeyLabel(`${isSpell ? 'spell' : 'item'}-${index + 1}` as DesktopAction, this.state.controls)} />
                 <span className="player_bar_action_name">{t(action.name)}</span>
-                {self && <span className="player_bar_action_self" aria-hidden="true">
-                  <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><circle cx="5" cy="3" r="2.2" /><path d="M1 10c0-2.6 1.8-4.2 4-4.2S9 7.4 9 10Z" /></svg>
-                </span>}
                 {cost !== null && <span className={`player_bar_action_cost ${lowMP ? 'insufficient-mp' : ''}`}><img src={mpIcon} alt={t("MP")} />{formatNumber(cost)}</span>}
               </button>
             );

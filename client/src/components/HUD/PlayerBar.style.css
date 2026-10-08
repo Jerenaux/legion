@@ -222,7 +222,3 @@
 @keyframes combat-status-in { from { opacity: 0; transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .combat-status-banner > span { animation: none; } }
 @media (max-width: 960px) { .combat-status-banner > span { font-size: .8125rem; padding: 5px 12px 6px; } }
-/* Consumables that act on the user: same corner as a spell's MP cost. */
-.player_bar_action_self { position: absolute; bottom: 2px; left: 4px; display: flex; color: var(--stat-up); }
-.player_bar_action_self svg { fill: currentColor; }
-.player_bar_action[aria-disabled="true"] .player_bar_action_self { color: var(--dock-muted); }
