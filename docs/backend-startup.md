@@ -31,7 +31,7 @@ The runner builds production-mode Functions, starts isolated Auth/Firestore/Func
 
 The integration checks cover simultaneous account provisioning, bootstrap/legacy equivalence, concurrent store DAU recording, unauthorized API/socket access, first practice, match membership, immediate PvP matching, persisted match/action records, both human readiness acknowledgements, bounded ELO selection, league/inactivity filtering, empty-pool fallback responses and complete AI match loading.
 
-Additional checks: root `bun run lint`; `bunx tsc --noEmit` and `bun test` in client, server, matchmaker and `api/functions`; client `bun run test:guide` for packaged readiness, recovery and telemetry/privacy.
+Additional checks: root `bun run lint`; `bunx tsc --noEmit` in client, server, matchmaker and `api/functions`; the retained integration checks in `docs/testing.md`; client `bun run test:guide` for packaged readiness, recovery and telemetry/privacy.
 
 ## Measurements (2026-10-06)
 

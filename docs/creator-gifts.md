@@ -131,8 +131,7 @@ is needed only for the revised guide copy. No production tokens are migrated.
 
 ```sh
 node tools/backend/run.cjs # isolated Firestore/Auth/Functions + CLI concurrency checks
-cd api/functions && bun test src/__tests__/gifts.test.ts
-cd ../../client && bun test electron/__tests__/gifts.test.js
+cd client && bun test electron/__tests__/gifts.test.js
 bun run test:guide --gifts --locale=de
 bun run test:guide --gifts --locale=ja
 ```

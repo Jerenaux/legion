@@ -57,4 +57,4 @@ median-duration, total-player, or per-mode fields. Its only repository caller is
 updated together with it. Other dashboard endpoints retain their existing behavior
 and costs; loading the entire dashboard is not equivalent to this lightweight query.
 
-Run regression tests with `cd api/functions && bun run test`.
+Run `node tools/backend/run.cjs` for the emulator integration checks, including concurrent store DAU recording. The isolated analytics helper/query-mock tests have been removed.

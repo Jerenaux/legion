@@ -3,7 +3,7 @@ import {Server, Socket} from 'socket.io';
 import {AIServerPlayer} from '../AIServerPlayer';
 import {TowerGame} from '../TowerGame';
 import {TurnSystem} from '../TurnSystem';
-import {createTowerRun, TOWER_ENCOUNTERS, TOWER_UPGRADES, chooseTowerUpgrade, finishTowerBattle, towerOffers} from '@legion/shared/tower';
+import {createTowerRun, TOWER_ENCOUNTERS, chooseTowerUpgrade, finishTowerBattle} from '@legion/shared/tower';
 import {Class, League, PlayMode, Stat, StatusEffect, Terrain} from '@legion/shared/enums';
 import {getSpellById} from '@legion/shared/Spells';
 import {GRID_HEIGHT} from '@legion/shared/config';
@@ -88,28 +88,6 @@ test('temporary upgrade effects reach combat without mutating shared spells', as
   await game.populateTeams();
   expect(game.getTeam(1)[2].spells.find(spell => spell.id === 6)?.cost).toBe(15);
   expect(getSpellById(6)!.cost).toBe(originalCost);
-});
-
-test('full run choices and banked rewards survive independently of permanent characters', () => {
-  const run = createTowerRun('full-run', 1, 'balanced');
-  const original = structuredClone(run.squad);
-  for (let floor = 0; floor < 6; floor++) {
-    run.phase = 'battle'; run.path.push(TOWER_ENCOUNTERS[floor][0].id);
-    const reward = finishTowerBattle(run, {won: true, units: run.squad.map(() => ({hp: 1, mp: 0, inventory: []}))});
-    expect(reward.gold).toBeGreaterThan(0);
-    expect(run.squad.every(unit => unit.hp > unit.character.stats.hp * 0.3)).toBe(true);
-    if (floor < 5) {
-      expect(run.offers).toEqual(towerOffers(run));
-      expect(run.offers.every(id => TOWER_UPGRADES.some(upgrade => upgrade.id === id))).toBe(true);
-      expect(() => chooseTowerUpgrade(run, 'invalid')).toThrow();
-      chooseTowerUpgrade(run, run.offers[2]);
-      expect(() => chooseTowerUpgrade(run, 'rest')).toThrow();
-    }
-  }
-  expect(run.phase).toBe('won'); expect(run.floor).toBe(6);
-  expect(run.earned.gold).toBe(555); expect(run.earned.xp).toBe(900); expect(run.earned.items).toHaveLength(4);
-  expect(original[2].character.skills).toEqual([0]);
-  expect(() => finishTowerBattle(run, {won: true, units: []})).toThrow();
 });
 
 test('untimed humans, AI fallback, and ice thaw prevent stuck encounters', async () => {

@@ -29,7 +29,7 @@ One expedition ending in victory or natural defeat grants one completed-match cr
 ## Validation and playtesting
 
 - `bun test` in `server`: encounter geometry, upgrade isolation, recovery, untimed turns, freeze recovery, boss warnings, readiness and disconnect behavior.
-- `bun test` in `api/functions`: complete-run transactions, concurrent/retried settlement, invalid-resource rollback, stale/locked choices, and permanent-roster isolation.
+- Tower store unit tests using an in-memory Firestore imitation have been removed. Check persistence changes through Firestore emulator integration scenarios; the retained combat and UI suites do not validate Tower settlement transactions.
 - `bun run test:guide` in `client`: packaged routing, tower entry, choices, keyboard controls, saved state, error recovery, live combat HUD and warning rendering, plus existing regression smoke checks.
 - `node tools/guide/capture.cjs --tower-images` in `client`: refresh only the tower guide crop using local fixtures. Fixtures never ship.
 
