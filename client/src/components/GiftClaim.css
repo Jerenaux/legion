@@ -88,3 +88,4 @@
   .gift-dialog, .gift-dialog--received .gift-chest, .gift-rewards li { animation: none; }
   .gift-reward .gift-loot-slot, .gift-actions button { transition: none; }
 }
+.gift-from { display: inline-flex; align-items: center; gap: 8px; margin: -4px 0 6px; color: oklch(0.88 0.13 90); font-size: .95rem; letter-spacing: .04em; }

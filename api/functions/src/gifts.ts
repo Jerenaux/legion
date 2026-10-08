@@ -6,6 +6,10 @@ import {getEquipmentById} from '@legion/shared/Equipments';
 import {getConsumableById} from '@legion/shared/Items';
 import {getSpellById} from '@legion/shared/Spells';
 import {addItemsToInventory} from './inventoryUtils';
+import {type CommunitySummary, communitySummary} from '@legion/shared/communities';
+
+/** Public pages and the CLI print this domain; Hosting rewrites /invite to the `invite` Function. */
+export const INVITE_ORIGIN = 'https://www.play-legion.io';
 
 export type GiftUsage = 'single' | 'unlimited';
 export const isGiftUsage = (value: unknown): value is GiftUsage => value === 'single' || value === 'unlimited';
@@ -33,15 +37,25 @@ export function validateGiftRewards(value: unknown): ChestReward[] {
   return rewards;
 }
 
-export type GiftResult = {status: 'claimed' | 'already_claimed'; rewards: ChestReward[]}
+/** A gift can invite its recipients to a creator community; joining stays the player's choice. */
+export type GiftResult = {status: 'claimed' | 'already_claimed'; rewards: ChestReward[]; community?: CommunitySummary | null}
   | {status: 'unavailable' | 'player_not_ready'};
+
+/** The active community a gift invites to, if any (revoked communities are ignored). */
+export async function giftCommunity(db: Firestore, communityId: unknown): Promise<CommunitySummary | null> {
+  if (typeof communityId !== 'string' || !communityId) return null;
+  const community = (await db.collection('communities').doc(communityId).get()).data();
+  return community?.status === 'active' ? communitySummary({...community, id: communityId}) : null;
+}
 
 export async function redeemGiftToken(db: Firestore, uid: string, token: unknown): Promise<GiftResult> {
   if (typeof token !== 'string' || !giftTokenPattern.test(token)) return {status: 'unavailable'};
   const giftRef = db.collection('creatorGifts').doc(giftId(token));
   const playerRef = db.collection('players').doc(uid);
-  return db.runTransaction(async transaction => {
+  let communityId: unknown;
+  const result: GiftResult = await db.runTransaction(async transaction => {
     const gift = (await transaction.get(giftRef)).data();
+    communityId = gift?.communityId;
     if (!gift || (gift.usage !== undefined && !isGiftUsage(gift.usage))) return {status: 'unavailable'};
     // Retrying a successful claim returns its receipt, even after expiry/revocation.
     if (gift.claimedBy) return gift.claimedBy === uid
@@ -69,4 +83,6 @@ export async function redeemGiftToken(db: Firestore, uid: string, token: unknown
     } else transaction.update(giftRef, {claimedBy: uid, claimedAt: Date.now()});
     return {status: 'claimed', rewards};
   });
+  if (result.status !== 'claimed' && result.status !== 'already_claimed') return result;
+  return {...result, community: await giftCommunity(db, communityId)};
 }

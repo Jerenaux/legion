@@ -1165,5 +1165,7 @@
   "HP already full": "HP已满",
   "MP already full": "MP已满",
   "Only revives a fallen ally": "只能复活倒下的队友",
-  "Nothing to cure": "没有可治疗的状态"
+  "Nothing to cure": "没有可治疗的状态",
+  "From {{value0}}": "来自 {{value0}}",
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "创作者的礼物也可能邀请你加入其社区。领取后由你决定是否加入。"
 }

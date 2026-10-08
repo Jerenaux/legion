@@ -1165,5 +1165,7 @@
   "HP already full": "HPは満タン",
   "MP already full": "MPは満タン",
   "Only revives a fallen ally": "倒れた味方専用",
-  "Nothing to cure": "治す状態異常なし"
+  "Nothing to cure": "治す状態異常なし",
+  "From {{value0}}": "{{value0}}より",
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "クリエイターのギフトには、そのコミュニティへの招待が含まれることもあります。受け取った後、参加するかどうかを選べます。"
 }

@@ -1,10 +1,10 @@
 import {onRequest} from './telemetry';
+import {redirectToInvite} from './inviteAPI';
 import {corsMiddleware, getUID, firestore} from './APIsetup';
 import {currentSeasonId} from './ranking';
 import {secondsUntilNextSeason} from './leaderboardsAPI';
 import {CommunityError, communityDetails, communityRanking, joinCommunity as joinCommunityRecord} from './communityStore';
 import {normalizeCommunityCode} from '@legion/shared/communities';
-import {STEAM_DEMO_APP_ID} from './platformIdentity';
 
 const STATUS: Record<CommunityError['code'], number> = {'invalid-code': 400, 'not-found': 404, 'already-member': 409, 'no-player': 404};
 
@@ -61,19 +61,10 @@ export const getCommunityRanking = onRequest({memory: '256MiB'}, (request, respo
   });
 });
 
-const escapeHTML = (value: string) => value.replace(/[&<>"']/g, char => `&#${char.charCodeAt(0)};`);
-
-// Creators share this HTTPS page: it works in any app, explains the code, and launches Legion.
+// Former community share URL: forwards to the combined invite page on play-legion.io.
 export const communityLink = onRequest({invoker: 'public'}, (request, response) => {
-  const code = normalizeCommunityCode(request.query.code);
-  response.set({'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff',
-    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"});
-  if (request.method !== 'GET' || !code) { response.status(400).send('Invalid community link'); return; }
-  const display = escapeHTML(code.toUpperCase());
-  response.type('html').send(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Join a Legion community</title>
-<style>body{font:18px/1.6 system-ui,sans-serif;background:#151d27;color:#eef2f5;margin:0;min-height:100vh;display:grid;place-items:center}main{max-width:32rem;padding:2rem}h1{line-height:1.2}a{color:#eec858}a.join{display:inline-block;padding:.8rem 1.2rem;background:#eec858;color:#151d27;border-radius:.4rem;font-weight:700;text-decoration:none}code{font-size:1.3em;color:#eec858}a:focus-visible{outline:3px solid white;outline-offset:4px}</style>
-<main><h1>Join the ${display} community in Legion</h1><p>Your profile, matches and leaderboards will show the community's sigil. You can belong to one community.</p>
-<p><a href="https://store.steampowered.com/app/${STEAM_DEMO_APP_ID}/">1. Install the free demo on Steam</a></p>
-<p><a class="join" href="steam://run/${STEAM_DEMO_APP_ID}/?community=${code}">2. Launch Legion and join</a></p>
-<p>Or enter the code <code>${display}</code> in your profile under Join a community.</p></main></html>`);
+  response.set({'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer'});
+  const target = redirectToInvite('community', request.query.code);
+  if (request.method !== 'GET' || !target) { response.status(400).send('Invalid community link'); return; }
+  response.redirect(302, target);
 });

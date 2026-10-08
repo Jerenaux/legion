@@ -18,7 +18,8 @@ SVG in `client/src/components/sigil/Sigil.tsx`. Never reorder those lists: store
 
 ## Links
 
-- HTTPS landing page: `https://us-central1-<project>.cloudfunctions.net/communityLink?code=<code>`.
+- Share page: `https://www.play-legion.io/invite?community=<code>` (see `docs/creator-gifts.md`; the former `communityLink` URL redirects there).
+- A creator gift created with `--community <code>` invites its recipients too, from a single link.
 - Steam: `steam://run/3996730/?community=<code>` (read through `GetLaunchQueryParam`).
 - Direct downloads: `legion://community/<code>`.
 

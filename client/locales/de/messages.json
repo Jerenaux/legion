@@ -1165,5 +1165,7 @@
   "HP already full": "LP bereits voll",
   "MP already full": "MP bereits voll",
   "Only revives a fallen ally": "Belebt nur gefallene Verbündete",
-  "Nothing to cure": "Nichts zu heilen"
+  "Nothing to cure": "Nichts zu heilen",
+  "From {{value0}}": "Von {{value0}}",
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "Ein Geschenk eines Creators kann dich auch in seine Community einladen. Nach dem Einlösen entscheidest du, ob du beitrittst."
 }

@@ -5,14 +5,15 @@ import {readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {Firestore} from 'firebase-admin/firestore';
 import {OAuth2Client} from 'google-auth-library';
-import {giftId, giftTokenPattern, isGiftUsage, validateGiftRewards} from '../src/gifts';
+import {INVITE_ORIGIN, giftId, giftTokenPattern, isGiftUsage, validateGiftRewards} from '../src/gifts';
+import {normalizeCommunityCode} from '@legion/shared/communities';
 import {FIRESTORE_DATABASE_ID} from '@legion/shared/config';
 
 const {values, positionals} = parseArgs({args: process.argv.slice(2), allowPositionals: true, options: {
   project: {type: 'string'}, label: {type: 'string'}, rewards: {type: 'string'}, expires: {type: 'string'}, id: {type: 'string'},
-  gcloud: {type: 'boolean'}, usage: {type: 'string'},
+  gcloud: {type: 'boolean'}, usage: {type: 'string'}, community: {type: 'string'},
 }});
-const usage = 'bun tools/gifts.ts <create|list|inspect|revoke> --project PROJECT [--usage single|unlimited --label NAME --rewards FILE.json --expires ISO_DATE | --id GIFT_ID]';
+const usage = 'bun tools/gifts.ts <create|list|inspect|revoke> --project PROJECT [--usage single|unlimited --label NAME --rewards FILE.json --expires ISO_DATE --community CODE | --id GIFT_ID]';
 try {
   if (!values.project || !['create', 'list', 'inspect', 'revoke'].includes(positionals[0])) throw new Error(usage);
   if (positionals[0] === 'create' && !isGiftUsage(values.usage)) throw new Error('Creation requires --usage single or --usage unlimited');
@@ -29,13 +30,19 @@ try {
     const rewards = validateGiftRewards(JSON.parse(readFileSync(values.rewards, 'utf8')));
     const expiresAt = values.expires ? Date.parse(values.expires) : null;
     if (expiresAt !== null && (!Number.isSafeInteger(expiresAt) || expiresAt <= Date.now())) throw new Error('Expiry must be in the future');
+    // Optional: recipients are also invited to join this creator community.
+    const communityId = values.community === undefined ? null : normalizeCommunityCode(values.community);
+    if (values.community !== undefined) {
+      const community = communityId ? await db.collection('communities').doc(communityId).get() : null;
+      if (!community?.exists || community.get('status') !== 'active') throw new Error('Community not found or not active');
+    }
     const token = randomBytes(32).toString('hex');
     const id = giftId(token);
-    await gifts.doc(id).create({usage: values.usage, label: values.label.trim(), rewards, createdAt: Date.now(), expiresAt, revokedAt: null, claimedAt: null, claimedBy: null});
+    await gifts.doc(id).create({usage: values.usage, label: values.label.trim(), rewards, communityId, createdAt: Date.now(), expiresAt, revokedAt: null, claimedAt: null, claimedBy: null});
     // Printed once; keep personal links private and share unlimited links with the intended audience.
-    console.log(JSON.stringify({id, token, usage: values.usage,
+    console.log(JSON.stringify({id, token, usage: values.usage, communityId,
+      shareURL: `${INVITE_ORIGIN}/invite?gift=${token}`,
       steamURL: `steam://run/3996730/?gift=${token}`,
-      emailURL: `https://us-central1-${values.project}.cloudfunctions.net/giftLink?token=${token}`,
       localURL: `legion://gift/${token}`,
     }, null, 2));
   } else if (command === 'list') {

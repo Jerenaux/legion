@@ -33,6 +33,7 @@ Gold uses ID 0. Creation and redemption validate item IDs and quantities.
 bun tools/gifts.ts create --project legion-32c6d --usage single --label "Creator name" --rewards /path/to/rewards.json
 bun tools/gifts.ts create --project legion-32c6d --usage unlimited --label "Creator audience" --rewards /path/to/rewards.json
 # Optionally add --expires 2027-01-01T00:00:00Z
+# Optionally add --community CODE: recipients are also invited to that active community
 bun tools/gifts.ts list --project legion-32c6d
 bun tools/gifts.ts inspect --project legion-32c6d --id GIFT_ID
 bun tools/gifts.ts revoke --project legion-32c6d --id GIFT_ID
@@ -46,9 +47,29 @@ token rather than converting an issued token in place.
 
 Creation prints the token, its usage and three links **once**. Keep single-use
 links private; creators can distribute unlimited links to their audiences.
-Keep tokens out of internal logs, commits, screenshots and PR descriptions. Use `emailURL`
-for outreach: its HTTPS page offers installation and a Steam launch button,
-without consuming the gift on GET. `steamURL` launches directly. A forwarded
+Keep tokens out of internal logs, commits, screenshots and PR descriptions. Use `shareURL`
+(`https://www.play-legion.io/invite?gift=TOKEN`) for outreach: the invite page shows the
+rewards (and the community's sigil when linked), offers installation and a Steam launch
+button, and never consumes the gift on GET. `steamURL` launches directly.
+
+### Gifts that invite to a community
+
+`--community CODE` stores `communityId` on the gift; creation fails unless that community
+is active. Redemption (`claimed` or `already_claimed`) returns the community summary. The
+client shows it in the gift dialog, then offers the usual join confirmation if the player
+has no community yet. Membership is never granted by the gift itself and stays permanent
+once confirmed. Revoked communities are omitted from receipts and the page.
+
+### Invite page
+
+`https://www.play-legion.io/invite?gift=TOKEN` or `?community=CODE` is rendered by the
+`invite` Function (`api/functions/src/invitePage.ts`) through a Firebase Hosting rewrite,
+so it shares the site's origin, CSP (no scripts or inline styles), font and artwork.
+`website/invite.css` and the reward sprite sheets ship with the website build. Unknown
+links return 404; expired, revoked or claimed gifts show an unavailable state without a
+claim button. The former `giftLink` and `communityLink` URLs redirect there. After merging,
+Functions deploy automatically; deploy the website (`gh workflow run deploy-website.yml
+--ref main`) so the rewrite and assets go live. A forwarded
 single-use link can be redeemed by its first recipient; it is not tied to a named creator.
 The internal label is operator-only and never sent to the game.
 
@@ -114,7 +135,7 @@ For a live local test, deploy the gift endpoints after checking the branch:
 
 ```sh
 DEPLOY=true node api/functions/node_modules/firebase-tools/lib/bin/firebase.js deploy \
-  --only functions:redeemGift,functions:giftLink --project legion-32c6d
+  --only functions:redeemGift,functions:invite --project legion-32c6d
 ```
 
 Follow the normal source-map credentials in `docs/error-reporting.md` when

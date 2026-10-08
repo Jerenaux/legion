@@ -1165,5 +1165,7 @@
   "HP already full": "HP가 이미 가득 참",
   "MP already full": "MP가 이미 가득 참",
   "Only revives a fallen ally": "쓰러진 아군만 부활",
-  "Nothing to cure": "치료할 상태 없음"
+  "Nothing to cure": "치료할 상태 없음",
+  "From {{value0}}": "{{value0}}의 선물",
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "크리에이터의 선물에는 커뮤니티 초대가 포함될 수 있습니다. 받은 후 가입 여부를 선택합니다."
 }

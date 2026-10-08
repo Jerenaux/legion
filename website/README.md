@@ -10,3 +10,4 @@ The old `POINT_TO_STEAM` flag and browser landing were deleted in the desktop re
 - Merge first, then deploy manually from `main`: `gh workflow run deploy-website.yml --ref main`. This deploys **Hosting only**, not Functions or desktop/store releases.
 
 The site deliberately has no Play/login toggle: enabling browser play again requires an explicitly supported client, authentication flow and backend origin policy, not just changing a button.
+- `/invite` is rewritten to the `invite` Function, which renders creator gift and community share pages with `invite.css` and the copied sprite sheets (see `docs/creator-gifts.md`). Deploy the website after merging so the rewrite and assets match the deployed Function.

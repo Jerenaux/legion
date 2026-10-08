@@ -1165,5 +1165,7 @@
   "HP already full": "HP already full",
   "MP already full": "MP already full",
   "Only revives a fallen ally": "Only revives a fallen ally",
-  "Nothing to cure": "Nothing to cure"
+  "Nothing to cure": "Nothing to cure",
+  "From {{value0}}": "From {{value0}}",
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "A creator’s gift can also invite you to their community. After claiming, you choose whether to join."
 }
