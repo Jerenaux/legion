@@ -7,7 +7,8 @@ Approved revision 4 artwork supplies the transparent wordmark (`logo.png`,
 `logobig.png` and the small legacy `logo_.png`), flame-and-sword emblem
 (`icon.png`, `icon.ico`, `icon.icns`, `favicon.ico`) and promotional thumbnail.
 Use the wordmark where it can be read comfortably; use the emblem in the navbar
-and native app icons. Keep gameplay and character artwork unchanged.
+and native app icons. The title and session screens share revision 4's text-free
+autumn arena background (`title/title.png`). Keep in-match artwork unchanged.
 
 ## Compatibility names
 
