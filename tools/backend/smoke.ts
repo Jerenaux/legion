@@ -96,6 +96,78 @@ try {
   assert.deepEqual((await mage.ref.get()).data().skills, [2]);
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
   assert.deepEqual((await gearPlayerRef.get()).data().inventory.spells, [5]);
+  // The scheduled job persists synthetic weekly/lifetime results atomically and is retry-safe.
+  const inactiveRef = db.collection('players').doc(`inactive-${run}`);
+  const playedRef = db.collection('players').doc(`inactive-ranked-${run}`);
+  const inactive = {
+    lastActiveDate: '2020-01-01 00:00:00', elo: 0,
+    engagementStats: {completedGames: 1},
+    leagueStats: {wins: 0, losses: 0, nbGames: 0},
+    allTimeStats: {wins: 4, losses: 3, nbGames: 7},
+  };
+  await inactiveRef.set(inactive);
+  await playedRef.set({...inactive, leagueStats: {wins: 1, losses: 0, nbGames: 1}});
+  const runInactiveJob = async () => {
+    const response = await fetch(`${api}/updateInactivePlayersStats-0`, {method: 'POST'});
+    assert(response.ok, await response.text());
+  };
+  await Promise.all([runInactiveJob(), runInactiveJob()]);
+  const synthetic = (await inactiveRef.get()).data();
+  const weekly = synthetic.leagueStats;
+  assert(weekly.nbGames >= 1 && weekly.nbGames <= 50);
+  assert.equal(weekly.wins + weekly.losses, weekly.nbGames);
+  assert.equal(synthetic.allTimeStats.wins, 4 + weekly.wins);
+  assert.equal(synthetic.allTimeStats.losses, 3 + weekly.losses);
+  assert.equal(synthetic.allTimeStats.nbGames, 7 + weekly.nbGames);
+  assert.equal(synthetic.elo, Math.round((weekly.wins / weekly.nbGames - 0.45) * 100));
+  assert(weekly.seasonId);
+  await runInactiveJob();
+  assert.deepEqual((await inactiveRef.get()).data(), synthetic);
+  assert.deepEqual((await playedRef.get()).data(), {...inactive, leagueStats: {wins: 1, losses: 0, nbGames: 1}});
+  await Promise.all([inactiveRef.delete(), playedRef.delete()]);
+  // Exercise the maintenance CLI against real Firestore, including stale-plan protection.
+  {
+    const {execFileSync, spawnSync} = await import('node:child_process');
+    const {mkdtempSync, readFileSync, rmSync} = await import('node:fs');
+    const {tmpdir} = await import('node:os');
+    const {join} = await import('node:path');
+    const directory = mkdtempSync(join(tmpdir(), 'legion-stats-repair-'));
+    const script = new URL('./repair-synthetic-stats.cjs', import.meta.url).pathname;
+    const ref = db.collection('players').doc(`repair-${run}`);
+    const zeroRef = db.collection('players').doc(`repair-zero-${run}`);
+    const ambiguousRef = db.collection('players').doc(`repair-ambiguous-${run}`);
+    const repairable = {...inactive, elo: 400,
+      leagueStats: {wins: 8, losses: 3, nbGames: 11, winStreak: 0, lossesStreak: 0, avgGrade: 0, avgAudienceScore: 0},
+      allTimeStats: {wins: 1, losses: 2, nbGames: 3},
+    };
+    await ref.set(repairable);
+    await Promise.all([15, -10, -8].map(elo => ref.collection('actions').add({actionType: 'reward', details: {elo}})));
+    await zeroRef.set({...repairable, leagueStats: {...repairable.leagueStats, wins: 0, losses: 1, nbGames: 1}, allTimeStats: {wins: 0, losses: 0, nbGames: 0}});
+    await ambiguousRef.set(repairable);
+    const cli = (file: string, apply = false) => execFileSync(process.execPath, [script, file, ...(apply ? ['--apply'] : [])], {env: process.env});
+    try {
+      const stale = join(directory, 'stale.json');
+      cli(stale);
+      await ref.update({elo: 401});
+      assert.notEqual(spawnSync(process.execPath, [script, stale, '--apply'], {env: process.env}).status, 0);
+      assert.equal((await ref.get()).data().elo, 401);
+      const plan = join(directory, 'plan.json');
+      cli(plan);
+      assert(JSON.parse(readFileSync(plan, 'utf8')).unresolved.some(entry => entry.id === ambiguousRef.id));
+      cli(plan, true);
+      const repaired = (await ref.get()).data();
+      assert.equal(repaired.elo, 97 + Math.round((8 / 11 - 0.45) * 100));
+      assert.deepEqual(repaired.allTimeStats, {wins: 9, losses: 5, nbGames: 14});
+      assert.deepEqual(repaired.engagementStats, inactive.engagementStats);
+      assert.equal((await zeroRef.get()).data().elo, 55);
+      assert.deepEqual((await ambiguousRef.get()).data(), repairable);
+      cli(plan, true);
+      assert.deepEqual((await ref.get()).data(), repaired);
+    } finally {
+      rmSync(directory, {recursive: true, force: true});
+      await Promise.all([ref, zeroRef, ambiguousRef].map(ref => db.recursiveDelete(ref)));
+    }
+  }
   const invalid=socket(13000,{token:'invalid'}); const rejection=event(invalid,'connect_error'); invalid.connect(); await rejection;
   // First practice uses the provisioned match and requires the render acknowledgement.
   const practice=socket(13123,{token:one.token,gameId:'0',combatReady:1});
