@@ -110,6 +110,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             }
 
             return rearrangedStats.map((item, index) => (
+                characterData.class === Class.WARRIOR && item.key === 'spatk' ? null :
                 <div data-sp-plus="true" className="character-info-bar" key={index}>
                     <button type="button" className="info-class"
                         aria-label={`${t(statNames[getStatEnum(item.key)])}: ${t(statExplanations[getStatEnum(item.key)])}`}

@@ -50,3 +50,27 @@ Baseline Functions were built from `66b17203` before changes. The same fixture a
 The combined bootstrap removes a separate cold function, one duplicate player read and 400 ms of client debounce; it does not improve the already tiny loopback median. Zombie results across runs were 19–33 ms for casual and 15–18 ms for ranked. The match-persistence comparison includes different transports; the new path also persists action records atomically.
 
 In the clean integration run, practice snapshot delivery took 91 ms, two-player queue-to-match 24 ms, PvP snapshot delivery 29 ms and AI snapshot delivery 63 ms. These are single checks, not percentile claims. Emulator worker startup is roughly one second and is not representative of production container startup. Production measurements and index scan verification remain necessary after deployment.
+
+## Legacy synthetic ranking repair
+
+`tools/backend/repair-synthetic-stats.cjs` repairs the old inactive-player job's
+missing lifetime results and accumulated ELO drift in the named `legion` database.
+It considers only accounts inactive for 48 hours with fewer than two completed
+games. It matches real reward-log ELO deltas against lifetime wins/losses before
+rebuilding ratings, and adds only the surviving synthetic weekly results. Accounts
+with inconsistent counters or incomplete reward history are reported and skipped.
+It does not change weekly results, leagues, real match records, or unlock progress.
+
+Using Application Default Credentials for `legion-32c6d`, first create a private
+plan outside the repository, then inspect its entries and unresolved records:
+
+```sh
+node tools/backend/repair-synthetic-stats.cjs /secure/path/repair-plan.json
+node tools/backend/repair-synthetic-stats.cjs /secure/path/repair-plan.json --apply
+```
+
+The plan retains the previous stats and ELO for rollback. Apply requires the exact
+Firestore document revision from the plan; a concurrent update aborts that write.
+A per-player repair marker makes reruns safe after partial completion. Never
+commit a production plan. The backend emulator smoke suite exercises this CLI,
+including concurrent-change refusal and repeated application.

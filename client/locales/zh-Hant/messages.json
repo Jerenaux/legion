@@ -1166,5 +1166,6 @@
   "Only revives a fallen ally": "只能復活倒下的隊友",
   "Nothing to cure": "沒有可治療的狀態",
   "From {{value0}}": "來自 {{value0}}",
-  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "創作者的禮物也可能邀請你加入其社群。領取後由你決定是否加入。"
+  "A creator’s gift can also invite you to their community. After claiming, you choose whether to join.": "創作者的禮物也可能邀請你加入其社群。領取後由你決定是否加入。",
+  "SpAtk applies only to mages.": "SpAtk僅適用於法師。"
 }

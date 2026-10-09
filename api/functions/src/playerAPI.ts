@@ -1052,17 +1052,17 @@ export const updateInactivePlayersStats = onSchedule(
       .where("engagementStats.completedGames", "<", 2)
       .get();
 
-    const batch = db.batch();
     let updatedCount = 0;
+    const seasonId = currentSeasonId(now);
 
-    snapshot.forEach((doc) => {
+    await Promise.all(snapshot.docs.map(async (doc) => {
       // Generate total games using exponential distribution for more variation
       const lambda = 0.1; // Parameter for exponential distribution
       const randomGames = Math.round(-Math.log(1 - Math.random()) / lambda);
       const cappedGames = Math.min(Math.max(randomGames, 1), 50); // Cap between 1 and 50 games
 
       // Approximate beta distribution using normal distribution
-      const u1 = Math.random();
+      const u1 = Math.max(Number.EPSILON, Math.random());
       const u2 = Math.random();
       const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
 
@@ -1073,26 +1073,33 @@ export const updateInactivePlayersStats = onSchedule(
       const wins = Math.round(cappedGames * winRatio);
       const losses = cappedGames - wins;
 
-      // More dramatic ELO adjustments based on performance
-      const winRateDeviation = winRatio - 0.45; // Deviation from expected 0.45
-      const eloAdjustment = Math.round(winRateDeviation * 100); // Scale factor of 50
+      // Use the recorded results: a rounded zero-win record must never gain ELO.
+      const winRateDeviation = wins / cappedGames - 0.45; // Deviation from expected 0.45
+      const eloAdjustment = Math.round(winRateDeviation * 100);
 
-      const currentElo = doc.data()?.elo || STARTING_ELO;
-      const newElo = currentElo + eloAdjustment;
+      const updated = await db.runTransaction(async (transaction) => {
+        const current = (await transaction.get(doc.ref)).data();
+        // A player may have returned or completed a ranked match since the query.
+        if (!current || !(current.lastActiveDate < cutoffDateString) ||
+            !(current.engagementStats?.completedGames < 2) ||
+            current.leagueStats?.wins !== 0 || current.leagueStats?.losses !== 0) return false;
 
-      batch.update(doc.ref, {
-        'leagueStats.wins': wins,
-        'leagueStats.losses': losses,
-        'leagueStats.nbGames': cappedGames,
-        'leagueStats.seasonId': currentSeasonId(),
-        "elo": newElo,
+        transaction.update(doc.ref, {
+          'leagueStats.wins': wins,
+          'leagueStats.losses': losses,
+          'leagueStats.nbGames': cappedGames,
+          'leagueStats.seasonId': seasonId,
+          'allTimeStats.wins': admin.firestore.FieldValue.increment(wins),
+          'allTimeStats.losses': admin.firestore.FieldValue.increment(losses),
+          'allTimeStats.nbGames': admin.firestore.FieldValue.increment(cappedGames),
+          elo: (current.elo ?? STARTING_ELO) + eloAdjustment,
+        });
+        return true;
       });
-
-      updatedCount++;
-    });
+      if (updated) updatedCount++;
+    }));
 
     if (updatedCount > 0) {
-      await batch.commit();
       logger.info(`Updated ${updatedCount} inactive players' stats with synthetic games`);
     } else {
       logger.info("No inactive players found needing updates");
