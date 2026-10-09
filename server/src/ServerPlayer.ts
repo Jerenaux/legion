@@ -579,7 +579,7 @@ export class ServerPlayer {
     }
 
     setZombieSpells() {
-        const spells = getSpells(this.class, this.level, this.spell_slots, true);
+        const spells = getSpells(this.class, this.spell_slots, true);
         this.spells = spells.map(id => new Spell(getSpellById(id)));
         // console.log(`[ServerPlayer:setZombieSpells] Spells: ${this.spells.map(spell => spell.id).join(", ")}`);
     }

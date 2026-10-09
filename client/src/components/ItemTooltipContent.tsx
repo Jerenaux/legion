@@ -77,7 +77,5 @@ function ItemTooltipContent({item, showClasses}: {
     </div>}
     {showClasses && 'classes' in item && item.classes.length > 0 &&
       <p className="item-preview-classes">{item.classes.map(classEnumToString).join(' · ')}</p>}
-    {/* Requirements matter when choosing gear, not in combat, where the action is already equipped. */}
-    {showClasses && 'minLevel' in item && <p className="item-preview-classes item-preview-level">{t('Requires level {{level}}', {level: item.minLevel})}</p>}
   </div>;
 }

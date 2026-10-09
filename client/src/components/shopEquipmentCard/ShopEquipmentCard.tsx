@@ -85,10 +85,6 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
         <div className="shop-card-title" style={titleStyle}>
           <span className="shop-card-title-name">{t(data.name)}</span>
           <div className="equipment-card-info-container">
-            {/* <div className="equipment-card-info-box">
-              <span className="equipment-card-info-lv">Lvl</span>
-              <span>{data.minLevel}</span>
-            </div> */}
             <div className="equipment-card-info-box">
               <img src={itemCountIcon} alt={t("count icon")} />
               <span>{formatNumber(this.props.getItemAmount(data.id, InventoryType.EQUIPMENTS))}</span>
