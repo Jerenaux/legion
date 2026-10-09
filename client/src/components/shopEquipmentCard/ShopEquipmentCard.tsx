@@ -1,4 +1,5 @@
 import {t, formatNumber} from '../../i18n/core';
+import ShopPrice from '../shopContent/ShopPrice';
 
 import { h } from 'preact';
 // ShopEquipmentCard.tsx
@@ -18,7 +19,6 @@ import mageIcon from '@assets/shop/mage_icon.png';
 import purpleBoxBg from '@assets/shop/purple_box_bg.png';
 import whiteBoxBg from '@assets/shop/white_box_bg.png';
 import itemCountIcon from '@assets/shop/item_count_icon.png';
-import goldIcon from '@assets/gold_icon.png';
 
 interface modalData {
   id: string | number;
@@ -125,10 +125,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
             {getRarityValue(data.effort).val}
           </span>
         </div>
-        <div className="shop-card-price">
-          <img src={goldIcon} alt={t("gold")} />
-          {formatNumber(data.price)}
-        </div>
+        <ShopPrice price={data.price} className="shop-card-price" />
 
         <ReactTooltip
           id={`equipment-desc-tooltip-${data.id}`}

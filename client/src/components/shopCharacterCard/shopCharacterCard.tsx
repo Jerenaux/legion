@@ -1,4 +1,5 @@
 import {t, formatNumber, i18n} from '../../i18n/core';
+import ShopPrice from '../shopContent/ShopPrice';
 import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
@@ -9,7 +10,6 @@ import { classEnumToString, getSpeedClass, getSpritePath, getStatEnum } from '..
 import { modalData } from '../shopContent/ShopContent';
 import { APICharacterData } from '@legion/shared/interfaces';
 
-import goldIcon from '@assets/gold_icon.png';
 import { spells } from '@legion/shared/Spells';
 import { mapFrameToCoordinates } from '../utils';
 import { Target, RarityColor, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from '@legion/shared/enums';
@@ -180,10 +180,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
             </div>
           ))}
         </div>
-        <div className="shop-card-price">
-          <img src={goldIcon} alt={t("gold")} />
-          {formatNumber(data.price)}
-        </div>
+        <ShopPrice price={data.price} className="shop-card-price" />
       </div>
     );
   }

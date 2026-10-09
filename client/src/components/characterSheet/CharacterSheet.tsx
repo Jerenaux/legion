@@ -1,4 +1,5 @@
 import {t, formatNumber, i18n} from '../../i18n/core';
+import FitText from '../FitText';
 import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
@@ -344,7 +345,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     </div>
                     <div className="team-info-container">
                         <div className="team-info">
-                            <p className="team-character-class team-class-label" data-class={Class[characterData.class]}>{classEnumToString(characterData.class)}</p>
+                            <FitText as="p" className="team-character-class team-class-label" data-class={Class[characterData.class]}>{classEnumToString(characterData.class)}</FitText>
                             <p className="team-character-name" title={characterData.name}>{characterData.name}</p>
                             <div className="team-exp-slider-container">
                                 <div className="team-curr-exp-slider" style={sliderStyle}></div>
@@ -399,7 +400,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     updateCharacterData={this.props.updateCharacterData}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
-                <ItemTooltip id="equipped-item-details" />
+                <ItemTooltip id="equipped-item-details" character={this.context.getActiveCharacter?.()} />
                 <ReactTooltip id="character-sheet-details" className="item-details-tooltip" place="top" positionStrategy="fixed" delayShow={150}
                     closeEvents={{ mouseleave: true, blur: true, click: true }} globalCloseEvents={{ escape: true }}
                     render={({ activeAnchor }) => {

@@ -205,7 +205,7 @@ class Inventory extends Component<InventoryProps> {
               </div>
             )}
           </div>
-          <ItemTooltip id="inventory-item-details" />
+          <ItemTooltip id="inventory-item-details" character={this.context.getActiveCharacter?.()} />
         </div>
         {/* Purchase Inventory Slots Dialog */}
         {(() => {

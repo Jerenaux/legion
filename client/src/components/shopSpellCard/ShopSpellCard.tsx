@@ -1,4 +1,5 @@
 import {t, formatNumber} from '../../i18n/core';
+import ShopPrice from '../shopContent/ShopPrice';
 
 import { h } from 'preact';
 // ShopSpellCard.tsx
@@ -18,7 +19,6 @@ import purpleBoxBg from '@assets/shop/purple_box_bg.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
-import goldIcon from '@assets/gold_icon.png';
 
 interface modalData {
   id: string | number;
@@ -142,10 +142,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
             {getRarityValue(data.effort).val}
           </span>
         </div>
-        <div className="spell-card-price">
-          <img src={goldIcon} alt={t("gold")} />
-          {formatNumber(data.price)}
-        </div>
+        <ShopPrice price={data.price} className="spell-card-price" />
       </button>
     );
   }

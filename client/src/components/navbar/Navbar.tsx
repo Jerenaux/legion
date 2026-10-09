@@ -19,6 +19,8 @@ import { quitGame } from '../systemMenu/SystemMenu';
 import { isElectron } from '../../utils/electronUtils';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { LockedFeatures } from "@legion/shared/enums";
+import { Tooltip as ReactTooltip } from 'react-tooltip';
+import { tooltipStyle } from '../itemTooltip';
 
 import brandIcon from '@assets/icon.png';
 import playIconOriginal from '@assets/play_btn_idle.png';
@@ -151,7 +153,14 @@ class Navbar extends Component<Props, State> {
 
         return (
             <PlayerContext.Consumer>
-                {playerContext => (
+                {playerContext => {
+                    // Locked flags explain how many games remain, on hover or keyboard focus.
+                    const lockedFlagTooltip = (feature: LockedFeatures, label: string) => {
+                        if (playerContext.canAccessFeature(feature)) return {};
+                        const hint = t("gamesToUnlock", {count: playerContext.getGamesUntilFeature(feature)});
+                        return {'data-tooltip-id': 'navbar-unlock-hint', 'data-tooltip-content': hint, 'aria-label': `${label}: ${hint}`};
+                    };
+                    return (
                                 <div className="menu">
                                     <div className="flexContainer">
                                         <div className="logoContainer">
@@ -207,6 +216,7 @@ class Navbar extends Component<Props, State> {
                                         </Link>
                                         <Link
                                             href={playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) ? "/shop" : "#"}
+                                            {...lockedFlagTooltip(LockedFeatures.CONSUMABLES_BATCH_1, t("Shop"))}
                                             onClick={(e) => {
                                                 if (!playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1)) {
                                                     e.preventDefault();
@@ -233,6 +243,7 @@ class Navbar extends Component<Props, State> {
                                         </Link>
                                         <Link
                                             href={playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) ? "/rank" : "#"}
+                                            {...lockedFlagTooltip(LockedFeatures.RANKED_MODE, t("Rank"))}
                                             onClick={(e) => {
                                                 if (!playerContext.canAccessFeature(LockedFeatures.RANKED_MODE)) {
                                                     e.preventDefault();
@@ -295,8 +306,10 @@ class Navbar extends Component<Props, State> {
                                             </div>
                                         </div>
                                     )}
+                                    <ReactTooltip id="navbar-unlock-hint" place="bottom" positionStrategy="fixed" delayShow={100} style={tooltipStyle} />
                                 </div>
-                )}
+                    );
+                }}
             </PlayerContext.Consumer>
         );
     }

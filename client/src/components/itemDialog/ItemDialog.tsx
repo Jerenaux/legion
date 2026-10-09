@@ -1,7 +1,8 @@
 import {t, i18n, userError} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
+import { ItemTooltipContent } from '../ItemTooltipContent';
 // ItemDialog.tsx
 import './ItemDialog.style.css';
 import Modal from 'react-modal';
@@ -9,9 +10,9 @@ import { Component } from 'preact';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat, Target, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
+import { InventoryActionType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
 import { apiFetch } from '../../services/apiService';
-import { errorToast, successToast, mapFrameToCoordinates, classEnumToString, cropFrame, getSpeedClass } from '../utils';
+import { errorToast, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
 import { getMaxStatValue, getSPIncrement } from '@legion/shared/levelling';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
@@ -31,9 +32,6 @@ import spellsSpritesheet from '@assets/spells.png';
 
 import confirmIcon from '@assets/inventory/confirm_icon.png';
 import cancelIcon from '@assets/inventory/cancel_icon.png';
-import mpIcon from '@assets/stats_icons/mp_icon.png';
-import cdIcon from '@assets/inventory/cd_icon.png';
-import targetIcon from '@assets/inventory/target_icon.png';
 import { APICharacterData } from '@legion/shared/interfaces';
 
 
@@ -215,7 +213,6 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           className="dialog-accept"
           disabled={isDisabled}
           onClick={acceptAction}
-          style={isDisabled ? { backgroundColor: "grey", opacity: "0.5" } : {}}
         >
           <img src={confirmIcon} alt={t("confirm")} />
           {acceptLabel}
@@ -231,127 +228,48 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     );
   }
 
+  /** Same card as the hover tooltip, with the inventory actions underneath. */
+  renderItemCard(item: BaseItem | BaseSpell | BaseEquipment, type: ItemDialogType, isDisabled: boolean, blockedReason?: string, showActions = true) {
+    const activeCharacter = this.context.getActiveCharacter() as APICharacterData | undefined;
+    return (
+      <div className="item-dialog-card">
+        <ItemTooltipContent item={item} showClasses character={activeCharacter} />
+        {isDisabled && blockedReason && <p className="item-dialog-blocked" role="status">{blockedReason}</p>}
+        {showActions && this.renderDialogButtons(() => this.AcceptAction(type, this.props.index), isDisabled)}
+      </div>
+    );
+  }
+
   renderEquipmentDialog(dialogData: BaseEquipment) {
     if (!dialogData) return null;
-    const { index } = this.props;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
     if (!activeCharacter) return null;
     const isDisabled = this.props.actionType === InventoryActionType.EQUIP && !canEquipEquipment(activeCharacter, dialogData.id);
-
-    return (
-      <div className="equip-dialog-container">
-        <div className="equip-dialog-image" style={{
-          backgroundImage: `url(${this.state.croppedImages[ItemDialogType.EQUIPMENTS] || ''})`,
-          backgroundSize: 'cover',
-        }} />
-        <p className="equip-dialog-name">{t(dialogData.name)}</p>
-        <div className="equip-dialog-class-container">
-          {dialogData.classes?.map((item) => (
-            <div style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}} className="equip-dialog-class">
-              {classEnumToString(item)}
-            </div>
-          ))}
-        </div>
-        {dialogData.description && <p className="equip-dialog-desc">{t(dialogData.description)}</p>}
-        {this.renderDialogButtons(() => this.AcceptAction(ItemDialogType.EQUIPMENTS, index), isDisabled)}
-      </div>
-    );
+    const reason = !hasRequiredClass(activeCharacter, dialogData.classes)
+      ? t("{{value0}} can’t use this class’s gear.", {value0: activeCharacter.name}) : undefined;
+    return this.renderItemCard(dialogData, ItemDialogType.EQUIPMENTS, isDisabled, reason);
   }
 
   renderConsumableDialog(dialogData: BaseItem) {
-    const { index } = this.props;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
-
-    const actionAllowed =
-      this.props.actionType === InventoryActionType.EQUIP ?
-      canEquipConsumable(activeCharacter) :
-      roomInInventory(this.context.player);
-
-    return (
-      <div className="dialog-item-container">
-        <div className="dialog-item-heading-bg"></div>
-        <div className="dialog-item-heading">
-        <div className="dialog-item-heading-image" style={{
-            backgroundImage: `url(${this.state.croppedImages[ItemDialogType.CONSUMABLES] || ''})`,
-            backgroundSize: 'cover',
-          }} />
-          <div className="dialog-item-title">
-            <span>{t(dialogData.name)}</span>
-            <span className="dialog-item-title-info">{t("Self")}</span>
-          </div>
-        </div>
-        <p className="dialog-item-desc">{t(dialogData.description)}</p>
-        <div className="dialog-consumable-info-container">
-          <div className="dialog-consumable-info">
-            <img src={cdIcon} alt={t("cd")} />
-            <span>{getSpeedClass(dialogData.speedClass)}</span>
-          </div>
-          <div className="dialog-consumable-info">
-            <img src={targetIcon} alt={t("target")} />
-            <span>{t(Target[dialogData.target])}</span>
-          </div>
-        </div>
-        <div className="dialog-item-info-container">
-          {dialogData.effects.map(effect => (
-            <div className="dialog-item-info">
-              <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[Stat[effect.stat]] }}><span>{t(Stat[effect.stat])}</span></div>
-              <span style={{ color: effect.value > 0 || effect.value === -1 ? '#9ed94c' : '#c95a74' }}>
-                {effect.value > 0 ? `+${effect.value}` : (effect.value === -1 ? '∞' : effect.value)}
-              </span>
-            </div>
-          ))}
-        </div>
-        {this.renderDialogButtons(
-            () => this.AcceptAction(ItemDialogType.CONSUMABLES, index),
-            !actionAllowed
-          )}
-      </div>
-    );
+    const equipping = this.props.actionType === InventoryActionType.EQUIP;
+    const actionAllowed = equipping ? canEquipConsumable(activeCharacter) : roomInInventory(this.context.player);
+    const reason = equipping ? t("{{value0}}’s item slots are full.", {value0: activeCharacter?.name}) : t("Your inventory is full.");
+    return this.renderItemCard(dialogData, ItemDialogType.CONSUMABLES, !actionAllowed, reason);
   }
 
   renderSpellDialog(dialogData: BaseSpell) {
-    const { index, isEquipped } = this.props;
+    const {isEquipped} = this.props;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
     const isDisabled = !canLearnSpell(activeCharacter, dialogData.id);
-
-    return (
-      <div className="dialog-spell-container">
-        <div className="spell-wrapper">
-        <div className="dialog-spell-container-image" style={{
-            backgroundImage: `url(${this.state.croppedImages[ItemDialogType.SPELLS] || ''})`,
-            backgroundSize: 'cover',
-          }} />
-        </div>
-        <p className="dialog-spell-name">{t(dialogData.name)}</p>
-        <p className="dialog-spell-desc">{t(dialogData.description)}</p>
-        <div className="dialog-spell-info-container">
-          <div className="dialog-spell-info">
-            <img src={mpIcon} alt={t("mp")} />
-            <span>{dialogData.cost}</span>
-          </div>
-          <div className="dialog-spell-info">
-            <img src={cdIcon} alt={t("cd")} />
-            <span>{getSpeedClass(dialogData.speedClass)}</span>
-          </div>
-          <div className="dialog-spell-info">
-            <img src={targetIcon} alt={t("target")} />
-            <span>{t(Target[dialogData.target])}</span>
-          </div>
-        </div>
-        <p className="spell-level-requirement" style={!hasMinLevel(activeCharacter, dialogData.minLevel) ? {backgroundColor: "darkred"} : {}}>
-          {t('Requires level {{level}}', {level: dialogData.minLevel})}
-        </p>
-        <div className="equip-dialog-class-container">
-          {dialogData.classes?.map((item) => (
-            <div style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}} className="equip-dialog-class">
-              {classEnumToString(item)}
-            </div>
-          ))}
-        </div>
-        {!isEquipped && this.renderDialogButtons(() => this.AcceptAction(ItemDialogType.SPELLS, index), isDisabled)}
-        {this.renderSpellConfirmationModal(dialogData, activeCharacter.name)}
-      </div>
-    );
+    const reason = !hasRequiredClass(activeCharacter, dialogData.classes)
+      ? t("{{value0}} can’t learn this class’s spells.", {value0: activeCharacter.name})
+      : !hasMinLevel(activeCharacter, dialogData.minLevel) ? t("{{value0}} needs level {{value1}}.", {value0: activeCharacter.name, value1: dialogData.minLevel})
+      : undefined;
+    return <>
+      {this.renderItemCard(dialogData, ItemDialogType.SPELLS, isDisabled, reason, !isEquipped)}
+      {this.renderSpellConfirmationModal(dialogData, activeCharacter.name)}
+    </>;
   }
 
   renderSpellConfirmationModal(dialogData: BaseSpell, characterName: string) {
