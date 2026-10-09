@@ -472,7 +472,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     };
 
     return (
-      <Modal isOpen={dialogOpen} contentLabel={isSP ? t("Spend stat points") : t("Item details")} style={customStyles} onRequestClose={this.handleClose}>
+      <Modal isOpen={dialogOpen} contentLabel={isSP ? t("Spend stat points") : t("Item details")} style={customStyles} onRequestClose={this.handleClose}
+        onAfterOpen={({contentEl}) => {
+          if (isSP) return;
+          const {width, height} = contentEl.getBoundingClientRect();
+          contentEl.style.top = `${Math.max(24, Math.min(position.top, window.innerHeight - height - 16))}px`;
+          contentEl.style.left = `${Math.max(16, Math.min(position.left, window.innerWidth - width - 16))}px`;
+        }}>
         {this.renderDialogContent()}
         {this.renderSellConfirmationModal()}
       </Modal>
