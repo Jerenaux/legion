@@ -14,7 +14,6 @@ export class BaseEquipment {
     price: number = 0; 
     effort: number = 0;
     rarity: Rarity = Rarity.COMMON;
-    minLevel: number = 0;
     classes: Class[] = [];
     beltSize?: number;
 

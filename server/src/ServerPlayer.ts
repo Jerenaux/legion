@@ -341,7 +341,9 @@ export class ServerPlayer {
         console.log(`[ServerPlayer:setUpCharacter] Stats: ${JSON.stringify(this.stats)}`);
         this.setInventory(data.carrying_capacity, data.inventory);
         this.setEquipment(data.equipment);
-        this.setSpells(data.skill_slots, data.skills);
+        this.setSpells(data.skill_slots, isAI
+            ? data.skills.filter((id: number) => getSpellById(id)?.minLevel <= data.level)
+            : data.skills);
         this.level = data.level;
         this.xp = data.xp;
         this.class = data.class;

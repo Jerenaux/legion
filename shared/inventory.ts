@@ -66,10 +66,7 @@ export function canEquipEquipment(characterData: DBCharacterData | APICharacterD
   }
   // if (dev) console.log(`[canEquipEquipment] equipmentId: ${equipmentId}, equipment: ${equipment.name}`);
 
-  return (
-    hasMinLevel(characterData, equipment.minLevel) &&
-    hasRequiredClass(characterData, equipment.classes)
-  );
+  return hasRequiredClass(characterData, equipment.classes);
 }
 
 export function canIncreaseStat(characterData: DBCharacterData | APICharacterData, index: number, amount: number): boolean {

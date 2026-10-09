@@ -46,3 +46,25 @@ test('first practice opens warrior, offensive mage, healer with reachable enemie
     game.mode = PlayMode.CASUAL_VS_AI;
     expect(game.getOpeningTurnOrder()).toBeUndefined();
 });
+
+
+test('AI loadouts respect spell levels when generated, copied and regenerated', async () => {
+    const game = new PracticeGame('spell-level-test', PlayMode.PRACTICE, League.BRONZE, {} as Server);
+    game.generateHoles();
+    await game.populateTeams();
+    const team = game.teams.get(2)!;
+    for (const character of team.getMembers()) {
+        for (const spell of character.spells) expect(spell.minLevel).toBeLessThanOrEqual(character.level);
+    }
+    const data = new NewCharacter(Class.BLACK_MAGE, 1).getCharacterData();
+    data.skills = [0, 2];
+    const copied = game.addAICharacter(team, data);
+    expect(copied.spells.map(spell => spell.id)).toEqual([0]);
+    copied.spell_slots = 20;
+    team.setZombieSpells();
+    expect(copied.spells.some(spell => spell.id === 2)).toBe(false);
+    for (const spell of copied.spells) expect(spell.minLevel).toBeLessThanOrEqual(copied.level);
+    copied.zombieLevelUp(20);
+    team.setZombieSpells();
+    expect(copied.spells.some(spell => spell.id === 2)).toBe(true);
+});

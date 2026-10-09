@@ -11,7 +11,6 @@ equipments[0] = new BaseEquipment({
     effects: [{stat: Stat.ATK, value: 100}, {stat: Stat.DEF, value: 15}],
     slot: EquipmentSlot.WEAPON,
     effort: 45,
-    minLevel: 15,
     classes: [Class.WARRIOR],
 });
 
@@ -24,7 +23,6 @@ equipments[1] = new BaseEquipment({
     effects: [{stat: Stat.SPATK, value: 5}, {stat: Stat.MP, value: 10}],
     slot: EquipmentSlot.WEAPON,
     effort: 4,
-    minLevel: 1,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -37,7 +35,6 @@ equipments[2] = new BaseEquipment({
     effects: [{stat: Stat.MP, value: 150}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 50,
-    minLevel: 1,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -50,7 +47,6 @@ equipments[3] = new BaseEquipment({
     slot: EquipmentSlot.BELT,
     effort: 30,
     beltSize: 1,
-    minLevel: 10,
 });
 
 equipments[4] = new BaseEquipment({
@@ -62,7 +58,6 @@ equipments[4] = new BaseEquipment({
     slot: EquipmentSlot.BELT,
     effort: 70,
     beltSize: 2,
-    minLevel: 20,
 });
 
 equipments[5] = new BaseEquipment({
@@ -73,7 +68,6 @@ equipments[5] = new BaseEquipment({
     effects: [{stat: Stat.ATK, value: 10}],
     slot: EquipmentSlot.WEAPON,
     effort: 3,
-    minLevel: 1,
     classes: [Class.WARRIOR],
 });
 
@@ -85,7 +79,6 @@ equipments[6] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 10}],
     slot: EquipmentSlot.HELMET,
     effort: 3,
-    minLevel: 1,
 });
 
 equipments[7] = new BaseEquipment({
@@ -96,7 +89,6 @@ equipments[7] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 10}],
     slot: EquipmentSlot.ARMOR,
     effort: 4,
-    minLevel: 1,
 });
 
 equipments[8] = new BaseEquipment({
@@ -107,7 +99,6 @@ equipments[8] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 20}, {stat: Stat.SPDEF, value: 10}],
     slot: EquipmentSlot.GLOVES,
     effort: 10,
-    minLevel: 5,
 });
 
 equipments[9] = new BaseEquipment({
@@ -118,7 +109,6 @@ equipments[9] = new BaseEquipment({
     effects: [{stat: Stat.SPEED, value: 10}, {stat: Stat.MP, value: 15}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
     slot: EquipmentSlot.BOOTS,
     effort: 9,
-    minLevel: 1,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -130,7 +120,6 @@ equipments[10] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 40}],
     slot: EquipmentSlot.NECKLACE,
     effort: 12,
-    minLevel: 1,
 });
 
 equipments[11] = new BaseEquipment({
@@ -141,7 +130,6 @@ equipments[11] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 5}],
     slot: EquipmentSlot.HELMET,
     effort: 11,
-    minLevel: 5,
     classes: [Class.WARRIOR],
 });
 
@@ -153,7 +141,6 @@ equipments[12] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 10}],
     slot: EquipmentSlot.ARMOR,
     effort: 12,
-    minLevel: 5,
     classes: [Class.WARRIOR],
 });
 
@@ -165,7 +152,6 @@ equipments[13] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.ATK, value: 10}],
     slot: EquipmentSlot.GLOVES,
     effort: 19,
-    minLevel: 10,
     classes: [Class.WARRIOR],
 });
 
@@ -177,7 +163,6 @@ equipments[14] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 20}, {stat: Stat.SPEED, value: 15}],
     slot: EquipmentSlot.BOOTS,
     effort: 15,
-    minLevel: 10,
     classes: [Class.WARRIOR],
 });
 
@@ -189,7 +174,6 @@ equipments[15] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 10}],
     slot: EquipmentSlot.GLOVES,
     effort: 3,
-    minLevel: 1,
 });
 
 equipments[16] = new BaseEquipment({
@@ -200,7 +184,6 @@ equipments[16] = new BaseEquipment({
     effects: [{stat: Stat.MP, value: 20}],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
-    minLevel: 1,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -212,7 +195,6 @@ equipments[17] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 20}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 4,
-    minLevel: 1,
 });
 
 equipments[18] = new BaseEquipment({
@@ -223,7 +205,6 @@ equipments[18] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.SPDEF, value: 20}],
     slot: EquipmentSlot.HELMET,
     effort: 21,
-    minLevel: 10,
     classes: [Class.WARRIOR],
 });
 
@@ -235,7 +216,6 @@ equipments[19] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.SPDEF, value: 25}],
     slot: EquipmentSlot.ARMOR,
     effort: 23,
-    minLevel: 10,
     classes: [Class.WARRIOR],
 });
 
@@ -247,7 +227,6 @@ equipments[20] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 10}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPEED, value: 5}],
     slot: EquipmentSlot.BOOTS,
     effort: 6,
-    minLevel: 1,
 });
 
 equipments[21] = new BaseEquipment({
@@ -258,7 +237,6 @@ equipments[21] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 10}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 6,
-    minLevel: 5,
 });
 
 equipments[22] = new BaseEquipment({
@@ -269,7 +247,6 @@ equipments[22] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 20}],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
-    minLevel: 1,
 });
 
 equipments[23] = new BaseEquipment({
@@ -280,7 +257,6 @@ equipments[23] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 15}, {stat: Stat.MP, value: 30}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 40}, {stat: Stat.SPDEF, value: 30}],
     slot: EquipmentSlot.WEAPON,
     effort: 35,
-    minLevel: 10,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -292,7 +268,6 @@ equipments[24] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 15}, {stat: Stat.MP, value: 50}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPATK, value: 25}, {stat: Stat.SPDEF, value: 30}],
     slot: EquipmentSlot.HELMET,
     effort: 40,
-    minLevel: 20,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
 });
 
@@ -304,7 +279,6 @@ equipments[25] = new BaseEquipment({
     effects: [{stat: Stat.MP, value: 15}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
     slot: EquipmentSlot.HELMET,
     effort: 9,
-    minLevel: 1,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
 });
 
@@ -316,7 +290,6 @@ equipments[26] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 10}, {stat: Stat.SPATK, value: 5}, {stat: Stat.MP, value: 10}],
     slot: EquipmentSlot.ARMOR,
     effort: 9,
-    minLevel: 1,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
 });
 
@@ -328,7 +301,6 @@ equipments[27] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.ATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
     slot: EquipmentSlot.GLOVES,
     effort: 8,
-    minLevel: 1,
 });
 
 equipments[28] = new BaseEquipment({
@@ -339,7 +311,6 @@ equipments[28] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPDEF, value: 5}, {stat: Stat.SPEED, value: 10}],
     slot: EquipmentSlot.BOOTS,
     effort: 10,
-    minLevel: 5,
     classes: [Class.WARRIOR],
 });
 
@@ -351,7 +322,6 @@ equipments[29] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 10}, {stat: Stat.MP, value: 15}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 5}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 12,
-    minLevel: 8,
 });
 
 equipments[30] = new BaseEquipment({
@@ -362,7 +332,6 @@ equipments[30] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 5}, {stat: Stat.MP, value: 5}],
     slot: EquipmentSlot.NECKLACE,
     effort: 3,
-    minLevel: 1,
 });
 
 equipments[31] = new BaseEquipment({
@@ -376,7 +345,6 @@ equipments[31] = new BaseEquipment({
     ],
     slot: EquipmentSlot.WEAPON,
     effort: 6,
-    minLevel: 3,
     classes: [Class.WARRIOR],
 });
 
@@ -397,7 +365,6 @@ equipments[32] = new BaseEquipment({
     ],
     slot: EquipmentSlot.WEAPON,
     effort: 25,
-    minLevel: 5,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -417,7 +384,6 @@ equipments[33] = new BaseEquipment({
     ],
     slot: EquipmentSlot.WEAPON,
     effort: 20,
-    minLevel: 5,
     classes: [Class.WARRIOR],
 });
 

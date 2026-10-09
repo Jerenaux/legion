@@ -658,6 +658,43 @@ if (!process.versions.electron) {
         await waitFor('location.pathname === "/play" && Boolean(document.querySelector("[data-playmode=practice]"))');
         console.log('Escape, direct packaged /guide load, and return to Play pass');
 
+        // Real inventory dialogs share the same eligibility rules as the HTTP endpoint.
+        for (const language of ['en', 'de', 'ja']) {
+          await js(`localStorage.setItem('legion.language', '${language}')`);
+          for (const [width, height] of [[1280, 720], [800, 600]]) {
+            win.setContentSize(width, height);
+            await win.loadURL(`${PACKAGED_APP_URL}team?item-check`);
+            await waitFor(`Boolean(document.querySelector('[data-item-icon="equipment-21"] [role="button"]'))`);
+            await js(`document.documentElement.style.fontSize = '130%'; document.querySelector('[data-item-icon="equipment-21"]').scrollIntoView({block: 'center'})`);
+            await ready();
+            await js(`document.querySelector('[data-item-icon="equipment-21"] [role="button"]').click()`);
+            await waitFor('Boolean(document.querySelector(".equip-dialog-container .dialog-accept"))');
+            assert.equal(await js('document.querySelector(".equip-dialog-container .dialog-accept").disabled'), false);
+            await js('document.querySelector(".equip-dialog-container .dialog-decline").click()');
+            await js(`document.querySelector('[data-item-icon="spells-2"]').scrollIntoView({block: 'center'})`);
+            await ready();
+            await js(`document.querySelector('[data-item-icon="spells-2"] [role="button"]').click()`);
+            await waitFor('Boolean(document.querySelector(".dialog-spell-container .dialog-accept"))');
+            assert.equal(await js('document.querySelector(".dialog-spell-container .dialog-accept").disabled'), true);
+            assert(await js('document.querySelector(".spell-level-requirement").textContent.includes("20")'));
+            await ready();
+            assert(await js('(() => { const r = document.querySelector(".ReactModal__Content").getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth; })()'), 'Learning dialog must fit the viewport');
+            fs.writeFileSync(path.join(dist, `spell-requirement-${language}-${width}.png`), (await win.webContents.capturePage()).toPNG());
+            await win.loadURL(`${PACKAGED_APP_URL}shop/spells?item-check`);
+            await waitFor('document.querySelectorAll(".spell-card-requirement").length > 0');
+            await js('document.documentElement.style.fontSize = "130%"');
+            await ready();
+            fs.writeFileSync(path.join(dist, `spell-shop-${language}-${width}.png`), (await win.webContents.capturePage()).toPNG());
+          }
+        }
+        await js("localStorage.setItem('legion.language', 'en')");
+        await win.loadURL(`${PACKAGED_APP_URL}team?item-check&level=20`);
+        await waitFor(`Boolean(document.querySelector('[data-item-icon="spells-2"] [role="button"]'))`);
+        await js(`document.querySelector('[data-item-icon="spells-2"] [role="button"]').click()`);
+        await waitFor('Boolean(document.querySelector(".dialog-spell-container .dialog-accept"))');
+        assert.equal(await js('document.querySelector(".dialog-spell-container .dialog-accept").disabled'), false);
+        console.log('Equipment ignores level; spell learning honors level in the packaged inventory UI');
+
         win.setContentSize(1280, 720);
         await win.loadURL(`${PACKAGED_APP_URL}rank`);
         await waitFor('Boolean(document.querySelector(".rank-load-error"))');

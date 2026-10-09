@@ -183,24 +183,6 @@
     text-align: center;
 }
 
-.equip-dialog-container .equip-dialog-lvl {
-    font-size: 0.625rem;
-    padding: 4px;
-    border-radius: 4px;
-    color: white;
-}
-
-.dialog-spell-container .equip-dialog-lvl {
-    font-size: 0.625rem;
-    padding: 4px;
-    border-radius: 4px;
-    color: white;
-}
-
-.equip-dialog-container .equip-dialog-lvl span {
-    color: #71deff;
-}
-
 .equip-dialog-container .equip-dialog-class-container {
     display: flex;
     flex-flow: wrap;
@@ -555,4 +537,12 @@
 .dialog-SP-modal .dialog-spell-modal-text {
     font-size: 1.125rem;
     margin-bottom: 20px;
+}
+
+.spell-level-requirement {
+    margin: 0;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-align: center;
 }

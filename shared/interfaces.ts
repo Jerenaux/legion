@@ -95,7 +95,6 @@ export interface EquipmentData {
     effects: Effect[];
     statusEffects?: WeaponStatusEffect[];
     slot: EquipmentSlot,
-    minLevel?: number;
     classes?: Class[];
     beltSize?: number;
     effort: number;

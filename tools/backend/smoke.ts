@@ -10,7 +10,7 @@ process.env.FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:19099';
 const {initializeApp} = requireAPI('firebase-admin/app');
 const {getFirestore} = requireAPI('firebase-admin/firestore');
 const {io} = requireClient('socket.io-client');
-const {GameStatus, PlayMode} = await import('../../shared/enums');
+const {GameStatus, PlayMode, Class, InventoryType, InventoryActionType} = await import('../../shared/enums');
 const {FIRESTORE_DATABASE_ID} = await import('../../shared/config');
 initializeApp({projectId: 'legion-32c6d'});
 const db = getFirestore(FIRESTORE_DATABASE_ID);
@@ -69,6 +69,33 @@ try {
   const restored=await login(`reset-${run}`);
   assert((await db.collection('players').doc(restored.uid).get()).exists, 'Reset account was not recreated');
   assert.equal((await http('bootstrapPlayer',undefined,restored.token,true)).characters.length,3);
+  // Equipment ignores character level; spell learning still enforces level, class and capacity.
+  const gearAccount = await login(`gear-${run}`);
+  const gearPlayerRef = db.collection('players').doc(gearAccount.uid);
+  const gearPlayer = (await gearPlayerRef.get()).data();
+  const gearCharacters = await Promise.all(gearPlayer.characters.map(ref => ref.get()));
+  const warrior = gearCharacters.find(doc => doc.data().class === Class.WARRIOR);
+  const mage = gearCharacters.find(doc => doc.data().class === Class.BLACK_MAGE);
+  assert.equal(warrior.data().level, 1);
+  assert.equal(mage.data().level, 1);
+  await gearPlayerRef.update({'inventory.equipment': [0, 21], 'inventory.spells': [2, 5]});
+  const equip = (characterId: string, inventoryType: string, index: number) =>
+    http('inventoryTransaction', {characterId, inventoryType, index, action: InventoryActionType.EQUIP}, gearAccount.token);
+  assert.equal((await equip(mage.id, InventoryType.EQUIPMENTS, 0)).status, 1);
+  assert.equal((await equip(mage.id, InventoryType.EQUIPMENTS, 1)).status, 0);
+  assert.equal((await mage.ref.get()).data().equipment.left_ring, 21);
+  assert.equal((await equip(warrior.id, InventoryType.EQUIPMENTS, 0)).status, 0);
+  assert.equal((await warrior.ref.get()).data().equipment.weapon, 0);
+  await warrior.ref.update({level: 20});
+  assert.equal((await equip(warrior.id, InventoryType.SPELLS, 0)).status, 1);
+  await mage.ref.update({skills: [], skill_slots: 1});
+  assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
+  assert.deepEqual((await mage.ref.get()).data().skills, []);
+  await mage.ref.update({level: 20});
+  assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 0);
+  assert.deepEqual((await mage.ref.get()).data().skills, [2]);
+  assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
+  assert.deepEqual((await gearPlayerRef.get()).data().inventory.spells, [5]);
   const invalid=socket(13000,{token:'invalid'}); const rejection=event(invalid,'connect_error'); invalid.connect(); await rejection;
   // First practice uses the provisioned match and requires the render acknowledgement.
   const practice=socket(13123,{token:one.token,gameId:'0',combatReady:1});

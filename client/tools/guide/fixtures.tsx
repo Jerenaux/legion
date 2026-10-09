@@ -240,7 +240,8 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   const completedGames = Math.max(0, Number(preview.get('games') ?? 12));
   const rosterSize = Math.max(3, Math.min(MAX_CHARACTERS, Number(preview.get('roster') ?? 3)));
   const roster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
-    : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]});
+    : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]}).map(character => preview.has('item-check')
+      ? {...character, level: Number(preview.get('level') ?? 1)} : character);
   const [activeId, setActiveId] = useState(characters[2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
@@ -252,7 +253,7 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
       isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
-      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: [6], equipment: []}},
+      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
     getCompletedGames: () => completedGames, checkEngagementFlag: () => true,
     getGamesUntilFeature: (feature: LockedFeatures) => Math.max(0, LOCKED_FEATURES[feature] - completedGames),
