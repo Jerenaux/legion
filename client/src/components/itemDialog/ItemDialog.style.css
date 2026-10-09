@@ -546,3 +546,82 @@
     font-size: 0.75rem;
     text-align: center;
 }
+
+/* Inventory actions on the same card as the hover tooltip (ItemTooltipContent). */
+.item-dialog-card {
+    width: 280px;
+    max-width: calc(100vw - 32px);
+    border: 1px solid #3f6f7d;
+    border-radius: 6px;
+    background: #1c1f25;
+    color: #e8f4f6;
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    box-shadow: 0 0 0 3px oklch(11% .025 250 / .6), 0 14px 32px oklch(5% .02 255 / .6);
+    animation: item-dialog-in 160ms ease-out;
+}
+
+.item-dialog-blocked {
+    margin: 0 12px;
+    padding: 6px 8px;
+    border-left: 2px solid var(--stat-down);
+    background: color-mix(in oklch, var(--stat-down) 10%, transparent);
+    color: #f4d4dc;
+    font-size: 0.75rem;
+}
+
+.item-dialog-card .dialog-button-container {
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid #3c616c;
+    flex-wrap: nowrap;
+}
+
+.item-dialog-card .dialog-button-container button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 32px;
+    padding: 6px 8px;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    background: oklch(22% .03 245);
+    color: #e8f4f6;
+    font: inherit;
+    font-size: 0.8125rem;
+}
+
+.item-dialog-card .dialog-button-container button img { display: none; }
+
+.item-dialog-card .dialog-button-container .dialog-accept {
+    flex-grow: 1.4;
+    border-color: oklch(86% .14 90);
+    background: linear-gradient(oklch(86% .15 90), oklch(73% .15 75));
+    color: oklch(20% .035 60);
+    text-transform: uppercase;
+    box-shadow: inset 0 1px oklch(97% .04 95 / .6), 0 3px 0 oklch(40% .09 65);
+}
+
+.item-dialog-card .dialog-button-container .dialog-accept:disabled {
+    filter: grayscale(1) brightness(.6);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.item-dialog-card .dialog-button-container .dialog-sell:hover { border-color: oklch(78% .13 80); }
+.item-dialog-card .dialog-button-container .dialog-decline { background: transparent; }
+.item-dialog-card .dialog-button-container button:hover:not(:disabled) { filter: brightness(1.12); }
+.item-dialog-card .dialog-button-container button:focus-visible { outline: 2px solid #71deff; outline-offset: 2px; }
+
+@keyframes item-dialog-in { from { opacity: 0; transform: translateY(4px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .item-dialog-card { animation: none; } }
+.dialog-button-container .dialog-accept:disabled { opacity: .5; filter: grayscale(1); cursor: not-allowed; }
+/* The legacy Sell style uses !important; match the card's secondary buttons instead. */
+.item-dialog-card .dialog-button-container .dialog-sell {
+    background: oklch(22% .03 245) !important;
+    border: 1px solid oklch(62% .09 70) !important;
+    color: oklch(88% .1 85);
+    font-size: 0.8125rem !important;
+}
+.item-dialog-card .dialog-button-container .dialog-sell:hover { background: oklch(27% .04 245) !important; }

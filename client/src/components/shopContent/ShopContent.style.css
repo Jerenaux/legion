@@ -343,3 +343,68 @@
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
 .shop-card-container, .spell-card-container { min-width: 0; max-width: 100%; box-sizing: border-box; }
+
+/* Gold sits next to the prices it is compared with, not only in the navbar corner. */
+.shop-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14px 20px;
+}
+
+.shop-purse {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 18px 6px 10px;
+    border: 2px solid oklch(78% .13 80);
+    border-radius: 6px;
+    background: radial-gradient(ellipse 80% 120% at 20% 50%, oklch(70% .13 80 / .22), transparent 70%), linear-gradient(oklch(24% .035 245), oklch(16% .03 250));
+    box-shadow: inset 0 1px 0 oklch(100% 0 0 / .08), 0 0 0 3px oklch(11% .025 250 / .6), 0 6px 18px oklch(5% .02 255 / .5);
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+}
+
+.shop-purse img {
+    width: 34px;
+    height: auto;
+    filter: drop-shadow(0 2px 2px oklch(5% .02 255 / .6));
+}
+
+.shop-purse-label {
+    color: var(--text-muted);
+    font-size: .875rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.shop-purse-amount {
+    font-weight: normal;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: var(--gold);
+    text-shadow: 0 2px 0 oklch(12% .02 250);
+    animation: shop-purse-change 450ms ease-out;
+}
+
+/* Prices the player cannot afford yet. */
+.shop-card-price.is-unaffordable,
+.spell-card-price.is-unaffordable {
+    color: oklch(72% .17 25);
+}
+
+.shop-card-price.is-unaffordable img,
+.spell-card-price.is-unaffordable img {
+    filter: grayscale(.6) brightness(.85);
+}
+
+@keyframes shop-purse-change {
+    0% { transform: scale(1.25); color: oklch(95% .1 95); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shop-purse-amount { animation: none; }
+}
+
+.shop-toolbar .shop-item-filter-container { align-self: center; margin-right: 0; }

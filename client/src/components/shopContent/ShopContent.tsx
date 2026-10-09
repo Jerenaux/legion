@@ -1,4 +1,5 @@
 import {t, userError} from '../../i18n/core';
+import { ShopPurse } from './ShopPrice';
 import { h } from 'preact';
 import './ShopContent.style.css';
 
@@ -460,10 +461,13 @@ class ShopContent extends Component<ShopContentProps> {
                         );
                     })}
                 </div>
-                <ShopItemFilter
-                    curr_tab={this.state.curr_tab}
-                    shopItems={defaultShopItems}
-                    handleInventory={this.handleInventory} />
+                <div className="shop-toolbar">
+                    <ShopPurse />
+                    <ShopItemFilter
+                        curr_tab={this.state.curr_tab}
+                        shopItems={defaultShopItems}
+                        handleInventory={this.handleInventory} />
+                </div>
                 <ReactTooltip id="shop-unlock-details" place="bottom" positionStrategy="fixed" delayShow={150} style={tooltipStyle} />
                 <div className={`shop-items-container ${this.state.curr_tab === ShopTab.EQUIPMENTS ? 'equipment-view' : ''}`}>
                     {renderItems()}

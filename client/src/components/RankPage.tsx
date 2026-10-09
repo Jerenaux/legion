@@ -10,6 +10,7 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import Ghost from './ghost/Ghost';
 import { APILeaderboardResponse } from "@legion/shared/interfaces";
 import CommunityRanking from './community/CommunityRanking';
+import RankIntro, { shouldShowRankIntro } from './rankIntro/RankIntro';
 import Sigil from './sigil/Sigil';
 
 
@@ -52,6 +53,7 @@ interface State {
   tour: string | null;
   isLoading: boolean;
   loadFailed: boolean;
+  showIntro: boolean;
 }
 
 class RankPage extends Component<{}, State> {
@@ -68,6 +70,7 @@ class RankPage extends Component<{}, State> {
     tour: null,
     isLoading: true,
     loadFailed: false,
+    showIntro: Boolean(this.context.player?.uid) && shouldShowRankIntro(this.context.player.uid),
   };
 
   camelCaseToNormal = (text) => {
@@ -171,6 +174,8 @@ class RankPage extends Component<{}, State> {
             <button type="button" data-game-control style={getRankTabStyle(RankPage.COMMUNITY_TAB)} title={t('Communities')} aria-pressed={this.state.curr_tab === RankPage.COMMUNITY_TAB} onClick={() => this.handleCurrTab(RankPage.COMMUNITY_TAB)}>
               <Sigil sigil={RankPage.COMMUNITY_TAB_SIGIL} size={36} label={t('Communities')} />
             </button>
+            <button type="button" data-game-control className="rank-help-tab" title={t('How leagues work')} aria-label={t('How leagues work')}
+              onClick={() => this.setState({ showIntro: true })}>?</button>
           </div>
 
           {this.state.curr_tab === RankPage.COMMUNITY_TAB ? <CommunityRanking /> : this.state.loadFailed ? (
@@ -189,6 +194,8 @@ class RankPage extends Component<{}, State> {
             <Ghost height={54} count={8} className="rank-ghost-rows" />
           }
         </div>
+        {this.state.showIntro && this.context.player?.uid &&
+          <RankIntro uid={this.context.player.uid} onClose={() => this.setState({ showIntro: false })} />}
       </div>
     );
   }

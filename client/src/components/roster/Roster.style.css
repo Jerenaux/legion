@@ -43,8 +43,10 @@
     font-size: 1.125rem;
     line-height: 1.25;
     text-transform: uppercase;
-    overflow-wrap: anywhere;
-    hyphens: auto;
+    /* Wrap between words only; FitText shrinks the font when one word is too long. */
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: manual;
 }
 
 .team-class-label::before {
@@ -293,9 +295,22 @@
 }
 
 .roster-level {
-    margin-left: 38px;
-    color: var(--team-muted);
-    font-size: 0.75rem;
+    align-self: flex-start;
+    margin: 3px 0 0 38px;
+    padding: 1px 8px;
+    border: 1px solid oklch(0.62 0.1 75);
+    border-radius: 3px;
+    background: oklch(0.18 0.03 250 / 0.85);
+    color: oklch(0.86 0.06 85);
+    font-family: var(--locale-font, Kim), system-ui, sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+}
+
+.roster-level strong {
+    font-weight: normal;
+    font-size: 1.0625rem;
+    color: oklch(0.9 0.14 88);
 }
 
 .roster-sp {

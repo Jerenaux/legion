@@ -4,7 +4,7 @@ import {h} from 'preact';
 import {BaseEquipment} from '@legion/shared/BaseEquipment';
 import {BaseItem} from '@legion/shared/BaseItem';
 import {BaseSpell} from '@legion/shared/BaseSpell';
-import {InventoryType, StatLabels, STATS_BG_COLOR, Target} from '@legion/shared/enums';
+import {Class, InventoryType, StatLabels, STATS_BG_COLOR, Target} from '@legion/shared/enums';
 import {getConsumableById} from '@legion/shared/Items';
 import {getSpellById} from '@legion/shared/Spells';
 import {getEquipmentById} from '@legion/shared/Equipments';
@@ -18,7 +18,10 @@ import speedIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 import './ItemTooltipContent.css';
 
-export function ItemTooltip({id, showClasses = true}: {id: string; showClasses?: boolean}) {
+/** The character the tooltip judges requirements against (team screens). */
+export type RequirementCharacter = {class: Class; level: number} | null | undefined;
+
+export function ItemTooltip({id, showClasses = true, character}: {id: string; showClasses?: boolean; character?: RequirementCharacter}) {
   return <ReactTooltip id={id} className="item-details-tooltip" place="top" positionStrategy="fixed" delayShow={0} delayHide={0}
     closeEvents={{mouseleave: true, blur: true, click: true}} globalCloseEvents={{escape: true}}
     render={({activeAnchor}) => {
@@ -35,13 +38,27 @@ export function ItemTooltip({id, showClasses = true}: {id: string; showClasses?:
       const item = type === InventoryType.CONSUMABLES ? getConsumableById(itemId)
         : type === InventoryType.SPELLS ? getSpellById(itemId)
         : type === InventoryType.EQUIPMENTS ? getEquipmentById(itemId) : null;
-      return item ? <ItemTooltipContent item={item} showClasses={showClasses} /> : null;
+      return item ? <ItemTooltipContent item={item} showClasses={showClasses} character={character} /> : null;
     }} />;
 }
 
-function ItemTooltipContent({item, showClasses}: {
+function Requirement({met, children}: {met: boolean | null; children: h.JSX.Element | string}) {
+  if (met === null) return <p className="item-preview-classes">{children}</p>;
+  return <p className={`item-preview-classes item-preview-requirement ${met ? 'is-met' : 'is-unmet'}`}>
+    <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+      {met ? <path d="M2 6.5 4.8 9.2 10 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        : <path d="M3 3l6 6M9 3 3 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />}
+    </svg>
+    <span className="visually-hidden">{t(met ? 'Requirement met:' : 'Requirement not met:')} </span>
+    {children}
+  </p>;
+}
+
+/** The item card shared by hover tooltips and the inventory action dialog. */
+export function ItemTooltipContent({item, showClasses, character}: {
   showClasses: boolean;
   item: BaseItem | BaseSpell | BaseEquipment;
+  character?: RequirementCharacter;
 }) {
   const spell = item instanceof BaseSpell;
   const equipment = item instanceof BaseEquipment;
@@ -76,8 +93,10 @@ function ItemTooltipContent({item, showClasses}: {
       })}
     </div>}
     {showClasses && 'classes' in item && item.classes.length > 0 &&
-      <p className="item-preview-classes">{item.classes.map(classEnumToString).join(' · ')}</p>}
+      <Requirement met={character ? item.classes.includes(character.class) : null}>{item.classes.map(classEnumToString).join(' · ')}</Requirement>}
     {/* Requirements matter when choosing gear, not in combat, where the action is already equipped. */}
-    {showClasses && spell && <p className="item-preview-classes item-preview-level">{t('Requires level {{level}}', {level: item.minLevel})}</p>}
+    {showClasses && spell && <Requirement met={character ? character.level >= item.minLevel : null}>
+      {t('Requires level {{level}}', {level: item.minLevel})}
+    </Requirement>}
   </div>;
 }

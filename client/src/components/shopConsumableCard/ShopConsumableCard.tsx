@@ -1,4 +1,5 @@
 import {t, formatNumber} from '../../i18n/core';
+import ShopPrice from '../shopContent/ShopPrice';
 
 import { h } from 'preact';
 import './ShopConsumableCard.style.css';
@@ -24,7 +25,6 @@ import speedIcon from '@assets/stats_icons/speed_icon.png';
 import itemCountIcon from '@assets/shop/item_count_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
-import goldIcon from '@assets/gold_icon.png';
 
 export const StatIcons = [
   hpIcon,
@@ -133,10 +133,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
             {getRarityValue(data.effort).val}
           </span>
         </div>
-        <div className="shop-card-price">
-          <img src={goldIcon} alt={t("gold")} />
-          {formatNumber(data.price)}
-        </div>
+        <ShopPrice price={data.price} className="shop-card-price" />
 
         <ReactTooltip
           id={`consumable-desc-tooltip-${data.id}`}

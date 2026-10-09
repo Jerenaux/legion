@@ -668,15 +668,15 @@ if (!process.versions.electron) {
             await js(`document.documentElement.style.fontSize = '130%'; document.querySelector('[data-item-icon="equipment-21"]').scrollIntoView({block: 'center'})`);
             await ready();
             await js(`document.querySelector('[data-item-icon="equipment-21"] [role="button"]').click()`);
-            await waitFor('Boolean(document.querySelector(".equip-dialog-container .dialog-accept"))');
-            assert.equal(await js('document.querySelector(".equip-dialog-container .dialog-accept").disabled'), false);
-            await js('document.querySelector(".equip-dialog-container .dialog-decline").click()');
+            await waitFor('Boolean(document.querySelector(".item-dialog-card .dialog-accept"))');
+            assert.equal(await js('document.querySelector(".item-dialog-card .dialog-accept").disabled'), false);
+            await js('document.querySelector(".item-dialog-card .dialog-decline").click()');
             await js(`document.querySelector('[data-item-icon="spells-2"]').scrollIntoView({block: 'center'})`);
             await ready();
             await js(`document.querySelector('[data-item-icon="spells-2"] [role="button"]').click()`);
-            await waitFor('Boolean(document.querySelector(".dialog-spell-container .dialog-accept"))');
-            assert.equal(await js('document.querySelector(".dialog-spell-container .dialog-accept").disabled'), true);
-            assert(await js('document.querySelector(".spell-level-requirement").textContent.includes("20")'));
+            await waitFor('Boolean(document.querySelector(".item-dialog-card .dialog-accept"))');
+            assert.equal(await js('document.querySelector(".item-dialog-card .dialog-accept").disabled'), true);
+            assert(await js('[...document.querySelectorAll(".item-dialog-card .item-preview-requirement.is-unmet")].some(row => row.textContent.includes("20"))'), 'The unmet spell level must be marked');
             await ready();
             assert(await js('(() => { const r = document.querySelector(".ReactModal__Content").getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth; })()'), 'Learning dialog must fit the viewport');
             fs.writeFileSync(path.join(dist, `spell-requirement-${language}-${width}.png`), (await win.webContents.capturePage()).toPNG());
@@ -691,12 +691,16 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}team?item-check&level=20`);
         await waitFor(`Boolean(document.querySelector('[data-item-icon="spells-2"] [role="button"]'))`);
         await js(`document.querySelector('[data-item-icon="spells-2"] [role="button"]').click()`);
-        await waitFor('Boolean(document.querySelector(".dialog-spell-container .dialog-accept"))');
-        assert.equal(await js('document.querySelector(".dialog-spell-container .dialog-accept").disabled'), false);
+        await waitFor('Boolean(document.querySelector(".item-dialog-card .dialog-accept"))');
+        assert.equal(await js('document.querySelector(".item-dialog-card .dialog-accept").disabled'), false);
         console.log('Equipment ignores level; spell learning honors level in the packaged inventory UI');
 
         win.setContentSize(1280, 720);
         await win.loadURL(`${PACKAGED_APP_URL}rank`);
+        // The first Rank visit explains leagues; skipping it must return control to the page.
+        await waitFor('Boolean(document.querySelector(".rank-intro"))');
+        await js('document.querySelector(".rank-intro-secondary").click()');
+        await waitFor('!document.querySelector(".rank-intro")');
         await waitFor('Boolean(document.querySelector(".rank-load-error"))');
         assert.equal(await js('document.querySelector(".rank-content").getAttribute("aria-busy")'), 'false');
         assert.equal(await js('document.querySelectorAll(".rank-content .ghost").length'), 0);

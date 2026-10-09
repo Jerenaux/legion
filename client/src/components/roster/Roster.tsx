@@ -1,4 +1,5 @@
 import {t, i18n, formatNumber} from '../../i18n/core';
+import FitText from '../FitText';
 import {Trans} from '../../i18n/Trans';
 import { h, Fragment } from 'preact';
 // Roster.tsx
@@ -59,9 +60,9 @@ class Roster extends Component {
                   <span style={{backgroundImage: `url(${getSpritePath(character.portrait)})`}} />
                 </span>
                 <span className="roster-identity">
-                  <span className="team-class-label">{classEnumToString(character.class)}</span>
+                  <FitText className="team-class-label">{classEnumToString(character.class)}</FitText>
                   <span className="roster-name" title={character.name}>{character.name}</span>
-                  <span className="roster-level">{t("Lvl")} {formatNumber(character.level)}</span>
+                  <span className="roster-level">{t("Lvl")} <strong>{formatNumber(character.level)}</strong></span>
                   {character.sp > 0 && <span className="roster-sp" title={t("Spend stat points")}>+{formatNumber(character.sp)} {t("SP")}</span>}
                 </span>
               </button>
