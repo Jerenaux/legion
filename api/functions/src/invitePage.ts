@@ -64,7 +64,7 @@ export function renderInvitePage({gift, community, invalid}: InvitePageInput): s
   const tag = community ? escapeHTML(community.tag) : '';
   const title = invalid ? 'This link doesn’t work'
     : community && giftOpen ? `${name} sent you a gift`
-    : community ? `Join ${name} in Legion`
+    : community ? `Join ${name} in Emberhall`
     : giftOpen ? 'A gift is waiting for you'
     : 'This gift is no longer available';
   const lead = invalid ? 'Check that you copied the whole link, or ask its creator for a new one. You can still play the free demo.'
@@ -83,19 +83,19 @@ export function renderInvitePage({gift, community, invalid}: InvitePageInput): s
     ? `<div class="crest">${sigilSvgMarkup(community.sigil, {size: 168, id: 'invite-sigil', label: `${community.name} sigil`})}</div>`
     : `<div class="crest crest-gift"><img src="/assets/gold_chest.png" alt="" width="150" height="128"></div>`;
   const eyebrow = community ? `<p class="eyebrow"><span class="tag">${tag}</span> Creator community</p>`
-    : `<p class="eyebrow">${invalid || !giftOpen ? 'Legion' : 'Creator gift'}</p>`;
+    : `<p class="eyebrow">${invalid || !giftOpen ? 'Emberhall' : 'Creator gift'}</p>`;
   const rewards = giftOpen ? `<section class="rewards" aria-labelledby="rewards-title"><h2 id="rewards-title">Your gear</h2>`
     + `<ul class="reward-grid">${gift!.rewards.map(rewardTile).join('')}</ul>${fine ? `<p class="fine">${fine}</p>` : ''}</section>` : '';
   const steps = launchQuery ? `<ol class="steps">
-      <li class="step"><span class="step-number">1</span><div><h2>Get the free demo</h2><p>Legion is free to try on Steam. Skip this if it’s already installed.</p>
+      <li class="step"><span class="step-number">1</span><div><h2>Get the free demo</h2><p>Emberhall is free to try on Steam. Skip this if it’s already installed.</p>
         <a class="button button-secondary" href="${STORE_URL}"><img src="/assets/steam.png" alt="" width="24" height="24">Free demo on Steam</a></div></li>
-      <li class="step"><span class="step-number">2</span><div><h2>${giftOpen && community ? 'Claim and join' : giftOpen ? 'Claim your gear' : 'Join the community'}</h2><p>Steam opens Legion${giftOpen ? ' and adds the gear to your account' : ''}${community ? `. Confirm to join ${name}` : ''}.</p>
-        <a class="button button-primary" href="${escapeHTML(steamLaunch(launchQuery))}">Open in Legion</a></div></li>
+      <li class="step"><span class="step-number">2</span><div><h2>${giftOpen && community ? 'Claim and join' : giftOpen ? 'Claim your gear' : 'Join the community'}</h2><p>Steam opens Emberhall${giftOpen ? ' and adds the gear to your account' : ''}${community ? `. Confirm to join ${name}` : ''}.</p>
+        <a class="button button-primary" href="${escapeHTML(steamLaunch(launchQuery))}">Open in Emberhall</a></div></li>
     </ol>` : `<p class="actions"><a class="button button-primary" href="${STORE_URL}"><img src="/assets/steam.png" alt="" width="24" height="24">Play the free demo on Steam</a></p>`;
   const code = community ? `<p class="code-hint">Link not working? Enter <code>${escapeHTML(community.id.toUpperCase())}</code> on your profile under Join a community.</p>` : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title} · Legion</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/invite.css"></head>
-<body><header class="bar"><a href="/" aria-label="Legion home"><img src="/assets/logo.png" alt="Legion" class="logo" width="120" height="50"></a></header>
+<title>${title} · Emberhall</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/favicon.ico"><link rel="stylesheet" href="/invite.css"></head>
+<body><header class="bar"><a href="/" aria-label="Emberhall home"><img src="/assets/logo.png" alt="Emberhall" class="logo" width="120" height="50"></a></header>
 <main class="invite${community ? ' has-community' : ''}${giftOpen ? ' has-gift' : ''}">
 <section class="hero" aria-labelledby="invite-title">${crest}<div class="hero-text">${eyebrow}<h1 id="invite-title">${title}</h1><p class="lead">${lead}</p></div></section>
 ${rewards}${steps}${code}

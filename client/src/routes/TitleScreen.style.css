@@ -40,8 +40,9 @@
 
 .logo-big {
     width: min(400px, 70vw);
-    height: min(400px, 38dvh);
-    min-height: 80px;
+    height: auto;
+    max-height: 38dvh;
+    flex-shrink: 0;
     object-fit: contain;
     margin-bottom: 20px;
 }

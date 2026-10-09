@@ -1,6 +1,6 @@
-# Legion game interface
+# Emberhall game interface
 
-Legion is played on desktop and handheld screens, with attention moving between
+Emberhall is played on desktop and handheld screens, with attention moving between
 animated combatants, the arena and action controls. Its UI should feel like the
 same game before, during and after battle. Read `docs/game-ui-writing.md` for copy.
 

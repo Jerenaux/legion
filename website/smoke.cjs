@@ -50,8 +50,8 @@ if (!process.versions.electron) {
           assert.equal(state.overflow, false, 'No horizontal overflow at ' + width);
           assert.equal(state.images, true);
           assert(state.title.includes('Classic RPG combat'));
-          assert.equal(state.links.filter(link => link.startsWith('https://store.steampowered.com/app/3729580/Legion/')).length, 3);
-          assert(state.links.includes('https://dikaryon.itch.io/legion'));
+          assert.equal(state.links.filter(link => link.startsWith('https://store.steampowered.com/app/3729580/Emberhall/')).length, 3);
+          assert(state.links.includes('https://dikaryon.itch.io/emberhall'));
           // Local visual review only; CI verifies layout/assets without GPU screenshots.
           if (route === '/' && !process.env.CI) fs.writeFileSync(path.join(profile, `website-${width}.png`), (await win.webContents.capturePage()).toPNG());
         }

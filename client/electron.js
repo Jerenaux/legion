@@ -2,6 +2,9 @@ const {app, BrowserWindow, ipcMain, net, protocol, screen, session, shell} = req
 const fs = require("node:fs");
 const path = require("node:path");
 const {pathToFileURL} = require("node:url");
+// Keep the existing profile, device identity and pending gifts across the rebrand.
+app.setPath('userData', path.join(app.getPath('appData'), 'client'));
+app.setName('Emberhall');
 const smokeTest = process.argv.includes('--smoke-test');
 if (smokeTest) app.setPath('userData', fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'legion-smoke-')));
 require('./electron/telemetry').initializeTelemetry(app);

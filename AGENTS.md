@@ -1,5 +1,13 @@
 # Repository instructions
 
+## Emberhall branding and compatibility
+
+Use **Emberhall** in player-facing copy and the approved Emberhall logos. See
+`docs/branding.md` for assets and compatibility identifiers. Keep the `client`
+save directory, `com.legion.game` app ID, `Legion` executable filenames,
+`app://legion/` origin and `legion://` invitation links stable: changing those
+is a migration, not a branding edit.
+
 ## Branches and desktop releases
 
 - Start each independent, coherent work batch on a new branch from the latest `main`. Do not accumulate unrelated requests on one branch or reuse a merged branch.

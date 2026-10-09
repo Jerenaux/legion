@@ -1,7 +1,7 @@
 {
   "name": "client",
-  "version": "0.25.1",
-  "description": "Legion desktop game client",
+  "version": "0.25.2",
+  "description": "Emberhall desktop game client",
   "author": "Dynetis Games",
   "private": true,
   "scripts": {
@@ -76,7 +76,8 @@
   },
   "build": {
     "appId": "com.legion.game",
-    "productName": "Legion",
+    "productName": "Emberhall",
+    "executableName": "Legion",
     "files": [
       "dist/**/*",
       "!**/*.map",
@@ -104,7 +105,7 @@
     },
     "mac": {
       "category": "public.app-category.games",
-      "icon": "public/logo.png",
+      "icon": "public/icon.icns",
       "hardenedRuntime": true,
       "notarize": true,
       "x64ArchFiles": "{Contents/Resources/steamworks.js/dist/osx/**,**/node_modules/koffi/build/koffi/**}"
@@ -120,7 +121,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "public/logo.png",
+      "icon": "public/icon.ico",
       "requestedExecutionLevel": "asInvoker"
     },
     "nsis": {
@@ -132,12 +133,12 @@
     },
     "linux": {
       "target": "AppImage",
-      "icon": "public/logo.png",
+      "icon": "public/icon.png",
       "executableName": "Legion"
     },
     "protocols": [
       {
-        "name": "Legion gift links",
+        "name": "Emberhall gift links",
         "schemes": [
           "legion"
         ]

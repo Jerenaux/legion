@@ -80,7 +80,7 @@ export async function reportProblem() {
     submitButtonLabel: t('Send report'),
     cancelButtonLabel: t('Cancel report'),
     isRequiredLabel: t('Required'),
-    successMessageText: t('Report sent. Thank you for helping improve Legion.'),
+    successMessageText: t('Report sent. Thank you for helping improve Emberhall.'),
     onFormClose: () => form.removeFromDom(),
   });
   form.appendToDom();

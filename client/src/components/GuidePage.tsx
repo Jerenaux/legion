@@ -56,7 +56,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
         <article className="guide-article">
           <header className="guide-intro">
-            <h1 id="guide-title" tabIndex={-1}>{t("How to play Legion")}</h1>
+            <h1 id="guide-title" tabIndex={-1}>{t("How to play Emberhall")}</h1>
             <p className="guide-lead">{t("Plan your turns, prepare your team, and compete in the weekly leagues.")}</p>
             <p>{t("Use the chapters to look up combat rules, equipment, rewards, or controls between matches. You can reopen this guide from the top-right menu.")}</p>
             {onClose && <p role="status">{t("Matchmaking continues while you read. Your match will open automatically.")}</p>}
@@ -68,7 +68,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="first-match">
             <h2 id="first-match" tabIndex={-1}>{t("Matches & modes")}</h2>
-            <p><Trans i18n={i18n} i18nKey={"Legion is a turn-based battle between two teams on a hexagonal arena. <0>Defeat every opposing character to win.</0> You begin with {{value0}} characters; your roster can eventually grow to {{value1}}."} components={[<strong />]} values={{value0: NB_START_CHARACTERS, value1: MAX_CHARACTERS}} /></p>
+            <p><Trans i18n={i18n} i18nKey={"Emberhall is a turn-based battle between two teams on a hexagonal arena. <0>Defeat every opposing character to win.</0> You begin with {{value0}} characters; your roster can eventually grow to {{value1}}."} components={[<strong />]} values={{value0: NB_START_CHARACTERS, value1: MAX_CHARACTERS}} /></p>
             <p><Trans i18n={i18n} i18nKey={"Before queuing, visit <0>Team</0> to spend stat points and equip items. Then open <1>Play</1> and choose a mode."} components={[<strong />, <strong />]} /></p>
             <h3>{t("Game modes")}</h3>
             <dl className="guide-definitions">
@@ -173,7 +173,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
 
           <section aria-labelledby="progression">
             <h2 id="progression" tabIndex={-1}>{t("Rewards, unlocks & weekly leagues")}</h2>
-            <p>{t('Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Legion, then open the link. Find your rewards in Team; normal equipment requirements still apply.')}</p>
+            <p>{t('Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Emberhall, then open the link. Find your rewards in Team; normal equipment requirements still apply.')}</p>
             <p>{t('Hover over or focus a reward to inspect it. Equip your gear in Team.')}</p>
             <p>{t('A creator’s gift can also invite you to their community. After claiming, you choose whether to join.')}</p>
             <p><Trans i18n={i18n} i18nKey={"The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use."} components={[<strong />]} /></p>
@@ -193,7 +193,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p><Trans i18n={i18n} i18nKey={"<0>ELO</0> changes with ranked results and measures your rating. The <1>weekly league</1> is a separate competition: current-season ranked wins determine the order, with fewer losses breaking ties."} components={[<strong />, <strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Promotion, demotion, and podium rewards happen <0>Friday at 19:00 UTC</0>. Check Rank for your position and the promotion/demotion zones. Only players who participated in that season’s ranked games are considered; sitting out a season does not demote you. Crossing an ELO threshold does not change your league immediately."} components={[<strong />]} /></p>
             <h3>{t("Creator communities")}</h3>
-            <p><Trans i18n={i18n} i18nKey={"Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Legion. You can belong to one community, and joining is permanent."} components={[<strong />]} /></p>
+            <p><Trans i18n={i18n} i18nKey={"Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Emberhall. You can belong to one community, and joining is permanent."} components={[<strong />]} /></p>
             <p>{t("The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.")}</p>
           </section>
 
@@ -212,7 +212,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Select your first three living characters. <0>Tab</0> / <1>Shift</1> + <2>Tab</2> cycle through living allies. Selection does not let a character act out of turn."} components={[<kbd />, <kbd />, <kbd />]} /></dd></div>
               <div><dt><kbd>{t("Space")}</kbd> / <kbd>{t("End")}</kbd></dt><dd>{t("Pass the active turn.")}</dd></div>
               <div><dt><kbd>{t("Esc")}</kbd></dt><dd>{t("In combat, open the game menu, with Settings and Abandon Game; close supported dialogs. Click a selected spell or item again to cancel targeting. From this guide, return to {{value0}}.", {value0: onClose ? 'the queue' : 'Play'})} {t("With nothing to close outside combat, Esc or the controller Menu button opens the game menu, with Settings and Quit game.")}</dd></div>
-              <div><dt><kbd>F11</kbd> / <kbd>{t("Alt")}</kbd> + <kbd>{t("Enter")}</kbd></dt><dd>{t("Switch between fullscreen and a window. Legion reopens in the mode you used last. On Mac, use Control + Command + F.")}</dd></div>
+              <div><dt><kbd>F11</kbd> / <kbd>{t("Alt")}</kbd> + <kbd>{t("Enter")}</kbd></dt><dd>{t("Switch between fullscreen and a window. Emberhall reopens in the mode you used last. On Mac, use Control + Command + F.")}</dd></div>
               <div><dt><kbd>{t("P")}</kbd></dt><dd><Trans i18n={i18n} i18nKey={"Open the combat menu. <0>The match keeps running:</0> opening Settings does not pause the opponent or the turn timer."} components={[<strong />]} /></dd></div>
               <div><dt>{t("Controller")}</dt><dd>{t("A confirms, B cancels, Y passes the turn, LB and RB switch characters, and Menu opens the game menu. The D-pad or left stick moves focus.")}</dd></div>
               <div><dt>{t("Menus")}</dt><dd><Trans i18n={i18n} i18nKey={"<0>Tab</0> or arrow keys move focus; <1>Enter</1> or <2>Space</2> activates a focused control. You can use the mouse wheel to scroll this guide."} components={[<kbd />, <kbd />, <kbd />]} /></dd></div>
@@ -224,7 +224,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h3>{t("Before you queue again")}</h3>
             <p><Trans i18n={i18n} i18nKey={"If Rank cannot load, it retries once automatically. If it still fails, check your connection and choose <0>Retry</0>, or select another league tab."} components={[<strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"If loading fails or the game is interrupted, choose <0>Reload game</0> to reconnect if your match is still running. Temporary connection losses reconnect automatically."} components={[<strong />]} /></p>
-            <p>{t("If Legion reports that it cannot start game graphics, try reloading, then restart Legion and update your graphics driver. Make sure Steam or Itch has installed the latest Legion update. Legion automatically uses a simpler renderer when WebGL is unavailable; if graphics still cannot start, it shows a recovery screen instead of continuing to load.")}</p>
+            <p>{t("If Emberhall reports that it cannot start game graphics, try reloading, then restart Emberhall and update your graphics driver. Make sure Steam or Itch has installed the latest Emberhall update. Emberhall automatically uses a simpler renderer when WebGL is unavailable; if graphics still cannot start, it shows a recovery screen instead of continuing to load.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Something not working as expected? Choose <0>Report a problem</0> in the top-right menu and describe what happened. The bottom of that menu shows your build version. Reports include your game version and player ID, but do not ask for passwords or contact details."} components={[<strong />]} /></p>
             <p>{t("Spend spare SP. Refill consumables. Check your spells. Then pick one thing to practice in the next fight: protect your healer, avoid clustering, or use the turn order to secure a knockout.")}</p>
             {onClose ? (

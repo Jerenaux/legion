@@ -172,7 +172,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
         const sessionExpired = error?.message === 'Authentication failed';
         this.setState({
             queueDataLoaded: false,
-            statusMessage: sessionExpired ? t("Your session expired. Restart Legion to reconnect.") : t("Could not connect. Retrying…"),
+            statusMessage: sessionExpired ? t("Your session expired. Restart Emberhall to reconnect.") : t("Could not connect. Retrying…"),
             statusIsError: true,
         });
     }
