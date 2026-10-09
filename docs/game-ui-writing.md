@@ -1,6 +1,6 @@
 # Game UI and writing
 
-These rules apply to all player-facing Legion copy, including tutorials, menus,
+These rules apply to all player-facing Emberhall copy, including tutorials, menus,
 rewards, dialogs and the guide. They record Jerome's October 2026 review of the
 guided-practice introduction. Read them before writing or redesigning a screen.
 
@@ -100,4 +100,4 @@ slang or random quirks merely to make writing seem human.
 
 The last two sources concern interfaces and websites. Use their findings about
 clarity and audience, not their page layouts or brand conventions, as a template
-for Legion. The rejected examples and the rules above are our editorial judgment.
+for Emberhall. The rejected examples and the rules above are our editorial judgment.

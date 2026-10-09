@@ -7,8 +7,8 @@ const assert = require('node:assert/strict');
 const output = path.join(__dirname, 'dist');
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 assert(!/<script|<form|\son\w+\s*=|\/game\/|\/play["']|firebase|socket\.io|bundle\.js/i.test(html), 'The website must not start the browser game');
-assert(html.includes('https://store.steampowered.com/app/3729580/Legion/'));
-assert(html.includes('https://dikaryon.itch.io/legion'));
+assert(html.includes('https://store.steampowered.com/app/3729580/Emberhall/'));
+assert(html.includes('https://dikaryon.itch.io/emberhall'));
 fs.mkdirSync(path.join(output, 'assets'), {recursive: true});
 for (const file of ['index.html', 'style.css', 'invite.css']) fs.copyFileSync(path.join(__dirname, file), path.join(output, file));
 // The invite page (/invite, rendered by a Function) also uses the reward sprite sheets.

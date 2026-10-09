@@ -6,11 +6,11 @@ product
 
 ## Users
 
-Players launching Legion from Steam or Itch on desktop and handheld hardware. They move quickly between loadout, matchmaking, and real-time battles, using mouse, keyboard, or controller.
+Players launching Emberhall from Steam or Itch on desktop and handheld hardware. They move quickly between loadout, matchmaking, and real-time battles, using mouse, keyboard, or controller.
 
 ## Product Purpose
 
-Legion is a competitive multiplayer arena game. The client should get players into a trustworthy match quickly, keep the state of networked actions obvious, and recover cleanly from transient service or connection failures.
+Emberhall is a competitive multiplayer arena game. The client should get players into a trustworthy match quickly, keep the state of networked actions obvious, and recover cleanly from transient service or connection failures.
 
 ## Brand Personality
 

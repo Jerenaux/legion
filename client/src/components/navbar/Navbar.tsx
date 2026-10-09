@@ -20,7 +20,7 @@ import { isElectron } from '../../utils/electronUtils';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { LockedFeatures } from "@legion/shared/enums";
 
-import legionLogo from '@assets/logo.png';
+import brandIcon from '@assets/icon.png';
 import playIconOriginal from '@assets/play_btn_idle.png';
 import playIconBlank from '@assets/localization/play_btn_idle.png';
 import teamIconOriginal from '@assets/team_btn_idle.png';
@@ -156,7 +156,7 @@ class Navbar extends Component<Props, State> {
                                     <div className="flexContainer">
                                         <div className="logoContainer">
                                             <Link href="/play" className="gameLogo">
-                                                <img src={legionLogo} alt={t("Legion Logo")} />
+                                                <img src={brandIcon} alt={t("Emberhall Logo")} />
                                             </Link>
                                         </div>
                                         <Link href={`/profile/${this.props.playerData?.uid}`} className="avatarContainerLink">

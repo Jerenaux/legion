@@ -11,12 +11,12 @@ export function CombatRecovery({error}: {error?: unknown}) {
       <p className="session-status__eyebrow">{t("Game interrupted")}</p>
       <h1>{graphicsFailed ? t("Unable to start game graphics") : loadingFailed ? t("The game couldn’t finish loading") : t("Let’s get you back to the arena")}</h1>
       <p className="session-status__message">{graphicsFailed
-        ? t("Legion couldn’t start or keep its graphics renderer running. Loading has stopped. Try reloading the game.")
+        ? t("Emberhall couldn’t start or keep its graphics renderer running. Loading has stopped. Try reloading the game.")
         : loadingFailed
           ? t("Loading took too long and has stopped. Check your connection, then reload to reconnect if your match is still in progress.")
-          : t("Legion couldn’t keep running. Reload to reconnect if your match is still in progress.")}</p>
+          : t("Emberhall couldn’t keep running. Reload to reconnect if your match is still in progress.")}</p>
       <button className="session-status__retry" type="button" onClick={() => location.reload()}>{t("Reload game")}</button>
-      {graphicsFailed && <p className="session-status__hint">{t("If reloading doesn’t help, restart Legion, close other games or apps, and update your graphics driver. Make sure Steam or Itch has installed the latest Legion update.")}</p>}
+      {graphicsFailed && <p className="session-status__hint">{t("If reloading doesn’t help, restart Emberhall, close other games or apps, and update your graphics driver. Make sure Steam or Itch has installed the latest Emberhall update.")}</p>}
     </section>
   </main>;
 }
