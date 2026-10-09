@@ -33,6 +33,7 @@ spells.push(new BaseSpell({
 
     score: 10,
     classes: [Class.BLACK_MAGE],
+    minLevel: 1,
     speedClass: SpeedClass.NORMAL,
     category: SpellShopCategory.ELEMENTAL,
     unlock: LockedFeatures.SPELLS_BATCH_1,
@@ -57,6 +58,7 @@ spells.push(new BaseSpell({
 
     score: 20,
     classes: [Class.BLACK_MAGE],
+    minLevel: 10,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     category: SpellShopCategory.ELEMENTAL,
@@ -80,6 +82,7 @@ spells.push(new BaseSpell({
 
     score: 100,
     classes: [Class.BLACK_MAGE],
+    minLevel: 20,
     speedClass: SpeedClass.SLOW,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     category: SpellShopCategory.ELEMENTAL,
@@ -102,6 +105,7 @@ spells.push(new BaseSpell({
 
     score: 5,
     classes: [Class.BLACK_MAGE],
+    minLevel: 1,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_1,
     category: SpellShopCategory.ELEMENTAL,
@@ -123,6 +127,7 @@ spells.push(new BaseSpell({
 
     score: 15,
     classes: [Class.BLACK_MAGE],
+    minLevel: 10,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     category: SpellShopCategory.ELEMENTAL,
@@ -145,6 +150,7 @@ spells.push(new BaseSpell({
 
     score: 50,
     classes: [Class.BLACK_MAGE],
+    minLevel: 20,
     speedClass: SpeedClass.SLOW,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     category: SpellShopCategory.ELEMENTAL,
@@ -167,6 +173,7 @@ spells.push(new BaseSpell({
     score: 5,
     effort: 5,
     classes: [Class.BLACK_MAGE],
+    minLevel: 1,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_1,
     category: SpellShopCategory.ELEMENTAL,
@@ -188,6 +195,7 @@ spells.push(new BaseSpell({
     score: 10,
     effort: 25,
     classes: [Class.BLACK_MAGE],
+    minLevel: 20,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     category: SpellShopCategory.ELEMENTAL,
@@ -209,6 +217,7 @@ spells.push(new BaseSpell({
     score: 20,
     effort: 35,
     classes: [Class.BLACK_MAGE],
+    minLevel: 20,
     speedClass: SpeedClass.SLOW,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     category: SpellShopCategory.ELEMENTAL,
@@ -232,6 +241,7 @@ spells.push(new BaseSpell({
 
     score: 5,
     classes: [Class.WHITE_MAGE],
+    minLevel: 1,
     speedClass: SpeedClass.NORMAL,
     targetHighlight: TargetHighlight.ALLY,
     unlock: LockedFeatures.SPELLS_BATCH_2,
@@ -255,6 +265,7 @@ spells.push(new BaseSpell({
 
     score: 10,
     classes: [Class.WHITE_MAGE],
+    minLevel: 2,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_2,
     category: SpellShopCategory.STATUS,
@@ -276,6 +287,7 @@ spells.push(new BaseSpell({
 
     score: 10,
     classes: [Class.WHITE_MAGE],
+    minLevel: 2,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_2,
     category: SpellShopCategory.STATUS,
@@ -301,7 +313,17 @@ spells.push(new BaseSpell({
     targetHighlight: TargetHighlight.DEAD,
     cost: 50,
     category: SpellShopCategory.HEALING,
+    minLevel: 20, // For AI
 }));
+
+export function getStarterSpells(characterClass: Class):number[] {
+    // Return the id's of lvl1 spells for the provided class
+    return spells.filter(spell => spell.minLevel === 1 && spell.classes.includes(characterClass)).map(spell => spell.id);
+}
+
+export function getSpellsUpToLevel(characterClass: Class, level: number):number[] {
+    return spells.filter(spell => spell.minLevel <= level && spell.classes.includes(characterClass)).map(spell => spell.id);
+}
 
 export function getSpellById(spellId: number): BaseSpell | undefined {
     return spells.find(spell => spell.id === spellId)!;

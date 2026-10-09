@@ -6,7 +6,7 @@ and shows the received items. During a match, replay, queue or lobby, redemption
 waits until returning to a menu. No code-entry widget or website login is needed.
 The reward reveal uses the game's chest art, rarity-colored loot slots and sound
 settings. Hovering or focusing a reward shows its inventory card, including
-effects and class requirements; gold explains its use in Shop.
+effects, class requirements and spell level requirements; gold explains its use in Shop.
 
 ## Manage gifts
 

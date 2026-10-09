@@ -143,3 +143,8 @@
     width: 14px;
     height: 14px;
 }
+.spell-card-requirement {
+    margin: 0;
+    font-size: 0.75rem;
+    text-align: center;
+}

@@ -69,8 +69,7 @@ try {
   const restored=await login(`reset-${run}`);
   assert((await db.collection('players').doc(restored.uid).get()).exists, 'Reset account was not recreated');
   assert.equal((await http('bootstrapPlayer',undefined,restored.token,true)).characters.length,3);
-  // Level-one characters can equip any class-compatible gear and learn spells;
-  // the real inventory endpoint must still enforce class and spell-slot limits.
+  // Equipment ignores character level; spell learning still enforces level, class and capacity.
   const gearAccount = await login(`gear-${run}`);
   const gearPlayerRef = db.collection('players').doc(gearAccount.uid);
   const gearPlayer = (await gearPlayerRef.get()).data();
@@ -87,8 +86,12 @@ try {
   assert.equal((await mage.ref.get()).data().equipment.left_ring, 21);
   assert.equal((await equip(warrior.id, InventoryType.EQUIPMENTS, 0)).status, 0);
   assert.equal((await warrior.ref.get()).data().equipment.weapon, 0);
+  await warrior.ref.update({level: 20});
   assert.equal((await equip(warrior.id, InventoryType.SPELLS, 0)).status, 1);
   await mage.ref.update({skills: [], skill_slots: 1});
+  assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
+  assert.deepEqual((await mage.ref.get()).data().skills, []);
+  await mage.ref.update({level: 20});
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 0);
   assert.deepEqual((await mage.ref.get()).data().skills, [2]);
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);

@@ -8,7 +8,7 @@ import { getPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
 import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
-import { spells as allSpells } from "./Spells";
+import { getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
   M,
@@ -63,7 +63,7 @@ export class NewCharacter {
       right_ring: -1,
       necklace: -1,
     };
-    this.skills = getSpells(this.characterClass, this.skill_slots, isAI);
+    this.skills = getSpells(this.characterClass, this.level, this.skill_slots, isAI);
     // console.log("========================");
     // console.log(`[NewCharacter:constructor] AI spells: ${this.skills.map(spell => getSpellById(spell)?.name).join(", ")}`);
     // console.log("========================");
@@ -307,8 +307,9 @@ export class NewCharacter {
   }
 }
 
-export function getSpells(characterClass: Class, skill_slots: number, isAI = false): number[] {
-  let spells = allSpells.filter(spell => spell.classes.includes(characterClass)).map(spell => spell.id);
+export function getSpells(characterClass: Class, level: number, skill_slots: number, isAI = false): number[] {
+  let spells = getSpellsUpToLevel(characterClass, level);
+  // console.log(`[getSpells] Candidate spells up to level ${level}: ${spells.join(", ")}`);
   switch (characterClass) {
     case Class.WARRIOR:
       return [];

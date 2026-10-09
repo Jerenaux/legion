@@ -108,6 +108,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
             </div>
           </div>
         </div>
+        <p className="spell-card-requirement">{t('Requires level {{level}}', {level: data.minLevel})}</p>
         <div className="spell-card-content">
           <div className="shop-portrait" style={{
                 backgroundImage: `url(${spellsSpritesheet})`,

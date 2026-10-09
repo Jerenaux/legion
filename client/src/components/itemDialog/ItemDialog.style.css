@@ -538,3 +538,11 @@
     font-size: 1.125rem;
     margin-bottom: 20px;
 }
+
+.spell-level-requirement {
+    margin: 0;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-align: center;
+}

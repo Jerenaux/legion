@@ -4,6 +4,7 @@ import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
 import { inventorySize } from './utils';
 import { getConsumableById } from './Items';
+import { SKIP_LEVEL_RESTRICTIONS } from './config';
 import { getMaxStatValue } from './levelling';
 import { getSPIncrement } from './levelling';
 
@@ -40,10 +41,17 @@ export function canLearnSpell(characterData: DBCharacterData | APICharacterData,
     console.error("Invalid spell ID");
     return false;
   }
+  if (dev) console.log(`[canLearnSpell] spellId: ${spellId}, spell: ${spell.name}, minLevel: ${spell.minLevel}, hasMinlevel: ${hasMinLevel(characterData, spell.minLevel)}, classes: ${spell.classes}, ${hasRequiredClass(characterData, spell.classes)}`);
   return (
+    hasMinLevel(characterData, spell.minLevel) &&
     hasRequiredClass(characterData, spell.classes) &&
     characterData.skills.length < characterData.skill_slots
   );
+}
+
+export function hasMinLevel(characterData: DBCharacterData | APICharacterData, level: number): boolean {
+  // if (dev) console.log(`[hasMinLevel] level: ${level}, characterData.level: ${characterData.level}, SKIP_LEVEL_RESTRICTIONS: ${SKIP_LEVEL_RESTRICTIONS}`);
+  return SKIP_LEVEL_RESTRICTIONS || characterData.level >= level;
 }
 
 export function hasRequiredClass(characterData: DBCharacterData | APICharacterData, classes: Class[]): boolean {

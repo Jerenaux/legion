@@ -21,6 +21,7 @@ import {
   canEquipEquipment,
   roomInInventory,
   hasRequiredClass,
+  hasMinLevel,
   canIncreaseStat
 } from '@legion/shared/inventory';
 
@@ -337,6 +338,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             <span>{t(Target[dialogData.target])}</span>
           </div>
         </div>
+        <p className="spell-level-requirement" style={!hasMinLevel(activeCharacter, dialogData.minLevel) ? {backgroundColor: "darkred"} : {}}>
+          {t('Requires level {{level}}', {level: dialogData.minLevel})}
+        </p>
         <div className="equip-dialog-class-container">
           {dialogData.classes?.map((item) => (
             <div style={!hasRequiredClass(activeCharacter, dialogData.classes) ? { backgroundColor: "darkred" } : {}} className="equip-dialog-class">

@@ -59,6 +59,7 @@ export interface SpellData {
     effects: Effect[];
     score: number;
     terrain?: Terrain;
+    minLevel?: number;
     classes?: Class[];
     status?: StatusEffectData;
     effort: number;

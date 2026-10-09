@@ -157,7 +157,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h3>{t("Three different kinds of preparation")}</h3>
             <ol className="guide-steps">
               <li><Trans i18n={i18n} i18nKey={"<0>Equip consumables.</0> Select a character, click a consumable in the shared inventory, then choose <1>Equip</1>. It fills a free carried-item slot. A Potion restores HP; Ether restores MP. Each use consumes one item. Refill after battles."} components={[<strong />, <strong />]} /></li>
-              <li><Trans i18n={i18n} i18nKey={"<0>Teach spells deliberately.</0> Select the intended character, click a compatible scroll in the shared inventory, and choose <1>Learn</1>. You need a free spell slot. Learning consumes the scroll and is permanent: you cannot unlearn it or transfer it to another character. Casting the learned spell only costs MP."} components={[<strong />, <strong />]} /></li>
+              <li><Trans i18n={i18n} i18nKey={"<0>Teach spells deliberately.</0> Select the intended character, click a compatible scroll in the shared inventory, and choose <1>Learn</1>. You need a free spell slot and the required character level. Learning consumes the scroll and is permanent: you cannot unlearn it or transfer it to another character. Casting the learned spell only costs MP."} components={[<strong />, <strong />]} /></li>
               <li><Trans i18n={i18n} i18nKey={"<0>Fit equipment.</0> With your character selected, click equipment in the shared inventory and choose <1>Equip</1>. Check class requirements. Equipment adds passive bonuses and can be swapped between battles."} components={[<strong />, <strong />]} /></li>
             </ol>
             <h3>{t("Spend your stat points")}</h3>

@@ -20,6 +20,7 @@ export class BaseSpell {
     terrain: Terrain = Terrain.NONE;
     rarity: Rarity = Rarity.COMMON;
     price: number = 0;
+    minLevel: number = 0;
     classes: Class[] = [];
     status?: StatusEffectData;
     effort: number = 0;
