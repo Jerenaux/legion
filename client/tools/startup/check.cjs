@@ -151,13 +151,9 @@ if (!process.versions.electron) {
       window.destroy();
       window = null;
     }
-  })().then(() => 0, async error => {
+  })().then(() => 0, error => {
     console.error(error);
     console.error(rendererLogs.join('\n'));
-    if (window && !window.isDestroyed()) {
-      fs.writeFileSync(path.join(temp, 'failure.png'), (await window.webContents.capturePage()).toPNG());
-      console.error(`Failure screenshot: ${path.join(temp, 'failure.png')}`);
-    }
     return 1;
   }).then(code => {
     window?.destroy();
