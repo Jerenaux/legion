@@ -16,6 +16,9 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   contracts across Functions, Firestore and CI.
 - `cd client && bun run test`: loads the real Steam SDK library and binds its
   native launch exports without authenticating to Steam.
+- `cd client && bun run test:startup`: real authentication renderer, native IPC
+  and Firebase SDK with loopback services; checks startup deadlines, cancellation,
+  late results and retry recovery without touching production accounts.
 - `cd client && bun run test:guide` and `bun run test:guide --dock`: real packaged
   renderer, Phaser combat, keyboard/menu flows, recovery and local replay capture.
   CI runs these on Windows and macOS. Other scenario switches remain available

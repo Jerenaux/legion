@@ -25,6 +25,9 @@ export default class AuthProvider extends Component<Props, State> {
   private unsubscribe?: firebase.Unsubscribe;
   private authenticating = false;
   private sessionReady = false;
+  private sessionTimedOut = false;
+  private sessionController?: AbortController;
+  private sessionTimeout?: ReturnType<typeof setTimeout>;
 
   componentDidMount() {
     this.unsubscribe = firebaseAuth.onAuthStateChanged(user => {
@@ -40,31 +43,58 @@ export default class AuthProvider extends Component<Props, State> {
 
   componentWillUnmount() {
     this.unsubscribe?.();
+    clearTimeout(this.sessionTimeout);
+    this.sessionController?.abort();
   }
 
   startSession = async () => {
+    // Firebase sign-in cannot be cancelled. Reload before retrying a timed-out
+    // attempt so its late result cannot overwrite the next platform's session.
+    if (this.sessionTimedOut) {
+      window.location.reload();
+      return;
+    }
     if (this.authenticating) return;
     this.authenticating = true;
     this.sessionReady = false;
     this.setState({isLoading: true, error: null});
+    const controller = new AbortController();
+    this.sessionController = controller;
+    let stage = "platform credential";
     try {
       if (!process.env.API_URL) throw new Error("API_URL is not configured");
-      const credential = await getPlatformCredential(
-        getElectronAPI(),
-        localStorage,
-        () => globalThis.crypto.randomUUID(),
-      );
-      const customToken = await exchangePlatformCredential(process.env.API_URL, credential);
-      await firebaseAuth.signInWithCustomToken(customToken);
+      const user = await Promise.race([
+        (async () => {
+          const credential = await getPlatformCredential(
+            getElectronAPI(), localStorage, () => globalThis.crypto.randomUUID(),
+          );
+          controller.signal.throwIfAborted();
+          stage = "platform exchange";
+          const customToken = await exchangePlatformCredential(process.env.API_URL, credential, fetch, controller.signal);
+          controller.signal.throwIfAborted();
+          stage = "Firebase sign-in";
+          return (await firebaseAuth.signInWithCustomToken(customToken)).user;
+        })(),
+        new Promise<never>((_resolve, reject) => {
+          this.sessionTimeout = setTimeout(() => {
+            this.sessionTimedOut = true;
+            reject(new Error(`Desktop session timed out during ${stage}`));
+            controller.abort();
+          }, 30000);
+        }),
+      ]);
+      if (controller.signal.aborted) return;
       this.sessionReady = true;
-      this.setState({user: firebaseAuth.currentUser, isLoading: false, error: null});
+      this.setState({user, isLoading: false, error: null});
     } catch (error) {
-      console.error("Desktop session failed:", error);
+      if (controller.signal.aborted && !this.sessionTimedOut) return;
+      console.error(`Desktop session failed during ${stage}:`, error);
       this.setState({
         isLoading: false,
         error: t("We couldn't reach Emberhall's services. Check your connection, then try again."),
       });
     } finally {
+      clearTimeout(this.sessionTimeout);
       this.authenticating = false;
     }
   };
