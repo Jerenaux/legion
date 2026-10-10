@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "影響行動順序與行動後的恢復時間。每 1 SP 增加 1 點。",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "下場戰鬥前，HP 和 MP 會恢復，倒下的角色也會復原。無需在對局之間治療隊伍。",
   "Rewards, unlocks & weekly leagues": "獎勵、解鎖與每週聯賽",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "結算介面顯示錶現評級、經驗、金幣和獎勵。開啟獎勵寶箱檢視內容。在<0>商店</0>消費金幣後，回到隊伍使用購買的物品。",
   "What unlocks when?": "何時解鎖哪些內容？",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "解鎖依據是<0>完成的對局數，而不僅是勝場</0>。將滑鼠或焦點移至鎖定的商店分頁上，可檢視還需多少場。",
   "{{value0}} game": "{{value0}} 場",
@@ -820,10 +819,6 @@
   "unlock the final equipment tier!_other": "再玩 {{count}} 場即可解鎖最高階裝備！",
   "Disconnected from server": "已與伺服器斷開連線",
   "Could not reconnect to server": "無法重新連線伺服器",
-  "Ace Player": "王牌玩家",
-  "Highest Game Grades": "最高對局評級",
-  "Crowd Favorite": "觀眾最愛",
-  "Highest Audience Scores": "最高觀眾評分",
   "Unstoppable": "勢不可擋",
   "Longest Win Streak": "最長連勝",
   "Highest Rated": "最高評分",
@@ -1193,5 +1188,6 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} 無法學習該職業的法術。",
   "{{value0}} can’t use this class’s gear.": "{{value0}} 無法使用該職業的裝備。",
   "{{value0}} needs level {{value1}}.": "{{value0}} 需要 {{value1}} 級。",
-  "{{value0}}’s item slots are full.": "{{value0}} 的道具欄已滿。"
+  "{{value0}}’s item slots are full.": "{{value0}} 的道具欄已滿。",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "結算介面顯示經驗、金幣和獲得的物品。在<0>商店</0>消費金幣後，回到隊伍使用購買的物品。"
 }

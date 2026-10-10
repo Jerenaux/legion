@@ -39,7 +39,6 @@ import heartSFX from '@assets/sfx/heart.wav';
 import cooldownSFX from '@assets/sfx/cooldown.wav';
 import shatterSFX from '@assets/sfx/shatter.wav';
 import flamesSFX from '@assets/sfx/flame.wav';
-import crowdSFX from '@assets/sfx/crowd.wav';
 import castSoundSFX from '@assets/sfx/spells/cast.wav';
 import fireballSFX from '@assets/sfx/spells/fire_3.wav';
 import thunderSoundSFX from '@assets/sfx/spells/thunder.wav';
@@ -158,7 +157,7 @@ export class Arena extends Phaser.Scene
 
     private static readonly SOUND_NAMES = [
         'click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball',
-        'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames', 'crowd',
+        'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames',
         'poison', 'mute', 'thud', 'revive'
     ];
 
@@ -203,7 +202,6 @@ export class Arena extends Phaser.Scene
             localanimation: this.processLocalAnimation,
             gameEnd: this.processGameEnd,
             towerWarning: this.showTowerWarning,
-            score: this.processScoreUpdate,
             addCharacter: this.processAddCharacter,
             queueData: this.processQueueData,
             turnee: this.processTurnee,
@@ -259,7 +257,6 @@ export class Arena extends Phaser.Scene
         this.load.audio('cooldown', cooldownSFX);
         this.load.audio('shatter', shatterSFX);
         this.load.audio('flames', flamesSFX);
-        this.load.audio('crowd', crowdSFX);
         // this.load.audio('cheer', cheerSFX);
         this.load.audio('thud', thudSFX);
 
@@ -1315,15 +1312,6 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    processScoreUpdate({score}) {
-        // console.log(`Team ${teamId} score updated to ${score}`);
-        const team = this.teamsMap.get(this.playerTeamId);
-        const _score = team.score;
-        team.setScore(score);
-        // this.refreshOverview(); // TODO: add if display score again
-        // if (score - _score > 50) this.playSound('cheer', 2);
-    }
-
     processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
         const team = this.teamsMap.get(data.team);
         this.placeCharacter(data.character, team, false);
@@ -1682,7 +1670,6 @@ export class Arena extends Phaser.Scene
         void setRouteMusic('/game').then(() => {
             if (!this.disposed && !music.gameOver) music.playBeginning();
         });
-        // this.playSound('crowd', 0.5, true);
 
         this.environmentalAudioSources = {
             flames: 0,
@@ -1792,7 +1779,7 @@ export class Arena extends Phaser.Scene
             events.emit('combatTipsAvailable', data.player.player.completedGames < 3);
         }
 
-        this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player, data.player.score));
+        this.teamsMap.set(data.player.teamId, new Team(this, data.player.teamId, true, data.player.player));
         this.teamsMap.set(data.opponent.teamId, new Team(this, data.opponent.teamId, false, data.general.mode === PlayMode.TOWER ? {...data.opponent.player, playerName: t(data.opponent.player.playerName)} : data.opponent.player));
 
         // Set up holes in the grid

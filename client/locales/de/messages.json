@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "Beeinflusst Zugfolge und Erholung zwischen Aktionen. Ein AP erhöht den Wert um 1.",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "LP und MP werden vor dem nächsten Kampf wiederhergestellt, kampfunfähige Figuren kehren zurück. Du musst dein Team zwischen Partien nicht heilen.",
   "Rewards, unlocks & weekly leagues": "Belohnungen, Freischaltungen & Wochenligen",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "Die Ergebnisansicht zeigt Leistungsnote, EP, Gold und Belohnungen. Öffne Belohnungstruhen, um ihren Inhalt zu sehen. Gib Gold im <0>Laden</0> aus und kehre zu Team zurück, um deine Käufe einzusetzen.",
   "What unlocks when?": "Was wird wann freigeschaltet?",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "Freischaltungen zählen <0>abgeschlossene Partien, nicht nur Siege</0>. Fahre über einen gesperrten Laden-Reiter oder fokussiere ihn, um die fehlende Anzahl zu sehen.",
   "{{value0}} game": "{{value0}} Partie",
@@ -820,10 +819,6 @@
   "unlock the final equipment tier!_other": "Spiele noch {{count}} Partien, um die letzte Ausrüstungsstufe freizuschalten!",
   "Disconnected from server": "Verbindung zum Server getrennt",
   "Could not reconnect to server": "Erneute Verbindung zum Server fehlgeschlagen",
-  "Ace Player": "Spitzenspieler",
-  "Highest Game Grades": "Beste Spielnoten",
-  "Crowd Favorite": "Publikumsliebling",
-  "Highest Audience Scores": "Beste Publikumswertungen",
   "Unstoppable": "Unaufhaltsam",
   "Longest Win Streak": "Längste Siegesserie",
   "Highest Rated": "Höchste Wertung",
@@ -1193,5 +1188,6 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} kann die Zauber dieser Klasse nicht lernen.",
   "{{value0}} can’t use this class’s gear.": "{{value0}} kann die Ausrüstung dieser Klasse nicht nutzen.",
   "{{value0}} needs level {{value1}}.": "{{value0}} braucht Stufe {{value1}}.",
-  "{{value0}}’s item slots are full.": "Die Gegenstandsplätze von {{value0}} sind voll."
+  "{{value0}}’s item slots are full.": "Die Gegenstandsplätze von {{value0}} sind voll.",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "Die Ergebnisansicht zeigt EP, Gold und erhaltene Gegenstände. Gib Gold im <0>Laden</0> aus und kehre zu Team zurück, um deine Käufe einzusetzen."
 }

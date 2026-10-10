@@ -12,8 +12,6 @@ interface RankStats {
   winStreak: number;
   lossesStreak: number;
   nbGames: number;
-  avgAudienceScore: number;
-  avgGrade: number;
   seasonId?: string;
 }
 
@@ -51,22 +49,19 @@ export function getEmptyLeagueStats(rank = 0, seasonId = currentSeasonId()) {
     winStreak: 0,
     lossesStreak: 0,
     nbGames: 0,
-    avgAudienceScore: 0,
-    avgGrade: 0,
   };
 }
 
 export function applyRankedResult(
   stats: RankStats | undefined,
   isWinner: boolean,
-  audienceScore: number,
-  grade: number,
   seasonId: string,
   resetMismatchedSeason: boolean,
 ): RankStats {
   const reset = resetMismatchedSeason && stats?.seasonId !== seasonId;
-  const current = reset || !stats ? getEmptyLeagueStats(0, seasonId) : {...stats};
-  const games = current.nbGames || 0;
+  // Older records still carry the retired grade and audience averages; drop them on the next write.
+  const {avgGrade: _grade, avgAudienceScore: _audience, ...current} =
+    (reset || !stats ? getEmptyLeagueStats(0, seasonId) : stats) as RankStats & {avgGrade?: number; avgAudienceScore?: number};
 
   return {
     ...current,
@@ -75,9 +70,7 @@ export function applyRankedResult(
     losses: current.losses + (isWinner ? 0 : 1),
     winStreak: isWinner ? current.winStreak + 1 : 0,
     lossesStreak: isWinner ? 0 : current.lossesStreak + 1,
-    nbGames: games + 1,
-    avgAudienceScore: ((current.avgAudienceScore || 0) * games + audienceScore) / (games + 1),
-    avgGrade: ((current.avgGrade || 0) * games + grade) / (games + 1),
+    nbGames: (current.nbGames || 0) + 1,
   };
 }
 

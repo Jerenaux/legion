@@ -1,6 +1,6 @@
 # Match readiness and recovery
 
-`Game.gameStarted` means the roster and initial snapshot exist. `combatStarted` means every human slot has acknowledged readiness. Do not start turns, AI decisions or audience scoring when merely sending `gameStatus` or receiving the champion reveal click.
+`Game.gameStarted` means the roster and initial snapshot exist. `combatStarted` means every human slot has acknowledged readiness. Do not start turns, AI decisions or the bonus-score timer when merely sending `gameStatus` or receiving the champion reveal click.
 
 Updated clients advertise `combatReady: 1` in socket authentication. Each snapshot supplies a new `readyToken`. The Arena sends `arenaReady(token)` from Phaser's post-render event only after assets, champion reveal, first-match illustrated briefing and all entrance animations finish, while the document is visible and the portrait-orientation overlay is absent. The server accepts that token only from the current connection assigned to the team. Duplicates and tokens from replaced connections cannot advance combat. AI roster owners are not human participants, even if their copied profile contains a UID.
 

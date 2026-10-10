@@ -216,7 +216,7 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
         community: previewCommunities && i % 3 !== 2 ? fixtureCommunities[i % fixtureCommunities.length] : null};
     }) : [];
     return {league: Number(endpoint.split('=')[1]), seasonEnd: 3600 * 52, playerRank: 4, ranking, highlights: [
-      {id: 'guide-award', name: 'Arena Apprentice', avatar: 'default', title: 'Ace Player', description: 'Highest Game Grades'},
+      {id: 'guide-award', name: 'Arena Apprentice', avatar: 'default', title: 'Unstoppable', description: 'Longest Win Streak'},
     ]};
   }
   throw new Error(`Unexpected API call in guide smoke test: ${endpoint}`);

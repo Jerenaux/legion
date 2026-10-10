@@ -55,8 +55,7 @@ async function main() {
     }
     const realElo = 100 + deltas.reduce((sum, delta) => sum + delta, 0);
     // Real ranked results always advance one streak; the synthetic job leaves both at zero.
-    const synthetic = weekly.nbGames > 0 && weekly.winStreak === 0 && weekly.lossesStreak === 0 &&
-      weekly.avgGrade === 0 && weekly.avgAudienceScore === 0;
+    const synthetic = weekly.nbGames > 0 && weekly.winStreak === 0 && weekly.lossesStreak === 0;
     const wins = synthetic ? weekly.wins : 0;
     const losses = synthetic ? weekly.losses : 0;
     const games = wins + losses;

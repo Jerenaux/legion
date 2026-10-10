@@ -4,7 +4,7 @@ import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
 import { CharacterUpdate, PlayerDataForGame, TeamData } from '@legion/shared/interfaces';
 import { ChestColor } from '@legion/shared/enums';
-import { MAX_AUDIENCE_SCORE } from "@legion/shared/config";
+import { MAX_BONUS_SCORE } from "@legion/shared/config";
 import { AIServerPlayer } from "./AIServerPlayer";
 
 
@@ -20,8 +20,7 @@ const FIRST_BLOOD_BONUS = 300;
 export class Team {
     id: number;
     members: ServerPlayer[] = [];
-    score: number = 0;
-    _score: number = 0;
+    score: number = 0; // Hidden bonus score, converted to chests at the end of the match
     actions: number = 0;
     game: Game;
     socket: Socket | null = null;
@@ -144,18 +143,7 @@ export class Team {
     }
 
     incrementScore(amount: number) {
-        this.score = Math.min(MAX_AUDIENCE_SCORE, this.score + amount);
-        // console.log(`[Team:incrementScore] ${this.id} score: ${this.score}`);
-    }
-
-    snapshotScore() {
-        this._score = this.score;
-    }
-
-    sendScore() {
-        if (this.score !== this._score) {
-            this.game.emitScoreChange(this);
-        }
+        this.score = Math.min(MAX_BONUS_SCORE, this.score + amount);
     }
 
     setSocket(socket: Socket) {

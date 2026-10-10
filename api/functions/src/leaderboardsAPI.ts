@@ -34,15 +34,13 @@ export function secondsUntilNextSeason(now = new Date()): number {
 function getHighlights(players: RankedPlayer[], isAllTime: boolean): LeaderboardHighlight[] {
   if (!players.length) return [];
 
-  const highest = (metric: "avgGrade" | "avgAudienceScore" | "winStreak") => players.reduce((best, player) => {
+  const highest = (metric: "winStreak") => players.reduce((best, player) => {
     const bestStats = isAllTime ? best.allTimeStats : best.leagueStats;
     const playerStats = isAllTime ? player.allTimeStats : player.leagueStats;
     return playerStats[metric] > bestStats[metric] ? player : best;
   });
 
   const highlights: LeaderboardHighlight[] = [
-    {player: highest("avgGrade"), title: "Ace Player", description: "Highest Game Grades"},
-    {player: highest("avgAudienceScore"), title: "Crowd Favorite", description: "Highest Audience Scores"},
     {player: highest("winStreak"), title: "Unstoppable", description: "Longest Win Streak"},
   ].map(({player, title, description}) => ({
     name: player.name,
