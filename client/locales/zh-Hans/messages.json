@@ -469,8 +469,6 @@
   "SP Available": "有可用 SP",
   "You have <span class=\"highlight-text\">SP</span> to spend! Click on the <span class=\"highlight-text\">+</span> button next to a stat to increase it and make your character stronger!": "你有可分配的 <span class=\"highlight-text\">SP</span>！点击属性旁的 <span class=\"highlight-text\">+</span> 按钮，让角色更强！",
   "One of your <span class=\"highlight-text\">Characters</span> has SP to spend! Click on the character to switch to it!": "有一名<span class=\"highlight-text\">角色</span>还有可分配的 SP！点击该角色切换过去！",
-  "New spell: Revive!": "新法术：复活术！",
-  "The Revive spell is now available in the shop! Use it to revive a character in combat!": "商店现已上架复活术！用它在战斗中复活角色！",
   "Friend added successfully!": "已成功添加好友！",
   "{{value0}} is ready to play!": "{{value0}} 可以开始游戏了！",
   "{{value0}} is already queuing!": "{{value0}} 已在匹配中！",

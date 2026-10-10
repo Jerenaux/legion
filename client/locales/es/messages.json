@@ -469,8 +469,6 @@
   "SP Available": "PA disponibles",
   "You have <span class=\"highlight-text\">SP</span> to spend! Click on the <span class=\"highlight-text\">+</span> button next to a stat to increase it and make your character stronger!": "¡Tienes <span class=\"highlight-text\">PA</span> sin gastar! ¡Pulsa <span class=\"highlight-text\">+</span> junto a un atributo para mejorarlo!",
   "One of your <span class=\"highlight-text\">Characters</span> has SP to spend! Click on the character to switch to it!": "¡Uno de tus <span class=\"highlight-text\">Personajes</span> tiene PA sin gastar! ¡Haz clic para seleccionarlo!",
-  "New spell: Revive!": "¡Nuevo hechizo: Resurrección!",
-  "The Revive spell is now available in the shop! Use it to revive a character in combat!": "¡Resurrección ya está disponible en la tienda! ¡Úsalo para revivir a un personaje en combate!",
   "Friend added successfully!": "¡Amigo añadido!",
   "{{value0}} is ready to play!": "¡{{value0}} está listo para jugar!",
   "{{value0}} is already queuing!": "¡{{value0}} ya está en cola!",

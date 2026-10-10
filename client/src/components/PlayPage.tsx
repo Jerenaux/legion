@@ -59,10 +59,6 @@ class PlayPage extends Component {
 
     const completedGames = this.context.getCompletedGames();
 
-    if (completedGames > 12) {
-      this.enqueuePopup(Popup.FeatureReveal);
-    }
-
     switch(completedGames) {
       case 0:
         this.enqueuePopup(Popup.PlayToUnlockShop);
