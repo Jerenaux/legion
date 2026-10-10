@@ -1,9 +1,9 @@
-// First-visit explanations for Play, Team and Shop. Facts come from the shared config so the
-// numbers stay true when unlocks or roster sizes change.
+// First-visit explanations for Play, Team and Shop. Roster and inventory sizes come from the
+// shared config. Unlock thresholds are left to the UI's own locked states.
 import {h} from 'preact';
 import {t} from '../../i18n/core';
-import {BASE_INVENTORY_SIZE, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS} from '@legion/shared/config';
-import {Class, LockedFeatures} from '@legion/shared/enums';
+import {BASE_INVENTORY_SIZE, MAX_CHARACTERS, NB_START_CHARACTERS} from '@legion/shared/config';
+import {Class} from '@legion/shared/enums';
 import PageIntro, {type IntroStep} from './PageIntro';
 import ClassCrest from '../HUD/ClassCrest';
 import practiceIcon from '@assets/practice_icon.png';
@@ -16,8 +16,6 @@ import consumablesIcon from '@assets/shop/consumables_icon.png';
 import spellsIcon from '@assets/shop/spells_icon.png';
 import equipmentIcon from '@assets/shop/helmet_icon.png';
 import charactersIcon from '@assets/shop/char_icon.png';
-
-const games = (feature: LockedFeatures) => LOCKED_FEATURES[feature];
 
 const crests = <div className="page-intro-crests">
   {[Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map(kind => <ClassCrest key={kind} characterClass={kind} />)}
@@ -37,7 +35,7 @@ export function PlayIntro({uid, onClose}: IntroProps) {
       rows: [
         {icon: practiceIcon, text: t('Practice: fight the AI. Reduced XP and gold, and your ELO never changes.')},
         {icon: casualIcon, text: t('Casual: fight other players for full rewards, with no ELO or league at stake.')},
-        {icon: rankedIcon, text: t('Ranked: higher rewards; results count toward your ELO and the weekly league. Opens after {{value0}} completed games.', {value0: games(LockedFeatures.RANKED_MODE)})},
+        {icon: rankedIcon, text: t('Ranked: higher rewards; results count toward your ELO and the weekly league.')},
       ],
       lines: [],
     },
@@ -46,10 +44,6 @@ export function PlayIntro({uid, onClose}: IntroProps) {
       art: icons([xpIcon, goldIcon, goldChest]),
       lines: [
         t('Win or lose, your characters gain XP and you earn gold based on your performance grade.'),
-        t('Completed games unlock new features: spells at {{value0}}, equipment at {{value1}}, Ranked at {{value2}}, daily loot at {{value3}} and new recruits at {{value4}}.', {
-          value0: games(LockedFeatures.SPELLS_BATCH_1), value1: games(LockedFeatures.EQUIPMENT_BATCH_1), value2: games(LockedFeatures.RANKED_MODE),
-          value3: games(LockedFeatures.DAILY_LOOT), value4: games(LockedFeatures.CHARACTER_PURCHASES),
-        }),
       ],
     },
     {
@@ -72,9 +66,7 @@ export function TeamIntro({uid, onClose}: IntroProps) {
       lines: [
         t('Levels, stats, learned spells and equipment stay with each character from match to match.'),
         t('No one is lost in battle: HP and MP refill afterwards, and knocked-out characters return.'),
-        t('You start with {{value0}} characters. Recruits unlock after {{value1}} games, up to {{value2}}.', {
-          value0: NB_START_CHARACTERS, value1: games(LockedFeatures.CHARACTER_PURCHASES), value2: MAX_CHARACTERS,
-        }),
+        t('You start with {{value0}} characters; your roster can grow to {{value1}}.', {value0: NB_START_CHARACTERS, value1: MAX_CHARACTERS}),
       ],
     },
     {
@@ -111,15 +103,15 @@ export function ShopIntro({uid, onClose}: IntroProps) {
       ],
     },
     {
-      title: t('New stock as you play'),
+      title: t('What the Shop sells'),
       art: icons([consumablesIcon, spellsIcon, equipmentIcon, charactersIcon]),
       rows: [
-        {icon: consumablesIcon, text: t('Consumables: open now. Stronger ones after {{value0}} and {{value1}} games.', {value0: games(LockedFeatures.CONSUMABLES_BATCH_2), value1: games(LockedFeatures.CONSUMABLES_BATCH_3)})},
-        {icon: spellsIcon, text: t('Spell scrolls: after {{value0}} games; more after {{value1}} and {{value2}}.', {value0: games(LockedFeatures.SPELLS_BATCH_1), value1: games(LockedFeatures.SPELLS_BATCH_2), value2: games(LockedFeatures.SPELLS_BATCH_3)})},
-        {icon: equipmentIcon, text: t('Equipment: after {{value0}} games; more after {{value1}} and {{value2}}.', {value0: games(LockedFeatures.EQUIPMENT_BATCH_1), value1: games(LockedFeatures.EQUIPMENT_BATCH_2), value2: games(LockedFeatures.EQUIPMENT_BATCH_3)})},
-        {icon: charactersIcon, text: t('New characters: after {{value0}} games.', {value0: games(LockedFeatures.CHARACTER_PURCHASES)})},
+        {icon: consumablesIcon, text: t('Consumables: potions and remedies a character carries into battle. Each use spends one.')},
+        {icon: spellsIcon, text: t('Spell scrolls: teach a character a new spell for good.')},
+        {icon: equipmentIcon, text: t('Equipment: stat bonuses you can swap between matches.')},
+        {icon: charactersIcon, text: t('Characters: new recruits to grow your roster.')},
       ],
-      lines: [],
+      lines: [t('More of each opens up as you play.')],
     },
     {
       title: t('Purchases go to your inventory'),

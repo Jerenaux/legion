@@ -46,6 +46,7 @@ export default function PageIntro({page, uid, label, steps, finishLabel, onClose
   const current = steps[step];
   const last = step === steps.length - 1;
   return <Modal isOpen onRequestClose={close} contentLabel={label} className={`page-intro page-intro--${page}`} overlayClassName="page-intro-overlay">
+    <button type="button" className="page-intro-skip" data-desktop-cancel onClick={close}>{t('Skip')}</button>
     <p className="page-intro-step" aria-live="polite">{t('Step {{value0}} of {{value1}}', {value0: step + 1, value1: steps.length})}</p>
     <div className="page-intro-art" key={step} aria-hidden="true">{current.art}</div>
     <h2>{current.title}</h2>
@@ -59,8 +60,7 @@ export default function PageIntro({page, uid, label, steps, finishLabel, onClose
       {steps.map((_, index) => <span key={index} className={index === step ? 'is-current' : ''} />)}
     </div>
     <div className="page-intro-actions">
-      {step > 0 ? <button type="button" className="page-intro-secondary" onClick={() => setStep(step - 1)}>{t('Back')}</button>
-        : <button type="button" className="page-intro-secondary" data-desktop-cancel onClick={close}>{t('Skip')}</button>}
+      {step > 0 && <button type="button" className="page-intro-secondary" onClick={() => setStep(step - 1)}>{t('Back')}</button>}
       <button type="button" className="page-intro-primary" onClick={() => last ? close() : setStep(step + 1)}>
         {last ? finishLabel : t('Next')}
       </button>

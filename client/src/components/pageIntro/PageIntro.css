@@ -110,3 +110,9 @@ fieldset.identity-avatars { min-width: 0; }
 .page-intro-points li { position: relative; padding-left: 22px; color: oklch(0.88 0.02 250); font-family: var(--locale-font, Arial), system-ui, sans-serif; font-size: 1rem; line-height: 1.5; }
 .page-intro-points li::before { content: ''; position: absolute; left: 2px; top: .55em; width: 8px; height: 8px; background: oklch(0.86 0.13 88); transform: rotate(45deg); box-shadow: 0 0 6px oklch(0.86 0.13 85 / 50%); }
 .page-intro-rows + .page-intro-points { margin-top: 0; }
+
+/* Skip is available on every step, out of the way of Back/Next. */
+.page-intro { position: relative; }
+.page-intro-skip { position: absolute; top: 12px; right: 14px; padding: 4px 10px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: oklch(0.75 0.03 250); font: .875rem var(--locale-font, 'Kim'), system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; cursor: pointer; }
+.page-intro-skip:hover { border-color: oklch(0.45 0.05 245); color: oklch(0.92 0.02 250); }
+.page-intro-skip:focus-visible { outline: 3px solid oklch(0.97 0.02 90); outline-offset: 2px; }

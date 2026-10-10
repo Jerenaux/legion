@@ -699,7 +699,7 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}rank?intros`);
         // The first Rank visit explains leagues; skipping it must return control to the page.
         await waitFor('Boolean(document.querySelector(".page-intro"))');
-        await js('document.querySelector(".page-intro-secondary").click()');
+        await js('document.querySelector(".page-intro-skip").click()');
         await waitFor('!document.querySelector(".page-intro")');
         await waitFor('Boolean(document.querySelector(".rank-load-error"))');
         assert.equal(await js('document.querySelector(".rank-content").getAttribute("aria-busy")'), 'false');
