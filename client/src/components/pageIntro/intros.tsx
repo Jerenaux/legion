@@ -64,7 +64,7 @@ export function TeamIntro({uid, onClose}: IntroProps) {
       title: t('Your characters keep their progress'),
       art: crests,
       lines: [
-        t('Levels, stats, learned spells and equipment stay with each character from match to match.'),
+        t('Levels, stats, learned spells and equipment are persistent.'),
         t('No one is lost in battle: HP and MP refill afterwards, and knocked-out characters return.'),
         t('You start with {{value0}} characters; your roster can grow to {{value1}}.', {value0: NB_START_CHARACTERS, value1: MAX_CHARACTERS}),
       ],
@@ -74,7 +74,7 @@ export function TeamIntro({uid, onClose}: IntroProps) {
       art: <div className="page-intro-sp"><img src={xpIcon} alt="" /><span className="page-intro-arrow">→</span><span className="page-intro-sp-badge"><span><strong>+3</strong><small>{t('SP')}</small></span></span></div>,
       lines: [
         t('Characters earn XP in battle, shared by how many targets each one hit or helped.'),
-        t('Each level raises their stats and grants at least 3 stat points (SP). Spend them with the + beside a stat: +10 HP or MP, or +1 to any other stat.'),
+        t('Each level grants stat points (SP) to spend on the stats you want to raise.'),
         t('Spent points are permanent, so build each character for their role.'),
       ],
     },
@@ -82,7 +82,7 @@ export function TeamIntro({uid, onClose}: IntroProps) {
       title: t('Equip before you fight'),
       art: icons([equipmentIcon, consumablesIcon, spellsIcon]),
       rows: [
-        {icon: equipmentIcon, text: t('Equipment adds bonuses and can be swapped between matches. Check its class.')},
+        {icon: equipmentIcon, text: t('Equipment adds bonuses and can be swapped between matches.')},
         {icon: consumablesIcon, text: t('Consumables fill carried-item slots and are used up in battle. Refill them after matches.')},
         {icon: spellsIcon, text: t('Learning a spell scroll is permanent and needs the right class and level. Casting costs MP.')},
       ],
@@ -109,7 +109,7 @@ export function ShopIntro({uid, onClose}: IntroProps) {
         {icon: consumablesIcon, text: t('Consumables: potions and remedies a character carries into battle. Each use spends one.')},
         {icon: spellsIcon, text: t('Spell scrolls: teach a character a new spell for good.')},
         {icon: equipmentIcon, text: t('Equipment: stat bonuses you can swap between matches.')},
-        {icon: charactersIcon, text: t('Characters: new recruits to grow your roster.')},
+        {icon: charactersIcon, text: t('Recruitment: new characters to grow your roster.')},
       ],
       lines: [t('More of each opens up as you play.')],
     },

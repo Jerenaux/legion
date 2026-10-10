@@ -28,6 +28,7 @@ export default function RankIntro({uid, onClose}: {uid: string; onClose: () => v
           <img key={icon} src={icon} alt="" style={{'--order': index}} />)}
       </div>,
       lines: [
+        t('Ranked players are split into five leagues, from Bronze up to Apex. Each league has its own ranking every week.'),
         t('Play one ranked match to appear in your league’s ranking. Practice and casual matches don’t count.'),
         t('Your place depends on this season’s ranked wins; fewer losses break ties.'),
         t('Each season ends on Friday at 19:00 UTC.'),
