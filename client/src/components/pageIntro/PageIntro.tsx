@@ -52,7 +52,9 @@ export default function PageIntro({page, uid, label, steps, finishLabel, onClose
     {current.rows && <ul className="page-intro-rows">
       {current.rows.map(row => <li key={row.text}><img src={row.icon} alt="" />{row.text}</li>)}
     </ul>}
-    {current.lines.map(line => <p className="page-intro-text" key={line}>{line}</p>)}
+    {current.lines.length > 0 && <ul className="page-intro-points">
+      {current.lines.map(line => <li key={line}>{line}</li>)}
+    </ul>}
     <div className="page-intro-dots" aria-hidden="true">
       {steps.map((_, index) => <span key={index} className={index === step ? 'is-current' : ''} />)}
     </div>

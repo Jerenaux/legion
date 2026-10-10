@@ -104,3 +104,9 @@
 .identity-hint { font-size: .9rem; color: oklch(0.72 0.03 250); }
 .page-intro-actions button:disabled { filter: grayscale(.6) brightness(.75); cursor: wait; transform: none; }
 fieldset.identity-avatars { min-width: 0; }
+
+/* Intro facts as a scannable list: gold diamond bullets, left-aligned, in a framed panel. */
+.page-intro-points { display: grid; gap: 10px; margin: 6px auto 0; padding: 14px 18px 14px 16px; max-width: 48ch; list-style: none; text-align: start; border: 1px solid oklch(0.33 0.035 240); border-radius: 6px; background: oklch(0.15 0.025 258 / 70%); }
+.page-intro-points li { position: relative; padding-left: 22px; color: oklch(0.88 0.02 250); font-family: var(--locale-font, Arial), system-ui, sans-serif; font-size: 1rem; line-height: 1.5; }
+.page-intro-points li::before { content: ''; position: absolute; left: 2px; top: .55em; width: 8px; height: 8px; background: oklch(0.86 0.13 88); transform: rotate(45deg); box-shadow: 0 0 6px oklch(0.86 0.13 85 / 50%); }
+.page-intro-rows + .page-intro-points { margin-top: 0; }
