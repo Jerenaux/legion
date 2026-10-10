@@ -1,3 +1,4 @@
+import {getDefaultDailyLoot} from "./dailyLoot";
 import {communitySeasonDocId, communitySummary} from '@legion/shared/communities';
 import {Transaction} from "firebase-admin/firestore";
 
@@ -199,7 +200,7 @@ export const postGameUpdate = onRequest({
           throw new Error("Player data does not exist");
         }
 
-        const dailyLoot = playerData.dailyloot as DailyLootAllDBData;
+        const dailyLoot: DailyLootAllDBData = {...getDefaultDailyLoot(), ...playerData.dailyloot};
         if (key) {
           dailyLoot[key].hasKey = true;
         }
