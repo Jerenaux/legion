@@ -20,9 +20,7 @@ interface Props {
   characterHover: CharacterHover | null;
   onInspect: InspectCharacter;
   members: TeamMember[];
-  score: number;
   position: string;
-  isSpectator: boolean;
   selectedPlayer: PlayerProps;
   eventEmitter: EventEmitter;
   isPlayerTeam: boolean;
@@ -74,14 +72,14 @@ class Overview extends Component<Props, State> {
     }
   }
 
-  render({ members, position, isSpectator }: Props, { blinking }: State) {
+  render({ members, position }: Props, { blinking }: State) {
     if (!members || !blinking.length) {
       return <div />;
     }
 
     return (
       <div className={`overview ${this.props.isPlayerTeam && 'overview_playerteam'} ${position === 'right' && 'overview_right'}`}>
-        <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} isSpectator={isSpectator} eventEmitter={this.props.eventEmitter} sharedCommunity={this.props.sharedCommunity} />
+        <PlayerInfo player={this.props.player} isPlayerTeam={this.props.isPlayerTeam} position={this.props.position} eventEmitter={this.props.eventEmitter} sharedCommunity={this.props.sharedCommunity} />
         <div className="member_container">
           <div className="team_label">
             {this.props.isPlayerTeam ? t("Your team") : t("Enemy team")}

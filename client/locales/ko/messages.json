@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "턴 순서와 행동 후 회복 시간에 영향을 줍니다. SP 1당 1 증가합니다.",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "다음 전투에서는 HP와 MP가 회복되고 쓰러진 캐릭터도 돌아옵니다. 경기 사이에 팀을 치유할 필요는 없습니다.",
   "Rewards, unlocks & weekly leagues": "보상, 해제 조건, 주간 리그",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "결과 화면에서 전투 등급, 경험치, 골드, 보상을 확인할 수 있습니다. 보상 상자를 열어 내용물을 살펴보세요. <0>상점</0>에서 골드를 쓴 뒤 팀으로 돌아가 구매한 물품을 사용하세요.",
   "What unlocks when?": "언제 무엇이 해제되나요?",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "해제 조건은 <0>승리 횟수가 아닌 완료한 경기 수</0>입니다. 잠긴 상점 탭에 마우스를 올리거나 초점을 맞추면 필요한 경기 수가 표시됩니다.",
   "{{value0}} game": "{{value0}}경기",
@@ -820,10 +819,6 @@
   "unlock the final equipment tier!_other": "{{count}}경기 더 플레이하면 최상위 장비가 해제됩니다!",
   "Disconnected from server": "서버와의 연결이 끊겼습니다",
   "Could not reconnect to server": "서버에 다시 연결하지 못했습니다",
-  "Ace Player": "최우수 선수",
-  "Highest Game Grades": "최고 전투 등급",
-  "Crowd Favorite": "관중의 인기 스타",
-  "Highest Audience Scores": "최고 관중 점수",
   "Unstoppable": "파죽지세",
   "Longest Win Streak": "최장 연승",
   "Highest Rated": "최고 평점",
@@ -1193,5 +1188,6 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}}은(는) 이 직업의 주문을 배울 수 없습니다.",
   "{{value0}} can’t use this class’s gear.": "{{value0}}은(는) 이 직업의 장비를 사용할 수 없습니다.",
   "{{value0}} needs level {{value1}}.": "{{value0}}은(는) {{value1}}레벨이 필요합니다.",
-  "{{value0}}’s item slots are full.": "{{value0}}의 아이템 슬롯이 가득 찼습니다."
+  "{{value0}}’s item slots are full.": "{{value0}}의 아이템 슬롯이 가득 찼습니다.",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "결과 화면에서 경험치, 골드, 획득한 아이템을 확인할 수 있습니다. <0>상점</0>에서 골드를 쓴 뒤 팀으로 돌아가 구매한 물품을 사용하세요."
 }

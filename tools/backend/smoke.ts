@@ -172,7 +172,7 @@ try {
     const zeroRef = db.collection('players').doc(`repair-zero-${run}`);
     const ambiguousRef = db.collection('players').doc(`repair-ambiguous-${run}`);
     const repairable = {...inactive, elo: 400,
-      leagueStats: {wins: 8, losses: 3, nbGames: 11, winStreak: 0, lossesStreak: 0, avgGrade: 0, avgAudienceScore: 0},
+      leagueStats: {wins: 8, losses: 3, nbGames: 11, winStreak: 0, lossesStreak: 0},
       allTimeStats: {wins: 1, losses: 2, nbGames: 3},
     };
     await ref.set(repairable);
@@ -251,8 +251,8 @@ try {
   // Completion must accept canceled/partial matches and persist every action before
   // the HTTP response. Previously an undefined result rejected after the response.
   const completedBefore = (await db.collection('players').doc(one.uid).get()).data().completedGames;
-  for (const results of [{}, {[one.uid]: {audience: 100, score: 10}}, {
-    [one.uid]: {audience: 100, score: 10}, [two.uid]: {audience: 50, score: 5},
+  for (const results of [{}, {[one.uid]: {bonusScore: 100, rewardFactor: 0.5}}, {
+    [one.uid]: {bonusScore: 100, rewardFactor: 0.5}, [two.uid]: {bonusScore: 50, rewardFactor: 0.25},
   }]) {
     const gameId = `complete-${crypto.randomUUID()}`;
     await http('createGame', {gameId, players: [one.uid, two.uid], mode: PlayMode.CASUAL, league: 0});
@@ -276,7 +276,7 @@ try {
   // prevent the authoritative match from completing or leave a rejected promise.
   const oldGameId = `legacy-complete-${run}`;
   await db.collection('games').doc(oldGameId).set({players: [one.uid, 'invalid/player'], mode: PlayMode.CASUAL_VS_AI});
-  const aiResults = {[one.uid]: {audience: 10, score: 1}};
+  const aiResults = {[one.uid]: {bonusScore: 10, rewardFactor: 0.1}};
   await http('completeGame', {gameId: oldGameId, winnerUID: '', results: aiResults});
   const oldGame = (await db.collection('games').doc(oldGameId).get()).data();
   assert.equal(oldGame.status, GameStatus.COMPLETED);

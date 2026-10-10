@@ -11,8 +11,6 @@ import { ENABLE_PLAYER_LEVEL, ENABLE_SETTINGS } from '@legion/shared/config';
 
 import teamBg from '@assets/HUD/team_bg.png';
 import teamBgReverse from '@assets/HUD/team_bg_reverse.png';
-import applauseIcon from '@assets/HUD/applause_icon.png';
-import donateIcon from '@assets/HUD/donate_icon.png';
 import settingsIcon from '@assets/HUD/settings_icon.png';
 import { SettingsModal } from '../settingsModal/SettingsModal';
 import { EventEmitter } from 'eventemitter3';
@@ -22,7 +20,6 @@ import '../systemMenu/SystemMenu.css';
 interface Props {
   player: PlayerProfileData;
   position: string;
-  isSpectator: boolean;
   eventEmitter: EventEmitter;
   isPlayerTeam: boolean;
   sharedCommunity?: boolean;
@@ -80,7 +77,7 @@ class PlayerInfo extends Component<Props, State> {
   }
 
   render() {
-    const { player, position, isSpectator, isPlayerTeam } = this.props;
+    const { player, position, isPlayerTeam } = this.props;
 
     const customStyles1 = {
       content: {
@@ -134,14 +131,6 @@ class PlayerInfo extends Component<Props, State> {
           </div>
         </div>
         {isPlayerTeam && <div className={position === 'right' ? "spectator_container_right" : "spectator_container"}>
-          {isSpectator && <div className="spectator_div">
-            <div className="spectator">
-              <img src={applauseIcon} alt={""} />
-            </div>
-            <div className="spectator">
-              <img src={donateIcon} alt={""} />
-            </div>
-          </div>}
           <button type="button" className="spectator" data-game-menu aria-label={t("Game menu")} onClick={() => this.handleOpenModal("menu_modal")}>
             <img src={settingsIcon} alt={""} />
           </button>

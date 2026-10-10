@@ -39,7 +39,6 @@ interface GameHUDState {
   tower: {floor: number; tier: number; name: string} | null;
   mode: PlayMode;
   game0: boolean;
-  grade: string;
   chests: GameOutcomeReward[];
   key: ChestColor;
   gameInitialized: boolean;
@@ -80,7 +79,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     mode: null,
     tower: null,
     game0: false,
-    grade: null,
     chests: [],
     key: null,
     gameInitialized: false,
@@ -227,11 +225,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   endGame = (data: OutcomeData) => {
     recordCompletedGame();
-    const { isWinner, xp, gold, grade, chests, characters, key } = data;
+    const { isWinner, xp, gold, chests, characters, key } = data;
     this.setState({
       gameOver: true,
       isWinner,
-      grade: grade,
       xpReward: xp,
       goldReward: gold,
       characters: characters,
@@ -303,11 +300,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   render() {
     const {
-      player, team1, team2, isSpectator, mode, gameInitialized,
+      player, team1, team2, mode, gameInitialized,
       showOverview, isHUDVisible, characterHover
     } = this.state;
     const ownMembers: TeamMember[] = team1?.members[0]?.isPlayer ? team1?.members : team2?.members;
-    const score = team1?.members[0]?.isPlayer ? team1?.score : team2?.score;
 
     if (!gameInitialized) {
       return null;
@@ -323,8 +319,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         data-coach-focus={isHUDVisible && !this.state.gameOver && this.state.isTutorialVisible ? this.state.tutorialMessage?.focus : undefined}>
         {/* Keep the exit-dialog owner mounted while tutorial/HUD chrome is hidden. */}
         <div className="hud-container" style={!isHUDVisible || !showOverview ? {display: 'none'} : undefined}>
-          <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} sharedCommunity={sharedCommunity} {...team1} />
-          <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" isSpectator={isSpectator} selectedPlayer={player} eventEmitter={events} mode={mode} sharedCommunity={sharedCommunity} {...team2} />
+          <Overview teamId={1} characterHover={characterHover} onInspect={this.inspectCharacter} position="left" selectedPlayer={player} eventEmitter={events} mode={mode} sharedCommunity={sharedCommunity} {...team1} />
+          <Overview teamId={2} characterHover={characterHover} onInspect={this.inspectCharacter} position="right" selectedPlayer={player} eventEmitter={events} mode={mode} sharedCommunity={sharedCommunity} {...team2} />
         </div>
         {this.state.tower && <div className="tower-combat-banner" role="status">
           <Trans i18nKey="Floor <0>{{floor}}</0>" values={{floor: this.state.tower.floor}} components={[<strong />]} />
@@ -347,7 +343,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
             characterHover={characterHover}
             onInspect={this.inspectCharacter}
             isTutorial={isTutorialMode}
-            score={score}
             mode={mode}
             closeGame={this.closeGame}
             queue={this.state.queue}
@@ -359,7 +354,6 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         {isHUDVisible && !this.state.gameOver && inspected && <CharacterHoverCard character={inspected} hover={characterHover} />}
         {isHUDVisible && this.state.gameOver && <Endgame
           members={ownMembers}
-          grade={this.state.grade}
           chests={this.state.chests}
           isWinner={this.state.isWinner}
           xpReward={this.state.xpReward}

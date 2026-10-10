@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "Влияет на порядок ходов и восстановление после действий. Одно ОХ добавляет 1.",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "К следующему бою ОЗ и ОМ восстанавливаются, а павшие персонажи возвращаются. Между матчами лечить команду не нужно.",
   "Rewards, unlocks & weekly leagues": "Награды, открытия и еженедельные лиги",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "Экран результатов показывает оценку вашей игры, опыт, золото и награды. Открывайте сундуки, чтобы посмотреть содержимое. Тратьте золото в <0>Магазине</0>, затем возвращайтесь в Команду, чтобы использовать покупки.",
   "What unlocks when?": "Когда что открывается?",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "Учитываются <0>завершённые матчи, а не только победы</0>. Наведите курсор или фокус на закрытую вкладку Магазина, чтобы узнать, сколько матчей осталось.",
   "{{value0}} game": "Матчей: {{value0}}",
@@ -820,10 +819,6 @@
   "unlock the final equipment tier!_other": "Матчей до открытия последнего разряда снаряжения: {{count}}!",
   "Disconnected from server": "Соединение с сервером потеряно",
   "Could not reconnect to server": "Не удалось переподключиться к серверу",
-  "Ace Player": "Лучший боец",
-  "Highest Game Grades": "Лучшие оценки за матч",
-  "Crowd Favorite": "Любимец публики",
-  "Highest Audience Scores": "Лучшие оценки зрителей",
   "Unstoppable": "Неудержимый",
   "Longest Win Streak": "Самая длинная серия побед",
   "Highest Rated": "Лидер рейтинга",
@@ -1225,5 +1220,6 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} не может изучать заклинания этого класса.",
   "{{value0}} can’t use this class’s gear.": "{{value0}} не может использовать снаряжение этого класса.",
   "{{value0}} needs level {{value1}}.": "{{value0}} нужен уровень {{value1}}.",
-  "{{value0}}’s item slots are full.": "Слоты предметов {{value0}} заполнены."
+  "{{value0}}’s item slots are full.": "Слоты предметов {{value0}} заполнены.",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "Экран результатов показывает опыт, золото и полученные предметы. Тратьте золото в <0>Магазине</0>, затем возвращайтесь в Команду, чтобы использовать покупки."
 }

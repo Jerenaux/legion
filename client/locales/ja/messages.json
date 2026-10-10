@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "行動順と行動後の待ち時間に影響します。1 SPにつき1上がります。",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "次の対戦ではHPとMPが回復し、戦闘不能のキャラクターも復帰します。対戦の合間に回復する必要はありません。",
   "Rewards, unlocks & weekly leagues": "報酬・解放・週間リーグ",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "結果画面には評価、XP、ゴールド、獲得報酬が表示されます。報酬の宝箱を開けて中身を確認しましょう。<0>ショップ</0>でゴールドを使い、チームに戻って購入品を活用します。",
   "What unlocks when?": "何がいつ解放される？",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "解放条件は<0>勝利数ではなく、完了した試合数</0>です。ロック中のショップタブにカーソルやフォーカスを合わせると、あと何試合必要か確認できます。",
   "{{value0}} game": "{{value0}}試合",
@@ -820,10 +819,6 @@
   "unlock the final equipment tier!_other": "あと{{count}}試合で、最高ランクの装備が解放されます！",
   "Disconnected from server": "サーバーとの接続が切れました",
   "Could not reconnect to server": "サーバーに再接続できませんでした",
-  "Ace Player": "エースプレイヤー",
-  "Highest Game Grades": "最高の対戦評価",
-  "Crowd Favorite": "観客のお気に入り",
-  "Highest Audience Scores": "最高の観客評価",
   "Unstoppable": "破竹の勢い",
   "Longest Win Streak": "最多連勝",
   "Highest Rated": "最高レート",
@@ -1193,5 +1188,6 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}}はこのクラスの呪文を習得できません。",
   "{{value0}} can’t use this class’s gear.": "{{value0}}はこのクラスの装備を使えません。",
   "{{value0}} needs level {{value1}}.": "{{value0}}はレベル{{value1}}が必要です。",
-  "{{value0}}’s item slots are full.": "{{value0}}のアイテム枠はいっぱいです。"
+  "{{value0}}’s item slots are full.": "{{value0}}のアイテム枠はいっぱいです。",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "結果画面には、XP、ゴールド、獲得したアイテムが表示されます。<0>ショップ</0>でゴールドを使い、チームに戻って購入品を活用します。"
 }

@@ -70,7 +70,7 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   await waitFor('Boolean(document.querySelector(".player_bar_action"))');
   assert(await js('liveDocument === document'), 'Navigation unexpectedly reloaded the app');
   assert((await js('document.body.textContent')).includes(catalog('pt-BR')['Pass Turn']));
-  await js('combatCheck.events.emit("gameEnd", {isWinner:true,xp:120,gold:240,grade:"A",chests:[],characters:[],key:"silver"})');
+  await js('combatCheck.events.emit("gameEnd", {isWinner:true,xp:120,gold:240,chests:[],characters:[],key:"silver"})');
   await waitFor('Boolean(document.querySelector(".endgame"))');
   await ready();
   assert.equal(await js('document.querySelector(".defeat_title img").alt'), catalog('pt-BR')['Victory!']);

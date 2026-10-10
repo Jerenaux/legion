@@ -166,7 +166,7 @@ export const postGameUpdate = onRequest({
       }
       const uid = request.body.uid;
       const resultId = request.body.resultId;
-      const {isWinner, xp, gold, characters, elo, key, chests, rawGrade, score} =
+      const {isWinner, xp, gold, characters, elo, key, chests} =
         request.body.outcomes as OutcomeData;
       console.log(`[postGameUpdate] [${uid}] Outcomes: ${JSON.stringify(request.body.outcomes, null, 2)}`);
       const {spellsUsed, itemsUsed, movements, attacks, flames, ice, poison, silenced, paralyzed, lowMP} =
@@ -334,16 +334,12 @@ export const postGameUpdate = onRequest({
             updates.leagueStats = applyRankedResult(
               playerData.leagueStats,
               isWinner,
-              score || 0,
-              rawGrade || 0,
               seasonId,
               true,
             );
             updates.allTimeStats = applyRankedResult(
               playerData.allTimeStats,
               isWinner,
-              score || 0,
-              rawGrade || 0,
               seasonId,
               false,
             );

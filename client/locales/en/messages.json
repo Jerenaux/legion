@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "Affects turn order and recovery between actions. One SP adds 1.",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.",
   "Rewards, unlocks & weekly leagues": "Rewards, unlocks & weekly leagues",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.",
   "What unlocks when?": "What unlocks when?",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.",
   "{{value0}} game": "{{value0}} game",
@@ -820,10 +819,6 @@
   "unlock the final equipment tier!_other": "Play {{count}} more games to unlock the final equipment tier!",
   "Disconnected from server": "Disconnected from server",
   "Could not reconnect to server": "Could not reconnect to server",
-  "Ace Player": "Ace Player",
-  "Highest Game Grades": "Highest Game Grades",
-  "Crowd Favorite": "Crowd Favorite",
-  "Highest Audience Scores": "Highest Audience Scores",
   "Unstoppable": "Unstoppable",
   "Longest Win Streak": "Longest Win Streak",
   "Highest Rated": "Highest Rated",
@@ -1193,5 +1188,6 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} can’t learn this class’s spells.",
   "{{value0}} can’t use this class’s gear.": "{{value0}} can’t use this class’s gear.",
   "{{value0}} needs level {{value1}}.": "{{value0}} needs level {{value1}}.",
-  "{{value0}}’s item slots are full.": "{{value0}}’s item slots are full."
+  "{{value0}}’s item slots are full.": "{{value0}}’s item slots are full.",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use."
 }

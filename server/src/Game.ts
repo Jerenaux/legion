@@ -61,7 +61,7 @@ export abstract class Game
     endedAt: number | null = null;
     turnTimer: number | null = null;
     private nextTurnTimer: number | null = null;
-    audienceTimer: NodeJS.Timeout | null = null;
+    bonusScoreTimer: NodeJS.Timeout | null = null;
     checkEndTimer: NodeJS.Timeout | null = null;
     config: Record<string, string | number | boolean | undefined>;
     tutorialSettings: {allowVictoryConditions: boolean; shortCooldowns: boolean};
@@ -344,12 +344,10 @@ export abstract class Game
             this.sendGameStatus(socket);
         });
 
-        this.audienceTimer = setInterval(() => {
+        // Hidden bonus score: grows with time and notable actions, and becomes end-of-match chests.
+        this.bonusScoreTimer = setInterval(() => {
             if (!this.combatStarted || this.combatClock.paused || this.gameOver) return;
-            this.teams.forEach(team => {
-                team.incrementScore(10);
-                team!.sendScore();
-            });
+            this.teams.forEach(team => { team.incrementScore(10); });
         }, 30 * 1000);
 
         this.checkEndTimer = setInterval(() => {
@@ -477,7 +475,7 @@ export abstract class Game
     protected clearTimers() {
         clearTimeout(this.loadingTimer!);
         this.loadingTimer = null;
-        clearInterval(this.audienceTimer!);
+        clearInterval(this.bonusScoreTimer!);
         clearInterval(this.checkEndTimer!);
         this.combatClock.dispose();
     }
@@ -610,7 +608,6 @@ export abstract class Game
                 teamId: playerTeamId,
                 player: team.getPlayerData(),
                 team: team.getMembers().map(player => player.getPlacementData(true)),
-                score: team.score,
             },
             opponent: {
                 teamId: otherTeamId,
@@ -737,7 +734,6 @@ export abstract class Game
         player.setHasActed(true);
         this.combatClock.cancel(this.turnTimer); // Accepted actions advance after their effects finish.
         player.team.incrementActions();
-        player.team.snapshotScore();
         return true;
     }
 
@@ -788,8 +784,8 @@ export abstract class Game
                 });
 
                 results[team.teamData.playerUID] = {
-                    audience: team.score,
-                    score: outcomes.rawGrade,
+                    bonusScore: team.score,
+                    rewardFactor: outcomes.rewardFactor,
                 }
                 if (team.id === winnerTeamID) {
                     winnerUID = team.teamData.playerUID;
@@ -1130,8 +1126,6 @@ export abstract class Game
             num: player.num
         });
 
-        team.sendScore();
-
         // console.log(`[Game:processMagic] Processed spell, isKill: ${isKill}`);
         this.turnSystem.processAction(player, spell.speedClass);
         let duration = isKill ? KILL_CAM_DURATION + KILL_CAM_DELAY : SPELL_DELAY;
@@ -1213,19 +1207,6 @@ export abstract class Game
         }
         this.combatClock.schedule(() => this.applyMagic(spell, player, x, y, player.team, targetPlayer), delay);
         return delay;
-    }
-
-    broadcastScoreChange(team: Team) {
-        this.broadcast('score', {
-            teamId: team.id,
-            score: team.score,
-        });
-    }
-
-    emitScoreChange(team: Team) {
-        team.socket?.emit('score', {
-            score: team.score,
-        });
     }
 
     broadcastHPchange(team: Team, num: number, hp: number, damage?: number) {
@@ -1362,43 +1343,38 @@ export abstract class Game
                 this.mode === PlayMode.RANKED || this.mode === PlayMode.RANKED_VS_AI ?
                 this.updateElo(isWinner ? team : otherTeam, isWinner ? otherTeam : team) :
                 {winnerUpdate: 0, loserUpdate: 0};
-            const grade = this.computeGrade(team, otherTeam);
+            const rewardFactor = this.computeRewardFactor(team, otherTeam);
             return {
                 isWinner,
-                rawGrade: grade,
-                grade: this.computeLetterGrade(grade),
-                gold: this.computeTeamGold(grade, this.mode),
-                xp: this.computeTeamXP(team, otherTeam, grade, this.mode),
+                rewardFactor,
+                gold: this.computeTeamGold(rewardFactor, this.mode),
+                xp: this.computeTeamXP(team, otherTeam, rewardFactor, this.mode),
                 elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
                 key: (this.mode === PlayMode.PRACTICE || this.mode === PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
                 chests: this.computeChests(team.score, this.mode),
-                score: team.score,
             }
         } catch (error) {
             console.error(error);
             return {
                 isWinner: false,
-                rawGrade: 0,
-                grade: 'E',
+                rewardFactor: 0,
                 gold: 0,
                 xp: 0,
                 elo: 0,
                 key: null,
                 chests: [],
-                score: 0,
             }
         }
     }
 
     computeChests(score: number, mode: PlayMode): GameOutcomeReward[] {
         const chests: GameOutcomeReward[] = [];
-        if (mode !== PlayMode.PRACTICE && mode !== PlayMode.TUTORIAL) this.computeAudienceRewards(score, chests);
+        if (mode !== PlayMode.PRACTICE && mode !== PlayMode.TUTORIAL) this.computeBonusChests(score, chests);
 
         return chests;
     }
 
-    computeAudienceRewards(score: number, chests: Array<GameOutcomeReward>): void {
-        // console.log(`[Game:computeAudienceRewards] League: ${this.league}, Score: ${score}`);
+    computeBonusChests(score: number, chests: Array<GameOutcomeReward>): void {
         const casualRewards = [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.SILVER];
         const leagueRewards = {
             [League.BRONZE]: [ChestColor.BRONZE, ChestColor.BRONZE, ChestColor.BRONZE],
@@ -1421,7 +1397,8 @@ export abstract class Game
         }
     }
 
-    computeGrade(team: Team, otherTeam: Team) {
+    /** 0–1 rating of how well the team fought (HP kept, healing, efficiency, level gap); scales gold and XP. */
+    computeRewardFactor(team: Team, otherTeam: Team) {
         const hpFactor = team.getHPLeft() / team.getTotalHP();
         const healingFactor = 1 - ((team.getHealedAmount() / (team.getHealedAmount() + otherTeam.getHealedAmount())) || 0);
 
@@ -1455,16 +1432,6 @@ export abstract class Game
         return (hpFactor * hpCoefficient + healingFactor * healingCoefficient + offenseFactor * offenseCoefficient + levelFactor * levelCoefficient)/totalWeight;
     }
 
-    computeLetterGrade(grade: number) {
-        if (grade >= 0.95) return 'S+';
-        if (grade >= 0.9) return 'S';
-        if (grade >= 0.8) return 'A';
-        if (grade >= 0.6) return 'B';
-        if (grade >= 0.4) return 'C';
-        if (grade >= 0.2) return 'D';
-        return 'E';
-    }
-
     updateElo(winningTeam: Team, losingTeam: Team): { winnerUpdate: number, loserUpdate: number } {
         const K_FACTOR = 30;
 
@@ -1486,8 +1453,8 @@ export abstract class Game
         };
       }
 
-    computeTeamGold(grade: number, mode: PlayMode) {
-        let gold = AVERAGE_GOLD_REWARD_PER_GAME * (grade + 0.3);
+    computeTeamGold(rewardFactor: number, mode: PlayMode) {
+        let gold = AVERAGE_GOLD_REWARD_PER_GAME * (rewardFactor + 0.3);
         if (mode === PlayMode.PRACTICE || mode === PlayMode.TUTORIAL) gold *= PRACTICE_GOLD_COEF;
         if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) gold *= RANKED_GOLD_COEF;
         // Add +- 5% random factor
@@ -1501,10 +1468,9 @@ export abstract class Game
         return teamLevel - otherTeamLevel;
     }
 
-    computeTeamXP(team: Team, otherTeam: Team, grade: number, mode: PlayMode) {
+    computeTeamXP(team: Team, otherTeam: Team, rewardFactor: number, mode: PlayMode) {
         if (team.getTotalInteractedTargets() === 0) return 0;
-        let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (grade + 0.3);
-        // console.log(`Base XP: ${xp}: ${otherTeam.getTotalLevel()} * ${XP_PER_LEVEL} * (${grade} + 0.3)`);
+        let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (rewardFactor + 0.3);
         if (mode === PlayMode.PRACTICE || mode === PlayMode.TUTORIAL) xp *= PRACTICE_XP_COEF;
         if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) xp *= RANKED_XP_COEF;
         if (team.isGame0) xp *= 2;

@@ -19,9 +19,8 @@ export class Team {
     playerLeague: number;
     completedGames: number;
     community: CommunitySummary | null;
-    score = 0;
 
-    constructor(scene, number: number, isPlayerTeam: boolean, teamData: PlayerProfileData, score = 0) {
+    constructor(scene, number: number, isPlayerTeam: boolean, teamData: PlayerProfileData) {
         this.scene = scene;
         this.id = number;
         this.isPlayerTeam = isPlayerTeam;
@@ -32,7 +31,6 @@ export class Team {
         this.playerRank = teamData.playerRank;
         this.playerLeague = teamData.playerLeague;
         this.community = teamData.community ?? null;
-        this.score = score;
     }   
 
     addMember(player: Player): void {
@@ -67,11 +65,6 @@ export class Team {
         }
     }
 
-    setScore(score: number) {
-        this.score = score;
-        // console.log(`Team ${this.id} score: ${this.score}`);
-    }
-
     getOverview(): TeamOverview {
         const members = [];
         this.members.forEach(member => {
@@ -103,7 +96,6 @@ export class Team {
                 completedGames: this.completedGames,
                 community: this.community,
             },
-            score: this.score,
             isPlayerTeam: this.isPlayerTeam
         };
     }
