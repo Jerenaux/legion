@@ -13,7 +13,6 @@ interface TimelineProps {
   characterHover: CharacterHover | null;
   onInspect: InspectCharacter;
   isTutorial: boolean;
-  score: number;
   mode: PlayMode;
   queue: {
     num: number;

@@ -21,14 +21,6 @@ import victoryBg from '@assets/game_end/victory_bg.png';
 import defeatBg from '@assets/game_end/defeat_bg.png';
 import victoryTitleOriginal from '@assets/game_end/victory.png';
 import defeatTitleOriginal from '@assets/game_end/defeat.png';
-import gradeA from '@assets/game_end/A.png';
-import gradeB from '@assets/game_end/B.png';
-import gradeC from '@assets/game_end/C.png';
-import gradeD from '@assets/game_end/D.png';
-import gradeE from '@assets/game_end/E.png';
-import gradeF from '@assets/game_end/F.png';
-import gradeS from '@assets/game_end/S.png';
-import gradeSp from '@assets/game_end/S+.png';
 import xpIcon from '@assets/game_end/XP_icon.png';
 import goldIcon from '@assets/gold_icon.png';
 import { mapFrameToCoordinates } from '../utils';
@@ -52,7 +44,6 @@ interface EndgameProps {
     isWinner: boolean;
     characters: CharacterUpdate[];
     members: TeamMember[];
-    grade: string;
     chests: GameOutcomeReward[];
     chestKey: ChestColor;
     game0: boolean;
@@ -144,20 +135,6 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
     endGameTitleBg = () => {
         return {
             backgroundImage: this.props.isWinner ? `url(${victoryBg})` : `url(${defeatBg})`,
-        }
-    }
-
-    getGradeImage = (grade: string) => {
-        switch (grade) {
-            case 'A': return gradeA;
-            case 'B': return gradeB;
-            case 'C': return gradeC;
-            case 'D': return gradeD;
-            case 'E': return gradeE;
-            case 'F': return gradeF;
-            case 'S': return gradeS;
-            case 'S+': return gradeSp;
-            default: return '';
         }
     }
 

@@ -11,7 +11,7 @@ import {Spell} from '../Spell';
 import {isSkip} from '@legion/shared/utils';
 
 const games: TowerGame[] = [];
-afterEach(() => { games.splice(0).forEach(game => { game.combatClock.dispose(); clearInterval(game.checkEndTimer!); clearInterval(game.audienceTimer!); }); mock.restore(); });
+afterEach(() => { games.splice(0).forEach(game => { game.combatClock.dispose(); clearInterval(game.checkEndTimer!); clearInterval(game.bonusScoreTimer!); }); mock.restore(); });
 async function battle(floor = 0, route = 0, tier = 1) {
   const run = createTowerRun('run', tier, 'balanced');
   run.floor = floor; run.phase = 'battle'; run.path[floor] = TOWER_ENCOUNTERS[floor][route].id;
