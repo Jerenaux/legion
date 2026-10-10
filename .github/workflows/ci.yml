@@ -122,6 +122,7 @@ jobs:
       - name: Repeated matches, software rendering, teardown, and recovery
         working-directory: client
         run: |
+          bun run test:startup
           bun run test:guide
           bun run test:guide --dock
 

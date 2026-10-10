@@ -31,11 +31,13 @@ export async function exchangePlatformCredential(
   apiBaseUrl: string,
   credential: PlatformCredential,
   fetcher: Fetcher = fetch,
+  signal?: AbortSignal,
 ): Promise<string> {
   const response = await fetcher(`${apiBaseUrl}/createPlatformSession`, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify(credential),
+    signal,
   });
   if (!response.ok) throw new Error("Platform authentication failed");
   const session = await response.json() as {customToken?: string};
