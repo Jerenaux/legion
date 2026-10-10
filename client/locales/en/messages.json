@@ -1192,7 +1192,6 @@
   "{{value0}} can’t use this class’s gear.": "{{value0}} can’t use this class’s gear.",
   "{{value0}} needs level {{value1}}.": "{{value0}} needs level {{value1}}.",
   "{{value0}}’s item slots are full.": "{{value0}}’s item slots are full.",
-  "Characters earn XP in battle, shared by how many targets each one hit or helped.": "Characters earn XP in battle, shared by how many targets each one hit or helped.",
   "Choose a mode": "Choose a mode",
   "Consumables fill carried-item slots and are used up in battle. Refill them after matches.": "Consumables fill carried-item slots and are used up in battle. Refill them after matches.",
   "Equip before you fight": "Equip before you fight",
@@ -1238,5 +1237,6 @@
   "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.": "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.",
   "Every match pays gold, win or lose. Fighting well pays more.": "Every match pays gold, win or lose. Fighting well pays more.",
   "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.": "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.",
-  "Selling an item returns half its price.": "Selling an item returns half its price."
+  "Selling an item returns half its price.": "Selling an item returns half its price.",
+  "Characters earn XP in battle, depending on their contributions to the battle.": "Characters earn XP in battle, depending on their contributions to the battle."
 }

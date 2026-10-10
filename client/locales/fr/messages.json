@@ -1208,7 +1208,6 @@
   "{{value0}} can’t use this class’s gear.": "{{value0}} ne peut pas utiliser l’équipement de cette classe.",
   "{{value0}} needs level {{value1}}.": "{{value0}} doit être niveau {{value1}}.",
   "{{value0}}’s item slots are full.": "Les emplacements d’objets de {{value0}} sont pleins.",
-  "Characters earn XP in battle, shared by how many targets each one hit or helped.": "Les personnages gagnent de l’XP en combat, répartie selon le nombre de cibles que chacun a frappées ou aidées.",
   "Choose a mode": "Choisis un mode",
   "Consumables fill carried-item slots and are used up in battle. Refill them after matches.": "Les consommables occupent des emplacements d’objets et s’épuisent en combat. Recharge-les après les matchs.",
   "Equip before you fight": "Équipe-toi avant de combattre",
@@ -1254,5 +1253,6 @@
   "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.": "Victoire ou défaite, vos personnages gagnent de l’XP et vous gagnez de l’or. Bien combattre rapporte davantage des deux.",
   "Every match pays gold, win or lose. Fighting well pays more.": "Chaque match rapporte de l’or, victoire ou défaite. Bien combattre rapporte davantage.",
   "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.": "L’inventaire contient {{value0}} objets au départ. Vous pouvez acheter des emplacements supplémentaires dans le menu Équipe.",
-  "Selling an item returns half its price.": "Vendre un objet rapporte la moitié de son prix."
+  "Selling an item returns half its price.": "Vendre un objet rapporte la moitié de son prix.",
+  "Characters earn XP in battle, depending on their contributions to the battle.": "Les personnages gagnent de l’XP au combat selon leur contribution à la bataille."
 }

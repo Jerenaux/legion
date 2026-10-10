@@ -1208,7 +1208,6 @@
   "{{value0}} can’t use this class’s gear.": "{{value0}} não pode usar o equipamento desta classe.",
   "{{value0}} needs level {{value1}}.": "{{value0}} precisa do nível {{value1}}.",
   "{{value0}}’s item slots are full.": "Os espaços de item de {{value0}} estão cheios.",
-  "Characters earn XP in battle, shared by how many targets each one hit or helped.": "As personagens ganham XP em combate, dividido consoante quantos alvos cada uma atingiu ou ajudou.",
   "Choose a mode": "Escolhe um modo",
   "Consumables fill carried-item slots and are used up in battle. Refill them after matches.": "Os consumíveis ocupam espaços de item e gastam-se em combate. Repõe-nos após as partidas.",
   "Equip before you fight": "Equipa antes de lutar",
@@ -1254,5 +1253,6 @@
   "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.": "Ganhes ou percas, as tuas personagens ganham XP e tu ganhas ouro. Lutar bem rende mais de ambos.",
   "Every match pays gold, win or lose. Fighting well pays more.": "Cada partida dá ouro, ganhes ou percas. Lutar bem dá mais.",
   "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.": "O inventário começa com {{value0}} itens. Podes comprar mais espaços no menu Equipa.",
-  "Selling an item returns half its price.": "Vender um item devolve metade do preço."
+  "Selling an item returns half its price.": "Vender um item devolve metade do preço.",
+  "Characters earn XP in battle, depending on their contributions to the battle.": "As personagens ganham XP em batalha consoante a sua contribuição para o combate."
 }

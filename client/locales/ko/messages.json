@@ -1192,7 +1192,6 @@
   "{{value0}} can’t use this class’s gear.": "{{value0}}은(는) 이 직업의 장비를 사용할 수 없습니다.",
   "{{value0}} needs level {{value1}}.": "{{value0}}은(는) {{value1}}레벨이 필요합니다.",
   "{{value0}}’s item slots are full.": "{{value0}}의 아이템 슬롯이 가득 찼습니다.",
-  "Characters earn XP in battle, shared by how many targets each one hit or helped.": "캐릭터는 전투에서 경험치를 얻으며, 공격하거나 도운 대상 수에 따라 나뉩니다.",
   "Choose a mode": "모드 선택",
   "Consumables fill carried-item slots and are used up in battle. Refill them after matches.": "소모품은 소지 슬롯을 차지하며 전투에서 소모됩니다. 경기 후 다시 채우세요.",
   "Equip before you fight": "싸우기 전에 장착하세요",
@@ -1238,5 +1237,6 @@
   "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.": "이기든 지든 캐릭터는 XP를, 당신은 골드를 얻습니다. 잘 싸울수록 둘 다 더 많이 얻습니다.",
   "Every match pays gold, win or lose. Fighting well pays more.": "이기든 지든 매 경기 골드를 받습니다. 잘 싸울수록 더 많이 받습니다.",
   "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.": "인벤토리는 처음에 아이템 {{value0}}개를 담을 수 있습니다. 추가 칸은 팀 메뉴에서 구매할 수 있습니다.",
-  "Selling an item returns half its price.": "아이템을 팔면 가격의 절반을 돌려받습니다."
+  "Selling an item returns half its price.": "아이템을 팔면 가격의 절반을 돌려받습니다.",
+  "Characters earn XP in battle, depending on their contributions to the battle.": "캐릭터는 전투에 기여한 만큼 XP를 얻습니다."
 }

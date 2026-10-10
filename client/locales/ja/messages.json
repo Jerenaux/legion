@@ -1192,7 +1192,6 @@
   "{{value0}} can’t use this class’s gear.": "{{value0}}はこのクラスの装備を使えません。",
   "{{value0}} needs level {{value1}}.": "{{value0}}はレベル{{value1}}が必要です。",
   "{{value0}}’s item slots are full.": "{{value0}}のアイテム枠はいっぱいです。",
-  "Characters earn XP in battle, shared by how many targets each one hit or helped.": "キャラクターは戦闘で経験値を得ます。攻撃・支援した対象の数に応じて分配されます。",
   "Choose a mode": "モードを選ぶ",
   "Consumables fill carried-item slots and are used up in battle. Refill them after matches.": "消耗品は所持枠を使い、戦闘で消費されます。試合後に補充しましょう。",
   "Equip before you fight": "戦う前に装備しよう",
@@ -1238,5 +1237,6 @@
   "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.": "勝っても負けても、キャラクターはXPを、あなたはゴールドを得ます。上手に戦うほど、どちらも多くもらえます。",
   "Every match pays gold, win or lose. Fighting well pays more.": "勝っても負けても、毎試合ゴールドがもらえます。上手に戦うほど多くもらえます。",
   "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.": "インベントリは最初{{value0}}個まで入ります。追加の枠はチームメニューで購入できます。",
-  "Selling an item returns half its price.": "アイテムを売ると、価格の半分が戻ります。"
+  "Selling an item returns half its price.": "アイテムを売ると、価格の半分が戻ります。",
+  "Characters earn XP in battle, depending on their contributions to the battle.": "キャラクターは戦闘での貢献度に応じてXPを獲得します。"
 }

@@ -1192,7 +1192,6 @@
   "{{value0}} can’t use this class’s gear.": "{{value0}} 无法使用该职业的装备。",
   "{{value0}} needs level {{value1}}.": "{{value0}} 需要 {{value1}} 级。",
   "{{value0}}’s item slots are full.": "{{value0}} 的道具栏已满。",
-  "Characters earn XP in battle, shared by how many targets each one hit or helped.": "角色在战斗中获得经验，按各自攻击或协助的目标数量分配。",
   "Choose a mode": "选择模式",
   "Consumables fill carried-item slots and are used up in battle. Refill them after matches.": "消耗品占用携带栏位，在战斗中会被用掉。赛后记得补充。",
   "Equip before you fight": "战斗前先装备",
@@ -1238,5 +1237,6 @@
   "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.": "无论胜负，你的角色都会获得经验，你也会获得金币。打得越好，两者获得越多。",
   "Every match pays gold, win or lose. Fighting well pays more.": "无论胜负，每场比赛都能获得金币。打得越好，获得越多。",
   "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.": "背包初始可容纳 {{value0}} 件物品。你可以在队伍菜单中购买更多格子。",
-  "Selling an item returns half its price.": "出售物品可返还其一半价格。"
+  "Selling an item returns half its price.": "出售物品可返还其一半价格。",
+  "Characters earn XP in battle, depending on their contributions to the battle.": "角色在战斗中根据各自的贡献获得经验。"
 }

@@ -1224,7 +1224,6 @@
   "{{value0}} can’t use this class’s gear.": "{{value0}} не может использовать снаряжение этого класса.",
   "{{value0}} needs level {{value1}}.": "{{value0}} нужен уровень {{value1}}.",
   "{{value0}}’s item slots are full.": "Слоты предметов {{value0}} заполнены.",
-  "Characters earn XP in battle, shared by how many targets each one hit or helped.": "Персонажи получают опыт в бою; он делится по числу целей, которые каждый атаковал или поддержал.",
   "Choose a mode": "Выберите режим",
   "Consumables fill carried-item slots and are used up in battle. Refill them after matches.": "Расходники занимают слоты предметов и тратятся в бою. Пополняйте их после матчей.",
   "Equip before you fight": "Экипируйтесь перед боем",
@@ -1270,5 +1269,6 @@
   "Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.": "При победе и поражении ваши персонажи получают опыт, а вы — золото. Хороший бой приносит больше и того, и другого.",
   "Every match pays gold, win or lose. Fighting well pays more.": "Каждый матч приносит золото — при победе и при поражении. Хороший бой приносит больше.",
   "The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.": "Сначала в инвентаре {{value0}} мест. Дополнительные места можно купить в меню «Команда».",
-  "Selling an item returns half its price.": "При продаже предмета возвращается половина его цены."
+  "Selling an item returns half its price.": "При продаже предмета возвращается половина его цены.",
+  "Characters earn XP in battle, depending on their contributions to the battle.": "Персонажи получают опыт в бою в зависимости от своего вклада в сражение."
 }
