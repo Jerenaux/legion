@@ -1,4 +1,6 @@
 import {t} from '../i18n/core';
+import { shouldShowPageIntro } from './pageIntro/PageIntro';
+import { ShopIntro } from './pageIntro/intros';
 import { h } from 'preact';
 import { Component, createRef } from 'preact';
 import { apiFetch } from '../services/apiService';
@@ -16,6 +18,7 @@ enum DialogType {
 }
 
 interface State {
+  introClosed?: boolean;
   characters: Array<APICharacterData & {price: number}>; // Characters on sale
   openDialog: DialogType;
   quantity: number;
@@ -84,10 +87,12 @@ class ShopPage extends Component<ShopPageProps, State> {
 
     return (
         <div className="shop-container">
-          <PopupManager
-            ref={this.popupManagerRef}
-            onPopupResolved={() => {}}
-          />
+          {!this.state.introClosed && this.context.player.isLoaded && shouldShowPageIntro('shop', this.context.player.uid)
+            ? <ShopIntro uid={this.context.player.uid} onClose={() => this.setState({introClosed: true})} />
+            : <PopupManager
+                ref={this.popupManagerRef}
+                onPopupResolved={() => {}}
+              />}
           <ShopContent
             characters={this.state.characters}
             requiredTab={ShopTab[this.props.matches.category?.toUpperCase()]}

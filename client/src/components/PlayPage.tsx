@@ -1,4 +1,6 @@
 import {t} from '../i18n/core';
+import { shouldShowPageIntro } from './pageIntro/PageIntro';
+import { PlayIntro } from './pageIntro/intros';
 import { h } from 'preact';
 // PlayPage.tsx
 import { Component, createRef } from 'preact';
@@ -19,7 +21,14 @@ class PlayPage extends Component {
 
   state = {
     showWelcome: false,
+    introClosed: false,
   };
+
+  /** After the tutorial match, explain modes and rewards before any unlock popup. */
+  introOpen() {
+    const {player} = this.context;
+    return !this.state.introClosed && player.isLoaded && this.context.getCompletedGames() >= 1 && shouldShowPageIntro('play', player.uid);
+  }
 
   popupManagerRef = createRef();
 
@@ -171,10 +180,12 @@ class PlayPage extends Component {
 
     return (
       <div className="play-content">
-        <PopupManager
-          ref={this.popupManagerRef}
-          onPopupResolved={this.handlePopupResolved}
-        />
+        {this.introOpen()
+          ? <PlayIntro uid={this.context.player.uid} onClose={() => this.setState({introClosed: true})} />
+          : <PopupManager
+              ref={this.popupManagerRef}
+              onPopupResolved={this.handlePopupResolved}
+            />}
         <Roster/>
         {data ? <PlayModes /> : <Ghost height={280} count={4} className="ghost-row" width="13rem" />}
         {this.context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={this.context.player.dailyloot} />}
