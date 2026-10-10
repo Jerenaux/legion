@@ -696,11 +696,11 @@ if (!process.versions.electron) {
         console.log('Equipment ignores level; spell learning honors level in the packaged inventory UI');
 
         win.setContentSize(1280, 720);
-        await win.loadURL(`${PACKAGED_APP_URL}rank`);
+        await win.loadURL(`${PACKAGED_APP_URL}rank?intros`);
         // The first Rank visit explains leagues; skipping it must return control to the page.
-        await waitFor('Boolean(document.querySelector(".rank-intro"))');
-        await js('document.querySelector(".rank-intro-secondary").click()');
-        await waitFor('!document.querySelector(".rank-intro")');
+        await waitFor('Boolean(document.querySelector(".page-intro"))');
+        await js('document.querySelector(".page-intro-skip").click()');
+        await waitFor('!document.querySelector(".page-intro")');
         await waitFor('Boolean(document.querySelector(".rank-load-error"))');
         assert.equal(await js('document.querySelector(".rank-content").getAttribute("aria-busy")'), 'false');
         assert.equal(await js('document.querySelectorAll(".rank-content .ghost").length'), 0);

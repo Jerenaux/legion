@@ -5,11 +5,10 @@ import Welcome from './welcome/Welcome';
 import { PlayOneGameNotification } from './gameNotification/PlayOneGameNotification';
 import { UnlockedFeature } from './unlockedFeature/UnlockedFeature';
 import { ChestReward } from "@legion/shared/interfaces";
-import { InventoryType, LockedFeatures, } from "@legion/shared/enums";
+import { LockedFeatures } from "@legion/shared/enums";
 import { SimplePopup } from './simplePopup/SimplePopup';
 import { ENABLE_CINDER_TOWER, UNLOCK_REWARDS } from '@legion/shared/config';
 import { PlayerContext } from '../../contexts/PlayerContext';
-import { FeatureReveal } from './featureReveal/FeatureReveal';
 
 export enum Popup {
   Guest,
@@ -47,7 +46,6 @@ export enum Popup {
   PlayToUnlockCharacters,
   SpendSP,
   SwitchCharacterForSP,
-  FeatureReveal,
 }
 
 interface UnlockedFeatureConfig {
@@ -62,20 +60,12 @@ interface SimplePopupConfig {
   text: string;
 }
 
-interface FeatureRevealConfig {
-  title: string;
-  description: string;
-  contentCategory: InventoryType;
-  frame: number;
-  route?: string;
-}
-
 interface PopupConfig {
   // biome-ignore lint/suspicious/noExplicitAny: Popup components deliberately have heterogeneous prop contracts enforced by each registry entry.
   component: any;
   priority: number;
   highlightSelectors?: string[];  // CSS selectors for elements to highlight
-  props?: UnlockedFeatureConfig | SimplePopupConfig | FeatureRevealConfig;
+  props?: UnlockedFeatureConfig | SimplePopupConfig;
   ignoreStorage?: boolean;
 }
 
@@ -449,17 +439,6 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     highlightSelectors: ['[data-character-canspendsp]'],
     props: {
       text: "One of your <span class=\"highlight-text\">Characters</span> has SP to spend! Click on the character to switch to it!",
-    }
-  },
-  [Popup.FeatureReveal]: {
-    component: FeatureReveal,
-    priority: 0, // Higher than Guest (-1) but lower than others
-    props: {
-      title: "New spell: Revive!",
-      description: "The Revive spell is now available in the shop! Use it to revive a character in combat!",
-      contentCategory: InventoryType.SPELLS,
-      frame: 33,
-      route: '/shop/spells/12',
     }
   },
 };

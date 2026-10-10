@@ -1,4 +1,7 @@
 import {t} from '../i18n/core';
+import { shouldShowPageIntro } from './pageIntro/PageIntro';
+import { PlayIntro } from './pageIntro/intros';
+import IdentityIntro from './pageIntro/IdentityIntro';
 import { h } from 'preact';
 // PlayPage.tsx
 import { Component, createRef } from 'preact';
@@ -19,7 +22,23 @@ class PlayPage extends Component {
 
   state = {
     showWelcome: false,
+    introClosed: false,
+    identityClosed: false,
   };
+
+  // After the tutorial match, one dialog at a time: the player's generated name and
+  // portrait, then how matches work, then any unlock popup.
+  afterFirstMatch() {
+    return this.context.player.isLoaded && this.context.getCompletedGames() >= 1;
+  }
+
+  identityOpen() {
+    return !this.state.identityClosed && this.afterFirstMatch() && shouldShowPageIntro('identity', this.context.player.uid);
+  }
+
+  introOpen() {
+    return !this.state.introClosed && this.afterFirstMatch() && shouldShowPageIntro('play', this.context.player.uid);
+  }
 
   popupManagerRef = createRef();
 
@@ -39,10 +58,6 @@ class PlayPage extends Component {
     if (!this.context.player.isLoaded) return;
 
     const completedGames = this.context.getCompletedGames();
-
-    if (completedGames > 12) {
-      this.enqueuePopup(Popup.FeatureReveal);
-    }
 
     switch(completedGames) {
       case 0:
@@ -171,10 +186,14 @@ class PlayPage extends Component {
 
     return (
       <div className="play-content">
-        <PopupManager
-          ref={this.popupManagerRef}
-          onPopupResolved={this.handlePopupResolved}
-        />
+        {this.identityOpen()
+          ? <IdentityIntro onClose={() => this.setState({identityClosed: true})} />
+          : this.introOpen()
+          ? <PlayIntro uid={this.context.player.uid} onClose={() => this.setState({introClosed: true})} />
+          : <PopupManager
+              ref={this.popupManagerRef}
+              onPopupResolved={this.handlePopupResolved}
+            />}
         <Roster/>
         {data ? <PlayModes /> : <Ghost height={280} count={4} className="ghost-row" width="13rem" />}
         {this.context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={this.context.player.dailyloot} />}
