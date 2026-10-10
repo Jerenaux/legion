@@ -4,7 +4,7 @@ import Modal from 'react-modal';
 import {t} from '../../i18n/core';
 import './PageIntro.css';
 
-export type IntroPage = 'rank' | 'play' | 'team' | 'shop';
+export type IntroPage = 'rank' | 'play' | 'team' | 'shop' | 'identity';
 
 export interface IntroStep {
   title: string;
@@ -22,6 +22,11 @@ export function shouldShowPageIntro(page: IntroPage, uid: string | undefined): b
   try { return !localStorage.getItem(storageKey(page, uid)); } catch { return false; }
 }
 
+export function markPageIntroSeen(page: IntroPage, uid: string | undefined) {
+  if (!uid) return;
+  try { localStorage.setItem(storageKey(page, uid), String(Date.now())); } catch { /* Storage disabled: shows again next visit. */ }
+}
+
 interface Props {
   page: IntroPage;
   uid: string;
@@ -35,7 +40,7 @@ interface Props {
 export default function PageIntro({page, uid, label, steps, finishLabel, onClose}: Props) {
   const [step, setStep] = useState(0);
   const close = () => {
-    try { localStorage.setItem(storageKey(page, uid), String(Date.now())); } catch { /* Storage disabled: shows again next visit. */ }
+    markPageIntroSeen(page, uid);
     onClose();
   };
   const current = steps[step];

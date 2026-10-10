@@ -1263,5 +1263,13 @@
   "You start with {{value0}} characters. Recruits unlock after {{value1}} games, up to {{value2}}.": "Вы начинаете с {{value0}} персонажами. Новые бойцы открываются после {{value1}} матчей, до {{value2}}.",
   "Your characters keep their progress": "Персонажи сохраняют прогресс",
   "Your gold is shown at the top of the Shop. Prices in red are out of reach for now.": "Ваше золото показано вверху магазина. Красные цены пока недоступны.",
-  "Your whole roster fights": "Сражается весь отряд"
+  "Your whole roster fights": "Сражается весь отряд",
+  "Avatar {{value0}}": "Аватар {{value0}}",
+  "Change": "Изменить",
+  "Choose a name.": "Выберите имя.",
+  "Keep them": "Оставить",
+  "Name": "Имя",
+  "Other players see them in matches and on leaderboards. We picked these for you; keep them or make them yours.": "Другие игроки видят их в матчах и таблицах лидеров. Мы выбрали их за вас — оставьте или измените.",
+  "You can change both any time from your profile: select your portrait at the top left.": "Изменить их можно в любой момент в профиле: выберите свой портрет вверху слева.",
+  "Your name and portrait": "Ваше имя и портрет"
 }

@@ -1231,5 +1231,13 @@
   "You start with {{value0}} characters. Recruits unlock after {{value1}} games, up to {{value2}}.": "你從 {{value0}} 名角色開始。{{value1}} 局後可招募新角色，最多 {{value2}} 名。",
   "Your characters keep their progress": "角色會保留成長",
   "Your gold is shown at the top of the Shop. Prices in red are out of reach for now.": "你的金幣顯示在商店頂部。紅色價格表示暫時買不起。",
-  "Your whole roster fights": "全員上陣"
+  "Your whole roster fights": "全員上陣",
+  "Avatar {{value0}}": "頭像 {{value0}}",
+  "Change": "更換",
+  "Choose a name.": "請輸入名稱。",
+  "Keep them": "保持不變",
+  "Name": "名稱",
+  "Other players see them in matches and on leaderboards. We picked these for you; keep them or make them yours.": "其他玩家會在對局和排行榜中看到它們。這是我們為你選的，可以保留，也可以改成你喜歡的。",
+  "You can change both any time from your profile: select your portrait at the top left.": "你可以隨時在個人檔案中修改它們：點擊左上角的頭像。",
+  "Your name and portrait": "你的名稱和頭像"
 }

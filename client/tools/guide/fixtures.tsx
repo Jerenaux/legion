@@ -56,8 +56,8 @@ const characters = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind
   id: `guide-${i}`, name: ['Roland', 'Luna', 'Ember'][i], portrait: ['1_1', '1_7', '1_5'][i],
   sp: 2, inventory: [0, 1], skills: [[], [9], [0, 3]][i],
 }));
-// Page intros (Rank, Play, Team, Shop) would cover scripted flows; ?intros shows them again.
-for (const page of ['rank', 'play', 'team', 'shop']) {
+// Page intros (Rank, Play, Team, Shop, identity) would cover scripted flows; ?intros shows them again.
+for (const page of ['rank', 'play', 'team', 'shop', 'identity']) {
   const key = `legion.${page}Intro.v1.guide-local-only`;
   try {
     if (new URLSearchParams(location.search).has('intros')) localStorage.removeItem(key);
@@ -192,6 +192,7 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
     return structuredClone(towerCheck.progress);
   }
   if (endpoint === 'recordPlayerAction') return {};
+  if (endpoint === 'updatePlayerName' || endpoint === 'updatePlayerAvatar') return {success: true};
   if (endpoint.startsWith('getCommunity?id=')) {
     const id = decodeURIComponent(endpoint.split('=')[1]);
     const community = fixtureCommunities.find(entry => entry.id === id);

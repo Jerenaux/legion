@@ -1231,5 +1231,13 @@
   "You start with {{value0}} characters. Recruits unlock after {{value1}} games, up to {{value2}}.": "You start with {{value0}} characters. Recruits unlock after {{value1}} games, up to {{value2}}.",
   "Your characters keep their progress": "Your characters keep their progress",
   "Your gold is shown at the top of the Shop. Prices in red are out of reach for now.": "Your gold is shown at the top of the Shop. Prices in red are out of reach for now.",
-  "Your whole roster fights": "Your whole roster fights"
+  "Your whole roster fights": "Your whole roster fights",
+  "Avatar {{value0}}": "Avatar {{value0}}",
+  "Change": "Change",
+  "Choose a name.": "Choose a name.",
+  "Keep them": "Keep them",
+  "Name": "Name",
+  "Other players see them in matches and on leaderboards. We picked these for you; keep them or make them yours.": "Other players see them in matches and on leaderboards. We picked these for you; keep them or make them yours.",
+  "You can change both any time from your profile: select your portrait at the top left.": "You can change both any time from your profile: select your portrait at the top left.",
+  "Your name and portrait": "Your name and portrait"
 }

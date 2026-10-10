@@ -1231,5 +1231,13 @@
   "You start with {{value0}} characters. Recruits unlock after {{value1}} games, up to {{value2}}.": "最初は{{value0}}人。{{value1}}試合後に新メンバーを最大{{value2}}人まで迎えられます。",
   "Your characters keep their progress": "キャラクターの成長は引き継がれる",
   "Your gold is shown at the top of the Shop. Prices in red are out of reach for now.": "所持ゴールドはショップ上部に表示されます。赤い価格はまだ手が届きません。",
-  "Your whole roster fights": "ロスター全員で戦う"
+  "Your whole roster fights": "ロスター全員で戦う",
+  "Avatar {{value0}}": "アバター {{value0}}",
+  "Change": "変更",
+  "Choose a name.": "名前を入力してください。",
+  "Keep them": "このままにする",
+  "Name": "名前",
+  "Other players see them in matches and on leaderboards. We picked these for you; keep them or make them yours.": "他のプレイヤーは試合やランキングでこれを目にします。こちらで選んだので、そのまま使うか自分好みに変えましょう。",
+  "You can change both any time from your profile: select your portrait at the top left.": "どちらもプロフィールからいつでも変更できます。左上のポートレートを選択してください。",
+  "Your name and portrait": "名前とポートレート"
 }

@@ -1,6 +1,7 @@
 import {t} from '../i18n/core';
 import { shouldShowPageIntro } from './pageIntro/PageIntro';
 import { PlayIntro } from './pageIntro/intros';
+import IdentityIntro from './pageIntro/IdentityIntro';
 import { h } from 'preact';
 // PlayPage.tsx
 import { Component, createRef } from 'preact';
@@ -22,12 +23,21 @@ class PlayPage extends Component {
   state = {
     showWelcome: false,
     introClosed: false,
+    identityClosed: false,
   };
 
-  /** After the tutorial match, explain modes and rewards before any unlock popup. */
+  // After the tutorial match, one dialog at a time: the player's generated name and
+  // portrait, then how matches work, then any unlock popup.
+  afterFirstMatch() {
+    return this.context.player.isLoaded && this.context.getCompletedGames() >= 1;
+  }
+
+  identityOpen() {
+    return !this.state.identityClosed && this.afterFirstMatch() && shouldShowPageIntro('identity', this.context.player.uid);
+  }
+
   introOpen() {
-    const {player} = this.context;
-    return !this.state.introClosed && player.isLoaded && this.context.getCompletedGames() >= 1 && shouldShowPageIntro('play', player.uid);
+    return !this.state.introClosed && this.afterFirstMatch() && shouldShowPageIntro('play', this.context.player.uid);
   }
 
   popupManagerRef = createRef();
@@ -180,7 +190,9 @@ class PlayPage extends Component {
 
     return (
       <div className="play-content">
-        {this.introOpen()
+        {this.identityOpen()
+          ? <IdentityIntro onClose={() => this.setState({identityClosed: true})} />
+          : this.introOpen()
           ? <PlayIntro uid={this.context.player.uid} onClose={() => this.setState({introClosed: true})} />
           : <PopupManager
               ref={this.popupManagerRef}

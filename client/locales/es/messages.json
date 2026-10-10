@@ -1247,5 +1247,13 @@
   "You start with {{value0}} characters. Recruits unlock after {{value1}} games, up to {{value2}}.": "Empiezas con {{value0}} personajes. Los reclutas se desbloquean tras {{value1}} partidas, hasta {{value2}}.",
   "Your characters keep their progress": "Tus personajes conservan su progreso",
   "Your gold is shown at the top of the Shop. Prices in red are out of reach for now.": "Tu oro aparece arriba en la Tienda. Los precios en rojo aún no están a tu alcance.",
-  "Your whole roster fights": "Todo tu equipo combate"
+  "Your whole roster fights": "Todo tu equipo combate",
+  "Avatar {{value0}}": "Avatar {{value0}}",
+  "Change": "Cambiar",
+  "Choose a name.": "Elige un nombre.",
+  "Keep them": "Mantener",
+  "Name": "Nombre",
+  "Other players see them in matches and on leaderboards. We picked these for you; keep them or make them yours.": "Los demás jugadores los ven en las partidas y clasificaciones. Los elegimos por ti: consérvalos o personalízalos.",
+  "You can change both any time from your profile: select your portrait at the top left.": "Puedes cambiar ambos cuando quieras desde tu perfil: selecciona tu retrato arriba a la izquierda.",
+  "Your name and portrait": "Tu nombre y retrato"
 }
