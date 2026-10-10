@@ -33,9 +33,9 @@ export function PlayIntro({uid, onClose}: IntroProps) {
       title: t('Choose a mode'),
       art: icons([practiceIcon, casualIcon, rankedIcon]),
       rows: [
-        {icon: practiceIcon, text: t('Practice: fight the AI. Reduced XP and gold, and your ELO never changes.')},
-        {icon: casualIcon, text: t('Casual: fight other players for full rewards, with no ELO or league at stake.')},
-        {icon: rankedIcon, text: t('Ranked: higher rewards; results count toward your ELO and the weekly league.')},
+        {icon: practiceIcon, text: t('Practice: fight the AI. Your ELO never changes.')},
+        {icon: casualIcon, text: t('Casual: fight other players, with no ELO or league at stake.')},
+        {icon: rankedIcon, text: t('Ranked: results count toward your ELO and the weekly league.')},
       ],
       lines: [],
     },
@@ -43,7 +43,7 @@ export function PlayIntro({uid, onClose}: IntroProps) {
       title: t('Every match moves you forward'),
       art: icons([xpIcon, goldIcon, goldChest]),
       lines: [
-        t('Win or lose, your characters gain XP and you earn gold based on your performance grade.'),
+        t('Win or lose, your characters gain XP and you earn gold. Fighting well earns more of both.'),
       ],
     },
     {
@@ -98,8 +98,7 @@ export function ShopIntro({uid, onClose}: IntroProps) {
       title: t('Spend the gold you earn'),
       art: icons([goldIcon, goldChest]),
       lines: [
-        t('Every match pays gold based on your grade. Ranked pays more; Practice pays less.'),
-        t('Your gold is shown at the top of the Shop. Prices in red are out of reach for now.'),
+        t('Every match pays gold, win or lose. Fighting well pays more.'),
       ],
     },
     {
@@ -118,7 +117,8 @@ export function ShopIntro({uid, onClose}: IntroProps) {
       art: icons([consumablesIcon, spellsIcon, equipmentIcon]),
       lines: [
         t('Everything you buy lands in the shared inventory. Assign it to a character in Team before battle.'),
-        t('The inventory holds {{value0}} items to start; buy more slots with the + in Team. Selling an item returns half its price.', {value0: BASE_INVENTORY_SIZE}),
+        t('The inventory holds {{value0}} items to start. You can buy more slots in the Team menu.', {value0: BASE_INVENTORY_SIZE}),
+        t('Selling an item returns half its price.'),
       ],
     },
   ];
