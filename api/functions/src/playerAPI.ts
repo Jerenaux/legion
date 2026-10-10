@@ -1,3 +1,4 @@
+import {chestsDelays, getDefaultDailyLoot} from "./dailyLoot";
 import {communitySummary} from '@legion/shared/communities';
 import { onRequest } from "./telemetry";
 import * as logger from "firebase-functions/logger";
@@ -88,30 +89,6 @@ export const buyInventorySlots = onRequest({
     }
   });
 });
-
-const chestsDelays = {
-  [ChestColor.BRONZE]: 6 * 60 * 60,
-  [ChestColor.SILVER]: 12 * 60 * 60,
-  [ChestColor.GOLD]: 24 * 60 * 60,
-};
-
-function getDefaultDailyLoot(): DailyLootAllDBData {
-  const now = Date.now() / 1000;
-  return {
-    [ChestColor.BRONZE]: {
-      time: now + chestsDelays[ChestColor.BRONZE],
-      hasKey: false,
-    },
-    [ChestColor.SILVER]: {
-      time: now + chestsDelays[ChestColor.SILVER],
-      hasKey: false,
-    },
-    [ChestColor.GOLD]: {
-      time: now + chestsDelays[ChestColor.GOLD],
-      hasKey: false,
-    },
-  };
-}
 
 function selectRandomAvatar(): string {
   // Return a random value betweem 1 and 31 included

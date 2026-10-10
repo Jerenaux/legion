@@ -62,6 +62,41 @@ try {
   assert.equal(daily.storeUsers.filter((uid: string)=>uid===one.uid).length,1);
   assert.equal((await db.collection('players').doc(one.uid).get()).data().lastStoreActiveDay,new Date().toISOString().slice(0,10));
   const denied=await fetch(`${api}/bootstrapPlayer`); assert.equal(denied.status,401);
+  // Inactive/seeded opponents can receive results without ever bootstrapping daily loot.
+  for (const [index, dailyloot, key] of [
+    [0, undefined, null],
+    [1, undefined, 'bronze'],
+    [2, {bronze: {time: 1234, hasKey: true}}, 'silver'],
+    [3, {bronze: {time: 1234, hasKey: true}, silver: {time: 5678, hasKey: false}, gold: {time: 9012, hasKey: false}}, 'gold'],
+  ] as const) {
+    const ref = db.collection('players').doc(`reward-${run}-${index}`);
+    await ref.set({gold: 10, xp: 5, elo: 2, characters: [], ...(dailyloot ? {dailyloot} : {})});
+    const reward = {uid: ref.id, resultId: `reward-${run}-${index}`, mode: PlayMode.CASUAL_VS_AI,
+      stayedUntilTheEnd: false, engagement: {}, outcomes: {
+        isWinner: true, xp: 7, gold: 3, elo: 1, characters: [], key,
+        chests: [{color: 'bronze', content: [{type: 'gold', id: -1, amount: 11}, {type: 'consumable', id: 10, amount: 1}]}],
+      }};
+    const started = Date.now() / 1000;
+    await Promise.all([http('postGameUpdate', reward), http('postGameUpdate', reward)]);
+    const saved = (await ref.get()).data();
+    assert.equal(saved.gold, 24);
+    assert.equal(saved.xp, 12);
+    assert.equal(saved.elo, 3);
+    assert.deepEqual(saved.inventory.consumables, [10]);
+    assert.equal(saved.casualStats.nbGames, 1);
+    for (const [color, delay] of [['bronze', 21600], ['silver', 43200], ['gold', 86400]] as const) {
+      const previous = dailyloot?.[color];
+      const chest = saved.dailyloot[color];
+      assert.equal(chest.hasKey, color === key || previous?.hasKey === true);
+      if (previous) assert.equal(chest.time, previous.time);
+      else assert(chest.time >= started + delay && chest.time <= Date.now() / 1000 + delay);
+    }
+    await http('postGameUpdate', reward);
+    assert.deepEqual((await ref.get()).data(), saved, 'A retried result must not grant rewards or reset timers twice');
+    assert.equal((await db.collection('processedGameResults').where('uid', '==', ref.id).get()).size, 1);
+    await ref.delete();
+  }
+  console.log('Post-match rewards initialize missing chest data, preserve existing timers/keys, and apply once under concurrent retries');
   // A reset account keeps its fixed-ID characters and practice match; signing in again must
   // still recreate a loadable player rather than fail on those leftovers.
   const reset=await login(`reset-${run}`);
