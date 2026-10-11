@@ -340,8 +340,14 @@
 .shop-tabs-container { flex-wrap: wrap; box-sizing: border-box; }
 .shop-items-container, .equipment-section, .spells-section, .consumables-section { box-sizing: border-box; }
 .shop-items-container, .equipment-grid, .spells-grid, .consumables-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    /* auto-fill keeps empty tracks, so a section with one or two cards keeps the usual card width. */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
 }
+/* Category groups span the whole item grid; only the cards inside them use its tracks. */
+:is(.spells-container, .consumables-container, .equipment-sections) { grid-column: 1 / -1; }
+
+/* Stats, rarity and price line up across a row, however long each description is. */
+:is(.spell-card-effect-container, .consumable-card-effect-container) { margin-top: auto; }
 .shop-card-container, .spell-card-container { min-width: 0; max-width: 100%; box-sizing: border-box; }
 
 /* Gold sits next to the prices it is compared with, not only in the navbar corner. */
