@@ -32,6 +32,7 @@ Gold uses ID 0. Creation and redemption validate item IDs and quantities.
 ```sh
 bun tools/gifts.ts create --project legion-32c6d --usage single --label "Creator name" --rewards /path/to/rewards.json
 bun tools/gifts.ts create --project legion-32c6d --usage unlimited --label "Creator audience" --rewards /path/to/rewards.json
+# Optionally add --language fr (invite page language; defaults to the community's)
 # Optionally add --expires 2027-01-01T00:00:00Z
 # Optionally add --community CODE: recipients are also invited to that active community
 bun tools/gifts.ts list --project legion-32c6d
@@ -72,6 +73,13 @@ Functions deploy automatically; deploy the website (`gh workflow run deploy-webs
 --ref main`) so the rewrite and assets go live. A forwarded
 single-use link can be redeemed by its first recipient; it is not tied to a named creator.
 The internal label is operator-only and never sent to the game.
+
+The page is localized into every shipped game language. Its language is, in order: `?lang=CODE`
+on the link (for testing or a bilingual creator), the gift's `--language`, the linked community's
+language, the visitor's browser languages, then English. Item names, reward kinds and the
+profile's "Join a community" label come from the game catalogs (`client/locales`), page copy from
+`api/functions/src/inviteCopy.ts`; dates, numbers and the Steam store link follow the language.
+The game itself still picks its own language from Steam or the computer.
 
 Firestore collection `creatorGifts` stores the token's SHA-256 hash as document
 ID, `usage`, rewards, label and creation/expiry/revocation timestamps (UTC

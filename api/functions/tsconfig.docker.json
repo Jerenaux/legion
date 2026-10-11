@@ -11,7 +11,8 @@
     "lib": ["es2022"],
     "baseUrl": "./",
 		"paths": {
-			"@legion/shared/*": ["shared/*"]
+			"@legion/shared/*": ["shared/*"],
+			"@legion/locales/*": ["locales/*"]
 		},
     "skipLibCheck": true,
   },

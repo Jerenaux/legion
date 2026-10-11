@@ -1,13 +1,15 @@
 import {onRequest} from './telemetry';
 import {firestore} from './APIsetup';
-import {INVITE_ORIGIN, giftCommunity, giftId, giftTokenPattern, validateGiftRewards} from './gifts';
+import {INVITE_ORIGIN, giftId, giftTokenPattern, validateGiftRewards} from './gifts';
 import {communitySummary, normalizeCommunityCode} from '@legion/shared/communities';
 import {INVITE_CSP, InvitePageInput, renderInvitePage} from './invitePage';
 import type {ChestReward} from '@legion/shared/interfaces';
+import {pickInviteLanguage} from './inviteCopy';
 
 const PAGE_HEADERS = {'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': INVITE_CSP};
 
-async function loadInvite(query: Record<string, unknown>): Promise<InvitePageInput> {
+/** The page data plus the language stored on the gift or its community (operator-set). */
+async function loadInvite(query: Record<string, unknown>): Promise<InvitePageInput & {storedLanguage?: unknown}> {
   const db = firestore();
   if (typeof query.gift === 'string') {
     if (!giftTokenPattern.test(query.gift)) return {invalid: true};
@@ -16,17 +18,20 @@ async function loadInvite(query: Record<string, unknown>): Promise<InvitePageInp
     const expired = gift.expiresAt != null && (!Number.isSafeInteger(gift.expiresAt) || gift.expiresAt <= Date.now());
     let rewards: ChestReward[] = [];
     try { rewards = validateGiftRewards(gift.rewards); } catch { /* Shown as unavailable. */ }
+    const communityId = typeof gift.communityId === 'string' && gift.communityId ? gift.communityId : null;
+    const communityDoc = communityId ? (await db.collection('communities').doc(communityId).get()).data() : undefined;
     return {
       gift: {token: query.gift, rewards, unlimited: gift.usage === 'unlimited', expiresAt: gift.expiresAt ?? null,
         available: rewards.length > 0 && !gift.revokedAt && !expired && !gift.claimedBy},
-      community: await giftCommunity(db, gift.communityId),
+      community: communityDoc?.status === 'active' ? communitySummary({...communityDoc, id: communityId}) : null,
+      storedLanguage: gift.language ?? communityDoc?.language,
     };
   }
   const id = normalizeCommunityCode(query.community);
   if (!id) return {invalid: true};
   const community = (await db.collection('communities').doc(id).get()).data();
   const summary = community?.status === 'active' ? communitySummary({...community, id}) : null;
-  return summary ? {community: summary} : {invalid: true};
+  return summary ? {community: summary, storedLanguage: community?.language} : {invalid: true};
 }
 
 // GET only renders a page: link scanners and previews can never claim a gift or join.
@@ -34,12 +39,15 @@ export const invite = onRequest({invoker: 'public', memory: '256MiB'}, async (re
   response.set(PAGE_HEADERS);
   if (request.method !== 'GET' && request.method !== 'HEAD') { response.status(405).send('Method not allowed'); return; }
   try {
-    const input = await loadInvite(request.query);
-    response.status(input.invalid ? 404 : 200).type('html').send(renderInvitePage(input));
+    const {storedLanguage, ...input} = await loadInvite(request.query);
+    const language = pickInviteLanguage(request.query.lang, storedLanguage, request.get('accept-language'));
+    response.set({'Content-Language': language, 'Vary': 'Accept-Language'});
+    response.status(input.invalid ? 404 : 200).type('html').send(renderInvitePage({...input, language}));
   } catch {
     // Never log the bearer gift token or query string.
     console.error('Invite page failed');
-    response.status(500).type('html').send(renderInvitePage({invalid: true}));
+    const language = pickInviteLanguage(request.query.lang, undefined, request.get('accept-language'));
+    response.status(500).type('html').send(renderInvitePage({invalid: true, language}));
   }
 });
 

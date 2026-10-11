@@ -36,6 +36,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
         '@legion/shared': path.resolve(__dirname, isDocker ? 'shared' : '../../shared'),
+        '@legion/locales': path.resolve(__dirname, isDocker ? 'locales' : '../../client/locales'),
       },
   },
   output: {
