@@ -263,7 +263,7 @@ test('reapplied statuses add their turns, from spells and poisoned weapons alike
   player.spells = [new Spell(getSpellById(10))];
   enemy.statuses[StatusEffect.POISON] = 4;
   game.processAction('spell', {x: 3, y: 5, index: 0, targetTeam: 2, target: 1}, socket);
-  scheduled.forEach(run => run());
+  for (const run of scheduled) run();
   expect(enemy.statuses[StatusEffect.POISON]).toBe(14);
 
   player.hasActed = false;
