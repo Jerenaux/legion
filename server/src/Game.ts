@@ -905,7 +905,7 @@ export abstract class Game
         // console.log(`[Game:processAttack] Weapon: ${weapon?.name}`);
         if (weapon) {
             weapon.statusEffects?.forEach(effect => {
-                opponent.addStatusEffect(effect.effect, effect.chance);
+                opponent.addStatusEffect(effect.effect, effect.duration, effect.chance);
             });
         }
 

@@ -257,3 +257,18 @@ test('Ether restoration is public and reconnect snapshots preserve the restored 
   expect(game.replayMessages).toContainEqual(expect.objectContaining({event: 'manachange', data: {team: 1, num: 1, mp: 25}}));
   expect(game.getGameData(2, true).opponent.team[0]).toMatchObject({mp: 25, maxMP: 100});
 });
+
+test('reapplied statuses add their turns, from spells and poisoned weapons alike', () => {
+  spyOn(Math, 'random').mockReturnValue(0);
+  player.spells = [new Spell(getSpellById(10))];
+  enemy.statuses[StatusEffect.POISON] = 4;
+  game.processAction('spell', {x: 3, y: 5, index: 0, targetTeam: 2, target: 1}, socket);
+  for (const run of scheduled) run();
+  expect(enemy.statuses[StatusEffect.POISON]).toBe(14);
+
+  player.hasActed = false;
+  player.equipment = {weapon: 32} as typeof player.equipment;
+  game.updatePlayerPosition(enemy, 2, 5);
+  game.processAction('attack', {target: 1, sameTeam: false}, socket);
+  expect(enemy.statuses[StatusEffect.POISON]).toBe(17);
+});

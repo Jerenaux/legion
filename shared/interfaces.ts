@@ -103,6 +103,7 @@ export interface EquipmentData {
 export interface WeaponStatusEffect {
     effect: StatusEffect;
     chance: number;
+    duration: number;
 }
 
 export interface CharacterUpdate {
@@ -352,6 +353,7 @@ export interface PlayerProps {
     items: BaseItem[];
     casting: boolean;
     statuses: StatusEffects;
+    statusRefreshes?: Partial<Record<StatusEffect, number>>;
     pendingSpell: number;
     pendingItem: number;
     isParalyzed: boolean;
@@ -373,6 +375,7 @@ export interface TeamMember {
     isPlayer: boolean;
     class: Class;
     statuses: StatusEffects;
+    statusRefreshes?: Partial<Record<StatusEffect, number>>;
     xp?: number;
     level?: number;
     id?: string;

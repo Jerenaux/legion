@@ -669,9 +669,7 @@
   "Wayfarer's cord": "旅人の飾り紐",
   "Sturdy Iron Sword": "頑丈な鉄の剣",
   "Serpent's Fang": "蛇の牙",
-  "80% chance to poison enemy on melee attacks.": "近接攻撃時、80%の確率で敵を毒にする。",
   "Viridian Striker": "翠緑の剣",
-  "30% chance to poison enemy on melee attacks.": "近接攻撃時、30%の確率で敵を毒にする。",
   "Remove": "外す",
   "Spend": "使う",
   "the queue": "マッチング",
@@ -1193,5 +1191,9 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}}はこのクラスの呪文を習得できません。",
   "{{value0}} can’t use this class’s gear.": "{{value0}}はこのクラスの装備を使えません。",
   "{{value0}} needs level {{value1}}.": "{{value0}}はレベル{{value1}}が必要です。",
-  "{{value0}}’s item slots are full.": "{{value0}}のアイテム枠はいっぱいです。"
+  "{{value0}}’s item slots are full.": "{{value0}}のアイテム枠はいっぱいです。",
+  "80% chance to poison the enemy for 3 turns on melee attacks.": "近接攻撃時、80%の確率で敵を3ターン毒にする。",
+  "30% chance to poison the enemy for 3 turns on melee attacks.": "近接攻撃時、30%の確率で敵を3ターン毒にする。",
+  "Stacks: reapplying adds these turns to any already left.": "重複可：再度かけると、残りターンにこのターン数が加算されます。",
+  "Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.": "状態異常の持続ターンは加算されます。毒の残り4ターンに10ターンのポイズンをかけると14ターンになります。各状態アイコンの横の数字が残りターンです。"
 }

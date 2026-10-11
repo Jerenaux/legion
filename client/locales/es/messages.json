@@ -669,9 +669,7 @@
   "Wayfarer's cord": "Cordón de caminante",
   "Sturdy Iron Sword": "Espada de hierro robusta",
   "Serpent's Fang": "Colmillo de serpiente",
-  "80% chance to poison enemy on melee attacks.": "80 % de probabilidad de envenenar al enemigo con ataques cuerpo a cuerpo.",
   "Viridian Striker": "Hoja viridiana",
-  "30% chance to poison enemy on melee attacks.": "30 % de probabilidad de envenenar al enemigo con ataques cuerpo a cuerpo.",
   "Remove": "Quitar",
   "Spend": "Gastar",
   "the queue": "la cola",
@@ -1209,5 +1207,9 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} no puede aprender los hechizos de esta clase.",
   "{{value0}} can’t use this class’s gear.": "{{value0}} no puede usar el equipo de esta clase.",
   "{{value0}} needs level {{value1}}.": "{{value0}} necesita nivel {{value1}}.",
-  "{{value0}}’s item slots are full.": "Las ranuras de objetos de {{value0}} están llenas."
+  "{{value0}}’s item slots are full.": "Las ranuras de objetos de {{value0}} están llenas.",
+  "80% chance to poison the enemy for 3 turns on melee attacks.": "80 % de probabilidad de envenenar al enemigo durante 3 turnos con ataques cuerpo a cuerpo.",
+  "30% chance to poison the enemy for 3 turns on melee attacks.": "30 % de probabilidad de envenenar al enemigo durante 3 turnos con ataques cuerpo a cuerpo.",
+  "Stacks: reapplying adds these turns to any already left.": "Se acumula: volver a aplicarlo suma estos turnos a los que queden.",
+  "Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.": "Las duraciones de los estados se suman: 4 turnos de veneno restantes más un hechizo Veneno de 10 turnos dan 14 turnos. El número junto a cada icono de estado muestra los turnos que quedan."
 }

@@ -42,6 +42,11 @@ export function ItemTooltip({id, showClasses = true, character}: {id: string; sh
     }} />;
 }
 
+/** Numbers in a description ("10 turns", "80%") stand out in gold. */
+function highlightNumbers(text: string) {
+  return text.split(/(\d+(?:[.,]\d+)*(?:\s?%)?)/).map((part, index) => index % 2 ? <span key={index} className="item-preview-number">{part}</span> : part);
+}
+
 function Requirement({met, children}: {met: boolean | null; children: h.JSX.Element | string}) {
   if (met === null) return <p className="item-preview-classes">{children}</p>;
   return <p className={`item-preview-classes item-preview-requirement ${met ? 'is-met' : 'is-unmet'}`}>
@@ -64,6 +69,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
   const equipment = item instanceof BaseEquipment;
   const sprite = spell ? spellsSpritesheet : equipment ? equipmentSpritesheet : consumablesSpritesheet;
   const {x, y} = mapFrameToCoordinates(item.frame);
+  const appliesStatus = equipment ? item.statusEffects.length > 0 : Boolean(item.status);
   return <div className="item-preview">
     <div className="item-preview-heading">
       <div className="item-preview-icon">
@@ -74,7 +80,8 @@ export function ItemTooltipContent({item, showClasses, character}: {
         <strong className="item-preview-name">{t(item.name)}</strong>
       </div>
     </div>
-    {item.description && <p className="item-preview-description">{t(item.description)}</p>}
+    {item.description && <p className="item-preview-description">{highlightNumbers(t(item.description))}</p>}
+    {appliesStatus && <p className="item-preview-note">{t('Stacks: reapplying adds these turns to any already left.')}</p>}
     {!equipment && <div className="item-preview-facts">
       {spell && <span><Trans i18n={i18n} i18nKey={"<0/>{{value0}} MP"} components={[<img src={mpIcon} alt="" />]} values={{value0: item.cost}} /></span>}
       <span><img src={speedIcon} alt={""} />{getSpeedClass(item.speedClass).toLowerCase()}</span>

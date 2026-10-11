@@ -7,7 +7,7 @@ import { BaseSpell } from '@legion/shared/BaseSpell';
 import { loadGameSettings } from '../../settings';
 import { CONTROLS_CHANGED_EVENT, DesktopAction } from '../../input/actions';
 import { SPELL_SLOT_OFFSET, primaryKeyLabel } from '../../input/bindings';
-import { statusIcons } from '../utils';
+import { statusIcons, statusPulse } from '../utils';
 import hpIcon from '@assets/stats_icons/hp_icon.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
 import { ItemTooltip } from '../ItemTooltipContent';
@@ -145,7 +145,7 @@ class PlayerBar extends Component<PlayerBarProps> {
                 </>}
                 <div className="player_bar_statuses">
                   {Object.entries(statuses || {}).filter(([, duration]) => duration !== 0).map(([status, duration]) => (
-                    <span key={status} role="img" aria-label={duration === -1 ? t('{{status}}, indefinite', {status: t(status)}) : t('statusTurns', {status: t(status), count: Number(duration)})}>
+                    <span {...statusPulse(player?.statusRefreshes, status)} role="img" aria-label={duration === -1 ? t('{{status}}, indefinite', {status: t(status)}) : t('statusTurns', {status: t(status), count: Number(duration)})}>
                       <img src={statusIcons[status]} alt={t(status)} /><span>{duration === -1 ? '∞' : formatNumber(Number(duration))}</span>
                     </span>
                   ))}

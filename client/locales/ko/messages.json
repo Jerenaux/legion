@@ -669,9 +669,7 @@
   "Wayfarer's cord": "나그네의 허리끈",
   "Sturdy Iron Sword": "튼튼한 철검",
   "Serpent's Fang": "독사의 송곳니",
-  "80% chance to poison enemy on melee attacks.": "근접 공격 시 80% 확률로 적을 중독시킵니다.",
   "Viridian Striker": "비취빛 타격검",
-  "30% chance to poison enemy on melee attacks.": "근접 공격 시 30% 확률로 적을 중독시킵니다.",
   "Remove": "제거",
   "Spend": "사용",
   "the queue": "대기열",
@@ -1193,5 +1191,9 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}}은(는) 이 직업의 주문을 배울 수 없습니다.",
   "{{value0}} can’t use this class’s gear.": "{{value0}}은(는) 이 직업의 장비를 사용할 수 없습니다.",
   "{{value0}} needs level {{value1}}.": "{{value0}}은(는) {{value1}}레벨이 필요합니다.",
-  "{{value0}}’s item slots are full.": "{{value0}}의 아이템 슬롯이 가득 찼습니다."
+  "{{value0}}’s item slots are full.": "{{value0}}의 아이템 슬롯이 가득 찼습니다.",
+  "80% chance to poison the enemy for 3 turns on melee attacks.": "근접 공격 시 80% 확률로 적을 3턴 동안 중독시킵니다.",
+  "30% chance to poison the enemy for 3 turns on melee attacks.": "근접 공격 시 30% 확률로 적을 3턴 동안 중독시킵니다.",
+  "Stacks: reapplying adds these turns to any already left.": "중첩: 다시 걸면 남은 턴에 이 턴 수가 더해집니다.",
+  "Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.": "상태 이상 지속 시간은 더해집니다. 중독이 4턴 남은 상태에서 10턴짜리 중독 주문을 걸면 14턴이 됩니다. 각 상태 아이콘 옆 숫자가 남은 턴입니다."
 }

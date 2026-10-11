@@ -35,7 +35,9 @@
 .item-preview-sprite { width: 32px; height: 32px; background-repeat: no-repeat; }
 .item-preview-kind { display: block; color: #a1b7c3; font-size: 0.625rem; }
 .item-preview-name { display: block; font-size: 0.9375rem; line-height: 1.3; }
-.item-preview-description { margin: 12px 0 0; color: #71deff; }
+.item-preview-description { margin: 12px 0 0; color: #71deff; font-size: 0.8125rem; }
+.item-preview-number { color: var(--gold); }
+.item-preview-note { margin: 6px 0 0; color: #d6e6ec; font-size: 0.8125rem; }
 .item-preview-facts {
   display: flex;
   justify-content: space-between;

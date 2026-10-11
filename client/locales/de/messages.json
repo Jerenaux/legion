@@ -669,9 +669,7 @@
   "Wayfarer's cord": "Wandererschnur",
   "Sturdy Iron Sword": "Robustes Eisenschwert",
   "Serpent's Fang": "Schlangenzahn",
-  "80% chance to poison enemy on melee attacks.": "80 % Chance, den Gegner bei Nahkampfangriffen zu vergiften.",
   "Viridian Striker": "Viridianklinge",
-  "30% chance to poison enemy on melee attacks.": "30 % Chance, den Gegner bei Nahkampfangriffen zu vergiften.",
   "Remove": "Entfernen",
   "Spend": "Ausgeben",
   "the queue": "der Warteschlange",
@@ -1193,5 +1191,9 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} kann die Zauber dieser Klasse nicht lernen.",
   "{{value0}} can’t use this class’s gear.": "{{value0}} kann die Ausrüstung dieser Klasse nicht nutzen.",
   "{{value0}} needs level {{value1}}.": "{{value0}} braucht Stufe {{value1}}.",
-  "{{value0}}’s item slots are full.": "Die Gegenstandsplätze von {{value0}} sind voll."
+  "{{value0}}’s item slots are full.": "Die Gegenstandsplätze von {{value0}} sind voll.",
+  "80% chance to poison the enemy for 3 turns on melee attacks.": "80 % Chance, den Gegner bei Nahkampfangriffen für 3 Züge zu vergiften.",
+  "30% chance to poison the enemy for 3 turns on melee attacks.": "30 % Chance, den Gegner bei Nahkampfangriffen für 3 Züge zu vergiften.",
+  "Stacks: reapplying adds these turns to any already left.": "Stapelbar: Erneutes Anwenden addiert diese Züge zu den verbleibenden.",
+  "Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.": "Statusdauern addieren sich: 4 verbleibende Züge Vergiftung plus ein 10-Züge-Gift-Zauber ergeben 14 Züge. Die Zahl neben jedem Statussymbol zeigt die verbleibenden Züge."
 }

@@ -59,17 +59,17 @@
 
 .spell-card-content {
     box-sizing: border-box;
-    display: flex;
+    /* Icon centred whatever the card width; class badges sit right beside it. */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
     width: 100%;
     padding: 0 4px;
 }
 
-.spell-card-content .shop-portrait {
-    margin-left: 65px;
-}
+.spell-card-content .shop-portrait { grid-column: 2; }
+.spell-card-content .shop-card-class-container { grid-column: 3; justify-self: start; margin-left: 10px; }
 
 .spell-card-class {
     width: 20px;
