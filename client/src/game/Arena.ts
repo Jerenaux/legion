@@ -185,6 +185,7 @@ export class Arena extends Phaser.Scene
             inventory: this.processInventory,
             hpchange: this.processHPChange,
             statuseffectchange: this.processStatusChange,
+            statusresisted: this.processStatusResisted,
             mpchange: this.processMPChange,
             manachange: this.processMPChange,
             useitem: this.processUseItem,
@@ -941,6 +942,11 @@ export class Arena extends Phaser.Scene
         if (damage) player.displayDamage(damage);
         if (player.isPlayer) events.emit('hpChange', {num, hp});
         this.refreshTutorial();
+    }
+
+    processStatusResisted({team, num}) {
+        if (this.gameEnded) return;
+        this.getPlayer(team, num)?.displayOverheadText(t('Resisted'), 3000, '#b7c9d4');
     }
 
     processStatusChange({team, num, statuses}) {

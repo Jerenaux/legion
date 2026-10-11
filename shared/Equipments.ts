@@ -351,7 +351,7 @@ equipments[31] = new BaseEquipment({
 equipments[32] = new BaseEquipment({
     id: 32,
     name: "Serpent's Fang",
-    description: "80% chance to poison the enemy for 3 turns on melee attacks.",
+    description: "Can poison the enemy on melee attacks.",
     frame: 22,
     effects: [
         {stat: Stat.ATK, value: 35},
@@ -372,7 +372,7 @@ equipments[32] = new BaseEquipment({
 equipments[33] = new BaseEquipment({
     id: 33,
     name: "Viridian Striker",
-    description: "30% chance to poison the enemy for 3 turns on melee attacks.",
+    description: "Can poison the enemy on melee attacks.",
     frame: 3,
     effects: [
         {stat: Stat.ATK, value: 40},

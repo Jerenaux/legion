@@ -6,7 +6,7 @@ import { h } from 'preact';
 import './ShopEquipmentCard.style.css';
 import { Component } from 'preact';
 import { Class, InventoryType, equipmentSlotFields } from "@legion/shared/enums";
-import { mapFrameToCoordinates } from '../utils';
+import { inflictedStatuses, mapFrameToCoordinates, statusIcons, statusSummary } from '../utils';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { StatIcons } from '../shopConsumableCard/ShopConsumableCard';
 import { Tooltip as ReactTooltip } from "react-tooltip";
@@ -113,6 +113,12 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
         </div>
         <p data-tooltip-id={`equipment-desc-tooltip-${data.id}`} className="equipment-card-description">{t(data.description)}</p>
         <div className="consumable-card-effect-container">
+          {inflictedStatuses(data).map(status => (
+            <div key={status.effect} className="consumable-card-effect">
+              <img src={statusIcons[status.effect]} alt={t(status.effect)} />
+              <span>{statusSummary(status)}</span>
+            </div>
+          ))}
           {data.effects.map((effect, index) => (
             <div key={index} className="consumable-card-effect">
               <img src={StatIcons[effect.stat]} alt={""} />

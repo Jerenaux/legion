@@ -1,4 +1,4 @@
-import {t} from '../i18n/core';
+import {t, formatNumber} from '../i18n/core';
 import {Class, SpeedClass, Stat, StatFields} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
 import { guide } from './tips';
@@ -199,6 +199,19 @@ export const statusIcons = {
   'Burn': burnIcon,
   'Haste': hasteIcon,
 };
+
+type StatusRoll = {effect: string; chance: number; duration: number};
+
+/** The statuses a spell, consumable or weapon can inflict. */
+export function inflictedStatuses(item: {status?: StatusRoll; statusEffects?: StatusRoll[]}): StatusRoll[] {
+  return item.statusEffects?.length ? item.statusEffects : item.status ? [item.status] : [];
+}
+
+/** "50% · 5 turns": the chance only appears when the status can fail to land. */
+export function statusSummary({chance, duration}: StatusRoll) {
+  const turns = t('statusDuration', {count: duration});
+  return chance < 1 ? `${formatNumber(chance, {style: 'percent'})} · ${turns}` : turns;
+}
 
 /** Status chips remount with a one-off pulse when the status gains turns (see Player.statusRefreshes). */
 export function statusPulse(refreshes: Partial<Record<string, number>> | undefined, status: string) {
