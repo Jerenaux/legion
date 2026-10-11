@@ -11,7 +11,7 @@ import './profile.style.css';
 import SearchPlayers from './SearchPlayers';
 import { route } from 'preact-router';
 import { apiFetch } from '../../services/apiService';
-import { MAX_AVATAR_ID } from '@legion/shared/config';
+import { MAX_AVATAR_ID, MAX_NICKNAME_LENGTH } from '@legion/shared/config';
 import type { CommunitySummary } from '@legion/shared/communities';
 import ProfileCommunity from '../community/ProfileCommunity';
 import Sigil from '../sigil/Sigil';
@@ -545,7 +545,7 @@ class Profile extends Component<Props, State> {
                                         className="name-edit-input"
                                         value={this.state.newName}
                                         onChange={this.handleNameChange}
-                                        maxLength={20}
+                                        maxLength={MAX_NICKNAME_LENGTH}
                                     />
                                     {this.state.isUpdatingName ? (
                                         <div className="name-edit-spinner" />
