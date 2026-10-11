@@ -1,6 +1,5 @@
 /* Frame, scrim and buttons come from the shared .loot-popup and .game-btn styles. */
-.unlocked-feature-content,
-.feature-reveal-content {
+.unlocked-feature-content {
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -8,8 +7,7 @@
   text-align: center;
 }
 
-.unlocked-feature-rewards,
-.feature-reveal-icon {
+.unlocked-feature-rewards {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 14px;
@@ -18,8 +16,7 @@
 }
 
 /* Each reward sits in an inventory-style slot with light rays behind it. */
-.unlocked-feature-reward-item,
-.feature-reveal-icon {
+.unlocked-feature-reward-item {
   position: relative;
   isolation: isolate;
   width: 72px;
@@ -34,8 +31,7 @@
   box-shadow: inset 0 0 0 3px oklch(12% .025 250 / .6), 0 0 22px oklch(80% .13 80 / .35);
 }
 
-.unlocked-feature-reward-item::before,
-.feature-reveal-icon::before {
+.unlocked-feature-reward-item::before {
   content: '';
   position: absolute;
   inset: -22px;
@@ -46,8 +42,7 @@
   animation: loot-shine 14s linear infinite;
 }
 
-.unlocked-feature-reward-icon,
-.feature-icon {
+.unlocked-feature-reward-icon {
   width: 32px;
   height: 32px;
   background-repeat: no-repeat;
@@ -69,8 +64,7 @@
   text-align: center;
 }
 
-.unlocked-feature-buttons,
-.feature-reveal-buttons {
+.unlocked-feature-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -79,6 +73,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .unlocked-feature-reward-item::before,
-  .feature-reveal-icon::before { animation: none; }
+  .unlocked-feature-reward-item::before { animation: none; }
 }

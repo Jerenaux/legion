@@ -1,4 +1,6 @@
 import { h } from 'preact';
+import { shouldShowPageIntro } from './pageIntro/PageIntro';
+import { TeamIntro } from './pageIntro/intros';
 // PlayPage.tsx
 
 import { Component, createRef } from 'preact';
@@ -15,6 +17,7 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import PopupManager, { Popup } from './popups/PopupManager';
 
 interface TeamPageState {
+  introClosed?: boolean;
   carrying_capacity: number;
   roster_data: APICharacterData[];
   character_id: string;
@@ -34,6 +37,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   static contextType = PlayerContext;
 
   state = {
+    introClosed: false,
     inventory: {
       consumables: [],
       equipment: [],
@@ -164,10 +168,12 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
   render() {
     return (
       <div className="team-page">
-        <PopupManager
-          ref={this.popupManagerRef}
-          onPopupResolved={() => {}}
-        />
+        {!this.state.introClosed && this.context.player.isLoaded && shouldShowPageIntro('team', this.context.player.uid)
+          ? <TeamIntro uid={this.context.player.uid} onClose={() => this.setState({introClosed: true})} />
+          : <PopupManager
+              ref={this.popupManagerRef}
+              onPopupResolved={() => {}}
+            />}
         <Roster/>
         <div className="character-inventory-container">
           {this.context.player.isLoaded ? <CharacterSheet
