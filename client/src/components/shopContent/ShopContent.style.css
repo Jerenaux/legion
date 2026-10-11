@@ -414,3 +414,42 @@
 }
 
 .shop-toolbar .shop-item-filter-container { align-self: center; margin-right: 0; }
+
+/* A shop screen, not a long web page: tabs and gold stay put, the stock scrolls in its own pane
+   with each category's banner pinned while browsing it. */
+.shop-container { height: 100%; min-height: 0; }
+.shop-content { height: 100%; min-height: 0; gap: 14px; }
+.shop-content > .shop-items-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px 16px 24px;
+    border-top: 1px solid oklch(55% .09 62 / .35);
+    mask-image: linear-gradient(transparent, #000 10px, #000 calc(100% - 18px), transparent);
+}
+:is(.spells-type-title, .consumables-type-title, .equipment-type-title) {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    backdrop-filter: blur(6px);
+    background: linear-gradient(90deg, oklch(24% .05 55 / .92), oklch(16% .03 250 / .6) 75%) !important;
+    border-left-color: var(--ember) !important;
+}
+/* Tabs and purse share one header row, leaving the height to the stock. */
+.shop-content {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 20px;
+}
+.shop-content > .shop-tabs-container { grid-column: 1; grid-row: 1; justify-self: end; margin: 0; }
+.shop-content > .shop-toolbar { grid-column: 2; grid-row: 1; margin: 0; }
+.shop-content > .shop-items-container { grid-column: 1 / -1; grid-row: 2; align-self: stretch; }
+@media (max-width: 1100px) {
+    .shop-content { grid-template-columns: 1fr; grid-template-rows: auto auto minmax(0, 1fr); }
+    .shop-content > .shop-tabs-container { justify-self: center; }
+    .shop-content > .shop-toolbar { grid-column: 1; grid-row: 2; }
+    .shop-content > .shop-items-container { grid-row: 3; }
+}

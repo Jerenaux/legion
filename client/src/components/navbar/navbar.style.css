@@ -115,28 +115,38 @@
 .expand_btn_trigger {
   width: 100%;
   height: 100%;
+  display: grid;
+  place-items: center;
   padding: 0;
-  border: 0;
-  background-color: transparent;
-  background-size: 100% 100%;
+  border: 1px solid oklch(55% .09 62 / .7);
+  border-radius: 8px;
+  background: linear-gradient(oklch(26% .04 55), oklch(16% .03 250));
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .08), 0 4px 10px oklch(5% .02 255 / .5);
+  cursor: var(--game-pointer);
+  transition: transform 120ms ease-out, border-color 120ms ease-out;
 }
 
-.expand_btn_trigger:hover {
-  cursor: pointer;
+.expand_btn_trigger img {
+  width: 22px;
+  height: 22px;
+  transition: transform 200ms ease-out;
 }
 
-.expand_btn:hover .dropdown-content {
-  display: block;
+.expand_btn_trigger:hover, .expand_btn_trigger[aria-expanded="true"] {
+  border-color: var(--ember);
 }
+
+.expand_btn_trigger[aria-expanded="true"] img { transform: rotate(45deg); }
+.expand_btn_trigger:active { transform: translateY(1px); }
 
 .dropdown-content {
   display: none;
   position: absolute;
   top: 40px;
   right: 0;
-  border-radius: 4px;
-  border: 1px solid var(--ink-edge);
-  background: var(--panel-bg);
+  border-radius: 8px;
+  border: 1px solid oklch(55% .09 62 / .7);
+  background: linear-gradient(oklch(22% .035 55 / .97), oklch(14% .028 250 / .97));
   overflow: hidden;
   min-width: 190px;
   padding: 4px 0;
@@ -168,8 +178,8 @@
 .dropdown-content a:hover,
 .dropdown-content button:focus-visible,
 .dropdown-content a:focus-visible {
-  background-color: oklch(31% .04 238);
-  box-shadow: inset 3px 0 0 var(--gold);
+  background-color: oklch(30% .06 55 / .8);
+  box-shadow: inset 3px 0 0 var(--ember);
   outline: none;
 }
 

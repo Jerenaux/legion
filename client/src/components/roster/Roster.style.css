@@ -324,3 +324,23 @@
     .roster-portrait > span { animation: none; background-position: -40px -40px; }
     .roster-character { transition: none; }
 }
+
+/* Team screen: the roster is a compact strip above the character sheet, labelled like other
+   game sections rather than with a full-width web heading rule. */
+.team-page .rosterContainer { width: min(1180px, 100%); max-width: none; margin: 0 auto; }
+.team-page .roster-heading { border-bottom: 0; margin: 0 0 8px; padding: 0; align-items: center; }
+.team-page .roster-heading h1 { display: flex; align-items: center; gap: 10px; font-size: .9375rem; letter-spacing: .06em; }
+.team-page .roster-heading h1::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    background: var(--ember);
+    box-shadow: 0 0 8px var(--ember-glow);
+}
+.team-page .rosters { gap: 10px; }
+.team-page .roster-character, .team-page .roster-slot { min-height: 78px; padding-block: 4px; }
+.team-page .roster-portrait { height: 74px; }
+.team-page .roster-portrait > span { transform: scale(.78); }
+.team-page .roster-character[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ember), 0 0 18px var(--ember-glow); }
+.team-page .character-inventory-container { width: min(1180px, 100%); max-width: none; margin-inline: auto; box-sizing: border-box; }

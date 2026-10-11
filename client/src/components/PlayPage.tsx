@@ -5,7 +5,7 @@ import IdentityIntro from './pageIntro/IdentityIntro';
 import { h } from 'preact';
 // PlayPage.tsx
 import { Component, createRef } from 'preact';
-import Roster from './roster/Roster';
+import PartyHall from './playHall/PartyHall';
 import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
 import DailyQuest from './dailyQuest/DailyQuest';
@@ -185,7 +185,7 @@ class PlayPage extends Component {
     }
 
     return (
-      <div className="play-content">
+      <div className="play-content play-hall">
         {this.identityOpen()
           ? <IdentityIntro onClose={() => this.setState({identityClosed: true})} />
           : this.introOpen()
@@ -194,7 +194,7 @@ class PlayPage extends Component {
               ref={this.popupManagerRef}
               onPopupResolved={this.handlePopupResolved}
             />}
-        <Roster/>
+        <PartyHall />
         {data ? <PlayModes /> : <Ghost height={280} count={4} className="ghost-row" width="13rem" />}
         {this.context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={this.context.player.dailyloot} />}
         {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}

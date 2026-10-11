@@ -262,6 +262,7 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
       isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
+      dailyloot: {bronze: {hasKey: true, countdown: 0}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}},
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
       carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],

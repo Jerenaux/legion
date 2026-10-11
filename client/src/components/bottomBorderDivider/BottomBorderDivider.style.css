@@ -1,12 +1,32 @@
 .dividerContainer {
-    padding: 6px 0;
-    margin: 12px 0;
-    border-bottom: 1px solid #ffa600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 12px;
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
+/* A game label rather than a full-width web section rule: an ember spark, then a short fading line. */
+.dividerContainer::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    background: var(--ember);
+    box-shadow: 0 0 8px var(--ember-glow);
+    flex: none;
+}
+
+.dividerContainer::after {
+    content: '';
+    height: 1px;
+    width: min(220px, 30%);
+    background: linear-gradient(90deg, oklch(70% .12 60 / .7), transparent);
+}
+
 .dividerContainer span {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #FFFFFF;
+    font-size: 0.9375rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-strong);
 }

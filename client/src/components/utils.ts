@@ -53,8 +53,8 @@ function showToast(text: string, duration: number = 3000, avatar: string) {
     text,
     duration,
     close: true,
-    gravity: "bottom", // `top` or `bottom`
-    position: "left", // `left`, `center` or `right`
+    gravity: "top", // Game notification banner under the navigation bar.
+    position: "center",
     stopOnFocus: true, // Prevents dismissing of toast on hover
     className: "toast",
     avatar,
@@ -70,7 +70,7 @@ export function showGuideToast(text: string, destination: string, duration: numb
     text,
     duration,
     close: true,
-    gravity: "bottom", // `top` or `bottom`
+    gravity: "top", // Game notification banner under the navigation bar.
     position: "center", // `left`, `center` or `right`
     stopOnFocus: true, // Prevents dismissing of toast on hover
     className: "toast",
