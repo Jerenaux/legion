@@ -1,19 +1,18 @@
-/* The Play screen is the hall itself: the party at the hearth, the battle choices beside it,
-   the day's loot below. It fills the window instead of stacking web-page sections. */
+/* The Play screen is the hall itself: the party and the day's chests at the hearth, the battle
+   choices in a row underneath. It fills the window instead of stacking web-page sections. */
 .play-content.play-hall {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(300px, 31vw, 430px);
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas: "party modes" "loot modes";
-  gap: 14px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
   height: 100%;
   min-height: 0;
-  padding: 0 clamp(16px, 3vw, 40px);
+  padding: 0 clamp(16px, 3vw, 40px) 8px;
+  box-sizing: border-box;
 }
 
-.play-hall .party-hall { grid-area: party; }
-.play-hall .barContainer { grid-area: modes; }
-.play-hall .dailyLootContainer { grid-area: loot; }
+.play-hall .party-hall { flex: 1 0 auto; width: 100%; }
+.play-hall .barContainer { flex: none; width: min(1180px, 100%); }
 
 /* ---- Party at the hearth ------------------------------------------------------------- */
 
@@ -21,8 +20,10 @@
   position: relative;
   min-height: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   padding-top: 40px;
   isolation: isolate;
 }
@@ -239,16 +240,14 @@
 /* ---- Battle choices ------------------------------------------------------------------- */
 
 .play-hall .barContainer {
-  min-height: 0;
   display: flex;
-  flex-direction: column;
   justify-content: center;
 }
 
 .play-hall .playModesRow {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -283,13 +282,13 @@
 
 .play-hall .buttonContainer:not(.disabled):hover,
 .play-hall .buttonContainer:not(.disabled):focus-visible {
-  transform: translateX(-4px);
+  transform: translateY(-3px);
   border-color: oklch(70% .12 65 / .9) !important;
   background: linear-gradient(100deg, oklch(30% .06 55 / .95), oklch(18% .035 250 / .94)) !important;
   box-shadow: 0 10px 26px oklch(5% .02 255 / .5), 0 0 22px oklch(65% .16 50 / .25);
 }
 
-.play-hall .buttonContainer:not(.disabled):active { transform: translateX(-1px); }
+.play-hall .buttonContainer:not(.disabled):active { transform: translateY(-1px); }
 
 .play-hall .buttonContainer .mode-icon {
   position: static !important;
@@ -343,38 +342,89 @@
 .play-hall .buttonContainer.disabled { opacity: .7; }
 .play-hall .buttonContainer .tower-mode-tag { position: absolute; top: 8px; right: 10px; }
 
-/* ---- The day's loot ------------------------------------------------------------------- */
+/* ---- The day's chests, set on the hall floor before the fire ---------------------------- */
 
-.play-hall .dailyLootContainer {
-  min-height: 0;
-  margin: 0;
-}
+.dailyLootContainer--scene { margin: 0; }
+.dailyLootContainer--scene .dailyLoots { gap: clamp(18px, 4vw, 56px); }
 
-.play-hall .dailyLootContainer .dividerContainer { margin: 0 0 6px; }
-
-.play-hall .dailyLoots {
+.dailyLootContainer--scene .lootBoxContainer {
+  position: relative;
   display: flex;
-  justify-content: center;
-  gap: 14px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  /* Equal widths keep the middle chest centred under the fire whatever its status says. */
+  width: 156px;
+  height: auto;
+  padding: 4px 6px;
+  background: none !important;
+  border: 0;
+  border-radius: 10px;
+  cursor: var(--game-pointer);
+  transition: transform 140ms ease-out;
 }
 
-/* ---- Small windows -------------------------------------------------------------------- */
+.dailyLootContainer--scene .lootBoxContainer:hover,
+.dailyLootContainer--scene .lootBoxContainer:focus-visible { transform: translateY(-3px); }
 
-@media (max-width: 960px), (max-height: 620px) {
-  .play-content.play-hall {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    grid-template-areas: "party" "modes" "loot";
-    height: auto;
-  }
-  .party-hall { min-height: 260px; }
-  .play-hall .playModesRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+/* The chest's colour names it on screen; the name stays for assistive technology. */
+.dailyLootContainer--scene .loot-box-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.dailyLootContainer--scene .loot-box-image {
+  width: 74px;
+  height: 58px;
+  filter: drop-shadow(0 5px 3px oklch(5% .02 255 / .6));
+}
+
+.dailyLootContainer--scene .loot-box-footer {
+  width: auto;
+  margin: 0;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: oklch(13% .02 250 / .82) !important;
+  border: 1px solid oklch(50% .06 60 / .5);
+  font-size: .6875rem;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 /* A chest that can be opened now glows like the hearth. */
-.play-hall .lootBoxContainer:has(.loot-box-open) {
-  box-shadow: 0 0 0 2px var(--ember), 0 0 24px var(--ember-glow);
+.dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-image {
+  filter: drop-shadow(0 0 10px var(--ember-glow)) drop-shadow(0 5px 3px oklch(5% .02 255 / .6));
   animation: loot-ready 2.4s ease-in-out infinite;
 }
-@keyframes loot-ready { 50% { box-shadow: 0 0 0 2px var(--ember), 0 0 12px var(--ember-glow); } }
-@media (prefers-reduced-motion: reduce) { .play-hall .lootBoxContainer:has(.loot-box-open) { animation: none; } }
+.dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-footer {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+@keyframes loot-ready { 50% { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) {
+  .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-image { animation: none; }
+}
+
+/* Characters left of the fire turn to face it. */
+.party-member.faces-right .party-member-sprite { transform: scaleX(-1); }
+
+/* ---- Small windows -------------------------------------------------------------------- */
+
+@media (max-height: 640px), (max-width: 900px) {
+  .party-hall { padding-top: 12px; }
+  .party-hall-members { gap: 2px 6px; }
+  .party-member { width: 112px; }
+  .party-member-meta { font-size: .6875rem; }
+  .dailyLootContainer--scene .lootBoxContainer { width: 132px; }
+  .dailyLootContainer--scene .loot-box-image { width: 60px; height: 47px; }
+  /* Compact banners: emblem, name and queue line; rewards stay on the larger layout. */
+  .play-hall .playModesRow { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+  .play-hall .buttonContainer { grid-template-columns: 44px 1fr; padding: 8px 10px !important; }
+  .play-hall .buttonContainer .mode-icon { width: 44px !important; height: 44px !important; }
+  .play-hall .buttonContainer .label { font-size: 1.125rem !important; }
+  .play-hall .buttonContainer .info-container { display: none !important; }
+}

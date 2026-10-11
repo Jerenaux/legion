@@ -19,6 +19,8 @@ import { IMMEDIATE_LOOT } from '@legion/shared/config';
 
 interface DailyLootProps {
   data: DailyLootAllAPIData,
+  /** Chests placed in the Play hall scene: no section label, no card frames. */
+  scene?: boolean,
 }
 
 interface DailyLootState {
@@ -96,8 +98,8 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
     const [width, height] = useWindowSize()
 
     return (
-      <div className="dailyLootContainer">
-        <BottomBorderDivider label='DAILY LOOT' />
+      <div className={`dailyLootContainer${this.props.scene ? ' dailyLootContainer--scene' : ''}`}>
+        {!this.props.scene && <BottomBorderDivider label='DAILY LOOT' />}
         {data ? <div className="dailyLoots">
           {chestsOrder.map((color) => {
             const chest = data[color];

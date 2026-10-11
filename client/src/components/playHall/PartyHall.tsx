@@ -10,6 +10,7 @@ import type {APICharacterData} from '@legion/shared/interfaces';
 import {LOCKED_FEATURES, MAX_CHARACTERS} from '@legion/shared/config';
 import {PlayerContext} from '../../contexts/PlayerContext';
 import ClassCrest from '../HUD/ClassCrest';
+import DailyLoot from '../dailyLoot/DailyLoot';
 import Ghost from '../ghost/Ghost';
 import {getSpritePath, classEnumToString} from '../utils';
 import lockIcon from '@assets/lock.png';
@@ -23,6 +24,8 @@ export default function PartyHall() {
   const requiredGames = LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES];
   const completedGames = Math.min(requiredGames, context.getCompletedGames());
   const gamesLeft = context.getGamesUntilFeature(LockedFeatures.CHARACTER_PURCHASES);
+  // The hearth stands in the middle of the party; everyone before it stands on its left.
+  const hearthIndex = Math.ceil((characters.length + (remainingSlots > 0 ? 1 : 0)) / 2);
 
   const recruit = <>
     <span className="party-member-sprite party-member-sprite--empty" aria-hidden="true" style={{backgroundImage: `url(${getSpritePath('1_1')})`}} />
@@ -45,9 +48,9 @@ export default function PartyHall() {
         <ul className="party-hall-members">
           {characters.map((character, index) => [
             // The party gathers on both sides of the hearth.
-            index === Math.ceil((characters.length + (remainingSlots > 0 ? 1 : 0)) / 2) && hearth,
+            index === hearthIndex && hearth,
             <li key={character.id}>
-              <button type="button" data-game-control className="party-member" data-class={Class[character.class]}
+              <button type="button" data-game-control className={`party-member${index < hearthIndex ? ' faces-right' : ''}`} data-class={Class[character.class]}
                 data-character-id={character.id} onClick={() => route(`/team/${character.id}`)}>
                 <span className="party-member-sprite" aria-hidden="true" style={{backgroundImage: `url(${getSpritePath(character.portrait)})`}} />
                 {character.sp > 0 && <span className="party-member-sp" title={t("Spend stat points")}>+{formatNumber(character.sp)} {t("SP")}</span>}
@@ -72,6 +75,7 @@ export default function PartyHall() {
           </li>}
         </ul>
       ) : <Ghost height={150} count={3} className="ghost-row" width="10rem" />}
+      {context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={context.player.dailyloot} scene />}
     </section>
   );
 }
