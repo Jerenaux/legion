@@ -2,11 +2,31 @@
   height: 48px;
   min-height: 48px;
   width: 100%;
-  background-image: url("@assets/navbar_bg.png");
-  background-size: 100% 100%;
+  /* A dark beam over the hall: soot-warm wood, an iron trim and a line of hearth light below. */
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(90deg, transparent, oklch(70% .15 55 / .07) 50%, transparent),
+    repeating-linear-gradient(90deg, oklch(100% 0 0 / .018) 0 2px, transparent 2px 9px),
+    linear-gradient(oklch(24% .03 48), oklch(15% .022 40));
+  border-bottom: 1px solid oklch(48% .08 60 / .75);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .07), inset 0 -3px 0 oklch(10% .015 40 / .6), 0 6px 18px oklch(4% .015 255 / .55);
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.menu::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -2px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ember) 30%, oklch(85% .14 75) 50%, var(--ember) 70%, transparent);
+  opacity: .55;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .flexContainer {

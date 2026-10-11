@@ -101,11 +101,11 @@ class ShopItemFilter extends Component<ShopItemFilterProps, ShopItemFilterState>
         }
 
         return (
-            <div>
-                <button type="button" data-game-control className="shop-item-filter-container" onClick={() => this.setState(prevState => ({ isOpen: !prevState.isOpen }))}>
-                    <div className="shop-item-filter-title">
-                        <span>{t("Filter Items")}</span>
-                    </div>
+            <div className="shop-item-filter">
+                <button type="button" data-game-control className={`shop-item-filter-container${this.state.isOpen ? ' is-open' : ''}`} aria-expanded={this.state.isOpen}
+                    onClick={() => this.setState(prevState => ({ isOpen: !prevState.isOpen }))}>
+                    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M1.5 2.5h13l-5 6v5l-3-1.5V8.5z" fill="currentColor" /></svg>
+                    <span>{t("Filter Items")}</span>
                 </button>
                 {this.state.isOpen && (
                     <div className="shop-filter-list">

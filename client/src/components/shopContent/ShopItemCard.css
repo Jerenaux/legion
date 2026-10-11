@@ -1,0 +1,204 @@
+/* ---- Shop item card: a lit display stand, the item's name and use, and a buy bar ---------- */
+
+.shop-item-card {
+  --rarity: oklch(74% .03 240);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 8px 0;
+  box-sizing: border-box;
+  border: 1px solid oklch(42% .05 60 / .55);
+  border-radius: 12px;
+  background: linear-gradient(oklch(19% .025 50), oklch(13% .02 250));
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .05), 0 10px 22px oklch(4% .02 255 / .45);
+  color: var(--text-strong);
+  text-align: center;
+  overflow: hidden;
+  cursor: var(--game-pointer);
+  transition: transform 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+.shop-item-card.rarity-rare { --rarity: oklch(72% .14 245); }
+.shop-item-card.rarity-epic { --rarity: oklch(70% .19 305); }
+.shop-item-card.rarity-legendary { --rarity: oklch(80% .16 75); }
+
+.shop-item-card:hover, .shop-item-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklch, var(--rarity) 70%, transparent);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .06), 0 14px 28px oklch(4% .02 255 / .55), 0 0 18px color-mix(in oklch, var(--rarity) 25%, transparent);
+}
+.shop-item-card:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
+/* The stand: the item lit from below in its rarity's colour. */
+.shop-item-stand {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 104px;
+  border-radius: 8px;
+  background:
+    radial-gradient(55% 70% at 50% 100%, color-mix(in oklch, var(--rarity) 30%, transparent), transparent 75%),
+    linear-gradient(oklch(15% .02 250), oklch(11% .018 250));
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--rarity) 30%, transparent), inset 0 -10px 18px oklch(4% .02 255 / .45);
+}
+.shop-item-stand::after {
+  content: "";
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  width: 70px;
+  height: 10px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: oklch(4% .02 255 / .55);
+  filter: blur(3px);
+}
+
+.shop-item-icon {
+  --cell: 64px;
+  position: relative;
+  z-index: 1;
+  width: var(--cell);
+  height: var(--cell);
+  margin-bottom: 6px;
+  background-repeat: no-repeat;
+  background-size: calc(var(--cell) * 10) auto;
+  background-position: calc(var(--fx, 0) * -1 * var(--cell)) calc(var(--fy, 0) * -1 * var(--cell));
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 3px oklch(4% .02 255 / .6));
+  transition: transform 200ms cubic-bezier(.2, .9, .3, 1.3);
+}
+.shop-item-card:hover .shop-item-icon { transform: translateY(-4px) scale(1.06); }
+
+.shop-item-rarity {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--rarity) 18%, oklch(12% .02 250));
+  color: var(--rarity);
+  font-size: .6875rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.shop-item-owned {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  font-size: .75rem;
+}
+.shop-item-owned img { width: 12px; height: auto; opacity: .7; }
+.shop-item-owned.has-some { color: var(--text-strong); }
+.shop-item-owned.has-some img { opacity: 1; }
+
+.shop-item-slot {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 22px;
+  height: 22px;
+  opacity: .95;
+  image-rendering: pixelated;
+}
+
+.shop-item-name {
+  font: 1.0625rem/1.15 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.shop-item-who {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  margin-top: -4px;
+}
+.shop-item-who { flex-wrap: wrap; }
+.shop-item-class {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px 1px 4px;
+  border-radius: 6px;
+  background: oklch(10% .018 250 / .6);
+  font-size: .6875rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--class-tint);
+}
+.shop-item-class .class-crest { width: 14px; height: 16px; flex: none; }
+.shop-item-class.class-WARRIOR { --class-tint: oklch(82% .13 82); }
+.shop-item-class.class-WHITE_MAGE { --class-tint: oklch(84% .13 150); }
+.shop-item-class.class-BLACK_MAGE { --class-tint: oklch(76% .15 305); }
+.shop-item-level {
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: oklch(12% .02 250 / .7);
+  color: var(--text-muted);
+  font-size: .75rem;
+}
+
+.shop-item-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  padding: 0 4px;
+  color: var(--text-muted);
+  font-size: .8125rem;
+  line-height: 1.35;
+}
+
+/* Stats sit together just above the buy bar so rows line up however long descriptions are. */
+.shop-item-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin-top: auto;
+}
+.shop-item-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: oklch(10% .018 250 / .65);
+  box-shadow: inset 0 0 0 1px oklch(100% 0 0 / .05);
+  font-size: .75rem;
+  white-space: nowrap;
+}
+.shop-item-stat img { width: 14px; height: 14px; object-fit: contain; }
+
+/* The buy bar spans the card's foot. */
+.shop-item-price {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 2px -8px 0;
+  padding: 8px;
+  border-top: 1px solid oklch(48% .08 62 / .45);
+  background: linear-gradient(oklch(26% .05 60 / .7), oklch(18% .04 50 / .7));
+  color: var(--gold);
+  font: 1.125rem/1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  transition: background 160ms ease-out;
+}
+.shop-item-price img { width: 18px; height: auto; }
+.shop-item-card:hover .shop-item-price { background: linear-gradient(oklch(40% .1 55 / .85), oklch(28% .08 45 / .85)); }
+.shop-item-price.is-unaffordable { color: oklch(72% .17 25); }
+.shop-item-price.is-unaffordable img { filter: grayscale(.6) brightness(.85); }
+.shop-item-card:hover .shop-item-price.is-unaffordable { background: linear-gradient(oklch(26% .05 30 / .7), oklch(18% .04 30 / .7)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-item-card, .shop-item-icon { transition: none; }
+  .shop-item-card:hover, .shop-item-card:hover .shop-item-icon { transform: none; }
+}

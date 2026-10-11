@@ -1,0 +1,72 @@
+/* Team screen: class colours shared by the sheet, and the party at the fire above it. */
+.team-page {
+    --team-surface: oklch(0.27 0.025 250);
+    --team-raised: oklch(0.32 0.03 230);
+    --team-edge: oklch(0.44 0.035 230);
+    --team-muted: oklch(0.75 0.025 230);
+    --team-selection: oklch(0.85 0.12 205);
+}
+
+.team-page [data-class] {
+    --class-color: oklch(0.92 0.01 230);
+    --class-emblem: none;
+}
+
+.team-page [data-class="WARRIOR"] {
+    --class-emblem: '';
+    --class-color: oklch(0.85 0.12 78);
+    --class-frame: url('@assets/HUD/class_icon_frame_w.png');
+    --class-icon: url('@assets/shop/warrior_icon.png');
+}
+
+.team-page [data-class="WHITE_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.94 0.025 155);
+    --class-frame: url('@assets/HUD/class_icon_frame_wm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+.team-page [data-class="BLACK_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.83 0.10 300);
+    --class-frame: url('@assets/HUD/class_icon_frame_bm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+.team-class-label {
+    position: relative;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--class-color);
+    font-family: var(--locale-font, Kim), system-ui, sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.25;
+    text-transform: uppercase;
+    /* Wrap between words only; FitText shrinks the font when one word is too long. */
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: manual;
+}
+
+.team-class-label::before {
+    content: var(--class-emblem);
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    background: var(--class-frame) center / contain no-repeat;
+}
+
+.team-class-label::after {
+    content: var(--class-emblem);
+    position: absolute;
+    left: 8px;
+    top: calc(50% - 8px);
+    width: 14px;
+    height: 16px;
+    background: oklch(0.2 0.02 250);
+    mask: var(--class-icon) center / contain no-repeat;
+}
+
+.team-page .character-inventory-container { width: min(1180px, 100%); max-width: none; margin-inline: auto; box-sizing: border-box; }

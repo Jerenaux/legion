@@ -5,7 +5,8 @@ import { TeamIntro } from './pageIntro/intros';
 
 import { Component, createRef } from 'preact';
 
-import Roster from './roster/Roster';
+import PartyHall from './playHall/PartyHall';
+import './TeamPage.css';
 import Inventory from './inventory/Inventory';
 import Ghost from './ghost/Ghost';
 
@@ -174,7 +175,7 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
               ref={this.popupManagerRef}
               onPopupResolved={() => {}}
             />}
-        <Roster/>
+        <PartyHall team />
         <div className="character-inventory-container">
           {this.context.player.isLoaded ? <CharacterSheet
             itemEffects={this.state.statsModifiers}

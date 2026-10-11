@@ -191,6 +191,11 @@ export async function apiFetch(endpoint: string, options: {body?: {action?: stri
     towerCheck.save();
     return structuredClone(towerCheck.progress);
   }
+  if (endpoint.startsWith('claimChest?')) {
+    await new Promise(resolve => setTimeout(resolve, 900));
+    return {content: [{type: RewardType.GOLD, id: 0, amount: 120}, {type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 1}, {type: RewardType.CONSUMABLES, id: 0, amount: 3}],
+      dailyloot: {bronze: {hasKey: false, countdown: 6 * 3600}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}}};
+  }
   if (endpoint === 'recordPlayerAction') return {};
   if (endpoint === 'updatePlayerName' || endpoint === 'updatePlayerAvatar') return {success: true};
   if (endpoint.startsWith('getCommunity?id=')) {

@@ -4,14 +4,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  height: 100%;
-  min-height: 0;
+  justify-content: safe center;
+  gap: 4px;
+  min-height: 100%;
   padding: 0 clamp(16px, 3vw, 40px) 8px;
   box-sizing: border-box;
 }
 
-.play-hall .party-hall { flex: 1 0 auto; width: 100%; }
+.play-hall .party-hall { flex: none; width: 100%; }
 .play-hall .barContainer { flex: none; width: min(1180px, 100%); }
 
 /* ---- Party at the hearth ------------------------------------------------------------- */
@@ -24,7 +24,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding-top: 40px;
+  padding-top: 24px;
   isolation: isolate;
 }
 
@@ -89,7 +89,7 @@
   width: 358px;
   height: 358px;
   background: url('@assets/vfx/terrain_fire_1.png') 0 0 / 2867px 2867px no-repeat;
-  animation: hearth-fire-x .8s steps(8) infinite, hearth-fire-y 6.4s steps(8) infinite;
+  animation: hearth-fire-x .42s steps(8) infinite, hearth-fire-y 3.36s steps(8) infinite;
   image-rendering: pixelated;
 }
 
@@ -100,6 +100,10 @@
 @media (prefers-reduced-motion: reduce) {
   .party-hall-fire { animation: none; }
   .party-hall-hearth::before { animation: none; }
+}
+
+.party-hall-members > li:not(.party-hall-hearth) {
+  transform: translateY(calc((var(--ring, 1) - 1) * 20px));
 }
 
 .party-hall-members {
@@ -115,7 +119,7 @@
 
 .party-member {
   position: relative;
-  width: 132px;
+  width: 152px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -141,16 +145,29 @@
   width: 80px;
   height: 96px;
   background-repeat: no-repeat;
-  background-position: -40px -40px;
+  background-position: -40px -184px;
   image-rendering: pixelated;
-  animation: animate-sprite .7s steps(1) infinite;
+  /* The combat idle loop (frames 9-10-11 and back), offset per place so the party breathes unevenly. */
+  animation: party-idle .9s steps(1) infinite;
+  animation-delay: calc(var(--ring, 1) * -.23s);
   filter: drop-shadow(0 6px 4px oklch(5% .02 255 / .55));
 }
 
-.party-member:not(:hover):not(:focus-visible) .party-member-sprite { animation-play-state: paused; }
+@keyframes party-idle {
+  0% { background-position: -40px -184px; }
+  25% { background-position: -184px -184px; }
+  50% { background-position: -328px -184px; }
+  75% { background-position: -184px -184px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .party-member-sprite { animation: none; }
+}
 
 .party-member-sprite--empty {
-  filter: brightness(0) opacity(.35);
+  /* A dark figure outlined in white: an empty place in the party. */
+  filter: brightness(0) drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
+  opacity: .55;
   animation: none;
 }
 
@@ -190,11 +207,28 @@
 
 .party-member-title .class-crest { width: 18px; height: 20px; flex: none; }
 
+.party-member-class {
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  font: .9375rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-transform: uppercase;
+  color: var(--class-tint, var(--text-strong));
+}
+
 .party-member-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: .9375rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: var(--text-strong);
+}
+
+.party-member[data-class="WARRIOR"] { --class-tint: oklch(82% .13 82); }
+.party-member[data-class="WHITE_MAGE"] { --class-tint: oklch(84% .13 150); }
+.party-member[data-class="BLACK_MAGE"] { --class-tint: oklch(76% .15 305); }
+
+.party-member--recruit .party-member-name {
+  font: .875rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .party-member-meta {
@@ -237,7 +271,7 @@
 .party-recruit-progress strong { color: var(--gold); }
 .party-recruit-progress progress { grid-column: 1 / -1; width: 100%; height: 5px; accent-color: var(--ember); }
 
-/* ---- Battle choices ------------------------------------------------------------------- */
+/* ---- Battle choices: the game's vertical mode cards, emblems astride the top edge ---------- */
 
 .play-hall .barContainer {
   display: flex;
@@ -245,102 +279,21 @@
 }
 
 .play-hall .playModesRow {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-  gap: 14px;
-  width: 100%;
-  margin: 0;
-  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 48px 18px;
+  padding: 40px 0 0;
 }
 
-/* Each mode is a banner: emblem on the left, name and rewards on the right. */
-.play-hall .buttonContainer {
-  position: relative;
-  display: grid !important;
-  grid-template-columns: 62px 1fr;
-  align-items: center;
-  gap: 4px 14px;
-  width: 100% !important;
-  max-width: none !important;
-  min-height: 0 !important;
-  height: auto !important;
-  margin: 0 !important;
-  padding: 12px 16px 12px 12px !important;
-  box-sizing: border-box;
-  text-align: left;
-  border: 1px solid oklch(46% .06 240 / .9) !important;
-  border-left: 4px solid oklch(62% .1 220) !important;
-  border-radius: 8px !important;
-  background: linear-gradient(100deg, oklch(24% .035 245 / .95), oklch(16% .03 250 / .92)) !important;
-  box-shadow: 0 10px 22px oklch(5% .02 255 / .45);
-}
-
-.play-hall .buttonContainer.ranked { border-left-color: var(--gold) !important; }
-.play-hall .buttonContainer, .play-hall .buttonContainer::before, .play-hall .buttonContainer::after { animation: none !important; }
-.play-hall .buttonContainer::before, .play-hall .buttonContainer::after { display: none !important; }
-.play-hall .buttonContainer.tower-mode { border-left-color: var(--ember) !important; }
-
-.play-hall .buttonContainer:not(.disabled):hover,
-.play-hall .buttonContainer:not(.disabled):focus-visible {
-  transform: translateY(-3px);
-  border-color: oklch(70% .12 65 / .9) !important;
-  background: linear-gradient(100deg, oklch(30% .06 55 / .95), oklch(18% .035 250 / .94)) !important;
+.play-hall .buttonContainer { width: 12.5rem; }
+.play-hall .buttonContainer img.mode-icon { max-width: 70px; height: 64px; margin-top: -36px; }
+.play-hall .buttonContainer.tower-mode img.mode-icon { height: 70px; margin-top: -40px; }
+.play-hall .buttonContainer .label { font-size: 1.5rem; }
+.play-hall .buttonContainer:hover:not(:disabled), .play-hall .buttonContainer:focus-visible {
+  border-color: oklch(70% .12 62 / .9);
   box-shadow: 0 10px 26px oklch(5% .02 255 / .5), 0 0 22px oklch(65% .16 50 / .25);
 }
-
-.play-hall .buttonContainer:not(.disabled):active { transform: translateY(-1px); }
-
-.play-hall .buttonContainer .mode-icon {
-  position: static !important;
-  width: 62px !important;
-  height: 62px !important;
-  margin: 0 !important;
-  object-fit: contain;
-  transform: none !important;
-  grid-row: span 2;
-}
-
-.play-hall .buttonContainer .labelContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
-  min-width: 0;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.play-hall .buttonContainer .label {
-  font-size: 1.375rem !important;
-  line-height: 1.1;
-  text-align: left !important;
-}
-
-.play-hall .buttonContainer .player { text-align: left !important; font-size: .75rem !important; }
-
-.play-hall .buttonContainer .info-container {
-  display: flex !important;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  margin-top: 6px !important;
-  padding: 0 !important;
-  background: none !important;
-  border: 0 !important;
-}
-
-.play-hall .buttonContainer .info-row {
-  display: flex !important;
-  align-items: center;
-  gap: 4px;
-  padding: 0 !important;
-  border: 0 !important;
-  font-size: .75rem;
-}
-
-.play-hall .buttonContainer .lock-container { display: flex; align-items: center; gap: 8px; }
-.play-hall .buttonContainer .lock-icon { width: 18px; height: 18px; }
-.play-hall .buttonContainer.disabled { opacity: .7; }
-.play-hall .buttonContainer .tower-mode-tag { position: absolute; top: 8px; right: 10px; }
 
 /* ---- The day's chests, set on the hall floor before the fire ---------------------------- */
 
@@ -353,8 +306,8 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  /* Equal widths keep the middle chest centred under the fire whatever its status says. */
-  width: 156px;
+  width: auto;
+  min-width: 156px;
   height: auto;
   padding: 4px 6px;
   background: none !important;
@@ -367,14 +320,16 @@
 .dailyLootContainer--scene .lootBoxContainer:hover,
 .dailyLootContainer--scene .lootBoxContainer:focus-visible { transform: translateY(-3px); }
 
-/* The chest's colour names it on screen; the name stays for assistive technology. */
 .dailyLootContainer--scene .loot-box-title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  order: 1;
+  width: auto;
+  padding: 0;
+  background: none;
+  font: .75rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: oklch(80% .06 70);
+  text-shadow: 0 1px 2px oklch(5% .02 255);
 }
 
 .dailyLootContainer--scene .loot-box-image {
@@ -384,6 +339,7 @@
 }
 
 .dailyLootContainer--scene .loot-box-footer {
+  order: 2;
   width: auto;
   margin: 0;
   padding: 2px 9px;
@@ -417,14 +373,50 @@
 @media (max-height: 640px), (max-width: 900px) {
   .party-hall { padding-top: 12px; }
   .party-hall-members { gap: 2px 6px; }
-  .party-member { width: 112px; }
+  .party-member { width: 132px; }
+  .party-member-class { font-size: .75rem; }
+  .dailyLootContainer--scene .loot-box-title { display: none; }
   .party-member-meta { font-size: .6875rem; }
-  .dailyLootContainer--scene .lootBoxContainer { width: 132px; }
   .dailyLootContainer--scene .loot-box-image { width: 60px; height: 47px; }
-  /* Compact banners: emblem, name and queue line; rewards stay on the larger layout. */
-  .play-hall .playModesRow { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
-  .play-hall .buttonContainer { grid-template-columns: 44px 1fr; padding: 8px 10px !important; }
-  .play-hall .buttonContainer .mode-icon { width: 44px !important; height: 44px !important; }
-  .play-hall .buttonContainer .label { font-size: 1.125rem !important; }
-  .play-hall .buttonContainer .info-container { display: none !important; }
+  .play-hall .playModesRow { gap: 44px 10px; padding-top: 34px; }
+  .play-hall .buttonContainer { width: 11rem; }
+}
+
+/* Short windows: the mode cards drop their padding so the whole hall still fits. */
+@media (max-height: 640px) {
+  .play-hall .buttonContainer { padding-bottom: 8px; }
+  .play-hall .buttonContainer .label { font-size: 1.25rem; }
+  .play-hall .buttonContainer .info-container { padding: 2px 8px; }
+  .play-hall .buttonContainer .info-row { padding: 2px 0; }
+}
+
+/* ---- Team page: the same fire, smaller, with the open character stepping into its light ---- */
+
+.party-hall--team { padding-top: 8px; margin-bottom: 6px; }
+.party-hall--team .party-hall-members > li:not(.party-hall-hearth) { transform: translateY(calc((var(--ring, 1) - 1) * 12px)); }
+.party-hall--team .party-hall-hearth { width: 110px; }
+.party-hall--team .party-hall-fire { scale: .72; transform-origin: 50% 100%; bottom: -34px; }
+.party-hall--team .party-hall-hearth::before { scale: .75; }
+.party-hall--team::before { height: 220px; }
+.party-hall--team .party-member { width: 140px; }
+.party-hall--team .party-member-sprite { scale: .85; transform-origin: 50% 100%; margin-top: -10px; }
+.party-hall--team .party-member.faces-right .party-member-sprite { transform: scaleX(-1); }
+.party-hall--team .party-member:not([aria-pressed="true"]) { opacity: .72; }
+.party-hall--team .party-member:not([aria-pressed="true"]):hover { opacity: 1; }
+.party-hall--team .party-member[aria-pressed="true"] .party-member-plate {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 1px var(--ember), 0 0 16px var(--ember-glow), 0 6px 14px oklch(5% .02 255 / .5);
+}
+/* A pool of firelight at the chosen one's feet. */
+.party-hall--team .party-member[aria-pressed="true"]::before {
+  content: "";
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  width: 96px;
+  height: 22px;
+  translate: -50% 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, oklch(75% .17 60 / .55), transparent);
 }

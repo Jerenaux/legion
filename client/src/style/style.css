@@ -2117,7 +2117,6 @@ a:-webkit-any-link {
   padding: 4px 6px;
   gap: 6px;
   overflow-y: auto;
-  border-right: 1px solid oklch(55% .09 62 / .3);
 }
 .rank-content > .flexContainer:has(.rank-tab-container) > :not(.rank-tab-container) {
   grid-column: 2;
