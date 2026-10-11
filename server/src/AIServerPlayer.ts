@@ -1,419 +1,442 @@
 import { ServerPlayer } from './ServerPlayer';
-import { AIAttackMode, SpeedClass, StatusEffect, Target } from "@legion/shared/enums";
-import { FREEZE_AI } from "@legion/shared/config";
-import { hexDistance } from '@legion/shared/utils';
+import { AIAttackMode, Class, EffectDirection, Stat, StatusEffect, Target, Terrain } from "@legion/shared/enums";
+import { FREEZE_AI, MOVEMENT_RANGE } from "@legion/shared/config";
+import { getTilesInHexRadius, hexDistance, isInSpellRange, isSkip, listCellsOnTheWay } from '@legion/shared/utils';
+import type { Effect } from '@legion/shared/interfaces';
+import { SpeedClass } from "@legion/shared/enums";
+import type { Spell } from './Spell';
+import type { Item } from './Item';
 
+/**
+ * Utility AI shared by practice bots, zombie opponents (inactive players' rosters) and Tower
+ * enemies. Every turn it scores each available action in HP-equivalent value, then picks the
+ * best one. Lower difficulty adds noise to those scores, so weaker opponents misjudge the way a
+ * person might instead of doing things no person would (walking a mage into melee, drinking an
+ * Ether at full MP).
+ */
 
-type Comparator<T> = (a: T, b: T) => number;
+/** How each character picks the enemy it focuses; fixed for the whole match. */
+enum Personality {
+    Opportunist, // the closest enemy
+    Hunter,      // the most wounded enemy
+    Equalizer,   // the healthiest enemy
+    Defender,    // the enemy nearest the most wounded ally
+    Hero,        // the enemy who has dealt the most damage
+}
 
-const highestHpComparator: Comparator<ServerPlayer> = (a, b) => a.hp - b.hp;
-const lowestHpComparator: Comparator<ServerPlayer> = (a, b) => b.hp - a.hp;
-const highestDamageComparator: Comparator<ServerPlayer> = (a, b) => a.damageDealt - b.damageDealt;
+type ActionKind = 'spell' | 'item' | 'attack' | 'move' | 'pass';
+type Plan = { kind: ActionKind; score: number; aoe?: boolean; execute: () => void };
 
-enum AIType {
-    Opportunist,
-    Hunter,
-    Equalizer,
-    Defender,
-    Hero
+const DOT_PER_TURN: Partial<Record<StatusEffect, number>> = { [StatusEffect.POISON]: 10, [StatusEffect.BURN]: 20 };
+// Consumables are scarce: an item must clearly beat this before the AI spends it.
+const ITEM_COST = 12;
+const MP_VALUE = 0.25;
+const KILL_BONUS = 30;
+const FRIENDLY_FIRE_WEIGHT = 1.5;
+// Turns beyond this are discounted: most fights are decided sooner.
+const STATUS_HORIZON = 4;
+const MAX_NOISE = 45;
+
+type Modifier = { stat: Stat; value: number; direction: EffectDirection } | undefined;
+
+function modulate(modifier: Modifier, player: ServerPlayer, value: number) {
+    if (!modifier || modifier.stat === Stat.NONE) return value;
+    const sign = modifier.direction === EffectDirection.PLUS ? 1 : -1;
+    const modified = value * (1 + player.getStat(modifier.stat) * modifier.value * sign);
+    return Math.sign(modified) !== Math.sign(value) ? Math.sign(value) : modified;
+}
+
+/** Expected (non-random) magnitude of an HP effect, mirroring Spell.modulateEffectAll. */
+function effectAmount(effect: Effect, caster: ServerPlayer, target: ServerPlayer) {
+    const base = Math.abs(effect.value);
+    if (!effect.modifiers) return base;
+    return Math.abs(modulate(effect.modifiers.casterModifier, caster, modulate(effect.modifiers.targetModifier, target, base)));
+}
+
+function gaussian() {
+    return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
 }
 
 export class AIServerPlayer extends ServerPlayer {
-    AItype: AIType = AIType.Opportunist;
+    personality: Personality = Personality.Opportunist;
     target: ServerPlayer | null = null;
-    retargetRate: number = 0;
-    retargetCount: number = 0;
     canUseItems: boolean = true;
     canUseStatusEffects: boolean = true;
     bannedSpells: number[] = [];
-    healRandomThreshold: number = 1.0;
     isZombie: boolean = false;
+    private plan: Plan | null = null;
 
     attackMode: AIAttackMode = AIAttackMode.IDLE;
     actionCount: number = 0;
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
         super(num, name, frame, x, y);
-
-        this.setArchetype();
-
-        // Assign a random value between 1 and 10 to retargetCount
-        this.retargetRate = Math.floor(Math.random() * 10) + 1;
-        this.retargetCount = this.retargetRate;
+        const personalities = [Personality.Opportunist, Personality.Hunter, Personality.Equalizer, Personality.Defender, Personality.Hero];
+        this.personality = personalities[Math.floor(Math.random() * personalities.length)];
     }
 
     setAttackMode(attackMode: AIAttackMode) {
         this.attackMode = attackMode;
     }
 
-    setArchetype() {
-        // Opportunist: attacks if adjacent, otherwise moves towards closest enemy
-        // Hunter: targets the enemy with the lowest HP
-        // Equalizer: targets the enemy with the highest HP
-        // Defender: targets enemy closest to lowest HP ally
-        // Hero: targets biggest damage dealer
-
-        const random = Math.floor(Math.random() * 4) + 1;
-        switch (random) {
-            case 1:
-                this.AItype = AIType.Opportunist;
-                break;
-            case 2:
-                this.AItype = AIType.Hunter;
-                break;
-            case 3:
-                this.AItype = AIType.Equalizer;
-                break;
-            case 4:
-                this.AItype = AIType.Defender;
-                break;
-            case 5:
-                this.AItype = AIType.Hero;
-                break;
-            default:
-                this.AItype = AIType.Opportunist;
-                break;
-        }
-    }
-
-    hasValidTarget() {
-        return this.target && this.target.isAlive();
-    }
-
-    takeAction(): number {
-        if (!this.canAct()) {
-            // console.log(`[AIServerPlayer:takeAction] ${this.name} cannot act`);
-            return 0;
-        }
-
-        if (this.getIQ() > 0.4) {
-            if (this.team?.game.checkIsOnFlame(this.x, this.y)) {
-                console.log(`[AIServerPlayer:takeAction] ${this.name} is on fire`);
-                const cell = this.team?.game.findFreeCellNear(this.x, this.y, true);
-                if (cell) {
-                    this.moveTowards(cell.x, cell.y);
-                    this.handleActionTaken();
-                    return 0;
-                }
-            }
-        }
-
-        // Try to use an item
-        if (this.checkForItemUse()) {
-            this.handleActionTaken();
-            return 0;
-        }
-
-        // Try to use a spell
-        if (this.checkForSpellUse()) {
-            this.handleActionTaken();
-            return 0;
-        }
-
-        // Try to attack or move
-        if (!this.hasValidTarget()) {
-            this.determineTarget();
-        }
-
-        if (!this.target) {
-            // console.log(`[AIServerPlayer:takeAction] ${this.name} has no valid target`);
-            return 0;
-        }
-
-        if (this.isNextTo(this.target.x, this.target.y)) {
-            // console.log(`[AIServerPlayer:takeAction] ${this.name} is next to target`);
-            this.attack(this.target);
-        } else {
-            // console.log(`[AIServerPlayer:takeAction] ${this.name} is not next to target`);
-            this.moveTowards(this.target.x, this.target.y);
-        }
-
-        this.handleActionTaken();
-        return 0;
-    }
-
-    private handleActionTaken() {
-        this.actionCount++;
-        this.retargetCount--;
-        if (this.retargetCount <= 0) {
-            this.target = null;
-            this.retargetCount = this.retargetRate;
-        }
-    }
-
-    checkForItemUse() {
-        if (!this.canUseItems) return false;
-        if (Math.random() < 0.4) return false;
-        for (let i = 0; i < this.inventory.length; i++) {
-            const item = this.getItemAtIndex(i);
-            if (!item) continue;
-            if (item.effectsAreApplicable(this)) {
-                const data = {
-                    x: this.x,
-                    y: this.y,
-                    index: i,
-                    targetTeam: null,
-                    target: null,
-                };
-                this.team?.game.processUseItem(data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    checkForSpellUse(): boolean {
-        // console.log(`[AIServerPlayer:checkForSpellUse] Checking for spells among ${this.spells.map(spell => spell.id)}`);
-        // Randomize the order of spells
-        const spells = this.spells.sort(() => Math.random() - 0.5);
-        for (let i = 0; i < spells.length; i++) {
-            const spell = spells[i];
-            // console.log(`[AIServerPlayer:checkForSpellUse] Checking spell ${spell.name}`);
-            if (this.bannedSpells.includes(spell.id)) continue;
-            if (spell.isStatusEffectSpell() && !this.canUseStatusEffects) continue;
-            // console.log(`[AIServerPlayer:checkForSpellUse] Checking spell ${spell.id}`);
-            if (spell.cost > this.mp) {
-                // console.log(`[AIServerPlayer:checkForSpellUse] Spell ${spell.id} costs ${spell.cost} MP, which is more than the AI has`);
-                continue;
-            }
-
-            // TODO: replace by checks on spell properties
-            switch (spell.id) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                    if (this.checkForAoE(i)) return true;
-                    break;
-                case 9:
-                    if (this.checkForHealUse(i)) return true;
-                    break;
-                case 10:
-                case 11:
-                    if (this.checkForStatusEffectUse(i)) return true;
-                    break;
-                default:
-                    console.log(`[AIServerPlayer:checkForSpellUse] Unknown spell ID: ${spell.id}`);
-                    continue;
-            }
-        }
-        return false;
-    }
-
-    checkForHealUse(index: number): boolean {
-        const spell = this.spells[index];
-        if (spell.target !== Target.SINGLE) return false;
-        if (!spell.isHealingSpell()) return false;
-        if (Math.random() > this.healRandomThreshold) return false;
-
-        const allies = this.team?.game.listAllAlliesInRange(this);
-        if (!allies || allies.length === 0) return false;
-        const ally = this.getOptimalTarget(allies!, lowestHpComparator);
-        if (!ally) return false;
-
-        const healAmount = spell.getHealAmount();
-        if (ally.hp <= (ally.getMaxHP() - healAmount)) {
-            const data = {
-                x: ally.x,
-                y: ally.y,
-                index,
-                targetTeam: ally.team.id,
-                target: ally.num,
-            };
-            this.team?.game.processMagic(data);
-            return true;
-        }
-        return false;
-    }
-
-    checkForAoE(index: number): boolean {
-        if (Math.random() < 0.4) return false;
-
-        const spell = this.spells[index];
-        if (spell.target !== Target.AOE) return false;
-
-        const tile = this.team?.game.scanGridForAoE(this, spell.radius - 1, spell.radius - 1);
-        if (tile) {
-            const data = {
-                x: tile!.x,
-                y: tile!.y,
-                index,
-                targetTeam: null,
-                target: null,
-            };
-            this.team?.game.processMagic(data);
-            return true;
-        }
-        return false;
-    }
-
-    checkForStatusEffectUse(index: number): boolean {
-        if (Math.random() < 0.4) return false;
-        const spell = this.spells[index];
-        console.log(`[AIServerPlayer:checkForStatusEffectUse] Checking for status effect use: ${spell.status.effect}`);
-
-        let targets = this.team?.game.listAllEnemiesInRange(this);
-        if (spell.status.effect === StatusEffect.MUTE) {
-            // Filter to keep only mages
-            targets = targets.filter(target => target.isMage());
-        }
-        if (!targets || targets.length === 0) return false;
-        // Find the first target that is not afflicted by the status effect
-        const target = targets.find(target => !target.hasStatusEffect(spell.status.effect));
-
-        if (target) {
-            const data = {
-                x: target.x,
-                y: target.y,
-                index,
-                targetTeam: target.team.id,
-                target: target.num,
-            };
-            this.team?.game.processMagic(data);
-            return true;
-        }
-        return false;
-    }
-
-    determineTarget() {
-        this.setArchetype();
-
-        switch (this.AItype) {
-            case AIType.Opportunist:
-                this.opportunistTarget();
-                break;
-            case AIType.Hunter:
-                this.hunterTarget();
-                break;
-            case AIType.Equalizer:
-                this.equalizerTarget();
-                break;
-            case AIType.Defender:
-                this.defenderTarget();
-                break;
-            case AIType.Hero:
-                this.heroTarget();
-                break;
-            default:
-                this.opportunistTarget();
-                break;
-        }
-    }
-
-    getOptimalTarget(targets: ServerPlayer[], comparator: Comparator<ServerPlayer>): ServerPlayer | null {
-        let optimalTarget: ServerPlayer | null = null;
-        targets.forEach(target => {
-            if (!optimalTarget || comparator(target, optimalTarget) > 0) {
-                optimalTarget = target;
-            }
-        });
-        return optimalTarget;
-    }
-
-    getClosestTarget(targets: ServerPlayer[], from: ServerPlayer = this) {
-        let closestTarget: ServerPlayer | null = null;
-        targets.forEach(target => {
-            if (!closestTarget || from.distanceTo(target.x, target.y) < from.distanceTo(closestTarget.x, closestTarget.y)) {
-                closestTarget = target;
-            }
-        });
-        return closestTarget;
-    }
-
-    opportunistTarget() {
-        let targets = this.team?.game.listAdjacentEnemies(this);
-        if (targets?.length === 0) {
-            targets = this.team?.game.listAllEnemies(this);
-        }
-        this.target = this.getClosestTarget(targets!);
-        // console.log(`opportunist target: ${this.target!.num} at (${this.target!.x}, ${this.target!.y})`);
-    }
-
-    hunterTarget() {
-        const targets = this.team?.game.listAllEnemies(this);
-        this.target = this.getOptimalTarget(targets!, lowestHpComparator);
-    }
-
-    equalizerTarget() {
-        const targets = this.team?.game.listAllEnemies(this);
-        this.target = this.getOptimalTarget(targets!, highestHpComparator);
-    }
-
-    defenderTarget() {
-        const allies = this.team?.game.listAllAllies(this);
-        if (!allies || allies.length === 0) {
-            this.hunterTarget();
-            return;
-        }
-        const ally = this.getOptimalTarget(allies!, lowestHpComparator);
-        const targets = this.team?.game.listAllEnemies(this);
-        this.target = this.getClosestTarget(targets!, ally!);
-    }
-
-    heroTarget() {
-        const targets = this.team?.game.listAllEnemies(this);
-        this.target = this.getOptimalTarget(targets!, highestDamageComparator);
-    }
-
-    attack(target: ServerPlayer) {
-        const data = {
-            target: target.num,
-            sameTeam: target.team.id === this.team!.id,
-        }
-        this.team?.game.processAttack(data);
-    }
-
-    moveTowards(x: number, y: number) {
-        const tiles = this.team?.game.listCellsInRange(this.x, this.y, this.distance);
-
-        // Find the tile with the lowest distance to (x, y)
-        let closestTile = tiles![0];
-        if (!closestTile) return;
-        let closestDistance = Math.pow(closestTile.x - x, 2) + Math.pow(closestTile.y - y, 2);
-        for(let i = 1; i < tiles!.length; i++) {
-            const nextTo = hexDistance(tiles![i].x, tiles![i].y, x, y) <= 1;
-            if (nextTo) {
-                closestTile = tiles![i];
-                break;
-            }
-            const distance = Math.pow(tiles![i].x - x, 2) + Math.pow(tiles![i].y - y, 2);
-            if (distance < closestDistance) {
-                closestTile = tiles![i];
-                closestDistance = distance;
-            }
-        }
-
-        const data = {
-            tile: closestTile,
-        }
-        this.team?.game.processMove(data);
-    }
-
-    getIQ() {
-        return this.team?.teamData.AIwinRatio;
-    }
-
     setZombie(isZombie: boolean) {
         this.isZombie = isZombie;
     }
 
+    /** 0 (clumsy) to 1 (sharp), from the difficulty tier set by AIGame/TowerGame. */
+    getIQ() {
+        const ratio = this.team?.teamData.AIwinRatio;
+        return Number.isFinite(ratio) ? Math.min(1, Math.max(0, ratio)) : 0.5;
+    }
+
+    get game() {
+        return this.team!.game;
+    }
+
+    takeAction(): number {
+        if (!this.canAct()) return 0;
+        const ranked = this.plan ? [this.plan, ...this.rankPlans()] : this.rankPlans();
+        this.plan = null;
+        // A plan can be refused (for example a tile that just became occupied): fall back in order.
+        for (const plan of ranked) {
+            plan.execute();
+            if (this.hasActed) break;
+        }
+        if (!this.hasActed) this.game.processPassTurn();
+        this.actionCount++;
+        return 0;
+    }
+
+    /** All options, best first after difficulty noise; never includes clearly harmful moves. */
+    rankPlans(): Plan[] {
+        this.refreshFocus();
+        const plans = [...this.spellPlans(), ...this.itemPlans(), ...this.attackPlans(), ...this.movePlans()]
+            .filter(plan => plan.score > 0);
+        plans.push({ kind: 'pass', score: 0, execute: () => this.game.processPassTurn() });
+        const iq = this.getIQ();
+        const noise = (1 - iq) * MAX_NOISE;
+        const best = Math.max(...plans.map(plan => plan.score));
+        // Weaker opponents settle for modest options more often, but never for harmful ones.
+        const floor = best * (0.15 + 0.35 * iq);
+        return plans
+            .map(plan => ({ plan, value: plan.score >= floor ? plan.score + gaussian() * noise : plan.score - 1000 }))
+            .sort((a, b) => b.value - a.value)
+            .map(({ plan }) => plan);
+    }
+
+    // ---- Targeting -------------------------------------------------------------------------
+
+    private enemies() {
+        return this.game.listAllEnemies(this);
+    }
+
+    private allies() {
+        return this.team!.getMembers();
+    }
+
+    /** Keep one focus target until it falls; the personality decides who that is. */
+    private refreshFocus() {
+        if (this.target?.isAlive()) return;
+        const enemies = this.enemies();
+        if (!enemies.length) { this.target = null; return; }
+        const ratio = (player: ServerPlayer) => player.hp / player.getMaxHP();
+        const by = (key: (player: ServerPlayer) => number) => enemies.reduce((best, enemy) => key(enemy) < key(best) ? enemy : best);
+        switch (this.personality) {
+            case Personality.Hunter: this.target = by(ratio); break;
+            case Personality.Equalizer: this.target = by(enemy => -ratio(enemy)); break;
+            case Personality.Hero: this.target = by(enemy => -enemy.damageDealt); break;
+            case Personality.Defender: {
+                const wounded = this.allies().filter(ally => ally.isAlive()).reduce((best, ally) => ratio(ally) < ratio(best) ? ally : best, this);
+                this.target = by(enemy => hexDistance(enemy.x, enemy.y, wounded.x, wounded.y));
+                break;
+            }
+            default: this.target = by(enemy => hexDistance(this.x, this.y, enemy.x, enemy.y));
+        }
+    }
+
+    /** Rough damage a character threatens per turn: what disabling or killing it is worth. */
+    private threat(player: ServerPlayer) {
+        const melee = player.getStat(Stat.ATK) / (1 + 10) * 10;
+        const magic = player.spells.some(spell => spell.cost <= player.mp) ? player.getStat(Stat.SPATK) * 0.6 + 15 : 0;
+        return Math.max(8, melee, magic);
+    }
+
+    private enemyWeight(enemy: ServerPlayer) {
+        let weight = 1;
+        if (enemy === this.target) weight += 0.25;
+        if (enemy.class === Class.WHITE_MAGE) weight += 0.15;
+        return weight;
+    }
+
+    // ---- Valuing effects ---------------------------------------------------------------------
+
+    private damageValue(target: ServerPlayer, damage: number) {
+        if (!target.isAlive()) return 0;
+        const dealt = Math.min(damage, target.hp);
+        const kills = damage >= target.hp;
+        if (target.team === this.team) return -(dealt * FRIENDLY_FIRE_WEIGHT + (kills ? 60 : 0));
+        return dealt * this.enemyWeight(target) + (kills ? KILL_BONUS + this.threat(target) : 0);
+    }
+
+    private healValue(target: ServerPlayer, amount: number) {
+        if (!target.isAlive()) return 0;
+        const missing = target.getMaxHP() - target.hp;
+        const ratio = target.hp / target.getMaxHP();
+        const urgency = ratio < 0.35 ? 1.6 : ratio < 0.6 ? 1.1 : 0.3;
+        const value = Math.min(amount, missing) * urgency;
+        return target.team === this.team ? value : -value;
+    }
+
+    private reviveValue(target: ServerPlayer) {
+        if (target.isAlive()) return 0;
+        const value = 45 + target.getMaxHP() * 0.3;
+        return target.team === this.team ? value : -value;
+    }
+
+    /** Worth of `turns` of a status on `target`; positive when it helps this AI's side. */
+    private statusValue(status: StatusEffect, target: ServerPlayer, turns: number) {
+        if (!target.isAlive()) return 0;
+        const effective = turns === -1 ? STATUS_HORIZON : Math.min(turns, STATUS_HORIZON);
+        // Durations stack, but an already-afflicted target gains less from more turns.
+        const stacked = target.hasStatusEffect(status) ? 0.35 : 1;
+        let value = 0;
+        switch (status) {
+            case StatusEffect.PARALYZE:
+            case StatusEffect.FREEZE:
+            case StatusEffect.SLEEP:
+                value = effective * this.threat(target) * 0.8;
+                break;
+            case StatusEffect.MUTE:
+                value = target.isMage() && target.mp > 0 ? effective * this.threat(target) * 0.7 : 2;
+                break;
+            case StatusEffect.POISON:
+            case StatusEffect.BURN:
+                value = Math.min(effective * (DOT_PER_TURN[status] ?? 10), target.hp);
+                break;
+            case StatusEffect.HASTE:
+                value = this.enemies().length ? 15 : 0;
+                return target.team === this.team ? value : -value;
+        }
+        value *= stacked;
+        return target.team === this.team ? -value : value;
+    }
+
+    /** Ice traps whoever stands on the tile; flames hurt whoever stays. */
+    private terrainValue(terrain: Terrain, targets: ServerPlayer[]) {
+        let value = 0;
+        for (const target of targets) {
+            if (terrain === Terrain.ICE) value += this.statusValue(StatusEffect.FREEZE, target, 3);
+            if (terrain === Terrain.FIRE) value += target.team === this.team ? -15 : 8;
+        }
+        return value;
+    }
+
+    // ---- Spells --------------------------------------------------------------------------------
+
+    private castableSpells() {
+        if (this.isMuted()) return [];
+        return this.spells
+            .map((spell, index) => ({ spell, index }))
+            .filter(({ spell }) => spell.cost <= this.mp && !this.bannedSpells.includes(spell.id)
+                && (this.canUseStatusEffects || !spell.isStatusEffectSpell()));
+    }
+
+    private spellValue(spell: Spell, targets: ServerPlayer[]) {
+        let value = 0;
+        for (const target of targets) {
+            for (const effect of spell.effects) {
+                if (effect.stat !== Stat.HP) continue;
+                if (effect.onKO) value += this.reviveValue(target);
+                else if (effect.value < 0) value += this.damageValue(target, effectAmount(effect, this, target));
+                else value += this.healValue(target, effectAmount(effect, this, target));
+            }
+            if (spell.status) value += spell.status.chance * this.statusValue(spell.status.effect, target, spell.status.duration);
+        }
+        if (spell.terrain !== Terrain.NONE) value += this.terrainValue(spell.terrain, targets);
+        return value - spell.cost * MP_VALUE;
+    }
+
+    private spellPlans(): Plan[] {
+        const plans: Plan[] = [];
+        for (const { spell, index } of this.castableSpells()) {
+            if (spell.target === Target.SINGLE) {
+                const everyone = [...this.allies(), ...this.game.getOtherTeam(this.team!.id).getMembers()];
+                for (const target of everyone) {
+                    if (!spell.isApplicable(target) || !isInSpellRange(this.x, this.y, target.x, target.y)) continue;
+                    const score = this.spellValue(spell, [target]);
+                    plans.push({ kind: 'spell', score, execute: () => this.game.processMagic({ x: target.x, y: target.y, index, targetTeam: target.team.id, target: target.num }) });
+                }
+            } else if (spell.target === Target.AOE) {
+                for (const tile of this.aoeCenters(spell.radius - 1)) {
+                    const targets = this.game.getPlayersInArea(tile.x, tile.y, spell.radius - 1);
+                    if (!targets.length) continue;
+                    const score = this.spellValue(spell, targets);
+                    plans.push({ kind: 'spell', aoe: true, score, execute: () => this.game.processMagic({ x: tile.x, y: tile.y, index, targetTeam: null, target: null }) });
+                }
+            }
+        }
+        return plans;
+    }
+
+    /** Tiles in casting range that would catch at least one enemy in an area of `radius`. */
+    private aoeCenters(radius: number) {
+        const seen = new Set<string>();
+        const tiles: { x: number; y: number }[] = [];
+        for (const enemy of this.enemies()) {
+            for (const tile of getTilesInHexRadius(enemy.x, enemy.y, radius)) {
+                const key = `${tile.x},${tile.y}`;
+                if (seen.has(key) || isSkip(tile.x, tile.y) || !isInSpellRange(this.x, this.y, tile.x, tile.y)) continue;
+                seen.add(key);
+                tiles.push(tile);
+            }
+        }
+        return tiles;
+    }
+
+    // ---- Consumables ---------------------------------------------------------------------------
+
+    private itemValue(item: Item, target: ServerPlayer) {
+        if (item.noEffectReason(target)) return -Infinity;
+        let value = 0;
+        for (const effect of item.effects) {
+            if (effect.stat === Stat.HP) {
+                if (effect.onKO) value += this.reviveValue(target);
+                else value += this.healValue(target, effect.value === -1 ? target.getMaxHP() : effect.value);
+            } else if (effect.stat === Stat.MP) {
+                value += this.manaValue(target, effect.value === -1 ? target.getMaxMP() : effect.value);
+            }
+        }
+        for (const status of item.statusRemovals) {
+            if (target.hasStatusEffect(status)) value -= this.statusValue(status, target, target.statuses[status]);
+        }
+        if (item.status) value += item.status.chance * this.statusValue(item.status.effect, target, item.status.duration);
+        return value - ITEM_COST;
+    }
+
+    /** MP only matters to casters, and most when it stands between them and their spells. */
+    private manaValue(target: ServerPlayer, amount: number) {
+        if (!target.isAlive() || target.team !== this.team || !target.spells.length) return 0;
+        const restored = Math.min(amount, target.getMaxMP() - target.mp);
+        const cheapest = Math.min(...target.spells.map(spell => spell.cost));
+        const need = target.mp < cheapest ? 2.5 : target.mp < cheapest * 2 ? 1 : 0.3;
+        return restored * 0.5 * need;
+    }
+
+    private itemPlans(): Plan[] {
+        if (!this.canUseItems) return [];
+        const plans: Plan[] = [];
+        this.inventory.forEach((item, index) => {
+            if (item.target === Target.SELF) {
+                plans.push({ kind: 'item', score: this.itemValue(item, this), execute: () => this.game.processUseItem({ x: this.x, y: this.y, index, targetTeam: null, target: null }) });
+            } else if (item.target === Target.SINGLE) {
+                for (const ally of this.allies()) {
+                    if (!isInSpellRange(this.x, this.y, ally.x, ally.y)) continue;
+                    plans.push({ kind: 'item', score: this.itemValue(item, ally), execute: () => this.game.processUseItem({ x: ally.x, y: ally.y, index, targetTeam: ally.team.id, target: ally.num }) });
+                }
+            } else if (item.target === Target.AOE) {
+                for (const ally of this.allies().filter(ally => isInSpellRange(this.x, this.y, ally.x, ally.y))) {
+                    const targets = this.game.getPlayersInArea(ally.x, ally.y, item.radius ?? 1);
+                    const score = targets.reduce((sum, target) => sum + Math.max(0, this.itemValue(item, target) + ITEM_COST), 0) - ITEM_COST;
+                    plans.push({ kind: 'item', score, execute: () => this.game.processUseItem({ x: ally.x, y: ally.y, index, targetTeam: null, target: null }) });
+                }
+            }
+        });
+        return plans;
+    }
+
+    // ---- Melee ---------------------------------------------------------------------------------
+
+    private meleeDamage(target: ServerPlayer) {
+        return Math.max(1, this.getStat(Stat.ATK) / (1 + target.getStat(Stat.DEF)) * 10);
+    }
+
+    private attackPlans(): Plan[] {
+        const weapon = this.getWeapon();
+        return this.game.listAdjacentEnemies(this).map(enemy => {
+            let score = this.damageValue(enemy, this.meleeDamage(enemy));
+            for (const status of weapon?.statusEffects ?? []) score += status.chance * this.statusValue(status.effect, enemy, status.duration);
+            return { kind: 'attack' as const, score, execute: () => this.attack(enemy) };
+        });
+    }
+
+    attack(target: ServerPlayer) {
+        this.game.processAttack({ target: target.num, sameTeam: target.team.id === this.team!.id });
+    }
+
+    // ---- Positioning ---------------------------------------------------------------------------
+
+    /** Casters with spells they can afford fight from range; everyone else closes in. */
+    private isRanged() {
+        if (!this.isMage()) return false;
+        const affordable = this.castableSpells().length > 0;
+        const ether = this.canUseItems && this.inventory.some(item => item.effects.some(effect => effect.stat === Stat.MP));
+        return affordable || ether;
+    }
+
+    private positionValue(x: number, y: number) {
+        const enemies = this.enemies();
+        if (!enemies.length) return 0;
+        let value = this.game.checkIsOnFlame(x, y) ? -25 : 0;
+        if (this.isRanged()) {
+            const inRange = enemies.filter(enemy => isInSpellRange(x, y, enemy.x, enemy.y));
+            if (inRange.length) value += 8;
+            if (this.target && inRange.includes(this.target)) value += 6;
+            for (const enemy of enemies) {
+                const distance = hexDistance(x, y, enemy.x, enemy.y);
+                if (distance <= 1) value -= 18;
+                else if (distance <= MOVEMENT_RANGE + 1 && !enemy.isMage()) value -= 5;
+            }
+            const nearest = Math.min(...enemies.map(enemy => hexDistance(x, y, enemy.x, enemy.y)));
+            value -= Math.abs(nearest - 5);
+            if (this.class === Class.WHITE_MAGE) {
+                value += 4 * this.allies().filter(ally => ally !== this && ally.isAlive() && ally.hp < ally.getMaxHP() * 0.6 && isInSpellRange(x, y, ally.x, ally.y)).length;
+            }
+        } else {
+            const focus = this.target ?? enemies[0];
+            const distance = hexDistance(x, y, focus.x, focus.y);
+            value -= distance * 6;
+            if (distance <= 1) value += 10;
+            // Stand near our casters so threats reach the warrior first.
+            if (this.allies().some(ally => ally !== this && ally.isAlive() && ally.isMage() && hexDistance(x, y, ally.x, ally.y) <= 2)) value += 3;
+        }
+        return value;
+    }
+
+    private movePlans(): Plan[] {
+        const here = this.positionValue(this.x, this.y);
+        return this.game.listCellsInRange(this.x, this.y, this.distance).map(tile => {
+            const flames = [...listCellsOnTheWay(this.x, this.y, tile.x, tile.y)]
+                .filter(cell => { const [x, y] = cell.split(',').map(Number); return (x !== tile.x || y !== tile.y) && this.game.checkIsOnFlame(x, y); }).length;
+            const score = this.positionValue(tile.x, tile.y) - here - flames * 10 - 1;
+            return { kind: 'move' as const, score, execute: () => this.game.processMove({ tile }) };
+        });
+    }
+
+    // ---- Turn flow -----------------------------------------------------------------------------
+
+    /** How long a person would plausibly take for this decision (zombies only pose as people). */
+    private thinkTime(plan: Plan | null) {
+        if (!this.isZombie) return 1000 + Math.random() * 1000;
+        const ranges: Record<ActionKind, [number, number]> = {
+            pass: [900, 1800], move: [900, 2000], attack: [1000, 2200], item: [1400, 2600], spell: [1600, 3000],
+        };
+        const [min, max] = ranges[plan?.kind ?? 'move'];
+        let delay = min + Math.random() * (max - min);
+        if (plan?.aoe) delay += 600 + Math.random() * 800;
+        if (this.actionCount === 0) delay += 1500;
+        return Math.round(delay);
+    }
+
     startTurn() {
-        // console.log(`[AIServerPlayer:startTurn] ${this.name} is starting turn`);
         super.startTurn();
         if (FREEZE_AI) {
-            this.team!.game.turnSystem.processAction(this, SpeedClass.SLOW);
-            this.team!.game.processTurn();
+            this.game.turnSystem.processAction(this, SpeedClass.SLOW);
+            this.game.processTurn();
             return;
         }
-        // If is zombie, take between 1 and 4 seconds to act, otherwise between 1 and 2
-        const delay = this.isZombie ? Math.floor(Math.random() * 3000) + 1000 : Math.floor(Math.random() * 1000) + 1000;
-        this.team!.game.combatClock.schedule(() => {
-            if (this.team!.game.turnee === this && !this.hasActed) this.takeAction();
-        }, delay);
+        this.plan = this.canAct() ? this.rankPlans()[0] ?? null : null;
+        this.game.combatClock.schedule(() => {
+            if (this.game.turnee === this && !this.hasActed) this.takeAction();
+        }, this.thinkTime(this.plan));
     }
 }

@@ -6,7 +6,7 @@ import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getMaxStatValue, getXPThreshold } from '@legion/shared/levelling';
 import { CharacterStats, Equipment, PlayerNetworkData, StatusEffects } from '@legion/shared/interfaces';
-import { INJURED_MODE, LOTSA_HP, MOVEMENT_RANGE, PARALYZED_DELAY } from "@legion/shared/config";
+import { INJURED_MODE, LOTSA_HP, MOVEMENT_RANGE, PARALYZED_DELAY, XP_CONTRIBUTION_PER_HP_BAR, XP_CONTRIBUTION_TARGET_CAP } from "@legion/shared/config";
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpells, lvlUp, setUpInventory } from '@legion/shared/NewCharacter';
 import { hexDistance } from '@legion/shared/utils';
@@ -62,6 +62,8 @@ export class ServerPlayer {
     entranceTime: number = 2.5;
     statuses: StatusEffects;
     interactedTargets: Set<ServerPlayer> = new Set();
+    /** Actions taken and damage absorbed; sets the contribution part of the XP share. */
+    contribution = 0;
     activeTerrainDoT: Terrain | null = null;
     class: Class;
     isAI = false;
@@ -201,7 +203,10 @@ export class ServerPlayer {
         if(this.isDead()) return;
         this.justDied = false;
 
+        const hpBefore = this.hp;
         this.updateHP(damage);
+        // Taking hits for the team counts toward the XP share, not only dealing them.
+        this.contribution += Math.max(0, hpBefore - this.hp) / this.getMaxHP() * XP_CONTRIBUTION_PER_HP_BAR;
         if (this.isDead()) {
             this.die();
         }
@@ -471,7 +476,11 @@ export class ServerPlayer {
         if (this.isDead()) return false;
         const r = Math.random();
         console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
-        if (r > chance) return false;
+        if (r > chance) {
+            // Shown over the target, so a failed roll is not mistaken for a spell without effect.
+            this.team!.game.broadcast('statusresisted', {team: this.team!.id, num: this.num, status});
+            return false;
+        }
 
         // Reapplying adds its turns to those left; -1 (until removed, e.g. frozen in ice) outlasts any count.
         const current = this.statuses[status];
@@ -558,6 +567,11 @@ export class ServerPlayer {
         // Earn 3 + floor(level/10) points + a small chance of 1 extra point
         const reward = (3 + Math.floor(this.level / 10) + (Math.random() < 0.1 ? 1 : 0));
         this.earnedStatsPoints += reward;
+    }
+
+    /** One action counts its targets, capped so area effects keep an edge without dominating. */
+    recordAction(targetCount: number) {
+        this.contribution += Math.min(Math.max(targetCount, 1), XP_CONTRIBUTION_TARGET_CAP);
     }
 
     addInteractedTarget(target: ServerPlayer) {

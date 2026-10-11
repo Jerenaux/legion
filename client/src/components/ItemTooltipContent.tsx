@@ -9,7 +9,7 @@ import {getConsumableById} from '@legion/shared/Items';
 import {getSpellById} from '@legion/shared/Spells';
 import {getEquipmentById} from '@legion/shared/Equipments';
 import {Tooltip as ReactTooltip} from 'react-tooltip';
-import {classEnumToString, getSpeedClass, mapFrameToCoordinates} from './utils';
+import {classEnumToString, getSpeedClass, inflictedStatuses, mapFrameToCoordinates, statusIcons, statusSummary} from './utils';
 import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -29,7 +29,7 @@ export function ItemTooltip({id, showClasses = true, character}: {id: string; sh
       const type = activeAnchor?.getAttribute('data-tooltip-item-type');
       if (type === 'xp') return <div className="item-preview">
         <strong className="item-preview-name">{t('Experience')}</strong>
-        <p className="item-preview-description">{t('Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.')}</p>
+        <p className="item-preview-description">{t('Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.')}</p>
       </div>;
       if (type === 'gold') return <div className="item-preview">
         <strong className="item-preview-name">{t('Gold')}</strong>
@@ -69,7 +69,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
   const equipment = item instanceof BaseEquipment;
   const sprite = spell ? spellsSpritesheet : equipment ? equipmentSpritesheet : consumablesSpritesheet;
   const {x, y} = mapFrameToCoordinates(item.frame);
-  const appliesStatus = equipment ? item.statusEffects.length > 0 : Boolean(item.status);
+  const statuses = inflictedStatuses(item);
   return <div className="item-preview">
     <div className="item-preview-heading">
       <div className="item-preview-icon">
@@ -81,7 +81,10 @@ export function ItemTooltipContent({item, showClasses, character}: {
       </div>
     </div>
     {item.description && <p className="item-preview-description">{highlightNumbers(t(item.description))}</p>}
-    {appliesStatus && <p className="item-preview-note">{t('Stacks: reapplying adds these turns to any already left.')}</p>}
+    {statuses.map(status => <p className="item-preview-status" key={status.effect}>
+      <img src={statusIcons[status.effect]} alt="" /><strong>{t(status.effect)}</strong><span>{highlightNumbers(statusSummary(status))}</span>
+    </p>)}
+    {statuses.length > 0 && <p className="item-preview-note">{t('Stacks: reapplying adds these turns to any already left.')}</p>}
     {!equipment && <div className="item-preview-facts">
       {spell && <span><Trans i18n={i18n} i18nKey={"<0/>{{value0}} MP"} components={[<img src={mpIcon} alt="" />]} values={{value0: item.cost}} /></span>}
       <span><img src={speedIcon} alt={""} />{getSpeedClass(item.speedClass).toLowerCase()}</span>

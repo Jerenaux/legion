@@ -37,6 +37,14 @@ export const STARTING_CONSUMABLES = [];
 export const STARTING_WHITE_MAGE_SPELLS = [9];
 export const STARTING_BLACK_MAGE_SPELLS = [0];
 export const XP_PER_LEVEL = 50;
+// Match XP share: this part is split equally; the rest follows each character's contribution.
+export const XP_EQUAL_SHARE = 0.6;
+// A single action counts for at most this many targets (area spells and items).
+export const XP_CONTRIBUTION_TARGET_CAP = 2;
+// Absorbing a full HP bar of damage counts as this many actions.
+export const XP_CONTRIBUTION_PER_HP_BAR = 3;
+// Extra XP for characters below the team's average level.
+export const XP_CATCH_UP_BONUS = 0.25;
 export const AVERAGE_GOLD_REWARD_PER_GAME = 100; 
 export const MAX_AUDIENCE_SCORE = 1500;
 export const PROMOTION_RATIO = 0.4;

@@ -54,7 +54,7 @@ export default function CharacterHoverCard({ character, hover }: { character: Te
       ))}
       <div className="character-hover-card__statuses">
         {activeStatuses.length ? activeStatuses.map(([status, turns]) => (
-          <span {...statusPulse(character.statusRefreshes, status)}><img src={statusIcons[status]} alt={""} />{t(status)}<b>{turns === -1 ? '∞' : turns}</b></span>
+          <span {...statusPulse(character.statusRefreshes, status)}><img src={statusIcons[status]} alt={""} />{t(status)}<span className="character-hover-card__sep" aria-hidden="true">·</span><b>{turns === -1 ? '∞' : t('statusDuration', {count: turns})}</b></span>
         )) : <span className="character-hover-card__no-status">{t("No status effects")}</span>}
       </div>
     </div>

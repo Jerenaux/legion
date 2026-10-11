@@ -912,6 +912,7 @@ export abstract class Game
         player.increaseDamageDealt(damage);
         player.team.incrementOffensiveActions();
         player.addInteractedTarget(opponent);
+        player.recordAction(1);
 
         let oneShot = false;
         if (opponent.justDied) {
@@ -1006,6 +1007,7 @@ export abstract class Game
         targets.forEach(target => {
             player.addInteractedTarget(target);
         });
+        player.recordAction(targets.length);
 
         const deadTargets_ = targets.filter(target => !target.isAlive()).length;
         item.applyEffect(targets);
@@ -1072,6 +1074,7 @@ export abstract class Game
             }
             player.addInteractedTarget(target);
         });
+        player.recordAction(targets.length);
         targets.forEach(target => {
             target.justDied = false;
         });

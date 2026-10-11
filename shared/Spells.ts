@@ -91,7 +91,7 @@ spells.push(new BaseSpell({
 spells.push(new BaseSpell({
     id: 3,
     name: "Thunder",
-    description: "Unleash a thunder bolt on 1 tile and may paralyze the target for 5 turns",
+    description: "Unleash a thunder bolt on 1 tile that can paralyze the target",
     frame: 20,
     vfx: "thunder_1",
     sfx: "thunder",
@@ -114,7 +114,7 @@ spells.push(new BaseSpell({
 spells.push(new BaseSpell({
     id: 4,
     name: "Thunder+",
-    description: "Unleash a thunder bolt on 2 tiles and may paralyze the target for 7 turns",
+    description: "Unleash a thunder bolt on 2 tiles that can paralyze the targets",
     frame: 21,
     vfx: "thunder_2",
     sfx: "thunder",
@@ -136,7 +136,7 @@ spells.push(new BaseSpell({
 spells.push(new BaseSpell({
     id: 5,
     name: "Thunder X",
-    description: "Unleash a thunder bolt on 3 tiles and may paralyze the target for 10 turns",
+    description: "Unleash a thunder bolt on 3 tiles that can paralyze the targets",
     frame: 22,
     vfx: "thunder_3",
     sfx: "thunder",
@@ -251,7 +251,7 @@ spells.push(new BaseSpell({
 spells.push(new BaseSpell({
     id: 10,
     name: "Poison",
-    description: "Poison a single target for 10 turns, dealing damage every turn",
+    description: "Poison a single target, dealing damage every turn",
     frame: 3,
     vfx: "poison",
     sfx: "poison",
@@ -274,7 +274,7 @@ spells.push(new BaseSpell({
 spells.push(new BaseSpell({
     id: 11,
     name: "Silence",
-    description: "Make the target mute, unable to cast spells for 5 turns",
+    description: "Make the target mute, unable to cast spells",
     frame: 4,
     vfx: "mute",
     sfx: "mute",

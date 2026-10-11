@@ -139,6 +139,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>{t("Silence")}</dt><dd>{t("Prevents spellcasting. A Bocca or Remedy removes it; a silenced mage can still move, attack, or use an item.")}</dd></div>
               <div><dt>{t("Paralysis")}</dt><dd>{t("Prevents actions while it lasts. Thunder spells can inflict it. Protect the affected character until they can act again.")}</dd></div>
             </dl>
+            <p>{t("Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.")}</p>
             <p>{t("Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.")}</p>
             <p>{t("At zero HP, a character is knocked out and cannot act. A revival item such as Clover targets a fallen character; ordinary healing is not a substitute. The battle ends if your entire team is down, so revive before that happens.")}</p>
           </section>
@@ -162,6 +163,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <li><Trans i18n={i18n} i18nKey={"<0>Fit equipment.</0> With your character selected, click equipment in the shared inventory and choose <1>Equip</1>. Check class requirements. Equipment adds passive bonuses and can be swapped between battles."} components={[<strong />, <strong />]} /></li>
             </ol>
             <h3>{t("Spend your stat points")}</h3>
+            <p>{t("Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Characters earn XP and level up, improving their stats and gaining <0>SP</0> (stat points). Use the <1>+</1> beside a stat on the character sheet to spend them. These choices are permanent."} components={[<strong />, <strong />]} /></p>
             <dl className="guide-definitions">
               <div><dt>{t("HP / MP")}</dt><dd>{t("Health and spellcasting resources. One SP adds 10 to either.")}</dd></div>

@@ -55,8 +55,11 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
     p.maxHP = 80.2; p.maxMP = 39.8; p.setMP(16.8); p.setHP(70.2); })()`);
   await waitFor('document.querySelector("#character-hover-card").textContent.includes("17 / 40")');
   await waitFor('document.querySelector("#character-hover-card").textContent.includes("70 / 80")');
-  assert(await js('document.querySelector("#character-hover-card").textContent.includes("Poison3")'));
-  assert(await js('document.querySelector("#character-hover-card").textContent.includes("Haste∞")'));
+  // Each active status shows its own entry with its remaining turns (∞ for indefinite).
+  const statusTurns = await js(`Object.fromEntries([...document.querySelectorAll('#character-hover-card .character-hover-card__statuses > span')]
+    .map(entry => [entry.querySelector('img')?.getAttribute('src') ? entry.childNodes[1]?.textContent : '', entry.querySelector('b')?.textContent]))`);
+  assert.match(statusTurns.Poison ?? '', /\b3\b/);
+  assert.equal(statusTurns.Haste, '∞');
   assert.equal(await js('getComputedStyle(document.querySelector("#character-hover-card")).pointerEvents'), 'none');
   await waitFor('!combatCheck.arena.getPlayer(2, 3).hurtTween.isPlaying()');
   await ready();
