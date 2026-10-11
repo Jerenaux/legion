@@ -1,3 +1,4 @@
+import {getLeagueRank} from "@legion/shared/leagueRanking";
 import {onRequest, onSchedule} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 
@@ -76,18 +77,8 @@ async function getPersonalRank(leagueID: number, uid: string): Promise<number | 
     return higher.data().count + 1;
   }
 
-  const stats = player.leagueStats;
-  const seasonId = currentSeasonId();
-  if (player.league !== leagueID || stats?.seasonId !== seasonId) return null;
-  const base = db.collection("players")
-    .where("league", "==", leagueID)
-    .where("leagueStats.seasonId", "==", seasonId);
-  const [moreWins, tiedWithFewerLosses] = await Promise.all([
-    base.where("leagueStats.wins", ">", stats.wins || 0).count().get(),
-    base.where("leagueStats.wins", "==", stats.wins || 0)
-      .where("leagueStats.losses", "<", stats.losses || 0).count().get(),
-  ]);
-  return moreWins.data().count + tiedWithFewerLosses.data().count + 1;
+  if (player.league !== leagueID) return null;
+  return getLeagueRank(db, player);
 }
 
 async function getLeaderboard(leagueID: number, uid: string) {

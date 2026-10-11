@@ -275,7 +275,7 @@ class Navbar extends Component<Props, State> {
                                         {playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
                                             <UserInfoBar
                                                 icon='league'
-                                                label={this.state.isLoading ? t("Loading...") : `#${this.props.playerData?.rank}`}
+                                                label={this.state.isLoading ? t("Loading...") : (this.props.playerData?.rank > 0 ? `#${this.props.playerData.rank}` : "–")}
                                                 isLeague={true}
                                                 bigLabel={!this.state.isLoading}
                                                 league={this.props.playerData?.league}

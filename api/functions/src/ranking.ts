@@ -1,3 +1,5 @@
+import {currentSeasonId} from "@legion/shared/leagueRanking";
+export {currentSeasonId} from "@legion/shared/leagueRanking";
 import {communitySummary} from "@legion/shared/communities";
 import {ChestColor, League} from "@legion/shared/enums";
 import {LeaderboardRow} from "@legion/shared/interfaces";
@@ -26,15 +28,6 @@ export interface RankedPlayer {
   allTimeStats: RankStats;
   isSynthetic?: boolean;
   community?: unknown;
-}
-
-export function currentSeasonId(now = new Date()): string {
-  const boundary = new Date(now);
-  const daysSinceFriday = (boundary.getUTCDay() + 2) % 7;
-  boundary.setUTCDate(boundary.getUTCDate() - daysSinceFriday);
-  boundary.setUTCHours(19, 0, 0, 0);
-  if (boundary > now) boundary.setUTCDate(boundary.getUTCDate() - 7);
-  return boundary.toISOString().slice(0, 10);
 }
 
 export function seasonEndingAt(boundary: Date): string {

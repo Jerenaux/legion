@@ -1,3 +1,4 @@
+import {getLeagueRank} from "@legion/shared/leagueRanking";
 import {chestsDelays, getDefaultDailyLoot} from "./dailyLoot";
 import {communitySummary} from '@legion/shared/communities';
 import { onRequest } from "./telemetry";
@@ -241,8 +242,9 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     throw new Error("playerData is null");
   }
 
-  const [characters] = await Promise.all([
+  const [characters, rank] = await Promise.all([
     includeRoster ? readRoster(playerData.characters || []) : Promise.resolve(undefined),
+    getLeagueRank(db, playerData),
     recordPlayerActivity(db, uid, playerData.lastActiveDate, storeBuild, undefined, playerData.lastStoreActiveDay),
   ]);
 
@@ -283,8 +285,8 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     teamName: "teamName",
     avatar: playerData.avatar || '1',
     league: playerData.league || 0,
-    rank: playerData.leagueStats?.rank || 0,
-    wins: playerData.leagueStats?.wins || 0,
+    rank: rank ?? 0,
+    wins: playerData.leagueStats?.seasonId === currentSeasonId() ? playerData.leagueStats.wins || 0 : 0,
     allTimeRank: playerData.allTimeStats?.rank || 0,
     dailyloot: playerData.dailyloot,
     inventory: sortedInventory,
@@ -927,7 +929,10 @@ export const zombieData = onRequest(
     if (closestPlayer) {
       const {id: playerId, data: playerData} = closestPlayer;
 
-      const rosterData = await readZombieRoster(playerId, playerData.characters || []);
+      const [rosterData, rank] = await Promise.all([
+        readZombieRoster(playerId, playerData.characters || []),
+        getLeagueRank(db, playerData),
+      ]);
 
       // Transform dailyloot
       const transformedDailyLoot = transformDailyLoot(playerData.dailyloot || getDefaultDailyLoot());
@@ -942,8 +947,8 @@ export const zombieData = onRequest(
           teamName: "teamName",
           avatar: playerData.avatar,
           league: playerData.league,
-          rank: playerData.leagueStats?.rank || 0,
-          wins: playerData.leagueStats?.wins || 0,
+          rank: rank ?? 0,
+          wins: playerData.leagueStats?.seasonId === currentSeasonId() ? playerData.leagueStats.wins || 0 : 0,
           allTimeRank: playerData.allTimeStats?.rank || 0,
           dailyloot: transformedDailyLoot,
           isLoaded: false,
@@ -1111,7 +1116,8 @@ export const getProfileData = onRequest({
             const playerData = playerDoc.data();
             const allTimeStats = playerData?.allTimeStats;
             const casualStats = playerData?.casualStats;
-            const leagueStats = playerData?.leagueStats;
+            const leagueStats = playerData?.leagueStats?.seasonId === currentSeasonId() ? playerData.leagueStats : undefined;
+            const rank = await getLeagueRank(db, playerData!);
 
             const profileData = {
                 name: playerData?.name || '',
@@ -1139,7 +1145,7 @@ export const getProfileData = onRequest({
                     losses: leagueStats?.losses || 0,
                     lossStreak: leagueStats?.lossesStreak || 0,
                     winStreak: leagueStats?.winStreak || 0,
-                    rank: leagueStats?.rank || 0,
+                    rank: rank ?? 0,
                     league: playerData?.league || 0,
                 },
             };

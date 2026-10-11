@@ -1,4 +1,5 @@
 import {flush} from './instrument';
+import {getLeagueRank} from "@legion/shared/leagueRanking";
 
 import express from 'express';
 import { Socket, Server } from 'socket.io';
@@ -105,7 +106,7 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<{p
       teamName: "teamName",
       avatar: playerData.avatar || '1',
       league: playerData.league || 0,
-      rank: playerData.leagueStats?.rank || 0,
+      rank: (await getLeagueRank(db, playerData)) ?? 0,
       dailyloot: transformedDailyLoot,
       AIwinRatio,
       completedGames: playerData.engagementStats?.completedGames || 0,
