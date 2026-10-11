@@ -46,9 +46,8 @@ Run `node tools/guide/preview.cjs` from `client` to serve the fixture-backed cli
 
 For a roster-only refresh, run `bun run test:guide --roster-images --locale=<code>`.
 This refreshes the cropped loadout image and saves Team/Play previews at compact
-window sizes and 130% text size in the temporary fixture directory. It also
-checks character selection, keyboard activation, recruitment progress, capacity,
-and the unlocked recruitment link. Inspect the previews manually.
+window sizes and 130% text size in the temporary fixture directory. Inspect the
+previews manually.
 
 Translated guide prose lives in `client/locales/<code>/messages.json`. Run
 `bun run guide:screenshots --locale=<code>` to capture the same cropped images
@@ -69,5 +68,5 @@ Disabling it keeps the spell unlock, three Ethers and 200 gold, and sends the
 unlock dialog to the spell shop. No milestones move and no save migration is
 needed. Re-enabling the flag restores Tower for players already past six games;
 it does not replay a previously dismissed milestone dialog. Deploy all consumers
-when changing the flag. `bun run test:guide --tower-unlock` verifies availability
-and the six-game dialog in the packaged renderer.
+when changing the flag. `bun run test:guide --tower-unlock` captures availability
+and the six-game dialog in the packaged renderer for manual review.

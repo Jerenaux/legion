@@ -157,7 +157,7 @@ bun run test:guide --gifts --locale=de
 bun run test:guide --gifts --locale=ja
 ```
 
-The fixture harness checks player readiness, running-app delivery, receipts,
-invalid/used links, network retry, queue deferral, and compact layouts with large
-text. It never contacts production. Also test the built executable with a fresh
+The `--gifts` run captures the gift screens (readiness, delivery, receipts,
+invalid/used links, retry, queue deferral, compact layouts) for manual review; it
+asserts nothing about the UI and never contacts production. Also test the built executable with a fresh
 gift, click twice, and verify its Firestore receipt and actual inventory change.

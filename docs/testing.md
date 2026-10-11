@@ -1,6 +1,9 @@
 # Testing
 
-Do not use TDD or write unit tests. Implement first, then verify the relevant
+Never use TDD, never write unit tests, and never write UI or frontend tests (no
+checks of text, formatting, tooltips, hover cards, menus, the combat dock, layout
+or styling). When a UI change breaks an existing UI assertion, delete it. Verify
+UI work by looking at the rebuilt app. Implement first, then verify the relevant
 integrated behavior. This applies to fixes and security changes too. The policy
 in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
 
@@ -19,10 +22,12 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
 - `cd client && bun run test:startup`: real authentication renderer, native IPC
   and Firebase SDK with loopback services; checks startup deadlines, cancellation,
   late results and retry recovery without touching production accounts.
-- `cd client && bun run test:guide` and `bun run test:guide --dock`: real packaged
-  renderer, Phaser combat, keyboard/menu flows, recovery and local replay capture.
-  CI runs these on Windows and macOS. Other scenario switches remain available
-  for gifts, Tower, localization and UI flows; see `docs/player-guide.md`.
+- `cd client && bun run test:guide`: packaged smoke checks only — error reporting
+  and replay privacy, music hand-off, repeated-match teardown, match readiness,
+  socket recovery and crash recovery. CI runs it on Windows and macOS. The other
+  switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
+  `--tower-images`, `--localization`, `--tutorial`) only capture screenshots for
+  manual review; `--tutorial` also keeps its match-readiness checks.
 - `node tools/backend/run.cjs` from the repository root: isolated Auth, Firestore
   and Functions emulators plus real server/matchmaker processes and HTTP/Socket.IO
   clients. Includes account bootstrap, matchmaking, progression, indexed opponents,

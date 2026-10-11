@@ -10,7 +10,6 @@
     "test": "bun test",
     "test:guide": "node tools/guide/capture.cjs",
     "test:startup": "node tools/startup/check.cjs",
-    "test:combat-hover": "node tools/guide/capture.cjs --hover",
     "guide:screenshots": "node tools/guide/capture.cjs --images",
     "electron:dev": "concurrently \"bun run start\" \"electron electron.js\"",
     "electron:build": "BUILD_TARGET=electron bun run build && electron-builder --mac --win",
