@@ -222,3 +222,23 @@
 @keyframes combat-status-in { from { opacity: 0; transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .combat-status-banner > span { animation: none; } }
 @media (max-width: 960px) { .combat-status-banner > span { font-size: .8125rem; padding: 5px 12px 6px; } }
+
+/* A status that just gained turns: its chip swells once with a gold glow. */
+.status-refreshed {
+  animation: status-refresh 0.9s ease-out;
+}
+
+@keyframes status-refresh {
+  0% { transform: scale(1); filter: none; }
+  30% { transform: scale(1.45); filter: drop-shadow(0 0 6px oklch(85% 0.14 85)); }
+  100% { transform: scale(1); filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-refreshed { animation: status-refresh-still 1.2s step-end; }
+}
+
+@keyframes status-refresh-still {
+  0% { outline: 1px solid oklch(85% 0.14 85); outline-offset: 1px; }
+  100% { outline: none; }
+}

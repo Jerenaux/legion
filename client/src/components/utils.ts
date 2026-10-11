@@ -200,6 +200,12 @@ export const statusIcons = {
   'Haste': hasteIcon,
 };
 
+/** Status chips remount with a one-off pulse when the status gains turns (see Player.statusRefreshes). */
+export function statusPulse(refreshes: Partial<Record<string, number>> | undefined, status: string) {
+  const at = refreshes?.[status] ?? 0;
+  return {key: `${status}-${at}`, className: Date.now() - at < 1500 ? 'status-refreshed' : undefined};
+}
+
 async function recordPlayerAction(actionType: string, details: string) {
   try {
     await apiFetch('recordPlayerAction', {

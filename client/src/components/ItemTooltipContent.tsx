@@ -64,6 +64,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
   const equipment = item instanceof BaseEquipment;
   const sprite = spell ? spellsSpritesheet : equipment ? equipmentSpritesheet : consumablesSpritesheet;
   const {x, y} = mapFrameToCoordinates(item.frame);
+  const appliesStatus = equipment ? item.statusEffects.length > 0 : Boolean(item.status);
   return <div className="item-preview">
     <div className="item-preview-heading">
       <div className="item-preview-icon">
@@ -75,6 +76,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
       </div>
     </div>
     {item.description && <p className="item-preview-description">{t(item.description)}</p>}
+    {appliesStatus && <p className="item-preview-note">{t('Stacks: reapplying adds these turns to any already left.')}</p>}
     {!equipment && <div className="item-preview-facts">
       {spell && <span><Trans i18n={i18n} i18nKey={"<0/>{{value0}} MP"} components={[<img src={mpIcon} alt="" />]} values={{value0: item.cost}} /></span>}
       <span><img src={speedIcon} alt={""} />{getSpeedClass(item.speedClass).toLowerCase()}</span>

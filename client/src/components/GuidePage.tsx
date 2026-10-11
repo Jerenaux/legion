@@ -139,6 +139,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>{t("Silence")}</dt><dd>{t("Prevents spellcasting. A Bocca or Remedy removes it; a silenced mage can still move, attack, or use an item.")}</dd></div>
               <div><dt>{t("Paralysis")}</dt><dd>{t("Prevents actions while it lasts. Thunder spells can inflict it. Protect the affected character until they can act again.")}</dd></div>
             </dl>
+            <p>{t("Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.")}</p>
             <p>{t("At zero HP, a character is knocked out and cannot act. A revival item such as Clover targets a fallen character; ordinary healing is not a substitute. The battle ends if your entire team is down, so revive before that happens.")}</p>
           </section>
 

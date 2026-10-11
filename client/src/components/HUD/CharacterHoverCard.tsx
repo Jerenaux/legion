@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef } from 'preact/hooks';
 import { ClassLabels } from '@legion/shared/enums';
 import { TeamMember } from '@legion/shared/interfaces';
 import ClassCrest from './ClassCrest';
-import { statusIcons } from '../utils';
+import { statusIcons, statusPulse } from '../utils';
 import './CharacterHoverCard.style.css';
 
 export interface CharacterHover {
@@ -54,7 +54,7 @@ export default function CharacterHoverCard({ character, hover }: { character: Te
       ))}
       <div className="character-hover-card__statuses">
         {activeStatuses.length ? activeStatuses.map(([status, turns]) => (
-          <span key={status}><img src={statusIcons[status]} alt={""} />{t(status)}<b>{turns === -1 ? '∞' : turns}</b></span>
+          <span {...statusPulse(character.statusRefreshes, status)}><img src={statusIcons[status]} alt={""} />{t(status)}<b>{turns === -1 ? '∞' : turns}</b></span>
         )) : <span className="character-hover-card__no-status">{t("No status effects")}</span>}
       </div>
     </div>

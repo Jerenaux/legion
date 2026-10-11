@@ -669,9 +669,7 @@
   "Wayfarer's cord": "Wayfarer's cord",
   "Sturdy Iron Sword": "Sturdy Iron Sword",
   "Serpent's Fang": "Serpent's Fang",
-  "80% chance to poison enemy on melee attacks.": "80% chance to poison enemy on melee attacks.",
   "Viridian Striker": "Viridian Striker",
-  "30% chance to poison enemy on melee attacks.": "30% chance to poison enemy on melee attacks.",
   "Remove": "Remove",
   "Spend": "Spend",
   "the queue": "the queue",
@@ -1193,5 +1191,9 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} can’t learn this class’s spells.",
   "{{value0}} can’t use this class’s gear.": "{{value0}} can’t use this class’s gear.",
   "{{value0}} needs level {{value1}}.": "{{value0}} needs level {{value1}}.",
-  "{{value0}}’s item slots are full.": "{{value0}}’s item slots are full."
+  "{{value0}}’s item slots are full.": "{{value0}}’s item slots are full.",
+  "80% chance to poison the enemy for 3 turns on melee attacks.": "80% chance to poison the enemy for 3 turns on melee attacks.",
+  "30% chance to poison the enemy for 3 turns on melee attacks.": "30% chance to poison the enemy for 3 turns on melee attacks.",
+  "Stacks: reapplying adds these turns to any already left.": "Stacks: reapplying adds these turns to any already left.",
+  "Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.": "Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining."
 }

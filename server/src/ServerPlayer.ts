@@ -473,7 +473,9 @@ export class ServerPlayer {
         console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
         if (r > chance) return false;
 
-        this.statuses[status] = duration;
+        // Reapplying adds its turns to those left; -1 (until removed, e.g. frozen in ice) outlasts any count.
+        const current = this.statuses[status];
+        this.statuses[status] = current === -1 || duration === -1 ? -1 : Math.max(current, 0) + duration;
 
         if (statsModifyingStatuses[status]) {
             for (const stat in statsModifyingStatuses[status]) {

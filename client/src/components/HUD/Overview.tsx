@@ -6,7 +6,7 @@ import PlayerInfo from './PlayerInfo';
 import ClassCrest from './ClassCrest';
 import { CharacterHover, InspectCharacter } from './CharacterHoverCard';
 import { PlayMode, StatusEffect } from '@legion/shared/enums';
-import { getSpritePath, statusIcons } from '../utils';
+import { getSpritePath, statusIcons, statusPulse } from '../utils';
 import './Overview.style.css';
 
 import charProfileReady from '@assets/HUD/char_profile_ready.png';
@@ -157,7 +157,8 @@ class Overview extends Component<Props, State> {
                 </div>
                 <div className={`char_statuses ${position === 'right' && 'char_statuses_right'}`}>
                   {Object.keys(member?.statuses).map((status: StatusEffect) => {
-                    return member.statuses[status] !== 0 && <img key={`${memberIndex}-${status}`} src={statusIcons[status]}  alt={""} />
+                    const pulse = statusPulse(member.statusRefreshes, status);
+                    return member.statuses[status] !== 0 && <img key={`${memberIndex}-${pulse.key}`} className={pulse.className} src={statusIcons[status]}  alt={""} />
                   })}
                 </div>
               </button>

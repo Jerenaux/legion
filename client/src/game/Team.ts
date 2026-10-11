@@ -85,6 +85,7 @@ export class Team {
                 isAlive: member.isAlive(),
                 isPlayer: member.isPlayer,
                 statuses: member.statuses,
+                statusRefreshes: member.statusRefreshes,
                 class: member.class,
                 xp: member.xp,
                 level: member.level,

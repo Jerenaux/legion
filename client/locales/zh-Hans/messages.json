@@ -669,9 +669,7 @@
   "Wayfarer's cord": "旅者绳饰",
   "Sturdy Iron Sword": "坚固铁剑",
   "Serpent's Fang": "毒蛇之牙",
-  "80% chance to poison enemy on melee attacks.": "近战攻击有 80% 概率使敌人中毒。",
   "Viridian Striker": "翠绿之刃",
-  "30% chance to poison enemy on melee attacks.": "近战攻击有 30% 概率使敌人中毒。",
   "Remove": "卸下",
   "Spend": "使用",
   "the queue": "匹配队列",
@@ -1193,5 +1191,9 @@
   "{{value0}} can’t learn this class’s spells.": "{{value0}} 无法学习该职业的法术。",
   "{{value0}} can’t use this class’s gear.": "{{value0}} 无法使用该职业的装备。",
   "{{value0}} needs level {{value1}}.": "{{value0}} 需要 {{value1}} 级。",
-  "{{value0}}’s item slots are full.": "{{value0}} 的道具栏已满。"
+  "{{value0}}’s item slots are full.": "{{value0}} 的道具栏已满。",
+  "80% chance to poison the enemy for 3 turns on melee attacks.": "近战攻击有 80% 概率使敌人中毒 3 回合。",
+  "30% chance to poison the enemy for 3 turns on melee attacks.": "近战攻击有 30% 概率使敌人中毒 3 回合。",
+  "Stacks: reapplying adds these turns to any already left.": "可叠加：再次施加会把这些回合数加到剩余回合上。",
+  "Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.": "状态持续回合会叠加：剩余 4 回合的中毒再加上 10 回合的毒术，共 14 回合。每个状态图标旁的数字显示剩余回合。"
 }

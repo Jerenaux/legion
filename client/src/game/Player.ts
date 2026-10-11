@@ -59,6 +59,8 @@ export class Player extends Phaser.GameObjects.Container {
     team: Team;
     animationLock = false;
     statuses: StatusEffects;
+    /** When each status last gained turns, so the HUD can pulse its counter. */
+    statusRefreshes: Partial<Record<StatusEffect, number>> = {};
     class: Class;
     xp: number;
     level: number;
@@ -222,6 +224,7 @@ export class Player extends Phaser.GameObjects.Container {
             items: this.inventory,
             casting: this.casting,
             statuses: this.statuses,
+            statusRefreshes: this.statusRefreshes,
             pendingSpell: this.pendingSpell,
             pendingItem: this.pendingItem,
             isParalyzed: this.isParalyzed(),
@@ -867,6 +870,10 @@ export class Player extends Phaser.GameObjects.Container {
     setStatuses(statuses: StatusEffects) {
         Object.keys(statuses).forEach(status => {
             const duration = statuses[status];
+            const previous = this.statuses[status];
+            if (previous && duration && (duration === -1 ? previous !== -1 : previous !== -1 && duration > previous)) {
+                this.statusRefreshes[status] = Date.now();
+            }
             this.statuses[status] = duration;
             if (duration !== 0) {
                 this.showStatusAnimation(status as keyof StatusEffects);
