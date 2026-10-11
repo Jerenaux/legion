@@ -15,6 +15,7 @@ import path from "node:path";
 const workflow = Bun.YAML.parse(await Bun.file(process.argv[2]).text());
 assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"], "Desktop releases must be manual-only");
 assert.equal(workflow.jobs.build.if, "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'", "Desktop builds must be restricted to main");
+assert.equal(workflow.jobs.build.needs, "desktop-stability", "Desktop builds must wait for the packaged stability gate");
 const steam = workflow.jobs["upload-steam-private"];
 assert.ok(steam.if.includes("github.ref == 'refs/heads/main'"), "Steam credentials must only be used from main");
 assert.deepEqual(steam.concurrency, {group: "steam-demo-upload", "cancel-in-progress": false}, "Steam token updates must be serialized without cancelling an active upload");

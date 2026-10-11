@@ -84,7 +84,7 @@ the Electron integration is controlled in `client/electron.js`.
    ```
 
    Add `publish_itch=true` only when an Itch release is also requested. Both stores consume the same platform artifacts and product version from `client/package.json`.
-4. Verify the completed workflow and its exact commit, source-map uploads, and packaged startup checks. Run the relevant Steam login/gameplay checks for the changes, including matchmaking, match completion, reconnect, and clean exit where applicable. Keep direct-download and Itch authentication covered too. Report any untested hardware/session paths honestly; never publish a known failing build.
+4. The workflow first runs the desktop stability gate (about 10–15 minutes); nothing is built or uploaded if it fails. Verify the completed workflow and its exact commit, source-map uploads, and packaged startup checks. Run the relevant Steam login/gameplay checks for the changes, including matchmaking, match completion, reconnect, and clean exit where applicable. Keep direct-download and Itch authentication covered too. Report any untested hardware/session paths honestly; never publish a known failing build.
 5. Unless the request explicitly excludes public publication, promote that exact Build ID to the Demo's public/default branch in [Steamworks](https://partner.steamgames.com/apps/builds/3996730) or through the publisher API below. Do not rebuild or stop at the private upload. Keep the previous public Build ID for rollback, complete any Valve confirmation, then verify the public branch points to the new Build ID before reporting it live.
 
 ### Public promotion through the publisher API

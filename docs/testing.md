@@ -24,7 +24,9 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   late results and retry recovery without touching production accounts.
 - `cd client && bun run test:guide`: packaged smoke checks only — error reporting
   and replay privacy, music hand-off, repeated-match teardown, match readiness,
-  socket recovery and crash recovery. CI runs it on Windows and macOS. The other
+  socket recovery and crash recovery. It runs with `test:startup` on Windows and
+  macOS only as the first job of the manual desktop release workflow, which stops
+  before building if it fails; it does not run on PRs, pushes or a schedule. The other
   switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
   `--tower-images`, `--localization`, `--tutorial`) only capture screenshots for
   manual review; `--tutorial` also keeps its match-readiness checks.
