@@ -206,7 +206,7 @@ items[12] = new BaseItem({
 items[13] = new BaseItem({
     id: 13,
     name: "Haste potion",
-    description: "Hastes a character for 5 turns, making them get new turns faster",
+    description: "Hastes a character, making them get new turns faster",
     frame: 13,
     animation: "potion_heal",
     sfx: "healing",

@@ -7,7 +7,7 @@ import './ShopSpellCard.style.css'
 import { Component, createRef } from 'preact';
 import { Class, InventoryType, Target } from "@legion/shared/enums";
 import { BaseSpell } from '@legion/shared/BaseSpell';
-import { getSpeedClass, mapFrameToCoordinates } from '../utils';
+import { getSpeedClass, inflictedStatuses, mapFrameToCoordinates, statusIcons, statusSummary } from '../utils';
 
 // Import image assets
 import spellsSpritesheet from '@assets/spells.png';
@@ -124,6 +124,12 @@ class ShopSpellCard extends Component<ShopCardProps> {
         </div>
         <p data-tooltip-id={`spell-desc-tooltip-${data.id}`} className="spell-card-description">{t(data.description)}</p>
         <div className="spell-card-effect-container">
+          {inflictedStatuses(data).map(status => (
+            <div key={status.effect} className="spell-card-effect">
+              <img src={statusIcons[status.effect]} alt={t(status.effect)} />
+              <span>{statusSummary(status)}</span>
+            </div>
+          ))}
           <div className="spell-card-effect">
             <img src={mpIcon} alt={t("cost")} />
             <span>{formatNumber(data.cost)}</span>

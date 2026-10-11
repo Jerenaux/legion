@@ -471,7 +471,11 @@ export class ServerPlayer {
         if (this.isDead()) return false;
         const r = Math.random();
         console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
-        if (r > chance) return false;
+        if (r > chance) {
+            // Shown over the target, so a failed roll is not mistaken for a spell without effect.
+            this.team!.game.broadcast('statusresisted', {team: this.team!.id, num: this.num, status});
+            return false;
+        }
 
         // Reapplying adds its turns to those left; -1 (until removed, e.g. frozen in ice) outlasts any count.
         const current = this.statuses[status];

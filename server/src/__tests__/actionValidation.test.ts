@@ -271,4 +271,11 @@ test('reapplied statuses add their turns, from spells and poisoned weapons alike
   game.updatePlayerPosition(enemy, 2, 5);
   game.processAction('attack', {target: 1, sameTeam: false}, socket);
   expect(enemy.statuses[StatusEffect.POISON]).toBe(17);
+
+  // A failed roll changes nothing but is announced to both players and the replay.
+  (Math.random as ReturnType<typeof mock>).mockReturnValue(0.99);
+  player.hasActed = false;
+  game.processAction('attack', {target: 1, sameTeam: false}, socket);
+  expect(enemy.statuses[StatusEffect.POISON]).toBe(17);
+  expect(game.replayMessages).toContainEqual(expect.objectContaining({event: 'statusresisted', data: {team: 2, num: 1, status: StatusEffect.POISON}}));
 });

@@ -9,7 +9,7 @@ import {getConsumableById} from '@legion/shared/Items';
 import {getSpellById} from '@legion/shared/Spells';
 import {getEquipmentById} from '@legion/shared/Equipments';
 import {Tooltip as ReactTooltip} from 'react-tooltip';
-import {classEnumToString, getSpeedClass, mapFrameToCoordinates} from './utils';
+import {classEnumToString, getSpeedClass, inflictedStatuses, mapFrameToCoordinates, statusIcons, statusSummary} from './utils';
 import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
@@ -69,7 +69,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
   const equipment = item instanceof BaseEquipment;
   const sprite = spell ? spellsSpritesheet : equipment ? equipmentSpritesheet : consumablesSpritesheet;
   const {x, y} = mapFrameToCoordinates(item.frame);
-  const appliesStatus = equipment ? item.statusEffects.length > 0 : Boolean(item.status);
+  const statuses = inflictedStatuses(item);
   return <div className="item-preview">
     <div className="item-preview-heading">
       <div className="item-preview-icon">
@@ -81,7 +81,10 @@ export function ItemTooltipContent({item, showClasses, character}: {
       </div>
     </div>
     {item.description && <p className="item-preview-description">{highlightNumbers(t(item.description))}</p>}
-    {appliesStatus && <p className="item-preview-note">{t('Stacks: reapplying adds these turns to any already left.')}</p>}
+    {statuses.map(status => <p className="item-preview-status" key={status.effect}>
+      <img src={statusIcons[status.effect]} alt="" /><strong>{t(status.effect)}</strong><span>{highlightNumbers(statusSummary(status))}</span>
+    </p>)}
+    {statuses.length > 0 && <p className="item-preview-note">{t('Stacks: reapplying adds these turns to any already left.')}</p>}
     {!equipment && <div className="item-preview-facts">
       {spell && <span><Trans i18n={i18n} i18nKey={"<0/>{{value0}} MP"} components={[<img src={mpIcon} alt="" />]} values={{value0: item.cost}} /></span>}
       <span><img src={speedIcon} alt={""} />{getSpeedClass(item.speedClass).toLowerCase()}</span>
