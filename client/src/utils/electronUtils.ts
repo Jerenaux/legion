@@ -15,6 +15,7 @@ interface ElectronAPI {
   getPendingGift?: () => Promise<string | null>;
   acknowledgeGift?: (token: string) => Promise<void>;
   onGiftAvailable?: (callback: () => void) => () => void;
+  onTelemetryFlush?: (callback: () => Promise<void>) => () => void;
   getPendingCommunity?: () => Promise<string | null>;
   acknowledgeCommunity?: (code: string) => Promise<void>;
   onCommunityAvailable?: (callback: () => void) => () => void;

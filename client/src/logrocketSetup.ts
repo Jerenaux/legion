@@ -4,6 +4,11 @@ import {telemetryConfig, logRocketOptions} from './telemetryConfig';
 export const logRocket: typeof import('logrocket') | undefined = (() => {
   if (!telemetryConfig.sentryReplay) return undefined;
   try {
+    // Use the recorder shipped in the bundle (see webpack.config.js), not a CDN download.
+    if (process.env.LOGROCKET_LOGGER_URL) {
+      const global = window as Window & {__SDKCONFIG__?: Record<string, unknown>};
+      global.__SDKCONFIG__ = {...global.__SDKCONFIG__, loggerURL: process.env.LOGROCKET_LOGGER_URL};
+    }
     const sdk: typeof import('logrocket') = require('logrocket');
     sdk.init('bpfssp/legion', logRocketOptions);
     return sdk;
@@ -34,14 +39,14 @@ const encode = (buffer: HTMLCanvasElement) => new Promise<string>((resolve, reje
     reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
-  }, 'image/webp', 0.7);
+  }, 'image/webp', 0.5);
 });
 
 export function captureLogRocketFrame(canvas: HTMLCanvasElement) {
   if (!logRocket || document.hidden || !canvas.parentElement || !canvas.width || !canvas.height) return;
   const now = performance.now();
   let frame = frames.get(canvas);
-  if (frame && (frame.busy || now - frame.time < 500)) return;
+  if (frame && (frame.busy || now - frame.time < 1000)) return;
   try {
     if (!frame) {
       hideLiveSnapshots();
@@ -61,7 +66,7 @@ export function captureLogRocketFrame(canvas: HTMLCanvasElement) {
     const current = frame;
     current.time = now;
     current.busy = true;
-    const width = Math.min(960, canvas.width);
+    const width = Math.min(640, canvas.width);
     const height = Math.round(width * canvas.height / canvas.width);
     // Copy now, before WebGL clears the frame; resizing and encoding happen off the frame.
     createImageBitmap(canvas, {resizeWidth: width, resizeHeight: height, resizeQuality: 'low'})

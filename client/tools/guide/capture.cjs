@@ -23,6 +23,8 @@ if (!process.versions.electron) {
   delete process.env.SENTRY_REPLAY_ENABLED;
   for (const key of ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL']) process.env[key] = 'app://legion/__fixture';
   delete process.env.SENTRY_AUTH_TOKEN;
+  // Ship the LogRocket recorder in the fixture bundle, as release builds do.
+  process.env.LOGROCKET_VENDOR = 'true';
   const config = require('../../webpack.config');
   // Test-only opt-in: production webpack still refuses local/CI non-store builds.
   const defines = config.plugins.find(plugin => plugin.definitions?.['process.env.SENTRY_REPLAY_ENABLED']);

@@ -90,12 +90,27 @@ export async function reportProblem() {
 export {captureException} from '@sentry/react';
 export {clearLogRocketFrame};
 
+let signedInId: string | undefined;
+
 export function setUser(user: Parameters<typeof Sentry.setUser>[0]) {
   Sentry.setUser(user);
   try {
-    if (user?.id) logRocket?.identify(String(user.id));
-    else logRocket?.startNewSession();
+    if (user?.id) {
+      signedInId = String(user.id);
+      logRocket?.identify(signedInId);
+    } else if (signedInId) {
+      // Only a real sign-out starts a new recording. Startup reports "no user" before the
+      // platform login completes; splitting there cut the start off every session.
+      signedInId = undefined;
+      logRocket?.startNewSession();
+    }
   } catch { /* Optional recording must not interrupt authentication. */ }
 }
+
+// Fix for truncated endings: before the window closes, the main process hides it (a real
+// visibility change both recorders upload on) and waits for this flush.
+getElectronAPI()?.onTelemetryFlush?.(async () => {
+  await Promise.all([Sentry.flush(1200).catch(() => false), new Promise(resolve => setTimeout(resolve, 1000))]);
+});
 
 try { logRocket?.getSessionURL(url => Sentry.setContext('logrocket', {sessionURL: url})); } catch { /* Sentry remains available. */ }
