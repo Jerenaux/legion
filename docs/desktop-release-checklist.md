@@ -12,7 +12,7 @@ After confirming all intended work is merged, build for both stores with:
 gh workflow run release-desktop.yml --ref main -F publish_itch=true -F upload_steam=true -F steam_branch=playtest
 ```
 
-Then promote the verified Steam Build ID to the **public Legion Demo by default**, following `STEAM_DEPLOYMENT.md`; private upload alone does not complete a normal Steam release. Do not ask for separate publication approval, but request any confirmation Valve requires. Honor explicit private-only, Itch-only, Steam-only, or artifacts-only requests by selecting the corresponding inputs and skipping excluded destinations. For artifacts without a store upload, omit the inputs. A dispatch targeting another branch or a tag skips all release jobs. `tools/validate_desktop_release.sh`, also run in CI, checks the manual-only trigger and main-only build guard.
+Then promote the verified Steam Build ID to the **public Legion Demo by default**, following `STEAM_DEPLOYMENT.md`; private upload alone does not complete a normal Steam release. Do not ask for separate publication approval, but request any confirmation Valve requires. Honor explicit private-only, Itch-only, Steam-only, or artifacts-only requests by selecting the corresponding inputs and skipping excluded destinations. For artifacts without a store upload, omit the inputs. A dispatch targeting another branch or a tag skips all release jobs. Every release first runs the packaged desktop stability suite (`test:startup` and `test:guide` on Windows and macOS, about 10–15 minutes); builds and store uploads start only if it passes. This suite runs nowhere else. `tools/validate_desktop_release.sh`, also run in CI, checks the manual-only trigger, the main-only build guard and this gate.
 
 ## Automated checks
 
