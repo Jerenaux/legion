@@ -1081,3 +1081,60 @@
     right: -8px;
     bottom: -8px;
 }
+
+/* Profile screen fitted to the window: identity and friends on the left, the three stat
+   cards stacked on the right; the friends list scrolls in place. */
+@media (min-width: 1100px) {
+    .profile-container:not(.loading):not(.error) {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-areas: "header stats" "friends stats";
+        gap: 18px 24px;
+        height: 100%;
+        box-sizing: border-box;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .profile-container > .profile-header { grid-area: header; }
+    .profile-container > .stats-grid {
+        grid-area: stats;
+        grid-template-columns: 1fr;
+        align-content: start;
+        gap: 12px;
+        margin: 0;
+        min-height: 0;
+        overflow-y: auto;
+    }
+    .profile-container > .friends-section {
+        grid-area: friends;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        margin: 0;
+    }
+    .profile-container > .friends-section > :last-child { min-height: 0; overflow-y: auto; }
+}
+.friends-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 0;
+    letter-spacing: .06em;
+}
+.friends-section h2::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    background: var(--ember);
+    box-shadow: 0 0 8px var(--ember-glow);
+}
+@media (min-width: 1100px) {
+    .profile-container > .player-status-box { grid-column: 1; }
+}
+@media (min-width: 1100px) {
+    .profile-container > .stats-grid .stats-card { padding-block: 12px; }
+    .profile-container > .stats-grid .stats-card h2 { font-size: 1.125rem; margin-bottom: 4px; }
+    .profile-container > .stats-grid .stat-row { padding-block: 5px; }
+}
