@@ -148,6 +148,29 @@ function createWindow() {
     });
   }
 
+  // Session recorders (Sentry Replay, LogRocket) upload in batches; closing at once drops the
+  // last seconds. Hide first (a real visibility change both recorders upload on), let the
+  // renderer flush, then close after its reply or 1.5 s. Every quit path closes this window.
+  let telemetryFlushed = smokeTest;
+  mainWindow.on('close', event => {
+    if (telemetryFlushed) return;
+    telemetryFlushed = true;
+    event.preventDefault();
+    const window = mainWindow;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      ipcMain.removeListener('telemetry-flushed', onReply);
+      if (!window.isDestroyed()) window.close();
+    };
+    const onReply = replyEvent => { if (replyEvent.sender === window.webContents) finish(); };
+    ipcMain.on('telemetry-flushed', onReply);
+    setTimeout(finish, 1500);
+    window.hide();
+    window.webContents.send('telemetry-flush');
+  });
+
   mainWindow.webContents.setWindowOpenHandler(({url}) => {
     if (isSafeExternalURL(url)) shell.openExternal(url);
     return {action: "deny"};

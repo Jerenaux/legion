@@ -23,6 +23,14 @@ contextBridge.exposeInMainWorld("electronAPI", Object.freeze({
     ipcRenderer.on('community-invite-available', listener);
     return () => ipcRenderer.removeListener('community-invite-available', listener);
   },
+  // The main process waits for this reply (or a short timeout) before closing the window.
+  onTelemetryFlush: callback => {
+    const listener = async () => {
+      try { await callback(); } finally { ipcRenderer.send('telemetry-flushed'); }
+    };
+    ipcRenderer.on('telemetry-flush', listener);
+    return () => ipcRenderer.removeListener('telemetry-flush', listener);
+  },
   showGamepadTextInput: options => ipcRenderer.invoke("show-gamepad-text-input", options),
   getControllerType: () => ipcRenderer.invoke("get-controller-type"),
 }));
