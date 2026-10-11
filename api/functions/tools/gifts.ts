@@ -7,13 +7,14 @@ import {Firestore} from 'firebase-admin/firestore';
 import {OAuth2Client} from 'google-auth-library';
 import {INVITE_ORIGIN, giftId, giftTokenPattern, isGiftUsage, validateGiftRewards} from '../src/gifts';
 import {normalizeCommunityCode} from '@legion/shared/communities';
+import {INVITE_LANGUAGES, matchInviteLanguage} from '../src/inviteLanguages';
 import {FIRESTORE_DATABASE_ID} from '@legion/shared/config';
 
 const {values, positionals} = parseArgs({args: process.argv.slice(2), allowPositionals: true, options: {
   project: {type: 'string'}, label: {type: 'string'}, rewards: {type: 'string'}, expires: {type: 'string'}, id: {type: 'string'},
-  gcloud: {type: 'boolean'}, usage: {type: 'string'}, community: {type: 'string'},
+  gcloud: {type: 'boolean'}, usage: {type: 'string'}, community: {type: 'string'}, language: {type: 'string'},
 }});
-const usage = 'bun tools/gifts.ts <create|list|inspect|revoke> --project PROJECT [--usage single|unlimited --label NAME --rewards FILE.json --expires ISO_DATE --community CODE | --id GIFT_ID]';
+const usage = 'bun tools/gifts.ts <create|list|inspect|revoke> --project PROJECT [--usage single|unlimited --label NAME --rewards FILE.json --expires ISO_DATE --community CODE --language LANG | --id GIFT_ID]';
 try {
   if (!values.project || !['create', 'list', 'inspect', 'revoke'].includes(positionals[0])) throw new Error(usage);
   if (positionals[0] === 'create' && !isGiftUsage(values.usage)) throw new Error('Creation requires --usage single or --usage unlimited');
@@ -36,11 +37,14 @@ try {
       const community = communityId ? await db.collection('communities').doc(communityId).get() : null;
       if (!community?.exists || community.get('status') !== 'active') throw new Error('Community not found or not active');
     }
+    // Optional invite page language; without it the page uses the community's, then the visitor's.
+    const language = values.language === undefined ? null : matchInviteLanguage(values.language);
+    if (values.language !== undefined && !language) throw new Error(`Unknown language ${values.language}. Use one of: ${INVITE_LANGUAGES.join(' ')}`);
     const token = randomBytes(32).toString('hex');
     const id = giftId(token);
-    await gifts.doc(id).create({usage: values.usage, label: values.label.trim(), rewards, communityId, createdAt: Date.now(), expiresAt, revokedAt: null, claimedAt: null, claimedBy: null});
+    await gifts.doc(id).create({usage: values.usage, label: values.label.trim(), rewards, communityId, ...(language ? {language} : {}), createdAt: Date.now(), expiresAt, revokedAt: null, claimedAt: null, claimedBy: null});
     // Printed once; keep personal links private and share unlimited links with the intended audience.
-    console.log(JSON.stringify({id, token, usage: values.usage, communityId,
+    console.log(JSON.stringify({id, token, usage: values.usage, communityId, language,
       shareURL: `${INVITE_ORIGIN}/invite?gift=${token}`,
       steamURL: `steam://run/3996730/?gift=${token}`,
       localURL: `legion://gift/${token}`,

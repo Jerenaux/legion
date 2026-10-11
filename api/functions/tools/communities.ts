@@ -7,19 +7,29 @@ import {FIRESTORE_DATABASE_ID} from '@legion/shared/config';
 import {
   PlayerCommunity, SIGIL_PALETTE, SIGIL_PATTERNS, SIGIL_SHAPES, SIGIL_SYMBOLS, Sigil, communitySummary, normalizeCommunityCode, validateCommunity,
 } from '@legion/shared/communities';
+import {INVITE_LANGUAGES, matchInviteLanguage} from '../src/inviteLanguages';
 
 const {values, positionals} = parseArgs({args: process.argv.slice(2), allowPositionals: true, options: {
   project: {type: 'string'}, id: {type: 'string'}, name: {type: 'string'}, tag: {type: 'string'}, sigil: {type: 'string'},
-  player: {type: 'string'}, gcloud: {type: 'boolean'},
+  player: {type: 'string'}, language: {type: 'string'}, gcloud: {type: 'boolean'},
 }});
-const commands = ['create', 'list', 'inspect', 'set-sigil', 'revoke', 'assign'];
+const commands = ['create', 'list', 'inspect', 'set-sigil', 'set-language', 'revoke', 'assign'];
 const usage = `bun tools/communities.ts <${commands.join('|')}> --project PROJECT
-  create    --id CODE --name NAME --tag TAG [--sigil SHAPE,PATTERN,PALETTE,SYMBOL]
+  create    --id CODE --name NAME --tag TAG [--sigil SHAPE,PATTERN,PALETTE,SYMBOL] [--language LANG]
+  set-language --id CODE --language LANG|none   (invite page language)
   inspect | revoke --id CODE
   set-sigil --id CODE --sigil SHAPE,PATTERN,PALETTE,SYMBOL
   assign    --id CODE --player UID   (operator override of the permanent membership)
 Sigil parts are names or indexes. Shapes: ${SIGIL_SHAPES.join(' ')}; patterns: ${SIGIL_PATTERNS.join(' ')};
-palettes: 0-${SIGIL_PALETTE.length - 1}; symbols: ${SIGIL_SYMBOLS.join(' ')}`;
+palettes: 0-${SIGIL_PALETTE.length - 1}; symbols: ${SIGIL_SYMBOLS.join(' ')}
+Languages: ${INVITE_LANGUAGES.join(' ')}`;
+
+/** A shipped invite-page language; throws on anything else. */
+function parseLanguage(text: string) {
+  const language = matchInviteLanguage(text);
+  if (!language) throw new Error(`Unknown language ${text}. Use one of: ${INVITE_LANGUAGES.join(' ')}`);
+  return language;
+}
 
 function parseSigil(text: string): Sigil {
   const parts = text.split(',').map(part => part.trim());
@@ -43,9 +53,10 @@ try {
 
   if (command === 'create') {
     const community = validateCommunity({id: values.id, name: values.name, tag: values.tag, sigil: values.sigil ? parseSigil(values.sigil) : undefined});
+    const language = values.language ? parseLanguage(values.language) : null;
     await communities.doc(community.id).create({name: community.name, tag: community.tag, sigil: community.sigil,
-      status: 'active', members: 0, createdAt: Date.now()});
-    console.log(JSON.stringify({...community,
+      status: 'active', members: 0, createdAt: Date.now(), ...(language ? {language} : {})});
+    console.log(JSON.stringify({...community, language,
       code: community.id.toUpperCase(),
       shareURL: `https://www.play-legion.io/invite?community=${community.id}`,
       steamURL: `steam://run/3996730/?community=${community.id}`,
@@ -66,6 +77,10 @@ try {
       await ref.update({sigil});
       // Members carry a copy of the sigil; refresh it everywhere.
       await updateMembers(id, {'community.sigil': sigil});
+    } else if (command === 'set-language') {
+      if (!values.language) throw new Error(usage);
+      // The language is only read by the invite page; members' stored copies don't carry it.
+      await ref.update({language: values.language === 'none' ? FieldValue.delete() : parseLanguage(values.language)});
     } else if (command === 'revoke') {
       await ref.update({status: 'revoked', revokedAt: Date.now()});
       await updateMembers(id, {community: FieldValue.delete()});

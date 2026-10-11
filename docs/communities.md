@@ -5,7 +5,8 @@ combat panels, the navbar, profiles, friends and leaderboards. It has no gamepla
 
 ## Data
 
-- `communities/{id}`: `{name, tag, sigil, status: 'active' | 'revoked', members, createdAt}`.
+- `communities/{id}`: `{name, tag, sigil, status: 'active' | 'revoked', members, createdAt, language?}`.
+  `language` (a shipped game language code) only sets the invite page's language.
   The ID is also the code creators share (`KESTREL` → `kestrel`).
 - `players/{uid}.community`: a copy of the summary plus `{joinedAt, via: 'code' | 'link' | 'operator'}`.
   Membership is permanent; only operators change it.
@@ -30,10 +31,11 @@ The app asks the player to confirm before joining. Players can also type the cod
 From `api/functions` (ADC, or `--gcloud` to use the gcloud access token):
 
 ```sh
-bun tools/communities.ts create --project legion-32c6d --id kestrel --name "Kestrel Guild" --tag KES [--sigil crest,chevron,0,raven]
+bun tools/communities.ts create --project legion-32c6d --id kestrel --name "Kestrel Guild" --tag KES [--sigil crest,chevron,0,raven] [--language fr]
 bun tools/communities.ts list --project legion-32c6d
 bun tools/communities.ts inspect --project legion-32c6d --id kestrel
 bun tools/communities.ts set-sigil --project legion-32c6d --id kestrel --sigil heater,quarterly,6,wolf
+bun tools/communities.ts set-language --project legion-32c6d --id kestrel --language fr   # or none
 bun tools/communities.ts assign --project legion-32c6d --id kestrel --player <uid>
 bun tools/communities.ts revoke --project legion-32c6d --id kestrel
 ```
