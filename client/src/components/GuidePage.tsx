@@ -163,6 +163,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <li><Trans i18n={i18n} i18nKey={"<0>Fit equipment.</0> With your character selected, click equipment in the shared inventory and choose <1>Equip</1>. Check class requirements. Equipment adds passive bonuses and can be swapped between battles."} components={[<strong />, <strong />]} /></li>
             </ol>
             <h3>{t("Spend your stat points")}</h3>
+            <p>{t("Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Characters earn XP and level up, improving their stats and gaining <0>SP</0> (stat points). Use the <1>+</1> beside a stat on the character sheet to spend them. These choices are permanent."} components={[<strong />, <strong />]} /></p>
             <dl className="guide-definitions">
               <div><dt>{t("HP / MP")}</dt><dd>{t("Health and spellcasting resources. One SP adds 10 to either.")}</dd></div>

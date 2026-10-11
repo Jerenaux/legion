@@ -1184,7 +1184,6 @@
   "Special Attack": "Особая атака",
   "Special Defense": "Особая защита",
   "Experience": "Опыт",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "Распределяется между персонажами по числу целей, которые каждый атаковал или поддержал. Каждый новый уровень даёт очки характеристик для раздела «Команда».",
   "HP already full": "ОЗ уже полны",
   "MP already full": "ОМ уже полны",
   "Only revives a fallen ally": "Только для павшего союзника",
@@ -1232,5 +1231,7 @@
   "statusDuration_other": "{{count}} хода",
   "statusDuration_few": "{{count}} хода",
   "statusDuration_many": "{{count}} ходов",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Некоторые состояния срабатывают не всегда: шанс указан в описании предметов и заклинаний, а над целью, которая избежала эффекта, появляется «Сопротивление»."
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Некоторые состояния срабатывают не всегда: шанс указан в описании предметов и заклинаний, а над целью, которая избежала эффекта, появляется «Сопротивление».",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "Большая часть делится поровну между персонажами, остальное — за действия каждого и полученный урон. Персонажи ниже среднего уровня команды получают больше. Каждый новый уровень даёт очки характеристик для распределения в «Команде».",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Каждый персонаж получает равную долю опыта за матч, даже если был повержен. Остальное — за действия персонажа и принятый на себя урон, так что танки не отстают. Персонажи ниже среднего уровня команды получают больше, чтобы догнать остальных."
 }

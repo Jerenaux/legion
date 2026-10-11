@@ -1168,7 +1168,6 @@
   "Special Attack": "Attaque spéciale",
   "Special Defense": "Défense spéciale",
   "Experience": "Expérience",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "Répartie entre tes personnages selon le nombre de cibles que chacun a frappées ou aidées. Chaque niveau gagné donne des points de caractéristique à dépenser dans Équipe.",
   "HP already full": "PV déjà au max",
   "MP already full": "PM déjà au max",
   "Only revives a fallen ally": "Ne ranime qu’un allié tombé",
@@ -1215,5 +1214,7 @@
   "statusDuration_one": "{{count}} tour",
   "statusDuration_other": "{{count}} tours",
   "statusDuration_many": "{{count}} tours",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Certaines altérations ne fonctionnent qu’une partie du temps : le détail des objets et des sorts indique la probabilité, et « Résisté » s’affiche au-dessus d’une cible qui y échappe."
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Certaines altérations ne fonctionnent qu’une partie du temps : le détail des objets et des sorts indique la probabilité, et « Résisté » s’affiche au-dessus d’une cible qui y échappe.",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "L’essentiel est partagé à parts égales entre vos personnages ; le reste récompense les actions de chacun et les dégâts encaissés. Les personnages sous le niveau moyen de l’équipe en gagnent davantage. Chaque niveau gagné donne des points de statistique à dépenser dans Équipe.",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Chaque personnage reçoit une part égale de l’XP d’un match, même s’il a été mis K.-O. Le reste récompense les actions de chacun et les dégâts encaissés, pour que les tanks suivent le rythme. Les personnages sous le niveau moyen de l’équipe en gagnent davantage pour rattraper leur retard."
 }

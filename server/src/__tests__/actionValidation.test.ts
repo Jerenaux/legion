@@ -279,3 +279,28 @@ test('reapplied statuses add their turns, from spells and poisoned weapons alike
   expect(enemy.statuses[StatusEffect.POISON]).toBe(17);
   expect(game.replayMessages).toContainEqual(expect.objectContaining({event: 'statusresisted', data: {team: 2, num: 1, status: StatusEffect.POISON}}));
 });
+
+test('match XP: equal base share, contribution from actions and absorbed damage, catch-up for lower levels', () => {
+  const tank = new ServerPlayer(2, 'Tank', '1_6', 1, 6);
+  tank.class = Class.WARRIOR;
+  tank.stats[Stat.HP] = 100;
+  tank.setHP(100);
+  tank.equipment = {};
+  game.teams.get(1).addMember(tank);
+  game.occupyCell(tank.x, tank.y, tank);
+  player.level = 5;
+  tank.level = 3;
+  const before = {mage: player.earnedXP, tank: tank.earnedXP};
+
+  // The mage lands one attack; the tank only absorbs half an HP bar.
+  game.updatePlayerPosition(enemy, 2, 5);
+  game.processAction('attack', {target: 1, sameTeam: false}, socket);
+  tank.takeDamage(50);
+  expect(player.contribution).toBe(1);
+  expect(tank.contribution).toBeCloseTo(1.5);
+
+  player.team.distributeXp(1000);
+  // 600 split equally; 400 by contribution (1 : 1.5); the tank is below the average level (+25%).
+  expect(player.earnedXP - before.mage).toBe(460);
+  expect(tank.earnedXP - before.tank).toBe(675);
+});

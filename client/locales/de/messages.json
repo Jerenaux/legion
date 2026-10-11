@@ -1152,7 +1152,6 @@
   "Special Attack": "Spezialangriff",
   "Special Defense": "Spezialverteidigung",
   "Experience": "Erfahrung",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "Wird unter deinen Charakteren danach aufgeteilt, wie viele Ziele jeder getroffen oder unterstützt hat. Jede neue Stufe gibt Attributpunkte, die du unter Team verteilen kannst.",
   "HP already full": "LP bereits voll",
   "MP already full": "MP bereits voll",
   "Only revives a fallen ally": "Belebt nur gefallene Verbündete",
@@ -1198,5 +1197,7 @@
   "Resisted": "Widerstanden",
   "statusDuration_one": "{{count}} Zug",
   "statusDuration_other": "{{count}} Züge",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Manche Zustände wirken nur mit einer gewissen Chance: Die Details von Gegenständen und Zaubern zeigen sie, und über einem Ziel, das einen Zustand abwehrt, erscheint „Widerstanden“."
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Manche Zustände wirken nur mit einer gewissen Chance: Die Details von Gegenständen und Zaubern zeigen sie, und über einem Ziel, das einen Zustand abwehrt, erscheint „Widerstanden“.",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "Der Großteil wird gleichmäßig auf deine Charaktere verteilt; der Rest belohnt ihre Aktionen und den erlittenen Schaden. Charaktere unter dem Durchschnittslevel des Teams erhalten mehr. Jeder Levelaufstieg gewährt Statuspunkte, die du in Team verteilst.",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Jeder Charakter erhält einen gleichen Anteil der EP eines Matches, auch wenn er ausgeschaltet wurde. Der Rest belohnt die Aktionen jedes Charakters und den abgefangenen Schaden, sodass Tanks mithalten. Charaktere unter dem Durchschnittslevel des Teams erhalten mehr, um aufzuholen."
 }

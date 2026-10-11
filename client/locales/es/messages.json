@@ -1168,7 +1168,6 @@
   "Special Attack": "Ataque especial",
   "Special Defense": "Defensa especial",
   "Experience": "Experiencia",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "Se reparte entre tus personajes según a cuántos objetivos golpeó o ayudó cada uno. Cada nivel ganado otorga puntos de atributo para gastar en Equipo.",
   "HP already full": "PS ya al máximo",
   "MP already full": "PM ya al máximo",
   "Only revives a fallen ally": "Solo revive a un aliado caído",
@@ -1215,5 +1214,7 @@
   "statusDuration_one": "{{count}} turno",
   "statusDuration_other": "{{count}} turnos",
   "statusDuration_many": "{{count}} turnos",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Algunos estados solo se aplican a veces: los detalles de objetos y hechizos muestran la probabilidad, y aparece «Resistido» sobre el objetivo que lo evita."
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Algunos estados solo se aplican a veces: los detalles de objetos y hechizos muestran la probabilidad, y aparece «Resistido» sobre el objetivo que lo evita.",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "La mayor parte se reparte por igual entre tus personajes; el resto premia las acciones de cada uno y el daño recibido. Los personajes por debajo del nivel medio del equipo ganan más. Cada nivel otorga puntos de estadística para gastar en Equipo.",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Cada personaje recibe una parte igual de la EXP de una partida, aunque haya caído. El resto premia las acciones de cada personaje y el daño que absorbió, para que los tanques no se queden atrás. Los personajes por debajo del nivel medio del equipo ganan más para alcanzar a los demás."
 }

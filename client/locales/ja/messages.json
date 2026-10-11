@@ -1152,7 +1152,6 @@
   "Special Attack": "特殊攻撃",
   "Special Defense": "特殊防御",
   "Experience": "経験値",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "攻撃・支援した対象の数に応じてキャラクターに分配されます。レベルが上がるごとに、チームで割り振れるステータスポイントを獲得します。",
   "HP already full": "HPは満タン",
   "MP already full": "MPは満タン",
   "Only revives a fallen ally": "倒れた味方専用",
@@ -1198,5 +1197,7 @@
   "Resisted": "レジスト",
   "statusDuration_one": "{{count}}ターン",
   "statusDuration_other": "{{count}}ターン",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "一部の状態異常は確率でしか発動しません。アイテムや魔法の詳細に確率が表示され、防いだ対象の上には「レジスト」と表示されます。"
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "一部の状態異常は確率でしか発動しません。アイテムや魔法の詳細に確率が表示され、防いだ対象の上には「レジスト」と表示されます。",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "大部分はキャラクター全員で均等に分配され、残りは各自の行動と受けたダメージに応じて配分されます。チームの平均レベルより低いキャラクターは多めに獲得します。レベルが上がるとステータスポイントを獲得し、チームで割り振れます。",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "試合のXPは、戦闘不能になったキャラクターも含めて全員に均等な分け前があります。残りは各キャラクターの行動と引き受けたダメージに応じて配分されるため、タンクも遅れを取りません。チームの平均レベルより低いキャラクターは追いつけるよう多めに獲得します。"
 }

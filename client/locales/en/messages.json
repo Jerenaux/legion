@@ -1152,7 +1152,6 @@
   "Special Attack": "Special Attack",
   "Special Defense": "Special Defense",
   "Experience": "Experience",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.",
   "HP already full": "HP already full",
   "MP already full": "MP already full",
   "Only revives a fallen ally": "Only revives a fallen ally",
@@ -1198,5 +1197,7 @@
   "Resisted": "Resisted",
   "statusDuration_one": "{{count}} turn",
   "statusDuration_other": "{{count}} turns",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off."
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up."
 }

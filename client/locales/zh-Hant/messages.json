@@ -1152,7 +1152,6 @@
   "Special Attack": "特殊攻擊",
   "Special Defense": "特殊防禦",
   "Experience": "經驗值",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "按每個角色攻擊或協助的目標數量分配給你的角色。每升一級都會獲得可在隊伍中分配的屬性點。",
   "HP already full": "HP已滿",
   "MP already full": "MP已滿",
   "Only revives a fallen ally": "只能復活倒下的隊友",
@@ -1198,5 +1197,7 @@
   "Resisted": "抵抗",
   "statusDuration_one": "{{count}} 回合",
   "statusDuration_other": "{{count}} 回合",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "部分狀態只有一定機率生效：物品和法術詳情會顯示機率，目標抵抗成功時，其上方會顯示「抵抗」。"
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "部分狀態只有一定機率生效：物品和法術詳情會顯示機率，目標抵抗成功時，其上方會顯示「抵抗」。",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "大部分經驗由你的角色平分，其餘按每個角色的行動和承受的傷害分配。低於隊伍平均等級的角色會獲得更多。每次升級都會獲得屬性點，可在隊伍中分配。",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "每個角色都能平分一場比賽的經驗，即使被擊倒也一樣。其餘部分按每個角色的行動和承受的傷害分配，讓坦克也不落後。低於隊伍平均等級的角色會獲得更多經驗以便追上。"
 }

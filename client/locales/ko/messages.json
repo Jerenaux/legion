@@ -1152,7 +1152,6 @@
   "Special Attack": "특수 공격",
   "Special Defense": "특수 방어",
   "Experience": "경험치",
-  "Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.": "각 캐릭터가 공격하거나 도운 대상 수에 따라 나뉩니다. 레벨이 오를 때마다 팀에서 사용할 능력치 포인트를 얻습니다.",
   "HP already full": "HP가 이미 가득 참",
   "MP already full": "MP가 이미 가득 참",
   "Only revives a fallen ally": "쓰러진 아군만 부활",
@@ -1198,5 +1197,7 @@
   "Resisted": "저항",
   "statusDuration_one": "{{count}}턴",
   "statusDuration_other": "{{count}}턴",
-  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "일부 상태 이상은 확률로만 걸립니다. 아이템과 주문 정보에 확률이 표시되며, 이를 막아낸 대상 위에는 \"저항\"이 표시됩니다."
+  "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "일부 상태 이상은 확률로만 걸립니다. 아이템과 주문 정보에 확률이 표시되며, 이를 막아낸 대상 위에는 \"저항\"이 표시됩니다.",
+  "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "대부분은 캐릭터들에게 균등하게 나뉘고, 나머지는 각자의 행동과 받은 피해에 따라 분배됩니다. 팀 평균 레벨보다 낮은 캐릭터는 더 많이 얻습니다. 레벨이 오를 때마다 팀에서 사용할 능력치 포인트를 얻습니다.",
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "모든 캐릭터는 쓰러졌더라도 경기 경험치를 균등하게 나눠 받습니다. 나머지는 각 캐릭터의 행동과 받아낸 피해에 따라 분배되므로 탱커도 뒤처지지 않습니다. 팀 평균 레벨보다 낮은 캐릭터는 따라잡을 수 있도록 더 많이 얻습니다."
 }

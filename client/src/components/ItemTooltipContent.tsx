@@ -29,7 +29,7 @@ export function ItemTooltip({id, showClasses = true, character}: {id: string; sh
       const type = activeAnchor?.getAttribute('data-tooltip-item-type');
       if (type === 'xp') return <div className="item-preview">
         <strong className="item-preview-name">{t('Experience')}</strong>
-        <p className="item-preview-description">{t('Split among your characters by how many targets each one hit or helped. Each level gained grants stat points to spend in Team.')}</p>
+        <p className="item-preview-description">{t('Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.')}</p>
       </div>;
       if (type === 'gold') return <div className="item-preview">
         <strong className="item-preview-name">{t('Gold')}</strong>

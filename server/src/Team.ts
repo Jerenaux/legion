@@ -4,7 +4,7 @@ import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
 import { CharacterUpdate, PlayerDataForGame, TeamData } from '@legion/shared/interfaces';
 import { ChestColor } from '@legion/shared/enums';
-import { MAX_AUDIENCE_SCORE } from "@legion/shared/config";
+import { MAX_AUDIENCE_SCORE, XP_CATCH_UP_BONUS, XP_EQUAL_SHARE } from "@legion/shared/config";
 import { AIServerPlayer } from "./AIServerPlayer";
 
 
@@ -226,13 +226,20 @@ export class Team {
         return this.socket?.firebaseToken;
     }
 
+    /**
+     * Every character, knocked out or not, gets an equal part of the match XP; the rest follows
+     * contribution (actions and damage absorbed). Characters below the team's average level catch up.
+     */
     distributeXp(xp: number) {
-        const total = this.getTotalInteractedTargets();
-        for (let i = 0; i < this.members.length; i++) {
-            const xpRatio = (this.members[i].countInteractedTargets() / total) || 0;
-            const xpShare = Math.round(xp * xpRatio);
-            // console.log(`[Team.distributeXp] XP share for ${this.members[i].name}: ${xpShare} (${this.members[i].countInteractedTargets()} / ${total})`);
-            this.members[i].gainXP(xpShare);
+        const members = this.members;
+        if (!members.length) return;
+        const totalContribution = members.reduce((sum, member) => sum + member.contribution, 0);
+        const averageLevel = members.reduce((sum, member) => sum + member.level, 0) / members.length;
+        for (const member of members) {
+            const equal = xp * XP_EQUAL_SHARE / members.length;
+            const earned = xp * (1 - XP_EQUAL_SHARE) * (totalContribution > 0 ? member.contribution / totalContribution : 1 / members.length);
+            const catchUp = member.level < averageLevel ? 1 + XP_CATCH_UP_BONUS : 1;
+            member.gainXP(Math.round((equal + earned) * catchUp));
         }
     }
 
