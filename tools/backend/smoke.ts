@@ -204,12 +204,55 @@ try {
     }
   }
   const invalid=socket(13000,{token:'invalid'}); const rejection=event(invalid,'connect_error'); invalid.connect(); await rejection;
+  // Real rank reads must agree across bootstrap, legacy clients, profiles, lobbies and combat.
+  // Deliberately retain obsolete stored ranks and include ties, other leagues and old seasons.
+  const {currentSeasonId} = await import('../../shared/leagueRanking');
+  const seasonId = currentSeasonId();
+  const rankRef = db.collection('players').doc(one.uid);
+  const rankingStats = {...initial.leagueStats, seasonId, wins: 8, losses: 2, nbGames: 10, rank: 999};
+  await rankRef.update({league: 4, leagueStats: rankingStats});
+  const rankFixtures = [
+    {wins: 10, losses: 4, league: 4, seasonId},
+    {wins: 8, losses: 1, league: 4, seasonId},
+    {wins: 8, losses: 2, league: 4, seasonId},
+    {wins: 20, losses: 0, league: 3, seasonId},
+    {wins: 20, losses: 0, league: 4, seasonId: '2000-01-01'},
+  ];
+  const rankRefs = rankFixtures.map((_, i) => db.collection('players').doc(`rank-${run}-${i}`));
+  await Promise.all(rankFixtures.map((fixture, i) => rankRefs[i].set({...initial, elo: 100 + i,
+    league: fixture.league, lastActiveDate: '2020-01-01 00:00:00',
+    leagueStats: {...rankingStats, ...fixture},
+  })));
+  const rankedBoard = await http('fetchLeaderboard?tab=4', undefined, one.token);
+  assert.equal(rankedBoard.playerRank, 3);
+  assert.equal(rankedBoard.ranking.find(row => row.playerId === one.uid).rank, 3);
+  assert.equal((await http('bootstrapPlayer', undefined, one.token)).player.rank, 3);
+  assert.equal((await http('getPlayerData', undefined, one.token)).rank, 3);
+  assert.equal((await http(`getProfileData?playerId=${one.uid}`)).leagueStats.rank, 3);
+  const lobby = await http('createLobby', {type: 'friend', opponentUID: two.uid}, one.token);
+  assert.equal((await db.collection('lobbies').doc(lobby.lobbyId).get()).data().rank, 3);
+  await http('cancelLobby', {lobbyId: lobby.lobbyId}, one.token);
+  const zombie = await http('zombieData?league=4&elo=100');
+  const zombieProfile = await http(`getProfileData?playerId=${zombie.playerData.uid}`);
+  assert.equal(zombie.playerData.rank, zombieProfile.leagueStats.rank);
+  assert.notEqual(zombie.playerData.rank, 999);
+  assert.equal((await rankRef.get()).data().leagueStats.rank, 999, 'Rank reads must not restore per-player writes');
+  await http('postGameUpdate', {uid: one.uid, resultId: `ranked-${run}`, mode: PlayMode.RANKED_VS_AI,
+    stayedUntilTheEnd: true, engagement: {}, outcomes: {
+      isWinner: true, xp: 0, gold: 0, elo: 0, characters: [], key: null, chests: [],
+    }});
+  assert.equal((await http('getPlayerData', undefined, one.token)).rank, 2);
+  assert.equal((await http('fetchLeaderboard?tab=4', undefined, one.token)).playerRank, 2);
+  const staleProfile = (await http(`getProfileData?playerId=${rankRefs[4].id}`)).leagueStats;
+  assert.equal(staleProfile.rank, 0);
+  assert.equal(staleProfile.wins, 0);
   // First practice uses the provisioned match and requires the render acknowledgement.
   const practice=socket(13123,{token:one.token,gameId:'0',combatReady:1});
   let turn=false; practice.on('turnee',()=>{turn=true;});
   const first=event(practice,'gameStatus'); const started=performance.now();practice.connect();const snapshot=await first;
   timings.practiceSnapshotMs=Math.round(performance.now()-started);
   assert.equal(snapshot.general.combatStarted,false);assert.equal(snapshot.player.team.length,3);
+  assert.equal(snapshot.player.player.playerRank, 2);
   await new Promise(resolve=>setTimeout(resolve,100));assert.equal(turn,false);
   const turnEvent=event(practice,'turnee');practice.emit('arenaReady',snapshot.general.readyToken);await turnEvent;
   practice.disconnect();
@@ -231,6 +274,12 @@ try {
   const snapshots=Promise.all([event(p1,'gameStatus'),event(p2,'gameStatus')]);const pvpStart=performance.now();p1.connect();p2.connect();
   const [s1,s2]=await snapshots;timings.pvpSnapshotMs=Math.round(performance.now()-pvpStart);
   assert.equal(s1.opponent.team.length,3);assert.equal(s2.opponent.team.length,3);
+  assert.equal(s1.player.player.playerRank, 2);assert.equal(s2.opponent.player.playerRank, 2);
+  await rankRef.update({'leagueStats.seasonId': '2000-01-01'});
+  const stalePlayer = await http('bootstrapPlayer', undefined, one.token);
+  assert.equal(stalePlayer.player.rank, 0);assert.equal(stalePlayer.player.wins, 0);
+  await Promise.all(rankRefs.map(ref => ref.delete()));
+  console.log('Current ranks agree across HTTP and Socket.IO, refresh after results, and reset across seasons without rank writes');
   let pvpTurn=false;p1.on('turnee',()=>{pvpTurn=true;});p1.emit('arenaReady',s1.general.readyToken);
   await new Promise(resolve=>setTimeout(resolve,100));assert.equal(pvpTurn,false);
   const pvpReady=event(p1,'turnee');p2.emit('arenaReady',s2.general.readyToken);await pvpReady;

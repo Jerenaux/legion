@@ -1,3 +1,4 @@
+import {getLeagueRank} from "@legion/shared/leagueRanking";
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID, performLockedOperation, firestore} from "./APIsetup";
@@ -31,7 +32,7 @@ export const createLobby = onRequest({memory: "512MiB"}, (request, response) =>
           opponentNickname: opponent.name,
           elo: player.elo,
           league: player.league,
-          rank: player.leagueStats?.rank || 0,
+          rank: (await getLeagueRank(db, player)) ?? 0,
           type: "friend",
           status: "pending",
           createdAt: admin.firestore.FieldValue.serverTimestamp(),

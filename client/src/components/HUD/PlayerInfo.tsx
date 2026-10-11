@@ -123,7 +123,7 @@ class PlayerInfo extends Component<Props, State> {
           </div>
           <div className={`player_info_rank ${position === 'right' && 'row_reverse'}`}>
             <img src={getLeagueIcon(player.playerLeague)} alt={""} />
-            <span>{!isBot ? `# ${player.playerRank}` : ''}</span>
+            <span>{isBot ? '' : player.playerRank > 0 ? `# ${player.playerRank}` : '–'}</span>
             {player.community && <span
               className={`player_info_community ${this.props.sharedCommunity ? 'player_info_community_shared' : ''}`}
               title={this.props.sharedCommunity ? t("{{value0}} · same community", {value0: player.community.name}) : player.community.name}
