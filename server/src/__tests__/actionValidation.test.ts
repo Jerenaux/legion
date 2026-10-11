@@ -304,3 +304,35 @@ test('match XP: equal base share, contribution from actions and absorbed damage,
   expect(player.earnedXP - before.mage).toBe(460);
   expect(tank.earnedXP - before.tank).toBe(675);
 });
+
+test('an AI mage with a target in range casts from where it stands instead of walking into melee', () => {
+  enemy.team.teamData.AIwinRatio = 1;
+  for (const unit of [player, enemy]) Object.assign(unit.stats, {[Stat.HP]: 100, [Stat.MP]: 100, [Stat.SPATK]: 10, [Stat.SPDEF]: 10});
+  enemy.spells = [new Spell(getSpellById(0))];
+  enemy.inventory = [];
+  game.updatePlayerPosition(enemy, 5, 5);
+  game.turnee = enemy;
+  enemy.takeAction();
+  expect(enemy.getMP()).toBe(100 - enemy.spells[0].cost);
+  expect([enemy.x, enemy.y]).toEqual([5, 5]);
+});
+
+test('an AI keeps its Ether when it barely needs MP, and drinks it when it cannot cast', () => {
+  enemy.team.teamData.AIwinRatio = 1;
+  Object.assign(enemy.stats, {[Stat.HP]: 100, [Stat.MP]: 100, [Stat.SPATK]: 10, [Stat.SPDEF]: 10});
+  enemy.spells = [new Spell(getSpellById(0))];
+  enemy.inventory = [new Item(getConsumableById(1))];
+  game.updatePlayerPosition(enemy, 9, 5);
+  game.turnee = enemy;
+  enemy.mp = 95;
+  enemy.takeAction();
+  expect(enemy.inventory.length).toBe(1);
+
+  enemy.hasActed = false;
+  enemy.mp = 0;
+  game.updatePlayerPosition(enemy, 5, 5);
+  game.turnee = enemy;
+  enemy.takeAction();
+  expect(enemy.inventory.length).toBe(0);
+  expect(enemy.getMP()).toBeGreaterThan(0);
+});

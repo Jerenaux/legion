@@ -229,14 +229,18 @@ export class AIGame extends Game {
             aiTeam.addWinRatio(winRatio);
             console.log(`[AIGame:populateTeams] AI team win ratio: ${winRatio}`);
 
+            // Difficulty mostly comes from decision noise (AIServerPlayer.getIQ). Generated practice
+            // teams for beginners also skip advanced tools; zombies always play their real loadout,
+            // since a "player" who never uses the spells they own reads as a bot.
             if (winRatio <= 0.1) aiTeam.scaleStats(0.5);
-            if (winRatio <= 0.3) {
+            if (!isVsZombie && winRatio <= 0.3) {
                 aiTeam.disableItems();
                 aiTeam.banSpells([3,4,5,6,7,8]);
                 aiTeam.disableStatusEffects();
-            }
-            if (winRatio <= 0.5) aiTeam.setHealRandomThreshold(0.4);
-            if (winRatio <= 0.6) aiTeam.banSpells([6,7,8]);
+            } else if (!isVsZombie && winRatio <= 0.6) aiTeam.banSpells([6,7,8]);
+            // The utility AI plays clearly better than its predecessor; these factors keep each
+            // tier's difficulty where it was (even AI-vs-AI win rates against the old AI).
+            aiTeam.scaleStats(winRatio <= 0.3 ? 0.78 : winRatio <= 0.6 ? 0.92 : 0.93);
             if (winRatio > 0.9) {
                 if (
                     !isVsZombie ||

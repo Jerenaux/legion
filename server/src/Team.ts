@@ -400,14 +400,6 @@ export class Team {
         }
     }
 
-    setHealRandomThreshold(threshold: number) {
-        console.log(`[Team:setHealRandomThreshold] Setting heal random threshold for team ${this.id} to ${threshold}`);
-        for (let i = 0; i < this.members.length; i++) {
-            const member = this.members[i] as AIServerPlayer;
-            member.healRandomThreshold = threshold;
-        }
-    }
-
     disableItems() {
         console.log(`[Team:disableItems] Disabling items for team ${this.id}`);
         for (let i = 0; i < this.members.length; i++) {
