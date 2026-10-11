@@ -46,7 +46,7 @@ export const XP_CONTRIBUTION_PER_HP_BAR = 3;
 // Extra XP for characters below the team's average level.
 export const XP_CATCH_UP_BONUS = 0.25;
 export const AVERAGE_GOLD_REWARD_PER_GAME = 100; 
-export const MAX_AUDIENCE_SCORE = 1500;
+export const MAX_BONUS_SCORE = 1500;
 export const PROMOTION_RATIO = 0.4;
 export const DEMOTION_RATIO = 0.3;
 export const SEASON_END_CRON = '0 19 * * 5' // UTC

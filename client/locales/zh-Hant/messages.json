@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "影響行動順序與行動後的恢復時間。每 1 SP 增加 1 點。",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "下場戰鬥前，HP 和 MP 會恢復，倒下的角色也會復原。無需在對局之間治療隊伍。",
   "Rewards, unlocks & weekly leagues": "獎勵、解鎖與每週聯賽",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "結算介面顯示錶現評級、經驗、金幣和獎勵。開啟獎勵寶箱檢視內容。在<0>商店</0>消費金幣後，回到隊伍使用購買的物品。",
   "What unlocks when?": "何時解鎖哪些內容？",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "解鎖依據是<0>完成的對局數，而不僅是勝場</0>。將滑鼠或焦點移至鎖定的商店分頁上，可檢視還需多少場。",
   "{{value0}} game": "{{value0}} 場",
@@ -812,10 +811,6 @@
   "unlock the final equipment tier!_other": "再玩 {{count}} 場即可解鎖最高階裝備！",
   "Disconnected from server": "已與伺服器斷開連線",
   "Could not reconnect to server": "無法重新連線伺服器",
-  "Ace Player": "王牌玩家",
-  "Highest Game Grades": "最高對局評級",
-  "Crowd Favorite": "觀眾最愛",
-  "Highest Audience Scores": "最高觀眾評分",
   "Unstoppable": "勢不可擋",
   "Longest Win Streak": "最長連勝",
   "Highest Rated": "最高評分",
@@ -1199,5 +1194,6 @@
   "statusDuration_other": "{{count}} 回合",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "部分狀態只有一定機率生效：物品和法術詳情會顯示機率，目標抵抗成功時，其上方會顯示「抵抗」。",
   "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "大部分經驗由你的角色平分，其餘按每個角色的行動和承受的傷害分配。低於隊伍平均等級的角色會獲得更多。每次升級都會獲得屬性點，可在隊伍中分配。",
-  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "每個角色都能平分一場比賽的經驗，即使被擊倒也一樣。其餘部分按每個角色的行動和承受的傷害分配，讓坦克也不落後。低於隊伍平均等級的角色會獲得更多經驗以便追上。"
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "每個角色都能平分一場比賽的經驗，即使被擊倒也一樣。其餘部分按每個角色的行動和承受的傷害分配，讓坦克也不落後。低於隊伍平均等級的角色會獲得更多經驗以便追上。",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "結算介面顯示經驗、金幣和獲得的物品。在<0>商店</0>消費金幣後，回到隊伍使用購買的物品。"
 }

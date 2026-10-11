@@ -61,7 +61,7 @@ module.exports = async ({win, js, waitFor, ready, output, locale}) => {
   await new Promise(resolve => setTimeout(resolve, 1400));
   await capture('announcement');
   for (const isWinner of [true, false]) {
-    await js(`combatCheck.events.emit('gameEnd', {isWinner: ${isWinner}, xp: 120, gold: 240, grade: 'A', chests: [], characters: [], key: 'silver'})`);
+    await js(`combatCheck.events.emit('gameEnd', {isWinner: ${isWinner}, xp: 120, gold: 240, chests: [], characters: [], key: 'silver'})`);
     await waitFor('Boolean(document.querySelector(".endgame"))');
     await ready();
     await capture(isWinner ? 'victory' : 'defeat');

@@ -116,15 +116,13 @@ export interface CharacterUpdate {
 }
 export interface OutcomeData {
     isWinner: boolean;
-    rawGrade: number;
-    grade: string;
+    rewardFactor: number;
     xp: number;
     gold: number;
     characters?: CharacterUpdate[];
     elo: number;
     key: ChestColor;
     chests: GameOutcomeReward[];
-    score: number;
 }
 
 export type CharacterStats = {
@@ -230,8 +228,6 @@ export interface LeagueStats {
     winStreak: number;
     lossesStreak: number;
     nbGames: number;
-    avgAudienceScore: number;
-    avgGrade: number;
     seasonId?: string;
 }
 
@@ -320,7 +316,6 @@ interface GamePlayerData {
     teamId: number;
     player: PlayerProfileData;
     team: PlayerNetworkData[];
-    score: number;
 }
 
 export interface GameData {
@@ -385,14 +380,13 @@ export interface TeamMember {
 export interface TeamOverview {
     members: TeamMember[];
     player: PlayerProfileData;
-    score: number;
     isPlayerTeam: boolean;
 }
 
 export interface EndGameDataResults {
     [key: string]: {
-        audience: number;
-        score: number;
+        bonusScore: number;
+        rewardFactor: number;
     }
 }
 

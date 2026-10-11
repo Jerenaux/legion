@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "Influe sur l’ordre des tours et la récupération entre les actions. Un PC ajoute 1.",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "PV et PM sont restaurés pour le prochain combat et les personnages K.-O. reviennent. Inutile de soigner votre équipe entre les parties.",
   "Rewards, unlocks & weekly leagues": "Récompenses, déblocages et ligues hebdomadaires",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "L’écran des résultats affiche votre note, votre XP, votre or et vos récompenses. Ouvrez les coffres pour voir leur contenu. Dépensez votre or dans la <0>Boutique</0>, puis revenez dans Équipe pour utiliser vos achats.",
   "What unlocks when?": "Quand débloque-t-on quoi ?",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "Les déblocages comptent les <0>parties terminées, pas seulement les victoires</0>. Survolez ou sélectionnez un onglet verrouillé de la Boutique pour voir combien de parties il manque.",
   "{{value0}} game": "{{value0}} partie",
@@ -824,10 +823,6 @@
   "unlock the final equipment tier!_other": "Jouez encore {{count}} parties pour débloquer les derniers équipements !",
   "Disconnected from server": "Connexion au serveur perdue",
   "Could not reconnect to server": "Impossible de se reconnecter au serveur",
-  "Ace Player": "Joueur d’élite",
-  "Highest Game Grades": "Meilleures notes de partie",
-  "Crowd Favorite": "Favori du public",
-  "Highest Audience Scores": "Meilleures notes du public",
   "Unstoppable": "Inarrêtable",
   "Longest Win Streak": "Plus longue série de victoires",
   "Highest Rated": "Meilleure cote",
@@ -1216,5 +1211,6 @@
   "statusDuration_many": "{{count}} tours",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Certaines altérations ne fonctionnent qu’une partie du temps : le détail des objets et des sorts indique la probabilité, et « Résisté » s’affiche au-dessus d’une cible qui y échappe.",
   "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "L’essentiel est partagé à parts égales entre vos personnages ; le reste récompense les actions de chacun et les dégâts encaissés. Les personnages sous le niveau moyen de l’équipe en gagnent davantage. Chaque niveau gagné donne des points de statistique à dépenser dans Équipe.",
-  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Chaque personnage reçoit une part égale de l’XP d’un match, même s’il a été mis K.-O. Le reste récompense les actions de chacun et les dégâts encaissés, pour que les tanks suivent le rythme. Les personnages sous le niveau moyen de l’équipe en gagnent davantage pour rattraper leur retard."
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Chaque personnage reçoit une part égale de l’XP d’un match, même s’il a été mis K.-O. Le reste récompense les actions de chacun et les dégâts encaissés, pour que les tanks suivent le rythme. Les personnages sous le niveau moyen de l’équipe en gagnent davantage pour rattraper leur retard.",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "L’écran des résultats affiche votre XP, votre or et les objets obtenus. Dépensez votre or dans la <0>Boutique</0>, puis revenez dans Équipe pour utiliser vos achats."
 }

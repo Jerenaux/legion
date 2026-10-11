@@ -47,7 +47,7 @@ module.exports = async ({win, js, waitFor, ready, output}) => {
   // Enter combat without a page load: freshly created Phaser text and result art must use the menu choice.
   await js('const link = document.createElement("a"); link.href="/game/guide-local"; document.body.append(link); link.click(); link.remove()');
   await waitFor('Boolean(document.querySelector(".player_bar_action"))');
-  await js('combatCheck.events.emit("gameEnd", {isWinner:true,xp:120,gold:240,grade:"A",chests:[],characters:[],key:"silver"})');
+  await js('combatCheck.events.emit("gameEnd", {isWinner:true,xp:120,gold:240,chests:[],characters:[],key:"silver"})');
   await waitFor('Boolean(document.querySelector(".endgame"))');
   await ready();
   await capture('victory-pt-BR');

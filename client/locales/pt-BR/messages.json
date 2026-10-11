@@ -101,7 +101,6 @@
   "Affects turn order and recovery between actions. One SP adds 1.": "Afeta a ordem de turnos e a recuperação entre ações. Um SP adiciona 1.",
   "HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.": "HP e MP são restaurados para a próxima batalha, e os personagens nocauteados retornam. Não é preciso curar a equipe entre partidas.",
   "Rewards, unlocks & weekly leagues": "Recompensas, desbloqueios e ligas semanais",
-  "The results screen shows your performance grade, XP, gold, and any rewards. Open reward chests to inspect their contents. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "A tela de resultados mostra sua nota de desempenho, XP, ouro e recompensas. Abra os baús para ver o conteúdo. Gaste ouro na <0>Loja</0> e volte à Equipe para usar as compras.",
   "What unlocks when?": "Quando cada recurso é desbloqueado?",
   "Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need.": "Os desbloqueios contam <0>partidas concluídas, não apenas vitórias</0>. Passe o cursor sobre uma aba bloqueada da Loja ou use o foco do teclado para ver quantas partidas faltam.",
   "{{value0}} game": "{{value0}} partida",
@@ -825,10 +824,6 @@
   "unlock the final equipment tier!_many": "Jogue mais {{count}} partidas para desbloquear o último nível de equipamentos!",
   "Disconnected from server": "Desconectado do servidor",
   "Could not reconnect to server": "Não foi possível reconectar ao servidor",
-  "Ace Player": "Craque da arena",
-  "Highest Game Grades": "Melhores notas de desempenho",
-  "Crowd Favorite": "Favorito da torcida",
-  "Highest Audience Scores": "Maiores notas do público",
   "Unstoppable": "Imparável",
   "Longest Win Streak": "Maior sequência de vitórias",
   "Highest Rated": "Melhor classificação",
@@ -1216,5 +1211,6 @@
   "statusDuration_many": "{{count}} turnos",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Alguns estados só funcionam parte das vezes: os detalhes de itens e feitiços mostram a chance, e “Resistiu” aparece sobre o alvo que escapa.",
   "Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.": "A maior parte é dividida igualmente entre seus personagens; o resto recompensa as ações de cada um e o dano recebido. Personagens abaixo do nível médio da equipe ganham mais. Cada nível ganho concede pontos de atributo para gastar em Equipe.",
-  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Cada personagem recebe uma parte igual do XP de uma partida, mesmo se for nocauteado. O resto recompensa as ações de cada personagem e o dano que absorveu, para que os tanques acompanhem. Personagens abaixo do nível médio da equipe ganham mais para alcançar os outros."
+  "Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.": "Cada personagem recebe uma parte igual do XP de uma partida, mesmo se for nocauteado. O resto recompensa as ações de cada personagem e o dano que absorveu, para que os tanques acompanhem. Personagens abaixo do nível médio da equipe ganham mais para alcançar os outros.",
+  "The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use.": "A tela de resultados mostra seu XP, ouro e itens recebidos. Gaste ouro na <0>Loja</0> e volte à Equipe para usar as compras."
 }
