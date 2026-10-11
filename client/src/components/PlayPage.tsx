@@ -14,7 +14,6 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
 import { firebaseAuth } from '../services/firebaseService';
 import PopupManager, { Popup } from './popups/PopupManager';
-import { LockedFeatures } from "@legion/shared/enums";
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
   static contextType = PlayerContext;
