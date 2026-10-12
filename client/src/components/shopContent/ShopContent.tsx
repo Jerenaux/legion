@@ -418,9 +418,7 @@ class ShopContent extends Component<ShopContentProps> {
 
         // Same grid as the item cards, so the shop keeps its shape while stock loads.
         const renderSkeletons = () => (
-            <div className="shop-items-container">
-                <Ghost height={340} count={6} className="ghost-grid shop-ghost-grid" />
-            </div>
+            <Ghost height={430} count={3} className="ghost-grid shop-ghost-grid" />
         )
 
         const shopTabIcons = [consumablesIcon, equipmentsIcon, spellsIcon, charactersIcon];

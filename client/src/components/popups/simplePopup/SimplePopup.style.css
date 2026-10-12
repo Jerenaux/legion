@@ -5,7 +5,7 @@
   transform: translateX(-50%);
   max-width: min(640px, calc(100vw - 32px));
   box-sizing: border-box;
-  padding: 14px 22px 14px 16px;
+  padding: 14px 36px 14px 16px;
   border: 1px solid oklch(70% .1 80);
   border-radius: 6px;
   background: var(--panel-bg);
@@ -13,6 +13,23 @@
   z-index: 1000;
   animation: slideUp 0.3s ease-out;
 }
+
+.simple-popup-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: oklch(70% .01 250);
+  transition: color 120ms ease-out, background 120ms ease-out;
+}
+.simple-popup-close:hover, .simple-popup-close:focus-visible { color: var(--text-strong); background: oklch(100% 0 0 / .08); }
 
 .simple-popup-content {
   display: flex;

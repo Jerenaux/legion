@@ -398,3 +398,11 @@
     .shop-content > .shop-toolbar { grid-column: 1; grid-row: 2; }
     .shop-content > .shop-items-container { grid-row: 3; }
 }
+
+/* Loading placeholders take the stock grid's own tracks, so they sit where the cards will. */
+.shop-items-container > .ghost-group.shop-ghost-grid {
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    gap: inherit;
+}
+.shop-ghost-grid .ghost { border-radius: 12px; }
