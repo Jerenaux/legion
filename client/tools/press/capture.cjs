@@ -37,7 +37,16 @@ fs.mkdirSync(output, {recursive:true});
     });
     await page.screenshot({path:path.join(output,'Emberhall-UI-Support-Spell-Cards.png'),clip});
     await page.setViewportSize({width:1920,height:1080});
-    await visit('/play?press=1');await save('Emberhall-UI-Game-Modes');
+    await visit('/play?press=1');
+    while(await page.getByRole('button',{name:'Dismiss',exact:true}).isVisible().catch(()=>false)) {
+      await page.getByRole('button',{name:'Dismiss',exact:true}).click();await page.waitForTimeout(300);
+    }
+    const modesClip=await page.locator('.playModesRow').evaluate(row=>{
+      const rects=[...row.querySelectorAll('.buttonContainer,.mode-icon')].map(el=>el.getBoundingClientRect());
+      const x=Math.min(...rects.map(r=>r.left))-8,y=Math.min(...rects.map(r=>r.top))-8;
+      return {x,y,width:Math.max(...rects.map(r=>r.right))-x+8,height:Math.max(...rects.map(r=>r.bottom))-y+8};
+    });
+    await page.screenshot({path:path.join(output,'Emberhall-UI-Game-Modes.png'),clip:modesClip});
     await visit('/rank?press=1&ranking');await save('Emberhall-UI-Leaderboard');
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
