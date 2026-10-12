@@ -1,7 +1,7 @@
 // Capture data only: imported by the local guide preview, never the release entry point.
 import {NewCharacter} from '../../../shared/NewCharacter';
 import {Class, League, PlayMode, StatusEffect, Terrain} from '../../../shared/enums';
-import type {GameData} from '../../../shared/interfaces';
+import type {GameData, StatusEffects} from '../../../shared/interfaces';
 import {MOVEMENT_RANGE} from '../../../shared/config';
 
 export function pressScene(index: number) {
@@ -30,7 +30,7 @@ export function pressScene(index: number) {
   const profile = {playerName: ['Enlil', 'Apeiron', 'Zanza'][variant], playerAvatar: ['4','7','12'][variant],
     teamName: '', playerLevel: 20, playerRank: [16,43,24][variant], playerLeague: League.GOLD, completedGames: 120,
     engagementStats: {completedGames: 120, everMoved: true, everAttacked: true, everUsedSpell: true, everUsedItem: true, everSawFlames: true, everSawIce: true}};
-  const statuses = Object.fromEntries(Object.values(StatusEffect).map(key => [key, 0]));
+  const statuses = Object.fromEntries(Object.values(StatusEffect).map(key => [key, 0])) as StatusEffects;
   const positions = [[[6,7],[5,3],[4,5],[4,8],[3,3]], [[6,5],[5,3],[4,6],[3,4]], [[6,6],[7,3],[4,6],[4,8],[5,3]]][variant];
   const enemyPositions = [[[8,6],[9,3],[12,8]], [[5,5],[9,3],[12,8],[10,6]], [[5,6],[10,3],[12,8],[8,6]]][variant];
   const unit = (i: number, position: number[]) => ({...characters[i], x: position[0], y: position[1],
