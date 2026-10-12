@@ -85,8 +85,12 @@ const sessionOptions = {
 export const createPlatformSession = onRequest(sessionOptions, (request, response) => {
   corsMiddleware(request, response, async () => {
     try {
-      const provider = request.body?.provider as PlatformProvider;
-      const credential = request.body?.credential as string;
+      const provider = request.body?.provider;
+      const credential = request.body?.credential;
+      if (!['steam', 'itch', 'direct'].includes(provider) || typeof credential !== 'string' || !credential) {
+        response.status(400).send("Valid platform credentials are required");
+        return;
+      }
       const externalId = await validateProvider(provider, credential);
       const uid = await resolveUID(provider, externalId);
       await Promise.all([ensureAuthUser(uid), ensurePlayer(uid)]);

@@ -73,6 +73,10 @@ jobs:
           bun run test --runInBand
           bunx tsc --noEmit
 
+      - name: Check desktop authentication and transient-failure recovery
+        working-directory: client
+        run: bun run test:startup
+
       - name: Check promotional website isolation
         run: node website/build.cjs
 

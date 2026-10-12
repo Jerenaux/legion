@@ -46,6 +46,14 @@ function socket(port: number, auth: unknown) {
   sockets.push(s); return s;
 }
 try {
+  // Malformed unauthenticated requests are client errors, not server incidents.
+  for (const body of [{}, {provider: 'unknown', credential: 'test'}, {provider: 'direct'},
+    {provider: 'direct', credential: 123}, {provider: 'direct', credential: ''}]) {
+    const response = await fetch(`${api}/createPlatformSession`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body),
+    });
+    assert.equal(response.status, 400);
+  }
   // Concurrent provisioning must create exactly one account, three characters and its first match.
   const accounts=await Promise.all([login(`test-${run}`),login(`test-${run}`)]);
   assert.equal(accounts[0].uid,accounts[1].uid);
