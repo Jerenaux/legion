@@ -46,6 +46,15 @@ if (!process.versions.electron) {
     for await (const _chunk of request) { /* Drain real HTTP requests. */ }
     if (request.url === '/createPlatformSession') {
       exchanges++;
+      if (mode === 'network-once' && exchanges === 1) { request.socket.destroy(); return; }
+      if (mode === 'stall-once' && exchanges === 1) {
+        response.on('close', () => { aborted = true; });
+        return;
+      }
+      if (['503-once', '429-once'].includes(mode) && exchanges === 1) {
+        response.writeHead(Number(mode.slice(0, 3))); response.end('{}'); return;
+      }
+      if (mode === 'rejected') { response.writeHead(401); response.end('{}'); return; }
       if (mode === 'exchange' || mode === 'body') {
         response.on('close', () => { aborted = true; });
         if (mode === 'body') { response.writeHead(200); response.write('{'); }
@@ -93,7 +102,8 @@ if (!process.versions.electron) {
       if (error || stats.hasErrors()) reject(error || new Error(stats.toString({all: false, errors: true})));
       else resolve();
     }));
-    for (const scenario of ['success', 'unavailable', 'credential', 'exchange', 'body', 'firebase']) {
+    const automatic = ['success', 'stall-once', 'network-once', '503-once', '429-once'];
+    for (const scenario of [...automatic, 'rejected', 'unavailable', 'credential', 'exchange', 'body', 'firebase']) {
       mode = scenario;
       currentUser = 'startup-player';
       exchanges = 0;
@@ -119,9 +129,9 @@ if (!process.versions.electron) {
       window.webContents.on('did-finish-load', () => loads++);
       const started = Date.now();
       await window.loadURL(PACKAGED_APP_URL);
-      if (scenario !== 'success') {
+      if (!automatic.includes(scenario)) {
         await waitFor(() => read('!!document.querySelector(".session-status__retry")'), `${scenario} recovery`, 35000);
-        if (scenario !== 'unavailable') {
+        if (scenario === 'credential' || scenario === 'firebase') {
           assert(Date.now() - started >= 28000, `${scenario}: deadline fired after ${Date.now() - started}ms`);
           const stage = scenario === 'credential' ? 'platform credential' : scenario === 'firebase' ? 'Firebase sign-in' : 'platform exchange';
           assert(logs.some(log => log.includes(`timed out during ${stage}`)), `${scenario}: missing stage diagnostic`);
@@ -133,7 +143,11 @@ if (!process.versions.electron) {
         }
         if (scenario === 'exchange' || scenario === 'body') {
           await waitFor(() => aborted, 'HTTP cancellation');
+          assert.equal(exchanges, 3, 'Stalled exchanges must have a bounded retry budget');
+          assert(Date.now() - started >= 23000, 'Each stalled attempt needs its own deadline');
         }
+        if (scenario === 'rejected') assert.equal(exchanges, 1, 'Invalid credentials must not retry');
+        if (scenario === 'unavailable') assert.equal(exchanges, 3, 'Service errors must stop after three attempts');
         if (scenario === 'firebase') {
           assert(releaseSignIn, 'Real Firebase SDK must reach the HTTP boundary');
           releaseSignIn();
@@ -144,10 +158,14 @@ if (!process.versions.electron) {
         currentUser = 'retry-player';
         await read('document.querySelector(".session-status__retry").click()');
       }
-      await waitFor(() => read(`document.querySelector('#authenticated')?.dataset.user === ${JSON.stringify(currentUser)}`), `${scenario} authentication`);
-      assert.equal(loads, scenario === 'success' || scenario === 'unavailable' ? 1 : 2, `${scenario}: retry reload behavior`);
+      await waitFor(() => read(`document.querySelector('#authenticated')?.dataset.user === ${JSON.stringify(currentUser)}`), `${scenario} authentication`, 15000);
+      if (automatic.includes(scenario)) {
+        assert.equal(exchanges, scenario === 'success' ? 1 : 2, 'Transient failure must recover without player action');
+        if (scenario === 'stall-once') assert(aborted, 'Timed-out request must be cancelled');
+      }
+      assert.equal(loads, scenario === 'credential' || scenario === 'firebase' ? 2 : 1, `${scenario}: retry reload behavior`);
       assert.equal(failures.length, 0, failures.join('\n'));
-      console.log(`PASS startup ${scenario}${scenario === 'success' ? '' : ' → retry'}`);
+      console.log(`PASS startup ${scenario}${automatic.includes(scenario) ? '' : ' → retry'}`);
       window.destroy();
       window = null;
     }

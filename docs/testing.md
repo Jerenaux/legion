@@ -21,10 +21,11 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   native launch exports without authenticating to Steam.
 - `cd client && bun run test:startup`: real authentication renderer, native IPC
   and Firebase SDK with loopback services; checks startup deadlines, cancellation,
-  late results and retry recovery without touching production accounts.
+  late results, bounded transient-request retries and recovery without touching production accounts.
+  This authentication integration check also runs in PR CI.
 - `cd client && bun run test:guide`: packaged smoke checks only — error reporting
   and replay privacy, music hand-off, repeated-match teardown, match readiness,
-  socket recovery and crash recovery. It runs with `test:startup` on Windows and
+  socket recovery and crash recovery. The full guide smoke runs with `test:startup` on Windows and
   macOS only as the first job of the manual desktop release workflow, which stops
   before building if it fails; it does not run on PRs, pushes or a schedule. The other
   switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
