@@ -47,3 +47,9 @@ The first source is the approved local rebrand master at
 outputs, original press-kit inventory and Drive replacement manifest are under
 `~/Code/emberhall-branding/press-kit-refresh/`. Do not commit videos, downloads,
 browser sessions or authentication material.
+
+Each combat shot uses a separate formation and matchup. Its snapshot declares
+the action spells so the normal asset loader prepares their effects before
+recording. Every captured frame is checked for visible Phaser missing textures;
+missing-animation warnings and browser errors stop the capture. Per-shot audit
+files and representative frames are saved beside the recordings.
