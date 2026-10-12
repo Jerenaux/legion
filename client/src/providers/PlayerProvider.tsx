@@ -49,6 +49,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     private retryTimer: ReturnType<typeof setTimeout> | undefined;
     private failureNotified = false;
     private identitySaves: Partial<Record<'name' | 'avatar', {value: string; saved: string; request: Promise<void>}>> = {};
+    private identityApplied: Partial<Record<'name' | 'avatar', {seq: number; value: string}>> = {};
 
     constructor(props: {}) {
       super(props);
@@ -123,6 +124,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     resetState = () => {
       this.session++;
       this.identitySaves = {};
+      this.identityApplied = {};
       this.bootstrapRequest = undefined;
       this.bootstrapDone = false;
       this.refreshQueued = false;
@@ -215,7 +217,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         // Keep player data that a newer refresh already applied; the roster is still needed.
         if (seq > this.playerAppliedSeq) {
           this.playerAppliedSeq = seq;
-          this.setState({player: {...data.player, ...this.pendingIdentity(), uid, isLoaded: true}, characters: data.characters});
+          this.setState({player: {...data.player, ...this.pendingIdentity(seq), uid, isLoaded: true}, characters: data.characters});
         } else {
           this.setState({characters: data.characters});
         }
@@ -263,7 +265,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   carrying_capacity: data.carrying_capacity,
                   engagementStats: data.engagementStats || {},
                   community: data.community ?? null,
-                  ...this.pendingIdentity(),
+                  ...this.pendingIdentity(seq),
               }
           });
       } catch (error) {
@@ -515,8 +517,11 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       }));
     }
 
-    private pendingIdentity() {
-      return Object.fromEntries(Object.entries(this.identitySaves).map(([field, save]) => [field, save.value]));
+    private pendingIdentity(seq: number) {
+      return Object.fromEntries([
+        ...Object.entries(this.identityApplied).filter(([, applied]) => seq <= applied.seq).map(([field, applied]) => [field, applied.value]),
+        ...Object.entries(this.identitySaves).map(([field, save]) => [field, save.value]),
+      ]);
     }
 
     updateIdentity = (updates: Partial<Pick<PlayerContextData, 'name' | 'avatar'>>) => {
@@ -544,8 +549,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           } finally {
             if (current() && save.request === request) {
               delete this.identitySaves[field];
-              // Discard snapshots fetched before this save settled.
-              this.playerAppliedSeq = ++this.playerRequestSeq;
+              // Older snapshots may still apply rewards, but cannot undo the saved identity.
+              this.identityApplied[field] = {seq: this.playerRequestSeq, value: save.saved};
               this.setPlayerInfo({[field]: save.saved});
             }
           }
