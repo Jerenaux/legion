@@ -62,6 +62,20 @@ try {
   assert.equal(daily.storeUsers.filter((uid: string)=>uid===one.uid).length,1);
   assert.equal((await db.collection('players').doc(one.uid).get()).data().lastStoreActiveDay,new Date().toISOString().slice(0,10));
   const denied=await fetch(`${api}/bootstrapPlayer`); assert.equal(denied.status,401);
+  // Nickname checks still run on the authenticated HTTP boundary, even for bypassed clients.
+  const renamed = await http('updatePlayerName', {name: '  Étoile勇者  '}, one.token);
+  assert.equal(renamed.name, 'Étoile勇者');
+  for (const name of [null, 123, {}, '', '   ', 'x'.repeat(19), 'fuck']) {
+    const response = await fetch(`${api}/updatePlayerName`, {
+      method: 'POST', headers: {'Content-Type': 'application/json', Authorization: `Bearer ${one.token}`},
+      body: JSON.stringify({name}),
+    });
+    assert.equal(response.status, 400);
+  }
+  const namedPlayer = (await db.collection('players').doc(one.uid).get()).data();
+  assert.equal(namedPlayer.name, renamed.name);
+  assert.equal(namedPlayer.name_lower, renamed.name.toLowerCase());
+  assert.equal((await http('getProfileData?playerId=' + one.uid)).name, renamed.name);
   // Inactive/seeded opponents can receive results without ever bootstrapping daily loot.
   for (const [index, dailyloot, key] of [
     [0, undefined, null],

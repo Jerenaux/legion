@@ -35,6 +35,7 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
+      'obscenity': require.resolve('obscenity'),
         '@legion/shared': path.resolve(__dirname, isDocker ? 'shared' : '../../shared'),
         '@legion/locales': path.resolve(__dirname, isDocker ? 'locales' : '../../client/locales'),
       },

@@ -476,6 +476,7 @@
   "Challenge to a Duel": "決闘を申し込む",
   "Name updated successfully!": "名前を変更しました！",
   "Failed to update name": "名前を変更できませんでした",
+  "Name is too long.": "名前が長すぎます。",
   "Name contains profane words": "名前に不適切な言葉が含まれています",
   "Avatar updated successfully!": "アバターを変更しました！",
   "Failed to update avatar": "アバターを変更できませんでした",

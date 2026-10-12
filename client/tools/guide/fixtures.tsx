@@ -260,12 +260,14 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   const [activeId, setActiveId] = useState(characters[2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
+  const [identity, setIdentity] = useState({name: profile.playerName, avatar: 'default'});
   Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true), fail: () => setRenderFailed(true)}});
   if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
     ...defaults, loaded, welcomeShown: true, characters: roster, activeCharacterId: activeId,
     socket: queueCheck.socket as unknown as typeof defaults.socket,
-    player: {...defaults.player, uid: 'guide-local-only', name: profile.playerName, avatar: 'default',
+    updateIdentity: (updates: Partial<typeof identity>) => setIdentity(current => ({...current, ...updates})),
+    player: {...defaults.player, uid: 'guide-local-only', ...identity,
       isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
       dailyloot: {bronze: {hasKey: true, countdown: 0}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}},
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,

@@ -476,6 +476,7 @@
   "Challenge to a Duel": "Défier en duel",
   "Name updated successfully!": "Nom modifié !",
   "Failed to update name": "Impossible de modifier le nom",
+  "Name is too long.": "Le nom est trop long.",
   "Name contains profane words": "Ce nom contient des termes inappropriés",
   "Avatar updated successfully!": "Avatar modifié !",
   "Failed to update avatar": "Impossible de modifier l’avatar",

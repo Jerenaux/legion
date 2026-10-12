@@ -1,10 +1,10 @@
 import {h} from 'preact';
 import {useContext, useState} from 'preact/hooks';
 import Modal from 'react-modal';
-import {t, userError} from '../../i18n/core';
+import {t} from '../../i18n/core';
 import {MAX_AVATAR_ID, MAX_NICKNAME_LENGTH} from '@legion/shared/config';
 import {PlayerContext} from '../../contexts/PlayerContext';
-import {apiFetch} from '../../services/apiService';
+import {validateNickname} from '@legion/shared/nickname';
 import {avatarContext} from '../utils';
 import {markPageIntroSeen} from './PageIntro';
 import './PageIntro.css';
@@ -16,11 +16,10 @@ const avatarURL = (id: string) => { try { return avatarContext(`./${id}.png`); }
  * them here (or later from their profile). Closing without changes keeps them.
  */
 export default function IdentityIntro({onClose}: {onClose: () => void}) {
-  const {player, setPlayerInfo} = useContext(PlayerContext);
+  const {player, updateIdentity} = useContext(PlayerContext);
   const [name, setName] = useState(player.name || '');
   const [avatar, setAvatar] = useState(player.avatar || '1');
   const [choosing, setChoosing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const trimmed = name.trim();
   const changed = trimmed !== player.name || avatar !== player.avatar;
@@ -30,29 +29,22 @@ export default function IdentityIntro({onClose}: {onClose: () => void}) {
     onClose();
   };
 
-  const save = async (event: Event) => {
+  const save = (event: Event) => {
     event.preventDefault();
     if (!changed) { close(); return; }
-    if (!trimmed) { setError(t('Choose a name.')); return; }
-    setSaving(true);
-    setError('');
     try {
-      if (avatar !== player.avatar) {
-        await apiFetch('updatePlayerAvatar', {method: 'POST', body: {avatarId: avatar}});
-        setPlayerInfo({avatar});
-      }
-      if (trimmed !== player.name) {
-        await apiFetch('updatePlayerName', {method: 'POST', body: {name: trimmed}});
-        setPlayerInfo({name: trimmed});
-      }
+      const validated = validateNickname(name);
+      updateIdentity({
+        ...(validated !== player.name ? {name: validated} : {}),
+        ...(avatar !== player.avatar ? {avatar} : {}),
+      });
       close();
     } catch (failure) {
-      setError(String((failure as Error)?.message).includes('profane') ? t('Name contains profane words') : userError(failure));
-      setSaving(false);
+      setError(t((failure as Error).message));
     }
   };
 
-  return <Modal isOpen onRequestClose={saving ? undefined : close} contentLabel={t('Your name and portrait')}
+  return <Modal isOpen onRequestClose={close} contentLabel={t('Your name and portrait')}
     className="page-intro page-intro--identity" overlayClassName="page-intro-overlay">
     <form onSubmit={save}>
       <h2>{t('Your name and portrait')}</h2>
@@ -79,8 +71,8 @@ export default function IdentityIntro({onClose}: {onClose: () => void}) {
       {error && <p id="identity-error" className="identity-error" role="alert">{error}</p>}
       <p className="page-intro-text identity-hint">{t('You can change both any time from your profile: select your portrait at the top left.')}</p>
       <div className="page-intro-actions">
-        <button type="button" className="page-intro-secondary" data-desktop-cancel disabled={saving} onClick={close}>{t('Skip')}</button>
-        <button type="submit" className="page-intro-primary" disabled={saving}>{changed ? t('Save') : t('Keep them')}</button>
+        <button type="button" className="page-intro-secondary" data-desktop-cancel onClick={close}>{t('Skip')}</button>
+        <button type="submit" className="page-intro-primary">{changed ? t('Save') : t('Keep them')}</button>
       </div>
     </form>
   </Modal>;

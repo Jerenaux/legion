@@ -1,3 +1,4 @@
+import {validateNickname} from '@legion/shared/nickname';
 import {t, i18n, userError} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 
@@ -10,7 +11,6 @@ import { PlayerContext } from '../../contexts/PlayerContext';
 import './profile.style.css';
 import SearchPlayers from './SearchPlayers';
 import { route } from 'preact-router';
-import { apiFetch } from '../../services/apiService';
 import { MAX_AVATAR_ID, MAX_NICKNAME_LENGTH } from '@legion/shared/config';
 import type { CommunitySummary } from '@legion/shared/communities';
 import ProfileCommunity from '../community/ProfileCommunity';
@@ -64,9 +64,7 @@ interface State {
     isCreatingChallenge: boolean;
     isEditingName: boolean;
     newName: string;
-    isUpdatingName: boolean;
     showAvatarGallery: boolean;
-    isUpdatingAvatar: boolean;
 }
 
 class Profile extends Component<Props, State> {
@@ -87,9 +85,7 @@ class Profile extends Component<Props, State> {
         isCreatingChallenge: false,
         isEditingName: false,
         newName: '',
-        isUpdatingName: false,
         showAvatarGallery: false,
-        isUpdatingAvatar: false,
     };
 
     getEffectiveId = () => {
@@ -355,7 +351,7 @@ class Profile extends Component<Props, State> {
     handleEditNameClick = () => {
         this.setState({
             isEditingName: true,
-            newName: this.state.profileData.name
+            newName: this.context.player.name
         });
     };
 
@@ -364,45 +360,14 @@ class Profile extends Component<Props, State> {
         this.setState({ newName: target.value });
     };
 
-    handleNameSubmit = async (e: Event) => {
+    handleNameSubmit = (e: Event) => {
         e.preventDefault();
-
-        this.setState({ isUpdatingName: true });
         try {
-            const response = await apiFetch('updatePlayerName', {
-                method: 'POST',
-                body: {
-                    name: this.state.newName
-                }
-            });
-
-            if (response.success) {
-                // Update local state
-                this.setState(prevState => ({
-                    profileData: {
-                        ...prevState.profileData,
-                        name: this.state.newName
-                    }
-                }));
-
-                // Update PlayerContext
-                this.context.setPlayerInfo({ name: this.state.newName });
-
-                successToast(t("Name updated successfully!"));
-            }
+            const name = validateNickname(this.state.newName);
+            this.context.updateIdentity({name});
+            this.setState({isEditingName: false});
         } catch (error) {
-            console.error('Error updating name:', error);
-            let message = userError(error);
-            // Check if 'profane' is in the error message
-            if (String(error.message).includes('profane')) {
-                message = t("Name contains profane words");
-            }
-            errorToast(message);
-        } finally {
-            this.setState({
-                isEditingName: false,
-                isUpdatingName: false
-            });
+            errorToast(userError(error));
         }
     };
 
@@ -410,46 +375,9 @@ class Profile extends Component<Props, State> {
         this.setState({ showAvatarGallery: true });
     };
 
-    handleAvatarSelect = async (avatarId: string) => {
-        // Don't do anything if selecting the same avatar
-        if (avatarId === this.state.profileData.avatar) {
-            this.setState({ showAvatarGallery: false });
-            return;
-        }
-
-        this.setState({ isUpdatingAvatar: true });
-        try {
-            const response = await apiFetch('updatePlayerAvatar', {
-                method: 'POST',
-                body: {
-                    avatarId
-                }
-            });
-
-            if (response.success) {
-                // Update local state
-                this.setState(prevState => ({
-                    avatarUrl: avatarContext(`./${avatarId}.png`),
-                    profileData: {
-                        ...prevState.profileData,
-                        avatar: avatarId
-                    }
-                }));
-
-                // Update PlayerContext
-                this.context.setPlayerInfo({ avatar: avatarId });
-
-                successToast(t("Avatar updated successfully!"));
-            }
-        } catch (error) {
-            console.error('Error updating avatar:', error);
-            errorToast(t("Failed to update avatar"));
-        } finally {
-            this.setState({
-                isUpdatingAvatar: false,
-                showAvatarGallery: false
-            });
-        }
+    handleAvatarSelect = (avatar: string) => {
+        this.context.updateIdentity({avatar});
+        this.setState({showAvatarGallery: false});
     };
 
     renderAvatarGallery = () => {
@@ -461,7 +389,7 @@ class Profile extends Component<Props, State> {
             avatarOptions.push(
                 <button type="button" data-game-control
                     key={avatarId}
-                    className={`avatar-option ${this.state.profileData.avatar === avatarId ? 'selected' : ''}`}
+                    className={`avatar-option ${this.context.player.avatar === avatarId ? 'selected' : ''}`}
                     style={{ backgroundImage: `url(${avatarContext(`./${avatarId}.png`)})` }}
                     onClick={() => this.handleAvatarSelect(avatarId)}
                 ></button>
@@ -481,13 +409,7 @@ class Profile extends Component<Props, State> {
                         </button>
                     </div>
                     <div className="avatar-grid">
-                        {this.state.isUpdatingAvatar ? (
-                            <div className="loading">
-                                <div className="loading-spinner" />
-                            </div>
-                        ) : (
-                            avatarOptions
-                        )}
+                        {avatarOptions}
                     </div>
                 </div>
             </div>
@@ -495,8 +417,16 @@ class Profile extends Component<Props, State> {
     };
 
     render() {
-        const { profileData, isLoading, error, avatarUrl } = this.state;
+        const {isLoading, error} = this.state;
+        const profileData = this.isOwnProfile() && this.state.profileData
+            ? {...this.state.profileData, name: this.context.player.name, avatar: this.context.player.avatar}
+            : this.state.profileData;
         const isOwnProfile = this.isOwnProfile();
+        let avatarUrl = this.state.avatarUrl;
+        if (isOwnProfile) {
+            try { avatarUrl = avatarContext(`./${this.context.player.avatar}.png`); }
+            catch { avatarUrl = null; }
+        }
 
         if (isLoading) {
             return <div className="profile-container loading">{t("Loading profile...")}</div>;
@@ -547,17 +477,11 @@ class Profile extends Component<Props, State> {
                                         onChange={this.handleNameChange}
                                         maxLength={MAX_NICKNAME_LENGTH}
                                     />
-                                    {this.state.isUpdatingName ? (
-                                        <div className="name-edit-spinner" />
-                                    ) : (
-                                        <>
-                                            <button type="submit">{t("Save")}</button>
-                                            <button
-                                                type="button"
-                                                onClick={() => this.setState({ isEditingName: false })}
-                                            >{t("Cancel")}</button>
-                                        </>
-                                    )}
+                                    <button type="submit">{t("Save")}</button>
+                                    <button
+                                        type="button"
+                                        onClick={() => this.setState({ isEditingName: false })}
+                                    >{t("Cancel")}</button>
                                 </form>
                             ) : (
                                 <>

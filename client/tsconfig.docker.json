@@ -13,6 +13,7 @@
 		"skipLibCheck": true,
 		"baseUrl": "./",
 		"paths": {
+            "obscenity": ["./node_modules/obscenity"],
 			"react": ["./node_modules/preact/compat"],
 			"react-dom": ["./node_modules/preact/compat"],
 			"@legion/shared/*": ["shared/*"],

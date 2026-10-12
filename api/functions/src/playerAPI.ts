@@ -1,3 +1,4 @@
+import {validateNickname} from '@legion/shared/nickname';
 import {getLeagueRank} from "@legion/shared/leagueRanking";
 import {chestsDelays, getDefaultDailyLoot} from "./dailyLoot";
 import {communitySummary} from '@legion/shared/communities';
@@ -1375,31 +1376,11 @@ export const updatePlayerName = onRequest({
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const newName = request.body.name;
-
-      // Validate name
-      if (!newName || typeof newName !== 'string') {
-        response.status(400).send('Valid name is required');
-        return;
-      }
-
-      if (newName.length > MAX_NICKNAME_LENGTH) {
-        response.status(400).send(`Name must be ${MAX_NICKNAME_LENGTH} characters or less`);
-        return;
-      }
-
-      // Dynamically import the profanity filter
-      const { RegExpMatcher } = await import('obscenity');
-      const { englishDataset } = await import('obscenity');
-      const { englishRecommendedTransformers } = await import('obscenity');
-
-      const matcher = new RegExpMatcher({
-        ...englishDataset.build(),
-        ...englishRecommendedTransformers,
-      });
-      const matches = matcher.getAllMatches(newName);
-      if (matches.length > 0) {
-        response.status(400).send('Name contains profane words');
+      let newName: string;
+      try {
+        newName = validateNickname(request.body.name);
+      } catch (error) {
+        response.status(400).send((error as Error).message);
         return;
       }
 
