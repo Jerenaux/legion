@@ -48,6 +48,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     private retryDelay = 0;
     private retryTimer: ReturnType<typeof setTimeout> | undefined;
     private failureNotified = false;
+    private identitySaves: Partial<Record<'name' | 'avatar', {value: string; saved: string; request: Promise<void>}>> = {};
+    private identityApplied: Partial<Record<'name' | 'avatar', {seq: number; value: string}>> = {};
 
     constructor(props: {}) {
       super(props);
@@ -121,6 +123,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     resetState = () => {
       this.session++;
+      this.identitySaves = {};
+      this.identityApplied = {};
       this.bootstrapRequest = undefined;
       this.bootstrapDone = false;
       this.refreshQueued = false;
@@ -213,7 +217,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         // Keep player data that a newer refresh already applied; the roster is still needed.
         if (seq > this.playerAppliedSeq) {
           this.playerAppliedSeq = seq;
-          this.setState({player: {...data.player, uid, isLoaded: true}, characters: data.characters});
+          this.setState({player: {...data.player, ...this.pendingIdentity(seq), uid, isLoaded: true}, characters: data.characters});
         } else {
           this.setState({characters: data.characters});
         }
@@ -261,6 +265,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   carrying_capacity: data.carrying_capacity,
                   engagementStats: data.engagementStats || {},
                   community: data.community ?? null,
+                  ...this.pendingIdentity(seq),
               }
           });
       } catch (error) {
@@ -510,6 +515,49 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           engagementStats: {...player.engagementStats, ...updates.engagementStats}
         }
       }));
+    }
+
+    private pendingIdentity(seq: number) {
+      return Object.fromEntries([
+        ...Object.entries(this.identityApplied).filter(([, applied]) => seq <= applied.seq).map(([field, applied]) => [field, applied.value]),
+        ...Object.entries(this.identitySaves).map(([field, save]) => [field, save.value]),
+      ]);
+    }
+
+    updateIdentity = (updates: Partial<Pick<PlayerContextData, 'name' | 'avatar'>>) => {
+      const session = this.session;
+      const uid = this.state.player.uid;
+      const current = () => session === this.session && firebaseAuth.currentUser?.uid === uid;
+      for (const field of ['name', 'avatar'] as const) {
+        const value = updates[field];
+        if (value === undefined) continue;
+        const save = this.identitySaves[field] ?? {
+          value, saved: this.state.player[field], request: Promise.resolve(),
+        };
+        save.value = value;
+        this.identitySaves[field] = save;
+        // Serialize edits of each field so an older request cannot overwrite a newer one.
+        const request = save.request.then(async () => {
+          if (!current()) return;
+          try {
+            await apiFetch(field === 'name' ? 'updatePlayerName' : 'updatePlayerAvatar', {
+              method: 'POST', body: field === 'name' ? {name: value} : {avatarId: value},
+            });
+            save.saved = value;
+          } catch (error) {
+            if (current() && save.request === request) errorToast(userError(error));
+          } finally {
+            if (current() && save.request === request) {
+              delete this.identitySaves[field];
+              // Older snapshots may still apply rewards, but cannot undo the saved identity.
+              this.identityApplied[field] = {seq: this.playerRequestSeq, value: save.saved};
+              this.setPlayerInfo({[field]: save.saved});
+            }
+          }
+        });
+        save.request = request;
+      }
+      this.setPlayerInfo(updates);
     }
 
     markShownWelcome = () => {
@@ -768,6 +816,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           welcomeShown: this.state.welcomeShown,
           loaded: this.state.player.isLoaded,
           setPlayerInfo: this.setPlayerInfo,
+          updateIdentity: this.updateIdentity,
           refreshPlayerData: this.fetchPlayerData,
           refreshAllData: this.fetchAllData,
           fetchRosterData: this.fetchRosterData,

@@ -12,6 +12,7 @@
     "lib": ["es2022"],
     "baseUrl": "./",
 		"paths": {
+            "obscenity": ["./node_modules/obscenity"],
 			"@legion/shared/*": ["../../shared/*"],
 			"@legion/locales/*": ["../../client/locales/*"]
 		},

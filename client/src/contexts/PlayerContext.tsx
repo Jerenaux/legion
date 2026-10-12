@@ -29,6 +29,7 @@ export const PlayerContext = createContext<{
   characterSheetIsDirty: boolean;
   welcomeShown: boolean;
   setPlayerInfo: (updates: Partial<PlayerContextData>) => void;
+  updateIdentity: (updates: Partial<Pick<PlayerContextData, 'name' | 'avatar'>>) => void;
   refreshPlayerData: () => void;
   fetchRosterData: () => Promise<void>;
   updateCharacterStats: (characterId: string, stat: Stat, amount: number) => void;
@@ -99,6 +100,7 @@ export const PlayerContext = createContext<{
   characterSheetIsDirty: false,
   welcomeShown: false,
   setPlayerInfo: () => {},
+  updateIdentity: () => {},
   refreshPlayerData: () => {},
   fetchRosterData: async () => {},
   updateCharacterStats: () => {},

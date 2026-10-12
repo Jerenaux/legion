@@ -476,6 +476,7 @@
   "Challenge to a Duel": "결투 신청",
   "Name updated successfully!": "이름을 변경했습니다!",
   "Failed to update name": "이름 변경에 실패했습니다",
+  "Name is too long.": "이름이 너무 깁니다.",
   "Name contains profane words": "이름에 부적절한 단어가 포함되어 있습니다",
   "Avatar updated successfully!": "아바타를 변경했습니다!",
   "Failed to update avatar": "아바타 변경에 실패했습니다",

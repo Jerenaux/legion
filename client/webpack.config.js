@@ -135,6 +135,7 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {
+      'obscenity': require.resolve('obscenity'),
       'react': 'preact/compat',
       'react-dom': 'preact/compat',
       '@legion/shared': path.resolve(__dirname, `${sharedPrefix}shared`),

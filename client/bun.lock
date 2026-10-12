@@ -30,6 +30,7 @@
         "html-webpack-plugin": "^5.6.8",
         "i18next": "^26.4.2",
         "logrocket": "^12.4.0",
+        "obscenity": "0.4.6",
         "phaser": "^3.90.0",
         "phaser3-rex-plugins": "^1.80.20",
         "preact": "10.19.3",
@@ -1284,6 +1285,8 @@
     "object-keys": ["object-keys@1.1.1", "", {}, "sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA=="],
 
     "obliterator": ["obliterator@2.0.5", "", {}, "sha512-42CPE9AhahZRsMNslczq0ctAEtqk8Eka26QofnqC346BZdHDySk3LWka23LI7ULIw11NmltpiLagIq8gBozxTw=="],
+
+    "obscenity": ["obscenity@0.4.6", "", {}, "sha512-pHk7kNN7j3L3zGhhGnwxjvXIGsPpLrcZl2r58fqWh/V/rH6b/dafscj2sMmAY+A/9/wPsocLmimgGk2DKeKsFQ=="],
 
     "obuf": ["obuf@1.1.2", "", {}, "sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg=="],
 
