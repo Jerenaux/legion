@@ -5,7 +5,7 @@ import firebase from "firebase/compat/app";
 
 import AuthContext from "../contexts/AuthContext";
 import {firebaseAuth} from "../services/firebaseService";
-import {exchangePlatformCredential, getPlatformCredential} from "../services/platformSession";
+import {exchangePlatformCredential, getPlatformCredential, SessionError, type SessionFailure} from "../services/platformSession";
 import {getElectronAPI} from "../utils/electronUtils";
 import logo from "@assets/logo.png";
 import "./AuthProvider.style.css";
@@ -17,7 +17,7 @@ interface Props {
 interface State {
   user: firebase.User | null;
   isLoading: boolean;
-  error: string | null;
+  error: SessionFailure | null;
 }
 
 export default class AuthProvider extends Component<Props, State> {
@@ -91,7 +91,9 @@ export default class AuthProvider extends Component<Props, State> {
       console.error(`Desktop session failed during ${stage}:`, error);
       this.setState({
         isLoading: false,
-        error: t("We couldn't reach Emberhall's services. Check your connection, then try again."),
+        error: error instanceof SessionError ? error.reason
+          : error instanceof Error && 'code' in error && error.code === 'auth/network-request-failed' ? 'network'
+          : this.sessionTimedOut && stage !== 'platform credential' ? 'network' : 'unknown',
       });
     } finally {
       clearTimeout(this.sessionTimeout);
@@ -115,14 +117,21 @@ export default class AuthProvider extends Component<Props, State> {
       );
     }
     if (error || !user) {
+      const failure = error || 'unknown';
+      const instructions = {
+        steam: [t("Steam sign-in failed"), t("Quit Steam completely, reopen it and sign in. Then launch Emberhall again from your Steam library.")],
+        itch: [t("itch.io sign-in failed"), t("Sign in to the itch.io app again, then launch Emberhall from your library.")],
+        network: [t("Connection failed"), t("We couldn't reach Emberhall's services. Check your connection, then try again.")],
+        service: [t("Sign-in service unavailable"), t("Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.")],
+        unknown: [t("Sign-in failed"), t("Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.")],
+      }[failure];
       return (
         <main className="session-screen session-screen--error">
-          <section className="session-status" role="alert">
+          <section className="session-status" role="alert" data-session-failure={failure}>
             <img className="session-status__logo" src={logo} alt={t("Emberhall")} />
             <div className="session-status__error-mark" aria-hidden="true">!</div>
-            <p className="session-status__eyebrow">{t("Connection interrupted")}</p>
-            <h1>{t("The arena is out of reach")}</h1>
-            <p className="session-status__message">{error || t("Your Emberhall session could not be started.")}</p>
+            <h1>{instructions[0]}</h1>
+            <p className="session-status__message">{instructions[1]}</p>
             <button className="session-status__retry" type="button" onClick={this.startSession}>{t("Try again")}</button>
             <p className="session-status__hint">{t("Press Enter or controller A to retry")}</p>
           </section>

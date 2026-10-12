@@ -1279,5 +1279,14 @@
   "Previous": "Назад",
   "navLeagueRank": "Лига «{{league}}» · Место {{rank}}",
   "navLeagueUnranked": "Лига «{{league}}» · Сыграйте рейтинговый матч, чтобы получить место",
-  "navGoldHint": "Ваше золото. Тратьте его в магазине на предметы, заклинания и новобранцев."
+  "navGoldHint": "Ваше золото. Тратьте его в магазине на предметы, заклинания и новобранцев.",
+  "Steam sign-in failed": "Не удалось войти в Steam",
+  "Quit Steam completely, reopen it and sign in. Then launch Emberhall again from your Steam library.": "Полностью закройте Steam, откройте его снова и войдите в аккаунт. Затем запустите Emberhall из библиотеки Steam.",
+  "itch.io sign-in failed": "Не удалось войти в itch.io",
+  "Sign in to the itch.io app again, then launch Emberhall from your library.": "Снова войдите в приложение itch.io, затем запустите Emberhall из библиотеки.",
+  "Connection failed": "Не удалось подключиться",
+  "Sign-in service unavailable": "Сервис входа недоступен",
+  "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhall не удалось проверить вашу сессию. Подождите немного и попробуйте снова. Если проблема сохраняется, проверьте наличие обновления игры.",
+  "Sign-in failed": "Не удалось войти",
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Перезапустите Emberhall и попробуйте снова. Если вы запустили игру через Steam или itch.io, убедитесь, что вы вошли в аккаунт этой платформы."
 }

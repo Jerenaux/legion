@@ -48,7 +48,8 @@ async function getPlatformAuth(env = process.env, loadSteamworks = () => require
   } catch (_error) {
     // An installed Steam build must not silently claim a gift on a device account
     // when Steam is temporarily unavailable. Let the connection screen retry.
-    throw new Error('Steam authentication is unavailable. Please restart Steam and retry.');
+    // Electron IPC drops custom Error properties; return a safe, structured reason.
+    return {error: 'steam'};
   }
 }
 

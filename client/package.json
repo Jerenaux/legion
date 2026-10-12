@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "0.33.4",
+  "version": "0.33.5",
   "description": "Emberhall desktop game client",
   "author": "Dynetis Games",
   "private": true,
@@ -93,7 +93,12 @@
       {
         "from": "node_modules/steamworks.js",
         "to": "steamworks.js",
-        "filter": ["index.js", "package.json", "LICENSE", "dist/**/*"]
+        "filter": [
+          "index.js",
+          "package.json",
+          "LICENSE",
+          "dist/**/*"
+        ]
       }
     ],
     "npmRebuild": false,
@@ -115,11 +120,15 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "public/icon.ico",
