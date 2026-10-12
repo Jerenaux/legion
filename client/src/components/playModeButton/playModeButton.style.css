@@ -18,7 +18,7 @@
     box-shadow: var(--panel-shadow);
     color: var(--text-strong);
     font: inherit;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     transition: transform 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out;
 }
 

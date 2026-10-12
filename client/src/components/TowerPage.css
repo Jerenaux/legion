@@ -13,7 +13,7 @@
 .tower-page h3 {font-size: 22px;}
 .tower-page h4 {font-size: 30px;}
 .tower-page p {font: inherit; margin: 8px 0; max-width: 65ch;}
-.tower-page button, .tower-page select {font: inherit; color: inherit; cursor: pointer;}
+.tower-page button, .tower-page select {font: inherit; color: inherit; cursor: var(--game-pointer);}
 .tower-page button {border: 1px solid var(--tower-line); background: var(--tower-panel); border-radius: 4px; padding: 10px 16px; transition: border-color 160ms ease-out, background-color 160ms ease-out, transform 160ms ease-out;}
 .tower-page button:hover:not(:disabled) {border-color: var(--tower-gold); background-color: oklch(30% .035 250);}
 .tower-page button:active:not(:disabled) {transform: translateY(1px);}
@@ -62,7 +62,7 @@
 .tower-difficulty option {background: oklch(23% .025 250); color: oklch(94% .02 85); font: 16px var(--locale-font, Tahoma), sans-serif;}
 .tower-difficulty-control>span {position: absolute; right: 14px; top: 6px; color: var(--tower-gold); font: 24px var(--locale-font, Tahoma), sans-serif; pointer-events: none;}
 .tower-kits {display: flex; gap: 12px; margin-bottom: 18px;}
-.tower-kit {position: relative; flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 18px; border: 1px solid var(--tower-line); border-radius: 4px; cursor: pointer; background: oklch(22% .025 245 / .95); box-shadow: inset 0 1px oklch(80% .02 245 / .1), 0 3px 6px oklch(10% .02 250 / .25);}
+.tower-kit {position: relative; flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 18px; border: 1px solid var(--tower-line); border-radius: 4px; cursor: var(--game-pointer); background: oklch(22% .025 245 / .95); box-shadow: inset 0 1px oklch(80% .02 245 / .1), 0 3px 6px oklch(10% .02 250 / .25);}
 .tower-kit>input {position: absolute; opacity: 0; width: 1px; height: 1px;}
 .tower-kit.selected {border-color: var(--tower-gold); background: linear-gradient(115deg, oklch(36% .05 65 / .95), oklch(23% .025 245)); box-shadow: inset 0 0 0 2px oklch(60% .09 70 / .2), 0 3px 6px oklch(10% .02 250 / .3);}
 .tower-kit.locked {color: var(--tower-muted); cursor: not-allowed;}
@@ -114,7 +114,7 @@
 .tower-run-track i {z-index: 1; width: 8px; height: 8px; border: 1px solid oklch(78% .08 80); background: oklch(35% .045 80); transform: rotate(45deg);}
 .tower-run-track img {z-index: 1; width: 32px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px oklch(8% .025 250));}
 .tower-rules {color: var(--tower-muted);}
-.tower-rules summary {cursor: pointer; padding: 10px 0; font-size: 16px; color: oklch(85% .03 245);}
+.tower-rules summary {cursor: var(--game-pointer); padding: 10px 0; font-size: 16px; color: oklch(85% .03 245);}
 .tower-rules[open] {position: absolute; bottom: 100%; left: 0; max-width: 680px; padding: 16px 22px; border: 1px solid var(--tower-line); background: oklch(20% .025 250); box-shadow: 0 8px 32px oklch(7% .02 250 / .65); max-height: 60vh; overflow-y: auto;}
 .tower-rules p {font-size: 16px; margin-bottom: 16px;}
 .tower-main.active-run {display: grid; grid-template-columns: minmax(0,1fr) 274px; gap: 20px 24px; align-items: start;}

@@ -9,7 +9,7 @@ import { Link, } from 'preact-router';
 import Ghost from './ghost/Ghost';
 
 import { apiFetch, } from '../services/apiService';
-import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS, DISCORD_LINK, X_LINK } from '@legion/shared/config';
+import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS } from '@legion/shared/config';
 import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';
 import { playSoundEffect, silentErrorToast } from './utils';
@@ -18,8 +18,7 @@ import GuidePage from './GuidePage';
 
 import goldIcon from '@assets/gold_icon.png';
 import exitIcon from '@assets/queue/exit_icon.png';
-import discordIcon from '@assets/queue/discord_btn.png';
-import xIcon from '@assets/queue/x_btn.png';
+import PartyHall from './playHall/PartyHall';
 import blueTriangle from '@assets/queue/blue_triangle.png';
 import matchFound from "@assets/sfx/match_found.wav";
 import { PlayModeLabels, PlayMode } from '@legion/shared/enums';
@@ -461,6 +460,9 @@ class QueuePage extends Component<QPageProps, QpageState> {
                     ) : this.renderPendingState(isLobbyMode)}
                 </div>
 
+                {/* The party waits by the hearth while the match is found. */}
+                {!isLobbyMode && <PartyHall chest={false} />}
+
                 <button type="button" className="queue-guide-card" onClick={() => this.showGuide(true)}>
                     <svg className="queue-guide-icon" viewBox="0 0 80 80" fill="none" aria-hidden="true">
                         <path d="M8 20 36 25 40 31 44 25 72 20V63L44 68 40 72 36 68 8 63Z" fill="oklch(0.27 0.04 235)" stroke="oklch(0.67 0.09 78)" stroke-width="2" stroke-linejoin="round" />
@@ -505,18 +507,6 @@ class QueuePage extends Component<QPageProps, QpageState> {
 
                 <QueueTips />
 
-                <div className="queue-btns">
-                    <Link href={X_LINK} target="_blank">
-                        <div className="btn-x">
-                            <img src={xIcon} alt={t("X")} />
-                        </div>
-                    </Link>
-                    <Link href={DISCORD_LINK} target="_blank">
-                        <div className="btn-discord">
-                            <img src={discordIcon} alt={t("Discord")} />
-                        </div>
-                    </Link>
-                </div>
             </div>
         );
     }

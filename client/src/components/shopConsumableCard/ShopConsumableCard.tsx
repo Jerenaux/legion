@@ -1,14 +1,10 @@
 import {t, formatNumber} from '../../i18n/core';
-import ShopPrice from '../shopContent/ShopPrice';
-
-import { h } from 'preact';
-import './ShopConsumableCard.style.css';
-import { Component } from 'preact';
-import { InventoryType, Target } from "@legion/shared/enums";
+import { h, Component } from 'preact';
+import { InventoryType, StatLabels, Target } from "@legion/shared/enums";
 import { BaseItem } from '@legion/shared/BaseItem';
-import { getSpeedClass, inflictedStatuses, mapFrameToCoordinates, statusIcons, statusSummary } from '../utils';
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import { Effect } from '@legion/shared/interfaces';
+import { getSpeedClass, inflictedStatuses, statusIcons, statusSummary } from '../utils';
+import ShopItemCard from '../shopContent/ShopItemCard';
 
 import consumablesSpritesheet from '@assets/consumables.png';
 
@@ -21,8 +17,6 @@ import satkIcon from '@assets/stats_icons/satk_icon.png';
 import sdefIcon from '@assets/stats_icons/sdef_icon.png';
 import speedIcon from '@assets/stats_icons/speed_icon.png';
 
-// Import other icons
-import itemCountIcon from '@assets/shop/item_count_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
 
@@ -52,103 +46,31 @@ interface ShopCardProps {
   isHighlighted?: boolean;
 }
 
+const effectValue = (effect: Effect) => effect.value === -1 ? '∞' : formatNumber(effect.value, {signDisplay: 'always'});
+
 class ShopConsumableCard extends Component<ShopCardProps> {
   render() {
-    const getRarityValue = (effort) => {
-      if(effort < 10) {
-        return {val: t("Common"), clr: "cyan"};
-      } else if(effort < 25) {
-        return {val: t("Rare"), clr: "tomato"};
-      } else if(effort < 50) {
-        return {val: t("Epic"), clr: "red"};
-      } else {
-        return {val: t("Legendary"), clr: "orange"};
-      }
-    }
-
     const { data } = this.props;
-
-    const modalData: modalData = {
-      id: data.id,
-      name: data.name,
-      url: consumablesSpritesheet,
-      frame: data.frame,
-      price: data.price
-    }
-
-    const titleStyle = {
-      borderRadius: '4px',
-    }
-
-    const coordinates = mapFrameToCoordinates(data.frame);
-
-    const getEffectValue = (effect: Effect) => {
-      if(effect.value === -1) return '∞';
-      return formatNumber(effect.value, {signDisplay: 'always'});
-    }
-
+    const modalData: modalData = {id: data.id, name: data.name, url: consumablesSpritesheet, frame: data.frame, price: data.price};
     return (
-      <button type="button" data-game-control
-        className={`shop-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`}
-        key={this.props.key}
+      <ShopItemCard
+        name={data.name}
+        description={data.description}
+        sheet={consumablesSpritesheet}
+        frame={data.frame}
+        effort={data.effort}
+        owned={this.props.getItemAmount(data.id, InventoryType.CONSUMABLES)}
+        price={data.price}
+        isHighlighted={this.props.isHighlighted}
+        dataItem={`consumable-${data.id}`}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
-        data-shop-item={`consumable-${data.id}`}
-      >
-        <div className="shop-card-title" style={titleStyle}>
-          <span>{t(data.name)}</span>
-          <div className="consumable-card-info-box">
-            <img src={itemCountIcon} alt={t("count icon")} />
-            <span>{formatNumber(this.props.getItemAmount(data.id, InventoryType.CONSUMABLES))}</span>
-          </div>
-        </div>
-        <div className="consumable-card-content">
-          <div className="shop-portrait" style={{
-              backgroundImage: `url(${consumablesSpritesheet})`,
-              backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
-          }} />
-        </div>
-        <p data-tooltip-id={`consumable-desc-tooltip-${data.id}`} className="consumable-card-description">{t(data.description)}</p>
-        <div className="consumable-card-effect-container">
-          {inflictedStatuses(data).map(status => (
-            <div key={status.effect} className="consumable-card-effect">
-              <img src={statusIcons[status.effect]} alt={t(status.effect)} />
-              <span>{statusSummary(status)}</span>
-            </div>
-          ))}
-          {data.effects.map((effect, index) => (
-            <div key={index} className="consumable-card-effect">
-              <img
-                src={StatIcons[effect.stat]}
-                style={effect.stat === 1 ? {transform: 'scaleX(0.8)'} : {}}
-                alt={""}
-              />
-              <span>{getEffectValue(effect)}</span>
-            </div>
-          ))}
-          <div className="consumable-card-effect">
-            <img src={cdIcon} style={{transform: 'scaleX(0.8)'}} alt={t("cooldown")} />
-            <span>{getSpeedClass(data.speedClass)}</span>
-          </div>
-          <div className="consumable-card-effect">
-            <img src={targetIcon} alt={t("target")} />
-            <span>{t(Target[data.target])}</span>
-          </div>
-        </div>
-        <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: "var(--locale-font, 'Kim'), system-ui, sans-serif"}}>
-            {getRarityValue(data.effort).val}
-          </span>
-        </div>
-        <ShopPrice price={data.price} className="shop-card-price" />
-
-        <ReactTooltip
-          id={`consumable-desc-tooltip-${data.id}`}
-          place="top-start"
-          variant="light"
-          content={t(data.description)}
-          style={{maxWidth: '120px'}}
-        />
-      </button>
+        stats={[
+          ...inflictedStatuses(data).map(status => ({icon: statusIcons[status.effect], label: t(status.effect), value: statusSummary(status), wide: true})),
+          ...data.effects.map(effect => ({icon: StatIcons[effect.stat], label: t(StatLabels[effect.stat]), value: effectValue(effect)})),
+          {icon: cdIcon, label: t("cooldown"), value: getSpeedClass(data.speedClass)},
+          {icon: targetIcon, label: t("target"), value: t(Target[data.target])},
+        ]}
+      />
     );
   }
 }

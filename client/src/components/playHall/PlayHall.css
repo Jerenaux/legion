@@ -1,0 +1,452 @@
+/* The Play screen is the hall itself: the party and the day's chests at the hearth, the battle
+   choices in a row underneath. It fills the window instead of stacking web-page sections. */
+.play-content.play-hall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 4px;
+  min-height: 100%;
+  padding: 0 clamp(16px, 3vw, 40px) 8px;
+  box-sizing: border-box;
+}
+
+.play-hall .party-hall { flex: none; width: 100%; }
+.play-hall .barContainer { flex: none; width: min(1180px, 100%); }
+
+/* ---- Party at the hearth ------------------------------------------------------------- */
+
+.party-hall {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding-top: 24px;
+  isolation: isolate;
+}
+
+/* Stone floor lit by the fire. */
+.party-hall::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 300px;
+  transform: translateY(-30%);
+  z-index: -2;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 55% 60% at 50% 58%, oklch(48% .12 50 / .38), transparent 70%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, oklch(26% .03 60 / .75), oklch(16% .02 250 / 0) 72%);
+}
+
+.party-hall-hearth {
+  position: relative;
+  flex: none;
+  align-self: stretch;
+  width: 150px;
+  z-index: -1;
+}
+
+/* Firelight halo behind the flames. */
+.party-hall-hearth::before {
+  content: '';
+  position: absolute;
+  left: calc(50% - 190px);
+  bottom: 0;
+  width: 380px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 60%, oklch(72% .17 55 / .42), oklch(60% .17 40 / .12) 45%, transparent 70%);
+  animation: hearth-breathe 3.2s ease-in-out infinite;
+}
+
+/* Hearthstones under the fire. */
+.party-hall-hearth::after {
+  content: '';
+  position: absolute;
+  left: calc(50% - 58px);
+  bottom: 30px;
+  width: 116px;
+  height: 22px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 30% 50% at 50% 35%, oklch(72% .16 55 / .8), transparent 70%),
+    repeating-linear-gradient(90deg, oklch(30% .02 60) 0 18px, oklch(22% .02 60) 18px 22px);
+  box-shadow: 0 0 0 2px oklch(14% .02 60 / .8);
+}
+
+/* The game's own fire animation: 8 × 8 frames of 256 px, shown at 1.4×. */
+.party-hall-fire {
+  position: absolute;
+  left: calc(50% - 179px);
+  bottom: -52px;
+  z-index: 1;
+  width: 358px;
+  height: 358px;
+  background: url('@assets/vfx/terrain_fire_1.png') 0 0 / 2867px 2867px no-repeat;
+  animation: hearth-fire-x .42s steps(8) infinite, hearth-fire-y 3.36s steps(8) infinite;
+  image-rendering: pixelated;
+}
+
+@keyframes hearth-fire-x { to { background-position-x: -2867px; } }
+@keyframes hearth-fire-y { to { background-position-y: -2867px; } }
+@keyframes hearth-breathe { 50% { opacity: .78; transform: scale(.96); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .party-hall-fire { animation: none; }
+  .party-hall-hearth::before { animation: none; }
+}
+
+.party-hall-members > li:not(.party-hall-hearth) {
+  transform: translateY(calc((var(--ring, 1) - 1) * 20px));
+}
+
+.party-hall-members {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px clamp(6px, 1.4vw, 22px);
+}
+
+.party-member {
+  position: relative;
+  width: 152px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px 8px;
+  border-radius: 10px;
+  color: var(--text-strong);
+  text-decoration: none;
+  cursor: var(--game-pointer);
+  transition: transform 140ms ease-out, background-color 140ms ease-out;
+}
+
+.party-member:hover, .party-member:focus-visible {
+  transform: translateY(-4px);
+  background: radial-gradient(ellipse at 50% 40%, oklch(60% .14 55 / .2), transparent 70%);
+}
+
+.party-member:active { transform: translateY(-1px); }
+
+/* Sprite at game scale, standing on its own shadow. */
+.party-member-sprite {
+  display: block;
+  width: 80px;
+  height: 96px;
+  background-repeat: no-repeat;
+  background-position: -40px -184px;
+  image-rendering: pixelated;
+  /* The combat idle loop (frames 9-10-11 and back), offset per place so the party breathes unevenly. */
+  animation: party-idle .9s steps(1) infinite;
+  animation-delay: calc(var(--ring, 1) * -.23s);
+  filter: drop-shadow(0 6px 4px oklch(5% .02 255 / .55));
+}
+
+@keyframes party-idle {
+  0% { background-position: -40px -184px; }
+  25% { background-position: -184px -184px; }
+  50% { background-position: -328px -184px; }
+  75% { background-position: -184px -184px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .party-member-sprite { animation: none; }
+}
+
+.party-member-sprite--empty {
+  /* A dark figure outlined in white: an empty place in the party. */
+  filter: brightness(0) drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
+  opacity: .55;
+  animation: none;
+}
+
+.party-member-sp {
+  position: absolute;
+  top: 2px;
+  right: 18px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: linear-gradient(var(--ember), var(--ember-deep));
+  color: oklch(18% .03 50);
+  font: .75rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  box-shadow: 0 0 10px var(--ember-glow);
+}
+
+/* Nameplate: crest and name, then class and level. */
+.party-member-plate {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 6px 5px;
+  box-sizing: border-box;
+  border: 1px solid oklch(52% .08 65 / .55);
+  border-radius: 6px;
+  background: linear-gradient(oklch(22% .03 55 / .92), oklch(14% .025 250 / .94));
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .06), 0 6px 14px oklch(5% .02 255 / .5);
+}
+
+.party-member-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+}
+
+.party-member-title .class-crest { width: 18px; height: 20px; flex: none; }
+
+.party-member-class {
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  font: .9375rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-transform: uppercase;
+  color: var(--class-tint, var(--text-strong));
+}
+
+.party-member-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-strong);
+}
+
+.party-member[data-class="WARRIOR"] { --class-tint: oklch(82% .13 82); }
+.party-member[data-class="WHITE_MAGE"] { --class-tint: oklch(84% .13 150); }
+.party-member[data-class="BLACK_MAGE"] { --class-tint: oklch(76% .15 305); }
+
+.party-member--recruit .party-member-name {
+  font: .875rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+}
+
+.party-member-meta {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  color: var(--text-muted);
+  font-size: .75rem;
+}
+
+.party-member-level strong { color: var(--gold); }
+
+.party-member[data-class="WARRIOR"] .party-member-plate { border-color: oklch(70% .12 80 / .65); }
+.party-member[data-class="WHITE_MAGE"] .party-member-plate { border-color: oklch(66% .12 150 / .6); }
+.party-member[data-class="BLACK_MAGE"] .party-member-plate { border-color: oklch(60% .14 300 / .6); }
+
+.party-member--recruit .party-member-plate {
+  border-style: dashed;
+  background: oklch(14% .02 250 / .7);
+}
+
+.party-member--recruit .party-member-name { white-space: normal; text-align: center; font-size: .875rem; }
+
+.party-member--recruit.is-locked { cursor: var(--game-arrow); }
+.party-member--recruit.is-locked:hover { transform: none; background: none; }
+
+.party-recruit-progress {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 3px 5px;
+  width: 100%;
+  color: var(--text-muted);
+  font-size: .6875rem;
+  text-align: left;
+}
+
+.party-recruit-progress img { width: 12px; height: 12px; }
+.party-recruit-progress strong { color: var(--gold); }
+.party-recruit-progress progress { grid-column: 1 / -1; width: 100%; height: 5px; accent-color: var(--ember); }
+
+/* ---- Battle choices: the game's vertical mode cards, emblems astride the top edge ---------- */
+
+.play-hall .barContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.play-hall .playModesRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 48px 18px;
+  padding: 40px 0 0;
+}
+
+.play-hall .buttonContainer { width: 12.5rem; }
+.play-hall .buttonContainer img.mode-icon { max-width: 70px; height: 64px; margin-top: -36px; }
+.play-hall .buttonContainer.tower-mode img.mode-icon { height: 70px; margin-top: -40px; }
+.play-hall .buttonContainer .label { font-size: 1.5rem; }
+.play-hall .buttonContainer:hover:not(:disabled), .play-hall .buttonContainer:focus-visible {
+  border-color: oklch(70% .12 62 / .9);
+  box-shadow: 0 10px 26px oklch(5% .02 255 / .5), 0 0 22px oklch(65% .16 50 / .25);
+}
+
+/* ---- The day's chests, set on the hall floor before the fire ---------------------------- */
+
+.dailyLootContainer--scene { margin: 0; }
+.dailyLootContainer--scene .dailyLoots { gap: clamp(18px, 4vw, 56px); }
+
+.dailyLootContainer--scene .lootBoxContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: auto;
+  min-width: 156px;
+  height: auto;
+  padding: 4px 6px;
+  background: none !important;
+  border: 0;
+  border-radius: 10px;
+  cursor: var(--game-pointer);
+  transition: transform 140ms ease-out;
+}
+
+.dailyLootContainer--scene .lootBoxContainer:hover,
+.dailyLootContainer--scene .lootBoxContainer:focus-visible { transform: translateY(-3px); }
+
+.dailyLootContainer--scene .loot-box-title {
+  order: 1;
+  width: auto;
+  padding: 0;
+  background: none;
+  font: .75rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: oklch(80% .06 70);
+  text-shadow: 0 1px 2px oklch(5% .02 255);
+}
+
+.dailyLootContainer--scene .loot-box-image {
+  width: 74px;
+  height: 58px;
+  filter: drop-shadow(0 5px 3px oklch(5% .02 255 / .6));
+}
+
+.dailyLootContainer--scene .loot-box-footer {
+  order: 2;
+  width: auto;
+  margin: 0;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: oklch(13% .02 250 / .82) !important;
+  border: 1px solid oklch(50% .06 60 / .5);
+  font-size: .6875rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* A chest that can be opened now glows like the hearth. */
+.dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-image {
+  filter: drop-shadow(0 0 12px var(--ember-glow)) drop-shadow(0 5px 3px oklch(5% .02 255 / .6));
+  transform-origin: 50% 90%;
+  animation: loot-ready 1.8s ease-in-out infinite;
+}
+/* A ready chest is opened with a proper button: ember fill, a glow that breathes. */
+.dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-footer {
+  padding: 5px 18px;
+  border: 1px solid oklch(80% .14 65);
+  background: linear-gradient(oklch(66% .17 50), oklch(50% .16 38)) !important;
+  box-shadow: 0 4px 12px oklch(4% .02 255 / .5), inset 0 1px 0 oklch(100% 0 0 / .3);
+  animation: loot-button-glow 1.8s ease-in-out infinite;
+}
+.dailyLootContainer--scene .loot-box-footer .loot-box-open {
+  font: 1rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: oklch(98% .02 80);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-shadow: 0 2px 0 oklch(30% .1 35);
+}
+.dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open):hover .loot-box-footer { filter: brightness(1.12); }
+
+/* Rattles hard twice, hops, then rests: impossible to miss, not tiring to look at. */
+@keyframes loot-ready {
+  0%, 46%, 100% { transform: none; }
+  4% { transform: rotate(-10deg) scale(1.06); }
+  8% { transform: rotate(9deg) scale(1.06); }
+  12% { transform: rotate(-8deg) scale(1.05); }
+  16% { transform: rotate(7deg) scale(1.04); }
+  20% { transform: rotate(-4deg); }
+  24% { transform: rotate(0) translateY(-8px) scale(1.04, .97); }
+  30% { transform: translateY(0) scale(1.06, .94); }
+  36% { transform: scale(.98, 1.03); }
+}
+@keyframes loot-button-glow {
+  0%, 100% { box-shadow: 0 4px 12px oklch(4% .02 255 / .5), inset 0 1px 0 oklch(100% 0 0 / .3), 0 0 0 0 var(--ember-glow); }
+  50% { box-shadow: 0 4px 12px oklch(4% .02 255 / .5), inset 0 1px 0 oklch(100% 0 0 / .3), 0 0 18px 4px var(--ember-glow); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-image,
+  .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-footer { animation: none; }
+}
+
+/* Characters left of the fire turn to face it. */
+.party-member.faces-right .party-member-sprite { transform: scaleX(-1); }
+
+/* ---- Small windows -------------------------------------------------------------------- */
+
+@media (max-height: 640px), (max-width: 900px) {
+  .party-hall { padding-top: 12px; }
+  .party-hall-members { gap: 2px 6px; }
+  .party-member { width: 132px; }
+  .party-member-class { font-size: .75rem; }
+  .dailyLootContainer--scene .loot-box-title { display: none; }
+  .party-member-meta { font-size: .6875rem; }
+  .dailyLootContainer--scene .loot-box-image { width: 60px; height: 47px; }
+  .play-hall .playModesRow { gap: 44px 10px; padding-top: 34px; }
+  .play-hall .buttonContainer { width: 11rem; }
+}
+
+/* Short windows: the mode cards drop their padding so the whole hall still fits. */
+@media (max-height: 640px) {
+  .play-hall .buttonContainer { padding-bottom: 8px; }
+  .play-hall .buttonContainer .label { font-size: 1.25rem; }
+  .play-hall .buttonContainer .info-container { padding: 2px 8px; }
+  .play-hall .buttonContainer .info-row { padding: 2px 0; }
+}
+
+/* ---- Team page: the same fire, smaller, with the open character stepping into its light ---- */
+
+.party-hall--team { padding-top: 8px; margin-bottom: 26px; }
+.party-hall--team .party-hall-members > li:not(.party-hall-hearth) { transform: translateY(calc((var(--ring, 1) - 1) * 12px)); }
+.party-hall--team .party-hall-hearth { width: 110px; }
+.party-hall--team .party-hall-fire { scale: .72; transform-origin: 50% 100%; bottom: -34px; }
+.party-hall--team .party-hall-hearth::before { scale: .75; }
+.party-hall--team::before { height: 220px; }
+.party-hall--team .party-member { width: 140px; }
+.party-hall--team .party-member-sprite { scale: .85; transform-origin: 50% 100%; margin-top: -10px; }
+.party-hall--team .party-member.faces-right .party-member-sprite { transform: scaleX(-1); }
+.party-hall--team .party-member:not([aria-pressed="true"]) { opacity: .72; }
+.party-hall--team .party-member:not([aria-pressed="true"]):hover { opacity: 1; }
+.party-hall--team .party-member[aria-pressed="true"] .party-member-plate {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 1px var(--ember), 0 0 16px var(--ember-glow), 0 6px 14px oklch(5% .02 255 / .5);
+}
+/* A pool of firelight at the chosen one's feet. */
+.party-hall--team .party-member[aria-pressed="true"]::before {
+  content: "";
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  width: 96px;
+  height: 22px;
+  translate: -50% 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, oklch(75% .17 60 / .55), transparent);
+}

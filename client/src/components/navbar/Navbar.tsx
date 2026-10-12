@@ -13,12 +13,12 @@ import { PlayerContextData } from '@legion/shared/interfaces';
 import { successToast, errorToast, avatarContext, lockIcon } from '../utils';
 import Sigil from '../sigil/Sigil';
 import {reportProblem} from '../../telemetry';
-import { ENABLE_PLAYER_LEVEL } from '@legion/shared/config';
+import { ENABLE_PLAYER_LEVEL, DISCORD_LINK, X_LINK } from '@legion/shared/config';
 import { SettingsModal } from '../settingsModal/SettingsModal';
 import { quitGame } from '../systemMenu/SystemMenu';
 import { isElectron } from '../../utils/electronUtils';
 import { PlayerContext } from '../../contexts/PlayerContext';
-import { LockedFeatures } from "@legion/shared/enums";
+import { LockedFeatures, LeaguesNames } from "@legion/shared/enums";
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { tooltipStyle } from '../itemTooltip';
 
@@ -39,10 +39,11 @@ import shopActiveIconOriginal from '@assets/shop_btn_active.png';
 import shopActiveIconBlank from '@assets/localization/shop_btn_active.png';
 import rankActiveIconOriginal from '@assets/rank-btn-active.png';
 import rankActiveIconBlank from '@assets/localization/rank-btn-active.png';
-import expandBtn from '@assets/expand_btn.png';
 import helpIcon from '@assets/svg/help.svg';
 import copyIcon from '@assets/svg/copy.svg';
 import cogIcon from '@assets/svg/cog.svg';
+import discordIcon from '@assets/svg/discord.svg';
+import xIcon from '@assets/svg/x.svg';
 
 const {version} = require('../../../package.json');
 
@@ -88,7 +89,26 @@ class Navbar extends Component<Props, State> {
 
     componentDidMount() {
         this.loadAvatar();
+        document.addEventListener('pointerdown', this.closeMenuOutside);
+        document.addEventListener('keydown', this.closeMenuOnEscape);
     }
+
+    componentWillUnmount() {
+        document.removeEventListener('pointerdown', this.closeMenuOutside);
+        document.removeEventListener('keydown', this.closeMenuOnEscape);
+    }
+
+    // The menu opens on click like a game menu, and closes on any click elsewhere or Escape.
+    closeMenuOutside = (event: PointerEvent) => {
+        if (this.state.openDropdown && !(event.target as Element)?.closest?.('.expand_btn')) this.setState({ openDropdown: false });
+    };
+
+    closeMenuOnEscape = (event: KeyboardEvent) => {
+        if (this.state.openDropdown && event.key === 'Escape') {
+            event.stopPropagation();
+            this.setState({ openDropdown: false });
+        }
+    };
 
     componentDidUpdate(prevProps: Readonly<Props>) {
         if (prevProps.playerData?.avatar !== this.props.playerData?.avatar) {
@@ -271,21 +291,21 @@ class Navbar extends Component<Props, State> {
                                     </div>
 
                                     <div className="flexContainer" id="goldEloArea">
-                                        <UserInfoBar icon='gold' label={`${this.state.isLoading ? t("Loading...") : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
+                                        <UserInfoBar icon='gold' hint={t("navGoldHint")} label={`${this.state.isLoading ? t("Loading...") : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
                                         {playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
                                             <UserInfoBar
                                                 icon='league'
                                                 label={this.state.isLoading ? t("Loading...") : (this.props.playerData?.rank > 0 ? `#${this.props.playerData.rank}` : "–")}
                                                 isLeague={true}
+                                                hint={this.props.playerData?.league === undefined ? undefined
+                                                    : t(this.props.playerData.rank > 0 ? "navLeagueRank" : "navLeagueUnranked", {league: t(LeaguesNames[this.props.playerData.league]), rank: this.formatNumber(this.props.playerData.rank)})}
                                                 bigLabel={!this.state.isLoading}
                                                 league={this.props.playerData?.league}
                                             />
                                         )}
-                                        {/* biome-ignore lint/a11y/noStaticElementInteractions: Hover is a pointer shortcut; the nested button provides keyboard access. */}
-                                        <div className="expand_btn" onMouseEnter={() => this.setState({ openDropdown: true })}>
-                                            <button type="button" className="expand_btn_trigger" aria-label={t("More options")} aria-expanded={this.state.openDropdown} style={{backgroundImage: `url(${expandBtn})`}} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })} />
-                                            {/* biome-ignore lint/a11y/noStaticElementInteractions: Pointer leave only dismisses a menu already controlled by a keyboard-accessible button. */}
-                                            <div className="dropdown-content" style={dropdownContentStyle} onMouseLeave={() => this.setState({ openDropdown: false })}>
+                                        <div className="expand_btn">
+                                            <button type="button" className="expand_btn_trigger" aria-label={t("More options")} aria-expanded={this.state.openDropdown} onClick={() => this.setState({ openDropdown: !this.state.openDropdown })}><img src={cogIcon} alt="" /></button>
+                                            <div className="dropdown-content" style={dropdownContentStyle}>
                                                 <Link href="/guide" onClick={() => this.setState({ openDropdown: false })}><Trans i18n={i18n} i18nKey={"<0/> Guide"} components={[<img src={helpIcon} alt="" />]} /></Link>
                                                 <button type="button" data-report-problem onClick={() => {
                                                     this.setState({openDropdown: false});
@@ -293,6 +313,8 @@ class Navbar extends Component<Props, State> {
                                                 }}><Trans i18n={i18n} i18nKey={"<0/> Report a problem"} components={[<img src={helpIcon} alt="" />]} /></button>
                                                 <button type="button" onClick={this.copyIDtoClipboard}><Trans i18n={i18n} i18nKey={"<0/> Player ID"} components={[<img src={copyIcon} alt="" />]} /></button>
                                                 <button type="button" onClick={this.toggleSettingsModal}><Trans i18n={i18n} i18nKey={"<0/> Settings"} components={[<img src={cogIcon} alt="" />]} /></button>
+                                                <a href={DISCORD_LINK} target="_blank" rel="noreferrer" onClick={() => this.setState({ openDropdown: false })}><img src={discordIcon} alt="" /> {t("Discord")}</a>
+                                                <a href={X_LINK} target="_blank" rel="noreferrer" onClick={() => this.setState({ openDropdown: false })}><img src={xIcon} alt="" /> {t("X")}</a>
                                                 {isElectron() && <button type="button" className="dropdown-quit" onClick={quitGame}><span>{t("Quit game")}</span></button>}
                                                 <small className="dropdown-version">{t("Version {{value0}}", {value0: version})}</small>
                                             </div>

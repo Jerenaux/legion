@@ -1,0 +1,281 @@
+/* Team screen: class colours shared by the sheet, and the party at the fire above it. */
+.team-page {
+    --team-surface: oklch(0.27 0.025 250);
+    --team-raised: oklch(0.32 0.03 230);
+    --team-edge: oklch(0.44 0.035 230);
+    --team-muted: oklch(0.75 0.025 230);
+    --team-selection: oklch(0.85 0.12 205);
+}
+
+.team-page [data-class] {
+    --class-color: oklch(0.92 0.01 230);
+    --class-emblem: none;
+}
+
+.team-page [data-class="WARRIOR"] {
+    --class-emblem: '';
+    --class-color: oklch(0.85 0.12 78);
+    --class-frame: url('@assets/HUD/class_icon_frame_w.png');
+    --class-icon: url('@assets/shop/warrior_icon.png');
+}
+
+.team-page [data-class="WHITE_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.94 0.025 155);
+    --class-frame: url('@assets/HUD/class_icon_frame_wm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+.team-page [data-class="BLACK_MAGE"] {
+    --class-emblem: '';
+    --class-color: oklch(0.83 0.10 300);
+    --class-frame: url('@assets/HUD/class_icon_frame_bm.png');
+    --class-icon: url('@assets/shop/mage_icon.png');
+}
+
+.team-class-label {
+    position: relative;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--class-color);
+    font-family: var(--locale-font, Kim), system-ui, sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.25;
+    text-transform: uppercase;
+    /* Wrap between words only; FitText shrinks the font when one word is too long. */
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: manual;
+}
+
+.team-class-label::before {
+    content: var(--class-emblem);
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    background: var(--class-frame) center / contain no-repeat;
+}
+
+.team-class-label::after {
+    content: var(--class-emblem);
+    position: absolute;
+    left: 8px;
+    top: calc(50% - 8px);
+    width: 14px;
+    height: 16px;
+    background: oklch(0.2 0.02 250);
+    mask: var(--class-icon) center / contain no-repeat;
+}
+
+.team-page .character-inventory-container { width: min(1180px, 100%); max-width: none; margin-inline: auto; box-sizing: border-box; }
+
+/* ---- Team screen: the party at the fire on top, then two framed panels that fill the window -------- */
+
+.team-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    overflow: visible;
+    padding: 0 clamp(16px, 3vw, 40px);
+}
+.team-page > .party-hall { flex: none; }
+
+.team-page .character-inventory-container {
+    /* The sheet keeps its natural height; the bag matches it and scrolls. */
+    flex: none;
+    align-items: start;
+    display: grid;
+    grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+    gap: 18px;
+    padding: 6px 0 18px;
+}
+
+/* Panels are framed like the play mode cards: a dark panel, an accent bar on top and a soft glow. */
+.team-page .team-content-card-container,
+.team-page .inventoryFullContainer {
+    --panel-accent: var(--ember);
+    position: relative;
+    isolation: isolate;
+    min-height: 0;
+    box-sizing: border-box;
+    border: 1px solid color-mix(in oklch, var(--panel-accent) 45%, var(--ink-edge-soft));
+    border-radius: 8px;
+    background:
+        radial-gradient(ellipse 80% 30% at 50% 0%, color-mix(in oklch, var(--panel-accent) 16%, transparent), transparent 70%),
+        var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+}
+.team-page .team-content-card-container { --panel-accent: var(--class-color); }
+.team-page .team-content-card-container::before,
+.team-page .inventoryFullContainer::before {
+    content: '';
+    position: absolute;
+    inset: 0 18px auto;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--panel-accent);
+    box-shadow: 0 0 12px var(--panel-accent);
+    opacity: .85;
+}
+
+/* Character sheet: identity, the character on a lit stand with its stats, kit, and gear down the side. */
+.team-page .team-content-card-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+}
+.team-page .team-content-container {
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    padding: 16px 18px;
+    gap: 14px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+}
+.team-page .team-info-container {
+    min-height: 0;
+    padding: 12px 12px 12px 46px;
+    border: 1px solid oklch(30% .03 240 / .8);
+    border-radius: 6px;
+    background: oklch(10% .02 250 / .45);
+}
+.team-page .team-level { top: 24px; left: -26px; }
+.team-page .team-exp-slider-container { height: 6px; border-radius: 3px; background: oklch(10% .02 250 / .8); box-shadow: inset 0 1px 2px oklch(0% 0 0 / .6); }
+.team-page .team-curr-exp-slider { border-radius: 3px; background: linear-gradient(90deg, var(--cyan), oklch(90% .08 200)); box-shadow: 0 0 8px oklch(80% .1 200 / .5); }
+
+.team-page .team-character-info-container { padding: 6px 0; gap: 28px; }
+.team-page .team-character-container {
+    width: 96px;
+    height: 128px;
+    display: grid;
+    place-items: end center;
+}
+/* A pool of light under the character, in its class colour. */
+.team-page .team-character-container::before {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    width: 120px;
+    height: 30px;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in oklch, var(--class-color) 45%, transparent), transparent);
+}
+.team-page .team-character {
+    position: relative;
+    width: 80px;
+    height: 96px;
+    scale: 1.3;
+    transform-origin: 50% 100%;
+    background-position: -40px -184px;
+    animation: party-idle .9s steps(1) infinite !important;
+    filter: drop-shadow(0 6px 4px oklch(4% .02 255 / .6));
+}
+.team-page .character-info-bar { width: 7.75rem; min-height: 1.75rem; background: oklch(10% .02 250 / .6); box-shadow: inset 0 0 0 1px oklch(100% 0 0 / .05); }
+.team-page .team-items-container { padding-top: 12px; border-top: 1px solid oklch(100% 0 0 / .07); }
+.team-page .team-item-container .team-item-heading { border-bottom-color: oklch(55% .09 62 / .5); color: var(--text-muted); }
+
+/* One slot look for gear, kit and inventory: a sunken well, tinted by rarity when filled. */
+.team-page :is(.sheet-item, .team-items .team-item, .section-items .item) {
+    --rarity: oklch(45% .03 240);
+    box-sizing: border-box;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid color-mix(in oklch, var(--rarity) 45%, oklch(30% .03 240));
+    border-radius: 8px;
+    background-color: oklch(13% .02 250);
+    box-shadow: inset 0 2px 5px oklch(0% 0 0 / .55);
+    transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
+}
+.team-page :is(.sheet-item, .team-items .team-item, .section-items .item):hover {
+    border-color: var(--ember);
+    box-shadow: inset 0 2px 5px oklch(0% 0 0 / .55), 0 0 10px var(--ember-glow);
+}
+.team-page .sheet-item img { width: 30px; height: 30px; object-fit: contain; opacity: .4; }
+.team-page .special-equip { image-rendering: pixelated; }
+
+.team-page .team-equip-container {
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    padding: 16px 12px;
+    background: oklch(8% .015 250 / .35);
+    border-left: 1px solid oklch(100% 0 0 / .07);
+    border-radius: 0 8px 8px 0;
+}
+
+/* Inventory: the bag fills the panel and scrolls inside it. */
+.team-page .inventoryFullContainer { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+/* The bag never sets the row height: it takes the sheet's height and scrolls inside it. */
+@media (min-width: 961px) { .team-page .inventoryFullContainer { contain: size; align-self: stretch; } }
+.team-page .inventoryContainer {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 16px 16px 12px;
+    border: 0;
+}
+.team-page .inventoryCategoryContainer {
+    padding: 6px 8px 6px 12px;
+    border: 1px solid oklch(30% .03 240 / .8);
+    border-radius: 6px;
+    background: oklch(10% .02 250 / .45);
+}
+.team-page .inventoryLabel { font-size: .9375rem; letter-spacing: .06em; color: var(--text-strong); }
+.team-page .categoryCount { background: oklch(8% .015 250 / .7); border-radius: 6px; padding: 4px 8px; }
+.team-page .categoryCount span { color: var(--ember); }
+.team-page .inventoryWrapper { flex: 1; min-height: 0; width: 100%; height: auto; }
+.team-page .inventory-sections { padding: 4px 2px 8px; gap: 16px; height: auto; }
+.team-page .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 6px;
+    border: 0;
+    border-bottom: 1px solid oklch(55% .09 62 / .3);
+    border-radius: 0;
+    background: none;
+    color: var(--text-muted);
+    font-size: .8125rem;
+    letter-spacing: .08em;
+}
+.team-page .section-title::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    rotate: 45deg;
+    background: var(--ember);
+    box-shadow: 0 0 8px var(--ember-glow);
+}
+.team-page .section-items { max-width: none; gap: 8px; }
+
+/* Narrow windows: the panels stack and the page scrolls instead. */
+@media (max-width: 960px) {
+    .team-page .character-inventory-container { flex: none; }
+    .team-page .character-inventory-container { grid-template-columns: minmax(0, 1fr); }
+    .team-page .inventoryFullContainer { min-height: 22rem; }
+}
+
+/* Short windows: the party steps closer and the sheet tightens so most of it fits without scrolling. */
+@media (max-height: 760px) {
+    .team-page .party-hall--team { margin-bottom: 14px; }
+    .team-page .party-hall--team .party-member-sprite { scale: .7; margin-top: -24px; }
+    .team-page .team-content-container { padding: 12px 14px; gap: 10px; }
+    .team-page .team-info-container { padding-block: 8px; }
+    .team-page .team-character-container { height: 108px; }
+    .team-page .team-character { scale: 1.1; }
+    .team-page .team-items-container { padding-top: 8px; }
+    .team-page :is(.sheet-item, .team-items .team-item) { width: 44px; height: 44px; }
+}

@@ -1,95 +1,114 @@
+// The chest reveal shared by the daily loot and the end-of-match rewards: the chest rattles
+// while its content loads, bursts open in a ring of embers, then deals its rewards one by one.
 import {t} from '../../i18n/core';
-
-import { h } from 'preact';
-import { Component } from 'preact';
-import Confetti from 'react-confetti';
+import { h, Component } from 'preact';
+import { createPortal } from 'preact/compat';
 
 import { ChestReward } from "@legion/shared/interfaces";
-import { RewardType, ChestColor } from "@legion/shared/enums";
-import { mapFrameToCoordinates } from '../utils';
+import { RewardType, ChestColor, Rarity } from "@legion/shared/enums";
+import { mapFrameToCoordinates, getRewardBgImage, getRewardObject } from '../utils';
 
 import bronzeChest from '@assets/shop/bronze_chest.png';
 import silverChest from '@assets/shop/silver_chest.png';
 import goldChest from '@assets/shop/gold_chest.png';
-import shineBg from '@assets/game_end/shine_bg.png';
-import { getRewardBgImage, getRewardObject } from '../utils';
+import './OpenedChest.css';
 
 interface OpenedChestProps {
-    width: number;
-    height: number;
+    /** Kept for callers sizing the old overlay; the reveal fills the window. */
+    width?: number;
+    height?: number;
     color: ChestColor;
     content: ChestReward[] | null;
     onClick: () => void;
 }
 
+const CHESTS = {
+  [ChestColor.BRONZE]: {image: bronzeChest, title: () => t("Bronze Chest")},
+  [ChestColor.SILVER]: {image: silverChest, title: () => t("Silver Chest")},
+  [ChestColor.GOLD]: {image: goldChest, title: () => t("Golden Chest")},
+};
+
+const KINDS = {
+  [RewardType.EQUIPMENT]: () => t("Equipment"),
+  [RewardType.SPELL]: () => t("Spell"),
+  [RewardType.CONSUMABLES]: () => t("Consumable"),
+  [RewardType.GOLD]: () => t("Gold"),
+};
+
+const RARITIES = {
+  [Rarity.COMMON]: {key: 'common', label: () => t("Common")},
+  [Rarity.RARE]: {key: 'rare', label: () => t("Rare")},
+  [Rarity.EPIC]: {key: 'epic', label: () => t("Epic")},
+  [Rarity.LEGENDARY]: {key: 'legendary', label: () => t("Legendary")},
+};
+
 class OpenedChest extends Component<OpenedChestProps> {
-  constructor(props) {
-    super(props);
+  button: HTMLButtonElement | null = null;
+
+  componentDidMount() {
+    document.addEventListener('keydown', this.onKey);
   }
 
-  getChestImage(color: ChestColor) {
-    switch (color) {
-        case ChestColor.BRONZE:
-            return bronzeChest;
-        case ChestColor.SILVER:
-            return silverChest;
-        case ChestColor.GOLD:
-            return goldChest;
-    }
+  componentDidUpdate(prev: OpenedChestProps) {
+    if (!prev.content && this.props.content) this.button?.focus({preventScroll: true});
   }
 
-  renderRewards() {
-    if (!this.props.content) {
-      return (
-        <div/>
-      );
-    }
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.onKey);
+  }
 
-    return this.props.content.map((reward: ChestReward, idx: number) => {
-      const rewardObject = getRewardObject(reward.type, reward.id);
-      const coordinates = rewardObject ? mapFrameToCoordinates(rewardObject.frame) : { x: 0, y: 0 };
-      const backgroundImageUrl = getRewardBgImage(reward.type);
-      return (
-        <div key={idx} className="streak_gold_list">
-          <div style={{
-            backgroundImage: `url(${backgroundImageUrl})`,
-            backgroundPosition: reward.type === RewardType.GOLD ? '' : `-${coordinates.x}px -${coordinates.y}px`,
-            backgroundSize: reward.type === RewardType.GOLD && '84% 100%',
-          }}></div>
-          <div className="streak_gold_list_amount">
-            {reward.amount}
-          </div>
-        </div>
-      )
-    });
+  onKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && this.props.content) {
+      event.preventDefault();
+      this.props.onClick();
+    }
+  };
+
+  renderReward(reward: ChestReward, index: number) {
+    const gold = reward.type === RewardType.GOLD;
+    const item = gold ? null : getRewardObject(reward.type, reward.id);
+    const {x, y} = item ? mapFrameToCoordinates(item.frame) : {x: 0, y: 0};
+    const rarity = gold ? null : RARITIES[item?.rarity ?? Rarity.COMMON];
+    return (
+      <li key={index} className={`chest-reward chest-reward--${gold ? 'gold' : rarity.key}`} style={{'--i': index}}>
+        <span className={`chest-reward-icon${gold ? ' is-gold' : ''}`} aria-hidden="true" style={{
+          backgroundImage: `url(${getRewardBgImage(reward.type)})`,
+          '--fx': x / 32,
+          '--fy': y / 32,
+        }} />
+        {(gold || reward.amount > 1) && <span className="chest-reward-amount">{gold ? reward.amount : `×${reward.amount}`}</span>}
+        <span className="chest-reward-name">{gold ? t("Gold") : item ? t(item.name) : ''}</span>
+        {rarity && <span className="chest-reward-kind">{KINDS[reward.type]?.()}</span>}
+        {rarity && <span className="chest-reward-rarity">{rarity.label()}</span>}
+      </li>
+    );
   }
 
   render() {
-    return (
-      <div style={{top: `${document.documentElement.scrollTop}px`, overflow: "hidden", zIndex: "9999999999"}} className="light_streak_container">
-        <div className="light_streak" style={{ width: this.props.width * 0.5 }}>
-          {this.props.content && <Confetti
-            width={this.props.width * 0.5}
-            height={this.props.height}
-          />}
-          <div className="light_streak_chest">
-          <img
-            src={this.getChestImage(this.props.color)}
-            className={this.props.content === null ? 'shake-animation' : ''}
-            alt={t("Daily reward chest")}
-          />
+    const {color, content, onClick} = this.props;
+    const chest = CHESTS[color] ?? CHESTS[ChestColor.BRONZE];
+    const open = content !== null;
+    return createPortal(
+      <div className={`chest-reveal chest-reveal--${color}${open ? ' is-open' : ''}`} role="dialog" aria-modal="true" aria-label={chest.title()} aria-busy={!open}>
+        <div className="chest-reveal-rays" aria-hidden="true" />
+        <div className="chest-reveal-stage">
+          <p className="chest-reveal-title">{chest.title()}</p>
+          <div className="chest-reveal-chest">
+            <img src={chest.image} alt="" />
+            <span className="chest-reveal-burst" aria-hidden="true">
+              {Array.from({length: 12}, (_, i) => <i key={i} style={{'--a': `${i * 30}deg`}} />)}
+            </span>
           </div>
-          <div className="light_shining_bg">
-            <img src={shineBg} alt={""} />
-          </div>
-          <div className="streak_gold_list_container">
-            {this.renderRewards()}
-          </div>
-          <button type="button" data-game-control className="streak_cofirm_container" style={{ width: this.props.width * 0.8 }} onClick={this.props.onClick}>
-            <div className="streak_confirm_btn"><span>{t("Confirm")}</span></div>
+          <ul className="chest-reveal-rewards" aria-live="polite">
+            {open && content.map((reward, index) => this.renderReward(reward, index))}
+          </ul>
+          <button type="button" data-game-control className="chest-reveal-continue" ref={el => { this.button = el; }}
+            onClick={onClick} disabled={!open} style={{'--n': content?.length ?? 0}}>
+            {open ? t("Continue") : t("Loading...")}
           </button>
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 }

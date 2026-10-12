@@ -20,7 +20,7 @@
     padding: 10px 8px;
     width: 184px;
     height: 198px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .lootBoxContainer:hover {

@@ -99,7 +99,7 @@ function startPlayTour() {
         tour,
         t("These are you characters, you can click on them to manage their stats and equipment!"),
         {
-            element: '.rosterContainer',
+            element: '.party-hall',
             on: 'top'
         })
     );
@@ -162,7 +162,7 @@ function startTeamTour() {
         tour,
         t("Click on the character cards to switch to another character!"),
         {
-            element: '.rosterContainer',
+            element: '.party-hall',
             on: 'bottom'
         },
         true),

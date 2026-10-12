@@ -1257,5 +1257,9 @@
   "Name": "Nom",
   "No one is lost in battle: HP and MP refill afterwards, and knocked-out characters return.": "Personne n’est perdu en combat : PV et PM se rechargent ensuite, et les personnages K.O. reviennent.",
   "Spell scrolls: teach a character a new spell for good.": "Parchemins de sort : apprennent définitivement un nouveau sort à un personnage.",
-  "How matches work": "Fonctionnement des matchs"
+  "How matches work": "Fonctionnement des matchs",
+  "Previous": "Précédent",
+  "navLeagueRank": "Ligue {{league}} · Rang {{rank}}",
+  "navLeagueUnranked": "Ligue {{league}} · Jouez un match classé pour obtenir un rang",
+  "navGoldHint": "Votre or. Dépensez-le à la Boutique en objets, sorts et recrues."
 }

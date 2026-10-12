@@ -11,7 +11,7 @@
 .combat-coach-panel { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 16px 34px 16px 12px; background: oklch(18% .025 250 / .97); border: 1px solid oklch(61% .075 85); border-radius: 4px; box-shadow: 0 3px 0 oklch(10% .01 250), inset 0 0 0 3px oklch(30% .025 250 / .45); }
 .combat-coach-icon { flex: 0 0 32px; display: grid; place-items: center; min-height: 32px; color: oklch(87% .12 85); font: 1.75rem/1 var(--locale-font, 'Kim'), sans-serif; }
 .combat-coach-icon img { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; }
-.combat-coach button { pointer-events: auto; color: oklch(83% .025 245); background: transparent; cursor: pointer; }
+.combat-coach button { pointer-events: auto; color: oklch(83% .025 245); background: transparent; cursor: var(--game-pointer); }
 .combat-coach .combat-coach-close { position: absolute; top: 3px; right: 3px; border: 0; width: 30px; height: 30px; font: 1.5rem/1 Arial, sans-serif; }
 .combat-coach button:hover { color: oklch(97% .015 85); background: oklch(90% .02 85 / .12); }
 .combat-coach button:focus-visible { outline: 2px solid oklch(88% .12 85); outline-offset: 3px; }

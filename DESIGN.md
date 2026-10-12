@@ -16,6 +16,14 @@ same game before, during and after battle. Read `docs/game-ui-writing.md` for co
 - Present a party as characters occupying a shared scene. Present rewards as
   loot. Use framed panels for inspection or a short instruction, not as a default
   wrapper around every object.
+- Emberhall is a hall at night lit by its hearth: deep ink-blue shadows, warm firelight
+  from below, ember (`--ember`) for menu selection, focus and "ready" states. Combat keeps
+  its cyan selection colour. The Play screen is the hall itself: the party gathered at the
+  hearth, battle choices beside it, the day's loot below.
+- This is a native game window, not a web page: the document never scrolls. Each screen fits
+  the window; long lists (shop stock, leaderboards) scroll inside their own pane. No hover-only
+  menus, no corner toasts, no full-width underlined section headings; text is not selectable
+  except in inputs.
 - Keep controls tactile, with a clear pressed state and keyboard focus. Meaning
   must remain available without color or animation. Native control semantics may
   be styled to match the game.

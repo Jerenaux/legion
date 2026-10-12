@@ -51,7 +51,7 @@
 .guide-page button {
   color: #81e4e8;
   font: inherit;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .guide-page button.guide-return {

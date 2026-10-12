@@ -1,45 +1,48 @@
+/* A hint card while waiting: the tip between two ember arrows. */
 .queue-tips {
-    width: 100%;
-    height: 6vw;
-    background-image: url('@assets/queue/tips_bg.png');
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    color: white;
-    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    position: relative;
-    display: flex;
-    justify-content: center;
-  }
-  .queue-tips-container {
-    width: 40vw;
-    text-align: center;
-    font-size: 0.875rem;
-  }
-  .queue-tips-container > div:first-child {
-    margin-top: 0.2vw;
-    margin-bottom: 0.4vw;
-  }
-  .queue-tips-container > div:last-child{
-    height: 2.8vw;
-  }
-  .queue-tips-arrow {
-    position: absolute;
-    top: 2vw;
-    color: coral;
-    font-size: calc(1.5vw * var(--text-scale, 1));
-    cursor: pointer;
-  }
-  .prev {
-    left: 25vw;
-  }
-  .next {
-    right: 25vw;
-  }
-  .queue-tips-text {
-    font-size: calc(1.2vw * var(--text-scale, 1));
-    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
-    text-align: center;
-    color: cyan;
-  }
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(860px, 100%);
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid oklch(48% .07 62 / .6);
+  border-radius: 12px;
+  background: linear-gradient(oklch(20% .03 50 / .9), oklch(14% .02 250 / .9));
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .06), 0 10px 24px oklch(4% .02 255 / .45);
+}
+
+.queue-tips-container { min-width: 0; text-align: center; }
+
+.queue-tips-title {
+  margin: 0 0 4px;
+  font: .8125rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: var(--ember);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.queue-tips-text {
+  margin: 0;
+  min-height: 2.6em;
+  display: grid;
+  place-items: center;
+  color: var(--text-strong);
+  font-size: 1rem;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.queue-tips-arrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid oklch(55% .09 62 / .6);
+  background: oklch(14% .02 45 / .8);
+  color: var(--ember);
+  transition: background 120ms ease-out, color 120ms ease-out;
+}
+.queue-tips-arrow:hover, .queue-tips-arrow:focus-visible { background: oklch(32% .07 52); color: var(--text-strong); }

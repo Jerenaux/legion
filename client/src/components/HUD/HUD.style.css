@@ -386,7 +386,7 @@
 .light_streak_chest img {
   width: 200px;
   transition: width 0.3s ease-out;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .light_streak_chest img:hover {
@@ -412,7 +412,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 
   z-index: 10;
   position: relative;
@@ -475,7 +475,7 @@
   justify-content: center;
   align-items: center;
 
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .exit_game_menu {
@@ -505,7 +505,7 @@
 
   color: #ffffff;
 
-  cursor: pointer;
+  cursor: var(--game-pointer);
   border: 0;
   font: inherit;
 }
@@ -576,7 +576,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  cursor: pointer;
+  cursor: var(--game-pointer);
 
 }
 

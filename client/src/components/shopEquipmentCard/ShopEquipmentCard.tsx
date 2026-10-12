@@ -1,24 +1,12 @@
 import {t, formatNumber} from '../../i18n/core';
-import ShopPrice from '../shopContent/ShopPrice';
-
-import { h } from 'preact';
-// ShopEquipmentCard.tsx
-import './ShopEquipmentCard.style.css';
-import { Component } from 'preact';
-import { Class, InventoryType, equipmentSlotFields } from "@legion/shared/enums";
-import { inflictedStatuses, mapFrameToCoordinates, statusIcons, statusSummary } from '../utils';
+import { h, Component } from 'preact';
+import { InventoryType, StatLabels, equipmentSlotFields } from "@legion/shared/enums";
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
+import { inflictedStatuses, statusIcons, statusSummary } from '../utils';
 import { StatIcons } from '../shopConsumableCard/ShopConsumableCard';
-import { Tooltip as ReactTooltip } from "react-tooltip";
-import { Effect } from '@legion/shared/interfaces';
+import ShopItemCard from '../shopContent/ShopItemCard';
 
-// Import image assets
 import equipmentSpritesheet from '@assets/equipment.png';
-import warriorIcon from '@assets/shop/warrior_icon.png';
-import mageIcon from '@assets/shop/mage_icon.png';
-import purpleBoxBg from '@assets/shop/purple_box_bg.png';
-import whiteBoxBg from '@assets/shop/white_box_bg.png';
-import itemCountIcon from '@assets/shop/item_count_icon.png';
 
 interface modalData {
   id: string | number;
@@ -38,109 +26,26 @@ interface ShopCardProps {
 
 class ShopEquipmentCard extends Component<ShopCardProps> {
   render() {
-    const getRarityValue = (effort) => {
-      if(effort < 10) {
-        return {val: t("Common"), clr: "cyan"};
-      } else if(effort < 25) {
-        return {val: t("Rare"), clr: "tomato"};
-      } else if(effort < 50) {
-        return {val: t("Epic"), clr: "red"};
-      } else {
-        return {val: t("Legendary"), clr: "orange"};
-      }
-    }
-
     const { data } = this.props;
-
-    const classStyle = (classes: Class) => {
-      return {
-        backgroundImage: `url(${classes === Class.BLACK_MAGE ? purpleBoxBg : whiteBoxBg})`,
-      }
-    }
-
-    const modalData: modalData = {
-      id: data.id,
-      name: data.name,
-      frame: data.frame,
-      url: equipmentSpritesheet,
-      price: data.price
-    }
-
-    const titleStyle = {
-      borderRadius: '4px',
-    }
-
-    const coordinates = mapFrameToCoordinates(data.frame);
-
-    const getEffectValue = (effect: Effect) => {
-      return formatNumber(effect.value, {signDisplay: 'always'});
-    }
-
+    const modalData: modalData = {id: data.id, name: data.name, frame: data.frame, url: equipmentSpritesheet, price: data.price};
     return (
-      <button type="button" data-game-control
-        className={`shop-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`}
-        key={this.props.key}
+      <ShopItemCard
+        name={data.name}
+        description={data.description}
+        sheet={equipmentSpritesheet}
+        frame={data.frame}
+        effort={data.effort}
+        owned={this.props.getItemAmount(data.id, InventoryType.EQUIPMENTS)}
+        price={data.price}
+        classes={data.classes}
+        slotIcon={require(`@assets/inventory/${equipmentSlotFields[data.slot]}_icon.png`)}
+        isHighlighted={this.props.isHighlighted}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
-      >
-        <div className="shop-card-title" style={titleStyle}>
-          <span className="shop-card-title-name">{t(data.name)}</span>
-          <div className="equipment-card-info-container">
-            <div className="equipment-card-info-box">
-              <img src={itemCountIcon} alt={t("count icon")} />
-              <span>{formatNumber(this.props.getItemAmount(data.id, InventoryType.EQUIPMENTS))}</span>
-            </div>
-          </div>
-        </div>
-        <div className="equipment-card-content">
-          <div className="shop-portrait" style={{
-                backgroundImage: `url(${equipmentSpritesheet})`,
-                backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
-            }} />
-          <div className="shop-card-class-container">
-            {data.classes.map((classes, index) => (
-              <div key={index} className="shop-card-class" style={classStyle(classes)}>
-                <img
-                  src={classes === Class.WARRIOR ? warriorIcon : mageIcon}
-                  style={classes === Class.WARRIOR ? {transform: 'scaleX(1.5)'} : {}}
-                  alt={t(classes === Class.WARRIOR ? "Warrior" : "Mage")}
-                />
-              </div>
-            ))}
-          </div>
-          <div className="equipment-card-class-badge">
-            <img src={require(`@assets/inventory/${equipmentSlotFields[data.slot]}_icon.png`)} alt={""} />
-          </div>
-        </div>
-        <p data-tooltip-id={`equipment-desc-tooltip-${data.id}`} className="equipment-card-description">{t(data.description)}</p>
-        <div className="consumable-card-effect-container">
-          {inflictedStatuses(data).map(status => (
-            <div key={status.effect} className="consumable-card-effect">
-              <img src={statusIcons[status.effect]} alt={t(status.effect)} />
-              <span>{statusSummary(status)}</span>
-            </div>
-          ))}
-          {data.effects.map((effect, index) => (
-            <div key={index} className="consumable-card-effect">
-              <img src={StatIcons[effect.stat]} alt={""} />
-              <span>{getEffectValue(effect)}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: "var(--locale-font, 'Kim'), system-ui, sans-serif"}}>
-            {getRarityValue(data.effort).val}
-          </span>
-        </div>
-        <ShopPrice price={data.price} className="shop-card-price" />
-
-        <ReactTooltip
-          id={`equipment-desc-tooltip-${data.id}`}
-          place="top-start"
-          variant="light"
-          content={t(data.description)}
-          style={{maxWidth: '120px'}}
-        />
-      </button>
+        stats={[
+          ...inflictedStatuses(data).map(status => ({icon: statusIcons[status.effect], label: t(status.effect), value: statusSummary(status), wide: true})),
+          ...data.effects.map(effect => ({icon: StatIcons[effect.stat], label: t(StatLabels[effect.stat]), value: formatNumber(effect.value, {signDisplay: 'always'})})),
+        ]}
+      />
     );
   }
 }

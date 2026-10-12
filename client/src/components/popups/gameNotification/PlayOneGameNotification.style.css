@@ -226,7 +226,7 @@
   border: none;
   background: none;
   color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
+  cursor: var(--game-pointer);
   padding: 0;
   display: flex;
   align-items: center;

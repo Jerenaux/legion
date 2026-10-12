@@ -1,21 +1,11 @@
 import {t, formatNumber} from '../../i18n/core';
-import ShopPrice from '../shopContent/ShopPrice';
-
-import { h } from 'preact';
-// ShopSpellCard.tsx
-import './ShopSpellCard.style.css'
-import { Component, createRef } from 'preact';
-import { Class, InventoryType, Target } from "@legion/shared/enums";
+import { h, Component } from 'preact';
+import { InventoryType, Target } from "@legion/shared/enums";
 import { BaseSpell } from '@legion/shared/BaseSpell';
-import { getSpeedClass, inflictedStatuses, mapFrameToCoordinates, statusIcons, statusSummary } from '../utils';
+import { getSpeedClass, inflictedStatuses, statusIcons, statusSummary } from '../utils';
+import ShopItemCard from '../shopContent/ShopItemCard';
 
-// Import image assets
 import spellsSpritesheet from '@assets/spells.png';
-import warriorIcon from '@assets/shop/warrior_icon.png';
-import mageIcon from '@assets/shop/mage_icon.png';
-import itemCountIcon from '@assets/shop/item_count_icon.png';
-import whiteBoxBg from '@assets/shop/white_box_bg.png';
-import purpleBoxBg from '@assets/shop/purple_box_bg.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
 import cdIcon from '@assets/inventory/cd_icon.png';
 import targetIcon from '@assets/inventory/target_icon.png';
@@ -37,119 +27,29 @@ interface ShopCardProps {
 }
 
 class ShopSpellCard extends Component<ShopCardProps> {
-  private cardRef = createRef();
-
-  componentDidMount() {
-    if (this.props.isHighlighted && this.cardRef.current) {
-      this.cardRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
-  }
-
-  componentDidUpdate(prevProps: ShopCardProps) {
-    if (!prevProps.isHighlighted && this.props.isHighlighted && this.cardRef.current) {
-      this.cardRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
-  }
-
   render() {
-    const getRarityValue = (effort) => {
-      if(effort < 10) {
-        return {val: t("Common"), clr: "cyan"};
-      } else if(effort < 25) {
-        return {val: t("Rare"), clr: "tomato"};
-      } else if(effort < 50) {
-        return {val: t("Epic"), clr: "red"};
-      } else {
-        return {val: t("Legendary"), clr: "orange"};
-      }
-    }
-
     const { data } = this.props;
-
-    const classStyle = (classes: Class) => {
-      return {
-        backgroundImage: `url(${classes === Class.BLACK_MAGE ? purpleBoxBg : whiteBoxBg})`
-      }
-    }
-
-    const titleStyle = {
-      borderRadius: '4px',
-    }
-
-    const modalData: modalData = {
-      id: data.id,
-      name: data.name,
-      frame: data.frame,
-      url: spellsSpritesheet,
-      price: data.price
-    }
-
-    const coordinates = mapFrameToCoordinates(data.frame);
-
+    const modalData: modalData = {id: data.id, name: data.name, frame: data.frame, url: spellsSpritesheet, price: data.price};
     return (
-      <button type="button" data-game-control
-        ref={this.cardRef}
-        className={`spell-card-container ${this.props.isHighlighted ? 'feature-highlight' : ''}`}
-        key={this.props.key}
+      <ShopItemCard
+        name={data.name}
+        description={data.description}
+        sheet={spellsSpritesheet}
+        frame={data.frame}
+        effort={data.effort}
+        owned={this.props.getItemAmount(data.id, InventoryType.SPELLS)}
+        price={data.price}
+        classes={data.classes}
+        minLevel={data.minLevel}
+        isHighlighted={this.props.isHighlighted}
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
-      >
-        <div className="spell-card-title" style={titleStyle}>
-          <span>{t(data.name)}</span>
-          <div className="spell-card-info-container">
-            <div className="spell-card-info-box">
-              <img src={itemCountIcon} alt={t("count icon")} />
-              <span>{formatNumber(this.props.getItemAmount(data.id, InventoryType.SPELLS))}</span>
-            </div>
-          </div>
-        </div>
-        <p className="spell-card-requirement">{t('Requires level {{level}}', {level: data.minLevel})}</p>
-        <div className="spell-card-content">
-          <div className="shop-portrait" style={{
-                backgroundImage: `url(${spellsSpritesheet})`,
-                backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
-            }} />
-          <div className="shop-card-class-container">
-            {data.classes.map((classes, index) => (
-              <div key={index} className="spell-card-class" style={classStyle(classes)}>
-                <img src={classes === Class.WARRIOR ? warriorIcon : mageIcon} alt={t("class icon")} />
-              </div>
-            ))}
-          </div>
-        </div>
-        <p data-tooltip-id={`spell-desc-tooltip-${data.id}`} className="spell-card-description">{t(data.description)}</p>
-        <div className="spell-card-effect-container">
-          {inflictedStatuses(data).map(status => (
-            <div key={status.effect} className="spell-card-effect">
-              <img src={statusIcons[status.effect]} alt={t(status.effect)} />
-              <span>{statusSummary(status)}</span>
-            </div>
-          ))}
-          <div className="spell-card-effect">
-            <img src={mpIcon} alt={t("cost")} />
-            <span>{formatNumber(data.cost)}</span>
-          </div>
-          <div className="spell-card-effect">
-            <img src={cdIcon} alt={t("cooldown")} />
-            <span>{getSpeedClass(data.speedClass)}</span>
-          </div>
-          <div className="spell-card-effect">
-            <img src={targetIcon} alt={t("target")} />
-            <span>{t(Target[data.target])}</span>
-          </div>
-        </div>
-        <div style={{lineHeight: '0.5'}}>
-          <span style={{color: `${getRarityValue(data.effort).clr}`, fontSize: '0.6875rem', fontFamily: "var(--locale-font, 'Kim'), system-ui, sans-serif"}}>
-            {getRarityValue(data.effort).val}
-          </span>
-        </div>
-        <ShopPrice price={data.price} className="spell-card-price" />
-      </button>
+        stats={[
+          ...inflictedStatuses(data).map(status => ({icon: statusIcons[status.effect], label: t(status.effect), value: statusSummary(status), wide: true})),
+          {icon: mpIcon, label: t("cost"), value: formatNumber(data.cost)},
+          {icon: cdIcon, label: t("cooldown"), value: getSpeedClass(data.speedClass)},
+          {icon: targetIcon, label: t("target"), value: t(Target[data.target])},
+        ]}
+      />
     );
   }
 }

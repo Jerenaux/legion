@@ -105,7 +105,7 @@
   border-radius: 0.5rem;
   box-shadow: 0 0.3rem 0 var(--session-gold-active);
   color: var(--session-ink);
-  cursor: pointer;
+  cursor: var(--game-pointer);
   font-family: var(--locale-font, 'Kim'), Arial, sans-serif;
   font-size: 1.125rem;
   font-weight: 700;

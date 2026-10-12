@@ -131,7 +131,7 @@ class RankPage extends Component<{}, State> {
         width: '48px',
         height: '48px',
         padding: '6px',
-        cursor: 'pointer'
+        cursor: 'var(--game-pointer)'
       }
     }
 

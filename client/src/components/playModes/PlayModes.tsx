@@ -6,7 +6,6 @@ import PlayModeButton from '../playModeButton/playModeButton';
 import { PlayMode, LockedFeatures } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { lockIcon } from '../utils';
-import BottomBorderDivider from '../bottomBorderDivider/BottomBorderDivider';
 
 enum MiddleBtns {
   PRACTICE = 'practice',
@@ -23,9 +22,6 @@ class PlayModes extends Component {
 
     return (
       <div className="barContainer">
-        <div className="playModesContainer">
-          <BottomBorderDivider label="PLAY MODES" />
-        </div>
         <div className="playModesRow">
           <PlayModeButton
             label={MiddleBtns.PRACTICE}

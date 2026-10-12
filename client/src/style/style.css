@@ -1,9 +1,15 @@
+/* The game's own pointers everywhere: the arrow by default, the gauntlet on anything clickable. */
+html { cursor: var(--game-arrow); }
+:where(a[href], button:not(:disabled), [role="button"], summary, label[for], select) { cursor: var(--game-pointer); }
+:where(input:not([type="checkbox"], [type="radio"], [type="range"]), textarea, [contenteditable="true"]) { cursor: text; }
+
 .firebase-emulator-warning {
   display: none;
 }
 
 :root {
-  --game-pointer: url('@assets/pointers/hand_pointer.png'), auto;
+  --game-pointer: url('@assets/pointers/hand_pointer.png'), pointer;
+  --game-arrow: url('@assets/pointers/general_pointer.png'), auto;
   --desktop-safe-inline: max(env(safe-area-inset-left), calc((100vw - 100vh * 16 / 9) / 2), 0px);
   --desktop-safe-block: max(env(safe-area-inset-top), calc((100vh - 100vw * 9 / 16) / 2), 0px);
   /* Shared menu palette: ink-blue panels, gold for the main action, cyan for selection. */
@@ -16,6 +22,11 @@
   --gold: oklch(84% .13 82);
   --gold-deep: oklch(64% .12 68);
   --cyan: oklch(86% .1 200);
+  /* Emberhall: a night hall lit by its hearth. Ember marks warmth and menu selection. */
+  --ember: oklch(76% .16 58);
+  --ember-deep: oklch(58% .17 42);
+  --ember-glow: oklch(70% .19 48 / .55);
+  --hearth-light: oklch(55% .16 45 / .32);
   --text-strong: oklch(96% .01 230);
   --text-muted: oklch(76% .025 230);
   /* Better / worse values outside combat; colour-blind mode swaps them for blue / orange. */
@@ -33,6 +44,26 @@ body {
   width: 100%;
   height: 100%;
   font-family: var(--locale-font, Arial), system-ui, sans-serif;
+  /* A native game window: the page never scrolls; panels that need it scroll inside. */
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Text stays selectable only where players type or copy. */
+input, textarea, [contenteditable="true"], .selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+/* Thin, warm scrollbars for the panels that scroll. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(52% .09 55 / .7) transparent;
 }
 
 canvas {
@@ -43,6 +74,11 @@ canvas {
 :focus-visible {
   outline: 3px solid #51fdff;
   outline-offset: 3px;
+}
+
+/* Menus use the hearth's ember for focus; combat keeps its cyan selection colour. */
+.homePage :focus-visible {
+  outline-color: var(--ember);
 }
 
 :where(button[data-game-control]) {
@@ -440,7 +476,8 @@ canvas {
   box-sizing: border-box;
 }
 
-/* The battlefield stays faintly present behind every menu, so menus and combat read as one game. */
+/* The battlefield stays faintly present behind every menu, so menus and combat read as one game;
+   the hall's hearth warms it from below. */
 .homePage::before {
   content: '';
   position: fixed;
@@ -448,14 +485,46 @@ canvas {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 120% 90% at 50% 35%, oklch(16% .035 245 / .3), oklch(9% .025 255 / .9) 80%),
-    linear-gradient(oklch(13% .035 250 / .55), oklch(10% .03 255 / .8)),
+    radial-gradient(ellipse 70% 55% at 50% 108%, var(--hearth-light), transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 35%, oklch(16% .035 245 / .3), oklch(9% .025 255 / .92) 80%),
+    linear-gradient(oklch(13% .035 250 / .6), oklch(10% .03 255 / .82)),
     url('@assets/arenabg.png') center / cover no-repeat;
-  filter: blur(3px) saturate(.75);
+  filter: blur(3px) saturate(.7);
+}
+
+/* Sparks drifting up from the hearth; decorative and off with reduced motion. */
+.homePage::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 88%, oklch(85% .15 70 / .9), transparent),
+    radial-gradient(2px 2px at 27% 96%, oklch(78% .17 50 / .8), transparent),
+    radial-gradient(1.5px 1.5px at 44% 84%, oklch(88% .12 80 / .8), transparent),
+    radial-gradient(2px 2px at 63% 92%, oklch(80% .17 55 / .85), transparent),
+    radial-gradient(1.5px 1.5px at 78% 86%, oklch(86% .14 72 / .75), transparent),
+    radial-gradient(2px 2px at 91% 97%, oklch(76% .17 45 / .8), transparent);
+  background-size: 100% 100%;
+  animation: hall-sparks 14s linear infinite;
+  opacity: .8;
+}
+
+@keyframes hall-sparks {
+  from { transform: translateY(0); opacity: 0; }
+  10% { opacity: .8; }
+  70% { opacity: .55; }
+  to { transform: translateY(-70vh); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homePage::after { animation: none; opacity: .35; }
 }
 
 .content {
   flex-grow: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -471,10 +540,26 @@ canvas {
 
 .mainContent {
   flex: 1;
-  overflow-y: hidden;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   padding: 28px 0 24px;
+}
+
+/* Each screen settles in briefly when opened. */
+.mainContent > * {
+  /* Backwards fill only: a transform left on the screen would trap fixed popups inside it. */
+  animation: screen-enter 220ms ease-out backwards;
+}
+
+@keyframes screen-enter {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mainContent > * { animation: none; }
 }
 
 .page-header {
@@ -565,7 +650,7 @@ canvas {
   align-items: center;
   color: lightgrey;
   padding: 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   font-size: 0.875rem;
   background-color: #080c15;
   border-radius: 3px;
@@ -575,7 +660,7 @@ canvas {
 
 .notificationBarButton:hover {
   filter: brightness(1.2);
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .notificationBarButton i {
@@ -658,7 +743,7 @@ canvas {
   display: flex;
   padding: 10px;
   border-radius: 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   margin-bottom: 10px;
   margin-right: 20px;
   border: 2px solid #CD853F;
@@ -827,7 +912,7 @@ canvas {
 .leaderboard-table th {
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .leaderboard-table tr:nth-child(even) {
@@ -918,7 +1003,7 @@ canvas {
 }
 
 .button {
-  cursor: pointer;
+  cursor: var(--game-pointer);
   margin: 10px;
 }
 
@@ -1103,7 +1188,7 @@ canvas {
   border: 1px solid #ccc;
   background-color: #F9F6EE;
   border-radius: 15px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .shop-item-card:hover {
@@ -1266,7 +1351,7 @@ canvas {
 
 
 .closebtn {
-  cursor: pointer;
+  cursor: var(--game-pointer);
   color: rgb(222, 24, 24);
   position: absolute;
   top: -10px;
@@ -1291,7 +1376,7 @@ canvas {
 .qty-button {
   margin: 0;
   padding: 0 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 
@@ -1441,7 +1526,7 @@ canvas {
   border: none;
   background-color: gold;
   color: #fff;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-size: 1.25rem;
@@ -1454,7 +1539,7 @@ canvas {
 
 .purchase-adjust {
   border-radius: 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .endgame {
@@ -1555,9 +1640,13 @@ canvas {
 }
 
 
+/* Notifications drop in under the navigation bar like in-game banners. */
+.toast.toastify-top { margin-top: 72px; }
 .toast {
-  border: 1px solid oklch(70% .1 80);
+  border: 1px solid oklch(62% .1 62 / .85);
+  border-left: 4px solid var(--ember);
   border-radius: 6px;
+  background: linear-gradient(oklch(22% .035 55 / .97), oklch(14% .028 250 / .97)) !important;
   box-shadow: var(--panel-shadow), 0 12px 30px oklch(4% .02 255 / .6);
   color: var(--text-strong);
   font: .9375rem/1.4 var(--locale-font, Arial), system-ui, sans-serif;
@@ -1650,7 +1739,7 @@ canvas {
   font-size: 1.875rem;
   line-height: 1.375rem;
   text-align: center;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   z-index: 1;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
@@ -1714,7 +1803,7 @@ a:-webkit-any-link {
   /* Rounded corners */
   color: #ffffff;
   margin-top: 10px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   width: 80%;
   /* Adjust width as needed */
   text-align: center;
@@ -1872,7 +1961,7 @@ a:-webkit-any-link {
   border-radius: 6px;
   font: 1.0625rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
   letter-spacing: .02em;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   transition: transform 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out, border-color 120ms ease-out;
 }
 
@@ -2011,3 +2100,36 @@ a:-webkit-any-link {
   white-space: nowrap;
   border: 0;
 }
+
+/* Rank screen: league crests form a rail on the left, the season summary sits on top,
+   and the leaderboard scrolls in its own area instead of lengthening the page. */
+.rank-content {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 16px 24px;
+  width: min(1180px, 100%);
+  height: 100%;
+  min-height: 0;
+}
+.rank-content > .flexContainer:not(:has(.rank-tab-container)) { grid-column: 2; grid-row: 1; justify-content: center; }
+.rank-content > .flexContainer:has(.rank-tab-container) { display: contents; }
+.rank-content > .flexContainer:has(.rank-tab-container) > .rank-tab-container {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  justify-content: flex-start;
+  padding: 4px 6px;
+  gap: 6px;
+  overflow-y: auto;
+}
+.rank-content > .flexContainer:has(.rank-tab-container) > :not(.rank-tab-container) {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: stretch;
+  min-height: 0;
+  overflow-y: auto;
+}
+.rank-tab-container button[aria-pressed="true"] { filter: drop-shadow(0 0 8px var(--ember-glow)); }
+.rank-tab-container button:focus-visible { outline-color: var(--ember); }

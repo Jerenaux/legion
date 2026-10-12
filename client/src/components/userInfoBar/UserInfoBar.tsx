@@ -11,6 +11,8 @@ interface BarProps {
     label: string;
     isLeague?: boolean;
     icon: string;
+    /** Explanation shown on hover. */
+    hint?: string;
 }
 
 const iconsMap = {
@@ -23,7 +25,8 @@ class UserInfoBar extends Component<BarProps> {
         const leagueIcon = getLeagueIcon(this.props.league);
 
         return (
-            <div className="userInfoBar">
+            <div className={`userInfoBar userInfoBar--${this.props.isLeague ? 'league' : this.props.icon}`}
+                data-tooltip-id={this.props.hint ? 'navbar-unlock-hint' : undefined} data-tooltip-content={this.props.hint}>
                 <div className="barLogo">
                     <img
                         src={this.props.isLeague ? leagueIcon : iconsMap[this.props.icon]}

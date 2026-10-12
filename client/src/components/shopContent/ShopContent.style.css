@@ -33,7 +33,7 @@
     box-sizing: border-box;
     min-height: 44px;
     padding: 8px 18px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     text-decoration: none;
     color: var(--text-muted);
     transition: background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;
@@ -100,47 +100,6 @@
     overflow-y: auto;
     margin: 0 auto;
     padding: 0 16px;
-}
-
-/* Items sit in an inventory-style slot at 1.5x, keeping pixel edges crisp. */
-.shop-portrait {
-    width: 32px;
-    height: 32px;
-    margin: 20px 10px 16px;
-    border-radius: 3px;
-    background-color: oklch(17% .025 250);
-    box-shadow: 0 0 0 5px oklch(17% .025 250), 0 0 0 6px oklch(46% .045 235), 0 4px 10px 6px oklch(5% .02 255 / .45);
-    transform: scale(1.5);
-    image-rendering: pixelated;
-    transition: transform 160ms ease-out;
-}
-
-:is(.shop-card-container, .spell-card-container):hover .shop-portrait {
-    transform: scale(1.5) translateY(-2px);
-}
-
-:is(.shop-card-container, .spell-card-container) {
-    transition: transform 160ms ease-out, filter 160ms ease-out;
-}
-
-:is(.shop-card-container, .spell-card-container):hover {
-    transform: translateY(-3px);
-    filter: drop-shadow(0 8px 14px oklch(5% .02 255 / .55));
-}
-
-:is(.shop-card-container, .spell-card-container):active {
-    transform: translateY(0);
-}
-
-:is(.shop-card-container, .spell-card-container):focus-visible {
-    outline: 3px solid var(--cyan);
-    outline-offset: 3px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .shop-portrait, .shop-card-container, .spell-card-container { transition: none; }
-    :is(.shop-card-container, .spell-card-container):hover { transform: none; }
-    :is(.shop-card-container, .spell-card-container):hover .shop-portrait { transform: scale(1.5); }
 }
 
 .equipment-sections {
@@ -341,14 +300,11 @@
 .shop-items-container, .equipment-section, .spells-section, .consumables-section { box-sizing: border-box; }
 .shop-items-container, .equipment-grid, .spells-grid, .consumables-grid {
     /* auto-fill keeps empty tracks, so a section with one or two cards keeps the usual card width. */
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
 }
 /* Category groups span the whole item grid; only the cards inside them use its tracks. */
 :is(.spells-container, .consumables-container, .equipment-sections) { grid-column: 1 / -1; }
 
-/* Stats, rarity and price line up across a row, however long each description is. */
-:is(.spell-card-effect-container, .consumable-card-effect-container) { margin-top: auto; }
-.shop-card-container, .spell-card-container { min-width: 0; max-width: 100%; box-sizing: border-box; }
 
 /* Gold sits next to the prices it is compared with, not only in the navbar corner. */
 .shop-toolbar {
@@ -393,16 +349,6 @@
     animation: shop-purse-change 450ms ease-out;
 }
 
-/* Prices the player cannot afford yet. */
-.shop-card-price.is-unaffordable,
-.spell-card-price.is-unaffordable {
-    color: oklch(72% .17 25);
-}
-
-.shop-card-price.is-unaffordable img,
-.spell-card-price.is-unaffordable img {
-    filter: grayscale(.6) brightness(.85);
-}
 
 @keyframes shop-purse-change {
     0% { transform: scale(1.25); color: oklch(95% .1 95); }
@@ -413,4 +359,50 @@
     .shop-purse-amount { animation: none; }
 }
 
-.shop-toolbar .shop-item-filter-container { align-self: center; margin-right: 0; }
+
+/* A shop screen, not a long web page: tabs and gold stay put, the stock scrolls in its own pane
+   with each category's banner pinned while browsing it. */
+.shop-container { height: 100%; min-height: 0; }
+.shop-content { height: 100%; min-height: 0; gap: 14px; }
+.shop-content > .shop-items-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px 16px 24px;
+    border-top: 1px solid oklch(55% .09 62 / .35);
+    mask-image: linear-gradient(transparent, #000 10px, #000 calc(100% - 18px), transparent);
+}
+:is(.spells-type-title, .consumables-type-title, .equipment-type-title) {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    backdrop-filter: blur(6px);
+    background: linear-gradient(90deg, oklch(24% .05 55 / .92), oklch(16% .03 250 / .6) 75%) !important;
+    border-left-color: var(--ember) !important;
+}
+/* Tabs and purse share one header row, leaving the height to the stock. */
+.shop-content {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 20px;
+}
+.shop-content > .shop-tabs-container { grid-column: 1; grid-row: 1; justify-self: end; width: auto; margin: 0; flex-wrap: wrap; justify-content: flex-end; }
+.shop-content > .shop-toolbar { grid-column: 2; grid-row: 1; margin: 0; }
+.shop-content > .shop-items-container { grid-column: 1 / -1; grid-row: 2; align-self: stretch; }
+@media (max-width: 1400px) {
+    .shop-content { grid-template-columns: 1fr; grid-template-rows: auto auto minmax(0, 1fr); }
+    .shop-content > .shop-tabs-container { justify-self: center; justify-content: center; }
+    .shop-content > .shop-toolbar { grid-column: 1; grid-row: 2; }
+    .shop-content > .shop-items-container { grid-row: 3; }
+}
+
+/* Loading placeholders take the stock grid's own tracks, so they sit where the cards will. */
+.shop-items-container > .ghost-group.shop-ghost-grid {
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    gap: inherit;
+}
+.shop-ghost-grid .ghost { border-radius: 12px; }

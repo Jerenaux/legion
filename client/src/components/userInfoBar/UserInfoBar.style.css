@@ -1,58 +1,49 @@
+/* Top-bar counters: a sunken slot in the beam, its emblem resting on the left end. */
 .userInfoBar {
     display: flex;
     align-items: center;
+    margin-right: 10px;
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
 
 .barLogo {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
+    position: relative;
     z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
 }
 
 .barLogo img {
-    width: 38px;
-    height: 30px;
+    width: 34px;
+    height: auto;
+    max-height: 32px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 2px oklch(4% .02 40 / .7));
 }
 
 .userInfoLabel {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 24px;
-    border: 1px solid #71deff;
-    border-radius: 6px;
-    margin-left: -16px;
-    margin-right: 8px;
-    padding-left: 20px;
-    padding-right: 8px;
-    background-color: #253644;
-    gap: 8px;
+    height: 26px;
+    min-width: 44px;
+    margin-left: -14px;
+    padding: 0 12px 0 20px;
+    box-sizing: border-box;
+    border: 1px solid oklch(58% .09 70 / .75);
+    border-radius: 999px;
+    background: linear-gradient(oklch(12% .02 40), oklch(19% .03 48));
+    box-shadow: inset 0 2px 4px oklch(2% 0 0 / .6), 0 1px 0 oklch(100% 0 0 / .07);
 }
 
 .userInfoLabel span {
-    font-weight: 600;
-    color: #fff;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    color: var(--text-strong);
+    line-height: 1;
+    text-shadow: 0 1px 0 oklch(5% .02 40);
 }
 
-.smallLabel {
-    font-size: 1rem;
-}
+.userInfoBar--gold .userInfoLabel span { color: var(--gold); }
 
-.bigLabel {
-    font-size: 1.75rem;
-    /* italic */
-    font-style: italic;
-}
-
-.eloSpan {
-    background-color: #364f63;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-weight: 400 !important;
-}
+.smallLabel { font-size: 1.0625rem; }
+.bigLabel { font-size: 1.1875rem; letter-spacing: .02em; }

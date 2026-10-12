@@ -2,11 +2,30 @@
   height: 48px;
   min-height: 48px;
   width: 100%;
-  background-image: url("@assets/navbar_bg.png");
-  background-size: 100% 100%;
+  /* A dark beam over the hall: soot-warm, an iron trim and a line of hearth light below. */
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(90deg, transparent, oklch(70% .15 55 / .07) 50%, transparent),
+    linear-gradient(oklch(24% .03 48), oklch(15% .022 40));
+  border-bottom: 1px solid oklch(48% .08 60 / .75);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .07), inset 0 -3px 0 oklch(10% .015 40 / .6), 0 6px 18px oklch(4% .015 255 / .55);
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.menu::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -2px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ember) 30%, oklch(85% .14 75) 50%, var(--ember) 70%, transparent);
+  opacity: .55;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .flexContainer {
@@ -115,28 +134,38 @@
 .expand_btn_trigger {
   width: 100%;
   height: 100%;
+  display: grid;
+  place-items: center;
   padding: 0;
-  border: 0;
-  background-color: transparent;
-  background-size: 100% 100%;
+  border: 1px solid oklch(55% .09 62 / .7);
+  border-radius: 8px;
+  background: linear-gradient(oklch(26% .04 55), oklch(16% .03 250));
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / .08), 0 4px 10px oklch(5% .02 255 / .5);
+  cursor: var(--game-pointer);
+  transition: transform 120ms ease-out, border-color 120ms ease-out;
 }
 
-.expand_btn_trigger:hover {
-  cursor: pointer;
+.expand_btn_trigger img {
+  width: 22px;
+  height: 22px;
+  transition: transform 200ms ease-out;
 }
 
-.expand_btn:hover .dropdown-content {
-  display: block;
+.expand_btn_trigger:hover, .expand_btn_trigger[aria-expanded="true"] {
+  border-color: var(--ember);
 }
+
+.expand_btn_trigger[aria-expanded="true"] img { transform: rotate(45deg); }
+.expand_btn_trigger:active { transform: translateY(1px); }
 
 .dropdown-content {
   display: none;
   position: absolute;
   top: 40px;
   right: 0;
-  border-radius: 4px;
-  border: 1px solid var(--ink-edge);
-  background: var(--panel-bg);
+  border-radius: 8px;
+  border: 1px solid oklch(55% .09 62 / .7);
+  background: linear-gradient(oklch(22% .035 55 / .97), oklch(14% .028 250 / .97));
   overflow: hidden;
   min-width: 190px;
   padding: 4px 0;
@@ -160,7 +189,7 @@
   text-decoration: none;
   display: block;
   text-align: left;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   box-sizing: border-box;
 }
 
@@ -168,8 +197,8 @@
 .dropdown-content a:hover,
 .dropdown-content button:focus-visible,
 .dropdown-content a:focus-visible {
-  background-color: oklch(31% .04 238);
-  box-shadow: inset 3px 0 0 var(--gold);
+  background-color: oklch(30% .06 55 / .8);
+  box-shadow: inset 3px 0 0 var(--ember);
   outline: none;
 }
 
@@ -221,10 +250,9 @@
   outline: none;
 }
 
-.menuItems a:focus-visible .menuItemContainer {
-  outline: 3px solid var(--cyan);
-  outline-offset: 2px;
-  border-radius: 4px;
+/* Keyboard focus outlines the banner itself rather than drawing a box around it. */
+.menuItems a:focus-visible .menuItem {
+  filter: drop-shadow(0 0 1px var(--ember)) drop-shadow(0 0 1px var(--ember)) drop-shadow(0 0 6px var(--ember-glow));
 }
 
 .menuItemContainer img {
@@ -259,7 +287,7 @@ login-buttons {
   color: #ffffff;
   margin: 10px 0;
   /* Vertical margin for spacing between buttons */
-  cursor: pointer;
+  cursor: var(--game-pointer);
   /* Adjust width as needed */
   text-align: center;
   transition: all 0.3s ease;
@@ -313,7 +341,7 @@ login-buttons {
 
 .avatarContainerLink:hover .avatarContainer {
     opacity: 0.8;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .menuItemContainer.disabled {
@@ -347,7 +375,7 @@ login-buttons {
     border: none;
     border-radius: 4px;
     color: white;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     width: 100%;
 }
 

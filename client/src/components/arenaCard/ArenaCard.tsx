@@ -48,7 +48,7 @@ class ArenaCard extends Component<CardProps> {
     const data = this.props.gameData;
     const bgStyle = {
         backgroundImage: `url(${this.state.active ? vsActive : vsIdle})`,
-        cursor: 'pointer'
+        cursor: 'var(--game-pointer)'
     }
 
     const countDown = {

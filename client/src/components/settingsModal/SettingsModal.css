@@ -15,7 +15,7 @@
   background: none;
   color: var(--text-muted);
   font: 1rem var(--locale-font, 'Kim'), system-ui, sans-serif;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 .setting_tab[aria-selected="true"] { color: var(--gold); }
 .setting_tab[aria-selected="true"]::after {
@@ -53,7 +53,7 @@
   background: oklch(14% .025 250 / .8);
   color: var(--text-muted);
   font: .875rem var(--locale-font, Arial), system-ui, sans-serif;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 .setting_mute[aria-pressed="true"] { border-color: oklch(70% .1 80); color: var(--gold); background: oklch(24% .04 70 / .6); }
 .setting_mute:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
@@ -97,7 +97,7 @@
   box-shadow: 0 2px 0 oklch(10% .025 250);
   color: var(--text-strong);
   font: .875rem var(--locale-font, 'Kim'), system-ui, sans-serif;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 .controls-binding.is-empty { color: var(--text-muted); }
 .controls-binding:hover { border-color: var(--text-muted); }

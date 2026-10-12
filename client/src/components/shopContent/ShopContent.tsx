@@ -160,9 +160,11 @@ class ShopContent extends Component<ShopContentProps> {
     handleOpenModal = (e: Event, modalData: modalData) => {
         const elementRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 
+        // Centre the buy dialog on the card it came from, kept inside the window.
+        const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
         const modalPosition = {
-            top: Math.min(elementRect.top + elementRect.height / 2, window.innerHeight - elementRect.height + 40),
-            left: elementRect.left + elementRect.width / 2,
+            top: clamp(elementRect.top + elementRect.height / 2 - 190, 72, window.innerHeight - 400),
+            left: clamp(elementRect.left + elementRect.width / 2 - 130, 16, window.innerWidth - 280),
         };
 
         this.setState({ openModal: true, position: modalPosition, modalData });
@@ -416,9 +418,7 @@ class ShopContent extends Component<ShopContentProps> {
 
         // Same grid as the item cards, so the shop keeps its shape while stock loads.
         const renderSkeletons = () => (
-            <div className="shop-items-container">
-                <Ghost height={340} count={6} className="ghost-grid shop-ghost-grid" />
-            </div>
+            <Ghost height={430} count={3} className="ghost-grid shop-ghost-grid" />
         )
 
         const shopTabIcons = [consumablesIcon, equipmentsIcon, spellsIcon, charactersIcon];

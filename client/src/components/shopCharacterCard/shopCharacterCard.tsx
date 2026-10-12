@@ -11,9 +11,10 @@ import { modalData } from '../shopContent/ShopContent';
 import { APICharacterData } from '@legion/shared/interfaces';
 
 import { spells } from '@legion/shared/Spells';
-import { mapFrameToCoordinates } from '../utils';
-import { Target, RarityColor, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from '@legion/shared/enums';
+import { mapFrameToCoordinates, raritySlotStyle } from '../utils';
+import { Class, Target, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from '@legion/shared/enums';
 import { BaseSpell } from '@legion/shared/BaseSpell';
+import ClassCrest from '../HUD/ClassCrest';
 
 import spellsSpritesheet from '@assets/spells.png';
 import mpIcon from '@assets/stats_icons/mp_icon.png';
@@ -79,31 +80,26 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
           event.preventDefault();
           event.currentTarget.click();
         }
-      }} className="shop-character-card-container" key={this.props.key} onClick={(e) => {
+      }} className="shop-character-card-container" data-class={Class[data.class]} key={this.props.key} onClick={(e) => {
         this.props.handleOpenModal(e, modalData);
         this.setState({shopCharacterCardDialogShow: false});
       }}>
+        <div className="shop-character-card-stand">
+          <div className="character-card-portrait" style={portraitStyle}></div>
+          <span className="shop-character-card-level">{t("Lvl")} <strong>{formatNumber(data.level)}</strong></span>
+        </div>
         <div className="shop-character-card-title">
-          <div className="shop-character-card-title-name">
-            <span>{data.name}</span>
-            <span className="character-class">{classEnumToString(data.class)}</span>
-          </div>
-          <div className="shop-character-card-info-container">
-            <div className="shop-character-card-info-box">
-              <span className="shop-character-card-info-lv">{t("Lvl")}</span>
-              <span>{formatNumber(data.level)}</span>
-            </div>
-          </div>
+          <span className="character-class"><ClassCrest characterClass={data.class} />{classEnumToString(data.class)}</span>
+          <span className="shop-character-card-name">{data.name}</span>
         </div>
 
         <div className="shop-character-card-content">
-          <div className="character-card-portrait" style={portraitStyle}></div>
           {/* biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: This handler only prevents the parent card click from opening. */}
           <div onClick={(event) => event.stopPropagation()} className="shop-character-card-class-container">
             {data.skills.map((item, i) => (
               <button type="button" data-game-control
                 key={i}
-                style={{ backgroundImage: `linear-gradient(to bottom right, ${RarityColor[getSpell(item)?.rarity]}, #1c1f25)` }}
+                style={raritySlotStyle(getSpell(item)?.rarity)}
                 className="shop-character-card-slot"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -115,7 +111,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
                   style={{
                     backgroundImage: `url(${spellsSpritesheet})`,
                     backgroundPosition: `-${mapFrameToCoordinates(getSpell(item).frame).x}px -${mapFrameToCoordinates(getSpell(item).frame).y}px`,
-                    cursor: 'pointer',
+                    cursor: 'var(--game-pointer)',
                   }}
                 />
               </button>
@@ -180,7 +176,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
             </div>
           ))}
         </div>
-        <ShopPrice price={data.price} className="shop-card-price" />
+        <ShopPrice price={data.price} className="shop-item-price" />
       </div>
     );
   }

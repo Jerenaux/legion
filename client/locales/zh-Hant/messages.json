@@ -1240,5 +1240,9 @@
   "No one is lost in battle: HP and MP refill afterwards, and knocked-out characters return.": "戰鬥中不會失去角色：之後 HP 和 MP 會恢復，倒下的角色也會歸隊。",
   "Spell scrolls: teach a character a new spell for good.": "法術卷軸：讓角色永久學會一個新法術。",
   "Change": "更換",
-  "How matches work": "對局規則"
+  "How matches work": "對局規則",
+  "Previous": "上一則",
+  "navLeagueRank": "{{league}}聯賽 · 第{{rank}}名",
+  "navLeagueUnranked": "{{league}}聯賽 · 進行一場排位賽即可獲得名次",
+  "navGoldHint": "你的金幣。可在商店購買道具、法術和新成員。"
 }

@@ -1,3 +1,4 @@
+import {RarityColor} from '@legion/shared/enums';
 import {t, formatNumber} from '../i18n/core';
 import {Class, SpeedClass, Stat, StatFields} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
@@ -53,8 +54,8 @@ function showToast(text: string, duration: number = 3000, avatar: string) {
     text,
     duration,
     close: true,
-    gravity: "bottom", // `top` or `bottom`
-    position: "left", // `left`, `center` or `right`
+    gravity: "top", // Game notification banner under the navigation bar.
+    position: "center",
     stopOnFocus: true, // Prevents dismissing of toast on hover
     className: "toast",
     avatar,
@@ -70,7 +71,7 @@ export function showGuideToast(text: string, destination: string, duration: numb
     text,
     duration,
     close: true,
-    gravity: "bottom", // `top` or `bottom`
+    gravity: "top", // Game notification banner under the navigation bar.
     position: "center", // `left`, `center` or `right`
     stopOnFocus: true, // Prevents dismissing of toast on hover
     className: "toast",
@@ -98,6 +99,16 @@ export function silentErrorToast(text: string, duration: number = -1) {
 export function errorToast(text: string, duration: number = -1) {
   console.error(text);
   showToast(text, duration, errorIcon);
+}
+
+/** An item slot tinted by rarity: a dark well with the rarity's colour glowing from one corner. */
+export function raritySlotStyle(rarity: number | undefined) {
+  const color = RarityColor[rarity ?? 0] ?? RarityColor[0];
+  const strength = rarity ? 46 : 16;
+  return {
+    backgroundImage: `radial-gradient(circle at 25% 15%, color-mix(in oklch, ${color} ${strength}%, transparent), transparent 75%), linear-gradient(oklch(19% .025 248), oklch(13% .02 252))`,
+    '--rarity': color,
+  };
 }
 
 export function mapFrameToCoordinates(frame: number) {

@@ -1,215 +1,139 @@
+/* ---- Shop character card: the recruit on a lit stand, class first, kit and stats, buy bar ---- */
+
 .shop-character-card-container {
-    background-image: url('@assets/shop/daily_bg_idle.png');
-    background-size: 100% 100%;
-    padding: 18px 12px;
-    min-width: 196px;
+    --class-tint: oklch(80% .05 240);
+    position: relative;
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 8px 8px 0;
+    box-sizing: border-box;
+    border: 1px solid oklch(42% .05 60 / .55);
+    border-radius: 12px;
+    background: linear-gradient(oklch(19% .025 50), oklch(13% .02 250));
+    box-shadow: inset 0 1px 0 oklch(100% 0 0 / .05), 0 10px 22px oklch(4% .02 255 / .45);
+    color: var(--text-strong);
+    text-align: center;
+    overflow: visible;
+    cursor: var(--game-pointer);
+    transition: transform 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+.shop-character-card-container[data-class="WARRIOR"] { --class-tint: oklch(82% .13 82); }
+.shop-character-card-container[data-class="WHITE_MAGE"] { --class-tint: oklch(84% .13 150); }
+.shop-character-card-container[data-class="BLACK_MAGE"] { --class-tint: oklch(76% .15 305); }
+
+.shop-character-card-container:hover, .shop-character-card-container:focus-visible {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklch, var(--class-tint) 65%, transparent);
+    box-shadow: inset 0 1px 0 oklch(100% 0 0 / .06), 0 14px 28px oklch(4% .02 255 / .55), 0 0 18px color-mix(in oklch, var(--class-tint) 22%, transparent);
+}
+.shop-character-card-container:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
+.shop-character-card-stand {
+    position: relative;
+    display: grid;
+    place-items: end center;
+    height: 132px;
+    border-radius: 8px;
+    background:
+        radial-gradient(55% 60% at 50% 100%, color-mix(in oklch, var(--class-tint) 28%, transparent), transparent 75%),
+        linear-gradient(oklch(15% .02 250), oklch(11% .018 250));
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--class-tint) 28%, transparent);
+    overflow: hidden;
+}
+
+/* The recruit at double size, idling while the card is pointed at. */
+.character-card-portrait {
+    width: 80px;
+    height: 96px;
+    margin-bottom: 8px;
+    background-repeat: no-repeat;
+    background-position: -40px -40px;
+    image-rendering: pixelated;
+    scale: 1.25;
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 5px 4px oklch(4% .02 255 / .6));
+    animation: animate-sprite .7s steps(1) infinite;
+    animation-play-state: paused;
+}
+.shop-character-card-container:hover .character-card-portrait { animation-play-state: running; }
+
+.shop-character-card-level {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: oklch(10% .018 250 / .75);
+    color: var(--text-muted);
+    font-size: .75rem;
+}
+.shop-character-card-level strong { color: var(--text-strong); }
+
+.shop-character-card-title { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.shop-character-card-title .character-class {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    cursor: pointer;
-    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+    color: var(--class-tint);
+    font: 1.125rem/1.1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+    text-transform: uppercase;
 }
+.shop-character-card-title .class-crest { width: 18px; height: 20px; }
+.shop-character-card-name { color: var(--text-muted); font-size: .875rem; }
 
-.shop-character-card-container:hover {
-    background-image: url('@assets/shop/daily_bg_active.png');
+/* Spells the recruit already knows, and free slots. */
+.shop-character-card-content { display: flex; justify-content: center; position: relative; }
+.shop-character-card-class-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.shop-character-card-slot {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 8px;
+    background-color: oklch(10% .018 250 / .6);
+    box-shadow: inset 0 0 0 1px oklch(100% 0 0 / .08);
 }
+button.shop-character-card-slot { cursor: var(--game-pointer); }
+button.shop-character-card-slot:hover { box-shadow: inset 0 0 0 1px var(--ember), 0 0 10px var(--ember-glow); }
+div.shop-character-card-slot { border: 1px dashed oklch(55% .03 240 / .4); box-shadow: none; }
+.shop-character-card-slot > div { width: 32px; height: 32px; image-rendering: pixelated; }
 
-.shop-character-card-title {
-    padding: 2px 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-image: url('@assets/shop/daily_title_bar.png');
-    background-size: 100% 100%;
-    width: 94%;
-}
-
-.shop-character-card-title-name {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
-}
-
-.shop-character-card-title-name span {
-    max-width: 100px;
-    font-size: 0.875rem;
-    text-transform: capitalize;
-    overflow: hidden;
-    /* text-overflow: ellipsis; */
-    white-space: nowrap;
-}
-
-.shop-character-card-title-name .character-class {
-    font-size: 0.625rem;
-    color: #ffa600;
-    letter-spacing: 0.32px;
-}
-
-.shop-character-card-title span {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #FFFFFF;
-}
-
-.shop-character-card-info-box {
-    background-image: url('@assets/shop/black_info_bg.png');
-    background-size: 100% 100%;
-    padding: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2px;
-}
-
-.shop-character-card-info-box .shop-character-card-info-lv {
-    font-weight: 400;
-    color: #ffa600;
-    font-size: 0.625rem;
-}
-
-.shop-character-card-info-container {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-}
-
-.shop-character-card-info-box span {
-    font-size: 0.75rem;
-    color: #FFFFFF;
-}
-
-.shop-character-card-info-box img {
-    width: 12px;
-    height: 12px;
-}
-
-.shop-character-card-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    box-sizing: border-box;
-    padding: 0 4px;
-    width: 100%;
-    position: relative;
-}
-
-.shop-character-card-content img {
-    width: 128px;
-    height: 128px;
-    border-radius: 12px;
-    transform: scale(0.75);
-}
-
+/* Stats as a two-column ledger, each tinted with its usual colour. */
 .shop-character-card-effect-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 4px;
-    width: 100%;
-    max-width: 196px;
-    padding: 4px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 6px;
+    margin-top: auto;
 }
-
 .shop-character-card-effect {
     display: flex;
-    justify-content: flex-end;
     align-items: center;
-    gap: 4px;
-    background-color: #16181c;
-    border-radius: 4px;
-    overflow: hidden;
-    width: 96px;
-    height: 26px;
-    position: relative;
-}
-
-.shop-character-card-effect span {
-    font-size: 0.6875rem;
-}
-
-.shop-character-card-effect-stat {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 46px;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 600;
-    color: #FFFFFF;
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-}
-
-.shop-character-card-effect-value {
-    padding: 4px 12px;
-    line-height: 0.75rem;
-    color: #FFFFFF;
-}
-
-.shop-card-price {
-    background-image: url('@assets/shop/daily_button.png');
-    background-size: 100% 100%;
-    padding: 8px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    color: #FFFFFF;
-    font-size: 0.875rem;
-    width: 100%;
-    margin-bottom: 4px;
-    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
-}
-
-.shop-card-price img {
-    width: 14px;
-    height: 14px;
-}
-
-.shop-character-card-class-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 4px 6px;
-}
-
-.character-card-portrait {
-    width: 68px;
-    min-height: 128px;
-    background-position: -40px -40px;
-    background-repeat: no-repeat;
-    animation: animate-sprite 0.7s steps(1) infinite;
-    transform: scale(.6);
-}
-
-.shop-character-card-slot {
-    box-sizing: border-box;
-    width: 43px;
-    height: 43px;
-    background-color: #1c1f25;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 3px 8px 3px 4px;
     border-radius: 6px;
-    border: 1px solid #274c57;
-    padding: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: oklch(10% .018 250 / .6);
+    font-size: .8125rem;
 }
-
-.shop-character-card-slot:hover {
-    cursor: pointer;
-    border: 1px solid #71deff;
+.shop-character-card-effect-stat {
+    padding: 1px 6px;
+    border-radius: 4px;
+    font: .6875rem/1.4 var(--locale-font, 'Kim'), system-ui, sans-serif;
+    color: #fff;
 }
+.shop-character-card-effect-value { font-weight: 600; }
 
-.shop-character-card-slot > div {
-    width: 32px;
-    height: 32px;
+.shop-character-card-container .shop-item-price { margin: 2px -8px 0; border-radius: 0 0 11px 11px; }
+.shop-character-card-container:hover .shop-item-price { background: linear-gradient(oklch(40% .1 55 / .85), oklch(28% .08 45 / .85)); }
+
+@media (prefers-reduced-motion: reduce) {
+    .shop-character-card-container { transition: none; }
+    .shop-character-card-container:hover { transform: none; }
+    .character-card-portrait { animation: none; }
 }
-
 
 .shop-character-card-dialog-position {
     position: absolute;

@@ -19,12 +19,24 @@ import { IMMEDIATE_LOOT } from '@legion/shared/config';
 
 interface DailyLootProps {
   data: DailyLootAllAPIData,
+  /** Chests placed in the Play hall scene: no section label, no card frames. */
+  scene?: boolean,
 }
 
 interface DailyLootState {
   chestColor: ChestColor | null,
   chestContent: ChestReward[] | null,
   chestDailyLoot: DailyLootAllAPIData | null,
+}
+
+// The hearth shows a single chest: one ready to open (the richest first), otherwise the next to unlock.
+function sceneChest(data: DailyLootAllAPIData): ChestColor[] {
+  const richestFirst = [ChestColor.GOLD, ChestColor.SILVER, ChestColor.BRONZE].filter(color => data[color]);
+  const ready = richestFirst.find(color => data[color].countdown <= 0 && data[color].hasKey);
+  if (ready) return [ready];
+  const next = richestFirst.reduce<ChestColor | null>((best, color) =>
+    best === null || data[color].countdown < data[best].countdown ? color : best, null);
+  return next ? [next] : [];
 }
 
 class DailyLoot extends Component<DailyLootProps, DailyLootState> {
@@ -96,10 +108,10 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
     const [width, height] = useWindowSize()
 
     return (
-      <div className="dailyLootContainer">
-        <BottomBorderDivider label='DAILY LOOT' />
+      <div className={`dailyLootContainer${this.props.scene ? ' dailyLootContainer--scene' : ''}`}>
+        {!this.props.scene && <BottomBorderDivider label='DAILY LOOT' />}
         {data ? <div className="dailyLoots">
-          {chestsOrder.map((color) => {
+          {(this.props.scene ? sceneChest(data) : chestsOrder).map((color) => {
             const chest = data[color];
 
             if (chest) {

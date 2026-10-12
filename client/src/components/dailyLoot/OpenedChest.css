@@ -1,0 +1,235 @@
+/* ---- Chest reveal: a dark hall, a beam of hearth light, the chest and what it held -------- */
+
+.chest-reveal {
+  --chest-tint: oklch(72% .12 60);
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(60% 55% at 50% 42%, oklch(24% .05 50 / .9), oklch(8% .015 255 / .96) 70%);
+  animation: chest-fade-in 220ms ease-out both;
+  user-select: none;
+}
+.chest-reveal--silver { --chest-tint: oklch(86% .03 240); }
+.chest-reveal--gold { --chest-tint: oklch(85% .15 88); }
+
+/* Slow rays behind the chest, coloured by its metal. */
+.chest-reveal-rays {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(from 0deg, color-mix(in oklch, var(--chest-tint) 16%, transparent) 0 6deg, transparent 6deg 20deg);
+  mask: radial-gradient(closest-side, #000 8%, transparent 62%);
+  opacity: 0;
+  transition: opacity 600ms ease-out;
+  animation: chest-rays 40s linear infinite;
+}
+.chest-reveal.is-open .chest-reveal-rays { opacity: 1; }
+
+.chest-reveal-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(920px, calc(100vw - 32px));
+  max-height: 100vh;
+  padding: 24px 0;
+}
+
+.chest-reveal-title {
+  margin: 0;
+  font: 2rem/1.1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: var(--chest-tint);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  text-shadow: 0 2px 0 oklch(12% .03 40), 0 0 24px color-mix(in oklch, var(--chest-tint) 45%, transparent);
+  animation: chest-title-in 420ms cubic-bezier(.2, .9, .3, 1.3) both;
+}
+
+.chest-reveal-chest {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 200px;
+  height: 160px;
+}
+.chest-reveal-chest img {
+  width: 180px;
+  height: auto;
+  filter: drop-shadow(0 14px 8px oklch(4% .02 255 / .7));
+  transform-origin: 50% 85%;
+  animation: chest-rattle 700ms ease-in-out infinite;
+}
+.chest-reveal.is-open .chest-reveal-chest img {
+  animation: chest-pop 520ms cubic-bezier(.2, .9, .3, 1.4) both;
+  filter: drop-shadow(0 0 26px color-mix(in oklch, var(--chest-tint) 70%, transparent)) drop-shadow(0 14px 8px oklch(4% .02 255 / .7));
+}
+
+/* Embers thrown out of the chest as it opens. */
+.chest-reveal-burst { position: absolute; inset: 50% auto auto 50%; }
+.chest-reveal-burst i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 10px 2px var(--ember-glow);
+  opacity: 0;
+}
+.chest-reveal.is-open .chest-reveal-burst i { animation: chest-ember 900ms cubic-bezier(.15, .7, .3, 1) both; }
+.chest-reveal-burst i:nth-child(3n) { background: var(--chest-tint); }
+.chest-reveal-burst i:nth-child(2n) { animation-duration: 1150ms !important; }
+
+.chest-reveal-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  min-height: 182px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each reward is dealt like a card from the chest. */
+.chest-reward {
+  --rarity: oklch(72% .02 240);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 148px;
+  padding: 14px 10px 12px;
+  border: 1px solid color-mix(in oklch, var(--rarity) 60%, transparent);
+  border-radius: 12px;
+  background:
+    radial-gradient(90% 60% at 50% 0%, color-mix(in oklch, var(--rarity) 22%, transparent), transparent 70%),
+    linear-gradient(oklch(19% .025 250), oklch(13% .02 252));
+  box-shadow: 0 12px 28px oklch(4% .02 255 / .55), inset 0 1px 0 oklch(100% 0 0 / .06);
+  text-align: center;
+  animation: chest-deal 520ms cubic-bezier(.2, .9, .3, 1.25) both;
+  animation-delay: calc(380ms + var(--i, 0) * 160ms);
+}
+.chest-reward--rare { --rarity: oklch(72% .14 245); }
+.chest-reward--epic { --rarity: oklch(68% .19 305); }
+.chest-reward--legendary { --rarity: oklch(80% .16 75); box-shadow: 0 12px 28px oklch(4% .02 255 / .55), 0 0 22px oklch(80% .16 75 / .35); }
+.chest-reward--gold { --rarity: oklch(84% .15 88); }
+
+.chest-reward-icon {
+  --cell: 64px;
+  width: var(--cell);
+  height: var(--cell);
+  margin-bottom: 4px;
+  background-repeat: no-repeat;
+  background-size: calc(var(--cell) * 10) auto;
+  background-position: calc(var(--fx, 0) * -1 * var(--cell)) calc(var(--fy, 0) * -1 * var(--cell));
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 2px oklch(4% .02 255 / .7));
+}
+.chest-reward-icon.is-gold { background-size: contain; background-position: center; image-rendering: auto; }
+
+.chest-reward-amount {
+  position: absolute;
+  top: 54px;
+  right: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: oklch(13% .02 250 / .9);
+  border: 1px solid color-mix(in oklch, var(--rarity) 60%, transparent);
+  font: 1rem/1.4 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: oklch(90% .13 90);
+}
+.chest-reward--gold .chest-reward-amount { position: static; font-size: 1.5rem; border: 0; background: none; padding: 0; }
+
+.chest-reward-name {
+  font: 1rem/1.15 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+.chest-reward-kind {
+  font-size: .75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.chest-reward-rarity {
+  margin-top: auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--rarity) 18%, transparent);
+  color: var(--rarity);
+  font-size: .6875rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.chest-reveal-continue {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 200px;
+  margin-top: 8px;
+  padding: 10px 28px;
+  border: 1px solid oklch(78% .14 62);
+  border-radius: 10px;
+  background: linear-gradient(oklch(64% .17 48), oklch(50% .16 38));
+  box-shadow: 0 8px 20px oklch(4% .02 255 / .5), 0 0 18px var(--ember-glow), inset 0 1px 0 oklch(100% 0 0 / .25);
+  color: oklch(98% .02 80);
+  font: 1.375rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 oklch(30% .1 35);
+  cursor: var(--game-pointer);
+  transition: transform 120ms ease-out, filter 120ms ease-out;
+}
+.chest-reveal.is-open .chest-reveal-continue {
+  animation: chest-fade-in 300ms ease-out both;
+  animation-delay: calc(560ms + var(--n, 0) * 160ms);
+}
+.chest-reveal-continue:hover:not(:disabled), .chest-reveal-continue:focus-visible { transform: translateY(-2px); filter: brightness(1.1); }
+.chest-reveal-continue:disabled { opacity: .45; filter: saturate(.4); cursor: var(--game-arrow); }
+
+@keyframes chest-fade-in { from { opacity: 0; } }
+@keyframes chest-rays { to { rotate: 360deg; } }
+@keyframes chest-title-in { from { opacity: 0; transform: translateY(-14px) scale(.9); } }
+@keyframes chest-rattle {
+  0%, 100% { transform: rotate(0) scale(1); }
+  20% { transform: rotate(-5deg) scale(1.02, .98); }
+  40% { transform: rotate(4deg) scale(.98, 1.03); }
+  60% { transform: rotate(-3deg); }
+  80% { transform: rotate(2deg); }
+}
+@keyframes chest-pop {
+  0% { transform: scale(.92, 1.06); }
+  45% { transform: scale(1.16, .9) translateY(-6px); }
+  100% { transform: scale(1); }
+}
+@keyframes chest-ember {
+  0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1.2); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-170px) scale(.3); }
+}
+@keyframes chest-deal {
+  from { opacity: 0; transform: translateY(-90px) scale(.4) rotate(-8deg); }
+}
+
+@media (max-height: 640px) {
+  .chest-reveal-stage { gap: 8px; }
+  .chest-reveal-title { font-size: 1.5rem; }
+  .chest-reveal-chest { height: 110px; }
+  .chest-reveal-chest img { width: 124px; }
+  .chest-reveal-rewards { min-height: 150px; gap: 10px; }
+  .chest-reward { width: 128px; padding: 10px 8px; }
+  .chest-reward-icon { --cell: 48px; }
+  .chest-reward-amount { top: 42px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chest-reveal, .chest-reveal *, .chest-reveal-rays { animation: none !important; }
+  .chest-reveal-burst { display: none; }
+}

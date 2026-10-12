@@ -5,17 +5,16 @@ import IdentityIntro from './pageIntro/IdentityIntro';
 import { h } from 'preact';
 // PlayPage.tsx
 import { Component, createRef } from 'preact';
-import Roster from './roster/Roster';
+import PartyHall from './playHall/PartyHall';
+import {HearthSound} from './playHall/useHearthSound';
 import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
 import DailyQuest from './dailyQuest/DailyQuest';
-import DailyLoot from './dailyLoot/DailyLoot';
 import Ghost from './ghost/Ghost';
 import { PlayerContext } from '../contexts/PlayerContext';
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
 import { firebaseAuth } from '../services/firebaseService';
 import PopupManager, { Popup } from './popups/PopupManager';
-import { LockedFeatures } from "@legion/shared/enums";
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
   static contextType = PlayerContext;
@@ -185,7 +184,7 @@ class PlayPage extends Component {
     }
 
     return (
-      <div className="play-content">
+      <div className="play-content play-hall">
         {this.identityOpen()
           ? <IdentityIntro onClose={() => this.setState({identityClosed: true})} />
           : this.introOpen()
@@ -194,9 +193,9 @@ class PlayPage extends Component {
               ref={this.popupManagerRef}
               onPopupResolved={this.handlePopupResolved}
             />}
-        <Roster/>
+        <PartyHall />
+        <HearthSound />
         {data ? <PlayModes /> : <Ghost height={280} count={4} className="ghost-row" width="13rem" />}
-        {this.context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={this.context.player.dailyloot} />}
         {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}
         {ENABLE_SPECTATOR_MODE && <OnGoingArena ongoingGameData={data.ongoingGames} />}
       </div>

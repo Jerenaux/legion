@@ -29,7 +29,7 @@
     border: 1px solid #244752;
     border-radius: 4px;
     padding: 4px 8px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -105,7 +105,7 @@
 }
 
 .character-info-dialog-control-btn:hover {
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .character-info-dialog-control-val {
@@ -362,7 +362,7 @@
     border-radius: 4px;
     color: white;
     margin: 0 6px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .dialog-spell-modal-confirm {
@@ -481,7 +481,7 @@
     gap: 4px;
     padding: 4px 8px;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-size: 0.5rem !important;
 }
 
