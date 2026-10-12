@@ -1121,7 +1121,7 @@
   "No community has a ranked win this week.": "本周还没有社区取得排位胜利。",
   "Enter a creator code on your profile to represent a community.": "在个人资料中输入创作者代码即可代表一个社区。",
   "Looking up this community…": "正在查找社区…",
-  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.": "其纹章会显示在你在对战、个人资料和排行榜中的名字旁。你的排位胜场计入该社区的每周排名。你只能加入一个社区，且无法退出。",
+  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.": "其纹章会显示在你在对战、个人资料和排行榜中的名字旁。你的排位胜场计入该社区的每周排名。你只能加入一个社区。",
   "Joining…": "正在加入…",
   "Your ranked wins now count toward its weekly ranking.": "你的排位胜场现在计入其每周排名。",
   "No community uses the code {{value0}}.": "没有社区使用代码 {{value0}}。",

@@ -58,7 +58,7 @@ export default function JoinCommunityDialog({code, via, onClose}: Props) {
 
   const message = {
     'loading': t('Looking up this community…'),
-    'confirm': t('Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.'),
+    'confirm': t('Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.'),
     'joining': t('Joining…'),
     'joined': t('Your ranked wins now count toward its weekly ranking.'),
     'not-found': t('No community uses the code {{value0}}.', {value0: code.toUpperCase()}),
@@ -76,6 +76,7 @@ export default function JoinCommunityDialog({code, via, onClose}: Props) {
       : shown && step !== 'not-found' ? shown.name : t('Join a community')}</h2>
     {shown && step !== 'not-found' && <p className="community-dialog-tag">{shown.tag}</p>}
     <p className="gift-message" aria-live="polite" aria-busy={step === 'loading' || step === 'joining'}>{message}</p>
+    {(step === 'loading' || step === 'joining') && <span className="gift-spinner" aria-hidden="true" />}
     {step !== 'loading' && step !== 'joining' && <div className="gift-actions">
       {step === 'confirm' && <button type="button" onClick={join}>{t('Join')}</button>}
       {step === 'joined' && <button type="button" onClick={openCommunity}>{t('View community')}</button>}

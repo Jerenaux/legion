@@ -70,6 +70,8 @@
 .gift-actions button:active { transform: translateY(2px); }
 .gift-actions button:focus-visible { outline: 3px solid oklch(0.97 0.02 90); outline-offset: 5px; }
 .gift-dialog .item-details-tooltip { z-index: 2; text-align: left; }
+.gift-spinner { display: block; width: 36px; height: 36px; margin: 24px auto 0; border: 3px solid oklch(0.32 0.03 250); border-top-color: oklch(0.86 0.15 90); border-radius: 50%; animation: gift-spin 800ms linear infinite; }
+@keyframes gift-spin { to { transform: rotate(360deg); } }
 @keyframes gift-arrive { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (max-height: 650px), (max-width: 600px) {
   .gift-dialog { padding: 16px 20px; }
@@ -87,5 +89,6 @@
 @media (prefers-reduced-motion: reduce) {
   .gift-dialog, .gift-dialog--received .gift-chest, .gift-rewards li { animation: none; }
   .gift-reward .gift-loot-slot, .gift-actions button { transition: none; }
+  .gift-spinner { animation-duration: 2.4s; }
 }
 .gift-from { display: inline-flex; align-items: center; gap: 8px; margin: -4px 0 6px; color: oklch(0.88 0.13 90); font-size: .95rem; letter-spacing: .04em; }

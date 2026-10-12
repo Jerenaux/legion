@@ -121,6 +121,7 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
       })}</ul>}
       {success && <p className="gift-hint">{t('Hover over or focus a reward to inspect it. Equip your gear in Team.')}</p>}
     </div>
+    {receipt?.status === 'loading' && <span className="gift-spinner" aria-hidden="true" />}
     {receipt?.status !== 'loading' && <div className="gift-actions">
       {receipt?.status === 'error' && <button type="button" onClick={claim}>{t('Try again')}</button>}
       <button type="button" data-desktop-cancel onClick={close}>{t(receipt?.status === 'error' ? 'Later' : 'Continue')}</button>

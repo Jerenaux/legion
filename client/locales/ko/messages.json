@@ -1121,7 +1121,7 @@
   "No community has a ranked win this week.": "이번 주에 랭크 승리를 거둔 커뮤니티가 없습니다.",
   "Enter a creator code on your profile to represent a community.": "프로필에서 크리에이터 코드를 입력하면 커뮤니티를 대표할 수 있습니다.",
   "Looking up this community…": "커뮤니티를 찾는 중…",
-  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.": "문장이 경기, 프로필, 순위표에서 이름 옆에 표시됩니다. 랭크 승리는 커뮤니티의 주간 순위에 반영됩니다. 커뮤니티는 하나만 가입할 수 있으며 탈퇴할 수 없습니다.",
+  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.": "문장이 경기, 프로필, 순위표에서 이름 옆에 표시됩니다. 랭크 승리는 커뮤니티의 주간 순위에 반영됩니다. 커뮤니티는 하나만 가입할 수 있습니다.",
   "Joining…": "가입 중…",
   "Your ranked wins now count toward its weekly ranking.": "이제 랭크 승리가 커뮤니티 주간 순위에 반영됩니다.",
   "No community uses the code {{value0}}.": "{{value0}} 코드를 사용하는 커뮤니티가 없습니다.",
