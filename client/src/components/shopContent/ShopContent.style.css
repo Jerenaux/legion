@@ -33,7 +33,7 @@
     box-sizing: border-box;
     min-height: 44px;
     padding: 8px 18px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     text-decoration: none;
     color: var(--text-muted);
     transition: background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;

@@ -58,7 +58,7 @@ a.profile-community:focus-visible { outline: 2px solid var(--gold); outline-offs
   color: oklch(20% .035 60);
   font: inherit;
   text-transform: uppercase;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 .profile-community-entry button:disabled { filter: grayscale(.8) brightness(.7); cursor: not-allowed; }
 .profile-community-entry button:focus-visible { outline: 2px solid var(--text-strong); outline-offset: 2px; }

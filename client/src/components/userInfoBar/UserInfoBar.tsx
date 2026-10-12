@@ -23,7 +23,7 @@ class UserInfoBar extends Component<BarProps> {
         const leagueIcon = getLeagueIcon(this.props.league);
 
         return (
-            <div className="userInfoBar">
+            <div className={`userInfoBar userInfoBar--${this.props.isLeague ? 'league' : this.props.icon}`}>
                 <div className="barLogo">
                     <img
                         src={this.props.isLeague ? leagueIcon : iconsMap[this.props.icon]}

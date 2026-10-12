@@ -64,7 +64,7 @@
 }
 
 .sheet-item:hover {
-    cursor: pointer;
+    cursor: var(--game-pointer);
     border: 1px solid #71deff;
 }
 
@@ -79,7 +79,7 @@
 }
 
 .equip-item:hover {
-    cursor: pointer;
+    cursor: var(--game-pointer);
     background-image: url('@assets/inventory/box_btn_active.png');
 }
 
@@ -132,7 +132,7 @@
 }
 
 .team-sp-container {
-    cursor: pointer;
+    cursor: var(--game-pointer);
     background-image: url('@assets/inventory/sp_bg_active.png');
     background-size: 100% 100%;
     width: 60px;
@@ -265,7 +265,7 @@
     border-radius: 4px;
     padding: 4px;
     position: relative;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .character-info-bar .info-class {
@@ -324,7 +324,7 @@
     background-image: url('@assets/inventory/add_stat_btn.png');
     background-size: 100% 100%;
     border: none;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .character-info-bar .info-bar-plus:hover {
@@ -358,7 +358,7 @@
 }
 
 .character-icon:hover {
-    cursor: pointer;
+    cursor: var(--game-pointer);
     border: 1px solid #71deff;
 }
 
@@ -403,6 +403,6 @@
 }
 
 .team-items .team-item:hover {
-    cursor: pointer;
+    cursor: var(--game-pointer);
     border: 1px solid #71deff;
 }

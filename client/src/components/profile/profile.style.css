@@ -312,7 +312,7 @@
     border-radius: 4px;
     color: white;
     padding: 6px 12px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.75rem;
     transition: all 0.2s ease;
@@ -355,7 +355,7 @@
     border-radius: 4px;
     color: white;
     padding: 8px 16px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.875rem;
     transition: all 0.2s ease;
@@ -389,7 +389,7 @@
 
 .profile-add-friend.is-friend {
     background: linear-gradient(135deg, #49d874, #2a7a4b);
-    cursor: default;
+    cursor: var(--game-arrow);
     opacity: 0.9;
 }
 
@@ -415,7 +415,7 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     transition: all 0.3s ease;
     padding: 10px;
     border-radius: 8px;
@@ -483,7 +483,7 @@
     border-radius: 4px;
     color: white;
     padding: 6px 12px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.75rem;
     transition: all 0.2s ease;
@@ -498,7 +498,7 @@
 /* Style for when already friends - remove hover effects and use green gradient */
 .add-friend-btn.is-friend {
     background: linear-gradient(135deg, #49d874, #2a7a4b);
-    cursor: default;
+    cursor: var(--game-arrow);
     opacity: 0.9;
     transform: none;
     transition: none;
@@ -586,7 +586,7 @@
     border-radius: 4px;
     font-size: 0.625rem;
     white-space: nowrap;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     border: 1px solid #f44336;
 }
 
@@ -645,7 +645,7 @@
     border-radius: 4px;
     color: white;
     padding: 8px 16px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.875rem;
     transition: all 0.2s ease;
@@ -868,7 +868,7 @@
 }
 
 .edit-name-icon {
-    cursor: pointer;
+    cursor: var(--game-pointer);
     opacity: 0.7;
     transition: opacity 0.2s;
     padding: 4px;
@@ -914,7 +914,7 @@
     border-radius: 4px;
     color: white;
     padding: 8px 16px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     font-size: 0.875rem;
     transition: all 0.2s ease;
@@ -957,7 +957,7 @@
     height: 32px;
     background: rgba(0, 0, 0, 0.8);
     border-radius: 50%;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1021,7 +1021,7 @@
     background: none;
     border: none;
     color: #fff;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-size: 1.5rem;
     padding: 0;
 }
@@ -1039,7 +1039,7 @@
     border-radius: 50%;
     background-size: 120%;
     background-position: center;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     border: 2px solid transparent;
     transition: all 0.2s ease;
 }

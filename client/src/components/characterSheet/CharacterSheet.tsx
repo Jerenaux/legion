@@ -5,7 +5,7 @@ import {Trans} from '../../i18n/Trans';
 import { h } from 'preact';
 import { Component, ComponentChildren } from 'preact';
 import './CharacterSheet.style.css';
-import { classEnumToString, mapFrameToCoordinates, getSpritePath, getStatEnum } from '../utils';
+import { classEnumToString, mapFrameToCoordinates, getSpritePath, getStatEnum, raritySlotStyle } from '../utils';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -14,7 +14,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { getConsumableById } from '@legion/shared/Items';
 import ItemDialog from '../itemDialog/ItemDialog';
 import { getXPThreshold } from '@legion/shared/levelling';
-import { Class, EquipmentSlot, InventoryActionType, InventoryType, RarityColor, statFieldsByIndex,
+import { Class, EquipmentSlot, InventoryActionType, InventoryType, statFieldsByIndex,
     STATS_BG_COLOR, ItemDialogType, SPSPendingData
  } from '@legion/shared/enums';
 import { Effect } from '@legion/shared/interfaces';
@@ -228,7 +228,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 const equipmentItem = getEquipmentById(item.value);
 
                 const slotStyle = {
-                    backgroundImage: item.value >= 0 && `linear-gradient(to bottom right, ${RarityColor[equipmentItem?.rarity]}, #1c1f25)`
+                    ...(item.value >= 0 ? raritySlotStyle(equipmentItem?.rarity) : {}),
                 }
 
                 if (this.props.selectedEquipmentSlot > -1) { // Equipping something
@@ -301,9 +301,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     const item = dataCallback(items[i]);
                     const coordinates = mapFrameToCoordinates(item?.frame);
 
-                    const slotStyle = {
-                        backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
-                    }
+                    const slotStyle = raritySlotStyle(item?.rarity);
 
                     return (
                         <button type="button" data-game-control className="team-item" key={i} style={(inventoryType === InventoryType.SPELLS || inventoryType === InventoryType.CONSUMABLES) && slotStyle}

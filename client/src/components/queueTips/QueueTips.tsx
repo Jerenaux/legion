@@ -36,22 +36,20 @@ export class QueueTips extends Component<{}, QueueTipsState> {
 
     render() {
         return (
-            <div className="queue-tips">
+            <section className="queue-tips" aria-live="polite">
+                <button type="button" data-game-control onClick={this.prevTip} className="queue-tips-arrow prev" aria-label={t("Previous")}>
+                    <svg viewBox="0 0 12 16" width="12" height="16" aria-hidden="true"><path d="M10 1 2 8l8 7z" fill="currentColor" /></svg>
+                </button>
                 <div className="queue-tips-container">
-                    <div style="font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;">{t("Tips")}</div>
-                    <div>
-                        <span className="queue-tips-text">
-                            {this.state.tips[this.state.tipCount] && t(this.state.tips[this.state.tipCount])}
-                        </span>
-                    </div>
+                    <h2 className="queue-tips-title">{t("Tips")}</h2>
+                    <p className="queue-tips-text">
+                        {this.state.tips[this.state.tipCount] && t(this.state.tips[this.state.tipCount])}
+                    </p>
                 </div>
-                <button type="button" data-game-control onClick={this.prevTip} className="queue-tips-arrow prev">
-                    ◀
+                <button type="button" data-game-control onClick={this.nextTip} className="queue-tips-arrow next" aria-label={t("Next")}>
+                    <svg viewBox="0 0 12 16" width="12" height="16" aria-hidden="true"><path d="m2 1 8 7-8 7z" fill="currentColor" /></svg>
                 </button>
-                <button type="button" data-game-control onClick={this.nextTip} className="queue-tips-arrow next">
-                    ▶
-                </button>
-            </div>
+            </section>
         );
     }
 }

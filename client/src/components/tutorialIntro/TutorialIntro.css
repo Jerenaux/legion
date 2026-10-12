@@ -23,7 +23,7 @@
 .tutorial-intro-scene { border: 1px solid oklch(43% .045 220); background: oklch(12% .02 250); border-radius: 4px; overflow: hidden; }
 .tutorial-intro-scene img { display: block; width: 100%; height: 220px; object-fit: contain; }
 .tutorial-intro-footer { display: flex; align-items: center; gap: 16px; border-top: 1px solid oklch(50% .05 85 / .5); padding-top: 18px; }
-.tutorial-intro button { cursor: pointer; font: 1rem/1.2 var(--locale-font, 'Kim'), sans-serif; }
+.tutorial-intro button { cursor: var(--game-pointer); font: 1rem/1.2 var(--locale-font, 'Kim'), sans-serif; }
 .tutorial-intro button:focus-visible { outline: 2px solid oklch(91% .10 85); outline-offset: 4px; }
 .tutorial-intro-skip, .tutorial-intro-back { border: 0; background: transparent; padding: 10px 0; color: oklch(76% .03 245); }
 .tutorial-intro-skip:hover, .tutorial-intro-back:hover { color: oklch(94% .02 85); }

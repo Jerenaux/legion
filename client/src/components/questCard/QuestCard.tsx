@@ -33,7 +33,7 @@ class QuestCard extends Component<CardProps> {
 
         const bgStyle = {
             backgroundImage: `url(${this.state.active ? questActive : questIdle})`,
-            cursor: 'pointer'
+            cursor: 'var(--game-pointer)'
         }
 
         return (

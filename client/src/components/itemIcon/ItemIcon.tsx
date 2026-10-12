@@ -198,7 +198,7 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
             style={{
               backgroundImage: croppedImageUrl ? `url(${croppedImageUrl})` : 'none',
               backgroundSize: 'cover',
-              cursor: 'pointer',
+              cursor: 'var(--game-pointer)',
             }}
           />
         )}

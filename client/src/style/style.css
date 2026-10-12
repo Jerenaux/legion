@@ -1,9 +1,15 @@
+/* The game's own pointers everywhere: the arrow by default, the gauntlet on anything clickable. */
+html { cursor: var(--game-arrow); }
+:where(a[href], button:not(:disabled), [role="button"], summary, label[for], select) { cursor: var(--game-pointer); }
+:where(input:not([type="checkbox"], [type="radio"], [type="range"]), textarea, [contenteditable="true"]) { cursor: text; }
+
 .firebase-emulator-warning {
   display: none;
 }
 
 :root {
-  --game-pointer: url('@assets/pointers/hand_pointer.png'), auto;
+  --game-pointer: url('@assets/pointers/hand_pointer.png'), pointer;
+  --game-arrow: url('@assets/pointers/general_pointer.png'), auto;
   --desktop-safe-inline: max(env(safe-area-inset-left), calc((100vw - 100vh * 16 / 9) / 2), 0px);
   --desktop-safe-block: max(env(safe-area-inset-top), calc((100vh - 100vw * 9 / 16) / 2), 0px);
   /* Shared menu palette: ink-blue panels, gold for the main action, cyan for selection. */
@@ -544,12 +550,12 @@ canvas {
 
 /* Each screen settles in briefly when opened. */
 .mainContent > * {
-  animation: screen-enter 220ms ease-out both;
+  /* Backwards fill only: a transform left on the screen would trap fixed popups inside it. */
+  animation: screen-enter 220ms ease-out backwards;
 }
 
 @keyframes screen-enter {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -644,7 +650,7 @@ canvas {
   align-items: center;
   color: lightgrey;
   padding: 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   font-size: 0.875rem;
   background-color: #080c15;
   border-radius: 3px;
@@ -654,7 +660,7 @@ canvas {
 
 .notificationBarButton:hover {
   filter: brightness(1.2);
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .notificationBarButton i {
@@ -737,7 +743,7 @@ canvas {
   display: flex;
   padding: 10px;
   border-radius: 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   margin-bottom: 10px;
   margin-right: 20px;
   border: 2px solid #CD853F;
@@ -906,7 +912,7 @@ canvas {
 .leaderboard-table th {
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   color: white;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .leaderboard-table tr:nth-child(even) {
@@ -997,7 +1003,7 @@ canvas {
 }
 
 .button {
-  cursor: pointer;
+  cursor: var(--game-pointer);
   margin: 10px;
 }
 
@@ -1182,7 +1188,7 @@ canvas {
   border: 1px solid #ccc;
   background-color: #F9F6EE;
   border-radius: 15px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .shop-item-card:hover {
@@ -1345,7 +1351,7 @@ canvas {
 
 
 .closebtn {
-  cursor: pointer;
+  cursor: var(--game-pointer);
   color: rgb(222, 24, 24);
   position: absolute;
   top: -10px;
@@ -1370,7 +1376,7 @@ canvas {
 .qty-button {
   margin: 0;
   padding: 0 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 
@@ -1520,7 +1526,7 @@ canvas {
   border: none;
   background-color: gold;
   color: #fff;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-size: 1.25rem;
@@ -1533,7 +1539,7 @@ canvas {
 
 .purchase-adjust {
   border-radius: 5px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
 }
 
 .endgame {
@@ -1733,7 +1739,7 @@ canvas {
   font-size: 1.875rem;
   line-height: 1.375rem;
   text-align: center;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   z-index: 1;
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
@@ -1797,7 +1803,7 @@ a:-webkit-any-link {
   /* Rounded corners */
   color: #ffffff;
   margin-top: 10px;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   width: 80%;
   /* Adjust width as needed */
   text-align: center;
@@ -1955,7 +1961,7 @@ a:-webkit-any-link {
   border-radius: 6px;
   font: 1.0625rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
   letter-spacing: .02em;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   transition: transform 120ms ease-out, box-shadow 120ms ease-out, background-color 120ms ease-out, border-color 120ms ease-out;
 }
 

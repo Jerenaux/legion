@@ -89,7 +89,7 @@
     font-weight: 500;
     letter-spacing: normal;
     text-transform: none;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     transition: border-color 160ms ease-out, background-color 160ms ease-out;
 }
 
@@ -173,7 +173,7 @@
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   border-radius: 8px;
   font-size: 1.25rem;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   transition: all 0.2s;
 }
 
@@ -193,7 +193,7 @@
   border-radius: 8px;
   font-size: 1.25rem;
   font-weight: 600;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   transition: all 0.2s;
   letter-spacing: 0.5px;
   line-height: 1.2;
@@ -242,7 +242,7 @@
   align-items: center;
   border-radius: 10px;
   box-sizing: border-box;
-  cursor: pointer;
+  cursor: var(--game-pointer);
   display: flex;
   font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
   font-size: 1.5rem;

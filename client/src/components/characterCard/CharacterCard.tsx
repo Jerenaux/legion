@@ -37,7 +37,7 @@ class CharacterCard extends Component<APICharacterData> {
 
     const bgStyle = {
       backgroundImage: `url(${this.getBgImagePath(this.state.active)})`,
-      cursor: 'pointer'
+      cursor: 'var(--game-pointer)'
     }
 
     return (

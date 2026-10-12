@@ -193,7 +193,7 @@
   animation-delay: calc(560ms + var(--n, 0) * 160ms);
 }
 .chest-reveal-continue:hover:not(:disabled), .chest-reveal-continue:focus-visible { transform: translateY(-2px); filter: brightness(1.1); }
-.chest-reveal-continue:disabled { opacity: .45; filter: saturate(.4); cursor: default; }
+.chest-reveal-continue:disabled { opacity: .45; filter: saturate(.4); cursor: var(--game-arrow); }
 
 @keyframes chest-fade-in { from { opacity: 0; } }
 @keyframes chest-rays { to { rotate: 360deg; } }

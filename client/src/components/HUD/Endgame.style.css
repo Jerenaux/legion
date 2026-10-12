@@ -15,7 +15,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     text-transform: uppercase;
     transition: all 0.2s ease;
@@ -212,7 +212,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     z-index: 10;
     position: relative;
     transition: transform 0.2s ease;
@@ -324,7 +324,7 @@
     align-items: center;
 
     padding-right: 8px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 
     position: absolute;
     bottom: 36px;

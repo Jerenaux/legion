@@ -17,8 +17,9 @@ import {getSpritePath, classEnumToString} from '../utils';
 import lockIcon from '@assets/lock.png';
 import './PlayHall.css';
 
-/** On the Team page the party stays at the fire without the chest, and the open character is marked. */
-export default function PartyHall({team = false}: {team?: boolean}) {
+/** On the Team page the party stays at the fire without the chest, and the open character is marked.
+ *  The queue shows the party without the chest too. */
+export default function PartyHall({team = false, chest = !team}: {team?: boolean; chest?: boolean}) {
   const context = useContext(PlayerContext);
   const characters = context.characters as APICharacterData[];
   const active = team ? context.getActiveCharacter() : null;
@@ -78,7 +79,7 @@ export default function PartyHall({team = false}: {team?: boolean}) {
           </li>}
         </ul>
       ) : <Ghost height={150} count={3} className="ghost-row" width="10rem" />}
-      {!team && context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={context.player.dailyloot} scene />}
+      {chest && context.canAccessFeature(LockedFeatures.DAILY_LOOT) && <DailyLoot data={context.player.dailyloot} scene />}
     </section>
   );
 }

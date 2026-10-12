@@ -461,7 +461,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
                 </div>
 
                 {/* The party waits by the hearth while the match is found. */}
-                {!isLobbyMode && <PartyHall />}
+                {!isLobbyMode && <PartyHall chest={false} />}
 
                 <button type="button" className="queue-guide-card" onClick={() => this.showGuide(true)}>
                     <svg className="queue-guide-icon" viewBox="0 0 80 80" fill="none" aria-hidden="true">

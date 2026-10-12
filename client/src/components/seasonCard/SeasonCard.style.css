@@ -128,7 +128,7 @@
     height: 36px;
     padding: 2px 6px;
     margin-right: 6px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .season-share-button img {

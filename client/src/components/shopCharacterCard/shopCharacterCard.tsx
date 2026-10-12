@@ -11,8 +11,8 @@ import { modalData } from '../shopContent/ShopContent';
 import { APICharacterData } from '@legion/shared/interfaces';
 
 import { spells } from '@legion/shared/Spells';
-import { mapFrameToCoordinates } from '../utils';
-import { Class, Target, RarityColor, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from '@legion/shared/enums';
+import { mapFrameToCoordinates, raritySlotStyle } from '../utils';
+import { Class, Target, statFieldsByIndex, STATS_BG_COLOR, StatLabels } from '@legion/shared/enums';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import ClassCrest from '../HUD/ClassCrest';
 
@@ -99,7 +99,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
             {data.skills.map((item, i) => (
               <button type="button" data-game-control
                 key={i}
-                style={{ backgroundImage: `linear-gradient(to bottom right, ${RarityColor[getSpell(item)?.rarity]}, #1c1f25)` }}
+                style={raritySlotStyle(getSpell(item)?.rarity)}
                 className="shop-character-card-slot"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -111,7 +111,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
                   style={{
                     backgroundImage: `url(${spellsSpritesheet})`,
                     backgroundPosition: `-${mapFrameToCoordinates(getSpell(item).frame).x}px -${mapFrameToCoordinates(getSpell(item).frame).y}px`,
-                    cursor: 'pointer',
+                    cursor: 'var(--game-pointer)',
                   }}
                 />
               </button>

@@ -43,7 +43,7 @@
     border: 1px solid #244752;
     border-radius: 4px;
     padding: 4px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -96,7 +96,7 @@
     align-items: center;
     font-weight: 600;
     color: #ffffff;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .purchase-count {

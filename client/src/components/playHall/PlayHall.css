@@ -253,7 +253,7 @@
 
 .party-member--recruit .party-member-name { white-space: normal; text-align: center; font-size: .875rem; }
 
-.party-member--recruit.is-locked { cursor: default; }
+.party-member--recruit.is-locked { cursor: var(--game-arrow); }
 .party-member--recruit.is-locked:hover { transform: none; background: none; }
 
 .party-recruit-progress {
@@ -392,7 +392,7 @@
 
 /* ---- Team page: the same fire, smaller, with the open character stepping into its light ---- */
 
-.party-hall--team { padding-top: 8px; margin-bottom: 6px; }
+.party-hall--team { padding-top: 8px; margin-bottom: 26px; }
 .party-hall--team .party-hall-members > li:not(.party-hall-hearth) { transform: translateY(calc((var(--ring, 1) - 1) * 12px)); }
 .party-hall--team .party-hall-hearth { width: 110px; }
 .party-hall--team .party-hall-fire { scale: .72; transform-origin: 50% 100%; bottom: -34px; }

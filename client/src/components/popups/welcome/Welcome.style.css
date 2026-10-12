@@ -62,7 +62,7 @@
     border-radius: 8px; /* Rounded corners */
     color: #ffffff;
     margin: 10px 0; /* Vertical margin for spacing between buttons */
-    cursor: pointer;
+    cursor: var(--game-pointer);
     width: 80%; /* Adjust width as needed */
     text-align: center;
     transition: all 0.3s ease; /* Smooth hover and active transition */
@@ -112,7 +112,7 @@
     font-size: 0.875rem;
     margin-top: 20px;
     padding: 10px 20px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     width: 50%; /* Adjust width as needed */
     text-align: center;
   }

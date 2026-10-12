@@ -9,7 +9,7 @@ import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { getEquipmentById } from '@legion/shared/Equipments';
 import ItemIcon from '../itemIcon/ItemIcon';
-import { InventoryActionType, InventoryType, RarityColor } from '@legion/shared/enums';
+import { InventoryActionType, InventoryType } from '@legion/shared/enums';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { inventorySize } from '@legion/shared/utils';
 
@@ -28,7 +28,7 @@ import goldIcon from '@assets/gold_icon.png';
 import { LockedFeatures } from '@legion/shared/enums';
 
 import { INVENTORY_SLOT_PRICE } from '@legion/shared/config';
-import { successToast, errorToast } from '../utils';
+import { successToast, errorToast, raritySlotStyle } from '../utils';
 
 Modal.setAppElement('#root');
 interface InventoryProps {
@@ -121,9 +121,7 @@ class Inventory extends Component<InventoryProps> {
           <div className="section-items">
             {inventory.map((itemId: number, i: number) => {
               const item = getItem(itemId);
-              const slotStyle = {
-                backgroundImage: `linear-gradient(to bottom right, ${RarityColor[item?.rarity]}, #1c1f25)`
-              }
+              const slotStyle = raritySlotStyle(item?.rarity);
 
               return (
                 <div

@@ -73,7 +73,7 @@
 .inventoryCategory:hover {
     background-color: transparent;
     border: 1px solid #a5670f;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .inventoryLabel {
@@ -106,7 +106,7 @@
 
 .categoryBtn:hover {
     opacity: 0.6;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .hint-modal-container {
@@ -147,7 +147,7 @@
 
 .hint-modal-button-container button:hover {
     opacity: 0.7;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     border: 1px solid #8be0f9;
 }
 
@@ -177,7 +177,7 @@
     border-radius: 6px;
     border: 1px solid #46899e;
     background-color: transparent;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -230,7 +230,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 .inventoryWrapper::-webkit-scrollbar {
@@ -263,7 +263,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     transition: all 0.2s ease;
     position: relative;
 }
@@ -432,7 +432,7 @@
     font-size: 0.875rem;
     font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: var(--game-pointer);
     display: flex;
     align-items: center;
     gap: 6px;

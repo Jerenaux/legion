@@ -1240,5 +1240,6 @@
   "No one is lost in battle: HP and MP refill afterwards, and knocked-out characters return.": "戦闘でキャラクターを失うことはありません。HPとMPは回復し、戦闘不能のキャラクターも復帰します。",
   "Spell scrolls: teach a character a new spell for good.": "呪文の巻物：キャラクターに新しい呪文を永続的に習得させます。",
   "Change": "変更",
-  "How matches work": "試合の仕組み"
+  "How matches work": "試合の仕組み",
+  "Previous": "前へ"
 }

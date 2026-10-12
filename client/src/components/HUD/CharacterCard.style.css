@@ -285,7 +285,7 @@
 }
 
 .endgame_character.question-mark-mode {
-    cursor: pointer;
+    cursor: var(--game-pointer);
     transition: transform 0.3s ease;
     width: clamp(120px, 15vw, 180px);
     height: clamp(120px, 15vw, 180px);
@@ -401,7 +401,7 @@
 }
 
 .endgame_character.clickable {
-    cursor: pointer;
+    cursor: var(--game-pointer);
 }
 
 /* Enhance hover effect for clickable cards */
