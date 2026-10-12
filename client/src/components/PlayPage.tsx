@@ -6,6 +6,7 @@ import { h } from 'preact';
 // PlayPage.tsx
 import { Component, createRef } from 'preact';
 import PartyHall from './playHall/PartyHall';
+import {HearthSound} from './playHall/useHearthSound';
 import PlayModes from './playModes/PlayModes';
 import OnGoingArena from './onGoingArena/OnGoingArena';
 import DailyQuest from './dailyQuest/DailyQuest';
@@ -193,6 +194,7 @@ class PlayPage extends Component {
               onPopupResolved={this.handlePopupResolved}
             />}
         <PartyHall />
+        <HearthSound />
         {data ? <PlayModes /> : <Ghost height={280} count={4} className="ghost-row" width="13rem" />}
         {ENABLE_QUESTS && <DailyQuest questData={data.dailyQuests} />}
         {ENABLE_SPECTATOR_MODE && <OnGoingArena ongoingGameData={data.ongoingGames} />}

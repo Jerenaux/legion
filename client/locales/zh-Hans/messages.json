@@ -1241,5 +1241,8 @@
   "Spell scrolls: teach a character a new spell for good.": "法术卷轴：让角色永久学会一个新法术。",
   "Change": "更换",
   "How matches work": "对局规则",
-  "Previous": "上一条"
+  "Previous": "上一条",
+  "navLeagueRank": "{{league}}联赛 · 第{{rank}}名",
+  "navLeagueUnranked": "{{league}}联赛 · 进行一场排位赛即可获得名次",
+  "navGoldHint": "你的金币。可在商店购买道具、法术和新成员。"
 }

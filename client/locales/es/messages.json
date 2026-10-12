@@ -1258,5 +1258,8 @@
   "No one is lost in battle: HP and MP refill afterwards, and knocked-out characters return.": "Nadie se pierde en combate: los PS y PM se recuperan después y los personajes derrotados vuelven.",
   "Spell scrolls: teach a character a new spell for good.": "Pergaminos de hechizo: enseñan a un personaje un hechizo nuevo para siempre.",
   "How matches work": "Cómo funcionan las partidas",
-  "Previous": "Anterior"
+  "Previous": "Anterior",
+  "navLeagueRank": "Liga {{league}} · Puesto {{rank}}",
+  "navLeagueUnranked": "Liga {{league}} · Juega una partida clasificatoria para obtener un puesto",
+  "navGoldHint": "Tu oro. Gástalo en la Tienda en objetos, hechizos y reclutas."
 }

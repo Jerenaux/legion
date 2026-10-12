@@ -353,16 +353,46 @@
 
 /* A chest that can be opened now glows like the hearth. */
 .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-image {
-  filter: drop-shadow(0 0 10px var(--ember-glow)) drop-shadow(0 5px 3px oklch(5% .02 255 / .6));
-  animation: loot-ready 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px var(--ember-glow)) drop-shadow(0 5px 3px oklch(5% .02 255 / .6));
+  transform-origin: 50% 90%;
+  animation: loot-ready 1.8s ease-in-out infinite;
 }
+/* A ready chest is opened with a proper button: ember fill, a glow that breathes. */
 .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-footer {
-  border-color: var(--ember);
-  color: var(--ember);
+  padding: 5px 18px;
+  border: 1px solid oklch(80% .14 65);
+  background: linear-gradient(oklch(66% .17 50), oklch(50% .16 38)) !important;
+  box-shadow: 0 4px 12px oklch(4% .02 255 / .5), inset 0 1px 0 oklch(100% 0 0 / .3);
+  animation: loot-button-glow 1.8s ease-in-out infinite;
 }
-@keyframes loot-ready { 50% { transform: translateY(-2px); } }
+.dailyLootContainer--scene .loot-box-footer .loot-box-open {
+  font: 1rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: oklch(98% .02 80);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-shadow: 0 2px 0 oklch(30% .1 35);
+}
+.dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open):hover .loot-box-footer { filter: brightness(1.12); }
+
+/* Rattles hard twice, hops, then rests: impossible to miss, not tiring to look at. */
+@keyframes loot-ready {
+  0%, 46%, 100% { transform: none; }
+  4% { transform: rotate(-10deg) scale(1.06); }
+  8% { transform: rotate(9deg) scale(1.06); }
+  12% { transform: rotate(-8deg) scale(1.05); }
+  16% { transform: rotate(7deg) scale(1.04); }
+  20% { transform: rotate(-4deg); }
+  24% { transform: rotate(0) translateY(-8px) scale(1.04, .97); }
+  30% { transform: translateY(0) scale(1.06, .94); }
+  36% { transform: scale(.98, 1.03); }
+}
+@keyframes loot-button-glow {
+  0%, 100% { box-shadow: 0 4px 12px oklch(4% .02 255 / .5), inset 0 1px 0 oklch(100% 0 0 / .3), 0 0 0 0 var(--ember-glow); }
+  50% { box-shadow: 0 4px 12px oklch(4% .02 255 / .5), inset 0 1px 0 oklch(100% 0 0 / .3), 0 0 18px 4px var(--ember-glow); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-image { animation: none; }
+  .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-image,
+  .dailyLootContainer--scene .lootBoxContainer:has(.loot-box-open) .loot-box-footer { animation: none; }
 }
 
 /* Characters left of the fire turn to face it. */

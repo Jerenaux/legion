@@ -1,4 +1,4 @@
-import {t, i18n} from '../../i18n/core';
+import {t, i18n, formatNumber} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 
 import { h } from 'preact';
@@ -76,65 +76,39 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
     };
 
     const coordinates = mapFrameToCoordinates(dialogData.frame);
-
-    const spriteStyle = dialogData.isCharacter ? {
-      backgroundImage: `url(${getSpritePath(dialogData.url)})`,
-      width: '68px',
-      minHeight: '98px',
-      backgroundPosition: '-40px -40px',
-      backgroundRepeat: 'no-repeat',
-      animation: 'animate-sprite 0.7s steps(1) infinite',
-      transform: 'scale(.75)',
-    } : {
-      backgroundImage: `url(${dialogData.url})`,
-      backgroundPosition: `-${coordinates.x}px -${coordinates.y}px`,
-      backgroundRepeat: 'no-repeat',
-      width: '32px',
-      height: '32px',
-    };
-
-    const countStyle = !hasEnoughGold ? {
-      color: '#f73b00',
-    } : {};
-
-    const buyBtnStyle = !hasEnoughGold ? {
-      opacity: 0.5,
-      border: '1px solid #71deff',
-      cursor: 'not-allowed'
-    } : {};
+    const total = dialogData.price * this.state.count;
 
     return (
       <Modal isOpen={dialogOpen} style={customStyles} onRequestClose={this.handleCloseDialog}>
-        <div className="purchase-dialog-container">
-          <div className="purchase-dialog-title">
-            <span>{dialogData.isCharacter ? dialogData.name : t(dialogData.name)}</span>
+        <div className={`buy-dialog${dialogData.isCharacter ? ' is-character' : ''}`} role="dialog" aria-label={dialogData.isCharacter ? dialogData.name : t(dialogData.name)}>
+          <p className="buy-dialog-title">{dialogData.isCharacter ? dialogData.name : t(dialogData.name)}</p>
+
+          <div className="buy-dialog-stand">
+            {dialogData.isCharacter
+              ? <span className="buy-dialog-character" style={{backgroundImage: `url(${getSpritePath(dialogData.url)})`}} />
+              : <span className="buy-dialog-item" style={{backgroundImage: `url(${dialogData.url})`, '--fx': coordinates.x / 32, '--fy': coordinates.y / 32}} />}
           </div>
 
-          <div className="purchase-dialog-frame" style={spriteStyle}></div>
-
           {!dialogData.isCharacter && (
-            <div className="purchase-count-container">
-              <button type="button" data-game-control className="purchase-count-button" onClick={() => this.handleCount(false)}><span>-</span></button>
-              <div className="purchase-count">
-                <span>{this.state.count > 9 ? this.state.count : `0${this.state.count}`}</span>
-              </div>
-              <button type="button" data-game-control className="purchase-count-button" onClick={() => this.handleCount(true)}><span>+</span></button>
+            <div className="buy-dialog-count">
+              <button type="button" data-game-control className="buy-dialog-step" aria-label="-" disabled={this.state.count === 1} onClick={() => this.handleCount(false)}>−</button>
+              <output className="buy-dialog-quantity">{this.state.count}</output>
+              <button type="button" data-game-control className="buy-dialog-step" aria-label="+" onClick={() => this.handleCount(true)}>+</button>
             </div>
           )}
 
-          <div className="purchase-dialog-price">
+          <div className={`buy-dialog-price${hasEnoughGold ? '' : ' is-unaffordable'}`} title={hasEnoughGold ? undefined : t('Not enough gold')}>
             <img src={goldIcon} alt={t("cost")} />
-            <span style={countStyle}>{dialogData.price * this.state.count}</span>
+            <span>{formatNumber(total)}</span>
           </div>
 
-          <div className="purchase-dialog-button-container">
-            <button type="button"
-              className="purchase-dialog-accept"
+          <div className="buy-dialog-buttons">
+            <button type="button" data-game-control
+              className="buy-dialog-accept"
               onClick={() => this.props.purchase(dialogData.id, this.state.count, dialogData.price)}
-              style={buyBtnStyle}
               disabled={!hasEnoughGold}
             ><Trans i18n={i18n} i18nKey={"<0/>Buy"} components={[<img src={confirmIcon} alt="" />]} /></button>
-            <button type="button" className="purchase-dialog-decline" onClick={this.handleCloseDialog}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
+            <button type="button" data-game-control className="buy-dialog-cancel" onClick={this.handleCloseDialog}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
           </div>
         </div>
       </Modal>

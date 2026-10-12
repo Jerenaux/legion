@@ -83,7 +83,9 @@
 .team-page > .party-hall { flex: none; }
 
 .team-page .character-inventory-container {
-    flex: 1 0 auto;
+    /* The sheet keeps its natural height; the bag matches it and scrolls. */
+    flex: none;
+    align-items: start;
     display: grid;
     grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
     gap: 18px;
@@ -146,7 +148,7 @@
 .team-page .team-exp-slider-container { height: 6px; border-radius: 3px; background: oklch(10% .02 250 / .8); box-shadow: inset 0 1px 2px oklch(0% 0 0 / .6); }
 .team-page .team-curr-exp-slider { border-radius: 3px; background: linear-gradient(90deg, var(--cyan), oklch(90% .08 200)); box-shadow: 0 0 8px oklch(80% .1 200 / .5); }
 
-.team-page .team-character-info-container { margin-block: auto; padding: 0; gap: 28px; }
+.team-page .team-character-info-container { padding: 6px 0; gap: 28px; }
 .team-page .team-character-container {
     width: 96px;
     height: 128px;
@@ -214,7 +216,7 @@
 /* Inventory: the bag fills the panel and scrolls inside it. */
 .team-page .inventoryFullContainer { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
 /* The bag never sets the row height: it takes the sheet's height and scrolls inside it. */
-@media (min-width: 961px) { .team-page .inventoryFullContainer { contain: size; } }
+@media (min-width: 961px) { .team-page .inventoryFullContainer { contain: size; align-self: stretch; } }
 .team-page .inventoryContainer {
     flex: 1;
     min-height: 0;

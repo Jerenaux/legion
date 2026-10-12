@@ -1241,5 +1241,8 @@
   "Spell scrolls: teach a character a new spell for good.": "呪文の巻物：キャラクターに新しい呪文を永続的に習得させます。",
   "Change": "変更",
   "How matches work": "試合の仕組み",
-  "Previous": "前へ"
+  "Previous": "前へ",
+  "navLeagueRank": "{{league}}リーグ · {{rank}}位",
+  "navLeagueUnranked": "{{league}}リーグ · ランクマッチを1回プレイすると順位がつきます",
+  "navGoldHint": "所持ゴールド。ショップでアイテム、魔法、仲間に使えます。"
 }

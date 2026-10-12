@@ -1,111 +1,153 @@
-.purchase-dialog-container {
-    background-image: url('@assets/shop/daily_bg_idle.png');
-    background-size: 100% 100%;
-    box-sizing: border-box;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: center;
+/* ---- Buy dialog: the item on a lit stand, a quantity stepper, the total, then Buy or Cancel ---- */
+
+.buy-dialog {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 15.5rem;
+  box-sizing: border-box;
+  padding: 18px 16px 16px;
+  border: 1px solid color-mix(in oklch, var(--ember) 45%, var(--ink-edge-soft));
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse 80% 35% at 50% 0%, color-mix(in oklch, var(--ember) 16%, transparent), transparent 70%),
+    var(--panel-bg);
+  box-shadow: var(--panel-shadow), 0 18px 40px oklch(4% .02 255 / .6);
+  color: var(--text-strong);
+  animation: buy-dialog-in 160ms ease-out;
+}
+.buy-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 0 18px auto;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--ember);
+  box-shadow: 0 0 12px var(--ember);
 }
 
-.purchase-dialog-title {
-    background-image: url('@assets/shop/item_title_bg_blue.png');
-    background-size: 100% 100%;
-    width: 100%;
-    padding: 8px 0;
-    display: flex;
-    justify-content: center;
+.buy-dialog-title {
+  margin: 0;
+  max-width: 100%;
+  font: 1.25rem/1.15 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
-.purchase-dialog-title span {
-    font-size: 1rem;
-    font-weight: 400;
-    color: #ffffff;
+.buy-dialog-stand {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 96px;
+  border-radius: 8px;
+  background:
+    radial-gradient(55% 70% at 50% 100%, color-mix(in oklch, var(--ember) 24%, transparent), transparent 75%),
+    linear-gradient(oklch(15% .02 250), oklch(11% .018 250));
+  box-shadow: inset 0 0 0 1px oklch(100% 0 0 / .06), inset 0 -10px 18px oklch(4% .02 255 / .45);
+  overflow: hidden;
 }
 
-.purchase-dialog-frame {
-    width: 84px;
-    height: 84px;
-    border-radius: 8px;
+.buy-dialog-item {
+  --cell: 64px;
+  width: var(--cell);
+  height: var(--cell);
+  background-repeat: no-repeat;
+  background-size: calc(var(--cell) * 10) auto;
+  background-position: calc(var(--fx, 0) * -1 * var(--cell)) calc(var(--fy, 0) * -1 * var(--cell));
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 3px oklch(4% .02 255 / .6));
 }
 
-.purchase-dialog-button-container {
-    display: flex;
-    justify-content: flex-end;
-    gap: 4px;
-    width: 100%;
-    padding-bottom: 4px;
+.buy-dialog-character {
+  width: 80px;
+  height: 96px;
+  margin-top: 8px;
+  background-repeat: no-repeat;
+  background-position: -40px -184px;
+  image-rendering: pixelated;
+  animation: party-idle .9s steps(1) infinite;
+  filter: drop-shadow(0 4px 3px oklch(4% .02 255 / .6));
 }
 
-.purchase-dialog-button-container button {
-    background: transparent;
-    border: 1px solid #244752;
-    border-radius: 4px;
-    padding: 4px;
-    cursor: var(--game-pointer);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1rem;
-    color: #ffffff;
-    min-width: 92px;
+.buy-dialog-count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.buy-dialog-step {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid oklch(55% .09 62 / .6);
+  border-radius: 50%;
+  background: oklch(14% .02 45 / .85);
+  color: var(--ember);
+  font: 1.25rem/1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  transition: background 120ms ease-out, color 120ms ease-out;
+}
+.buy-dialog-step:hover:not(:disabled), .buy-dialog-step:focus-visible { background: oklch(32% .07 52); color: var(--text-strong); }
+.buy-dialog-step:disabled { opacity: .35; }
+.buy-dialog-quantity {
+  min-width: 3ch;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: oklch(10% .018 250 / .75);
+  box-shadow: inset 0 2px 4px oklch(0% 0 0 / .5);
+  font: 1.25rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-align: center;
 }
 
-.purchase-dialog-button-container button:hover {
-    border: 1px solid #71deff;
+.buy-dialog-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold);
+  font: 1.5rem/1 var(--locale-font, 'Kim'), system-ui, sans-serif;
 }
+.buy-dialog-price img { width: 26px; height: auto; }
+.buy-dialog-price.is-unaffordable { color: oklch(72% .17 25); }
+.buy-dialog-price.is-unaffordable img { filter: grayscale(.6) brightness(.85); }
 
-.purchase-dialog-button-container button img {
-    width: 10px;
-    height: 10px;
-    margin-right: 4px;
+.buy-dialog-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
 }
+.buy-dialog-buttons button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font: 1rem/1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+  text-transform: uppercase;
+  transition: transform 120ms ease-out, filter 120ms ease-out, background 120ms ease-out;
+}
+.buy-dialog-buttons img { width: 14px; height: 14px; object-fit: contain; }
+.buy-dialog-accept {
+  border: 1px solid oklch(78% .14 62);
+  background: linear-gradient(oklch(64% .17 48), oklch(50% .16 38));
+  box-shadow: 0 6px 14px oklch(4% .02 255 / .45), inset 0 1px 0 oklch(100% 0 0 / .25);
+  color: oklch(98% .02 80);
+  text-shadow: 0 2px 0 oklch(30% .1 35);
+}
+.buy-dialog-accept img { filter: brightness(0) invert(1); }
+.buy-dialog-accept:hover:not(:disabled), .buy-dialog-accept:focus-visible { transform: translateY(-1px); filter: brightness(1.1); }
+.buy-dialog-accept:disabled { filter: saturate(.3); opacity: .5; cursor: not-allowed; }
+.buy-dialog-cancel {
+  border: 1px solid oklch(45% .04 240 / .7);
+  background: oklch(14% .02 250 / .8);
+  color: var(--text-muted);
+}
+.buy-dialog-cancel:hover, .buy-dialog-cancel:focus-visible { background: oklch(22% .03 245); color: var(--text-strong); }
 
-.purchase-dialog-price {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-}
-
-.purchase-dialog-price img {
-    width: 18px;
-    height: 18px;
-}
-
-.purchase-dialog-price span {
-    font-size: 0.875rem;
-    color: #ffffff;
-}
-
-.purchase-count-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-}
-
-.purchase-count-button {
-    background-image: url('@assets/shop/blue_box_bg.png');
-    background-size: 100% 100%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 600;
-    color: #ffffff;
-    cursor: var(--game-pointer);
-}
-
-.purchase-count {
-    background-image: url('@assets/shop/count_box_bg.png');
-    background-size: 100% 100%;
-    padding: 8px 14px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #ffffff;
-    font-size: 0.75rem;
-}
+@keyframes buy-dialog-in { from { opacity: 0; transform: translateY(6px) scale(.97); } }
+@media (prefers-reduced-motion: reduce) { .buy-dialog, .buy-dialog-character { animation: none; } }

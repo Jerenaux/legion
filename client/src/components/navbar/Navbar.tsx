@@ -18,7 +18,7 @@ import { SettingsModal } from '../settingsModal/SettingsModal';
 import { quitGame } from '../systemMenu/SystemMenu';
 import { isElectron } from '../../utils/electronUtils';
 import { PlayerContext } from '../../contexts/PlayerContext';
-import { LockedFeatures } from "@legion/shared/enums";
+import { LockedFeatures, LeaguesNames } from "@legion/shared/enums";
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { tooltipStyle } from '../itemTooltip';
 
@@ -42,6 +42,8 @@ import rankActiveIconBlank from '@assets/localization/rank-btn-active.png';
 import helpIcon from '@assets/svg/help.svg';
 import copyIcon from '@assets/svg/copy.svg';
 import cogIcon from '@assets/svg/cog.svg';
+import discordIcon from '@assets/svg/discord.svg';
+import xIcon from '@assets/svg/x.svg';
 
 const {version} = require('../../../package.json');
 
@@ -289,12 +291,14 @@ class Navbar extends Component<Props, State> {
                                     </div>
 
                                     <div className="flexContainer" id="goldEloArea">
-                                        <UserInfoBar icon='gold' label={`${this.state.isLoading ? t("Loading...") : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
+                                        <UserInfoBar icon='gold' hint={t("navGoldHint")} label={`${this.state.isLoading ? t("Loading...") : this.formatNumber(Math.round(this.props.playerData?.gold))}`}  />
                                         {playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
                                             <UserInfoBar
                                                 icon='league'
                                                 label={this.state.isLoading ? t("Loading...") : (this.props.playerData?.rank > 0 ? `#${this.props.playerData.rank}` : "–")}
                                                 isLeague={true}
+                                                hint={this.props.playerData?.league === undefined ? undefined
+                                                    : t(this.props.playerData.rank > 0 ? "navLeagueRank" : "navLeagueUnranked", {league: t(LeaguesNames[this.props.playerData.league]), rank: this.formatNumber(this.props.playerData.rank)})}
                                                 bigLabel={!this.state.isLoading}
                                                 league={this.props.playerData?.league}
                                             />
@@ -309,8 +313,8 @@ class Navbar extends Component<Props, State> {
                                                 }}><Trans i18n={i18n} i18nKey={"<0/> Report a problem"} components={[<img src={helpIcon} alt="" />]} /></button>
                                                 <button type="button" onClick={this.copyIDtoClipboard}><Trans i18n={i18n} i18nKey={"<0/> Player ID"} components={[<img src={copyIcon} alt="" />]} /></button>
                                                 <button type="button" onClick={this.toggleSettingsModal}><Trans i18n={i18n} i18nKey={"<0/> Settings"} components={[<img src={cogIcon} alt="" />]} /></button>
-                                                <a href={DISCORD_LINK} target="_blank" rel="noreferrer" onClick={() => this.setState({ openDropdown: false })}>{t("Discord")}</a>
-                                                <a href={X_LINK} target="_blank" rel="noreferrer" onClick={() => this.setState({ openDropdown: false })}>{t("X")}</a>
+                                                <a href={DISCORD_LINK} target="_blank" rel="noreferrer" onClick={() => this.setState({ openDropdown: false })}><img src={discordIcon} alt="" /> {t("Discord")}</a>
+                                                <a href={X_LINK} target="_blank" rel="noreferrer" onClick={() => this.setState({ openDropdown: false })}><img src={xIcon} alt="" /> {t("X")}</a>
                                                 {isElectron() && <button type="button" className="dropdown-quit" onClick={quitGame}><span>{t("Quit game")}</span></button>}
                                                 <small className="dropdown-version">{t("Version {{value0}}", {value0: version})}</small>
                                             </div>

@@ -1241,5 +1241,8 @@
   "Spell scrolls: teach a character a new spell for good.": "Spell scrolls: teach a character a new spell for good.",
   "Change": "Change",
   "How matches work": "How matches work",
-  "Previous": "Previous"
+  "Previous": "Previous",
+  "navLeagueRank": "{{league}} league · Rank {{rank}}",
+  "navLeagueUnranked": "{{league}} league · Play a ranked match to get a rank",
+  "navGoldHint": "Your gold. Spend it in the Shop on items, spells and recruits."
 }
