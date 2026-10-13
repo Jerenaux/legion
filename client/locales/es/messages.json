@@ -1136,7 +1136,7 @@
   "No community has a ranked win this week.": "Ninguna comunidad tiene victorias clasificatorias esta semana.",
   "Enter a creator code on your profile to represent a community.": "Introduce un código de creador en tu perfil para representar a una comunidad.",
   "Looking up this community…": "Buscando esta comunidad…",
-  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.": "Su emblema aparece junto a tu nombre en las partidas, en tu perfil y en las clasificaciones. Tus victorias clasificatorias cuentan para su clasificación semanal. Solo puedes unirte a una comunidad y no puedes abandonarla.",
+  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.": "Su emblema aparece junto a tu nombre en las partidas, en tu perfil y en las clasificaciones. Tus victorias clasificatorias cuentan para su clasificación semanal. Solo puedes unirte a una comunidad.",
   "Joining…": "Uniéndote…",
   "Your ranked wins now count toward its weekly ranking.": "Tus victorias clasificatorias ya cuentan para su clasificación semanal.",
   "No community uses the code {{value0}}.": "Ninguna comunidad usa el código {{value0}}.",

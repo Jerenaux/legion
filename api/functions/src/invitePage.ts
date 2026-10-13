@@ -115,5 +115,5 @@ export function renderInvitePage({gift, community, invalid, language = 'en'}: In
 ${rewards}${steps}${code}
 </main>
 <div class="party" aria-hidden="true"><img src="/assets/warrior.png" alt="" width="220" height="220"><img src="/assets/whitemage.png" alt="" width="220" height="220"><img src="/assets/blackmage.png" alt="" width="220" height="220"></div>
-<footer class="foot"><a href="/">play-legion.io</a><span>${copy.footer}</span></footer></body></html>`;
+<footer class="foot"><a href="https://emberhall.io/">emberhall.io</a><span>${copy.footer}</span></footer></body></html>`;
 }

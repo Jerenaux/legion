@@ -1121,7 +1121,7 @@
   "No community has a ranked win this week.": "今週ランク戦で勝利したコミュニティはまだありません。",
   "Enter a creator code on your profile to represent a community.": "プロフィールでクリエイターコードを入力すると、コミュニティを代表できます。",
   "Looking up this community…": "コミュニティを検索中…",
-  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.": "紋章は試合、プロフィール、ランキングであなたの名前の横に表示されます。ランク戦の勝利はコミュニティの週間ランキングに加算されます。参加できるコミュニティは1つだけで、脱退はできません。",
+  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.": "紋章は試合、プロフィール、ランキングであなたの名前の横に表示されます。ランク戦の勝利はコミュニティの週間ランキングに加算されます。参加できるコミュニティは1つだけです。",
   "Joining…": "参加中…",
   "Your ranked wins now count toward its weekly ranking.": "あなたのランク戦勝利がこのコミュニティの週間ランキングに加算されます。",
   "No community uses the code {{value0}}.": "コード {{value0}} のコミュニティはありません。",

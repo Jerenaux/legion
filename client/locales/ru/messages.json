@@ -1151,7 +1151,7 @@
   "No community has a ranked win this week.": "На этой неделе ни у одного сообщества нет побед в рейтинге.",
   "Enter a creator code on your profile to represent a community.": "Введите код автора в профиле, чтобы представлять сообщество.",
   "Looking up this community…": "Ищем сообщество…",
-  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.": "Её герб появится рядом с вашим именем в матчах, профиле и таблицах лидеров. Ваши победы в рейтинге идут в её недельный рейтинг. Можно вступить только в одно сообщество, и покинуть его нельзя.",
+  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.": "Её герб появится рядом с вашим именем в матчах, профиле и таблицах лидеров. Ваши победы в рейтинге идут в её недельный рейтинг. Можно вступить только в одно сообщество.",
   "Joining…": "Вступаем…",
   "Your ranked wins now count toward its weekly ranking.": "Теперь ваши победы в рейтинге идут в её недельный рейтинг.",
   "No community uses the code {{value0}}.": "Нет сообщества с кодом {{value0}}.",

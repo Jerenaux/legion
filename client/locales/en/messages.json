@@ -1121,7 +1121,7 @@
   "No community has a ranked win this week.": "No community has a ranked win this week.",
   "Enter a creator code on your profile to represent a community.": "Enter a creator code on your profile to represent a community.",
   "Looking up this community…": "Looking up this community…",
-  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.": "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can join one community, and you cannot leave it.",
+  "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.": "Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.",
   "Joining…": "Joining…",
   "Your ranked wins now count toward its weekly ranking.": "Your ranked wins now count toward its weekly ranking.",
   "No community uses the code {{value0}}.": "No community uses the code {{value0}}.",
