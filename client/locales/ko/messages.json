@@ -1245,5 +1245,14 @@
   "Previous": "이전",
   "navLeagueRank": "{{league}} 리그 · {{rank}}위",
   "navLeagueUnranked": "{{league}} 리그 · 랭크 경기를 한 번 하면 순위가 생깁니다",
-  "navGoldHint": "보유 골드입니다. 상점에서 아이템, 주문, 동료 영입에 사용하세요."
+  "navGoldHint": "보유 골드입니다. 상점에서 아이템, 주문, 동료 영입에 사용하세요.",
+  "Steam sign-in failed": "Steam 로그인 실패",
+  "Quit Steam completely, reopen it and sign in. Then launch Emberhall again from your Steam library.": "Steam을 완전히 종료한 뒤 다시 열고 로그인하세요. 그런 다음 Steam 라이브러리에서 Emberhall을 다시 실행하세요.",
+  "itch.io sign-in failed": "itch.io 로그인 실패",
+  "Sign in to the itch.io app again, then launch Emberhall from your library.": "itch.io 앱에 다시 로그인한 뒤 라이브러리에서 Emberhall을 실행하세요.",
+  "Connection failed": "연결 실패",
+  "Sign-in service unavailable": "로그인 서비스를 이용할 수 없음",
+  "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhall이 세션을 확인하지 못했습니다. 잠시 후 다시 시도하세요. 문제가 계속되면 게임 업데이트가 있는지 확인하세요.",
+  "Sign-in failed": "로그인 실패",
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Emberhall을 다시 시작하고 재시도하세요. Steam이나 itch.io에서 실행했다면 해당 서비스에 로그인되어 있는지도 확인하세요."
 }

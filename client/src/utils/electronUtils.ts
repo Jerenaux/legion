@@ -1,7 +1,7 @@
 /**
  * Utility functions for Electron environment detection and interaction
  */
-import type { PlatformCredential } from '../services/platformSession';
+import type { PlatformAuthResult } from '../services/platformSession';
 
 interface ElectronAPI {
   isPackaged?: boolean;
@@ -11,7 +11,7 @@ interface ElectronAPI {
   isFullscreen: () => Promise<boolean>;
   toggleFullscreen: () => Promise<boolean>;
   quitApp: () => Promise<void>;
-  getPlatformAuth: () => Promise<PlatformCredential | null>;
+  getPlatformAuth: () => Promise<PlatformAuthResult>;
   getPendingGift?: () => Promise<string | null>;
   acknowledgeGift?: (token: string) => Promise<void>;
   onGiftAvailable?: (callback: () => void) => () => void;

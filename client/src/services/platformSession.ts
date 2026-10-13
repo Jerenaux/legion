@@ -3,8 +3,17 @@ export type PlatformCredential = {
   credential: string;
 };
 
+export type SessionFailure = 'steam' | 'itch' | 'network' | 'service' | 'unknown';
+export type PlatformAuthResult = PlatformCredential | {error: 'steam'} | null;
+
+export class SessionError extends Error {
+  constructor(public readonly reason: SessionFailure, message: string) {
+    super(message);
+  }
+}
+
 type StorageLike = Pick<Storage, "getItem" | "setItem">;
-type PlatformAPI = {getPlatformAuth?: () => Promise<PlatformCredential | null>};
+type PlatformAPI = {getPlatformAuth?: () => Promise<PlatformAuthResult>};
 type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
 
 const DEVICE_ID_KEY = "legion.deviceId";
@@ -23,7 +32,10 @@ export async function getPlatformCredential(
   randomUUID: () => string,
 ): Promise<PlatformCredential> {
   const native = await platformAPI?.getPlatformAuth?.();
-  if (native) return native;
+  if (native) {
+    if ('error' in native) throw new SessionError(native.error, 'Steam authentication unavailable');
+    return native;
+  }
   return {provider: "direct", credential: getOrCreateDeviceId(storage, randomUUID)};
 }
 
@@ -47,20 +59,26 @@ export async function exchangePlatformCredential(
         signal: attemptSignal,
       });
       if (!response.ok) {
-        const error = new Error(`Platform authentication failed (HTTP ${response.status})`);
+        const reason = [401, 403].includes(response.status) && credential.provider !== 'direct'
+          ? credential.provider : 'service';
+        const error = new SessionError(reason, `Platform authentication failed (HTTP ${response.status})`);
         if (![408, 429].includes(response.status) && response.status < 500) throw error;
         // Drain the error response before retrying so the connection can be reused.
         await response.text();
         if (attempt === 2) throw error;
       } else {
         const session = await response.json() as {customToken?: string};
-        if (!session.customToken) throw new Error("Platform session returned no token");
+        if (!session.customToken) throw new SessionError("service", "Platform session returned no token");
         return session.customToken;
       }
     } catch (error) {
       signal?.throwIfAborted();
       // Fetch rejects with TypeError on network failures; response/validation errors are terminal.
-      if (attempt === 2 || (!attemptSignal.aborted && !(error instanceof TypeError))) throw error;
+      const networkFailure = attemptSignal.aborted || error instanceof TypeError;
+      if (attempt === 2 || !networkFailure) {
+        if (networkFailure) throw new SessionError('network', 'Platform exchange could not complete');
+        throw error;
+      }
     }
     await new Promise<void>((resolve, reject) => {
       const onAbort = () => { clearTimeout(timer); reject(signal?.reason); };

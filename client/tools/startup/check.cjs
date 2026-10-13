@@ -29,8 +29,14 @@ if (!process.versions.electron) {
   const failures = [];
   let rendererLogs = [];
   ipcMain.handle('set-language', () => true);
-  ipcMain.handle('get-platform-auth', () => mode === 'credential'
-    ? new Promise(resolve => { releaseCredential = resolve; }) : null);
+  ipcMain.handle('get-platform-auth', () => {
+    if (mode === 'steam-unavailable') return require('../../electron/platform').getPlatformAuth(
+      {SteamAppId: '3996730'}, () => ({init() {throw new Error('External Steam client disconnected');}}));
+    if (mode === 'steam-rejected' || mode === 'itch-rejected') {
+      return {provider: mode.split('-')[0], credential: 'local-test-credential'};
+    }
+    return mode === 'credential' ? new Promise(resolve => { releaseCredential = resolve; }) : null;
+  });
   const token = () => {
     const now = Math.floor(Date.now() / 1000);
     return ['{"alg":"none"}', JSON.stringify({sub: currentUser, user_id: currentUser,
@@ -54,7 +60,7 @@ if (!process.versions.electron) {
       if (['503-once', '429-once'].includes(mode) && exchanges === 1) {
         response.writeHead(Number(mode.slice(0, 3))); response.end('{}'); return;
       }
-      if (mode === 'rejected') { response.writeHead(401); response.end('{}'); return; }
+      if (['rejected', 'steam-rejected', 'itch-rejected'].includes(mode)) { response.writeHead(401); response.end('{}'); return; }
       if (mode === 'exchange' || mode === 'body') {
         response.on('close', () => { aborted = true; });
         if (mode === 'body') { response.writeHead(200); response.write('{'); }
@@ -103,7 +109,7 @@ if (!process.versions.electron) {
       else resolve();
     }));
     const automatic = ['success', 'stall-once', 'network-once', '503-once', '429-once'];
-    for (const scenario of [...automatic, 'rejected', 'unavailable', 'credential', 'exchange', 'body', 'firebase']) {
+    for (const scenario of [...automatic, 'rejected', 'steam-unavailable', 'steam-rejected', 'itch-rejected', 'unavailable', 'credential', 'exchange', 'body', 'firebase']) {
       mode = scenario;
       currentUser = 'startup-player';
       exchanges = 0;
@@ -131,6 +137,16 @@ if (!process.versions.electron) {
       await window.loadURL(PACKAGED_APP_URL);
       if (!automatic.includes(scenario)) {
         await waitFor(() => read('!!document.querySelector(".session-status__retry")'), `${scenario} recovery`, 35000);
+        const expectedFailure = {
+          'steam-unavailable': 'steam', 'steam-rejected': 'steam', 'itch-rejected': 'itch',
+          rejected: 'service', unavailable: 'service', credential: 'unknown',
+          exchange: 'network', body: 'network', firebase: 'network',
+        }[scenario];
+        assert.equal(await read('document.querySelector("[role=alert]").dataset.sessionFailure'), expectedFailure);
+        const message = await read('document.querySelector(".session-status__message").textContent');
+        assert(message.trim().length > 0 && !/undefined|\{\{|local-test-credential|External Steam client/.test(message));
+        if (scenario === 'steam-unavailable') assert.equal(exchanges, 0, 'Native failure must not fall back to a device account');
+        if (scenario.endsWith('-rejected')) assert.equal(exchanges, 1, 'Rejected store credentials must not retry');
         if (scenario === 'credential' || scenario === 'firebase') {
           assert(Date.now() - started >= 28000, `${scenario}: deadline fired after ${Date.now() - started}ms`);
           const stage = scenario === 'credential' ? 'platform credential' : scenario === 'firebase' ? 'Firebase sign-in' : 'platform exchange';
