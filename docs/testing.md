@@ -54,3 +54,5 @@ Run `bun run lint` at the repository root, `bunx tsc --noEmit` in client, server
 matchmaker and api/functions, and `bun run locales:check` in client. Keep build,
 package and deployment checks; they are not unit tests. Test-only changes do not
 require a product version bump.
+
+- `bun run test:freeze` in `client`: real Electron main-thread freeze, Node stack, power transitions, and bounded diagnostic context, with an isolated temporary profile and local Sentry sink. No visible game window or production telemetry.

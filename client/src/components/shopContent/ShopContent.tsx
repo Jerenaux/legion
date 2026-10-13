@@ -6,7 +6,7 @@ import './ShopContent.style.css';
 import Ghost from '../ghost/Ghost';
 import { Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
-import { apiFetch } from '../../services/apiService';
+import { apiMutation } from '../../services/apiService';
 import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, LockedFeatures } from '@legion/shared/enums';
 import { EQUIPMENT_BATCH_GOLD, MAX_CHARACTERS } from "@legion/shared/config";
 import { ShopItems, APICharacterData } from '@legion/shared/interfaces';
@@ -135,6 +135,7 @@ class ShopContent extends Component<ShopContentProps> {
             spells: spells.sort(sortByRarityAndPrice)
         },
         isLoadingCharacters: false,
+        purchasing: false,
     }
 
     componentDidMount(): void {
@@ -182,7 +183,10 @@ class ShopContent extends Component<ShopContentProps> {
         return this.context.player.gold >= this.state.modalData.price * quantity;
     }
 
-    purchase = async (id: string | number, quantity: number, price: number) => {
+    purchasePending = false;
+
+    purchase = async (id: string | number, quantity: number) => {
+        if (this.purchasePending) return;
         if (!id && id !== 0) {
             errorToast(t("No article selected!"));
             return;
@@ -213,23 +217,21 @@ class ShopContent extends Component<ShopContentProps> {
             inventoryType: this.state.curr_tab
         };
 
-        if (!purchasingCharacter) this.context.applyPurchase(id, price, quantity, this.state.curr_tab);
-        playSoundEffect(purchaseSfx);
-        successToast(t("Purchase successful!"));
-        this.handleCloseModal();
-
-        await apiFetch(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', {
-            method: 'POST',
-            body: payload
-        })
-            .then(() => {
-                if (purchasingCharacter) {
-                    this.props.fetchCharactersOnSale();
-                }
-            })
-            .catch(error => errorToast(userError(error)));
-
-        if (purchasingCharacter) this.context.applyPurchase(id, price, quantity, this.state.curr_tab);
+        this.purchasePending = true;
+        this.setState({purchasing: true});
+        try {
+            await apiMutation(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', payload);
+            this.handleCloseModal();
+            playSoundEffect(purchaseSfx);
+            successToast(t("Purchase successful!"));
+        } catch (error) {
+            silentErrorToast(userError(error));
+        } finally {
+            await this.context.refreshAllData();
+            if (purchasingCharacter) this.props.fetchCharactersOnSale();
+            this.purchasePending = false;
+            this.setState({purchasing: false});
+        }
     }
 
     getEquipmentBatch = (price: number): LockedFeatures | null => {
@@ -478,6 +480,7 @@ class ShopContent extends Component<ShopContentProps> {
                     dialogData={this.state.modalData}
                     handleClose={this.handleCloseModal}
                     purchase={this.purchase}
+                    pending={this.state.purchasing}
                 />
             </div>
         );

@@ -1,3 +1,4 @@
+import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {getDefaultDailyLoot} from "./dailyLoot";
 import {communitySeasonDocId, communitySummary} from '@legion/shared/communities';
 import {Transaction} from "firebase-admin/firestore";
@@ -511,82 +512,33 @@ export const deleteOnSaleCharacters = onRequest({
   });
 });
 
-export const purchaseCharacter = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  logger.info("Purchasing character");
+export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, response) => {
   const db = firestore();
-
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
       const characterId = request.body.articleId;
-
-      if (!characterId) {
-        throw new Error("Character ID is not provided or is invalid.");
+      if (typeof characterId !== 'string' || !characterId || characterId.includes('/') || characterId.length > 200) {
+        throw new MutationError(400, 'Invalid character ID');
       }
-
-      // Fetch the price of the character
-      const characterDoc = await db.collection("characters")
-        .doc(characterId).get();
-      const characterData = characterDoc.data();
-      if (!characterData) {
-        throw new Error("Character does not exist");
-      }
-      if (!characterData.onSale) {
-        throw new Error("Character is not on sale");
-      }
-      const price = characterData.price;
-
-      await db.runTransaction(async (transaction) => {
-        const playerRef = db.collection("players").doc(uid);
-        const playerDoc = await transaction.get(playerRef);
-
-        if (!playerDoc.exists) {
-          throw new Error("Documents do not exist");
-        }
-
-        const playerData = playerDoc.data();
-
-        if (!playerData) {
-          throw new Error("Data does not exist");
-        }
-
-        // Check that player has enough gold to purchase character
-        if (playerData.gold < price) {
-          throw new Error("Player does not have enough gold");
-        }
-
-        // Check if player has less than MAX_CHARACTERS characters
-        if (playerData.characters.length >= MAX_CHARACTERS) {
-          throw new Error("Player has too many characters");
-        }
-
-        // Subtract gold from player
-        transaction.update(playerRef, {
-          gold: admin.firestore.FieldValue.increment(-price),
+      const result = await playerMutation(uid, 'purchaseCharacter', request.body.requestId, {characterId},
+        async (transaction, playerRef, player) => {
+          const characterRef = db.collection('characters').doc(characterId);
+          const character = (await transaction.get(characterRef)).data();
+          if (!character?.onSale) throw new MutationError(409, 'Character is not on sale');
+          if (!Number.isFinite(character.price) || character.price <= 0) throw new MutationError(409, 'Invalid character price');
+          if (player.gold < character.price) throw new MutationError(409, 'Not enough gold!');
+          if (player.characters.length >= MAX_CHARACTERS) throw new MutationError(409, 'Character limit reached!');
+          transaction.update(playerRef, {gold: player.gold - character.price,
+            characters: admin.firestore.FieldValue.arrayUnion(characterRef)});
+          transaction.update(characterRef, {onSale: false, price: 0});
+          return {status: 0};
         });
-
-        // Add character to player's roster
-        transaction.update(playerRef, {
-          characters: admin.firestore.FieldValue.arrayUnion(
-            db.collection("characters").doc(characterId)
-          ),
-        });
-
-        transaction.update(db.collection("characters").doc(characterId), {
-          onSale: false,
-          price: 0,
-        });
-      });
-      console.log("Transaction successfully committed!");
-      logPlayerAction(uid, "purchaseCharacter", {characterId, price});
-      monitorCharactersOnSale(db);
-
-      response.send({status: 0});
+      response.send(result);
+      await monitorCharactersOnSale(db);
     } catch (error) {
-      console.error("Error purchasing character:", error);
-      response.status(401).send("Unauthorized");
+      if (!response.headersSent) mutationFailure(response, 'purchaseCharacter', error);
+      else console.error('Restocking characters failed:', error);
     }
   });
 });

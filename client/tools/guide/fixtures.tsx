@@ -302,3 +302,6 @@ window.fetch = new Proxy(window.fetch, {apply(target, receiver, [input, init]) {
   }));
   return Reflect.apply(target, receiver, [input, init]);
 }});
+
+// New mutation caller shape; this harness exercises telemetry and packaged routing.
+export const apiMutation = (endpoint, body) => apiFetch(endpoint, {body});

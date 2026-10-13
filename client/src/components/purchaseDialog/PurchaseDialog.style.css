@@ -151,3 +151,5 @@
 
 @keyframes buy-dialog-in { from { opacity: 0; transform: translateY(6px) scale(.97); } }
 @media (prefers-reduced-motion: reduce) { .buy-dialog, .buy-dialog-character { animation: none; } }
+
+.buy-dialog-accept .spinner { width: 16px; height: 16px; margin: 0; border-width: 2px; }

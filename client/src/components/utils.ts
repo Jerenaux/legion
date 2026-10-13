@@ -242,8 +242,8 @@ async function recordPlayerAction(actionType: string, details: string) {
         },
       },
     }, 1, 300, true);
-  } catch (error) {
-    console.error(`Error recording player action: ${error}`);
+  } catch {
+    // apiFetch already reports the failure; analytics must not interrupt play.
   }
 }
 

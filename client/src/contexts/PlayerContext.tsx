@@ -1,6 +1,6 @@
 import { createContext } from 'preact';
 import { PlayerContextData, APICharacterData, FriendData, } from '@legion/shared/interfaces';
-import { League, Stat, InventoryActionType, ShopTab, LockedFeatures } from "@legion/shared/enums";
+import { League, Stat, LockedFeatures } from "@legion/shared/enums";
 import { Socket } from 'socket.io-client';
 
 export interface PlayerContextState {
@@ -35,8 +35,6 @@ export const PlayerContext = createContext<{
   updateCharacterStats: (characterId: string, stat: Stat, amount: number) => void;
   getCharacter: (characterId: string) => APICharacterData | undefined;
   getActiveCharacter: () => APICharacterData | undefined;
-  updateInventory: (type: string, action: InventoryActionType, index: number) => void;
-  applyPurchase: (articleId: number, price: number, quantity: number, shoptab: ShopTab) => void;
   updateActiveCharacter: (characterId: string) => void;
   refreshAllData: () => void;
   markWelcomeShown: () => void;
@@ -106,8 +104,6 @@ export const PlayerContext = createContext<{
   updateCharacterStats: () => {},
   getCharacter: () => undefined,
   getActiveCharacter: () => undefined,
-  updateInventory: () => {},
-  applyPurchase: () => {},
   updateActiveCharacter: () => {},
   refreshAllData: () => {},
   markWelcomeShown: () => {},

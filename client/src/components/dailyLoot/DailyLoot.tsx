@@ -1,4 +1,4 @@
-import {t} from '../../i18n/core';
+import {t, userError} from '../../i18n/core';
 import { h } from 'preact';
 // DailyLootBox.tsx
 import './DailyLoot.style.css';
@@ -8,7 +8,7 @@ import Ghost from '../ghost/Ghost';
 
 import { useWindowSize } from '@react-hook/window-size';
 
-import { apiFetch } from '../../services/apiService';
+import { apiMutation } from '../../services/apiService';
 import { silentErrorToast, } from '../utils';
 import { ChestColor } from "@legion/shared/enums";
 import { DailyLootAllAPIData, ChestReward } from "@legion/shared/interfaces";
@@ -51,12 +51,15 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
 
   static contextType = PlayerContext;
 
+  opening = false;
+
   render() {
     const { data } = this.props;
     const chestsOrder = [ChestColor.BRONZE, ChestColor.SILVER, ChestColor.GOLD];
 
     const handleOpen = async (color: ChestColor, countdown: number, hasKey: boolean) => {
 
+      if (this.opening) return;
       // Check if countdown is over and if key is owned
       if (countdown > 0 && !IMMEDIATE_LOOT) {
         silentErrorToast(t("Chest locked, wait for the countdown to end!"));
@@ -67,6 +70,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
         return;
       }
 
+      this.opening = true;
        // Immediately show OpenedChest with loading state
       this.setState({
         chestColor: color,
@@ -75,8 +79,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
       });
 
       try {
-        const data = await apiFetch(`claimChest?chestType=${color}`);
-        this.context.refreshAllData();
+        const data = await apiMutation('claimChest', {chestType: color});
 
         // Update state with fetched data
         this.setState({
@@ -90,14 +93,14 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
           chestContent: null,
           chestDailyLoot: null,
         });
-        console.error(t("Error: {{value0}}", {value0: error}));
+        silentErrorToast(userError(error));
+      } finally {
+        await this.context.refreshAllData();
+        this.opening = false;
       }
     }
 
     const chestConfirm = () => {
-      if (this.state.chestDailyLoot) {
-        this.context.setPlayerInfo({ dailyloot: this.state.chestDailyLoot });
-      }
       this.setState({
         chestColor: null,
         chestContent: null,

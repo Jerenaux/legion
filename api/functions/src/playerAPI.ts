@@ -1,3 +1,4 @@
+import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {validateNickname} from '@legion/shared/nickname';
 import {getLeagueRank} from "@legion/shared/leagueRanking";
 import {chestsDelays, getDefaultDailyLoot} from "./dailyLoot";
@@ -10,8 +11,8 @@ import admin, { corsMiddleware, getUID, checkAPIKey, firestore} from "./APIsetup
 import { uniqueNamesGenerator } from "unique-names-generator";
 
 import { Class, ChestColor, League, PlayMode } from "@legion/shared/enums";
-import { PlayerContextData, DailyLootAllDBData, DBPlayerData,
-  PlayerInventory, ChestReward, EngagementStats } from "@legion/shared/interfaces";
+import { PlayerContextData, DBPlayerData,
+  PlayerInventory, EngagementStats } from "@legion/shared/interfaces";
 import { NewCharacter } from "@legion/shared/NewCharacter";
 import { getChestContent } from "@legion/shared/chests";
 import {
@@ -395,138 +396,42 @@ export const saveGoldReward = onRequest({
   });
 });
 
-export async function awardChestContent(
-  playerRef: admin.firestore.DocumentReference,
-  chestColor: ChestColor,
-) {
-  const content: ChestReward[] = getChestContent(chestColor);
-  logger.info(`[awardChestContent] Chest content: ${JSON.stringify(content)}`);
-
-  try {
-    // First, get the current player data
-    const playerDoc = await playerRef.get();
-    if (!playerDoc.exists) {
-      throw new Error('Player document does not exist');
-    }
-    const playerData = playerDoc.data() as DBPlayerData;
-
-    // Prepare updates
-    const updates: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {};
-    let goldIncrement = 0;
-
-    for (const reward of content) {
-      switch (reward.type) {
-        case "gold":
-          goldIncrement += (reward.amount || 0);
-          break;
-        case "consumable":
-          if (!updates["inventory.consumables"]) {
-            updates["inventory.consumables"] = [...(playerData.inventory?.consumables || [])];
-          }
-          updates["inventory.consumables"].push(reward.id);
-          break;
-        case "spell":
-          if (!updates["inventory.spells"]) {
-            updates["inventory.spells"] = [...(playerData.inventory?.spells || [])];
-          }
-          updates["inventory.spells"].push(reward.id);
-          break;
-        case "equipment":
-          if (!updates["inventory.equipment"]) {
-            updates["inventory.equipment"] = [...(playerData.inventory?.equipment || [])];
-          }
-          updates["inventory.equipment"].push(reward.id);
-          break;
-        default:
-          logger.warn(`[awardChestContent] Unknown reward type: ${reward.type}`);
-      }
-    }
-
-    // Apply updates
-    if (goldIncrement > 0) {
-      updates.gold = admin.firestore.FieldValue.increment(goldIncrement);
-    }
-
-    await playerRef.update(updates);
-
-    logger.info(`[awardChestContent] Successfully awarded chest content to player ${playerRef.id}`);
-    return content;
-  } catch (error) {
-    logger.error(`[awardChestContent] Error awarding chest content: ${error}`);
-    throw error;
-  }
-}
-
-export const claimChest = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = firestore();
-
+export const claimChest = onRequest({memory: '512MiB'}, (request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const chestType = request.query.chestType as keyof DailyLootAllDBData;
-      logger.info("Claiming chest for player:", uid, "chestType:", chestType);
-
-      const playerRef = db.collection("players").doc(uid);
-      const playerDoc = await playerRef.get();
-
-      if (!playerDoc.exists) {
-        throw new Error("Invalid player ID");
-      }
-
-      const playerData = playerDoc.data();
-      if (!playerData) {
-        throw new Error("playerData is null");
-      }
-
-      const chest = playerData.dailyloot[chestType];
-      if (!chest) {
-        throw new Error("Invalid chest type");
-      }
-
-      const now = Date.now() / 1000;
-      if (!chest.hasKey && !IMMEDIATE_LOOT) {
-        response.status(400).send("Key for chest not owned!");
-        return;
-      }
-      if (chest.time > now && !IMMEDIATE_LOOT) {
-        response.status(400).send("Chest is still locked!");
-        return;
-      }
-
-      const batch = db.batch();
-
-      // Update dailyloot
-      playerData.dailyloot[chestType] = {
-        time: now + chestsDelays[chestType],
-        hasKey: false,
-      };
-      batch.update(playerRef, {
-        dailyloot: playerData.dailyloot,
-      });
-
-      // Update utilization stats
-      batch.update(playerRef, {
-        'engagementStats.everOpenedDailyLoot': true,
-      });
-
-      // Commit the batch
-      await batch.commit();
-
-      // Award chest content
-      const content = await awardChestContent(playerRef, chestType as ChestColor);
-
-      const dailyLootResponse = transformDailyLoot(playerData.dailyloot);
-      logPlayerAction(uid, "claimChest", { chestType });
-      response.send({
-        content,
-        dailyloot: dailyLootResponse,
-      });
-    } catch (error) {
-      console.error("claimChest error:", error);
-      response.status(500).send("Error");
-    }
+      // GET remains supported for installed clients. New clients send a retry-safe POST.
+      const chestType = (request.body?.chestType ?? request.query.chestType) as ChestColor;
+      if (!Object.values(ChestColor).includes(chestType)) throw new MutationError(400, 'Invalid chest type');
+      const content = getChestContent(chestType);
+      const result = await playerMutation(uid, 'claimChest', request.body?.requestId, {chestType},
+        (transaction, playerRef, player) => {
+          const chest = player.dailyloot[chestType];
+          if (!chest) throw new MutationError(409, 'Invalid chest type');
+          if (!chest.hasKey && !IMMEDIATE_LOOT) throw new MutationError(409, 'You need a key to open this chest, go play a casual or ranked game!');
+          const now = Date.now() / 1000;
+          if (chest.time > now && !IMMEDIATE_LOOT) throw new MutationError(409, 'Chest locked, wait for the countdown to end!');
+          const dailyloot = {...player.dailyloot, [chestType]: {time: now + chestsDelays[chestType], hasKey: false}};
+          const inventory = {
+            consumables: [...player.inventory.consumables],
+            spells: [...player.inventory.spells],
+            equipment: [...player.inventory.equipment],
+          };
+          let gold = player.gold;
+          for (const reward of content) {
+            if (reward.type === 'gold') gold += reward.amount;
+            else {
+              const field = reward.type === 'consumable' ? 'consumables' : reward.type === 'spell' ? 'spells' : 'equipment';
+              inventory[field].push(...Array(reward.amount ?? 1).fill(reward.id));
+            }
+          }
+          for (const items of Object.values(inventory)) items.sort(numericalSort);
+          transaction.update(playerRef, {gold, inventory, dailyloot, 'engagementStats.everOpenedDailyLoot': true});
+          // Store absolute times, so replaying a receipt doesn't reset the displayed countdown.
+          return {content, dailyloot};
+        });
+      response.send({...result, dailyloot: transformDailyLoot(result.dailyloot)});
+    } catch (error) { mutationFailure(response, 'claimChest', error); }
   });
 });
 
