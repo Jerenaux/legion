@@ -1262,5 +1262,14 @@
   "Previous": "Anterior",
   "navLeagueRank": "Liga {{league}} · Posição {{rank}}",
   "navLeagueUnranked": "Liga {{league}} · Jogue uma partida ranqueada para ter uma posição",
-  "navGoldHint": "Seu ouro. Gaste na Loja com itens, magias e recrutas."
+  "navGoldHint": "Seu ouro. Gaste na Loja com itens, magias e recrutas.",
+  "Steam sign-in failed": "Falha ao entrar no Steam",
+  "Quit Steam completely, reopen it and sign in. Then launch Emberhall again from your Steam library.": "Feche o Steam completamente, abra-o novamente e entre na sua conta. Depois, inicie Emberhall pela biblioteca do Steam.",
+  "itch.io sign-in failed": "Falha ao entrar no itch.io",
+  "Sign in to the itch.io app again, then launch Emberhall from your library.": "Entre novamente no aplicativo do itch.io e inicie Emberhall pela sua biblioteca.",
+  "Connection failed": "Falha na conexão",
+  "Sign-in service unavailable": "Serviço de login indisponível",
+  "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhall não conseguiu verificar sua sessão. Aguarde um momento e tente novamente. Se o problema continuar, veja se há uma atualização do jogo.",
+  "Sign-in failed": "Falha ao entrar",
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Reinicie Emberhall e tente novamente. Se você iniciou pelo Steam ou itch.io, confira se também está conectado à sua conta nessa plataforma."
 }

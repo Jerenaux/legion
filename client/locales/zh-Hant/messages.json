@@ -1245,5 +1245,14 @@
   "Previous": "上一則",
   "navLeagueRank": "{{league}}聯賽 · 第{{rank}}名",
   "navLeagueUnranked": "{{league}}聯賽 · 進行一場排位賽即可獲得名次",
-  "navGoldHint": "你的金幣。可在商店購買道具、法術和新成員。"
+  "navGoldHint": "你的金幣。可在商店購買道具、法術和新成員。",
+  "Steam sign-in failed": "Steam 登入失敗",
+  "Quit Steam completely, reopen it and sign in. Then launch Emberhall again from your Steam library.": "請完全結束 Steam，重新開啟並登入。然後從 Steam 收藏庫重新啟動 Emberhall。",
+  "itch.io sign-in failed": "itch.io 登入失敗",
+  "Sign in to the itch.io app again, then launch Emberhall from your library.": "請重新登入 itch.io 應用程式，然後從遊戲庫啟動 Emberhall。",
+  "Connection failed": "連線失敗",
+  "Sign-in service unavailable": "登入服務無法使用",
+  "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhall 無法驗證你的工作階段。請稍候再試。如果問題持續，請檢查遊戲是否有更新。",
+  "Sign-in failed": "登入失敗",
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "請重新啟動 Emberhall 並重試。如果你透過 Steam 或 itch.io 啟動遊戲，也請確認已登入相應平台。"
 }

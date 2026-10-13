@@ -1,3 +1,5 @@
+import '../../src/i18n';
+import '../../src/style/style.css';
 import {h, render} from 'preact';
 import AuthProvider from '../../src/providers/AuthProvider';
 import AuthContext from '../../src/contexts/AuthContext';

@@ -1245,5 +1245,14 @@
   "Previous": "前へ",
   "navLeagueRank": "{{league}}リーグ · {{rank}}位",
   "navLeagueUnranked": "{{league}}リーグ · ランクマッチを1回プレイすると順位がつきます",
-  "navGoldHint": "所持ゴールド。ショップでアイテム、魔法、仲間に使えます。"
+  "navGoldHint": "所持ゴールド。ショップでアイテム、魔法、仲間に使えます。",
+  "Steam sign-in failed": "Steamへのサインインに失敗しました",
+  "Quit Steam completely, reopen it and sign in. Then launch Emberhall again from your Steam library.": "Steamを完全に終了し、再起動してサインインしてください。その後、SteamライブラリからEmberhallを起動し直してください。",
+  "itch.io sign-in failed": "itch.ioへのサインインに失敗しました",
+  "Sign in to the itch.io app again, then launch Emberhall from your library.": "itch.ioアプリにサインインし直してから、ライブラリからEmberhallを起動してください。",
+  "Connection failed": "接続に失敗しました",
+  "Sign-in service unavailable": "認証サービスを利用できません",
+  "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhallのセッションを確認できませんでした。少し待ってから再試行してください。問題が続く場合は、ゲームの更新がないか確認してください。",
+  "Sign-in failed": "サインインに失敗しました",
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Emberhallを再起動して、もう一度お試しください。Steamやitch.ioから起動した場合は、そのサービスにサインインしているか確認してください。"
 }
