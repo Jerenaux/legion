@@ -201,7 +201,8 @@ try {
   const shopperCharacter = afterChest.characters[0];
   const sell = {characterId: shopperCharacter.id, inventoryType: InventoryType.CONSUMABLES,
     action: InventoryActionType.SELL, index: 0, expectedItemId: 0, requestId: crypto.randomUUID()};
-  await shopperRef.update({'inventory.consumables': [0, 1]});
+  // The API displays sorted items even for old unsorted documents.
+  await shopperRef.update({'inventory.consumables': [1, 0]});
   const sold = await Promise.all([http('inventoryTransaction', sell, shopper.token), http('inventoryTransaction', sell, shopper.token)]);
   assert(sold.every(result => result.status === 0));
   assert.deepEqual((await shopperRef.get()).data().inventory.consumables, [1]);
