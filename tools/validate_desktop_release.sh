@@ -16,6 +16,17 @@ const workflow = Bun.YAML.parse(await Bun.file(process.argv[2]).text());
 assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"], "Desktop releases must be manual-only");
 assert.equal(workflow.jobs.build.if, "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'", "Desktop builds must be restricted to main");
 assert.equal(workflow.jobs.build.needs, "desktop-stability", "Desktop builds must wait for the packaged stability gate");
+const cleanup = Bun.YAML.parse(await Bun.file(path.join(path.dirname(process.argv[2]), "cleanup-release-artifacts.yml")).text());
+assert.deepEqual(cleanup.on.workflow_run, {workflows: [workflow.name], types: ["completed"]}, "Cleanup must wait for the entire release workflow, including cancellations");
+assert.equal(cleanup.jobs.cleanup.permissions.actions, "write");
+assert.equal(cleanup.jobs.cleanup.steps[0].env.RUN_ID, '${{ github.event.workflow_run.id }}', "Only delete artifacts from the completed release run");
+for (const job of Object.values(workflow.jobs)) {
+  for (const step of job.steps ?? []) {
+    if (step.uses?.startsWith("actions/upload-artifact@")) {
+      assert.equal(step.with["retention-days"], 1, "Artifacts must expire if completion cleanup fails");
+    }
+  }
+}
 const steam = workflow.jobs["upload-steam-private"];
 assert.ok(steam.if.includes("github.ref == 'refs/heads/main'"), "Steam credentials must only be used from main");
 assert.deepEqual(steam.concurrency, {group: "steam-demo-upload", "cancel-in-progress": false}, "Steam token updates must be serialized without cancelling an active upload");

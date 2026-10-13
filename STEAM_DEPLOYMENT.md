@@ -101,3 +101,15 @@ The workflow's `steam_branch=playtest` input and public/default rejection remain
 Manual builds allow unsigned packages; signing and notarization use the configured credentials when available. Signing setup is separate from Steam upload authentication.
 
 References: [Steam Demo configuration](https://partner.steamgames.com/doc/store/application/demos), [GameCI Steam authentication](https://game.ci/docs/github/deployment/steam/), and [publisher Web API keys](https://partner.steamgames.com/doc/webapi_overview/auth).
+
+## Temporary Actions artifacts
+
+Release artifacts exist only while the release workflow is running. A separate
+completion workflow deletes that run’s artifacts after all build, smoke-test and
+store-upload jobs finish, including failed or cancelled runs. The cleanup workflow
+never checks out or executes code from the triggering run. Uploads also use one-day
+retention as a fallback if cleanup cannot run. Steam and Itch builds are unaffected.
+
+To retry after completion, start a fresh full release workflow; rerunning only a
+download/upload job cannot recover deleted artifacts. Build-only dispatches are
+not retained for later download either.
