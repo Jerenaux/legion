@@ -33,10 +33,12 @@ function initializeTelemetry(app) {
       Sentry.captureConsoleIntegration({levels: ['error']}),
       Sentry.childProcessIntegration({events: ['crashed', 'oom', 'abnormal-exit', 'launch-failed', 'integrity-failure']}),
       Sentry.rendererEventLoopBlockIntegration({captureNativeStacktrace: true}),
-      // No profiler/native addon or debugger overhead for the mostly-idle main thread.
-      anrIntegration({anrThreshold: 10000, pollInterval: 1000, captureStackTrace: false}),
+      // The worker uses Node's loopback inspector to capture both the blocked stack and live scope.
+      anrIntegration({anrThreshold: 10000, pollInterval: 1000, captureStackTrace: true,
+        appRootPath: app.getAppPath(), staticTags: {'event.process': 'browser'}}),
     ],
   });
+  if (!process.argv.includes('--smoke-test')) app.whenReady().then(() => require('./freeze-diagnostics').installFreezeDiagnostics(app));
 }
 
 module.exports = {initializeTelemetry, filterDesktopEvent};

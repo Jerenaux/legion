@@ -77,6 +77,10 @@ jobs:
         working-directory: client
         run: bun run test:startup
 
+      - name: Check main-thread freeze diagnostics with local ingestion
+        working-directory: client
+        run: bun run test:freeze
+
       - name: Check promotional website isolation
         run: node website/build.cjs
 

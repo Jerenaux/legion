@@ -1,15 +1,15 @@
+import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {corsMiddleware, getUID, firestore} from "./APIsetup";
 import {getConsumableById} from "@legion/shared/Items";
 import {getSpellById} from "@legion/shared/Spells";
 import {getEquipmentById} from "@legion/shared/Equipments";
-import {InventoryType, InventoryActionType, ShopTab, ChestColor, RewardType }
+import {InventoryType, InventoryActionType, ShopTab, ChestColor, RewardType, equipmentSlotFields, EquipmentSlot }
   from "@legion/shared/enums";
-import {DBCharacterData, DBPlayerData} from "@legion/shared/interfaces";
+import {DBCharacterData, Equipment, PlayerInventory} from "@legion/shared/interfaces";
 import {inventorySize} from "@legion/shared/utils";
 import {getChestContent} from "@legion/shared/chests";
-import {logPlayerAction} from "./dashboardAPI";
 import { getSellPrice,
   canEquipConsumable,
   canLearnSpell,
@@ -52,88 +52,34 @@ export const inventoryData = onRequest({
   });
 });
 
-export const purchaseItem = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = firestore();
-
+export const purchaseItem = onRequest({memory: '512MiB'}, (request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
-      const playerDocRef = db.collection("players").doc(uid);
-      const docSnap = await playerDocRef.get();
-
-      if (docSnap.exists) {
-        const itemId = request.body.articleId;
-        const nb = request.body.quantity;
-        const inventoryType = request.body.inventoryType as ShopTab;
-
-        // Check that the player has enough space in their inventory
-        const inventory = docSnap.data()?.inventory;
-        if (inventorySize(inventory) + nb > docSnap.data()?.carrying_capacity) {
-          response.status(500).send("Inventory full");
-          return;
-        }
-
-        let itemPrice = 0;
-        switch (inventoryType) {
-          case ShopTab.CONSUMABLES:
-            itemPrice = getConsumableById(itemId)?.price || 0;
-            break;
-          case ShopTab.SPELLS:
-            itemPrice = getSpellById(itemId)?.price || 0;
-            break;
-          case ShopTab.EQUIPMENTS:
-            itemPrice = getEquipmentById(itemId)?.price || 0;
-            break;
-          default:
-            response.status(500).send("Invalid inventory type");
-            return;
-        }
-        const totalPrice = itemPrice * nb;
-
-        let gold = docSnap.data()?.gold;
-        if (gold < totalPrice) {
-          response.status(500).send("Insufficient gold");
-          return;
-        }
-
-        gold -= totalPrice;
-
-        const inventoryUpdate = addItemsToInventory(
-          docSnap.data() as DBPlayerData,
-            inventoryType === ShopTab.CONSUMABLES ? RewardType.CONSUMABLES :
-            inventoryType === ShopTab.SPELLS ? RewardType.SPELL :
-            RewardType.EQUIPMENT,
-          itemId,
-          nb
-        );
-
-        const result = await db.runTransaction(async (transaction) => {
-          const updates: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> = {
-            "gold": gold,
-            'engagementStats.everPurchased': true,
-          };
-
-          if (inventoryUpdate.inventory) {
-            updates.inventory = inventoryUpdate.inventory;
-          }
-
-          transaction.update(playerDocRef, updates);
-
-          return { gold, inventory: inventoryUpdate.inventory };
-        });
-
-        logPlayerAction(uid, "purchaseItem", {inventoryType, itemId, nb, totalPrice});
-
-        response.send(result);
-      } else {
-        response.status(404).send("Not Found: Invalid player ID");
+      const {articleId: itemId, quantity, inventoryType, requestId} = request.body;
+      if (!Number.isSafeInteger(itemId) || itemId < 0 || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1000) {
+        throw new MutationError(400, 'Invalid purchase');
       }
-    } catch (error) {
-      console.error("purchaseItem error:", error);
-      response.status(500).send("Error");
-    }
+      const item = inventoryType === ShopTab.CONSUMABLES ? getConsumableById(itemId) :
+        inventoryType === ShopTab.SPELLS ? getSpellById(itemId) :
+        inventoryType === ShopTab.EQUIPMENTS ? getEquipmentById(itemId) : undefined;
+      if (!item || !Number.isFinite(item.price) || item.price <= 0) throw new MutationError(400, 'Invalid article');
+      const totalPrice = item.price * quantity;
+      const result = await playerMutation(uid, 'purchaseItem', requestId, {itemId, quantity, inventoryType},
+        (transaction, playerRef, player) => {
+          if (inventorySize(player.inventory) + quantity > player.carrying_capacity) {
+            throw new MutationError(409, 'Not enough room in inventory!');
+          }
+          if (player.gold < totalPrice) throw new MutationError(409, 'Not enough gold!');
+          const {inventory} = addItemsToInventory(player,
+            inventoryType === ShopTab.CONSUMABLES ? RewardType.CONSUMABLES :
+            inventoryType === ShopTab.SPELLS ? RewardType.SPELL : RewardType.EQUIPMENT, itemId, quantity);
+          const gold = player.gold - totalPrice;
+          transaction.update(playerRef, {gold, inventory, 'engagementStats.everPurchased': true});
+          return {gold, inventory};
+        });
+      response.send(result);
+    } catch (error) { mutationFailure(response, 'purchaseItem', error); }
   });
 });
 
@@ -150,17 +96,18 @@ export const inventoryTransaction = onRequest({
       const action = request.body.action as InventoryActionType;
       const index = request.body.index;
 
+      if (typeof characterId !== 'string' || !characterId || characterId.includes('/') || characterId.length > 200) throw new MutationError(400, 'Invalid character ID');
       const playerRef = db.collection("players").doc(uid);
       const characterRef = db.collection("characters").doc(characterId);
 
-      const playerDoc = await playerRef.get();
-      const characterDoc = await characterRef.get();
+      const result = await playerMutation(uid, 'inventoryTransaction', request.body.requestId,
+        {characterId, inventoryType, action, index, expectedItemId: request.body.expectedItemId ?? null}, async (transaction, _playerRef, playerData) => {
+      const characterDoc = await transaction.get(characterRef);
 
-      if (!playerDoc.exists || !characterDoc.exists) {
-        throw new Error('Documents do not exist');
+      if (!characterDoc.exists) {
+        throw new MutationError(404, 'Documents do not exist');
       }
 
-      const playerData = playerDoc.data() as DBPlayerData;
       const characterData = characterDoc.data() as DBCharacterData;
 
       if (!playerData || !characterData) {
@@ -170,8 +117,24 @@ export const inventoryTransaction = onRequest({
       const characters = playerData.characters as admin.firestore.DocumentReference[];
       const characterIds = characters.map((character) => character.id);
       if (!characterIds.includes(characterId)) {
-        throw new Error("Character not owned by player");
+        throw new MutationError(403, "Character not owned by player");
       }
+
+      if (![InventoryType.CONSUMABLES, InventoryType.SPELLS, InventoryType.EQUIPMENTS].includes(inventoryType) ||
+          ![InventoryActionType.EQUIP, InventoryActionType.UNEQUIP, InventoryActionType.SELL].includes(action) ||
+          !Number.isSafeInteger(index) || index < 0) throw new MutationError(400, 'Invalid inventory action');
+      const selected = action === InventoryActionType.UNEQUIP
+        ? inventoryType === InventoryType.CONSUMABLES ? characterData.inventory[index]
+          : inventoryType === InventoryType.EQUIPMENTS ? characterData.equipment[equipmentSlotFields[index as EquipmentSlot] as keyof Equipment] : undefined
+        : playerData.inventory[inventoryType as keyof PlayerInventory][index];
+      if (typeof selected !== 'number' || !Number.isSafeInteger(selected) || selected < 0 ||
+          (request.body.expectedItemId !== undefined && selected !== request.body.expectedItemId)) {
+        return {status: 1};
+      }
+
+      const article = inventoryType === InventoryType.CONSUMABLES ? getConsumableById(selected) :
+        inventoryType === InventoryType.SPELLS ? getSpellById(selected) : getEquipmentById(selected);
+      if (!article) return {status: 1};
 
       let canDo = false;
       if (action === InventoryActionType.EQUIP) {
@@ -188,14 +151,12 @@ export const inventoryTransaction = onRequest({
         }
         if (!canDo) {
           logger.info("[inventoryTransaction] Conditions not fulfilled to equip item");
-          response.send({ status: 1 });
-          return;
+          return {status: 1};
         }
       } else if (action === InventoryActionType.UNEQUIP) {
         if (inventorySize(playerData.inventory) >= playerData.carrying_capacity) {
           logger.info("Player inventory full!");
-          response.send({ status: 1 });
-          return;
+          return {status: 1};
         }
       }
 
@@ -244,13 +205,12 @@ export const inventoryTransaction = onRequest({
         // @ts-expect-error
         inventory[inventoryField] = inventory[inventoryField].filter((_, i) => i !== index);
 
-        await playerRef.update({
+        transaction.update(playerRef, {
           inventory,
           gold: admin.firestore.FieldValue.increment(itemPrice),
         });
 
-        response.send({ status: 0 });
-        return;
+        return {status: 0};
       } else if (action === InventoryActionType.UNEQUIP) {
         switch (inventoryType) {
           case InventoryType.CONSUMABLES:
@@ -264,20 +224,17 @@ export const inventoryTransaction = onRequest({
 
       if (!update) {
         logger.info("No update to perform");
-        response.send({ status: 1 });
-        return;
+        return {status: 1};
       }
 
-      await playerRef.update(inventoryPlayerWrite(update.playerUpdate));
-      console.log(`[inventoryTransaction] Character update: ${JSON.stringify(update.characterUpdate)}`);
-      await characterRef.update(update.characterUpdate);
+      transaction.update(playerRef, inventoryPlayerWrite(update.playerUpdate));
+      transaction.update(characterRef, update.characterUpdate);
 
-      await logPlayerAction(uid, "inventoryTransaction", { action, characterId, inventoryType, index });
-
-      response.send({ status: 0 });
+      return {status: 0};
+      });
+      response.send(result);
     } catch (error) {
-      console.error("inventoryTransaction error:", error);
-      response.status(500).send("Error processing transaction");
+      mutationFailure(response, 'inventoryTransaction', error);
     }
   });
 });

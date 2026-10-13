@@ -11,8 +11,8 @@ import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { InventoryActionType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
-import { apiFetch } from '../../services/apiService';
-import { errorToast, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
+import { apiFetch, apiMutation } from '../../services/apiService';
+import { playSoundEffect, silentErrorToast, errorToast, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
 import { getMaxStatValue, getSPIncrement } from '@legion/shared/levelling';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
@@ -30,6 +30,7 @@ import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
 import spellsSpritesheet from '@assets/spells.png';
 
+import equipSfx from '@assets/sfx/equip.wav';
 import confirmIcon from '@assets/inventory/confirm_icon.png';
 import cancelIcon from '@assets/inventory/cancel_icon.png';
 import { APICharacterData } from '@legion/shared/interfaces';
@@ -140,11 +141,15 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     this.props.handleClose();
   }
 
-  AcceptAction = (type: ItemDialogType, index: number) => {
+  actionPending = false;
+
+  AcceptAction = async (type: ItemDialogType, index: number) => {
+    if (this.actionPending) return;
     const { actionType } = this.props;
 
     const payload = {
       index,
+      expectedItemId: this.props.dialogData && 'id' in this.props.dialogData ? this.props.dialogData.id : undefined,
       characterId: this.context.getActiveCharacter().id,
       inventoryType: type,
       action: actionType === InventoryActionType.EQUIP && this.state.sellModalShow ?
@@ -155,20 +160,24 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       console.log(`[ItemDialog] AcceptAction: type: ${type} action: ${payload.action} index: ${index}`);
     }
 
-    this.context.updateInventory(type, payload.action, index);
+    this.actionPending = true;
     this.props.handleClose();
-
-    if (type === ItemDialogType.SPELLS && actionType === InventoryActionType.EQUIP) {
-      successToast(t("Spell learned!"));
-    } else if (payload.action === InventoryActionType.SELL) {
-      successToast(t("Item sold!"));
+    try {
+      const result = await apiMutation('inventoryTransaction', payload);
+      if (result.status === 0 && payload.action !== InventoryActionType.SELL) playSoundEffect(equipSfx);
+      if (result.status !== 0) {
+        silentErrorToast(t('Unable to complete the request. Please try again.'));
+      } else if (type === ItemDialogType.SPELLS && payload.action === InventoryActionType.EQUIP) {
+        successToast(t("Spell learned!"));
+      } else if (payload.action === InventoryActionType.SELL) {
+        successToast(t("Item sold!"));
+      }
+    } catch (error) {
+      silentErrorToast(userError(error));
+    } finally {
+      await this.context.refreshAllData();
+      this.actionPending = false;
     }
-
-    apiFetch('inventoryTransaction', {
-      method: 'POST',
-      body: payload
-    })
-      .catch(error => console.error(error));
   }
 
   spendSP = async (stat: Stat, amount: number) => {

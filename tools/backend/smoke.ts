@@ -153,6 +153,75 @@ try {
   assert.deepEqual((await mage.ref.get()).data().skills, [2]);
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
   assert.deepEqual((await gearPlayerRef.get()).data().inventory.spells, [5]);
+  // Mutation receipts cross the real HTTP/auth/Firestore boundary, including concurrent retries.
+  const shopper = await login(`shop-${run}`);
+  const shopperRef = db.collection('players').doc(shopper.uid);
+  await shopperRef.update({gold: 100000, carrying_capacity: 1000, inventory: {consumables: [], spells: [], equipment: []}});
+  const {ShopTab, ChestColor} = await import('../../shared/enums');
+  const {getConsumableById} = await import('../../shared/Items');
+  const purchase = {articleId: 0, quantity: 2, inventoryType: ShopTab.CONSUMABLES, requestId: crypto.randomUUID()};
+  const bought = await Promise.all(Array.from({length: 4}, () => http('purchaseItem', purchase, shopper.token)));
+  assert(bought.every(result => JSON.stringify(result) === JSON.stringify(bought[0])));
+  let shopState = (await shopperRef.get()).data();
+  assert.equal(shopState.gold, 100000 - getConsumableById(0).price * 2);
+  assert.deepEqual(shopState.inventory.consumables, [0, 0]);
+  const rejectMutation = async (endpoint, body, status) => {
+    const response = await fetch(`${api}/${endpoint}`, {method: 'POST', headers: {'Content-Type': 'application/json', Authorization: `Bearer ${shopper.token}`}, body: JSON.stringify(body)});
+    assert.equal(response.status, status, await response.text());
+  };
+  await rejectMutation('purchaseItem', {...purchase, quantity: 3}, 409);
+  for (const quantity of [0, -1, 1.5, 1001]) await rejectMutation('purchaseItem', {...purchase, quantity, requestId: crypto.randomUUID()}, 400);
+  await rejectMutation('purchaseItem', {...purchase, articleId: 999999, requestId: crypto.randomUUID()}, 400);
+  // Different concurrent purchases both survive, rather than replacing each other's inventory/gold.
+  await Promise.all([1, 2].map(() => http('purchaseItem', {...purchase, requestId: crypto.randomUUID()}, shopper.token)));
+  shopState = (await shopperRef.get()).data();
+  assert.equal(shopState.inventory.consumables.length, 6);
+  assert.equal(shopState.gold, 100000 - getConsumableById(0).price * 6);
+  await shopperRef.update({gold: 0});
+  await rejectMutation('purchaseItem', {...purchase, requestId: crypto.randomUUID()}, 409);
+  assert.equal((await shopperRef.get()).data().inventory.consumables.length, 6);
+  await shopperRef.update({gold: 100000, 'dailyloot.bronze': {hasKey: true, time: 0}});
+  const claim = {chestType: ChestColor.BRONZE, requestId: crypto.randomUUID()};
+  const chestResults = await Promise.all([http('claimChest', claim, shopper.token), http('claimChest', claim, shopper.token)]);
+  assert.deepEqual(chestResults[0].content, chestResults[1].content);
+  const afterChest = (await shopperRef.get()).data();
+  const expectedInventory = {consumables: [...shopState.inventory.consumables], spells: [], equipment: []};
+  let expectedGold = 100000;
+  for (const reward of chestResults[0].content) {
+    if (reward.type === 'gold') expectedGold += reward.amount;
+    else expectedInventory[reward.type === 'consumable' ? 'consumables' : reward.type === 'spell' ? 'spells' : 'equipment'].push(...Array(reward.amount).fill(reward.id));
+  }
+  for (const values of Object.values(expectedInventory)) values.sort((a, b) => a - b);
+  assert.deepEqual(afterChest.inventory, expectedInventory);
+  assert.equal(afterChest.gold, expectedGold);
+  assert.equal(afterChest.dailyloot.bronze.hasKey, false);
+  // A response lost after commit is replayed even though the chest is now locked.
+  assert.deepEqual((await http('claimChest', claim, shopper.token)).content, chestResults[0].content);
+  assert.deepEqual((await shopperRef.get()).data().inventory, afterChest.inventory);
+  const shopperCharacter = afterChest.characters[0];
+  const sell = {characterId: shopperCharacter.id, inventoryType: InventoryType.CONSUMABLES,
+    action: InventoryActionType.SELL, index: 0, expectedItemId: 0, requestId: crypto.randomUUID()};
+  await shopperRef.update({'inventory.consumables': [0, 1]});
+  const sold = await Promise.all([http('inventoryTransaction', sell, shopper.token), http('inventoryTransaction', sell, shopper.token)]);
+  assert(sold.every(result => result.status === 0));
+  assert.deepEqual((await shopperRef.get()).data().inventory.consumables, [1]);
+  const stale = await http('inventoryTransaction', {...sell, requestId: crypto.randomUUID()}, shopper.token);
+  assert.equal(stale.status, 1);
+  assert.deepEqual((await shopperRef.get()).data().inventory.consumables, [1]);
+  const otherBuyer = await login(`other-shop-${run}`);
+  await db.collection('players').doc(otherBuyer.uid).update({gold: 100000});
+  const saleRef = db.collection('characters').doc(`sale-${run}`);
+  await saleRef.set({...warrior.data(), onSale: true, price: 100});
+  const bids = await Promise.all([shopper, otherBuyer].map(account => fetch(`${api}/purchaseCharacter`, {
+    method: 'POST', headers: {'Content-Type': 'application/json', Authorization: `Bearer ${account.token}`},
+    body: JSON.stringify({articleId: saleRef.id, requestId: crypto.randomUUID()}),
+  })));
+  assert.deepEqual(bids.map(response => response.status).sort(), [200, 409]);
+  const owners = await Promise.all([shopper, otherBuyer].map(account => db.collection('players').doc(account.uid).get()));
+  assert.equal(owners.filter(doc => doc.data().characters.some(ref => ref.id === saleRef.id)).length, 1);
+  assert.equal((await shopperRef.collection('mutationReceipts').doc(purchase.requestId).get()).exists, true);
+  console.log('Atomic purchases/chests/inventory, concurrent replay, stale selection, validation, and exclusive recruitment pass');
+  await (await import('./client-recovery')).checkClientRecovery(api, shopper, shopperRef);
   // The scheduled job persists synthetic weekly/lifetime results atomically and is retry-safe.
   const inactiveRef = db.collection('players').doc(`inactive-${run}`);
   const playedRef = db.collection('players').doc(`inactive-ranked-${run}`);

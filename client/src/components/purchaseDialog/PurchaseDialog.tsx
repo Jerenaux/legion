@@ -4,6 +4,7 @@ import {Trans} from '../../i18n/Trans';
 import { h } from 'preact';
 // PurchaseDialog.tsx
 import './PurchaseDialog.style.css';
+import Spinner from '../spinner/Spinner';
 import Modal from 'react-modal';
 import { Component } from 'preact';
 import { mapFrameToCoordinates, getSpritePath } from '../utils';
@@ -19,6 +20,7 @@ Modal.setAppElement('#root');
 
 interface PurchaseDialogProps {
   dialogOpen: boolean;
+  pending?: boolean;
   dialogData: modalData,
   position: {
     top: number,
@@ -45,6 +47,7 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
   }
 
   handleCloseDialog = () => {
+    if (this.props.pending) return;
     this.setState({count: 1}); // initialize count
     this.props.handleClose();
   }
@@ -91,9 +94,9 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
 
           {!dialogData.isCharacter && (
             <div className="buy-dialog-count">
-              <button type="button" data-game-control className="buy-dialog-step" aria-label="-" disabled={this.state.count === 1} onClick={() => this.handleCount(false)}>−</button>
+              <button type="button" data-game-control className="buy-dialog-step" aria-label="-" disabled={this.props.pending || this.state.count === 1} onClick={() => this.handleCount(false)}>−</button>
               <output className="buy-dialog-quantity">{this.state.count}</output>
-              <button type="button" data-game-control className="buy-dialog-step" aria-label="+" onClick={() => this.handleCount(true)}>+</button>
+              <button type="button" data-game-control className="buy-dialog-step" aria-label="+" disabled={this.props.pending} onClick={() => this.handleCount(true)}>+</button>
             </div>
           )}
 
@@ -106,9 +109,9 @@ class PurchaseDialog extends Component<PurchaseDialogProps, PurchaseDialogState>
             <button type="button" data-game-control
               className="buy-dialog-accept"
               onClick={() => this.props.purchase(dialogData.id, this.state.count, dialogData.price)}
-              disabled={!hasEnoughGold}
-            ><Trans i18n={i18n} i18nKey={"<0/>Buy"} components={[<img src={confirmIcon} alt="" />]} /></button>
-            <button type="button" data-game-control className="buy-dialog-cancel" onClick={this.handleCloseDialog}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
+              disabled={this.props.pending || !hasEnoughGold} aria-busy={this.props.pending}
+            >{this.props.pending && <Spinner />}<Trans i18n={i18n} i18nKey={"<0/>Buy"} components={[<img src={confirmIcon} alt="" />]} /></button>
+            <button type="button" data-game-control className="buy-dialog-cancel" disabled={this.props.pending} onClick={this.handleCloseDialog}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
           </div>
         </div>
       </Modal>

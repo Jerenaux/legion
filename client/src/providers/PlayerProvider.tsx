@@ -5,8 +5,8 @@ import { Component, } from 'preact';
 import { PlayerContextState, PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
 import { errorToast, avatarContext, silentErrorToast } from '../components/utils';
-import { APICharacterData, PlayerContextData, PlayerInventory } from '@legion/shared/interfaces';
-import { League, Stat, StatFields, InventoryActionType, ShopTab, ItemDialogType, LockedFeatures
+import { APICharacterData, PlayerContextData } from '@legion/shared/interfaces';
+import { League, Stat, StatFields, LockedFeatures
  } from "@legion/shared/enums";
 import { firebaseAuth } from '../services/firebaseService';
 import { getSPIncrement } from '@legion/shared/levelling';
@@ -17,23 +17,7 @@ import matchFound from "@assets/sfx/match_found.wav";
 import { route } from 'preact-router';
 import {createRefreshingSocketAuth, retrySocketAuthentication, socketReconnectOptions} from '../services/socketPolicy';
 
-import {
-  canEquipConsumable,
-  canLearnSpell,
-  canEquipEquipment,
-  equipConsumable,
-  unequipConsumable,
-  learnSpell,
-  equipEquipment,
-  unequipEquipment,
-  roomInInventory,
-  numericalSort,
-} from '@legion/shared/inventory';
-
-import equipSfx from "@assets/sfx/equip.wav";
-import { getConsumableById } from "@legion/shared/Items";
-import { getSpellById } from "@legion/shared/Spells";
-import { getEquipmentById } from "@legion/shared/Equipments";
+import {canEquipEquipment, canLearnSpell} from '@legion/shared/inventory';
 import { LOCKED_FEATURES } from '@legion/shared/config';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
@@ -62,8 +46,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.updateCharacterStats = this.updateCharacterStats.bind(this);
       this.getCharacter = this.getCharacter.bind(this);
       this.getActiveCharacter = this.getActiveCharacter.bind(this);
-      this.updateInventory = this.updateInventory.bind(this);
-      this.applyPurchase = this.applyPurchase.bind(this);
       this.updateActiveCharacter = this.updateActiveCharacter.bind(this);
       this.fetchAllData = this.fetchAllData.bind(this);
       this.markShownWelcome = this.markShownWelcome.bind(this);
@@ -319,185 +301,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
               }
             }
           };
-      });
-    }
-
-    updateInventory(type: ItemDialogType, action: InventoryActionType, index: number) {
-      this.setState((prevState) => {
-        const activeCharacter = prevState.characters.find(character => character.id === prevState.activeCharacterId) || prevState.characters[0];
-        if (!activeCharacter) {
-          errorToast(t("No active character selected!"));
-          return prevState;
-        }
-
-        // Shared inventory helpers mutate their inputs. Work on detached copies
-        // so queued updates and failed operations cannot corrupt existing state.
-        const newState = { ...prevState, player: {...prevState.player, inventory: structuredClone(prevState.player.inventory)} };
-        const updatedInventory = newState.player.inventory;
-        const updatedCharacter = structuredClone(activeCharacter);
-
-        let result = null;
-
-        // Handle sell action
-        if (action === InventoryActionType.SELL) {
-          let itemPrice = 0;
-          let inventoryField: keyof PlayerInventory;
-
-          switch(type) {
-            case ItemDialogType.CONSUMABLES:
-              itemPrice = (getConsumableById(updatedInventory.consumables[index])?.price || 0) / 2;
-              inventoryField = 'consumables';
-              break;
-            case ItemDialogType.EQUIPMENTS:
-              itemPrice = (getEquipmentById(updatedInventory.equipment[index])?.price || 0) / 2;
-              inventoryField = 'equipment';
-              break;
-            case ItemDialogType.SPELLS:
-              itemPrice = (getSpellById(updatedInventory.spells[index])?.price || 0) / 2;
-              inventoryField = 'spells';
-              break;
-            default:
-              return prevState;
-          }
-
-          const updatedItems = [...updatedInventory[inventoryField]];
-          updatedItems.splice(index, 1);
-
-          return {
-            ...newState,
-            player: {
-              ...newState.player,
-              gold: newState.player.gold + itemPrice,
-              inventory: {
-                ...updatedInventory,
-                [inventoryField]: updatedItems
-              }
-            }
-          };
-        }
-        // ### END OF SELL ACTION ###
-
-        switch(type) {
-          case ItemDialogType.CONSUMABLES:
-            if (action === InventoryActionType.EQUIP) {
-              if (!canEquipConsumable(updatedCharacter)) {
-                errorToast(t("Character inventory is full!"));
-                return prevState;
-              }
-              result = equipConsumable(newState.player, updatedCharacter, index);
-            } else {
-              if (!roomInInventory(newState.player)) {
-                errorToast(t("Player inventory is full!"));
-                return prevState;
-              }
-              result = unequipConsumable(newState.player, updatedCharacter, index);
-            }
-            break;
-          case ItemDialogType.EQUIPMENTS:
-            if (action === InventoryActionType.EQUIP) {
-              if (!canEquipEquipment(updatedCharacter, updatedInventory.equipment[index])) {
-                errorToast(t("Cannot equip this item!"));
-                return prevState;
-              }
-              result = equipEquipment(newState.player, updatedCharacter, index);
-            } else {
-              if (!roomInInventory(newState.player)) {
-                errorToast(t("Player inventory is full!"));
-                return prevState;
-              }
-              result = unequipEquipment(newState.player, updatedCharacter, index);
-            }
-            break;
-          case ItemDialogType.SPELLS:
-            if (action === InventoryActionType.EQUIP) {
-              if (!canLearnSpell(updatedCharacter, updatedInventory.spells[index])) {
-                errorToast(t("Cannot learn this spell!"));
-                return prevState;
-              }
-              result = learnSpell(newState.player, updatedCharacter, index);
-            }
-            break;
-        }
-
-        if (!result) {
-          return prevState;
-        }
-
-        playSoundEffect(equipSfx);
-
-        // Update the character in the characters array
-        const updatedCharacters = newState.characters.map(char =>
-          char.id === updatedCharacter.id ? { ...updatedCharacter, ...result.characterUpdate } : char
-        );
-
-        return {
-          ...newState,
-          characters: updatedCharacters,
-          characterSheetIsDirty: true,
-          player: {
-            ...newState.player,
-            ...result.playerUpdate,
-            engagementStats: {
-              ...newState.player.engagementStats,
-              ...result.playerUpdate.engagementStats,
-            }
-          }
-        };
-      });
-    }
-
-    applyPurchase(articleId: number, price: number, quantity: number, shoptab: ShopTab) {
-      if (shoptab === ShopTab.CHARACTERS) {
-        // For character purchases, update gold and fetch roster data
-        this.setState(
-          prevState => ({
-            player: {
-              ...prevState.player,
-              gold: prevState.player.gold - price * quantity
-            }
-          }),
-          () => {
-            this.fetchRosterData();
-          }
-        );
-        return;
-      }
-
-      const { inventory } = this.state.player;
-      let inventoryField: keyof PlayerInventory;
-
-      switch (shoptab) {
-        case ShopTab.CONSUMABLES:
-          inventoryField = 'consumables';
-          break;
-        case ShopTab.EQUIPMENTS:
-          inventoryField = 'equipment';
-          break;
-        case ShopTab.SPELLS:
-          inventoryField = 'spells';
-          break;
-        default:
-          return;
-      }
-
-      const updatedInventoryField = [...inventory[inventoryField]];
-      for (let i = 0; i < quantity; i++) {
-        updatedInventoryField.push(articleId);
-      }
-
-      this.setState({
-        player: {
-          ...this.state.player,
-          gold: this.state.player.gold - price * quantity,
-          inventory: {
-            ...inventory,
-            [inventoryField]: updatedInventoryField.sort(numericalSort)
-          },
-          engagementStats: {
-            ...this.state.player.engagementStats,
-            everPurchased: true
-          }
-        }
       });
     }
 
@@ -823,8 +626,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           updateCharacterStats: this.updateCharacterStats,
           getCharacter: this.getCharacter,
           getActiveCharacter: this.getActiveCharacter,
-          updateInventory: this.updateInventory,
-          applyPurchase: this.applyPurchase,
           updateActiveCharacter: this.updateActiveCharacter,
           markWelcomeShown: this.markShownWelcome,
           resetState: this.resetState,
