@@ -143,6 +143,7 @@ jobs:
             client/release/*.exe
             client/release/*.AppImage
           if-no-files-found: error
+          retention-days: 1
 
   publish-itch:
     if: github.event_name == 'workflow_dispatch' && inputs.publish_itch

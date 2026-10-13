@@ -1,0 +1,30 @@
+name: Delete completed release artifacts
+
+on:
+  workflow_run:
+    workflows: ["Build desktop releases"]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  cleanup:
+    if: github.event.workflow_run.event == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Delete this completed run's artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Snapshot every page before deletion changes the pagination.
+          artifact_ids=$(gh api --paginate "repos/$GH_REPO/actions/runs/$RUN_ID/artifacts?per_page=100" --jq '.artifacts[].id')
+          for artifact_id in $artifact_ids; do
+            gh api --method DELETE "repos/$GH_REPO/actions/artifacts/$artifact_id"
+          done
