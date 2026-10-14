@@ -6,7 +6,7 @@ import {getEquipmentById} from '@legion/shared/Equipments';
 import {getConsumableById} from '@legion/shared/Items';
 import {getSpellById} from '@legion/shared/Spells';
 import {addItemsToInventory} from './inventoryUtils';
-import {type CommunitySummary, communitySummary} from '@legion/shared/communities';
+import {type CommunitySummary, communitySummary, normalizeCommunityCode} from '@legion/shared/communities';
 
 /** Public pages and the CLI print this domain; Hosting rewrites /invite to the `invite` Function. */
 export const INVITE_ORIGIN = 'https://www.play-legion.io';
@@ -50,12 +50,21 @@ export async function giftCommunity(db: Firestore, communityId: unknown): Promis
 
 export async function redeemGiftToken(db: Firestore, uid: string, token: unknown): Promise<GiftResult> {
   if (typeof token !== 'string' || !giftTokenPattern.test(token)) return {status: 'unavailable'};
-  const giftRef = db.collection('creatorGifts').doc(giftId(token));
+  return redeemGiftById(db, uid, giftId(token));
+}
+
+async function redeemGiftById(db: Firestore, uid: string, id: string, code?: string): Promise<GiftResult> {
+  const giftRef = db.collection('creatorGifts').doc(id);
   const playerRef = db.collection('players').doc(uid);
   let communityId: unknown;
   const result: GiftResult = await db.runTransaction(async transaction => {
     const gift = (await transaction.get(giftRef)).data();
     communityId = gift?.communityId;
+    // Public codes must never claim personal gifts, even if a campaign changed after lookup.
+    if (code) {
+      const community = (await transaction.get(db.collection('communities').doc(code))).data();
+      if (community?.status !== 'active' || gift?.usage !== 'unlimited' || gift.communityId !== code) return {status: 'unavailable'};
+    }
     if (!gift || (gift.usage !== undefined && !isGiftUsage(gift.usage))) return {status: 'unavailable'};
     // Retrying a successful claim returns its receipt, even after expiry/revocation.
     if (gift.claimedBy) return gift.claimedBy === uid
@@ -85,4 +94,29 @@ export async function redeemGiftToken(db: Firestore, uid: string, token: unknown
   });
   if (result.status !== 'claimed' && result.status !== 'already_claimed') return result;
   return {...result, community: await giftCommunity(db, communityId)};
+}
+
+/** Public creator codes claim audience campaigns using the same receipts as their links. */
+export async function redeemCommunityCode(db: Firestore, uid: string, value: unknown): Promise<GiftResult | {status: 'no_gift'; community: CommunitySummary}> {
+  const code = normalizeCommunityCode(value);
+  const community = code ? await giftCommunity(db, code) : null;
+  if (!community || !code) return {status: 'unavailable'};
+  const gifts = await db.collection('creatorGifts').where('communityId', '==', code).where('usage', '==', 'unlimited').get();
+  const results: Extract<GiftResult, {rewards: ChestReward[]}>[] = [];
+  for (const gift of gifts.docs) {
+    const result = await redeemGiftById(db, uid, gift.id, code);
+    if (result.status === 'player_not_ready') return result;
+    if (result.status === 'claimed' || result.status === 'already_claimed') results.push(result);
+  }
+  // A retry can finish a partially completed set without granting any campaign twice.
+  const claimed = results.filter(result => result.status === 'claimed');
+  const receipts = claimed.length ? claimed : results;
+  if (!receipts.length) return {status: 'no_gift', community};
+  const rewards: ChestReward[] = [];
+  for (const receipt of receipts) for (const reward of receipt.rewards) {
+    const existing = rewards.find(item => item.type === reward.type && item.id === reward.id);
+    if (existing) existing.amount += reward.amount;
+    else rewards.push({...reward});
+  }
+  return {status: claimed.length ? 'claimed' : 'already_claimed', rewards, community};
 }

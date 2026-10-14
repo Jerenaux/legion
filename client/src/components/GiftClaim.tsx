@@ -17,9 +17,9 @@ import shine from '@assets/game_end/shine_bg.png';
 import rewardSound from '@assets/sfx/purchase.wav';
 import './GiftClaim.css';
 
-type Receipt = {status: 'claimed' | 'already_claimed' | 'unavailable' | 'error' | 'loading'; rewards?: ChestReward[]; community?: CommunitySummary | null};
+type Receipt = {status: 'claimed' | 'already_claimed' | 'unavailable' | 'error' | 'loading' | 'no_gift'; rewards?: ChestReward[]; community?: CommunitySummary | null};
 
-export default function GiftClaim({blocked}: {blocked: boolean}) {
+export default function GiftClaim({blocked, code, onClose}: {blocked: boolean; code?: string; onClose?: () => void}) {
   const {player, refreshAllData} = useContext(PlayerContext);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   // A creator's gift can also invite to their community: offered after the gift dialog closes.
@@ -31,15 +31,20 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
   const desktop = getElectronAPI();
 
   const claim = async () => {
-    if (!token.current) return;
+    if (!token.current && !code) return;
     setReceipt({status: 'loading'});
     try {
-      const result = await apiFetch('redeemGift', {method: 'POST', body: {token: token.current}});
+      const result = await apiFetch('redeemGift', {method: 'POST', body: code ? {code} : {token: token.current}});
       if (!mounted.current) return;
       if (result.status === 'claimed' || result.status === 'already_claimed') {
         refreshAllData();
         setReceipt(result);
         if (result.status === 'claimed') playSoundEffect(rewardSound);
+      } else if (code && result.status === 'no_gift') {
+        if (!player.community) {
+          setReceipt(null);
+          setCommunityInvite(result.community.id);
+        } else setReceipt(result);
       } else setReceipt({status: result.status === 'unavailable' ? 'unavailable' : 'error'});
     } catch {
       if (mounted.current) setReceipt({status: 'error'});
@@ -52,7 +57,7 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
   }, []);
 
   useEffect(() => {
-    if (!player.isLoaded || blocked || postponed.current || !desktop?.getPendingGift) return;
+    if (code || !player.isLoaded || blocked || postponed.current || !desktop?.getPendingGift) return;
     const check = async () => {
       if (busy.current) return;
       busy.current = true;
@@ -67,20 +72,29 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
     const unsubscribe = desktop.onGiftAvailable?.(() => { void check(); });
     void check();
     return unsubscribe;
-  }, [player.isLoaded, blocked, receipt === null]);
+  }, [player.isLoaded, blocked, receipt === null, code]);
+
+  useEffect(() => {
+    if (!code || !player.isLoaded || blocked || busy.current) return;
+    busy.current = true;
+    void claim();
+  }, [code, player.isLoaded, blocked]);
 
   const close = async () => {
     if (!receipt || receipt.status === 'loading') return;
-    if (receipt.status === 'error') postponed.current = true; // Keep the token on disk for the next launch.
-    else {
-      try { await desktop?.acknowledgeGift?.(token.current!); }
-      catch { postponed.current = true; } // A repeated receipt is safe; do not loop on an IPC failure.
+    if (!code) {
+      if (receipt.status === 'error') postponed.current = true; // Keep the token on disk for the next launch.
+      else {
+        try { await desktop?.acknowledgeGift?.(token.current!); }
+        catch { postponed.current = true; } // A repeated receipt is safe; do not loop on an IPC failure.
+      }
     }
     token.current = null;
     busy.current = false;
     const community = receipt.community;
     setReceipt(null);
     if (community && !player.community) setCommunityInvite(community.id);
+    else onClose?.();
   };
 
   const success = receipt?.status === 'claimed' || receipt?.status === 'already_claimed';
@@ -99,7 +113,8 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
       <p className="gift-message">{receipt?.status === 'loading' ? t('Claiming your gift…')
         : receipt?.status === 'claimed' ? t('Your gift has been added to your shared inventory.')
         : receipt?.status === 'already_claimed' ? t('You already claimed this gift. Your gear is in your shared inventory.')
-        : receipt?.status === 'unavailable' ? t('This gift link is invalid, expired, revoked, or already used by another player.')
+        : receipt?.status === 'no_gift' ? t('This creator code has no active gift.')
+        : receipt?.status === 'unavailable' ? code ? t('No community uses the code {{value0}}.', {value0: code.toUpperCase()}) : t('This gift link is invalid, expired, revoked, or already used by another player.')
         : t('We couldn’t claim your gift. Check your connection and try again.')}</p>
       {success && <ul className="gift-rewards">{receipt?.rewards?.map((reward, index) => {
         const item = getRewardObject(reward.type, reward.id);
@@ -128,6 +143,6 @@ export default function GiftClaim({blocked}: {blocked: boolean}) {
     </div>}
     <ItemTooltip id="gift-item-details" />
   </Modal>
-  {communityInvite && !receipt && !blocked && <JoinCommunityDialog code={communityInvite} via="link" onClose={() => setCommunityInvite(null)} />}
+  {communityInvite && !receipt && !blocked && <JoinCommunityDialog code={communityInvite} via={code ? 'code' : 'link'} onClose={() => {setCommunityInvite(null); onClose?.();}} />}
   </>;
 }

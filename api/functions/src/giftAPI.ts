@@ -1,7 +1,7 @@
 import {onRequest} from './telemetry';
 import {redirectToInvite} from './inviteAPI';
 import {corsMiddleware, getUID, firestore} from './APIsetup';
-import {redeemGiftToken} from './gifts';
+import {redeemCommunityCode, redeemGiftToken} from './gifts';
 
 export const redeemGift = onRequest({memory: '512MiB', invoker: 'public'}, (request, response) => {
   corsMiddleware(request, response, async () => {
@@ -9,7 +9,11 @@ export const redeemGift = onRequest({memory: '512MiB', invoker: 'public'}, (requ
     let uid: string;
     try { uid = await getUID(request); } catch { response.status(401).send('Unauthorized'); return; }
     try {
-      response.set('Cache-Control', 'no-store').json(await redeemGiftToken(firestore(), uid, request.body?.token));
+      const db = firestore();
+      const result = request.body?.code !== undefined
+        ? await redeemCommunityCode(db, uid, request.body.code)
+        : await redeemGiftToken(db, uid, request.body?.token);
+      response.set('Cache-Control', 'no-store').json(result);
     } catch {
       // Never log the bearer gift token or request body.
       console.error('Gift redemption failed');
