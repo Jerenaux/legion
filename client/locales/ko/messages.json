@@ -1137,7 +1137,6 @@
   "communityMembers_one": "멤버 {{count}}명",
   "communityMembers_other": "멤버 {{count}}명",
   "Creator communities": "크리에이터 커뮤니티",
-  "Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Emberhall. You can belong to one community, and joining is permanent.": "크리에이터는 코드나 링크를 공유합니다. 프로필의 <0>커뮤니티 가입</0>에 코드를 입력하거나 링크를 열어 Emberhall을 실행하세요. 커뮤니티는 하나만 소속될 수 있으며 가입은 영구적입니다.",
   "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.": "커뮤니티 문장이 경기, 프로필, 순위표에서 이름 옆에 표시됩니다. 랭크 승리는 순위의 커뮤니티 탭 주간 합계에 더해지며 리그와 함께 초기화됩니다. 커뮤니티는 전투에 영향을 주지 않습니다.",
   "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Emberhall, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "선물 링크의 보상은 현재 플레이 중인 계정에 지급됩니다. 개인용 링크는 전체에서 한 번만, 커뮤니티용 링크는 계정당 한 번씩 사용할 수 있습니다. 서로 다른 캠페인의 선물도 받을 수 있습니다. Emberhall을 설치한 뒤 링크를 여세요. 보상은 팀에서 확인할 수 있으며, 일반 장비 착용 조건은 그대로 적용됩니다.",
   "Health Points": "체력",
@@ -1254,5 +1253,9 @@
   "Sign-in service unavailable": "로그인 서비스를 이용할 수 없음",
   "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhall이 세션을 확인하지 못했습니다. 잠시 후 다시 시도하세요. 문제가 계속되면 게임 업데이트가 있는지 확인하세요.",
   "Sign-in failed": "로그인 실패",
-  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Emberhall을 다시 시작하고 재시도하세요. Steam이나 itch.io에서 실행했다면 해당 서비스에 로그인되어 있는지도 확인하세요."
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Emberhall을 다시 시작하고 재시도하세요. Steam이나 itch.io에서 실행했다면 해당 서비스에 로그인되어 있는지도 확인하세요.",
+  "After the tutorial, you can change your name and portrait, then view the Play instructions.": "튜토리얼을 마치면 이름과 초상화를 변경하고 플레이 안내를 확인할 수 있습니다.",
+  "Redeem": "받기",
+  "This creator code has no active gift.": "이 크리에이터 코드로 받을 수 있는 선물이 없습니다.",
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "프로필에 크리에이터 코드를 입력하면 시청자용 선물을 받을 수 있습니다. 코드와 링크 중 어느 쪽을 사용하든 각 선물은 계정당 한 번만 받을 수 있습니다. 여러 크리에이터의 선물을 받을 수 있으며, 커뮤니티 가입은 선택 사항이지만 가입 후에는 변경할 수 없습니다."
 }

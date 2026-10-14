@@ -1137,7 +1137,6 @@
   "communityMembers_one": "{{count}} Mitglied",
   "communityMembers_other": "{{count}} Mitglieder",
   "Creator communities": "Creator-Communitys",
-  "Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Emberhall. You can belong to one community, and joining is permanent.": "Creator teilen einen Code oder Link. Gib den Code in deinem Profil unter <0>Einer Community beitreten</0> ein oder öffne den Link, um Emberhall zu starten. Du kannst zu einer Community gehören, und der Beitritt ist dauerhaft.",
   "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.": "Das Siegel der Community erscheint neben deinem Namen in Matches, in deinem Profil und in Ranglisten. Deine Ranglistensiege zählen zu ihrer Wochensumme im Tab „Communitys“ unter Rang, die mit den Ligen zurückgesetzt wird. Communitys haben im Kampf keine Wirkung.",
   "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Emberhall, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "Geschenklinks gewähren dem gerade angemeldeten Konto Belohnungen. Persönliche Links gelten insgesamt einmal, Community-Links einmal pro Konto. Du kannst Geschenke aus verschiedenen Aktionen einlösen. Installiere Emberhall und öffne dann den Link. Deine Belohnungen findest du unter Team; die üblichen Ausrüstungsvoraussetzungen gelten weiterhin.",
   "Health Points": "Lebenspunkte",
@@ -1254,5 +1253,9 @@
   "Sign-in service unavailable": "Anmeldedienst nicht verfügbar",
   "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhall konnte deine Sitzung nicht überprüfen. Warte kurz und versuche es erneut. Prüfe auf ein Spielupdate, falls das Problem bestehen bleibt.",
   "Sign-in failed": "Anmeldung fehlgeschlagen",
-  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Starte Emberhall neu und versuche es erneut. Falls du es über Steam oder itch.io gestartet hast, prüfe, ob du dort angemeldet bist."
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "Starte Emberhall neu und versuche es erneut. Falls du es über Steam oder itch.io gestartet hast, prüfe, ob du dort angemeldet bist.",
+  "After the tutorial, you can change your name and portrait, then view the Play instructions.": "Nach dem Tutorial kannst du deinen Namen und dein Porträt ändern und anschließend die Spielhinweise ansehen.",
+  "Redeem": "Einlösen",
+  "This creator code has no active gift.": "Für diesen Creator-Code ist kein Geschenk verfügbar.",
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "Gib in deinem Profil einen Creator-Code ein, um die verfügbaren Geschenke für dessen Community zu erhalten. Jedes Geschenk kann pro Konto nur einmal eingelöst werden, ob per Code oder Link. Du kannst Geschenke verschiedener Creator erhalten; der Beitritt zu einer Community ist freiwillig und dauerhaft."
 }

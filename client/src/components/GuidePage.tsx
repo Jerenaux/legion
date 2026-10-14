@@ -70,6 +70,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h2 id="first-match" tabIndex={-1}>{t("Matches & modes")}</h2>
             <p><Trans i18n={i18n} i18nKey={"Emberhall is a turn-based battle between two teams on a hexagonal arena. <0>Defeat every opposing character to win.</0> You begin with {{value0}} characters; your roster can eventually grow to {{value1}}."} components={[<strong />]} values={{value0: NB_START_CHARACTERS, value1: MAX_CHARACTERS}} /></p>
             <p><Trans i18n={i18n} i18nKey={"Before queuing, visit <0>Team</0> to spend stat points and equip items. Then open <1>Play</1> and choose a mode."} components={[<strong />, <strong />]} /></p>
+            <p>{t("After the tutorial, you can change your name and portrait, then view the Play instructions.")}</p>
             <h3>{t("Game modes")}</h3>
             <dl className="guide-definitions">
               <div><dt>{t("Practice")}</dt><dd>{t("Fight AI and learn your loadout. Reduced XP and gold; no item rewards or ELO changes. Equipped consumables are still used up.")}</dd></div>
@@ -196,7 +197,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p><Trans i18n={i18n} i18nKey={"<0>ELO</0> changes with ranked results and measures your rating. The <1>weekly league</1> is a separate competition: current-season ranked wins determine the order, with fewer losses breaking ties."} components={[<strong />, <strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Promotion, demotion, and podium rewards happen <0>Friday at 19:00 UTC</0>. Check Rank for your position and the promotion/demotion zones. Only players who participated in that season’s ranked games are considered; sitting out a season does not demote you. Crossing an ELO threshold does not change your league immediately."} components={[<strong />]} /></p>
             <h3>{t("Creator communities")}</h3>
-            <p><Trans i18n={i18n} i18nKey={"Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Emberhall. You can belong to one community, and joining is permanent."} components={[<strong />]} /></p>
+            <p>{t("Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.")}</p>
             <p>{t("The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.")}</p>
           </section>
 

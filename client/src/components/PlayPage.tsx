@@ -28,7 +28,8 @@ class PlayPage extends Component {
   // After the tutorial match, one dialog at a time: the player's generated name and
   // portrait, then how matches work, then any unlock popup.
   afterFirstMatch() {
-    return this.context.player.isLoaded && this.context.getCompletedGames() >= 1;
+    // The unlock counter excludes the tutorial; these introductions must include it.
+    return this.context.player.isLoaded && (this.context.player.engagementStats?.completedGames || 0) >= 1;
   }
 
   identityOpen() {

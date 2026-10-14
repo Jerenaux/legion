@@ -3,7 +3,7 @@
 Install the Steam demo, then click a personal or community gift link. Steam passes the token
 to Legion; after platform authentication and player loading, Legion redeems it
 and shows the received items. During a match, replay, queue or lobby, redemption
-waits until returning to a menu. No code-entry widget or website login is needed.
+waits until returning to a menu. Players can also enter the creator’s community code on their profile to claim its available audience gifts; no website login is needed.
 The reward reveal uses the game's chest art, rarity-colored loot slots and sound
 settings. Hovering or focusing a reward shows its inventory card, including
 effects, class requirements and spell level requirements; gold explains its use in Shop.
@@ -93,10 +93,10 @@ contend on a shared campaign update. Inspect receipts directly in Firestore when
 needed; `inspect` and `list` report campaign metadata. The raw token is not stored. Keep the creation
 output securely if the link must be resent; otherwise revoke and reissue.
 `list` returns the latest 100 gifts. This uses automatic single-field indexing;
-redemption uses exact document reads, so no composite index is needed. Existing
+token redemption uses exact document reads. Code redemption uses the community/usage index documented below. Existing
 Firestore rules deny all client access; the operator CLI uses privileged IAM.
 
-`redeemGift` accepts authenticated POST requests containing only `{token}`.
+`redeemGift` accepts authenticated POST requests containing `{token}` or a public creator `{code}`.
 One Firestore transaction records ownership and adds the configured rewards.
 Single-use claims have one winner; other accounts receive `unavailable`, with
 no recipient details. Unlimited links allow every account to claim once, even
@@ -160,7 +160,8 @@ is needed only for the revised guide copy. No production tokens are migrated.
 
 ```sh
 node tools/backend/run.cjs # isolated Firestore/Auth/Functions + CLI concurrency checks
-cd client && bun test electron/__tests__/gifts.test.js
+node tools/backend/run.cjs
+cd client
 bun run test:guide --gifts --locale=de
 bun run test:guide --gifts --locale=ja
 ```
@@ -169,3 +170,25 @@ The `--gifts` run captures the gift screens (readiness, delivery, receipts,
 invalid/used links, retry, queue deferral, compact layouts) for manual review; it
 asserts nothing about the UI and never contacts production. Also test the built executable with a fresh
 gift, click twice, and verify its Firestore receipt and actual inventory change.
+
+## Redeeming a creator code
+
+The profile's **Creator code → Redeem** flow calls `redeemGift` with `{code}`.
+It finds all unlimited-use campaigns linked to that active community and claims
+eligible gifts through the same Firestore transaction and per-account receipts as
+`{token}`. This works for existing campaigns without reissuing links or migrating
+data. Personal single-use gifts (including legacy gifts without `usage`) are never
+claimable through a public code. Expiry and revocation still block new claims.
+
+Code and link claims cannot double-grant a campaign, even when submitted together.
+Multiple campaigns can be claimed. Newly granted rewards are shown together in
+the existing gift reveal; repeating a claim shows its receipt. If a request fails
+partway through several campaigns, retrying safely finishes the remaining claims.
+
+After the reward reveal, unaffiliated players can confirm joining the community.
+Membership is still optional and permanent. Code entry stays available to existing
+members, who can claim other creators' rewards without changing their community.
+Codes with no eligible gifts still offer the normal membership confirmation.
+The `creatorGifts` community/usage query index is in `firestore.indexes.json` and
+is deployed before Functions. No gift tokens, campaign labels or claimants are
+exposed by the code endpoint.

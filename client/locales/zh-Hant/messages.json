@@ -1137,7 +1137,6 @@
   "communityMembers_one": "{{count}} 名成員",
   "communityMembers_other": "{{count}} 名成員",
   "Creator communities": "創作者社群",
-  "Creators share a code or link. Enter the code under <0>Join a community</0> on your profile, or open the link to launch Emberhall. You can belong to one community, and joining is permanent.": "創作者會分享代碼或連結。在個人檔案的<0>加入社群</0>中輸入代碼，或開啟連結啟動 Emberhall。你只能屬於一個社群，且加入後不可更改。",
   "The community’s sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins add to its weekly total in the Communities tab of Rank, which resets with the leagues. Communities have no effect in combat.": "社群紋章會顯示在你在對戰、個人檔案和排行榜中的名字旁。你的排位勝場計入排名頁「社群」分頁中的每週總數，並隨聯賽一同重置。社群不影響戰鬥。",
   "Gift links grant rewards to the account currently playing. Personal links work once in total; community links work once per account. You can claim gifts from different campaigns. Install Emberhall, then open the link. Find your rewards in Team; normal equipment requirements still apply.": "禮物連結會將獎勵發放給目前遊玩的帳號。個人連結總共只能使用一次；社群連結每個帳號可使用一次。你可以領取不同活動的禮物。先安裝 Emberhall，再開啟連結。獎勵可在「隊伍」中查看，仍須符合正常的裝備條件。",
   "Health Points": "生命值",
@@ -1254,5 +1253,9 @@
   "Sign-in service unavailable": "登入服務無法使用",
   "Emberhall couldn't verify your session. Wait a moment and try again. If this continues, check for a game update.": "Emberhall 無法驗證你的工作階段。請稍候再試。如果問題持續，請檢查遊戲是否有更新。",
   "Sign-in failed": "登入失敗",
-  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "請重新啟動 Emberhall 並重試。如果你透過 Steam 或 itch.io 啟動遊戲，也請確認已登入相應平台。"
+  "Restart Emberhall and try again. If you launched it through Steam or itch.io, check that you're signed in there too.": "請重新啟動 Emberhall 並重試。如果你透過 Steam 或 itch.io 啟動遊戲，也請確認已登入相應平台。",
+  "After the tutorial, you can change your name and portrait, then view the Play instructions.": "完成教學後，你可以更改名字和頭像，然後查看對戰說明。",
+  "Redeem": "兌換",
+  "This creator code has no active gift.": "此創作者代碼目前沒有可領取的禮物。",
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "在個人資料中輸入創作者代碼，即可領取其面向觀眾的可用禮物。無論使用代碼還是連結，每份禮物每個帳號只能領取一次。你可以領取不同創作者的禮物；加入社群是自願的，但加入後無法更換。"
 }

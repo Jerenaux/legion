@@ -514,6 +514,68 @@ try {
       assert.equal(legacy.headers.get('location'), `https://www.play-legion.io/invite?${target}`);
     }
     console.log('Gift community invitations, explicit join, invite page states and legacy link redirects pass');
+    // Public code redemption uses the exact same campaign receipts as private-token links.
+    const codeFan = await login(`code-fan-${run}`);
+    const playerRef = db.collection('players').doc(codeFan.uid);
+    const initial = (await playerRef.get()).data();
+    const privateGift = cli('create', '--usage', 'single', '--label', 'private', '--rewards', rewardsFile, '--community', code);
+    const legacyGift = cli('create', '--usage', 'single', '--label', 'legacy', '--rewards', rewardsFile, '--community', code);
+    await db.collection('creatorGifts').doc(legacyGift.id).update({usage: requireAPI('firebase-admin/firestore').FieldValue.delete()});
+    const expiredGift = cli('create', '--usage', 'unlimited', '--label', 'expired', '--rewards', rewardsFile, '--community', code);
+    await db.collection('creatorGifts').doc(expiredGift.id).update({expiresAt: Date.now() - 1000});
+    const revokedGift = cli('create', '--usage', 'unlimited', '--label', 'revoked', '--rewards', rewardsFile, '--community', code);
+    cli('revoke', '--id', revokedGift.id);
+    const noAuth = await fetch(`${api}/redeemGift`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({code})});
+    assert.equal(noAuth.status, 401);
+    for (const invalid of ['', '../creator', {}, 'missing-community']) {
+      assert.equal((await http('redeemGift', {code: invalid}, codeFan.token)).status, 'unavailable');
+    }
+    const simultaneous = await Promise.all([
+      http('redeemGift', {code: ` ${code.toUpperCase()} `}, codeFan.token),
+      http('redeemGift', {code}, codeFan.token),
+      http('redeemGift', {token: invite.token}, codeFan.token),
+    ]);
+    assert.equal(simultaneous.filter(result => result.status === 'claimed').length, 1);
+    assert.equal(simultaneous.filter(result => result.status === 'already_claimed').length, 2);
+    for (const result of simultaneous) {
+      assert.deepEqual(result.rewards, rewards);
+      assert.equal(result.community.id, code);
+      assert.deepEqual(Object.keys(result).sort(), ['community', 'rewards', 'status']);
+    }
+    const afterCode = (await playerRef.get()).data();
+    assert.equal(afterCode.gold, initial.gold + 50);
+    assert.equal(afterCode.inventory.equipment.length, initial.inventory.equipment.length + 1);
+    assert.deepEqual(afterCode.engagementStats, initial.engagementStats);
+    assert.equal(afterCode.community, undefined, 'Claiming rewards does not bypass membership confirmation');
+    for (const gift of [privateGift, legacyGift, expiredGift, revokedGift]) {
+      const ref = db.collection('creatorGifts').doc(gift.id);
+      assert.equal((await ref.get()).get('claimedBy'), null);
+      assert.equal((await ref.collection('claims').get()).size, 0);
+    }
+    // A link already claimed before entering the code cannot award its items again.
+    assert.equal((await http('redeemGift', {code}, fan.token)).status, 'already_claimed');
+    assert.equal((await http('joinCommunity', {code, via: 'code'}, codeFan.token)).id, code);
+    const extra = cli('create', '--usage', 'unlimited', '--label', 'second-campaign', '--rewards', rewardsFile, '--community', code);
+    const extra2 = cli('create', '--usage', 'unlimited', '--label', 'third-campaign', '--rewards', rewardsFile, '--community', code);
+    const extraClaim = await http('redeemGift', {code}, codeFan.token);
+    assert.equal(extraClaim.status, 'claimed');
+    assert.deepEqual(extraClaim.rewards, rewards.map(reward => ({...reward, amount: reward.amount * 2})));
+    assert.equal((await http('redeemGift', {token: extra.token}, codeFan.token)).status, 'already_claimed');
+    assert.equal((await http('redeemGift', {token: extra2.token}, codeFan.token)).status, 'already_claimed');
+    assert.equal((await playerRef.get()).get('gold'), initial.gold + 150);
+    assert.equal((await http('redeemGift', {code}, codeFan.token)).status, 'already_claimed');
+    const otherCode = `other-${run.slice(0, 8)}`;
+    execFileSync('bun', ['tools/communities.ts', 'create', '--project', 'legion-32c6d', '--id', otherCode, '--name', 'Other Guild', '--tag', 'OTH'], cliOptions);
+    assert.equal((await http('redeemGift', {code: otherCode}, codeFan.token)).status, 'no_gift');
+    cli('create', '--usage', 'unlimited', '--label', 'other-community', '--rewards', rewardsFile, '--community', otherCode);
+    assert.equal((await http('redeemGift', {code: otherCode}, codeFan.token)).status, 'claimed');
+    assert.equal((await playerRef.get()).get('community.id'), code, 'Other creator gifts preserve existing membership');
+    await db.collection('communities').doc(otherCode).update({status: 'revoked'});
+    assert.equal((await http('redeemGift', {code: otherCode}, codeFan.token)).status, 'unavailable');
+    assert.equal((await playerRef.get()).get('gold'), initial.gold + 200);
+    assert.deepEqual((await playerRef.get()).get('engagementStats'), initial.engagementStats);
+    console.log('Creator codes: existing campaigns, link/code concurrency, receipt sharing, privacy, expiry, revocation, multiple campaigns and existing membership pass');
+
   } finally { rmSync(giftFiles, {recursive: true, force: true}); }
   console.log('Backend integration passed:',JSON.stringify(timings));
 } finally {

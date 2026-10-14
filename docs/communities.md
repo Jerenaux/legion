@@ -24,7 +24,7 @@ SVG in `client/src/components/sigil/Sigil.tsx`. Never reorder those lists: store
 - Steam: `steam://run/3996730/?community=<code>` (read through `GetLaunchQueryParam`).
 - Direct downloads: `legion://community/<code>`.
 
-The app asks the player to confirm before joining. Players can also type the code on their profile.
+The app asks the player to confirm before joining. Players can also type the code on their profile: this first claims the community’s available unlimited-use audience gifts, then offers membership. Code entry stays available to existing members without changing their affiliation. Codes and gift links share the same once-per-account receipts; see `docs/creator-gifts.md`.
 
 ## Operator CLI
 
