@@ -106,25 +106,25 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
   };
 
   componentDidMount() {
-    events.on('showPlayerBox', this.showPlayerBox);
-    events.on('characterHoverChanged', this.onCharacterHover);
-    events.on('refreshOverview', this.updateOverview);
-    events.on('gameEnd', this.endGame);
-    events.on('towerInfo', this.setTowerInfo);
+    events.on('showPlayerBox', this.showPlayerBox, this);
+    events.on('characterHoverChanged', this.onCharacterHover, this);
+    events.on('refreshOverview', this.updateOverview, this);
+    events.on('gameEnd', this.endGame, this);
+    events.on('towerInfo', this.setTowerInfo, this);
     events.on('hoverCharacter', () => {
       if (this.state.pendingSpell || this.state.pendingItem) return;
       this.handleCursorChange('pointerCursor')
-    });
+    }, this);
 
     events.on('hoverEnemyCharacter', () => {
       if (this.state.pendingSpell || this.state.pendingItem) return;
       this.handleCursorChange('swordCursor')
-    });
+    }, this);
 
     events.on('unhoverCharacter', () => {
       if (this.state.pendingSpell || this.state.pendingItem) return;
       this.handleCursorChange('normalCursor')
-    });
+    }, this);
 
     events.on('pendingSpell', () => {
       this.setState({
@@ -132,7 +132,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         pendingItem: false,
       });
       this.handleCursorChange('spellCursor')
-    });
+    }, this);
 
     events.on('pendingItem', () => {
       this.setState({
@@ -140,35 +140,35 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
         pendingItem: true,
       });
       this.handleCursorChange('itemCursor')
-    });
+    }, this);
 
     events.on('clearPendingSpell', () => {
       this.setState({
         pendingSpell: false,
       });
       this.handleCursorChange('normalCursor')
-    });
+    }, this);
 
     events.on('clearPendingItem', () => {
       this.setState({
         pendingItem: false,
       });
       this.handleCursorChange('normalCursor')
-    });
+    }, this);
 
     // Add a new event listener for tutorial messages
-    events.on('showTutorialMessage', this.handleTutorialMessage);
-    events.on('hideTutorialMessage', this.hideTutorialMessage);
-    events.on('combatTipsAvailable', this.handleTipsAvailable);
-    events.on('combatTipsVisibility', this.handleTipsVisibility);
-    events.on('actionFeedback', this.handleActionFeedback);
-    events.on('turnStarted', this.clearActionFeedback);
+    events.on('showTutorialMessage', this.handleTutorialMessage, this);
+    events.on('hideTutorialMessage', this.hideTutorialMessage, this);
+    events.on('combatTipsAvailable', this.handleTipsAvailable, this);
+    events.on('combatTipsVisibility', this.handleTipsVisibility, this);
+    events.on('actionFeedback', this.handleActionFeedback, this);
+    events.on('turnStarted', this.clearActionFeedback, this);
     for (const event of ['playerMoved', 'playerAttacked', 'playerCastSpell', 'playerUseItem']) {
-      events.on(event, this.clearActionFeedback);
+      events.on(event, this.clearActionFeedback, this);
     }
     // Add new event listener for revealing top menu
-    events.on('revealTopMenu', this.revealTopMenu);
-    events.on('revealOverview', this.revealOverview);
+    events.on('revealTopMenu', this.revealTopMenu, this);
+    events.on('revealOverview', this.revealOverview, this);
 
     // Add keyboard event listener for HUD toggle
     window.addEventListener('keydown', this.handleKeyDown);
@@ -176,7 +176,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   componentWillUnmount() {
     clearTimeout(this.feedbackTimer);
-    events.removeAllListeners();
+    // The next route may already have registered its music/settings listeners.
+    for (const event of events.eventNames()) {
+      for (const listener of events.listeners(event)) events.off(event, listener, this);
+    }
     // Remove keyboard event listener
     window.removeEventListener('keydown', this.handleKeyDown);
   }

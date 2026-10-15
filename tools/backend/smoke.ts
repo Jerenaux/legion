@@ -223,35 +223,12 @@ try {
   assert.equal((await shopperRef.collection('mutationReceipts').doc(purchase.requestId).get()).exists, true);
   console.log('Atomic purchases/chests/inventory, concurrent replay, stale selection, validation, and exclusive recruitment pass');
   await (await import('./client-recovery')).checkClientRecovery(api, shopper, shopperRef);
-  // The scheduled job persists synthetic weekly/lifetime results atomically and is retry-safe.
-  const inactiveRef = db.collection('players').doc(`inactive-${run}`);
-  const playedRef = db.collection('players').doc(`inactive-ranked-${run}`);
   const inactive = {
     lastActiveDate: '2020-01-01 00:00:00', elo: 0,
     engagementStats: {completedGames: 1},
     leagueStats: {wins: 0, losses: 0, nbGames: 0},
     allTimeStats: {wins: 4, losses: 3, nbGames: 7},
   };
-  await inactiveRef.set(inactive);
-  await playedRef.set({...inactive, leagueStats: {wins: 1, losses: 0, nbGames: 1}});
-  const runInactiveJob = async () => {
-    const response = await fetch(`${api}/updateInactivePlayersStats-0`, {method: 'POST'});
-    assert(response.ok, await response.text());
-  };
-  await Promise.all([runInactiveJob(), runInactiveJob()]);
-  const synthetic = (await inactiveRef.get()).data();
-  const weekly = synthetic.leagueStats;
-  assert(weekly.nbGames >= 1 && weekly.nbGames <= 50);
-  assert.equal(weekly.wins + weekly.losses, weekly.nbGames);
-  assert.equal(synthetic.allTimeStats.wins, 4 + weekly.wins);
-  assert.equal(synthetic.allTimeStats.losses, 3 + weekly.losses);
-  assert.equal(synthetic.allTimeStats.nbGames, 7 + weekly.nbGames);
-  assert.equal(synthetic.elo, Math.round((weekly.wins / weekly.nbGames - 0.45) * 100));
-  assert(weekly.seasonId);
-  await runInactiveJob();
-  assert.deepEqual((await inactiveRef.get()).data(), synthetic);
-  assert.deepEqual((await playedRef.get()).data(), {...inactive, leagueStats: {wins: 1, losses: 0, nbGames: 1}});
-  await Promise.all([inactiveRef.delete(), playedRef.delete()]);
   // Exercise the maintenance CLI against real Firestore, including stale-plan protection.
   {
     const {execFileSync, spawnSync} = await import('node:child_process');
@@ -295,13 +272,14 @@ try {
       await Promise.all([ref, zeroRef, ambiguousRef].map(ref => db.recursiveDelete(ref)));
     }
   }
+  await (await import('./ranked-participation')).checkRankedParticipation({db, http, login, api, run});
   const invalid=socket(13000,{token:'invalid'}); const rejection=event(invalid,'connect_error'); invalid.connect(); await rejection;
   // Real rank reads must agree across bootstrap, legacy clients, profiles, lobbies and combat.
   // Deliberately retain obsolete stored ranks and include ties, other leagues and old seasons.
   const {currentSeasonId} = await import('../../shared/leagueRanking');
   const seasonId = currentSeasonId();
   const rankRef = db.collection('players').doc(one.uid);
-  const rankingStats = {...initial.leagueStats, seasonId, wins: 8, losses: 2, nbGames: 10, rank: 999};
+  const rankingStats = {...initial.leagueStats, seasonId, hasRankedResult: true, wins: 8, losses: 2, nbGames: 10, rank: 999};
   await rankRef.update({league: 4, leagueStats: rankingStats});
   const rankFixtures = [
     {wins: 10, losses: 4, league: 4, seasonId},
@@ -367,6 +345,8 @@ try {
   const [s1,s2]=await snapshots;timings.pvpSnapshotMs=Math.round(performance.now()-pvpStart);
   assert.equal(s1.opponent.team.length,3);assert.equal(s2.opponent.team.length,3);
   assert.equal(s1.player.player.playerRank, 2);assert.equal(s2.opponent.player.playerRank, 2);
+  assert.equal(s2.player.player.playerRank, 0, 'Unranked combat player has no fabricated position');
+  assert.equal(s2.player.player.playerLeague, initial.league, 'Unranked combat player retains league membership');
   await rankRef.update({'leagueStats.seasonId': '2000-01-01'});
   const stalePlayer = await http('bootstrapPlayer', undefined, one.token);
   assert.equal(stalePlayer.player.rank, 0);assert.equal(stalePlayer.player.wins, 0);

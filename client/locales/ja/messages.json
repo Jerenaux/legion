@@ -385,7 +385,7 @@
   "<0/>Confirm": "<0/>確認",
   "Spend stat points": "能力値ポイントを使う",
   "Item details": "アイテムの詳細",
-  "No players in this league yet": "このリーグにはまだプレイヤーがいません",
+  "No ranked games in this league this season": "今シーズン、このリーグではまだランク戦が行われていません",
   "Player ID {{value0}} copied!": "プレイヤーID {{value0}}をコピーしました！",
   "Emberhall Logo": "Emberhallロゴ",
   "Loading...": "読み込み中…",
@@ -1257,5 +1257,6 @@
   "After the tutorial, you can change your name and portrait, then view the Play instructions.": "チュートリアル終了後、名前とポートレートを変更し、プレイの説明を確認できます。",
   "Redeem": "受け取る",
   "This creator code has no active gift.": "このクリエイターコードには現在受け取れるギフトがありません。",
-  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "プロフィールでクリエイターコードを入力すると、視聴者向けのギフトを受け取れます。コードとリンクのどちらを使っても、各ギフトを受け取れるのは1アカウントにつき1回です。複数のクリエイターからギフトを受け取れます。コミュニティへの参加は任意ですが、参加後は変更できません。"
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "プロフィールでクリエイターコードを入力すると、視聴者向けのギフトを受け取れます。コードとリンクのどちらを使っても、各ギフトを受け取れるのは1アカウントにつき1回です。複数のクリエイターからギフトを受け取れます。コミュニティへの参加は任意ですが、参加後は変更できません。",
+  "No ranked games this season": "今シーズンのランク戦は未プレイ"
 }

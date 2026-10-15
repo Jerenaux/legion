@@ -51,7 +51,39 @@ The combined bootstrap removes a separate cold function, one duplicate player re
 
 In the clean integration run, practice snapshot delivery took 91 ms, two-player queue-to-match 24 ms, PvP snapshot delivery 29 ms and AI snapshot delivery 63 ms. These are single checks, not percentile claims. Emulator worker startup is roughly one second and is not representative of production container startup. Production measurements and index scan verification remain necessary after deployment.
 
-## Legacy synthetic ranking repair
+## Ranked participation
+
+Weekly standings, rank counts, profiles and weekly rollover require a matching
+`leagueStats.seasonId` and `hasRankedResult: true`. New accounts start false. A
+recorded ranked result sets true, including a loss or a ranked match against an
+inactive opponent. Practice and casual games cannot set it. League membership
+persists between seasons; combat displays that league and only a current-season
+rank, with a dash before participation. The all-time ELO board is separate.
+
+The inactive-player job that invented results is removed. Existing synthetic
+records are excluded from weekly standings and awards; their first real ranked
+result starts a clean weekly record. This does not rewrite historical ELO or
+lifetime stats, or reverse past promotions/rewards.
+
+`bun tools/backend/backfill-ranked-participation.ts` previews a bounded migration
+of the current and previous seasons in the named `legion` database. `--apply`
+marks genuine legacy participants. Real results always advanced a win/loss
+streak; synthetic records left both at zero. It preserves scores and league,
+rechecks each record in a transaction, skips already marked records and can be
+rerun. Previous-season records are included for an interrupted weekly rollover.
+
+API deployment waits for the new indexes, backfills before switching Functions,
+and reruns after deployment to catch older in-flight writers. The game-server
+deployment also waits for the indexes and backfills before changing revisions.
+The Functions deploy uses `--force` to delete the retired
+`updateInactivePlayersStats` scheduled function and its schedule. No production
+migration is performed merely by opening this PR.
+
+## Historical synthetic ranking repair
+
+The following tool predates ranked participation enforcement. It is retained for
+historical repair reproducibility; do not run it to populate leaderboards.
+
 
 `tools/backend/repair-synthetic-stats.cjs` repairs the old inactive-player job's
 missing lifetime results and accumulated ELO drift in the named `legion` database.

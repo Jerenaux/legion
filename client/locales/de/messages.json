@@ -385,7 +385,7 @@
   "<0/>Confirm": "<0/>Bestätigen",
   "Spend stat points": "Attributpunkte verteilen",
   "Item details": "Gegenstandsdetails",
-  "No players in this league yet": "Noch keine Spieler in dieser Liga",
+  "No ranked games in this league this season": "In dieser Liga wurden diese Saison noch keine Ranglistenspiele gespielt",
   "Player ID {{value0}} copied!": "Spieler-ID {{value0}} kopiert!",
   "Emberhall Logo": "Emberhall-Logo",
   "Loading...": "Laden…",
@@ -1257,5 +1257,6 @@
   "After the tutorial, you can change your name and portrait, then view the Play instructions.": "Nach dem Tutorial kannst du deinen Namen und dein Porträt ändern und anschließend die Spielhinweise ansehen.",
   "Redeem": "Einlösen",
   "This creator code has no active gift.": "Für diesen Creator-Code ist kein Geschenk verfügbar.",
-  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "Gib in deinem Profil einen Creator-Code ein, um die verfügbaren Geschenke für dessen Community zu erhalten. Jedes Geschenk kann pro Konto nur einmal eingelöst werden, ob per Code oder Link. Du kannst Geschenke verschiedener Creator erhalten; der Beitritt zu einer Community ist freiwillig und dauerhaft."
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "Gib in deinem Profil einen Creator-Code ein, um die verfügbaren Geschenke für dessen Community zu erhalten. Jedes Geschenk kann pro Konto nur einmal eingelöst werden, ob per Code oder Link. Du kannst Geschenke verschiedener Creator erhalten; der Beitritt zu einer Community ist freiwillig und dauerhaft.",
+  "No ranked games this season": "Diese Saison noch keine Ranglistenspiele"
 }

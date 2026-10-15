@@ -150,7 +150,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t("Roster cards show each character’s class, name, level and unspent SP.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Open <0>Team</0> in the top navigation and select a character’s portrait. Their sheet shows stats, equipment, carried consumables, and learned spells. Your shared inventory sits beside it. Hover over or focus any item or learned spell, in your inventory or on the character sheet, for an instant preview of its effects, casting cost, and requirements. Hover over a stat label to learn what it does."} components={[<strong />]} /></p>
             <figure>
-              <img src={loadout} width="1052" height="660" loading="lazy" alt={t("The Team screen: Ember’s character stats and equipment slots on the left, equipped consumables and spells below, and the shared inventory on the right.")} />
+              <img src={loadout} width="1052" height="496" loading="lazy" alt={t("The Team screen: Ember’s character stats and equipment slots on the left, equipped consumables and spells below, and the shared inventory on the right.")} />
               <figcaption>{t("Owning an item is not enough: assign it to the character who needs it before queuing.")}</figcaption>
             </figure>
             <h3>{t("Grow your team")}</h3>
@@ -189,11 +189,12 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.EQUIPMENT_BATCH_1]})}</dt><dd>{t("The first equipment purchases.")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.RANKED_MODE]})}</dt><dd>{t("Ranked mode and the league leaderboard.")}</dd></div>
               {ENABLE_CINDER_TOWER && <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.TOWER_MODE]})}</dt><dd>{t("The Cinder Tower")}</dd></div>}
-              <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.DAILY_LOOT]})}</dt><dd>{t("Daily loot. Check its keys and countdowns on Play.")}</dd></div>
+              <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.DAILY_LOOT]})}</dt><dd>{t("Daily loot. Check its keys and countdowns on Play.")} {t("Play Casual or Ranked games for daily chest keys!")}</dd></div>
               <div><dt>{t("gameCount", {count: LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES]})}</dt><dd>{t("Character purchases to expand your roster.")}</dd></div>
             </dl>
             <p>{t("More consumables, spells, and equipment unlock along the way.")}</p>
             <h3>{t("Your league is not your ELO")}</h3>
+            <p>{t("Play one ranked match to appear in your league’s ranking. Practice and casual matches don’t count.")}</p>
             <p><Trans i18n={i18n} i18nKey={"<0>ELO</0> changes with ranked results and measures your rating. The <1>weekly league</1> is a separate competition: current-season ranked wins determine the order, with fewer losses breaking ties."} components={[<strong />, <strong />]} /></p>
             <p><Trans i18n={i18n} i18nKey={"Promotion, demotion, and podium rewards happen <0>Friday at 19:00 UTC</0>. Check Rank for your position and the promotion/demotion zones. Only players who participated in that season’s ranked games are considered; sitting out a season does not demote you. Crossing an ELO threshold does not change your league immediately."} components={[<strong />]} /></p>
             <h3>{t("Creator communities")}</h3>

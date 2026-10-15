@@ -385,7 +385,7 @@
   "<0/>Confirm": "<0/>Confirmer",
   "Spend stat points": "Dépenser des points de caractéristiques",
   "Item details": "Détails de l’objet",
-  "No players in this league yet": "Aucun joueur dans cette ligue",
+  "No ranked games in this league this season": "Aucun match classé dans cette ligue cette saison",
   "Player ID {{value0}} copied!": "Identifiant {{value0}} copié !",
   "Emberhall Logo": "Logo Emberhall",
   "Loading...": "Chargement…",
@@ -1274,5 +1274,6 @@
   "After the tutorial, you can change your name and portrait, then view the Play instructions.": "Après le tutoriel, vous pouvez changer votre nom et votre portrait, puis consulter les instructions de jeu.",
   "Redeem": "Utiliser",
   "This creator code has no active gift.": "Aucun cadeau n’est actuellement disponible avec ce code créateur.",
-  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "Saisissez un code créateur sur votre profil pour récupérer les cadeaux disponibles pour sa communauté. Un cadeau ne peut être récupéré qu’une fois par compte, par code ou par lien. Vous pouvez recevoir des cadeaux de plusieurs créateurs ; rejoindre une communauté est facultatif et définitif."
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "Saisissez un code créateur sur votre profil pour récupérer les cadeaux disponibles pour sa communauté. Un cadeau ne peut être récupéré qu’une fois par compte, par code ou par lien. Vous pouvez recevoir des cadeaux de plusieurs créateurs ; rejoindre une communauté est facultatif et définitif.",
+  "No ranked games this season": "Aucun match classé cette saison"
 }

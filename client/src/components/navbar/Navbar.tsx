@@ -1,3 +1,4 @@
+import FitText from '../FitText';
 import {t, i18n, localizedAsset, language} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 
@@ -5,7 +6,6 @@ import { h } from 'preact';
 // Navbar.tsx
 
 import './navbar.style.css';
-import './SettingsModalWrapper.css';
 import { Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
 import UserInfoBar from '../userInfoBar/UserInfoBar';
@@ -223,7 +223,7 @@ class Navbar extends Component<Props, State> {
                                     <div className="menuItems">
                                         <Link href="/play" onMouseOver={() => this.setState({ hovered: MenuItems.PLAY })} onMouseLeave={() => this.setState({ hovered: '' })}>
                                             <div className={`menuItemContainer ${currentPage(Routes.PLAY) ? 'activeFlag' : ''}`}>
-                                                <img className="menuItem" src={this.state.hovered === MenuItems.PLAY ? playActiveIcon : playIcon} alt={t("Play")} />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.PLAY ? "play_btn_active.png" : "play_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="48" lengthAdjust="spacingAndGlyphs">{t("Play")}</text></svg>}
+                                                <img className="menuItem" src={this.state.hovered === MenuItems.PLAY ? playActiveIcon : playIcon} alt={t("Play")} />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.PLAY ? "play_btn_active.png" : "play_btn_idle.png", "") && <FitText className="flag-label" aria-hidden="true">{t("Play")}</FitText>}
                                             </div>
                                         </Link>
                                         <Link href="/team" onMouseOver={() => this.setState({ hovered: MenuItems.TEAM })} onMouseLeave={() => this.setState({ hovered: '' })}>
@@ -231,7 +231,7 @@ class Navbar extends Component<Props, State> {
                                                 className={`menuItemContainer ${currentPage(Routes.TEAM) ? 'activeFlag' : ''}`}
                                                 data-team-page
                                             >
-                                                <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} alt={t("Team")} />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.TEAM ? "team_btn_active.png" : "team_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="50" lengthAdjust="spacingAndGlyphs">{t("Team")}</text></svg>}
+                                                <img className="menuItem" src={this.state.hovered === MenuItems.TEAM ? teamActiveIcon : teamIcon} alt={t("Team")} />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.TEAM ? "team_btn_active.png" : "team_btn_idle.png", "") && <FitText className="flag-label" aria-hidden="true">{t("Team")}</FitText>}
                                             </div>
                                         </Link>
                                         <Link
@@ -251,7 +251,7 @@ class Navbar extends Component<Props, State> {
                                                     className="menuItem"
                                                     src={this.state.hovered === MenuItems.SHOP ? shopActiveIcon : shopIcon}
                                                     alt={t("Shop")}
-                                                />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.SHOP ? "shop_btn_active.png" : "shop_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="48" lengthAdjust="spacingAndGlyphs">{t("Shop")}</text></svg>}
+                                                />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.SHOP ? "shop_btn_active.png" : "shop_btn_idle.png", "") && <FitText className="flag-label" aria-hidden="true">{t("Shop")}</FitText>}
                                                 {!playerContext.canAccessFeature(LockedFeatures.CONSUMABLES_BATCH_1) && (
                                                     <img
                                                         className="lock-overlay"
@@ -278,7 +278,7 @@ class Navbar extends Component<Props, State> {
                                                     className="menuItem"
                                                     src={this.state.hovered === MenuItems.RANK ? rankActiveIcon : rankIcon}
                                                     alt={t("Rank")}
-                                                />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.RANK ? "rank-btn-active.png" : "rank_btn_idle.png", "") && <svg className="flag-label" viewBox="0 0 72 84" aria-hidden="true"><text x="36" y="68" textAnchor="middle" textLength="48" lengthAdjust="spacingAndGlyphs">{t("Rank")}</text></svg>}
+                                                />{language !== "en" && !localizedAsset(this.state.hovered === MenuItems.RANK ? "rank-btn-active.png" : "rank_btn_idle.png", "") && <FitText className="flag-label" aria-hidden="true">{t("Rank")}</FitText>}
                                                 {!playerContext.canAccessFeature(LockedFeatures.RANKED_MODE) && (
                                                     <img
                                                         className="lock-overlay"
@@ -321,12 +321,7 @@ class Navbar extends Component<Props, State> {
                                         </div>
                                     </div>
                                     {this.state.isSettingsModalOpen && (
-                                        <div className="settings-modal-wrapper">
-                                            <button type="button" data-game-control className="settings-modal-overlay" onClick={this.toggleSettingsModal}></button>
-                                            <div className="settings-modal-container" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-                                                <SettingsModal onClose={this.toggleSettingsModal} />
-                                            </div>
-                                        </div>
+                                        <SettingsModal onClose={this.toggleSettingsModal} />
                                     )}
                                     <ReactTooltip id="navbar-unlock-hint" place="bottom" positionStrategy="fixed" delayShow={100} style={tooltipStyle} />
                                 </div>

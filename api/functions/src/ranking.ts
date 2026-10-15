@@ -15,6 +15,7 @@ interface RankStats {
   lossesStreak: number;
   nbGames: number;
   seasonId?: string;
+  hasRankedResult?: boolean;
 }
 
 export interface RankedPlayer {
@@ -37,6 +38,7 @@ export function getEmptyLeagueStats(rank = 0, seasonId = currentSeasonId()) {
   return {
     rank,
     seasonId,
+    hasRankedResult: false,
     wins: 0,
     losses: 0,
     winStreak: 0,
@@ -51,14 +53,16 @@ export function applyRankedResult(
   seasonId: string,
   resetMismatchedSeason: boolean,
 ): RankStats {
-  const reset = resetMismatchedSeason && stats?.seasonId !== seasonId;
+  // Preserve real results written by an older Function during rollout; synthetic records have no streak.
+  const hasRealResult = stats?.hasRankedResult === true || (stats?.winStreak || 0) > 0 || (stats?.lossesStreak || 0) > 0;
+  const reset = resetMismatchedSeason && (stats?.seasonId !== seasonId || !hasRealResult);
   // Older records still carry the retired grade and audience averages; drop them on the next write.
   const {avgGrade: _grade, avgAudienceScore: _audience, ...current} =
     (reset || !stats ? getEmptyLeagueStats(0, seasonId) : stats) as RankStats & {avgGrade?: number; avgAudienceScore?: number};
 
   return {
     ...current,
-    ...(resetMismatchedSeason ? {seasonId} : {}),
+    ...(resetMismatchedSeason ? {seasonId, hasRankedResult: true} : {}),
     wins: current.wins + (isWinner ? 1 : 0),
     losses: current.losses + (isWinner ? 0 : 1),
     winStreak: isWinner ? current.winStreak + 1 : 0,

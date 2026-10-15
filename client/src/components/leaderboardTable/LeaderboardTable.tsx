@@ -219,7 +219,7 @@ class LeaderboardTable extends Component<LeaderboardTableProps, LeaderboardTable
                         )) : <tr><td colSpan={7}><Ghost height={54} count={6} /></td></tr>}
                     </tbody>
                 </table>
-                <div style={this.state.tableData.length === 0 ? { display: "block" } : { display: "none" }} className="table-empty">{t("No players in this league yet")}</div>
+                <div style={this.state.tableData.length === 0 ? { display: "block" } : { display: "none" }} className="table-empty">{t("No ranked games in this league this season")}</div>
             </section>
         );
     }

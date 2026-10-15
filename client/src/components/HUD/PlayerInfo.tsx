@@ -1,4 +1,5 @@
-import {t} from '../../i18n/core';
+import {t, formatNumber} from '../../i18n/core';
+import {LeaguesNames} from '@legion/shared/enums';
 import { h } from 'preact';
 import { Component } from 'preact';
 import { route } from 'preact-router';
@@ -98,6 +99,10 @@ class PlayerInfo extends Component<Props, State> {
     };
 
     const isBot = player.playerRank === -1;
+    const league = t(LeaguesNames[player.playerLeague]);
+    const rankLabel = player.playerRank > 0
+      ? t('navLeagueRank', {league, rank: formatNumber(player.playerRank)})
+      : `${league} · ${t('No ranked games this season')}`;
 
     return (
       <div className={`player_info_container relative ${position === 'right' && 'player_info_container_right'}`}>
@@ -119,8 +124,8 @@ class PlayerInfo extends Component<Props, State> {
             </div>}
           </div>
           <div className={`player_info_rank ${position === 'right' && 'row_reverse'}`}>
-            <img src={getLeagueIcon(player.playerLeague)} alt={""} />
-            <span>{isBot ? '' : player.playerRank > 0 ? `# ${player.playerRank}` : '–'}</span>
+            <img src={getLeagueIcon(player.playerLeague)} alt={league} />
+            {!isBot && <span role="img" title={rankLabel} aria-label={rankLabel}>{player.playerRank > 0 ? `# ${formatNumber(player.playerRank)}` : '–'}</span>}
             {player.community && <span
               className={`player_info_community ${this.props.sharedCommunity ? 'player_info_community_shared' : ''}`}
               title={this.props.sharedCommunity ? t("{{value0}} · same community", {value0: player.community.name}) : player.community.name}
@@ -165,9 +170,7 @@ class PlayerInfo extends Component<Props, State> {
             </div>
           </div>
         </Modal>
-        <Modal isOpen={this.state.isSettingsModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1} aria={{labelledby: "settings-title"}}>
-          <SettingsModal onClose={this.handleCloseModal} />
-        </Modal>
+        {this.state.isSettingsModalOpen && <SettingsModal onClose={this.handleCloseModal} />}
       </div>
     );
   }

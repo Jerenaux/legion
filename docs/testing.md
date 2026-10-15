@@ -1,11 +1,10 @@
 # Testing
 
-Never use TDD, never write unit tests, and never write UI or frontend tests (no
-checks of text, formatting, tooltips, hover cards, menus, the combat dock, layout
-or styling). When a UI change breaks an existing UI assertion, delete it. Verify
-UI work by looking at the rebuilt app. Implement first, then verify the relevant
-integrated behavior. This applies to fixes and security changes too. The policy
-in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
+Never use TDD or write unit tests. Implement first, then verify the smallest relevant
+integration, end-to-end or smoke flow through real components and system boundaries.
+Do not automate checks of styling or exact player-facing wording. Review presentation
+through screenshots; retain behavioral checks for input, navigation, gameplay, recovery
+and security. The policy in AGENTS.md and CLAUDE.md supersedes historical plans.
 
 ## Retained checks
 
@@ -24,11 +23,15 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   late results, bounded transient-request retries and recovery without touching production accounts.
   This authentication integration check also runs in PR CI.
 - `cd client && bun run test:guide`: packaged smoke checks only — error reporting
-  and replay privacy, music hand-off, repeated-match teardown, match readiness,
+  and replay privacy, music hand-off and interruption recovery, repeated-match teardown, match readiness,
   socket recovery and crash recovery. The full guide smoke runs with `test:startup` on Windows and
   macOS only as the first job of the manual desktop release workflow, which stops
-  before building if it fails; it does not run on PRs, pushes or a schedule. The other
-  switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
+  before building if it fails; it does not run on PRs, pushes or a schedule.
+  Audio recovery can also run alone with `node tools/guide/capture.cjs --audio-recovery`
+  in `client` (real media/Phaser contexts, simulated platform interruptions and local Sentry ingestion).
+  Chest input/countdown/reward opening and real Phaser Thunder impact anchors can run alone
+  with `node tools/guide/capture.cjs --hall`; these use local account/API fixtures.
+  Screenshot switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
   `--tower-images`, `--localization`, `--tutorial`) only capture screenshots for
   manual review; `--tutorial` also keeps its match-readiness checks.
 - `node tools/backend/run.cjs` from the repository root: isolated Auth, Firestore
@@ -42,6 +45,7 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   credential-preservation shell steps without store uploads.
 - `node website/smoke.cjs` and the packaged executable's `--smoke-test`: existing
   browser/site and offline packaged startup/shutdown checks, run by CI/releases.
+  Packaged shutdown uses the real preload `quitApp` IPC with a process-exit deadline.
 
 The matchmaker has no isolated `test` script; validate it through the backend
 integration runner. Tests with fake Firestore implementations have been removed;

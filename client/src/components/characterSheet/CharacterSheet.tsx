@@ -1,3 +1,4 @@
+import ClassCrest from '../HUD/ClassCrest';
 import {t, formatNumber, i18n} from '../../i18n/core';
 import FitText from '../FitText';
 import {Trans} from '../../i18n/Trans';
@@ -343,7 +344,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     </div>
                     <div className="team-info-container">
                         <div className="team-info">
-                            <FitText as="p" className="team-character-class team-class-label" data-class={Class[characterData.class]}>{classEnumToString(characterData.class)}</FitText>
+                            <p className="team-character-class team-class-label" data-class={Class[characterData.class]}><ClassCrest characterClass={characterData.class} /><FitText>{classEnumToString(characterData.class)}</FitText></p>
                             <p className="team-character-name" title={characterData.name}>{characterData.name}</p>
                             <div className="team-exp-slider-container">
                                 <div className="team-curr-exp-slider" style={sliderStyle}></div>

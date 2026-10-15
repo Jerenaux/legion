@@ -1,6 +1,6 @@
 import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {validateNickname} from '@legion/shared/nickname';
-import {getLeagueRank} from "@legion/shared/leagueRanking";
+import {getLeagueRank, hasRankedParticipation} from "@legion/shared/leagueRanking";
 import {chestsDelays, getDefaultDailyLoot} from "./dailyLoot";
 import {communitySummary} from '@legion/shared/communities';
 import { onRequest } from "./telemetry";
@@ -30,7 +30,6 @@ import { logPlayerAction } from "./dashboardAPI";
 import {recordPlayerActivity} from "./dailyAnalytics";
 import {currentSeasonId, getEmptyLeagueStats} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
-import { onSchedule } from "./telemetry";
 import {matchDocument} from "@legion/shared/matchData";
 import { transformDailyLoot } from "@legion/shared/utils";
 import {findZombieOpponent, readZombieRoster} from "./zombieOpponents";
@@ -288,7 +287,7 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     avatar: playerData.avatar || '1',
     league: playerData.league || 0,
     rank: rank ?? 0,
-    wins: playerData.leagueStats?.seasonId === currentSeasonId() ? playerData.leagueStats.wins || 0 : 0,
+    wins: hasRankedParticipation(playerData.leagueStats) ? playerData.leagueStats.wins || 0 : 0,
     allTimeRank: playerData.allTimeStats?.rank || 0,
     dailyloot: playerData.dailyloot,
     inventory: sortedInventory,
@@ -854,7 +853,7 @@ export const zombieData = onRequest(
           avatar: playerData.avatar,
           league: playerData.league,
           rank: rank ?? 0,
-          wins: playerData.leagueStats?.seasonId === currentSeasonId() ? playerData.leagueStats.wins || 0 : 0,
+          wins: hasRankedParticipation(playerData.leagueStats) ? playerData.leagueStats.wins || 0 : 0,
           allTimeRank: playerData.allTimeStats?.rank || 0,
           dailyloot: transformedDailyLoot,
           isLoaded: false,
@@ -919,85 +918,6 @@ export const incrementStartedGames = onRequest({ secrets: ["API_KEY"], memory: '
     });
 });
 
-export const updateInactivePlayersStats = onSchedule(
-  {
-    schedule: "every day 00:00",
-    memory: "512MiB",
-  },
-  async (_event) => {
-  const db = firestore();
-  const now = new Date();
-
-  // Calculate the timestamp for 48 hours ago
-  const cutoffDate = new Date(now.getTime() - (48 * 60 * 60 * 1000));
-  const cutoffDateString = cutoffDate.toISOString().replace('T', ' ').slice(0, 19);
-
-  try {
-    const snapshot = await db.collection("players")
-      .where("lastActiveDate", "<", cutoffDateString)
-      .where("leagueStats.wins", "==", 0)
-      .where("leagueStats.losses", "==", 0)
-      .where("engagementStats.completedGames", "<", 2)
-      .get();
-
-    let updatedCount = 0;
-    const seasonId = currentSeasonId(now);
-
-    await Promise.all(snapshot.docs.map(async (doc) => {
-      // Generate total games using exponential distribution for more variation
-      const lambda = 0.1; // Parameter for exponential distribution
-      const randomGames = Math.round(-Math.log(1 - Math.random()) / lambda);
-      const cappedGames = Math.min(Math.max(randomGames, 1), 50); // Cap between 1 and 50 games
-
-      // Approximate beta distribution using normal distribution
-      const u1 = Math.max(Number.EPSILON, Math.random());
-      const u2 = Math.random();
-      const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-
-      // Transform to beta-like distribution centered around 0.45
-      let winRatio = 0.45 + (z0 * 0.15); // Standard deviation of 0.15
-      winRatio = Math.max(0.1, Math.min(0.8, winRatio)); // Clamp between 0.1 and 0.8
-
-      const wins = Math.round(cappedGames * winRatio);
-      const losses = cappedGames - wins;
-
-      // Use the recorded results: a rounded zero-win record must never gain ELO.
-      const winRateDeviation = wins / cappedGames - 0.45; // Deviation from expected 0.45
-      const eloAdjustment = Math.round(winRateDeviation * 100);
-
-      const updated = await db.runTransaction(async (transaction) => {
-        const current = (await transaction.get(doc.ref)).data();
-        // A player may have returned or completed a ranked match since the query.
-        if (!current || !(current.lastActiveDate < cutoffDateString) ||
-            !(current.engagementStats?.completedGames < 2) ||
-            current.leagueStats?.wins !== 0 || current.leagueStats?.losses !== 0) return false;
-
-        transaction.update(doc.ref, {
-          'leagueStats.wins': wins,
-          'leagueStats.losses': losses,
-          'leagueStats.nbGames': cappedGames,
-          'leagueStats.seasonId': seasonId,
-          'allTimeStats.wins': admin.firestore.FieldValue.increment(wins),
-          'allTimeStats.losses': admin.firestore.FieldValue.increment(losses),
-          'allTimeStats.nbGames': admin.firestore.FieldValue.increment(cappedGames),
-          elo: (current.elo ?? STARTING_ELO) + eloAdjustment,
-        });
-        return true;
-      });
-      if (updated) updatedCount++;
-    }));
-
-    if (updatedCount > 0) {
-      logger.info(`Updated ${updatedCount} inactive players' stats with synthetic games`);
-    } else {
-      logger.info("No inactive players found needing updates");
-    }
-  } catch (error) {
-    logger.error("Error updating inactive players:", error);
-    throw error;
-  }
-});
-
 // Update the getProfileData function to include name and avatar in the response
 export const getProfileData = onRequest({
   memory: '512MiB',
@@ -1022,7 +942,7 @@ export const getProfileData = onRequest({
             const playerData = playerDoc.data();
             const allTimeStats = playerData?.allTimeStats;
             const casualStats = playerData?.casualStats;
-            const leagueStats = playerData?.leagueStats?.seasonId === currentSeasonId() ? playerData.leagueStats : undefined;
+            const leagueStats = hasRankedParticipation(playerData?.leagueStats) ? playerData?.leagueStats : undefined;
             const rank = await getLeagueRank(db, playerData!);
 
             const profileData = {

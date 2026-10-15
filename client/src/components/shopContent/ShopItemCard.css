@@ -169,13 +169,18 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 7px;
-  border-radius: 6px;
+  padding: 0 6px 0 0;
+  border: 1px solid oklch(42% .04 65 / .65);
+  border-radius: 4px;
   background: oklch(10% .018 250 / .65);
   box-shadow: inset 0 0 0 1px oklch(100% 0 0 / .05);
   font-size: .75rem;
-  white-space: nowrap;
+  max-width: 100%;
+  text-align: left;
 }
+.shop-stat-symbol { display: grid; place-items: center; align-self: stretch; flex: none; padding: 5px; background: oklch(27% .035 240); border-right: 1px solid oklch(42% .04 65 / .65); border-radius: 3px 0 0 3px; }
+.shop-stat-label { color: var(--text-muted); font-size: .6875rem; overflow-wrap: anywhere; }
+.shop-stat-value { color: var(--gold); padding-block: 3px; overflow-wrap: anywhere; }
 .shop-item-stat img { width: 14px; height: 14px; object-fit: contain; }
 
 /* The buy bar spans the card's foot. */

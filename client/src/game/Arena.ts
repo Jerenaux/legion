@@ -7,6 +7,7 @@ import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import {setRouteMusic} from '../routeMusic';
+import {watchAudioContext} from '../audioRecovery';
 import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
@@ -109,6 +110,7 @@ export class Arena extends Phaser.Scene
     SFX;
     overviewReady = false;
     musicManager: MusicManager;
+    private stopAudioRecovery: (() => void) | null = null;
     sprites: Phaser.GameObjects.Sprite[] = [];
     environmentalAudioSources;
     gameSettings;
@@ -1133,22 +1135,13 @@ export class Arena extends Phaser.Scene
             let yScale = scale;
 
             if (config && config.stretch) {
-                let distanceToTop = pixelY;
-                // if (config && config.extraStretch) {
-                //     distanceToTop += 100;
-                // }
-                const baseHeight = 512; // Base height of the thunder sprite
-
-                // Set the scale: normal width, stretched height to reach top
-                let heightScale = distanceToTop / baseHeight;
-                if (config && config.extraStretch) {
-                    heightScale *= 1.2;
-                }
-                yScale = heightScale;
+                // Stretch above the impact, never away from the target tile.
+                const beamHeight = 512 * ((config.originY ?? 1) - (config.beamTop ?? 0));
+                yScale = Math.max(scale, (pixelY - this.cameras.main.worldView.top) / beamHeight);
             }
             // Normal handling for other animations
             this.localAnimationSprite.setPosition(pixelX, pixelY)
-                .setOrigin(0.5, config?.stretch ? 1 : 0.7)
+                .setOrigin(0.5, config?.originY ?? 0.7)
                 .setVisible(true)
                 .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
                 .setScale(scale * (config ? VFX_DISPLAY_SCALE : 1), yScale * (config ? VFX_DISPLAY_SCALE : 1));
@@ -1665,6 +1658,15 @@ export class Arena extends Phaser.Scene
         this.setUpArena();
         this.createAnims();
         this.createSounds();
+        if (this.sound instanceof Phaser.Sound.WebAudioSoundManager) {
+            // Phaser consumes this internal flag on its next update to unlock queued sounds.
+            const sound = this.sound as Phaser.Sound.WebAudioSoundManager & {unlocked: boolean};
+            this.stopAudioRecovery = watchAudioContext(sound.context, 'combat', () => {
+                if (sound.locked) {
+                    sound.unlocked = true;
+                }
+            });
+        }
 
         this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(LOCAL_ANIMATION_SCALE).setOrigin(0.5, 0.7).setVisible(false);
         this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);
@@ -2185,6 +2187,8 @@ export class Arena extends Phaser.Scene
         this.game.events.off(Phaser.Core.Events.POST_RENDER, this.refreshCharacterHover);
         window.removeEventListener('blur', this.clearCharacterHover);
         this.disposed = true;
+        this.stopAudioRecovery?.();
+        this.stopAudioRecovery = null;
         this.eventsQueue.length = 0;
         window.removeEventListener('characterInSpellRadius', this.highlightCharacter);
         window.removeEventListener('characterOutOfSpellRadius', this.unhighlightCharacter);

@@ -2,11 +2,13 @@ import LanguageSelect from '../LanguageSelect';
 import {t} from '../../i18n/core';
 import { h } from 'preact';
 import { Component } from 'preact';
+import Modal from 'react-modal';
 import { events } from '../HUD/GameHUD';
 import { isElectron, getElectronAPI } from '../../utils/electronUtils';
 import {GameSettings, loadGameSettings, saveGameSettings} from '../../settings';
 import ControlsSettings from './ControlsSettings';
 import './SettingsModal.css';
+import './SettingsModalWrapper.css';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -113,21 +115,25 @@ export class SettingsModal extends Component<SettingsModalProps, {settings: Game
           className="setting_tab" onClick={() => this.setState({tab: id})}>{label}</button>
       );
       return (
-        <div className={`setting_menu flex flex_col gap_4 ${tab === 'controls' ? 'is-wide' : ''}`}>
-          <h2 className="setting_title" id="settings-title">{t("Settings")}</h2>
-          <div className="setting_tabs" role="tablist" aria-label={t("Settings")}>
-            {tabButton('general', t("General"))}
-            {tabButton('controls', t("Controls"))}
-          </div>
-          {tab === 'general' ? this.renderGeneral() : (
-            <div className="setting_dialog" role="tabpanel" id="settings-panel-controls" aria-labelledby="settings-tab-controls">
-              <ControlsSettings />
+        <Modal isOpen onRequestClose={this.props.onClose} aria={{labelledby: 'settings-title'}}
+          onAfterOpen={({contentEl}) => contentEl.querySelector<HTMLElement>('[role="tab"]')?.focus()}
+          className="settings-modal-container" overlayClassName="settings-modal-wrapper">
+          <div className={`setting_menu flex flex_col gap_4 ${tab === 'controls' ? 'is-wide' : ''}`}>
+            <h2 className="setting_title" id="settings-title">{t("Settings")}</h2>
+            <div className="setting_tabs" role="tablist" aria-label={t("Settings")}>
+              {tabButton('general', t("General"))}
+              {tabButton('controls', t("Controls"))}
             </div>
-          )}
-          <div className="justify_center flex gap_4">
-            <button type="button" className="setting_menu_btn setting_close game-btn game-btn--ink" data-desktop-cancel onClick={this.props.onClose}>{t("Close")}</button>
+            {tab === 'general' ? this.renderGeneral() : (
+              <div className="setting_dialog" role="tabpanel" id="settings-panel-controls" aria-labelledby="settings-tab-controls">
+                <ControlsSettings />
+              </div>
+            )}
+            <div className="justify_center flex gap_4">
+              <button type="button" className="setting_menu_btn setting_close game-btn game-btn--ink" data-desktop-cancel onClick={this.props.onClose}>{t("Close")}</button>
+            </div>
           </div>
-        </div>
+        </Modal>
       );
     }
   }

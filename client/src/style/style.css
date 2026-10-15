@@ -1,5 +1,7 @@
 /* The game's own pointers everywhere: the arrow by default, the gauntlet on anything clickable. */
 html { cursor: var(--game-arrow); }
+/* Keep scene/HUD stacking below dialogs portalled to body, regardless of local z-indexes. */
+#root { isolation: isolate; }
 :where(a[href], button:not(:disabled), [role="button"], summary, label[for], select) { cursor: var(--game-pointer); }
 :where(input:not([type="checkbox"], [type="radio"], [type="range"]), textarea, [contenteditable="true"]) { cursor: text; }
 

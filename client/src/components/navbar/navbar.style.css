@@ -5,6 +5,8 @@
   /* A dark beam over the hall: soot-warm, an iron trim and a line of hearth light below. */
   position: relative;
   isolation: isolate;
+  /* The hall's transparent hit area must not intercept dropdown clicks (including Quit). */
+  z-index: 1;
   background:
     linear-gradient(90deg, transparent, oklch(70% .15 55 / .07) 50%, transparent),
     linear-gradient(oklch(24% .03 48), oklch(15% .022 40));
@@ -383,9 +385,24 @@ login-buttons {
     background-color: #777;
 }
 
-.flag-label { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.flag-label text { font-family: var(--locale-font, 'Kim'), system-ui, sans-serif; font-size: 12px; font-weight: 900; fill: #cce7ee; stroke: #152b3e; stroke-width: 0.8px; paint-order: stroke; }
-.activeFlag .flag-label { top: 10px; }
+.flag-label {
+  position: absolute;
+  top: 54px;
+  left: 7px;
+  width: 58px;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #cce7ee;
+  -webkit-text-stroke: .35px #152b3e;
+  paint-order: stroke;
+  text-shadow: 0 1px 1px #152b3e;
+}
+.activeFlag .flag-label { top: 64px; }
 .menuItemContainer.disabled .flag-label { filter: grayscale(100%); }
 
 @media (max-width: 880px) {
