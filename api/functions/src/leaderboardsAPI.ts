@@ -91,6 +91,7 @@ async function getLeaderboard(leagueID: number, uid: string) {
     query = query
       .where("league", "==", leagueID)
       .where("leagueStats.seasonId", "==", seasonId)
+      .where("leagueStats.hasRankedResult", "==", true)
       .orderBy("leagueStats.wins", "desc")
       .orderBy("leagueStats.losses", "asc")
       .orderBy("elo", "desc");
@@ -119,6 +120,7 @@ async function getLeagueOutcomes(seasonId: string): Promise<{participants: numbe
   const snapshots = await Promise.all(leagues.map((league) => db.collection("players")
     .where("league", "==", league)
     .where("leagueStats.seasonId", "==", seasonId)
+    .where("leagueStats.hasRankedResult", "==", true)
     .orderBy("leagueStats.wins", "desc")
     .orderBy("leagueStats.losses", "asc")
     .orderBy("elo", "desc")

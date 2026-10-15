@@ -229,6 +229,7 @@ export interface LeagueStats {
     lossesStreak: number;
     nbGames: number;
     seasonId?: string;
+    hasRankedResult?: boolean;
 }
 
 export interface TeamData {

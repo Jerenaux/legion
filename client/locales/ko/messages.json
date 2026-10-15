@@ -385,7 +385,7 @@
   "<0/>Confirm": "<0/>확인",
   "Spend stat points": "능력치 포인트 사용",
   "Item details": "아이템 상세 정보",
-  "No players in this league yet": "아직 이 리그에 플레이어가 없습니다",
+  "No ranked games in this league this season": "이번 시즌 이 리그의 랭크전 기록이 없습니다",
   "Player ID {{value0}} copied!": "플레이어 ID {{value0}} 복사 완료!",
   "Emberhall Logo": "Emberhall 로고",
   "Loading...": "불러오는 중...",
@@ -1257,5 +1257,6 @@
   "After the tutorial, you can change your name and portrait, then view the Play instructions.": "튜토리얼을 마치면 이름과 초상화를 변경하고 플레이 안내를 확인할 수 있습니다.",
   "Redeem": "받기",
   "This creator code has no active gift.": "이 크리에이터 코드로 받을 수 있는 선물이 없습니다.",
-  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "프로필에 크리에이터 코드를 입력하면 시청자용 선물을 받을 수 있습니다. 코드와 링크 중 어느 쪽을 사용하든 각 선물은 계정당 한 번만 받을 수 있습니다. 여러 크리에이터의 선물을 받을 수 있으며, 커뮤니티 가입은 선택 사항이지만 가입 후에는 변경할 수 없습니다."
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "프로필에 크리에이터 코드를 입력하면 시청자용 선물을 받을 수 있습니다. 코드와 링크 중 어느 쪽을 사용하든 각 선물은 계정당 한 번만 받을 수 있습니다. 여러 크리에이터의 선물을 받을 수 있으며, 커뮤니티 가입은 선택 사항이지만 가입 후에는 변경할 수 없습니다.",
+  "No ranked games this season": "이번 시즌 랭크전 기록 없음"
 }

@@ -77,6 +77,13 @@ jobs:
           docker push gcr.io/legion-32c6d/server:${{ github.sha }}
           docker push gcr.io/legion-32c6d/server:latest
 
+      # API deployment creates these indexes. Never serve the new rank queries before they are ready.
+      - name: Prepare ranked participation reads
+        run: |
+          bun ci --cwd api/functions
+          node tools/backend/wait-for-indexes.cjs legion-32c6d
+          bun tools/backend/backfill-ranked-participation.ts --apply
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy server \

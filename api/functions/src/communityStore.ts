@@ -1,3 +1,4 @@
+import {hasRankedParticipation} from "@legion/shared/leagueRanking";
 import type {Firestore} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 import {
@@ -90,7 +91,7 @@ export async function communityDetails(db: Firestore, id: string, seasonId: stri
     topMembers: members.docs.map(doc => {
       const player = doc.data();
       return {id: doc.id, name: player.name || '', avatar: player.avatar || '1', elo: player.elo || 0, league: player.league || 0,
-        weeklyWins: player.leagueStats?.seasonId === seasonId ? player.leagueStats?.wins || 0 : 0};
+        weeklyWins: hasRankedParticipation(player.leagueStats, seasonId) ? player.leagueStats?.wins || 0 : 0};
     }),
   };
 }

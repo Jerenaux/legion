@@ -15,6 +15,17 @@ test('Firebase builds once in predeploy, with source-map credentials in the actu
   expect(steps.some(step => /bun run build/.test(step.run || ''))).toBe(false);
   const firebase = JSON.parse(readFileSync(resolve(root, 'firebase.json'), 'utf8'));
   expect(firebase.functions.predeploy).toEqual(['bun run --cwd ./api/functions build']);
+  const migrations = steps.flatMap((step, index) => step.run?.includes('backfill-ranked-participation.ts --apply') ? [index] : []);
+  expect(migrations).toHaveLength(2);
+  expect(migrations[0]).toBeLessThan(steps.indexOf(deploy));
+  expect(migrations[1]).toBeGreaterThan(steps.indexOf(deploy));
+  expect(deploy.run).toContain('--force'); // Remove the retired synthetic-results schedule.
+  const server = Bun.YAML.parse(readFileSync(resolve(root, '.github/workflows/deploy-server.yml'), 'utf8'));
+  const serverSteps = server.jobs.deploy.steps;
+  const gate = serverSteps.findIndex((step: {run?: string}) => step.run?.includes('wait-for-indexes.cjs'));
+  expect(gate).toBeGreaterThan(-1);
+  expect(gate).toBeLessThan(serverSteps.findIndex((step: {run?: string}) => step.run?.includes('gcloud run deploy')));
+  expect(serverSteps[gate].run).toContain('backfill-ranked-participation.ts --apply');
 });
 
 

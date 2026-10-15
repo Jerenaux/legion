@@ -385,7 +385,7 @@
   "<0/>Confirm": "<0/>确认",
   "Spend stat points": "分配属性点",
   "Item details": "物品详情",
-  "No players in this league yet": "此联赛暂无玩家",
+  "No ranked games in this league this season": "本赛季该联赛暂无排位赛记录",
   "Player ID {{value0}} copied!": "已复制玩家 ID {{value0}}！",
   "Emberhall Logo": "Emberhall 标志",
   "Loading...": "加载中…",
@@ -1257,5 +1257,6 @@
   "After the tutorial, you can change your name and portrait, then view the Play instructions.": "完成教程后，你可以更改名字和头像，然后查看对战说明。",
   "Redeem": "兑换",
   "This creator code has no active gift.": "此创作者代码当前没有可领取的礼物。",
-  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "在个人资料中输入创作者代码，即可领取其面向观众的可用礼物。无论使用代码还是链接，每份礼物每个账号只能领取一次。你可以领取不同创作者的礼物；加入社区是自愿的，但加入后无法更换。"
+  "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "在个人资料中输入创作者代码，即可领取其面向观众的可用礼物。无论使用代码还是链接，每份礼物每个账号只能领取一次。你可以领取不同创作者的礼物；加入社区是自愿的，但加入后无法更换。",
+  "No ranked games this season": "本赛季尚未参加排位赛"
 }
