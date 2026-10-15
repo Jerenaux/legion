@@ -33,5 +33,19 @@ same game before, during and after battle. Read `docs/game-ui-writing.md` for co
 - Validate in the real game, including 1280×720, 800×600, enlarged text, German
   and Japanese. Guidance must leave the action dock and turn order usable.
 
+## Dialog layering
+
+Full-window dialogs use the existing `react-modal` body portal, outside the game
+root. `#root` isolates scene/HUD stacking so local z-indexes cannot cover those
+dialogs. Do not put a modal overlay inside a navigation bar, animated page or
+other isolated/filtered/transformed ancestor; increasing its z-index cannot
+escape that ancestor. `SettingsModal` owns its portal and backdrop: render it
+directly, without another modal wrapper, from every entry point.
+
+When changing scene or navigation stacking, inspect an open dialog over the live
+scene and after closing it, including the dropdown and Escape paths. Check Korean
+and an enlarged-text compact layout as well as English; ensure the backdrop covers
+the whole window and the dialog controls remain reachable.
+
 The game-specific choices here take precedence over generic website or dashboard
 styling advice. Accessibility and input behavior remain required.

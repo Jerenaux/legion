@@ -5,7 +5,6 @@ import { h } from 'preact';
 // Navbar.tsx
 
 import './navbar.style.css';
-import './SettingsModalWrapper.css';
 import { Component } from 'preact';
 import { Link, useRouter } from 'preact-router';
 import UserInfoBar from '../userInfoBar/UserInfoBar';
@@ -321,12 +320,7 @@ class Navbar extends Component<Props, State> {
                                         </div>
                                     </div>
                                     {this.state.isSettingsModalOpen && (
-                                        <div className="settings-modal-wrapper">
-                                            <button type="button" data-game-control className="settings-modal-overlay" onClick={this.toggleSettingsModal}></button>
-                                            <div className="settings-modal-container" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-                                                <SettingsModal onClose={this.toggleSettingsModal} />
-                                            </div>
-                                        </div>
+                                        <SettingsModal onClose={this.toggleSettingsModal} />
                                     )}
                                     <ReactTooltip id="navbar-unlock-hint" place="bottom" positionStrategy="fixed" delayShow={100} style={tooltipStyle} />
                                 </div>

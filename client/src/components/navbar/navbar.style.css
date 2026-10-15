@@ -5,6 +5,7 @@
   /* A dark beam over the hall: soot-warm, an iron trim and a line of hearth light below. */
   position: relative;
   isolation: isolate;
+  z-index: 1;
   background:
     linear-gradient(90deg, transparent, oklch(70% .15 55 / .07) 50%, transparent),
     linear-gradient(oklch(24% .03 48), oklch(15% .022 40));

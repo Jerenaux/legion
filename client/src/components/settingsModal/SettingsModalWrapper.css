@@ -8,14 +8,6 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-}
-
-.settings-modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -23,6 +15,8 @@
   position: relative;
   z-index: 1001;
   max-width: 90%;
-  max-height: 90%;
-  overflow-y: auto;
+  outline: none;
 }
+
+/* One scroller inside the panel keeps its frame and Close button reachable at large text sizes. */
+.settings-modal-container .setting_menu { max-height: calc(100dvh - 32px); }

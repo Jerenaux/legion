@@ -1,9 +1,9 @@
 import {t} from '../../i18n/core';
-import { h, Fragment } from 'preact';
+import { h } from 'preact';
 import { Component } from 'preact';
 import { SettingsModal } from '../settingsModal/SettingsModal';
 import { isElectron, getElectronAPI } from '../../utils/electronUtils';
-import '../navbar/SettingsModalWrapper.css';
+import Modal from 'react-modal';
 import './SystemMenu.css';
 
 export const OPEN_SYSTEM_MENU_EVENT = 'legion:open-system-menu';
@@ -33,8 +33,7 @@ export class SystemMenu extends Component<{}, {view: 'closed' | 'menu' | 'settin
   };
 
   close = () => {
-    this.setState({view: 'closed'});
-    this.previousFocus?.focus?.({preventScroll: true});
+    this.setState({view: 'closed'}, () => this.previousFocus?.focus?.({preventScroll: true}));
   };
 
   focusFirst = (element: HTMLElement | null) => element?.focus({preventScroll: true});
@@ -43,26 +42,18 @@ export class SystemMenu extends Component<{}, {view: 'closed' | 'menu' | 'settin
     const {view} = this.state;
     if (view === 'closed') return null;
     if (view === 'settings') {
-      return (
-        <div className="settings-modal-wrapper">
-          <button type="button" data-game-control className="settings-modal-overlay" aria-label={t("Close")} onClick={this.close}></button>
-          <div className="settings-modal-container" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-            <SettingsModal onClose={this.close} />
-          </div>
-        </div>
-      );
+      return <SettingsModal onClose={this.close} />;
     }
     return (
-      <div className="loot-popup-scrim">
-        <div className="system-menu loot-popup" role="dialog" aria-modal="true" aria-labelledby="system-menu-title">
-          <h2 id="system-menu-title">{t("Game menu")}</h2>
-          <div className="system-menu-actions">
-            <button type="button" className="game-btn game-btn--gold" ref={this.focusFirst} data-desktop-cancel onClick={this.close}>{t("Resume")}</button>
-            <button type="button" className="game-btn game-btn--ink" onClick={() => this.setState({view: 'settings'})}>{t("Settings")}</button>
-            {isElectron() && <button type="button" className="game-btn game-btn--ink system-menu-quit" onClick={quitGame}>{t("Quit game")}</button>}
-          </div>
+      <Modal isOpen onRequestClose={this.close} className="system-menu loot-popup" overlayClassName="loot-popup-scrim"
+        aria={{labelledby: 'system-menu-title'}} shouldReturnFocusAfterClose={false}>
+        <h2 id="system-menu-title">{t("Game menu")}</h2>
+        <div className="system-menu-actions">
+          <button type="button" className="game-btn game-btn--gold" ref={this.focusFirst} data-desktop-cancel onClick={this.close}>{t("Resume")}</button>
+          <button type="button" className="game-btn game-btn--ink" onClick={() => this.setState({view: 'settings'})}>{t("Settings")}</button>
+          {isElectron() && <button type="button" className="game-btn game-btn--ink system-menu-quit" onClick={quitGame}>{t("Quit game")}</button>}
         </div>
-      </div>
+      </Modal>
     );
   }
 }

@@ -165,9 +165,7 @@ class PlayerInfo extends Component<Props, State> {
             </div>
           </div>
         </Modal>
-        <Modal isOpen={this.state.isSettingsModalOpen} onRequestClose={this.handleCloseModal} style={customStyles1} aria={{labelledby: "settings-title"}}>
-          <SettingsModal onClose={this.handleCloseModal} />
-        </Modal>
+        {this.state.isSettingsModalOpen && <SettingsModal onClose={this.handleCloseModal} />}
       </div>
     );
   }
