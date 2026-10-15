@@ -11,9 +11,10 @@ is a migration, not a branding edit.
 ## Browser work
 
 Prefer headless browser automation for browser work, including reading, editing,
-and checks, whenever possible. Use computer-use tools only when a headless
-approach cannot complete the task, such as when the authenticated session is
-available only in an open browser.
+and checks, whenever possible. Check whether headless HTTP or Playwright can
+access the target before opening an interactive browser. Use computer-use tools
+only when a headless approach cannot complete the task, such as when the
+authenticated session is available only in an open browser.
 
 ## Branches and desktop releases
 
