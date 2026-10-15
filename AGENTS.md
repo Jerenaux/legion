@@ -8,6 +8,13 @@ save directory, `com.legion.game` app ID, `Legion` executable filenames,
 `app://legion/` origin and `legion://` invitation links stable: changing those
 is a migration, not a branding edit.
 
+## Browser work
+
+Prefer headless browser automation for browser work, including reading, editing,
+and checks, whenever possible. Use computer-use tools only when a headless
+approach cannot complete the task, such as when the authenticated session is
+available only in an open browser.
+
 ## Branches and desktop releases
 
 - Start each independent, coherent work batch on a new branch from the latest `main`. Do not accumulate unrelated requests on one branch or reuse a merged branch.
