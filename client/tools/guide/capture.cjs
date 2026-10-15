@@ -10,6 +10,7 @@ const localization = process.argv.includes('--localization');
 const towerUnlock = process.argv.includes('--tower-unlock');
 const giftsCheck = process.argv.includes('--gifts');
 const rosterImages = process.argv.includes('--roster-images');
+const audioRecovery = process.argv.includes('--audio-recovery');
 const tutorial = process.argv.includes('--tutorial');
 assert(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale), 'Invalid locale');
 
@@ -259,7 +260,7 @@ if (!process.versions.electron) {
         await win.loadURL(PACKAGED_APP_URL);
         await js(`localStorage.setItem('legion.language', ${JSON.stringify(locale)})`);
       }
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !localization && !towerUnlock && !rosterImages && !tutorial && !giftsCheck) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !localization && !towerUnlock && !rosterImages && !tutorial && !giftsCheck && !audioRecovery) {
         for (const [name, url, preload, additionalArguments] of [
           ['browser preview of store bundle', sinkURL, undefined, []],
           ['Electron HTTP preview', sinkURL, path.join(client, 'preload.js'), ['--legion-packaged']],
@@ -284,7 +285,9 @@ if (!process.versions.electron) {
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
         console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
       }
-      if (tutorial) {
+      if (audioRecovery) {
+        await require('./audio-recovery.cjs')({win, js, waitFor, envelopes, url: PACKAGED_APP_URL});
+      } else if (tutorial) {
         await require('./tutorial.cjs')({win, js, waitFor, ready, output: dist, locale, sinkURL, timingChecks});
         assert.deepEqual(rendererErrors, []);
       } else if (process.argv.includes('--replay-off')) {
@@ -466,6 +469,7 @@ if (!process.versions.electron) {
         await capture('tower', {x: 0, y: 60, width: 1600, height: 840});
         }
       } else {
+        await require('./audio-recovery.cjs')({win, js, waitFor, envelopes, url: PACKAGED_APP_URL});
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
@@ -685,7 +689,7 @@ if (!process.versions.electron) {
         }
       }
       assert.deepEqual(rendererErrors, [], 'Renderer errors during guide smoke test');
-      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !localization && !towerUnlock && !rosterImages && !tutorial && !giftsCheck) {
+      if (!process.argv.includes('--images') && !process.argv.includes('--tower-images') && !localization && !towerUnlock && !rosterImages && !tutorial && !giftsCheck && !audioRecovery) {
         // Hidden CI windows stop receiving compositor frames on Windows/Linux.
         // Show the remaining combat checks on CI's isolated desktop, at a size
         // that fits its display. Keep oversized layout captures and local runs hidden.

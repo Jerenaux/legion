@@ -8,6 +8,17 @@ Caught API failures are reported after retries are exhausted, even when the call
 
 The Bun game server and matchmaker initialize Sentry before other services. Firebase uses the official serverless HTTP wrapper so caught errors inside asynchronous CORS callbacks are flushed before the response ends. Scheduled handlers flush before finishing and rethrow errors to preserve retries. Always import `onRequest`/`onSchedule` from `api/functions/src/telemetry.ts`, not directly from Firebase. Deployment options and weekly league behavior must stay unchanged.
 
+## Audio recovery
+
+Audio recovery listens for foreground focus/visibility and mouse, keyboard or controller input.
+It resumes existing menu music and hearth/combat contexts without changing saved mute or volume
+settings. Context state changes leave audio breadcrumbs. Unexpected playback, loading and resume
+failures report a warning once per source/operation/error type per session, with volume/mute,
+focus, visibility and audio-state details. Expected autoplay restrictions and aborted play
+requests leave only a breadcrumb. Device names, audio URLs and raw browser error messages are
+not included. Phaser’s direct resume calls are observed too, so their rejected promises do not
+reach the fatal-error handler. Recovery cannot repair an unavailable operating-system output device.
+
 ## CI credentials and source maps
 
 Firebase's `firebase.json` predeploy hook is the **only** deployment build. Pass `SENTRY_AUTH_TOKEN` and `SENTRY_BACKEND_PROJECT` to the Firebase deploy step itself. Never build/upload first and then let a credential-less predeploy rebuild replace the instrumented files. `api/functions/src/__tests__/deployment.test.ts` guards this sequencing. Verify a deployed bundle's debug ID against its uploaded map, not just a synthetic event made from an earlier local build.

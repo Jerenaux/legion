@@ -3,6 +3,7 @@ import {useEffect} from 'preact/hooks';
 import flameSFX from '@assets/sfx/flame.wav';
 import {sfxGain} from '../../settings';
 import {events} from '../HUD/GameHUD';
+import {reportAudioFailure, watchAudioContext} from '../../audioRecovery';
 
 const LEVEL = 0.28;
 const FADE_S = 0.8;
@@ -11,7 +12,8 @@ let buffer: Promise<AudioBuffer> | null = null;
 export function useHearthSound() {
   useEffect(() => {
     let context: AudioContext;
-    try { context = new AudioContext(); } catch { return; }
+    try { context = new AudioContext(); } catch (error) { reportAudioFailure('hearth', 'create', error); return; }
+    const stopRecovery = watchAudioContext(context, 'hearth');
     const gain = context.createGain();
     gain.gain.value = 0;
     gain.connect(context.destination);
@@ -24,9 +26,6 @@ export function useHearthSound() {
       gain.gain.setValueAtTime(gain.gain.value, context.currentTime);
       gain.gain.linearRampToValueAtTime(target(), context.currentTime + seconds);
     };
-    // Autoplay may hold the context until the player's first interaction.
-    const resume = () => { if (context.state === 'suspended') void context.resume(); };
-
     buffer ??= fetch(flameSFX).then(response => response.arrayBuffer()).then(data => context.decodeAudioData(data));
     buffer.then(decoded => {
       if (stopped) return;
@@ -35,19 +34,18 @@ export function useHearthSound() {
       source.loop = true;
       source.connect(gain);
       source.start();
-      resume();
       setLevel(FADE_S);
-    }).catch(() => { buffer = null; });
+    }).catch(error => {
+      buffer = null;
+      if (!stopped) reportAudioFailure('hearth', 'load', error, {state: context.state});
+    });
 
     const onSettings = () => setLevel();
     events.on('settingsChanged', onSettings);
-    document.addEventListener('pointerdown', resume);
-    document.addEventListener('keydown', resume);
     return () => {
       stopped = true;
+      stopRecovery();
       events.off('settingsChanged', onSettings);
-      document.removeEventListener('pointerdown', resume);
-      document.removeEventListener('keydown', resume);
       gain.gain.cancelScheduledValues(context.currentTime);
       gain.gain.setValueAtTime(gain.gain.value, context.currentTime);
       gain.gain.linearRampToValueAtTime(0, context.currentTime + 0.4);

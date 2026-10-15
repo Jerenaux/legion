@@ -1,4 +1,5 @@
 import {RarityColor} from '@legion/shared/enums';
+import {reportAudioFailure} from '../audioRecovery';
 import {t, formatNumber} from '../i18n/core';
 import {Class, SpeedClass, Stat, StatFields} from "@legion/shared/enums";
 import { apiFetch } from '../services/apiService';
@@ -123,7 +124,7 @@ export function playSoundEffect(src: string, volume: number = 1.0) {
   const sfxVolume = sfxGain();
   const audio = new Audio(src);
   audio.volume = Math.min(Math.max(volume * sfxVolume, 0), 1); // Adjust volume based on SFX setting
-  audio.play().catch(error => console.error('Error playing sound:', error));
+  audio.play().catch(error => reportAudioFailure('ui-sfx', 'play', error, {volume: audio.volume, mediaError: audio.error?.code ?? null}));
 }
 
 let tipLock = false;

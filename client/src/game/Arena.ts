@@ -7,6 +7,7 @@ import { GameHUD, events } from '../components/HUD/GameHUD';
 import { Team } from './Team';
 import { MusicManager } from './MusicManager';
 import {setRouteMusic} from '../routeMusic';
+import {watchAudioContext} from '../audioRecovery';
 import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
@@ -109,6 +110,7 @@ export class Arena extends Phaser.Scene
     SFX;
     overviewReady = false;
     musicManager: MusicManager;
+    private stopAudioRecovery: (() => void) | null = null;
     sprites: Phaser.GameObjects.Sprite[] = [];
     environmentalAudioSources;
     gameSettings;
@@ -1665,6 +1667,15 @@ export class Arena extends Phaser.Scene
         this.setUpArena();
         this.createAnims();
         this.createSounds();
+        if (this.sound instanceof Phaser.Sound.WebAudioSoundManager) {
+            // Phaser consumes this internal flag on its next update to unlock queued sounds.
+            const sound = this.sound as Phaser.Sound.WebAudioSoundManager & {unlocked: boolean};
+            this.stopAudioRecovery = watchAudioContext(sound.context, 'combat', () => {
+                if (sound.locked) {
+                    sound.unlocked = true;
+                }
+            });
+        }
 
         this.localAnimationSprite = this.add.sprite(0, 0, '').setScale(LOCAL_ANIMATION_SCALE).setOrigin(0.5, 0.7).setVisible(false);
         this.localAnimationSprite.on('animationcomplete', () => this.localAnimationSprite.setVisible(false), this);
@@ -2185,6 +2196,8 @@ export class Arena extends Phaser.Scene
         this.game.events.off(Phaser.Core.Events.POST_RENDER, this.refreshCharacterHover);
         window.removeEventListener('blur', this.clearCharacterHover);
         this.disposed = true;
+        this.stopAudioRecovery?.();
+        this.stopAudioRecovery = null;
         this.eventsQueue.length = 0;
         window.removeEventListener('characterInSpellRadius', this.highlightCharacter);
         window.removeEventListener('characterOutOfSpellRadius', this.unhighlightCharacter);

@@ -24,11 +24,13 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   late results, bounded transient-request retries and recovery without touching production accounts.
   This authentication integration check also runs in PR CI.
 - `cd client && bun run test:guide`: packaged smoke checks only — error reporting
-  and replay privacy, music hand-off, repeated-match teardown, match readiness,
+  and replay privacy, music hand-off and interruption recovery, repeated-match teardown, match readiness,
   socket recovery and crash recovery. The full guide smoke runs with `test:startup` on Windows and
   macOS only as the first job of the manual desktop release workflow, which stops
-  before building if it fails; it does not run on PRs, pushes or a schedule. The other
-  switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
+  before building if it fails; it does not run on PRs, pushes or a schedule.
+  Audio recovery can also run alone with `node tools/guide/capture.cjs --audio-recovery`
+  in `client` (real media/Phaser contexts, simulated platform interruptions and local Sentry ingestion).
+  Screenshot switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
   `--tower-images`, `--localization`, `--tutorial`) only capture screenshots for
   manual review; `--tutorial` also keeps its match-readiness checks.
 - `node tools/backend/run.cjs` from the repository root: isolated Auth, Firestore

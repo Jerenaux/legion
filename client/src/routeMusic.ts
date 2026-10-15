@@ -2,6 +2,7 @@ import titleMusic from "@assets/music/title.mp3";
 import menuMusic from "@assets/music/menus.mp3";
 import {musicGain} from "./settings";
 import {events} from "./components/HUD/GameHUD";
+import {onAudioRecovery, reportAudioFailure} from './audioRecovery';
 
 const FADE_MS = 2000;
 const FADE_IN_MS = 500;
@@ -13,6 +14,7 @@ let gain = 1;
 let transition: Promise<void> | null = null;
 let finishFade: (() => void) | null = null;
 let fadeInTimer: ReturnType<typeof setInterval> | null = null;
+let stopRecovery: (() => void) | null = null;
 
 const updateVolume = () => {
   if (audio) audio.volume = gain * musicGain();
@@ -27,8 +29,8 @@ const start = () => {
       updateVolume();
       if (gain === 1) clearFadeIn();
     }, 20);
-  }).catch(() => {
-    // Retry blocked autoplay on the player's next interaction.
+  }).catch(error => {
+    if (audio === track && !finishFade) reportAudioFailure('route-music', 'play', error, {track: playing, paused: track.paused, volume: track.volume, mediaError: track.error?.code ?? null});
   });
 };
 
@@ -39,9 +41,10 @@ function clearFadeIn() {
 
 function release() {
   clearFadeIn();
-  document.removeEventListener('pointerdown', start);
-  document.removeEventListener('keydown', start);
+  stopRecovery?.();
+  stopRecovery = null;
   events.off('settingsChanged', updateVolume);
+  if (audio) audio.onerror = null;
   audio?.pause();
   audio?.removeAttribute('src');
   audio?.load();
@@ -54,11 +57,13 @@ function playDesired() {
   playing = desired;
   audio = new Audio(desired === 'title' ? titleMusic : menuMusic);
   audio.loop = true;
+  audio.onerror = () => {
+    if (audio?.error) reportAudioFailure('route-music', 'media', new Error(), {track: playing, mediaError: audio.error.code});
+  };
   gain = 0;
   updateVolume();
   start();
-  document.addEventListener('pointerdown', start);
-  document.addEventListener('keydown', start);
+  stopRecovery = onAudioRecovery(start);
   events.on('settingsChanged', updateVolume);
 }
 
