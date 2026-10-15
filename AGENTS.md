@@ -1,5 +1,13 @@
 # Repository instructions
 
+## Browser checks and Steam store
+
+Use headless tools, especially headless Playwright, whenever they can complete a
+browser check or store update. Use browser-use or computer-use only when no
+headless option can complete it. Emberhall's full-game store page is
+https://store.steampowered.com/app/3729580/Emberhall/; this is separate from
+the Steam Demo build target (`3996730`).
+
 ## Emberhall branding and compatibility
 
 Use **Emberhall** in player-facing copy and the approved Emberhall logos. See

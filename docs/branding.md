@@ -24,7 +24,9 @@ autumn arena background (`title/title.png`). Keep in-match artwork unchanged.
   persistence contracts, not visible branding.
 - The website remains on its existing `play-legion.io` domain until a separate
   domain migration. Itch links use `dikaryon.itch.io/emberhall` and the current
-  trailer is `UYA7ADeMO9E` on Dikaryon's YouTube channel.
+  English trailer is `UYA7ADeMO9E` on Dikaryon's YouTube channel. The Simplified
+  Chinese trailer is `y4lX6jFT3x4`. The full-game Steam store page is
+  https://store.steampowered.com/app/3729580/Emberhall/.
 
 Any future rename of these compatibility identifiers needs its own migration
 and packaged-app verification. Do not globally replace lowercase `legion`.
