@@ -131,7 +131,7 @@ function createWindow() {
 
   if (smokeTest) {
     mainWindow.webContents.setAudioMuted(true);
-    const timeout = setTimeout(() => {console.error('Packaged startup timed out'); app.exit(1);}, 20000);
+    setTimeout(() => {console.error('Packaged startup or quit timed out'); app.exit(1);}, 20000);
     mainWindow.webContents.once('did-finish-load', async () => {
       try {
         let recovered = false;
@@ -141,9 +141,9 @@ function createWindow() {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
         if (!recovered || mainWindow.webContents.getURL() !== PACKAGED_APP_URL) throw new Error('Packaged offline recovery screen missing');
-        clearTimeout(timeout);
-        console.log('Packaged offline recovery screen loaded; closing normally');
-        mainWindow.close();
+        console.log('Packaged offline recovery screen loaded; requesting quit through preload');
+        // Defer the IPC call so this evaluation returns before Electron destroys its renderer.
+        await mainWindow.webContents.executeJavaScript('setTimeout(() => { void window.electronAPI.quitApp(); }, 0); true');
       } catch (error) {console.error(error); app.exit(1);}
     });
   }

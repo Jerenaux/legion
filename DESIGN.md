@@ -46,6 +46,9 @@ When changing scene or navigation stacking, inspect an open dialog over the live
 scene and after closing it, including the dropdown and Escape paths. Check Korean
 and an enlarged-text compact layout as well as English; ensure the backdrop covers
 the whole window and the dialog controls remain reachable.
+Verify dropdown actions with real pointer clicks: transparent scene containers can
+intercept clicks even where the menu remains visible. Calling `.click()` on the
+element directly bypasses hit testing and will miss this failure.
 
 The game-specific choices here take precedence over generic website or dashboard
 styling advice. Accessibility and input behavior remain required.

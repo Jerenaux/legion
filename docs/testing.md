@@ -42,6 +42,7 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   credential-preservation shell steps without store uploads.
 - `node website/smoke.cjs` and the packaged executable's `--smoke-test`: existing
   browser/site and offline packaged startup/shutdown checks, run by CI/releases.
+  Packaged shutdown uses the real preload `quitApp` IPC with a process-exit deadline.
 
 The matchmaker has no isolated `test` script; validate it through the backend
 integration runner. Tests with fake Firestore implementations have been removed;

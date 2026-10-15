@@ -5,6 +5,7 @@
   /* A dark beam over the hall: soot-warm, an iron trim and a line of hearth light below. */
   position: relative;
   isolation: isolate;
+  /* The hall's transparent hit area must not intercept dropdown clicks (including Quit). */
   z-index: 1;
   background:
     linear-gradient(90deg, transparent, oklch(70% .15 55 / .07) 50%, transparent),
