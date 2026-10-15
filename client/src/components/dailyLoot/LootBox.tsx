@@ -1,7 +1,13 @@
 import {t, i18n} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
+import {createPortal} from 'preact/compat';
+import {Tooltip} from 'react-tooltip';
+import {IMMEDIATE_LOOT} from '@legion/shared/config';
+import {playSoundEffect} from '../utils';
+import nopeSfx from '@assets/sfx/nope.wav';
+import '../ItemTooltipContent.css';
 import { Component } from 'preact';
 import { ChestColor } from "@legion/shared/enums";
 
@@ -17,7 +23,7 @@ interface LootBoxProps {
     color: ChestColor;
     timeRemaining: number;
     ownsKey: boolean;
-    onClick: () => void;
+    onClick: () => Promise<boolean>;
 }
 
 interface LootBoxState {
@@ -26,6 +32,7 @@ interface LootBoxState {
 
 class LootBox extends Component<LootBoxProps, LootBoxState> {
     interval: NodeJS.Timeout;
+    rejection?: Animation;
 
     constructor(props: LootBoxProps) {
         super(props);
@@ -39,6 +46,7 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
     }
 
     componentWillUnmount() {
+        this.rejection?.cancel();
         this.clearInterval();
     }
 
@@ -117,14 +125,41 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
         }
     }
 
+    handleClick = async (event: MouseEvent) => {
+        const chest = (event.currentTarget as HTMLElement).querySelector('.loot-box-image');
+        const locked = !IMMEDIATE_LOOT && (this.state.timeRemaining > 0 || !this.props.ownsKey);
+        if (locked || !await this.props.onClick()) {
+            this.rejection?.cancel();
+            this.rejection = chest?.animate(
+                matchMedia('(prefers-reduced-motion: reduce)').matches
+                    ? [{opacity: 1}, {opacity: .45}, {opacity: 1}]
+                    : [{transform: 'translateX(0)'}, {transform: 'translateX(-5px) rotate(-5deg)'},
+                        {transform: 'translateX(5px) rotate(5deg)'}, {transform: 'translateX(-3px)'}, {transform: 'translateX(0)'}],
+                {duration: 300},
+            );
+            playSoundEffect(nopeSfx, .2);
+            return;
+        }
+    };
+
     render() {
-        const { onClick } = this.props;
+        const tooltipId = `chest-help-${this.props.color}`;
         return (
-            <button type="button" data-game-control className="lootBoxContainer" onClick={onClick}>
+            <>
+            <button type="button" data-game-control data-tooltip-id={tooltipId} className="lootBoxContainer" onClick={this.handleClick}>
                 <div className="loot-box-title"><span>{this.getTitle()}</span></div>
                 <img className="loot-box-image" src={this.getImageSrc()} alt="" />
                 <div className="loot-box-footer">{this.getFooterContent()}</div>
             </button>
+            {createPortal(<Tooltip id={tooltipId} place="top" positionStrategy="fixed" className="item-details-tooltip"
+                delayShow={150} globalCloseEvents={{escape: true}}>
+                <div className="item-preview">
+                    <div className="item-preview-heading"><img src={silverKeyIcon} width="24" height="24" alt="" /><strong className="item-preview-name">{this.getTitle()}</strong></div>
+                    <p className="item-preview-note">{t("Play Casual or Ranked games for daily chest keys!")}</p>
+                    {this.state.timeRemaining > 0 && <p className="item-preview-note">{t("Chest locked, wait for the countdown to end!")}</p>}
+                </div>
+            </Tooltip>, document.body)}
+            </>
         );
     }
 }

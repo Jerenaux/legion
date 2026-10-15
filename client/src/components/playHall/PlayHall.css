@@ -46,9 +46,8 @@
 
 .party-hall-hearth {
   position: relative;
-  flex: none;
   align-self: stretch;
-  width: 150px;
+  width: 100%;
   z-index: -1;
 }
 
@@ -103,23 +102,28 @@
 }
 
 .party-hall-members > li:not(.party-hall-hearth) {
+  min-width: 0;
   transform: translateY(calc((var(--ring, 1) - 1) * 20px));
 }
 
 .party-hall-members {
   list-style: none;
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
+  padding: 0 0 calc((var(--party-left) - 1) * 20px);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(var(--party-left), minmax(0, 152px)) minmax(64px, 110px) repeat(var(--party-right), minmax(0, 152px));
+  align-items: end;
   justify-content: center;
-  gap: 4px clamp(6px, 1.4vw, 22px);
+  width: min(1180px, 100%);
+  gap: 4px clamp(4px, 1vw, 16px);
 }
 
 .party-member {
   position: relative;
-  width: 152px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -211,6 +215,7 @@
   min-width: 0;
   overflow: hidden;
   text-align: center;
+  word-break: keep-all;
   font: .9375rem/1.2 var(--locale-font, 'Kim'), system-ui, sans-serif;
   text-transform: uppercase;
   color: var(--class-tint, var(--text-strong));
@@ -403,7 +408,7 @@
 @media (max-height: 640px), (max-width: 900px) {
   .party-hall { padding-top: 12px; }
   .party-hall-members { gap: 2px 6px; }
-  .party-member { width: 132px; }
+
   .party-member-class { font-size: .75rem; }
   .dailyLootContainer--scene .loot-box-title { display: none; }
   .party-member-meta { font-size: .6875rem; }
@@ -422,13 +427,14 @@
 
 /* ---- Team page: the same fire, smaller, with the open character stepping into its light ---- */
 
-.party-hall--team { padding-top: 8px; margin-bottom: 26px; }
+.party-hall--team { padding-top: 8px; margin-bottom: 8px; }
+.party-hall--team .party-hall-members { padding-bottom: calc((var(--party-left) - 1) * 12px); }
 .party-hall--team .party-hall-members > li:not(.party-hall-hearth) { transform: translateY(calc((var(--ring, 1) - 1) * 12px)); }
-.party-hall--team .party-hall-hearth { width: 110px; }
+
 .party-hall--team .party-hall-fire { scale: .72; transform-origin: 50% 100%; bottom: -34px; }
 .party-hall--team .party-hall-hearth::before { scale: .75; }
 .party-hall--team::before { height: 220px; }
-.party-hall--team .party-member { width: 140px; }
+
 .party-hall--team .party-member-sprite { scale: .85; transform-origin: 50% 100%; margin-top: -10px; }
 .party-hall--team .party-member.faces-right .party-member-sprite { transform: scaleX(-1); }
 .party-hall--team .party-member:not([aria-pressed="true"]) { opacity: .72; }

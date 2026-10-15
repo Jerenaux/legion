@@ -52,3 +52,12 @@ element directly bypasses hit testing and will miss this failure.
 
 The game-specific choices here take precedence over generic website or dashboard
 styling advice. Accessibility and input behavior remain required.
+
+## Party and localized labels
+
+Keep the hearth and the full party in one responsive grid, including the next
+recruit. Reserve space for staggered nameplates so they cannot overlap controls
+below. Use `ClassCrest` for class symbols, including the character sheet.
+Localized navigation labels must preserve glyph proportions: fit the font size,
+never force SVG `textLength` with `spacingAndGlyphs`. Pair shop stat icons with
+visible translated labels rather than relying on icon recognition.

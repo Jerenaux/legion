@@ -45,7 +45,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
         onClick={(e) => this.props.handleOpenModal(e, modalData)}
         stats={[
           ...inflictedStatuses(data).map(status => ({icon: statusIcons[status.effect], label: t(status.effect), value: statusSummary(status), wide: true})),
-          {icon: mpIcon, label: t("cost"), value: formatNumber(data.cost)},
+          {icon: mpIcon, label: t("MP"), value: formatNumber(data.cost)},
           {icon: cdIcon, label: t("cooldown"), value: getSpeedClass(data.speedClass)},
           {icon: targetIcon, label: t("target"), value: t(Target[data.target])},
         ]}

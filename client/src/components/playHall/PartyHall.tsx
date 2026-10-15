@@ -49,7 +49,7 @@ export default function PartyHall({team = false, chest = !team}: {team?: boolean
   return (
     <section className={`party-hall${team ? ' party-hall--team' : ''}`} aria-label={t("Team")}>
       {characters.length > 0 ? (
-        <ul className="party-hall-members">
+        <ul className="party-hall-members" style={{'--party-left': hearthIndex, '--party-right': characters.length + (remainingSlots > 0 ? 1 : 0) - hearthIndex}}>
           {characters.map((character, index) => [
             // The party gathers on both sides of the hearth.
             index === hearthIndex && hearth,

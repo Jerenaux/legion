@@ -1,4 +1,4 @@
-import {t, userError} from '../../i18n/core';
+import {userError} from '../../i18n/core';
 import { h } from 'preact';
 // DailyLootBox.tsx
 import './DailyLoot.style.css';
@@ -15,7 +15,6 @@ import { DailyLootAllAPIData, ChestReward } from "@legion/shared/interfaces";
 import LootBox from "./LootBox";
 import { PlayerContext } from '../../contexts/PlayerContext';
 import OpenedChest from '../dailyLoot/OpenedChest';
-import { IMMEDIATE_LOOT } from '@legion/shared/config';
 
 interface DailyLootProps {
   data: DailyLootAllAPIData,
@@ -57,19 +56,9 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
     const { data } = this.props;
     const chestsOrder = [ChestColor.BRONZE, ChestColor.SILVER, ChestColor.GOLD];
 
-    const handleOpen = async (color: ChestColor, countdown: number, hasKey: boolean) => {
+    const handleOpen = async (color: ChestColor) => {
 
-      if (this.opening) return;
-      // Check if countdown is over and if key is owned
-      if (countdown > 0 && !IMMEDIATE_LOOT) {
-        silentErrorToast(t("Chest locked, wait for the countdown to end!"));
-        return;
-      }
-      if (!hasKey && !IMMEDIATE_LOOT) {
-        silentErrorToast(t("You need a key to open this chest, go play a casual or ranked game!"));
-        return;
-      }
-
+      if (this.opening) return true;
       this.opening = true;
        // Immediately show OpenedChest with loading state
       this.setState({
@@ -93,11 +82,14 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
           chestContent: null,
           chestDailyLoot: null,
         });
+        // Another session may have opened it since the last refresh.
+        if (error?.status === 409) return false;
         silentErrorToast(userError(error));
       } finally {
         await this.context.refreshAllData();
         this.opening = false;
       }
+      return true;
     }
 
     const chestConfirm = () => {
@@ -124,7 +116,7 @@ class DailyLoot extends Component<DailyLootProps, DailyLootState> {
                   color={color}
                   timeRemaining={chest.countdown}
                   ownsKey={chest.hasKey}
-                  onClick={() => handleOpen(color, chest.countdown, chest.hasKey)}
+                  onClick={() => handleOpen(color)}
                 />
               );
             }

@@ -1135,22 +1135,13 @@ export class Arena extends Phaser.Scene
             let yScale = scale;
 
             if (config && config.stretch) {
-                let distanceToTop = pixelY;
-                // if (config && config.extraStretch) {
-                //     distanceToTop += 100;
-                // }
-                const baseHeight = 512; // Base height of the thunder sprite
-
-                // Set the scale: normal width, stretched height to reach top
-                let heightScale = distanceToTop / baseHeight;
-                if (config && config.extraStretch) {
-                    heightScale *= 1.2;
-                }
-                yScale = heightScale;
+                // Stretch above the impact, never away from the target tile.
+                const beamHeight = 512 * ((config.originY ?? 1) - (config.beamTop ?? 0));
+                yScale = Math.max(scale, (pixelY - this.cameras.main.worldView.top) / beamHeight);
             }
             // Normal handling for other animations
             this.localAnimationSprite.setPosition(pixelX, pixelY)
-                .setOrigin(0.5, config?.stretch ? 1 : 0.7)
+                .setOrigin(0.5, config?.originY ?? 0.7)
                 .setVisible(true)
                 .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
                 .setScale(scale * (config ? VFX_DISPLAY_SCALE : 1), yScale * (config ? VFX_DISPLAY_SCALE : 1));

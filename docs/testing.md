@@ -1,11 +1,10 @@
 # Testing
 
-Never use TDD, never write unit tests, and never write UI or frontend tests (no
-checks of text, formatting, tooltips, hover cards, menus, the combat dock, layout
-or styling). When a UI change breaks an existing UI assertion, delete it. Verify
-UI work by looking at the rebuilt app. Implement first, then verify the relevant
-integrated behavior. This applies to fixes and security changes too. The policy
-in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
+Never use TDD or write unit tests. Implement first, then verify the smallest relevant
+integration, end-to-end or smoke flow through real components and system boundaries.
+Do not automate checks of styling or exact player-facing wording. Review presentation
+through screenshots; retain behavioral checks for input, navigation, gameplay, recovery
+and security. The policy in AGENTS.md and CLAUDE.md supersedes historical plans.
 
 ## Retained checks
 
@@ -30,6 +29,8 @@ in AGENTS.md and CLAUDE.md supersedes test-first steps in historical plans.
   before building if it fails; it does not run on PRs, pushes or a schedule.
   Audio recovery can also run alone with `node tools/guide/capture.cjs --audio-recovery`
   in `client` (real media/Phaser contexts, simulated platform interruptions and local Sentry ingestion).
+  Chest input/countdown/reward opening and real Phaser Thunder impact anchors can run alone
+  with `node tools/guide/capture.cjs --hall`; these use local account/API fixtures.
   Screenshot switches (`--images`, `--roster-images`, `--gifts`, `--tower-unlock`,
   `--tower-images`, `--localization`, `--tutorial`) only capture screenshots for
   manual review; `--tutorial` also keeps its match-readiness checks.

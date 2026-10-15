@@ -83,8 +83,9 @@ export default function ShopItemCard(props: ShopItemCardProps) {
       <span className="shop-item-stats">
         {props.stats.map((stat, index) => (
           <span key={index} className={`shop-item-stat${stat.wide ? ' is-wide' : ''}`} title={stat.label}>
-            <img src={stat.icon} alt={stat.label} />
-            <span>{stat.value}</span>
+            <span className="shop-stat-symbol"><img src={stat.icon} alt="" /></span>
+            <span className="shop-stat-label">{stat.label}</span>
+            <span className="shop-stat-value">{stat.value}</span>
           </span>
         ))}
       </span>

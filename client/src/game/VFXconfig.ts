@@ -5,7 +5,9 @@ interface VFXConfig {
     scale: number;
     shake?: boolean;
     stretch?: boolean;
-    extraStretch?: boolean;
+    /** Impact anchor and visible beam top within the source frame (normalized). */
+    originY?: number;
+    beamTop?: number;
 }
 
 // Spell sheets are half-resolution (same frame count/timing, 75% less decoded memory).
@@ -60,22 +62,23 @@ export const VFXconfig: Record<string, VFXConfig>    = {
     thunder_1: {
         frameRate: 30,
         scale: 0.5,
-        yoffset: 50,
+        originY: 1,
+        beamTop: 0,
         stretch: true,
     },
     thunder_2: {
         frameRate: 30,
-        yoffset: 400,
+        originY: 164 / VFX_FRAME_SIZE,
+        beamTop: 36 / VFX_FRAME_SIZE,
         stretch: true,
-        extraStretch: true, 
         scale: 1,
     },
     thunder_3: {
         frameRate: 40,
         scale: 1,
         stretch: true,
-        extraStretch: true,
-        yoffset: 400,
+        originY: 164 / VFX_FRAME_SIZE,
+        beamTop: 28 / VFX_FRAME_SIZE,
     },
     heal_1: {
         frameRate: 15,
