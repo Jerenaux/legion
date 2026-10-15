@@ -1,3 +1,4 @@
+import {pressScene} from '../press/scenes';
 import {createTowerRun, chooseTowerUpgrade, finishTowerBattle, TowerProgress, TOWER_ENCOUNTERS} from '@legion/shared/tower';
 import {i18n} from '../../src/i18n/core';
 import {Trans} from '../../src/i18n/Trans';
@@ -51,7 +52,8 @@ Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () =
   },
 });
 
-const characters = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind, i) => ({
+const press = new URLSearchParams(location.search).has('press') ? pressScene(Number(new URLSearchParams(location.search).get('press')) || 1) : null;
+const characters = press?.characters ?? [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind, i) => ({
   ...new NewCharacter(kind, 1).getCharacterData(), level: 3,
   id: `guide-${i}`, name: ['Roland', 'Luna', 'Ember'][i], portrait: ['1_1', '1_7', '1_5'][i],
   sp: 2, inventory: [0, 1], skills: [[], [9], [0, 3]][i],
@@ -75,7 +77,7 @@ const fixtureCommunities = [
   {id: 'verdant', name: 'Verdant Oath', tag: 'VRD', sigil: {shape: 0, pattern: 3, palette: 2, symbol: 10}},
   {id: 'nightglass', name: 'Nightglass', tag: 'NGT', sigil: {shape: 1, pattern: 9, palette: 3, symbol: 6}},
 ];
-const profile = {
+const profile = press?.profile ?? {
   playerName: 'Arena Apprentice', teamName: '', playerAvatar: 'default',
   playerLevel: 1, playerRank: 12, playerLeague: League.BRONZE, completedGames: 12,
   engagementStats: {completedGames: 12, everMoved: true, everAttacked: true, everUsedSpell: true, everUsedItem: true, everSawFlames: true, everSawIce: true},
@@ -85,7 +87,7 @@ const team = characters.map((character, i) => ({
   ...character, x: [4, 3, 5][i], y: [4, 6, 7][i], hp: [78, 80, 80][i], maxHP: [100, 80, 80][i],
   mp: [20, 30, 32][i], maxMP: [20, 30, 40][i], distance: MOVEMENT_RANGE, spells: character.skills, statuses,
 }));
-const battle = {
+const battle = press?.battle ?? {
   general: {reconnect: true, spectator: false, mode: PlayMode.CASUAL},
   // Keep one unlearned action so the fixture exercises contextual spell coaching.
   player: {teamId: 1, player: {...profile, engagementStats: {...profile.engagementStats, everUsedSpell: false},
@@ -156,7 +158,7 @@ Arena.prototype.connectToServer = async function () {
 };
 
 export async function getFirebaseIdToken() { return 'guide-local-only'; }
-const rankCheck = {fail: true};
+const rankCheck = {fail: !press};
 Object.assign(window, {rankCheck});
 const towerCheck = {
   enabled: ENABLE_CINDER_TOWER,
@@ -253,14 +255,14 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   const defaults = useContext(PlayerContext);
   const [preview] = useState(() => new URLSearchParams(location.search));
   const completedGames = Math.max(0, Number(preview.get('games') ?? 12));
-  const rosterSize = Math.max(3, Math.min(MAX_CHARACTERS, Number(preview.get('roster') ?? 3)));
+  const rosterSize = Math.max(3, Math.min(MAX_CHARACTERS, Number(preview.get('roster') ?? (press ? 6 : 3))));
   const roster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
     : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]}).map(character => preview.has('item-check')
       ? {...character, level: Number(preview.get('level') ?? 1)} : character);
-  const [activeId, setActiveId] = useState(characters[2].id);
+  const [activeId, setActiveId] = useState(characters[press ? Math.max(0, Math.min(5, Number(preview.get('character') ?? 2))) : 2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
-  const [identity, setIdentity] = useState({name: profile.playerName, avatar: 'default'});
+  const [identity, setIdentity] = useState({name: profile.playerName, avatar: press ? profile.playerAvatar : 'default'});
   Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true), fail: () => setRenderFailed(true)}});
   if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
@@ -268,10 +270,10 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     updateIdentity: (updates: Partial<typeof identity>) => setIdentity(current => ({...current, ...updates})),
     player: {...defaults.player, uid: 'guide-local-only', ...identity,
-      isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
+      isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: press ? 2840 : 240, elo: 128, rank: profile.playerRank,
       dailyloot: {bronze: {hasKey: true, countdown: 0}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}},
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
-      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}},
+      carrying_capacity: press ? 40 : BASE_INVENTORY_SIZE, inventory: press?.inventory ?? {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
     getCompletedGames: () => completedGames, checkEngagementFlag: () => true,
     getGamesUntilFeature: (feature: LockedFeatures) => Math.max(0, LOCKED_FEATURES[feature] - completedGames),
