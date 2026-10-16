@@ -90,6 +90,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     recordLoadingStep('start');
     events.on('progressUpdate', this.updateProgress);
     events.on('gameInitialized', this.handleGameInitialized);
+    events.on('gameEnd', this.handleGameEnd);
     events.on('combatWaiting', this.handleCombatWaiting);
     events.on('serverDisconnect', this.handleServerDisconnect);
     events.on('combatError', this.failGame);
@@ -132,6 +133,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.off('combatConnectionLost', this.handleConnectionLost);
     events.off('progressUpdate', this.updateProgress);
     events.off('gameInitialized', this.handleGameInitialized);
+    events.off('gameEnd', this.handleGameEnd);
     events.off('combatWaiting', this.handleCombatWaiting);
     events.off('serverDisconnect', this.handleServerDisconnect);
     events.off('revealTeam', this.handleRevealTeam);
@@ -184,6 +186,14 @@ class GamePage extends Component<GamePageProps, GamePageState> {
         this.startWaitingTimer();
       }
     });
+  };
+
+  handleGameEnd = () => {
+    const arena = this.game?.scene.getScene('Arena') as Arena | undefined;
+    // Results may reach the client before the updated game count reaches Firestore.
+    if (arena?.gameSettings?.game0 && !arena.isReplay && !arena.gameSettings.spectator) {
+      this.context.markFirstMatchCompleted();
+    }
   };
 
   handleGameInitialized = () => {

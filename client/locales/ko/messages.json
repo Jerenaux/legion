@@ -1258,5 +1258,6 @@
   "Redeem": "받기",
   "This creator code has no active gift.": "이 크리에이터 코드로 받을 수 있는 선물이 없습니다.",
   "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "프로필에 크리에이터 코드를 입력하면 시청자용 선물을 받을 수 있습니다. 코드와 링크 중 어느 쪽을 사용하든 각 선물은 계정당 한 번만 받을 수 있습니다. 여러 크리에이터의 선물을 받을 수 있으며, 커뮤니티 가입은 선택 사항이지만 가입 후에는 변경할 수 없습니다.",
-  "No ranked games this season": "이번 시즌 랭크전 기록 없음"
+  "No ranked games this season": "이번 시즌 랭크전 기록 없음",
+  "If this is your first visit, close the gift and community dialogs, then press Play to meet your characters and start the tutorial.": "처음 플레이한다면 선물과 커뮤니티 창을 닫고 플레이를 눌러 캐릭터를 만나고 튜토리얼을 시작하세요."
 }

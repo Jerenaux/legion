@@ -1,7 +1,6 @@
 import {h} from 'preact';
 import {useContext, useEffect, useState} from 'preact/hooks';
 import Modal from 'react-modal';
-import {route} from 'preact-router';
 import type {CommunitySummary, PlayerCommunity} from '@legion/shared/communities';
 import {PlayerContext} from '../../contexts/PlayerContext';
 import {apiFetch} from '../../services/apiService';
@@ -51,11 +50,6 @@ export default function JoinCommunityDialog({code, via, onClose}: Props) {
     }
   };
 
-  const openCommunity = () => {
-    onClose();
-    route(`/community/${community!.id}`);
-  };
-
   const message = {
     'loading': t('Looking up this community…'),
     'confirm': t('Its sigil appears beside your name in matches, on your profile and in leaderboards. Your ranked wins count toward its weekly ranking. You can only join one community.'),
@@ -79,7 +73,6 @@ export default function JoinCommunityDialog({code, via, onClose}: Props) {
     {(step === 'loading' || step === 'joining') && <span className="gift-spinner" aria-hidden="true" />}
     {step !== 'loading' && step !== 'joining' && <div className="gift-actions">
       {step === 'confirm' && <button type="button" onClick={join}>{t('Join')}</button>}
-      {step === 'joined' && <button type="button" onClick={openCommunity}>{t('View community')}</button>}
       <button type="button" data-desktop-cancel className="community-dialog-secondary" onClick={onClose}>
         {t(step === 'confirm' ? 'Not now' : 'Close')}
       </button>
