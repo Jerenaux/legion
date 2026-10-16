@@ -191,8 +191,9 @@ costs while the desktop update rolls out. Tower-specific overrides remain.
 
 Older clients still contain old shop descriptions, SP controls and consumable
 targeting. In particular, they cannot redistribute SP or target an allied
-character with a Remedy; do not describe those features as available until the
-client update is installed. The server validates spending and owns all damage,
+character with a Remedy, and their ice-terrain action gate predates timed thawing.
+The updated client is required for the revised ice behavior too; do not describe
+these features as available until the client update is installed. The server validates spending and owns all damage,
 healing, statuses and costs. New clients omit damage previews for old snapshots
 that do not provide authoritative stats rather than guessing from class defaults.
 
@@ -200,3 +201,5 @@ AI threat and spell estimates share the combat formulas. Movement charges only
 the first crossed fire tile's actual damage, matching one exposure per move,
 and values ending in fire as two future exposures. Those latter weights remain
 planner heuristics, not changes to terrain duration or adaptive difficulty.
+
+Equal initiative times use a per-character random tie-breaker, avoiding team-order advantage; authored tutorial openings, recovery times and damage remain unchanged.

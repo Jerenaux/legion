@@ -6,6 +6,7 @@ interface TurnQueueItem {
     character: ServerPlayer;
     nextActionTime: number;
     passCount: number;
+    tieBreaker: number;
 }
 
 export class TurnSystem {
@@ -22,6 +23,7 @@ export class TurnSystem {
         this.turnQueue = characters.map(char => ({
             character: char,
             nextActionTime: openingOrder ? 1001 + openingOrder.indexOf(char) : this.getInitialActionTime(char.getStat(Stat.SPEED)),
+            tieBreaker: Math.random(),
             passCount: 0
         }));
         
@@ -30,8 +32,7 @@ export class TurnSystem {
     }
 
     getInitialActionTime(speed) {
-        // Higher speed = lower initial action time
-        // Base value of 1001 gives us room for variation
+        // Higher speed gives earlier initiative without randomizing recovery time.
         return recoveryTime(speed, SpeedClass.NORMAL);
     }
 
@@ -80,7 +81,8 @@ export class TurnSystem {
     }
 
     sortQueue() {
-        this.turnQueue.sort((a, b) => a.nextActionTime - b.nextActionTime);
+        // Fixed class speeds must not give the first-listed team every tied activation.
+        this.turnQueue.sort((a, b) => (a.nextActionTime - b.nextActionTime) || (a.tieBreaker - b.tieBreaker));
     }
 
     getQueueData() {
@@ -97,6 +99,7 @@ export class TurnSystem {
         this.turnQueue.push({
             character: character,
             nextActionTime: this.currentTime + this.getInitialActionTime(character.getStat(Stat.SPEED)),
+            tieBreaker: Math.random(),
             passCount: 0
         });
         this.sortQueue();

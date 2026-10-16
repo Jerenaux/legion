@@ -123,6 +123,35 @@ test('Socket.IO attacks and spells agree with shared damage and have no defense 
   expect(Math.max(...damage.slice(1, 4)) - Math.min(...damage.slice(1, 4))).toBeLessThanOrEqual(1);
 });
 
+test('equal-speed opening ties can favor either team, while authored tutorial order stays fixed', async () => {
+  player.stats[Stat.SPEED] = 20;
+  opponent.stats[Stat.SPEED] = 20;
+  ally.stats[Stat.SPEED] = 10;
+  for (const winner of [1, 2]) {
+    const random = spyOn(Math, 'random')
+      .mockReturnValueOnce(winner === 1 ? .1 : .9)
+      .mockReturnValueOnce(winner === 2 ? .1 : .9)
+      .mockReturnValueOnce(.5);
+    game.turnSystem.initializeTurnOrder([player, opponent, ally]);
+    random.mockRestore();
+    game.turnee = game.turnSystem.getNextActor();
+    const snapshot = new Promise<GameData>(resolve => client.once('gameStatus', resolve));
+    game.sendGameStatus(player.team.getSocket());
+    const packet = await snapshot;
+    expect(game.turnee.team.id).toBe(winner);
+    expect(packet.queue[0]).toMatchObject({team: winner, num: 1});
+  }
+  const opening = [ally, player, opponent];
+  const random = spyOn(Math, 'random').mockReturnValueOnce(.5).mockReturnValueOnce(.1).mockReturnValueOnce(.9);
+  game.turnSystem.initializeTurnOrder([player, opponent, ally], opening);
+  random.mockRestore();
+  game.turnee = game.turnSystem.getNextActor();
+  const snapshot = new Promise<GameData>(resolve => client.once('gameStatus', resolve));
+  game.sendGameStatus(player.team.getSocket());
+  expect((await snapshot).queue.map(unit => [unit.team, unit.num])).toEqual([[1, 2], [1, 1], [2, 1]]);
+  expect(game.turnee).toBe(ally);
+});
+
 test('Socket.IO snapshots advertise authoritative spell costs and effective stats before casting', async () => {
   player.spells = [new Spell(getSpellById(3))];
   player.setMP(1000);
