@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, expect, mock, spyOn, test} from 'bun:test';
 import {createServer} from 'node:http';
 import {Server, type Socket} from 'socket.io';
-import {io, type Socket as ClientSocket} from '../../../client/node_modules/socket.io-client';
+import {io, type Socket as ClientSocket} from 'socket.io-client';
 import {Class, EquipmentSlot, equipmentSlotFields, League, PlayMode, Stat, StatFields, StatusEffect, Terrain} from '@legion/shared/enums';
 import type {GameData} from '@legion/shared/interfaces';
 import {baseStats, damageAmount, effectAmount, MELEE_POTENCY} from '@legion/shared/combatBalance';

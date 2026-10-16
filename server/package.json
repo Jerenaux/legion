@@ -24,6 +24,7 @@
     "@sentry/cli": "2.58.6",
     "@types/bun": "latest",
     "@types/express": "^5.0.6",
+    "socket.io-client": "4.8.3",
     "tsc-alias": "1.8.10",
     "tsconfig-paths": "^4.2.0"
   },
