@@ -19,4 +19,7 @@
 }
 
 /* One scroller inside the panel keeps its frame and Close button reachable at large text sizes. */
-.settings-modal-container .setting_menu { max-height: calc(100dvh - 32px); }
+.settings-modal-container .setting_menu {
+  max-height: calc(100dvh - 32px);
+  background: linear-gradient(oklch(24% .03 245), oklch(17% .028 250));
+}
