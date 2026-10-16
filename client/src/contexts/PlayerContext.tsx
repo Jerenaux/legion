@@ -9,6 +9,7 @@ export interface PlayerContextState {
   activeCharacterId: string;
   characterSheetIsDirty: boolean;
   welcomeShown: boolean;
+  firstMatchCompleted: boolean;
   lastHelp: number;
   friends: FriendData[];
   socket: Socket | null;
@@ -28,6 +29,7 @@ export const PlayerContext = createContext<{
   activeCharacterId: string;
   characterSheetIsDirty: boolean;
   welcomeShown: boolean;
+  firstMatchCompleted: boolean;
   setPlayerInfo: (updates: Partial<PlayerContextData>) => void;
   updateIdentity: (updates: Partial<Pick<PlayerContextData, 'name' | 'avatar'>>) => void;
   refreshPlayerData: () => void;
@@ -38,6 +40,7 @@ export const PlayerContext = createContext<{
   updateActiveCharacter: (characterId: string) => void;
   refreshAllData: () => void;
   markWelcomeShown: () => void;
+  markFirstMatchCompleted: () => void;
   resetState: () => void;
   friends: FriendData[];
   addFriend: (friendId: string) => Promise<void>;
@@ -97,6 +100,7 @@ export const PlayerContext = createContext<{
   activeCharacterId: '',
   characterSheetIsDirty: false,
   welcomeShown: false,
+  firstMatchCompleted: false,
   setPlayerInfo: () => {},
   updateIdentity: () => {},
   refreshPlayerData: () => {},
@@ -107,6 +111,7 @@ export const PlayerContext = createContext<{
   updateActiveCharacter: () => {},
   refreshAllData: () => {},
   markWelcomeShown: () => {},
+  markFirstMatchCompleted: () => {},
   resetState: () => {},
   friends: [],
   addFriend: async () => {},

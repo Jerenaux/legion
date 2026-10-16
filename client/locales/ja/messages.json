@@ -1258,5 +1258,6 @@
   "Redeem": "受け取る",
   "This creator code has no active gift.": "このクリエイターコードには現在受け取れるギフトがありません。",
   "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "プロフィールでクリエイターコードを入力すると、視聴者向けのギフトを受け取れます。コードとリンクのどちらを使っても、各ギフトを受け取れるのは1アカウントにつき1回です。複数のクリエイターからギフトを受け取れます。コミュニティへの参加は任意ですが、参加後は変更できません。",
-  "No ranked games this season": "今シーズンのランク戦は未プレイ"
+  "No ranked games this season": "今シーズンのランク戦は未プレイ",
+  "If this is your first visit, close the gift and community dialogs, then press Play to meet your characters and start the tutorial.": "初めてプレイする場合は、ギフトとコミュニティのダイアログを閉じて「プレイ」を押すと、キャラクター紹介とチュートリアルが始まります。"
 }
