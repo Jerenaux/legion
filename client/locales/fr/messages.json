@@ -1275,5 +1275,6 @@
   "Redeem": "Utiliser",
   "This creator code has no active gift.": "Aucun cadeau n’est actuellement disponible avec ce code créateur.",
   "Enter a creator code on your profile to claim its available audience gifts. Code and link claims share the same once-per-account limit. You can claim gifts from different creators; joining a community is optional and permanent.": "Saisissez un code créateur sur votre profil pour récupérer les cadeaux disponibles pour sa communauté. Un cadeau ne peut être récupéré qu’une fois par compte, par code ou par lien. Vous pouvez recevoir des cadeaux de plusieurs créateurs ; rejoindre une communauté est facultatif et définitif.",
-  "No ranked games this season": "Aucun match classé cette saison"
+  "No ranked games this season": "Aucun match classé cette saison",
+  "If this is your first visit, close the gift and community dialogs, then press Play to meet your characters and start the tutorial.": "Si vous jouez pour la première fois, fermez les fenêtres de cadeau et de communauté, puis appuyez sur Jouer pour découvrir vos personnages et commencer le tutoriel."
 }

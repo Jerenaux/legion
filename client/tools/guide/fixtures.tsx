@@ -134,6 +134,13 @@ Arena.prototype.connectToServer = async function () {
   this.socket = Object.assign(new EventEmitter(), {disconnect() {}}) as typeof this.socket;
   this.enqueueMessage('queueData', battle.queue);
   const snapshot = structuredClone(battle);
+  if (location.pathname === '/game/0') {
+    this.socket.connected = true;
+    snapshot.general.mode = PlayMode.TUTORIAL;
+    snapshot.player.player.completedGames = 0;
+    snapshot.general.combatStarted = false;
+    snapshot.turnee.turnNumber = 0;
+  }
   if (location.pathname.includes('/tower-fixture')) {
     snapshot.general.mode = PlayMode.TOWER;
     snapshot.general.tower = {floor: 6, tier: 1, name: 'The Cinder Warden', warning: [{x: 4, y: 4}, {x: 5, y: 4}]};
@@ -172,13 +179,13 @@ const towerCheck = {
   save() { localStorage.setItem('tower-fixture', JSON.stringify(this.progress)); },
 };
 Object.assign(window, {towerCheck});
-const giftCheck = {status: 'claimed', requests: 0};
+const giftCheck = {status: 'claimed', requests: 0, community: new URLSearchParams(location.search).has('audience') ? fixtureCommunities[0] : undefined};
 Object.assign(window, {giftCheck});
 export async function apiFetch(endpoint: string, options: {body?: {code?: string; action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
   if (endpoint === 'redeemGift') {
     giftCheck.requests++;
     if (giftCheck.status === 'error') throw new Error('Expected gift timeout');
-    return {status: giftCheck.status, ...(options.body?.code ? {community: fixtureCommunities.find(community => community.id === options.body.code)} : {}), rewards: [{type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 2}, {type: RewardType.CONSUMABLES, id: 0, amount: 3}, {type: RewardType.GOLD, id: 0, amount: 500}]};
+    return {status: giftCheck.status, community: giftCheck.community || fixtureCommunities.find(community => community.id === options.body?.code), rewards: [{type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 2}, {type: RewardType.CONSUMABLES, id: 0, amount: 3}, {type: RewardType.GOLD, id: 0, amount: 500}]};
   }
   if (endpoint === 'tower') {
     towerCheck.requests.push(options.body?.action || 'read');
@@ -257,7 +264,7 @@ Object.assign(window, {queueCheck});
 export default function FixturePlayer({children}: {children: ComponentChildren}) {
   const defaults = useContext(PlayerContext);
   const [preview] = useState(() => new URLSearchParams(location.search));
-  const completedGames = Math.max(0, Number(preview.get('games') ?? 12));
+  const completedGames = preview.has('new-player') ? 0 : Math.max(0, Number(preview.get('games') ?? 12));
   const rosterSize = Math.max(3, Math.min(MAX_CHARACTERS, Number(preview.get('roster') ?? 3)));
   const roster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
     : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]}).map(character => preview.has('item-check')
@@ -266,17 +273,22 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
   const [identity, setIdentity] = useState({name: profile.playerName, avatar: 'default'});
+  const [playerUpdates, setPlayerUpdates] = useState({});
+  const [firstMatchCompleted, setFirstMatchCompleted] = useState(false);
+  const totalGames = preview.has('new-player') ? 0 : completedGames + 1;
   Object.assign(window, {titleLoadingCheck: {finish: () => setLoaded(true), fail: () => setRenderFailed(true)}});
   if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
     ...defaults, loaded, welcomeShown: true, characters: roster, activeCharacterId: activeId,
+    firstMatchCompleted, markFirstMatchCompleted: () => setFirstMatchCompleted(true),
+    setPlayerInfo: updates => setPlayerUpdates(current => ({...current, ...updates})),
     socket: queueCheck.socket as unknown as typeof defaults.socket,
     updateIdentity: (updates: Partial<typeof identity>) => setIdentity(current => ({...current, ...updates})),
     player: {...defaults.player, uid: 'guide-local-only', ...identity,
-      isLoaded: loaded, completedGames: completedGames + 1, engagementStats: {...profile.engagementStats, completedGames: completedGames + 1}, gold: 240, elo: 128, rank: 12,
+      isLoaded: loaded, completedGames: totalGames, engagementStats: {...profile.engagementStats, completedGames: totalGames}, gold: 240, elo: 128, rank: 12,
       dailyloot: {bronze: {hasKey: preview.get('chest') !== 'key', countdown: preview.get('chest') === 'countdown' ? 5 : 0}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}},
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
-      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}},
+      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}, ...playerUpdates},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
     getCompletedGames: () => completedGames, checkEngagementFlag: () => true,
     getGamesUntilFeature: (feature: LockedFeatures) => Math.max(0, LOCKED_FEATURES[feature] - completedGames),
