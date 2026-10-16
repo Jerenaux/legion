@@ -17,8 +17,9 @@ const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOpt
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
 let sessionRecorder;
-// Local desktop recording is temporary; CI and smoke checks must never upload player replays.
-const recordReplays = !smokeTest && !process.env.CI && !process.env.GITHUB_ACTIONS;
+// Only the manual Steam/Itch release workflow stamps this package marker.
+const storeReplayBuild = app.isPackaged && require('./package.json').replayChannel === 'store';
+const recordReplays = storeReplayBuild && !smokeTest && !process.env.CI && !process.env.GITHUB_ACTIONS;
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) app.quit();
 const {giftFromArguments, createGiftQueue} = require('./electron/gifts');
@@ -136,7 +137,7 @@ function createWindow() {
         endpoint: 'https://europe-west1-games-analytics-jr.cloudfunctions.net/replayIngest',
         outbox: path.join(app.getPath('userData'), 'replay', 'outbox'),
         isTrustedURL: url => isTrustedSender(url, isDev),
-        metadata: {game_version: app.getVersion(), channel: 'local', debug_build: !app.isPackaged},
+        metadata: {game_version: app.getVersion(), channel: process.env.ITCHIO_API_KEY ? 'itch' : (process.env.SteamAppId || process.env.SteamGameId) ? 'steam' : 'store', debug_build: false},
       });
     } catch (error) { require('@sentry/electron/main').captureException(error); }
   }

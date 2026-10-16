@@ -19,6 +19,7 @@ import { GameData, StatusEffects, CharacterStats } from '../../../shared/interfa
 import {getClient, getReplay, getIsolationScope, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
 import {getElectronAPI} from '../../src/utils/electronUtils';
+import {setUser} from '../../src/telemetry';
 import {GameHUD, events} from '../../src/components/HUD/GameHUD';
 import {spells} from '../../../shared/Spells';
 import {items} from '../../../shared/Items';
@@ -45,7 +46,7 @@ MusicManager.prototype.playBeginning = function () {
 };
 Object.assign(window, {routeAudio, musicOverlaps});
 
-Object.assign(window, {replayCheck: {flush: () => getElectronAPI()?.replay?.flush(), id: () => getIsolationScope().getScopeData().contexts.replay?.sessionId,
+Object.assign(window, {replayCheck: {identify: (id: string) => setUser({id}), flush: () => getElectronAPI()?.replay?.flush(), id: () => getIsolationScope().getScopeData().contexts.replay?.sessionId,
   status: () => ({replay: Boolean(getReplay()), canvas: Boolean(getClient()?.getIntegrationByName('ReplayCanvas')),
     rate: getClient<BrowserClient>()?.getOptions().replaysSessionSampleRate})},
   stabilityFreeze: function stabilityFreeze() {

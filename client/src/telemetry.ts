@@ -6,9 +6,8 @@ import {dsn, dataCollection} from '../electron/telemetry-options';
 import {scrubTelemetry} from '@legion/shared/telemetryPrivacy';
 import {getElectronAPI} from './utils/electronUtils';
 
-export const sessionReplay = startReplay(getElectronAPI()?.replay, id => {
-  Sentry.setContext('replay', {sessionId: id, url: `https://games-replay-jr.web.app/#/s/${id}`});
-});
+export let sessionReplay = startReplay();
+let replayStarted = false;
 
 if (process.env.NODE_ENV === 'production') {
   const options = {
@@ -73,7 +72,20 @@ export function setUser(user: Parameters<typeof Sentry.setUser>[0]) {
   try {
     if (user?.id) {
       signedInId = String(user.id);
-      sessionReplay.identify(signedInId);
+      const bridge = getElectronAPI()?.replay;
+      if (!replayStarted && bridge) {
+        replayStarted = true;
+        // Identify before capture starts, so login cannot flush a tiny anonymous session.
+        const playerId = signedInId;
+        sessionReplay = startReplay({...bridge, start: async () => {
+          await bridge.identify(playerId);
+          return bridge.start();
+        }}, id => {
+          Sentry.setContext('replay', {sessionId: id, url: `https://games-replay-jr.web.app/#/s/${id}`});
+        });
+      } else {
+        sessionReplay.identify(signedInId);
+      }
     } else if (signedInId) {
       // Only a real sign-out starts a new recording. Startup reports "no user" before the
       // platform login completes; splitting there cut the start off every session.

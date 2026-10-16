@@ -475,6 +475,9 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
+        await js('replayCheck.flush()');
+        assert.equal(recordings.length, 0, 'Startup must not upload a separate anonymous replay');
+        await js("replayCheck.identify('guide-player')");
         await waitFor('Boolean(replayCheck.id())');
         assert.deepEqual(await js('replayCheck.status()'), {replay: false, canvas: false, rate: 0});
         assert.equal(await js(`new Promise(resolve => {
@@ -608,6 +611,8 @@ if (!process.versions.electron) {
           const context = canvas.getContext('2d'); context.drawImage(image, 0, 0, 32, 32);
           return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
         })()`), 'Recorded window/combat pixels must not be blank');
+        assert.equal(new Set(recordings.map(({header}) => header.session)).size, 1, 'Login must keep a single recording');
+        assert.equal(recordings.find(({header}) => header.seq === 0).header.meta.player_id, 'guide-player');
         console.log('Replay: composed window WebP frames and scrubbed events delivered to loopback');
         const cleanup = await js(`(() => {
           window.previousGame = combatCheck.arena.game;

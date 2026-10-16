@@ -96,11 +96,15 @@ There are no filesystem links to another checkout in the shipped dependency.
 `electron.js` installs capture only for the main game window and validates every IPC
 sender against that window's main frame and trusted app/dev URL. Preload exposes
 fixed replay methods only when main supplies `--legion-replay`. Browser previews
-cannot record. **For now, local development and locally packaged desktop builds are
-eligible**, tagged `local`. CI, GitHub Actions and `--smoke-test` skip installation
-and must never send recordings to production. Restrict this gate to Steam/Itch store
-builds when local recording is no longer wanted. The existing compiled store-build
-marker still controls API/socket store diagnostics independently of recording.
+cannot record. Only packaged store releases stamped with `replayChannel: store` in
+package metadata record. The manual release workflow adds that marker only when
+Steam or Itch upload is selected; ordinary local builds omit it. CI, GitHub Actions
+and `--smoke-test` skip installation, including draining old upload outboxes.
+The existing compiled store-build marker still controls API/socket store diagnostics.
+Recording waits for the first authenticated user and identifies them before starting
+capture, so startup/login produces one recording rather than a tiny anonymous one
+followed by the authenticated session. Actual account changes/sign-out still split
+sessions.
 
 Capture runs at most twice per second, at 960 pixels wide, with WebP quality 0.5.
 Unchanged thumbnails are skipped. Inputs, focus/resize and battle/error events share
