@@ -8,6 +8,7 @@ import { statusIcons, statusPulse } from '../utils';
 import './CharacterHoverCard.style.css';
 
 export interface CharacterHover {
+  preview?: {hp: number; action: string};
   team: number;
   num: number;
   left: number;
@@ -52,6 +53,9 @@ export default function CharacterHoverCard({ character, hover }: { character: Te
           </div>
         </div>
       ))}
+      {hover.preview && <div className="character-hover-card__preview" data-heal={hover.preview.hp > 0}>
+        <span>{t(hover.preview.action)}</span><b>{t("HP")} {formatNumber(hover.preview.hp, {signDisplay: 'always'})}</b>
+      </div>}
       <div className="character-hover-card__statuses">
         {activeStatuses.length ? activeStatuses.map(([status, turns]) => (
           <span {...statusPulse(character.statusRefreshes, status)}><img src={statusIcons[status]} alt={""} />{t(status)}<span className="character-hover-card__sep" aria-hidden="true">·</span><b>{turns === -1 ? '∞' : t('statusDuration', {count: turns})}</b></span>

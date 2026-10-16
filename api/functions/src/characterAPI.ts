@@ -1,3 +1,6 @@
+import type {Request, Response} from 'express';
+import {balanceCharacter, emptyAllocations} from '@legion/shared/characterBalance';
+import {BALANCE_VERSION, spBonus} from '@legion/shared/combatBalance';
 import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {getDefaultDailyLoot} from "./dailyLoot";
 import {communitySeasonDocId, communitySummary} from '@legion/shared/communities';
@@ -6,9 +9,8 @@ import {Transaction} from "firebase-admin/firestore";
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, getUID, firestore} from "./APIsetup";
-import {getMaxStatValue, getSPIncrement} from "@legion/shared/levelling";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFieldsByIndex, PlayMode, Stat, RewardType} from "@legion/shared/enums";
+import {Class, statFieldsByIndex, PlayMode, RewardType} from "@legion/shared/enums";
 import {MAX_CHARACTERS} from "@legion/shared/config";
 import {OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
 import {logPlayerAction} from "./dashboardAPI";
@@ -21,35 +23,19 @@ export async function readRoster(characters: admin.firestore.DocumentReference[]
   if (!characters.length) return [];
   const db = firestore();
 
-  const characterDocs = await db.getAll(...characters, {
-    fieldMask: ['name', 'portrait', 'level', 'class', 'experience', 'xp', 'sp', 'stats', 'carrying_capacity',
-      'carrying_capacity_bonus', 'skill_slots', 'inventory', 'equipment', 'equipment_bonuses', 'sp_bonuses',
-      'skills',
-    ],
-  });
-
-  return characterDocs.map((characterDoc) => {
-    return {
-      id: characterDoc.id,
-      name: characterDoc.get('name'),
-      level: characterDoc.get('level'),
-      class: characterDoc.get('class'),
-      experience: characterDoc.get('experience'),
-      portrait: characterDoc.get('portrait'),
-      xp: characterDoc.get('xp'),
-      sp: characterDoc.get('sp'),
-      stats: characterDoc.get('stats'),
-      carrying_capacity: characterDoc.get('carrying_capacity'),
-      carrying_capacity_bonus: characterDoc.get('carrying_capacity_bonus'),
-      skill_slots: characterDoc.get('skill_slots'),
-      inventory: characterDoc.get('inventory'),
-      equipment: characterDoc.get('equipment'),
-      equipment_bonuses: characterDoc.get('equipment_bonuses'),
-      sp_bonuses: characterDoc.get('sp_bonuses'),
-      skills: characterDoc.get('skills'),
-    };
-  });
-
+  const characterDocs = await db.getAll(...characters);
+  return Promise.all(characterDocs.filter(doc => doc.exists).map(async doc => {
+    // A transaction prevents the one-time refund from racing a spend or a match reward.
+    const data = doc.get('balanceVersion') === BALANCE_VERSION ? balanceCharacter(doc.data() as DBCharacterData)
+      : await db.runTransaction(async transaction => {
+        const current = await transaction.get(doc.ref);
+        const balanced = balanceCharacter(current.data() as DBCharacterData);
+        if (current.get('balanceVersion') !== BALANCE_VERSION) transaction.update(doc.ref, {...balanced});
+        return balanced;
+      });
+    const {legacyBalance, ...publicData} = data;
+    return {id: doc.id, ...publicData};
+  }));
 }
 
 export const rosterData = onRequest({
@@ -96,22 +82,25 @@ export const characterData = onRequest({
       const characterIds = characters.map((character) => character.id);
       if (!characterIds.includes(request.query.id as string)) {
         response.status(404).send("Not Found: character not owned by player");
+        return;
       }
 
       if (!request.query.id) {
         response.status(404).send("Not Found: Invalid character ID");
+        return;
       }
       const docSnap =
           await db.collection("characters")
             .doc(request.query.id as string).get();
 
       if (docSnap.exists) {
-        const characterData = docSnap.data();
+        const [characterData] = await readRoster([docSnap.ref]);
         response.send({
           ...characterData,
         });
       } else {
         response.status(404).send("Not Found: Invalid character ID");
+        return;
       }
     } catch (error) {
       console.error("characterData error:", error);
@@ -201,6 +190,7 @@ export const postGameUpdate = onRequest({
           throw new Error("Player data does not exist");
         }
 
+        const characterDocs = playerData.characters?.length ? await transaction.getAll(...playerData.characters) : [];
         const dailyLoot: DailyLootAllDBData = {...getDefaultDailyLoot(), ...playerData.dailyloot};
         if (key) {
           dailyLoot[key].hasKey = true;
@@ -357,23 +347,14 @@ export const postGameUpdate = onRequest({
 
         transaction.update(playerRef, updates);
 
-        // Update XP for each character
-        if (playerData.characters && Array.isArray(playerData.characters) && characters) {
-          for (const characterRef of playerData.characters) {
-            if (characterRef instanceof admin.firestore.DocumentReference) {
-              const characterRewards = characters.find((c) => c.id === characterRef.id);
-
-              if (characterRewards) {
-                const sp = characterRewards.points;
-                transaction.update(characterRef, {
-                  xp: characterRewards.xp,
-                  level: admin.firestore.FieldValue.increment(characterRewards.level),
-                  sp: admin.firestore.FieldValue.increment(sp),
-                  allTimeSP: admin.firestore.FieldValue.increment(sp),
-                });
-              }
-            }
-          }
+        for (const doc of characterDocs) {
+          const reward = characters?.find(c => c.id === doc.id);
+          if (!doc.exists || !reward) continue;
+          const data = balanceCharacter(doc.data() as DBCharacterData);
+          data.level += reward.level;
+          data.xp = reward.xp;
+          // Recompute the available budget from earned levels, never trust a client's SP count.
+          transaction.update(doc.ref, {...balanceCharacter(data)});
         }
         transaction.create(receiptRef, {
           resultId,
@@ -473,7 +454,7 @@ export const listOnSaleCharacters = onRequest({
       }
 
       const characters = querySnapshot.docs.map((doc) => {
-        const characterData = doc.data();
+        const {legacyBalance, ...characterData} = balanceCharacter(doc.data() as DBCharacterData);
         return {
           id: doc.id, // Include the document ID
           ...characterData,
@@ -531,7 +512,7 @@ export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, respons
           if (player.characters.length >= MAX_CHARACTERS) throw new MutationError(409, 'Character limit reached!');
           transaction.update(playerRef, {gold: player.gold - character.price,
             characters: admin.firestore.FieldValue.arrayUnion(characterRef)});
-          transaction.update(characterRef, {onSale: false, price: 0});
+          transaction.update(characterRef, {...balanceCharacter(character as DBCharacterData), onSale: false, price: 0});
           return {status: 0};
         });
       response.send(result);
@@ -543,76 +524,44 @@ export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, respons
   });
 });
 
-export const spendSP = onRequest({
-  memory: '512MiB',
-}, (request, response) => {
-  const db = firestore();
-
-  corsMiddleware(request, response, async () => {
-    try {
-      const uid = await getUID(request);
-      const characterId = request.body.characterId as string;
-      const amount = request.body.amount;
-      const index = request.body.stat as number;
-      console.log(`[spendSP] Spending ${amount} SP on stat [${index} ] ${statFieldsByIndex[index]}`);
-
-      if (index < 0 || index >= statFieldsByIndex.length) {
-        throw new Error("Invalid stat index");
-      }
-
-      await db.runTransaction(async (transaction) => {
-        const playerRef = db.collection("players").doc(uid);
-        const characterRef = db.collection("characters").doc(characterId);
-
-        const playerDoc = await transaction.get(playerRef);
-        const characterDoc = await transaction.get(characterRef);
-
-        if (!playerDoc.exists || !characterDoc.exists) {
-          throw new Error("Documents do not exist");
-        }
-
-        const playerData = playerDoc.data();
-        const characterData = characterDoc.data() as DBCharacterData;
-
-        if (!playerData || !characterData) {
-          throw new Error("Data does not exist");
-        }
-
-        // Check that character is owned by player
-        const characters = playerData.characters as admin.firestore.DocumentReference[];
-        const characterIds = characters.map((character) => character.id);
-        if (!characterIds.includes(characterId)) {
-          throw new Error("Character not owned by player");
-        }
-
-        // Check that character has enough skill points
-        if (characterData.sp < amount) {
-          throw new Error("Character does not have enough skill points");
-        }
-
-        // Check if new value would exceed maximum
-        if (!canIncreaseStat(characterData, index, amount)) {
-          throw new Error(`Cannot exceed maximum value of ${getMaxStatValue(index as Stat)} for ${statFieldsByIndex[index]}`);
-        }
-        const spBonuses = characterData.sp_bonuses;
-        spBonuses[statFieldsByIndex[index]] += getSPIncrement(index) * amount;
-
-        transaction.update(characterRef, {
-          sp: admin.firestore.FieldValue.increment(-amount),
-          sp_bonuses: spBonuses,
-        });
-
-        transaction.update(playerRef, {
-          'engagementStats.everSpentSP': true,
-        });
-      });
-
-      logPlayerAction(uid, "spendSP", {characterId, amount, stat: statFieldsByIndex[index]});
-
-      response.send({status: 0});
-    } catch (error) {
-      console.error("Error spending skill points:", error);
-      response.status(500).send("Error");
+async function changeSP(request: Request, response: Response, reset: boolean) {
+  try {
+    const uid = await getUID(request);
+    const {characterId, amount, stat: index, requestId} = request.body;
+    if (typeof characterId !== 'string' || !characterId || characterId.includes('/') || characterId.length > 200) {
+      throw new MutationError(400, 'Invalid character ID');
     }
-  });
+    if (!reset && (!Number.isSafeInteger(index) || index < 0 || index >= statFieldsByIndex.length ||
+        !Number.isSafeInteger(amount) || amount <= 0)) throw new MutationError(400, 'Invalid SP request');
+    const payload = reset ? {characterId} : {characterId, amount, stat: index};
+    const result = await playerMutation(uid, reset ? 'resetSP' : 'spendSP', requestId, payload,
+      async (transaction, playerRef, player) => {
+        if (!(player.characters as admin.firestore.DocumentReference[]).some(ref => ref.id === characterId)) throw new MutationError(403, 'Character not owned by player');
+        const ref = firestore().collection('characters').doc(characterId);
+        const doc = await transaction.get(ref);
+        if (!doc.exists) throw new MutationError(404, 'Character not found');
+        let data = balanceCharacter(doc.data() as DBCharacterData);
+        if (reset) {
+          data.sp_allocations = emptyAllocations();
+          data = balanceCharacter(data);
+        } else {
+          if (!canIncreaseStat(data, index, amount)) throw new MutationError(409, 'Not enough SP or stat allocation limit reached');
+          const field = statFieldsByIndex[index];
+          data.sp_allocations![field] += amount;
+          data.sp_bonuses[field] = spBonus(index, data.sp_allocations![field]);
+          data.sp -= amount;
+          transaction.update(playerRef, {'engagementStats.everSpentSP': true});
+        }
+        transaction.update(ref, {...data});
+        return {status: 0};
+      });
+    response.send(result);
+  } catch (error) { mutationFailure(response, reset ? 'resetSP' : 'spendSP', error); }
+}
+
+export const spendSP = onRequest({memory: '512MiB'}, (request, response) => {
+  corsMiddleware(request, response, () => changeSP(request, response, false));
+});
+export const resetSP = onRequest({memory: '512MiB'}, (request, response) => {
+  corsMiddleware(request, response, () => changeSP(request, response, true));
 });

@@ -1,3 +1,4 @@
+import {balanceCharacter} from '@legion/shared/characterBalance';
 import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
@@ -109,7 +110,7 @@ export const inventoryTransaction = onRequest({
           throw new MutationError(404, 'Documents do not exist');
         }
 
-        const characterData = characterDoc.data() as DBCharacterData;
+        const characterData = balanceCharacter(characterDoc.data() as DBCharacterData);
 
         if (!playerData || !characterData) {
           throw new Error("Data does not exist");
@@ -231,7 +232,7 @@ export const inventoryTransaction = onRequest({
         }
 
         transaction.update(playerRef, inventoryPlayerWrite(update.playerUpdate));
-        transaction.update(characterRef, update.characterUpdate);
+        transaction.update(characterRef, {...characterData, ...update.characterUpdate});
 
         return {status: 0};
       });

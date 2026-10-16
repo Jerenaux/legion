@@ -1,3 +1,5 @@
+import {balanceCharacter} from '@legion/shared/characterBalance';
+import {FIRE_POTENCY, POISON_POTENCY, STATUS_TURNS, supportAmount, spBudget} from '@legion/shared/combatBalance';
 import { Team } from './Team';
 import { Item } from './Item';
 import { Spell } from './Spell';
@@ -13,19 +15,13 @@ import { hexDistance } from '@legion/shared/utils';
 
 
 const terrainDot = {
-    [Terrain.FIRE]: 20,
+    [Terrain.FIRE]: FIRE_POTENCY,
 }
 
 const statusDot = {
-    [StatusEffect.POISON]: 10,
-    [StatusEffect.BURN]: 20,
+    [StatusEffect.POISON]: POISON_POTENCY,
+    [StatusEffect.BURN]: FIRE_POTENCY,
 }
-
-const statsModifyingStatuses = {
-    [StatusEffect.HASTE]: {
-        [Stat.SPEED]: 1.5,
-    },
-};
 
 const DoTStatuses = [StatusEffect.POISON, StatusEffect.BURN];
 const DoTTerrains = [Terrain.FIRE];
@@ -68,6 +64,8 @@ export class ServerPlayer {
     class: Class;
     isAI = false;
     hasActed: boolean = false;
+    private activationStatuses: StatusEffect[] = [];
+    private statusDamage: Partial<Record<StatusEffect, number>> = {};
 
     constructor(num: number, name: string, frame: string, x: number, y: number) {
         this.num = num;
@@ -121,6 +119,10 @@ export class ServerPlayer {
             statuses: this.statuses,
             class: this.class,
             level: this.level,
+            combatStats: Object.fromEntries(Object.keys(this.stats).map(stat => [stat, this.getStat(Number(stat) as Stat)])) as CharacterStats,
+            spellEffects: Object.fromEntries(this.spells.map(spell => [spell.id, spell.effects])),
+            // Existing installed clients already consume this cost override outside Tower too.
+            towerSpellCosts: Object.fromEntries(this.spells.map(spell => [spell.id, spell.cost])),
             // Both teams need spell effects loaded before combat or a summoned unit acts.
             spells: this.getNetworkSpells(),
         }
@@ -333,7 +335,8 @@ export class ServerPlayer {
         return data.stats[stat] + data.equipment_bonuses[stat] + data.sp_bonuses[stat];
     }
 
-    setUpCharacter(data, isAI = false) {
+    setUpCharacter(data, isAI = false, preserveStats = false) {
+        if (!isAI && !preserveStats) data = balanceCharacter(data);
         console.log(`[ServerPlayer:setUpCharacter] ${this.name} set up with data: ${JSON.stringify(data)}`);
         // console.log(`[ServerPlayer:setUpCharacter] Spells: ${JSON.stringify(data.skills)}`);
         this.setHP(this.getFullStatValue(data, "hp"));
@@ -373,7 +376,7 @@ export class ServerPlayer {
     getStat(stat: Stat) {
         if (stat === Stat.NONE) return 0;
         const value = Math.min(this.stats[stat] * this.stats_modifiers[stat], getMaxStatValue(stat)) || 0;
-        return stat === Stat.HP || stat === Stat.MP ? Math.round(value) : value;
+        return Math.max(stat === Stat.HP ? 1 : 0, Math.round(value));
     }
 
     setTeam(team: Team) {
@@ -436,10 +439,10 @@ export class ServerPlayer {
     }
 
     // Called when traversing cells with terrain effects
-    applyTerrainEffect(terrain: Terrain) {
+    applyTerrainEffect(terrain: Terrain, potency = terrainDot[terrain]) {
         switch (terrain) {
             case Terrain.FIRE: {
-                const damage = this.team?.isGame0() ? terrainDot[terrain] / 2 : terrainDot[terrain];
+                const damage = this.team?.isGame0() ? Math.round(potency / 2) : potency;
                 this.takeDamage(damage);
                 break;
             }
@@ -457,7 +460,7 @@ export class ServerPlayer {
         }
 
         if (terrain === Terrain.ICE) {
-            this.addStatusEffect(StatusEffect.FREEZE, -1, 1);
+            this.addStatusEffect(StatusEffect.FREEZE, 3, 1);
         }
     }
 
@@ -472,9 +475,9 @@ export class ServerPlayer {
         }
     }
 
-    addStatusEffect(status: StatusEffect, duration: number, chance: number = 1) {
+    addStatusEffect(status: StatusEffect, duration: number, chance: number = 1, caster?: ServerPlayer) {
         if (this.isDead()) return false;
-        const r = Math.random();
+        const r = chance >= 1 ? 0 : Math.random();
         console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
         if (r > chance) {
             // Shown over the target, so a failed roll is not mistaken for a spell without effect.
@@ -482,15 +485,11 @@ export class ServerPlayer {
             return false;
         }
 
-        // Reapplying adds its turns to those left; -1 (until removed, e.g. frozen in ice) outlasts any count.
-        const current = this.statuses[status];
-        this.statuses[status] = current === -1 || duration === -1 ? -1 : Math.max(current, 0) + duration;
-
-        if (statsModifyingStatuses[status]) {
-            for (const stat in statsModifyingStatuses[status]) {
-                this.setStatsModifier(stat as unknown as Stat, statsModifyingStatuses[status][stat]);
-            }
-        }
+        // Refresh to the effect's limit, never add unlimited disabled activations.
+        const cap = STATUS_TURNS[status] ?? 3;
+        this.statuses[status] = Math.min(cap, Math.max(this.statuses[status], Math.min(cap, duration < 0 ? cap : duration)));
+        if (DoTStatuses.includes(status)) this.statusDamage[status] = caster
+            ? supportAmount(statusDot[status], caster.level, caster.getStat(Stat.SPATK)) : statusDot[status];
 
         this.broadcastStatusEffectChange();
 
@@ -515,20 +514,16 @@ export class ServerPlayer {
     removeStatusEffect(status: StatusEffect) {
         this.statuses[status] = 0;
 
-        if (statsModifyingStatuses[status]) {
-            for (const stat in statsModifyingStatuses[status]) {
-                this.setStatsModifier(stat as unknown as Stat, 1);
-            }
-        }
-
+        delete this.statusDamage[status];
         this.broadcastStatusEffectChange();
     }
 
     decrementStatuses() {
         let change = false;
-        for (const status in this.statuses) {
+        for (const status of this.activationStatuses) {
             if (this.statuses[status] > 0) {
                 this.statuses[status]--;
+                change = true;
                 if (this.statuses[status] === 0) {
                     change = true;
                     this.removeStatusEffect(status as keyof StatusEffects);
@@ -564,8 +559,7 @@ export class ServerPlayer {
     }
 
     earnStatsPoints() {
-        // Earn 3 + floor(level/10) points + a small chance of 1 extra point
-        const reward = (3 + Math.floor(this.level / 10) + (Math.random() < 0.1 ? 1 : 0));
+        const reward = spBudget(this.level) - spBudget(this.level - 1);
         this.earnedStatsPoints += reward;
     }
 
@@ -625,9 +619,15 @@ export class ServerPlayer {
         return this.spells.length > 0;
     }
 
+    endTurn() {
+        this.decrementStatuses();
+        this.activationStatuses = [];
+    }
+
     startTurn() {
+        this.activationStatuses = Object.values(StatusEffect).filter(status => this.statuses[status] > 0);
         if (this.activeTerrainDoT) {
-            this.applyTerrainEffect(this.activeTerrainDoT);
+            this.applyTerrainEffect(this.activeTerrainDoT, this.team!.game.terrainManager.fireDamage.get(`${this.x},${this.y}`));
 
             this.team!.incrementFlames();
         }
@@ -641,13 +641,14 @@ export class ServerPlayer {
 
         for (const status of DoTStatuses) {
             if (this.statuses[status] > 0) {
-                this.takeDamage(statusDot[status]);
+                this.takeDamage(this.statusDamage[status] ?? statusDot[status]);
             }
         }
 
-        this.decrementStatuses();
+        if (this.isDead()) return;
 
         if (this.isParalyzed()) {
+            this.hasActed = true;
             this.team!.game.turnSystem.processAction(this, SpeedClass.SLOW);
             this.team!.game.combatClock.schedule(() => {
                 this.team!.game.processTurn();

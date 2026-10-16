@@ -1,7 +1,8 @@
+import {effectAmount} from '@legion/shared/combatBalance';
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
-import { Stat, Target, EffectDirection, } from "@legion/shared/enums";
-import { EffectModifiers, EffectModifier, Effect } from "@legion/shared/interfaces";
+import { Stat, Target, } from "@legion/shared/enums";
+import { Effect } from "@legion/shared/interfaces";
 
 import { BaseSpell } from "@legion/shared/BaseSpell";
 
@@ -34,41 +35,10 @@ export class Spell extends BaseSpell {
         });
     }
 
-    modulateEffectAll(modifiers: EffectModifiers, caster: ServerPlayer, target: ServerPlayer, value: number) {
-        return this.modulateEffect(
-            modifiers.casterModifier,
-            caster,
-           this.modulateEffect(modifiers.targetModifier, target, value)
-        );
-    }
-
-    modulateEffect(modifier: EffectModifier, player: ServerPlayer, value: number) {
-        if (modifier.stat === Stat.NONE) return value;
-        const statValue = player.getStat(modifier.stat);
-        const sign = modifier.direction === EffectDirection.PLUS ? 1 : -1;
-        const random = (Math.random() - 0.5)/10;
-
-        // Store the original sign of the value
-        const originalSign = Math.sign(value);
-
-        // Calculate the modified value
-        let modifiedValue = value * (1 + (statValue * modifier.value * sign)) * (1 + random);
-
-        // Ensure the sign of the value doesn't change (damage stays damage, healing stays healing)
-        // If sign flipped, set to a minimum effect value (e.g., 1)
-        if (Math.sign(modifiedValue) !== originalSign) {
-            modifiedValue = originalSign * 1; // Minimum effect of 1 in the original direction
-        }
-
-        return modifiedValue;
-    }
-
     dealDamage(caster: ServerPlayer, targets: ServerPlayer[], effect: Effect) {
         targets.forEach(target => {
             if (!target.isAlive()) return;
-            let damage = effect.value * -1;
-            // console.log(`Dealing ${damage} damage`);
-            if (effect.modifiers) damage = this.modulateEffectAll(effect.modifiers, caster, target, damage);
+            const damage = effectAmount(effect, caster, target);
             target.takeDamage(damage);
         });
     }
@@ -76,9 +46,8 @@ export class Spell extends BaseSpell {
     heal(caster: ServerPlayer, targets: ServerPlayer[], effect: Effect) {
         targets.forEach(target => {
             if (!target.isAlive() && !effect.onKO) return;
-            let heal = effect.value;
-            // console.log(`Healing ${heal} damage`);
-            if (effect.modifiers) heal = this.modulateEffectAll(effect.modifiers, caster, target, heal);
+            if (effect.onKO && target.isAlive()) return;
+            const heal = effectAmount(effect, caster, target);
             target.heal(heal);
         });
     }

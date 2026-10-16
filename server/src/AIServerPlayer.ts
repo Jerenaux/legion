@@ -1,8 +1,8 @@
+import {damageAmount, effectAmount, MELEE_POTENCY, POISON_POTENCY, FIRE_POTENCY, supportAmount, STATUS_TURNS} from '@legion/shared/combatBalance';
 import { ServerPlayer } from './ServerPlayer';
-import { AIAttackMode, Class, EffectDirection, Stat, StatusEffect, Target, Terrain } from "@legion/shared/enums";
+import { AIAttackMode, Class, Stat, StatusEffect, Target, Terrain } from "@legion/shared/enums";
 import { FREEZE_AI, MOVEMENT_RANGE } from "@legion/shared/config";
 import { getTilesInHexRadius, hexDistance, isInSpellRange, isSkip, listCellsOnTheWay } from '@legion/shared/utils';
-import type { Effect } from '@legion/shared/interfaces';
 import { SpeedClass } from "@legion/shared/enums";
 import type { Spell } from './Spell';
 import type { Item } from './Item';
@@ -27,7 +27,7 @@ enum Personality {
 type ActionKind = 'spell' | 'item' | 'attack' | 'move' | 'pass';
 type Plan = { kind: ActionKind; score: number; aoe?: boolean; execute: () => void };
 
-const DOT_PER_TURN: Partial<Record<StatusEffect, number>> = { [StatusEffect.POISON]: 10, [StatusEffect.BURN]: 20 };
+const DOT_PER_TURN: Partial<Record<StatusEffect, number>> = { [StatusEffect.POISON]: POISON_POTENCY, [StatusEffect.BURN]: FIRE_POTENCY };
 // Consumables are scarce: an item must clearly beat this before the AI spends it.
 const ITEM_COST = 12;
 const MP_VALUE = 0.25;
@@ -36,22 +36,6 @@ const FRIENDLY_FIRE_WEIGHT = 1.5;
 // Turns beyond this are discounted: most fights are decided sooner.
 const STATUS_HORIZON = 4;
 const MAX_NOISE = 45;
-
-type Modifier = { stat: Stat; value: number; direction: EffectDirection } | undefined;
-
-function modulate(modifier: Modifier, player: ServerPlayer, value: number) {
-    if (!modifier || modifier.stat === Stat.NONE) return value;
-    const sign = modifier.direction === EffectDirection.PLUS ? 1 : -1;
-    const modified = value * (1 + player.getStat(modifier.stat) * modifier.value * sign);
-    return Math.sign(modified) !== Math.sign(value) ? Math.sign(value) : modified;
-}
-
-/** Expected (non-random) magnitude of an HP effect, mirroring Spell.modulateEffectAll. */
-function effectAmount(effect: Effect, caster: ServerPlayer, target: ServerPlayer) {
-    const base = Math.abs(effect.value);
-    if (!effect.modifiers) return base;
-    return Math.abs(modulate(effect.modifiers.casterModifier, caster, modulate(effect.modifiers.targetModifier, target, base)));
-}
 
 function gaussian() {
     return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
@@ -156,8 +140,10 @@ export class AIServerPlayer extends ServerPlayer {
 
     /** Rough damage a character threatens per turn: what disabling or killing it is worth. */
     private threat(player: ServerPlayer) {
-        const melee = player.getStat(Stat.ATK) / (1 + 10) * 10;
-        const magic = player.spells.some(spell => spell.cost <= player.mp) ? player.getStat(Stat.SPATK) * 0.6 + 15 : 0;
+        const melee = damageAmount(MELEE_POTENCY, player.level, player.getStat(Stat.ATK), 10);
+        const magic = Math.max(0, ...player.spells.filter(spell => spell.cost <= player.mp && !player.isMuted())
+            .flatMap(spell => spell.effects.filter(effect => effect.stat === Stat.HP && effect.value < 0)
+                .map(effect => damageAmount(-effect.value, player.level, player.getStat(Stat.SPATK), 10))));
         return Math.max(8, melee, magic);
     }
 
@@ -194,10 +180,10 @@ export class AIServerPlayer extends ServerPlayer {
     }
 
     /** Worth of `turns` of a status on `target`; positive when it helps this AI's side. */
-    private statusValue(status: StatusEffect, target: ServerPlayer, turns: number) {
+    private statusValue(status: StatusEffect, target: ServerPlayer, turns: number, scaled = false) {
         if (!target.isAlive()) return 0;
         const effective = turns === -1 ? STATUS_HORIZON : Math.min(turns, STATUS_HORIZON);
-        // Durations stack, but an already-afflicted target gains less from more turns.
+        // Refreshing a duration has less value than disabling a new target.
         const stacked = target.hasStatusEffect(status) ? 0.35 : 1;
         let value = 0;
         switch (status) {
@@ -211,7 +197,9 @@ export class AIServerPlayer extends ServerPlayer {
                 break;
             case StatusEffect.POISON:
             case StatusEffect.BURN:
-                value = Math.min(effective * (DOT_PER_TURN[status] ?? 10), target.hp);
+                value = Math.min(effective * (scaled
+                    ? supportAmount(DOT_PER_TURN[status], this.level, this.getStat(Stat.SPATK))
+                    : DOT_PER_TURN[status]), target.hp);
                 break;
             case StatusEffect.HASTE:
                 value = this.enemies().length ? 15 : 0;
@@ -225,8 +213,11 @@ export class AIServerPlayer extends ServerPlayer {
     private terrainValue(terrain: Terrain, targets: ServerPlayer[]) {
         let value = 0;
         for (const target of targets) {
-            if (terrain === Terrain.ICE) value += this.statusValue(StatusEffect.FREEZE, target, 3);
-            if (terrain === Terrain.FIRE) value += target.team === this.team ? -15 : 8;
+            if (terrain === Terrain.ICE) value += this.statusValue(StatusEffect.FREEZE, target, STATUS_TURNS[StatusEffect.FREEZE]);
+            if (terrain === Terrain.FIRE) {
+                const damage = Math.min(target.hp, supportAmount(FIRE_POTENCY, this.level, this.getStat(Stat.SPATK)));
+                value += target.team === this.team ? -damage * FRIENDLY_FIRE_WEIGHT : damage;
+            }
         }
         return value;
     }
@@ -250,7 +241,7 @@ export class AIServerPlayer extends ServerPlayer {
                 else if (effect.value < 0) value += this.damageValue(target, effectAmount(effect, this, target));
                 else value += this.healValue(target, effectAmount(effect, this, target));
             }
-            if (spell.status) value += spell.status.chance * this.statusValue(spell.status.effect, target, spell.status.duration);
+            if (spell.status) value += spell.status.chance * this.statusValue(spell.status.effect, target, spell.status.duration, true);
         }
         if (spell.terrain !== Terrain.NONE) value += this.terrainValue(spell.terrain, targets);
         return value - spell.cost * MP_VALUE;
@@ -347,7 +338,7 @@ export class AIServerPlayer extends ServerPlayer {
     // ---- Melee ---------------------------------------------------------------------------------
 
     private meleeDamage(target: ServerPlayer) {
-        return Math.max(1, this.getStat(Stat.ATK) / (1 + target.getStat(Stat.DEF)) * 10);
+        return this.game.calculateDamage(this, target);
     }
 
     private attackPlans(): Plan[] {
@@ -376,7 +367,8 @@ export class AIServerPlayer extends ServerPlayer {
     private positionValue(x: number, y: number) {
         const enemies = this.enemies();
         if (!enemies.length) return 0;
-        let value = this.game.checkIsOnFlame(x, y) ? -25 : 0;
+        // Ending in fire risks another exposure on each subsequent activation.
+        let value = this.game.checkIsOnFlame(x, y) ? -2 * (this.game.terrainManager.fireDamage.get(`${x},${y}`) ?? FIRE_POTENCY) : 0;
         if (this.isRanged()) {
             const inRange = enemies.filter(enemy => isInSpellRange(x, y, enemy.x, enemy.y));
             if (inRange.length) value += 8;
@@ -405,9 +397,10 @@ export class AIServerPlayer extends ServerPlayer {
     private movePlans(): Plan[] {
         const here = this.positionValue(this.x, this.y);
         return this.game.listCellsInRange(this.x, this.y, this.distance).map(tile => {
-            const flames = [...listCellsOnTheWay(this.x, this.y, tile.x, tile.y)]
-                .filter(cell => { const [x, y] = cell.split(',').map(Number); return (x !== tile.x || y !== tile.y) && this.game.checkIsOnFlame(x, y); }).length;
-            const score = this.positionValue(tile.x, tile.y) - here - flames * 10 - 1;
+            const flame = [...listCellsOnTheWay(this.x, this.y, tile.x, tile.y)]
+                .find(cell => this.game.terrainManager.terrainMap.get(cell) === Terrain.FIRE);
+            const exposure = flame ? this.game.terrainManager.fireDamage.get(flame) ?? FIRE_POTENCY : 0;
+            const score = this.positionValue(tile.x, tile.y) - here - exposure - 1;
             return { kind: 'move' as const, score, execute: () => this.game.processMove({ tile }) };
         });
     }

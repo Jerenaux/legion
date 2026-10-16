@@ -11,9 +11,11 @@ import { Arena } from '../../src/game/Arena';
 import {MusicManager} from '../../src/game/MusicManager';
 import { EventEmitter } from 'eventemitter3';
 import { NewCharacter } from '../../../shared/NewCharacter';
-import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures, RewardType } from '../../../shared/enums';
+import {balanceCharacter, emptyAllocations} from '../../../shared/characterBalance';
+import {canIncreaseStat} from '../../../shared/inventory';
+import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures, RewardType, Stat, statFieldsByIndex } from '../../../shared/enums';
 import { ENABLE_CINDER_TOWER, BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
-import { GameData, StatusEffects } from '../../../shared/interfaces';
+import { GameData, StatusEffects, CharacterStats } from '../../../shared/interfaces';
 import {getClient, getReplay, getIsolationScope, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
 import {getElectronAPI} from '../../src/utils/electronUtils';
@@ -53,10 +55,11 @@ Object.assign(window, {replayCheck: {flush: () => getElectronAPI()?.replay?.flus
 });
 
 const characters = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE].map((kind, i) => ({
-  ...new NewCharacter(kind, 1).getCharacterData(), level: 3,
+  ...new NewCharacter(kind, 3).getCharacterData(),
   id: `guide-${i}`, name: ['Roland', 'Luna', 'Ember'][i], portrait: ['1_1', '1_7', '1_5'][i],
-  sp: 2, inventory: [0, 1], skills: [[], [9], [0, 3]][i],
+  inventory: [0, 1], skills: [[], [9], [0, 3]][i],
 }));
+let previewRoster = characters;
 // Page intros (Rank, Play, Team, Shop, identity) would cover scripted flows; ?intros shows them again.
 for (const page of ['rank', 'play', 'team', 'shop', 'identity']) {
   const key = `legion.${page}Intro.v1.guide-local-only`;
@@ -82,10 +85,13 @@ const profile = {
   engagementStats: {completedGames: 12, everMoved: true, everAttacked: true, everUsedSpell: true, everUsedItem: true, everSawFlames: true, everSawIce: true},
 };
 const statuses = Object.fromEntries(Object.values(StatusEffect).map(key => [key, 0])) as StatusEffects;
-const team = characters.map((character, i) => ({
-  ...character, x: [4, 3, 5][i], y: [4, 6, 7][i], hp: [78, 80, 80][i], maxHP: [100, 80, 80][i],
-  mp: [20, 30, 32][i], maxMP: [20, 30, 40][i], distance: MOVEMENT_RANGE, spells: character.skills, statuses,
-}));
+const team = characters.map((character, i) => {
+  const combatStats = Object.fromEntries(statFieldsByIndex.map((field, stat) =>
+    [stat, character.stats[field] + character.sp_bonuses[field] + character.equipment_bonuses[field]])) as CharacterStats;
+  return {...character, x: [4, 3, 5][i], y: [4, 6, 7][i], hp: [78, 80, 80][i], maxHP: combatStats[Stat.HP],
+    mp: [20, 30, 32][i], maxMP: combatStats[Stat.MP], distance: MOVEMENT_RANGE, spells: character.skills, statuses,
+    combatStats, spellEffects: Object.fromEntries(character.skills.map(id => [id, spells.find(spell => spell.id === id).effects]))};
+});
 const battle = {
   general: {reconnect: true, spectator: false, mode: PlayMode.CASUAL},
   // Keep one unlearned action so the fixture exercises contextual spell coaching.
@@ -181,7 +187,21 @@ const towerCheck = {
 Object.assign(window, {towerCheck});
 const giftCheck = {status: 'claimed', requests: 0, community: new URLSearchParams(location.search).has('audience') ? fixtureCommunities[0] : undefined};
 Object.assign(window, {giftCheck});
-export async function apiFetch(endpoint: string, options: {body?: {code?: string; action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
+export async function apiFetch(endpoint: string, options: {body?: {characterId?: string; stat?: number; amount?: number; code?: string; action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
+  if (endpoint === 'spendSP' || endpoint === 'resetSP') {
+    const {characterId, stat, amount} = options.body;
+    previewRoster = previewRoster.map(character => {
+      if (character.id !== characterId) return character;
+      const updated = balanceCharacter(character);
+      if (endpoint === 'resetSP') updated.sp_allocations = emptyAllocations();
+      else {
+        if (!canIncreaseStat(updated, stat, amount)) throw new Error('Invalid fixture SP allocation');
+        updated.sp_allocations[statFieldsByIndex[stat]] += amount;
+      }
+      return balanceCharacter(updated);
+    });
+    return {status: 0};
+  }
   if (endpoint === 'redeemGift') {
     giftCheck.requests++;
     if (giftCheck.status === 'error') throw new Error('Expected gift timeout');
@@ -266,9 +286,12 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   const [preview] = useState(() => new URLSearchParams(location.search));
   const completedGames = preview.has('new-player') ? 0 : Math.max(0, Number(preview.get('games') ?? 12));
   const rosterSize = Math.max(3, Math.min(MAX_CHARACTERS, Number(preview.get('roster') ?? 3)));
-  const roster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
-    : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]}).map(character => preview.has('item-check')
-      ? {...character, level: Number(preview.get('level') ?? 1)} : character);
+  const [roster, setRoster] = useState(() => {
+    previewRoster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
+      : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]}).map(character => balanceCharacter(preview.has('item-check')
+        ? {...character, level: Number(preview.get('level') ?? 1)} : character));
+    return previewRoster;
+  });
   const [activeId, setActiveId] = useState(characters[2].id);
   const [loaded, setLoaded] = useState(!new URLSearchParams(location.search).has('loading'));
   const [renderFailed, setRenderFailed] = useState(false);
@@ -280,6 +303,7 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   if (renderFailed) throw new Error('telemetry-smoke-render-error');
   const value = {
     ...defaults, loaded, welcomeShown: true, characters: roster, activeCharacterId: activeId,
+    refreshAllData: async () => {setRoster([...previewRoster]);},
     firstMatchCompleted, markFirstMatchCompleted: () => setFirstMatchCompleted(true),
     setPlayerInfo: updates => setPlayerUpdates(current => ({...current, ...updates})),
     socket: queueCheck.socket as unknown as typeof defaults.socket,

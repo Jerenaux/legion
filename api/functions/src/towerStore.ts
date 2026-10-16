@@ -1,3 +1,5 @@
+import {balanceCharacter} from '@legion/shared/characterBalance';
+import type {DBCharacterData} from '@legion/shared/interfaces';
 import {randomUUID} from 'node:crypto';
 import admin from 'firebase-admin';
 import {LOCKED_FEATURES} from '@legion/shared/config';
@@ -92,8 +94,11 @@ export async function settleTowerBattle(db: FirebaseFirestore.Firestore, gameId:
       }
     }
     characters.forEach((doc, index) => {
-      if (doc.exists) transaction.update(doc.ref, towerXP(doc.data() as Parameters<typeof towerXP>[0],
-        Math.floor(reward.xp / characters.length) + (index < reward.xp % characters.length ? 1 : 0)));
+      if (doc.exists) {
+        const data = balanceCharacter(doc.data() as DBCharacterData);
+        transaction.update(doc.ref, balanceCharacter({...data, ...towerXP(data,
+          Math.floor(reward.xp / characters.length) + (index < reward.xp % characters.length ? 1 : 0))}));
+      }
     });
     transaction.set(runRef, run);
     transaction.update(gameRef, {towerSettled: true, status: GameStatus.COMPLETED, end: new Date(), towerWon: result.won});

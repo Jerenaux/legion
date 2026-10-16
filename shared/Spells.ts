@@ -17,8 +17,9 @@ const SPBasedBoost = new EffectModifiers(
 
 spells.push(new BaseSpell({
     id: 0,
+    cost: 10,
     name: "Fire",
-    description: "Fire attack that sets 1 tile on fire",
+    description: "Burn 1 tile.",
     frame: 0,
     vfx: "fire_1_explosion",
     sfx: "fireball",
@@ -27,7 +28,7 @@ spells.push(new BaseSpell({
     charge: 'charged_fire_1',
     // projectile: 'fireball_1',
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -15, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -26, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.FIRE,
     effort: 3,
 
@@ -42,8 +43,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 1,
+    cost: 18,
     name: "Fire+",
-    description: "Fire attack that sets 2 tiles on fire",
+    description: "Burn 7 tiles.",
     frame: 1,
     vfx: "fire_2_explosion",
     sfx: "fireball",
@@ -52,7 +54,7 @@ spells.push(new BaseSpell({
     charge: 'charged_fire_1',
     // projectile: 'fireball_2',
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -25, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -22, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.FIRE,
     effort: 12,
 
@@ -66,8 +68,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 2,
+    cost: 28,
     name: "Fire X",
-    description: "Fire attack that sets 3 tiles on fire",
+    description: "Burn 19 tiles.",
     frame: 2,
     vfx: "fire_3_explosion",
     sfx: "fireball",
@@ -76,7 +79,7 @@ spells.push(new BaseSpell({
     target: Target.AOE,
     // projectile: 'fireball_3',
     charge: 'charged_fire_2',
-    effects: [{stat: Stat.HP, value: -60, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -18, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.FIRE,
     effort: 25,
 
@@ -90,8 +93,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 3,
+    cost: 14,
     name: "Thunder",
-    description: "Unleash a thunder bolt on 1 tile that can paralyze the target",
+    description: "Strike 1 tile and paralyze targets for 1 turn.",
     frame: 20,
     vfx: "thunder_1",
     sfx: "thunder",
@@ -99,8 +103,8 @@ spells.push(new BaseSpell({
 
     radius: 1,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
-    status: {effect: StatusEffect.PARALYZE, chance: 0.5, duration: 5},
+    effects: [{stat: Stat.HP, value: -24, modifiers: SPBasedBoostDeboost}],
+    status: {effect: StatusEffect.PARALYZE, chance: 1, duration: 1},
     effort: 4,
 
     score: 5,
@@ -113,16 +117,17 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 4,
+    cost: 24,
     name: "Thunder+",
-    description: "Unleash a thunder bolt on 2 tiles that can paralyze the targets",
+    description: "Strike 7 tiles and paralyze targets for 1 turn.",
     frame: 21,
     vfx: "thunder_2",
     sfx: "thunder",
     charge: 'charged_thunder_1',
     radius: 2,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -60, modifiers: SPBasedBoostDeboost}],
-    status: {effect: StatusEffect.PARALYZE, chance: 0.7, duration: 7},
+    effects: [{stat: Stat.HP, value: -20, modifiers: SPBasedBoostDeboost}],
+    status: {effect: StatusEffect.PARALYZE, chance: 1, duration: 1},
     effort: 15,
 
     score: 15,
@@ -135,8 +140,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 5,
+    cost: 36,
     name: "Thunder X",
-    description: "Unleash a thunder bolt on 3 tiles that can paralyze the targets",
+    description: "Strike 19 tiles and paralyze targets for 1 turn.",
     frame: 22,
     vfx: "thunder_3",
     sfx: "thunder",
@@ -144,8 +150,8 @@ spells.push(new BaseSpell({
 
     radius: 3,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -20, modifiers: SPBasedBoostDeboost}],
-    status: {effect: StatusEffect.PARALYZE, chance: 0.9, duration: 10},
+    effects: [{stat: Stat.HP, value: -16, modifiers: SPBasedBoostDeboost}],
+    status: {effect: StatusEffect.PARALYZE, chance: 1, duration: 1},
     effort: 30,
 
     score: 50,
@@ -158,8 +164,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 6,
+    cost: 16,
     name: "Ice",
-    description: "Generate a pillar of ice one 1 tile and trap the target in ice",
+    description: "Cover 1 tile in ice. Trapped characters lose 3 turns.",
     frame: 10,
     vfx: "ice_1",
     sfx: "ice",
@@ -167,7 +174,7 @@ spells.push(new BaseSpell({
 
     radius: 1,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -30, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -18, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.ICE,
 
     score: 5,
@@ -181,21 +188,22 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 7,
+    cost: 28,
     name: "Ice+",
-    description: "Generate a pillar of ice on 2 tiles and trap the targets in ice",
+    description: "Cover 7 tiles in ice. Trapped characters lose 3 turns.",
     frame: 11,
     vfx: "ice_2",
     sfx: "ice",
     charge: 'charged_ice_1',
     radius: 2,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -60, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -15, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.ICE,
 
     score: 10,
     effort: 25,
     classes: [Class.BLACK_MAGE],
-    minLevel: 20,
+    minLevel: 10,
     speedClass: SpeedClass.NORMAL,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     category: SpellShopCategory.ELEMENTAL,
@@ -203,15 +211,16 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 8,
+    cost: 40,
     name: "Ice X",
-    description: "Generate a pillar of ice on 3 tiles and trap the targets in ice",
+    description: "Cover 19 tiles in ice. Trapped characters lose 3 turns.",
     frame: 12,
     vfx: "ice_3",
     sfx: "ice",
     charge: 'charged_ice_2',
     radius: 3,
     target: Target.AOE,
-    effects: [{stat: Stat.HP, value: -100, modifiers: SPBasedBoostDeboost}],
+    effects: [{stat: Stat.HP, value: -12, modifiers: SPBasedBoostDeboost}],
     terrain: Terrain.ICE,
 
     score: 20,
@@ -226,6 +235,7 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 9,
+    cost: 15,
     name: "Heal",
     description: "Heal a single target",
     frame: 30,
@@ -235,9 +245,8 @@ spells.push(new BaseSpell({
 
     radius: 1,
     target: Target.SINGLE,
-    effects: [{stat: Stat.HP, value: 25, modifiers: SPBasedBoost}],
+    effects: [{stat: Stat.HP, value: 28, modifiers: SPBasedBoost}],
     effort: 4,
-    cost: 15,
 
     score: 5,
     classes: [Class.WHITE_MAGE],
@@ -250,8 +259,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 10,
+    cost: 12,
     name: "Poison",
-    description: "Poison a single target, dealing damage every turn",
+    description: "Poison a target for 3 turns.",
     frame: 3,
     vfx: "poison",
     sfx: "poison",
@@ -260,7 +270,7 @@ spells.push(new BaseSpell({
     radius: 1,
     target: Target.SINGLE,
     effects: [],
-    status: {effect: StatusEffect.POISON, chance: 1, duration: 10},
+    status: {effect: StatusEffect.POISON, chance: 1, duration: 3},
     effort: 5,
 
     score: 10,
@@ -273,8 +283,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 11,
+    cost: 16,
     name: "Silence",
-    description: "Make the target mute, unable to cast spells",
+    description: "Prevent a target from casting spells for 2 turns.",
     frame: 4,
     vfx: "mute",
     sfx: "mute",
@@ -282,7 +293,7 @@ spells.push(new BaseSpell({
     radius: 1,
     target: Target.SINGLE,
     effects: [],
-    status: {effect: StatusEffect.MUTE, chance: 1, duration: 5},
+    status: {effect: StatusEffect.MUTE, chance: 1, duration: 2},
     effort: 4,
 
     score: 10,
@@ -295,8 +306,9 @@ spells.push(new BaseSpell({
 
 spells.push(new BaseSpell({
     id: 12,
+    cost: 35,
     name: "Revive",
-    description: "Revive a single target",
+    description: "Revive a fallen character with 30% of their maximum HP.",
     frame: 33,
     vfx: "heal_3",
     sfx: "revive",
@@ -304,14 +316,13 @@ spells.push(new BaseSpell({
 
     radius: 1,
     target: Target.SINGLE,
-    effects: [{stat: Stat.HP, value: 10, modifiers: SPBasedBoost, onKO: true}],
+    effects: [{stat: Stat.HP, value: 30, onKO: true}],
     effort: 30,
     unlock: LockedFeatures.SPELLS_BATCH_3,
     speedClass: SpeedClass.SLOW,
     score: 20,
     classes: [Class.WHITE_MAGE],
     targetHighlight: TargetHighlight.DEAD,
-    cost: 50,
     category: SpellShopCategory.HEALING,
     minLevel: 20, // For AI
 }));

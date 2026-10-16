@@ -1,3 +1,4 @@
+import {recoveryTime} from '@legion/shared/combatBalance';
 import { SpeedClass, Stat } from "@legion/shared/enums";
 import { ServerPlayer } from "./ServerPlayer";
 
@@ -6,13 +7,6 @@ interface TurnQueueItem {
     nextActionTime: number;
     passCount: number;
 }
-
-const ACTION_COOLDOWNS = {
-    [SpeedClass.PASS]: 60,      // Base cooldown for passing
-    [SpeedClass.FAST]: 100,    
-    [SpeedClass.NORMAL]: 150,   
-    [SpeedClass.SLOW]: 250      
-};
 
 export class TurnSystem {
     private currentTime: number;
@@ -38,7 +32,7 @@ export class TurnSystem {
     getInitialActionTime(speed) {
         // Higher speed = lower initial action time
         // Base value of 1001 gives us room for variation
-        return 1001 - (speed * 5);
+        return recoveryTime(speed, SpeedClass.NORMAL);
     }
 
     // After a character takes an action
@@ -46,19 +40,7 @@ export class TurnSystem {
         const queueItem = this.turnQueue.find(c => c.character === character);
         if (!queueItem) return;
 
-        // Get base cooldown for the action
-        const baseCooldown = ACTION_COOLDOWNS[actionType];
-        
-        const charSpeed = character.getStat(Stat.SPEED);
-        
-        // Compute new action time:
-        // - Start from current time
-        // - Add cooldown modified by speed (faster characters recover faster)
-        // - Add small random factor to prevent perfect loops
-        const speedMultiplier = 1 - (charSpeed * 0.0045); // Speed reduces cooldown by 0.4% per point
-        const randomVariation = Math.random() * 10 - 5; // ±5 variation
-        let timeIncrement = (baseCooldown * speedMultiplier) + randomVariation;
-        
+        let timeIncrement = recoveryTime(character.getStat(Stat.SPEED), actionType, character.isHasted());
         // Find the next fastest actor's time (for all actions)
         const otherActors = this.turnQueue.filter(item => 
             item.character !== character && 
@@ -114,7 +96,7 @@ export class TurnSystem {
     addCharacter(character: ServerPlayer) {
         this.turnQueue.push({
             character: character,
-            nextActionTime: this.getInitialActionTime(character.getStat(Stat.SPEED)),
+            nextActionTime: this.currentTime + this.getInitialActionTime(character.getStat(Stat.SPEED)),
             passCount: 0
         });
         this.sortQueue();

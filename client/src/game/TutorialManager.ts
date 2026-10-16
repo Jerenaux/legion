@@ -96,7 +96,7 @@ export class TutorialManager {
         } else if (c.ice && unseen('everSawIce')) {
             situation('everSawIce', t('Frozen in ice'), t('Attack ice with another character to break it!'), {icon: 'attack'});
         } else if (c.paralyzed && unseen('everParalyzed')) {
-            situation('everParalyzed', t('Paralysis'), t('Paralysis prevents you from acting for several turns!'));
+            situation('everParalyzed', t('Paralysis'), t('Paralysis skips your next turn. An ally can use Remedy to cure it.'));
         } else if (!c.canAct) {
             this.events.emit('hideTutorialMessage');
         } else if (c.fire && unseen('everSawFlames')) {

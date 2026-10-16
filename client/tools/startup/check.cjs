@@ -130,6 +130,7 @@ if (!process.versions.electron) {
       window = new BrowserWindow({show: false, webPreferences: {session: isolated, contextIsolation: true,
         nodeIntegration: false, backgroundThrottling: false, preload: path.join(client, 'preload.js'),
         additionalArguments: ['--legion-packaged']}});
+      window.webContents.setAudioMuted(true);
       window.webContents.on('console-message', event => logs.push(event.message));
       let loads = 0;
       window.webContents.on('did-finish-load', () => loads++);

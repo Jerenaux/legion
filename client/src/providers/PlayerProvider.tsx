@@ -6,10 +6,9 @@ import { PlayerContextState, PlayerContext } from '../contexts/PlayerContext';
 import { apiFetch } from '../services/apiService';
 import { errorToast, avatarContext, silentErrorToast } from '../components/utils';
 import { APICharacterData, PlayerContextData } from '@legion/shared/interfaces';
-import { League, Stat, StatFields, LockedFeatures
+import { League, LockedFeatures
  } from "@legion/shared/enums";
 import { firebaseAuth } from '../services/firebaseService';
-import { getSPIncrement } from '@legion/shared/levelling';
 import { playSoundEffect } from '../components/utils';
 import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
@@ -43,7 +42,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.fetchPlayerData = this.fetchPlayerData.bind(this);
       this.setPlayerInfo = this.setPlayerInfo.bind(this);
       this.fetchRosterData = this.fetchRosterData.bind(this);
-      this.updateCharacterStats = this.updateCharacterStats.bind(this);
       this.getCharacter = this.getCharacter.bind(this);
       this.getActiveCharacter = this.getActiveCharacter.bind(this);
       this.updateActiveCharacter = this.updateActiveCharacter.bind(this);
@@ -276,34 +274,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       });
     }
 
-    updateCharacterStats = (characterId: string, stat: Stat, amount: number): void => {
-      this.setState((prevState) => {
-        const updatedCharacters = prevState.characters.map((character) => {
-          if (character.id === characterId) {
-            const newStats = { ...character.stats };
-            newStats[StatFields[stat]] += getSPIncrement(stat) * amount;
-            return {
-              ...character,
-              stats: newStats,
-              sp: character.sp - amount,
-            };
-          }
-          return character;
-        });
 
-        return {
-            characterSheetIsDirty: true,
-            characters: updatedCharacters,
-            player: {
-              ...prevState.player,
-              engagementStats: {
-                ...prevState.player.engagementStats,
-                everSpentSP: true
-              }
-            }
-          };
-      });
-    }
 
     getCharacter = (characterId: string): APICharacterData | undefined => {
       return this.state.characters.find(char => char.id === characterId);
@@ -626,7 +597,6 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           refreshPlayerData: this.fetchPlayerData,
           refreshAllData: this.fetchAllData,
           fetchRosterData: this.fetchRosterData,
-          updateCharacterStats: this.updateCharacterStats,
           getCharacter: this.getCharacter,
           getActiveCharacter: this.getActiveCharacter,
           updateActiveCharacter: this.updateActiveCharacter,

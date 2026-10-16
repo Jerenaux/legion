@@ -29,7 +29,7 @@ export function ItemTooltip({id, showClasses = true, character}: {id: string; sh
       const type = activeAnchor?.getAttribute('data-tooltip-item-type');
       if (type === 'xp') return <div className="item-preview">
         <strong className="item-preview-name">{t('Experience')}</strong>
-        <p className="item-preview-description">{t('Most is shared equally among your characters; the rest rewards each one’s actions and the damage they took. Characters below the team’s average level earn extra. Each level gained grants stat points to spend in Team.')}</p>
+        <p className="item-preview-description">{t('XP is shared across the team, with extra for actions, damage taken and catching up in level. Gain 2 SP per level through level 21.')}</p>
       </div>;
       if (type === 'gold') return <div className="item-preview">
         <strong className="item-preview-name">{t('Gold')}</strong>
@@ -84,7 +84,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
     {statuses.map(status => <p className="item-preview-status" key={status.effect}>
       <img src={statusIcons[status.effect]} alt="" /><strong>{t(status.effect)}</strong><span>{highlightNumbers(statusSummary(status))}</span>
     </p>)}
-    {statuses.length > 0 && <p className="item-preview-note">{t('Stacks: reapplying adds these turns to any already left.')}</p>}
+    {statuses.length > 0 && <p className="item-preview-note">{t('Reapplying refreshes the duration; it does not add turns.')}</p>}
     {!equipment && <div className="item-preview-facts">
       {spell && <span><Trans i18n={i18n} i18nKey={"<0/>{{value0}} MP"} components={[<img src={mpIcon} alt="" />]} values={{value0: item.cost}} /></span>}
       <span><img src={speedIcon} alt={""} />{getSpeedClass(item.speedClass).toLowerCase()}</span>
@@ -97,7 +97,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
         return <div className="item-preview-effect" key={index}>
           <span className="item-preview-stat" style={{backgroundColor: STATS_BG_COLOR[label]}}>{t(label)}</span>
           <strong className={full || effect.value > 0 ? 'item-preview-positive' : 'item-preview-negative'}>
-            {full ? t("Full") : formatNumber(effect.value, {signDisplay: effect.value > 0 ? 'always' : 'auto'})}
+            {full ? t("Full") : effect.onKO ? formatNumber(.3, {style: 'percent'}) : formatNumber(effect.value, {signDisplay: effect.value > 0 ? 'always' : 'auto'})}
           </strong>
         </div>;
       })}

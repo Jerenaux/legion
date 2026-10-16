@@ -1,3 +1,5 @@
+import {BALANCE_VERSION, baseStats, spBudget} from './combatBalance';
+import {emptyAllocations} from './characterBalance';
 import { Class, Stat, statFieldsByIndex } from "./enums";
 import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
 import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
@@ -7,7 +9,7 @@ import { selectStatToLevelUp, increaseStat, } from "./levelling";
 import { getPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
-import { LOTSA_MP, BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
+import { BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
 import { getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
@@ -67,15 +69,8 @@ export class NewCharacter {
     // console.log("========================");
     // console.log(`[NewCharacter:constructor] AI spells: ${this.skills.map(spell => getSpellById(spell)?.name).join(", ")}`);
     // console.log("========================");
-    this.stats = {
-      [Stat.HP]: this.getHP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
-      [Stat.MP]: this.getMP() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
-      [Stat.ATK]: this.getAtk() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
-      [Stat.DEF]: this.getDef() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
-      [Stat.SPATK]: this.getSpatk() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
-      [Stat.SPDEF]: this.getSpdef() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
-      [Stat.SPEED]: this.getSpeed() * (unicornBonus && Math.random() < 0.1 ? 2 : 1),
-    };
+    const baseline = baseStats(this.characterClass, isAI ? 1 : level);
+    this.stats = Object.fromEntries(statFieldsByIndex.map((field, index) => [index, baseline[field]])) as CharacterStats;
     this.equipment_bonuses = {
       [Stat.HP]: 0,
       [Stat.MP]: 0,
@@ -95,7 +90,7 @@ export class NewCharacter {
       [Stat.SPEED]: 0,
     };
 
-    for (let i = 1; i < this.level; i++) {
+    for (let i = 1; isAI && i < this.level; i++) {
       lvlUp(this.characterClass, this.stats);
     }
 
@@ -154,107 +149,6 @@ export class NewCharacter {
     return warriorSprites[Math.floor(Math.random() * warriorSprites.length)];
   }
 
-  getHP(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return 100;
-      case Class.WHITE_MAGE:
-        return 80;
-      case Class.BLACK_MAGE:
-        return 80;
-      case Class.THIEF:
-        return 90;
-    }
-    return 100;
-  }
-
-  getMP(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return 20;
-      case Class.WHITE_MAGE:
-        return 30;
-      case Class.BLACK_MAGE:
-        return LOTSA_MP ? 1000 : 40;
-      case Class.THIEF:
-        return 20;
-    }
-    return 20;
-  }
-
-  getRandom(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  getAtk(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return this.getRandom(8, 12);
-      case Class.WHITE_MAGE:
-        return this.getRandom(5, 8);
-      case Class.BLACK_MAGE:
-        return this.getRandom(5, 8);
-      case Class.THIEF:
-        return this.getRandom(5, 10);
-    }
-    return 5;
-  }
-
-  getDef(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return this.getRandom(8, 12);
-      case Class.WHITE_MAGE:
-        return this.getRandom(5, 8);
-      case Class.BLACK_MAGE:
-        return this.getRandom(5, 8);
-      case Class.THIEF:
-        return this.getRandom(5, 10);
-    }
-    return 5;
-  }
-
-  getSpatk(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return this.getRandom(5, 8);
-      case Class.WHITE_MAGE:
-        return this.getRandom(8, 12);
-      case Class.BLACK_MAGE:
-        return this.getRandom(8, 12);
-      case Class.THIEF:
-        return this.getRandom(5, 8);
-    }
-    return 5;
-  }
-
-  getSpdef(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return this.getRandom(5, 8);
-      case Class.WHITE_MAGE:
-      case Class.BLACK_MAGE:
-        return this.getRandom(8, 12);
-      case Class.THIEF:
-        return this.getRandom(5, 8);
-    }
-    return 5;
-  }
-
-  getSpeed(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return this.getRandom(26, 35);
-      case Class.WHITE_MAGE:
-        return this.getRandom(15, 25);
-      case Class.BLACK_MAGE:
-        return this.getRandom(15, 20);
-      case Class.THIEF:
-        return this.getRandom(20, 30);
-    }
-    return 5;
-  }
-
   getPrice(): number {
     const reference = 135;
     // Returns the sum of all stats
@@ -288,8 +182,10 @@ export class NewCharacter {
         class: this.characterClass,
         level: this.level,
         xp: 0,
-        sp: 0,
-        allTimeSP: 0,
+        sp: spBudget(this.level),
+        allTimeSP: spBudget(this.level),
+        balanceVersion: BALANCE_VERSION,
+        sp_allocations: emptyAllocations(),
         stats: dbStats,
         carrying_capacity: this.carrying_capacity,
         carrying_capacity_bonus: this.carrying_capacity_bonus,

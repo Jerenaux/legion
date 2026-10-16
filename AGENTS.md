@@ -33,6 +33,10 @@ Make the bump after syncing the latest `main`, so concurrent branches do not reu
 
 If explicitly requested, release tags must be `v<version>`, for example `v0.2.0`, and must exactly match `client/package.json`. Tags do not trigger desktop builds. Manual desktop releases publish the package version from `main` to every selected Itch channel.
 
+## Silent headless verification
+
+Run all headless tests, screenshot captures and browser previews **without audible sound**. Mute output at the browser/Electron boundary before loading the game: use Chromium `--mute-audio` or Electron `webContents.setAudioMuted(true)`. Muting only HTML audio or game settings is insufficient because Phaser/Web Audio can still play. Keep audio processing available for audio-recovery checks; never change Jerome's system volume or mute his apps.
+
 ## App verification cleanup
 
 When opening the app to check your work, close the app instance you opened as soon as verification is finished, including after failed or interrupted checks. Do not close an app instance Jerome already had open.

@@ -1,3 +1,4 @@
+import {spBudget} from './combatBalance';
 import {Class, Terrain, RewardType} from './enums';
 import {GRID_HEIGHT} from './config';
 import {NewCharacter} from './NewCharacter';
@@ -196,6 +197,6 @@ export function towerXP(character: {xp: number; level: number; sp: number; allTi
   let xp = (character.xp || 0) + amount;
   let level = character.level || 1;
   let points = 0;
-  while (xp >= getXPThreshold(level)) { xp -= getXPThreshold(level); level++; points += 3 + Math.floor(level / 10); }
+  while (xp >= getXPThreshold(level)) { xp -= getXPThreshold(level); level++; points += spBudget(level) - spBudget(level - 1); }
   return {xp, level, sp: (character.sp || 0) + points, allTimeSP: (character.allTimeSP || 0) + points};
 }

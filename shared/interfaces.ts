@@ -254,6 +254,9 @@ export interface GameOutcomeReward {
 }
 
 export interface CharacterData {
+    balanceVersion?: number;
+    sp_allocations?: CharacterStringStats;
+    legacyBalance?: {stats: CharacterStringStats; sp_bonuses: CharacterStringStats; sp: number; allTimeSP: number};
     name: string;
     portrait: string;
     class: Class;
@@ -281,6 +284,8 @@ export interface APICharacterData extends DBCharacterData {
 }
 
 export interface PlayerNetworkData {
+    combatStats?: CharacterStats;
+    spellEffects?: Record<number, Effect[]>;
     towerSpellCosts?: Record<number, number>;
     portrait: string;
     name: string;

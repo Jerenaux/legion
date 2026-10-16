@@ -1,4 +1,5 @@
 import {route} from 'preact-router';
+import {damageAmount, effectAmount, MELEE_POTENCY} from '@legion/shared/combatBalance';
 import { itemNoEffectReason, type ItemNoEffectReason } from '@legion/shared/itemUse';
 import {t, userError, localizedAsset, language, fontFamily} from '../i18n/core';
 import { io } from 'socket.io-client';
@@ -12,7 +13,7 @@ import { getSpellById } from '@legion/shared/Spells';
 import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { PlayMode, Target, Terrain, StatusEffect, GEN, AIAttackMode, TargetHighlight } from "@legion/shared/enums";
+import { PlayMode, Target, Terrain, StatusEffect, GEN, AIAttackMode, TargetHighlight, Stat } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, retrySocketAuthentication, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
@@ -710,7 +711,7 @@ export class Arena extends Phaser.Scene
         if (source === 'battlefield') player.onPointerOver();
         if (anchor) {
             this.characterHover = {team: player.team.id, num: player.num,
-                left: anchor.left, right: anchor.right, top: anchor.top, bottom: anchor.bottom};
+                left: anchor.left, right: anchor.right, top: anchor.top, bottom: anchor.bottom, preview: this.getHPPreview(player)};
             events.emit('characterHoverChanged', this.characterHover);
         } else this.refreshCharacterHover();
     }
@@ -728,12 +729,20 @@ export class Arena extends Phaser.Scene
 
     private refreshCharacterHover = () => {
         const player = this.hoveredPlayer;
-        if (!player || this.hoverSource !== 'battlefield') return;
+        if (!player) return;
+        if (this.hoverSource === 'hud') {
+            const next = {...this.characterHover, preview: this.getHPPreview(player)};
+            if (JSON.stringify(next) !== JSON.stringify(this.characterHover)) {
+                this.characterHover = next;
+                events.emit('characterHoverChanged', next);
+            }
+            return;
+        }
         const camera = this.cameras.main;
         const canvas = this.game.canvas.getBoundingClientRect();
         const scaleX = canvas.width / this.scale.gameSize.width;
         const scaleY = canvas.height / this.scale.gameSize.height;
-        const next = {team: player.team.id, num: player.num,
+        const next = {team: player.team.id, num: player.num, preview: this.getHPPreview(player),
             left: canvas.left + (camera.x + (player.x - 34 - camera.worldView.x) * camera.zoom) * scaleX,
             right: canvas.left + (camera.x + (player.x + 34 - camera.worldView.x) * camera.zoom) * scaleX,
             top: canvas.top + (camera.y + (player.y - 54 - camera.worldView.y) * camera.zoom) * scaleY,
@@ -743,6 +752,27 @@ export class Arena extends Phaser.Scene
             events.emit('characterHoverChanged', next);
         }
     };
+
+    private getHPPreview(target: Player): CharacterHover['preview'] {
+        const caster = this.selectedPlayer;
+        if (this.isReplay || this.gameSettings?.spectator || this.gameEnded || this.inputLocked ||
+            !caster?.combatStats || !target.combatStats || this.unavailableActionReason(caster) || caster.pendingItem != null) return;
+        const spell = caster.pendingSpell == null ? null : caster.spells[caster.pendingSpell];
+        let hp = target.hp;
+        if (spell) {
+            if (caster.isMuted() || spell.cost > caster.mp || !this.validateTarget(target.gridX, target.gridY, spell)) return;
+            const stats = (player: Player) => ({level: player.level, getStat: (stat: Stat) => player.combatStats[stat] ?? 0});
+            for (const effect of spell.effects) {
+                if (effect.stat !== Stat.HP || (effect.onKO ? target.isAlive() : !target.isAlive())) continue;
+                const amount = effectAmount(effect, stats(caster), stats(target));
+                hp = Math.max(0, Math.min(target.maxHP, hp + (effect.value < 0 ? -amount : amount)));
+            }
+        } else {
+            if (target === caster || !target.isTarget() || !caster.isNextTo(target.gridX, target.gridY)) return;
+            hp = Math.max(0, hp - damageAmount(MELEE_POTENCY, caster.level, caster.combatStats[Stat.ATK], target.combatStats[Stat.DEF]));
+        }
+        if (hp !== target.hp) return {hp: hp - target.hp, action: spell?.name ?? 'Attack'};
+    }
 
     validateTarget(gridX, gridY, action: BaseSpell | BaseItem) {
         if (!isInSpellRange(this.selectedPlayer.gridX, this.selectedPlayer.gridY, gridX, gridY)) return false;
@@ -804,7 +834,7 @@ export class Arena extends Phaser.Scene
             spellInRange: player === active && availableSpells.some(hasTarget),
             pendingSpell: player?.pendingSpell != null,
             pendingItem: player?.pendingItem != null,
-            ice: active.isInIce(), fire: this.hasFlame(active.gridX, active.gridY),
+            ice: active.isFrozen(), fire: this.hasFlame(active.gridX, active.gridY),
             poison: active.statuses[StatusEffect.POISON] !== 0,
             muted: active.isMuted(), paralyzed: active.isParalyzed(),
             lowMP: active.spells.length > 0 && active.spells.every(spell => spell.cost > active.mp),
@@ -823,7 +853,7 @@ export class Arena extends Phaser.Scene
         if (!active || !player) return t("Wait for your active character to be selected.");
         if (!active.isPlayer) return t("It is your opponent’s turn.");
         if (player !== active) return t("{{name}} acts now. Select the active character.", {name: active.name});
-        if (player.isInIce()) return t("This character is frozen. Another character can break the ice.");
+        if (player.isFrozen()) return t("This character is frozen. Another character can break the ice.");
         if (!player.canAct()) return t("This character cannot act right now.");
     }
 
@@ -1589,7 +1619,10 @@ export class Arena extends Phaser.Scene
             player.setDistance(character.distance);
             player.setInventory(character.inventory);
         }
+        player.combatStats = character.combatStats;
         player.setSpells(character.spells ?? []);
+        if (character.spellEffects) player.spells = player.spells.map(spell => Object.assign(Object.create(Object.getPrototypeOf(spell)), spell,
+            {effects: character.spellEffects[spell.id] ?? spell.effects}));
         if (character.towerSpellCosts) player.spells = player.spells.map(spell => Object.assign(Object.create(Object.getPrototypeOf(spell)), spell,
             {cost: character.towerSpellCosts[spell.id] ?? spell.cost}));
         player.setStatuses(character.statuses);

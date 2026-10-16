@@ -1,3 +1,6 @@
+import {FIRE_POTENCY, supportAmount} from '@legion/shared/combatBalance';
+import {Stat} from '@legion/shared/enums';
+import type {ServerPlayer} from './ServerPlayer';
 import { Game } from "./Game";
 import { Spell } from "./Spell";
 import { TerrainUpdate } from '@legion/shared/interfaces';
@@ -34,6 +37,7 @@ class TerrainIncompatibility {
 
 export class TerrainManager {
     game: Game;
+    fireDamage = new Map<string, number>();
     previousTerrainMap = new Map<string, Terrain>();
     terrainMap = new Map<string, Terrain>();
     incompatibility = new TerrainIncompatibility();
@@ -45,7 +49,7 @@ export class TerrainManager {
         this.updates = [];
     }
 
-    updateTerrainFromSpell(spell: Spell, x: number, y: number) {
+    updateTerrainFromSpell(spell: Spell, x: number, y: number, caster?: ServerPlayer) {
         this.updates = [];
 
         const tilesInRadius = getTilesInHexRadius(x, y, spell.radius - 1);
@@ -54,6 +58,8 @@ export class TerrainManager {
             if (isSkip(tile.x, tile.y)) continue;
 
             this.determineTerrain(spell.terrain, tile.x, tile.y);
+            if (this.getTerrain(tile.x, tile.y) === Terrain.FIRE) this.fireDamage.set(`${tile.x},${tile.y}`,
+                caster ? supportAmount(FIRE_POTENCY, caster.level, caster.getStat(Stat.SPATK)) : FIRE_POTENCY);
             this.postProcessing(tile.x, tile.y);
         }
 
@@ -86,6 +92,7 @@ export class TerrainManager {
     updateTerrainMap(terrain: Terrain, x: number, y: number) {
         this.previousTerrainMap.set(`${x},${y}`, this.terrainMap.get(`${x},${y}`) || Terrain.NONE);
         this.terrainMap.set(`${x},${y}`, terrain);
+        if (terrain !== Terrain.FIRE) this.fireDamage.delete(`${x},${y}`);
         this.updates.push(this.getTerrainUpdate(x, y));
     }
 
