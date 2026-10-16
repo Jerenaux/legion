@@ -94,10 +94,15 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         if (this.state.resettingSP) return;
         this.setState({resettingSP: true});
         try {
-            await apiMutation('resetSP', {characterId: this.context.getActiveCharacter().id});
+            const character = this.context.getActiveCharacter();
+            await apiMutation('resetSP', {characterId: character.id, spVersion: character.spVersion ?? 0});
             await this.context.refreshAllData();
             this.props.updateCharacterData();
-        } catch (error) { errorToast(userError(error)); }
+        } catch (error) {
+            errorToast(userError(error));
+            // A newer build makes the next request a distinct action instead of a retry of this one.
+            this.context.refreshAllData();
+        }
         finally { this.setState({resettingSP: false}); }
     }
 

@@ -1,6 +1,7 @@
 import type {Request, Response} from 'express';
-import {balanceCharacter, emptyAllocations} from '@legion/shared/characterBalance';
-import {BALANCE_VERSION, spBonus} from '@legion/shared/combatBalance';
+import {emptyAllocations} from '@legion/shared/characterBalance';
+import {publicCharacter, readCharacter, writeCharacter} from './characterStore';
+import {BALANCE_VERSION} from '@legion/shared/combatBalance';
 import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {getDefaultDailyLoot} from "./dailyLoot";
 import {communitySeasonDocId, communitySummary} from '@legion/shared/communities';
@@ -12,7 +13,7 @@ import admin, {checkAPIKey, corsMiddleware, getUID, firestore} from "./APIsetup"
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFieldsByIndex, PlayMode, RewardType} from "@legion/shared/enums";
 import {MAX_CHARACTERS} from "@legion/shared/config";
-import {OutcomeData, DailyLootAllDBData, DBCharacterData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
+import {OutcomeData, DailyLootAllDBData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
@@ -26,15 +27,12 @@ export async function readRoster(characters: admin.firestore.DocumentReference[]
   const characterDocs = await db.getAll(...characters);
   return Promise.all(characterDocs.filter(doc => doc.exists).map(async doc => {
     // A transaction prevents the one-time refund from racing a spend or a match reward.
-    const data = doc.get('balanceVersion') === BALANCE_VERSION ? balanceCharacter(doc.data() as DBCharacterData)
-      : await db.runTransaction(async transaction => {
-        const current = await transaction.get(doc.ref);
-        const balanced = balanceCharacter(current.data() as DBCharacterData);
-        if (current.get('balanceVersion') !== BALANCE_VERSION) transaction.update(doc.ref, {...balanced});
-        return balanced;
-      });
-    const {legacyBalance, ...publicData} = data;
-    return {id: doc.id, ...publicData};
+    if (doc.get('balanceVersion') === BALANCE_VERSION) return publicCharacter(doc);
+    return db.runTransaction(async transaction => {
+      const current = await transaction.get(doc.ref);
+      if (current.get('balanceVersion') !== BALANCE_VERSION) writeCharacter(transaction, doc.ref, readCharacter(current));
+      return publicCharacter(current);
+    });
   }));
 }
 
@@ -350,11 +348,11 @@ export const postGameUpdate = onRequest({
         for (const doc of characterDocs) {
           const reward = characters?.find(c => c.id === doc.id);
           if (!doc.exists || !reward) continue;
-          const data = balanceCharacter(doc.data() as DBCharacterData);
+          const data = readCharacter(doc);
           data.level += reward.level;
           data.xp = reward.xp;
           // Recompute the available budget from earned levels, never trust a client's SP count.
-          transaction.update(doc.ref, {...balanceCharacter(data)});
+          writeCharacter(transaction, doc.ref, data);
         }
         transaction.create(receiptRef, {
           resultId,
@@ -377,7 +375,7 @@ async function createCharacterForSale(
   classType: Class = Class.RANDOM
 ) {
   // const level = 1; // Math.floor(Math.random() * 100);
-  const character = new NewCharacter(classType, 1, true).getCharacterData(true);
+  const character = new NewCharacter(classType, 1).getCharacterData(true);
   character.onSale = true;
   // Add the character to the collection
   await db.collection("characters").add(character);
@@ -453,13 +451,7 @@ export const listOnSaleCharacters = onRequest({
           .get();
       }
 
-      const characters = querySnapshot.docs.map((doc) => {
-        const {legacyBalance, ...characterData} = balanceCharacter(doc.data() as DBCharacterData);
-        return {
-          id: doc.id, // Include the document ID
-          ...characterData,
-        };
-      });
+      const characters = querySnapshot.docs.map(publicCharacter);
 
       response.send(characters);
     } catch (error) {
@@ -505,14 +497,15 @@ export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, respons
       const result = await playerMutation(uid, 'purchaseCharacter', request.body.requestId, {characterId},
         async (transaction, playerRef, player) => {
           const characterRef = db.collection('characters').doc(characterId);
-          const character = (await transaction.get(characterRef)).data();
+          const characterDoc = await transaction.get(characterRef);
+          const character = characterDoc.data();
           if (!character?.onSale) throw new MutationError(409, 'Character is not on sale');
           if (!Number.isFinite(character.price) || character.price <= 0) throw new MutationError(409, 'Invalid character price');
           if (player.gold < character.price) throw new MutationError(409, 'Not enough gold!');
           if (player.characters.length >= MAX_CHARACTERS) throw new MutationError(409, 'Character limit reached!');
           transaction.update(playerRef, {gold: player.gold - character.price,
             characters: admin.firestore.FieldValue.arrayUnion(characterRef)});
-          transaction.update(characterRef, {...balanceCharacter(character as DBCharacterData), onSale: false, price: 0});
+          writeCharacter(transaction, characterRef, readCharacter(characterDoc), {onSale: false, price: 0});
           return {status: 0};
         });
       response.send(result);
@@ -527,32 +520,35 @@ export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, respons
 async function changeSP(request: Request, response: Response, reset: boolean) {
   try {
     const uid = await getUID(request);
-    const {characterId, amount, stat: index, requestId} = request.body;
+    const {characterId, amount, stat: index, requestId, spVersion} = request.body;
     if (typeof characterId !== 'string' || !characterId || characterId.includes('/') || characterId.length > 200) {
       throw new MutationError(400, 'Invalid character ID');
     }
     if (!reset && (!Number.isSafeInteger(index) || index < 0 || index >= statFieldsByIndex.length ||
         !Number.isSafeInteger(amount) || amount <= 0)) throw new MutationError(400, 'Invalid SP request');
-    const payload = reset ? {characterId} : {characterId, amount, stat: index};
+    // Installed clients older than spVersion send none; they also send no request ID to replay.
+    if (spVersion !== undefined && (!Number.isSafeInteger(spVersion) || spVersion < 0)) throw new MutationError(400, 'Invalid SP request');
+    const payload = {characterId, ...(reset ? {} : {amount, stat: index}), ...(spVersion === undefined ? {} : {spVersion})};
     const result = await playerMutation(uid, reset ? 'resetSP' : 'spendSP', requestId, payload,
       async (transaction, playerRef, player) => {
         if (!(player.characters as admin.firestore.DocumentReference[]).some(ref => ref.id === characterId)) throw new MutationError(403, 'Character not owned by player');
         const ref = firestore().collection('characters').doc(characterId);
         const doc = await transaction.get(ref);
         if (!doc.exists) throw new MutationError(404, 'Character not found');
-        let data = balanceCharacter(doc.data() as DBCharacterData);
+        const data = readCharacter(doc);
+        if (spVersion !== undefined && (data.spVersion ?? 0) !== spVersion) {
+          throw new MutationError(409, 'This character changed elsewhere. Check the updated stats and try again.');
+        }
+        data.spVersion = (data.spVersion ?? 0) + 1;
         if (reset) {
           data.sp_allocations = emptyAllocations();
-          data = balanceCharacter(data);
         } else {
           if (!canIncreaseStat(data, index, amount)) throw new MutationError(409, 'Not enough SP or stat allocation limit reached');
-          const field = statFieldsByIndex[index];
-          data.sp_allocations![field] += amount;
-          data.sp_bonuses[field] = spBonus(index, data.sp_allocations![field]);
-          data.sp -= amount;
+          data.sp_allocations![statFieldsByIndex[index]] += amount;
           transaction.update(playerRef, {'engagementStats.everSpentSP': true});
         }
-        transaction.update(ref, {...data});
+        // Bonuses and the remaining SP are derived from the allocations on write.
+        writeCharacter(transaction, ref, data);
         return {status: 0};
       });
     response.send(result);

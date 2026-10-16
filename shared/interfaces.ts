@@ -256,6 +256,8 @@ export interface GameOutcomeReward {
 export interface CharacterData {
     balanceVersion?: number;
     sp_allocations?: CharacterStringStats;
+    /** Bumped by every SP spend or reset, so each SP request is tied to the build it was made from. */
+    spVersion?: number;
     legacyBalance?: {stats: CharacterStringStats; sp_bonuses: CharacterStringStats; sp: number; allTimeSP: number};
     name: string;
     portrait: string;

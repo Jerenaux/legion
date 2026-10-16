@@ -34,7 +34,8 @@ Thunder skips one affected activation; ice skips three. Silence blocks spells
 for two affected activations. Poison has base potency 8 for three activations.
 Reapplication refreshes a capped duration rather than adding durations. Remedy
 removes harmful statuses except ice; Remedy, Antidote and Bocca can target allies.
-Revive restores 30% maximum HP for 35 MP, with no per-match use limit.
+Revive restores 30% maximum HP for 35 MP, with no per-match use limit. A revive
+spell's effect value is that percentage; Clover, a consumable, revives with a flat 50 HP.
 
 ## Saved-character migration
 
@@ -69,6 +70,8 @@ Poison weapons retain their existing proc chances. They reserve
 Serpent's Fang and four for Viridian Striker. This values expected nominal poison
 damage like HP and charges the effect against the same budget as direct stats.
 Repeated applications refresh duration; they do not buy additive poison stacks.
+While a DoT is active, reapplying it keeps the stronger tick, so weapon poison never
+weakens a caster's scaled poison.
 These are balance weights, not a claim that every stat is equally useful in
 every matchup. Poison may be cleansed before all ticks; extra consumable slots
 still require acquiring items and spending an action.
@@ -202,4 +205,9 @@ the first crossed fire tile's actual damage, matching one exposure per move,
 and values ending in fire as two future exposures. Those latter weights remain
 planner heuristics, not changes to terrain duration or adaptive difficulty.
 
-Equal initiative times use a per-character random tie-breaker, avoiding team-order advantage; authored tutorial openings, recovery times and damage remain unchanged.
+Equal initiative times use a random tie-breaker, redrawn each time a character is rescheduled, so neither team order nor one lucky draw wins every later tie; authored tutorial openings, recovery times and damage remain unchanged.
+
+AI characters use the same scale as players: class baseline at their level plus
+that level's SP budget, spent by class weights under the same 20-per-stat cap. The
+legacy random level-up curve remains only for zombie-team scaling. The Tower's
+Sculptor of Ice halves Ice's MP cost (rounded up) and its damage.

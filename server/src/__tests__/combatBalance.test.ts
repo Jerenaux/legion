@@ -3,7 +3,9 @@ import {createServer} from 'node:http';
 import {Server, type Socket} from 'socket.io';
 import {io, type Socket as ClientSocket} from 'socket.io-client';
 import {Class, EquipmentSlot, equipmentSlotFields, League, PlayMode, Stat, StatFields, StatusEffect, Terrain} from '@legion/shared/enums';
-import type {GameData} from '@legion/shared/interfaces';
+import type {GameData, OutcomeData} from '@legion/shared/interfaces';
+import {getXPThreshold} from '@legion/shared/levelling';
+import {RANKED_XP_COEF, XP_PER_LEVEL} from '@legion/shared/config';
 import {baseStats, damageAmount, effectAmount, MELEE_POTENCY} from '@legion/shared/combatBalance';
 import {getSpellById} from '@legion/shared/Spells';
 import {getConsumableById} from '@legion/shared/Items';
@@ -276,17 +278,29 @@ test('Poison lasts three activations and repeated Revive restores 30 percent wit
   expect(player.mp).toBe(1000 - 12 * 2 - 35 * 3);
 });
 
-test('tutorial XP doubles only the first completed-match account; SP stops growing after forty earned points', async () => {
-  await action('attack', {target: 1, sameTeam: false});
+test.each([[0, 2], [1, 1]])('a match won over Socket.IO doubles XP only for an account with %i completed games; SP stops after forty', async (completedGames, multiplier) => {
+  player.team.teamData.completedGames = completedGames;
+  player.team.teamData.playerUID = 'balance-player';
+  game.combatStarted = true;
+  // Persistence leaves the server; the match outcome itself uses production logic.
+  for (const method of ['writeOutcomesToDb', 'updateGameInDB', 'saveReplayToDb'] as const) spyOn(game, method).mockResolvedValue(undefined);
   spyOn(Math, 'random').mockReturnValue(.5);
-  player.team.teamData.completedGames = 1;
-  const normal = game.computeTeamXP(player.team, opponent.team, 1, PlayMode.CASUAL);
-  player.team.teamData.completedGames = 0;
-  const first = game.computeTeamXP(player.team, opponent.team, 1, PlayMode.CASUAL);
-  expect(normal).toBeGreaterThan(0);
-  expect(Math.abs(first - normal * 2)).toBeLessThanOrEqual(1);
-  for (let level = 1; level < 40; level++) player.levelUp();
-  expect(player.earnedStatsPoints).toBe(40);
+  // One character sits at the 40-SP cap, one is a level away from it.
+  player.level = 21; player.xp = getXPThreshold(21) - 1;
+  ally.level = 20; ally.xp = getXPThreshold(20) - 1;
+  opponent.setHP(1);
+  const ended = new Promise<OutcomeData>(resolve => client.once('gameEnd', resolve));
+  await action('attack', {target: 1, sameTeam: false});
+  expect(opponent.isAlive()).toBe(false);
+  game.checkEndGame(); // The match's once-a-second end check.
+  const outcome = await ended;
+  expect(outcome.isWinner).toBe(true);
+  expect(outcome.xp).toBe(Math.round(opponent.level * XP_PER_LEVEL * (outcome.rewardFactor + .3) * RANKED_XP_COEF * multiplier));
+  const points = Object.fromEntries(outcome.characters!.map(character => [character.num, character]));
+  expect(points[player.num].level).toBeGreaterThan(0);
+  expect(points[player.num].points).toBe(0);
+  expect(points[ally.num].level).toBeGreaterThan(0);
+  expect(points[ally.num].points).toBe(2);
 });
 
 test('combat samples measure PvP damage progression separately from adaptive AI duels', async () => {

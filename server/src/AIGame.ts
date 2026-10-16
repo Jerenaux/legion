@@ -72,7 +72,7 @@ export class AIGame extends Game {
     summonEnemy(data: {x: number, y: number, attackMode: AIAttackMode, className?: Class, full?: boolean}) {
         if (!data.className) data.className = Class.WARRIOR;
         const aiTeam = this.teams.get(2);
-        const character = new NewCharacter(data.className, 1, false, true).getCharacterData();
+        const character = new NewCharacter(data.className, 1, true).getCharacterData();
         if (!data.full) {
             character.portrait = 'mil1_3';
             character.stats[Stat.HP] = 40;
@@ -116,7 +116,7 @@ export class AIGame extends Game {
         }
 
         for (let i = 0; i < nb; i++) {
-            const character = new NewCharacter(classes[i], levels[i], false, true).getCharacterData();
+            const character = new NewCharacter(classes[i], levels[i], true).getCharacterData();
             this.addAICharacter(team, character);
         }
 
@@ -261,7 +261,7 @@ export class AIGame extends Game {
     addExtraTeamMember(team: Team) {
         // Get average level of the team
         const averageLevel = Math.ceil(team.getMembers().reduce((sum, player) => sum + player.level, 0) / team.getMembers().length);
-        const character = new NewCharacter(Class.RANDOM, averageLevel, false, true).getCharacterData();
+        const character = new NewCharacter(Class.RANDOM, averageLevel, true).getCharacterData();
         this.addAICharacter(team, character);
     }
 

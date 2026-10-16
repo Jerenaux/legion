@@ -1,7 +1,7 @@
-import {BALANCE_VERSION, baseStats, spBudget} from './combatBalance';
+import {BALANCE_VERSION, baseStats, MAX_STAT_SP, spBonus, spBudget} from './combatBalance';
 import {emptyAllocations} from './characterBalance';
 import { Class, Stat, statFieldsByIndex } from "./enums";
-import { CharacterStats, Equipment, DBCharacterData } from "./interfaces";
+import { CharacterStats, CharacterStringStats, Equipment, DBCharacterData } from "./interfaces";
 import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femaleSprites }
   from "./sprites";
 import { male_names, female_names } from "./names";
@@ -32,9 +32,12 @@ export class NewCharacter {
   inventory: number[];
   equipment: Equipment;
   skills: number[];
+  sp_allocations: CharacterStringStats = emptyAllocations();
+  isAI: boolean;
 
-  constructor(characterClass = Class.RANDOM, level = 1, unicornBonus = false, isAI = false) {
-    console.log(`[NewCharacter:constructor] Creating new character with class ${characterClass}, level ${level}, unicornBonus ${unicornBonus}, isAI ${isAI}`);
+  constructor(characterClass = Class.RANDOM, level = 1, isAI = false) {
+    console.log(`[NewCharacter:constructor] Creating new character with class ${characterClass}, level ${level}, isAI ${isAI}`);
+    this.isAI = isAI;
     if (characterClass === Class.RANDOM) {
       const candidates = [Class.WARRIOR, Class.WHITE_MAGE, Class.BLACK_MAGE];
       // Get random value from candidates
@@ -69,7 +72,7 @@ export class NewCharacter {
     // console.log("========================");
     // console.log(`[NewCharacter:constructor] AI spells: ${this.skills.map(spell => getSpellById(spell)?.name).join(", ")}`);
     // console.log("========================");
-    const baseline = baseStats(this.characterClass, isAI ? 1 : level);
+    const baseline = baseStats(this.characterClass, level);
     this.stats = Object.fromEntries(statFieldsByIndex.map((field, index) => [index, baseline[field]])) as CharacterStats;
     this.equipment_bonuses = {
       [Stat.HP]: 0,
@@ -90,13 +93,26 @@ export class NewCharacter {
       [Stat.SPEED]: 0,
     };
 
-    for (let i = 1; isAI && i < this.level; i++) {
-      lvlUp(this.characterClass, this.stats);
-    }
+    // AI spends the same SP budget as a player of its level, so both share one stat scale.
+    if (isAI) this.allocateSP(spBudget(level));
 
     if (isAI) {
       this.inventory = setUpInventory(this.characterClass, this.level, this.carrying_capacity);
       console.log(`[NewCharacter:constructor] AI inventory: ${this.inventory}`);
+    }
+  }
+
+  allocateSP(budget: number) {
+    for (let i = 0; i < budget; i++) {
+      let stat = selectStatToLevelUp(this.characterClass);
+      if (this.sp_allocations[statFieldsByIndex[stat]] >= MAX_STAT_SP) {
+        const open = statFieldsByIndex.findIndex(field => this.sp_allocations[field] < MAX_STAT_SP);
+        if (open < 0) return;
+        stat = open as Stat;
+      }
+      const field = statFieldsByIndex[stat];
+      this.sp_allocations[field]++;
+      this.sp_bonuses[stat as Exclude<Stat, Stat.NONE>] = spBonus(stat, this.sp_allocations[field]);
     }
   }
 
@@ -182,10 +198,10 @@ export class NewCharacter {
         class: this.characterClass,
         level: this.level,
         xp: 0,
-        sp: spBudget(this.level),
+        sp: this.isAI ? 0 : spBudget(this.level),
         allTimeSP: spBudget(this.level),
         balanceVersion: BALANCE_VERSION,
-        sp_allocations: emptyAllocations(),
+        sp_allocations: {...this.sp_allocations},
         stats: dbStats,
         carrying_capacity: this.carrying_capacity,
         carrying_capacity_bonus: this.carrying_capacity_bonus,

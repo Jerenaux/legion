@@ -46,7 +46,7 @@ export class TowerGame extends AIGame {
       if (this.run.upgrades.includes('frostcraft')) {
         const spell = player.spells.find(candidate => candidate.id === 6);
         if (spell) {
-          spell.cost = Math.max(5, spell.cost - 15);
+          spell.cost = Math.ceil(spell.cost / 2);
           spell.effects = spell.effects.map(effect => ({...effect, value: effect.value / 2}));
         }
       }

@@ -103,6 +103,8 @@ export class Arena extends Phaser.Scene
     hoveredPlayer: Player | null = null;
     private hoverSource: 'battlefield' | 'hud' | null = null;
     private characterHover: CharacterHover | null = null;
+    private hoverPreviewKey = '';
+    private hoverPreviewValue: CharacterHover['preview'];
     localAnimationSprite: Phaser.GameObjects.Sprite;
     terrainSpritesMap: Map<string, Phaser.GameObjects.Sprite> = new Map<string, Phaser.GameObjects.Sprite>();
     terrainMap: Map<string, Terrain> = new Map<string, Terrain>();
@@ -727,12 +729,31 @@ export class Arena extends Phaser.Scene
         events.emit('characterHoverChanged', null);
     };
 
+    private sameHover(a: CharacterHover | null, b: CharacterHover) {
+        return !!a && a.team === b.team && a.num === b.num && a.left === b.left && a.right === b.right &&
+            a.top === b.top && a.bottom === b.bottom && a.preview?.hp === b.preview?.hp && a.preview?.action === b.preview?.action;
+    }
+
+    // Runs every frame while hovering: recompute the preview only when one of its inputs changes.
+    private hoverPreview(target: Player): CharacterHover['preview'] {
+        const caster = this.selectedPlayer;
+        const key = [this.isReplay, this.gameSettings?.spectator, this.gameEnded, this.inputLocked,
+            this.turnee?.team, this.turnee?.num, caster?.team.id, caster?.num, caster?.pendingSpell, caster?.pendingItem,
+            caster?.mp, caster?.gridX, caster?.gridY, caster?.isMuted(), caster?.isFrozen(), caster?.canAct(),
+            target.team.id, target.num, target.hp, target.gridX, target.gridY, target.isAlive()].join();
+        if (key !== this.hoverPreviewKey) {
+            this.hoverPreviewKey = key;
+            this.hoverPreviewValue = this.getHPPreview(target);
+        }
+        return this.hoverPreviewValue;
+    }
+
     private refreshCharacterHover = () => {
         const player = this.hoveredPlayer;
         if (!player) return;
         if (this.hoverSource === 'hud') {
-            const next = {...this.characterHover, preview: this.getHPPreview(player)};
-            if (JSON.stringify(next) !== JSON.stringify(this.characterHover)) {
+            const next = {...this.characterHover, preview: this.hoverPreview(player)};
+            if (!this.sameHover(this.characterHover, next)) {
                 this.characterHover = next;
                 events.emit('characterHoverChanged', next);
             }
@@ -742,12 +763,12 @@ export class Arena extends Phaser.Scene
         const canvas = this.game.canvas.getBoundingClientRect();
         const scaleX = canvas.width / this.scale.gameSize.width;
         const scaleY = canvas.height / this.scale.gameSize.height;
-        const next = {team: player.team.id, num: player.num, preview: this.getHPPreview(player),
+        const next = {team: player.team.id, num: player.num, preview: this.hoverPreview(player),
             left: canvas.left + (camera.x + (player.x - 34 - camera.worldView.x) * camera.zoom) * scaleX,
             right: canvas.left + (camera.x + (player.x + 34 - camera.worldView.x) * camera.zoom) * scaleX,
             top: canvas.top + (camera.y + (player.y - 54 - camera.worldView.y) * camera.zoom) * scaleY,
             bottom: canvas.top + (camera.y + (player.y + 62 - camera.worldView.y) * camera.zoom) * scaleY};
-        if (JSON.stringify(next) !== JSON.stringify(this.characterHover)) {
+        if (!this.sameHover(this.characterHover, next)) {
             this.characterHover = next;
             events.emit('characterHoverChanged', next);
         }

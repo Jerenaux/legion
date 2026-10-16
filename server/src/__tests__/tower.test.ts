@@ -86,7 +86,7 @@ test('temporary upgrade effects reach combat without mutating shared spells', as
   chooseTowerUpgrade(game.run, 'frostcraft');
   game.teams.forEach(team => { team.members = []; });
   await game.populateTeams();
-  expect(game.getTeam(1)[2].spells.find(spell => spell.id === 6)?.cost).toBe(5);
+  expect(game.getTeam(1)[2].spells.find(spell => spell.id === 6)?.cost).toBe(Math.ceil(originalCost / 2));
   expect(getSpellById(6)!.cost).toBe(originalCost);
 });
 

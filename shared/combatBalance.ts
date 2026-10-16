@@ -38,7 +38,8 @@ export function supportAmount(potency: number, level: number, attack: number) {
 }
 export type CombatStats = {level: number; getStat: (stat: Stat) => number};
 export function effectAmount(effect: Effect, caster: CombatStats, target: CombatStats) {
-    if (effect.onKO) return Math.max(1, Math.round(target.getStat(Stat.HP) * .3));
+    // A revive spell's value is the percentage of maximum HP restored.
+    if (effect.onKO) return Math.max(1, Math.round(target.getStat(Stat.HP) * effect.value / 100));
     if (!effect.modifiers) return Math.abs(effect.value);
     return effect.value < 0
         ? damageAmount(-effect.value, caster.level, caster.getStat(Stat.SPATK), target.getStat(Stat.SPDEF))

@@ -86,7 +86,7 @@ export const TOWER_UPGRADES = [
   {id: 'poison', name: 'Venom Lesson', description: 'Black Mage learns Poison. Full spellbook: replaces oldest spell.'},
   {id: 'silence', name: 'Quiet Lesson', description: 'Black Mage learns Silence. Full spellbook: replaces oldest spell.'},
   {id: 'fire-plus', name: 'Spreading Flame', description: 'Black Mage learns Fire+. Full spellbook: replaces oldest spell.'},
-  {id: 'frostcraft', name: 'Sculptor of Ice', description: 'Learn Ice. −15 MP cost, half damage. Full spellbook: replaces oldest spell.'},
+  {id: 'frostcraft', name: 'Sculptor of Ice', description: 'Learn Ice. Half MP cost, half damage. Full spellbook: replaces oldest spell.'},
   {id: 'swift', name: 'Light Footwork', description: 'Warrior: +1 movement range, +12 Speed.'},
   {id: 'guard', name: 'Tempered Armor', description: 'Squad: +30 current & max HP, +1 DEF.'},
   {id: 'focus', name: 'Deep Reserves', description: 'Mages: +30 current & max MP, +2 SP.ATK.'},

@@ -460,7 +460,7 @@ export class ServerPlayer {
         }
 
         if (terrain === Terrain.ICE) {
-            this.addStatusEffect(StatusEffect.FREEZE, 3, 1);
+            this.addStatusEffect(StatusEffect.FREEZE, STATUS_TURNS[StatusEffect.FREEZE], 1);
         }
     }
 
@@ -488,8 +488,11 @@ export class ServerPlayer {
         // Refresh to the effect's limit, never add unlimited disabled activations.
         const cap = STATUS_TURNS[status] ?? 3;
         this.statuses[status] = Math.min(cap, Math.max(this.statuses[status], Math.min(cap, duration < 0 ? cap : duration)));
-        if (DoTStatuses.includes(status)) this.statusDamage[status] = caster
-            ? supportAmount(statusDot[status], caster.level, caster.getStat(Stat.SPATK)) : statusDot[status];
+        if (DoTStatuses.includes(status)) {
+            const damage = caster ? supportAmount(statusDot[status], caster.level, caster.getStat(Stat.SPATK)) : statusDot[status];
+            // Reapplying must never weaken an active DoT, e.g. weapon poison over a caster's poison.
+            this.statusDamage[status] = Math.max(damage, this.statusDamage[status] ?? 0);
+        }
 
         this.broadcastStatusEffectChange();
 

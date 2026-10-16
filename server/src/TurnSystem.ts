@@ -64,6 +64,8 @@ export class TurnSystem {
         }
         
         queueItem.nextActionTime = this.currentTime + timeIncrement;
+        // Redraw on every reschedule: a fixed draw would let one unit win every later tie.
+        queueItem.tieBreaker = Math.random();
         this.sortQueue();
     }
 

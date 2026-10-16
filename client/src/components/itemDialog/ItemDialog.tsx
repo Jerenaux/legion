@@ -191,10 +191,14 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     this.actionPending = true;
     this.props.handleClose();
     try {
-      await apiMutation('spendSP', {stat, amount, characterId: character.id});
+      await apiMutation('spendSP', {stat, amount, characterId: character.id, spVersion: character.spVersion ?? 0});
       await this.context.refreshAllData();
       this.props.updateCharacterData();
-    } catch (error) { errorToast(userError(error)); }
+    } catch (error) {
+      errorToast(userError(error));
+      // A newer build makes the next request a distinct action instead of a retry of this one.
+      this.context.refreshAllData();
+    }
     finally { this.actionPending = false; }
   }
 

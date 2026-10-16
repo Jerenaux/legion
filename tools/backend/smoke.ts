@@ -223,6 +223,12 @@ try {
     assert.equal(afterRead.sp, 38);
     assert.deepEqual(afterRead.legacyBalance, migrated.legacyBalance);
     assert(Object.values(afterRead.sp_bonuses).every(value => Number.isInteger(value) && Number(value) >= 0));
+    // Requests carry the build version they were made from, so an old pending request cannot match a new action.
+    await request('spendSP', {...spend, spVersion: afterRead.spVersion - 1, requestId: crypto.randomUUID()}, 409);
+    await request('spendSP', {...spend, spVersion: afterRead.spVersion, requestId: crypto.randomUUID()}, 200);
+    const versioned = (await characterRef.get()).data();
+    assert.equal(versioned.sp, 37);
+    assert.equal(versioned.spVersion, afterRead.spVersion + 1);
     console.log('Legacy character migration, integer SP, caps, ownership, concurrent receipt retries and free redistribution pass');
   }
   // Mutation receipts cross the real HTTP/auth/Firestore boundary, including concurrent retries.

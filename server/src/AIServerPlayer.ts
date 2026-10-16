@@ -173,9 +173,9 @@ export class AIServerPlayer extends ServerPlayer {
         return target.team === this.team ? value : -value;
     }
 
-    private reviveValue(target: ServerPlayer) {
+    private reviveValue(target: ServerPlayer, restoredHP: number) {
         if (target.isAlive()) return 0;
-        const value = 45 + target.getMaxHP() * 0.3;
+        const value = 45 + restoredHP;
         return target.team === this.team ? value : -value;
     }
 
@@ -237,7 +237,7 @@ export class AIServerPlayer extends ServerPlayer {
         for (const target of targets) {
             for (const effect of spell.effects) {
                 if (effect.stat !== Stat.HP) continue;
-                if (effect.onKO) value += this.reviveValue(target);
+                if (effect.onKO) value += this.reviveValue(target, effectAmount(effect, this, target));
                 else if (effect.value < 0) value += this.damageValue(target, effectAmount(effect, this, target));
                 else value += this.healValue(target, effectAmount(effect, this, target));
             }
@@ -291,7 +291,7 @@ export class AIServerPlayer extends ServerPlayer {
         let value = 0;
         for (const effect of item.effects) {
             if (effect.stat === Stat.HP) {
-                if (effect.onKO) value += this.reviveValue(target);
+                if (effect.onKO) value += this.reviveValue(target, effect.value);
                 else value += this.healValue(target, effect.value === -1 ? target.getMaxHP() : effect.value);
             } else if (effect.stat === Stat.MP) {
                 value += this.manaValue(target, effect.value === -1 ? target.getMaxMP() : effect.value);
