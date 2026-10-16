@@ -1,6 +1,15 @@
 const {contextBridge, ipcRenderer} = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", Object.freeze({
+  replay: process.argv.includes('--legion-replay') ? Object.freeze({
+    start: () => ipcRenderer.invoke('replay:start'),
+    capture: value => ipcRenderer.invoke('replay:capture', value),
+    frame: value => ipcRenderer.invoke('replay:frame', value),
+    event: value => ipcRenderer.invoke('replay:event', value),
+    identify: value => ipcRenderer.invoke('replay:identify', value),
+    flush: () => ipcRenderer.invoke('replay:flush'),
+    stop: () => ipcRenderer.invoke('replay:stop'),
+  }) : undefined,
   isPackaged: process.argv.includes('--legion-packaged'),
   steamLanguage: process.argv.find(argument => argument.startsWith('--legion-steam-language='))?.split('=')[1] || null,
   smokeTest: process.argv.includes('--legion-smoke-test'),

@@ -1,14 +1,14 @@
-import {logRocket, captureLogRocketFrame, clearLogRocketFrame} from './logrocketSetup';
+import {startReplay} from '@jerenaux/replay/renderer';
 import {t} from './i18n/core';
 import * as Sentry from '@sentry/react';
 import {init as initElectron, eventLoopBlockIntegration} from '@sentry/electron/renderer';
 import {dsn, dataCollection} from '../electron/telemetry-options';
 import {scrubTelemetry} from '@legion/shared/telemetryPrivacy';
 import {getElectronAPI} from './utils/electronUtils';
-import {telemetryConfig} from './telemetryConfig';
 
-const replayCanvas = telemetryConfig.sentryReplay
-  ? Sentry.replayCanvasIntegration({enableManualSnapshot: true}) : null;
+export const sessionReplay = startReplay(getElectronAPI()?.replay, id => {
+  Sentry.setContext('replay', {sessionId: id, url: `https://games-replay-jr.web.app/#/s/${id}`});
+});
 
 if (process.env.NODE_ENV === 'production') {
   const options = {
@@ -18,31 +18,16 @@ if (process.env.NODE_ENV === 'production') {
     release: process.env.SENTRY_RELEASE,
     dist: process.env.SENTRY_DIST,
     dataCollection,
-    beforeSend: scrubTelemetry,
+    beforeSend: (event: Sentry.ErrorEvent) => {
+      sessionReplay.event('error', {type: event.exception?.values?.[0]?.type || 'Error'});
+      return scrubTelemetry(event);
+    },
     beforeBreadcrumb: scrubTelemetry,
     maxBreadcrumbs: 30,
     tracesSampleRate: 0.1,
-    replaysSessionSampleRate: telemetryConfig.sentryReplay ? 1 : 0,
+    replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
     integrations: [
-      ...(replayCanvas ? [
-        Sentry.replayIntegration({
-          maskAllText: false,
-          maskAllInputs: false,
-          blockAllMedia: false,
-          networkCaptureBodies: false,
-          networkDetailAllowUrls: [],
-          beforeAddRecordingEvent: event => {
-            const payload = event.data?.payload;
-            if (payload && 'op' in payload && payload.op.startsWith('resource.') && 'description' in payload && typeof payload.description === 'string') {
-              // Fetch spans can contain relative URLs, which the shared absolute-URL scrubber cannot match.
-              payload.description = payload.description.split(/[?#]/)[0];
-            }
-            return scrubTelemetry(event);
-          },
-        }),
-        replayCanvas,
-      ] : []),
       Sentry.browserTracingIntegration(),
       Sentry.captureConsoleIntegration({levels: ['error']}),
       Sentry.feedbackIntegration({
@@ -60,14 +45,6 @@ if (process.env.NODE_ENV === 'production') {
       eventLoopBlockIntegration({threshold: 10000, pollInterval: 1000}),
     ]}, Sentry.init);
   } else Sentry.init(options);
-}
-
-export function captureCombatFrame(canvas: HTMLCanvasElement) {
-  captureLogRocketFrame(canvas);
-  if (replayCanvas && Sentry.getReplay()?.getReplayId()) {
-    // Capture before WebGL clears the frame; the SDK throttles snapshots to 2 fps.
-    void replayCanvas.snapshot(canvas, {skipRequestAnimationFrame: true}).catch(() => {});
-  }
 }
 
 export async function reportProblem() {
@@ -88,7 +65,6 @@ export async function reportProblem() {
 }
 
 export {captureException} from '@sentry/react';
-export {clearLogRocketFrame};
 
 let signedInId: string | undefined;
 
@@ -97,20 +73,17 @@ export function setUser(user: Parameters<typeof Sentry.setUser>[0]) {
   try {
     if (user?.id) {
       signedInId = String(user.id);
-      logRocket?.identify(signedInId);
+      sessionReplay.identify(signedInId);
     } else if (signedInId) {
       // Only a real sign-out starts a new recording. Startup reports "no user" before the
       // platform login completes; splitting there cut the start off every session.
       signedInId = undefined;
-      logRocket?.startNewSession();
+      sessionReplay.identify();
     }
   } catch { /* Optional recording must not interrupt authentication. */ }
 }
 
-// Fix for truncated endings: before the window closes, the main process hides it (a real
-// visibility change both recorders upload on) and waits for this flush.
+// The main process persists frames independently; also flush errors before closing.
 getElectronAPI()?.onTelemetryFlush?.(async () => {
-  await Promise.all([Sentry.flush(1200).catch(() => false), new Promise(resolve => setTimeout(resolve, 1000))]);
+  await Promise.all([Sentry.flush(1200).catch(() => false), sessionReplay.stop()]);
 });
-
-try { logRocket?.getSessionURL(url => Sentry.setContext('logrocket', {sessionURL: url})); } catch { /* Sentry remains available. */ }

@@ -1,9 +1,11 @@
 /**
  * Utility functions for Electron environment detection and interaction
  */
+import type {ReplayBridge} from '@jerenaux/replay/renderer';
 import type { PlatformAuthResult } from '../services/platformSession';
 
 interface ElectronAPI {
+  replay?: ReplayBridge;
   isPackaged?: boolean;
   steamLanguage?: string | null;
   setLanguage?: (code: string) => Promise<boolean>;

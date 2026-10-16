@@ -21,16 +21,9 @@ if (!process.versions.electron) {
   process.chdir(client);
   process.env.NODE_ENV = 'production';
   process.env.BUILD_TARGET = 'electron';
-  // Exercise store Replay against the loopback sink, never production ingestion.
-  delete process.env.SENTRY_REPLAY_ENABLED;
   for (const key of ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL']) process.env[key] = 'app://legion/__fixture';
   delete process.env.SENTRY_AUTH_TOKEN;
-  // Ship the LogRocket recorder in the fixture bundle, as release builds do.
-  process.env.LOGROCKET_VENDOR = 'true';
   const config = require('../../webpack.config');
-  // Test-only opt-in: production webpack still refuses local/CI non-store builds.
-  const defines = config.plugins.find(plugin => plugin.definitions?.['process.env.SENTRY_REPLAY_ENABLED']);
-  defines.definitions['process.env.SENTRY_REPLAY_ENABLED'] = JSON.stringify(process.argv.includes('--replay-off') ? '' : 'true');
   config.mode = 'production';
   config.devtool = 'hidden-source-map';
   config.output.path = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-guide-'));
@@ -88,7 +81,7 @@ if (!process.versions.electron) {
   // Exercise the real production SDK and preload, but ingest exclusively on loopback.
   const Sentry = require('@sentry/electron/main');
   const envelopes = [];
-  const replayEvents = [];
+  const recordings = [];
   const sink = require('node:http').createServer(async (request, response) => {
     // Also serve the exact store fixture bundle as a local browser preview.
     if (request.method === 'GET') {
@@ -104,14 +97,13 @@ if (!process.versions.electron) {
     let body = Buffer.concat(chunks);
     if (request.headers['content-encoding'] === 'gzip') body = require('node:zlib').gunzipSync(body);
     envelopes.push(body.toString());
-    if (request.url.includes('/envelope/')) {
-      const {parseEnvelope} = require('@sentry/core');
-      for (const [header, payload] of parseEnvelope(body)[1]) {
-        if (header.type !== 'replay_recording') continue;
-        const recording = Buffer.from(payload);
-        const data = recording.subarray(recording.indexOf(10) + 1);
-        replayEvents.push(...JSON.parse(data[0] === 91 ? data.toString() : require('node:zlib').inflateSync(data).toString()));
-      }
+    if (request.url === '/recording') {
+      const length = body.readUInt32LE(5);
+      const header = JSON.parse(body.toString('utf8', 9, 9 + length));
+      const eventLength = body.readUInt32LE(9 + length);
+      const eventStart = 13 + length;
+      const events = JSON.parse(require('node:zlib').gunzipSync(body.subarray(eventStart, eventStart + eventLength)));
+      recordings.push({header, events, images: body.subarray(eventStart + eventLength)});
     }
     response.writeHead(200, {'Content-Type': 'application/json'});
     response.end('{}');
@@ -191,9 +183,8 @@ if (!process.versions.electron) {
   Sentry.init = originalInit;
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   app.whenReady().then(async () => {
-    const logrocket = await require('./logrocket.cjs').installLogRocketSink(session.defaultSession);
     // Fail closed: the recorder is served from memory, and its uploads are intercepted locally.
-    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`) && !logrocket.allows(details.url)}));
+    session.defaultSession.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, done) => done({cancel: !details.url.startsWith(`${sinkURL}/`) && !details.url.startsWith(`${sinkURL.replace('http:', 'ws:')}/`)}));
     session.defaultSession.webRequest.onHeadersReceived((details, done) => done({
       responseHeaders: {...details.responseHeaders, 'Content-Security-Policy': [PACKAGED_CSP.replace("connect-src 'self'", `connect-src 'self' ${sinkURL} ${sinkURL.replace('http:', 'ws:')}`)],
         'Document-Policy': ['include-js-call-stacks-in-crash-reports']},
@@ -210,7 +201,16 @@ if (!process.versions.electron) {
     });
     const win = new BrowserWindow({width: 1600, height: 900, useContentSize: true, show: false,
       webPreferences: {contextIsolation: true, sandbox: true, backgroundThrottling: false,
-        preload: path.join(client, 'preload.js'), additionalArguments: ['--legion-packaged']}});
+        preload: path.join(client, 'preload.js'), additionalArguments: ['--legion-packaged', ...(process.argv.includes('--replay-off') ? [] : ['--legion-replay'])]}});
+    const recorder = process.argv.includes('--replay-off') ? null : require('@jerenaux/replay/electron').installReplay(win, {
+      game: 'legion', endpoint: sinkURL + '/recording',
+      outbox: path.join(app.getPath('userData'), 'replay', 'outbox'),
+      metadata: {channel: 'local'}, isTrustedURL: url => url.startsWith(PACKAGED_APP_URL),
+    });
+    // Hidden fixture windows still exercise capture, without opening a game on the desktop.
+    win.webContents.on('dom-ready', () => {
+      void win.webContents.executeJavaScript("Object.defineProperty(document, 'hidden', {get: () => false, configurable: true})").catch(() => {});
+    });
     win.webContents.setAudioMuted(true);
     const rendererErrors = [];
     win.webContents.on('console-message', event => {
@@ -281,8 +281,7 @@ if (!process.versions.electron) {
             await preview.webContents.executeJavaScript('replayCheck.flush()');
           } finally { preview.destroy(); }
         }
-        assert.equal(logrocket.uploads.length, 0, 'Excluded runtimes must not send LogRocket recordings');
-        assert.equal(replayEvents.length, 0, 'Excluded runtimes must not send Replay frames');
+        assert.equal(recordings.length, 0, 'Excluded runtimes must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Excluded runtimes must not send Replay events');
         console.log('Browser/HTTP previews, missing preload, unpackaged Electron and smoke checks cannot record');
       }
@@ -300,8 +299,7 @@ if (!process.versions.electron) {
         assert.equal(await js('Boolean(window.LogRocket)'), false, 'Local combat must not initialize LogRocket');
         assert.equal(await js('replayCheck.id()'), undefined, 'Local combat must not start a Replay session');
         assert.deepEqual(await js('replayCheck.status()'), {replay: false, canvas: false, rate: 0});
-        assert.equal(logrocket.uploads.length, 0, 'Excluded runtimes must not send LogRocket recordings');
-        assert.equal(replayEvents.length, 0, 'Local combat must not send Replay frames');
+        assert.equal(recordings.length, 0, 'Local combat must not send Replay frames');
         assert(envelopes.every(body => !body.includes('"type":"replay_event"')), 'Local combat must not send Replay events');
         console.log('Locally packaged combat runs without Replay capture');
       } else if (process.argv.includes('--tower-images')) {
@@ -478,7 +476,7 @@ if (!process.versions.electron) {
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
         await waitFor('Boolean(replayCheck.id())');
-        assert.deepEqual(await js('replayCheck.status()'), {replay: true, canvas: true, rate: 1});
+        assert.deepEqual(await js('replayCheck.status()'), {replay: false, canvas: false, rate: 0});
         assert.equal(await js(`new Promise(resolve => {
           document.addEventListener('securitypolicyviolation', event => {
             if (event.blockedURI === 'https://blocked.invalid/__csp_probe__.js') resolve(event.effectiveDirective);
@@ -593,35 +591,24 @@ if (!process.versions.electron) {
         })()`, true);
         assert.deepEqual(musicTracks, ['bgm_loop_1', 'bgm_loop_1', 'bgm_loop_2', 'bgm_loop_7']);
         console.log('Muted Phaser audio: two natural plays → next track → health-driven jump passes');
-        assert(await js('replayCheck.id()'), 'Production sessions must start Sentry Replay without an error');
         await js('replayCheck.flush()');
         const replayDeadline = Date.now() + 10000;
-        while (!replayEvents.some(event => event.type === 3 && event.data.source === 9)) {
-          assert(Date.now() < replayDeadline, 'Sentry must deliver canvas frames to the loopback sink');
-          await new Promise(resolve => setTimeout(resolve, 100));
+        while (!recordings.some(recording => recording.header.frames.length)) {
+          assert(Date.now() < replayDeadline, 'Replay must deliver window frames to loopback');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await recorder.flush();
         }
-        assert(replayEvents.some(event => event.type === 2), 'Sentry must deliver the surrounding DOM');
-        const recordedDOM = JSON.stringify(replayEvents);
-        for (const visible of ['visible-replay-text', 'visible-replay-input', 'guide.png?replay-smoke-media']) {
-          assert(recordedDOM.includes(visible), `Replay must show ${visible}`);
-        }
-        assert.deepEqual(replayEvents.filter(event => JSON.stringify(event).includes('private-replay-')), [], 'Replay must not upload passwords or private network data');
-        const frames = replayEvents.filter(event => event.type === 3 && event.data.source === 9);
-        const encodedFrame = frames.flatMap(event => event.data.commands ?? [])
-          .filter(command => command.property === 'drawImage').at(-1)?.args[0].args[0];
-        assert(encodedFrame?.data[0].base64, 'Canvas recording must contain encoded pixels');
+        assert(!JSON.stringify(recordings.map(({header, events}) => ({header, events}))).includes('private-replay-'), 'Replay must not upload passwords or network data');
+        const recording = recordings.filter(recording => recording.header.frames.length).at(-1);
+        const [, offset, length] = recording.header.frames.at(-1);
+        const encoded = recording.images.subarray(offset, offset + length).toString('base64');
         assert(await js(`(async () => {
-          const image = new Image();
-          image.src = ${JSON.stringify(`data:${encodedFrame.type};base64,${encodedFrame.data[0].base64}`)};
-          await image.decode();
-          const canvas = document.createElement('canvas');
-          canvas.width = canvas.height = 32;
-          const context = canvas.getContext('2d');
-          context.drawImage(image, 0, 0, 32, 32);
+          const image = new Image(); image.src = 'data:image/webp;base64,${encoded}'; await image.decode();
+          const canvas = document.createElement('canvas'); canvas.width = canvas.height = 32;
+          const context = canvas.getContext('2d'); context.drawImage(image, 0, 0, 32, 32);
           return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
-        })()`), 'Recorded combat pixels must not be blank');
-        console.log(`Sentry Replay: visible DOM, inputs, media, and ${frames.length} canvas updates delivered; passwords and network data scrubbed`);
-        await require('./logrocket-check.cjs')({logrocket, js, waitFor});
+        })()`), 'Recorded window/combat pixels must not be blank');
+        console.log('Replay: composed window WebP frames and scrubbed events delivered to loopback');
         const cleanup = await js(`(() => {
           window.previousGame = combatCheck.arena.game;
           const player = combatCheck.arena.selectedPlayer;
@@ -634,7 +621,6 @@ if (!process.versions.electron) {
         await waitFor('!previousGame.loop.running');
         assert.equal(cleanup, null, 'Already-destroyed sprites must not prevent leaving a match');
         assert.equal(await js('previousGame.loop.running'), false, 'Unmount must stop the engine, not only its scene');
-        assert.equal(await js('document.querySelectorAll("[data-logrocket-canvas]").length'), 0, 'Teardown must remove replay snapshots');
         assert.equal(await js('Object.keys(previousGame.textures.list).length'), 0);
         for (const exit of ['normal', 'loading', 'animation', 'sleeping', 'context-loss', 'canvas', 'canvas-throws']) {
           if (exit.startsWith('canvas')) await js(`(() => {
@@ -921,6 +907,7 @@ if (!process.versions.electron) {
         console.log('Native crash storage isolation passes');
       }
     } finally {
+      await recorder?.stop();
       win.destroy();
       await Sentry.close(2000);
       sink.closeAllConnections();

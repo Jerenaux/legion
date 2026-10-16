@@ -30,7 +30,7 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
         try {
             const headers = new Headers(options.headers || {});
             if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-            headers.set('X-Store-Build', String(telemetryConfig.sentryReplay));
+            headers.set('X-Store-Build', String(telemetryConfig.storeBuild));
             const {timeoutMs = 30000, expectedUid, ...fetchOptions} = options;
             const body = options.body == null ? undefined : typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
             for (let refresh = 0; refresh < 2; refresh++) {

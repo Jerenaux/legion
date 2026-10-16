@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { Arena } from './Arena';
 import RoundRectanglePlugin from 'phaser3-rex-plugins/plugins/roundrectangle-plugin.js';
-import {captureCombatFrame, clearLogRocketFrame} from '../telemetry';
+import {sessionReplay} from '../telemetry';
 import {addBreadcrumb, setTag} from '@sentry/react';
 
 const gameWidth = 1920;
@@ -47,9 +47,9 @@ export function startGame() {
     });
     setTag('combat.renderer', context ? 'webgl' : 'canvas');
     addBreadcrumb({category: 'combat', message: 'Engine created'});
-    game.events.on(Phaser.Core.Events.POST_RENDER, () => captureCombatFrame(game.canvas));
+    sessionReplay.event('battle_start', {}, {label: 'Battle', highlight: 'battles'});
     game.events.once(Phaser.Core.Events.DESTROY, () => {
-        clearLogRocketFrame(game.canvas);
+        sessionReplay.event('battle_end');
         addBreadcrumb({category: 'combat', message: 'Engine destroyed'});
         // Phaser deletes textures synchronously; release the driver's context afterwards.
         queueMicrotask(() => context?.getExtension('WEBGL_lose_context')?.loseContext());

@@ -14,8 +14,9 @@ import { NewCharacter } from '../../../shared/NewCharacter';
 import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures, RewardType } from '../../../shared/enums';
 import { ENABLE_CINDER_TOWER, BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
 import { GameData, StatusEffects } from '../../../shared/interfaces';
-import {getClient, getReplay, type BrowserClient} from '@sentry/react';
+import {getClient, getReplay, getIsolationScope, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
+import {getElectronAPI} from '../../src/utils/electronUtils';
 import {GameHUD, events} from '../../src/components/HUD/GameHUD';
 import {spells} from '../../../shared/Spells';
 import {items} from '../../../shared/Items';
@@ -42,7 +43,7 @@ MusicManager.prototype.playBeginning = function () {
 };
 Object.assign(window, {routeAudio, musicOverlaps});
 
-Object.assign(window, {replayCheck: {flush: () => getReplay()?.flush(), id: () => getReplay()?.getReplayId(),
+Object.assign(window, {replayCheck: {flush: () => getElectronAPI()?.replay?.flush(), id: () => getIsolationScope().getScopeData().contexts.replay?.sessionId,
   status: () => ({replay: Boolean(getReplay()), canvas: Boolean(getClient()?.getIntegrationByName('ReplayCanvas')),
     rate: getClient<BrowserClient>()?.getOptions().replaysSessionSampleRate})},
   stabilityFreeze: function stabilityFreeze() {

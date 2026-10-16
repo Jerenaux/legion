@@ -17,24 +17,6 @@ const storeReplay = isProduction && isElectron
   && process.env.GITHUB_WORKFLOW_REF === 'Jerenaux/legion/.github/workflows/release-desktop.yml@refs/heads/main'
   && process.env.SENTRY_REPLAY_ENABLED === 'true';
 const requiredElectronUrls = ['API_URL', 'GAME_SERVER_URL', 'MATCHMAKER_URL'];
-// LogRocket's npm package is only a loader for this recorder. Shipping the recorder in the
-// bundle lets recording start with the first frame instead of after a CDN download.
-const LOGROCKET_RECORDER = 'https://cdn.logr-in.com/logger-1.min.js';
-const LOGROCKET_VENDOR_PATH = 'vendor/logrocket-logger-1.min.js';
-const vendorLogRocket = storeReplay || process.env.LOGROCKET_VENDOR === 'true';
-
-class VendorLogRocketRecorder {
-  apply(compiler) {
-    compiler.hooks.thisCompilation.tap('VendorLogRocketRecorder', compilation => {
-      compilation.hooks.processAssets.tapPromise({name: 'VendorLogRocketRecorder', stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL}, async () => {
-        const response = await fetch(LOGROCKET_RECORDER, {signal: AbortSignal.timeout(30000)});
-        if (!response.ok) throw new Error(`LogRocket recorder download failed: ${response.status}`);
-        compilation.emitAsset(LOGROCKET_VENDOR_PATH, new webpack.sources.RawSource(Buffer.from(await response.arrayBuffer())), {minimized: true});
-      });
-    });
-  }
-}
-
 if (isProduction && isElectron) {
   const missingUrls = requiredElectronUrls.filter(key => !process.env[key]);
   if (missingUrls.length) throw new Error(`Missing Electron build variables: ${missingUrls.join(', ')}`);
@@ -164,9 +146,7 @@ module.exports = {
       'process.env.SENTRY_RELEASE': JSON.stringify(`legion@${require('./package.json').version}`),
       'process.env.SENTRY_DIST': JSON.stringify(process.platform),
       'process.env.SENTRY_REPLAY_ENABLED': JSON.stringify(storeReplay ? 'true' : ''),
-      'process.env.LOGROCKET_LOGGER_URL': JSON.stringify(vendorLogRocket ? `app://legion/${LOGROCKET_VENDOR_PATH}` : ''),
     }),
-    ...(vendorLogRocket ? [new VendorLogRocketRecorder()] : []),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'public/favicon.ico', to: 'favicon.ico' },
