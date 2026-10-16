@@ -97,7 +97,7 @@ export function ItemTooltipContent({item, showClasses, character}: {
         return <div className="item-preview-effect" key={index}>
           <span className="item-preview-stat" style={{backgroundColor: STATS_BG_COLOR[label]}}>{t(label)}</span>
           <strong className={full || effect.value > 0 ? 'item-preview-positive' : 'item-preview-negative'}>
-            {full ? t("Full") : effect.onKO && spell ? formatNumber(effect.value / 100, {style: 'percent'}) : formatNumber(effect.value, {signDisplay: effect.value > 0 ? 'always' : 'auto'})}
+            {full ? t("Full") : effect.onKO ? formatNumber(effect.value / 100, {style: 'percent'}) : formatNumber(effect.value, {signDisplay: effect.value > 0 ? 'always' : 'auto'})}
           </strong>
         </div>;
       })}

@@ -1,4 +1,4 @@
-import {damageAmount, effectAmount, MELEE_POTENCY, POISON_POTENCY, FIRE_POTENCY, supportAmount, STATUS_TURNS} from '@legion/shared/combatBalance';
+import {damageAmount, effectAmount, reviveAmount, MELEE_POTENCY, POISON_POTENCY, FIRE_POTENCY, supportAmount, STATUS_TURNS} from '@legion/shared/combatBalance';
 import { ServerPlayer } from './ServerPlayer';
 import { AIAttackMode, Class, Stat, StatusEffect, Target, Terrain } from "@legion/shared/enums";
 import { FREEZE_AI, MOVEMENT_RANGE } from "@legion/shared/config";
@@ -291,7 +291,7 @@ export class AIServerPlayer extends ServerPlayer {
         let value = 0;
         for (const effect of item.effects) {
             if (effect.stat === Stat.HP) {
-                if (effect.onKO) value += this.reviveValue(target, effect.value);
+                if (effect.onKO) value += this.reviveValue(target, reviveAmount(effect, target.getMaxHP()));
                 else value += this.healValue(target, effect.value === -1 ? target.getMaxHP() : effect.value);
             } else if (effect.stat === Stat.MP) {
                 value += this.manaValue(target, effect.value === -1 ? target.getMaxMP() : effect.value);

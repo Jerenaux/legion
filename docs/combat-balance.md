@@ -34,8 +34,8 @@ Thunder skips one affected activation; ice skips three. Silence blocks spells
 for two affected activations. Poison has base potency 8 for three activations.
 Reapplication refreshes a capped duration rather than adding durations. Remedy
 removes harmful statuses except ice; Remedy, Antidote and Bocca can target allies.
-Revive restores 30% maximum HP for 35 MP, with no per-match use limit. A revive
-spell's effect value is that percentage; Clover, a consumable, revives with a flat 50 HP.
+Revive restores 30% maximum HP for 35 MP, with no per-match use limit. Clover, the
+consumable revive, also restores 30% maximum HP. A revive's effect value is that percentage.
 
 ## Saved-character migration
 

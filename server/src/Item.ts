@@ -1,6 +1,7 @@
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
 import { Stat, Target } from "@legion/shared/enums";
+import { reviveAmount } from "@legion/shared/combatBalance";
 import { BaseItem } from "@legion/shared/BaseItem";
 import { itemNoEffectReason, ItemNoEffectReason } from "@legion/shared/itemUse";
 
@@ -25,7 +26,7 @@ export class Item extends BaseItem {
                 let value: number;
                 switch (effect.stat) {
                     case Stat.HP:
-                        value = effect.value === -1 ? target.getMaxHP() : effect.value;
+                        value = effect.onKO ? reviveAmount(effect, target.getMaxHP()) : effect.value === -1 ? target.getMaxHP() : effect.value;
                         target.heal(value);
                         break;
                     case Stat.MP:
