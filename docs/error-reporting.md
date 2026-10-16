@@ -82,31 +82,62 @@ The September 2026 setup was verified with tagged synthetic exceptions in both p
 
 ## Desktop replays
 
-Sentry and LogRocket record eligible store sessions in parallel. LogRocket provides an independent fallback when Sentry rejects recordings because its quota is exhausted; recording cannot start retroactively after a quota rejection. LogRocket uses the existing `bpfssp/legion` project. Release builds ship LogRocket's recorder (`logger-1.min.js`) in the bundle under `vendor/`: webpack downloads it at build time and the loader is pointed at it through `__SDKCONFIG__.loggerURL`, so recording starts with the first frame instead of after a CDN download. `PACKAGED_CSP` still permits `https://cdn.logr-in.com` as a fallback; local/blob workers remain required for replay recording.
+The external `@jerenaux/replay` library records the entire composed Electron window,
+including Preact UI, Phaser WebGL/Canvas, fonts and bundled images. Sessions appear at
+https://games-replay-jr.web.app alongside Tungsteel. The stable backend game ID is
+`legion`; player-facing branding remains Emberhall.
 
-Replay requires two independent checks: Webpack only embeds the opt-in in production Electron bundles built by this repository's manual `release-desktop.yml` workflow on `main`, and the renderer requires the main process's packaged marker, the `app://legion` origin, and no smoke-test flag. A local `SENTRY_REPLAY_ENABLED=true` cannot enable it. Browser previews (including a served copy of a store bundle), development, locally packaged builds, ordinary CI, and artifact-only releases cannot record.
+The implementation lives in `Jerenaux/replay`, pinned to commit `2915b82` in
+`client/vendor/replay-2915b82.tgz`. The dependency uses this packed package so clean
+builds and CI do not require access credentials for the private replay repository.
+To upgrade, pack the new library commit and replace the dependency/archive together.
+There are no filesystem links to another checkout in the shipped dependency.
 
-The release workflow enables all three Itch platforms when `publish_itch` is selected, and macOS/Windows when `upload_steam` is selected; Steam-only Linux artifacts stay off. `--smoke-test` also disables Sentry. Recording does not depend on Steam/Itch authentication or launcher environment variables, so direct/offline launches of store packages remain eligible.
+`electron.js` installs capture only for the main game window and validates every IPC
+sender against that window's main frame and trusted app/dev URL. Preload exposes
+fixed replay methods only when main supplies `--legion-replay`. Browser previews
+cannot record. **For now, local development and locally packaged desktop builds are
+eligible**, tagged `local`. CI, GitHub Actions and `--smoke-test` skip installation
+and must never send recordings to production. Restrict this gate to Steam/Itch store
+builds when local recording is no longer wanted. The existing compiled store-build
+marker still controls API/socket store diagnostics independently of recording.
 
-Store renderer sessions use `replaysSessionSampleRate: 1` (100% of sessions), including sessions without errors. `replaysOnErrorSampleRate: 0` avoids a separate error-only buffering mode. This does not change the existing trace sampling rate. The account's replay quota limits accepted recordings; there is no client-side 50-session counter, paid upgrade, or spending change. Once the Sentry quota is exhausted, its recordings can be discarded until it renews. LogRocket remains independent, subject to its own quota and retention. No billing changes are made.
+Capture runs at most twice per second, at 960 pixels wide, with WebP quality 0.5.
+Unchanged thumbnails are skipped. Inputs, focus/resize and battle/error events share
+the existing RPLY v1 format. Player identity changes split sessions. Sentry errors
+include the central dashboard session link; raw console/network data is not recorded.
+No audio is captured. This is a visual session recording, separate from Emberhall's
+existing server-message match replay feature.
 
-LogRocket uses the same `telemetryConfig.sentryReplay` gate, including the same workflow opt-in and runtime exclusions. It records visible text, ordinary inputs and media, masks password inputs, disables IP collection, console and exception capture, removes network headers/bodies/referrers and URL credentials/query/fragment, and identifies players only by their internal ID. Sentry errors include the LogRocket session URL when available. A new LogRocket session starts only on a real sign-out, never on the initial "no user" state at startup. Before the window closes, Electron hides it and waits up to 1.5 s for the renderer to flush Sentry and let LogRocket upload, so recordings keep their last seconds.
+The recorder masks password inputs and elements marked `data-replay-mask` or
+`data-private`; sensitive UI must be marked before display. It excludes keyboard
+events from all editable fields. Other visible text is recorded. Game-event data
+scrubs credential keys and URL credentials/query/fragment. Do not put sensitive text
+in canvas pixels or unmarked UI. Capture and upload failures cannot interrupt gameplay.
 
-LogRocket’s web recorder does not capture WebGL directly. The game supplies snapshots at most once per second, downscaled to 640 pixels wide (WebP quality 0.5) to keep sessions within LogRocket's limits, as a DOM image behind the live canvas. Sentry excludes this image to avoid duplicate recording. Teardown removes it. Snapshot failures never interrupt gameplay. Private packaged assets outside these snapshots can still be unavailable in hosted playback.
+Segments flush every 15 seconds or before 3.5 MB, and are atomically saved under
+`<userData>/replay/outbox` before upload. Offline/failed uploads retry, including on
+relaunch; the queue drops oldest segments above 300 MB. Idle sessions split after
+30 minutes without input and capture gaps over two minutes. A crash can lose the
+current in-memory segment. The close handler persists main-process data even if the
+renderer is unresponsive; its bounded shutdown deadline can leave uploads for next launch.
 
-The existing Sentry SDK records the Phaser WebGL canvas through `replayCanvasIntegration` in manual snapshot mode. Phaser's `POST_RENDER` event captures pixels before the buffer clears; the SDK limits capture to 2 fps. Keep `preserveDrawingBuffer` disabled and capture failures isolated from gameplay. These are low-frame-rate recordings, not smooth video.
+Sentry's error reporting, feedback, native crashes, freeze detection, release IDs and
+source-map upload remain enabled. Sentry Replay and LogRocket recording, canvas hooks,
+recorder downloads and the LogRocket dependency have been removed.
 
-Replay records DOM text, ordinary input values, and media. Password-type inputs remain masked by Sentry's recorder. Players can still type private information into ordinary fields, including feedback; this content is visible in replays and cannot be scrubbed after capture. Network bodies and detailed headers are not collected, and custom recording events pass through the shared credential/URL scrubber. Canvas pixels cannot be scrubbed: do not render passwords, chat, or other sensitive information into the arena. Private `app://` fonts and images outside the canvas remain a playback limitation in Sentry's web player; no public asset mirror is configured.
-
-The guide harness overrides the compiled opt-in only in its temporary fixture bundle and supplies the packaged preload marker, with remote traffic blocked and Sentry pointed at loopback. `bun run test:guide` verifies real compressed Replay envelopes through Electron's transport to a loopback sink, including visible DOM text, ordinary inputs and media references, masked passwords, decodable nonblank combat pixels, and network redaction under the production CSP. It also serves that store bundle over local HTTP and checks that previews, missing preloads, unpackaged Electron, and smoke checks install neither Replay nor its canvas recorder. `bun run test:guide --replay-off` checks local packaged combat with Replay disabled and runs in CI. The harness also serves the real LogRocket recorder through a local protocol handler and intercepts its uploads, checking DOM/input capture, masked passwords, network redaction and combat snapshots. All other remote traffic is blocked. These checks never consume live Sentry or LogRocket quota. This verifies capture and transport, not live dashboard storage or playback.
-
-Reference: [Sentry canvas recording](https://docs.sentry.io/platforms/javascript/session-replay/#canvas-recording).
+The packaged guide smoke installs the actual library with an isolated outbox and
+loopback upload endpoint; browser previews and smoke-flagged windows have no bridge.
+It checks compressed, decodable composed frames and private-data exclusion with remote
+traffic blocked. The library repository also checks masked pixels, text-field key
+exclusion, untrusted IPC rejection, disk retry across recorder restarts and compatibility
+with the actual central dashboard parser. These checks never consume production quota.
 
 ### Investigating freezes
 
 Main-process ANRs have `event.process=browser`; renderer ANRs keep the renderer tag and native stack capture. Both include `desktop_health`: a timestamped pre-stall snapshot, uptime, the last power transition, six recent timer delays, main memory usage, bounded per-process CPU/memory samples, and window visibility/focus/crash state. Power transitions also leave breadcrumbs. No URLs, player names, window titles, credentials, or input content are collected. Samples are every five seconds, so they describe the lead-up rather than prove what blocked the thread. Check the sample age and sleep/resume history before attributing an overnight report to gameplay.
 
-Store releases upload source maps; local test builds do not. Preserve the exact release/dist when investigating an unresolved renderer frame. `bun run test:freeze` verifies a real main-thread freeze and power lifecycle context against loopback ingestion; `test:guide` covers renderer freezes and source-map resolution. Sentry replay quota is independent of error ingestion: LogRocket remains enabled for the same eligible store sessions with the existing privacy settings. This does not increase either provider's quota.
+Store releases upload source maps; local test builds do not. Preserve the exact release/dist when investigating an unresolved renderer frame. `bun run test:freeze` verifies a real main-thread freeze and power lifecycle context against loopback ingestion; `test:guide` covers renderer freezes and source-map resolution. Replay recording uses our own storage and upload costs, independently of Sentry error ingestion.
 
 ### Inventory request recovery
 

@@ -13,8 +13,8 @@ export const createRefreshingSocketAuth = (
   payload: Record<string, unknown> = {},
 ) => (callback: (auth: Record<string, unknown>) => void) => {
   void getToken()
-    .then(token => callback({...payload, token, storeBuild: telemetryConfig.sentryReplay}))
-    .catch(() => callback({...payload, token: "", storeBuild: telemetryConfig.sentryReplay}));
+    .then(token => callback({...payload, token, storeBuild: telemetryConfig.storeBuild}))
+    .catch(() => callback({...payload, token: "", storeBuild: telemetryConfig.storeBuild}));
 };
 
 export const shouldAbandonGame = (reason: string) => reason === "io server disconnect";

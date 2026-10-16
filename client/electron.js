@@ -16,6 +16,9 @@ const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOpt
 
 const isDev = process.env.NODE_ENV !== "production" && !app.isPackaged;
 let mainWindow;
+let sessionRecorder;
+// Local desktop recording is temporary; CI and smoke checks must never upload player replays.
+const recordReplays = !smokeTest && !process.env.CI && !process.env.GITHUB_ACTIONS;
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
 if (!hasSingleInstanceLock) app.quit();
 const {giftFromArguments, createGiftQueue} = require('./electron/gifts');
@@ -120,11 +123,23 @@ function createWindow() {
       webSecurity: true,
       additionalArguments: [
         ...(app.isPackaged ? ['--legion-packaged'] : []),
+        ...(recordReplays ? ['--legion-replay'] : []),
         ...(steamLanguage ? [`--legion-steam-language=${steamLanguage}`] : []),
         ...(smokeTest ? ['--legion-smoke-test'] : []),
       ],
     },
   });
+  if (recordReplays) {
+    try {
+      sessionRecorder = require('@jerenaux/replay/electron').installReplay(mainWindow, {
+        game: 'legion',
+        endpoint: 'https://europe-west1-games-analytics-jr.cloudfunctions.net/replayIngest',
+        outbox: path.join(app.getPath('userData'), 'replay', 'outbox'),
+        isTrustedURL: url => isTrustedSender(url, isDev),
+        metadata: {game_version: app.getVersion(), channel: 'local', debug_build: !app.isPackaged},
+      });
+    } catch (error) { require('@sentry/electron/main').captureException(error); }
+  }
   const localization = require('./electron/localization');
   localization.useSystemLanguages([steamLanguage, ...app.getPreferredSystemLanguages()]);
   require('./electron/recovery').installRendererRecovery(mainWindow, localization.t);
@@ -148,14 +163,14 @@ function createWindow() {
     });
   }
 
-  // Session recorders (Sentry Replay, LogRocket) upload in batches; closing at once drops the
-  // last seconds. Hide first (a real visibility change both recorders upload on), let the
-  // renderer flush, then close after its reply or 1.5 s. Every quit path closes this window.
+  // Persist the final replay segment before close, even if the renderer is unresponsive.
+  // Upload can retry from disk next launch; Sentry retains its bounded renderer flush.
   let telemetryFlushed = smokeTest;
   mainWindow.on('close', event => {
     if (telemetryFlushed) return;
     telemetryFlushed = true;
     event.preventDefault();
+    void sessionRecorder?.stop().catch(() => {});
     const window = mainWindow;
     let finished = false;
     const finish = () => {

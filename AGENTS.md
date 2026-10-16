@@ -85,7 +85,7 @@ Keep every production composite index in `firestore.indexes.json`; the API deplo
 
 Preserve early Sentry initialization in Electron, Bun services, and Firebase. Register Firebase HTTP/scheduled handlers through `api/functions/src/telemetry.ts` so reports flush before serverless execution ends. Follow `docs/error-reporting.md`; do not log credentials, bundle upload tokens/source maps, or enable backend tracing/profiling by default. Keep the real SDK loopback smoke test in `bun run test:guide` passing.
 
-Sentry and LogRocket record the same eligible store sessions; preserve their shared gate and privacy policy. Preserve the shared `PACKAGED_CSP`: bundled scripts plus the exact LogRocket CDN origin, with local/blob replay workers. The guide smoke test must verify real replay envelopes, nonblank combat canvas frames, and input/network redaction using local ingestion only. Never send CI recordings to production. Replay frame rate and private `app://` assets have the limitations documented in `docs/error-reporting.md`.
+The external `@jerenaux/replay` Electron library records composed game-window frames into the central Replay dashboard. Preserve password/private-element masking, text-input key exclusion, sender validation, the disk outbox and loopback-only fixture uploads. Local development and packaged desktop builds currently record; CI and `--smoke-test` do not. Sentry retains errors/crashes/freezes and source maps, with replay session links, but Sentry Replay and LogRocket are disabled. Keep `PACKAGED_CSP` restricted to bundled scripts and local/blob workers. See `docs/error-reporting.md`.
 
 ## Match timing
 
