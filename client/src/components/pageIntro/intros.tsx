@@ -71,11 +71,11 @@ export function TeamIntro({uid, onClose}: IntroProps) {
     },
     {
       title: t('Levels and stat points'),
-      art: <div className="page-intro-sp"><img src={xpIcon} alt="" /><span className="page-intro-arrow">→</span><span className="page-intro-sp-badge"><span><strong>+3</strong><small>{t('SP')}</small></span></span></div>,
+      art: <div className="page-intro-sp"><img src={xpIcon} alt="" /><span className="page-intro-arrow">→</span><span className="page-intro-sp-badge"><span><strong>+2</strong><small>{t('SP')}</small></span></span></div>,
       lines: [
         t('Characters earn XP in battle, depending on their contributions to the battle.'),
-        t('Each level grants stat points (SP) to spend on the stats you want to raise.'),
-        t('Spent points are permanent, so build each character for their role.'),
+        t('Gain 2 SP per level through level 21. Spend them on the stats you want to raise.'),
+        t('Reset SP returns all spent points for free outside combat.'),
       ],
     },
     {

@@ -1,12 +1,11 @@
+import {MAX_STAT_SP} from './combatBalance';
 import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment } from './interfaces';
-import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType, Stat, statFieldsByIndex } from "./enums";
+import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType, statFieldsByIndex } from "./enums";
 import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
 import { inventorySize } from './utils';
 import { getConsumableById } from './Items';
 import { SKIP_LEVEL_RESTRICTIONS } from './config';
-import { getMaxStatValue } from './levelling';
-import { getSPIncrement } from './levelling';
 
 const dev = process.env.NODE_ENV === "development";
 
@@ -70,12 +69,10 @@ export function canEquipEquipment(characterData: DBCharacterData | APICharacterD
 }
 
 export function canIncreaseStat(characterData: DBCharacterData | APICharacterData, index: number, amount: number): boolean {
-  const stat = statFieldsByIndex[index];
-  const currentValue = characterData.stats[stat] + characterData.sp_bonuses[stat];
-  const increment = getSPIncrement(index) * amount;
-  const newValue = currentValue + increment;
-  const max = getMaxStatValue(index as Stat);
-  return newValue <= max;
+  if (!Number.isSafeInteger(index) || index < 0 || index >= statFieldsByIndex.length ||
+      !Number.isSafeInteger(amount) || amount <= 0 || amount > characterData.sp) return false;
+  const points = characterData.sp_allocations?.[statFieldsByIndex[index]] ?? 0;
+  return points + amount <= MAX_STAT_SP;
 }
 
 export function equipConsumable(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
@@ -275,7 +272,7 @@ export function unequipEquipment(playerData: PlayerContextData | DBPlayerData, c
   };
 }
 
-function applyEquipmentBonuses(equipped: Equipment) {
+export function applyEquipmentBonuses(equipped: Equipment) {
   const bonuses = {
     hp: 0,
     mp: 0,

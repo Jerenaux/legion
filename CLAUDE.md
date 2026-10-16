@@ -12,6 +12,10 @@ When a UI change breaks an existing UI assertion, **delete the assertion**; do n
 
 The only client-side automated checks are the existing smoke tests for startup and authentication, packaged routing, error reporting and replay privacy, crash recovery, and match readiness. The guide, localization, gifts, roster, Tower and preview scripts only capture screenshots for manual review.
 
+## Silent headless verification
+
+Run all headless tests, screenshot captures and browser previews **without audible sound**. Mute output at the browser/Electron boundary before loading the game: use Chromium `--mute-audio` or Electron `webContents.setAudioMuted(true)`. Muting only HTML audio or game settings is insufficient because Phaser/Web Audio can still play. Keep audio processing available for audio-recovery checks; never change Jerome's system volume or mute his apps.
+
 ## Testing policy
 
 Do not write unit tests or restore the removed unit-test suites. Implement the change first, then validate it through the smallest relevant integration, end-to-end, smoke, or deployment-contract check.

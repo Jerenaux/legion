@@ -1,3 +1,5 @@
+import {MAX_STAT_SP, spBonus} from '@legion/shared/combatBalance';
+import {statFieldsByIndex} from '@legion/shared/enums';
 import {t, i18n, userError} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 
@@ -11,9 +13,8 @@ import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { InventoryActionType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
-import { apiFetch, apiMutation } from '../../services/apiService';
+import { apiMutation } from '../../services/apiService';
 import { playSoundEffect, silentErrorToast, errorToast, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
-import { getMaxStatValue, getSPIncrement } from '@legion/shared/levelling';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
 import {
@@ -181,27 +182,24 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   spendSP = async (stat: Stat, amount: number) => {
-    const payload = {
-      stat,
-      amount,
-      characterId: this.context.getActiveCharacter().id,
-    };
-
-    if (!canIncreaseStat(this.context.getActiveCharacter(), stat, amount)) {
-      errorToast(t("The maximum value of {{value0}} is {{value1}}", {value0: t(StatLabels[stat]), value1: getMaxStatValue(stat)}));
+    if (this.actionPending) return;
+    const character = this.context.getActiveCharacter();
+    if (!canIncreaseStat(character, stat, amount)) {
+      errorToast(t('You can spend at most 20 SP on one stat.'));
       return;
     }
-    this.context.updateCharacterStats(this.context.getActiveCharacter().id, stat, amount);
-
-    this.props.updateCharacterData();
+    this.actionPending = true;
     this.props.handleClose();
-    successToast(t("{{value0}} increased by {{value1}}!", {value0: t(StatLabels[stat]), value1: getSPIncrement(stat)*amount}));
-
-    apiFetch('spendSP', {
-      method: 'POST',
-      body: payload
-    })
-      .catch(error => errorToast(userError(error)));
+    try {
+      await apiMutation('spendSP', {stat, amount, characterId: character.id, spVersion: character.spVersion ?? 0});
+      await this.context.refreshAllData();
+      this.props.updateCharacterData();
+    } catch (error) {
+      errorToast(userError(error));
+      // A newer build makes the next request a distinct action instead of a retry of this one.
+      this.context.refreshAllData();
+    }
+    finally { this.actionPending = false; }
   }
 
   renderDialogButtons(acceptAction: () => void, isDisabled: boolean = false) {
@@ -307,15 +305,15 @@ class ItemDialog extends Component<DialogProps, DialogState> {
           </div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}
-            <span className='character-info-addition' style={{ color: '#9ed94c' }}>{t("+ {{value0}}", {value0: getSPIncrement(dialogData.stat) * dialogValue})}</span>
+            <span className='character-info-addition' style={{ color: '#9ed94c' }}>{t("+ {{value0}}", {value0: spBonus(dialogData.stat, (activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0) + dialogValue) - (activeCharacter.sp_bonuses[statFieldsByIndex[dialogData.stat]] ?? 0)})}</span>
           </div>
         </div>
         <div className="character-info-dialog-control">
           <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))}>-</button>
           <div className="character-info-dialog-control-val">{dialogValue}</div>
-          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, prevState.dialogValue + 1) }))}>+</button>
+          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, MAX_STAT_SP - (activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0), prevState.dialogValue + 1) }))}>+</button>
         </div>
-        {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }))}
+        {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }), !canIncreaseStat(activeCharacter, dialogData.stat, dialogValue))}
       </div>
     );
   }

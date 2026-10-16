@@ -85,8 +85,8 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t("On Play, choose the golden rook to the right of Ranked. Choose Balanced or Control, set the difficulty, and use Begin expedition in the bottom bar. Rules & rewards opens the full rules.")}</p>
             <p><Trans i18n={i18n} i18nKey={"Choose <0>The Cinder Tower</0> on Play for an online solo expedition. A temporary Warrior, White Mage, and Black Mage climb six floors, ending with the Cinder Warden. Turns have no deadline, so the combat dock shows no timer. Enemies have boosted health, mana, attack, defenses, and speed. Your main roster and owned consumables are separate from this squad."} components={[<strong />]} /></p>
             <figure><img src={tower} width="1600" height="840" loading="lazy" alt={t("The tower route screen with the expedition squad, banked rewards, and a choice between the Broken Gate and the more dangerous Ember Approach.")} /><figcaption>{t("Follow your ascent on the left. Check your squad, compare the enemy lineups, and choose your next encounter. Dangerous paths award 25% more gold and XP.")}</figcaption></figure>
-            <p>{t("After each victory, choose one preparation: recover, refill supplies, or take an upgrade. Spell lessons fill up to three slots and replace the oldest spell when full. Upgrades last only for this expedition. Sculptor of Ice makes Ice cost 15 less MP but halves its damage; Light Footwork gives the Warrior an extra movement tile and 12 Speed.")}</p>
-            <p>{t("Between victories, each ally is brought to at least 30% HP, then restores 15 HP and 15 MP, capped at their maximums. Knocked-out allies return and statuses clear. Sanctuary fully restores HP and MP; Quartermaster refills supplies. During Tower battles, ice traps thaw after two skipped turns, so a frozen squad can recover.")}</p>
+            <p>{t("After each victory, choose one preparation: recover, refill supplies, or take an upgrade. Spell lessons fill up to three slots and replace the oldest spell when full. Upgrades last only for this expedition. Sculptor of Ice halves Ice's MP cost and its damage; Light Footwork gives the Warrior an extra movement tile and 12 Speed.")}</p>
+            <p>{t("Between victories, each ally is brought to at least 30% HP, then restores 15 HP and 15 MP, capped at their maximums. Knocked-out allies return and statuses clear. Sanctuary fully restores HP and MP; Quartermaster refills supplies.")}</p>
             <p>{t("The combat badge shows your current floor. In Ember Approach, two fire mages stand beyond a wall of flame spanning the arena. Cast across it, or extinguish a section with Ice to cross safely.")}</p>
             <p>{t("The Warden marks tiles before its next turn. Move away from those warning symbols before the blast. It leaves fire behind; the turn order shows when it will act.")}</p>
             <p>{t("Gold, XP, and milestone items are banked after each victory. XP is shared across your permanent roster. Defeat or retirement ends the run but keeps everything already banked. Higher floors pay more. Clearing a tier unlocks the next, up to Tier 5; each tier adds 15% enemy HP and attack power and 20% account rewards. Your first clear also unlocks the Control starting kit.")}</p>
@@ -133,15 +133,16 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t("Read item and spell details in Team or Shop before a match: check the effect, MP cost, and action speed. Fast actions bring your next turn around sooner than slow ones. A bigger spell is not always the better choice.")}</p>
             <p><Trans i18n={i18n} i18nKey={"<0>Check the whole target area.</0> Area spells can affect allies as well as enemies, and healing can help an opponent caught in the area. Aim carefully before confirming."} components={[<strong />]} /></p>
             <p>{t("Fire hits a tile, even if it is empty, and leaves flames behind. Crossing flames or standing in them causes damage.")}</p>
+            <p>{t("Elemental spells cover 1, 7 or 19 tiles. Wider spells deal less damage per target. Damage has no random rolls; attack and defense determine the result.")}</p>
             <dl className="guide-definitions">
-              <div><dt>{t("Fire")}</dt><dd>{t("Leaves burning ground. Crossing flames or remaining on them causes damage. Move out of the fire; an ice spell can extinguish it.")}</dd></div>
-              <div><dt>{t("Ice")}</dt><dd>{t("Creates obstacles and can freeze a character in place. Break the ice with a melee attack from another character or melt it with fire. Attacking an occupied ice tile can also hurt its captive.")}</dd></div>
-              <div><dt>{t("Poison")}</dt><dd>{t("Deals damage over time. Cure it with an equipped Antidote or Remedy instead of letting repeated damage pile up.")}</dd></div>
-              <div><dt>{t("Silence")}</dt><dd>{t("Prevents spellcasting. A Bocca or Remedy removes it; a silenced mage can still move, attack, or use an item.")}</dd></div>
-              <div><dt>{t("Paralysis")}</dt><dd>{t("Prevents actions while it lasts. Thunder spells can inflict it. Protect the affected character until they can act again.")}</dd></div>
+              <div><dt>{t("Fire")}</dt><dd>{t("Burns at the start of a character’s turn and at most once per movement action. Ice extinguishes flames.")}</dd></div>
+              <div><dt>{t("Ice")}</dt><dd>{t("Ice blocks tiles and makes trapped characters skip 3 turns. Remedy cannot thaw them. Another character can break the ice with melee or melt it with fire; melee can also hurt the captive.")}</dd></div>
+              <div><dt>{t("Poison")}</dt><dd>{t("Deals damage on the affected character’s next 3 turns. Antidote or Remedy cures it.")}</dd></div>
+              <div><dt>{t("Silence")}</dt><dd>{t("Blocks spells for 2 of the affected character’s turns. Bocca or Remedy removes it. Movement, melee and items remain available.")}</dd></div>
+              <div><dt>{t("Paralysis")}</dt><dd>{t("Thunder makes affected characters skip their next turn. An ally can cure paralysis with Remedy.")}</dd></div>
             </dl>
-            <p>{t("Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.")}</p>
-            <p>{t("Status durations add up: 4 turns of poison left plus a 10-turn Poison spell make 14 turns. The number beside each status icon shows the turns remaining.")}</p>
+            <p>{t("Spell statuses always apply when the spell hits. Antidote, Bocca and Remedy can target the user or an ally.")}</p>
+            <p>{t("Status counters count the affected character’s turns. Reapplying refreshes the duration instead of adding turns. Fire and empty ice tiles remain until another action removes them.")}</p>
             <p>{t("At zero HP, a character is knocked out and cannot act. A revival item such as Clover targets a fallen character; ordinary healing is not a substitute. The battle ends if your entire team is down, so revive before that happens.")}</p>
           </section>
 
@@ -165,13 +166,14 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             </ol>
             <h3>{t("Spend your stat points")}</h3>
             <p>{t("Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.")}</p>
-            <p><Trans i18n={i18n} i18nKey={"Characters earn XP and level up, improving their stats and gaining <0>SP</0> (stat points). Use the <1>+</1> beside a stat on the character sheet to spend them. These choices are permanent."} components={[<strong />, <strong />]} /></p>
+            <p><Trans i18n={i18n} i18nKey={"Gain 2 <0>SP</0> per level through level 21: 40 total, with at most 20 in one stat. Use <1>+</1> to spend them. Reset SP returns all spent points for free outside combat."} components={[<strong />, <strong />]} /></p>
             <dl className="guide-definitions">
-              <div><dt>{t("HP / MP")}</dt><dd>{t("Health and spellcasting resources. One SP adds 10 to either.")}</dd></div>
+              <div><dt>{t("HP / MP")}</dt><dd>{t("One SP adds 2 HP or 1 MP.")}</dd></div>
               <div><dt>{t("ATK / DEF")}</dt><dd>{t("Physical attack power and physical defense. One SP adds 1.")}</dd></div>
               <div><dt>{t("SP.ATK / SP.DEF")}</dt><dd>{t("Magic power and magic defense. One SP adds 1.")}</dd></div>
-              <div><dt>{t("Speed")}</dt><dd>{t("Affects turn order and recovery between actions. One SP adds 1.")}</dd></div>
+              <div><dt>{t("Speed")}</dt><dd>{t("Shortens recovery between actions, with a cap. Every 2 SP add 1 Speed.")}</dd></div>
             </dl>
+            <p>{t("Level growth adds up to 20% to HP, damage and healing by level 21. Equipment and allocated SP add their listed bonuses.")}</p>
             <p>{t("HP and MP are restored for the next battle, and knocked-out characters return. You do not need to heal your roster between matches.")}</p>
           </section>
 

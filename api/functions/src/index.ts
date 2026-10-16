@@ -4,7 +4,7 @@ import {inventoryData, purchaseItem, inventoryTransaction, inventorySave, getRew
   from "./inventoryAPI";
 import {rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters,
-  deleteOnSaleCharacters, purchaseCharacter, spendSP} from "./characterAPI";
+  deleteOnSaleCharacters, purchaseCharacter, spendSP, resetSP} from "./characterAPI";
 import {createPlayer, getPlayerData, bootstrapPlayer, queuingData,
   saveGoldReward, claimChest, completeTour, fetchGuideTip,
   setPlayerOnSteroids, zombieData, recordPlayerAction,
@@ -25,7 +25,7 @@ export {
   createPlayer, rosterData, characterData, postGameUpdate,
   generateOnSaleCharacters, listOnSaleCharacters, deleteOnSaleCharacters,
   purchaseCharacter, getPlayerData, bootstrapPlayer, queuingData, createGame,
-  inventorySave, inventoryTransaction, saveGoldReward, spendSP,
+  inventorySave, inventoryTransaction, saveGoldReward, spendSP, resetSP,
   getReward, claimChest,
   completeGame, getDashboardData, getActionLog, logQueuingActivity, insertGameAction,
   getGameLog, completeTour, fetchGuideTip,

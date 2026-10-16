@@ -1,3 +1,4 @@
+import {recoveryTime} from '@legion/shared/combatBalance';
 import { SpeedClass, Stat } from "@legion/shared/enums";
 import { ServerPlayer } from "./ServerPlayer";
 
@@ -5,14 +6,8 @@ interface TurnQueueItem {
     character: ServerPlayer;
     nextActionTime: number;
     passCount: number;
+    tieBreaker: number;
 }
-
-const ACTION_COOLDOWNS = {
-    [SpeedClass.PASS]: 60,      // Base cooldown for passing
-    [SpeedClass.FAST]: 100,    
-    [SpeedClass.NORMAL]: 150,   
-    [SpeedClass.SLOW]: 250      
-};
 
 export class TurnSystem {
     private currentTime: number;
@@ -28,6 +23,7 @@ export class TurnSystem {
         this.turnQueue = characters.map(char => ({
             character: char,
             nextActionTime: openingOrder ? 1001 + openingOrder.indexOf(char) : this.getInitialActionTime(char.getStat(Stat.SPEED)),
+            tieBreaker: Math.random(),
             passCount: 0
         }));
         
@@ -36,9 +32,8 @@ export class TurnSystem {
     }
 
     getInitialActionTime(speed) {
-        // Higher speed = lower initial action time
-        // Base value of 1001 gives us room for variation
-        return 1001 - (speed * 5);
+        // Higher speed gives earlier initiative without randomizing recovery time.
+        return recoveryTime(speed, SpeedClass.NORMAL);
     }
 
     // After a character takes an action
@@ -46,19 +41,7 @@ export class TurnSystem {
         const queueItem = this.turnQueue.find(c => c.character === character);
         if (!queueItem) return;
 
-        // Get base cooldown for the action
-        const baseCooldown = ACTION_COOLDOWNS[actionType];
-        
-        const charSpeed = character.getStat(Stat.SPEED);
-        
-        // Compute new action time:
-        // - Start from current time
-        // - Add cooldown modified by speed (faster characters recover faster)
-        // - Add small random factor to prevent perfect loops
-        const speedMultiplier = 1 - (charSpeed * 0.0045); // Speed reduces cooldown by 0.4% per point
-        const randomVariation = Math.random() * 10 - 5; // ±5 variation
-        let timeIncrement = (baseCooldown * speedMultiplier) + randomVariation;
-        
+        let timeIncrement = recoveryTime(character.getStat(Stat.SPEED), actionType, character.isHasted());
         // Find the next fastest actor's time (for all actions)
         const otherActors = this.turnQueue.filter(item => 
             item.character !== character && 
@@ -81,6 +64,8 @@ export class TurnSystem {
         }
         
         queueItem.nextActionTime = this.currentTime + timeIncrement;
+        // Redraw on every reschedule: a fixed draw would let one unit win every later tie.
+        queueItem.tieBreaker = Math.random();
         this.sortQueue();
     }
 
@@ -98,7 +83,8 @@ export class TurnSystem {
     }
 
     sortQueue() {
-        this.turnQueue.sort((a, b) => a.nextActionTime - b.nextActionTime);
+        // Fixed class speeds must not give the first-listed team every tied activation.
+        this.turnQueue.sort((a, b) => (a.nextActionTime - b.nextActionTime) || (a.tieBreaker - b.tieBreaker));
     }
 
     getQueueData() {
@@ -114,7 +100,8 @@ export class TurnSystem {
     addCharacter(character: ServerPlayer) {
         this.turnQueue.push({
             character: character,
-            nextActionTime: this.getInitialActionTime(character.getStat(Stat.SPEED)),
+            nextActionTime: this.currentTime + this.getInitialActionTime(character.getStat(Stat.SPEED)),
+            tieBreaker: Math.random(),
             passCount: 0
         });
         this.sortQueue();

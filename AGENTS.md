@@ -33,6 +33,10 @@ Make the bump after syncing the latest `main`, so concurrent branches do not reu
 
 If explicitly requested, release tags must be `v<version>`, for example `v0.2.0`, and must exactly match `client/package.json`. Tags do not trigger desktop builds. Manual desktop releases publish the package version from `main` to every selected Itch channel.
 
+## Silent headless verification
+
+Run all headless tests, screenshot captures and browser previews **without audible sound**. Mute output at the browser/Electron boundary before loading the game: use Chromium `--mute-audio` or Electron `webContents.setAudioMuted(true)`. Muting only HTML audio or game settings is insufficient because Phaser/Web Audio can still play. Keep audio processing available for audio-recovery checks; never change Jerome's system volume or mute his apps.
+
 ## App verification cleanup
 
 When opening the app to check your work, close the app instance you opened as soon as verification is finished, including after failed or interrupted checks. Do not close an app instance Jerome already had open.
@@ -85,7 +89,7 @@ Keep every production composite index in `firestore.indexes.json`; the API deplo
 
 Preserve early Sentry initialization in Electron, Bun services, and Firebase. Register Firebase HTTP/scheduled handlers through `api/functions/src/telemetry.ts` so reports flush before serverless execution ends. Follow `docs/error-reporting.md`; do not log credentials, bundle upload tokens/source maps, or enable backend tracing/profiling by default. Keep the real SDK loopback smoke test in `bun run test:guide` passing.
 
-The external `@jerenaux/replay` Electron library records composed game-window frames into the central Replay dashboard. Preserve password/private-element masking, text-input key exclusion, sender validation, the disk outbox and loopback-only fixture uploads. Local development and packaged desktop builds currently record; CI and `--smoke-test` do not. Sentry retains errors/crashes/freezes and source maps, with replay session links, but Sentry Replay and LogRocket are disabled. Keep `PACKAGED_CSP` restricted to bundled scripts and local/blob workers. See `docs/error-reporting.md`.
+The external `@jerenaux/replay` Electron library records composed game-window frames into the central Replay dashboard. Preserve password/private-element masking, text-input key exclusion, sender validation, the disk outbox and loopback-only fixture uploads. Only packaged Steam/Itch release builds stamped with `replayChannel: store` record; local builds, CI and `--smoke-test` do not. Capture starts after the first authenticated user is identified, avoiding a separate anonymous startup recording. Sentry retains errors/crashes/freezes and source maps, with replay session links, but Sentry Replay and LogRocket are disabled. Keep `PACKAGED_CSP` restricted to bundled scripts and local/blob workers. See `docs/error-reporting.md`.
 
 ## Match timing
 

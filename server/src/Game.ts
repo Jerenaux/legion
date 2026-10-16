@@ -1,3 +1,4 @@
+import {damageAmount, MELEE_POTENCY} from '@legion/shared/combatBalance';
 import { Socket, Server } from 'socket.io';
 import type { ItemNoEffectReason } from '@legion/shared/itemUse';
 import { getFirestore, DocumentReference } from 'firebase-admin/firestore';
@@ -512,6 +513,7 @@ export abstract class Game
                 this.turnSystem.processAction(this.turnee, SpeedClass.NORMAL);
             }
 
+            this.turnee?.endTurn();
             this.broadcastQueueData();
             this.turnee = this.turnSystem.getNextActor();
             if (!this.turnee) return;
@@ -631,25 +633,7 @@ export abstract class Game
         if (this.config.HIGH_DAMAGE) {
             return 1000;
         }
-        // Calculate the base damage
-        // let baseDamage = attacker.atk - defender.def;
-        let baseDamage = attacker.getStat(Stat.ATK) / (1 + defender.getStat(Stat.DEF));
-        baseDamage *= 10;
-
-        // Ensure baseDamage doesn't fall below some minimum (e.g., 1)
-        baseDamage = Math.max(baseDamage, 1);
-
-        // Add randomness factor - in this case, damage can be from 0.9 to 1.1 times the baseDamage
-        let randomFactor = 0.9 + Math.random() * 0.2;
-        let totalDamage = baseDamage * randomFactor;
-
-        // Round the result to get rid of fractions
-        totalDamage = Math.round(totalDamage);
-
-        // Ensure totalDamage is at least 1
-        totalDamage = Math.max(totalDamage, 1);
-
-        return totalDamage;
+        return damageAmount(MELEE_POTENCY, attacker.level, attacker.getStat(Stat.ATK), defender.getStat(Stat.DEF));
     }
 
     getTeam(team: number): ServerPlayer[] {
@@ -846,16 +830,12 @@ export abstract class Game
 
     // Called when traversing cells with terrain effects
     checkForTerrainEffects(player: ServerPlayer, cells: Set<string>) {
-        cells.forEach(cell => {
-            const [x, y] = cell.split(',').map(Number);
-            const terrain = this.terrainManager.terrainMap.get(cell);
-            if (terrain) {
-                const distance = hexDistance(player.x, player.y, x, y);
-                this.combatClock.schedule(() => {
-                    player.applyTerrainEffect(terrain);
-                }, distance * 100);
-            }
-        });
+        // Crossing several burning tiles is one exposure per movement action.
+        const cell = [...cells].find(cell => this.terrainManager.terrainMap.get(cell) === Terrain.FIRE);
+        if (!cell) return;
+        const [x, y] = cell.split(',').map(Number);
+        const damage = this.terrainManager.fireDamage.get(cell);
+        this.combatClock.schedule(() => player.applyTerrainEffect(Terrain.FIRE, damage), hexDistance(player.x, player.y, x, y) * 100);
     }
 
     // Apply when ending on cell with terrain effect
@@ -1083,7 +1063,7 @@ export abstract class Game
         const nbBurning = this.terrainManager.getNbBurning();
 
         if (spell.terrain) {
-            const terrainUpdates = this.terrainManager.updateTerrainFromSpell(spell, x, y);
+            const terrainUpdates = this.terrainManager.updateTerrainFromSpell(spell, x, y, player);
             this.broadcastTerrain(terrainUpdates);
 
             // If any terrain update is not NONE
@@ -1094,7 +1074,7 @@ export abstract class Game
 
         if (spell.status) {
             targets.forEach(target => {
-                const success = target.addStatusEffect(spell.status.effect, spell.status.duration, spell.status.chance);
+                const success = target.addStatusEffect(spell.status.effect, spell.status.duration, spell.status.chance, player);
                 console.log(`[Game:applyMagic] Status effect ${spell.status.effect} applied to target ${target.num}: ${success}`);
                 if (success) {
                     team.increaseScoreFromStatusEffect();
@@ -1476,7 +1456,7 @@ export abstract class Game
         let xp = otherTeam.getTotalLevel() * XP_PER_LEVEL * (rewardFactor + 0.3);
         if (mode === PlayMode.PRACTICE || mode === PlayMode.TUTORIAL) xp *= PRACTICE_XP_COEF;
         if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) xp *= RANKED_XP_COEF;
-        if (team.isGame0) xp *= 2;
+        if (team.isGame0()) xp *= 2;
         // Add +- 5% random factor
         xp *= 0.95 + Math.random() * 0.1;
 

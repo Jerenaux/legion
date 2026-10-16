@@ -1,6 +1,6 @@
 import { createContext } from 'preact';
 import { PlayerContextData, APICharacterData, FriendData, } from '@legion/shared/interfaces';
-import { League, Stat, LockedFeatures } from "@legion/shared/enums";
+import { League, LockedFeatures } from "@legion/shared/enums";
 import { Socket } from 'socket.io-client';
 
 export interface PlayerContextState {
@@ -34,7 +34,6 @@ export const PlayerContext = createContext<{
   updateIdentity: (updates: Partial<Pick<PlayerContextData, 'name' | 'avatar'>>) => void;
   refreshPlayerData: () => void;
   fetchRosterData: () => Promise<void>;
-  updateCharacterStats: (characterId: string, stat: Stat, amount: number) => void;
   getCharacter: (characterId: string) => APICharacterData | undefined;
   getActiveCharacter: () => APICharacterData | undefined;
   updateActiveCharacter: (characterId: string) => void;
@@ -105,7 +104,6 @@ export const PlayerContext = createContext<{
   updateIdentity: () => {},
   refreshPlayerData: () => {},
   fetchRosterData: async () => {},
-  updateCharacterStats: () => {},
   getCharacter: () => undefined,
   getActiveCharacter: () => undefined,
   updateActiveCharacter: () => {},

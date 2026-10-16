@@ -34,7 +34,7 @@ export function selectStatToLevelUp(characterClass: Class): Stat {
 
 export function increaseStat(stat: Stat, currentValue: number) {
     const increments = [1, 1, 1, 1, 2, 2, 2, 3, 3, 4];
-    const increment = increments[Math.floor(Math.random() * increments.length)] * getSPIncrement(stat);
+    const increment = increments[Math.floor(Math.random() * increments.length)] * (stat === Stat.HP || stat === Stat.MP ? 10 : 1);
     return currentValue + increment;
 }
 
@@ -42,22 +42,6 @@ export function increaseStat(stat: Stat, currentValue: number) {
 // Returns the XP needed to reach the next level, `level` being the current level
 export function getXPThreshold(level: number) {
     return 50 + (level - 1) * XP_PER_LEVEL;
-}
-
-export function getSPIncrement(stat: number) {
-    switch (stat) {
-        case Stat.ATK:
-        case Stat.DEF:
-        case Stat.SPATK:
-        case Stat.SPDEF:
-        case Stat.SPEED:
-            return 1;
-        case Stat.HP:
-        case Stat.MP:
-            return 10;
-        default:
-            return 1;
-    }
 }
 
 export function getMaxStatValue(stat: Stat) {

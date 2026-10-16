@@ -70,7 +70,7 @@ async function apiFetch(endpoint: string, options: ApiFetchOptions = {}, maxRetr
 
 const pendingMutations = new Map<string, ReturnType<typeof apiFetch>>();
 // Only endpoints with atomic server receipts may be retried after an ambiguous response.
-export function apiMutation(endpoint: 'purchaseItem' | 'purchaseCharacter' | 'claimChest' | 'inventoryTransaction', body: Record<string, unknown>) {
+export function apiMutation(endpoint: 'spendSP' | 'resetSP' | 'purchaseItem' | 'purchaseCharacter' | 'claimChest' | 'inventoryTransaction', body: Record<string, unknown>) {
     const uid = firebaseAuth.currentUser?.uid;
     if (!uid) return Promise.reject(new Error('No authenticated desktop session'));
     const key = `pendingMutation:${uid}:${endpoint}:${JSON.stringify(body)}`;

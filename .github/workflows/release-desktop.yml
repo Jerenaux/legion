@@ -110,7 +110,11 @@ jobs:
             [[ -n "${!variable}" ]] || unset "$variable"
           done
           BUILD_TARGET=electron bun run build
-          bunx electron-builder ${{ matrix.builder_args }}
+          replay_args=()
+          if [[ "$SENTRY_REPLAY_ENABLED" == 'true' ]]; then
+            replay_args+=("-c.extraMetadata.replayChannel=store")
+          fi
+          bunx electron-builder ${{ matrix.builder_args }} "${replay_args[@]}"
       - name: Prepare store directory
         working-directory: client
         shell: bash

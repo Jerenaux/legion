@@ -153,6 +153,84 @@ try {
   assert.deepEqual((await mage.ref.get()).data().skills, [2]);
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
   assert.deepEqual((await gearPlayerRef.get()).data().inventory.spells, [5]);
+  // Balance migration and SP spending cross the authenticated API and real Firestore transactions.
+  {
+    const {Stat} = await import('../../shared/enums');
+    const {baseStats} = await import('../../shared/combatBalance');
+    const spAccount = await login(`sp-${run}`);
+    const spPlayerRef = db.collection('players').doc(spAccount.uid);
+    const spPlayer = (await spPlayerRef.get()).data();
+    const characterRef = spPlayer.characters[0];
+    const legacy = (await characterRef.get()).data();
+    delete legacy.balanceVersion;
+    delete legacy.sp_allocations;
+    Object.assign(legacy, {level: 21, xp: 123, sp: -100, allTimeSP: 999});
+    legacy.stats = Object.fromEntries(Object.keys(legacy.stats).map(stat => [stat, 800]));
+    legacy.sp_bonuses = Object.fromEntries(Object.keys(legacy.sp_bonuses).map(stat => [stat, -20]));
+    await characterRef.set(legacy);
+    const bootstraps = await Promise.all(Array.from({length: 4}, () => http('bootstrapPlayer', undefined, spAccount.token)));
+    const migrated = (await characterRef.get()).data();
+    assert.equal(migrated.balanceVersion, 1);
+    assert.equal(migrated.level, 21);
+    assert.equal(migrated.xp, 123);
+    assert.equal(migrated.sp, 40);
+    assert.equal(migrated.allTimeSP, 40);
+    assert.deepEqual(migrated.stats, baseStats(legacy.class, 21));
+    assert.deepEqual(migrated.inventory, legacy.inventory);
+    assert.deepEqual(migrated.skills, legacy.skills);
+    assert.deepEqual(migrated.equipment, legacy.equipment);
+    assert.deepEqual(migrated.legacyBalance, {stats: legacy.stats, sp_bonuses: legacy.sp_bonuses, sp: -100, allTimeSP: 999});
+    assert(bootstraps.every(result => result.characters.find(character => character.id === characterRef.id).legacyBalance === undefined));
+    await http('rosterData', undefined, spAccount.token);
+    assert.deepEqual((await characterRef.get()).data(), migrated, 'Repeated reads must not refund points or rewrite the backup');
+    const request = async (endpoint: string, body: unknown, expected: number, token = spAccount.token) => {
+      const response = await fetch(`${api}/${endpoint}`, {method: 'POST',
+        headers: {'Content-Type': 'application/json', Authorization: `Bearer ${token}`}, body: JSON.stringify(body)});
+      assert.equal(response.status, expected, await response.text());
+    };
+    const spend = {characterId: characterRef.id, stat: Stat.ATK, amount: 1};
+    for (const amount of [-1, 0, .5, NaN, Infinity, -Infinity, '1', null, Number.MAX_SAFE_INTEGER + 1]) {
+      await request('spendSP', {...spend, amount}, 400);
+    }
+    const overflow = await fetch(`${api}/spendSP`, {method: 'POST',
+      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${spAccount.token}`},
+      body: JSON.stringify({...spend, amount: 'OVERFLOW'}).replace('"OVERFLOW"', '1e999')});
+    assert.equal(overflow.status, 400);
+    for (const stat of [-1, .5, 7, 999, null, 'atk']) await request('spendSP', {...spend, stat}, 400);
+    await request('spendSP', {...spend, characterId: '../bad'}, 400);
+    for (const endpoint of ['spendSP', 'resetSP']) await request(endpoint, spend, 403, two.token);
+    assert.deepEqual((await characterRef.get()).data(), migrated, 'Rejected requests must not alter the character');
+    const allocation = {...spend, amount: 20, requestId: crypto.randomUUID()};
+    await Promise.all(Array.from({length: 4}, () => request('spendSP', allocation, 200)));
+    assert.equal((await characterRef.get()).data().sp, 20);
+    assert.equal((await characterRef.get()).data().sp_allocations.atk, 20);
+    await request('spendSP', {...allocation, amount: 19}, 409);
+    await request('spendSP', spend, 409);
+    await request('spendSP', {...spend, stat: Stat.DEF, amount: 20}, 200);
+    await request('spendSP', {...spend, stat: Stat.HP}, 409);
+    assert.equal((await characterRef.get()).data().sp, 0);
+    const resetRequest = {characterId: characterRef.id, requestId: crypto.randomUUID()};
+    await Promise.all(Array.from({length: 4}, () => request('resetSP', resetRequest, 200)));
+    assert.equal((await characterRef.get()).data().sp, 40);
+    await request('spendSP', {...spend, stat: Stat.SPEED}, 200);
+    assert.equal((await characterRef.get()).data().sp_bonuses.speed, 0);
+    await request('spendSP', {...spend, stat: Stat.SPEED}, 200);
+    assert.equal((await characterRef.get()).data().sp_bonuses.speed, 1);
+    await request('resetSP', resetRequest, 200);
+    assert.equal((await characterRef.get()).data().sp, 38, 'Replaying an earlier reset must not refund newer spending');
+    await http('rosterData', undefined, spAccount.token);
+    const afterRead = (await characterRef.get()).data();
+    assert.equal(afterRead.sp, 38);
+    assert.deepEqual(afterRead.legacyBalance, migrated.legacyBalance);
+    assert(Object.values(afterRead.sp_bonuses).every(value => Number.isInteger(value) && Number(value) >= 0));
+    // Requests carry the build version they were made from, so an old pending request cannot match a new action.
+    await request('spendSP', {...spend, spVersion: afterRead.spVersion - 1, requestId: crypto.randomUUID()}, 409);
+    await request('spendSP', {...spend, spVersion: afterRead.spVersion, requestId: crypto.randomUUID()}, 200);
+    const versioned = (await characterRef.get()).data();
+    assert.equal(versioned.sp, 37);
+    assert.equal(versioned.spVersion, afterRead.spVersion + 1);
+    console.log('Legacy character migration, integer SP, caps, ownership, concurrent receipt retries and free redistribution pass');
+  }
   // Mutation receipts cross the real HTTP/auth/Firestore boundary, including concurrent retries.
   const shopper = await login(`shop-${run}`);
   const shopperRef = db.collection('players').doc(shopper.uid);

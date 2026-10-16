@@ -1,6 +1,7 @@
 import { BaseEquipment } from "./BaseEquipment";
 import { Stat, EquipmentSlot, Class, StatusEffect } from ".";
 
+// Equipment budgets, including poison and carrying capacity: docs/combat-balance.md.
 export const equipments:BaseEquipment[] = [];
 
 equipments[0] = new BaseEquipment({
@@ -8,7 +9,7 @@ equipments[0] = new BaseEquipment({
     name: "Jagged Sword",
     description: "",
     frame: 0,
-    effects: [{stat: Stat.ATK, value: 100}, {stat: Stat.DEF, value: 15}],
+    effects: [{stat: Stat.ATK, value: 12}, {stat: Stat.DEF, value: 4}],
     slot: EquipmentSlot.WEAPON,
     effort: 45,
     classes: [Class.WARRIOR],
@@ -20,7 +21,7 @@ equipments[1] = new BaseEquipment({
     name: "Basic staff",
     description: "",
     frame: 20,
-    effects: [{stat: Stat.SPATK, value: 5}, {stat: Stat.MP, value: 10}],
+    effects: [{stat: Stat.SPATK, value: 2}, {stat: Stat.MP, value: 2}],
     slot: EquipmentSlot.WEAPON,
     effort: 4,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
@@ -32,7 +33,7 @@ equipments[2] = new BaseEquipment({
     name: "Ring of the Soul",
     description: "",
     frame: 40,
-    effects: [{stat: Stat.MP, value: 150}],
+    effects: [{stat: Stat.MP, value: 20}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 50,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
@@ -65,7 +66,7 @@ equipments[5] = new BaseEquipment({
     name: "Dagger",
     description: "",
     frame: 1,
-    effects: [{stat: Stat.ATK, value: 10}],
+    effects: [{stat: Stat.ATK, value: 3}],
     slot: EquipmentSlot.WEAPON,
     effort: 3,
     classes: [Class.WARRIOR],
@@ -76,7 +77,7 @@ equipments[6] = new BaseEquipment({
     name: "Traveler's hat",
     description: "",
     frame: 70,
-    effects: [{stat: Stat.DEF, value: 10}],
+    effects: [{stat: Stat.DEF, value: 3}],
     slot: EquipmentSlot.HELMET,
     effort: 3,
 });
@@ -86,7 +87,7 @@ equipments[7] = new BaseEquipment({
     name: "Cloth tunic",
     description: "",
     frame: 90,
-    effects: [{stat: Stat.DEF, value: 10}],
+    effects: [{stat: Stat.DEF, value: 4}],
     slot: EquipmentSlot.ARMOR,
     effort: 4,
 });
@@ -96,7 +97,7 @@ equipments[8] = new BaseEquipment({
     name: "Hardened gloves",
     description: "",
     frame: 110,
-    effects: [{stat: Stat.DEF, value: 20}, {stat: Stat.SPDEF, value: 10}],
+    effects: [{stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.GLOVES,
     effort: 10,
 });
@@ -106,7 +107,7 @@ equipments[9] = new BaseEquipment({
     name: "Whispering Boots",
     description: "",
     frame: 130,
-    effects: [{stat: Stat.SPEED, value: 10}, {stat: Stat.MP, value: 15}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [{stat: Stat.SPEED, value: 1}, {stat: Stat.MP, value: 2}, {stat: Stat.DEF, value: 1}, {stat: Stat.SPATK, value: 1}, {stat: Stat.SPDEF, value: 1}],
     slot: EquipmentSlot.BOOTS,
     effort: 9,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
@@ -117,7 +118,7 @@ equipments[10] = new BaseEquipment({
     name: "Golden necklace",
     description: "",
     frame: 50,
-    effects: [{stat: Stat.HP, value: 40}],
+    effects: [{stat: Stat.HP, value: 20}],
     slot: EquipmentSlot.NECKLACE,
     effort: 12,
 });
@@ -127,7 +128,7 @@ equipments[11] = new BaseEquipment({
     name: "Helmet",
     description: "",
     frame: 71,
-    effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 5}],
+    effects: [{stat: Stat.DEF, value: 6}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.HELMET,
     effort: 11,
     classes: [Class.WARRIOR],
@@ -138,7 +139,7 @@ equipments[12] = new BaseEquipment({
     name: "Leather armor",
     description: "",
     frame: 91,
-    effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 10}],
+    effects: [{stat: Stat.DEF, value: 7}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.ARMOR,
     effort: 12,
     classes: [Class.WARRIOR],
@@ -149,7 +150,7 @@ equipments[13] = new BaseEquipment({
     name: "Armored gloves",
     description: "",
     frame: 111,
-    effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.ATK, value: 10}],
+    effects: [{stat: Stat.DEF, value: 8}, {stat: Stat.ATK, value: 4}],
     slot: EquipmentSlot.GLOVES,
     effort: 19,
     classes: [Class.WARRIOR],
@@ -160,7 +161,7 @@ equipments[14] = new BaseEquipment({
     name: "Armored boots",
     description: "",
     frame: 131,
-    effects: [{stat: Stat.DEF, value: 30}, {stat: Stat.SPDEF, value: 20}, {stat: Stat.SPEED, value: 15}],
+    effects: [{stat: Stat.DEF, value: 4}, {stat: Stat.SPDEF, value: 4}, {stat: Stat.SPEED, value: 1}],
     slot: EquipmentSlot.BOOTS,
     effort: 15,
     classes: [Class.WARRIOR],
@@ -171,7 +172,7 @@ equipments[15] = new BaseEquipment({
     name: "Light gloves",
     description: "",
     frame: 112,
-    effects: [{stat: Stat.DEF, value: 10}],
+    effects: [{stat: Stat.DEF, value: 3}],
     slot: EquipmentSlot.GLOVES,
     effort: 3,
 });
@@ -181,7 +182,7 @@ equipments[16] = new BaseEquipment({
     name: "Jade necklace",
     description: "",
     frame: 51,
-    effects: [{stat: Stat.MP, value: 20}],
+    effects: [{stat: Stat.MP, value: 6}],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
@@ -192,7 +193,7 @@ equipments[17] = new BaseEquipment({
     name: "Golden ring",
     description: "",
     frame: 41,
-    effects: [{stat: Stat.HP, value: 20}],
+    effects: [{stat: Stat.HP, value: 8}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 4,
 });
@@ -202,7 +203,7 @@ equipments[18] = new BaseEquipment({
     name: "Knight's helmet",
     description: "",
     frame: 72,
-    effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.SPDEF, value: 20}],
+    effects: [{stat: Stat.DEF, value: 9}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.HELMET,
     effort: 21,
     classes: [Class.WARRIOR],
@@ -213,7 +214,7 @@ equipments[19] = new BaseEquipment({
     name: "Knight's armor",
     description: "",
     frame: 92,
-    effects: [{stat: Stat.DEF, value: 50}, {stat: Stat.SPDEF, value: 25}],
+    effects: [{stat: Stat.DEF, value: 9}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.ARMOR,
     effort: 23,
     classes: [Class.WARRIOR],
@@ -224,7 +225,7 @@ equipments[20] = new BaseEquipment({
     name: "Light boots",
     description: "",
     frame: 132,
-    effects: [{stat: Stat.DEF, value: 10}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPEED, value: 5}],
+    effects: [{stat: Stat.DEF, value: 2}, {stat: Stat.SPDEF, value: 2}, {stat: Stat.SPEED, value: 1}],
     slot: EquipmentSlot.BOOTS,
     effort: 6,
 });
@@ -234,7 +235,7 @@ equipments[21] = new BaseEquipment({
     name: "Ruby ring",
     description: "",
     frame: 42,
-    effects: [{stat: Stat.HP, value: 10}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}],
+    effects: [{stat: Stat.HP, value: 4}, {stat: Stat.ATK, value: 2}, {stat: Stat.DEF, value: 2}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 6,
 });
@@ -244,7 +245,7 @@ equipments[22] = new BaseEquipment({
     name: "Teardrop necklace",
     description: "",
     frame: 52,
-    effects: [{stat: Stat.HP, value: 20}],
+    effects: [{stat: Stat.HP, value: 12}],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
 });
@@ -254,7 +255,7 @@ equipments[23] = new BaseEquipment({
     name: "Astral Scepter",
     description: "",
     frame: 21,
-    effects: [{stat: Stat.HP, value: 15}, {stat: Stat.MP, value: 30}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 40}, {stat: Stat.SPDEF, value: 30}],
+    effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 4}, {stat: Stat.DEF, value: 1}, {stat: Stat.SPATK, value: 6}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.WEAPON,
     effort: 35,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
@@ -265,7 +266,7 @@ equipments[24] = new BaseEquipment({
     name: "Sorcerer's Cowl",
     description: "",
     frame: 73,
-    effects: [{stat: Stat.HP, value: 15}, {stat: Stat.MP, value: 50}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPATK, value: 25}, {stat: Stat.SPDEF, value: 30}],
+    effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 4}, {stat: Stat.DEF, value: 2}, {stat: Stat.SPATK, value: 4}, {stat: Stat.SPDEF, value: 4}],
     slot: EquipmentSlot.HELMET,
     effort: 40,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
@@ -276,7 +277,7 @@ equipments[25] = new BaseEquipment({
     name: "Novice Wizard's Hat",
     description: "",
     frame: 74,
-    effects: [{stat: Stat.MP, value: 15}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [{stat: Stat.MP, value: 2}, {stat: Stat.DEF, value: 1}, {stat: Stat.SPATK, value: 2}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.HELMET,
     effort: 9,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
@@ -287,7 +288,7 @@ equipments[26] = new BaseEquipment({
     name: "Acolyte's Tunic",
     description: "",
     frame: 93,
-    effects: [{stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 10}, {stat: Stat.SPATK, value: 5}, {stat: Stat.MP, value: 10}],
+    effects: [{stat: Stat.DEF, value: 2}, {stat: Stat.SPDEF, value: 2}, {stat: Stat.SPATK, value: 1}, {stat: Stat.MP, value: 2}],
     slot: EquipmentSlot.ARMOR,
     effort: 9,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
@@ -298,7 +299,7 @@ equipments[27] = new BaseEquipment({
     name: "Traveler's gloves",
     description: "",
     frame: 113,
-    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.ATK, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [{stat: Stat.HP, value: 4}, {stat: Stat.DEF, value: 2}, {stat: Stat.ATK, value: 1}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.GLOVES,
     effort: 8,
 });
@@ -308,7 +309,7 @@ equipments[28] = new BaseEquipment({
     name: "Sentinel's Greaves",
     description: "",
     frame: 133,
-    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.DEF, value: 10}, {stat: Stat.SPDEF, value: 5}, {stat: Stat.SPEED, value: 10}],
+    effects: [{stat: Stat.HP, value: 4}, {stat: Stat.DEF, value: 3}, {stat: Stat.SPDEF, value: 1}, {stat: Stat.SPEED, value: 1}],
     slot: EquipmentSlot.BOOTS,
     effort: 10,
     classes: [Class.WARRIOR],
@@ -319,7 +320,7 @@ equipments[29] = new BaseEquipment({
     name: "Ruby signet",
     description: "",
     frame: 43,
-    effects: [{stat: Stat.HP, value: 10}, {stat: Stat.MP, value: 15}, {stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 5}],
+    effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 2}, {stat: Stat.ATK, value: 2}, {stat: Stat.DEF, value: 2}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 12,
 });
@@ -329,7 +330,7 @@ equipments[30] = new BaseEquipment({
     name: "Wayfarer's cord",
     description: "",
     frame: 53,
-    effects: [{stat: Stat.HP, value: 5}, {stat: Stat.MP, value: 5}],
+    effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 1}],
     slot: EquipmentSlot.NECKLACE,
     effort: 3,
 });
@@ -339,10 +340,7 @@ equipments[31] = new BaseEquipment({
     name: "Sturdy Iron Sword",
     description: "",
     frame: 2,
-    effects: [
-        {stat: Stat.ATK, value: 25},
-        {stat: Stat.DEF, value: 5}
-    ],
+    effects: [{stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 1}],
     slot: EquipmentSlot.WEAPON,
     effort: 6,
     classes: [Class.WARRIOR],
@@ -353,10 +351,7 @@ equipments[32] = new BaseEquipment({
     name: "Serpent's Fang",
     description: "Can poison the enemy on melee attacks.",
     frame: 22,
-    effects: [
-        {stat: Stat.ATK, value: 35},
-        {stat: Stat.MP, value: 35},
-    ],
+    effects: [{stat: Stat.ATK, value: 2}, {stat: Stat.MP, value: 4}],
     statusEffects: [
         {
             effect: StatusEffect.POISON,
@@ -374,9 +369,7 @@ equipments[33] = new BaseEquipment({
     name: "Viridian Striker",
     description: "Can poison the enemy on melee attacks.",
     frame: 3,
-    effects: [
-        {stat: Stat.ATK, value: 40},
-    ],
+    effects: [{stat: Stat.ATK, value: 8}],
     statusEffects: [
         {
             effect: StatusEffect.POISON,

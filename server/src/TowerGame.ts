@@ -3,13 +3,12 @@ import {AIGame} from './AIGame';
 import {ServerPlayer} from './ServerPlayer';
 import {AIServerPlayer} from './AIServerPlayer';
 import {apiFetch} from './API';
-import {Class, League, PlayMode, SpeedClass, StatusEffect, Terrain} from '@legion/shared/enums';
+import {Class, League, PlayMode, SpeedClass, Terrain} from '@legion/shared/enums';
 import {TOWER_ENCOUNTERS, TowerRun, towerCharacter, TowerBattleResult} from '@legion/shared/tower';
 import {getTilesInHexRadius, isSkip} from '@legion/shared/utils';
 import {remoteConfig} from '@legion/shared/config';
 
 export class TowerGame extends AIGame {
-  private frozenTurns = new Map<ServerPlayer, number>();
   private result: TowerBattleResult | null = null;
   private saving: Promise<void> | null = null;
   private saved = false;
@@ -40,13 +39,14 @@ export class TowerGame extends AIGame {
     enemies.teamData.AIwinRatio = 0.8;
     this.run.squad.forEach((unit, index) => {
       const player = new ServerPlayer(index + 1, unit.character.name, unit.character.portrait, index === 0 ? 5 : 4, [5, 3, 7][index]);
-      player.setUpCharacter(unit.character);
+      // Tower squads have authored run upgrades, not account progression to migrate.
+      player.setUpCharacter(unit.character, false, true);
       player.hp = unit.hp; player.mp = unit.mp;
       if (this.run.upgrades.includes('swift') && player.class === Class.WARRIOR) player.distance++;
       if (this.run.upgrades.includes('frostcraft')) {
         const spell = player.spells.find(candidate => candidate.id === 6);
         if (spell) {
-          spell.cost = Math.max(5, spell.cost - 15);
+          spell.cost = Math.ceil(spell.cost / 2);
           spell.effects = spell.effects.map(effect => ({...effect, value: effect.value / 2}));
         }
       }
@@ -74,15 +74,6 @@ export class TowerGame extends AIGame {
 
   resetTurnTimer() {
     this.turnStart = this.combatClock.now(); this.turnDuration = 0;
-    const unit = this.turnee;
-    if (unit?.isFrozen()) {
-      const skipped = this.frozenTurns.get(unit) || 0;
-      if (skipped >= 2) {
-        this.broadcastTerrain(this.terrainManager.removeIce(unit.x, unit.y));
-        unit.removeStatusEffect(StatusEffect.FREEZE);
-        this.frozenTurns.delete(unit);
-      } else this.frozenTurns.set(unit, skipped + 1);
-    } else if (unit) this.frozenTurns.delete(unit);
     // Existing AI can fail to find a legal move. Human decisions have no deadline.
     if (this.turnee?.team.id === 2) this.turnTimer = this.combatClock.schedule(() => this.processTurn(), 5000);
   }

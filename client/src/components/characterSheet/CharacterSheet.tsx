@@ -1,3 +1,6 @@
+import {apiMutation} from '../../services/apiService';
+import {errorToast} from '../utils';
+import {userError} from '../../i18n/core';
 import ClassCrest from '../HUD/ClassCrest';
 import {t, formatNumber, i18n} from '../../i18n/core';
 import FitText from '../FitText';
@@ -52,6 +55,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
     static contextType = PlayerContext;
 
     state = {
+        resettingSP: false,
         characterItems: [],
         itemIndex: 0,
         openModal: false,
@@ -84,6 +88,22 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         if (!modalData) return;
         this.handleOpenModal(e, modalData, modalType, index);
         this.props.handleItemEffect(modalData.effects, InventoryActionType.UNEQUIP);
+    }
+
+    resetSP = async () => {
+        if (this.state.resettingSP) return;
+        this.setState({resettingSP: true});
+        try {
+            const character = this.context.getActiveCharacter();
+            await apiMutation('resetSP', {characterId: character.id, spVersion: character.spVersion ?? 0});
+            await this.context.refreshAllData();
+            this.props.updateCharacterData();
+        } catch (error) {
+            errorToast(userError(error));
+            // A newer build makes the next request a distinct action instead of a retry of this one.
+            this.context.refreshAllData();
+        }
+        finally { this.setState({resettingSP: false}); }
     }
 
     render() {
@@ -364,6 +384,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                         </div>
                         <div className="team-character-info">
                             {renderInfoBars()}
+                            <button type="button" data-game-control className="sp-reset-button" onClick={this.resetSP}
+                                disabled={this.state.resettingSP || !Object.values(characterData.sp_allocations ?? {}).some(value => Number(value) > 0)}>{t('Reset SP')}</button>
                         </div>
                     </div>
                     <div className="team-items-container">

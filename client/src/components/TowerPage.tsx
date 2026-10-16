@@ -172,7 +172,7 @@ export default function TowerPage() {
       </div>}
       {progress && <footer className="tower-command-bar">
           <details name="tower-info" className="tower-rules"><summary>{t("Rules & rewards")}</summary>
-            <p>{t("Entry is free. Every run starts with a temporary squad; your roster and owned items stay untouched. Turns have no time limit. After a victory, each character is brought to at least 30% HP, then restores 15 HP and 15 MP, up to their maximums. Knocked-out allies return; statuses clear. Ice traps thaw after two skipped turns. Supplies stay used until refilled.")}</p>
+            <p>{t("Entry is free. Every run starts with a temporary squad; your roster and owned items stay untouched. Turns have no time limit. After a victory, each character is brought to at least 30% HP, then restores 15 HP and 15 MP, up to their maximums. Knocked-out allies return; statuses clear. Supplies stay used until refilled.")}</p>
             <p>{t("Sanctuary fully restores HP and MP; Quartermaster refills supplies. Defeat ends the run. Banked gold, items, and XP remain yours. XP is shared across your permanent roster. Temporary stats and spells never overwrite it.")}</p>
             <p>{t("Each tier adds 15% enemy HP and attack power and 20% gold and XP. Clear a tier to unlock the next, up to Tier 5. One finished expedition, won or lost, counts as one match toward unlocks. Retiring or giving up does not count. Tower never changes ranked results or ELO.")}</p>
             <p>{t("An internet connection is required. Close Emberhall between encounters and return later. A short disconnect pauses the battle. If the server can no longer resume it, restart that encounter from its saved entry state with no duplicate rewards.")}</p>

@@ -7,7 +7,7 @@ import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
 import { Target, StatusEffect, Class, Stat } from "@legion/shared/enums";
 import { Arena } from "./Arena";
-import { PlayerProps, StatusEffects } from "@legion/shared/interfaces";
+import { PlayerProps, StatusEffects, CharacterStats } from "@legion/shared/interfaces";
 import { paralyzingStatuses } from '@legion/shared/utils';
 import { SpeechBubble } from "./SpeechBubble";
 import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE, GRID_WIDTH } from '@legion/shared/config';
@@ -40,6 +40,7 @@ export class Player extends Phaser.GameObjects.Container {
     num: number;
     distance: number;
     baseSquare: Phaser.GameObjects.Graphics;
+    combatStats?: CharacterStats;
     maxHP: number;
     maxMP: number;
     hp: number;

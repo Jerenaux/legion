@@ -258,25 +258,25 @@ test('Ether restoration is public and reconnect snapshots preserve the restored 
   expect(game.getGameData(2, true).opponent.team[0]).toMatchObject({mp: 25, maxMP: 100});
 });
 
-test('reapplied statuses add their turns, from spells and poisoned weapons alike', () => {
+test('reapplied spell and weapon poison refresh within three affected activations', () => {
   spyOn(Math, 'random').mockReturnValue(0);
   player.spells = [new Spell(getSpellById(10))];
   enemy.statuses[StatusEffect.POISON] = 4;
   game.processAction('spell', {x: 3, y: 5, index: 0, targetTeam: 2, target: 1}, socket);
   for (const run of scheduled) run();
-  expect(enemy.statuses[StatusEffect.POISON]).toBe(14);
+  expect(enemy.statuses[StatusEffect.POISON]).toBe(3);
 
   player.hasActed = false;
   player.equipment = {weapon: 32} as typeof player.equipment;
   game.updatePlayerPosition(enemy, 2, 5);
   game.processAction('attack', {target: 1, sameTeam: false}, socket);
-  expect(enemy.statuses[StatusEffect.POISON]).toBe(17);
+  expect(enemy.statuses[StatusEffect.POISON]).toBe(3);
 
   // A failed roll changes nothing but is announced to both players and the replay.
   (Math.random as ReturnType<typeof mock>).mockReturnValue(0.99);
   player.hasActed = false;
   game.processAction('attack', {target: 1, sameTeam: false}, socket);
-  expect(enemy.statuses[StatusEffect.POISON]).toBe(17);
+  expect(enemy.statuses[StatusEffect.POISON]).toBe(3);
   expect(game.replayMessages).toContainEqual(expect.objectContaining({event: 'statusresisted', data: {team: 2, num: 1, status: StatusEffect.POISON}}));
 });
 

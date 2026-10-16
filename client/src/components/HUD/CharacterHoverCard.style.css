@@ -83,3 +83,8 @@
   .member .char_profile_container,
   .timeline_portrait_container { transition: none; }
 }
+
+.character-hover-card__preview { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; font-size: .8125rem; color: oklch(83% .13 35); }
+.character-hover-card__preview[data-heal="true"] { color: oklch(83% .12 155); }
+.character-hover-card__preview span { overflow-wrap: anywhere; }
+.character-hover-card__preview b { flex-shrink: 0; font-weight: 400; }

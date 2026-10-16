@@ -1,3 +1,4 @@
+import {readCharacter, writeCharacter} from './characterStore';
 import {playerMutation, MutationError, mutationFailure} from './playerMutation';
 import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
@@ -7,7 +8,7 @@ import {getSpellById} from "@legion/shared/Spells";
 import {getEquipmentById} from "@legion/shared/Equipments";
 import {InventoryType, InventoryActionType, ShopTab, ChestColor, RewardType, equipmentSlotFields, EquipmentSlot }
   from "@legion/shared/enums";
-import {DBCharacterData, Equipment, PlayerInventory} from "@legion/shared/interfaces";
+import {Equipment, PlayerInventory} from "@legion/shared/interfaces";
 import {inventorySize} from "@legion/shared/utils";
 import {getChestContent} from "@legion/shared/chests";
 import { getSellPrice,
@@ -109,7 +110,7 @@ export const inventoryTransaction = onRequest({
           throw new MutationError(404, 'Documents do not exist');
         }
 
-        const characterData = characterDoc.data() as DBCharacterData;
+        const characterData = readCharacter(characterDoc);
 
         if (!playerData || !characterData) {
           throw new Error("Data does not exist");
@@ -231,7 +232,7 @@ export const inventoryTransaction = onRequest({
         }
 
         transaction.update(playerRef, inventoryPlayerWrite(update.playerUpdate));
-        transaction.update(characterRef, update.characterUpdate);
+        writeCharacter(transaction, characterRef, {...characterData, ...update.characterUpdate});
 
         return {status: 0};
       });

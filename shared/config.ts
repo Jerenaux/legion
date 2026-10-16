@@ -96,7 +96,6 @@ export const STARTING_EQUIPMENT_ADMIN = [2];
 export let INJURED_MODE = false;
 export let SKIP_LEVEL_RESTRICTIONS = false;
 export let IMMEDIATE_LOOT = true;
-export let LOTSA_MP = false;
 export let LOTSA_HP = false;
 export let MAX_AI_CHARACTERS = 6;
 export let KILLALL_BM = false;
@@ -198,7 +197,6 @@ if (!isDev) {
     INJURED_MODE = false;
     SKIP_LEVEL_RESTRICTIONS = false;
     IMMEDIATE_LOOT = false;
-    LOTSA_MP = false;
     LOTSA_HP = false;
     ALLOW_SWITCHEROO_RANKED = true;
     MAX_AI_CHARACTERS = MAX_CHARACTERS;

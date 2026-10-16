@@ -4,7 +4,7 @@ import {AIServerPlayer} from '../AIServerPlayer';
 import {TowerGame} from '../TowerGame';
 import {TurnSystem} from '../TurnSystem';
 import {createTowerRun, TOWER_ENCOUNTERS, chooseTowerUpgrade, finishTowerBattle} from '@legion/shared/tower';
-import {Class, League, PlayMode, Stat, StatusEffect, Terrain} from '@legion/shared/enums';
+import {Class, League, PlayMode, Stat, Terrain} from '@legion/shared/enums';
 import {getSpellById} from '@legion/shared/Spells';
 import {GRID_HEIGHT} from '@legion/shared/config';
 import {Spell} from '../Spell';
@@ -86,11 +86,11 @@ test('temporary upgrade effects reach combat without mutating shared spells', as
   chooseTowerUpgrade(game.run, 'frostcraft');
   game.teams.forEach(team => { team.members = []; });
   await game.populateTeams();
-  expect(game.getTeam(1)[2].spells.find(spell => spell.id === 6)?.cost).toBe(15);
+  expect(game.getTeam(1)[2].spells.find(spell => spell.id === 6)?.cost).toBe(Math.ceil(originalCost / 2));
   expect(getSpellById(6)!.cost).toBe(originalCost);
 });
 
-test('untimed humans, AI fallback, and ice thaw prevent stuck encounters', async () => {
+test('untimed humans and AI fallback retain bounded freeze with permanent ice terrain', async () => {
   const game = await battle();
   const schedule = spyOn(game.combatClock, 'schedule').mockReturnValue(1);
   game.turnee = game.getTeam(1)[0]; game.resetTurnTimer();
@@ -98,10 +98,14 @@ test('untimed humans, AI fallback, and ice thaw prevent stuck encounters', async
   game.turnee = game.getTeam(2)[0]; game.resetTurnTimer();
   expect(schedule.mock.calls[0][1]).toBe(5000);
   const unit = game.turnee;
-  unit.statuses[StatusEffect.FREEZE] = -1;
-  game.terrainManager.updateTerrainMap(Terrain.ICE, unit.x, unit.y);
-  game.resetTurnTimer(); game.resetTurnTimer(); expect(unit.isFrozen()).toBe(true);
-  game.resetTurnTimer(); expect(unit.isFrozen()).toBe(false); expect(game.hasObstacle(unit.x, unit.y)).toBe(false);
+  game.terrainManager.updateTerrainFromSpell(new Spell(getSpellById(6)!), unit.x, unit.y);
+  for (let activation = 0; activation < 3; activation++) {
+    expect(unit.isFrozen()).toBe(true);
+    unit.startTurn();
+    unit.endTurn();
+  }
+  expect(unit.isFrozen()).toBe(false);
+  expect(game.hasObstacle(unit.x, unit.y)).toBe(true);
 });
 
 test('boss warns before attacking and moving away avoids the blast', async () => {

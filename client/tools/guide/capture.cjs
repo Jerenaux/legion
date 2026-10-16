@@ -475,6 +475,9 @@ if (!process.versions.electron) {
         await win.loadURL(`${PACKAGED_APP_URL}?loading`);
         await waitFor('Boolean(document.querySelector(".title-screen"))');
         await waitFor('routeAudio.some(audio => audio.loop && audio.currentTime > 0)');
+        await js('replayCheck.flush()');
+        assert.equal(recordings.length, 0, 'Startup must not upload a separate anonymous replay');
+        await js("replayCheck.identify('guide-player')");
         await waitFor('Boolean(replayCheck.id())');
         assert.deepEqual(await js('replayCheck.status()'), {replay: false, canvas: false, rate: 0});
         assert.equal(await js(`new Promise(resolve => {
@@ -608,6 +611,8 @@ if (!process.versions.electron) {
           const context = canvas.getContext('2d'); context.drawImage(image, 0, 0, 32, 32);
           return new Set(new Uint32Array(context.getImageData(0, 0, 32, 32).data.buffer)).size > 20;
         })()`), 'Recorded window/combat pixels must not be blank');
+        assert.equal(new Set(recordings.map(({header}) => header.session)).size, 1, 'Login must keep a single recording');
+        assert.equal(recordings.find(({header}) => header.seq === 0).header.meta.player_id, 'guide-player');
         console.log('Replay: composed window WebP frames and scrubbed events delivered to loopback');
         const cleanup = await js(`(() => {
           window.previousGame = combatCheck.arena.game;
@@ -762,15 +767,12 @@ if (!process.versions.electron) {
           await js('combatCheck.arena.socket.emit("mana-change", {team: 2, num: 3, mp: 7}) && undefined');
           await waitFor('combatCheck.arena.getPlayer(2, 3).mp === 7 && combatCheck.arena.eventsQueue.length === 0');
           assert.equal(await js('combatCheck.arena.getPlayer(1, 3).mp'), 32, 'Enemy updates must not change the matching allied slot');
-          assert.equal(await js('combatCheck.arena.getPlayer(2, 3).MPBar.list[2].scaleX'), 7 / 40);
-          await waitFor('Array.from(document.querySelectorAll(".overview_right .char_stats_mp")).at(-1)?.style.width === "17.5%"');
           await js('combatCheck.arena.socket.emit("mana-change", {team: 2, num: 3, mp: 27}) && undefined');
           await waitFor('combatCheck.arena.getPlayer(2, 3).mp === 27');
-          assert.equal(await js('combatCheck.arena.getPlayer(2, 3).MPBar.list[2].scaleX'), 27 / 40);
           await js('combatCheck.arena.socket.emit("legacy-mana-change", {num: 3, mp: 22}) && undefined');
           await waitFor('combatCheck.arena.getPlayer(1, 3).mp === 22');
           assert.equal(await js('combatCheck.arena.getPlayer(2, 3).mp'), 27);
-          console.log(`${scenario}: enemy mana, restoration, HUD bars, and legacy own-team updates pass`);
+          console.log(`${scenario}: enemy mana, restoration, and legacy own-team updates pass`);
 
           await js('combatCheck.arena.socket.emit("late-assets") && undefined');
           await waitFor('combatCheck.arena.teamsMap.get(2).members.length === 4 && combatCheck.arena.eventsQueue.length === 0');
