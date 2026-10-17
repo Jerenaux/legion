@@ -13,7 +13,6 @@ import GiftClaim from './components/GiftClaim';
 import CommunityInvite from './components/community/CommunityInvite';
 import withAuth from './components/withAuth';
 
-import {setUser} from './telemetry';
 import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
@@ -22,17 +21,6 @@ import SystemMenu, {openSystemMenu} from './components/systemMenu/SystemMenu';
 import {loadGameSettings} from './settings';
 import {silentErrorToast, successToast} from './components/utils';
 import {setRouteMusic, stopRouteMusic} from './routeMusic';
-if (process.env.NODE_ENV === 'production') {
-  // Set up auth state listener to update Sentry user info
-  firebaseAuth.onAuthStateChanged((user) => {
-    if (user) {
-      setUser({ id: user.uid });
-    } else {
-      setUser(null);
-    }
-  });
-}
-
 const AuthenticatedHomePage = withAuth(HomePage);
 const AuthenticatedGamePage = withAuth(GamePage);
 
