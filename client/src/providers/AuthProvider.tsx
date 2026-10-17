@@ -7,6 +7,7 @@ import AuthContext from "../contexts/AuthContext";
 import {firebaseAuth} from "../services/firebaseService";
 import {exchangePlatformCredential, getPlatformCredential, SessionError, type SessionFailure} from "../services/platformSession";
 import {getElectronAPI} from "../utils/electronUtils";
+import {setUser} from '../telemetry';
 import logo from "@assets/logo.png";
 import "./AuthProvider.style.css";
 
@@ -84,6 +85,9 @@ export default class AuthProvider extends Component<Props, State> {
         }),
       ]);
       if (controller.signal.aborted) return;
+      if (!user) throw new Error('Platform sign-in returned no user');
+      // Cached Firebase identities are not proof of the Steam/Itch account launching now.
+      setUser({id: user.uid});
       this.sessionReady = true;
       this.setState({user, isLoading: false, error: null});
     } catch (error) {

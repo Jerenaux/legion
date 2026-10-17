@@ -101,7 +101,7 @@ package metadata record. The manual release workflow adds that marker only when
 Steam or Itch upload is selected; ordinary local builds omit it. CI, GitHub Actions
 and `--smoke-test` skip installation, including draining old upload outboxes.
 The existing compiled store-build marker still controls API/socket store diagnostics.
-Recording waits for the first authenticated user and identifies them before starting
+Recording waits for AuthProvider to finish the platform credential exchange and Firebase custom-token sign-in; it ignores the cached Firebase user restored at startup. AuthProvider identifies the verified account before starting
 capture, so startup/login produces one recording rather than a tiny anonymous one
 followed by the authenticated session. Actual account changes/sign-out still split
 sessions.
