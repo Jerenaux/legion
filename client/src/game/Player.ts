@@ -277,7 +277,7 @@ export class Player extends Phaser.GameObjects.Container {
             },
             onComplete: () => {
                 // Play the 'thud' sound effect
-                this.arena.playSound('thud', 0.5);
+                this.arena.playSound('thud');
 
                 // Create a smoke effect on landing
                 const smokeSprite = this.scene.add.sprite(targetX, targetY + 15, '')
@@ -566,7 +566,7 @@ export class Player extends Phaser.GameObjects.Container {
         const unavailable = this.arena.unavailableActionReason(this);
         if (unavailable) {
             this.arena.actionFeedback(unavailable);
-            this.arena.playSound('nope', 0.2);
+            this.arena.playSound('nope');
             return;
         }
         if (item) {
@@ -592,7 +592,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.playAnim('cast', false);
             this.animationSprite.setVisible(true).play('cast');
             this.displayOverheadText(t(name), 4000, '#fff');
-            this.arena.playSound('cast', 1);
+            this.arena.playSound('cast');
 
             if (charge) {
                 // Create charge sprite above the player
@@ -661,7 +661,7 @@ export class Player extends Phaser.GameObjects.Container {
             this.arena.actionFeedback(unavailable || (this.isMuted()
                 ? t("Silenced: choose another action.")
                 : t("Not enough mana: needs {{cost}} MP, you have {{mp}}.", {cost: spell.cost, mp: this.mp})));
-            this.arena.playSound('nope', 0.2);
+            this.arena.playSound('nope');
             return;
         }
 

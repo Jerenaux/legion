@@ -11,6 +11,7 @@ import Sigil from './sigil/Sigil';
 import JoinCommunityDialog from './community/JoinCommunityDialog';
 import {RewardType, InventoryType, RarityColor} from '@legion/shared/enums';
 import {getRewardObject, getRewardBgImage, mapFrameToCoordinates, playSoundEffect} from './utils';
+import {sfxLevel} from '../sfxMix';
 import {ItemTooltip} from './ItemTooltipContent';
 import goldChest from '@assets/shop/gold_chest.png';
 import shine from '@assets/game_end/shine_bg.png';
@@ -39,7 +40,7 @@ export default function GiftClaim({blocked, code, onClose}: {blocked: boolean; c
       if (result.status === 'claimed' || result.status === 'already_claimed') {
         refreshAllData();
         setReceipt(result);
-        if (result.status === 'claimed') playSoundEffect(rewardSound);
+        if (result.status === 'claimed') playSoundEffect(rewardSound, sfxLevel('purchase'));
       } else if (code && result.status === 'no_gift') {
         if (!player.community) {
           setReceipt(null);

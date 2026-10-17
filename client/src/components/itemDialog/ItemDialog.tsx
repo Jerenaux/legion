@@ -15,6 +15,7 @@ import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { InventoryActionType, InventoryType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
 import { apiMutation } from '../../services/apiService';
 import { playSoundEffect, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
+import { sfxLevel } from '../../sfxMix';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { predictInventoryAction, predictSP } from '../../providers/predictions';
 
@@ -169,7 +170,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     if (payload.action === InventoryActionType.SELL) {
       successToast(t("Item sold!"));
     } else {
-      playSoundEffect(equipSfx);
+      playSoundEffect(equipSfx, sfxLevel('equip'));
       if (type === ItemDialogType.SPELLS) successToast(t("Spell learned!"));
     }
   }
