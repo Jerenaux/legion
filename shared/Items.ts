@@ -1,6 +1,9 @@
 import { BaseItem } from "./BaseItem";
 import { Stat, StatusEffect, Target, SpeedClass, TargetHighlight, LockedFeatures, ConsumableShopCategory } from ".";
 
+// One-use consumables at 800+ gold are hard to justify; keep their rarity and AI tier, cut the price.
+const EXPENSIVE_CONSUMABLE_DISCOUNT = 0.3;
+
 export const items: BaseItem[] = [];
 
 items[0] = new BaseItem({
@@ -89,6 +92,7 @@ items[5] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.MP, value: 60}],
     effort: 8,
+    priceDiscount: EXPENSIVE_CONSUMABLE_DISCOUNT,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
 });
@@ -119,6 +123,7 @@ items[7] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: 140}, {stat: Stat.MP, value: 60}],
     effort: 18,
+    priceDiscount: EXPENSIVE_CONSUMABLE_DISCOUNT,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
 });
@@ -151,6 +156,7 @@ items[9] = new BaseItem({
     target: Target.SELF,
     effects: [{stat: Stat.HP, value: -1}, {stat: Stat.MP, value: -1}],
     effort: 20,
+    priceDiscount: EXPENSIVE_CONSUMABLE_DISCOUNT,
     unlock: LockedFeatures.CONSUMABLES_BATCH_3,
     category: ConsumableShopCategory.HEALING,
 });

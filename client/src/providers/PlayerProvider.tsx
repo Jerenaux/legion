@@ -246,6 +246,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   carrying_capacity: data.carrying_capacity,
                   engagementStats: data.engagementStats || {},
                   community: data.community ?? null,
+                  firstWinBonusGold: data.firstWinBonusGold || 0,
                   ...this.pendingIdentity(seq),
               }
           });

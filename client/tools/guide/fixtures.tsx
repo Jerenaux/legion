@@ -14,7 +14,7 @@ import { NewCharacter } from '../../../shared/NewCharacter';
 import {balanceCharacter, emptyAllocations} from '../../../shared/characterBalance';
 import {canIncreaseStat} from '../../../shared/inventory';
 import { ChestColor, Class, League, PlayMode, StatusEffect, Terrain, LockedFeatures, RewardType, Stat, statFieldsByIndex } from '../../../shared/enums';
-import { ENABLE_CINDER_TOWER, BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS } from '../../../shared/config';
+import { ENABLE_CINDER_TOWER, BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATURES, MAX_CHARACTERS, FIRST_WIN_BONUS_GOLD } from '../../../shared/config';
 import { GameData, StatusEffects, CharacterStats } from '../../../shared/interfaces';
 import {getClient, getReplay, getIsolationScope, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
@@ -220,6 +220,7 @@ export async function apiFetch(endpoint: string, options: {body?: {characterId?:
     towerCheck.save();
     return structuredClone(towerCheck.progress);
   }
+  if (endpoint === 'claimFirstWinBonus') return {gold: FIRST_WIN_BONUS_GOLD};
   if (endpoint === 'claimChest') {
     chestCheck.claims++;
     if (new URLSearchParams(location.search).get('chest') === 'stale') throw Object.assign(new Error('Chest locked'), {status: 409});
@@ -312,6 +313,7 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
     player: {...defaults.player, uid: 'guide-local-only', ...identity,
       isLoaded: loaded, completedGames: totalGames, engagementStats: {...profile.engagementStats, completedGames: totalGames}, gold: 240, elo: 128, rank: 12,
       dailyloot: {bronze: {hasKey: preview.get('chest') !== 'key', countdown: preview.get('chest') === 'countdown' ? 5 : 0}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}},
+      firstWinBonusGold: preview.has('first-win') ? FIRST_WIN_BONUS_GOLD : 0,
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
       carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}, ...playerUpdates},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],

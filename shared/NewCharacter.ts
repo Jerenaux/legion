@@ -6,10 +6,10 @@ import { warriorSprites, whiteMageSprites, blackMageSprites, thiefSprites, femal
   from "./sprites";
 import { male_names, female_names } from "./names";
 import { selectStatToLevelUp, increaseStat, } from "./levelling";
-import { getPrice } from "./economy";
+import { getCharacterPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
-import { BASE_CHARACTER_CARRYING_CAPACITY, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
+import { BASE_CHARACTER_CARRYING_CAPACITY, NB_START_CHARACTERS, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
 import { getSpellsUpToLevel } from "./Spells";
 
 enum Gender {
@@ -165,16 +165,6 @@ export class NewCharacter {
     return warriorSprites[Math.floor(Math.random() * warriorSprites.length)];
   }
 
-  getPrice(): number {
-    const reference = 135;
-    // Returns the sum of all stats
-    const sum = Object.values(this.stats).reduce((a, b) => a + b, 0);
-    const coefficient = sum / reference;
-    const price = Math.floor(getPrice(100) * coefficient);
-    // Add +- 10% random variation
-    return price + Math.floor(Math.random() * price * 0.2);
-  }
-
   getCharacterData(includePrice = false): DBCharacterData {
     // Convert stats from enum keys to string keys for DB storage
     const validStats = statFieldsByIndex.map(key => ({
@@ -213,7 +203,8 @@ export class NewCharacter {
         skills: this.skills
     };
     if (includePrice) {
-        data.price = this.getPrice();
+        // Display default for unauthenticated listings; purchases charge by the buyer's roster size.
+        data.price = getCharacterPrice(NB_START_CHARACTERS);
     }
     return data;
   }

@@ -12,7 +12,8 @@ import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, getUID, firestore} from "./APIsetup";
 import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFieldsByIndex, PlayMode, RewardType} from "@legion/shared/enums";
-import {MAX_CHARACTERS} from "@legion/shared/config";
+import {FIRST_WIN_BONUS_GOLD, MAX_CHARACTERS} from "@legion/shared/config";
+import {getCharacterPrice} from "@legion/shared/economy";
 import {OutcomeData, DailyLootAllDBData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
@@ -140,6 +141,8 @@ export async function processChestRewards(
   });
 }
 
+const FIRST_WIN_BONUS_MODES = [PlayMode.CASUAL, PlayMode.CASUAL_VS_AI, PlayMode.RANKED, PlayMode.RANKED_VS_AI];
+
 export const postGameUpdate = onRequest({
   secrets: ["API_KEY"],
   memory: '512MiB',
@@ -264,6 +267,13 @@ export const postGameUpdate = onRequest({
 
         if (goldReward > 0) {
           updates.gold = admin.firestore.FieldValue.increment(goldReward);
+        }
+
+        // First Casual/Ranked win of the UTC day: banked here, paid when the player claims it in the hall.
+        const today = new Date().toISOString().slice(0, 10);
+        const bonus = playerData.firstWinBonus as DBPlayerData['firstWinBonus'];
+        if (isWinner && stayedUntilTheEnd && FIRST_WIN_BONUS_MODES.includes(mode) && bonus?.day !== today) {
+          updates.firstWinBonus = {day: today, pendingGold: (bonus?.pendingGold || 0) + FIRST_WIN_BONUS_GOLD};
         }
 
         // Update engagement stats
@@ -451,7 +461,13 @@ export const listOnSaleCharacters = onRequest({
           .get();
       }
 
-      const characters = querySnapshot.docs.map(publicCharacter);
+      // The next recruit's price depends on the viewer's roster; anonymous requests see the first price.
+      let price = getCharacterPrice(0);
+      try {
+        const player = await db.collection("players").doc(await getUID(request)).get();
+        price = getCharacterPrice(player.get('characters')?.length || 0);
+      } catch { /* Unauthenticated listing */ }
+      const characters = querySnapshot.docs.map(doc => ({...publicCharacter(doc), price}));
 
       response.send(characters);
     } catch (error) {
@@ -500,10 +516,10 @@ export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, respons
           const characterDoc = await transaction.get(characterRef);
           const character = characterDoc.data();
           if (!character?.onSale) throw new MutationError(409, 'Character is not on sale');
-          if (!Number.isFinite(character.price) || character.price <= 0) throw new MutationError(409, 'Invalid character price');
-          if (player.gold < character.price) throw new MutationError(409, 'Not enough gold!');
           if (player.characters.length >= MAX_CHARACTERS) throw new MutationError(409, 'Character limit reached!');
-          transaction.update(playerRef, {gold: player.gold - character.price,
+          const price = getCharacterPrice(player.characters.length);
+          if (player.gold < price) throw new MutationError(409, 'Not enough gold!');
+          transaction.update(playerRef, {gold: player.gold - price,
             characters: admin.firestore.FieldValue.arrayUnion(characterRef)});
           writeCharacter(transaction, characterRef, readCharacter(characterDoc), {onSale: false, price: 0});
           return {status: 0};

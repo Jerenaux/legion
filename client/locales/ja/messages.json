@@ -1299,5 +1299,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "レベル21まではレベルアップごとに2 SPを獲得します。伸ばしたい能力値に割り振りましょう。",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "氷はキャラクターを3ターン閉じ込めます。近接攻撃か炎で早く解放できます。",
   "The + and X spells cover more tiles but deal less damage per target.": "＋とXの魔法は範囲が広い分、対象1体あたりのダメージが低くなります。",
-  "Reset SP returns all spent points for free outside combat.": "戦闘外でSPリセットを使うと、使用済みポイントが無料ですべて戻ります。"
+  "Reset SP returns all spent points for free outside combat.": "戦闘外でSPリセットを使うと、使用済みポイントが無料ですべて戻ります。",
+  "First win of the day": "本日の初勝利",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "カジュアルかランクで毎日最初に勝利すると、このボーナスを獲得できます。{{value0}}にリセットされます。",
+  "Claim {{value0}} gold": "{{value0}}ゴールドを受け取る",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "カジュアルかランクで毎日最初に勝利すると、{{value0}}ゴールドのボーナスを獲得できます。プレイ画面で受け取ってください。ボーナスはUTCの午前0時にリセットされます。",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "仲間は雇うたびに高くなります：{{value0}}、{{value1}}、{{value2}}ゴールド。",
+  "No bonus to claim": "受け取れるボーナスはありません"
 }

@@ -1299,5 +1299,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "Jeder Stufenaufstieg bis Stufe 21 gibt 2 SP. Verteile sie auf die Werte, die du erhöhen möchtest.",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "Eis hält Charaktere 3 Züge lang gefangen. Nahkampf oder Feuer kann sie früher befreien.",
   "The + and X spells cover more tiles but deal less damage per target.": "Die + und X-Zauber treffen mehr Felder, verursachen aber weniger Schaden pro Ziel.",
-  "Reset SP returns all spent points for free outside combat.": "SP zurücksetzen erstattet außerhalb des Kampfes alle ausgegebenen Punkte kostenlos."
+  "Reset SP returns all spent points for free outside combat.": "SP zurücksetzen erstattet außerhalb des Kampfes alle ausgegebenen Punkte kostenlos.",
+  "First win of the day": "Erster Sieg des Tages",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "Dein erster Sieg in Ungewertet oder Rangliste an jedem Tag bringt diesen Bonus. Er wird um {{value0}} zurückgesetzt.",
+  "Claim {{value0}} gold": "{{value0}} Gold einsammeln",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Dein erster Sieg in Ungewertet oder Rangliste an jedem Tag bringt {{value0}} Bonusgold. Sammle es auf dem Bildschirm „Spielen“ ein. Der Bonus wird um Mitternacht UTC zurückgesetzt.",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Jeder Rekrut kostet mehr als der vorige: {{value0}}, {{value1}}, dann {{value2}} Gold.",
+  "No bonus to claim": "Kein Bonus verfügbar"
 }

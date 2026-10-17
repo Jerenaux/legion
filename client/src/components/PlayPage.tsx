@@ -15,6 +15,7 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
 import { firebaseAuth } from '../services/firebaseService';
 import PopupManager, { Popup } from './popups/PopupManager';
+import FirstWinBonus from './popups/firstWin/FirstWinBonus';
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
   static contextType = PlayerContext;
@@ -23,10 +24,11 @@ class PlayPage extends Component {
     showWelcome: false,
     introClosed: false,
     identityClosed: false,
+    firstWinClosed: false,
   };
 
   // After the tutorial match, one dialog at a time: the player's generated name and
-  // portrait, then how matches work, then any unlock popup.
+  // portrait, then how matches work, then the first-win bonus, then any unlock popup.
   afterFirstMatch() {
     // The unlock counter excludes the tutorial; these introductions must include it.
     return this.context.player.isLoaded && (this.context.player.engagementStats?.completedGames || 0) >= 1;
@@ -38,6 +40,10 @@ class PlayPage extends Component {
 
   introOpen() {
     return !this.state.introClosed && this.afterFirstMatch() && shouldShowPageIntro('play', this.context.player.uid);
+  }
+
+  firstWinOpen() {
+    return !this.state.firstWinClosed && this.context.player.isLoaded && (this.context.player.firstWinBonusGold || 0) > 0;
   }
 
   popupManagerRef = createRef();
@@ -190,6 +196,8 @@ class PlayPage extends Component {
           ? <IdentityIntro onClose={() => this.setState({identityClosed: true})} />
           : this.introOpen()
           ? <PlayIntro uid={this.context.player.uid} onClose={() => this.setState({introClosed: true})} />
+          : this.firstWinOpen()
+          ? <FirstWinBonus gold={this.context.player.firstWinBonusGold} onClose={() => this.setState({firstWinClosed: true})} />
           : <PopupManager
               ref={this.popupManagerRef}
               onPopupResolved={this.handlePopupResolved}

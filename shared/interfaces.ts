@@ -85,6 +85,8 @@ export interface ConsumableData {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: ConsumableShopCategory;
+    /** Fraction taken off the effort-based price, e.g. 0.3 for 30% off. */
+    priceDiscount?: number;
 }
 
 export interface EquipmentData {
@@ -211,6 +213,8 @@ export interface DBPlayerData<CharacterReference = unknown> {
     leagueStats: LeagueStats;
     allTimeStats: LeagueStats;
     lastLeagueRolloverSeason?: string;
+    /** UTC day (YYYY-MM-DD) of the last first-win bonus, and the gold still waiting to be claimed. */
+    firstWinBonus?: {day: string; pendingGold: number};
     friends: string[];
     engagementStats?: EngagementStats;
     joinDate?: string;
@@ -424,6 +428,8 @@ export interface PlayerContextData {
     completedGames?: number;
     engagementStats?: Partial<EngagementStats>;
     community?: PlayerCommunity | null;
+    /** Unclaimed first-win-of-the-day gold. */
+    firstWinBonusGold?: number;
 }
 
 export interface PlayerDataForGame {

@@ -1299,5 +1299,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "21레벨까지 레벨이 오를 때마다 2 SP를 얻습니다. 원하는 능력치에 배분하세요.",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "얼음에 갇히면 3턴 동안 행동할 수 없습니다. 근접 공격이나 불로 더 빨리 풀어줄 수 있습니다.",
   "The + and X spells cover more tiles but deal less damage per target.": "+와 X 주문은 더 많은 칸을 공격하지만 대상당 피해는 낮습니다.",
-  "Reset SP returns all spent points for free outside combat.": "전투 밖에서 SP 초기화를 사용하면 사용한 포인트가 모두 무료로 반환됩니다."
+  "Reset SP returns all spent points for free outside combat.": "전투 밖에서 SP 초기화를 사용하면 사용한 포인트가 모두 무료로 반환됩니다.",
+  "First win of the day": "오늘의 첫 승리",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "매일 일반 또는 랭크 모드에서 처음 승리하면 이 보너스를 받습니다. {{value0}}에 초기화됩니다.",
+  "Claim {{value0}} gold": "골드 {{value0}} 받기",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "매일 일반 또는 랭크 모드에서 처음 승리하면 보너스 골드 {{value0}}를 받습니다. 플레이 화면에서 받으세요. 보너스는 UTC 자정에 초기화됩니다.",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "새 동료는 영입할수록 비싸집니다: {{value0}}, {{value1}}, 그다음 {{value2}} 골드.",
+  "No bonus to claim": "받을 보너스가 없습니다"
 }

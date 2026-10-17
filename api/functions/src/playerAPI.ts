@@ -297,6 +297,7 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     completedGames: playerData.engagementStats?.completedGames || 0,
     engagementStats: playerData.engagementStats || {},
     community: playerData.community ?? null,
+    firstWinBonusGold: playerData.firstWinBonus?.pendingGold || 0,
   } as PlayerContextData;
   return {player, characters};
 }
@@ -431,6 +432,26 @@ export const claimChest = onRequest({memory: '512MiB'}, (request, response) => {
         });
       response.send({...result, dailyloot: transformDailyLoot(result.dailyloot)});
     } catch (error) { mutationFailure(response, 'claimChest', error); }
+  });
+});
+
+// Pays the first-win bonus banked by postGameUpdate. Retry-safe: a replayed request returns the original amount.
+export const claimFirstWinBonus = onRequest({memory: '512MiB'}, (request, response) => {
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const result = await playerMutation(uid, 'claimFirstWinBonus', request.body?.requestId, {},
+        (transaction, playerRef, player) => {
+          const gold = player.firstWinBonus?.pendingGold || 0;
+          if (gold <= 0) throw new MutationError(409, 'No bonus to claim');
+          transaction.update(playerRef, {
+            gold: admin.firestore.FieldValue.increment(gold),
+            'firstWinBonus.pendingGold': 0,
+          });
+          return {gold};
+        });
+      response.send(result);
+    } catch (error) { mutationFailure(response, 'claimFirstWinBonus', error); }
   });
 });
 

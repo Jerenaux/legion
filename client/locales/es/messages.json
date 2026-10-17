@@ -1316,5 +1316,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "Gana 2 SP por nivel hasta el nivel 21. Inviértelos en los atributos que quieras mejorar.",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "El hielo atrapa a los personajes durante 3 turnos. El combate cuerpo a cuerpo o el fuego pueden liberarlos antes.",
   "The + and X spells cover more tiles but deal less damage per target.": "Los hechizos + y X cubren más casillas, pero infligen menos daño por objetivo.",
-  "Reset SP returns all spent points for free outside combat.": "Reiniciar SP devuelve gratis todos los puntos gastados fuera del combate."
+  "Reset SP returns all spent points for free outside combat.": "Reiniciar SP devuelve gratis todos los puntos gastados fuera del combate.",
+  "First win of the day": "Primera victoria del día",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "Tu primera victoria del día en Casual o Clasificatoria otorga este bono. Se reinicia a las {{value0}}.",
+  "Claim {{value0}} gold": "Reclamar {{value0}} de oro",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Tu primera victoria del día en Casual o Clasificatoria otorga {{value0}} de oro extra. Reclámalo en la pantalla Jugar. El bono se reinicia a medianoche UTC.",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Cada recluta cuesta más que el anterior: {{value0}}, {{value1}} y luego {{value2}} de oro.",
+  "No bonus to claim": "No hay bono que reclamar"
 }

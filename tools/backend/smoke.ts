@@ -119,6 +119,40 @@ try {
     await ref.delete();
   }
   console.log('Post-match rewards initialize missing chest data, preserve existing timers/keys, and apply once under concurrent retries');
+  {
+    // First Casual/Ranked win of the UTC day is banked once by postGameUpdate and paid by a retry-safe claim.
+    const {FIRST_WIN_BONUS_GOLD} = await import('../../shared/config');
+    const winner = await login(`first-win-${run}`);
+    const winnerRef = db.collection('players').doc(winner.uid);
+    const result = (id: string, mode: number, isWinner = true, stayedUntilTheEnd = true) => http('postGameUpdate', {
+      uid: winner.uid, resultId: `first-win-${run}-${id}`, mode, stayedUntilTheEnd, engagement: {},
+      outcomes: {isWinner, xp: 0, gold: 10, elo: 0, characters: [], key: null, chests: []}});
+    const pending = async () => (await http('getPlayerData', undefined, winner.token)).firstWinBonusGold;
+    // Past the unlock milestones, so completed games add no unlock gold.
+    await winnerRef.update({gold: 0, 'engagementStats.completedGames': 100});
+    await result('practice', PlayMode.PRACTICE);
+    await result('friend', PlayMode.CASUAL_VS_FRIEND);
+    await result('loss', PlayMode.CASUAL, false);
+    await result('left', PlayMode.RANKED, true, false);
+    assert.equal(await pending(), 0, 'Practice, friendly, lost and abandoned matches earn no first-win bonus');
+    await Promise.all([result('win', PlayMode.CASUAL_VS_AI), result('win', PlayMode.CASUAL_VS_AI)]);
+    await result('second-win', PlayMode.RANKED_VS_AI);
+    assert.equal(await pending(), FIRST_WIN_BONUS_GOLD, 'Only the first win of the day is banked');
+    assert.equal((await winnerRef.get()).get('gold'), 60);
+    const claim = {requestId: crypto.randomUUID()};
+    const claims = await Promise.all([http('claimFirstWinBonus', claim, winner.token), http('claimFirstWinBonus', claim, winner.token)]);
+    assert(claims.every(claimed => claimed.gold === FIRST_WIN_BONUS_GOLD));
+    assert.equal((await winnerRef.get()).get('gold'), 60 + FIRST_WIN_BONUS_GOLD);
+    assert.equal(await pending(), 0);
+    const again = await fetch(`${api}/claimFirstWinBonus`, {method: 'POST',
+      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${winner.token}`}, body: JSON.stringify({requestId: crypto.randomUUID()})});
+    assert.equal(again.status, 409);
+    // An unclaimed bonus from an earlier day stacks with today's.
+    await winnerRef.update({firstWinBonus: {day: '2020-01-01', pendingGold: FIRST_WIN_BONUS_GOLD}});
+    await result('next-day', PlayMode.RANKED);
+    assert.equal(await pending(), FIRST_WIN_BONUS_GOLD * 2);
+    console.log('First-win bonus: eligible modes only, once per day under concurrent results, atomic replay-safe claim');
+  }
   // A reset account keeps its fixed-ID characters and practice match; signing in again must
   // still recreate a loadable player rather than fail on those leftovers.
   const reset=await login(`reset-${run}`);
@@ -291,6 +325,11 @@ try {
   await db.collection('players').doc(otherBuyer.uid).update({gold: 100000});
   const saleRef = db.collection('characters').doc(`sale-${run}`);
   await saleRef.set({...warrior.data(), onSale: true, price: 100});
+  // Recruit prices follow the buyer's roster size, not the price stored on the listing.
+  const {CHARACTER_PRICES} = await import('../../shared/config');
+  const listed = await http('listOnSaleCharacters', undefined, otherBuyer.token);
+  assert(listed.length && listed.every(character => character.price === CHARACTER_PRICES[0]));
+  const goldBefore = await Promise.all([shopper, otherBuyer].map(async account => (await db.collection('players').doc(account.uid).get()).get('gold')));
   const bids = await Promise.all([shopper, otherBuyer].map(account => fetch(`${api}/purchaseCharacter`, {
     method: 'POST', headers: {'Content-Type': 'application/json', Authorization: `Bearer ${account.token}`},
     body: JSON.stringify({articleId: saleRef.id, requestId: crypto.randomUUID()}),
@@ -298,6 +337,10 @@ try {
   assert.deepEqual(bids.map(response => response.status).sort(), [200, 409]);
   const owners = await Promise.all([shopper, otherBuyer].map(account => db.collection('players').doc(account.uid).get()));
   assert.equal(owners.filter(doc => doc.data().characters.some(ref => ref.id === saleRef.id)).length, 1);
+  owners.forEach((doc, index) => { assert.equal(doc.data().gold, goldBefore[index] - (doc.data().characters.some(ref => ref.id === saleRef.id) ? CHARACTER_PRICES[0] : 0)); });
+  const buyer = owners.find(doc => doc.data().characters.some(ref => ref.id === saleRef.id));
+  const next = await http('listOnSaleCharacters', undefined, buyer.id === shopper.uid ? shopper.token : otherBuyer.token);
+  assert(next.every(character => character.price === CHARACTER_PRICES[1]), 'The next recruit costs more');
   assert.equal((await shopperRef.collection('mutationReceipts').doc(purchase.requestId).get()).exists, true);
   console.log('Atomic purchases/chests/inventory, concurrent replay, stale selection, validation, and exclusive recruitment pass');
   await (await import('./client-recovery')).checkClientRecovery(api, shopper, shopperRef);

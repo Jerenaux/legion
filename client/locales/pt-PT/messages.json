@@ -1316,5 +1316,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "Ganha 2 SP por nível até ao nível 21. Gasta-os nos atributos que quiseres aumentar.",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "O gelo prende personagens durante 3 turnos. Ataques corpo a corpo ou fogo podem libertá-las mais cedo.",
   "The + and X spells cover more tiles but deal less damage per target.": "Os feitiços + e X cobrem mais casas, mas causam menos dano por alvo.",
-  "Reset SP returns all spent points for free outside combat.": "Repor SP devolve todos os pontos gastos gratuitamente fora de combate."
+  "Reset SP returns all spent points for free outside combat.": "Repor SP devolve todos os pontos gastos gratuitamente fora de combate.",
+  "First win of the day": "Primeira vitória do dia",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "A tua primeira vitória do dia em Casual ou Classificado dá este bónus. Renova-se às {{value0}}.",
+  "Claim {{value0}} gold": "Receber {{value0}} de ouro",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "A tua primeira vitória do dia em Casual ou Classificado dá {{value0}} de ouro de bónus. Recebe-o no ecrã Jogar. O bónus renova-se à meia-noite UTC.",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Cada recruta custa mais do que o anterior: {{value0}}, {{value1}} e depois {{value2}} de ouro.",
+  "No bonus to claim": "Não há bónus para receber"
 }
