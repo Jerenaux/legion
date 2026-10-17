@@ -8,6 +8,7 @@ import ClassCrest from '../HUD/ClassCrest';
 import {events} from '../HUD/GameHUD';
 import {combatTipsVisible} from '../../game/TutorialManager';
 import {getSpritePath, playSoundEffect} from '../utils';
+import {sfxLevel} from '../../sfxMix';
 import hourglass from '@assets/HUD/hourglass.png';
 import sword from '@assets/stats_icons/attack_icon.png';
 import enterSound from '@assets/sfx/equip.wav';
@@ -24,7 +25,7 @@ export function TeamReveal({team, onComplete}: TeamRevealProps) {
   useEffect(() => { startButton.current?.focus(); }, []);
   const start = () => {
     events.emit('combatTipsVisibility', tips);
-    playSoundEffect(enterSound);
+    playSoundEffect(enterSound, sfxLevel('equip'));
     onComplete();
   };
   return <section className="team-reveal-overlay" role="dialog" aria-modal="true" aria-labelledby="team-reveal-title">

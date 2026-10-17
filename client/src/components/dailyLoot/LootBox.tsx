@@ -6,6 +6,7 @@ import {createPortal} from 'preact/compat';
 import {Tooltip} from 'react-tooltip';
 import {IMMEDIATE_LOOT} from '@legion/shared/config';
 import {playSoundEffect} from '../utils';
+import {sfxLevel} from '../../sfxMix';
 import nopeSfx from '@assets/sfx/nope.wav';
 import '../ItemTooltipContent.css';
 import { Component } from 'preact';
@@ -137,7 +138,7 @@ class LootBox extends Component<LootBoxProps, LootBoxState> {
                         {transform: 'translateX(5px) rotate(5deg)'}, {transform: 'translateX(-3px)'}, {transform: 'translateX(0)'}],
                 {duration: 300},
             );
-            playSoundEffect(nopeSfx, .2);
+            playSoundEffect(nopeSfx, sfxLevel('nope'));
             return;
         }
     };

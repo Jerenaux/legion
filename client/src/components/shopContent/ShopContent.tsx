@@ -12,6 +12,7 @@ import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, Locke
 import { EQUIPMENT_BATCH_GOLD } from "@legion/shared/config";
 import { ShopItems, APICharacterData } from '@legion/shared/interfaces';
 import { errorToast, successToast, playSoundEffect, lockIcon } from '../utils';
+import { sfxLevel } from '../../sfxMix';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
 import ShopEquipmentCard from '../shopEquipmentCard/ShopEquipmentCard';
@@ -201,7 +202,7 @@ class ShopContent extends Component<ShopContentProps> {
             () => apiMutation(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', payload));
         if (!queued) return;
         this.handleCloseModal();
-        playSoundEffect(purchaseSfx);
+        playSoundEffect(purchaseSfx, sfxLevel('purchase'));
         successToast(t("Purchase successful!"));
         if (recruit) {
             // Off the shelf at once; the restocked list (and next recruit price) follows the server.

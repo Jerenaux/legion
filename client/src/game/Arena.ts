@@ -69,6 +69,7 @@ import { VFXconfig, fireLevels, terrainFireLevels, chargedFireLevels,
     chargedIceLevels, chargedThunderLevels, iceLevels, thunderLevels,
     healLevels, VFX_FRAME_SIZE, VFX_DISPLAY_SCALE } from './VFXconfig';
 import {loadGameSettings, sfxGain} from '../settings';
+import {sfxLevel} from '../sfxMix';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 import type {CharacterHover} from '../components/HUD/CharacterHoverCard';
 
@@ -462,7 +463,7 @@ export class Arena extends Phaser.Scene
             'no-status': t("Nothing to cure"),
         }[reason];
         target.displayOverheadText(message, 1800, '#ffe3a1');
-        this.playSound('nope', 0.2);
+        this.playSound('nope');
     }
 
     endTutorial() {
@@ -655,14 +656,14 @@ export class Arena extends Phaser.Scene
         if (pendingSpell != null) {
             if (!this.validateTarget(gridX, gridY, pendingSpell)) {
                 this.actionFeedback(t("Choose a highlighted target in range."));
-                this.playSound('nope', 0.2);
+                this.playSound('nope');
                 return;
             }
             this.sendSpell(gridX, gridY, player);
         } else if (pendingItem != null) {
             if (!this.validateTarget(gridX, gridY, pendingItem)) {
                 this.actionFeedback(t("Choose a highlighted target in range."));
-                this.playSound('nope', 0.2);
+                this.playSound('nope');
                 return;
             }
             if (player && pendingItem.target === Target.SINGLE && this.showItemNoEffect(pendingItem, player)) return;
@@ -1421,7 +1422,7 @@ export class Arena extends Phaser.Scene
             return;
         }
 
-        const adjustedVolume = volume * this.sfxVolume;
+        const adjustedVolume = volume * sfxLevel(name) * this.sfxVolume;
         try {
             this.SFX[name].play({delay: 0, volume: adjustedVolume, loop});
         } catch (error) {
@@ -1442,7 +1443,7 @@ export class Arena extends Phaser.Scene
             this.playSoundMultipleTimes(key, times - 1); // Play the sound again
         });
 
-        sound.play();
+        sound.play({volume: sfxLevel(key) * this.sfxVolume});
     }
 
 
@@ -2217,7 +2218,7 @@ export class Arena extends Phaser.Scene
         if (this.gameEnded || !this.gameInitialized) return;
         const flames = this.environmentalAudioSources.flames;
         if (flames > 0) {
-            this.playSound('flames', 0.5, true);
+            this.playSound('flames', 1, true);
         } else {
             this.stopSound('flames');
         }
