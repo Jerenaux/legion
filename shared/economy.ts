@@ -1,8 +1,17 @@
 import { Rarity } from "./enums";
-import { AVERAGE_GOLD_REWARD_PER_GAME } from "./config";
+import { CHARACTER_PRICES, NB_START_CHARACTERS } from "./config";
 
-export function getPrice(effort: number): number {
-    return Math.floor(effort * AVERAGE_GOLD_REWARD_PER_GAME);
+// Gold per point of effort. Independent of match rewards, so raising rewards does not raise prices.
+export const PRICE_UNIT = 100;
+
+export function getPrice(effort: number, discount = 0): number {
+    return Math.round(effort * PRICE_UNIT * (1 - discount));
+}
+
+/** Price of the next recruit for a player who already owns `ownedCharacters`. */
+export function getCharacterPrice(ownedCharacters: number): number {
+    const index = Math.max(0, ownedCharacters - NB_START_CHARACTERS);
+    return CHARACTER_PRICES[Math.min(index, CHARACTER_PRICES.length - 1)];
 }
 
 export function getRarity(effort: number): Rarity {

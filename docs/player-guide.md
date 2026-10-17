@@ -42,7 +42,7 @@ Run the standard lint, TypeScript checks, and tests too. Guide-only changes (cop
 
 ## Local web previews
 
-Run `node tools/guide/preview.cjs` from `client` to serve the fixture-backed client at `http://127.0.0.1:8084`. This uses development mode with Sentry disabled and blocks external requests. Open `/team?games=0`, `/team?games=11`, or `/team?games=12` to inspect recruitment before and after its unlock; add `&roster=6` for a full team. Query values are only read by the guide fixture provider, never the shipped client.
+Run `node tools/guide/preview.cjs` from `client` to serve the fixture-backed client at `http://127.0.0.1:8084`. This uses development mode with Sentry disabled and blocks external requests. Open `/team?games=0`, `/team?games=11`, or `/team?games=12` to inspect recruitment before and after its unlock; add `&roster=6` for a full team. Open `/play?first-win` to inspect the first-win-of-the-day bonus popup. Query values are only read by the guide fixture provider, never the shipped client.
 
 For a roster-only refresh, run `bun run test:guide --roster-images --locale=<code>`.
 This refreshes the cropped loadout image and saves Team/Play previews at compact

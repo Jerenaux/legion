@@ -135,11 +135,9 @@ export function listCellsOnTheWay(startX: number, startY: number, endX: number, 
     return cells;
 }
 
+/** Items held in the player inventory: the fields players see, whatever else an old document stores. */
 export function inventorySize(inventory: PlayerInventory): number {
-    return Object.values(inventory)
-    .filter(Array.isArray)
-    .map(arr => arr.length)
-    .reduce((acc, curr) => acc + curr, 0);
+    return (inventory.consumables?.length ?? 0) + (inventory.spells?.length ?? 0) + (inventory.equipment?.length ?? 0);
 }
 
 export const paralyzingStatuses = [StatusEffect.FREEZE, StatusEffect.PARALYZE, StatusEffect.SLEEP];

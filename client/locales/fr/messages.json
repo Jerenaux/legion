@@ -1316,5 +1316,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "Chaque niveau gagné jusqu’au niveau 21 donne 2 SP. Dépensez-les dans les statistiques de votre choix.",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "La glace piège les personnages pendant 3 tours. Le corps à corps ou le feu peut les libérer plus tôt.",
   "The + and X spells cover more tiles but deal less damage per target.": "Les sorts + et X couvrent plus de cases, mais infligent moins de dégâts par cible.",
-  "Reset SP returns all spent points for free outside combat.": "Réinitialiser les SP rend gratuitement tous les points dépensés hors combat."
+  "Reset SP returns all spent points for free outside combat.": "Réinitialiser les SP rend gratuitement tous les points dépensés hors combat.",
+  "First win of the day": "Première victoire du jour",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "Votre première victoire en Amical ou en Classé de la journée rapporte ce bonus. Il se réinitialise à {{value0}}.",
+  "Claim {{value0}} gold": "Récupérer {{value0}} pièces d’or",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Votre première victoire en Amical ou en Classé de la journée rapporte {{value0}} pièces d’or en bonus. Récupérez-les sur l’écran Jouer. Le bonus se réinitialise à minuit UTC.",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Chaque recrue coûte plus cher que la précédente : {{value0}}, {{value1}}, puis {{value2}} pièces d’or.",
+  "No bonus to claim": "Aucun bonus à récupérer"
 }

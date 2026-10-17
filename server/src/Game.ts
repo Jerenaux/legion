@@ -1330,7 +1330,7 @@ export abstract class Game
             return {
                 isWinner,
                 rewardFactor,
-                gold: this.computeTeamGold(rewardFactor, this.mode),
+                gold: this.computeTeamGold(rewardFactor, this.mode, team.isGame0()),
                 xp: this.computeTeamXP(team, otherTeam, rewardFactor, this.mode),
                 elo: isWinner ? eloUpdate.winnerUpdate : eloUpdate.loserUpdate,
                 key: (this.mode === PlayMode.PRACTICE || this.mode === PlayMode.TUTORIAL) ? null : team.getChestKey() as ChestColor,
@@ -1436,9 +1436,10 @@ export abstract class Game
         };
       }
 
-    computeTeamGold(rewardFactor: number, mode: PlayMode) {
+    computeTeamGold(rewardFactor: number, mode: PlayMode, firstMatch = false) {
         let gold = AVERAGE_GOLD_REWARD_PER_GAME * (rewardFactor + 0.3);
-        if (mode === PlayMode.PRACTICE || mode === PlayMode.TUTORIAL) gold *= PRACTICE_GOLD_COEF;
+        // The first match pays like Casual, whichever mode hosts it.
+        if ((mode === PlayMode.PRACTICE || mode === PlayMode.TUTORIAL) && !firstMatch) gold *= PRACTICE_GOLD_COEF;
         if (mode === PlayMode.RANKED || mode === PlayMode.RANKED_VS_AI) gold *= RANKED_GOLD_COEF;
         // Add +- 5% random factor
         gold *= 0.95 + Math.random() * 0.1;

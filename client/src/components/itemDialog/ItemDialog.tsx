@@ -1,6 +1,6 @@
 import {MAX_STAT_SP, spBonus} from '@legion/shared/combatBalance';
 import {statFieldsByIndex} from '@legion/shared/enums';
-import {t, i18n, userError} from '../../i18n/core';
+import {t, i18n} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
 
 import { h, Fragment } from 'preact';
@@ -12,10 +12,11 @@ import { Component } from 'preact';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
-import { InventoryActionType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
+import { InventoryActionType, InventoryType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
 import { apiMutation } from '../../services/apiService';
-import { playSoundEffect, silentErrorToast, errorToast, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
+import { playSoundEffect, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
 import { PlayerContext } from '../../contexts/PlayerContext';
+import { predictInventoryAction, predictSP } from '../../providers/predictions';
 
 import {
   canEquipConsumable,
@@ -53,7 +54,6 @@ interface DialogProps {
   };
   handleClose: () => void;
   handleSelectedEquipmentSlot: (newValue: number) => void;
-  updateCharacterData?: () => void;
 }
 
 interface DialogState {
@@ -142,16 +142,13 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     this.props.handleClose();
   }
 
-  actionPending = false;
-
-  AcceptAction = async (type: ItemDialogType, index: number) => {
-    if (this.actionPending) return;
-    const { actionType } = this.props;
-
+  AcceptAction = (type: ItemDialogType, index: number) => {
+    const { actionType, dialogData } = this.props;
+    const character = this.context.getActiveCharacter();
     const payload = {
       index,
-      expectedItemId: this.props.dialogData && 'id' in this.props.dialogData ? this.props.dialogData.id : undefined,
-      characterId: this.context.getActiveCharacter().id,
+      expectedItemId: dialogData && 'id' in dialogData ? dialogData.id : undefined,
+      characterId: character.id,
       inventoryType: type,
       action: actionType === InventoryActionType.EQUIP && this.state.sellModalShow ?
         InventoryActionType.SELL : actionType
@@ -161,45 +158,28 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       console.log(`[ItemDialog] AcceptAction: type: ${type} action: ${payload.action} index: ${index}`);
     }
 
-    this.actionPending = true;
     this.props.handleClose();
-    try {
-      const result = await apiMutation('inventoryTransaction', payload);
-      if (result.status === 0 && payload.action !== InventoryActionType.SELL) playSoundEffect(equipSfx);
-      if (result.status !== 0) {
-        silentErrorToast(t('Unable to complete the request. Please try again.'));
-      } else if (type === ItemDialogType.SPELLS && payload.action === InventoryActionType.EQUIP) {
-        successToast(t("Spell learned!"));
-      } else if (payload.action === InventoryActionType.SELL) {
-        successToast(t("Item sold!"));
-      }
-    } catch (error) {
-      silentErrorToast(userError(error));
-    } finally {
-      await this.context.refreshAllData();
-      this.actionPending = false;
+    const queued = this.context.optimisticMutation(
+      view => predictInventoryAction(view, character.id, type as unknown as InventoryType, payload.action, index, payload.expectedItemId),
+      async () => {
+        const result = await apiMutation('inventoryTransaction', payload);
+        if (result.status !== 0) throw new Error('Unable to complete the request. Please try again.');
+      });
+    if (!queued) return;
+    if (payload.action === InventoryActionType.SELL) {
+      successToast(t("Item sold!"));
+    } else {
+      playSoundEffect(equipSfx);
+      if (type === ItemDialogType.SPELLS) successToast(t("Spell learned!"));
     }
   }
 
-  spendSP = async (stat: Stat, amount: number) => {
-    if (this.actionPending) return;
+  spendSP = (stat: Stat, amount: number) => {
     const character = this.context.getActiveCharacter();
-    if (!canIncreaseStat(character, stat, amount)) {
-      errorToast(t('You can spend at most 20 SP on one stat.'));
-      return;
-    }
-    this.actionPending = true;
     this.props.handleClose();
-    try {
-      await apiMutation('spendSP', {stat, amount, characterId: character.id, spVersion: character.spVersion ?? 0});
-      await this.context.refreshAllData();
-      this.props.updateCharacterData();
-    } catch (error) {
-      errorToast(userError(error));
-      // A newer build makes the next request a distinct action instead of a retry of this one.
-      this.context.refreshAllData();
-    }
-    finally { this.actionPending = false; }
+    // The shown spVersion already counts queued SP changes, which the server applies first.
+    this.context.optimisticMutation(view => predictSP(view, character.id, stat, amount),
+      () => apiMutation('spendSP', {stat, amount, characterId: character.id, spVersion: character.spVersion ?? 0}));
   }
 
   renderDialogButtons(acceptAction: () => void, isDisabled: boolean = false) {

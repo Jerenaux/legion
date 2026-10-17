@@ -2,7 +2,7 @@ import {t, i18n, localizedAsset} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
 import { h } from 'preact';
 import { Link } from 'preact-router/match';
-import { ENABLE_CINDER_TOWER, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
+import { CHARACTER_PRICES, ENABLE_CINDER_TOWER, FIRST_WIN_BONUS_GOLD, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
 import { LockedFeatures } from '@legion/shared/enums';
 import {defaultGameSettings} from '../settings';
 import battleOriginal from '@assets/guide/battle.jpg';
@@ -156,6 +156,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             </figure>
             <h3>{t("Grow your team")}</h3>
             <p><Trans i18n={i18n} i18nKey={"The next recruit’s place in Team shows how your roster can grow to {{value0}} characters. Recruitment unlocks after {{value1}} completed games, win or lose. Track your progress below the roster; once unlocked, choose <0>Recruit character</0> to buy a new teammate with gold in Shop."} components={[<strong />]} values={{value0: MAX_CHARACTERS, value1: LOCKED_FEATURES[LockedFeatures.CHARACTER_PURCHASES]}} /></p>
+            <p>{t("Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.", {value0: CHARACTER_PRICES[0], value1: CHARACTER_PRICES[1], value2: CHARACTER_PRICES[2]})}</p>
             <h3>{t("Know your roles")}</h3>
             <p><Trans i18n={i18n} i18nKey={"<0>Warriors</0> are sturdy melee fighters. <1>White Mages</1> start with healing magic and support the team. <2>Black Mages</2> start with offensive magic and can use damage, terrain, and status effects to disrupt an opponent. Check each character’s actual stats and spells before choosing their job."} components={[<strong />, <strong />, <strong />]} /> {t("SpAtk applies only to mages.")}</p>
             <h3>{t("Three different kinds of preparation")}</h3>
@@ -184,6 +185,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t('A creator’s gift can also invite you to their community. After claiming, you choose whether to join.')}</p>
             <p>{t('If this is your first visit, close the gift and community dialogs, then press Play to meet your characters and start the tutorial.')}</p>
             <p><Trans i18n={i18n} i18nKey={"The results screen shows your XP, gold and any item rewards. Spend gold in <0>Shop</0>, then return to Team to put purchases to use."} components={[<strong />]} /></p>
+            <p>{t("Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.", {value0: FIRST_WIN_BONUS_GOLD})}</p>
             <h3>{t("What unlocks when?")}</h3>
             <p><Trans i18n={i18n} i18nKey={"Unlocks use <0>completed games, not just wins</0>. Hover over or focus a locked Shop tab to see how many more games you need."} components={[<strong />]} /></p>
             <dl className="guide-definitions guide-unlocks">

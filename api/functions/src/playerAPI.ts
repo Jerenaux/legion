@@ -20,7 +20,7 @@ import {
   STARTING_ELO,
   STARTING_CONSUMABLES, STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN,
   IMMEDIATE_LOOT,
-  NB_START_CHARACTERS, INVENTORY_SIZE_PER_CHARACTER,
+  NB_START_CHARACTERS,
   BASE_INVENTORY_SIZE,
   INVENTORY_SLOT_PRICE, MAX_PURCHASABLE_SLOTS,
   MAX_NICKNAME_LENGTH,
@@ -30,11 +30,13 @@ import { logPlayerAction } from "./dashboardAPI";
 import {recordPlayerActivity} from "./dailyAnalytics";
 import {currentSeasonId, getEmptyLeagueStats} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
+import {aiWinRatio} from "@legion/shared/aiDifficulty";
 import {matchDocument} from "@legion/shared/matchData";
 import { transformDailyLoot } from "@legion/shared/utils";
 import {findZombieOpponent, readZombieRoster} from "./zombieOpponents";
 import {readRoster} from "./characterAPI";
 import {starterCharacterId} from "./playerProvisioning";
+import {playerInventoryCapacity} from "./inventoryUtils";
 
 export const buyInventorySlots = onRequest({
   memory: '512MiB',
@@ -270,12 +272,8 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     equipment: Array.isArray(inventory.equipment) ? inventory.equipment.sort(numericalSort) : [],
   };
 
-  const inventorySize = (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER + (playerData.purchasedInventorySlots || 0);
 
-  const AIwinRatio =
-    playerData.AIstats && playerData.AIstats.nbGames > 0 ?
-      (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
-      0;
+  const AIwinRatio = aiWinRatio(playerData.AIstats);
 
   const player = {
     uid,
@@ -291,12 +289,13 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     allTimeRank: playerData.allTimeStats?.rank || 0,
     dailyloot: playerData.dailyloot,
     inventory: sortedInventory,
-    carrying_capacity: inventorySize,
+    carrying_capacity: playerInventoryCapacity(playerData as DBPlayerData),
     isLoaded: false,
     AIwinRatio,
     completedGames: playerData.engagementStats?.completedGames || 0,
     engagementStats: playerData.engagementStats || {},
     community: playerData.community ?? null,
+    firstWinBonusGold: playerData.firstWinBonus?.pendingGold || 0,
   } as PlayerContextData;
   return {player, characters};
 }
@@ -431,6 +430,26 @@ export const claimChest = onRequest({memory: '512MiB'}, (request, response) => {
         });
       response.send({...result, dailyloot: transformDailyLoot(result.dailyloot)});
     } catch (error) { mutationFailure(response, 'claimChest', error); }
+  });
+});
+
+// Pays the first-win bonus banked by postGameUpdate. Retry-safe: a replayed request returns the original amount.
+export const claimFirstWinBonus = onRequest({memory: '512MiB'}, (request, response) => {
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const result = await playerMutation(uid, 'claimFirstWinBonus', request.body?.requestId, {},
+        (transaction, playerRef, player) => {
+          const gold = player.firstWinBonus?.pendingGold || 0;
+          if (gold <= 0) throw new MutationError(409, 'No bonus to claim');
+          transaction.update(playerRef, {
+            gold: admin.firestore.FieldValue.increment(gold),
+            'firstWinBonus.pendingGold': 0,
+          });
+          return {gold};
+        });
+      response.send(result);
+    } catch (error) { mutationFailure(response, 'claimFirstWinBonus', error); }
   });
 });
 

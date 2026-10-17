@@ -24,7 +24,7 @@ export class BaseItem {
 
     constructor(props: ConsumableData) {
         Object.assign(this, props);
-        this.price = getPrice(props.effort);
+        this.price = getPrice(props.effort, props.priceDiscount);
         this.rarity = getRarity(props.effort);
     }
 }

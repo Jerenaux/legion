@@ -18,6 +18,8 @@ import {createRefreshingSocketAuth, retrySocketAuthentication, socketReconnectOp
 
 import {canEquipEquipment, canLearnSpell} from '@legion/shared/inventory';
 import { LOCKED_FEATURES } from '@legion/shared/config';
+import type { PlayerView } from './predictions';
+import { isRejection, Rejection } from '@legion/shared/playerActions';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private bootstrapRequest: Promise<void> | undefined;
@@ -33,6 +35,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     private failureNotified = false;
     private identitySaves: Partial<Record<'name' | 'avatar', {value: string; saved: string; request: Promise<void>}>> = {};
     private identityApplied: Partial<Record<'name' | 'avatar', {seq: number; value: string}>> = {};
+    /** Optimistic mutations: sent one at a time, in the order the player made them. */
+    private mutationTail: Promise<void> = Promise.resolve();
+    private mutationsPending = 0;
+    /** Bumped by a failed mutation, which cancels the predicted mutations queued behind it. */
+    private mutationEpoch = 0;
+    /** Ticks whenever a mutation is queued or settles; loads that overlap one are discarded. */
+    private mutationClock = 0;
 
     constructor(props: {}) {
       super(props);
@@ -111,6 +120,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       this.refreshQueued = false;
       this.retryDelay = 0;
       this.failureNotified = false;
+      this.mutationTail = Promise.resolve();
+      this.mutationsPending = 0;
       clearTimeout(this.retryTimer);
       this.retryTimer = undefined;
       if (this.state.socket) {
@@ -179,6 +190,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
 
     private async loadBootstrap(uid: string, session: number) {
       const seq = ++this.playerRequestSeq;
+      const clock = this.mutationClock;
       const current = () => session === this.session && firebaseAuth.currentUser?.uid === uid;
       try {
         let data: {player: PlayerContextData; characters: APICharacterData[]};
@@ -195,6 +207,8 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         this.bootstrapDone = true;
         this.retryDelay = 0;
         this.failureNotified = false;
+        // Predicted changes still pending would be overwritten; the refresh after them resyncs.
+        if (!this.mutationsSettledSince(clock)) return;
         // Keep player data that a newer refresh already applied; the roster is still needed.
         if (seq > this.playerAppliedSeq) {
           this.playerAppliedSeq = seq;
@@ -222,11 +236,13 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       if (!user) return;
       const session = this.session;
       const seq = ++this.playerRequestSeq;
+      const clock = this.mutationClock;
 
       try {
           const data = await apiFetch('getPlayerData', {}, 3) as PlayerContextData;
-          // Ignore if signed out, or if a newer player load already landed.
+          // Ignore if signed out, if a newer player load already landed, or if it would undo predicted changes.
           if (session !== this.session || seq <= this.playerAppliedSeq || firebaseAuth.currentUser?.uid !== user.uid) return;
+          if (!this.mutationsSettledSince(clock)) return;
           this.playerAppliedSeq = seq;
           this.setState({
               player: {
@@ -246,6 +262,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
                   carrying_capacity: data.carrying_capacity,
                   engagementStats: data.engagementStats || {},
                   community: data.community ?? null,
+                  firstWinBonusGold: data.firstWinBonusGold || 0,
                   ...this.pendingIdentity(seq),
               }
           });
@@ -256,8 +273,10 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
     }
 
     async fetchRosterData() {
+      const clock = this.mutationClock;
       try {
         const data = await apiFetch('rosterData', {}, 3);
+        if (!this.mutationsSettledSince(clock)) return;
         this.setState({
           characters: data.characters
         });
@@ -265,6 +284,53 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
         console.error('Error fetching roster data:', error);
         // errorToast(`Error: ${error}`);
       }
+    }
+
+    /** True when no optimistic mutation was pending, queued or settled since `clock` was read. */
+    private mutationsSettledSince(clock: number) {
+      return this.mutationsPending === 0 && clock === this.mutationClock;
+    }
+
+    /**
+     * Shows the predicted outcome of an action at once, then sends it to the server after every
+     * earlier one, so each request reaches the state its prediction was made from. A failure shows
+     * an error and cancels the predictions queued behind it; once the queue drains, a refresh
+     * replaces the predictions with server data. When the shared rules reject the action, shows the
+     * reason and returns null without sending anything; otherwise resolves to whether the server applied it.
+     */
+    optimisticMutation = (predict: (view: PlayerView) => PlayerView | Rejection, send: () => Promise<unknown>): Promise<boolean> | null => {
+      const prediction = predict(this.state);
+      if (isRejection(prediction)) {
+        silentErrorToast(userError(prediction.error));
+        return null;
+      }
+      this.setState(prev => {
+        const next = predict(prev);
+        return isRejection(next) ? null : {...next, characterSheetIsDirty: true};
+      });
+      const session = this.session;
+      const epoch = this.mutationEpoch;
+      this.mutationsPending++;
+      this.mutationClock++;
+      const outcome = this.mutationTail.then(async () => {
+        if (session !== this.session || epoch !== this.mutationEpoch) return false;
+        try {
+          await send();
+          return true;
+        } catch (error) {
+          if (session === this.session && epoch === this.mutationEpoch) {
+            this.mutationEpoch++;
+            silentErrorToast(userError(error));
+          }
+          return false;
+        }
+      });
+      this.mutationTail = outcome.then(() => {
+        if (session !== this.session) return;
+        this.mutationClock++;
+        if (--this.mutationsPending === 0) void this.fetchAllData();
+      });
+      return outcome;
     }
 
     updateActiveCharacter = (characterId: string): void => {
@@ -627,6 +693,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           notifyLeaveGame: this.notifyLeaveGame,
           getCharacterThatCanSpendSP: this.getCharacterThatCanSpendSP,
           buyInventorySlots: this.buyInventorySlots,
+          optimisticMutation: this.optimisticMutation,
         }}>
           {children}
 

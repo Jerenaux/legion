@@ -182,7 +182,6 @@ class TeamPage extends Component<TeamPageProps, TeamPageState> {
             handleItemEffect={this.handleItemEffect}
             selectedEquipmentSlot={this.state.selectedEquipmentSlot}
             handleSelectedEquipmentSlot={this.handleSelectedEquipmentSlot}
-            updateCharacterData={this.updateCharacterData}
           /> : <Ghost height={420} className="character-sheet-skeleton" />}
 
           {this.context.player.isLoaded ? <Inventory

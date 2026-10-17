@@ -1299,5 +1299,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "升至21级前，每次升级获得2 SP。将其分配给想提升的属性。",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "冰会困住角色3个回合。近战或火焰可以提前将其解救。",
   "The + and X spells cover more tiles but deal less damage per target.": "+和X法术覆盖更多地格，但对单个目标的伤害较低。",
-  "Reset SP returns all spent points for free outside combat.": "战斗外可免费重置SP，返还所有已用点数。"
+  "Reset SP returns all spent points for free outside combat.": "战斗外可免费重置SP，返还所有已用点数。",
+  "First win of the day": "每日首胜",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "每天在休闲或排位模式中首次获胜即可获得此奖励。将于 {{value0}} 重置。",
+  "Claim {{value0}} gold": "领取 {{value0}} 金币",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "每天在休闲或排位模式中首次获胜可获得 {{value0}} 奖励金币。请在“对战”界面领取。奖励于 UTC 午夜重置。",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "每位新成员都比上一位更贵：{{value0}}、{{value1}}，然后是 {{value2}} 金币。",
+  "No bonus to claim": "没有可领取的奖励"
 }

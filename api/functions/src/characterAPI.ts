@@ -1,5 +1,4 @@
 import type {Request, Response} from 'express';
-import {emptyAllocations} from '@legion/shared/characterBalance';
 import {publicCharacter, readCharacter, writeCharacter} from './characterStore';
 import {BALANCE_VERSION} from '@legion/shared/combatBalance';
 import {playerMutation, MutationError, mutationFailure} from './playerMutation';
@@ -11,11 +10,13 @@ import {onRequest} from "./telemetry";
 import * as logger from "firebase-functions/logger";
 import admin, {checkAPIKey, corsMiddleware, getUID, firestore} from "./APIsetup";
 import {NewCharacter} from "@legion/shared/NewCharacter";
-import {Class, statFieldsByIndex, PlayMode, RewardType} from "@legion/shared/enums";
-import {MAX_CHARACTERS} from "@legion/shared/config";
+import {Class, PlayMode, RewardType} from "@legion/shared/enums";
+import {FIRST_WIN_BONUS_GOLD} from "@legion/shared/config";
+import {getCharacterPrice} from "@legion/shared/economy";
+import {recordAIResult} from "@legion/shared/aiDifficulty";
 import {OutcomeData, DailyLootAllDBData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
 import {logPlayerAction} from "./dashboardAPI";
-import { canIncreaseStat } from "@legion/shared/inventory";
+import {changeSP, isRejection, recruitCharacter} from "@legion/shared/playerActions";
 import { addItemsToInventory, checkFeatureUnlock, getUnlockRewards, InventoryUpdate } from "./inventoryUtils";
 import {applyRankedResult, currentSeasonId} from "./ranking";
 import {gameResultReceiptId} from "./gameResults";
@@ -139,6 +140,8 @@ export async function processChestRewards(
     }
   });
 }
+
+const FIRST_WIN_BONUS_MODES = [PlayMode.CASUAL, PlayMode.CASUAL_VS_AI, PlayMode.RANKED, PlayMode.RANKED_VS_AI];
 
 export const postGameUpdate = onRequest({
   secrets: ["API_KEY"],
@@ -266,6 +269,13 @@ export const postGameUpdate = onRequest({
           updates.gold = admin.firestore.FieldValue.increment(goldReward);
         }
 
+        // First Casual/Ranked win of the UTC day: banked here, paid when the player claims it in the hall.
+        const today = new Date().toISOString().slice(0, 10);
+        const bonus = playerData.firstWinBonus as DBPlayerData['firstWinBonus'];
+        if (isWinner && stayedUntilTheEnd && FIRST_WIN_BONUS_MODES.includes(mode) && bonus?.day !== today) {
+          updates.firstWinBonus = {day: today, pendingGold: (bonus?.pendingGold || 0) + FIRST_WIN_BONUS_GOLD};
+        }
+
         // Update engagement stats
         if (spellsUsed) updates['engagementStats.everUsedSpell'] = true;
         if (itemsUsed) updates['engagementStats.everUsedItems'] = true;
@@ -336,11 +346,7 @@ export const postGameUpdate = onRequest({
         }
 
         if (mode === PlayMode.PRACTICE || mode === PlayMode.CASUAL_VS_AI || mode === PlayMode.RANKED_VS_AI) {
-          const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
-          updates.AIstats = {
-            nbGames: currentAIStats.nbGames + 1,
-            wins: currentAIStats.wins + (isWinner ? 1 : 0),
-          };
+          updates.AIstats = recordAIResult(playerData.AIstats, isWinner);
         }
 
         transaction.update(playerRef, updates);
@@ -451,7 +457,13 @@ export const listOnSaleCharacters = onRequest({
           .get();
       }
 
-      const characters = querySnapshot.docs.map(publicCharacter);
+      // The next recruit's price depends on the viewer's roster; anonymous requests see the first price.
+      let price = getCharacterPrice(0);
+      try {
+        const player = await db.collection("players").doc(await getUID(request)).get();
+        price = getCharacterPrice(player.get('characters')?.length || 0);
+      } catch { /* Unauthenticated listing */ }
+      const characters = querySnapshot.docs.map(doc => ({...publicCharacter(doc), price}));
 
       response.send(characters);
     } catch (error) {
@@ -498,12 +510,9 @@ export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, respons
         async (transaction, playerRef, player) => {
           const characterRef = db.collection('characters').doc(characterId);
           const characterDoc = await transaction.get(characterRef);
-          const character = characterDoc.data();
-          if (!character?.onSale) throw new MutationError(409, 'Character is not on sale');
-          if (!Number.isFinite(character.price) || character.price <= 0) throw new MutationError(409, 'Invalid character price');
-          if (player.gold < character.price) throw new MutationError(409, 'Not enough gold!');
-          if (player.characters.length >= MAX_CHARACTERS) throw new MutationError(409, 'Character limit reached!');
-          transaction.update(playerRef, {gold: player.gold - character.price,
+          const recruit = recruitCharacter(player, player.characters.length, characterDoc.data());
+          if (isRejection(recruit)) throw new MutationError(recruit.status, recruit.error);
+          transaction.update(playerRef, {gold: recruit.gold,
             characters: admin.firestore.FieldValue.arrayUnion(characterRef)});
           writeCharacter(transaction, characterRef, readCharacter(characterDoc), {onSale: false, price: 0});
           return {status: 0};
@@ -517,17 +526,14 @@ export const purchaseCharacter = onRequest({memory: '512MiB'}, (request, respons
   });
 });
 
-async function changeSP(request: Request, response: Response, reset: boolean) {
+async function handleSPChange(request: Request, response: Response, reset: boolean) {
   try {
     const uid = await getUID(request);
     const {characterId, amount, stat: index, requestId, spVersion} = request.body;
     if (typeof characterId !== 'string' || !characterId || characterId.includes('/') || characterId.length > 200) {
       throw new MutationError(400, 'Invalid character ID');
     }
-    if (!reset && (!Number.isSafeInteger(index) || index < 0 || index >= statFieldsByIndex.length ||
-        !Number.isSafeInteger(amount) || amount <= 0)) throw new MutationError(400, 'Invalid SP request');
     // Installed clients older than spVersion send none; they also send no request ID to replay.
-    if (spVersion !== undefined && (!Number.isSafeInteger(spVersion) || spVersion < 0)) throw new MutationError(400, 'Invalid SP request');
     const payload = {characterId, ...(reset ? {} : {amount, stat: index}), ...(spVersion === undefined ? {} : {spVersion})};
     const result = await playerMutation(uid, reset ? 'resetSP' : 'spendSP', requestId, payload,
       async (transaction, playerRef, player) => {
@@ -535,18 +541,9 @@ async function changeSP(request: Request, response: Response, reset: boolean) {
         const ref = firestore().collection('characters').doc(characterId);
         const doc = await transaction.get(ref);
         if (!doc.exists) throw new MutationError(404, 'Character not found');
-        const data = readCharacter(doc);
-        if (spVersion !== undefined && (data.spVersion ?? 0) !== spVersion) {
-          throw new MutationError(409, 'This character changed elsewhere. Check the updated stats and try again.');
-        }
-        data.spVersion = (data.spVersion ?? 0) + 1;
-        if (reset) {
-          data.sp_allocations = emptyAllocations();
-        } else {
-          if (!canIncreaseStat(data, index, amount)) throw new MutationError(409, 'Not enough SP or stat allocation limit reached');
-          data.sp_allocations![statFieldsByIndex[index]] += amount;
-          transaction.update(playerRef, {'engagementStats.everSpentSP': true});
-        }
+        const data = changeSP(readCharacter(doc), reset, index, amount, spVersion);
+        if (isRejection(data)) throw new MutationError(data.status, data.error);
+        if (!reset) transaction.update(playerRef, {'engagementStats.everSpentSP': true});
         // Bonuses and the remaining SP are derived from the allocations on write.
         writeCharacter(transaction, ref, data);
         return {status: 0};
@@ -556,8 +553,8 @@ async function changeSP(request: Request, response: Response, reset: boolean) {
 }
 
 export const spendSP = onRequest({memory: '512MiB'}, (request, response) => {
-  corsMiddleware(request, response, () => changeSP(request, response, false));
+  corsMiddleware(request, response, () => handleSPChange(request, response, false));
 });
 export const resetSP = onRequest({memory: '512MiB'}, (request, response) => {
-  corsMiddleware(request, response, () => changeSP(request, response, true));
+  corsMiddleware(request, response, () => handleSPChange(request, response, true));
 });

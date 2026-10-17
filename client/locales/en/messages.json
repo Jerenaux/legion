@@ -1299,5 +1299,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "Ice traps characters for 3 turns. Melee or fire can free them sooner.",
   "The + and X spells cover more tiles but deal less damage per target.": "The + and X spells cover more tiles but deal less damage per target.",
-  "Reset SP returns all spent points for free outside combat.": "Reset SP returns all spent points for free outside combat."
+  "Reset SP returns all spent points for free outside combat.": "Reset SP returns all spent points for free outside combat.",
+  "First win of the day": "First win of the day",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.",
+  "Claim {{value0}} gold": "Claim {{value0}} gold",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.",
+  "No bonus to claim": "No bonus to claim"
 }

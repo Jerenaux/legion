@@ -286,6 +286,16 @@
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
+.character-info-bar.can-spend,
+.character-info-bar.can-spend .info-class {
+    cursor: var(--game-pointer, pointer);
+}
+
+.character-info-bar.can-spend:hover {
+    background-color: #2a2f38;
+    box-shadow: 0 0 0 1px oklch(72% .11 80 / .7);
+}
+
 .character-info-bar .info-class:focus-visible {
     outline: 2px solid #71deff;
     outline-offset: 2px;

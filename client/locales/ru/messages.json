@@ -1333,5 +1333,11 @@
   "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.": "Каждый уровень до 21-го даёт 2 SP. Вкладывайте их в характеристики, которые хотите повысить.",
   "Ice traps characters for 3 turns. Melee or fire can free them sooner.": "Лёд удерживает персонажей 3 хода. Ближняя атака или огонь могут освободить их раньше.",
   "The + and X spells cover more tiles but deal less damage per target.": "Заклинания + и X охватывают больше клеток, но наносят меньше урона каждой цели.",
-  "Reset SP returns all spent points for free outside combat.": "«Сбросить SP» бесплатно возвращает все вложенные очки вне боя."
+  "Reset SP returns all spent points for free outside combat.": "«Сбросить SP» бесплатно возвращает все вложенные очки вне боя.",
+  "First win of the day": "Первая победа дня",
+  "Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.": "Первая победа за день в режиме «Обычный» или «Рейтинговый» приносит этот бонус. Он обновляется в {{value0}}.",
+  "Claim {{value0}} gold": "Забрать {{value0}} золота",
+  "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Первая победа за день в режиме «Обычный» или «Рейтинговый» приносит {{value0}} бонусного золота. Заберите его на экране «Играть». Бонус обновляется в полночь по UTC.",
+  "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Каждый новобранец дороже предыдущего: {{value0}}, {{value1}}, затем {{value2}} золота.",
+  "No bonus to claim": "Нет бонуса для получения"
 }

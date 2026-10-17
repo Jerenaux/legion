@@ -45,7 +45,12 @@ export const XP_CONTRIBUTION_TARGET_CAP = 2;
 export const XP_CONTRIBUTION_PER_HP_BAR = 3;
 // Extra XP for characters below the team's average level.
 export const XP_CATCH_UP_BONUS = 0.25;
-export const AVERAGE_GOLD_REWARD_PER_GAME = 100; 
+// Gold rewards only. Shop prices use PRICE_UNIT (economy.ts) so rewards can be tuned without inflating prices.
+export const AVERAGE_GOLD_REWARD_PER_GAME = 200;
+// Extra recruits, in purchase order: the 4th, 5th and 6th character.
+export const CHARACTER_PRICES = [5000, 8000, 12000];
+// Paid once per UTC day, for the first Casual or Ranked win.
+export const FIRST_WIN_BONUS_GOLD = 300;
 export const MAX_BONUS_SCORE = 1500;
 export const PROMOTION_RATIO = 0.4;
 export const DEMOTION_RATIO = 0.3;
@@ -56,7 +61,7 @@ export const SPELL_RANGE = 5;
 export const PROJECTILE_DURATION = 1.5;
 
 export const PRACTICE_XP_COEF = 0.6;
-export const PRACTICE_GOLD_COEF = 0.1; // TODO: make 0?
+export const PRACTICE_GOLD_COEF = 0.5;
 export const RANKED_XP_COEF = 1.2;
 export const RANKED_GOLD_COEF = 1.5;
 
@@ -72,7 +77,7 @@ export const INITIAL_COOLDOWN = 3; // sec
 export const eloRangeIncreaseInterval = 20; // seconds
 export const eloRangeStart = 600;
 export const eloRangeStep = 50; // Increase range by 50 points every interval
-export const goldRewardInterval = 15;
+export const goldRewardInterval = 5;
 export const goldReward = 1;
 export const casualModeThresholdTime = 5; // seconds after which redirection probability starts increasing
 export const maxWaitTimeForPractice = isDev ? 5 : 60; // maximum wait time after which a player is guaranteed to be redirected
