@@ -19,6 +19,7 @@ import {createRefreshingSocketAuth, retrySocketAuthentication, socketReconnectOp
 import {canEquipEquipment, canLearnSpell} from '@legion/shared/inventory';
 import { LOCKED_FEATURES } from '@legion/shared/config';
 import type { PlayerView } from './predictions';
+import { isRejection, Rejection } from '@legion/shared/playerActions';
 
 class PlayerProvider extends Component<{}, PlayerContextState> {
     private bootstrapRequest: Promise<void> | undefined;
@@ -294,14 +295,18 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
      * Shows the predicted outcome of an action at once, then sends it to the server after every
      * earlier one, so each request reaches the state its prediction was made from. A failure shows
      * an error and cancels the predictions queued behind it; once the queue drains, a refresh
-     * replaces the predictions with server data. Returns null, without sending anything, when the
-     * prediction rejects the action; otherwise resolves to whether the server applied it.
+     * replaces the predictions with server data. When the shared rules reject the action, shows the
+     * reason and returns null without sending anything; otherwise resolves to whether the server applied it.
      */
-    optimisticMutation = (predict: (view: PlayerView) => PlayerView | null, send: () => Promise<unknown>): Promise<boolean> | null => {
-      if (!predict(this.state)) return null;
+    optimisticMutation = (predict: (view: PlayerView) => PlayerView | Rejection, send: () => Promise<unknown>): Promise<boolean> | null => {
+      const prediction = predict(this.state);
+      if (isRejection(prediction)) {
+        silentErrorToast(userError(prediction.error));
+        return null;
+      }
       this.setState(prev => {
         const next = predict(prev);
-        return next && {...next, characterSheetIsDirty: true};
+        return isRejection(next) ? null : {...next, characterSheetIsDirty: true};
       });
       const session = this.session;
       const epoch = this.mutationEpoch;

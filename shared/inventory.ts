@@ -1,5 +1,11 @@
 import {MAX_STAT_SP} from './combatBalance';
-import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment } from './interfaces';
+import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment, EngagementStats, PlayerInventory } from './interfaces';
+
+/** The player data the inventory helpers read and update. */
+export interface InventoryHolder {
+  inventory: PlayerInventory;
+  engagementStats?: Partial<EngagementStats>;
+}
 import { EquipmentSlot, equipmentSlotFields, Class, ItemDialogType, InventoryType, statFieldsByIndex } from "./enums";
 import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
@@ -75,7 +81,7 @@ export function canIncreaseStat(characterData: DBCharacterData | APICharacterDat
   return points + amount <= MAX_STAT_SP;
 }
 
-export function equipConsumable(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function equipConsumable(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {
   const playerInventory = playerData.inventory;
   const consumables = playerInventory.consumables.sort(numericalSort);
   const inventory = characterData.inventory as number[];
@@ -102,7 +108,7 @@ export function equipConsumable(playerData: PlayerContextData | DBPlayerData, ch
   };
 }
 
-export function unequipConsumable(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function unequipConsumable(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {
   const playerInventory = playerData.inventory;
   const consumables = playerInventory.consumables.sort(numericalSort);
   const inventory = characterData.inventory as number[];
@@ -122,7 +128,7 @@ export function unequipConsumable(playerData: PlayerContextData | DBPlayerData, 
   };
 }
 
-export function learnSpell(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function learnSpell(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {
   const playerInventory = playerData.inventory;
   const spells = playerInventory.spells.sort(numericalSort);
   const skills = characterData.skills as number[];
@@ -154,7 +160,7 @@ export function learnSpell(playerData: PlayerContextData | DBPlayerData, charact
 
 function handleInventoryCapacityChange(
   characterData: DBCharacterData | APICharacterData,
-  playerInventory: PlayerContextData['inventory'] | DBPlayerData['inventory'],
+  playerInventory: PlayerInventory,
   newCapacity: number
 ): { characterInventory: number[], playerConsumables: number[] } {
   const characterInventory = [...characterData.inventory] as number[];
@@ -168,7 +174,7 @@ function handleInventoryCapacityChange(
   return { characterInventory, playerConsumables };
 }
 
-export function equipEquipment(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function equipEquipment(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort(numericalSort);
   const equipped = characterData.equipment as Equipment;
@@ -229,7 +235,7 @@ export function equipEquipment(playerData: PlayerContextData | DBPlayerData, cha
   };
 }
 
-export function unequipEquipment(playerData: PlayerContextData | DBPlayerData, characterData: DBCharacterData | APICharacterData, index: number) {
+export function unequipEquipment(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {
   const playerInventory = playerData.inventory;
   const equipment = playerInventory.equipment.sort(numericalSort);
   const equipped = characterData.equipment as Equipment;

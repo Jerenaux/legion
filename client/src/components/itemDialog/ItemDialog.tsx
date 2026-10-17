@@ -14,7 +14,7 @@ import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
 import { InventoryActionType, InventoryType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
 import { apiMutation } from '../../services/apiService';
-import { playSoundEffect, silentErrorToast, errorToast, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
+import { playSoundEffect, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { predictInventoryAction, predictSP } from '../../providers/predictions';
 
@@ -165,9 +165,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
         const result = await apiMutation('inventoryTransaction', payload);
         if (result.status !== 0) throw new Error('Unable to complete the request. Please try again.');
       });
-    if (!queued) {
-      silentErrorToast(t('Unable to complete the request. Please try again.'));
-    } else if (payload.action === InventoryActionType.SELL) {
+    if (!queued) return;
+    if (payload.action === InventoryActionType.SELL) {
       successToast(t("Item sold!"));
     } else {
       playSoundEffect(equipSfx);
@@ -177,10 +176,6 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
   spendSP = (stat: Stat, amount: number) => {
     const character = this.context.getActiveCharacter();
-    if (!canIncreaseStat(character, stat, amount)) {
-      errorToast(t('You can spend at most 20 SP on one stat.'));
-      return;
-    }
     this.props.handleClose();
     // The shown spVersion already counts queued SP changes, which the server applies first.
     this.context.optimisticMutation(view => predictSP(view, character.id, stat, amount),

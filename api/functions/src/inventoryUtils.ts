@@ -3,6 +3,7 @@ import { RewardType, LockedFeatures } from "@legion/shared/enums";
 import { numericalSort } from "@legion/shared/inventory";
 import { DBPlayerData, EngagementStats, PlayerInventory } from "@legion/shared/interfaces";
 import { LOCKED_FEATURES, UNLOCK_REWARDS } from "@legion/shared/config";
+import { inventoryCapacity } from "@legion/shared/playerActions";
 
 export interface InventoryUpdate {
   inventory?: {
@@ -20,6 +21,11 @@ export function inventoryPlayerWrite(update: {inventory: PlayerInventory; engage
     if (update.engagementStats?.[flag]) fields[`engagementStats.${flag}`] = true;
   }
   return fields;
+}
+
+/** The capacity players see; the stored carrying_capacity field is a stale creation-time value. */
+export function playerInventoryCapacity(player: Pick<DBPlayerData, 'characters' | 'purchasedInventorySlots'>) {
+  return inventoryCapacity(player.characters?.length ?? 0, player.purchasedInventorySlots ?? 0);
 }
 
 export function addItemsToInventory(

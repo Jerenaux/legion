@@ -286,7 +286,7 @@ try {
   // Mutation receipts cross the real HTTP/auth/Firestore boundary, including concurrent retries.
   const shopper = await login(`shop-${run}`);
   const shopperRef = db.collection('players').doc(shopper.uid);
-  await shopperRef.update({gold: 100000, carrying_capacity: 1000, inventory: {consumables: [], spells: [], equipment: []}});
+  await shopperRef.update({gold: 100000, purchasedInventorySlots: 1000, inventory: {consumables: [], spells: [], equipment: []}});
   const {ShopTab, ChestColor} = await import('../../shared/enums');
   const {getConsumableById} = await import('../../shared/Items');
   const purchase = {articleId: 0, quantity: 2, inventoryType: ShopTab.CONSUMABLES, requestId: crypto.randomUUID()};
@@ -310,6 +310,16 @@ try {
   await shopperRef.update({gold: 0});
   await rejectMutation('purchaseItem', {...purchase, requestId: crypto.randomUUID()}, 409);
   assert.equal((await shopperRef.get()).data().inventory.consumables.length, 6);
+  // Purchases are limited by the capacity players are shown (roster slots plus bought slots),
+  // never by the stored creation-time carrying_capacity field.
+  await shopperRef.update({gold: 100000, purchasedInventorySlots: 2, carrying_capacity: 1000});
+  const capacity = (await http('getPlayerData', undefined, shopper.token)).carrying_capacity;
+  await shopperRef.update({'inventory.consumables': Array(capacity - 1).fill(0)});
+  await rejectMutation('purchaseItem', {...purchase, requestId: crypto.randomUUID()}, 409);
+  await shopperRef.update({carrying_capacity: 0});
+  await http('purchaseItem', {...purchase, quantity: 1, requestId: crypto.randomUUID()}, shopper.token);
+  assert.equal((await shopperRef.get()).data().inventory.consumables.length, capacity);
+  await shopperRef.update({purchasedInventorySlots: 1000, 'inventory.consumables': Array(6).fill(0)});
   await shopperRef.update({gold: 100000, 'dailyloot.bronze': {hasKey: true, time: 0}});
   const claim = {chestType: ChestColor.BRONZE, requestId: crypto.randomUUID()};
   const chestResults = await Promise.all([http('claimChest', claim, shopper.token), http('claimChest', claim, shopper.token)]);

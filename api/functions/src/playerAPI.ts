@@ -20,7 +20,7 @@ import {
   STARTING_ELO,
   STARTING_CONSUMABLES, STARTING_SPELLS_ADMIN, STARTING_EQUIPMENT_ADMIN,
   IMMEDIATE_LOOT,
-  NB_START_CHARACTERS, INVENTORY_SIZE_PER_CHARACTER,
+  NB_START_CHARACTERS,
   BASE_INVENTORY_SIZE,
   INVENTORY_SLOT_PRICE, MAX_PURCHASABLE_SLOTS,
   MAX_NICKNAME_LENGTH,
@@ -36,6 +36,7 @@ import { transformDailyLoot } from "@legion/shared/utils";
 import {findZombieOpponent, readZombieRoster} from "./zombieOpponents";
 import {readRoster} from "./characterAPI";
 import {starterCharacterId} from "./playerProvisioning";
+import {playerInventoryCapacity} from "./inventoryUtils";
 
 export const buyInventorySlots = onRequest({
   memory: '512MiB',
@@ -271,7 +272,6 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     equipment: Array.isArray(inventory.equipment) ? inventory.equipment.sort(numericalSort) : [],
   };
 
-  const inventorySize = (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER + (playerData.purchasedInventorySlots || 0);
 
   const AIwinRatio = aiWinRatio(playerData.AIstats);
 
@@ -289,7 +289,7 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
     allTimeRank: playerData.allTimeStats?.rank || 0,
     dailyloot: playerData.dailyloot,
     inventory: sortedInventory,
-    carrying_capacity: inventorySize,
+    carrying_capacity: playerInventoryCapacity(playerData as DBPlayerData),
     isLoaded: false,
     AIwinRatio,
     completedGames: playerData.engagementStats?.completedGames || 0,

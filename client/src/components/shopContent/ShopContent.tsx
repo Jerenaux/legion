@@ -9,9 +9,9 @@ import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiMutation } from '../../services/apiService';
 import { predictCharacterPurchase, predictItemPurchase } from '../../providers/predictions';
 import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, LockedFeatures } from '@legion/shared/enums';
-import { EQUIPMENT_BATCH_GOLD, MAX_CHARACTERS } from "@legion/shared/config";
+import { EQUIPMENT_BATCH_GOLD } from "@legion/shared/config";
 import { ShopItems, APICharacterData } from '@legion/shared/interfaces';
-import { errorToast, successToast, playSoundEffect, silentErrorToast, lockIcon } from '../utils';
+import { errorToast, successToast, playSoundEffect, lockIcon } from '../utils';
 import ShopSpellCard from '../shopSpellCard/ShopSpellCard';
 import ShopConsumableCard from '../shopConsumableCard/ShopConsumableCard';
 import ShopEquipmentCard from '../shopEquipmentCard/ShopEquipmentCard';
@@ -21,7 +21,6 @@ import ShopItemFilter from '../shopItemFilter/ShopItemFilter';
 import { spells } from '@legion/shared/Spells';
 import { items } from '@legion/shared/Items';
 import { equipments } from '@legion/shared/Equipments';
-import { inventorySize } from '@legion/shared/utils';
 import { Link } from 'preact-router';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { tooltipStyle } from '../itemTooltip';
@@ -181,35 +180,14 @@ class ShopContent extends Component<ShopContentProps> {
         this.setState({ inventoryData: inventory });
     }
 
-    hasEnoughGold = (quantity: number) => {
-        return this.context.player.gold >= this.state.modalData.price * quantity;
-    }
-
     purchase = (id: string | number, quantity: number) => {
         if (!id && id !== 0) {
             errorToast(t("No article selected!"));
             return;
         }
 
-        if (!this.hasEnoughGold(quantity)) {
-            silentErrorToast(t("Not enough gold!"));
-            return;
-        }
-
         const purchasingCharacter = this.state.curr_tab === ShopTab.CHARACTERS;
         const recruit = purchasingCharacter ? this.props.characters.find(character => character.id === id) : undefined;
-
-        if (purchasingCharacter) {
-            if (this.context.characters.length >= MAX_CHARACTERS) {
-                silentErrorToast(t("Character limit reached!"));
-                return;
-            }
-        } else {
-            if (inventorySize(this.context.player.inventory) + quantity > this.context.player.carrying_capacity) {
-                silentErrorToast(t("Not enough room in inventory!"));
-                return;
-            }
-        }
 
         const payload = {
             articleId: id,
@@ -218,13 +196,10 @@ class ShopContent extends Component<ShopContentProps> {
         };
 
         const queued = this.context.optimisticMutation(
-            view => recruit ? predictCharacterPurchase(view, recruit, this.state.modalData.price, MAX_CHARACTERS)
+            view => purchasingCharacter ? predictCharacterPurchase(view, recruit)
                 : predictItemPurchase(view, this.state.curr_tab, id as number, quantity),
             () => apiMutation(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', payload));
-        if (!queued) {
-            silentErrorToast(t('Unable to complete the request. Please try again.'));
-            return;
-        }
+        if (!queued) return;
         this.handleCloseModal();
         playSoundEffect(purchaseSfx);
         successToast(t("Purchase successful!"));
