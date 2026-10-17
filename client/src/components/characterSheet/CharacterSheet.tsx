@@ -131,9 +131,18 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 return baseValue + (effectVal(modifierKey) || 0);
             }
 
+            const canSpend = characterData.sp > 0;
+            const openSP = (e: Event, item: {value: number}, index: number) => {
+                e.stopPropagation();
+                this.handleOpenModal(e, {stat: index, value: item.value}, ItemDialogType.SP, index);
+            };
+
+            // With SP to spend, the whole stat row opens the dialog; the + button keeps keyboard access.
             return rearrangedStats.map((item, index) => (
                 characterData.class === Class.WARRIOR && item.key === 'spatk' ? null :
-                <div data-sp-plus="true" className="character-info-bar" key={index}>
+                // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: pointer shortcut; the focusable + button handles keys.
+                <div data-sp-plus="true" className={`character-info-bar${canSpend ? ' can-spend' : ''}`} key={index}
+                    onClick={canSpend ? (e) => openSP(e, item, index) : undefined}>
                     <button type="button" className="info-class"
                         aria-label={`${t(statNames[getStatEnum(item.key)])}: ${t(statExplanations[getStatEnum(item.key)])}`}
                         data-tooltip-id="character-sheet-details"
@@ -149,17 +158,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                         </p>
                     </div>
 
-                    {characterData?.sp > 0 && <button type="button"
+                    {canSpend && <button type="button"
                         className="info-bar-plus"
-                        onClick={(e) => this.handleOpenModal(
-                            e,
-                            {
-                                stat: index,
-                                value: item.value,
-                            },
-                            ItemDialogType.SP,
-                            index
-                        )}
+                        onClick={(e) => openSP(e, item, index)}
                     ></button>
                     }
                 </div>
