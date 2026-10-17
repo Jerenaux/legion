@@ -9,6 +9,9 @@ import {firebaseAuth} from '../../src/services/firebaseService';
 firebaseAuth.onAuthStateChanged(user => {
   document.documentElement.dataset.firebaseUser = user?.uid || '';
 });
-render(<AuthProvider><AuthContext.Consumer>{({user}) =>
+if (location.search === '?seed') {
+  // Seed real Firebase persistence, then reload into the actual startup flow.
+  void firebaseAuth.signInWithCustomToken('local-test-token');
+} else render(<AuthProvider><AuthContext.Consumer>{({user}) =>
   <main id="authenticated" data-user={user?.uid} />
 }</AuthContext.Consumer></AuthProvider>, document.getElementById('root')!);

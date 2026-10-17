@@ -15,7 +15,8 @@ if (!process.versions.electron) {
   const {PACKAGED_CSP} = require('../../electron/security');
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-startup-'));
   app.setPath('userData', path.join(temp, 'profile'));
-  protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
+  fs.mkdirSync(path.join(temp, 'crashes'));
+  app.setPath('crashDumps', path.join(temp, 'crashes'));
   app.on('window-all-closed', () => {});
   const deadline = setTimeout(() => app.exit(1), 6 * 60 * 1000);
   deadline.unref();
@@ -27,6 +28,9 @@ if (!process.versions.electron) {
   let aborted = false;
   let currentUser = 'startup-player';
   const failures = [];
+  const recordings = [];
+  let recorder;
+  const Sentry = require('@sentry/electron/main');
   let rendererLogs = [];
   ipcMain.handle('set-language', () => true);
   ipcMain.handle('get-platform-auth', () => {
@@ -35,7 +39,7 @@ if (!process.versions.electron) {
     if (mode === 'steam-rejected' || mode === 'itch-rejected') {
       return {provider: mode.split('-')[0], credential: 'local-test-credential'};
     }
-    return mode === 'credential' ? new Promise(resolve => { releaseCredential = resolve; }) : null;
+    return ['credential', 'cached-user'].includes(mode) ? new Promise(resolve => { releaseCredential = resolve; }) : null;
   });
   const token = () => {
     const now = Math.floor(Date.now() / 1000);
@@ -49,7 +53,15 @@ if (!process.versions.electron) {
     response.setHeader('Access-Control-Allow-Headers', '*');
     response.setHeader('Content-Type', 'application/json');
     if (request.method === 'OPTIONS') { response.end(); return; }
-    for await (const _chunk of request) { /* Drain real HTTP requests. */ }
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    const body = Buffer.concat(chunks);
+    if (request.url === '/recording') {
+      const length = body.readUInt32LE(5);
+      recordings.push(JSON.parse(body.toString('utf8', 9, 9 + length)));
+      response.end('{}'); return;
+    }
+    if (request.url.startsWith('/api/1/envelope/')) { response.end('{}'); return; }
     if (request.url === '/createPlatformSession') {
       exchanges++;
       if (mode === 'network-once' && exchanges === 1) { request.socket.destroy(); return; }
@@ -76,12 +88,18 @@ if (!process.versions.electron) {
       if (mode === 'firebase') releaseSignIn = finish;
       else finish();
     } else if (request.url.includes('accounts:lookup')) {
-      response.end(JSON.stringify({users: [{localId: currentUser, createdAt: '1', lastLoginAt: '1'}]}));
+      const uid = JSON.parse(Buffer.from(JSON.parse(body).idToken.split('.')[1], 'base64url').toString()).sub;
+      response.end(JSON.stringify({users: [{localId: uid, createdAt: '1', lastLoginAt: '1'}]}));
     } else {
       failures.push(`Unexpected HTTP request: ${request.url}`);
       response.writeHead(404); response.end('{}');
     }
-  });
+  }).listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const automatic = ['cached-user', 'success', 'stall-once', 'network-once', '503-once', '429-once'];
+  const scenarios = [...automatic, 'rejected', 'steam-unavailable', 'steam-rejected', 'itch-rejected', 'unavailable', 'credential', 'exchange', 'body', 'firebase'];
+  Sentry.init({getSessions: () => scenarios.map(name => session.fromPartition(`startup-${name}`)), dsn: `${base.replace('http://', 'http://test@')}/1`, environment: 'test', onFatalError: () => {}});
+  protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   const read = expression => window.webContents.executeJavaScript(expression);
   const waitFor = async (check, label, timeout = 10000) => {
@@ -94,8 +112,6 @@ if (!process.versions.electron) {
   };
   (async () => {
     await app.whenReady();
-    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    const base = `http://127.0.0.1:${server.address().port}`;
     process.chdir(client);
     Object.assign(process.env, {NODE_ENV: 'production', BUILD_TARGET: 'electron', API_URL: base,
       GAME_SERVER_URL: base, MATCHMAKER_URL: base, USE_FIREBASE_EMULATOR: 'true', FIREBASE_AUTH_EMULATOR_HOST: base});
@@ -108,8 +124,7 @@ if (!process.versions.electron) {
       if (error || stats.hasErrors()) reject(error || new Error(stats.toString({all: false, errors: true})));
       else resolve();
     }));
-    const automatic = ['success', 'stall-once', 'network-once', '503-once', '429-once'];
-    for (const scenario of [...automatic, 'rejected', 'steam-unavailable', 'steam-rejected', 'itch-rejected', 'unavailable', 'credential', 'exchange', 'body', 'firebase']) {
+    for (const scenario of scenarios) {
       mode = scenario;
       currentUser = 'startup-player';
       exchanges = 0;
@@ -117,7 +132,7 @@ if (!process.versions.electron) {
       const logs = [];
       rendererLogs = logs;
       const isolated = session.fromPartition(`startup-${scenario}`);
-      isolated.webRequest.onBeforeRequest((details, callback) => {
+      isolated.webRequest.onBeforeRequest({urls: ['https://*/*', 'http://*/*', 'wss://*/*', 'ws://*/*']}, (details, callback) => {
         const allowed = details.url.startsWith('app://legion/') || details.url.startsWith(`${base}/`);
         if (!allowed) failures.push(`External request blocked: ${details.url}`);
         callback({cancel: !allowed});
@@ -129,13 +144,33 @@ if (!process.versions.electron) {
       isolated.protocol.handle('app', request => net.fetch(pathToFileURL(resolveAppPath(config.output.path, request.url)).toString()));
       window = new BrowserWindow({show: false, webPreferences: {session: isolated, contextIsolation: true,
         nodeIntegration: false, backgroundThrottling: false, preload: path.join(client, 'preload.js'),
-        additionalArguments: ['--legion-packaged']}});
+        additionalArguments: ['--legion-packaged', ...(scenario === 'cached-user' ? ['--legion-replay'] : [])]}});
       window.webContents.setAudioMuted(true);
       window.webContents.on('console-message', event => logs.push(event.message));
       let loads = 0;
       window.webContents.on('did-finish-load', () => loads++);
       const started = Date.now();
+      if (scenario === 'cached-user') {
+        recorder = require('@jerenaux/replay/electron').installReplay(window, {
+          game: 'legion', endpoint: `${base}/recording`, outbox: path.join(temp, 'replay-outbox'),
+          isTrustedURL: url => url.startsWith(PACKAGED_APP_URL),
+        });
+        currentUser = 'cached-direct-player';
+        await window.loadURL(`${PACKAGED_APP_URL}?seed`);
+        await waitFor(() => read('document.documentElement.dataset.firebaseUser === "cached-direct-player"'), 'cached Firebase seed');
+        currentUser = 'verified-steam-player';
+      }
       await window.loadURL(PACKAGED_APP_URL);
+      if (scenario === 'cached-user') {
+        await waitFor(() => read('document.documentElement.dataset.firebaseUser === "cached-direct-player"'), 'cached user restoration');
+        await waitFor(() => Boolean(releaseCredential), 'pending Steam credential');
+        await read("Object.defineProperty(document, 'hidden', {configurable: true, value: false}); true");
+        await pause(1200);
+        await recorder.flush();
+        assert.equal(recordings.length, 0, 'Cached Firebase user must not start a replay');
+        assert.equal(recorder.session, undefined, 'Recorder must wait for verified platform identity');
+        releaseCredential({provider: 'steam', credential: 'local-test-credential'});
+      }
       if (!automatic.includes(scenario)) {
         await waitFor(() => read('!!document.querySelector(".session-status__retry")'), `${scenario} recovery`, 35000);
         const expectedFailure = {
@@ -177,11 +212,20 @@ if (!process.versions.electron) {
       }
       await waitFor(() => read(`document.querySelector('#authenticated')?.dataset.user === ${JSON.stringify(currentUser)}`), `${scenario} authentication`, 15000);
       if (automatic.includes(scenario)) {
-        assert.equal(exchanges, scenario === 'success' ? 1 : 2, 'Transient failure must recover without player action');
+        assert.equal(exchanges, ['success', 'cached-user'].includes(scenario) ? 1 : 2, 'Transient failure must recover without player action');
         if (scenario === 'stall-once') assert(aborted, 'Timed-out request must be cancelled');
       }
-      assert.equal(loads, scenario === 'credential' || scenario === 'firebase' ? 2 : 1, `${scenario}: retry reload behavior`);
+      assert.equal(loads, ['cached-user', 'credential', 'firebase'].includes(scenario) ? 2 : 1, `${scenario}: retry reload behavior`);
       assert.equal(failures.length, 0, failures.join('\n'));
+      if (scenario === 'cached-user') {
+        await waitFor(() => recorder.frames.length > 0, 'verified user native replay frame');
+        await recorder.flush();
+        assert.equal(new Set(recordings.map(header => header.session)).size, 1);
+        assert.equal(recordings[0].meta.player_id, 'verified-steam-player');
+        assert.ok(recordings.some(header => header.frames.length > 0));
+        await recorder.dispose(); recorder = null;
+        console.log('Cached Firebase → delayed Steam verification: one recording, correct verified user');
+      }
       console.log(`PASS startup ${scenario}${automatic.includes(scenario) ? '' : ' → retry'}`);
       window.destroy();
       window = null;
@@ -190,7 +234,9 @@ if (!process.versions.electron) {
     console.error(error);
     console.error(rendererLogs.join('\n'));
     return 1;
-  }).then(code => {
+  }).then(async code => {
+    await recorder?.dispose();
+    await Sentry.close(2000);
     window?.destroy();
     server.closeAllConnections();
     server.close();
