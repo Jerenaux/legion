@@ -1,6 +1,5 @@
 import {apiMutation} from '../../services/apiService';
-import {errorToast} from '../utils';
-import {userError} from '../../i18n/core';
+import {predictSP} from '../../providers/predictions';
 import ClassCrest from '../HUD/ClassCrest';
 import {t, formatNumber, i18n} from '../../i18n/core';
 import FitText from '../FitText';
@@ -48,14 +47,12 @@ interface CharacterSheetProps {
     handleItemEffect: (effects: Effect[], actionType: InventoryActionType) => void;
     selectedEquipmentSlot: number;
     handleSelectedEquipmentSlot: (newValue: number) => void;
-    updateCharacterData: () => void;
 }
 
 class CharacterSheet extends Component<CharacterSheetProps> {
     static contextType = PlayerContext;
 
     state = {
-        resettingSP: false,
         characterItems: [],
         itemIndex: 0,
         openModal: false,
@@ -90,20 +87,11 @@ class CharacterSheet extends Component<CharacterSheetProps> {
         this.props.handleItemEffect(modalData.effects, InventoryActionType.UNEQUIP);
     }
 
-    resetSP = async () => {
-        if (this.state.resettingSP) return;
-        this.setState({resettingSP: true});
-        try {
-            const character = this.context.getActiveCharacter();
-            await apiMutation('resetSP', {characterId: character.id, spVersion: character.spVersion ?? 0});
-            await this.context.refreshAllData();
-            this.props.updateCharacterData();
-        } catch (error) {
-            errorToast(userError(error));
-            // A newer build makes the next request a distinct action instead of a retry of this one.
-            this.context.refreshAllData();
-        }
-        finally { this.setState({resettingSP: false}); }
+    resetSP = () => {
+        const character = this.context.getActiveCharacter();
+        // The shown spVersion already counts queued SP changes, which the server applies first.
+        this.context.optimisticMutation(view => predictSP(view, character.id),
+            () => apiMutation('resetSP', {characterId: character.id, spVersion: character.spVersion ?? 0}));
     }
 
     render() {
@@ -386,7 +374,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                         <div className="team-character-info">
                             {renderInfoBars()}
                             <button type="button" data-game-control className="sp-reset-button" onClick={this.resetSP}
-                                disabled={this.state.resettingSP || !Object.values(characterData.sp_allocations ?? {}).some(value => Number(value) > 0)}>{t('Reset SP')}</button>
+                                disabled={!Object.values(characterData.sp_allocations ?? {}).some(value => Number(value) > 0)}>{t('Reset SP')}</button>
                         </div>
                     </div>
                     <div className="team-items-container">
@@ -419,7 +407,6 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     position={this.state.modalPosition}
                     dialogData={this.state.modalData}
                     handleClose={this.handleCloseModal}
-                    updateCharacterData={this.props.updateCharacterData}
                     handleSelectedEquipmentSlot={this.props.handleSelectedEquipmentSlot}
                 />
                 <ItemTooltip id="equipped-item-details" character={this.context.getActiveCharacter?.()} />

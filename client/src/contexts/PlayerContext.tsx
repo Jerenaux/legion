@@ -2,6 +2,7 @@ import { createContext } from 'preact';
 import { PlayerContextData, APICharacterData, FriendData, } from '@legion/shared/interfaces';
 import { League, LockedFeatures } from "@legion/shared/enums";
 import { Socket } from 'socket.io-client';
+import type { PlayerView } from '../providers/predictions';
 
 export interface PlayerContextState {
   player: PlayerContextData;
@@ -72,6 +73,7 @@ export const PlayerContext = createContext<{
   getCharacterThatCanSpendSP: () => APICharacterData;
   notifyLeaveGame: (gameId: string) => void;
   buyInventorySlots: (slots: number) => Promise<void>;
+  optimisticMutation: (predict: (view: PlayerView) => PlayerView | null, send: () => Promise<unknown>) => Promise<boolean> | null;
 }>({
   player: {
     uid: '',
@@ -142,4 +144,5 @@ export const PlayerContext = createContext<{
   getCharacterThatCanSpendSP: () => undefined,
   notifyLeaveGame: () => {},
   buyInventorySlots: async () => {},
+  optimisticMutation: () => null,
 });

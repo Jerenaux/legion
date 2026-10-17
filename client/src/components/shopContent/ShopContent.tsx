@@ -1,4 +1,4 @@
-import {t, userError} from '../../i18n/core';
+import {t} from '../../i18n/core';
 import { ShopPurse } from './ShopPrice';
 import { h } from 'preact';
 import './ShopContent.style.css';
@@ -7,6 +7,7 @@ import Ghost from '../ghost/Ghost';
 import { Component } from 'preact';
 import { PlayerContext } from '../../contexts/PlayerContext';
 import { apiMutation } from '../../services/apiService';
+import { predictCharacterPurchase, predictItemPurchase } from '../../providers/predictions';
 import { InventoryType, ShopTab, EquipmentSlot, equipmentSlotLabelsPlural, LockedFeatures } from '@legion/shared/enums';
 import { EQUIPMENT_BATCH_GOLD, MAX_CHARACTERS } from "@legion/shared/config";
 import { ShopItems, APICharacterData } from '@legion/shared/interfaces';
@@ -39,7 +40,7 @@ interface ShopContentProps {
     characters: Array<APICharacterData & {price: number}>;
     requiredTab: number;
     highlightedItemId?: string;
-    fetchCharactersOnSale: () => void;
+    fetchCharactersOnSale: () => Promise<void>;
 }
 
 export interface modalData {
@@ -135,7 +136,8 @@ class ShopContent extends Component<ShopContentProps> {
             spells: spells.sort(sortByRarityAndPrice)
         },
         isLoadingCharacters: false,
-        purchasing: false,
+        /** Recruits bought here whose purchase the server has not confirmed yet. */
+        recruited: [] as string[],
     }
 
     componentDidMount(): void {
@@ -183,10 +185,7 @@ class ShopContent extends Component<ShopContentProps> {
         return this.context.player.gold >= this.state.modalData.price * quantity;
     }
 
-    purchasePending = false;
-
-    purchase = async (id: string | number, quantity: number) => {
-        if (this.purchasePending) return;
+    purchase = (id: string | number, quantity: number) => {
         if (!id && id !== 0) {
             errorToast(t("No article selected!"));
             return;
@@ -198,6 +197,7 @@ class ShopContent extends Component<ShopContentProps> {
         }
 
         const purchasingCharacter = this.state.curr_tab === ShopTab.CHARACTERS;
+        const recruit = purchasingCharacter ? this.props.characters.find(character => character.id === id) : undefined;
 
         if (purchasingCharacter) {
             if (this.context.characters.length >= MAX_CHARACTERS) {
@@ -217,20 +217,22 @@ class ShopContent extends Component<ShopContentProps> {
             inventoryType: this.state.curr_tab
         };
 
-        this.purchasePending = true;
-        this.setState({purchasing: true});
-        try {
-            await apiMutation(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', payload);
-            this.handleCloseModal();
-            playSoundEffect(purchaseSfx);
-            successToast(t("Purchase successful!"));
-        } catch (error) {
-            silentErrorToast(userError(error));
-        } finally {
-            await this.context.refreshAllData();
-            if (purchasingCharacter) this.props.fetchCharactersOnSale();
-            this.purchasePending = false;
-            this.setState({purchasing: false});
+        const queued = this.context.optimisticMutation(
+            view => recruit ? predictCharacterPurchase(view, recruit, this.state.modalData.price, MAX_CHARACTERS)
+                : predictItemPurchase(view, this.state.curr_tab, id as number, quantity),
+            () => apiMutation(purchasingCharacter ? 'purchaseCharacter' : 'purchaseItem', payload));
+        if (!queued) {
+            silentErrorToast(t('Unable to complete the request. Please try again.'));
+            return;
+        }
+        this.handleCloseModal();
+        playSoundEffect(purchaseSfx);
+        successToast(t("Purchase successful!"));
+        if (recruit) {
+            // Off the shelf at once; the restocked list (and next recruit price) follows the server.
+            this.setState({recruited: [...this.state.recruited, recruit.id]});
+            void queued.then(() => this.props.fetchCharactersOnSale()).then(() =>
+                this.setState({recruited: this.state.recruited.filter(recruitId => recruitId !== recruit.id)}));
         }
     }
 
@@ -406,7 +408,7 @@ class ShopContent extends Component<ShopContentProps> {
                 case ShopTab.CHARACTERS:
                     return this.state.isLoadingCharacters ?
                         renderSkeletons() :
-                        characters?.map((item, index) =>
+                        characters?.filter(item => !this.state.recruited.includes(item.id)).map((item, index) =>
                             <ShopCharacterCard
                                 key={index}
                                 data={item}
@@ -480,7 +482,6 @@ class ShopContent extends Component<ShopContentProps> {
                     dialogData={this.state.modalData}
                     handleClose={this.handleCloseModal}
                     purchase={this.purchase}
-                    pending={this.state.purchasing}
                 />
             </div>
         );
