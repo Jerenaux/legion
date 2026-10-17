@@ -14,6 +14,7 @@ import {NewCharacter} from "@legion/shared/NewCharacter";
 import {Class, statFieldsByIndex, PlayMode, RewardType} from "@legion/shared/enums";
 import {FIRST_WIN_BONUS_GOLD, MAX_CHARACTERS} from "@legion/shared/config";
 import {getCharacterPrice} from "@legion/shared/economy";
+import {recordAIResult} from "@legion/shared/aiDifficulty";
 import {OutcomeData, DailyLootAllDBData, ChestReward, DBPlayerData} from "@legion/shared/interfaces";
 import {logPlayerAction} from "./dashboardAPI";
 import { canIncreaseStat } from "@legion/shared/inventory";
@@ -346,11 +347,7 @@ export const postGameUpdate = onRequest({
         }
 
         if (mode === PlayMode.PRACTICE || mode === PlayMode.CASUAL_VS_AI || mode === PlayMode.RANKED_VS_AI) {
-          const currentAIStats = playerData.AIstats || { nbGames: 0, wins: 0 };
-          updates.AIstats = {
-            nbGames: currentAIStats.nbGames + 1,
-            wins: currentAIStats.wins + (isWinner ? 1 : 0),
-          };
+          updates.AIstats = recordAIResult(playerData.AIstats, isWinner);
         }
 
         transaction.update(playerRef, updates);

@@ -153,6 +153,24 @@ try {
     assert.equal(await pending(), FIRST_WIN_BONUS_GOLD * 2);
     console.log('First-win bonus: eligible modes only, once per day under concurrent results, atomic replay-safe claim');
   }
+  {
+    // Adaptive AI difficulty follows the last AI_RECENT_MATCHES results, not the lifetime record.
+    const {AI_RECENT_MATCHES} = await import('../../shared/aiDifficulty');
+    const veteran = await login(`ai-window-${run}`);
+    const veteranRef = db.collection('players').doc(veteran.uid);
+    await veteranRef.update({AIstats: {nbGames: 100, wins: 95}, 'engagementStats.completedGames': 100});
+    const ratio = async () => (await http('getPlayerData', undefined, veteran.token)).AIwinRatio;
+    // Accounts from before the window: their earlier average fills it.
+    assert(Math.abs(await ratio() - (AI_RECENT_MATCHES * 0.95 - 1) / (AI_RECENT_MATCHES + 2)) < 1e-9);
+    for (let i = 0; i < AI_RECENT_MATCHES; i++) {
+      await http('postGameUpdate', {uid: veteran.uid, resultId: `ai-window-${run}-${i}`, mode: i % 2 ? PlayMode.PRACTICE : PlayMode.CASUAL_VS_AI,
+        stayedUntilTheEnd: true, engagement: {}, outcomes: {isWinner: false, xp: 0, gold: 0, elo: 0, characters: [], key: null, chests: []}});
+    }
+    const stats = (await veteranRef.get()).get('AIstats');
+    assert.deepEqual([stats.nbGames, stats.wins, stats.recent.length], [100 + AI_RECENT_MATCHES, 95, AI_RECENT_MATCHES]);
+    assert.equal(await ratio(), -1 / (AI_RECENT_MATCHES + 2), 'A losing streak eases the AI despite a strong lifetime record');
+    console.log('Adaptive AI difficulty uses the recent-results window, seeded from older records');
+  }
   // A reset account keeps its fixed-ID characters and practice match; signing in again must
   // still recreate a loadable player rather than fail on those leftovers.
   const reset=await login(`reset-${run}`);

@@ -30,6 +30,7 @@ import { logPlayerAction } from "./dashboardAPI";
 import {recordPlayerActivity} from "./dailyAnalytics";
 import {currentSeasonId, getEmptyLeagueStats} from "./ranking";
 import { numericalSort } from "@legion/shared/inventory";
+import {aiWinRatio} from "@legion/shared/aiDifficulty";
 import {matchDocument} from "@legion/shared/matchData";
 import { transformDailyLoot } from "@legion/shared/utils";
 import {findZombieOpponent, readZombieRoster} from "./zombieOpponents";
@@ -272,10 +273,7 @@ async function loadPlayerData(uid: string, storeBuild: boolean, includeRoster: b
 
   const inventorySize = (playerData.characters?.length || 0) * INVENTORY_SIZE_PER_CHARACTER + (playerData.purchasedInventorySlots || 0);
 
-  const AIwinRatio =
-    playerData.AIstats && playerData.AIstats.nbGames > 0 ?
-      (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
-      0;
+  const AIwinRatio = aiWinRatio(playerData.AIstats);
 
   const player = {
     uid,

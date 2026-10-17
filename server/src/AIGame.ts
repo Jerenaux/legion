@@ -15,6 +15,10 @@ import { GAME_0_TURN_DURATION, MAX_AI_CHARACTERS, TURN_DURATION } from '@legion/
 
 const AI_VS_AI = false;
 
+// AI team stat multipliers per difficulty tier (win ratio <= 0.3, <= 0.6, above; elite applies on top above 0.9).
+// Calibrated with tools/difficultySim.ts; see docs/combat-balance.md.
+export const DIFFICULTY_STAT_SCALES = {easy: 0.78, normal: 0.90, hard: 0.90, elite: 1.2};
+
 type TutorialEvent =
     | {action: 'summonEnemy'; x: number; y: number; attackMode: AIAttackMode; className?: Class; full?: boolean}
     | {action: 'summonAlly'; x: number; y: number; className: Class}
@@ -225,36 +229,38 @@ export class AIGame extends Game {
             let winRatio = playerTeam.teamData.AIwinRatio;
             if (this.mode === PlayMode.RANKED_VS_AI) winRatio += 0.1 + (this.league * 0.1);
             if (this.mode === PlayMode.PRACTICE) winRatio -= 0.1;
-
-            aiTeam.addWinRatio(winRatio);
             console.log(`[AIGame:populateTeams] AI team win ratio: ${winRatio}`);
+            this.applyDifficulty(aiTeam, winRatio, isVsZombie);
+        }
+    }
 
-            // Difficulty mostly comes from decision noise (AIServerPlayer.getIQ). Generated practice
-            // teams for beginners also skip advanced tools; zombies always play their real loadout,
-            // since a "player" who never uses the spells they own reads as a bot.
-            if (winRatio <= 0.1) aiTeam.scaleStats(0.5);
-            if (!isVsZombie && winRatio <= 0.3) {
-                aiTeam.disableItems();
-                aiTeam.banSpells([3,4,5,6,7,8]);
-                aiTeam.disableStatusEffects();
-            } else if (!isVsZombie && winRatio <= 0.6) aiTeam.banSpells([6,7,8]);
-            // The utility AI plays clearly better than its predecessor; these factors keep each
-            // tier's difficulty where it was (even AI-vs-AI win rates against the old AI).
-            aiTeam.scaleStats(winRatio <= 0.3 ? 0.78 : winRatio <= 0.6 ? 0.92 : 0.93);
-            if (winRatio > 0.9) {
-                if (
-                    !isVsZombie ||
-                    (this.mode === PlayMode.RANKED_VS_AI && this.league >= League.GOLD)
-                ) this.addExtraTeamMember(aiTeam!);
-                aiTeam.scaleStats(1.2);
-            }
+    /** Sets the AI team's sharpness, tools and stats from the player's recent win ratio against the AI. */
+    applyDifficulty(aiTeam: Team, winRatio: number, isVsZombie = false) {
+        aiTeam.addWinRatio(winRatio);
 
-            if (isVsZombie && winRatio >= 0.5) {
-                const averageLevel = Math.ceil(aiTeam.getMembers().reduce((sum, player) => sum + player.level, 0) / aiTeam.getMembers().length);
-                aiTeam.zombieLevelUp(averageLevel);
-                aiTeam.setZombieInventories();
-                aiTeam.setZombieSpells();
-            }
+        // Difficulty mostly comes from decision noise (AIServerPlayer.getIQ). Generated practice
+        // teams for beginners also skip advanced tools; zombies always play their real loadout,
+        // since a "player" who never uses the spells they own reads as a bot.
+        if (winRatio <= 0.1) aiTeam.scaleStats(0.5);
+        if (!isVsZombie && winRatio <= 0.3) {
+            aiTeam.disableItems();
+            aiTeam.banSpells([3,4,5,6,7,8]);
+            aiTeam.disableStatusEffects();
+        } else if (!isVsZombie && winRatio <= 0.6) aiTeam.banSpells([6,7,8]);
+        aiTeam.scaleStats(winRatio <= 0.3 ? DIFFICULTY_STAT_SCALES.easy : winRatio <= 0.6 ? DIFFICULTY_STAT_SCALES.normal : DIFFICULTY_STAT_SCALES.hard);
+        if (winRatio > 0.9) {
+            if (
+                !isVsZombie ||
+                (this.mode === PlayMode.RANKED_VS_AI && this.league >= League.GOLD)
+            ) this.addExtraTeamMember(aiTeam);
+            aiTeam.scaleStats(DIFFICULTY_STAT_SCALES.elite);
+        }
+
+        if (isVsZombie && winRatio >= 0.5) {
+            const averageLevel = Math.ceil(aiTeam.getMembers().reduce((sum, player) => sum + player.level, 0) / aiTeam.getMembers().length);
+            aiTeam.zombieLevelUp(averageLevel);
+            aiTeam.setZombieInventories();
+            aiTeam.setZombieSpells();
         }
     }
 

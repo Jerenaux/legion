@@ -183,6 +183,36 @@ These are controlled combat samples, not human playtests or an estimate of live
 win rates. Team composition, focused attacks, terrain coverage, healing and item
 use can change the results; monitor those after a coordinated client/server rollout.
 
+## Adaptive AI difficulty
+
+Matches against the AI (Practice, and Casual or Ranked when the queue falls back to
+an AI or saved-player opponent) adapt to the player's win ratio over their last
+20 AI matches (`shared/aiDifficulty.ts`): `(wins − 1) / (matches + 2)`, so a new
+player starts at 0. Matches recorded before the window existed count at the
+player's earlier average. Practice subtracts 0.1; Ranked-vs-AI adds 0.1 plus 0.1
+per league. `AIGame.applyDifficulty` maps the ratio to AI sharpness, available
+tools and `DIFFICULTY_STAT_SCALES`. With a full window the ratio peaks at 0.86,
+so the elite tier (above 0.9) is reached only through the Ranked-vs-AI bonus.
+
+`bun tools/difficultySim.ts` (from `server`) plays a player-proxy AI team against
+generated teams at each tier through the production combat and AI code. It
+reports the proxy's score, counting matches still undecided after 1,500
+activations as half a win; since #142, many more mid-tier matches stall (up to
+half at level 20). After #142 the 0.92/0.93 normal/hard scales made those tiers
+up to 19 points harder at level 1 and 2–8 points harder elsewhere. 0.90/0.90
+restores the pre-#142 averages (400 matches per cell, ±2.5 points):
+
+| Level | r=0.2 | r=0.45 | r=0.75 | r=0.95 |
+|---:|---:|---:|---:|---:|
+| 1 | 99 (pre-#142: 99) | 72 (79) | 73 (84) | 5 (6) |
+| 5 | 100 (100) | 74 (70) | 74 (74) | 3 (5) |
+| 12 | 93 (100) | 72 (73) | 71 (67) | 10 (16) |
+| 20 | 93 (94) | 66 (65) | 65 (62) | 18 (16) |
+
+The proxy's own sharpness (0.5 or 0.8) changed scores by only a few points. A
+single multiplier cannot reproduce the pre-#142 slope across levels in the hard
+tier; it matches the average.
+
 ## Coordinated rollout
 
 Deploy backend and desktop clients together. Authoritative combat snapshots now

@@ -25,6 +25,7 @@ import { withRetry } from './utils';
 import {authenticateSocket} from '@legion/shared/socketAuth';
 import {shouldRetireGame} from './gameLifecycle';
 import {desktopCors, rejectSocketOrigin, rejectUntrustedOrigin} from '@legion/shared/corsPolicy';
+import {aiWinRatio} from '@legion/shared/aiDifficulty';
 
 if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     // We're running locally with emulators
@@ -93,10 +94,7 @@ async function getPlayerData(uid: string, retries = 10, delay = 500): Promise<{p
     // Transform dailyloot data
     const transformedDailyLoot = transformDailyLoot(playerData.dailyloot || {});
 
-    const AIwinRatio =
-      playerData.AIstats && playerData.AIstats.nbGames > 0 ?
-        (playerData.AIstats.wins - 1) / (playerData.AIstats.nbGames + 2) :
-        0;
+    const AIwinRatio = aiWinRatio(playerData.AIstats);
 
     return {characters: playerData.characters || [], player: {
       uid,
