@@ -3,7 +3,7 @@
 // so this table alone sets the balance between sounds. Keep values at or below 0: HTML audio cannot amplify.
 const MIX_DB: Record<string, number> = {
   // Spells and item effects
-  fireball: -2, thunder: 0, ice: 0, poison: 0, mute: 0, revive: 0, healing: 0,
+  fireball: 0, thunder: 0, ice: 0, poison: 0, mute: 0, revive: 0, healing: 0,
   // Combat hits and actions
   shatter: -1, thud: -1.5, slash: -4, cast: -6, cooldown: -6,
   // Feedback and ambience
