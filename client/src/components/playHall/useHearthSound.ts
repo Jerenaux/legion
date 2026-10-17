@@ -2,10 +2,11 @@
 import {useEffect} from 'preact/hooks';
 import flameSFX from '@assets/sfx/flame.wav';
 import {sfxGain} from '../../settings';
+import {sfxLevel} from '../../sfxMix';
 import {events} from '../HUD/GameHUD';
 import {reportAudioFailure, watchAudioContext} from '../../audioRecovery';
 
-const LEVEL = 0.28;
+const LEVEL = sfxLevel('hearth');
 const FADE_S = 0.8;
 let buffer: Promise<AudioBuffer> | null = null;
 

@@ -10,6 +10,7 @@ import { League, LockedFeatures
  } from "@legion/shared/enums";
 import { firebaseAuth } from '../services/firebaseService';
 import { playSoundEffect } from '../components/utils';
+import { sfxLevel } from '../sfxMix';
 import { io } from 'socket.io-client';
 import { getFirebaseIdToken } from '../services/apiService';
 import matchFound from "@assets/sfx/match_found.wav";
@@ -489,7 +490,7 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
           });
 
           // Play sound effect
-          playSoundEffect(matchFound, 0.5);
+          playSoundEffect(matchFound, sfxLevel('matchFound'));
       });
 
       socket.on('challengeDeclined', (data: { playerName: string }) => {

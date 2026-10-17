@@ -5,6 +5,7 @@ import {PlayerContext} from '../../../contexts/PlayerContext';
 import {apiMutation} from '../../../services/apiService';
 import {language, t, userError} from '../../../i18n/core';
 import {playSoundEffect, silentErrorToast} from '../../utils';
+import {sfxLevel} from '../../../sfxMix';
 import goldIcon from '@assets/gold_icon.png';
 import shine from '@assets/game_end/shine_bg.png';
 import rewardSound from '@assets/sfx/purchase.wav';
@@ -49,7 +50,7 @@ export default function FirstWinBonus({gold, onClose}: {gold: number; onClose: (
     try {
       await apiMutation('claimFirstWinBonus', {});
       if (!mounted.current) return;
-      playSoundEffect(rewardSound);
+      playSoundEffect(rewardSound, sfxLevel('purchase'));
       setShown(gold);
       setState('claimed');
       refreshPlayerData();

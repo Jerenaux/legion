@@ -13,6 +13,7 @@ import { ENABLE_APPROX_WT, ENABLE_MM_TOGGLE, ENABLE_Q_NEWS } from '@legion/share
 import { tips } from './tips'
 import { PlayerContext } from '../contexts/PlayerContext';
 import { playSoundEffect, silentErrorToast } from './utils';
+import { sfxLevel } from '../sfxMix';
 import { QueueTips } from './queueTips/QueueTips';
 import GuidePage from './GuidePage';
 
@@ -188,7 +189,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
         // Setup all game-related socket listeners
         socket.on('matchFound', ({ gameId }) => {
             console.log('matchFound', gameId);
-            playSoundEffect(matchFound, 0.5);
+            playSoundEffect(matchFound, sfxLevel('matchFound'));
             route(`/game/${gameId}`);
         });
 
