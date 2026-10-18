@@ -504,10 +504,34 @@
     line-height: 1.45;
 }
 .sp-dialog-title {
-    margin: 0 0 16px;
+    margin: 0 0 12px;
     color: #f4f5f7;
     font-size: 1.25rem;
     text-align: center;
+}
+.sp-dialog-stat-info {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border: 1px solid color-mix(in oklch, var(--stat-color) 45%, transparent);
+    border-left: 4px solid var(--stat-color);
+    border-radius: 6px;
+    background: linear-gradient(90deg, color-mix(in oklch, var(--stat-color) 22%, transparent), oklch(18% .02 250 / .6) 70%);
+    box-shadow: inset 0 1px oklch(100% 0 0 / .05);
+}
+.sp-dialog-stat-name {
+    display: block;
+    margin-bottom: 2px;
+    color: color-mix(in oklch, var(--stat-color) 40%, white);
+    font-size: .8125rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.sp-dialog-stat-description {
+    margin: 0;
+    color: #d6dde3;
+    font-family: system-ui, sans-serif;
+    font-size: .9375rem;
+    line-height: 1.4;
 }
 .character-info-dialog-container .character-info-dialog-card span,
 .character-info-dialog-container .character-info-dialog-card-text {

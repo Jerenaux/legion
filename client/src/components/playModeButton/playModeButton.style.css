@@ -108,8 +108,9 @@
 .labelContainer .label {
     width: 100%;
     margin: 8px 0 2px;
-    overflow-wrap: anywhere;
-    hyphens: auto;
+    /* Wrap between words only; FitText shrinks the font when one word is too long. */
+    overflow-wrap: normal;
+    hyphens: manual;
     font: 1.5rem/1.1 var(--locale-font, 'Kim'), system-ui, sans-serif;
     color: color-mix(in oklch, var(--mode-accent) 35%, white);
     text-transform: uppercase;
