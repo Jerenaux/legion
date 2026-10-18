@@ -9,6 +9,7 @@ import CasualIcon from '@assets/casual_icon.png';
 import RankedIcon from '@assets/ranked_icon.png';
 import TowerIcon from '@assets/tower_icon.png';
 import { PlayMode } from '@legion/shared/enums';
+import FitText from '../FitText';
 import xpIcon from '@assets/game_end/XP_icon.png';
 import goldIcon from '@assets/gold_icon.png';
 import goldChest from '@assets/shop/gold_chest.png';
@@ -101,7 +102,7 @@ class PlayModeButton extends Component<Props> {
                     className="mode-icon"
                 />
                 <div className="labelContainer">
-                    <span className="label">{t(label)}</span>
+                    <FitText className="label">{t(label)}</FitText>
                     {!disabled && (
                         mode === PlayMode.TOWER ? <span className="player">{t("Solo expedition")}</span> : mode === PlayMode.PRACTICE
                             ? <span className="player">{t("vs AI")}</span>

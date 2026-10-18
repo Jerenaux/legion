@@ -5,6 +5,7 @@ import {Trans} from '../../i18n/Trans';
 
 import { h, Fragment } from 'preact';
 import { ItemTooltipContent } from '../ItemTooltipContent';
+import { statExplanations, statNames } from '../itemTooltip';
 // ItemDialog.tsx
 import './ItemDialog.style.css';
 import Modal from 'react-modal';
@@ -280,6 +281,10 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     return (
       <div className="character-info-dialog-container">
         <h2 className="sp-dialog-title">{t("Increase {{value0}}", {value0: t(StatLabels[dialogData.stat])})}</h2>
+        <div className="sp-dialog-stat-info" style={{ '--stat-color': STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
+          <strong className="sp-dialog-stat-name">{t(statNames[dialogData.stat])}</strong>
+          <p className="sp-dialog-stat-description">{t(statExplanations[dialogData.stat])}</p>
+        </div>
         <div className="character-info-dialog-card-container">
           <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
             <span>{t(StatLabels[dialogData.stat])}</span>
