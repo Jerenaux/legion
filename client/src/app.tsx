@@ -16,6 +16,7 @@ import withAuth from './components/withAuth';
 import { recordPageView } from './components/utils';
 import { firebaseAuth } from './services/firebaseService';
 import {actionFromKeyboard, DESKTOP_ACTION_EVENT, DesktopAction, dispatchDesktopAction} from './input/actions';
+import {sessionReplay} from './telemetry';
 import {startGamepadInput} from './input/gamepad';
 import SystemMenu, {openSystemMenu} from './components/systemMenu/SystemMenu';
 import {loadGameSettings} from './settings';
@@ -109,6 +110,7 @@ class App extends Component<{}, AppState> {
 
     handleDesktopAction = async (event: CustomEvent<{action: DesktopAction; source: string}>) => {
       const {action, source} = event.detail;
+      if (source === 'gamepad') sessionReplay.activity();
       const focused = document.activeElement;
       if (source === 'gamepad' && focused instanceof HTMLSelectElement && (action === 'menu-left' || action === 'menu-right')) {
         focused.selectedIndex = Math.max(0, Math.min(focused.options.length - 1, focused.selectedIndex + (action === 'menu-right' ? 1 : -1)));

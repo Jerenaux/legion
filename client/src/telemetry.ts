@@ -82,6 +82,8 @@ export function setUser(user: Parameters<typeof Sentry.setUser>[0]) {
           return bridge.start();
         }}, id => {
           Sentry.setContext('replay', {sessionId: id, url: `https://games-replay-jr.web.app/#/s/${id}`});
+        }, (error, operation) => {
+          Sentry.captureException(error, {tags: {subsystem: 'replay', operation}});
         });
       } else {
         sessionReplay.identify(signedInId);
@@ -92,7 +94,9 @@ export function setUser(user: Parameters<typeof Sentry.setUser>[0]) {
       signedInId = undefined;
       sessionReplay.identify();
     }
-  } catch { /* Optional recording must not interrupt authentication. */ }
+  } catch {
+    Sentry.captureException(new Error('Replay identity setup failed'), {tags: {subsystem: 'replay'}});
+  }
 }
 
 // The main process persists frames independently; also flush errors before closing.
