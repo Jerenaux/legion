@@ -1544,22 +1544,23 @@ export abstract class Game
         }
     }
 
-    async saveInventoryToDb(token: string, characterId: string, inventory: number[]) {
+    async saveInventoryToDb(uid: string, characterId: string, inventory: number[]) {
         console.log(`[Game:saveInventoryToDb] Saving inventory to DB for character ${characterId}`);
         try {
-            await apiFetch(
-                'inventorySave',
-                token,
-                {
-                    method: 'POST',
-                    body: {
-                        characterId,
-                        inventory,
-                    },
+            // Combat can outlive the socket's login token; persist with the server's Firebase identity.
+            const db = getFirestore(FIRESTORE_DATABASE_ID);
+            const playerRef = db.collection('players').doc(uid);
+            const characterRef = db.collection('characters').doc(characterId);
+            await db.runTransaction(async transaction => {
+                const player = await transaction.get(playerRef);
+                const characters = player.get('characters') as DocumentReference[] | undefined;
+                if (!characters?.some(character => character.path === characterRef.path)) {
+                    throw new Error('Cannot save inventory: character not owned by player');
                 }
-            );
+                transaction.update(characterRef, {inventory});
+            });
         } catch (error) {
-            console.error(error);
+            console.error('Combat inventory save failed:', {gameId: this.id, characterId}, error);
         }
     }
 

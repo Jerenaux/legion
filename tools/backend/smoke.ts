@@ -58,6 +58,7 @@ try {
   const accounts=await Promise.all([login(`test-${run}`),login(`test-${run}`)]);
   assert.equal(accounts[0].uid,accounts[1].uid);
   const one=accounts[0], two=await login(`other-${run}`);
+  await (await import('./combat-inventory')).checkCombatInventory({db, api, account: one, otherAccount: two});
   const initial=(await db.collection('players').doc(one.uid).get()).data();
   assert.equal(initial.characters.length,3);
   assert((await db.collection('games').doc(one.uid).get()).exists);

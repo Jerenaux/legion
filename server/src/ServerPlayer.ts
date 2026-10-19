@@ -405,7 +405,7 @@ export class ServerPlayer {
         }
         this.inventory.splice(index, 1);
         if (!this.isAI) {
-            this.team!.game.saveInventoryToDb(this.team!.getFirebaseToken(), this.dbId, this.inventory.map(item => item.id));
+            this.team!.game.saveInventoryToDb(this.team!.teamData.playerUID, this.dbId, this.inventory.map(item => item.id));
         }
     }
 
