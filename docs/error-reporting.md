@@ -6,6 +6,8 @@ Coverage includes uncaught JavaScript errors, unhandled promise rejections, `con
 
 Caught API failures are reported after retries are exhausted, even when the caller only displays a toast. Expected HTTP 4xx rejections are excluded at this boundary. Silent gameplay mistakes cannot be detected automatically: players can use **Menu → Report a problem**. Reports carry the product release and the authenticated player's internal ID when available.
 
+Native Steam sign-in failures report `steam.auth_stage` (SDK initialization, ticket request or ticket preparation), a recognized SDK reason/code, elapsed time, whether the client initialized, and CPU architecture. Sentry supplies the OS and release. Native messages/stacks, ticket contents and unrecognized codes are never attached. Reports are limited to once per stage/code/reason per minute; concurrent credential requests share one result. Reporting failure cannot change authentication or fall back to a device account. The startup smoke checks these reports against local Sentry ingestion only.
+
 The Bun game server and matchmaker initialize Sentry before other services. Firebase uses the official serverless HTTP wrapper so caught errors inside asynchronous CORS callbacks are flushed before the response ends. Scheduled handlers flush before finishing and rethrow errors to preserve retries. Always import `onRequest`/`onSchedule` from `api/functions/src/telemetry.ts`, not directly from Firebase. Deployment options and weekly league behavior must stay unchanged.
 
 ## Audio recovery

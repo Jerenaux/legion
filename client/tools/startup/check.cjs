@@ -31,11 +31,28 @@ if (!process.versions.electron) {
   const recordings = [];
   let recorder;
   const Sentry = require('@sentry/electron/main');
+  const envelopes = [];
+  const nativeSecret = 'private-native-ticket-and-path';
+  const steamFailures = {
+    'steam-unavailable': {stage: 'sdk_initialization', reason: 'unknown', code: 'ERR_DLOPEN_FAILED'},
+    'steam-ticket-timeout': {stage: 'ticket_request', reason: 'ticket_timeout', code: 'GenericFailure'},
+    'steam-ticket-unavailable': {stage: 'ticket_request', reason: 'unknown', code: 'unknown'},
+    'steam-ticket-preparation': {stage: 'ticket_preparation', reason: 'unknown', code: 'InvalidArg'},
+  };
   let rendererLogs = [];
   ipcMain.handle('set-language', () => true);
   ipcMain.handle('get-platform-auth', () => {
-    if (mode === 'steam-unavailable') return require('../../electron/platform').getPlatformAuth(
-      {SteamAppId: '3996730'}, () => ({init() {throw new Error('External Steam client disconnected');}}));
+    if (steamFailures[mode]) return require('../../electron/platform').getPlatformAuth(
+      {SteamAppId: '3996730'}, () => ({init() {
+        const failure = () => Object.assign(new Error(mode === 'steam-ticket-timeout'
+          ? "Steam didn't validated the ticket in time." : nativeSecret),
+          {code: mode === 'steam-ticket-unavailable' ? nativeSecret : steamFailures[mode].code});
+        if (mode === 'steam-unavailable') throw failure();
+        return {auth: {async getAuthTicketForWebApi() {
+          if (mode === 'steam-ticket-preparation') return {cancel() {}, getBytes() {throw failure();}};
+          throw failure();
+        }}};
+      }}));
     if (mode === 'steam-rejected' || mode === 'itch-rejected') {
       return {provider: mode.split('-')[0], credential: 'local-test-credential'};
     }
@@ -61,7 +78,11 @@ if (!process.versions.electron) {
       recordings.push(JSON.parse(body.toString('utf8', 9, 9 + length)));
       response.end('{}'); return;
     }
-    if (request.url.startsWith('/api/1/envelope/')) { response.end('{}'); return; }
+    if (request.url.startsWith('/api/1/envelope/')) {
+      envelopes.push((request.headers['content-encoding'] === 'gzip'
+        ? require('node:zlib').gunzipSync(body) : body).toString());
+      response.end('{}'); return;
+    }
     if (request.url === '/createPlatformSession') {
       exchanges++;
       if (mode === 'network-once' && exchanges === 1) { request.socket.destroy(); return; }
@@ -97,7 +118,7 @@ if (!process.versions.electron) {
   }).listen(0);
   const base = `http://127.0.0.1:${server.address().port}`;
   const automatic = ['cached-user', 'success', 'stall-once', 'network-once', '503-once', '429-once'];
-  const scenarios = [...automatic, 'rejected', 'steam-unavailable', 'steam-rejected', 'itch-rejected', 'unavailable', 'credential', 'exchange', 'body', 'firebase'];
+  const scenarios = [...automatic, 'rejected', ...Object.keys(steamFailures), 'steam-rejected', 'itch-rejected', 'unavailable', 'credential', 'exchange', 'body', 'firebase'];
   Sentry.init({getSessions: () => scenarios.map(name => session.fromPartition(`startup-${name}`)), dsn: `${base.replace('http://', 'http://test@')}/1`, environment: 'test', onFatalError: () => {}});
   protocol.registerSchemesAsPrivileged([PACKAGED_APP_SCHEME]);
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -126,6 +147,7 @@ if (!process.versions.electron) {
     }));
     for (const scenario of scenarios) {
       mode = scenario;
+      require('../../electron/platform').shutdownPlatform();
       currentUser = 'startup-player';
       exchanges = 0;
       aborted = false;
@@ -174,14 +196,34 @@ if (!process.versions.electron) {
       if (!automatic.includes(scenario)) {
         await waitFor(() => read('!!document.querySelector(".session-status__retry")'), `${scenario} recovery`, 35000);
         const expectedFailure = {
-          'steam-unavailable': 'steam', 'steam-rejected': 'steam', 'itch-rejected': 'itch',
+          ...Object.fromEntries(Object.keys(steamFailures).map(name => [name, 'steam'])),
+          'steam-rejected': 'steam', 'itch-rejected': 'itch',
           rejected: 'service', unavailable: 'service', credential: 'unknown',
           exchange: 'network', body: 'network', firebase: 'network',
         }[scenario];
         assert.equal(await read('document.querySelector("[role=alert]").dataset.sessionFailure'), expectedFailure);
         const message = await read('document.querySelector(".session-status__message").textContent');
         assert(message.trim().length > 0 && !/undefined|\{\{|local-test-credential|External Steam client/.test(message));
-        if (scenario === 'steam-unavailable') assert.equal(exchanges, 0, 'Native failure must not fall back to a device account');
+        if (steamFailures[scenario]) {
+          // Real preload/IPC + Sentry SDK + HTTP ingestion; only the external Steam service is substituted.
+          await read('Promise.all([window.electronAPI.getPlatformAuth(), window.electronAPI.getPlatformAuth()])');
+          await Sentry.flush(2000);
+          const events = envelopes.flatMap(body => body.split('\n').flatMap(line => {
+            try {const event = JSON.parse(line); return event.contexts?.steam_auth ? [event] : [];}
+            catch {return [];}
+          }));
+          const expected = steamFailures[scenario];
+          const reports = events.filter(event => event.tags?.['steam.auth_stage'] === expected.stage
+            && event.tags?.['steam.auth_reason'] === expected.reason);
+          assert.equal(reports.length, 1, 'Repeated/concurrent failures must not flood Sentry');
+          const context = reports[0].contexts.steam_auth;
+          assert.equal(context.code, expected.code);
+          assert.equal(context.client_initialized, expected.stage !== 'sdk_initialization');
+          assert.equal(context.architecture, process.arch);
+          assert(context.elapsed_ms >= 0);
+          assert(envelopes.every(body => !body.includes(nativeSecret)), 'Native messages, codes and credentials must stay private');
+          assert.equal(exchanges, 0, 'Native failure must not fall back to a device account');
+        }
         if (scenario.endsWith('-rejected')) assert.equal(exchanges, 1, 'Rejected store credentials must not retry');
         if (scenario === 'credential' || scenario === 'firebase') {
           assert(Date.now() - started >= 28000, `${scenario}: deadline fired after ${Date.now() - started}ms`);
