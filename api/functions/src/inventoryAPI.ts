@@ -156,8 +156,7 @@ export const inventorySave = onRequest({
 
       response.send({status: 0});
     } catch (error) {
-      console.error("inventorySave error:", error);
-      response.status(500).send("Error");
+      mutationFailure(response, 'inventorySave', error);
     }
   });
 });

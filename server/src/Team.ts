@@ -209,11 +209,6 @@ export class Team {
         return this.socket;
     }
 
-    getFirebaseToken() {
-        // @ts-expect-error
-        return this.socket?.firebaseToken;
-    }
-
     /**
      * Every character, knocked out or not, gets an equal part of the match XP; the rest follows
      * contribution (actions and damage absorbed). Characters below the team's average level catch up.

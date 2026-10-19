@@ -36,7 +36,8 @@ and security. The policy in AGENTS.md and CLAUDE.md supersedes historical plans.
   manual review; `--tutorial` also keeps its match-readiness checks.
 - `node tools/backend/run.cjs` from the repository root: isolated Auth, Firestore
   and Functions emulators plus real server/matchmaker processes and HTTP/Socket.IO
-  clients. Includes account bootstrap, matchmaking, progression, indexed opponents,
+  clients. Includes account bootstrap, combat inventory persistence without player tokens,
+  expired-token rejection, matchmaking, progression, indexed opponents,
   gift redemption and community flows. Requires service dependencies and Java 21+;
   it never uses production player data. See `docs/backend-startup.md`.
 - `node --test tools/steam-credentials.test.cjs`: executes the credential CLI in

@@ -10,6 +10,7 @@ The performance changes preserve the current Iowa deployments and European Fires
 - The matchmaker reads authoritative queue fields and writes the match plus action records directly to Firestore. It attempts matching immediately after queue insertion. The periodic widening/fallback behavior remains. Discord bot code and its dependencies are removed; community links remain.
 - Combat loads match/player data concurrently, reuses the authenticated UID and character references, and fetches human and AI rosters concurrently. Remote Config is shared per process for 60 seconds with concurrent-fetch deduplication; a failed refresh is retried, never cached. Render acknowledgements still gate combat.
 - Socket authentication uses Firebase's normally refreshed token. An authentication rejection forces one refresh/retry; a successful connection resets that allowance.
+- Combat item consumption writes to Firestore using the game server's service identity, with a transactional ownership check. Never forward the socket's handshake ID token for these saves: it can expire while combat remains connected. The legacy `inventorySave` HTTP endpoint remains for older server revisions and returns 401 for invalid/expired tokens; unexpected persistence failures still report to Sentry.
 
 ## Zombie opponents
 
