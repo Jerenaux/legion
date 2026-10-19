@@ -5,7 +5,7 @@
     "": {
       "name": "client",
       "dependencies": {
-        "@jerenaux/replay": "file:vendor/replay-2915b82.tgz",
+        "@jerenaux/replay": "file:vendor/replay-99adaed.tgz",
         "@sentry/electron": "7.18.0",
         "@sentry/node": "10.73.0",
         "koffi": "2.16.3",
@@ -386,7 +386,7 @@
 
     "@isaacs/fs-minipass": ["@isaacs/fs-minipass@4.0.1", "", { "dependencies": { "minipass": "^7.0.4" } }, "sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w=="],
 
-    "@jerenaux/replay": ["@jerenaux/replay@vendor/replay-2915b82.tgz", { "peerDependencies": { "electron": ">=30" }, "optionalPeers": ["electron"] }, "sha512-eI6eaCopBfzqrD0xklYXOTkaQNjScS1bhDae3VkeAC27jaqyvOjCtnYYEvr79KWhdd+nC6hC/2BU4vB8lUVnJg=="],
+    "@jerenaux/replay": ["@jerenaux/replay@vendor/replay-99adaed.tgz", { "peerDependencies": { "electron": ">=30" }, "optionalPeers": ["electron"] }, "sha512-IoeMUI6uUWY0dPlBR/1zjV8bRHBik1F47Gz7xU8GS2q/mWRq5vJLTtsbGe/His8M55z+TJoxowi4K7AIlnQhLQ=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 

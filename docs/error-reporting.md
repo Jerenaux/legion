@@ -87,8 +87,8 @@ including Preact UI, Phaser WebGL/Canvas, fonts and bundled images. Sessions app
 https://games-replay-jr.web.app alongside Tungsteel. The stable backend game ID is
 `legion`; player-facing branding remains Emberhall.
 
-The implementation lives in `Jerenaux/replay`, pinned to commit `2915b82` in
-`client/vendor/replay-2915b82.tgz`. The dependency uses this packed package so clean
+The implementation lives in `Jerenaux/replay`, pinned to commit `99adaed` in
+`client/vendor/replay-99adaed.tgz`. The dependency uses this packed package so clean
 builds and CI do not require access credentials for the private replay repository.
 To upgrade, pack the new library commit and replace the dependency/archive together.
 There are no filesystem links to another checkout in the shipped dependency.
@@ -110,6 +110,9 @@ Capture runs at most twice per second, at 960 pixels wide, with WebP quality 0.5
 Unchanged thumbnails are skipped. Inputs, focus/resize and battle/error events share
 the existing RPLY v1 format. Player identity changes split sessions. Sentry errors
 include the central dashboard session link; raw console/network data is not recorded.
+Controller actions refresh the idle timer without recording button contents. Main and
+renderer failures reach Sentry with a `subsystem: replay` tag, sanitized error codes
+and a one-per-operation-per-minute limit. Reporting failures never block gameplay.
 No audio is captured. This is a visual session recording, separate from Emberhall's
 existing server-message match replay feature.
 
@@ -121,7 +124,8 @@ in canvas pixels or unmarked UI. Capture and upload failures cannot interrupt ga
 
 Segments flush every 15 seconds or before 3.5 MB, and are atomically saved under
 `<userData>/replay/outbox` before upload. Offline/failed uploads retry, including on
-relaunch; the queue drops oldest segments above 300 MB. Idle sessions split after
+relaunch; the queue drops oldest segments above 300 MB. Invalid segments rejected
+with HTTP 400/413/422 are reported and discarded so they cannot block later uploads. Idle sessions split after
 30 minutes without input and capture gaps over two minutes. A crash can lose the
 current in-memory segment. The close handler persists main-process data even if the
 renderer is unresponsive; its bounded shutdown deadline can leave uploads for next launch.

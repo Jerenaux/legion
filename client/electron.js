@@ -138,6 +138,9 @@ function createWindow() {
         outbox: path.join(app.getPath('userData'), 'replay', 'outbox'),
         isTrustedURL: url => isTrustedSender(url, isDev),
         metadata: {game_version: app.getVersion(), channel: process.env.ITCHIO_API_KEY ? 'itch' : (process.env.SteamAppId || process.env.SteamGameId) ? 'steam' : 'store', debug_build: false},
+        onError: (error, operation) => require('@sentry/electron/main').captureException(error, {
+          tags: {subsystem: 'replay', operation},
+        }),
       });
     } catch (error) { require('@sentry/electron/main').captureException(error); }
   }
