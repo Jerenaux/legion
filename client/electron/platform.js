@@ -3,6 +3,35 @@ let activeTicket;
 let activeSteamClient;
 let pendingAuth;
 let launchReader;
+const lastAuthReports = new Map();
+// Only recognize fixed SDK messages/codes; never send native messages, stacks or ticket bytes.
+const authReasons = new Map([
+  ["Steam didn't validated the ticket in time.", 'ticket_timeout'],
+  ["there isn't a network connection to steam or it failed to connect", 'no_connection'],
+  ['user not logged on', 'not_logged_on'],
+  ['connect failed', 'connect_failed'],
+  ['requested service is unavailable', 'service_unavailable'],
+  ['operation timed out', 'timeout'],
+  ['password or ticket is invalid', 'invalid_ticket'],
+  ['failed to init the steamworks API', 'initialization_failed'],
+]);
+
+function reportAuthFailure(error, stage, startedAt) {
+  try {
+    const code = ['GenericFailure', 'InvalidArg', 'ERR_DLOPEN_FAILED', 'MODULE_NOT_FOUND'].includes(error?.code)
+      ? error.code : 'unknown';
+    const reason = authReasons.get(error?.message) || 'unknown';
+    const key = `${stage}:${code}:${reason}`;
+    const now = Date.now();
+    if (now - (lastAuthReports.get(key) ?? -Infinity) < 60000) return;
+    lastAuthReports.set(key, now);
+    require('@sentry/electron/main').captureException(new Error(`Steam authentication failed during ${stage}`), {
+      tags: {'steam.auth_stage': stage, 'steam.auth_reason': reason},
+      contexts: {steam_auth: {stage, reason, code, elapsed_ms: now - startedAt,
+        client_initialized: Boolean(activeSteamClient), architecture: process.arch}},
+    });
+  } catch { /* Diagnostics must never change the sign-in result. */ }
+}
 
 /** Reads a `steam://run/<app>/?key=value` launch parameter ("gift", "community"). */
 function getSteamLaunchParam(steamworksRoot, key) {
@@ -28,29 +57,33 @@ function getPlatformLanguage(env = process.env, loadSteamworks = () => require("
 
 async function getPlatformAuth(env = process.env, loadSteamworks = () => require("steamworks.js")) {
   if (env.ITCHIO_API_KEY) return {provider: "itch", credential: env.ITCHIO_API_KEY};
-  try {
-    const client = getSteamClient(env, loadSteamworks);
-    if (!client) return null;
-    // Startup only reads the language. Concurrent renderer requests share one ticket request.
-    if (pendingAuth) return await pendingAuth;
-    const request = (async () => {
+  // Share the result, including failure reporting, across concurrent native IPC requests.
+  if (pendingAuth) return pendingAuth;
+  const request = (async () => {
+    const startedAt = Date.now();
+    let stage = 'sdk_initialization';
+    try {
+      const client = getSteamClient(env, loadSteamworks);
+      if (!client) return null;
+      stage = 'ticket_request';
       const ticket = await client.auth.getAuthTicketForWebApi(
         env.STEAM_WEB_API_IDENTITY || STEAM_WEB_API_IDENTITY,
       );
+      stage = 'ticket_preparation';
       if (client !== activeSteamClient) { ticket.cancel(); return null; }
       activeTicket?.cancel();
       activeTicket = ticket;
       return {provider: "steam", credential: ticket.getBytes().toString("hex")};
-    })();
-    pendingAuth = request;
-    try { return await request; }
-    finally { if (pendingAuth === request) pendingAuth = undefined; }
-  } catch (_error) {
-    // An installed Steam build must not silently claim a gift on a device account
-    // when Steam is temporarily unavailable. Let the connection screen retry.
-    // Electron IPC drops custom Error properties; return a safe, structured reason.
-    return {error: 'steam'};
-  }
+    } catch (error) {
+      reportAuthFailure(error, stage, startedAt);
+      // Preserve the Steam account: never fall back to a device account on native failure.
+      // Electron IPC drops custom Error properties; return a safe, structured reason.
+      return {error: 'steam'};
+    }
+  })();
+  pendingAuth = request;
+  try { return await request; }
+  finally { if (pendingAuth === request) pendingAuth = undefined; }
 }
 
 async function showGamepadTextInput(options = {}) {
