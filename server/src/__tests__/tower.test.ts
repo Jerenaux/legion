@@ -90,7 +90,7 @@ test('temporary upgrade effects reach combat without mutating shared spells', as
   expect(getSpellById(6)!.cost).toBe(originalCost);
 });
 
-test('untimed humans and AI fallback retain bounded freeze with permanent ice terrain', async () => {
+test('untimed humans and AI fallback retain bounded freeze and melt ice when freeze expires', async () => {
   const game = await battle();
   const schedule = spyOn(game.combatClock, 'schedule').mockReturnValue(1);
   game.turnee = game.getTeam(1)[0]; game.resetTurnTimer();
@@ -105,7 +105,7 @@ test('untimed humans and AI fallback retain bounded freeze with permanent ice te
     unit.endTurn();
   }
   expect(unit.isFrozen()).toBe(false);
-  expect(game.hasObstacle(unit.x, unit.y)).toBe(true);
+  expect(game.hasObstacle(unit.x, unit.y)).toBe(false);
 });
 
 test('boss warns before attacking and moving away avoids the blast', async () => {
