@@ -315,7 +315,7 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
       dailyloot: {bronze: {hasKey: preview.get('chest') !== 'key', countdown: preview.get('chest') === 'countdown' ? 5 : 0}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}},
       firstWinBonusGold: preview.has('first-win') ? FIRST_WIN_BONUS_GOLD : 0,
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
-      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}, ...playerUpdates},
+      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: preview.has('inventory') ? Array(Number(preview.get('inventory'))).fill(0) : [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}, ...playerUpdates},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
     getCompletedGames: () => completedGames, checkEngagementFlag: () => true,
     getGamesUntilFeature: (feature: LockedFeatures) => Math.max(0, LOCKED_FEATURES[feature] - completedGames),

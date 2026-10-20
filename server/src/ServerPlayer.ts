@@ -530,10 +530,18 @@ export class ServerPlayer {
                 if (this.statuses[status] === 0) {
                     change = true;
                     this.removeStatusEffect(status as keyof StatusEffects);
+                    if (status === StatusEffect.FREEZE) this.meltIce();
                 }
             }
         }
         if (change) this.broadcastStatusEffectChange();
+    }
+
+    /** An expired freeze melts the ice holding the character, so clients play the melting animation. */
+    private meltIce() {
+        const game = this.team?.game;
+        if (!game || game.terrainManager.getTerrain(this.x, this.y) !== Terrain.ICE) return;
+        game.broadcastTerrain(game.terrainManager.removeIce(this.x, this.y));
     }
 
     clearStatusEffects() {

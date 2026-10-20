@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "0.37.4",
+  "version": "0.38.0",
   "description": "Emberhall desktop game client",
   "author": "Dynetis Games",
   "private": true,

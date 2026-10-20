@@ -287,6 +287,9 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
       }
     }
 
+    /** The newest predicted view until its render lands. */
+    private latestView: PlayerView | null = null;
+
     /** True when no optimistic mutation was pending, queued or settled since `clock` was read. */
     private mutationsSettledSince(clock: number) {
       return this.mutationsPending === 0 && clock === this.mutationClock;
@@ -300,14 +303,20 @@ class PlayerProvider extends Component<{}, PlayerContextState> {
      * reason and returns null without sending anything; otherwise resolves to whether the server applied it.
      */
     optimisticMutation = (predict: (view: PlayerView) => PlayerView | Rejection, send: () => Promise<unknown>): Promise<boolean> | null => {
-      const prediction = predict(this.state);
+      // this.state lags behind predictions whose render is still pending; check against the latest one,
+      // or a quick second purchase would be sent although the queued state already rejects it.
+      const prediction = predict(this.latestView ?? this.state);
       if (isRejection(prediction)) {
         silentErrorToast(userError(prediction.error));
         return null;
       }
+      const view = {player: prediction.player, characters: prediction.characters};
+      this.latestView = view;
       this.setState(prev => {
         const next = predict(prev);
         return isRejection(next) ? null : {...next, characterSheetIsDirty: true};
+      }, () => {
+        if (this.latestView === view) this.latestView = null;
       });
       const session = this.session;
       const epoch = this.mutationEpoch;

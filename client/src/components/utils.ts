@@ -93,11 +93,14 @@ export function successToast(text: string, duration: number = 3000) {
   showToast(text, duration, successIcon);
 }
 
-export function silentErrorToast(text: string, duration: number = -1) {
+// Errors stay a little longer than confirmations so they can be read, then close themselves.
+const ERROR_TOAST_DURATION = 6000;
+
+export function silentErrorToast(text: string, duration: number = ERROR_TOAST_DURATION) {
   showToast(text, duration, errorIcon);
 }
 
-export function errorToast(text: string, duration: number = -1) {
+export function errorToast(text: string, duration: number = ERROR_TOAST_DURATION) {
   console.error(text);
   showToast(text, duration, errorIcon);
 }

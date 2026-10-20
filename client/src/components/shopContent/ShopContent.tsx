@@ -1,5 +1,5 @@
 import {t} from '../../i18n/core';
-import { ShopPurse } from './ShopPrice';
+import { ShopInventory, ShopPurse } from './ShopPrice';
 import { h } from 'preact';
 import './ShopContent.style.css';
 
@@ -405,6 +405,7 @@ class ShopContent extends Component<ShopContentProps> {
 
         return (
             <div className='shop-content'>
+                <div className='shop-header'>
                 <div className='shop-tabs-container'>
                     {this.state.inventoryData && shopTabIcons.map((icon, index) => {
                         const isCharacterTab = index === ShopTab.CHARACTERS;
@@ -443,10 +444,12 @@ class ShopContent extends Component<ShopContentProps> {
                 </div>
                 <div className="shop-toolbar">
                     <ShopPurse />
+                    {this.state.curr_tab !== ShopTab.CHARACTERS && <ShopInventory />}
                     <ShopItemFilter
                         curr_tab={this.state.curr_tab}
                         shopItems={defaultShopItems}
                         handleInventory={this.handleInventory} />
+                </div>
                 </div>
                 <ReactTooltip id="shop-unlock-details" place="bottom" positionStrategy="fixed" delayShow={150} style={tooltipStyle} />
                 <div className={`shop-items-container ${this.state.curr_tab === ShopTab.EQUIPMENTS ? 'equipment-view' : ''}`}>

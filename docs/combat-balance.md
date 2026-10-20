@@ -131,8 +131,8 @@ unchanged and must be evaluated separately from human PvP loadouts.
 Account-roster migration does not apply to temporary Tower squads: their authored
 stats and run upgrades remain intact. Recruit listings show normalized stats
 before purchase, and the purchase transaction persists those same stats. Freeze
-lasts three affected activations in Tower as in other modes; an icy tile remains
-a terrain obstacle after the trapped character recovers and can move off it.
+lasts three affected activations in Tower as in other modes; when it expires, the
+ice holding the character melts. Ice cast on empty tiles remains an obstacle.
 
 ## Simulation findings
 
