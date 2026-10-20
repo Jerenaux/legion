@@ -1351,5 +1351,8 @@
   "Last week’s ranked results moved you up a league.": "По итогам рейтинговых матчей прошлой недели вы поднялись на лигу выше.",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "По итогам рейтинговых матчей прошлой недели вы опустились на лигу ниже. Побеждайте в рейтинговых матчах на этой неделе, чтобы вернуться.",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "Сезон прошлой недели завершён. Рейтинговые победы и поражения считаются заново с нуля.",
-  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Тряска и вспышки</0> включает тряску камеры, вспышки при ударах и стоп-кадры. Щёлкните или нажмите любую клавишу, чтобы пропустить замедленный повтор нокаута."
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Тряска и вспышки</0> отключает тряску камеры, вспышки при ударах и стоп-кадры. Щёлкните или нажмите любую клавишу, чтобы пропустить замедленный повтор нокаута.",
+  "Camera follows the turn": "Камера следует за ходом",
+  "The camera drifts slightly toward the character taking its turn.": "Камера слегка смещается к персонажу, который сейчас ходит.",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Камера следует за ходом</0> смещает камеру к персонажу, который сейчас ходит; по умолчанию выключено."
 }

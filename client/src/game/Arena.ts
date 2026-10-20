@@ -78,7 +78,7 @@ import {sfxLevel} from '../sfxMix';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 import type {CharacterHover} from '../components/HUD/CharacterHoverCard';
 import {NUMBER_COLORS} from './Player';
-import {rumble, screenEffectsEnabled, shake} from './feedback';
+import {cameraNudgeEnabled, rumble, shake} from './feedback';
 
 /** Sounds that loop or get stopped keep one instance; everything else may overlap a few times. */
 const PERSISTENT_SOUNDS = new Set(['cast', 'heart', 'flames', 'jingle_win', 'jingle_lose', 'level_up']);
@@ -1427,7 +1427,7 @@ export class Arena extends Phaser.Scene
         }
 
         // A gentle nudge toward whoever acts; the board stays readable.
-        if (screenEffectsEnabled() && !this.isZoomedForSpellCast) {
+        if (cameraNudgeEnabled() && !this.isZoomedForSpellCast) {
             this.panCameraWithOffset(player.x, player.y, 700, 'Sine.easeInOut', 0.05);
         }
     }

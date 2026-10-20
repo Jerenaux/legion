@@ -9,8 +9,10 @@ export interface GameSettings {
   sfxMuted: boolean;
   /** Adds shapes and patterns to team and range colours, and swaps red/green pairs. */
   colorblind: boolean;
-  /** Camera shake, hit flashes and impact freezes in combat; off unless the player turns them on. */
+  /** Camera shake, hit flashes and impact freezes in combat. */
   screenEffects: boolean;
+  /** The camera drifts toward the character taking its turn; off unless the player turns it on. */
+  cameraNudge: boolean;
   controls: ControlBindings;
 }
 
@@ -21,7 +23,8 @@ export const defaultGameSettings: GameSettings = {
   musicMuted: false,
   sfxMuted: false,
   colorblind: false,
-  screenEffects: false,
+  screenEffects: true,
+  cameraNudge: false,
   controls: {},
 };
 
@@ -38,7 +41,8 @@ export function parseGameSettings(raw: string | null): GameSettings {
       musicMuted: saved.musicMuted === true,
       sfxMuted: saved.sfxMuted === true,
       colorblind: saved.colorblind === true,
-      screenEffects: saved.screenEffects === true,
+      screenEffects: saved.screenEffects !== false,
+      cameraNudge: saved.cameraNudge === true,
       controls: parseControlBindings(saved.controls),
     };
   } catch {

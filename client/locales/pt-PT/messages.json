@@ -1334,5 +1334,8 @@
   "Last week’s ranked results moved you up a league.": "Os teus resultados classificados da semana passada fizeram-te subir uma liga.",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Os teus resultados classificados da semana passada fizeram-te descer uma liga. Vence partidas classificadas esta semana para voltares a subir.",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "A temporada da semana passada terminou. As vitórias e derrotas classificadas recomeçam do zero.",
-  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremor e flashes</0> ativa o tremor da câmara, os flashes dos golpes e as pausas de impacto. Clica ou prime qualquer tecla para saltar a câmara lenta de um K.O."
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremor e flashes</0> desativa o tremor da câmara, os flashes dos golpes e as pausas de impacto. Clica ou prime qualquer tecla para saltar a câmara lenta de um K.O.",
+  "Camera follows the turn": "Câmara segue o turno",
+  "The camera drifts slightly toward the character taking its turn.": "A câmara desloca-se ligeiramente para a personagem que está a jogar.",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Câmara segue o turno</0> desloca a câmara para a personagem que está a jogar; está desativada por predefinição."
 }

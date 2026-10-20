@@ -1317,5 +1317,8 @@
   "Last week’s ranked results moved you up a league.": "根据上周的排位赛成绩，你升了一级联赛。",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "根据上周的排位赛成绩，你降了一级联赛。本周赢下排位赛即可重新晋级。",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "上周的赛季已结束。排位赛胜负从零开始重新计算。",
-  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>屏幕震动与闪光</0>可开启镜头震动、命中闪光和受击停顿。点击或按任意键可跳过击倒慢镜头。"
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>屏幕震动与闪光</0>可关闭镜头震动、命中闪光和受击停顿。点击或按任意键可跳过击倒慢镜头。",
+  "Camera follows the turn": "镜头跟随回合",
+  "The camera drifts slightly toward the character taking its turn.": "镜头会略微移向正在行动的角色。",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>镜头跟随回合</0>会让镜头移向正在行动的角色；默认关闭。"
 }

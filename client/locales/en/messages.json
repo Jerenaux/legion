@@ -1317,5 +1317,8 @@
   "Last week’s ranked results moved you up a league.": "Last week’s ranked results moved you up a league.",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "Last week’s season is over. Ranked wins and losses start again from zero.",
-  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam."
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.",
+  "Camera follows the turn": "Camera follows the turn",
+  "The camera drifts slightly toward the character taking its turn.": "The camera drifts slightly toward the character taking its turn.",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default."
 }

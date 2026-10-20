@@ -24,6 +24,9 @@ const reducedMotion = typeof window !== 'undefined' && window.matchMedia
 /** Shake, flashes, freezes and knockback: off when the player disables them or the system asks for reduced motion. */
 export const screenEffectsEnabled = () => loadGameSettings().screenEffects && !reducedMotion?.matches;
 
+/** The camera drifting toward the acting character: opt-in, and never with reduced motion. */
+export const cameraNudgeEnabled = () => loadGameSettings().cameraNudge && !reducedMotion?.matches;
+
 const stops = new WeakMap<Phaser.Scene, {until: number; timer: ReturnType<typeof setTimeout>}>();
 
 /** Freeze tweens and sprite animations for a moment so a hit lands. Overlapping stops merge. */
