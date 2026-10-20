@@ -897,7 +897,7 @@ export abstract class Game
 
         if (this.hasObstacle(opponent.x, opponent.y)) {
             const terrainUpdates = this.terrainManager.removeIce(opponent.x, opponent.y);
-            this.broadcastTerrain(terrainUpdates);
+            this.broadcastTerrain(terrainUpdates, 'shatter');
             opponent.removeStatusEffect(StatusEffect.FREEZE);
         }
 
@@ -932,7 +932,7 @@ export abstract class Game
         if (!this.beginAction(player)) return;
 
         const terrainUpdates = this.terrainManager.removeIce(x, y);
-        this.broadcastTerrain(terrainUpdates);
+        this.broadcastTerrain(terrainUpdates, 'shatter');
 
         this.broadcast('obstacleattack', {
             team: player.team.id,
@@ -1218,8 +1218,8 @@ export abstract class Game
         });
     }
 
-    broadcastTerrain(terrainUpdates: TerrainUpdate[]) {
-        this.broadcast('terrain', terrainUpdates);
+    broadcastTerrain(terrainUpdates: TerrainUpdate[], iceRemoval?: TerrainUpdate['iceRemoval']) {
+        this.broadcast('terrain', iceRemoval ? terrainUpdates.map(update => ({...update, iceRemoval})) : terrainUpdates);
     }
 
     listAdjacentEnemies(player: ServerPlayer): ServerPlayer[] {

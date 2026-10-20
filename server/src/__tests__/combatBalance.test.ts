@@ -3,7 +3,8 @@ import {createServer} from 'node:http';
 import {Server, type Socket} from 'socket.io';
 import {io, type Socket as ClientSocket} from 'socket.io-client';
 import {Class, EquipmentSlot, equipmentSlotFields, League, PlayMode, Stat, StatFields, StatusEffect, Terrain} from '@legion/shared/enums';
-import type {GameData, OutcomeData} from '@legion/shared/interfaces';
+import type {GameData, OutcomeData, TerrainUpdate} from '@legion/shared/interfaces';
+import {getTilesInHexRadius} from '@legion/shared/utils';
 import {getXPThreshold} from '@legion/shared/levelling';
 import {RANKED_XP_COEF, XP_PER_LEVEL} from '@legion/shared/config';
 import {baseStats, damageAmount, effectAmount, MELEE_POTENCY} from '@legion/shared/combatBalance';
@@ -64,6 +65,7 @@ beforeEach(async () => {
   spyOn(game, 'saveInventoryToDb').mockResolvedValue(undefined);
   spyOn(globalThis, 'fetch').mockRejectedValue(new Error('External access is forbidden in combat integration'));
   transport.on('connection', (socket: Socket) => {
+    socket.join(game.id);
     game.socketMap.set(socket, player.team);
     player.team.setSocket(socket);
     socket.on('action', (action, data, acknowledge) => {
@@ -89,6 +91,16 @@ afterEach(async () => {
 async function action(name: string, data: unknown) {
   scheduled.length = 0;
   await client.timeout(2000).emitWithAck('action', name, data);
+}
+function nextTerrainClear() {
+  return new Promise<TerrainUpdate[]>(resolve => {
+    const receive = (updates: TerrainUpdate[]) => {
+      if (!updates.some(update => update.terrain === Terrain.NONE)) return;
+      client.off('terrain', receive);
+      resolve(updates);
+    };
+    client.on('terrain', receive);
+  });
 }
 async function cast(id: number, target = opponent) {
   game.turnee = player;
@@ -189,6 +201,7 @@ test('Thunder skips exactly one activation; Ice skips three, then melts so the c
   opponent.endTurn();
   expect(opponent.isParalyzed()).toBe(false);
   await cast(6);
+  const thaw = nextTerrainClear();
   for (const remaining of [3, 2, 1]) {
     expect(opponent.statuses[StatusEffect.FREEZE]).toBe(remaining);
     opponent.hasActed = false;
@@ -198,6 +211,31 @@ test('Thunder skips exactly one activation; Ice skips three, then melts so the c
   }
   expect(opponent.canAct()).toBe(true);
   expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+});
+
+test.each(['obstacle', 'character'])('Socket.IO melee breaks %s ice, clears freeze, and distinguishes it from melting', async kind => {
+  const tile = kind === 'character' ? opponent : getTilesInHexRadius(player.x, player.y, 1)
+    .find(tile => player.isNextTo(tile.x, tile.y) && !game.getPlayerAt(tile.x, tile.y))!;
+  game.terrainManager.updateTerrainFromSpell(new Spell(getSpellById(6)), tile.x, tile.y);
+  expect(game.hasObstacle(tile.x, tile.y)).toBe(true);
+  const cleared = nextTerrainClear();
+  await action(kind === 'character' ? 'attack' : 'obstacleattack', kind === 'character'
+    ? {target: opponent.num, sameTeam: false} : {x: tile.x, y: tile.y});
+  expect(await cleared).toEqual([{x: tile.x, y: tile.y, terrain: Terrain.NONE, iceRemoval: 'shatter'}]);
+  expect(game.hasObstacle(tile.x, tile.y)).toBe(false);
+  expect(opponent.isFrozen()).toBe(false);
+  expect(player.hasActed).toBe(true);
+});
+
+test('Socket.IO fire melts ice without marking a melee break', async () => {
+  player.setMP(1000);
+  await cast(6);
+  const thaw = nextTerrainClear();
+  await cast(0);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+  expect(game.hasObstacle(opponent.x, opponent.y)).toBe(false);
+  expect(opponent.isFrozen()).toBe(false);
 });
 
 test('Silence blocks two affected activations, refreshes within its cap, and permits a later spell', async () => {

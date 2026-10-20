@@ -168,6 +168,7 @@ export interface TerrainUpdate {
     x: number;
     y: number;
     terrain: Terrain;
+    iceRemoval?: 'shatter';
 }
 
 export interface StatusEffectData {

@@ -79,6 +79,7 @@ import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 import type {CharacterHover} from '../components/HUD/CharacterHoverCard';
 import {NUMBER_COLORS} from './Player';
 import {cameraNudgeEnabled, rumble, shake} from './feedback';
+import {shatterIce} from './iceShatter';
 
 /** Sounds that loop or get stopped keep one instance; everything else may overlap a few times. */
 const PERSISTENT_SOUNDS = new Set(['cast', 'heart', 'flames', 'jingle_win', 'jingle_lose', 'level_up']);
@@ -1040,7 +1041,6 @@ export class Arena extends Phaser.Scene
         this.playSound('slash');
         player.attack(x);
         player.lunge(this.hexGridToPixelCoords(x, y), () => {
-            this.playSound('shatter');
             this.displayAttackImpact(x, y);
             const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
             this.sparks(pixelX, pixelY - 10, 12, 0xd8f4ff);
@@ -1117,11 +1117,11 @@ export class Arena extends Phaser.Scene
 
     processTerrain(updates: TerrainUpdate[], isReconnect = false) {
         if (this.gameEnded) return;
-        updates.forEach(({x, y, terrain}) => {
+        updates.forEach(({x, y, terrain, iceRemoval}) => {
             const handlers = {
                 [Terrain.FIRE]: () => this.handleFireTerrain(x, y),
                 [Terrain.ICE]: () => this.handleIceTerrain(x, y, isReconnect),
-                [Terrain.NONE]: () => this.handleClearTerrain(x, y)
+                [Terrain.NONE]: () => this.handleClearTerrain(x, y, iceRemoval)
             };
             handlers[terrain]?.();
         });
@@ -2778,12 +2778,13 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    private handleClearTerrain(x: number, y: number) {
+    private handleClearTerrain(x: number, y: number, iceRemoval?: TerrainUpdate['iceRemoval']) {
         this.hexGridManager.setObstacle(x, y, false);
         this.terrainMap.delete(serializeCoords(x, y));
         const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
         if (terrainsprite) {
-            this.meltdown(terrainsprite);
+            if (iceRemoval === 'shatter') shatterIce(this, terrainsprite);
+            else this.meltdown(terrainsprite);
             this.terrainSpritesMap.delete(serializeCoords(x, y));
         }
     }
