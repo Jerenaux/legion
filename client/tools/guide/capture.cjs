@@ -587,7 +587,7 @@ if (!process.versions.electron) {
             await complete();
             return tracks;
           } finally {
-            music.playEnd();
+            music.stopAll();
             arena.sound.setRate(originalRate);
             arena.sound.pauseOnBlur = originalPauseOnBlur;
           }

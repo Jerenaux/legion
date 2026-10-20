@@ -44,9 +44,10 @@ module.exports = async ({win, js, waitFor, envelopes, url}) => {
     window.AudioContext = new Proxy(AudioContext, {construct(Target, args) {
       const context = Reflect.construct(Target, args); hearthContexts.push(context); return context;
     }});
+    window.menusBefore = routeAudio.filter(audio => audio.loop).length;
     combatCheck.route('/play');
   `);
-  await waitFor('hearthContexts.length > 0 && routeAudio.some(audio => audio.loop && !audio.paused)');
+  await waitFor('hearthContexts.length > 0 && routeAudio.filter(audio => audio.loop).length > menusBefore && !routeAudio.filter(audio => audio.loop).at(-1).paused');
   await waitFor('hearthContexts[0].state === "running"');
   await js('window.menuTrack = routeAudio.filter(audio => audio.loop).at(-1)');
   for (const signal of ['window.dispatchEvent(new Event("focus"))', 'document.dispatchEvent(new Event("visibilitychange"))', 'audioSignal()']) {
