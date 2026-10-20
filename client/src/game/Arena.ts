@@ -1462,14 +1462,15 @@ export class Arena extends Phaser.Scene
         }));
     }
 
-    /** End-screen level-ups cut the result jingle short for their own fanfare. */
+    /** End-screen level-ups play their fanfare once the result jingle has finished. */
     playLevelUp = () => {
         if (this.disposed) return;
         const jingle = this.jingle;
         if (jingle?.isPlaying) {
-            this.tweens.add({targets: jingle, volume: 0, duration: 250, onComplete: () => jingle.stop()});
+            jingle.once(Phaser.Sound.Events.COMPLETE, () => { if (!this.disposed) this.playSound('level_up'); });
+        } else {
+            this.playSound('level_up');
         }
-        this.playSound('level_up');
     };
 
     processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
