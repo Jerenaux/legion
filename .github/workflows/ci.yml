@@ -48,9 +48,13 @@ jobs:
           name: server-coverage
         continue-on-error: true
 
-  build-client:
-    name: Build Client
+  client-checks:
+    name: Client / ${{ matrix.check }}
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [static, authentication, freeze, package, combat, website]
     
     steps:
       - name: Checkout code
@@ -67,6 +71,7 @@ jobs:
           bun ci
 
       - name: Check native Steam binding, locales, and client types
+        if: matrix.check == 'static'
         run: |
           cd client
           bun run locales:check
@@ -74,17 +79,21 @@ jobs:
           bunx tsc --noEmit
 
       - name: Check desktop authentication and transient-failure recovery
+        if: matrix.check == 'authentication'
         working-directory: client
         run: bun run test:startup
 
       - name: Check main-thread freeze diagnostics with local ingestion
+        if: matrix.check == 'freeze'
         working-directory: client
         run: bun run test:freeze
 
-      - name: Check promotional website isolation
-        run: node website/build.cjs
+      - name: Check promotional website isolation and smoke-test website
+        if: matrix.check == 'website'
+        run: node website/smoke.cjs
 
       - name: Build and package Electron client
+        if: matrix.check == 'package'
         run: |
           cd client
           BUILD_TARGET=electron bun run build
@@ -100,16 +109,29 @@ jobs:
           GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
           MATCHMAKER_URL: ${{ vars.MATCHMAKER_URL }}
 
-      - name: Smoke-test recorder exclusion and promotional website
+      - name: Smoke-test recorder exclusion, combat readiness, and recovery
+        if: matrix.check == 'combat'
         working-directory: client
         run: |
           bun ci --cwd ../server
           bun run test:guide --replay-off
-          node ../website/smoke.cjs
 
       - name: Smoke-test actual packaged startup and clean shutdown offline
+        if: matrix.check == 'package'
         working-directory: client
         run: release/mac-arm64/Legion.app/Contents/MacOS/Legion --smoke-test
+
+  # Preserve the branch-protection check and reject failed, cancelled or skipped jobs.
+  build-client:
+    name: Build Client
+    needs: client-checks
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: Require every client check to pass
+        env:
+          CLIENT_RESULT: ${{ needs.client-checks.result }}
+        run: test "$CLIENT_RESULT" = success
 
   build-api:
     name: Build API

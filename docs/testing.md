@@ -8,6 +8,13 @@ and security. The policy in AGENTS.md and CLAUDE.md supersedes historical plans.
 
 ## Retained checks
 
+PR CI runs client static checks, authentication, main-thread freeze diagnostics,
+packaging, combat/recovery smoke checks (`test:guide --replay-off`), and website
+checks in six parallel macOS jobs. Each has an isolated checkout; the packaged
+startup check runs after packaging in the same job. The required **Build Client**
+check passes only when every client job succeeds. Scenario ordering and timeouts
+inside each suite are unchanged; no build artifacts are transferred between jobs.
+
 - `cd server && bun run test`: real combat interactions between Game, players,
   teams, spells/items, terrain, turn scheduling and the combat clock; practice
   setup and Tower encounters; HTTP and Socket.IO origin handling over loopback.
@@ -26,7 +33,8 @@ and security. The policy in AGENTS.md and CLAUDE.md supersedes historical plans.
   and replay privacy, music hand-off and interruption recovery, repeated-match teardown, match readiness,
   socket recovery and crash recovery. The full guide smoke runs with `test:startup` on Windows and
   macOS only as the first job of the manual desktop release workflow, which stops
-  before building if it fails; it does not run on PRs, pushes or a schedule.
+  before building if it fails. PR CI runs the recorder-disabled variant
+  (`--replay-off`); the full release suite does not run on PRs, pushes or a schedule.
   Audio recovery can also run alone with `node tools/guide/capture.cjs --audio-recovery`
   in `client` (real media/Phaser contexts, simulated platform interruptions and local Sentry ingestion).
   Chest input/countdown/reward opening and real Phaser Thunder impact anchors can run alone
