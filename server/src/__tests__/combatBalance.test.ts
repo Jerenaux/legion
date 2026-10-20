@@ -178,7 +178,7 @@ test('Socket.IO snapshots advertise authoritative spell costs and effective stat
   }
 });
 
-test('Thunder skips exactly one activation; Ice skips three, then permits acting without erasing terrain', async () => {
+test('Thunder skips exactly one activation; Ice skips three, then melts so the character can act', async () => {
   player.setMP(1000);
   opponent.statuses[StatusEffect.PARALYZE] = 100;
   await cast(3);
@@ -197,7 +197,7 @@ test('Thunder skips exactly one activation; Ice skips three, then permits acting
     opponent.endTurn();
   }
   expect(opponent.canAct()).toBe(true);
-  expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.ICE);
+  expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
 });
 
 test('Silence blocks two affected activations, refreshes within its cap, and permits a later spell', async () => {

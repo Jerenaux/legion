@@ -1172,6 +1172,7 @@
   "Your ELO rating carries over from season to season. It rises or falls after every ranked match and orders the All-time tab.": "ELOレーティングはシーズンをまたいで引き継がれます。ランク戦のたびに上下し、「通算」タブの順位を決めます。",
   "Your gold": "所持ゴールド",
   "Your inventory is full.": "インベントリがいっぱいです。",
+  "Sell or equip items in Team to make room.": "チーム画面でアイテムを売るか装備して空きを作りましょう。",
   "Your place depends on this season’s ranked wins; fewer losses break ties.": "順位は今シーズンのランク戦の勝利数で決まり、同数の場合は敗北の少ない方が上位です。",
   "{{value0}} can’t learn this class’s spells.": "{{value0}}はこのクラスの呪文を習得できません。",
   "{{value0}} can’t use this class’s gear.": "{{value0}}はこのクラスの装備を使えません。",

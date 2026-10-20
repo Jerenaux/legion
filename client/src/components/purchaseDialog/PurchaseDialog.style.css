@@ -113,13 +113,30 @@
 .buy-dialog-price.is-unaffordable { color: oklch(72% .17 25); }
 .buy-dialog-price.is-unaffordable img { filter: grayscale(.6) brightness(.85); }
 
+/* Replaces the quantity stepper when nothing more fits, so Buy is never a dead end. */
+.buy-dialog-warning {
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid oklch(62% .17 25 / .7);
+  border-radius: 6px;
+  background: oklch(30% .09 25 / .55);
+  color: oklch(88% .07 30);
+  font-size: .875rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Side by side when both labels fit; long translations stack them at full width instead of overflowing. */
 .buy-dialog-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
 }
 .buy-dialog-buttons button {
+  flex: 1 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;

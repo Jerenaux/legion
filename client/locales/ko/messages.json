@@ -1172,6 +1172,7 @@
   "Your ELO rating carries over from season to season. It rises or falls after every ranked match and orders the All-time tab.": "ELO 점수는 시즌이 바뀌어도 유지됩니다. 랭크 경기마다 오르내리며 '역대' 탭의 순위를 정합니다.",
   "Your gold": "보유 골드",
   "Your inventory is full.": "인벤토리가 가득 찼습니다.",
+  "Sell or equip items in Team to make room.": "팀 화면에서 아이템을 판매하거나 장착해 공간을 확보하세요.",
   "Your place depends on this season’s ranked wins; fewer losses break ties.": "순위는 이번 시즌 랭크 승리 수로 정해지며, 동점이면 패배가 적은 쪽이 앞섭니다.",
   "{{value0}} can’t learn this class’s spells.": "{{value0}}은(는) 이 직업의 주문을 배울 수 없습니다.",
   "{{value0}} can’t use this class’s gear.": "{{value0}}은(는) 이 직업의 장비를 사용할 수 없습니다.",

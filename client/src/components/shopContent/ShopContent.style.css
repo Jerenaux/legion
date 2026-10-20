@@ -296,7 +296,7 @@
 /* Reflow cards and tabs as text grows instead of widening the whole page. */
 .shop-container { width: 100%; min-width: 0; box-sizing: border-box; padding: 0 16px; }
 .shop-content { min-width: 0; }
-.shop-tabs-container { flex-wrap: wrap; box-sizing: border-box; }
+.shop-tabs-container { box-sizing: border-box; }
 .shop-items-container, .equipment-section, .spells-section, .consumables-section { box-sizing: border-box; }
 .shop-items-container, .equipment-grid, .spells-grid, .consumables-grid {
     /* auto-fill keeps empty tracks, so a section with one or two cards keeps the usual card width. */
@@ -359,6 +359,65 @@
     .shop-purse-amount { animation: none; }
 }
 
+/* Inventory space, styled like the purse but quieter until it runs out. */
+.shop-inventory {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 6px 16px;
+    border: 1px solid var(--ink-edge);
+    border-radius: 6px;
+    background: linear-gradient(oklch(22% .03 245), oklch(15% .025 250));
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+}
+.shop-inventory-label {
+    color: var(--text-muted);
+    font-size: .875rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+.shop-inventory-count {
+    font-weight: normal;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--text-strong);
+}
+.shop-inventory.is-full {
+    flex-wrap: wrap;
+    max-width: 30rem;
+    column-gap: 12px;
+    row-gap: 2px;
+    border: 2px solid oklch(64% .19 28);
+    background: radial-gradient(ellipse 70% 130% at 0% 50%, oklch(58% .2 28 / .35), transparent 70%), linear-gradient(oklch(25% .06 25), oklch(16% .035 250));
+    box-shadow: 0 0 0 3px oklch(11% .025 250 / .6), 0 0 16px oklch(60% .2 28 / .35);
+}
+.shop-inventory.is-full::before {
+    content: '!';
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: oklch(64% .19 28);
+    color: oklch(98% .01 30);
+    font: 1.1rem/1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+}
+.shop-inventory.is-full .shop-inventory-label { color: oklch(88% .08 30); }
+.shop-inventory.is-full .shop-inventory-count { color: oklch(80% .15 28); }
+.shop-inventory-action {
+    flex-basis: 100%;
+    padding-left: 38px;
+    color: var(--gold);
+    font: .8125rem/1.3 system-ui, sans-serif;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.shop-inventory-action:hover { color: oklch(92% .1 90); }
+.shop-inventory-action:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+
 
 /* A shop screen, not a long web page: tabs and gold stay put, the stock scrolls in its own pane
    with each category's banner pinned while browsing it. */
@@ -381,22 +440,25 @@
     background: linear-gradient(90deg, oklch(24% .05 55 / .92), oklch(16% .03 250 / .6) 75%) !important;
     border-left-color: var(--ember) !important;
 }
-/* Tabs and purse share one header row, leaving the height to the stock. */
-.shop-content {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto minmax(0, 1fr);
+/* Tabs and toolbar share one header row when they fit. Otherwise the toolbar moves below as a
+   whole, so a tab is never left alone on a second line. */
+.shop-header {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    column-gap: 20px;
+    justify-content: center;
+    gap: 12px 28px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 16px;
 }
-.shop-content > .shop-tabs-container { grid-column: 1; grid-row: 1; justify-self: end; width: auto; margin: 0; flex-wrap: wrap; justify-content: flex-end; }
-.shop-content > .shop-toolbar { grid-column: 2; grid-row: 1; margin: 0; }
-.shop-content > .shop-items-container { grid-column: 1 / -1; grid-row: 2; align-self: stretch; }
-@media (max-width: 1400px) {
-    .shop-content { grid-template-columns: 1fr; grid-template-rows: auto auto minmax(0, 1fr); }
-    .shop-content > .shop-tabs-container { justify-self: center; justify-content: center; }
-    .shop-content > .shop-toolbar { grid-column: 1; grid-row: 2; }
-    .shop-content > .shop-items-container { grid-row: 3; }
+.shop-header > .shop-tabs-container { width: auto; margin: 0; padding: 0; flex-wrap: nowrap; }
+.shop-header > .shop-toolbar { margin: 0; }
+.shop-tab-item { white-space: nowrap; }
+.shop-content > .shop-items-container { align-self: stretch; }
+/* Too narrow for four tabs in a row: a 2 × 2 block keeps them aligned. */
+@media (max-width: 1000px) {
+    .shop-header > .shop-tabs-container { display: grid; grid-template-columns: repeat(2, auto); }
 }
 
 /* Loading placeholders take the stock grid's own tracks, so they sit where the cards will. */
