@@ -102,6 +102,13 @@ export class SettingsModal extends Component<SettingsModalProps, {settings: Game
             <small id="colorblind-help">{t("Blue and orange replace green and red on the battlefield.")}</small>
           </div>
 
+          <div className="setting_check">
+            <input type="checkbox" id="screen-effects-toggle" aria-describedby="screen-effects-help" checked={settings.screenEffects}
+              onChange={() => this.update({screenEffects: !settings.screenEffects})} />
+            <label htmlFor="screen-effects-toggle">{t("Screen shake & flashes")}</label>
+            <small id="screen-effects-help">{t("Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.")}</small>
+          </div>
+
           {this.renderVolume('music')}
           {this.renderVolume('sfx')}
         </div>

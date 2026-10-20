@@ -466,3 +466,36 @@
   .queue-container .queue-detail-body { top: 3vw; }
   .queue-container .queue-detail-body > div { padding-bottom: 0; margin-bottom: .3vw; }
 }
+
+/* "Match found!" flares for a beat before the arena loads. */
+.match-found {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    background: radial-gradient(circle at center, oklch(62% 0.17 55 / 0.45), oklch(12% 0.02 40 / 0.75) 60%);
+    animation: match-found-bg 1s ease-out forwards;
+}
+.match-found span {
+    font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    text-transform: uppercase;
+    color: oklch(97% 0.03 85);
+    text-shadow: 0 0 24px oklch(72% 0.18 55), 0 0 48px oklch(62% 0.2 40 / 0.7), 0 3px 2px oklch(25% 0.06 40);
+    animation: match-found-text 1s cubic-bezier(.2, .9, .3, 1.2) forwards;
+}
+@keyframes match-found-bg {
+    from { opacity: 0; }
+    20% { opacity: 1; }
+    to { opacity: 1; }
+}
+@keyframes match-found-text {
+    from { opacity: 0; transform: scale(1.8); letter-spacing: 0.3em; }
+    30% { opacity: 1; transform: scale(1); letter-spacing: 0.04em; }
+    to { opacity: 1; transform: scale(1.06); letter-spacing: 0.06em; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .match-found span { animation: none; }
+}

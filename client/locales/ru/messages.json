@@ -1340,5 +1340,16 @@
   "Claim {{value0}} gold": "Забрать {{value0}} золота",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Первая победа за день в режиме «Обычный» или «Рейтинговый» приносит {{value0}} бонусного золота. Заберите его на экране «Играть». Бонус обновляется в полночь по UTC.",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Каждый новобранец дороже предыдущего: {{value0}}, {{value1}}, затем {{value2}} золота.",
-  "No bonus to claim": "Нет бонуса для получения"
+  "No bonus to claim": "Нет бонуса для получения",
+  "Screen shake & flashes": "Тряска и вспышки",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "Удары трясут камеру, подсвечивают цель и на миг замораживают действие. Системная настройка уменьшения движения тоже их отключает.",
+  "Your turn": "Ваш ход",
+  "Match found!": "Матч найден!",
+  "Promoted to the {{league}} league!": "Повышение в лигу «{{league}}»!",
+  "Moved down to the {{league}} league": "Понижение в лигу «{{league}}»",
+  "A new season has begun": "Начался новый сезон",
+  "Last week’s ranked results moved you up a league.": "По итогам рейтинговых матчей прошлой недели вы поднялись на лигу выше.",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "По итогам рейтинговых матчей прошлой недели вы опустились на лигу ниже. Побеждайте в рейтинговых матчах на этой неделе, чтобы вернуться.",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "Сезон прошлой недели завершён. Рейтинговые победы и поражения считаются заново с нуля.",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Тряска и вспышки</0> отключает тряску камеры, вспышки при ударах и стоп-кадры. Щёлкните или нажмите любую клавишу, чтобы пропустить замедленный повтор нокаута."
 }

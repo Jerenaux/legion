@@ -126,6 +126,8 @@ class PlayerBar extends Component<PlayerBarProps> {
     return (
       <>
       <section className="player_bar_container" aria-label={t("Combat commands")} data-active={canAct} data-pending={Boolean(pending)} data-dense={spells.length + items.length > 6} data-has-spells={spells.length > 0}>
+        {/* Replays on every turn of yours: keyed by the turn. */}
+        {isPlayerTurn && <div className="your_turn_banner" key={turnNumber} aria-hidden="true"><span>{t("Your turn")}</span></div>}
         <div className="player_bar">
           {isPlayerTurn ? <div className="player_bar_body">
             <div className="player_bar_character">
@@ -135,7 +137,10 @@ class PlayerBar extends Component<PlayerBarProps> {
                 </div>
                 {player && <>
                   <div className="player_bar_stat">
-                    <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />{t('HP')}</span><meter min={0} max={player.maxHp || 1} value={restoredHP ?? player.hp} aria-label={t("Health")} />
+                    <span className="player_bar_stat_icon"><img src={hpIcon} alt="" />{t('HP')}</span><span className="player_bar_hp_meter" key={`${player.team}-${player.number}`}>
+                      <span className="player_bar_hp_trail" style={{width: `${Math.max(0, Math.min(1, player.hp / (player.maxHp || 1))) * 100}%`}} />
+                      <meter min={0} max={player.maxHp || 1} value={restoredHP ?? player.hp} aria-label={t("Health")} />
+                    </span>
                     <span className={restoredHP != null ? 'player_bar_restore_preview' : ''}>{formatNumber(Math.round(restoredHP ?? player.hp))}<span className="player_bar_max">/{formatNumber(Math.round(player.maxHp))}</span></span>
                   </div>
                   {spells.length > 0 && <div className="player_bar_stat player_bar_mana">

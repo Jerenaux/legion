@@ -13,14 +13,24 @@ interface CircularTimerProps {
 
 interface CircularTimerState {
   progress: number;
+  urgency: '' | 'warning' | 'danger';
+}
+
+/** Ember when time runs short, red and pulsing at the end; scaled down for short turns. */
+function urgency(remaining: number, duration: number): CircularTimerState['urgency'] {
+  if (remaining <= 0) return '';
+  if (remaining <= Math.min(5, duration * 0.25)) return 'danger';
+  if (remaining <= Math.min(10, duration * 0.45)) return 'warning';
+  return '';
 }
 
 export class CircularTimer extends Component<CircularTimerProps, CircularTimerState> {
   private animationFrame: number;
   private startTime: number;
 
-  state = {
-    progress: 100
+  state: CircularTimerState = {
+    progress: 100,
+    urgency: '',
   };
 
   componentDidMount() {
@@ -57,7 +67,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
     const remainingTime = Math.max(0, this.props.timeLeft - elapsed / 1000);
     const progress = this.props.turnDuration > 0 ? (remainingTime / this.props.turnDuration) * 100 : 0;
 
-    this.setState({ progress });
+    this.setState({ progress, urgency: urgency(remainingTime, this.props.turnDuration) });
 
     if (progress > 0) {
       this.animationFrame = requestAnimationFrame(this.animate);
@@ -72,7 +82,7 @@ export class CircularTimer extends Component<CircularTimerProps, CircularTimerSt
     const offset = circumference - (this.state.progress / 100) * circumference;
 
     return (
-      <div class="circular_timer">
+      <div class="circular_timer" data-urgency={this.state.urgency || undefined}>
         <svg width={size} height={size}>
           <title>{t("Turn time remaining")}</title>
           <circle

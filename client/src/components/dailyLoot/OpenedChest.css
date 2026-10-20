@@ -66,6 +66,12 @@
   transform-origin: 50% 85%;
   animation: chest-rattle 700ms ease-in-out infinite;
 }
+/* Epic or legendary loot: a harder, faster shake and a glow before the lid gives. */
+.chest-reveal.is-intense .chest-reveal-chest img {
+  animation: chest-rattle-intense 350ms ease-in-out infinite;
+  filter: drop-shadow(0 0 18px color-mix(in oklch, var(--chest-tint) 80%, transparent)) drop-shadow(0 14px 8px oklch(4% .02 255 / .7));
+}
+.chest-reveal.is-intense .chest-reveal-rays { opacity: .5; }
 .chest-reveal.is-open .chest-reveal-chest img {
   animation: chest-pop 520ms cubic-bezier(.2, .9, .3, 1.4) both;
   filter: drop-shadow(0 0 26px color-mix(in oklch, var(--chest-tint) 70%, transparent)) drop-shadow(0 14px 8px oklch(4% .02 255 / .7));
@@ -204,6 +210,12 @@
   40% { transform: rotate(4deg) scale(.98, 1.03); }
   60% { transform: rotate(-3deg); }
   80% { transform: rotate(2deg); }
+}
+@keyframes chest-rattle-intense {
+  0%, 100% { transform: rotate(0) scale(1.04); }
+  25% { transform: rotate(-8deg) scale(1.08, .95) translateX(-4px); }
+  50% { transform: rotate(7deg) scale(.96, 1.08) translateY(-4px); }
+  75% { transform: rotate(-5deg) translateX(3px); }
 }
 @keyframes chest-pop {
   0% { transform: scale(.92, 1.06); }

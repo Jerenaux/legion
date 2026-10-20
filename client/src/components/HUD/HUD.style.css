@@ -890,6 +890,21 @@
   transform-origin: center;
 }
 
+.circular_timer[data-urgency="warning"] .circular_timer_progress { stroke: #e58a2f; }
+.circular_timer[data-urgency="warning"] .circular_timer_bg { stroke: rgba(229, 138, 47, 0.25); }
+.circular_timer[data-urgency="danger"] .circular_timer_progress { stroke: #e2412f; }
+.circular_timer[data-urgency="danger"] .circular_timer_bg { stroke: rgba(226, 65, 47, 0.3); }
+.circular_timer[data-urgency="danger"] { animation: timer-pulse 0.5s ease-in-out infinite alternate; }
+
+@keyframes timer-pulse {
+  from { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+  to { transform: scale(1.14); filter: drop-shadow(0 0 6px rgba(226, 65, 47, 0.8)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circular_timer[data-urgency="danger"] { animation: none; }
+}
+
 .circular_timer_icon {
   position: absolute;
   width: 60%;

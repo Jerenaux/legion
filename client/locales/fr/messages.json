@@ -1323,5 +1323,16 @@
   "Claim {{value0}} gold": "Récupérer {{value0}} pièces d’or",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Votre première victoire en Amical ou en Classé de la journée rapporte {{value0}} pièces d’or en bonus. Récupérez-les sur l’écran Jouer. Le bonus se réinitialise à minuit UTC.",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Chaque recrue coûte plus cher que la précédente : {{value0}}, {{value1}}, puis {{value2}} pièces d’or.",
-  "No bonus to claim": "Aucun bonus à récupérer"
+  "No bonus to claim": "Aucun bonus à récupérer",
+  "Screen shake & flashes": "Tremblements et flashs",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "Les coups font trembler la caméra, font clignoter la cible et figent brièvement l’action. Le réglage de réduction des animations de votre système les désactive aussi.",
+  "Your turn": "À vous de jouer",
+  "Match found!": "Partie trouvée !",
+  "Promoted to the {{league}} league!": "Promotion en ligue {{league}} !",
+  "Moved down to the {{league}} league": "Relégation en ligue {{league}}",
+  "A new season has begun": "Une nouvelle saison commence",
+  "Last week’s ranked results moved you up a league.": "Vos résultats classés de la semaine dernière vous font monter d’une ligue.",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Vos résultats classés de la semaine dernière vous font descendre d’une ligue. Gagnez des matchs classés cette semaine pour remonter.",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "La saison de la semaine dernière est terminée. Les victoires et défaites classées repartent de zéro.",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremblements et flashs</0> désactive les tremblements de caméra, les flashs d’impact et les arrêts sur image. Cliquez ou appuyez sur une touche pour passer un ralenti de K.-O."
 }

@@ -1,11 +1,6 @@
-export function currentSeasonId(now = new Date()): string {
-  const boundary = new Date(now);
-  const daysSinceFriday = (boundary.getUTCDay() + 2) % 7;
-  boundary.setUTCDate(boundary.getUTCDate() - daysSinceFriday);
-  boundary.setUTCHours(19, 0, 0, 0);
-  if (boundary > now) boundary.setUTCDate(boundary.getUTCDate() - 7);
-  return boundary.toISOString().slice(0, 10);
-}
+import {currentSeasonId} from "./season";
+
+export {currentSeasonId};
 
 /** Written only by a recorded ranked result, never by account creation or synthetic stats. */
 export function hasRankedParticipation(stats: {seasonId?: string; hasRankedResult?: boolean} | undefined, seasonId = currentSeasonId()): boolean {

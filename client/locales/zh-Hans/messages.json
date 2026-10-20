@@ -1306,5 +1306,16 @@
   "Claim {{value0}} gold": "领取 {{value0}} 金币",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "每天在休闲或排位模式中首次获胜可获得 {{value0}} 奖励金币。请在“对战”界面领取。奖励于 UTC 午夜重置。",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "每位新成员都比上一位更贵：{{value0}}、{{value1}}，然后是 {{value2}} 金币。",
-  "No bonus to claim": "没有可领取的奖励"
+  "No bonus to claim": "没有可领取的奖励",
+  "Screen shake & flashes": "屏幕震动与闪光",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "命中时镜头会震动、目标会闪光，动作也会短暂停顿。系统的“减弱动态效果”设置也会关闭这些效果。",
+  "Your turn": "你的回合",
+  "Match found!": "已找到对局！",
+  "Promoted to the {{league}} league!": "晋级至{{league}}联赛！",
+  "Moved down to the {{league}} league": "降级至{{league}}联赛",
+  "A new season has begun": "新赛季已开始",
+  "Last week’s ranked results moved you up a league.": "根据上周的排位赛成绩，你升了一级联赛。",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "根据上周的排位赛成绩，你降了一级联赛。本周赢下排位赛即可重新晋级。",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "上周的赛季已结束。排位赛胜负从零开始重新计算。",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>屏幕震动与闪光</0>可关闭镜头震动、命中闪光和受击停顿。点击或按任意键可跳过击倒慢镜头。"
 }

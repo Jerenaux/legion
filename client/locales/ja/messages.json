@@ -1306,5 +1306,16 @@
   "Claim {{value0}} gold": "{{value0}}ゴールドを受け取る",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "カジュアルかランクで毎日最初に勝利すると、{{value0}}ゴールドのボーナスを獲得できます。プレイ画面で受け取ってください。ボーナスはUTCの午前0時にリセットされます。",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "仲間は雇うたびに高くなります：{{value0}}、{{value1}}、{{value2}}ゴールド。",
-  "No bonus to claim": "受け取れるボーナスはありません"
+  "No bonus to claim": "受け取れるボーナスはありません",
+  "Screen shake & flashes": "画面の揺れとフラッシュ",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "攻撃が当たるとカメラが揺れ、対象が光り、一瞬動きが止まります。システムの「視差効果を減らす」設定でもオフになります。",
+  "Your turn": "あなたのターン",
+  "Match found!": "マッチが見つかりました！",
+  "Promoted to the {{league}} league!": "{{league}}リーグに昇格！",
+  "Moved down to the {{league}} league": "{{league}}リーグに降格",
+  "A new season has begun": "新しいシーズンが始まりました",
+  "Last week’s ranked results moved you up a league.": "先週のランク戦の結果でリーグが1つ上がりました。",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "先週のランク戦の結果でリーグが1つ下がりました。今週ランク戦で勝って再び昇格しましょう。",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "先週のシーズンが終了しました。ランク戦の勝敗はゼロからやり直しです。",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>画面の揺れとフラッシュ</0>をオフにすると、カメラの揺れ、ヒット時のフラッシュ、一瞬の停止がなくなります。撃破時のスローモーションはクリックまたは任意のキーでスキップできます。"
 }

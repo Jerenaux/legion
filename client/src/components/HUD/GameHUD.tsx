@@ -11,6 +11,8 @@ import { CharacterUpdate, GameOutcomeReward, OutcomeData, PlayerProps, TeamMembe
 import Timeline from './Timeline';
 import { PlayMode, ChestColor } from '@legion/shared/enums';
 import { recordCompletedGame } from '../utils';
+import { recordRankedSeason } from '../popups/leagueResult/LeagueResult';
+import { firebaseAuth } from '../../services/firebaseService';
 import TutorialDialogue from './TutorialDialogue';
 import { combatTipsVisible, saveCombatTips, type TutorialMessage } from '../../game/TutorialManager';
 import PlayerBar from './PlayerBar';
@@ -34,6 +36,7 @@ interface GameHUDState {
   isWinner: boolean;
   xpReward: number;
   goldReward: number;
+  eloChange: number;
   characters: CharacterUpdate[];
   isSpectator: boolean;
   tower: {floor: number; tier: number; name: string} | null;
@@ -74,6 +77,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     isWinner: false,
     xpReward: 0,
     goldReward: 0,
+    eloChange: 0,
     characters: [],
     isSpectator: false,
     mode: null,
@@ -228,12 +232,15 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   endGame = (data: OutcomeData) => {
     recordCompletedGame();
-    const { isWinner, xp, gold, chests, characters, key } = data;
+    const { isWinner, xp, gold, chests, characters, key, elo } = data;
+    const uid = firebaseAuth.currentUser?.uid;
+    if (uid && (this.state.mode === PlayMode.RANKED || this.state.mode === PlayMode.RANKED_VS_AI)) recordRankedSeason(uid);
     this.setState({
       gameOver: true,
       isWinner,
       xpReward: xp,
       goldReward: gold,
+      eloChange: elo || 0,
       characters: characters,
       chests: chests,
       key: key,
@@ -367,6 +374,7 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           mode={mode}
           closeGame={this.closeGame}
           eventEmitter={events}
+          eloChange={this.state.eloChange}
         />}
         {isHUDVisible && !this.state.gameOver && this.state.tipsAvailable && (
           <TutorialDialogue

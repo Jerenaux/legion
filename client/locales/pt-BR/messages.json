@@ -1323,5 +1323,16 @@
   "Claim {{value0}} gold": "Resgatar {{value0}} de ouro",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Sua primeira vitória do dia no Casual ou no Ranqueado rende {{value0}} de ouro bônus. Resgate na tela Jogar. O bônus é renovado à meia-noite UTC.",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Cada recruta custa mais que o anterior: {{value0}}, {{value1}} e depois {{value2}} de ouro.",
-  "No bonus to claim": "Nenhum bônus para resgatar"
+  "No bonus to claim": "Nenhum bônus para resgatar",
+  "Screen shake & flashes": "Tremor e flashes",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "Os golpes tremem a câmera, fazem o alvo piscar e congelam a ação por um instante. A configuração de movimento reduzido do sistema também os desativa.",
+  "Your turn": "Sua vez",
+  "Match found!": "Partida encontrada!",
+  "Promoted to the {{league}} league!": "Promovido à liga {{league}}!",
+  "Moved down to the {{league}} league": "Rebaixado para a liga {{league}}",
+  "A new season has begun": "Uma nova temporada começou",
+  "Last week’s ranked results moved you up a league.": "Seus resultados ranqueados da semana passada subiram você uma liga.",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Seus resultados ranqueados da semana passada desceram você uma liga. Vença partidas ranqueadas esta semana para voltar a subir.",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "A temporada da semana passada terminou. Vitórias e derrotas ranqueadas recomeçam do zero.",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremor e flashes</0> desativa o tremor da câmera, os flashes de golpe e as pausas de impacto. Clique ou pressione qualquer tecla para pular a câmera lenta de um nocaute."
 }
