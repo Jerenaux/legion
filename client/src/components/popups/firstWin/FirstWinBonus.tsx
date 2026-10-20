@@ -1,5 +1,5 @@
 import {h} from 'preact';
-import {useContext, useEffect, useState} from 'preact/hooks';
+import {useContext, useEffect, useRef, useState} from 'preact/hooks';
 import Modal from 'react-modal';
 import {PlayerContext} from '../../../contexts/PlayerContext';
 import {apiMutation} from '../../../services/apiService';
@@ -27,6 +27,9 @@ function resetTime() {
 export default function FirstWinBonus({gold, onClose}: {gold: number; onClose: () => void}) {
   const {optimisticMutation} = useContext(PlayerContext);
   const [shown, setShown] = useState(reducedMotion() ? gold : 0);
+  const [claimed, setClaimed] = useState(false);
+  const mounted = useRef(true);
+  useEffect(() => () => { mounted.current = false; }, []);
 
   // Count the bonus up while the coins land.
   useEffect(() => {
@@ -42,15 +45,18 @@ export default function FirstWinBonus({gold, onClose}: {gold: number; onClose: (
     return () => cancelAnimationFrame(frame);
   }, [gold]);
 
-  // Credit the gold and close at once; the server confirms in the background and a failure rolls back.
+  // Credit the gold at once; the server confirms in the background and a failure rolls back.
   const claim = () => {
-    if (!optimisticMutation(predictFirstWinClaim, () => apiMutation('claimFirstWinBonus', {}))) return;
+    if (claimed || !optimisticMutation(predictFirstWinClaim, () => apiMutation('claimFirstWinBonus', {}))) return;
     playSoundEffect(rewardSound, sfxLevel('purchase'));
-    onClose();
+    setShown(gold);
+    setClaimed(true);
+    // Let the coins fly toward the gold counter; any click or key skips it.
+    setTimeout(() => mounted.current && onClose(), reducedMotion() ? 0 : 750);
   };
 
-  return <Modal isOpen onRequestClose={claim} contentLabel={t('First win of the day')}
-    className="first-win" overlayClassName="first-win-overlay" shouldCloseOnOverlayClick={false}>
+  return <Modal isOpen onRequestClose={claimed ? onClose : claim} contentLabel={t('First win of the day')}
+    className={`first-win${claimed ? ' first-win--claimed' : ''}`} overlayClassName="first-win-overlay" shouldCloseOnOverlayClick={claimed}>
     <div className="first-win-emblem" aria-hidden="true">
       <img className="first-win-rays" src={shine} alt="" />
       <img className="first-win-pile" src={goldIcon} alt="" />
@@ -61,8 +67,8 @@ export default function FirstWinBonus({gold, onClose}: {gold: number; onClose: (
     <p className="first-win-amount" aria-live="polite"><img src={goldIcon} alt="" />+{new Intl.NumberFormat(language).format(shown)}</p>
     <p className="first-win-rule">{t('Your first Casual or Ranked win each day earns this bonus. It resets at {{value0}}.', {value0: resetTime()})}</p>
     <button type="button" className="game-btn game-btn--gold first-win-claim" ref={focusOnMount} data-desktop-cancel
-      onClick={claim}>
-      {t('Claim {{value0}} gold', {value0: gold})}
+      onClick={claimed ? onClose : claim}>
+      {claimed ? t('Continue') : t('Claim {{value0}} gold', {value0: gold})}
     </button>
   </Modal>;
 }

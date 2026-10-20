@@ -96,6 +96,9 @@ export const DARKENING_INTENSITY = 0.9;
 const TINT_COLOR = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
 const AIR_ENTRANCE_DELAY = 750;
 const AIR_ENTRANCE_DELAY_VARIANCE = 200;
+/** After the last blow (and its kill cam): pause, then the jingle and celebration, then the result screen. */
+const RESULT_DELAY_MS = 700;
+const RESULT_SCREEN_DELAY_MS = 1800;
 const spellSheetFiles = require.context('@assets/vfx', false, /^\.\/(fire_[123]_explosion|terrain_fire_1|charged_(fire|ice|thunder)_[12]|(ice|thunder|heal)_[123])\.png$/);
 const SPELL_SHEETS = [
     ...fireLevels.map(level => `fire_${level}_explosion`),
@@ -199,6 +202,8 @@ export class Arena extends Phaser.Scene
     /** Where the latest spell landed, so the characters it hits recoil away from it. */
     private lastImpact: {x: number; y: number; at: number} | null = null;
     private killCamCheck: Phaser.Time.TimerEvent | null = null;
+    /** Killing spells still travelling to their target. */
+    private killsInFlight = 0;
     private endKillCam: (() => void) | null = null;
     private afterKillCam: (() => void)[] = [];
     private movePreview: Phaser.GameObjects.GameObject[] = [];
@@ -1262,9 +1267,13 @@ export class Arena extends Phaser.Scene
             this.animateProjectile(fromX, fromY, toX, toY, spell.projectile);
         }
 
+        if (isKill) this.killsInFlight++;
         this.time.delayedCall(spell.projectile ? PROJECTILE_DURATION * 1000 : 0, () => {
             this.lastImpact = {x: pixelXInitial, y: pixelYInitial, at: performance.now()};
-            if (isKill) this.requestKillCam(pixelXInitial, pixelYInitial);
+            if (isKill) {
+                this.killsInFlight--;
+                this.requestKillCam(pixelXInitial, pixelYInitial);
+            }
 
             const scale = config && 'scale' in config ? config.scale : LOCAL_ANIMATION_SCALE;
             let yScale = scale;
@@ -1433,8 +1442,8 @@ export class Arena extends Phaser.Scene
         music.fadeOut();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
         const losingTeam = this.teamsMap.get(winningTeam?.id === 1 ? 2 : 1);
-        // Let a final kill cam finish before the result plays at normal speed.
-        this.whenKillCamEnds(() => {
+        // Let the final kill play out (kill cam included) before the result; the music fades meanwhile.
+        this.whenKillCamEnds(() => this.time.delayedCall(RESULT_DELAY_MS, () => {
             if (this.disposed) return;
             const jingle = data.isWinner ? 'jingle_win' : 'jingle_lose';
             this.jingle = this.playSound(jingle);
@@ -1445,20 +1454,19 @@ export class Arena extends Phaser.Scene
                     if (!this.disposed) music.playEnd();
                 });
             });
-            this.time.delayedCall(200, () => {
-                winningTeam?.members.forEach((player) => {
-                    player.victoryDance();
-                    if (player.isAlive()) this.embers(player.x, player.y - 30, 20);
-                });
-                losingTeam?.members.forEach((player) => {
-                    if (player.isAlive()) player.playAnim('hurt');
-                });
+            winningTeam?.members.forEach((player) => {
+                player.victoryDance();
+                if (player.isAlive()) this.embers(player.x, player.y - 30, 20);
+            });
+            losingTeam?.members.forEach((player) => {
+                if (player.isAlive()) player.playAnim('hurt');
             });
             rumble(data.isWinner ? 0.4 : 0.6, data.isWinner ? 0.6 : 0.2, data.isWinner ? 250 : 350);
-        });
-        if (this.overviewReady) {
-            events.emit('gameEnd', data);
-        }
+            // The champions celebrate on the field before the result screen covers it.
+            this.time.delayedCall(RESULT_SCREEN_DELAY_MS, () => {
+                if (!this.disposed && this.overviewReady) events.emit('gameEnd', data);
+            });
+        }));
     }
 
     /** End-screen level-ups cut the result jingle short for their own fanfare. */
@@ -2285,7 +2293,10 @@ export class Arena extends Phaser.Scene
      * the final kill, a one-shot or several knockouts at once, so routine kills keep the pace.
      */
     requestKillCam(x: number, y: number) {
-        if (this.killCamActive || this.killCamCheck) return;
+        if (this.killCamActive || this.killCamCheck) {
+            this.flushAfterKillCam();
+            return;
+        }
         this.killCamCheck = this.time.delayedCall(120, () => {
             this.killCamCheck = null;
             const now = Date.now();
@@ -2294,14 +2305,23 @@ export class Arena extends Phaser.Scene
             const finalKill = [...this.teamsMap.values()].some(team => team.members.length && team.members.every(player => !player.isAlive()));
             const oneShot = recent.some(player => player.hpBeforeHit >= player.maxHP);
             if (finalKill || oneShot || recent.length >= 2) this.killCam(x, y);
-            else this.afterKillCam.splice(0).forEach(callback => { callback(); });
+            else this.flushAfterKillCam();
         });
     }
 
-    /** Run now, or once the kill cam has returned to normal speed. */
+    private killCamBusy() {
+        return this.killCamActive || this.killCamCheck !== null || this.killsInFlight > 0;
+    }
+
+    /** Run now, or once pending kills have landed and the kill cam has returned to normal speed. */
     private whenKillCamEnds(callback: () => void) {
-        if (this.killCamActive || this.killCamCheck) this.afterKillCam.push(callback);
+        if (this.killCamBusy()) this.afterKillCam.push(callback);
         else callback();
+    }
+
+    private flushAfterKillCam() {
+        if (this.killCamBusy()) return;
+        this.afterKillCam.splice(0).forEach(callback => { callback(); });
     }
 
     killCam(x, y) {
@@ -2362,7 +2382,7 @@ export class Arena extends Phaser.Scene
                 if (sprite.anims) sprite.anims.timeScale = originalTimeScale;
             });
             this.killCamActive = false;
-            this.afterKillCam.splice(0).forEach(callback => { callback(); });
+            this.flushAfterKillCam();
             this.processGENQueue(); // Trigger processing of GEN queue after kill cam
         };
     }
