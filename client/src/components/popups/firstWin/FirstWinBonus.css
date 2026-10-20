@@ -108,14 +108,6 @@
   max-width: 100%;
 }
 
-/* Claimed: the pile and coins fly up toward the gold counter. */
-.first-win--claimed .first-win-pile { animation: first-win-collect 650ms cubic-bezier(.5, 0, .7, .4) forwards; }
-.first-win--claimed .first-win-coin {
-  opacity: 1;
-  animation: first-win-collect 600ms cubic-bezier(.5, 0, .7, .4) forwards;
-  animation-delay: calc(var(--coin-order) * 15ms);
-}
-
 @keyframes first-win-fade { from { opacity: 0; } }
 @keyframes first-win-arrive {
   from { opacity: 0; transform: translateY(18px) scale(.9); }
@@ -131,10 +123,6 @@
   60% { opacity: 1; transform: rotate(var(--coin-angle)) translateY(-78px) rotate(calc(-1 * var(--coin-angle))) scale(1); }
   100% { opacity: 0; transform: rotate(var(--coin-angle)) translateY(-52px) rotate(calc(-1 * var(--coin-angle))) translateY(30px) scale(.8); }
 }
-@keyframes first-win-collect {
-  to { opacity: 0; transform: translate(160px, -260px) scale(.35); }
-}
-
 @media (max-height: 650px), (max-width: 600px) {
   .first-win { padding: 12px 20px 20px; }
   .first-win-emblem { width: 140px; height: 100px; }
@@ -145,7 +133,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .first-win-overlay, .first-win, .first-win-rays, .first-win-pile,
-  .first-win--claimed .first-win-pile { animation: none; }
-  .first-win-coin, .first-win--claimed .first-win-coin { display: none; }
+  .first-win-overlay, .first-win, .first-win-rays, .first-win-pile { animation: none; }
+  .first-win-coin { display: none; }
 }

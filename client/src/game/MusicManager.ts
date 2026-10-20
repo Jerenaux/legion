@@ -121,6 +121,23 @@ export class MusicManager {
         this.prefetch();
     }
 
+    /** Fade the combat track out quickly, in real time so kill-cam slow motion cannot stretch it. */
+    fadeOut(ms = 350) {
+        this.gameOver = true;
+        this.stopEntryFade();
+        const sound = this.currentSound;
+        if (!sound) return;
+        const start = performance.now();
+        const from = this.volume;
+        const timer = setInterval(() => {
+            const progress = Math.min(1, (performance.now() - start) / ms);
+            if (this.currentSound === sound && this.scene) sound.setVolume(from * (1 - progress));
+            if (progress < 1) return;
+            clearInterval(timer);
+            if (this.currentSound === sound) this.releaseCurrent();
+        }, 16);
+    }
+
     playEnd() {
         this.gameOver = true;
         this.releaseCurrent();

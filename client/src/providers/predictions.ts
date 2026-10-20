@@ -66,3 +66,10 @@ export function predictCharacterPurchase(view: PlayerView, recruit: APICharacter
     characters: [...view.characters, {...recruit, onSale: false, price: 0}],
   };
 }
+
+/** Claiming the first-win bonus moves the pending gold into the purse. */
+export function predictFirstWinClaim(view: PlayerView): PlayerView | Rejection {
+  const bonus = view.player.firstWinBonusGold || 0;
+  if (bonus <= 0) return {status: 409, error: 'No first-win bonus to claim'};
+  return {...view, player: {...view.player, gold: view.player.gold + bonus, firstWinBonusGold: 0}};
+}

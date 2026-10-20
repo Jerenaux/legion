@@ -1429,7 +1429,8 @@ export class Arena extends Phaser.Scene
         this.clearMovePreview();
         this.gameEnded = true;
         const music = this.musicManager;
-        music.gameOver = true;
+        // Clear the stage for the result jingle.
+        music.fadeOut();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
         const losingTeam = this.teamsMap.get(winningTeam?.id === 1 ? 2 : 1);
         // Let a final kill cam finish before the result plays at normal speed.
