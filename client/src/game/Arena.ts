@@ -208,7 +208,6 @@ export class Arena extends Phaser.Scene
     private afterKillCam: (() => void)[] = [];
     private movePreview: Phaser.GameObjects.GameObject[] = [];
     private damagePreviewTarget: Player | null = null;
-    private jingle: Phaser.Sound.BaseSound | null = null;
 
     constructor() {
         super({ key: 'Arena' });
@@ -1446,7 +1445,7 @@ export class Arena extends Phaser.Scene
             if (this.disposed) return;
             const jingle = data.isWinner ? 'jingle_win' : 'jingle_lose';
             // The jingle closes the match; the combat soundtrack does not resume after it.
-            this.jingle = this.playSound(jingle);
+            this.playSound(jingle);
             winningTeam?.members.forEach((player) => {
                 player.victoryDance();
                 if (player.isAlive()) this.embers(player.x, player.y - 30, 20);
@@ -1462,15 +1461,9 @@ export class Arena extends Phaser.Scene
         }));
     }
 
-    /** End-screen level-ups play their fanfare once the result jingle has finished. */
+    /** End-screen level-ups play their fanfare over the result jingle. */
     playLevelUp = () => {
-        if (this.disposed) return;
-        const jingle = this.jingle;
-        if (jingle?.isPlaying) {
-            jingle.once(Phaser.Sound.Events.COMPLETE, () => { if (!this.disposed) this.playSound('level_up'); });
-        } else {
-            this.playSound('level_up');
-        }
+        if (!this.disposed) this.playSound('level_up');
     };
 
     processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
