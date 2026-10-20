@@ -1437,23 +1437,16 @@ export class Arena extends Phaser.Scene
         this.clearCharacterHover();
         this.clearMovePreview();
         this.gameEnded = true;
-        const music = this.musicManager;
         // Clear the stage for the result jingle.
-        music.fadeOut();
+        this.musicManager.fadeOut();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
         const losingTeam = this.teamsMap.get(winningTeam?.id === 1 ? 2 : 1);
         // Let the final kill play out (kill cam included) before the result; the music fades meanwhile.
         this.whenKillCamEnds(() => this.time.delayedCall(RESULT_DELAY_MS, () => {
             if (this.disposed) return;
             const jingle = data.isWinner ? 'jingle_win' : 'jingle_lose';
+            // The jingle closes the match; the combat soundtrack does not resume after it.
             this.jingle = this.playSound(jingle);
-            // The end music follows the jingle instead of playing over it.
-            const delay = Math.max(0, ((this.jingle?.duration ?? 0) - 1) * 1000);
-            this.time.delayedCall(delay, () => {
-                void setRouteMusic('/game').then(() => {
-                    if (!this.disposed) music.playEnd();
-                });
-            });
             winningTeam?.members.forEach((player) => {
                 player.victoryDance();
                 if (player.isAlive()) this.embers(player.x, player.y - 30, 20);

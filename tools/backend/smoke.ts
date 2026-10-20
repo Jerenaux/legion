@@ -322,9 +322,19 @@ try {
   assert.equal((await shopperRef.get()).data().inventory.consumables.length, capacity);
   await shopperRef.update({purchasedInventorySlots: 1000, 'inventory.consumables': Array(6).fill(0)});
   await shopperRef.update({gold: 100000, 'dailyloot.bronze': {hasKey: true, time: 0}});
+  // Peeking rolls the content once, claims nothing, and the claim then pays exactly that content.
+  const peeks = await Promise.all([http('peekChest', {chestType: ChestColor.BRONZE}, shopper.token), http('peekChest', {chestType: ChestColor.BRONZE}, shopper.token)]);
+  assert.deepEqual(peeks[0].content, peeks[1].content);
+  assert.equal((await shopperRef.get()).get('dailyloot.bronze.hasKey'), true);
+  assert.equal((await shopperRef.get()).get('gold'), 100000);
   const claim = {chestType: ChestColor.BRONZE, requestId: crypto.randomUUID()};
   const chestResults = await Promise.all([http('claimChest', claim, shopper.token), http('claimChest', claim, shopper.token)]);
   assert.deepEqual(chestResults[0].content, chestResults[1].content);
+  assert.deepEqual(chestResults[0].content, peeks[0].content);
+  assert.equal((await shopperRef.get()).get('dailyloot.bronze.content'), undefined);
+  const lockedPeek = await fetch(`${api}/peekChest`, {method: 'POST',
+    headers: {'Content-Type': 'application/json', Authorization: `Bearer ${shopper.token}`}, body: JSON.stringify({chestType: ChestColor.BRONZE})});
+  assert.equal(lockedPeek.status, 409, 'A locked chest cannot be peeked');
   const afterChest = (await shopperRef.get()).data();
   const expectedInventory = {consumables: [...shopState.inventory.consumables], spells: [], equipment: []};
   let expectedGold = 100000;

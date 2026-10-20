@@ -138,20 +138,6 @@ export class MusicManager {
         }, 16);
     }
 
-    playEnd() {
-        this.gameOver = true;
-        this.releaseCurrent();
-        this.requestTrack('bgm_end');
-        this.playLoadedEnd();
-        this.trimCache();
-    }
-
-    private playLoadedEnd() {
-        if (!this.scene || !this.gameOver || this.currentSound || !this.scene.cache.audio.has('bgm_end')) return;
-        this.currentSound = this.scene.sound.add('bgm_end', this.soundConfig);
-        this.currentSound.play();
-    }
-
     private stopEntryFade() {
         this.entryFade?.remove();
         this.entryFade = null;
@@ -166,7 +152,7 @@ export class MusicManager {
 
     private nextKey() {
         const next = this.intensity > this.playingIntensity ? this.intensity : Math.min(this.intensity + 1, this.nbIntensities);
-        return this.gameOver ? 'bgm_end' : `bgm_loop_${next}`;
+        return `bgm_loop_${next}`;
     }
 
     private prefetch() {
@@ -178,7 +164,6 @@ export class MusicManager {
         if (!this.scene || this.scene.cache.audio.has(key) || this.pending.has(key)) return;
         const loaded = () => {
             this.pending.delete(key);
-            this.playLoadedEnd();
             this.trimCache();
         };
         this.pending.set(key, loaded);

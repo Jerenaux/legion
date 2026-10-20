@@ -188,6 +188,8 @@ const towerCheck = {
 Object.assign(window, {towerCheck});
 const giftCheck = {status: 'claimed', requests: 0, community: new URLSearchParams(location.search).has('audience') ? fixtureCommunities[0] : undefined};
 Object.assign(window, {giftCheck});
+const fixtureChestContent = [{type: RewardType.GOLD, id: 0, amount: 120}, {type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 1}, {type: RewardType.CONSUMABLES, id: 0, amount: 3}];
+
 export async function apiFetch(endpoint: string, options: {body?: {characterId?: string; stat?: number; amount?: number; code?: string; action?: string; tier?: number; kit?: 'balanced' | 'control'; upgrade?: string; encounter?: string}} = {}) {
   if (endpoint === 'spendSP' || endpoint === 'resetSP') {
     const {characterId, stat, amount} = options.body;
@@ -221,11 +223,15 @@ export async function apiFetch(endpoint: string, options: {body?: {characterId?:
     return structuredClone(towerCheck.progress);
   }
   if (endpoint === 'claimFirstWinBonus') return {gold: FIRST_WIN_BONUS_GOLD};
+  if (endpoint === 'peekChest') {
+    if (new URLSearchParams(location.search).get('chest') === 'stale') throw Object.assign(new Error('Chest locked'), {status: 409});
+    return {content: fixtureChestContent};
+  }
   if (endpoint === 'claimChest') {
     chestCheck.claims++;
     if (new URLSearchParams(location.search).get('chest') === 'stale') throw Object.assign(new Error('Chest locked'), {status: 409});
     await new Promise(resolve => setTimeout(resolve, 900));
-    return {content: [{type: RewardType.GOLD, id: 0, amount: 120}, {type: RewardType.EQUIPMENT, id: 2, amount: 1}, {type: RewardType.SPELL, id: 6, amount: 1}, {type: RewardType.CONSUMABLES, id: 0, amount: 3}],
+    return {content: fixtureChestContent,
       dailyloot: {bronze: {hasKey: false, countdown: 6 * 3600}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}}};
   }
   if (endpoint === 'recordPlayerAction') return {};
