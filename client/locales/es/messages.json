@@ -1334,5 +1334,5 @@
   "Last week’s ranked results moved you up a league.": "Tus resultados clasificatorios de la semana pasada te suben una liga.",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Tus resultados clasificatorios de la semana pasada te bajan una liga. Gana partidas clasificatorias esta semana para volver a subir.",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "La temporada de la semana pasada ha terminado. Las victorias y derrotas clasificatorias vuelven a empezar de cero.",
-  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Temblores y destellos</0> desactiva las sacudidas de cámara, los destellos de impacto y las pausas al golpear. Haz clic o pulsa cualquier tecla para saltar la cámara lenta de un K.O."
+  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Temblores y destellos</0> activa las sacudidas de cámara, los destellos de impacto y las pausas al golpear. Haz clic o pulsa cualquier tecla para saltar la cámara lenta de un K.O."
 }

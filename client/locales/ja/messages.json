@@ -1317,5 +1317,5 @@
   "Last week’s ranked results moved you up a league.": "先週のランク戦の結果でリーグが1つ上がりました。",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "先週のランク戦の結果でリーグが1つ下がりました。今週ランク戦で勝って再び昇格しましょう。",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "先週のシーズンが終了しました。ランク戦の勝敗はゼロからやり直しです。",
-  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>画面の揺れとフラッシュ</0>をオフにすると、カメラの揺れ、ヒット時のフラッシュ、一瞬の停止がなくなります。撃破時のスローモーションはクリックまたは任意のキーでスキップできます。"
+  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>画面の揺れとフラッシュ</0>をオンにすると、カメラの揺れ、ヒット時のフラッシュ、一瞬の停止が加わります。撃破時のスローモーションはクリックまたは任意のキーでスキップできます。"
 }

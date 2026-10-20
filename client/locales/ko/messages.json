@@ -1317,5 +1317,5 @@
   "Last week’s ranked results moved you up a league.": "지난주 랭크 결과로 리그가 한 단계 올랐습니다.",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "지난주 랭크 결과로 리그가 한 단계 내려갔습니다. 이번 주 랭크 경기에서 승리해 다시 올라가세요.",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "지난주 시즌이 끝났습니다. 랭크 승패가 0부터 다시 시작됩니다.",
-  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>화면 흔들림 및 번쩍임</0>을 끄면 카메라 흔들림, 적중 번쩍임, 타격 정지가 사라집니다. 처치 슬로 모션은 클릭하거나 아무 키나 눌러 건너뛸 수 있습니다."
+  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>화면 흔들림 및 번쩍임</0>을 켜면 카메라 흔들림, 적중 번쩍임, 타격 정지가 추가됩니다. 처치 슬로 모션은 클릭하거나 아무 키나 눌러 건너뛸 수 있습니다."
 }

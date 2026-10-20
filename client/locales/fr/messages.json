@@ -1334,5 +1334,5 @@
   "Last week’s ranked results moved you up a league.": "Vos résultats classés de la semaine dernière vous font monter d’une ligue.",
   "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Vos résultats classés de la semaine dernière vous font descendre d’une ligue. Gagnez des matchs classés cette semaine pour remonter.",
   "Last week’s season is over. Ranked wins and losses start again from zero.": "La saison de la semaine dernière est terminée. Les victoires et défaites classées repartent de zéro.",
-  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremblements et flashs</0> désactive les tremblements de caméra, les flashs d’impact et les arrêts sur image. Cliquez ou appuyez sur une touche pour passer un ralenti de K.-O."
+  "<0>Screen shake & flashes</0> turns on camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremblements et flashs</0> active les tremblements de caméra, les flashs d’impact et les arrêts sur image. Cliquez ou appuyez sur une touche pour passer un ralenti de K.-O."
 }
