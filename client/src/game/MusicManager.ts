@@ -121,18 +121,21 @@ export class MusicManager {
         this.prefetch();
     }
 
-    playEnd() {
+    /** Fade the combat track out quickly, in real time so kill-cam slow motion cannot stretch it. */
+    fadeOut(ms = 350) {
         this.gameOver = true;
-        this.releaseCurrent();
-        this.requestTrack('bgm_end');
-        this.playLoadedEnd();
-        this.trimCache();
-    }
-
-    private playLoadedEnd() {
-        if (!this.scene || !this.gameOver || this.currentSound || !this.scene.cache.audio.has('bgm_end')) return;
-        this.currentSound = this.scene.sound.add('bgm_end', this.soundConfig);
-        this.currentSound.play();
+        this.stopEntryFade();
+        const sound = this.currentSound;
+        if (!sound) return;
+        const start = performance.now();
+        const from = this.volume;
+        const timer = setInterval(() => {
+            const progress = Math.min(1, (performance.now() - start) / ms);
+            if (this.currentSound === sound && this.scene) sound.setVolume(from * (1 - progress));
+            if (progress < 1) return;
+            clearInterval(timer);
+            if (this.currentSound === sound) this.releaseCurrent();
+        }, 16);
     }
 
     private stopEntryFade() {
@@ -149,7 +152,7 @@ export class MusicManager {
 
     private nextKey() {
         const next = this.intensity > this.playingIntensity ? this.intensity : Math.min(this.intensity + 1, this.nbIntensities);
-        return this.gameOver ? 'bgm_end' : `bgm_loop_${next}`;
+        return `bgm_loop_${next}`;
     }
 
     private prefetch() {
@@ -161,7 +164,6 @@ export class MusicManager {
         if (!this.scene || this.scene.cache.audio.has(key) || this.pending.has(key)) return;
         const loaded = () => {
             this.pending.delete(key);
-            this.playLoadedEnd();
             this.trimCache();
         };
         this.pending.set(key, loaded);

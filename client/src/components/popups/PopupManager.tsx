@@ -7,6 +7,7 @@ import { UnlockedFeature } from './unlockedFeature/UnlockedFeature';
 import { ChestReward } from "@legion/shared/interfaces";
 import { LockedFeatures } from "@legion/shared/enums";
 import { SimplePopup } from './simplePopup/SimplePopup';
+import { LeagueResult } from './leagueResult/LeagueResult';
 import { ENABLE_CINDER_TOWER, UNLOCK_REWARDS } from '@legion/shared/config';
 import { PlayerContext } from '../../contexts/PlayerContext';
 
@@ -46,6 +47,7 @@ export enum Popup {
   PlayToUnlockCharacters,
   SpendSP,
   SwitchCharacterForSP,
+  LeagueResult,
 }
 
 interface UnlockedFeatureConfig {
@@ -66,6 +68,8 @@ interface PopupConfig {
   priority: number;
   highlightSelectors?: string[];  // CSS selectors for elements to highlight
   props?: UnlockedFeatureConfig | SimplePopupConfig;
+  /** Props known only when the popup is queued. */
+  dynamic?: boolean;
   ignoreStorage?: boolean;
 }
 
@@ -433,6 +437,12 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
       text: "You have <span class=\"highlight-text\">SP</span> to spend! Click on the <span class=\"highlight-text\">+</span> button next to a stat to increase it and make your character stronger!",
     }
   },
+  [Popup.LeagueResult]: {
+    component: LeagueResult,
+    priority: 200,
+    ignoreStorage: true,
+    dynamic: true,
+  },
   [Popup.SwitchCharacterForSP]: {
     component: SimplePopup,
     priority: 30,
@@ -565,7 +575,10 @@ export class PopupManager extends Component<Props, State> {
     }
   };
 
-  enqueuePopup = (popup: Popup) => {
+  private dynamicProps = new Map<Popup, object>();
+
+  enqueuePopup = (popup: Popup, props?: object) => {
+    if (props) this.dynamicProps.set(popup, props);
     // Check if popup should be shown
     if (!POPUP_CONFIGS[popup].ignoreStorage && this.getDisplayedPopups().has(popup)) {
       return;
@@ -619,6 +632,7 @@ export class PopupManager extends Component<Props, State> {
     return <PopupComponent
       onHide={this.handlePopupClosed}
       {...localizedProps}
+      {...(config.dynamic ? this.dynamicProps.get(activePopup) : {})}
     />;
   }
 }

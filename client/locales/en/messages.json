@@ -1306,5 +1306,19 @@
   "Claim {{value0}} gold": "Claim {{value0}} gold",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.",
-  "No bonus to claim": "No bonus to claim"
+  "No bonus to claim": "No bonus to claim",
+  "Screen shake & flashes": "Screen shake & flashes",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.",
+  "Your turn": "Your turn",
+  "Match found!": "Match found!",
+  "Promoted to the {{league}} league!": "Promoted to the {{league}} league!",
+  "Moved down to the {{league}} league": "Moved down to the {{league}} league",
+  "A new season has begun": "A new season has begun",
+  "Last week’s ranked results moved you up a league.": "Last week’s ranked results moved you up a league.",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "Last week’s season is over. Ranked wins and losses start again from zero.",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.",
+  "Camera follows the turn": "Camera follows the turn",
+  "The camera drifts slightly toward the character taking its turn.": "The camera drifts slightly toward the character taking its turn.",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default."
 }

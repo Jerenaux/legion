@@ -7,10 +7,14 @@ const MIX_DB: Record<string, number> = {
   fireball: 6, thunder: 0, ice: 0, poison: 0, mute: 0, revive: 0, healing: 0,
   // Combat hits and actions
   shatter: -1, thud: -1.5, slash: -4, cast: -6, cooldown: -6,
+  // Melee impacts sit under the swing.
+  impact_punch: -9, impact_sword: -10,
+  // Results
+  jingle_win: -5, jingle_lose: -5, level_up: -5,
   // Feedback and ambience
   click: -13.5, steps: -8.5, nope: -12, heart: -10, flames: -12, hearth: -16,
   // Menus
-  matchFound: -4, purchase: -0.5, equip: -0.5,
+  matchFound: -4, purchase: -0.5, equip: -0.5, chestRattle: -6, chestOpen: -3,
 };
 
 /** Linear gain for a sound before the player's SFX volume is applied. */

@@ -394,21 +394,54 @@ export const saveGoldReward = onRequest({
   });
 });
 
+/** The chest, if it can be opened now. */
+function openableChest(player: DBPlayerData, chestType: ChestColor) {
+  const chest = player.dailyloot?.[chestType];
+  if (!chest) throw new MutationError(409, 'Invalid chest type');
+  if (!chest.hasKey && !IMMEDIATE_LOOT) throw new MutationError(409, 'You need a key to open this chest, go play a casual or ranked game!');
+  if (chest.time > Date.now() / 1000 && !IMMEDIATE_LOOT) throw new MutationError(409, 'Chest locked, wait for the countdown to end!');
+  return chest;
+}
+
+function chestTypeOf(request: {body?: {chestType?: unknown}; query: Record<string, unknown>}) {
+  const chestType = (request.body?.chestType ?? request.query.chestType) as ChestColor;
+  if (!Object.values(ChestColor).includes(chestType)) throw new MutationError(400, 'Invalid chest type');
+  return chestType;
+}
+
+// Rolls an openable chest's content ahead of the claim, once, so the reveal can show it at once.
+// Peeking claims nothing: the content stays fixed until claimChest pays it.
+export const peekChest = onRequest({memory: '512MiB'}, (request, response) => {
+  corsMiddleware(request, response, async () => {
+    try {
+      const uid = await getUID(request);
+      const chestType = chestTypeOf(request);
+      const playerRef = firestore().collection('players').doc(uid);
+      const content = await firestore().runTransaction(async (transaction) => {
+        const player = (await transaction.get(playerRef)).data() as DBPlayerData | undefined;
+        if (!player) throw new MutationError(404, 'Player not found');
+        const chest = openableChest(player, chestType);
+        if (chest.content) return chest.content;
+        const rolled = getChestContent(chestType);
+        transaction.update(playerRef, {[`dailyloot.${chestType}.content`]: rolled});
+        return rolled;
+      });
+      response.send({content});
+    } catch (error) { mutationFailure(response, 'peekChest', error); }
+  });
+});
+
 export const claimChest = onRequest({memory: '512MiB'}, (request, response) => {
   corsMiddleware(request, response, async () => {
     try {
       const uid = await getUID(request);
       // GET remains supported for installed clients. New clients send a retry-safe POST.
-      const chestType = (request.body?.chestType ?? request.query.chestType) as ChestColor;
-      if (!Object.values(ChestColor).includes(chestType)) throw new MutationError(400, 'Invalid chest type');
-      const content = getChestContent(chestType);
+      const chestType = chestTypeOf(request);
       const result = await playerMutation(uid, 'claimChest', request.body?.requestId, {chestType},
         (transaction, playerRef, player) => {
-          const chest = player.dailyloot[chestType];
-          if (!chest) throw new MutationError(409, 'Invalid chest type');
-          if (!chest.hasKey && !IMMEDIATE_LOOT) throw new MutationError(409, 'You need a key to open this chest, go play a casual or ranked game!');
+          const chest = openableChest(player, chestType);
+          const content = chest.content ?? getChestContent(chestType);
           const now = Date.now() / 1000;
-          if (chest.time > now && !IMMEDIATE_LOOT) throw new MutationError(409, 'Chest locked, wait for the countdown to end!');
           const dailyloot = {...player.dailyloot, [chestType]: {time: now + chestsDelays[chestType], hasKey: false}};
           const inventory = {
             consumables: [...player.inventory.consumables],

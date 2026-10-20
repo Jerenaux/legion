@@ -1323,5 +1323,19 @@
   "Claim {{value0}} gold": "Receber {{value0}} de ouro",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "A tua primeira vitória do dia em Casual ou Classificado dá {{value0}} de ouro de bónus. Recebe-o no ecrã Jogar. O bónus renova-se à meia-noite UTC.",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Cada recruta custa mais do que o anterior: {{value0}}, {{value1}} e depois {{value2}} de ouro.",
-  "No bonus to claim": "Não há bónus para receber"
+  "No bonus to claim": "Não há bónus para receber",
+  "Screen shake & flashes": "Tremor e flashes",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "Os golpes fazem tremer a câmara, fazem o alvo piscar e congelam a ação por um instante. A definição de movimento reduzido do sistema também os desativa.",
+  "Your turn": "A tua vez",
+  "Match found!": "Partida encontrada!",
+  "Promoted to the {{league}} league!": "Promovido à liga {{league}}!",
+  "Moved down to the {{league}} league": "Despromovido para a liga {{league}}",
+  "A new season has begun": "Começou uma nova temporada",
+  "Last week’s ranked results moved you up a league.": "Os teus resultados classificados da semana passada fizeram-te subir uma liga.",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Os teus resultados classificados da semana passada fizeram-te descer uma liga. Vence partidas classificadas esta semana para voltares a subir.",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "A temporada da semana passada terminou. As vitórias e derrotas classificadas recomeçam do zero.",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremor e flashes</0> desativa o tremor da câmara, os flashes dos golpes e as pausas de impacto. Clica ou prime qualquer tecla para saltar a câmara lenta de um K.O.",
+  "Camera follows the turn": "Câmara segue o turno",
+  "The camera drifts slightly toward the character taking its turn.": "A câmara desloca-se ligeiramente para a personagem que está a jogar.",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Câmara segue o turno</0> desloca a câmara para a personagem que está a jogar; está desativada por predefinição."
 }

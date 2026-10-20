@@ -4,6 +4,12 @@ import { DARKENING_INTENSITY } from './Arena';
 export class HealthBar extends Phaser.GameObjects.Container {
   private readonly barBackground: RoundRectangle;
   private readonly hpBar: RoundRectangle;
+  /** What was just lost: stays lit, then drains after the hit. */
+  private readonly trailBar: RoundRectangle;
+  /** Predicted loss from the hovered action, blinking on top of the bar. */
+  private readonly previewBar: RoundRectangle;
+  private trailTween: Phaser.Tweens.Tween | null = null;
+  private previewTween: Phaser.Tweens.Tween | null = null;
   private readonly barOutline: RoundRectangle;
   private hpValue: number;
   private originalColor: number;
@@ -49,14 +55,28 @@ export class HealthBar extends Phaser.GameObjects.Container {
       width: width,
     });
 
+    const trailOptions = {
+      x: this.barBackground.getTopLeft().x,
+      y: this.barBackground.getTopLeft().y,
+      radius: radius,
+      height: height,
+      width: width,
+    };
+    this.trailBar = new RoundRectangle(scene, {...trailOptions, color: 0xfff1c9});
+    this.previewBar = new RoundRectangle(scene, {...trailOptions, color: 0xffffff});
+
     this.hpValue = 0;
     this.hpBar.setOrigin(0);
+    this.trailBar.setOrigin(0);
+    this.previewBar.setOrigin(0).setVisible(false);
     this.barOutline.setOrigin(0);
     this.setHpValue(1);
 
     this.add(this.barOutline);
     this.add(this.barBackground);
+    this.add(this.trailBar);
     this.add(this.hpBar);
+    this.add(this.previewBar);
   }
 
   /**
@@ -69,9 +89,38 @@ export class HealthBar extends Phaser.GameObjects.Container {
       return this;
     }
 
+    const previous = this.hpValue;
     this.hpValue = Phaser.Math.Clamp(value, 0, 1);
     this.hpBar.scaleX = this.hpValue;
+    this.trailTween?.stop();
+    if (this.hpValue < previous && this.scene) {
+      // The lost chunk stays visible for a moment before draining.
+      this.trailBar.scaleX = Math.max(this.trailBar.scaleX, previous);
+      this.trailTween = this.scene.tweens.add({
+        targets: this.trailBar, scaleX: this.hpValue, delay: 400, duration: 300, ease: 'Cubic.easeIn',
+      });
+    } else {
+      this.trailBar.scaleX = this.hpValue;
+    }
+    if (this.previewBar.visible) this.setPreview(null);
     return this;
+  }
+
+  /** Blink the share of the bar a hovered action would remove; null clears it. */
+  setPreview(value: number | null) {
+    this.previewTween?.stop();
+    this.previewTween = null;
+    const target = value == null ? this.hpValue : Phaser.Math.Clamp(value, 0, 1);
+    if (target >= this.hpValue) {
+      this.previewBar.setVisible(false);
+      return;
+    }
+    this.previewBar.setPosition(this.hpBar.x + this.hpBar.width * target, this.hpBar.y);
+    this.previewBar.scaleX = this.hpValue - target;
+    this.previewBar.setVisible(true).setAlpha(0.9);
+    this.previewTween = this.scene.tweens.add({
+      targets: this.previewBar, alpha: 0.2, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    });
   }
 
   tweenPosition(x?: number, y?: number) {

@@ -196,6 +196,8 @@ export interface DailyLootAllDBData {
 export interface DailyLootDBData {
     hasKey: boolean;
     time: number;
+    /** Rolled in advance by peekChest so the reveal needn't wait; claimChest pays exactly this. */
+    content?: ChestReward[];
 }
 export interface DBPlayerData<CharacterReference = unknown> {
     name: string;

@@ -32,9 +32,6 @@ import {shouldShowUnlockMessage} from './endgameUnlock';
 interface EndgameState {
     finalGold: number;
     finalXp: number;
-    displayGold: number;
-    displayXp: number;
-    countedXP: number;
     selectedChest: GameOutcomeReward;
 }
 
@@ -49,6 +46,8 @@ interface EndgameProps {
     game0: boolean;
     mode: PlayMode;
     eventEmitter: EventEmitter;
+    /** Rating change from a ranked match; zero otherwise. */
+    eloChange: number;
     closeGame: () => void;
 }
 
@@ -80,40 +79,19 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         this.state = {
             finalGold: props.goldReward,
             finalXp: props.xpReward,
-            displayGold: 0,
-            displayXp: 0,
-            countedXP: 0,
             selectedChest: null,
         };
         this.events = this.props.eventEmitter;
     }
 
-    componentDidMount() {
-        const duration = 1500;
-        this.animateValue("displayGold", 0, this.state.finalGold, duration);
-        this.animateValue("displayXp", 0, this.state.finalXp, duration);
-    }
+    private levelUpPlayed = false;
 
-    animateValue(displayKey, start, end, duration) {
-        const range = end - start;
-        const stepTime = 10; // time in ms between updates, can be adjusted
-        const totalSteps = duration / stepTime;
-        const increment = range / totalSteps;
-
-        let current = start;
-        const timer = setInterval(() => {
-            current += increment;
-            // Make sure we don't go beyond the target value
-            if ((increment > 0 && current > end) || (increment < 0 && current < end)) {
-                current = end;
-            }
-            this.setState({ [displayKey]: Math.round(current) });
-
-            if (current === end) {
-                clearInterval(timer);
-            }
-        }, stepTime);
-    }
+    /** One fanfare however many characters level up. */
+    handleLevelUp = () => {
+        if (this.levelUpPlayed) return;
+        this.levelUpPlayed = true;
+        this.events.emit('endgameLevelUp');
+    };
 
     handlePlayAgain = () => {
         const modesToQueueMap = {
@@ -188,6 +166,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                             member={members[character.num - 1]}
                             update={character as CharacterUpdate}
                             isWinner={this.props.isWinner}
+                            onLevelUp={this.handleLevelUp}
                         />
                     ))}
                 </div>
@@ -224,6 +203,13 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                         ))}
                     </div>
                     <ItemTooltip id="endgame-reward-details" />
+                    {this.props.eloChange !== 0 && (this.props.mode === PlayMode.RANKED || this.props.mode === PlayMode.RANKED_VS_AI) && (
+                        <p className="endgame_elo" data-trend={this.props.eloChange > 0 ? 'up' : 'down'}>
+                            <span>{t("ELO")}</span>
+                            <strong><CountUp start={0} end={this.props.eloChange} duration={1.2} delay={0.8}
+                                formattingFn={value => `${value > 0 ? '+' : value < 0 ? '−' : ''}${formatNumber(Math.abs(value))}`} /></strong>
+                        </p>
+                    )}
                 </div>
 
                 <div className="endgame_buttons">

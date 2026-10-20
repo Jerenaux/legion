@@ -20,7 +20,8 @@ module.exports = async ({win, js, waitFor, ready, url}) => {
     win.webContents.sendInputEvent({type: 'mouseDown', button: 'left', clickCount: 1, ...point});
     win.webContents.sendInputEvent({type: 'mouseUp', button: 'left', clickCount: 1, ...point});
     await waitFor(`routeAudio.filter(audio => !audio.loop).length === ${soundsBefore + 1}`);
-    assert.equal(await js('chestCheck.claims'), state === 'stale' ? 1 : 0, 'Known locked chests must not call the API; stale claims must recover without a popup');
+    // The peek made before the click already reports a stale chest, so neither case reaches the claim.
+    assert.equal(await js('chestCheck.claims'), 0, 'Known locked or stale chests must not call the claim API');
     assert.equal(await js('Boolean(document.querySelector(".simple-popup, .chest-reveal"))'), false);
     if (state === 'countdown') {
       await waitFor('Boolean(document.querySelector(".loot-box-open"))');

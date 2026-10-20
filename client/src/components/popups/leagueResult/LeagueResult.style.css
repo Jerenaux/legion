@@ -1,0 +1,20 @@
+.league-result-icon {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 8px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px oklch(8% .02 255 / .6));
+}
+.league-result--promoted .league-result-icon {
+  animation: league-result-rise 700ms cubic-bezier(.2, .9, .3, 1.3) both;
+  filter: drop-shadow(0 0 20px oklch(80% .15 80 / .7)) drop-shadow(0 6px 10px oklch(8% .02 255 / .6));
+}
+.league-result--demoted .league-result-icon { filter: grayscale(.35) drop-shadow(0 6px 10px oklch(8% .02 255 / .6)); }
+@keyframes league-result-rise {
+  from { opacity: 0; transform: translateY(24px) scale(.6); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .league-result--promoted .league-result-icon { animation: none; }
+}

@@ -1306,5 +1306,19 @@
   "Claim {{value0}} gold": "골드 {{value0}} 받기",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "매일 일반 또는 랭크 모드에서 처음 승리하면 보너스 골드 {{value0}}를 받습니다. 플레이 화면에서 받으세요. 보너스는 UTC 자정에 초기화됩니다.",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "새 동료는 영입할수록 비싸집니다: {{value0}}, {{value1}}, 그다음 {{value2}} 골드.",
-  "No bonus to claim": "받을 보너스가 없습니다"
+  "No bonus to claim": "받을 보너스가 없습니다",
+  "Screen shake & flashes": "화면 흔들림 및 번쩍임",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "공격이 적중하면 카메라가 흔들리고 대상이 번쩍이며 잠시 동작이 멈춥니다. 시스템의 동작 줄이기 설정으로도 꺼집니다.",
+  "Your turn": "내 차례",
+  "Match found!": "매치를 찾았습니다!",
+  "Promoted to the {{league}} league!": "{{league}} 리그로 승급!",
+  "Moved down to the {{league}} league": "{{league}} 리그로 강등",
+  "A new season has begun": "새 시즌이 시작되었습니다",
+  "Last week’s ranked results moved you up a league.": "지난주 랭크 결과로 리그가 한 단계 올랐습니다.",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "지난주 랭크 결과로 리그가 한 단계 내려갔습니다. 이번 주 랭크 경기에서 승리해 다시 올라가세요.",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "지난주 시즌이 끝났습니다. 랭크 승패가 0부터 다시 시작됩니다.",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>화면 흔들림 및 번쩍임</0>을 끄면 카메라 흔들림, 적중 번쩍임, 타격 정지가 사라집니다. 처치 슬로 모션은 클릭하거나 아무 키나 눌러 건너뛸 수 있습니다.",
+  "Camera follows the turn": "카메라가 턴을 따라감",
+  "The camera drifts slightly toward the character taking its turn.": "카메라가 턴을 진행 중인 캐릭터 쪽으로 살짝 이동합니다.",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>카메라가 턴을 따라감</0>을 켜면 턴을 진행 중인 캐릭터 쪽으로 카메라가 이동합니다. 기본값은 꺼짐입니다."
 }

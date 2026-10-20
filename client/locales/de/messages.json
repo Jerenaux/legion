@@ -1306,5 +1306,19 @@
   "Claim {{value0}} gold": "{{value0}} Gold einsammeln",
   "Your first Casual or Ranked win each day earns {{value0}} bonus gold. Claim it on the Play screen. The bonus resets at midnight UTC.": "Dein erster Sieg in Ungewertet oder Rangliste an jedem Tag bringt {{value0}} Bonusgold. Sammle es auf dem Bildschirm „Spielen“ ein. Der Bonus wird um Mitternacht UTC zurückgesetzt.",
   "Each recruit costs more than the last: {{value0}}, {{value1}}, then {{value2}} gold.": "Jeder Rekrut kostet mehr als der vorige: {{value0}}, {{value1}}, dann {{value2}} Gold.",
-  "No bonus to claim": "Kein Bonus verfügbar"
+  "No bonus to claim": "Kein Bonus verfügbar",
+  "Screen shake & flashes": "Bildschirmwackeln & Blitze",
+  "Hits shake the camera, flash the target and briefly freeze the action. Your system’s reduced-motion setting also turns them off.": "Treffer lassen die Kamera wackeln, das Ziel aufblitzen und halten die Action kurz an. Die Systemeinstellung für reduzierte Bewegung schaltet sie ebenfalls aus.",
+  "Your turn": "Du bist am Zug",
+  "Match found!": "Match gefunden!",
+  "Promoted to the {{league}} league!": "Aufstieg in die {{league}}-Liga!",
+  "Moved down to the {{league}} league": "Abstieg in die {{league}}-Liga",
+  "A new season has begun": "Eine neue Saison hat begonnen",
+  "Last week’s ranked results moved you up a league.": "Deine Ranglistenergebnisse der letzten Woche bringen dich eine Liga höher.",
+  "Last week’s ranked results moved you down a league. Win ranked matches this week to climb back.": "Deine Ranglistenergebnisse der letzten Woche bringen dich eine Liga tiefer. Gewinne diese Woche Ranglistenmatches, um wieder aufzusteigen.",
+  "Last week’s season is over. Ranked wins and losses start again from zero.": "Die Saison der letzten Woche ist vorbei. Ranglistensiege und -niederlagen beginnen wieder bei null.",
+  "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Bildschirmwackeln & Blitze</0> schaltet Kamerawackeln, Trefferblitze und kurze Standbilder bei Treffern aus. Klicke oder drücke eine beliebige Taste, um eine Zeitlupe nach einem K.-o. zu überspringen.",
+  "Camera follows the turn": "Kamera folgt dem Zug",
+  "The camera drifts slightly toward the character taking its turn.": "Die Kamera bewegt sich leicht zur Figur, die gerade am Zug ist.",
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Kamera folgt dem Zug</0> bewegt die Kamera zur Figur, die am Zug ist; standardmäßig ist das aus."
 }

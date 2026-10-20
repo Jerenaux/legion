@@ -15,6 +15,7 @@ interface CountUpProps {
     // Endgame props
     update?: CharacterUpdate;
     isWinner?: boolean;
+    onLevelUp?: () => void;
     // Team reveal props
     hideXP?: boolean;
     isQuestionMark?: boolean;
@@ -49,6 +50,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                         xpCounter: 0,
                         totalXP: prevState.totalXP - maxXP
                     }));
+                    this.props.onLevelUp?.();
                     return;
                 }
 

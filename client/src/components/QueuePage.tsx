@@ -2,6 +2,7 @@ import {t, i18n, userError} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
 
 import { h } from 'preact';
+import { createPortal } from 'preact/compat';
 import '../style/QueuePage.style.css';
 import { Component } from 'preact';
 import { route } from 'preact-router';
@@ -63,6 +64,7 @@ interface QpageState {
         type: string;
         opponentName: string | null;
     } | null;
+    matchFound?: boolean;
 }
 
 
@@ -71,6 +73,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
     static contextType = PlayerContext;
     interval = null;
     intervalWaited = null;
+    matchFoundTimer: ReturnType<typeof setTimeout> | null = null;
     socketRetryTimeout = null;
     socketRetryCount = 0;
     maxSocketRetries = 10;
@@ -189,8 +192,11 @@ class QueuePage extends Component<QPageProps, QpageState> {
         // Setup all game-related socket listeners
         socket.on('matchFound', ({ gameId }) => {
             console.log('matchFound', gameId);
+            if (this.matchFoundTimer) return;
             playSoundEffect(matchFound, sfxLevel('matchFound'));
-            route(`/game/${gameId}`);
+            // A beat to register the match before the arena loads.
+            this.setState({matchFound: true});
+            this.matchFoundTimer = setTimeout(() => route(`/game/${gameId}`), 1000);
         });
 
         socket.on('updateGold', ({ gold }) => {
@@ -298,6 +304,7 @@ class QueuePage extends Component<QPageProps, QpageState> {
         }
         clearInterval(this.interval);
         clearInterval(this.intervalWaited);
+        clearTimeout(this.matchFoundTimer);
         if (this.socketRetryTimeout) {
             clearTimeout(this.socketRetryTimeout);
         }
@@ -375,6 +382,8 @@ class QueuePage extends Component<QPageProps, QpageState> {
 
         return (
             <div className="queue-container">
+                {this.state.matchFound && createPortal(
+                    <div className="match-found" role="status"><span>{t("Match found!")}</span></div>, document.body)}
                 <div className="queue-body">
                     {this.state.queueDataLoaded || isLobbyMode ? (
                         isLobbyMode ? this.renderPendingState(isLobbyMode) : (

@@ -15,6 +15,7 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import { ENABLE_QUESTS, ENABLE_SPECTATOR_MODE } from "@legion/shared/config";
 import { firebaseAuth } from '../services/firebaseService';
 import PopupManager, { Popup } from './popups/PopupManager';
+import { leagueChangeSinceLastVisit } from './popups/leagueResult/LeagueResult';
 import FirstWinBonus from './popups/firstWin/FirstWinBonus';
 /* eslint-disable react/prefer-stateless-function */
 class PlayPage extends Component {
@@ -60,8 +61,16 @@ class PlayPage extends Component {
     this.popupManagerRef.current?.enqueuePopup(popup);
   }
 
+  private leagueChecked = false;
+
   componentDidUpdate() {
     if (!this.context.player.isLoaded) return;
+
+    if (!this.leagueChecked && this.context.player.uid) {
+      this.leagueChecked = true;
+      const kind = leagueChangeSinceLastVisit(this.context.player.uid, this.context.player.league);
+      if (kind) this.popupManagerRef.current?.enqueuePopup(Popup.LeagueResult, {kind, league: this.context.player.league});
+    }
 
     const completedGames = this.context.getCompletedGames();
 

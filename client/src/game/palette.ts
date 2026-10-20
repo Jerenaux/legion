@@ -3,8 +3,8 @@
 const COLORBLIND_TINTS: Record<number, number> = {
     0xff0000: 0xff8a00, // enemy team, targeting cursor
     0x00ff00: 0x3d9bff, // ally glow, hover, item cursor
-    0xffaaaa: 0xffc98f, // enemy target range
-    0xaaffaa: 0xa9d2ff, // ally target range
+    0xffd6c8: 0xffe2c2, // enemy target range
+    0xd2ffd2: 0xd3e7ff, // ally target range
     0xff5555: 0xff9b33, // enemy spell area
     0x55ff55: 0x5aa9ff, // ally spell area
     0x00cc00: 0x2f86ff, // ally in range

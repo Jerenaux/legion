@@ -6,7 +6,10 @@ import { createPortal } from 'preact/compat';
 
 import { ChestReward } from "@legion/shared/interfaces";
 import { RewardType, ChestColor, Rarity } from "@legion/shared/enums";
-import { mapFrameToCoordinates, getRewardBgImage, getRewardObject } from '../utils';
+import { mapFrameToCoordinates, getRewardBgImage, getRewardObject, playSoundEffect } from '../utils';
+import { sfxLevel } from '../../sfxMix';
+import rattleSound from '@assets/sfx/chest_rattle.wav';
+import openSound from '@assets/sfx/chest_open.wav';
 
 import bronzeChest from '@assets/shop/bronze_chest.png';
 import silverChest from '@assets/shop/silver_chest.png';
@@ -42,23 +45,68 @@ const RARITIES = {
   [Rarity.LEGENDARY]: {key: 'legendary', label: () => t("Legendary")},
 };
 
-class OpenedChest extends Component<OpenedChestProps> {
+// The rattle always builds up a little, even when the server answers at once.
+const MIN_RATTLE_MS = 600;
+const RARE_BUILD_UP_MS = 900;
+
+interface OpenedChestState {
+  revealed: boolean;
+  /** Epic or legendary loot: the chest shakes harder before it opens. */
+  intense: boolean;
+}
+
+class OpenedChest extends Component<OpenedChestProps, OpenedChestState> {
   button: HTMLButtonElement | null = null;
+  state: OpenedChestState = {revealed: false, intense: false};
+  private openedAt = performance.now();
+  private rattleTimer: ReturnType<typeof setInterval> | null = null;
+  private revealTimer: ReturnType<typeof setTimeout> | null = null;
 
   componentDidMount() {
     document.addEventListener('keydown', this.onKey);
+    this.rattle(700);
+    if (this.props.content) this.scheduleReveal();
   }
 
   componentDidUpdate(prev: OpenedChestProps) {
-    if (!prev.content && this.props.content) this.button?.focus({preventScroll: true});
+    if (!prev.content && this.props.content) this.scheduleReveal();
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.onKey);
+    this.stopRattle();
+    clearTimeout(this.revealTimer);
+  }
+
+  private rattle(interval: number) {
+    this.stopRattle();
+    const play = () => playSoundEffect(rattleSound, sfxLevel('chestRattle'));
+    play();
+    this.rattleTimer = setInterval(play, interval);
+  }
+
+  private stopRattle() {
+    if (this.rattleTimer) clearInterval(this.rattleTimer);
+    this.rattleTimer = null;
+  }
+
+  private scheduleReveal() {
+    const rare = this.props.content.some(reward => reward.type !== RewardType.GOLD
+      && (getRewardObject(reward.type, reward.id)?.rarity ?? Rarity.COMMON) >= Rarity.EPIC);
+    if (rare) {
+      this.setState({intense: true});
+      this.rattle(350);
+    }
+    const wait = Math.max(0, MIN_RATTLE_MS - (performance.now() - this.openedAt)) + (rare ? RARE_BUILD_UP_MS : 0);
+    this.revealTimer = setTimeout(() => {
+      this.stopRattle();
+      playSoundEffect(openSound, sfxLevel('chestOpen'));
+      this.setState({revealed: true}, () => this.button?.focus({preventScroll: true}));
+    }, wait);
   }
 
   onKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && this.props.content) {
+    if (event.key === 'Escape' && this.state.revealed) {
       event.preventDefault();
       this.props.onClick();
     }
@@ -87,9 +135,9 @@ class OpenedChest extends Component<OpenedChestProps> {
   render() {
     const {color, content, onClick} = this.props;
     const chest = CHESTS[color] ?? CHESTS[ChestColor.BRONZE];
-    const open = content !== null;
+    const open = content !== null && this.state.revealed;
     return createPortal(
-      <div className={`chest-reveal chest-reveal--${color}${open ? ' is-open' : ''}`} role="dialog" aria-modal="true" aria-label={chest.title()} aria-busy={!open}>
+      <div className={`chest-reveal chest-reveal--${color}${open ? ' is-open' : ''}${this.state.intense && !open ? ' is-intense' : ''}`} role="dialog" aria-modal="true" aria-label={chest.title()} aria-busy={!open}>
         <div className="chest-reveal-rays" aria-hidden="true" />
         <div className="chest-reveal-stage">
           <p className="chest-reveal-title">{chest.title()}</p>

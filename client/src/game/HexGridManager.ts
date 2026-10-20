@@ -10,8 +10,9 @@ export enum TileColors {
     PLAYER_TEAM = 0x0000ff, // Dark blue
     ENEMY_TEAM = 0xff0000,  // Dark red
     MOVEMENT_RANGE = 0x00ffff, // Cyan
-    TARGET_RANGE = 0xffaaaa, // Light red
-    TARGET_RANGE_ALLY = 0xaaffaa, // Light green for ally target range
+    // Range stays a light wash so the board stays readable; the area of effect carries the colour.
+    TARGET_RANGE = 0xffd6c8, // Light red
+    TARGET_RANGE_ALLY = 0xd2ffd2, // Light green for ally target range
     SPELL_RADIUS = 0xff5555, // Bright red
     SPELL_RADIUS_ALLY = 0x55ff55, // Bright green for ally-targeting spell radius
     TARGET_ALLY = 0x00cc00,  // Green for allies in target range
@@ -48,6 +49,7 @@ export class HexGridManager {
         highlights: Map<HighlightType, number>
     }> = new Map();
     private isInTargetMode: boolean = false;
+    private areaPulse: Phaser.Tweens.Tween | null = null;
 
     // Grid dimensions and position
     private gridCorners: { startX: number, startY: number };
@@ -611,6 +613,16 @@ export class HexGridManager {
     // Update toggleTargetMode to handle character highlights
     toggleTargetMode(flag: boolean) {
         this.isInTargetMode = flag;
+        this.areaPulse?.stop();
+        this.areaPulse = null;
+        this.tilesMap.forEach(tile => { tile.setAlpha(0.5); });
+        if (flag) {
+            // The hovered area of effect pulses brighter than the range around it.
+            this.areaPulse = this.scene.tweens.addCounter({from: 0.55, to: 0.95, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+                onUpdate: tween => this.tileStates.forEach((state, key) => {
+                    this.tilesMap.get(key)?.setAlpha(state.highlights.has(HighlightType.SPELL) ? tween.getValue() : 0.5);
+                })});
+        }
 
         // Clear character highlights when leaving target mode
         if (!flag) {

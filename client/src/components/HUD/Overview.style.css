@@ -204,6 +204,7 @@
 }
 
 .char_stats_bar {
+  position: relative;
   background-color: #0e0e0e;
   border-radius: 2px;
   overflow: hidden;
@@ -215,10 +216,37 @@
 }
 
 .char_stats_hp {
+  position: relative;
   background-color: #ca304d;
   border-radius: 3px;
   height: 100%;
-  transition: width 0.3s ease-out;
+  transition: width 0.12s ease-out;
+}
+
+.char_stats_hp_trail {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  background-color: #ffe7b0;
+  transition: width 0.3s ease-in 0.4s;
+}
+
+.char_profile_container.char_hit {
+  animation: char-hit 0.45s ease-out;
+}
+
+@keyframes char-hit {
+  0% { filter: brightness(2.4) saturate(0.4); transform: translateX(-3px); }
+  20% { transform: translateX(3px); }
+  40% { filter: brightness(1.4) sepia(0.6) hue-rotate(-30deg) saturate(3); transform: translateX(-2px); }
+  60% { transform: translateX(1px); }
+  100% { filter: none; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .char_profile_container.char_hit { animation: none; }
+  .char_stats_hp_trail { transition: none; }
 }
 
 .char_stats_mp {

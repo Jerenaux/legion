@@ -10,10 +10,10 @@ import { MusicManager } from './MusicManager';
 import {setRouteMusic} from '../routeMusic';
 import {watchAudioContext} from '../audioRecovery';
 import { getSpellById } from '@legion/shared/Spells';
-import { serializeCoords, hexDistance, isInSpellRange } from '@legion/shared/utils';
+import { serializeCoords, hexDistance, isInSpellRange, listCellsOnTheWay } from '@legion/shared/utils';
 import { getFirebaseIdToken } from '../services/apiService';
 import { allSprites } from '@legion/shared/sprites';
-import { PlayMode, Target, Terrain, StatusEffect, GEN, AIAttackMode, TargetHighlight, Stat } from "@legion/shared/enums";
+import { PlayMode, Target, Terrain, StatusEffect, GEN, AIAttackMode, TargetHighlight, Stat, Class } from "@legion/shared/enums";
 import { TerrainUpdate, GameData, GameReplayMessage, OutcomeData, PlayerNetworkData, TurnQueueEntry, TurnState } from '@legion/shared/interfaces';
 import {createRefreshingSocketAuth, retrySocketAuthentication, shouldAbandonGame, socketReconnectOptions} from '../services/socketPolicy';
 import { KILL_CAM_DURATION, BASE_ANIM_FRAME_RATE, FREEZE_CAMERA, GRID_WIDTH, GRID_HEIGHT,
@@ -51,6 +51,11 @@ import poisonSoundSFX from '@assets/sfx/spells/poison.wav';
 import muteSoundSFX from '@assets/sfx/spells/mute.wav';
 import bgmStartSFX from '@assets/music/bgm_start.wav';
 import thudSFX from '@assets/sfx/thud.wav';
+import impactPunchSFX from '@assets/sfx/impact_punch.wav';
+import impactSwordSFX from '@assets/sfx/impact_sword.wav';
+import jingleWinSFX from '@assets/sfx/jingle_win.wav';
+import jingleLoseSFX from '@assets/sfx/jingle_lose.wav';
+import levelUpSFX from '@assets/sfx/level_up.wav';
 
 import speechBubble from '@assets/speech_bubble.png';
 import speechTail from '@assets/speech_tail.png';
@@ -72,6 +77,18 @@ import {loadGameSettings, sfxGain} from '../settings';
 import {sfxLevel} from '../sfxMix';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 import type {CharacterHover} from '../components/HUD/CharacterHoverCard';
+import {NUMBER_COLORS} from './Player';
+import {cameraNudgeEnabled, rumble, shake} from './feedback';
+
+/** Sounds that loop or get stopped keep one instance; everything else may overlap a few times. */
+const PERSISTENT_SOUNDS = new Set(['cast', 'heart', 'flames', 'jingle_win', 'jingle_lose', 'level_up']);
+const MAX_SOUND_COPIES = 3;
+const EMBER_TINTS = [0xfff1c2, 0xffc46b, 0xff8a3c, 0xff5a1f];
+const CHARGE_TINTS: Record<string, number[]> = {
+    fire: [0xffd27a, 0xff9a3c, 0xff5a1f],
+    ice: [0xe6fbff, 0xa8e6ff, 0x6fc8ff],
+    thunder: [0xfffbd0, 0xfff07a, 0xd0c0ff],
+};
 
 const LOCAL_ANIMATION_SCALE = 2;
 const DEPTH_OFFSET = 0.01;
@@ -79,6 +96,9 @@ export const DARKENING_INTENSITY = 0.9;
 const TINT_COLOR = Math.round(0x66 * DARKENING_INTENSITY) * 0x010101;
 const AIR_ENTRANCE_DELAY = 750;
 const AIR_ENTRANCE_DELAY_VARIANCE = 200;
+/** After the last blow (and its kill cam): pause, then the jingle and celebration, then the result screen. */
+const RESULT_DELAY_MS = 700;
+const RESULT_SCREEN_DELAY_MS = 1800;
 const spellSheetFiles = require.context('@assets/vfx', false, /^\.\/(fire_[123]_explosion|terrain_fire_1|charged_(fire|ice|thunder)_[12]|(ice|thunder|heal)_[123])\.png$/);
 const SPELL_SHEETS = [
     ...fireLevels.map(level => `fire_${level}_explosion`),
@@ -164,7 +184,8 @@ export class Arena extends Phaser.Scene
     private static readonly SOUND_NAMES = [
         'click', 'slash', 'steps', 'nope', 'heart', 'cooldown', 'fireball',
         'healing', 'cast', 'thunder', 'ice', 'shatter', 'flames',
-        'poison', 'mute', 'thud', 'revive'
+        'poison', 'mute', 'thud', 'revive', 'impact_punch', 'impact_sword',
+        'jingle_win', 'jingle_lose', 'level_up',
     ];
 
     private isInTargetMode: boolean = false;
@@ -174,6 +195,19 @@ export class Arena extends Phaser.Scene
     private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
     private selfItemPreview: {x: number; y: number; player: Player} | null = null;
+    private soundCopies = new Map<string, number>();
+    private sparkEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    private emberEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    private tintedSparkEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    /** Where the latest spell landed, so the characters it hits recoil away from it. */
+    private lastImpact: {x: number; y: number; at: number} | null = null;
+    private killCamCheck: Phaser.Time.TimerEvent | null = null;
+    /** Killing spells still travelling to their target. */
+    private killsInFlight = 0;
+    private endKillCam: (() => void) | null = null;
+    private afterKillCam: (() => void)[] = [];
+    private movePreview: Phaser.GameObjects.GameObject[] = [];
+    private damagePreviewTarget: Player | null = null;
 
     constructor() {
         super({ key: 'Arena' });
@@ -266,6 +300,11 @@ export class Arena extends Phaser.Scene
         this.load.audio('flames', flamesSFX);
         // this.load.audio('cheer', cheerSFX);
         this.load.audio('thud', thudSFX);
+        this.load.audio('impact_punch', impactPunchSFX);
+        this.load.audio('impact_sword', impactSwordSFX);
+        this.load.audio('jingle_win', jingleWinSFX);
+        this.load.audio('jingle_lose', jingleLoseSFX);
+        this.load.audio('level_up', levelUpSFX);
 
 
         // Load spell sounds
@@ -522,6 +561,7 @@ export class Arena extends Phaser.Scene
             const isAllyTargetingSpell = spell?.targetHighlight === TargetHighlight.ALLY;
 
             this.isInTargetMode = true;
+            this.clearMovePreview();
             this.targetModeSize = spell?.radius - 1|| 0;
             this.hexGridManager.toggleTargetMode(true);
 
@@ -681,6 +721,8 @@ export class Arena extends Phaser.Scene
 
     handleTileHover(gridX, gridY, hover = true) {
         const player = this.gridMap.get(serializeCoords(gridX, gridY));
+        if (hover && !player) this.showMovePreview(gridX, gridY);
+        else this.clearMovePreview();
         if (hover && player) {
             this.inspectBattlefieldCharacter(player);
         } else if (this.hoverSource === 'battlefield' && (!hover ? this.hoveredPlayer === player : true)) {
@@ -719,7 +761,17 @@ export class Arena extends Phaser.Scene
         } else this.refreshCharacterHover();
     }
 
+    /** Blink the predicted loss on the target's own bar, not only in the HUD. */
+    private showDamagePreview(target: Player | null, preview?: CharacterHover['preview']) {
+        if (this.damagePreviewTarget && this.damagePreviewTarget !== target) this.damagePreviewTarget.healthBar?.setPreview(null);
+        this.damagePreviewTarget = target;
+        if (!target) return;
+        target.healthBar?.setPreview(preview && preview.hp < 0 ? (target.hp + preview.hp) / target.maxHP : null);
+    }
+
     clearCharacterHover = () => {
+        this.showDamagePreview(null);
+        this.hoverPreviewKey = '';
         if (this.hoveredPlayer) {
             this.hoveredPlayer.setHovered(false);
             if (this.hoverSource === 'battlefield') this.hoveredPlayer.onPointerOut();
@@ -745,6 +797,7 @@ export class Arena extends Phaser.Scene
         if (key !== this.hoverPreviewKey) {
             this.hoverPreviewKey = key;
             this.hoverPreviewValue = this.getHPPreview(target);
+            this.showDamagePreview(target, this.hoverPreviewValue);
         }
         return this.hoverPreviewValue;
     }
@@ -821,6 +874,7 @@ export class Arena extends Phaser.Scene
             return;
         }
         this.playSound('click');
+        this.clearMovePreview();
         this.sendMove(gridX, gridY);
         this.hexGridManager.clearHighlight();
     }
@@ -914,6 +968,7 @@ export class Arena extends Phaser.Scene
     }
 
     deselectPlayer() {
+        this.clearMovePreview();
         if (this.selectedPlayer) {
             this.selectedPlayer.deselect();
             this.selectedPlayer.cancelSkill();
@@ -939,6 +994,7 @@ export class Arena extends Phaser.Scene
             return;
         }
 
+        this.clearMovePreview();
         this.gridMap.delete(serializeCoords(player.gridX, player.gridY));
         this.gridMap.set(serializeCoords(tile.x, tile.y), player);
 
@@ -949,7 +1005,7 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    processAttack({team, target, num, hp, isKill, sameTeam}) {
+    processAttack({team, target, num, hp, damage, isKill, sameTeam}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         const otherTeam = sameTeam ? team : this.getOtherTeam(team);
@@ -957,13 +1013,21 @@ export class Arena extends Phaser.Scene
         if (!player || !targetPlayer) return;
 
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(targetPlayer.gridX, targetPlayer.gridY);
-        if (isKill) this.killCam(pixelX, pixelY);
+        // The server reports the HP change just before the attack; play it when the blow lands.
+        const hpBefore = targetPlayer.hp;
+        const delta = targetPlayer.takePendingReaction() ?? (hp !== hpBefore ? (damage ?? hp - hpBefore) : null);
 
         this.playSound('slash');
         player.attack(targetPlayer.gridX);
         targetPlayer.setHP(hp);
         targetPlayer.displaySlash(player);
-        this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);
+        player.lunge(targetPlayer, () => {
+            this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);
+            const mage = player.class === Class.WHITE_MAGE || player.class === Class.BLACK_MAGE;
+            this.playSound(mage ? 'impact_punch' : 'impact_sword');
+            if (delta) targetPlayer.showHPChange(delta, {from: player});
+        });
+        if (isKill) this.requestKillCam(pixelX, pixelY);
         if (player.isPlayer) {
             events.emit('playerAttacked');
         }
@@ -972,10 +1036,16 @@ export class Arena extends Phaser.Scene
     processObstacleAttack({team, num, x, y}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
+        if (!player) return;
         this.playSound('slash');
-        this.playSound('shatter');
         player.attack(x);
-        this.displayAttackImpact(x, y);
+        player.lunge(this.hexGridToPixelCoords(x, y), () => {
+            this.playSound('shatter');
+            this.displayAttackImpact(x, y);
+            const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
+            this.sparks(pixelX, pixelY - 10, 12, 0xd8f4ff);
+            shake(this, 120, 0.003);
+        });
     }
 
     processInventory({num, inventory}) {
@@ -989,10 +1059,27 @@ export class Arena extends Phaser.Scene
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         if (!player) return;
+        const delta = damage ?? hp - player.hp;
         player.setHP(hp);
-        if (damage) player.displayDamage(damage);
+        if (delta) this.queueHPReaction(player, delta);
         if (player.isPlayer) events.emit('hpChange', {num, hp});
         this.refreshTutorial();
+    }
+
+    /** Wait a moment in case a melee attack claims this change; otherwise it came from a spell, item or effect. */
+    private queueHPReaction(player: Player, delta: number) {
+        const total = (player.takePendingReaction() ?? 0) + delta;
+        player.pendingReaction = {delta: total, timer: this.time.delayedCall(80, () => {
+            player.pendingReaction = null;
+            const impact = this.lastImpact && performance.now() - this.lastImpact.at < 1500 ? this.lastImpact : null;
+            let color: string | undefined;
+            if (total < 0 && !impact) {
+                // Damage over time takes the colour of its cause.
+                if (player.statuses[StatusEffect.POISON]) color = NUMBER_COLORS.poison;
+                else if (player.statuses[StatusEffect.BURN] || this.hasFlame(player.gridX, player.gridY)) color = NUMBER_COLORS.burn;
+            }
+            player.showHPChange(total, {from: impact ?? undefined, color});
+        })};
     }
 
     processStatusResisted({team, num}) {
@@ -1010,7 +1097,10 @@ export class Arena extends Phaser.Scene
     processMPChange({team = this.playerTeamId, num, mp}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
-        player?.setMP(mp);
+        if (player) {
+            const previous = player.setMP(mp);
+            if (mp > previous) player.showMPGain(mp - previous);
+        }
         this.refreshTutorial();
     }
 
@@ -1176,11 +1266,12 @@ export class Arena extends Phaser.Scene
             this.animateProjectile(fromX, fromY, toX, toY, spell.projectile);
         }
 
+        if (isKill) this.killsInFlight++;
         this.time.delayedCall(spell.projectile ? PROJECTILE_DURATION * 1000 : 0, () => {
+            this.lastImpact = {x: pixelXInitial, y: pixelYInitial, at: performance.now()};
             if (isKill) {
-                this.killCam(pixelXInitial, pixelYInitial);
-            } else {
-                // this.spellCam(pixelX, pixelY);
+                this.killsInFlight--;
+                this.requestKillCam(pixelXInitial, pixelYInitial);
             }
 
             const scale = config && 'scale' in config ? config.scale : LOCAL_ANIMATION_SCALE;
@@ -1204,9 +1295,7 @@ export class Arena extends Phaser.Scene
             this.playSound(spell.sfx);
 
             if (config && config.shake) {
-                const duration = isKill ? 2000 : 1000;
-                const intensity = isKill ? 0.002 : 0.02;
-                this.cameras.main.shake(duration, intensity);
+                shake(this, isKill ? 450 : 320, isKill ? 0.012 : 0.007);
             }
         });
     }
@@ -1283,14 +1372,12 @@ export class Arena extends Phaser.Scene
     }
 
     // Add this new method to handle camera movement
-    panCameraWithOffset(targetX: number, targetY: number, duration: number = 1000, easing: string = 'Cubic.easeOut') {
+    panCameraWithOffset(targetX: number, targetY: number, duration: number = 1000, easing: string = 'Cubic.easeOut', moveRatio = 0.4) {
         if (FREEZE_CAMERA) return;
         // Get screen dimensions and target position
         const screenWidth = this.cameras.main.width;
         const screenHeight = this.cameras.main.height;
 
-        // Calculate camera movement from center
-        const moveRatio = 0.4;
         const screenCenterX = screenWidth/2;
         const screenCenterY = screenHeight/2;
 
@@ -1334,34 +1421,50 @@ export class Arena extends Phaser.Scene
         if (!player) return;
 
         // If killcam is active, wait for it to finish before highlighting turnee
-        if (this.killCamActive) {
-            this.time.delayedCall(KILL_CAM_DURATION * 1000, () => {
-                this.highlightTurnee();
-            });
+        if (this.killCamActive || this.killCamCheck) {
+            this.whenKillCamEnds(() => this.highlightTurnee());
             return;
         }
 
-        // this.panCameraWithOffset(x, y);
+        // A gentle nudge toward whoever acts; the board stays readable.
+        if (cameraNudgeEnabled() && !this.isZoomedForSpellCast) {
+            this.panCameraWithOffset(player.x, player.y, 700, 'Sine.easeInOut', 0.05);
+        }
     }
 
     processGameEnd(data: OutcomeData) {
         this.clearCharacterHover();
+        this.clearMovePreview();
         this.gameEnded = true;
-        const music = this.musicManager;
-        music.gameOver = true;
-        void setRouteMusic('/game').then(() => {
-            if (!this.disposed) music.playEnd();
-        });
+        // Clear the stage for the result jingle.
+        this.musicManager.fadeOut();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
-        this.time.delayedCall(200, () => {
+        const losingTeam = this.teamsMap.get(winningTeam?.id === 1 ? 2 : 1);
+        // Let the final kill play out (kill cam included) before the result; the music fades meanwhile.
+        this.whenKillCamEnds(() => this.time.delayedCall(RESULT_DELAY_MS, () => {
+            if (this.disposed) return;
+            const jingle = data.isWinner ? 'jingle_win' : 'jingle_lose';
+            // The jingle closes the match; the combat soundtrack does not resume after it.
+            this.playSound(jingle);
             winningTeam?.members.forEach((player) => {
                 player.victoryDance();
+                if (player.isAlive()) this.embers(player.x, player.y - 30, 20);
             });
-        });
-        if (this.overviewReady) {
-            events.emit('gameEnd', data);
-        }
+            losingTeam?.members.forEach((player) => {
+                if (player.isAlive()) player.playAnim('hurt');
+            });
+            rumble(data.isWinner ? 0.4 : 0.6, data.isWinner ? 0.6 : 0.2, data.isWinner ? 250 : 350);
+            // The champions celebrate on the field before the result screen covers it.
+            this.time.delayedCall(RESULT_SCREEN_DELAY_MS, () => {
+                if (!this.disposed && this.overviewReady) events.emit('gameEnd', data);
+            });
+        }));
     }
+
+    /** End-screen level-ups play their fanfare over the result jingle. */
+    playLevelUp = () => {
+        if (!this.disposed) this.playSound('level_up');
+    };
 
     processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
         const team = this.teamsMap.get(data.team);
@@ -1386,8 +1489,11 @@ export class Arena extends Phaser.Scene
         if (this.gameEnded) return;
         events.emit('combatWaiting', false);
         // Determine if turnee is player
+        this.clearMovePreview();
         if (data.team !== this.playerTeamId) {
             events.emit('enemyTurn');
+        } else if (!this.isReplay && !this.gameSettings?.spectator) {
+            rumble(0.1, 0.25, 90);
         }
         events.emit('turnStarted');
 
@@ -1416,17 +1522,30 @@ export class Arena extends Phaser.Scene
         for (const player of this.gridMap.values()) player.numKey?.setFontSize(12 * settings.textSize / 100);
     }
 
-    playSound(name, volume = 1, loop = false) {
+    /** Combat sounds vary a little in pitch and volume, and up to a few copies of one sound may overlap. */
+    playSound(name, volume = 1, loop = false): Phaser.Sound.BaseSound | null {
         if (!this.SFX || !this.SFX[name]) {
             console.warn(`Sound effect "${name}" not found`);
-            return;
+            return null;
         }
 
         const adjustedVolume = volume * sfxLevel(name) * this.sfxVolume;
         try {
-            this.SFX[name].play({delay: 0, volume: adjustedVolume, loop});
+            if (loop || PERSISTENT_SOUNDS.has(name)) {
+                this.SFX[name].play({delay: 0, volume: adjustedVolume, loop});
+                return this.SFX[name];
+            }
+            const copies = this.soundCopies.get(name) ?? 0;
+            if (copies >= MAX_SOUND_COPIES) return null;
+            const sound = this.sound.add(name);
+            this.soundCopies.set(name, copies + 1);
+            sound.once(Phaser.Sound.Events.DESTROY, () => this.soundCopies.set(name, (this.soundCopies.get(name) ?? 1) - 1));
+            sound.once(Phaser.Sound.Events.COMPLETE, () => sound.destroy());
+            sound.play({volume: adjustedVolume * (0.9 + Math.random() * 0.2), rate: 0.94 + Math.random() * 0.12});
+            return sound;
         } catch (error) {
             console.warn(`Error playing sound "${name}":`, error);
+            return null;
         }
     }
 
@@ -1681,7 +1800,7 @@ export class Arena extends Phaser.Scene
         if (!player || item?.target !== Target.SELF || this.unavailableActionReason(player)) return;
         this.selfItemPreview = {x: player.gridX, y: player.gridY, player};
         player.setItemPreviewed(true);
-        this.hexGridManager.applyHighlight(player.gridX, player.gridY, TileColors.TARGET_RANGE_ALLY, HighlightType.SPELL);
+        this.hexGridManager.applyHighlight(player.gridX, player.gridY, TileColors.SPELL_RADIUS_ALLY, HighlightType.SPELL);
     }
 
     highlightCells(gridX, gridY, radius) {
@@ -1713,6 +1832,7 @@ export class Arena extends Phaser.Scene
         this.setUpArena();
         this.createAnims();
         this.createSounds();
+        this.createParticles();
         if (this.sound instanceof Phaser.Sound.WebAudioSoundManager) {
             // Phaser consumes this internal flag on its next update to unlock queued sounds.
             const sound = this.sound as Phaser.Sound.WebAudioSoundManager & {unlocked: boolean};
@@ -1860,6 +1980,7 @@ export class Arena extends Phaser.Scene
             itemClick: (keyIndex: number) => { this.previewSelfItem(null); this.selectedPlayer?.onKey(keyIndex); },
             itemPreview: (index: number | null) => this.previewSelfItem(index),
             passTurn: () => { this.playSound('click'); this.socket.emit('passTurn'); },
+            endgameLevelUp: this.playLevelUp,
             abandonGame: () => this.abandonGame(),
             exitGame: () => this.destroy(),
             tutorialIntroComplete: () => {
@@ -2154,6 +2275,42 @@ export class Arena extends Phaser.Scene
         return this.turnee;
     }
 
+    /**
+     * Kills are confirmed a moment later, once every HP change has arrived: the kill cam plays only for
+     * the final kill, a one-shot or several knockouts at once, so routine kills keep the pace.
+     */
+    requestKillCam(x: number, y: number) {
+        if (this.killCamActive || this.killCamCheck) {
+            this.flushAfterKillCam();
+            return;
+        }
+        this.killCamCheck = this.time.delayedCall(120, () => {
+            this.killCamCheck = null;
+            const now = Date.now();
+            const all = [...this.teamsMap.values()].flatMap(team => team.members);
+            const recent = all.filter(player => !player.isAlive() && now - player.diedAt < 600);
+            const finalKill = [...this.teamsMap.values()].some(team => team.members.length && team.members.every(player => !player.isAlive()));
+            const oneShot = recent.some(player => player.hpBeforeHit >= player.maxHP);
+            if (finalKill || oneShot || recent.length >= 2) this.killCam(x, y);
+            else this.flushAfterKillCam();
+        });
+    }
+
+    private killCamBusy() {
+        return this.killCamActive || this.killCamCheck !== null || this.killsInFlight > 0;
+    }
+
+    /** Run now, or once pending kills have landed and the kill cam has returned to normal speed. */
+    private whenKillCamEnds(callback: () => void) {
+        if (this.killCamBusy()) this.afterKillCam.push(callback);
+        else callback();
+    }
+
+    private flushAfterKillCam() {
+        if (this.killCamBusy()) return;
+        this.afterKillCam.splice(0).forEach(callback => { callback(); });
+    }
+
     killCam(x, y) {
         this.killCamActive = true;
         // Save the original camera state
@@ -2163,6 +2320,7 @@ export class Arena extends Phaser.Scene
         const originalTweenRate = this.tweens.timeScale;
         const originalScrollX = this.cameras.main.scrollX;
         const originalScrollY = this.cameras.main.scrollY;
+        const emitters = [this.sparkEmitter, this.emberEmitter, this.tintedSparkEmitter];
 
         const targetZoom = 2;
         const slowMotionScale = 0.2;
@@ -2170,38 +2328,133 @@ export class Arena extends Phaser.Scene
         this.sound.setRate(slowMotionScale);
         this.localAnimationSprite.anims.timeScale = slowMotionScale;
         this.tweens.timeScale = slowMotionScale;
+        emitters.forEach(emitter => { emitter.timeScale = slowMotionScale; });
 
         // For every sprites in this.sprites, set anims.timeScale to slowMotionScale
         this.sprites.forEach((sprite) => {
             if (sprite.anims) sprite.anims.timeScale = slowMotionScale;
         });
 
-        const firstDelay = 0;
-        const secondDelay = firstDelay + KILL_CAM_DURATION * 1000;
         const cameraSpeed = 200;
-
-        this.time.delayedCall(firstDelay, () => {
-            // Move camera to the spell's location and zoom in
+        if (!FREEZE_CAMERA) {
             this.cameras.main.pan(x, y, cameraSpeed, 'Power2');
             this.cameras.main.zoomTo(targetZoom, cameraSpeed, 'Power2');
-        });
+        }
 
-        this.time.delayedCall(secondDelay, () => {
+        // Any click or key skips the rest of the kill cam.
+        const skip = () => this.endKillCam?.();
+        const timer = this.time.delayedCall(KILL_CAM_DURATION * 1000, skip);
+        this.input.once('pointerdown', skip);
+        window.addEventListener('keydown', skip, {once: true});
+
+        this.endKillCam = () => {
+            this.endKillCam = null;
+            timer.remove();
+            this.input.off('pointerdown', skip);
+            window.removeEventListener('keydown', skip);
+            if (this.disposed) return;
             // Return the camera to its original position and zoom level
-            const returnX = this.cameras.main.width / 2 + originalScrollX;
-            const returnY = this.cameras.main.height / 2 + originalScrollY;
-            this.cameras.main.pan(returnX, returnY, cameraSpeed, 'Power2');
-            this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2');
+            if (!FREEZE_CAMERA) {
+                const returnX = this.cameras.main.width / 2 + originalScrollX;
+                const returnY = this.cameras.main.height / 2 + originalScrollY;
+                this.cameras.main.pan(returnX, returnY, cameraSpeed, 'Power2');
+                this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2');
+            }
             this.localAnimationSprite.anims.timeScale = originalTimeScale;
             this.sound.setRate(originalSoundRate);
             this.tweens.timeScale = originalTweenRate;
+            emitters.forEach(emitter => { emitter.timeScale = 1; });
 
             this.sprites.forEach((sprite) => {
                 if (sprite.anims) sprite.anims.timeScale = originalTimeScale;
             });
             this.killCamActive = false;
+            this.flushAfterKillCam();
             this.processGENQueue(); // Trigger processing of GEN queue after kill cam
-        });
+        };
+    }
+
+    createParticles() {
+        if (!this.textures.exists('fx_spark')) {
+            const graphics = this.make.graphics({x: 0, y: 0}, false);
+            graphics.fillStyle(0xffffff, 1).fillCircle(4, 4, 4);
+            graphics.generateTexture('fx_spark', 8, 8);
+            graphics.destroy();
+        }
+        // Below the announcements (depth 10), above every character.
+        this.sparkEmitter = this.add.particles(0, 0, 'fx_spark', {
+            emitting: false, lifespan: {min: 220, max: 480}, speed: {min: 120, max: 320}, angle: {min: 200, max: 340},
+            gravityY: 700, scale: {start: 0.7, end: 0}, tint: EMBER_TINTS, blendMode: 'ADD',
+        }).setDepth(9);
+        this.tintedSparkEmitter = this.add.particles(0, 0, 'fx_spark', {
+            emitting: false, lifespan: {min: 300, max: 600}, speed: {min: 60, max: 180}, gravityY: 200,
+            scale: {start: 0.6, end: 0}, blendMode: 'ADD',
+        }).setDepth(9);
+        this.emberEmitter = this.add.particles(0, 0, 'fx_spark', {
+            emitting: false, lifespan: {min: 700, max: 1400}, speedY: {min: -130, max: -40}, speedX: {min: -35, max: 35},
+            x: {min: -18, max: 18}, scale: {start: 0.6, end: 0}, alpha: {start: 1, end: 0}, tint: EMBER_TINTS, blendMode: 'ADD',
+        }).setDepth(9);
+    }
+
+    /** A burst of sparks; an optional tint replaces the ember colours. */
+    sparks(x: number, y: number, count: number, tint?: number) {
+        if (!this.sparkEmitter || count <= 0) return;
+        if (tint === undefined) {
+            this.sparkEmitter.explode(count, x, y);
+            return;
+        }
+        this.tintedSparkEmitter.setParticleTint(tint);
+        this.tintedSparkEmitter.explode(count, x, y);
+    }
+
+    /** Embers drifting up, for knockouts and victories. */
+    embers(x: number, y: number, count: number) {
+        this.emberEmitter?.explode(count, x, y);
+    }
+
+    dustPuff(x: number, y: number, depth: number, scale = 0.7) {
+        if (this.disposed) return;
+        const puff = this.add.sprite(x, y, '').setDepth(depth).setScale(scale).setAlpha(0.6);
+        puff.play('smoke');
+        puff.once('animationcomplete', () => puff.destroy());
+    }
+
+    /** Embers gathering around a caster charging a spell. */
+    chargeAura(player: Player, charge: string) {
+        const element = Object.keys(CHARGE_TINTS).find(key => charge.includes(key)) ?? 'fire';
+        return this.add.particles(0, 0, 'fx_spark', {
+            lifespan: 700, frequency: 45, speedY: {min: -90, max: -30}, x: {min: -26, max: 26}, y: {min: -10, max: 30},
+            scale: {start: 0.55, end: 0}, alpha: {start: 0.9, end: 0}, tint: CHARGE_TINTS[element], blendMode: 'ADD',
+            follow: player,
+        }).setDepth(player.depth + 0.005);
+    }
+
+    /** While hovering a reachable tile: the route there and a ghost of the unit at the end. */
+    showMovePreview(gridX: number, gridY: number) {
+        this.clearMovePreview();
+        const player = this.selectedPlayer;
+        if (!player?.isPlayer || player.pendingSpell != null || player.pendingItem != null || this.isInTargetMode
+            || this.unavailableActionReason(player) || this.gridMap.has(serializeCoords(gridX, gridY))
+            || !player.canMoveTo(gridX, gridY)
+            || !this.hexGridManager.isValidCell(player.gridX, player.gridY, gridX, gridY, this.isFree.bind(this))) return;
+        const dots = this.add.graphics().setDepth(2);
+        dots.fillStyle(0xfff1c9, 0.9);
+        for (const cell of listCellsOnTheWay(player.gridX, player.gridY, gridX, gridY)) {
+            const [x, y] = cell.split(',').map(Number);
+            if (x === gridX && y === gridY) continue;
+            const {x: px, y: py} = this.hexGridToPixelCoords(x, y);
+            dots.fillCircle(px, py + 40, 7);
+        }
+        const {x, y} = this.hexGridToPixelCoords(gridX, gridY);
+        const ghost = this.add.sprite(x, y, player.texture, player.sprite.frame.name)
+            .setAlpha(0.55).setTint(0xcfe8ff).setFlipX(gridX === player.gridX ? player.sprite.flipX : gridX > player.gridX)
+            .setDepth(this.yToZ(gridY) - 0.005);
+        this.movePreview = [dots, ghost];
+    }
+
+    clearMovePreview() {
+        this.movePreview.forEach(object => { object.destroy(); });
+        this.movePreview = [];
     }
 
     addFlames() {
@@ -2255,6 +2508,9 @@ export class Arena extends Phaser.Scene
         this.socket?.disconnect();
         Object.entries(this.hudHandlers).forEach(([event, handler]) => { events.off(event, handler); });
         events.off('settingsChanged', this.onSettingsChanged, this);
+        this.endKillCam?.();
+        this.afterKillCam.length = 0;
+        this.clearMovePreview();
         this.musicManager?.destroy();
         this.tutorialManager?.destroy();
         this.tweens?.killAll();

@@ -63,7 +63,7 @@ class Overview extends Component<Props, State> {
           setTimeout(() => {
             blinking[memberIndex] = false;
             this.setState({ blinking });
-          }, 750); // blink for 500ms
+          }, 450);
         }
         previousHPs[memberIndex] = member.hp;
       });
@@ -132,7 +132,7 @@ class Overview extends Component<Props, State> {
                 onBlur={() => onInspect(teamId, memberIndex + 1, null)}
                 className={`member char_stats_container ${position === 'right' && 'flex_row_reverse'}`}
               >
-                <div className='char_profile_container' style={charProfileStyle(memberIndex)}>
+                <div className={`char_profile_container ${blinking[memberIndex] ? 'char_hit' : ''}`} style={charProfileStyle(memberIndex)}>
                   <div className={`char_portrait ${position === 'left' ? 'flip' : 'char_portrait_right'} ${member.hp > 0 ? 'char_alive_animation' : ''}`} style={portraitStyle} />
                   {Number.isFinite(member.level) && <span className="char_level_tag"><small>{t("Lvl")}</small>{formatNumber(member.level)}</span>}
                 </div>
@@ -147,6 +147,8 @@ class Overview extends Component<Props, State> {
                     <p>{member.name}</p>
                   </div>
                   <div className="char_stats_bar" style={position === 'left' && { justifyContent: 'flex-start' }}>
+                    {/* What was just lost stays lit, then drains. */}
+                    <div className="char_stats_hp_trail" style={{ width: `${(member.hp / member.maxHP) * 100}%`, [position === 'left' ? 'left' : 'right']: 0 }}></div>
                     <div className="char_stats_hp" style={{ width: `${(member.hp / member.maxHP) * 100}%` }}></div>
                   </div>
                   {Number.isFinite(member.mp) && member.maxMP > 0 && <div className="char_stats_bar" style={position === 'left' && { justifyContent: 'flex-start' }}>

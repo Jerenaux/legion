@@ -11,11 +11,26 @@ import { PlayerProps, StatusEffects, CharacterStats } from "@legion/shared/inter
 import { paralyzingStatuses } from '@legion/shared/utils';
 import { SpeechBubble } from "./SpeechBubble";
 import { BASE_ANIM_FRAME_RATE, MOVEMENT_RANGE, GRID_WIDTH } from '@legion/shared/config';
-import { hexDistance } from '@legion/shared/utils';
+import { hexDistance, listCellsOnTheWay } from '@legion/shared/utils';
 import {loadGameSettings} from '../settings';
 import {VFX_DISPLAY_SCALE} from './VFXconfig';
 import {SPELL_SLOT_OFFSET} from '../input/bindings';
 import {displayTint} from './palette';
+import {FEEDBACK, flash, hitStop, popNumber, rumble, screenEffectsEnabled, shake} from './feedback';
+
+/** Knocked-out characters stay on the field, dimmed. */
+const DEAD_TINT = 0x7a7480;
+const STEP_MS = 110;
+
+export const NUMBER_COLORS = {
+    damage: '#ffe6c7', heavy: '#ff6a4a', heal: '#7dee8f', mana: '#7cc6ff', poison: '#c08cff', burn: '#ffa04d',
+};
+
+const STATUS_COLORS: Partial<Record<StatusEffect, number>> = {
+    [StatusEffect.POISON]: 0xa66bff, [StatusEffect.BURN]: 0xff7a2e, [StatusEffect.FREEZE]: 0x8fd8ff,
+    [StatusEffect.PARALYZE]: 0xffe066, [StatusEffect.SLEEP]: 0x9fb4ff, [StatusEffect.MUTE]: 0xd2c8e0,
+    [StatusEffect.HASTE]: 0x7dffb0,
+};
 
 enum GlowColors {
     Enemy = 0xff0000,
@@ -47,7 +62,6 @@ export class Player extends Phaser.GameObjects.Container {
     mp: number;
     healthBar: HealthBar;
     MPBar: HealthBar;
-    hurtTween: Phaser.Tweens.Tween;
     inventory: BaseItem[] = [];
     spells: BaseSpell[] = [];
     animationSprite: Phaser.GameObjects.Sprite;
@@ -73,6 +87,13 @@ export class Player extends Phaser.GameObjects.Container {
     selectionArrow: Phaser.GameObjects.Sprite;
     deathCheckTimer: Phaser.Time.TimerEvent;
     chargeSprite: Phaser.GameObjects.Sprite | null = null;
+    /** HP before the latest loss, to recognise one-shots. */
+    hpBeforeHit = 0;
+    diedAt = 0;
+    /** An HP change waiting briefly in case a melee attack claims it, so the hit lands with the blow. */
+    pendingReaction: {delta: number; timer: Phaser.Time.TimerEvent} | null = null;
+    private offsetTween: Phaser.Tweens.BaseTween | null = null;
+    private chargeAura: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
 
     constructor(
         scene: Phaser.Scene, arenaScene: Arena, team: Team, name: string, gridX: number, gridY: number, x: number, y: number,
@@ -609,6 +630,8 @@ export class Player extends Phaser.GameObjects.Container {
 
                 // Play the fire charge animation
                 this.chargeSprite.play(charge);
+                this.chargeAura?.destroy();
+                this.chargeAura = this.arena.chargeAura(this, charge);
             }
         } else {
             // Stop and clean up charge animation when ending cast
@@ -618,6 +641,8 @@ export class Player extends Phaser.GameObjects.Container {
                 this.chargeSprite.destroy();
                 this.chargeSprite = null;
             }
+            this.chargeAura?.destroy();
+            this.chargeAura = null;
 
             this.playAnim('idle');
             this.animationSprite.setVisible(false);
@@ -682,41 +707,39 @@ export class Player extends Phaser.GameObjects.Container {
         return hexDistance(this.gridX, this.gridY, x, y) <= 1;
     }
 
-    walkTo(gridX: number, gridY: number, duration = 300, callback?: () => void) {
-        // Store old position
+    walkTo(gridX: number, gridY: number, duration?: number, callback?: () => void) {
         const oldGridX = this.gridX;
         const oldGridY = this.gridY;
 
         // Update grid position - this changes the character's logical position
         this.updatePos(gridX, gridY);
-
-        // Start walking animation
         this.playAnim('walk');
-
-        // Get the pixel coordinates for the movement
-        const {x, y} = this.arena.hexGridToPixelCoords(gridX, gridY);
-
-        // Update grid tile at old position (remove character from old tile)
         this.arena.hexGridManager.updateTileOnCharacterExit(oldGridX, oldGridY);
 
-        // Animate the character to the new position
-        this.scene.tweens.add({
-            targets: this,
-            props: {
-                x,
-                y,
-            },
-            duration,
-            onComplete: () => {
-                // Update grid tile at new position (add character to new tile)
-                this.arena.hexGridManager.updateTileOnCharacterEnter(gridX, gridY, this.isPlayer);
+        const finish = () => {
+            this.arena.hexGridManager.updateTileOnCharacterEnter(gridX, gridY, this.isPlayer);
+            if (callback) callback();
+            else this.playAnim('idle');
+        };
 
-                // Execute callback or return to idle animation
-                if (callback) {
-                    callback();
-                } else {
-                    this.playAnim('idle');
-                }
+        // Step through each hex of the straight line a move follows, with a puff of dust per step.
+        const cells = duration ? [{x: gridX, y: gridY}]
+            : [...listCellsOnTheWay(oldGridX, oldGridY, gridX, gridY)].map(cell => {
+                const [x, y] = cell.split(',').map(Number);
+                return {x, y};
+            });
+        const stepMs = duration ?? Math.min(STEP_MS, 450 / cells.length);
+        this.scene.tweens.chain({
+            targets: this,
+            tweens: cells.map((cell, index) => ({
+                ...this.arena.hexGridToPixelCoords(cell.x, cell.y),
+                duration: stepMs,
+                ease: index === cells.length - 1 ? 'Quad.easeOut' : 'Linear',
+                onComplete: () => this.arena.dustPuff(this.x, this.y + 40, this.depth - 0.001),
+            })),
+            onComplete: () => {
+                this.landingSquash();
+                finish();
             },
         });
 
@@ -724,21 +747,25 @@ export class Player extends Phaser.GameObjects.Container {
         if (oldGridX !== this.gridX) this.sprite.flipX = this.gridX > oldGridX;
     }
 
+    private landingSquash() {
+        if (!screenEffectsEnabled()) return;
+        this.scene.tweens.add({targets: this.sprite, scaleY: 0.92, scaleX: 1.06, duration: 70, yoyo: true, ease: 'Quad.easeOut',
+            onComplete: () => this.sprite.setScale(1)});
+    }
+
     setHP(hp) {
         const _hp = this.hp
         this.hp = hp;
         this.healthBar.setHpValue(hp / this.maxHP);
-        if (this.hp < _hp) {
-            this.hurt();
-        }
+        if (this.hp < _hp) this.hpBeforeHit = _hp;
 
         if(this.isSelected()) this.checkHeartbeat();
 
         if (this.hp <= 0) {
+            if (_hp > 0) this.diedAt = Date.now();
             this.die();
         } else {
-            // this.showBaseSquare(); // Show baseSquare when alive
-
+            if (_hp <= 0) this.restoreTint();
             if (!this.casting) this.playAnim('hurt', true);
 
             this.displayBars();
@@ -748,6 +775,126 @@ export class Player extends Phaser.GameObjects.Container {
             this.arena.refreshUI(this.num);
             this.team.updateHP();
         }
+    }
+
+    /** Hand back a waiting HP reaction so a melee attack can play it at the moment of impact. */
+    takePendingReaction(): number | null {
+        const pending = this.pendingReaction;
+        if (!pending) return null;
+        pending.timer.remove();
+        this.pendingReaction = null;
+        return pending.delta;
+    }
+
+    /**
+     * The visible side of an HP change: a number, and for damage a flash, knockback, impact freeze,
+     * shake and sparks scaled by the share of max HP lost. `from` is where the blow came from.
+     */
+    showHPChange(delta: number, {from, color}: {from?: {x: number; y: number}; color?: string} = {}) {
+        if (!delta || !this.scene) return;
+        const share = Math.min(1, Math.abs(delta) / this.maxHP);
+        const y = (-this.sprite.height / 2) + 15;
+        const fontSize = 24 * loadGameSettings().textSize / 100;
+        if (delta > 0) {
+            popNumber(this.scene, this, y, `+${Math.round(delta)}`, color ?? NUMBER_COLORS.heal, 1 + share * 0.6, fontSize);
+            return;
+        }
+        const kill = this.hp <= 0;
+        const heavy = share >= 0.25 || kill;
+        popNumber(this.scene, this, y, `${Math.round(delta)}`, color ?? (heavy ? NUMBER_COLORS.heavy : NUMBER_COLORS.damage),
+            1 + Math.min(share, 0.5) * 1.4, fontSize);
+        flash(this.scene, this.sprite, () => this.restoreTint(), color ? Phaser.Display.Color.HexStringToColor(color).color : 0xffffff);
+        this.knockback(from);
+        hitStop(this.scene, FEEDBACK.hitStopMs(share, kill));
+        const {duration, intensity} = FEEDBACK.shake(share, kill);
+        shake(this.scene, duration, intensity);
+        this.arena.sparks(this.x, this.y - 10, kill ? 18 : Math.round(5 + share * 20));
+        if (kill) {
+            this.deathFlourish();
+            rumble(0.6, 0.5, 220);
+        } else if (this.isPlayer) {
+            rumble(0.2 + share * 0.6, 0.3, 120);
+        }
+    }
+
+    showMPGain(delta: number) {
+        if (delta <= 0 || !this.scene) return;
+        popNumber(this.scene, this, (-this.sprite.height / 2) + 15, `+${Math.round(delta)}`, NUMBER_COLORS.mana, 1,
+            24 * loadGameSettings().textSize / 100);
+    }
+
+    /** Shove the sprite away from the blow and let it settle back. */
+    private knockback(from?: {x: number; y: number}) {
+        if (!screenEffectsEnabled()) return;
+        this.resetOffset();
+        if (!from) {
+            this.offsetTween = this.scene.tweens.add({targets: this.sprite, scaleY: 0.9, duration: 60, yoyo: true,
+                onComplete: () => this.sprite.setScale(1)});
+            return;
+        }
+        const angle = Math.atan2(this.y - from.y, this.x - from.x);
+        const distance = FEEDBACK.knockbackDistance;
+        this.offsetTween = this.scene.tweens.chain({targets: this.sprite, tweens: [
+            {x: Math.cos(angle) * distance, y: Math.sin(angle) * distance * 0.5, duration: 60, ease: 'Quad.easeOut'},
+            {x: 0, y: 0, duration: 220, ease: 'Quad.easeInOut'},
+        ]});
+    }
+
+    /** Wind up, lunge at the target and call `onImpact` as the blow lands. */
+    lunge(target: {x: number; y: number}, onImpact: () => void) {
+        if (!screenEffectsEnabled()) {
+            onImpact();
+            return;
+        }
+        this.resetOffset();
+        const angle = Math.atan2(target.y - this.y, target.x - this.x);
+        const dx = Math.cos(angle), dy = Math.sin(angle) * 0.5;
+        this.offsetTween = this.scene.tweens.chain({targets: this.sprite, tweens: [
+            {x: -dx * 4, y: -dy * 4, duration: FEEDBACK.windUpMs, ease: 'Quad.easeOut'},
+            {x: dx * FEEDBACK.lungeDistance, y: dy * FEEDBACK.lungeDistance, duration: FEEDBACK.lungeMs, ease: 'Quad.easeIn',
+                onComplete: onImpact},
+            {x: 0, y: 0, duration: 180, ease: 'Quad.easeOut'},
+        ]});
+    }
+
+    private resetOffset() {
+        this.offsetTween?.stop();
+        this.offsetTween = null;
+        this.sprite.setPosition(0, 0).setScale(1);
+    }
+
+    /** Collapse, embers drifting up, then the body dims. */
+    private deathFlourish() {
+        this.arena.embers(this.x, this.y - 10, 16);
+        if (!screenEffectsEnabled()) return;
+        this.scene.tweens.add({targets: this.sprite, scaleY: 0.82, scaleX: 1.1, duration: 110, yoyo: true, ease: 'Quad.easeOut',
+            onComplete: () => this.sprite.setScale(1)});
+    }
+
+    /** Clear temporary tints, keeping a knocked-out character dimmed. */
+    restoreTint() {
+        if (!this.sprite?.active) return;
+        if (this.isAlive()) {
+            this.sprite.clearTint();
+            this.sprite.setAlpha(1);
+        } else {
+            this.sprite.setTint(DEAD_TINT);
+            this.sprite.setAlpha(0.85);
+        }
+    }
+
+    /** A coloured glow over the character when a status takes hold. */
+    private statusPulse(color: number) {
+        if (!screenEffectsEnabled()) return;
+        const from = Phaser.Display.Color.ValueToColor(0xffffff);
+        const to = Phaser.Display.Color.ValueToColor(color);
+        this.scene.tweens.addCounter({from: 0, to: 100, duration: 180, yoyo: true, repeat: 1,
+            onUpdate: tween => {
+                const c = Phaser.Display.Color.Interpolate.ColorWithColor(from, to, 100, tween.getValue());
+                this.sprite.setTint(Phaser.Display.Color.GetColor(c.r, c.g, c.b));
+            },
+            onComplete: () => this.restoreTint(),
+        });
     }
 
     getHPpct() {
@@ -762,6 +909,7 @@ export class Player extends Phaser.GameObjects.Container {
         if(this.mp !== _mp) {
             this.arena.refreshUI(this.num);
         }
+        return _mp;
     }
 
     die() {
@@ -770,6 +918,8 @@ export class Player extends Phaser.GameObjects.Container {
         this.MPBar?.setVisible(false);
         this.hideAllStatusAnimations();
         this.playAnim('die');
+        // Dim once the fall has played.
+        this.scene.time.delayedCall(450, () => this.restoreTint());
         // this.hideBaseSquare();
         // this.stopBlinkingBaseSquare(); // Stop blinking if any
         if (this.arena.selectedPlayer === this) this.arena.deselectPlayer();
@@ -780,21 +930,6 @@ export class Player extends Phaser.GameObjects.Container {
     attack(targetX: number) {
         this.playAnim('attack', true);
         this.sprite.flipX = targetX > this.gridX;
-    }
-
-    hurt() {
-        if (this.hurtTween?.isPlaying()) this.hurtTween.complete();
-        // Blink
-        this.hurtTween = this.scene.tweens.add({
-            targets: this,
-            alpha: 0,
-            duration: 100,
-            repeat: 2,
-            yoyo: true,
-            onComplete: () => {
-                this.alpha = 1;
-            }
-        });
     }
 
     displayOverheadText(text, duration, color) {
@@ -824,11 +959,6 @@ export class Player extends Phaser.GameObjects.Container {
                 textObject.destroy();
             }
         });
-    }
-
-    displayDamage(damage) {
-        const txt = damage > 0 ? `+${Math.round(damage)}` : `${Math.round(damage)}`;
-        this.displayOverheadText(txt, 4000, '#fff');
     }
 
     displaySlash(attacker) {
@@ -876,6 +1006,8 @@ export class Player extends Phaser.GameObjects.Container {
                 this.statusRefreshes[status] = Date.now();
             }
             this.statuses[status] = duration;
+            if (duration !== 0 && !previous) this.onStatusGained(status as StatusEffect);
+            else if (!duration && previous && this.isAlive()) this.arena.dustPuff(this.x, this.y - 40, this.depth + 0.001, 0.6);
             if (duration !== 0) {
                 this.showStatusAnimation(status as keyof StatusEffects);
                 this.arena.relayEvent(`statusGained_${status}`);
@@ -889,6 +1021,19 @@ export class Player extends Phaser.GameObjects.Container {
         this.toggleCharacterImmobilization(paralyzing);
 
         this.arena.refreshUI(this.num);
+    }
+
+    private onStatusGained(status: StatusEffect) {
+        const color = STATUS_COLORS[status];
+        if (color) {
+            this.statusPulse(color);
+            this.arena.sparks(this.x, this.y - 30, 8, color);
+        }
+        const sprite = this.statusSprites.get(status);
+        if (sprite && screenEffectsEnabled()) {
+            sprite.setScale(0);
+            this.scene.tweens.add({targets: sprite, scale: 1, duration: 320, ease: 'Back.easeOut'});
+        }
     }
 
     showStatusAnimation(status: StatusEffect) {
@@ -993,6 +1138,10 @@ export class Player extends Phaser.GameObjects.Container {
     destroy() {
         if (!this.scene) return;
         if (this.arena.hoveredPlayer === this) this.arena.clearCharacterHover();
+        this.chargeAura?.destroy();
+        this.chargeAura = null;
+        this.pendingReaction?.timer.remove();
+        this.pendingReaction = null;
         // Cleanup charge sprite if it exists
         if (this.chargeSprite) {
             this.chargeSprite.destroy();
@@ -1002,6 +1151,7 @@ export class Player extends Phaser.GameObjects.Container {
         // Stop all tweens related to this player
         if (this.scene?.tweens) {
             this.scene.tweens.killTweensOf(this);
+            this.scene.tweens.killTweensOf(this.sprite);
             // this.scene.tweens.killTweensOf(this.baseSquare);
         }
 
