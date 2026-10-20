@@ -128,13 +128,15 @@
   text-align: center;
 }
 
+/* Side by side when both labels fit; long translations stack them at full width instead of overflowing. */
 .buy-dialog-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
 }
 .buy-dialog-buttons button {
+  flex: 1 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
