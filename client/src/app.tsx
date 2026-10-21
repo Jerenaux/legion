@@ -124,8 +124,13 @@ class App extends Component<{}, AppState> {
         return document.querySelector<HTMLButtonElement>('.player_bar_pass_turn:not([disabled])')?.click();
       }
       if (action === 'pause') {
-        if (this.state.currentMainRoute !== 'game') return this.openSystemMenu();
-        return document.querySelector<HTMLElement>('[data-game-menu]')?.click();
+        const combatMenu = this.combatMenu();
+        return combatMenu ? combatMenu.click() : this.openSystemMenu();
+      }
+      // The player's own match handles this in its HUD; spectators and replays get the system menu.
+      if (action === 'abandon-dialog') {
+        if (!this.combatMenu()) this.openSystemMenu();
+        return;
       }
       if (action === 'confirm') {
         const active = document.activeElement as HTMLElement;
@@ -146,9 +151,14 @@ class App extends Component<{}, AppState> {
       }
     };
 
-    // Outside combat only; combat has its own menu and Esc opens the abandon confirmation there.
+    /** The in-match menu (Settings or Abandon), offered only while the player's own match is running. */
+    combatMenu = () => this.state.currentMainRoute === 'game' && !document.querySelector('.endgame')
+      ? document.querySelector<HTMLElement>('[data-game-menu]')
+      : null;
+
+    // Everywhere else (title, menus, victory screen, replays) Esc opens Resume, Settings or Quit.
     openSystemMenu = () => {
-      if (this.state.currentMainRoute === 'game' || document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
+      if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
       openSystemMenu();
     };
 
