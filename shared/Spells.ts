@@ -336,6 +336,11 @@ export function getSpellsUpToLevel(characterClass: Class, level: number):number[
     return spells.filter(spell => spell.minLevel <= level && spell.classes.includes(characterClass)).map(spell => spell.id);
 }
 
+/** Tiers of one element share a family: Fire, Fire+ and Fire X are all "Fire". */
+export function spellFamily(spell: Pick<BaseSpell, 'name'>): string {
+    return spell.name.replace(/(\+| X)$/, '');
+}
+
 export function getSpellById(spellId: number): BaseSpell | undefined {
     return spells.find(spell => spell.id === spellId)!;
 }

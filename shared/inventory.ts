@@ -11,7 +11,7 @@ import { getSpellById } from "./Spells";
 import { getEquipmentById } from "./Equipments";
 import { inventorySize } from './utils';
 import { getConsumableById } from './Items';
-import { SKIP_LEVEL_RESTRICTIONS } from './config';
+import { BASE_MAGE_SPELL_SLOTS, SKIP_LEVEL_RESTRICTIONS, SPELL_SLOT_UNLOCK_LEVELS } from './config';
 
 const dev = process.env.NODE_ENV === "development";
 
@@ -40,18 +40,39 @@ export function canEquipConsumable(characterData: DBCharacterData | APICharacter
     characterData.carrying_capacity + (characterData.carrying_capacity_bonus || 0);
 }
 
-export function canLearnSpell(characterData: DBCharacterData | APICharacterData, spellId: number): boolean {
+/** Spell slots a class has at `level`: three for mages, plus one at each unlock level. */
+export function spellSlotsAt(characterClass: Class, level: number): number {
+  if (characterClass !== Class.WHITE_MAGE && characterClass !== Class.BLACK_MAGE) return 0;
+  return BASE_MAGE_SPELL_SLOTS + SPELL_SLOT_UNLOCK_LEVELS.filter(unlock => level >= unlock).length;
+}
+
+/** A character's spell slots. Stored counts only ever add slots (older test accounts); levels grant the rest. */
+export function spellSlots(characterData: Pick<DBCharacterData, 'class' | 'level' | 'skill_slots'>): number {
+  return Math.max(characterData.skill_slots || 0, spellSlotsAt(characterData.class, characterData.level));
+}
+
+/** The level at which the next spell slot opens, or null once every slot is open. */
+export function nextSpellSlotLevel(characterData: Pick<DBCharacterData, 'class' | 'level' | 'skill_slots'>): number | null {
+  if (spellSlotsAt(characterData.class, 1) === 0) return null;
+  return SPELL_SLOT_UNLOCK_LEVELS.find(unlock => characterData.level < unlock
+    && spellSlotsAt(characterData.class, unlock) > spellSlots(characterData)) ?? null;
+}
+
+/** Class, level and not already known: whether the character could use the spell, slots aside. */
+export function canKnowSpell(characterData: DBCharacterData | APICharacterData, spellId: number): boolean {
   const spell = getSpellById(spellId);
   if (!spell) {
     console.error("Invalid spell ID");
     return false;
   }
-  if (dev) console.log(`[canLearnSpell] spellId: ${spellId}, spell: ${spell.name}, minLevel: ${spell.minLevel}, hasMinlevel: ${hasMinLevel(characterData, spell.minLevel)}, classes: ${spell.classes}, ${hasRequiredClass(characterData, spell.classes)}`);
-  return (
-    hasMinLevel(characterData, spell.minLevel) &&
+  if (dev) console.log(`[canKnowSpell] spellId: ${spellId}, spell: ${spell.name}, minLevel: ${spell.minLevel}, hasMinlevel: ${hasMinLevel(characterData, spell.minLevel)}, classes: ${spell.classes}, ${hasRequiredClass(characterData, spell.classes)}`);
+  return hasMinLevel(characterData, spell.minLevel) &&
     hasRequiredClass(characterData, spell.classes) &&
-    characterData.skills.length < characterData.skill_slots
-  );
+    !(characterData.skills as number[]).includes(spellId);
+}
+
+export function canLearnSpell(characterData: DBCharacterData | APICharacterData, spellId: number): boolean {
+  return canKnowSpell(characterData, spellId) && characterData.skills.length < spellSlots(characterData);
 }
 
 export function hasMinLevel(characterData: DBCharacterData | APICharacterData, level: number): boolean {
@@ -128,12 +149,19 @@ export function unequipConsumable(playerData: InventoryHolder, characterData: DB
   };
 }
 
-export function learnSpell(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {
+/**
+ * Teaching the scroll at `index` of the sorted player spells. With `replaceIndex`, the learned spell
+ * in that slot returns to the inventory as a scroll and the new spell takes its place.
+ */
+export function learnSpell(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number, replaceIndex?: number) {
   const playerInventory = playerData.inventory;
   const spells = playerInventory.spells.sort(numericalSort);
-  const skills = characterData.skills as number[];
+  const skills = [...characterData.skills as number[]];
 
   if (index < 0 || index >= spells.length) {
+    return null;
+  }
+  if (replaceIndex !== undefined && (!Number.isSafeInteger(replaceIndex) || replaceIndex < 0 || replaceIndex >= skills.length)) {
     return null;
   }
 
@@ -143,7 +171,8 @@ export function learnSpell(playerData: InventoryHolder, characterData: DBCharact
   }
 
   spells.splice(index, 1);
-  skills.push(item);
+  if (replaceIndex === undefined) skills.push(item);
+  else spells.push(...skills.splice(replaceIndex, 1, item));
 
   playerInventory.spells = spells.sort(numericalSort);
   return {
@@ -154,6 +183,19 @@ export function learnSpell(playerData: InventoryHolder, characterData: DBCharact
         everEquippedSpell: true
       }
     },
+    characterUpdate: { skills },
+  };
+}
+
+/** Returning the learned spell in slot `index` to the shared inventory as a scroll. */
+export function unlearnSpell(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {
+  const skills = [...characterData.skills as number[]];
+  if (index < 0 || index >= skills.length) return null;
+  const [spell] = skills.splice(index, 1);
+  const playerInventory = playerData.inventory;
+  playerInventory.spells = [...playerInventory.spells, spell].sort(numericalSort);
+  return {
+    playerUpdate: { inventory: playerInventory },
     characterUpdate: { skills },
   };
 }

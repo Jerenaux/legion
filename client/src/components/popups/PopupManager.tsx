@@ -274,7 +274,7 @@ const POPUP_CONFIGS: Record<Popup, PopupConfig> = {
     priority: 17,
     highlightSelectors: ['[data-item-learnable]'],
     props: {
-      text: "Click on a <span class=\"highlight-text\">Spell</span> to teach it to the current character; they will then be able to use it in combat! But be careful, teaching a spell will take a spell slot and cannot be undone!",
+      text: "Click on a <span class=\"highlight-text\">Spell</span> to teach it to the current character; they will then be able to use it in combat! Each spell takes a spell slot.",
     }
   },
   [Popup.EquipEquipment]: {

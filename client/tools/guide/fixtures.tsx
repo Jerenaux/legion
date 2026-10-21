@@ -86,7 +86,9 @@ const profile = {
   engagementStats: {completedGames: 12, everMoved: true, everAttacked: true, everUsedSpell: true, everUsedItem: true, everSawFlames: true, everSawIce: true},
 };
 const statuses = Object.fromEntries(Object.values(StatusEffect).map(key => [key, 0])) as StatusEffects;
-const team = characters.map((character, i) => {
+const previewSkills = new URLSearchParams(location.search).get('skills')?.split(',').map(Number);
+const team = characters.map((source, i) => {
+  const character = i === 2 && previewSkills ? {...source, skills: previewSkills} : source;
   const combatStats = Object.fromEntries(statFieldsByIndex.map((field, stat) =>
     [stat, character.stats[field] + character.sp_bonuses[field] + character.equipment_bonuses[field]])) as CharacterStats;
   return {...character, x: [4, 3, 5][i], y: [4, 6, 7][i], hp: [78, 80, 80][i], maxHP: combatStats[Stat.HP],
@@ -297,7 +299,10 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
   const [roster, setRoster] = useState(() => {
     previewRoster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
       : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]}).map(character => balanceCharacter(preview.has('item-check')
-        ? {...character, level: Number(preview.get('level') ?? 1)} : character));
+        ? {...character, level: Number(preview.get('level') ?? 1)} : character))
+      // ?skills=0,3,6 sets the black mage's learned spells, to review the spell-slot states.
+      .map(character => character.id === characters[2].id && preview.has('skills')
+        ? {...character, skills: preview.get('skills')!.split(',').map(Number)} : character);
     return previewRoster;
   });
   const [activeId, setActiveId] = useState(characters[2].id);
@@ -321,7 +326,7 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
       dailyloot: {bronze: {hasKey: preview.get('chest') !== 'key', countdown: preview.get('chest') === 'countdown' ? 5 : 0}, silver: {hasKey: false, countdown: 5400}, gold: {hasKey: false, countdown: 41000}},
       firstWinBonusGold: preview.has('first-win') ? FIRST_WIN_BONUS_GOLD : 0,
       community: preview.has('community') ? {...fixtureCommunities[0], joinedAt: Date.parse('2026-09-14'), via: 'code' as const} : null,
-      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: preview.has('inventory') ? Array(Number(preview.get('inventory'))).fill(0) : [0, 0, 1, 6], spells: preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}, ...playerUpdates},
+      carrying_capacity: BASE_INVENTORY_SIZE, inventory: {consumables: preview.has('inventory') ? Array(Number(preview.get('inventory'))).fill(0) : [0, 0, 1, 6], spells: preview.has('spells') ? preview.get('spells')!.split(',').map(Number) : preview.has('item-check') ? [2, 6] : [6], equipment: preview.has('item-check') ? [21] : []}, ...playerUpdates},
     canAccessFeature: (feature: LockedFeatures) => completedGames >= LOCKED_FEATURES[feature],
     getCompletedGames: () => completedGames, checkEngagementFlag: () => true,
     getGamesUntilFeature: (feature: LockedFeatures) => Math.max(0, LOCKED_FEATURES[feature] - completedGames),

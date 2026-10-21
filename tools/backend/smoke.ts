@@ -59,6 +59,7 @@ try {
   assert.equal(accounts[0].uid,accounts[1].uid);
   const one=accounts[0], two=await login(`other-${run}`);
   await (await import('./combat-inventory')).checkCombatInventory({db, api, account: one, otherAccount: two});
+  await (await import('./spell-loadout')).checkSpellLoadout({db, api, account: await login(`spells-${run}`)});
   const initial=(await db.collection('players').doc(one.uid).get()).data();
   assert.equal(initial.characters.length,3);
   assert((await db.collection('games').doc(one.uid).get()).exists);
@@ -198,12 +199,14 @@ try {
   assert.equal((await warrior.ref.get()).data().equipment.weapon, 0);
   await warrior.ref.update({level: 20});
   assert.equal((await equip(warrior.id, InventoryType.SPELLS, 0)).status, 1);
-  await mage.ref.update({skills: [], skill_slots: 1});
+  await mage.ref.update({skills: []});
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
   assert.deepEqual((await mage.ref.get()).data().skills, []);
   await mage.ref.update({level: 20});
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 0);
   assert.deepEqual((await mage.ref.get()).data().skills, [2]);
+  // Level 20 opens five slots; with all five taken, Thunder X has no room.
+  await mage.ref.update({skills: [0, 1, 2, 3, 6]});
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
   assert.deepEqual((await gearPlayerRef.get()).data().inventory.spells, [5]);
   // Balance migration and SP spending cross the authenticated API and real Firestore transactions.

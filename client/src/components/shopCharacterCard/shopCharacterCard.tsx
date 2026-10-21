@@ -1,3 +1,4 @@
+import { spellSlots } from '@legion/shared/inventory';
 import {t, formatNumber, i18n} from '../../i18n/core';
 import ShopPrice from '../shopContent/ShopPrice';
 import {Trans} from '../../i18n/Trans';
@@ -117,7 +118,7 @@ class ShopCharacterCard extends Component<ShopCharacteCardProps, ShopCharacterCa
               </button>
             ))}
 
-            {Array.from({ length: data.skill_slots }, (_, i) => {
+            {Array.from({ length: spellSlots(data) }, (_, i) => {
               if (i >= data.skills.length) {
                 return (
                   <div key={i} className="shop-character-card-slot"></div>

@@ -84,7 +84,7 @@ export function TeamIntro({uid, onClose}: IntroProps) {
       rows: [
         {icon: equipmentIcon, text: t('Equipment adds bonuses and can be swapped between matches.')},
         {icon: consumablesIcon, text: t('Consumables fill carried-item slots and are used up in battle. Refill them after matches.')},
-        {icon: spellsIcon, text: t('Learning a spell scroll is permanent and needs the right class and level. Casting costs MP.')},
+        {icon: spellsIcon, text: t('Each learned spell fills a slot and needs the right class and level. Remove it to get the scroll back. Casting costs MP.')},
       ],
       lines: [t('Owning an item isn’t enough: assign it to the character who needs it.')],
     },

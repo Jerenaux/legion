@@ -649,3 +649,69 @@
     font-size: 0.8125rem !important;
 }
 .item-dialog-card .dialog-button-container .dialog-sell:hover { background: oklch(27% .04 245) !important; }
+
+/* Spell slot count, the remove note, and the list of learned spells a scroll can replace. */
+.item-dialog-slots,
+.item-dialog-note {
+    margin: 8px 12px 0;
+    color: oklch(82% .03 230);
+    font-size: 0.75rem;
+}
+
+.item-dialog-replace {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid #3c616c;
+}
+
+.item-dialog-replace-heading {
+    margin: 0;
+    color: var(--gold, #dfb94b);
+    font-size: 0.8125rem;
+}
+
+.item-dialog-replace-list {
+    display: grid;
+    gap: 6px;
+}
+
+.item-dialog-replace-option,
+.item-dialog-replace .dialog-decline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 4px 8px;
+    border: 1px solid #3c616c;
+    border-radius: 4px;
+    background: oklch(22% .03 245);
+    color: #e8f4f6;
+    font: inherit;
+    font-size: 0.8125rem;
+    text-align: start;
+    cursor: var(--game-pointer);
+}
+
+.item-dialog-replace .dialog-decline {
+    justify-content: center;
+    background: transparent;
+}
+
+.item-dialog-replace .dialog-decline img { display: none; }
+
+.item-dialog-replace-option:hover,
+.item-dialog-replace-option:focus-visible,
+.item-dialog-replace .dialog-decline:hover {
+    border-color: #71deff;
+    background: oklch(27% .04 240);
+}
+
+.item-dialog-replace-icon {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    image-rendering: pixelated;
+}

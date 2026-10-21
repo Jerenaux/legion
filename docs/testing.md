@@ -45,6 +45,7 @@ inside each suite are unchanged; no build artifacts are transferred between jobs
 - `node tools/backend/run.cjs` from the repository root: isolated Auth, Firestore
   and Functions emulators plus real server/matchmaker processes and HTTP/Socket.IO
   clients. Includes account bootstrap, combat inventory persistence without player tokens,
+  spell loadouts (level-based slots, replacing and removing learned spells),
   expired-token rejection, matchmaking, progression, indexed opponents,
   gift redemption and community flows. Requires service dependencies and Java 21+;
   it never uses production player data. See `docs/backend-startup.md`.

@@ -8,8 +8,8 @@ import {getSpellById} from './Spells';
 import {getEquipmentById} from './Equipments';
 import {inventorySize} from './utils';
 import {
-  canEquipConsumable, canEquipEquipment, canIncreaseStat, canLearnSpell, equipConsumable, equipEquipment,
-  getSellPrice, InventoryHolder, learnSpell, numericalSort, unequipConsumable, unequipEquipment,
+  canEquipConsumable, canEquipEquipment, canIncreaseStat, canKnowSpell, canLearnSpell, equipConsumable, equipEquipment,
+  getSellPrice, InventoryHolder, learnSpell, numericalSort, unequipConsumable, unequipEquipment, unlearnSpell,
 } from './inventory';
 
 // The rules of every player mutation, shared by the API handlers that apply them and the client
@@ -86,14 +86,18 @@ export interface InventoryActionResult<C extends DBCharacterData = DBCharacterDa
 
 /**
  * Equipping, unequipping or selling the item at `index`: an index into the sorted player inventory,
- * or for unequipping, into the character's items or equipment slots. `expectedItemId` guards against
- * an index that no longer points at the item the player chose.
+ * or for unequipping, into the character's items, spells or equipment slots. `expectedItemId` guards
+ * against an index that no longer points at the item the player chose. Learning a spell with
+ * `replaceIndex` swaps out the spell in that slot, so it needs neither a free slot nor inventory room.
  */
 export function inventoryAction<C extends DBCharacterData>(player: PlayerWallet, capacity: number, source: C,
-    inventoryType: InventoryType, action: InventoryActionType, index: number, expectedItemId?: number): Rejection | InventoryActionResult<C> {
+    inventoryType: InventoryType, action: InventoryActionType, index: number, expectedItemId?: number,
+    replaceIndex?: number): Rejection | InventoryActionResult<C> {
   if (![InventoryType.CONSUMABLES, InventoryType.SPELLS, InventoryType.EQUIPMENTS].includes(inventoryType) ||
       ![InventoryActionType.EQUIP, InventoryActionType.UNEQUIP, InventoryActionType.SELL].includes(action) ||
       !Number.isSafeInteger(index) || index < 0) return reject(400, 'Invalid inventory action');
+  if (replaceIndex !== undefined && (!Number.isSafeInteger(replaceIndex) || replaceIndex < 0 ||
+      action !== InventoryActionType.EQUIP || inventoryType !== InventoryType.SPELLS)) return reject(400, 'Invalid inventory action');
   const refused = reject(409, INVENTORY_ACTION_REFUSED);
   // Players see sorted inventories, including older documents stored unsorted.
   const owner = {...player, inventory: structuredClone(player.inventory)};
@@ -103,7 +107,8 @@ export function inventoryAction<C extends DBCharacterData>(player: PlayerWallet,
 
   const selected = action === InventoryActionType.UNEQUIP
     ? inventoryType === InventoryType.CONSUMABLES ? character.inventory[index]
-      : inventoryType === InventoryType.EQUIPMENTS ? character.equipment[equipmentSlotFields[index as EquipmentSlot] as keyof Equipment] : undefined
+      : inventoryType === InventoryType.EQUIPMENTS ? character.equipment[equipmentSlotFields[index as EquipmentSlot] as keyof Equipment]
+      : character.skills[index]
     : owner.inventory[field][index];
   if (typeof selected !== 'number' || !Number.isSafeInteger(selected) || selected < 0 ||
       (expectedItemId !== undefined && selected !== expectedItemId) || !getArticle(inventoryType, selected)) return refused;
@@ -118,11 +123,14 @@ export function inventoryAction<C extends DBCharacterData>(player: PlayerWallet,
   let update: {playerUpdate: {inventory: PlayerInventory; engagementStats?: Partial<EngagementStats>}; characterUpdate: Partial<DBCharacterData>} | null = null;
   if (action === InventoryActionType.EQUIP) {
     if (inventoryType === InventoryType.CONSUMABLES && canEquipConsumable(character)) update = equipConsumable(owner, character, index);
-    else if (inventoryType === InventoryType.SPELLS && canLearnSpell(character, selected)) update = learnSpell(owner, character, index);
+    else if (inventoryType === InventoryType.SPELLS && replaceIndex !== undefined) {
+      if (canKnowSpell(character, selected)) update = learnSpell(owner, character, index, replaceIndex);
+    } else if (inventoryType === InventoryType.SPELLS && canLearnSpell(character, selected)) update = learnSpell(owner, character, index);
     else if (inventoryType === InventoryType.EQUIPMENTS && canEquipEquipment(character, selected)) update = equipEquipment(owner, character, index);
   } else if (inventorySize(owner.inventory) < capacity) {
     if (inventoryType === InventoryType.CONSUMABLES) update = unequipConsumable(owner, character, index);
     else if (inventoryType === InventoryType.EQUIPMENTS) update = unequipEquipment(owner, character, index);
+    else if (inventoryType === InventoryType.SPELLS) update = unlearnSpell(owner, character, index);
   }
   if (!update) return refused;
 

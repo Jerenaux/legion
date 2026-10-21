@@ -8,7 +8,9 @@ import {Trans} from '../../i18n/Trans';
 import { h } from 'preact';
 import { Component, ComponentChildren } from 'preact';
 import './CharacterSheet.style.css';
-import { classEnumToString, mapFrameToCoordinates, getSpritePath, getStatEnum, raritySlotStyle } from '../utils';
+import { classEnumToString, mapFrameToCoordinates, getSpritePath, getStatEnum, raritySlotStyle, lockIcon } from '../utils';
+import { spellSlots, spellSlotsAt } from '@legion/shared/inventory';
+import { BASE_MAGE_SPELL_SLOTS, SPELL_SLOT_UNLOCK_LEVELS } from '@legion/shared/config';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
@@ -295,7 +297,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     dataCallback = getConsumableById;
                     break;
                 case InventoryType.SPELLS:
-                    capacity = characterData.skill_slots;
+                    capacity = spellSlots(characterData);
                     items = characterData.skills;
                     dialogType = ItemDialogType.SPELLS;
                     backgroundImageUrl = spellsSpritesheet;
@@ -330,6 +332,21 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                 } else {
                     return <div className="team-item" key={i} />;
                 }
+            }).concat(inventoryType === InventoryType.SPELLS ? renderLockedSpellSlots(capacity) : []);
+        };
+
+        // Spell slots still to come, each labelled with the level that opens it.
+        const renderLockedSpellSlots = (open: number) => {
+            const total = spellSlotsAt(characterData.class, Number.MAX_SAFE_INTEGER);
+            return Array.from({ length: Math.max(0, total - open) }, (_, i) => {
+                const level = SPELL_SLOT_UNLOCK_LEVELS[open + i - BASE_MAGE_SPELL_SLOTS];
+                return (
+                    <div className="team-item team-item--locked" key={`locked-${level}`}
+                        role="img" aria-label={t("Spell slot: opens at level {{value0}}", {value0: level})}>
+                        <img src={lockIcon} alt="" />
+                        <span>{t("Lvl. {{value0}}", {value0: level})}</span>
+                    </div>
+                );
             });
         };
 
@@ -381,8 +398,8 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                         <div className="character-icon-container">
                             {renderEquipmentItems('specialEquip')}
                         </div>
-                        {characterData.skill_slots > 0 && <div className="team-item-container">
-                            <p className="team-item-heading">{t("SPELLS")}</p>
+                        {spellSlots(characterData) > 0 && <div className="team-item-container">
+                            <p className="team-item-heading">{t("SPELLS")} <span className="team-item-count">{characterData.skills.length}/{spellSlots(characterData)}</span></p>
                             <div className="team-items">
                                 {renderInventoryItems(InventoryType.SPELLS)}
                             </div>
@@ -399,7 +416,6 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                     {renderEquipmentItems('standardEquip')}
                 </div>
                 <ItemDialog
-                    isEquipped={true}
                     actionType={InventoryActionType.UNEQUIP}
                     index={this.state.itemIndex}
                     dialogOpen={this.state.openModal}
