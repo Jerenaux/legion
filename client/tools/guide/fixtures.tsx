@@ -300,6 +300,11 @@ export default function FixturePlayer({children}: {children: ComponentChildren})
     previewRoster = Array.from({length: rosterSize}, (_, i) => i < characters.length ? characters[i]
       : {...characters[i % characters.length], id: `guide-${i}`, name: ['Aldric', 'Iris', 'Vex'][i - 3]}).map(character => balanceCharacter(preview.has('item-check')
         ? {...character, level: Number(preview.get('level') ?? 1)} : character))
+      // ?allocate=mp:19 pre-spends the black mage's SP, to review the per-stat cap in the SP dialog.
+      .map(character => character.id === characters[2].id && preview.has('allocate')
+        ? balanceCharacter({...character, sp_allocations: {...character.sp_allocations,
+          ...Object.fromEntries(preview.get('allocate')!.split(',').map(pair => pair.split(':')).map(([stat, points]) => [stat, Number(points)]))}})
+        : character)
       // ?skills=0,3,6 sets the black mage's learned spells, to review the spell-slot states.
       .map(character => character.id === characters[2].id && preview.has('skills')
         ? {...character, skills: preview.get('skills')!.split(',').map(Number)} : character);

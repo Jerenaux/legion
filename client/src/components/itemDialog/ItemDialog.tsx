@@ -329,28 +329,40 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     if (this.state.dialogSPModalShow) return this.renderSPConfirmationModal(dialogData);
     const { dialogValue } = this.state;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
+    const allocated = activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0;
+    // Each stat holds at most MAX_STAT_SP points, so the SP left may not all fit in this one.
+    const room = Math.max(0, MAX_STAT_SP - allocated);
+    const most = Math.min(activeCharacter.sp, room);
+    const statLabel = t(StatLabels[dialogData.stat]);
 
     return (
       <div className="character-info-dialog-container">
-        <h2 className="sp-dialog-title">{t("Increase {{value0}}", {value0: t(StatLabels[dialogData.stat])})}</h2>
+        <h2 className="sp-dialog-title">{t("Increase {{value0}}", {value0: statLabel})}</h2>
         <div className="sp-dialog-stat-info" style={{ '--stat-color': STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
           <strong className="sp-dialog-stat-name">{t(statNames[dialogData.stat])}</strong>
           <p className="sp-dialog-stat-description">{t(statExplanations[dialogData.stat])}</p>
         </div>
         <div className="character-info-dialog-card-container">
           <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
-            <span>{t(StatLabels[dialogData.stat])}</span>
+            <span>{statLabel}</span>
           </div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}
-            <span className='character-info-addition' style={{ color: '#9ed94c' }}>{t("+ {{value0}}", {value0: spBonus(dialogData.stat, (activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0) + dialogValue) - (activeCharacter.sp_bonuses[statFieldsByIndex[dialogData.stat]] ?? 0)})}</span>
+            <span className='character-info-addition' style={{ color: '#9ed94c' }}>{t("+ {{value0}}", {value0: spBonus(dialogData.stat, allocated + dialogValue) - (activeCharacter.sp_bonuses[statFieldsByIndex[dialogData.stat]] ?? 0)})}</span>
           </div>
         </div>
         <div className="character-info-dialog-control">
-          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))}>-</button>
+          <button type="button" data-game-control className="character-info-dialog-control-btn character-info-dialog-control-btn--minus"
+            aria-label={t("Fewer points")} disabled={dialogValue <= 1}
+            onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))} />
           <div className="character-info-dialog-control-val">{dialogValue}</div>
-          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, MAX_STAT_SP - (activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0), prevState.dialogValue + 1) }))}>+</button>
+          <button type="button" data-game-control className="character-info-dialog-control-btn character-info-dialog-control-btn--plus"
+            aria-label={t("More points")} disabled={dialogValue >= most}
+            onClick={() => this.setState(prevState => ({ dialogValue: Math.min(most, prevState.dialogValue + 1) }))} />
         </div>
+        {room < activeCharacter.sp && <p className="sp-dialog-cap" role="status">
+          {t("{{value0}} already has {{value1}}/{{value2}} points.", {value0: statLabel, value1: allocated, value2: MAX_STAT_SP})}
+        </p>}
         {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }), !canIncreaseStat(activeCharacter, dialogData.stat, dialogValue))}
       </div>
     );

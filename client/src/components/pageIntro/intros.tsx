@@ -106,7 +106,7 @@ export function ShopIntro({uid, onClose}: IntroProps) {
       art: icons([consumablesIcon, spellsIcon, equipmentIcon, charactersIcon]),
       rows: [
         {icon: consumablesIcon, text: t('Consumables: potions and remedies a character carries into battle. Each use spends one.')},
-        {icon: spellsIcon, text: t('Spell scrolls: teach a character a new spell for good.')},
+        {icon: spellsIcon, text: t('Spell scrolls: teach a mage a new spell. Remove it later to get the scroll back.')},
         {icon: equipmentIcon, text: t('Equipment: stat bonuses you can swap between matches.')},
         {icon: charactersIcon, text: t('Recruitment: new characters to grow your roster.')},
       ],

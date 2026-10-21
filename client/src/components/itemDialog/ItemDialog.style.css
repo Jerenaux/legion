@@ -98,14 +98,47 @@
     margin-bottom: 12px;
 }
 
+/* The - and + are drawn, not typed: the display font's glyphs sit off-centre. */
 .character-info-dialog-control-btn {
-    padding: 4px 8px;
+    position: relative;
+    padding: 0;
     border: 1px solid #3c616c;
     border-radius: 4px;
 }
 
-.character-info-dialog-control-btn:hover {
+.character-info-dialog-control-btn::before,
+.character-info-dialog-control-btn--plus::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    transform: translate(-50%, -50%);
+}
+
+.character-info-dialog-control-btn--plus::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.character-info-dialog-control-btn:hover:not(:disabled) {
     cursor: var(--game-pointer);
+    border-color: #71deff;
+}
+
+.character-info-dialog-control-btn:disabled {
+    opacity: .35;
+    cursor: default;
+}
+
+/* Explains why + stops before the SP run out. */
+.sp-dialog-cap {
+    margin: -4px 0 12px;
+    color: oklch(82% .03 230);
+    font-size: 0.8125rem;
+    text-align: center;
 }
 
 .character-info-dialog-control-val {
