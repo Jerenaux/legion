@@ -745,3 +745,16 @@ button.streak_gold_list:focus-visible {
 }
 /* Room for the MVP crest above the level label. */
 .endgame .endgame_character.is-mvp { padding-top: calc(clamp(24px, 3vh, 32px) + 12px); }
+/* Without an MVP, rows of up to three cards; a shorter last row sits centred under the first. */
+.endgame .endgame_characters_grid:not(.has-mvp) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: calc(3 * clamp(120px, 15vw, 180px) + 2 * 25px + 40px);
+}
+/* A large party keeps the podium on one row. */
+.endgame .endgame_characters_grid.has-mvp:is([data-count="5"], [data-count="6"]) { zoom: .8; }
+@media (max-height: 820px) {
+    .endgame .endgame_characters_grid:not(.has-mvp):is([data-count="4"], [data-count="5"], [data-count="6"]) { zoom: .78; }
+}

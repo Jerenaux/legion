@@ -86,6 +86,10 @@ const PERSISTENT_SOUNDS = new Set(['cast', 'heart', 'flames', 'jingle_win', 'jin
 const MAX_SOUND_COPIES = 3;
 /** The 19-tile X tier: Fire X, Ice X, Thunder X. */
 const isUltimate = (spell: BaseSpell) => spell.target === Target.AOE && spell.radius >= 3;
+/** Server announcements plus the client's own. */
+type Announcement = GEN | 'rampage';
+/** Sent actions that end the turn. */
+const ACTION_CHANNELS = new Set(['move', 'attack', 'obstacleattack', 'spell', 'useitem']);
 const EMBER_TINTS = [0xfff1c2, 0xffc46b, 0xff8a3c, 0xff5a1f];
 const CHARGE_TINTS: Record<string, number[]> = {
     fire: [0xffd27a, 0xff9a3c, 0xff5a1f],
@@ -143,7 +147,7 @@ export class Arena extends Phaser.Scene
     gameSettings;
     killCamActive = false;
     pendingGEN: GEN;
-    genQueue: GEN[] = [];
+    genQueue: Announcement[] = [];
     isDisplayingGEN: boolean = false;
     eventsQueue = [];
     private readyToken: string | null = null;
@@ -182,6 +186,8 @@ export class Arena extends Phaser.Scene
         [GEN.FROZEN]: { label: 'Frozen!', asset: 'announcements/frozen.png', text1: 'frozen', text2: null },
         [GEN.BURNING]: { label: 'Burning!', asset: 'announcements/burning.png', text1: 'stuff-is', text2: 'on-fire' },
         [GEN.TUTORIAL]: { label: 'Tutorial!', asset: 'announcements/tutorial.png', text1: 'tutorial', text2: null },
+        // Client-side announcement without word artwork: drawn as lettering in the same style.
+        rampage: { label: 'Rampage!', asset: 'announcements/rampage.png', text1: null, text2: null },
     };
 
     private static readonly SOUND_NAMES = [
@@ -207,6 +213,8 @@ export class Arena extends Phaser.Scene
     private killCamCheck: Phaser.Time.TimerEvent | null = null;
     /** Killing spells still travelling to their target. */
     private killsInFlight = 0;
+    /** An action was sent this turn: previews describe the next action, so they wait for the next turn. */
+    private actionPending = false;
     /** Where the camera rests between kill cams and cinematics: the centre, or a turn nudge. */
     private cameraHome = {x: 0, y: 0};
     private cinematic: {caster: Player; overlay: Phaser.GameObjects.Rectangle} | null = null;
@@ -491,6 +499,7 @@ export class Arena extends Phaser.Scene
     processActionRejected(turn: TurnState & {reason?: ItemNoEffectReason}) {
         if (this.gameEnded || turn.turnNumber !== this.turnee?.turnNumber ||
             turn.team !== this.turnee.team || turn.num !== this.turnee.num) return;
+        this.actionPending = false;
         this.unlockInput();
         this.selectedPlayer?.cancelItem();
         this.selectTurnee();
@@ -526,6 +535,7 @@ export class Arena extends Phaser.Scene
     }
 
     send(channel, data) {
+        if (ACTION_CHANNELS.has(channel)) this.actionPending = true;
         if (this.socket) {
             this.socket.emit(channel, data);
         }
@@ -804,7 +814,7 @@ export class Arena extends Phaser.Scene
     // Runs every frame while hovering: recompute the preview only when one of its inputs changes.
     private hoverPreview(target: Player): CharacterHover['preview'] {
         const caster = this.selectedPlayer;
-        const key = [this.isReplay, this.gameSettings?.spectator, this.gameEnded, this.inputLocked,
+        const key = [this.isReplay, this.gameSettings?.spectator, this.gameEnded, this.inputLocked, this.actionPending,
             this.turnee?.team, this.turnee?.num, caster?.team.id, caster?.num, caster?.pendingSpell, caster?.pendingItem,
             caster?.mp, caster?.gridX, caster?.gridY, caster?.isMuted(), caster?.isFrozen(), caster?.canAct(),
             target.team.id, target.num, target.hp, target.gridX, target.gridY, target.isAlive()].join();
@@ -844,7 +854,7 @@ export class Arena extends Phaser.Scene
 
     private getHPPreview(target: Player): CharacterHover['preview'] {
         const caster = this.selectedPlayer;
-        if (this.isReplay || this.gameSettings?.spectator || this.gameEnded || this.inputLocked ||
+        if (this.isReplay || this.gameSettings?.spectator || this.gameEnded || this.inputLocked || this.actionPending ||
             !caster?.combatStats || !target.combatStats || this.unavailableActionReason(caster) || caster.pendingItem != null) return;
         const spell = caster.pendingSpell == null ? null : caster.spells[caster.pendingSpell];
         let hp = target.hp;
@@ -1514,6 +1524,7 @@ export class Arena extends Phaser.Scene
         events.emit('combatWaiting', false);
         // Determine if turnee is player
         this.clearMovePreview();
+        this.actionPending = false;
         if (data.team !== this.playerTeamId) {
             events.emit('enemyTurn');
         } else if (!this.isReplay && !this.gameSettings?.spectator) {
@@ -2168,7 +2179,7 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    enqueueGEN(gen: GEN) {
+    enqueueGEN(gen: Announcement) {
         this.genQueue.push(gen);
         this.processGENQueue();
     }
@@ -2185,7 +2196,7 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    displayGEN(gen: GEN): Promise<void> {
+    displayGEN(gen: Announcement): Promise<void> {
         if (this.gameEnded) return Promise.resolve();
 
         return new Promise((resolve) => {
@@ -2237,10 +2248,13 @@ export class Arena extends Phaser.Scene
                     .setScrollFactor(0).setDepth(10);
                 title.setScale(Math.min(640 / title.width, 180 / title.height, (this.cameras.main.width - 32) / title.width));
                 targets.push(title);
-            } else if (language !== 'en') {
-                const title = this.add.text(-350, yPosition, t(config.label), {
-                    fontFamily: fontFamily(), fontSize: 48, fontStyle: 'bold', color: '#d9f5ff',
-                    stroke: '#17384e', strokeThickness: 5, align: 'center',
+            } else if (language !== 'en' || !config.text1) {
+                // Without word artwork, English lettering matches the artwork's cyan and navy.
+                const lettered = language === 'en';
+                const title = this.add.text(-350, yPosition, lettered ? t(config.label).toUpperCase() : t(config.label), {
+                    fontFamily: fontFamily(), fontSize: lettered ? 64 : 48, fontStyle: 'bold', color: lettered ? '#5ff2ff' : '#d9f5ff',
+                    stroke: lettered ? '#0b2a44' : '#17384e', strokeThickness: lettered ? 9 : 5, align: 'center',
+                    shadow: lettered ? {offsetX: 0, offsetY: 5, color: '#0b2a44', fill: true, stroke: true} : undefined,
                     wordWrap: {width: Math.min(640, this.cameras.main.width - 32), useAdvancedWrap: true},
                 }).setOrigin(0.5).setScrollFactor(0).setDepth(10);
                 title.setScale(Math.min(1, 180 / title.height));
@@ -2371,9 +2385,7 @@ export class Arena extends Phaser.Scene
             if (!blow || Date.now() - blow.at > 2500 || blow.by.team === victim.team || this.disposed) return;
             const kills = (this.killsBy.get(blow.by) ?? 0) + 1;
             this.killsBy.set(blow.by, kills);
-            if (kills >= 2 && !this.gameEnded) this.whenKillCamEnds(() => events.emit('combatCallout', {
-                kind: 'rampage', name: blow.by.name, own: blow.by.isPlayer, count: kills,
-            }));
+            if (kills >= 2 && !this.gameEnded) this.enqueueGEN('rampage');
         });
         this.refreshLastStands();
     }

@@ -435,7 +435,7 @@ export class ServerPlayer {
     }
 
     increaseDamageDealt(amount: number) {
-        if (amount < 0) return; // = healing
+        if (amount < 0) return;
         this.damageDealt += amount;
         // this.team?.increaseScoreFromDamage(amount);
     }

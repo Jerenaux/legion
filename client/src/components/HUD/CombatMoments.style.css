@@ -15,7 +15,6 @@
   animation: callout-life 1.9s cubic-bezier(.2, .8, .3, 1) forwards;
 }
 .combat-callout[data-side="enemy"] { --callout-hue: 25; }
-.combat-callout--rampage { --callout-hue: 55; }
 .combat-callout__band {
   position: absolute;
   inset: 0;

@@ -261,3 +261,11 @@
   .versus *, .versus::after, .versus-side, .versus-side::before { animation: none !important; }
   .versus.is-leaving { opacity: 0; }
 }
+
+/* Teams of up to six: three cards per row. */
+.versus-side__panel { width: min(520px, 46vw); }
+.versus-side__team { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; }
+.versus-side--enemy .versus-side__team { justify-content: end; direction: rtl; }
+.versus-side--enemy .versus-side__team li { direction: ltr; }
+.versus-side__team:has(li:nth-child(4)) li { width: clamp(64px, 8.4vw, 96px); padding-block: 4px 6px; }
+.versus-side__team:has(li:nth-child(4)) .versus-side__sprite { transform: scale(1.05); }

@@ -1,11 +1,11 @@
-// Big combat moments drawn over the arena: callouts (last stand, rampage), the last-stand
+// Big combat moments drawn over the arena: the last-stand callout, the last-stand
 // vignette and the name card of an X-tier spell.
 import {t} from '../../i18n/core';
 import {h} from 'preact';
 import './CombatMoments.style.css';
 
 export interface Callout {
-  kind: 'lastStand' | 'rampage';
+  kind: 'lastStand';
   name: string;
   own: boolean;
   /** Changes on every callout so a repeat replays its animation. */
@@ -21,7 +21,6 @@ export interface SpellCinematic {
 
 const TITLES = {
   lastStand: () => t("Last stand!"),
-  rampage: () => t("Rampage!"),
 };
 
 export function CombatCallout({callout}: {callout: Callout}) {

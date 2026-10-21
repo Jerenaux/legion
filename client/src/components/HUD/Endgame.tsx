@@ -197,7 +197,7 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                     ))}
                 </ul>}
 
-                <div className={`endgame_characters_grid ${mvp ? 'has-mvp' : ''}`}>
+                <div className={`endgame_characters_grid ${mvp ? 'has-mvp' : ''}`} data-count={characters.length}>
                     {podiumOrder(characters, mvp?.num).map((character) => (
                         <CharacterCard
                             key={character.num}

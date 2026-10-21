@@ -1039,7 +1039,8 @@ export abstract class Game
             if (target.HPHasChanged()) {
                 const delta = target.getHPDelta();
                 // console.log(`[Game:applyMagic] delta: ${delta}, justDied: ${target.justDied}, targetHP: ${target.getHP()}, targetMaxHP: ${target.getMaxHP()}`);
-                player.increaseDamageDealt(delta);
+                // The HP delta is negative for damage; heals are not damage dealt.
+                player.increaseDamageDealt(-delta);
                 if (target.justDied && delta < 0){
                     nbKills++;
                     if (target.team !== player.team) player.kills++;
