@@ -3,7 +3,8 @@ import {useState} from 'preact/hooks';
 import {language, locales, selectLanguage, languageChangeBlocked, t, userError} from '../i18n/core';
 import './LanguageSelect.css';
 
-export default function LanguageSelect() {
+/** `compact` keeps the label for assistive tech but shows only the picker. */
+export default function LanguageSelect({compact = false}: {compact?: boolean}) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const blocked = languageChangeBlocked(location.pathname);
@@ -23,7 +24,7 @@ export default function LanguageSelect() {
   };
   return <div className="language-select">
     <label>
-      {t('Language')}
+      <span className={compact ? 'visually-hidden' : undefined}>{t('Language')}</span>
       <select value={pending ?? language} disabled={blocked || pending !== null} aria-busy={pending !== null} onChange={event => void change(event.currentTarget)}>
         {locales.map(locale => <option key={locale.code} value={locale.code} lang={locale.code} style={{fontFamily: locale.fontFamily}}>{locale.name}</option>)}
       </select>
