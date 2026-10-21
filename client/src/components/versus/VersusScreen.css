@@ -167,6 +167,8 @@
   line-height: 1;
   font-style: italic;
   letter-spacing: -.04em;
+  /* The gradient is clipped to the text box; room for the italic overhang keeps the S whole. */
+  padding: 0 .16em 0 .08em;
   background: linear-gradient(180deg, oklch(99% .02 95) 20%, var(--ember) 55%, oklch(55% .2 35));
   -webkit-background-clip: text;
   background-clip: text;
