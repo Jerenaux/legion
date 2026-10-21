@@ -10,7 +10,8 @@ import { getCharacterPrice } from "./economy";
 import { getStarterConsumables, MAGE_SPECIFIC_ITEMS } from "./Items";
 
 import { BASE_CHARACTER_CARRYING_CAPACITY, NB_START_CHARACTERS, STARTING_WHITE_MAGE_SPELLS, STARTING_BLACK_MAGE_SPELLS } from "./config";
-import { getSpellsUpToLevel } from "./Spells";
+import { getSpellById, getSpellsUpToLevel, spellFamily } from "./Spells";
+import { spellSlotsAt } from "./inventory";
 
 enum Gender {
   M,
@@ -117,17 +118,8 @@ export class NewCharacter {
   }
 
   getSkillSlots(): number {
-    switch (this.characterClass) {
-      case Class.WARRIOR:
-        return 0;
-      case Class.WHITE_MAGE:
-        return 3;
-      case Class.BLACK_MAGE:
-        return 3;
-      case Class.THIEF:
-        return 1;
-    }
-    return 0;
+    if (this.characterClass === Class.THIEF) return 1;
+    return spellSlotsAt(this.characterClass, this.level);
   }
 
   determineGender(): Gender {
@@ -211,28 +203,34 @@ export class NewCharacter {
 }
 
 export function getSpells(characterClass: Class, level: number, skill_slots: number, isAI = false): number[] {
-  let spells = getSpellsUpToLevel(characterClass, level);
-  // console.log(`[getSpells] Candidate spells up to level ${level}: ${spells.join(", ")}`);
-  switch (characterClass) {
-    case Class.WARRIOR:
-      return [];
-    case Class.WHITE_MAGE:
-      if (!isAI) return STARTING_WHITE_MAGE_SPELLS;
-      // Remove spells that are already in STARTING_WHITE_MAGE_SPELLS
-      spells = spells.filter(spell => !STARTING_WHITE_MAGE_SPELLS.includes(spell));
-      // Select `skill_slots` random spells from spells
-      return STARTING_WHITE_MAGE_SPELLS.concat(spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_WHITE_MAGE_SPELLS.length ));
-    case Class.BLACK_MAGE: {
-      if (!isAI) return STARTING_BLACK_MAGE_SPELLS;
-      spells = spells.filter(spell => !STARTING_BLACK_MAGE_SPELLS.includes(spell));
-      const randomSpells = spells.sort(() => Math.random() - 0.5).slice(0, skill_slots - STARTING_BLACK_MAGE_SPELLS.length );
-      const result = STARTING_BLACK_MAGE_SPELLS.concat(randomSpells);
-      return result;
-    }
-    case Class.THIEF:
-      return [];
+  if (characterClass === Class.WHITE_MAGE && !isAI) return STARTING_WHITE_MAGE_SPELLS;
+  if (characterClass === Class.BLACK_MAGE && !isAI) return STARTING_BLACK_MAGE_SPELLS;
+  if (characterClass !== Class.WHITE_MAGE && characterClass !== Class.BLACK_MAGE) return [];
+  // White mages always keep Heal: their team's sustain depends on it.
+  const required = characterClass === Class.WHITE_MAGE ? STARTING_WHITE_MAGE_SPELLS : [];
+  return aiSpellLoadout(getSpellsUpToLevel(characterClass, level), skill_slots, required);
+}
+
+/**
+ * An AI caster's spells: the strongest tier it has reached in each family (Fire, Fire+, Fire X…),
+ * then the next-best remaining spells, so extra slots add cheaper fallbacks for when MP runs low.
+ */
+export function aiSpellLoadout(candidates: number[], slots: number, required: number[] = []): number[] {
+  const byStrength = [...candidates]
+    .sort(() => Math.random() - 0.5)
+    .sort((a, b) => (getSpellById(b)?.minLevel ?? 0) - (getSpellById(a)?.minLevel ?? 0));
+  const best = new Map<string, number>();
+  for (const id of byStrength) {
+    const family = spellFamily(getSpellById(id)!);
+    if (!best.has(family)) best.set(family, id);
   }
-  return [];
+  const loadout = [...required.filter(id => candidates.includes(id)),
+    ...[...best.values()].filter(id => !required.includes(id))].slice(0, slots);
+  for (const id of byStrength) {
+    if (loadout.length >= slots) break;
+    if (!loadout.includes(id)) loadout.push(id);
+  }
+  return loadout;
 }
 
 export function setUpInventory(characterClass: Class, level: number, carrying_capacity: number): number[] {

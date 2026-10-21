@@ -2,7 +2,7 @@ import {t, i18n, localizedAsset} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
 import { h } from 'preact';
 import { Link } from 'preact-router/match';
-import { CHARACTER_PRICES, ENABLE_CINDER_TOWER, FIRST_WIN_BONUS_GOLD, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, TURN_DURATION } from '@legion/shared/config';
+import { CHARACTER_PRICES, ENABLE_CINDER_TOWER, FIRST_WIN_BONUS_GOLD, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, SPELL_SLOT_UNLOCK_LEVELS, TURN_DURATION } from '@legion/shared/config';
 import { LockedFeatures } from '@legion/shared/enums';
 import {defaultGameSettings} from '../settings';
 import battleOriginal from '@assets/guide/battle.jpg';
@@ -162,7 +162,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <h3>{t("Three different kinds of preparation")}</h3>
             <ol className="guide-steps">
               <li><Trans i18n={i18n} i18nKey={"<0>Equip consumables.</0> Select a character, click a consumable in the shared inventory, then choose <1>Equip</1>. It fills a free carried-item slot. A Potion restores HP; Ether restores MP. Each use consumes one item. Refill after battles."} components={[<strong />, <strong />]} /></li>
-              <li><Trans i18n={i18n} i18nKey={"<0>Teach spells deliberately.</0> Select the intended character, click a compatible scroll in the shared inventory, and choose <1>Learn</1>. You need a free spell slot and the required character level. Learning consumes the scroll and is permanent: you cannot unlearn it or transfer it to another character. Casting the learned spell only costs MP."} components={[<strong />, <strong />]} /></li>
+              <li><Trans i18n={i18n} i18nKey={"<0>Teach spells.</0> Select a character, click a compatible scroll in the shared inventory, and choose <1>Learn</1>. Each spell needs the required character level and fills a spell slot. Mages start with three slots and gain one at levels {{value0}}, {{value1}} and {{value2}}. With every slot taken, choose which learned spell the scroll replaces. To free a slot, click a learned spell and choose <2>Remove</2>: its scroll returns to the shared inventory, where any eligible mage can learn it. Casting a learned spell only costs MP."} components={[<strong />, <strong />, <strong />]} values={{value0: SPELL_SLOT_UNLOCK_LEVELS[0], value1: SPELL_SLOT_UNLOCK_LEVELS[1], value2: SPELL_SLOT_UNLOCK_LEVELS[2]}} /></li>
               <li><Trans i18n={i18n} i18nKey={"<0>Fit equipment.</0> With your character selected, click equipment in the shared inventory and choose <1>Equip</1>. Check class requirements. Equipment adds passive bonuses and can be swapped between battles."} components={[<strong />, <strong />]} /></li>
             </ol>
             <h3>{t("Spend your stat points")}</h3>

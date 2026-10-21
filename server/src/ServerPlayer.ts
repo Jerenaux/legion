@@ -11,6 +11,7 @@ import { CharacterStats, Equipment, PlayerNetworkData, StatusEffects } from '@le
 import { INJURED_MODE, LOTSA_HP, MOVEMENT_RANGE, PARALYZED_DELAY, XP_CONTRIBUTION_PER_HP_BAR, XP_CONTRIBUTION_TARGET_CAP } from "@legion/shared/config";
 import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpells, lvlUp, setUpInventory } from '@legion/shared/NewCharacter';
+import { spellSlotsAt } from '@legion/shared/inventory';
 import { hexDistance } from '@legion/shared/utils';
 
 
@@ -604,7 +605,8 @@ export class ServerPlayer {
     }
 
     setZombieSpells() {
-        const spells = getSpells(this.class, this.level, this.spell_slots, true);
+        // A zombie levelled up to its opponents also gets the spell slots of its new level.
+        const spells = getSpells(this.class, this.level, Math.max(this.spell_slots, spellSlotsAt(this.class, this.level)), true);
         this.spells = spells.map(id => new Spell(getSpellById(id)));
         // console.log(`[ServerPlayer:setZombieSpells] Spells: ${this.spells.map(spell => spell.id).join(", ")}`);
     }

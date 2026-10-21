@@ -84,7 +84,7 @@ export function TeamIntro({uid, onClose}: IntroProps) {
       rows: [
         {icon: equipmentIcon, text: t('Equipment adds bonuses and can be swapped between matches.')},
         {icon: consumablesIcon, text: t('Consumables fill carried-item slots and are used up in battle. Refill them after matches.')},
-        {icon: spellsIcon, text: t('Learning a spell scroll is permanent and needs the right class and level. Casting costs MP.')},
+        {icon: spellsIcon, text: t('Each learned spell fills a slot and needs the right class and level. Remove it to get the scroll back. Casting costs MP.')},
       ],
       lines: [t('Owning an item isn’t enough: assign it to the character who needs it.')],
     },
@@ -106,7 +106,7 @@ export function ShopIntro({uid, onClose}: IntroProps) {
       art: icons([consumablesIcon, spellsIcon, equipmentIcon, charactersIcon]),
       rows: [
         {icon: consumablesIcon, text: t('Consumables: potions and remedies a character carries into battle. Each use spends one.')},
-        {icon: spellsIcon, text: t('Spell scrolls: teach a character a new spell for good.')},
+        {icon: spellsIcon, text: t('Spell scrolls: teach a mage a new spell. Remove it later to get the scroll back.')},
         {icon: equipmentIcon, text: t('Equipment: stat bonuses you can swap between matches.')},
         {icon: charactersIcon, text: t('Recruitment: new characters to grow your roster.')},
       ],

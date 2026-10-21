@@ -66,13 +66,15 @@ export const inventoryTransaction = onRequest({
       const inventoryType = request.body.inventoryType as InventoryType;
       const action = request.body.action as InventoryActionType;
       const index = request.body.index;
+      // Learning a spell in place of the one in this slot; absent for every other action.
+      const replaceIndex = request.body.replaceIndex ?? undefined;
 
       if (typeof characterId !== 'string' || !characterId || characterId.includes('/') || characterId.length > 200) throw new MutationError(400, 'Invalid character ID');
       const playerRef = db.collection("players").doc(uid);
       const characterRef = db.collection("characters").doc(characterId);
 
       const result = await playerMutation(uid, 'inventoryTransaction', request.body.requestId,
-        {characterId, inventoryType, action, index, expectedItemId: request.body.expectedItemId ?? null}, async (transaction, _playerRef, playerData) => {
+        {characterId, inventoryType, action, index, expectedItemId: request.body.expectedItemId ?? null, replaceIndex: replaceIndex ?? null}, async (transaction, _playerRef, playerData) => {
         const characterDoc = await transaction.get(characterRef);
 
         if (!characterDoc.exists) {
@@ -92,7 +94,7 @@ export const inventoryTransaction = onRequest({
         }
 
         const outcome = inventoryAction(playerData, playerInventoryCapacity(playerData), characterData,
-          inventoryType, action, index, request.body.expectedItemId);
+          inventoryType, action, index, request.body.expectedItemId, replaceIndex);
         if (isRejection(outcome)) {
           if (outcome.status === 400) throw new MutationError(400, outcome.error);
           logger.info(`[inventoryTransaction] ${outcome.error}`);

@@ -49,7 +49,9 @@ export default function PartyHall({team = false, chest = !team}: {team?: boolean
   return (
     <section className={`party-hall${team ? ' party-hall--team' : ''}`} aria-label={t("Team")}>
       {characters.length > 0 ? (
-        <ul className="party-hall-members" style={{'--party-left': hearthIndex, '--party-right': characters.length + (remainingSlots > 0 ? 1 : 0) - hearthIndex}}>
+        // Both sides get as many columns as the fuller one, so the hearth stays centred when the
+        // party has an odd number of places; the short side keeps an empty outer column.
+        <ul className="party-hall-members" style={{'--party-left': hearthIndex, '--party-right': hearthIndex}}>
           {characters.map((character, index) => [
             // The party gathers on both sides of the hearth.
             index === hearthIndex && hearth,

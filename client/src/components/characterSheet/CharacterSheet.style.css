@@ -417,6 +417,36 @@
     border: 1px solid #71deff;
 }
 
+/* A spell slot that opens at a later level. */
+.team-items .team-item--locked {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 1px;
+    border-style: dashed;
+    background-color: #15181d;
+    color: oklch(72% .03 230);
+    font: 600 .625rem/1 var(--locale-font, Arial), system-ui, sans-serif;
+    white-space: nowrap;
+}
+
+.team-items .team-item--locked img {
+    width: 14px;
+    height: 14px;
+    opacity: .7;
+}
+
+.team-items .team-item--locked:hover {
+    cursor: default;
+    border: 1px dashed #274c57;
+}
+
+.team-item-heading .team-item-count {
+    float: inline-end;
+    color: oklch(80% .03 230);
+    font-size: .8em;
+}
+
 .sp-reset-button { grid-column: 2; justify-self: end; align-self: center; max-width: 100%; padding: .25rem .6rem; color: var(--accent-gold, #dfb94b); background: #151e25; border: 1px solid currentColor; border-radius: 4px; font: inherit; font-size: .75rem; cursor: var(--game-pointer); }
 .sp-reset-button:hover:not(:disabled), .sp-reset-button:focus-visible { color: #fff1b0; background: #29313a; }
 .sp-reset-button:disabled { opacity: .4; cursor: default; }

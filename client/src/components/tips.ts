@@ -1,6 +1,6 @@
 export const tips = [
     "You earn gold while queuing for a match. Patience pays off!",
-    "Teaching a spell to a character permanently consumes it - choose carefully!",
+    "Mages gain extra spell slots as they level up, and you can swap learned spells between matches.",
     "Play Casual or Ranked games for daily chest keys!",
     "Gain 2 SP per level through level 21. Spend them on the stats you want to raise.",
     "If your mages often lack MP, equip them with Ethers!",

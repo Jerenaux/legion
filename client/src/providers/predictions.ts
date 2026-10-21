@@ -20,11 +20,11 @@ function replaceCharacter(characters: APICharacterData[], character: APICharacte
 }
 
 export function predictInventoryAction(view: PlayerView, characterId: string, inventoryType: InventoryType,
-    action: InventoryActionType, index: number, expectedItemId?: number): PlayerView | Rejection {
+    action: InventoryActionType, index: number, expectedItemId?: number, replaceIndex?: number): PlayerView | Rejection {
   const character = view.characters.find(c => c.id === characterId);
   if (!character) return notOwned;
   // The client receives the capacity the API checks against (playerInventoryCapacity).
-  const outcome = inventoryAction(view.player, view.player.carrying_capacity, character, inventoryType, action, index, expectedItemId);
+  const outcome = inventoryAction(view.player, view.player.carrying_capacity, character, inventoryType, action, index, expectedItemId, replaceIndex);
   if (isRejection(outcome)) return outcome;
   return {
     player: {...view.player, inventory: outcome.inventory, gold: view.player.gold + outcome.goldGained,

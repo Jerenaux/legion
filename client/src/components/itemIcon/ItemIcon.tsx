@@ -206,7 +206,6 @@ class ItemIcon extends Component<ItemIconProps, ItemIconState> {
 
         <ItemDialog
           index={index}
-          isEquipped={false}
           actionType={InventoryActionType.EQUIP}
           dialogOpen={this.state.openModal}
           dialogType={this.state.modalType}

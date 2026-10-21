@@ -9,10 +9,11 @@ import { statExplanations, statNames } from '../itemTooltip';
 // ItemDialog.tsx
 import './ItemDialog.style.css';
 import Modal from 'react-modal';
-import { Component } from 'preact';
+import { Component, type ComponentChildren } from 'preact';
 import { BaseItem } from '@legion/shared/BaseItem';
 import { BaseSpell } from '@legion/shared/BaseSpell';
 import { BaseEquipment } from '@legion/shared/BaseEquipment';
+import { getSpellById } from '@legion/shared/Spells';
 import { InventoryActionType, InventoryType, Stat, SPSPendingData, STATS_BG_COLOR, ItemDialogType, StatLabels } from '@legion/shared/enums';
 import { apiMutation } from '../../services/apiService';
 import { playSoundEffect, successToast, mapFrameToCoordinates, cropFrame } from '../utils';
@@ -22,8 +23,10 @@ import { predictInventoryAction, predictSP } from '../../providers/predictions';
 
 import {
   canEquipConsumable,
-  canLearnSpell,
+  canKnowSpell,
   canEquipEquipment,
+  nextSpellSlotLevel,
+  spellSlots,
   roomInInventory,
   hasRequiredClass,
   hasMinLevel,
@@ -45,7 +48,6 @@ import { getSellPrice } from '@legion/shared/inventory';
 Modal.setAppElement('#root');
 interface DialogProps {
   index?: number;
-  isEquipped?: boolean;
   actionType: InventoryActionType;
   dialogType: ItemDialogType;
   dialogOpen: boolean;
@@ -144,7 +146,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     this.props.handleClose();
   }
 
-  AcceptAction = (type: ItemDialogType, index: number) => {
+  /** `replaceIndex`: when learning a spell, the learned spell it takes the place of. */
+  AcceptAction = (type: ItemDialogType, index: number, replaceIndex?: number) => {
     const { actionType, dialogData } = this.props;
     const character = this.context.getActiveCharacter();
     const payload = {
@@ -153,7 +156,8 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       characterId: character.id,
       inventoryType: type,
       action: actionType === InventoryActionType.EQUIP && this.state.sellModalShow ?
-        InventoryActionType.SELL : actionType
+        InventoryActionType.SELL : actionType,
+      replaceIndex,
     };
 
     if (process.env.NODE_ENV === 'development') {
@@ -162,7 +166,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
 
     this.props.handleClose();
     const queued = this.context.optimisticMutation(
-      view => predictInventoryAction(view, character.id, type as unknown as InventoryType, payload.action, index, payload.expectedItemId),
+      view => predictInventoryAction(view, character.id, type as unknown as InventoryType, payload.action, index, payload.expectedItemId, replaceIndex),
       async () => {
         const result = await apiMutation('inventoryTransaction', payload);
         if (result.status !== 0) throw new Error('Unable to complete the request. Please try again.');
@@ -172,7 +176,9 @@ class ItemDialog extends Component<DialogProps, DialogState> {
       successToast(t("Item sold!"));
     } else {
       playSoundEffect(equipSfx, sfxLevel('equip'));
-      if (type === ItemDialogType.SPELLS) successToast(t("Spell learned!"));
+      if (type === ItemDialogType.SPELLS) {
+        successToast(payload.action === InventoryActionType.UNEQUIP ? t("Scroll returned to your inventory.") : t("Spell learned!"));
+      }
     }
   }
 
@@ -187,7 +193,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   renderDialogButtons(acceptAction: () => void, isDisabled: boolean = false) {
     const { actionType, dialogType } = this.props;
     let acceptLabel = actionType === InventoryActionType.UNEQUIP ? t('Remove') : t("Equip");
-    if (this.props.dialogType === ItemDialogType.SPELLS) {
+    if (this.props.dialogType === ItemDialogType.SPELLS && actionType === InventoryActionType.EQUIP) {
       acceptLabel = t("Learn");
     } else if (this.props.dialogType === ItemDialogType.SP) {
       acceptLabel = t('Spend');
@@ -218,12 +224,14 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   /** Same card as the hover tooltip, with the inventory actions underneath. */
-  renderItemCard(item: BaseItem | BaseSpell | BaseEquipment, type: ItemDialogType, isDisabled: boolean, blockedReason?: string, showActions = true) {
+  renderItemCard(item: BaseItem | BaseSpell | BaseEquipment, type: ItemDialogType, isDisabled: boolean, blockedReason?: string,
+      showActions = true, extra?: ComponentChildren) {
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData | undefined;
     return (
       <div className="item-dialog-card">
         <ItemTooltipContent item={item} showClasses character={activeCharacter} />
         {isDisabled && blockedReason && <p className="item-dialog-blocked" role="status">{blockedReason}</p>}
+        {extra}
         {showActions && this.renderDialogButtons(() => this.AcceptAction(type, this.props.index), isDisabled)}
       </div>
     );
@@ -248,17 +256,61 @@ class ItemDialog extends Component<DialogProps, DialogState> {
   }
 
   renderSpellDialog(dialogData: BaseSpell) {
-    const {isEquipped} = this.props;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
-    const isDisabled = !canLearnSpell(activeCharacter, dialogData.id);
+    const slots = spellSlots(activeCharacter);
+    const used = activeCharacter.skills.length;
+    const nextSlot = nextSpellSlotLevel(activeCharacter);
+    const slotInfo = slots > 0 && <p className="item-dialog-slots">
+      {t("Spell slots: {{value0}}/{{value1}}", {value0: used, value1: slots})}
+      {nextSlot !== null && <> · {t("Next slot at level {{value0}}", {value0: nextSlot})}</>}
+    </p>;
+
+    // A learned spell: removing it returns the scroll to the shared inventory.
+    if (this.props.actionType === InventoryActionType.UNEQUIP) {
+      const room = roomInInventory(this.context.player);
+      return this.renderItemCard(dialogData, ItemDialogType.SPELLS, !room, t("Your inventory is full."), true,
+        <p className="item-dialog-note">{t("Removing it returns the scroll to your inventory.")}</p>);
+    }
+
+    const knowable = canKnowSpell(activeCharacter, dialogData.id);
+    const full = used >= slots;
     const reason = !hasRequiredClass(activeCharacter, dialogData.classes)
       ? t("{{value0}} can’t learn this class’s spells.", {value0: activeCharacter.name})
       : !hasMinLevel(activeCharacter, dialogData.minLevel) ? t("{{value0}} needs level {{value1}}.", {value0: activeCharacter.name, value1: dialogData.minLevel})
+      : (activeCharacter.skills as number[]).includes(dialogData.id) ? t("{{value0}} already knows this spell.", {value0: activeCharacter.name})
       : undefined;
-    return <>
-      {this.renderItemCard(dialogData, ItemDialogType.SPELLS, isDisabled, reason, !isEquipped)}
-      {this.renderSpellConfirmationModal(dialogData, activeCharacter.name)}
-    </>;
+    if (knowable && full) {
+      return this.renderItemCard(dialogData, ItemDialogType.SPELLS, true, undefined, false, <>
+        {slotInfo}
+        {this.renderSpellReplacement(activeCharacter)}
+      </>);
+    }
+    return this.renderItemCard(dialogData, ItemDialogType.SPELLS, !knowable, reason, true, knowable && slotInfo);
+  }
+
+  /** With every slot taken, each learned spell can make way: it returns to the inventory as a scroll. */
+  renderSpellReplacement(character: APICharacterData) {
+    return (
+      <div className="item-dialog-replace">
+        <p className="item-dialog-replace-heading">{t("Replace a learned spell")}</p>
+        <div className="item-dialog-replace-list">
+          {(character.skills as number[]).map((id, slot) => {
+            const spell = getSpellById(id);
+            if (!spell) return null;
+            const {x, y} = mapFrameToCoordinates(spell.frame);
+            return (
+              <button type="button" key={id} className="item-dialog-replace-option"
+                onClick={() => this.AcceptAction(ItemDialogType.SPELLS, this.props.index, slot)}>
+                <span className="item-dialog-replace-icon" aria-hidden="true"
+                  style={{backgroundImage: `url(${spellsSpritesheet})`, backgroundPosition: `-${x}px -${y}px`}} />
+                {t("Replace {{value0}}", {value0: t(spell.name)})}
+              </button>
+            );
+          })}
+        </div>
+        <button type="button" className="dialog-decline" onClick={this.handleClose}><Trans i18n={i18n} i18nKey={"<0/>Cancel"} components={[<img src={cancelIcon} alt="" />]} /></button>
+      </div>
+    );
   }
 
   renderSpellConfirmationModal(dialogData: BaseSpell, characterName: string) {
@@ -277,28 +329,40 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     if (this.state.dialogSPModalShow) return this.renderSPConfirmationModal(dialogData);
     const { dialogValue } = this.state;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
+    const allocated = activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0;
+    // Each stat holds at most MAX_STAT_SP points, so the SP left may not all fit in this one.
+    const room = Math.max(0, MAX_STAT_SP - allocated);
+    const most = Math.min(activeCharacter.sp, room);
+    const statLabel = t(StatLabels[dialogData.stat]);
 
     return (
       <div className="character-info-dialog-container">
-        <h2 className="sp-dialog-title">{t("Increase {{value0}}", {value0: t(StatLabels[dialogData.stat])})}</h2>
+        <h2 className="sp-dialog-title">{t("Increase {{value0}}", {value0: statLabel})}</h2>
         <div className="sp-dialog-stat-info" style={{ '--stat-color': STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
           <strong className="sp-dialog-stat-name">{t(statNames[dialogData.stat])}</strong>
           <p className="sp-dialog-stat-description">{t(statExplanations[dialogData.stat])}</p>
         </div>
         <div className="character-info-dialog-card-container">
           <div className="character-info-dialog-card" style={{ backgroundColor: STATS_BG_COLOR[StatLabels[dialogData.stat]] }}>
-            <span>{t(StatLabels[dialogData.stat])}</span>
+            <span>{statLabel}</span>
           </div>
           <div className="character-info-dialog-card-text">
             {dialogData.value}
-            <span className='character-info-addition' style={{ color: '#9ed94c' }}>{t("+ {{value0}}", {value0: spBonus(dialogData.stat, (activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0) + dialogValue) - (activeCharacter.sp_bonuses[statFieldsByIndex[dialogData.stat]] ?? 0)})}</span>
+            <span className='character-info-addition' style={{ color: '#9ed94c' }}>{t("+ {{value0}}", {value0: spBonus(dialogData.stat, allocated + dialogValue) - (activeCharacter.sp_bonuses[statFieldsByIndex[dialogData.stat]] ?? 0)})}</span>
           </div>
         </div>
         <div className="character-info-dialog-control">
-          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))}>-</button>
+          <button type="button" data-game-control className="character-info-dialog-control-btn character-info-dialog-control-btn--minus"
+            aria-label={t("Fewer points")} disabled={dialogValue <= 1}
+            onClick={() => this.setState(prevState => ({ dialogValue: Math.max(1, prevState.dialogValue - 1) }))} />
           <div className="character-info-dialog-control-val">{dialogValue}</div>
-          <button type="button" data-game-control className="character-info-dialog-control-btn" onClick={() => this.setState(prevState => ({ dialogValue: Math.min(activeCharacter.sp, MAX_STAT_SP - (activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0), prevState.dialogValue + 1) }))}>+</button>
+          <button type="button" data-game-control className="character-info-dialog-control-btn character-info-dialog-control-btn--plus"
+            aria-label={t("More points")} disabled={dialogValue >= most}
+            onClick={() => this.setState(prevState => ({ dialogValue: Math.min(most, prevState.dialogValue + 1) }))} />
         </div>
+        {room < activeCharacter.sp && <p className="sp-dialog-cap" role="status">
+          {t("{{value0}} already has {{value1}}/{{value2}} points.", {value0: statLabel, value1: allocated, value2: MAX_STAT_SP})}
+        </p>}
         {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }), !canIncreaseStat(activeCharacter, dialogData.stat, dialogValue))}
       </div>
     );
