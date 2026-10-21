@@ -1,11 +1,12 @@
 import {t, formatNumber} from '../../i18n/core';
 
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 import { Component } from 'preact';
 import { route, getCurrentUrl } from 'preact-router';
 
 import { Class, ClassLabels } from '@legion/shared/enums';
-import { APICharacterData, CharacterUpdate, PlayerNetworkData, TeamMember } from '@legion/shared/interfaces';
+import { APICharacterData, CharacterMatchStats, CharacterUpdate, PlayerNetworkData, TeamMember } from '@legion/shared/interfaces';
+import CountUp from 'react-countup';
 import { getXPThreshold } from '@legion/shared/levelling';
 import { getSpritePath } from '../utils';
 import './CharacterCard.style.css';
@@ -16,6 +17,8 @@ interface CountUpProps {
     update?: CharacterUpdate;
     isWinner?: boolean;
     onLevelUp?: () => void;
+    /** Set on the match's MVP: the card takes the centre of the podium and shows what they did. */
+    mvp?: CharacterMatchStats;
     // Team reveal props
     hideXP?: boolean;
     isQuestionMark?: boolean;
@@ -88,7 +91,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
     };
 
     render() {
-        const { update, member, hideXP, isQuestionMark, isClickable, showSPBadge } = this.props;
+        const { update, member, hideXP, isQuestionMark, isClickable, showSPBadge, mvp } = this.props;
         const maxXP = getXPThreshold(this.props.member.level);
         const isReceivingXP = update?.earnedXP > 0;
         const isResettingXP = this.state.xpCounter === 0;
@@ -107,11 +110,15 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
         const Card = isClickable ? 'button' : 'div';
         return (
             <Card type={isClickable ? 'button' : undefined} data-game-control={isClickable || undefined}
-                className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''} ${isClickable ? 'clickable' : ''} ${this.isSelected() ? 'selected' : ''}`}
+                className={`endgame_character ${isLevelingUp ? 'leveling-up' : ''} ${isClickable ? 'clickable' : ''} ${this.isSelected() ? 'selected' : ''} ${mvp ? 'is-mvp' : ''}`}
                 data-character-id={member.id}
                 data-class={Class[member.class]}
                 onClick={this.handleClick}
             >
+                {mvp && <>
+                    <div className="endgame_mvp_rays" aria-hidden="true" />
+                    <div className="endgame_mvp_crest">{t("MVP")}</div>
+                </>}
                 {showSPBadge && member.sp > 0 && (
                     <div className="endgame_character_sp_badge">{t("SP")}</div>
                 )}
@@ -151,6 +158,18 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
 
                 <div className="endgame_character_name">{member.name}</div>
                 <div className="endgame_character_class">{t(ClassLabels[member.class])}</div>
+                {mvp && <dl className="endgame_mvp_stats">
+                    {[
+                        {label: t("KOs"), value: mvp.kills, show: true},
+                        {label: t("Damage"), value: mvp.damage, show: mvp.damage > 0 || mvp.healing === 0},
+                        {label: t("Healing"), value: mvp.healing, show: mvp.healing > 0},
+                    ].filter(stat => stat.show).map((stat, index) => (
+                        <div key={stat.label} style={{'--stat-index': index}}>
+                            <dt>{stat.label}</dt>
+                            <dd><CountUp end={stat.value} duration={1.1} delay={0.9 + index * 0.15} formattingFn={formatNumber} /></dd>
+                        </div>
+                    ))}
+                </dl>}
             </Card>
         );
     }

@@ -88,3 +88,8 @@
 .character-hover-card__preview[data-heal="true"] { color: oklch(83% .12 155); }
 .character-hover-card__preview span { overflow-wrap: anywhere; }
 .character-hover-card__preview b { flex-shrink: 0; font-weight: 400; }
+/* A finishing blow reads as one at a glance. */
+.character-hover-card__preview[data-lethal="true"] { color: oklch(72% .2 28); }
+.character-hover-card__ko { display: inline-flex; align-items: center; gap: 4px; font-family: var(--locale-font, 'Kim'), system-ui, sans-serif; letter-spacing: .06em; animation: hover-ko-pulse .52s ease-in-out infinite alternate; }
+@keyframes hover-ko-pulse { to { color: oklch(92% .08 60); text-shadow: 0 0 8px oklch(65% .22 28); } }
+@media (prefers-reduced-motion: reduce) { .character-hover-card__ko { animation: none; } }

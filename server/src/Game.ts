@@ -756,6 +756,9 @@ export abstract class Game
 
                 team.distributeXp(outcomes.xp);
                 outcomes.characters = team.getCharactersDBUpdates();
+                outcomes.teamStats = team.getMembers().map(member => ({
+                    num: member.num, damage: member.damageDealt, healing: member.healingDone, kills: member.kills,
+                }));
                 const engagement = team.getEngagement();
                 this.writeOutcomesToDb(team, outcomes, engagement);
                 console.log(`[Game:endGame] Team ${team!.id} (UID: ${uid}) outcomes: ${JSON.stringify(outcomes)}`);
@@ -891,13 +894,14 @@ export abstract class Game
         player.recordAction(1);
 
         let oneShot = false;
+        if (opponent.justDied && opponent.team !== player.team) player.kills++;
         if (opponent.justDied) {
             oneShot = (damage >= opponent.getMaxHP());
         }
 
         if (this.hasObstacle(opponent.x, opponent.y)) {
             const terrainUpdates = this.terrainManager.removeIce(opponent.x, opponent.y);
-            this.broadcastTerrain(terrainUpdates);
+            this.broadcastTerrain(terrainUpdates, 'shatter');
             opponent.removeStatusEffect(StatusEffect.FREEZE);
         }
 
@@ -932,7 +936,7 @@ export abstract class Game
         if (!this.beginAction(player)) return;
 
         const terrainUpdates = this.terrainManager.removeIce(x, y);
-        this.broadcastTerrain(terrainUpdates);
+        this.broadcastTerrain(terrainUpdates, 'shatter');
 
         this.broadcast('obstacleattack', {
             team: player.team.id,
@@ -1007,6 +1011,7 @@ export abstract class Game
         targets.forEach(target => {
             if (target.HPHasChanged()) {
                 target.team.incrementHealing(target.getHPDelta());
+                player.healingDone += Math.max(0, target.getHPDelta());
             }
             if (target.MPHasChanged()) {
                 this.emitMPchange(target.team!, target.num, target.getMP());
@@ -1034,11 +1039,14 @@ export abstract class Game
             if (target.HPHasChanged()) {
                 const delta = target.getHPDelta();
                 // console.log(`[Game:applyMagic] delta: ${delta}, justDied: ${target.justDied}, targetHP: ${target.getHP()}, targetMaxHP: ${target.getMaxHP()}`);
-                player.increaseDamageDealt(delta);
+                // The HP delta is negative for damage; heals are not damage dealt.
+                player.increaseDamageDealt(-delta);
                 if (target.justDied && delta < 0){
                     nbKills++;
+                    if (target.team !== player.team) player.kills++;
                 }
                 if (delta > 0) {
+                    player.healingDone += delta;
                     player.team!.increaseScoreFromHeal(player);
                     player.team!.incrementHealing(delta);
                 } else if (delta < 0) {
@@ -1218,8 +1226,8 @@ export abstract class Game
         });
     }
 
-    broadcastTerrain(terrainUpdates: TerrainUpdate[]) {
-        this.broadcast('terrain', terrainUpdates);
+    broadcastTerrain(terrainUpdates: TerrainUpdate[], iceRemoval?: TerrainUpdate['iceRemoval']) {
+        this.broadcast('terrain', iceRemoval ? terrainUpdates.map(update => ({...update, iceRemoval})) : terrainUpdates);
     }
 
     listAdjacentEnemies(player: ServerPlayer): ServerPlayer[] {

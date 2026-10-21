@@ -4,7 +4,7 @@ import { h } from 'preact';
 import { Component } from 'preact';
 import { useWindowSize } from '@react-hook/window-size';
 import CountUp from 'react-countup';
-import { CharacterUpdate, GameOutcomeReward, TeamMember } from '@legion/shared/interfaces';
+import { CharacterMatchStats, CharacterUpdate, GameOutcomeReward, TeamMember } from '@legion/shared/interfaces';
 import CharacterCard from './CharacterCard';
 import { ChestColor, InventoryType, PlayMode, RewardType } from '@legion/shared/enums';
 import { ItemTooltip } from '../ItemTooltipContent';
@@ -48,6 +48,9 @@ interface EndgameProps {
     eventEmitter: EventEmitter;
     /** Rating change from a ranked match; zero otherwise. */
     eloChange: number;
+    /** Comeback, Flawless, Ace: earned across the whole match. */
+    honours: string[];
+    teamStats?: CharacterMatchStats[];
     closeGame: () => void;
 }
 
@@ -58,6 +61,28 @@ interface Reward {
     icon: string;
     backgroundImage?: string;
     coordinates?: { x: number; y: number };
+}
+
+const HONOURS: Record<string, {label: () => string; detail: () => string}> = {
+    comeback: {label: () => t("Comeback!"), detail: () => t("Won after trailing by two characters.")},
+    flawless: {label: () => t("Flawless"), detail: () => t("Won without losing a character.")},
+    ace: {label: () => t("Ace"), detail: () => t("One character knocked out the whole enemy team.")},
+};
+
+/** The character who did the most: damage and healing, with each knockout worth a solid hit. */
+function pickMVP(stats?: CharacterMatchStats[]) {
+    const score = (entry: CharacterMatchStats) => entry.damage + entry.healing + entry.kills * 40;
+    const best = stats?.reduce<CharacterMatchStats | null>((top, entry) => !top || score(entry) > score(top) ? entry : top, null);
+    return best && score(best) > 0 ? best : null;
+}
+
+/** The MVP stands in the middle of the podium; the others flank it. */
+function podiumOrder<T extends {num: number}>(characters: T[], mvp: number | undefined) {
+    const others = characters.filter(character => character.num !== mvp);
+    const star = characters.find(character => character.num === mvp);
+    if (!star) return characters;
+    const half = Math.ceil(others.length / 2);
+    return [...others.slice(0, half), star, ...others.slice(half)];
 }
 
 // Reward tiles share the inventory tooltip; XP and gold have their own short explanations.
@@ -151,6 +176,8 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
         const [width, height] = useWindowSize()
         const { members, characters } = this.props;
         const showPlayAgain = !this.props.game0 && this.props.mode !== PlayMode.CASUAL_VS_FRIEND;
+        const mvp = pickMVP(this.props.teamStats);
+        const honours = this.props.honours.filter(honour => HONOURS[honour]);
 
         return (
             <div className={`endgame ${this.props.isWinner ? 'is-victory' : 'is-defeat'}`}>
@@ -160,13 +187,25 @@ export class Endgame extends Component<EndgameProps, EndgameState> {
                       : <div className="defeat_title_bg localized-result">{t(this.props.isWinner ? "Victory!" : "Defeat")}</div>}
                 </div>
 
-                <div className="endgame_characters_grid">
-                    {characters.map((character) => (
+                {honours.length > 0 && <ul className="endgame_honours" aria-label={t("Honours")}>
+                    {honours.map((honour, index) => (
+                        <li key={honour} className={`endgame_honour endgame_honour--${honour}`} style={{'--honour-index': index}}
+                            title={HONOURS[honour].detail()}>
+                            <strong>{HONOURS[honour].label()}</strong>
+                            <span>{HONOURS[honour].detail()}</span>
+                        </li>
+                    ))}
+                </ul>}
+
+                <div className={`endgame_characters_grid ${mvp ? 'has-mvp' : ''}`} data-count={characters.length}>
+                    {podiumOrder(characters, mvp?.num).map((character) => (
                         <CharacterCard
+                            key={character.num}
                             member={members[character.num - 1]}
                             update={character as CharacterUpdate}
                             isWinner={this.props.isWinner}
                             onLevelUp={this.handleLevelUp}
+                            mvp={character.num === mvp?.num ? mvp : undefined}
                         />
                     ))}
                 </div>

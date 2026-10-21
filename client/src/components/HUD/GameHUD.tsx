@@ -17,6 +17,7 @@ import TutorialDialogue from './TutorialDialogue';
 import { combatTipsVisible, saveCombatTips, type TutorialMessage } from '../../game/TutorialManager';
 import PlayerBar from './PlayerBar';
 import CharacterHoverCard, { CharacterHover } from './CharacterHoverCard';
+import { Callout, CombatCallout, LastStandVignette, SpellCinematic, SpellNameCard } from './CombatMoments';
 
 
 interface GameHUDProps {
@@ -57,6 +58,11 @@ interface GameHUDState {
   turnNumber: number;
   isHUDVisible: boolean;
   characterHover: CharacterHover | null;
+  callout: Callout | null;
+  lastStand: boolean;
+  spellCinematic: SpellCinematic | null;
+  honours: string[];
+  teamStats: OutcomeData['teamStats'];
 }
 
 const events = new EventEmitter();
@@ -98,11 +104,18 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     turnDuration: 0,
     isHUDVisible: true,
     characterHover: null,
+    callout: null,
+    lastStand: false,
+    spellCinematic: null,
+    honours: [],
+    teamStats: undefined,
   });
 
   state = this.getInitialState();
 
   private lastPassTurnClick = 0;
+  private calloutTimer: ReturnType<typeof setTimeout>;
+  private calloutCount = 0;
   private feedbackTimer: ReturnType<typeof setTimeout>;
   private clearActionFeedback = () => {
     clearTimeout(this.feedbackTimer);
@@ -171,6 +184,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       events.on(event, this.clearActionFeedback, this);
     }
     // Add new event listener for revealing top menu
+    events.on('combatCallout', this.showCallout, this);
+    events.on('lastStand', (lastStand: boolean) => this.setState({lastStand}), this);
+    events.on('spellCinematic', (spellCinematic: SpellCinematic | null) => this.setState({spellCinematic}), this);
     events.on('revealTopMenu', this.revealTopMenu, this);
     events.on('revealOverview', this.revealOverview, this);
 
@@ -178,8 +194,15 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
     window.addEventListener('keydown', this.handleKeyDown);
   }
 
+  showCallout = (callout: Omit<Callout, 'key'>) => {
+    clearTimeout(this.calloutTimer);
+    this.setState({callout: {...callout, key: ++this.calloutCount}});
+    this.calloutTimer = setTimeout(() => this.setState({callout: null}), 1900);
+  };
+
   componentWillUnmount() {
     clearTimeout(this.feedbackTimer);
+    clearTimeout(this.calloutTimer);
     // The next route may already have registered its music/settings listeners.
     for (const event of events.eventNames()) {
       for (const listener of events.listeners(event)) events.off(event, listener, this);
@@ -232,7 +255,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
 
   endGame = (data: OutcomeData) => {
     recordCompletedGame();
-    const { isWinner, xp, gold, chests, characters, key, elo } = data;
+    const { isWinner, xp, gold, chests, characters, key, elo, teamStats } = data;
+    const honours = (data as OutcomeData & {honours?: string[]}).honours ?? [];
     const uid = firebaseAuth.currentUser?.uid;
     if (uid && (this.state.mode === PlayMode.RANKED || this.state.mode === PlayMode.RANKED_VS_AI)) recordRankedSeason(uid);
     this.setState({
@@ -241,6 +265,10 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
       xpReward: xp,
       goldReward: gold,
       eloChange: elo || 0,
+      honours,
+      teamStats,
+      callout: null,
+      spellCinematic: null,
       characters: characters,
       chests: chests,
       key: key,
@@ -362,6 +390,9 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           />
         )}
         {isHUDVisible && !this.state.gameOver && inspected && <CharacterHoverCard character={inspected} hover={characterHover} />}
+        {!this.state.gameOver && this.state.lastStand && <LastStandVignette />}
+        {!this.state.gameOver && this.state.spellCinematic && <SpellNameCard cinematic={this.state.spellCinematic} />}
+        {!this.state.gameOver && this.state.callout && <CombatCallout callout={this.state.callout} />}
         {isHUDVisible && this.state.gameOver && <Endgame
           members={ownMembers}
           chests={this.state.chests}
@@ -375,6 +406,8 @@ class GameHUD extends Component<GameHUDProps, GameHUDState> {
           closeGame={this.closeGame}
           eventEmitter={events}
           eloChange={this.state.eloChange}
+          honours={this.state.honours}
+          teamStats={this.state.teamStats}
         />}
         {isHUDVisible && !this.state.gameOver && this.state.tipsAvailable && (
           <TutorialDialogue

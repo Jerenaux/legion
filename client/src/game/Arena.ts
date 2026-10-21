@@ -78,11 +78,18 @@ import {sfxLevel} from '../sfxMix';
 import {DESKTOP_ACTION_EVENT, DesktopAction} from '../input/actions';
 import type {CharacterHover} from '../components/HUD/CharacterHoverCard';
 import {NUMBER_COLORS} from './Player';
-import {cameraNudgeEnabled, rumble, shake} from './feedback';
+import {cameraNudgeEnabled, rumble, screenEffectsEnabled, shake} from './feedback';
+import {shatterIce} from './iceShatter';
 
 /** Sounds that loop or get stopped keep one instance; everything else may overlap a few times. */
 const PERSISTENT_SOUNDS = new Set(['cast', 'heart', 'flames', 'jingle_win', 'jingle_lose', 'level_up']);
 const MAX_SOUND_COPIES = 3;
+/** The 19-tile X tier: Fire X, Ice X, Thunder X. */
+const isUltimate = (spell: BaseSpell) => spell.target === Target.AOE && spell.radius >= 3;
+/** Server announcements plus the client's own. */
+type Announcement = GEN | 'rampage';
+/** Sent actions that end the turn. */
+const ACTION_CHANNELS = new Set(['move', 'attack', 'obstacleattack', 'spell', 'useitem']);
 const EMBER_TINTS = [0xfff1c2, 0xffc46b, 0xff8a3c, 0xff5a1f];
 const CHARGE_TINTS: Record<string, number[]> = {
     fire: [0xffd27a, 0xff9a3c, 0xff5a1f],
@@ -140,7 +147,7 @@ export class Arena extends Phaser.Scene
     gameSettings;
     killCamActive = false;
     pendingGEN: GEN;
-    genQueue: GEN[] = [];
+    genQueue: Announcement[] = [];
     isDisplayingGEN: boolean = false;
     eventsQueue = [];
     private readyToken: string | null = null;
@@ -179,6 +186,8 @@ export class Arena extends Phaser.Scene
         [GEN.FROZEN]: { label: 'Frozen!', asset: 'announcements/frozen.png', text1: 'frozen', text2: null },
         [GEN.BURNING]: { label: 'Burning!', asset: 'announcements/burning.png', text1: 'stuff-is', text2: 'on-fire' },
         [GEN.TUTORIAL]: { label: 'Tutorial!', asset: 'announcements/tutorial.png', text1: 'tutorial', text2: null },
+        // Client-side announcement without word artwork: drawn as lettering in the same style.
+        rampage: { label: 'Rampage!', asset: 'announcements/rampage.png', text1: null, text2: null },
     };
 
     private static readonly SOUND_NAMES = [
@@ -204,6 +213,19 @@ export class Arena extends Phaser.Scene
     private killCamCheck: Phaser.Time.TimerEvent | null = null;
     /** Killing spells still travelling to their target. */
     private killsInFlight = 0;
+    /** An action was sent this turn: previews describe the next action, so they wait for the next turn. */
+    private actionPending = false;
+    /** Where the camera rests between kill cams and cinematics: the centre, or a turn nudge. */
+    private cameraHome = {x: 0, y: 0};
+    private cinematic: {caster: Player; overlay: Phaser.GameObjects.Rectangle} | null = null;
+    /** Who last struck a blow, so a knockout can be credited to them. */
+    private lastBlow: {by: Player; at: number} | null = null;
+    private killsBy = new Map<Player, number>();
+    /** Teams down to their last character, with the ember aura around the survivor. */
+    private lastStands = new Map<number, Phaser.GameObjects.Particles.ParticleEmitter>();
+    /** Lowest (own alive − enemy alive) seen, and own knockouts: for the Comeback and Flawless honours. */
+    private worstDeficit = 0;
+    private ownLosses = 0;
     private endKillCam: (() => void) | null = null;
     private afterKillCam: (() => void)[] = [];
     private movePreview: Phaser.GameObjects.GameObject[] = [];
@@ -477,6 +499,7 @@ export class Arena extends Phaser.Scene
     processActionRejected(turn: TurnState & {reason?: ItemNoEffectReason}) {
         if (this.gameEnded || turn.turnNumber !== this.turnee?.turnNumber ||
             turn.team !== this.turnee.team || turn.num !== this.turnee.num) return;
+        this.actionPending = false;
         this.unlockInput();
         this.selectedPlayer?.cancelItem();
         this.selectTurnee();
@@ -512,6 +535,7 @@ export class Arena extends Phaser.Scene
     }
 
     send(channel, data) {
+        if (ACTION_CHANNELS.has(channel)) this.actionPending = true;
         if (this.socket) {
             this.socket.emit(channel, data);
         }
@@ -790,7 +814,7 @@ export class Arena extends Phaser.Scene
     // Runs every frame while hovering: recompute the preview only when one of its inputs changes.
     private hoverPreview(target: Player): CharacterHover['preview'] {
         const caster = this.selectedPlayer;
-        const key = [this.isReplay, this.gameSettings?.spectator, this.gameEnded, this.inputLocked,
+        const key = [this.isReplay, this.gameSettings?.spectator, this.gameEnded, this.inputLocked, this.actionPending,
             this.turnee?.team, this.turnee?.num, caster?.team.id, caster?.num, caster?.pendingSpell, caster?.pendingItem,
             caster?.mp, caster?.gridX, caster?.gridY, caster?.isMuted(), caster?.isFrozen(), caster?.canAct(),
             target.team.id, target.num, target.hp, target.gridX, target.gridY, target.isAlive()].join();
@@ -830,7 +854,7 @@ export class Arena extends Phaser.Scene
 
     private getHPPreview(target: Player): CharacterHover['preview'] {
         const caster = this.selectedPlayer;
-        if (this.isReplay || this.gameSettings?.spectator || this.gameEnded || this.inputLocked ||
+        if (this.isReplay || this.gameSettings?.spectator || this.gameEnded || this.inputLocked || this.actionPending ||
             !caster?.combatStats || !target.combatStats || this.unavailableActionReason(caster) || caster.pendingItem != null) return;
         const spell = caster.pendingSpell == null ? null : caster.spells[caster.pendingSpell];
         let hp = target.hp;
@@ -1016,6 +1040,7 @@ export class Arena extends Phaser.Scene
         // The server reports the HP change just before the attack; play it when the blow lands.
         const hpBefore = targetPlayer.hp;
         const delta = targetPlayer.takePendingReaction() ?? (hp !== hpBefore ? (damage ?? hp - hpBefore) : null);
+        this.lastBlow = {by: player, at: Date.now()};
 
         this.playSound('slash');
         player.attack(targetPlayer.gridX);
@@ -1040,7 +1065,6 @@ export class Arena extends Phaser.Scene
         this.playSound('slash');
         player.attack(x);
         player.lunge(this.hexGridToPixelCoords(x, y), () => {
-            this.playSound('shatter');
             this.displayAttackImpact(x, y);
             const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
             this.sparks(pixelX, pixelY - 10, 12, 0xd8f4ff);
@@ -1117,11 +1141,11 @@ export class Arena extends Phaser.Scene
 
     processTerrain(updates: TerrainUpdate[], isReconnect = false) {
         if (this.gameEnded) return;
-        updates.forEach(({x, y, terrain}) => {
+        updates.forEach(({x, y, terrain, iceRemoval}) => {
             const handlers = {
                 [Terrain.FIRE]: () => this.handleFireTerrain(x, y),
                 [Terrain.ICE]: () => this.handleIceTerrain(x, y, isReconnect),
-                [Terrain.NONE]: () => this.handleClearTerrain(x, y)
+                [Terrain.NONE]: () => this.handleClearTerrain(x, y, iceRemoval)
             };
             handlers[terrain]?.();
         });
@@ -1198,6 +1222,9 @@ export class Arena extends Phaser.Scene
         const player = this.getPlayer(team, num);
         const spell = getSpellById(id);
         player?.castAnimation(flag, spell?.name, spell?.charge);
+        if (flag && player) this.lastBlow = {by: player, at: Date.now()};
+        if (flag && player && spell && isUltimate(spell)) this.startSpellCinematic(player, spell);
+        else if (!flag) this.endSpellCinematic(false);
 
         if (CAST_ZOOM) {
             // Check for cast start with charged spell
@@ -1252,6 +1279,8 @@ export class Arena extends Phaser.Scene
 
     processLocalAnimation({fromX, fromY, toX, toY, id, isKill}) {
         const spell = getSpellById(id);
+        const caster = this.gridMap.get(serializeCoords(fromX, fromY));
+        if (caster) this.lastBlow = {by: caster, at: Date.now()};
         const {x: pixelXInitial, y: pixelYInitial} = this.hexGridToPixelCoords(toX, toY);
         let pixelY = pixelYInitial;
         let pixelX = pixelXInitial;
@@ -1269,6 +1298,7 @@ export class Arena extends Phaser.Scene
         if (isKill) this.killsInFlight++;
         this.time.delayedCall(spell.projectile ? PROJECTILE_DURATION * 1000 : 0, () => {
             this.lastImpact = {x: pixelXInitial, y: pixelYInitial, at: performance.now()};
+            if (isUltimate(spell)) this.endSpellCinematic(true);
             if (isKill) {
                 this.killsInFlight--;
                 this.requestKillCam(pixelXInitial, pixelYInitial);
@@ -1383,6 +1413,7 @@ export class Arena extends Phaser.Scene
 
         const offsetX = (targetX - screenCenterX) * moveRatio;
         const offsetY = (targetY - screenCenterY) * moveRatio;
+        this.cameraHome = {x: screenCenterX + offsetX, y: screenCenterY + offsetY};
 
         // Pan camera smoothly from center
         this.cameras.main.pan(
@@ -1436,6 +1467,9 @@ export class Arena extends Phaser.Scene
         this.clearCharacterHover();
         this.clearMovePreview();
         this.gameEnded = true;
+        this.lastStands.forEach(aura => { aura.destroy(); });
+        this.lastStands.clear();
+        events.emit('lastStand', false);
         // Clear the stage for the result jingle.
         this.musicManager.fadeOut();
         const winningTeam = data.isWinner ? this.teamsMap.get(this.playerTeamId) : this.teamsMap.get(this.getOtherTeam(this.playerTeamId));
@@ -1456,7 +1490,7 @@ export class Arena extends Phaser.Scene
             rumble(data.isWinner ? 0.4 : 0.6, data.isWinner ? 0.6 : 0.2, data.isWinner ? 250 : 350);
             // The champions celebrate on the field before the result screen covers it.
             this.time.delayedCall(RESULT_SCREEN_DELAY_MS, () => {
-                if (!this.disposed && this.overviewReady) events.emit('gameEnd', data);
+                if (!this.disposed && this.overviewReady) events.emit('gameEnd', {...data, honours: this.matchHonours(data)});
             });
         }));
     }
@@ -1490,6 +1524,7 @@ export class Arena extends Phaser.Scene
         events.emit('combatWaiting', false);
         // Determine if turnee is player
         this.clearMovePreview();
+        this.actionPending = false;
         if (data.team !== this.playerTeamId) {
             events.emit('enemyTurn');
         } else if (!this.isReplay && !this.gameSettings?.spectator) {
@@ -1866,6 +1901,7 @@ export class Arena extends Phaser.Scene
         }
 
         this.hexGridManager = new HexGridManager(this);
+        this.cameraHome = {x: this.cameras.main.width / 2, y: this.cameras.main.height / 2};
 
         this.sceneCreated = true;
         this.game.events.on(Phaser.Core.Events.POST_RENDER, this.reportArenaReady, this);
@@ -1991,6 +2027,9 @@ export class Arena extends Phaser.Scene
             teamRevealed: () => {
                 this.displayGame(data, isReconnect);
             },
+            versusShown: () => {
+                this.displayGame(data, isReconnect);
+            },
         };
         Object.entries(this.hudHandlers).forEach(([event, handler]) => { events.on(event, handler); });
 
@@ -1999,6 +2038,21 @@ export class Arena extends Phaser.Scene
         events.emit('combatWaiting', !isReconnect);
         if (this.tutorialIntroPending) {
             events.emit('revealTeam', data.player.team);
+        } else if (!isReconnect && !this.isReplay && !data.general.spectator && data.general.mode !== PlayMode.TUTORIAL) {
+            // Both sides face off before the arena fills; the drop-in follows the versus screen.
+            const tower = data.general.mode === PlayMode.TOWER;
+            const side = (team: PlayerNetworkData[], player: GameData['player']['player'], name: string, enemy = false) => ({
+                name, avatar: player.playerAvatar, league: player.playerLeague, rank: player.playerRank, bot: player.playerRank === -1,
+                community: player.community ?? null,
+                characters: team.map(character => ({name: tower && enemy ? t(character.name) : character.name,
+                    portrait: character.portrait, class: character.class, level: character.level})),
+            });
+            events.emit('revealVersus', {
+                mode: data.general.mode,
+                floor: data.general.tower ? data.general.tower.floor : null,
+                own: side(data.player.team, data.player.player, data.player.player.playerName),
+                enemy: side(data.opponent.team, data.opponent.player, this.teamsMap.get(data.opponent.teamId)?.playerName ?? data.opponent.player.playerName, true),
+            });
         } else {
             this.displayGame(data, isReconnect);
         }
@@ -2125,7 +2179,7 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    enqueueGEN(gen: GEN) {
+    enqueueGEN(gen: Announcement) {
         this.genQueue.push(gen);
         this.processGENQueue();
     }
@@ -2142,7 +2196,7 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    displayGEN(gen: GEN): Promise<void> {
+    displayGEN(gen: Announcement): Promise<void> {
         if (this.gameEnded) return Promise.resolve();
 
         return new Promise((resolve) => {
@@ -2194,10 +2248,13 @@ export class Arena extends Phaser.Scene
                     .setScrollFactor(0).setDepth(10);
                 title.setScale(Math.min(640 / title.width, 180 / title.height, (this.cameras.main.width - 32) / title.width));
                 targets.push(title);
-            } else if (language !== 'en') {
-                const title = this.add.text(-350, yPosition, t(config.label), {
-                    fontFamily: fontFamily(), fontSize: 48, fontStyle: 'bold', color: '#d9f5ff',
-                    stroke: '#17384e', strokeThickness: 5, align: 'center',
+            } else if (language !== 'en' || !config.text1) {
+                // Without word artwork, English lettering matches the artwork's cyan and navy.
+                const lettered = language === 'en';
+                const title = this.add.text(-350, yPosition, lettered ? t(config.label).toUpperCase() : t(config.label), {
+                    fontFamily: fontFamily(), fontSize: lettered ? 64 : 48, fontStyle: 'bold', color: lettered ? '#5ff2ff' : '#d9f5ff',
+                    stroke: lettered ? '#0b2a44' : '#17384e', strokeThickness: lettered ? 9 : 5, align: 'center',
+                    shadow: lettered ? {offsetX: 0, offsetY: 5, color: '#0b2a44', fill: true, stroke: true} : undefined,
                     wordWrap: {width: Math.min(640, this.cameras.main.width - 32), useAdvancedWrap: true},
                 }).setOrigin(0.5).setScrollFactor(0).setDepth(10);
                 title.setScale(Math.min(1, 180 / title.height));
@@ -2276,9 +2333,115 @@ export class Arena extends Phaser.Scene
     }
 
     /**
-     * Kills are confirmed a moment later, once every HP change has arrived: the kill cam plays only for
-     * the final kill, a one-shot or several knockouts at once, so routine kills keep the pace.
+     * X-tier spells get a moment of their own while they charge: the field dims around the caster,
+     * the camera closes in and the HUD names the spell. The impact ends it with a white flash.
      */
+    private startSpellCinematic(caster: Player, spell: BaseSpell) {
+        this.endSpellCinematic(false);
+        const camera = this.cameras.main;
+        const overlay = this.add.rectangle(camera.width / 2, camera.height / 2, camera.width * 3, camera.height * 3, 0x07040c, 0)
+            .setDepth(5);
+        this.tweens.add({targets: overlay, fillAlpha: 0.62, duration: 320, ease: 'Sine.easeOut'});
+        // Above the dimmed field, below the effects and announcements.
+        caster.setDepth(5.5);
+        this.cinematic = {caster, overlay};
+        const element = ['fire', 'ice', 'thunder'].find(key => spell.vfx?.includes(key) || spell.charge?.includes(key)) ?? 'fire';
+        events.emit('spellCinematic', {caster: caster.name, spell: spell.name, element, own: caster.isPlayer});
+        if (!FREEZE_CAMERA) {
+            camera.pan(caster.x, caster.y - 20, 450, 'Sine.easeOut');
+            camera.zoomTo(1.3, 450, 'Sine.easeOut');
+        }
+        rumble(0.15, 0.35, 300);
+    }
+
+    private endSpellCinematic(impact: boolean) {
+        const cinematic = this.cinematic;
+        if (!cinematic) return;
+        this.cinematic = null;
+        events.emit('spellCinematic', null);
+        cinematic.caster.setDepth(this.yToZ(cinematic.caster.gridY));
+        this.tweens.add({targets: cinematic.overlay, fillAlpha: 0, duration: impact ? 140 : 260,
+            onComplete: () => cinematic.overlay.destroy()});
+        if (impact && screenEffectsEnabled()) {
+            this.cameras.main.flash(260, 255, 248, 235);
+            shake(this, 420, 0.012);
+        }
+        if (impact) rumble(0.8, 0.6, 320);
+        if (!FREEZE_CAMERA) {
+            this.cameras.main.pan(this.cameraHome.x, this.cameraHome.y, 500, 'Sine.easeInOut');
+            this.cameras.main.zoomTo(1, 500, 'Sine.easeInOut');
+        }
+    }
+
+    /** A character was just knocked out: credit the blow, track the honours, check for a last stand. */
+    onCharacterDown(victim: Player) {
+        if (!this.gameInitialized) return;
+        if (victim.team.id === this.playerTeamId) this.ownLosses++;
+        const alive = (teamId: number) => this.teamsMap.get(teamId)?.members.filter(member => member.isAlive()).length ?? 0;
+        this.worstDeficit = Math.min(this.worstDeficit, alive(this.playerTeamId) - alive(this.getOtherTeam(this.playerTeamId)));
+        // The attack or spell event can trail the HP change by a moment.
+        this.time.delayedCall(200, () => {
+            const blow = this.lastBlow;
+            if (!blow || Date.now() - blow.at > 2500 || blow.by.team === victim.team || this.disposed) return;
+            const kills = (this.killsBy.get(blow.by) ?? 0) + 1;
+            this.killsBy.set(blow.by, kills);
+            if (kills >= 2 && !this.gameEnded) this.enqueueGEN('rampage');
+        });
+        this.refreshLastStands();
+    }
+
+    onCharacterUp() {
+        if (this.gameInitialized) this.refreshLastStands();
+    }
+
+    /** A team reduced to one character makes its last stand: callout, aura, and for your own team a vignette and the music at full tilt. */
+    private refreshLastStands() {
+        for (const team of this.teamsMap.values()) {
+            const alive = team.members.filter(member => member.isAlive());
+            const standing = alive.length === 1 && team.members.length > 1;
+            const aura = this.lastStands.get(team.id);
+            if (standing && !aura && !this.gameEnded) {
+                const survivor = alive[0];
+                const own = team.id === this.playerTeamId;
+                this.lastStands.set(team.id, this.lastStandAura(survivor));
+                this.whenKillCamEnds(() => {
+                    if (this.gameEnded || !survivor.isAlive()) return;
+                    events.emit('combatCallout', {kind: 'lastStand', name: survivor.name, own});
+                    if (own) events.emit('lastStand', true);
+                    this.musicManager.surge();
+                    rumble(own ? 0.5 : 0.2, 0.4, 260);
+                });
+            } else if (!standing && aura) {
+                aura.destroy();
+                this.lastStands.delete(team.id);
+                if (team.id === this.playerTeamId) events.emit('lastStand', false);
+            }
+        }
+    }
+
+    private lastStandAura(player: Player) {
+        return this.add.particles(0, 0, 'fx_spark', {
+            lifespan: 900, frequency: 70, speedY: {min: -70, max: -25}, x: {min: -22, max: 22}, y: {min: -20, max: 40},
+            scale: {start: 0.5, end: 0}, alpha: {start: 0.85, end: 0}, tint: [0xff6a3a, 0xffb347, 0xe0412f], blendMode: 'ADD',
+            follow: player,
+        }).setDepth(player.depth + 0.005);
+    }
+
+    /** Honours shown on the end screen, from the whole match. */
+    private matchHonours(data: OutcomeData): string[] {
+        const honours: string[] = [];
+        const enemies = this.teamsMap.get(this.getOtherTeam(this.playerTeamId))?.members.length ?? 0;
+        const own = this.teamsMap.get(this.playerTeamId)?.members ?? [];
+        if (data.isWinner && this.worstDeficit <= -2) honours.push('comeback');
+        if (data.isWinner && this.ownLosses === 0 && own.length > 1) honours.push('flawless');
+        const ace = data.teamStats
+            ? data.teamStats.some(stats => stats.kills >= enemies)
+            : own.some(member => (this.killsBy.get(member) ?? 0) >= enemies);
+        if (data.isWinner && enemies >= 2 && ace) honours.push('ace');
+        return honours;
+    }
+
+    /** Every kill gets the slow-motion kill cam, a moment after the blow so every HP change has arrived. */
     requestKillCam(x: number, y: number) {
         if (this.killCamActive || this.killCamCheck) {
             this.flushAfterKillCam();
@@ -2286,13 +2449,7 @@ export class Arena extends Phaser.Scene
         }
         this.killCamCheck = this.time.delayedCall(120, () => {
             this.killCamCheck = null;
-            const now = Date.now();
-            const all = [...this.teamsMap.values()].flatMap(team => team.members);
-            const recent = all.filter(player => !player.isAlive() && now - player.diedAt < 600);
-            const finalKill = [...this.teamsMap.values()].some(team => team.members.length && team.members.every(player => !player.isAlive()));
-            const oneShot = recent.some(player => player.hpBeforeHit >= player.maxHP);
-            if (finalKill || oneShot || recent.length >= 2) this.killCam(x, y);
-            else this.flushAfterKillCam();
+            this.killCam(x, y);
         });
     }
 
@@ -2313,13 +2470,11 @@ export class Arena extends Phaser.Scene
 
     killCam(x, y) {
         this.killCamActive = true;
-        // Save the original camera state
-        const originalZoom = this.cameras.main.zoom;
+        // The camera returns to its resting framing, not wherever a cinematic left it.
+        const originalZoom = 1;
         const originalTimeScale = this.localAnimationSprite.anims.timeScale;
         const originalSoundRate = this.sound.rate;
         const originalTweenRate = this.tweens.timeScale;
-        const originalScrollX = this.cameras.main.scrollX;
-        const originalScrollY = this.cameras.main.scrollY;
         const emitters = [this.sparkEmitter, this.emberEmitter, this.tintedSparkEmitter];
 
         const targetZoom = 2;
@@ -2355,9 +2510,7 @@ export class Arena extends Phaser.Scene
             if (this.disposed) return;
             // Return the camera to its original position and zoom level
             if (!FREEZE_CAMERA) {
-                const returnX = this.cameras.main.width / 2 + originalScrollX;
-                const returnY = this.cameras.main.height / 2 + originalScrollY;
-                this.cameras.main.pan(returnX, returnY, cameraSpeed, 'Power2');
+                this.cameras.main.pan(this.cameraHome.x, this.cameraHome.y, cameraSpeed, 'Power2');
                 this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2');
             }
             this.localAnimationSprite.anims.timeScale = originalTimeScale;
@@ -2778,12 +2931,13 @@ export class Arena extends Phaser.Scene
         });
     }
 
-    private handleClearTerrain(x: number, y: number) {
+    private handleClearTerrain(x: number, y: number, iceRemoval?: TerrainUpdate['iceRemoval']) {
         this.hexGridManager.setObstacle(x, y, false);
         this.terrainMap.delete(serializeCoords(x, y));
         const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
         if (terrainsprite) {
-            this.meltdown(terrainsprite);
+            if (iceRemoval === 'shatter') shatterIce(this, terrainsprite);
+            else this.meltdown(terrainsprite);
             this.terrainSpritesMap.delete(serializeCoords(x, y));
         }
     }

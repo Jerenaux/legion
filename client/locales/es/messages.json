@@ -1337,5 +1337,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Temblores y destellos</0> desactiva las sacudidas de cámara, los destellos de impacto y las pausas al golpear. Haz clic o pulsa cualquier tecla para saltar la cámara lenta de un K.O.",
   "Camera follows the turn": "La cámara sigue el turno",
   "The camera drifts slightly toward the character taking its turn.": "La cámara se desplaza ligeramente hacia el personaje que juega su turno.",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>La cámara sigue el turno</0> desplaza la cámara hacia el personaje que juega su turno; viene desactivada por defecto."
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>La cámara sigue el turno</0> desplaza la cámara hacia el personaje que juega su turno; viene desactivada por defecto.",
+  "Last stand!": "¡Última resistencia!",
+  "Rampage!": "¡Arrasando!",
+  "KO": "K.O.",
+  "KOs": "K.O.",
+  "Damage": "Daño",
+  "MVP": "MVP",
+  "Honours": "Honores",
+  "Comeback!": "¡Remontada!",
+  "Flawless": "Impecable",
+  "Ace": "As",
+  "Won after trailing by two characters.": "Victoria tras ir dos personajes por detrás.",
+  "Won without losing a character.": "Victoria sin perder ningún personaje.",
+  "One character knocked out the whole enemy team.": "Un solo personaje dejó K.O. a todo el equipo rival.",
+  "{{value0}} vs {{value1}}": "{{value0}} contra {{value1}}"
 }

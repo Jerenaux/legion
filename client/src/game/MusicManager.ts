@@ -60,6 +60,13 @@ export class MusicManager {
         return 0;
     }
 
+    /** Jump to the most intense track at the next phrase, for a last stand. */
+    surge() {
+        if (this.gameOver) return;
+        this.intensity = this.nbIntensities;
+        this.prefetch();
+    }
+
     updateMusicIntensity(ratio) {
         if (this.gameOver) return;
 

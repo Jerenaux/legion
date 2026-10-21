@@ -1320,5 +1320,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>화면 흔들림 및 번쩍임</0>을 끄면 카메라 흔들림, 적중 번쩍임, 타격 정지가 사라집니다. 처치 슬로 모션은 클릭하거나 아무 키나 눌러 건너뛸 수 있습니다.",
   "Camera follows the turn": "카메라가 턴을 따라감",
   "The camera drifts slightly toward the character taking its turn.": "카메라가 턴을 진행 중인 캐릭터 쪽으로 살짝 이동합니다.",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>카메라가 턴을 따라감</0>을 켜면 턴을 진행 중인 캐릭터 쪽으로 카메라가 이동합니다. 기본값은 꺼짐입니다."
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>카메라가 턴을 따라감</0>을 켜면 턴을 진행 중인 캐릭터 쪽으로 카메라가 이동합니다. 기본값은 꺼짐입니다.",
+  "Last stand!": "최후의 저항!",
+  "Rampage!": "폭주!",
+  "KO": "처치",
+  "KOs": "처치",
+  "Damage": "피해",
+  "MVP": "MVP",
+  "Honours": "칭호",
+  "Comeback!": "역전승!",
+  "Flawless": "완벽한 승리",
+  "Ace": "에이스",
+  "Won after trailing by two characters.": "캐릭터 2명 차이로 뒤처졌다가 승리했습니다.",
+  "Won without losing a character.": "캐릭터를 하나도 잃지 않고 승리했습니다.",
+  "One character knocked out the whole enemy team.": "캐릭터 한 명이 적 팀 전원을 처치했습니다.",
+  "{{value0}} vs {{value1}}": "{{value0}} 대 {{value1}}"
 }

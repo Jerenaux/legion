@@ -1337,5 +1337,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremblements et flashs</0> désactive les tremblements de caméra, les flashs d’impact et les arrêts sur image. Cliquez ou appuyez sur une touche pour passer un ralenti de K.-O.",
   "Camera follows the turn": "Caméra qui suit le tour",
   "The camera drifts slightly toward the character taking its turn.": "La caméra se déplace légèrement vers le personnage dont c’est le tour.",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Caméra qui suit le tour</0> déplace la caméra vers le personnage dont c’est le tour ; cette option est désactivée par défaut."
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Caméra qui suit le tour</0> déplace la caméra vers le personnage dont c’est le tour ; cette option est désactivée par défaut.",
+  "Last stand!": "Dernier rempart !",
+  "Rampage!": "Carnage !",
+  "KO": "K.-O.",
+  "KOs": "K.-O.",
+  "Damage": "Dégâts",
+  "MVP": "MVP",
+  "Honours": "Distinctions",
+  "Comeback!": "Remontada !",
+  "Flawless": "Sans faute",
+  "Ace": "As",
+  "Won after trailing by two characters.": "Victoire après avoir été mené de deux personnages.",
+  "Won without losing a character.": "Victoire sans perdre un seul personnage.",
+  "One character knocked out the whole enemy team.": "Un seul personnage a mis K.-O. toute l’équipe adverse.",
+  "{{value0}} vs {{value1}}": "{{value0}} contre {{value1}}"
 }

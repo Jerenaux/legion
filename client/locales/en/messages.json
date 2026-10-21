@@ -1320,5 +1320,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.",
   "Camera follows the turn": "Camera follows the turn",
   "The camera drifts slightly toward the character taking its turn.": "The camera drifts slightly toward the character taking its turn.",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default."
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.",
+  "Last stand!": "Last stand!",
+  "Rampage!": "Rampage!",
+  "KO": "KO",
+  "KOs": "KOs",
+  "Damage": "Damage",
+  "MVP": "MVP",
+  "Honours": "Honours",
+  "Comeback!": "Comeback!",
+  "Flawless": "Flawless",
+  "Ace": "Ace",
+  "Won after trailing by two characters.": "Won after trailing by two characters.",
+  "Won without losing a character.": "Won without losing a character.",
+  "One character knocked out the whole enemy team.": "One character knocked out the whole enemy team.",
+  "{{value0}} vs {{value1}}": "{{value0}} vs {{value1}}"
 }

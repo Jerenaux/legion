@@ -1,0 +1,273 @@
+/* Face-off: own side in steel blue from the left, the enemy in ember red from the right,
+   split by a burning seam with the VS struck in the middle. */
+.versus {
+  --own: oklch(58% .14 250);
+  --own-deep: oklch(24% .08 255);
+  --enemy: oklch(60% .19 28);
+  --enemy-deep: oklch(24% .09 25);
+  --ember: oklch(82% .16 65);
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  cursor: var(--game-pointer, pointer);
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+  color: oklch(97% .01 240);
+}
+:root[data-colorblind] .versus { --enemy: oklch(72% .16 55); --enemy-deep: oklch(28% .08 50); }
+
+.versus__backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, oklch(20% .03 260 / .7), oklch(6% .01 260 / .94) 70%);
+  animation: versus-fade .25s ease-out both;
+}
+
+/* Each side is a skewed slab that slams in and carries its commander and team. */
+.versus-side {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 58%;
+  display: flex;
+  align-items: center;
+}
+.versus-side--own { left: 0; justify-content: flex-start; animation: versus-in-left .42s cubic-bezier(.2, .9, .25, 1.05) both; }
+.versus-side--enemy { right: 0; justify-content: flex-end; animation: versus-in-right .42s .06s cubic-bezier(.2, .9, .25, 1.05) both; }
+.versus-side::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: skewX(-12deg);
+}
+.versus-side--own::before {
+  left: -12%;
+  background: linear-gradient(100deg, var(--own-deep) 30%, color-mix(in oklch, var(--own) 55%, var(--own-deep)) 92%, var(--own) 100%);
+  box-shadow: 12px 0 40px color-mix(in oklch, var(--own) 50%, transparent);
+}
+.versus-side--enemy::before {
+  right: -12%;
+  background: linear-gradient(280deg, var(--enemy-deep) 30%, color-mix(in oklch, var(--enemy) 55%, var(--enemy-deep)) 92%, var(--enemy) 100%);
+  box-shadow: -12px 0 40px color-mix(in oklch, var(--enemy) 50%, transparent);
+}
+/* Fine diagonal grain over the slabs. */
+.versus-side::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: skewX(-12deg);
+  background: repeating-linear-gradient(-60deg, oklch(100% 0 0 / .035) 0 2px, transparent 2px 9px);
+  pointer-events: none;
+}
+.versus-side__panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(14px, 3vh, 28px);
+  width: min(560px, 80%);
+  padding: 0 clamp(20px, 5vw, 64px);
+}
+.versus-side--enemy .versus-side__panel { justify-items: end; text-align: right; }
+
+.versus-side__identity { display: flex; align-items: center; gap: 16px; animation: versus-rise .4s .3s ease-out both; }
+/* Both teams line up at the same height whatever the length of the names above them. */
+.versus-side__panel { grid-template-rows: minmax(clamp(120px, 24vh, 200px), auto) auto; }
+.versus-side__identity { align-self: end; }
+.versus-side--enemy .versus-side__identity { flex-direction: row-reverse; }
+.versus-side__avatar {
+  width: clamp(64px, 11vh, 96px);
+  height: clamp(64px, 11vh, 96px);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--side-accent);
+  background: oklch(14% .02 260);
+  box-shadow: 0 0 0 4px oklch(8% .01 260 / .6), 0 0 26px var(--side-accent);
+}
+.versus-side--own { --side-accent: var(--own); }
+.versus-side--enemy { --side-accent: var(--enemy); }
+.versus-side__text { display: grid; gap: 6px; min-width: 0; }
+.versus-side__name {
+  font-size: clamp(1.75rem, 4.4vw, 3rem);
+  line-height: 1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  text-shadow: 0 3px 0 oklch(10% .02 260 / .8), 0 0 18px var(--side-accent);
+}
+.versus-side__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-family: system-ui, sans-serif;
+  font-size: .9375rem;
+  color: oklch(88% .03 240);
+}
+.versus-side--enemy .versus-side__meta { justify-content: flex-end; }
+.versus-side__league { width: 30px; height: 30px; object-fit: contain; }
+.versus-side__community { display: inline-flex; align-items: center; gap: 6px; }
+
+.versus-side__team { display: flex; gap: clamp(8px, 2vw, 22px); margin: 0; padding: 0; list-style: none; }
+.versus-side__team li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: clamp(76px, 10vw, 112px);
+  padding: 6px 4px 8px;
+  border: 1px solid color-mix(in oklch, var(--side-accent) 60%, transparent);
+  border-radius: 6px;
+  background: linear-gradient(oklch(12% .02 260 / .3), oklch(10% .02 260 / .75));
+  animation: versus-card .38s cubic-bezier(.2, .9, .3, 1.25) both;
+  animation-delay: calc(380ms + var(--i) * 90ms);
+}
+.versus-side__sprite {
+  width: 64px;
+  height: 64px;
+  background-position: -40px -40px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  transform: scale(1.25);
+  transform-origin: 50% 70%;
+}
+.versus-side--own .versus-side__sprite { scale: -1 1; }
+.versus-side__crest { position: absolute; top: -10px; right: -8px; width: 26px; }
+.versus-side__character {
+  max-width: 100%;
+  margin-top: 4px;
+  font-size: .8125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.versus-side__level { font-family: system-ui, sans-serif; font-size: .6875rem; color: var(--ember); }
+
+/* The seam: a vertical bolt of fire between the slabs. */
+.versus__seam {
+  position: absolute;
+  top: -5%;
+  bottom: -5%;
+  left: 50%;
+  width: 6px;
+  translate: -50% 0;
+  rotate: 12deg;
+  background: linear-gradient(transparent, var(--ember) 15%, oklch(98% .04 90) 50%, var(--ember) 85%, transparent);
+  box-shadow: 0 0 22px var(--ember), 0 0 60px oklch(70% .2 45);
+  animation: versus-seam .35s .38s ease-out both;
+}
+
+.versus__emblem {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  translate: -50% -50%;
+}
+.versus__vs {
+  font-size: clamp(5rem, 15vw, 10rem);
+  line-height: 1;
+  font-style: italic;
+  letter-spacing: -.04em;
+  /* The gradient is clipped to the text box; room for the italic overhang keeps the S whole. */
+  padding: 0 .16em 0 .08em;
+  background: linear-gradient(180deg, oklch(99% .02 95) 20%, var(--ember) 55%, oklch(55% .2 35));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 0 oklch(18% .05 30)) drop-shadow(0 0 28px oklch(70% .2 45));
+  animation: versus-slam .5s .42s cubic-bezier(.3, 1.5, .5, 1) both, versus-throb 1.4s 1s ease-in-out infinite alternate;
+}
+.versus__ring {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border: 4px solid var(--ember);
+  border-radius: 50%;
+  opacity: 0;
+  animation: versus-ring .7s .55s ease-out both;
+}
+.versus__burst { position: absolute; width: 0; height: 0; }
+.versus__burst i {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  border-radius: 50%;
+  background: oklch(92% .12 80);
+  box-shadow: 0 0 10px var(--ember);
+  opacity: 0;
+  animation: versus-spark .8s .55s cubic-bezier(.15, .7, .3, 1) both;
+}
+/* A white flash as the VS lands. */
+.versus::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: oklch(100% 0 0);
+  opacity: 0;
+  pointer-events: none;
+  animation: versus-flash .45s .5s ease-out both;
+}
+.versus__mode {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  margin: 0;
+  padding: 4px 22px;
+  translate: -50% 0;
+  border: 1px solid oklch(70% .1 80 / .7);
+  border-radius: 999px;
+  background: oklch(10% .02 260 / .8);
+  font-size: 1rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ember);
+  animation: versus-rise .4s .8s ease-out both;
+}
+
+/* Exit: the slabs fly back out and the VS bursts toward the camera. */
+.versus.is-leaving .versus-side--own { animation: versus-out-left .42s cubic-bezier(.6, 0, .8, .4) both; }
+.versus.is-leaving .versus-side--enemy { animation: versus-out-right .42s cubic-bezier(.6, 0, .8, .4) both; }
+.versus.is-leaving .versus__vs { animation: versus-burst-out .4s ease-in both; }
+.versus.is-leaving .versus__backdrop,
+.versus.is-leaving .versus__seam,
+.versus.is-leaving .versus__mode { animation: versus-fade-out .4s ease-in both; }
+
+@keyframes versus-fade { from { opacity: 0; } }
+@keyframes versus-fade-out { to { opacity: 0; } }
+@keyframes versus-in-left { from { transform: translateX(-110%); } }
+@keyframes versus-in-right { from { transform: translateX(110%); } }
+@keyframes versus-out-left { to { transform: translateX(-115%); } }
+@keyframes versus-out-right { to { transform: translateX(115%); } }
+@keyframes versus-rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes versus-card { from { opacity: 0; transform: translateY(24px) scale(.85); } }
+@keyframes versus-seam { from { opacity: 0; transform: scaleY(0); } }
+@keyframes versus-slam {
+  0% { opacity: 0; transform: scale(4); filter: blur(8px); }
+  60% { opacity: 1; transform: scale(.9); filter: blur(0) drop-shadow(0 0 28px oklch(70% .2 45)); }
+  100% { transform: scale(1); }
+}
+@keyframes versus-throb { to { transform: scale(1.06); } }
+@keyframes versus-ring { 0% { opacity: .9; transform: scale(.3); } 100% { opacity: 0; transform: scale(3.2); } }
+@keyframes versus-spark {
+  0% { opacity: 1; transform: rotate(var(--a)) translateY(0); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-180px); }
+}
+@keyframes versus-flash { 0% { opacity: .55; } 100% { opacity: 0; } }
+@keyframes versus-burst-out { to { opacity: 0; transform: scale(2.4); filter: blur(6px); } }
+
+@media (max-height: 600px) {
+  .versus-side__panel { gap: 10px; }
+  .versus-side__team li { width: 72px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .versus *, .versus::after, .versus-side, .versus-side::before { animation: none !important; }
+  .versus.is-leaving { opacity: 0; }
+}
+
+/* Teams of up to six: three cards per row. */
+.versus-side__panel { width: min(520px, 46vw); }
+.versus-side__team { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; }
+.versus-side--enemy .versus-side__team { justify-content: end; direction: rtl; }
+.versus-side--enemy .versus-side__team li { direction: ltr; }
+.versus-side__team:has(li:nth-child(4)) li { width: clamp(64px, 8.4vw, 96px); padding-block: 4px 6px; }
+.versus-side__team:has(li:nth-child(4)) .versus-side__sprite { transform: scale(1.05); }
