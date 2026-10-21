@@ -1,6 +1,15 @@
 # Repository instructions
 
-Follow `AGENTS.md` for the full repository instructions.
+Follow `AGENTS.md` for the full repository instructions. Read it before starting work: it holds rules this file does not repeat, such as version bumps and release policy.
+
+## Always rebuild the local app
+
+After **every** change to the game, rebuild the local macOS ARM64 app without waiting for Jerome to ask. A change is not finished until this rebuild succeeds; report any build failure.
+
+- Build from the branch being tested, in the main `~/Code/legion` checkout: `cd client && BUILD_TARGET=electron bun run build && bunx electron-builder --mac --arm64 --dir`.
+- The Electron build requires `API_URL`, `GAME_SERVER_URL` and `MATCHMAKER_URL`. Export them from the repository's GitHub Actions variables (`gh variable list`), as the desktop release workflow does.
+- The result must replace `client/release/mac-arm64/Legion.app`. Do this even when screenshots, smoke tests or a temporary fixture build already verified the change, because none of them update the app Jerome launches.
+- Rebuilding does not authorize launching the app or a store release. Never close an app instance Jerome has open (`pgrep -x Legion`); if the build cannot replace the bundle while it runs, say so.
 
 ## No TDD and no UI tests
 

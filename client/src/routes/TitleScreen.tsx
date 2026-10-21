@@ -2,27 +2,119 @@ import LanguageSelect from '../components/LanguageSelect';
 import {t} from '../i18n/core';
 import { h } from 'preact';
 
-import {useContext} from "preact/hooks";
+import {useContext, useEffect, useRef, useState} from "preact/hooks";
 import {route} from "preact-router";
 import logoBig from "@assets/logo.png";
+import titleArt from "@assets/title/title.png";
 import {PlayerContext} from "../contexts/PlayerContext";
 import Spinner from "../components/spinner/Spinner";
 import {STEAM_STORE_URL, titlePlayRoute} from "./titleScreenRoute";
+import {DESKTOP_ACTION_EVENT, DesktopAction} from "../input/actions";
+import {buttonLabel, buttonsFor, primaryKeyLabel} from "../input/bindings";
+import {loadGameSettings} from "../settings";
 import "./TitleScreen.style.css";
 
 const {version} = require("../../package.json");
 
+/** Long enough for the flash to peak and fade to ink before the menus replace it. */
+const LEAVE_DELAY_MS = 420;
+
+// Deterministic so the drift looks the same on every visit and in screenshots.
+const random = (seed: number) => {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+};
+const LEAVES = Array.from({length: 14}, (_, i) => ({
+  '--x': `${Math.round(random(i + 1) * 120)}%`,
+  '--size': `${Math.round(14 + random(i + 11) * 14)}px`,
+  '--duration': `${(11 + random(i + 21) * 9).toFixed(1)}s`,
+  '--delay': `${(-random(i + 31) * 20).toFixed(1)}s`,
+  '--sway': `${(2.5 + random(i + 41) * 2).toFixed(1)}s`,
+  '--spin': `${Math.round(240 + random(i + 51) * 480) * (i % 2 ? 1 : -1)}deg`,
+  '--hue': `${Math.round(4 + random(i + 61) * 34)}`,
+}));
+const EMBERS = Array.from({length: 18}, (_, i) => ({
+  '--x': `${Math.round(random(i + 101) * 100)}%`,
+  '--size': `${(2 + random(i + 111) * 3).toFixed(1)}px`,
+  '--duration': `${(6 + random(i + 121) * 6).toFixed(1)}s`,
+  '--delay': `${(-random(i + 131) * 12).toFixed(1)}s`,
+  '--drift': `${Math.round((random(i + 141) - 0.5) * 160)}px`,
+}));
+
+const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
 const TitleScreen = () => {
   const {loaded, player} = useContext(PlayerContext);
-  const play = () => route(titlePlayRoute(player.engagementStats?.completedGames || 0));
+  const [leaving, setLeaving] = useState(false);
+  const [gamepad, setGamepad] = useState(false);
+  const leavingRef = useRef(false);
+  const playRef = useRef<() => void>();
+  const leaveTimer = useRef(0);
+
+  const play = () => {
+    if (leavingRef.current) return;
+    leavingRef.current = true;
+    const target = titlePlayRoute(player.engagementStats?.completedGames || 0);
+    if (reducedMotion()) return route(target);
+    setLeaving(true);
+    leaveTimer.current = window.setTimeout(() => route(target), LEAVE_DELAY_MS);
+  };
+  useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
+  playRef.current = play;
+
+  // Confirm with nothing focused starts the game, so Enter or controller A works straight away.
+  useEffect(() => {
+    const onAction = (event: CustomEvent<{action: DesktopAction; source: string}>) => {
+      if (event.detail.source === 'gamepad') setGamepad(true);
+      if (event.detail.action !== 'confirm' || !loaded) return;
+      const active = document.activeElement;
+      if (active && active !== document.body) return;
+      if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
+      playRef.current?.();
+    };
+    const onPadConnected = () => setGamepad(true);
+    const onKey = () => setGamepad(false);
+    window.addEventListener(DESKTOP_ACTION_EVENT, onAction as EventListener);
+    window.addEventListener('gamepadconnected', onPadConnected);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener(DESKTOP_ACTION_EVENT, onAction as EventListener);
+      window.removeEventListener('gamepadconnected', onPadConnected);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [loaded]);
+
+  const controls = loadGameSettings().controls;
+  const padButton = buttonsFor('confirm', controls)[0];
+  const confirmLabel = gamepad && padButton !== undefined ? buttonLabel(padButton) : t(primaryKeyLabel('confirm', controls));
 
   return (
-    <div className="title-screen">
+    <div className={`title-screen${leaving ? ' title-screen--leaving' : ''}`}>
+      <div className="title-scene" aria-hidden="true">
+        <div className="title-scene-drift">
+          <img src={titleArt} alt="" className="title-scene-art" draggable={false} />
+          <span className="title-sword-glow" />
+          <span className="title-sword-glint" />
+        </div>
+      </div>
+      <div className="title-vignette" aria-hidden="true" />
+      <div className="title-particles" aria-hidden="true">
+        {LEAVES.map((style, i) => <span key={`leaf-${i}`} className="title-leaf" style={style}><span /></span>)}
+        {EMBERS.map((style, i) => <span key={`ember-${i}`} className="title-ember" style={style} />)}
+      </div>
+
       <div className="title-screen-content" aria-busy={!loaded}>
-        <img src={logoBig} alt={t("Emberhall")} className="logo-big" />
+        <h1 className="title-logo">
+          <span className="title-logo-intro">
+            <span className="title-logo-glow" aria-hidden="true" />
+            <img src={logoBig} alt={t("Emberhall")} className="logo-big" draggable={false} />
+            <span className="title-logo-shine" aria-hidden="true" style={{'--logo': `url(${logoBig})`}} />
+          </span>
+        </h1>
         {loaded ? (
           <div className="title-screen-actions">
-            <button type="button" className="title-screen-button title-screen-button--play" onClick={play}>{t("Play")}</button>
+            <button type="button" className="game-btn game-btn--gold title-screen-button title-screen-button--play" onClick={play}>{t("Play")}</button>
+            {confirmLabel && <p className="title-screen-hint" aria-hidden="true">{t("Press {{value0}} to play", {value0: confirmLabel})}</p>}
             <a
               className="title-screen-button title-screen-button--steam"
               href={STEAM_STORE_URL}
@@ -44,9 +136,13 @@ const TitleScreen = () => {
             <p>{t("Loading your game…")}</p>
           </div>
         )}
-        <LanguageSelect />
       </div>
-      <small className="title-screen-version">{t("v{{value0}}", {value0: version})}</small>
+
+      <div className="title-screen-corner title-screen-corner--start">
+        <LanguageSelect compact />
+      </div>
+      <small className="title-screen-corner title-screen-version">{t("v{{value0}}", {value0: version})}</small>
+      <div className="title-flash" aria-hidden="true" />
     </div>
   );
 };
