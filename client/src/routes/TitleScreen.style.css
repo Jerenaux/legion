@@ -8,14 +8,11 @@
     isolation: isolate;
 }
 
-/* Art layer, slightly oversized so pointer parallax never reveals an edge. */
 .title-scene {
     position: absolute;
-    inset: -3%;
+    inset: 0;
     container-type: size;
     overflow: hidden;
-    transform: translate3d(calc(var(--px, 0) * -14px), calc(var(--py, 0) * -9px), 0);
-    transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Covers the window like background-size: cover, so overlays can be placed in art coordinates. */
@@ -78,8 +75,6 @@
     inset: 0;
     overflow: hidden;
     pointer-events: none;
-    transform: translate3d(calc(var(--px, 0) * -26px), calc(var(--py, 0) * -16px), 0);
-    transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .title-leaf {
@@ -134,8 +129,6 @@
     width: min(64vw, 80dvh, 940px);
     aspect-ratio: 16 / 9;
     flex-shrink: 0;
-    transform: translate3d(calc(var(--px, 0) * 8px), calc(var(--py, 0) * 5px), 0);
-    transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .title-logo-intro {
@@ -478,9 +471,6 @@
     .title-particles,
     .title-sword-glint,
     .title-logo-shine { display: none; }
-    .title-scene,
-    .title-particles,
-    .title-logo { transform: none; }
 }
 
 #firebaseui-auth-container {
