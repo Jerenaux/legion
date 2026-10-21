@@ -1,4 +1,4 @@
-import {MAX_STAT_SP, spBonus} from '@legion/shared/combatBalance';
+import {spBonus} from '@legion/shared/combatBalance';
 import {statFieldsByIndex} from '@legion/shared/enums';
 import {t, i18n} from '../../i18n/core';
 import {Trans} from '../../i18n/Trans';
@@ -330,9 +330,7 @@ class ItemDialog extends Component<DialogProps, DialogState> {
     const { dialogValue } = this.state;
     const activeCharacter = this.context.getActiveCharacter() as APICharacterData;
     const allocated = activeCharacter.sp_allocations?.[statFieldsByIndex[dialogData.stat]] ?? 0;
-    // Each stat holds at most MAX_STAT_SP points, so the SP left may not all fit in this one.
-    const room = Math.max(0, MAX_STAT_SP - allocated);
-    const most = Math.min(activeCharacter.sp, room);
+    const most = activeCharacter.sp;
     const statLabel = t(StatLabels[dialogData.stat]);
 
     return (
@@ -360,9 +358,6 @@ class ItemDialog extends Component<DialogProps, DialogState> {
             aria-label={t("More points")} disabled={dialogValue >= most}
             onClick={() => this.setState(prevState => ({ dialogValue: Math.min(most, prevState.dialogValue + 1) }))} />
         </div>
-        {room < activeCharacter.sp && <p className="sp-dialog-cap" role="status">
-          {t("{{value0}} already has {{value1}}/{{value2}} points.", {value0: statLabel, value1: allocated, value2: MAX_STAT_SP})}
-        </p>}
         {this.renderDialogButtons(() => this.setState({ dialogSPModalShow: true }), !canIncreaseStat(activeCharacter, dialogData.stat, dialogValue))}
       </div>
     );

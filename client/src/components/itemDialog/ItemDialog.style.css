@@ -133,14 +133,6 @@
     cursor: default;
 }
 
-/* Explains why + stops before the SP run out. */
-.sp-dialog-cap {
-    margin: -4px 0 12px;
-    color: oklch(82% .03 230);
-    font-size: 0.8125rem;
-    text-align: center;
-}
-
 .character-info-dialog-control-val {
     padding: 4px 24px;
     border: 1px solid #3c616c;

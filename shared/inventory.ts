@@ -1,4 +1,3 @@
-import {MAX_STAT_SP} from './combatBalance';
 import { APICharacterData, DBCharacterData, DBPlayerData, PlayerContextData, Equipment, EngagementStats, PlayerInventory } from './interfaces';
 
 /** The player data the inventory helpers read and update. */
@@ -98,8 +97,8 @@ export function canEquipEquipment(characterData: DBCharacterData | APICharacterD
 export function canIncreaseStat(characterData: DBCharacterData | APICharacterData, index: number, amount: number): boolean {
   if (!Number.isSafeInteger(index) || index < 0 || index >= statFieldsByIndex.length ||
       !Number.isSafeInteger(amount) || amount <= 0 || amount > characterData.sp) return false;
-  const points = characterData.sp_allocations?.[statFieldsByIndex[index]] ?? 0;
-  return points + amount <= MAX_STAT_SP;
+  // Any stat can take every point: the formulas already make one-stat builds a trade-off.
+  return true;
 }
 
 export function equipConsumable(playerData: InventoryHolder, characterData: DBCharacterData | APICharacterData, index: number) {

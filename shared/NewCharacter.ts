@@ -1,4 +1,4 @@
-import {BALANCE_VERSION, baseStats, MAX_STAT_SP, spBonus, spBudget} from './combatBalance';
+import {BALANCE_VERSION, baseStats, spBonus, spBudget} from './combatBalance';
 import {emptyAllocations} from './characterBalance';
 import { Class, Stat, statFieldsByIndex } from "./enums";
 import { CharacterStats, CharacterStringStats, Equipment, DBCharacterData } from "./interfaces";
@@ -105,12 +105,7 @@ export class NewCharacter {
 
   allocateSP(budget: number) {
     for (let i = 0; i < budget; i++) {
-      let stat = selectStatToLevelUp(this.characterClass);
-      if (this.sp_allocations[statFieldsByIndex[stat]] >= MAX_STAT_SP) {
-        const open = statFieldsByIndex.findIndex(field => this.sp_allocations[field] < MAX_STAT_SP);
-        if (open < 0) return;
-        stat = open as Stat;
-      }
+      const stat = selectStatToLevelUp(this.characterClass);
       const field = statFieldsByIndex[stat];
       this.sp_allocations[field]++;
       this.sp_bonuses[stat as Exclude<Stat, Stat.NONE>] = spBonus(stat, this.sp_allocations[field]);

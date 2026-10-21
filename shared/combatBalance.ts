@@ -1,9 +1,8 @@
 import {Class, Stat, SpeedClass, StatusEffect} from './enums';
 import type {CharacterStringStats, Effect} from './interfaces';
+import {MAX_LEVEL} from './config';
 
 export const BALANCE_VERSION = 1;
-export const MAX_SP = 40;
-export const MAX_STAT_SP = 20;
 export const MELEE_POTENCY = 28;
 export const FIRE_POTENCY = 6;
 export const POISON_POTENCY = 8;
@@ -15,8 +14,12 @@ export const STATUS_TURNS: Record<StatusEffect, number> = {
 export function levelGrowth(level: number) {
     return 1 + Math.min(20, Math.max(0, level - 1)) / 100;
 }
+/** Level where SP slow from 2 per level to 1, and where level growth stops. */
+export const SP_FULL_RATE_LEVEL = 21;
+/** SP earned by `level`: 2 per level through 21 (40 SP), then 1 per level up to the level cap. */
 export function spBudget(level: number) {
-    return Math.min(MAX_SP, Math.max(0, Math.floor(level - 1)) * 2);
+    const reached = Math.min(Math.floor(level), MAX_LEVEL);
+    return Math.max(0, Math.min(reached, SP_FULL_RATE_LEVEL) - 1) * 2 + Math.max(0, reached - SP_FULL_RATE_LEVEL);
 }
 export function baseStats(characterClass: Class, level = 1): CharacterStringStats {
     const warrior = characterClass === Class.WARRIOR;
