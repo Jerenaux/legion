@@ -18,7 +18,7 @@ import { getEquipmentById } from '@legion/shared/Equipments';
 import { getSpellById } from '@legion/shared/Spells';
 import { getConsumableById } from '@legion/shared/Items';
 import ItemDialog from '../itemDialog/ItemDialog';
-import { getXPThreshold } from '@legion/shared/levelling';
+import { getXPThreshold, isMaxLevel } from '@legion/shared/levelling';
 import { Class, EquipmentSlot, InventoryActionType, InventoryType, statFieldsByIndex,
     STATS_BG_COLOR, ItemDialogType, SPSPendingData
  } from '@legion/shared/enums';
@@ -357,8 +357,9 @@ class CharacterSheet extends Component<CharacterSheetProps> {
             animation: 'animate-sprite 0.7s steps(1) infinite',
         };
 
+        const maxLevel = isMaxLevel(characterData.level);
         const sliderStyle = {
-            width: `${characterData?.xp * 100 / xpToLevel}%`,
+            width: maxLevel ? '100%' : `${characterData?.xp * 100 / xpToLevel}%`,
         }
 
         return (
@@ -376,7 +377,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
                                 <div className="team-curr-exp-slider" style={sliderStyle}></div>
                             </div>
                             <div className="team-exp-info">
-                                <span><Trans i18n={i18n} i18nKey={"EXP <0>{{value0}}</0> / <1>{{value1}}</1>"} components={[<span className="team-curr-exp" />, <span className="team-total-exp" />]} values={{value0: Math.round(characterData?.xp), value1: xpToLevel}} /></span>
+                                <span>{maxLevel ? t("Max level") : <Trans i18n={i18n} i18nKey={"EXP <0>{{value0}}</0> / <1>{{value1}}</1>"} components={[<span className="team-curr-exp" />, <span className="team-total-exp" />]} values={{value0: Math.round(characterData?.xp), value1: xpToLevel}} />}</span>
                             </div>
                         </div>
                         <div className="team-sp-container">

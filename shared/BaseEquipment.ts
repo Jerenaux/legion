@@ -20,6 +20,7 @@ export class BaseEquipment {
     constructor(props: EquipmentData) {
         Object.assign(this, props);
         this.price = getPrice(props.effort);
-        this.rarity = getRarity(props.effort);
+        // Rarity is a design choice per item (colour, chest pools); price only reflects stats.
+        this.rarity = props.rarity ?? getRarity(props.effort);
     }
 }

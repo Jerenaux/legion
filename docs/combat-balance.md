@@ -18,7 +18,11 @@ chances.
 - Fixed class baselines replace random starting stats and recruitment jackpots.
   HP gains the level multiplier; other base stats stay fixed. Dynamic AI
   difficulty multipliers and developed zombie-team scaling remain unchanged.
-- Level-ups award two SP through level 21: at most 40 total and 20 per stat.
+- Level-ups award two SP through level 21 (40 SP), then one per level up to the
+  level-50 cap (69 SP). Characters at level 50 stop gaining XP. There is no
+  per-stat limit: any stat can take every point (see the build simulation below).
+- Mages start with three spell slots and gain one at levels 15, 25 and 40
+  (`SPELL_SLOT_UNLOCK_LEVELS`). Learned spells can be removed or replaced outside combat.
   One SP buys 2 HP, 1 MP/ATK/DEF/SPATK/SPDEF; every two allocated SP buy one
   SPEED, rounded down on the total allocation. No fractional stats are stored.
   Resetting SP outside combat refunds every allocated point at no cost.
@@ -78,8 +82,15 @@ still require acquiring items and spending an action.
 
 Common pieces spend 3–7 points, rare pieces 8–12, epic pieces 8–16, and legendary
 pieces 16–20. Premium equipment expands options without the former +100 ATK,
-+150 MP or +50 DEF jumps. Prices and rarity retain their existing progression.
-Light boots now provide DEF and SPDEF rather than two DEF entries.
++150 MP or +50 DEF jumps. Light boots now provide DEF and SPDEF rather than two DEF entries.
+
+Prices follow the budget: 100 gold per point up to 7 points, 120 for 8–10, 125 for
+12 and 150 for 16 or more, rounded to 100 (for example 2,400 for a 16-point
+weapon). Belts keep a premium (1,500 and 4,000) because an extra item slot is
+multiplied by every consumable it carries. Rarity is set per item in
+`shared/Equipments.ts` and no longer follows price, so cheaper premium pieces keep
+their colour and chest-drop pool. The shop still unlocks equipment by price
+(`EQUIPMENT_BATCH_GOLD`), so repriced items can unlock in an earlier batch.
 
 | ID | Equipment | Bonuses / effect | Budget |
 |---:|---|---|---:|
@@ -241,3 +252,31 @@ AI characters use the same scale as players: class baseline at their level plus
 that level's SP budget, spent by class weights under the same 20-per-stat cap. The
 legacy random level-up curve remains only for zombie-team scaling. The Tower's
 Sculptor of Ice halves Ice's MP cost (rounded up) and its damage.
+
+## Build and level simulation
+
+`cd server && bun tools/build-simulation.ts [matchesPerPairing]` plays headless 3v3
+AI-vs-AI matches (warrior, white mage, black mage per side) on the production
+combat engine, with the shared SP budget, spell-slot rules and AI spell loadouts.
+Only the combat clock (virtual time), persistence and network are stubbed. Both
+sides play at full AI skill with starter consumables and no equipment, and swap
+sides every match. AI casters stop casting once out of MP, so most matches end at
+the 10-minute virtual limit and are decided on remaining HP; knockouts and
+decisions are reported separately.
+
+October 2026 run, 400 matches per pairing (about ±5% margin):
+
+- At level 21 (40 SP), balanced, all-in offense, the former 20-point cap, and
+  tank builds win 43–61% against each other: no build dominates, so the per-stat
+  cap was removed. Putting every point into Speed is a weak build (it loses 69–79%).
+- Balanced level 25/30/40/50 teams beat level 21 teams 51–56% / 51–54% / 58–64% /
+  62–69%. For comparison, level 21 beats level 15 64–66% and level 15 beats level
+  10 65%: the whole post-21 range adds about one early-game level gap.
+- With best-in-slot equipment on both sides (belts excluded), offense-heavy builds
+  gain an edge: all-in offense beats balanced 63% and tank 59%, but stays even with
+  the former capped split (47%). Favoured, not dominant.
+- Equipment outweighs levels and SP: fully geared teams beat ungeared ones at the
+  same level 94–98%, geared level 10 beats ungeared level 21 85%, and geared level
+  21 beats ungeared level 50 89%. Cheaper premium equipment (October 2026 prices)
+  shortens the time to that power rather than adding any.
+

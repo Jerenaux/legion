@@ -2,7 +2,8 @@ import {t, i18n, localizedAsset} from '../i18n/core';
 import {Trans} from '../i18n/Trans';
 import { h } from 'preact';
 import { Link } from 'preact-router/match';
-import { CHARACTER_PRICES, ENABLE_CINDER_TOWER, FIRST_WIN_BONUS_GOLD, LOCKED_FEATURES, MAX_CHARACTERS, NB_START_CHARACTERS, SPELL_SLOT_UNLOCK_LEVELS, TURN_DURATION } from '@legion/shared/config';
+import { CHARACTER_PRICES, ENABLE_CINDER_TOWER, FIRST_WIN_BONUS_GOLD, LOCKED_FEATURES, MAX_CHARACTERS, MAX_LEVEL, NB_START_CHARACTERS, SPELL_SLOT_UNLOCK_LEVELS, TURN_DURATION } from '@legion/shared/config';
+import { SP_FULL_RATE_LEVEL, spBudget } from '@legion/shared/combatBalance';
 import { LockedFeatures } from '@legion/shared/enums';
 import {defaultGameSettings} from '../settings';
 import battleOriginal from '@assets/guide/battle.jpg';
@@ -167,7 +168,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             </ol>
             <h3>{t("Spend your stat points")}</h3>
             <p>{t("Every character gets an equal share of a match’s XP, even if knocked out. The rest rewards each character’s actions and the damage they absorbed, so tanks keep pace. Characters below the team’s average level earn extra to catch up.")}</p>
-            <p><Trans i18n={i18n} i18nKey={"Gain 2 <0>SP</0> per level through level 21: 40 total, with at most 20 in one stat. Use <1>+</1> to spend them. Reset SP returns all spent points for free outside combat."} components={[<strong />, <strong />]} /></p>
+            <p><Trans i18n={i18n} i18nKey={"Gain 2 <0>SP</0> per level through level {{value0}}, then 1 per level up to the level cap of {{value1}}: {{value2}} in total. Any stat can take as many points as you like. Use <1>+</1> to spend them. Reset SP returns all spent points for free outside combat."} components={[<strong />, <strong />]} values={{value0: SP_FULL_RATE_LEVEL, value1: MAX_LEVEL, value2: spBudget(MAX_LEVEL)}} /></p>
             <dl className="guide-definitions">
               <div><dt>{t("HP / MP")}</dt><dd>{t("One SP adds 2 HP or 1 MP.")}</dd></div>
               <div><dt>{t("ATK / DEF")}</dt><dd>{t("Physical attack power and physical defense. One SP adds 1.")}</dd></div>

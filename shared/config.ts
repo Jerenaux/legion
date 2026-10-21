@@ -38,7 +38,9 @@ export const STARTING_WHITE_MAGE_SPELLS = [9];
 export const STARTING_BLACK_MAGE_SPELLS = [0];
 /** Mages start with this many spell slots and gain one more at each level below, up to six. */
 export const BASE_MAGE_SPELL_SLOTS = 3;
-export const SPELL_SLOT_UNLOCK_LEVELS = [10, 20, 30];
+export const SPELL_SLOT_UNLOCK_LEVELS = [15, 25, 40];
+/** Characters stop gaining XP at this level. */
+export const MAX_LEVEL = 50;
 export const XP_PER_LEVEL = 50;
 // Match XP share: this part is split equally; the rest follows each character's contribution.
 export const XP_EQUAL_SHARE = 0.6;

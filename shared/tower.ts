@@ -3,7 +3,7 @@ import {Class, Terrain, RewardType} from './enums';
 import {GRID_HEIGHT} from './config';
 import {NewCharacter} from './NewCharacter';
 import {DBCharacterData, ChestReward} from './interfaces';
-import {getXPThreshold} from './levelling';
+import {getXPThreshold, isMaxLevel} from './levelling';
 
 export const TOWER_FLOORS = 6;
 export const TOWER_MAX_TIER = 5;
@@ -197,6 +197,7 @@ export function towerXP(character: {xp: number; level: number; sp: number; allTi
   let xp = (character.xp || 0) + amount;
   let level = character.level || 1;
   let points = 0;
-  while (xp >= getXPThreshold(level)) { xp -= getXPThreshold(level); level++; points += spBudget(level) - spBudget(level - 1); }
+  while (!isMaxLevel(level) && xp >= getXPThreshold(level)) { xp -= getXPThreshold(level); level++; points += spBudget(level) - spBudget(level - 1); }
+  if (isMaxLevel(level)) xp = 0;
   return {xp, level, sp: (character.sp || 0) + points, allTimeSP: (character.allTimeSP || 0) + points};
 }

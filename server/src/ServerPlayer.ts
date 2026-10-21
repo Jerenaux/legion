@@ -6,7 +6,7 @@ import { Spell } from './Spell';
 import { Stat, Terrain, StatusEffect, Class, SpeedClass } from "@legion/shared/enums";
 import { getConsumableById } from '@legion/shared/Items';
 import { getSpellById } from '@legion/shared/Spells';
-import { getMaxStatValue, getXPThreshold } from '@legion/shared/levelling';
+import { getMaxStatValue, getXPThreshold, isMaxLevel } from '@legion/shared/levelling';
 import { CharacterStats, Equipment, PlayerNetworkData, StatusEffects } from '@legion/shared/interfaces';
 import { INJURED_MODE, LOTSA_HP, MOVEMENT_RANGE, PARALYZED_DELAY, XP_CONTRIBUTION_PER_HP_BAR, XP_CONTRIBUTION_TARGET_CAP } from "@legion/shared/config";
 import { getEquipmentById } from '@legion/shared/Equipments';
@@ -558,11 +558,14 @@ export class ServerPlayer {
     }
 
     gainXP(amount: number) {
+        // Characters at the level cap earn nothing, so results never show XP they cannot use.
+        if (isMaxLevel(this.level)) return;
         this.xp += amount;
         this.earnedXP += amount;
-        while (this.xp >= getXPThreshold(this.level)) {
+        while (!isMaxLevel(this.level) && this.xp >= getXPThreshold(this.level)) {
             this.levelUp();
         }
+        if (isMaxLevel(this.level)) this.xp = 0;
     }
 
     levelUp() {

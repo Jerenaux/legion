@@ -3,7 +3,7 @@
 import {h, ComponentChildren} from 'preact';
 import {useEffect, useRef} from 'preact/hooks';
 import {t, formatNumber} from '../../i18n/core';
-import {Class} from '@legion/shared/enums';
+import {Class, Rarity} from '@legion/shared/enums';
 import ShopPrice from './ShopPrice';
 import {mapFrameToCoordinates} from '../utils';
 import ClassCrest from '../HUD/ClassCrest';
@@ -23,7 +23,7 @@ interface ShopItemCardProps {
   description: string;
   sheet: string;
   frame: number;
-  effort: number;
+  rarity: Rarity;
   owned: number;
   price: number;
   stats: ShopCardStat[];
@@ -36,10 +36,11 @@ interface ShopItemCardProps {
   dataItem?: string;
 }
 
-export function rarityOf(effort: number) {
-  if (effort < 10) return {key: 'common', label: t("Common")};
-  if (effort < 25) return {key: 'rare', label: t("Rare")};
-  if (effort < 50) return {key: 'epic', label: t("Epic")};
+/** Each item's own rarity: equipment sets it per item, consumables and spells derive it from effort. */
+export function rarityOf(rarity: Rarity) {
+  if (rarity === Rarity.COMMON) return {key: 'common', label: t("Common")};
+  if (rarity === Rarity.RARE) return {key: 'rare', label: t("Rare")};
+  if (rarity === Rarity.EPIC) return {key: 'epic', label: t("Epic")};
   return {key: 'legendary', label: t("Legendary")};
 }
 
@@ -54,7 +55,7 @@ export default function ShopItemCard(props: ShopItemCardProps) {
   useEffect(() => {
     if (props.isHighlighted) ref.current?.scrollIntoView({behavior: 'smooth', block: 'center'});
   }, [props.isHighlighted]);
-  const rarity = rarityOf(props.effort);
+  const rarity = rarityOf(props.rarity);
   const {x, y} = mapFrameToCoordinates(props.frame);
   return (
     <button type="button" data-game-control ref={ref} onClick={props.onClick} data-shop-item={props.dataItem}

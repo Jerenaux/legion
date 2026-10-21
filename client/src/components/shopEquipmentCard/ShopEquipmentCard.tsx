@@ -34,7 +34,7 @@ class ShopEquipmentCard extends Component<ShopCardProps> {
         description={data.description}
         sheet={equipmentSpritesheet}
         frame={data.frame}
-        effort={data.effort}
+        rarity={data.rarity}
         owned={this.props.getItemAmount(data.id, InventoryType.EQUIPMENTS)}
         price={data.price}
         classes={data.classes}
