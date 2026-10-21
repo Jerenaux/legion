@@ -1320,5 +1320,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>畫面震動與閃光</0>可關閉鏡頭震動、命中閃光和受擊停頓。點擊或按任意鍵可跳過擊倒慢鏡頭。",
   "Camera follows the turn": "鏡頭跟隨回合",
   "The camera drifts slightly toward the character taking its turn.": "鏡頭會略微移向正在行動的角色。",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>鏡頭跟隨回合</0>會讓鏡頭移向正在行動的角色；預設關閉。"
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>鏡頭跟隨回合</0>會讓鏡頭移向正在行動的角色；預設關閉。",
+  "Last stand!": "背水一戰！",
+  "Rampage!": "大殺四方！",
+  "KO": "擊倒",
+  "KOs": "擊倒",
+  "Damage": "傷害",
+  "MVP": "MVP",
+  "Honours": "榮譽",
+  "Comeback!": "逆轉！",
+  "Flawless": "完美無瑕",
+  "Ace": "王牌",
+  "Won after trailing by two characters.": "在落後兩名角色的情況下取勝。",
+  "Won without losing a character.": "未損失任何角色便取得勝利。",
+  "One character knocked out the whole enemy team.": "一名角色擊倒了整個敵方隊伍。",
+  "{{value0}} vs {{value1}}": "{{value0}} 對 {{value1}}"
 }

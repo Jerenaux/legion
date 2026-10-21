@@ -577,3 +577,171 @@ button.streak_gold_list:focus-visible {
     from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: none; }
 }
+
+/* Honours: stamps slammed onto the result under the title. */
+.endgame_honours {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.endgame_honour {
+    --honour: oklch(84% .14 80);
+    display: grid;
+    justify-items: center;
+    padding: 4px 16px 5px;
+    border: 2px solid var(--honour);
+    border-radius: 6px;
+    background: oklch(16% .03 250 / .85);
+    box-shadow: inset 0 0 0 2px oklch(10% .02 250 / .6), 0 0 18px color-mix(in oklch, var(--honour) 40%, transparent);
+    rotate: -3deg;
+    animation: honour-stamp .42s cubic-bezier(.3, 1.6, .5, 1) both;
+    animation-delay: calc(900ms + var(--honour-index, 0) * 220ms);
+}
+.endgame_honour:nth-child(even) { rotate: 2deg; }
+.endgame_honour--comeback { --honour: oklch(78% .17 35); }
+.endgame_honour--ace { --honour: oklch(80% .12 300); }
+.endgame_honour strong {
+    font: 1.25rem/1.1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--honour);
+}
+.endgame_honour span { font-size: .75rem; color: oklch(85% .02 240); }
+@keyframes honour-stamp {
+    0% { opacity: 0; transform: scale(2.6); }
+    70% { opacity: 1; transform: scale(.94); }
+    100% { transform: none; }
+}
+
+/* Podium: the MVP stands raised in the middle, the rest flank it. */
+.endgame_characters_grid.has-mvp {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: clamp(14px, 2.4vw, 32px);
+}
+.endgame_characters_grid.has-mvp > .endgame_character:not(.is-mvp) { opacity: .88; }
+.endgame .endgame_character.is-mvp {
+    z-index: 1;
+    width: clamp(150px, 19vw, 230px);
+    margin-bottom: 14px;
+    border: 1px solid color-mix(in oklch, var(--class-color) 70%, transparent);
+    background: radial-gradient(ellipse at 50% 35%, oklch(36% .07 80 / .95), oklch(18% .03 250 / .95) 75%);
+    box-shadow: 0 0 34px oklch(78% .14 80 / .35), inset 0 0 0 1px oklch(100% 0 0 / .06);
+    animation: mvp-rise 600ms 300ms cubic-bezier(.2, .9, .3, 1.2) both;
+}
+.endgame .endgame_character.is-mvp .endgame_character_portrait { transform: scale(1.3); margin: 18px 0 14px; }
+.endgame .endgame_character.is-mvp .endgame_character_name { font-size: clamp(.875rem, calc(1.9vh * var(--text-scale, 1)), 1.25rem); }
+.endgame_mvp_rays {
+    position: absolute;
+    inset: -30% -40%;
+    z-index: -1;
+    pointer-events: none;
+    background: repeating-conic-gradient(from 0deg, oklch(90% .12 85 / .22) 0deg 8deg, transparent 8deg 24deg);
+    mask: radial-gradient(circle, black 18%, transparent 62%);
+    animation: mvp-rays 18s linear infinite, mvp-rays-in .8s .5s ease-out both;
+}
+.endgame_mvp_crest {
+    position: absolute;
+    top: -17px;
+    left: 50%;
+    padding: 3px 18px 4px;
+    translate: -50% 0;
+    border: 2px solid oklch(92% .1 92);
+    border-radius: 4px;
+    background: linear-gradient(oklch(88% .15 88), oklch(72% .16 70));
+    box-shadow: 0 3px 0 oklch(45% .1 60), 0 0 20px oklch(84% .15 85 / .6);
+    color: oklch(22% .05 60);
+    font: 1.125rem/1 var(--locale-font, 'Kim'), system-ui, sans-serif;
+    letter-spacing: .12em;
+    white-space: nowrap;
+    animation: mvp-crest .5s 1s cubic-bezier(.3, 1.6, .5, 1) both;
+}
+.endgame_mvp_crest::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 35%, oklch(100% 0 0 / .7) 50%, transparent 65%);
+    background-size: 250% 100%;
+    animation: mvp-shine 2.6s 1.6s ease-in-out infinite;
+}
+.endgame_mvp_stats {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 8px 0 0;
+}
+.endgame_mvp_stats > div {
+    display: grid;
+    justify-items: center;
+    min-width: 46px;
+    padding: 3px 6px;
+    border: 1px solid oklch(60% .08 80 / .6);
+    border-radius: 4px;
+    background: oklch(12% .02 250 / .8);
+    animation: mvp-stat .35s cubic-bezier(.2, .9, .3, 1.3) both;
+    animation-delay: calc(900ms + var(--stat-index, 0) * 150ms);
+}
+.endgame_mvp_stats dt { font-size: .625rem; letter-spacing: .06em; text-transform: uppercase; color: oklch(82% .03 240); }
+.endgame_mvp_stats dd { margin: 0; font: 1rem/1.1 var(--locale-font, 'Kim'), system-ui, sans-serif; color: var(--gold); }
+@keyframes mvp-rise { from { opacity: 0; transform: translateY(30px) scale(.9); } }
+@keyframes mvp-rays { to { rotate: 360deg; } }
+@keyframes mvp-rays-in { from { opacity: 0; scale: .4; } }
+@keyframes mvp-crest { from { opacity: 0; transform: scale(2.4); } }
+@keyframes mvp-shine { 0% { background-position: 120% 0; } 60%, 100% { background-position: -120% 0; } }
+@keyframes mvp-stat { from { opacity: 0; transform: translateY(8px); } }
+
+@media (max-height: 600px) {
+    .endgame_honour span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .endgame_honour, .endgame .endgame_character.is-mvp, .endgame_mvp_rays, .endgame_mvp_crest,
+    .endgame_mvp_crest::after, .endgame_mvp_stats > div { animation: none; }
+}
+
+/* Layout: one column from title to buttons, so the podium never collides with the rewards. */
+.endgame {
+    justify-content: flex-start;
+    gap: clamp(6px, 1.4vh, 14px);
+    overflow-y: auto;
+}
+.endgame .defeat_title { margin: clamp(10px, 3vh, 36px) auto clamp(4px, 1vh, 12px); flex-shrink: 0; }
+.endgame .endgame_characters_grid { margin-top: clamp(14px, 3vh, 26px); min-height: 0; flex-shrink: 0; }
+.endgame .endgame_honour span { display: none; }
+.endgame .endgame_honour { padding: 3px 14px; cursor: help; }
+.endgame .endgame_rewards_container {
+    position: relative;
+    bottom: auto;
+    flex-shrink: 0;
+    height: 128px;
+    margin-top: clamp(4px, 1.5vh, 16px);
+}
+.endgame .endgame_rewards_heading_container { top: 20px; }
+.endgame .endgame_rewards_items { bottom: 12px; }
+.endgame .endgame_elo {
+    top: auto;
+    bottom: 30px;
+    right: max(4%, calc(50% - 470px));
+}
+.endgame .endgame_buttons {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    justify-content: center;
+    width: min(560px, 92vw);
+    margin-top: auto;
+    margin-bottom: clamp(12px, 3vh, 28px);
+    flex-shrink: 0;
+}
+.endgame .endgame_buttons > * { flex: 1 1 0; width: auto; }
+.endgame .endgame_button_secondary { height: clamp(44px, 8vh, 56px); }
+@media (max-height: 600px) {
+    .endgame .endgame_characters_grid { transform: none; margin-top: 18px; zoom: .8; }
+    .endgame .endgame_rewards_container { transform: none; zoom: .85; }
+}
+/* Room for the MVP crest above the level label. */
+.endgame .endgame_character.is-mvp { padding-top: calc(clamp(24px, 3vh, 32px) + 12px); }

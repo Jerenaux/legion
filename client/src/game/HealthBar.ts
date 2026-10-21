@@ -10,6 +10,8 @@ export class HealthBar extends Phaser.GameObjects.Container {
   private readonly previewBar: RoundRectangle;
   private trailTween: Phaser.Tweens.Tween | null = null;
   private previewTween: Phaser.Tweens.Tween | null = null;
+  /** Shown above the bar when the hovered action would knock the target out. */
+  private skull: Phaser.GameObjects.Container | null = null;
   private readonly barOutline: RoundRectangle;
   private hpValue: number;
   private originalColor: number;
@@ -102,7 +104,7 @@ export class HealthBar extends Phaser.GameObjects.Container {
     } else {
       this.trailBar.scaleX = this.hpValue;
     }
-    if (this.previewBar.visible) this.setPreview(null);
+    if (this.previewBar.visible || this.skull) this.setPreview(null);
     return this;
   }
 
@@ -111,16 +113,41 @@ export class HealthBar extends Phaser.GameObjects.Container {
     this.previewTween?.stop();
     this.previewTween = null;
     const target = value == null ? this.hpValue : Phaser.Math.Clamp(value, 0, 1);
+    const lethal = value != null && target <= 0 && this.hpValue > 0;
+    this.showSkull(lethal);
     if (target >= this.hpValue) {
       this.previewBar.setVisible(false);
       return;
     }
     this.previewBar.setPosition(this.hpBar.x + this.hpBar.width * target, this.hpBar.y);
     this.previewBar.scaleX = this.hpValue - target;
+    // A lethal blow blinks red rather than white.
+    this.previewBar.setFillStyle(lethal ? 0xff3b2f : 0xffffff);
     this.previewBar.setVisible(true).setAlpha(0.9);
     this.previewTween = this.scene.tweens.add({
-      targets: this.previewBar, alpha: 0.2, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      targets: this.previewBar, alpha: 0.2, duration: lethal ? 260 : 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
     });
+  }
+
+  private showSkull(visible: boolean) {
+    if (!visible) {
+      if (this.skull) this.scene?.tweens.killTweensOf(this.skull);
+      this.skull?.destroy();
+      this.skull = null;
+      return;
+    }
+    if (this.skull) return;
+    // A small skull drawn in vector so it stays crisp at any zoom.
+    const g = this.scene.add.graphics();
+    g.fillStyle(0x1b0f0a, 1).fillCircle(0, -1, 9).fillRoundedRect(-6, 4, 12, 7, 2);
+    g.fillStyle(0xfff4e0, 1).fillCircle(0, -1, 7.5).fillRoundedRect(-4.5, 4, 9, 5.5, 1.5);
+    g.fillStyle(0x1b0f0a, 1).fillCircle(-3, -1.5, 2.3).fillCircle(3, -1.5, 2.3).fillTriangle(0, 1.5, -1.3, 3.6, 1.3, 3.6);
+    g.fillRect(-1.6, 6.5, 0.9, 3).fillRect(0.7, 6.5, 0.9, 3);
+    this.skull = this.scene.add.container(0, -16, [g]).setScale(0);
+    this.add(this.skull);
+    this.scene.tweens.add({targets: this.skull, scale: 1, duration: 220, ease: 'Back.easeOut', onComplete: () => {
+      if (this.skull) this.scene.tweens.add({targets: this.skull, scale: 1.15, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'});
+    }});
   }
 
   tweenPosition(x?: number, y?: number) {

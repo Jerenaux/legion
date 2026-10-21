@@ -1320,5 +1320,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Bildschirmwackeln & Blitze</0> schaltet Kamerawackeln, Trefferblitze und kurze Standbilder bei Treffern aus. Klicke oder drücke eine beliebige Taste, um eine Zeitlupe nach einem K.-o. zu überspringen.",
   "Camera follows the turn": "Kamera folgt dem Zug",
   "The camera drifts slightly toward the character taking its turn.": "Die Kamera bewegt sich leicht zur Figur, die gerade am Zug ist.",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Kamera folgt dem Zug</0> bewegt die Kamera zur Figur, die am Zug ist; standardmäßig ist das aus."
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Kamera folgt dem Zug</0> bewegt die Kamera zur Figur, die am Zug ist; standardmäßig ist das aus.",
+  "Last stand!": "Letzter Widerstand!",
+  "Rampage!": "Amoklauf!",
+  "KO": "K.O.",
+  "KOs": "K.O.s",
+  "Damage": "Schaden",
+  "MVP": "MVP",
+  "Honours": "Auszeichnungen",
+  "Comeback!": "Comeback!",
+  "Flawless": "Makellos",
+  "Ace": "Ass",
+  "Won after trailing by two characters.": "Gesiegt nach einem Rückstand von zwei Figuren.",
+  "Won without losing a character.": "Gesiegt, ohne eine Figur zu verlieren.",
+  "One character knocked out the whole enemy team.": "Eine einzige Figur hat das ganze gegnerische Team ausgeschaltet.",
+  "{{value0}} vs {{value1}}": "{{value0}} gegen {{value1}}"
 }

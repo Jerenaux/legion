@@ -125,6 +125,15 @@ export interface OutcomeData {
     elo: number;
     key: ChestColor;
     chests: GameOutcomeReward[];
+    /** What each of the team's characters did this match, for the end screen's MVP. */
+    teamStats?: CharacterMatchStats[];
+}
+
+export interface CharacterMatchStats {
+    num: number;
+    damage: number;
+    healing: number;
+    kills: number;
 }
 
 export type CharacterStats = {

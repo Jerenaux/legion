@@ -1337,5 +1337,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Tremor e flashes</0> desativa o tremor da câmera, os flashes de golpe e as pausas de impacto. Clique ou pressione qualquer tecla para pular a câmera lenta de um nocaute.",
   "Camera follows the turn": "Câmera segue o turno",
   "The camera drifts slightly toward the character taking its turn.": "A câmera se desloca levemente em direção ao personagem da vez.",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Câmera segue o turno</0> desloca a câmera em direção ao personagem da vez; vem desativada por padrão."
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Câmera segue o turno</0> desloca a câmera em direção ao personagem da vez; vem desativada por padrão.",
+  "Last stand!": "Última resistência!",
+  "Rampage!": "Massacre!",
+  "KO": "Nocaute",
+  "KOs": "Nocautes",
+  "Damage": "Dano",
+  "MVP": "MVP",
+  "Honours": "Honrarias",
+  "Comeback!": "Virada!",
+  "Flawless": "Impecável",
+  "Ace": "Ás",
+  "Won after trailing by two characters.": "Vitória depois de estar dois personagens atrás.",
+  "Won without losing a character.": "Vitória sem perder nenhum personagem.",
+  "One character knocked out the whole enemy team.": "Um único personagem nocauteou toda a equipe inimiga.",
+  "{{value0}} vs {{value1}}": "{{value0}} contra {{value1}}"
 }

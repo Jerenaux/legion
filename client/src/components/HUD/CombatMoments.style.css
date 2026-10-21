@@ -1,0 +1,126 @@
+/* Callouts: a band slams across the field with the moment's name. */
+.combat-callout {
+  --callout-hue: 40;
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  z-index: 12;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: min(760px, 92vw);
+  padding: 14px 24px 16px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: callout-life 1.9s cubic-bezier(.2, .8, .3, 1) forwards;
+}
+.combat-callout[data-side="enemy"] { --callout-hue: 25; }
+.combat-callout--rampage { --callout-hue: 55; }
+.combat-callout__band {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, transparent, oklch(30% .12 var(--callout-hue) / .85) 18%, oklch(42% .17 var(--callout-hue) / .9) 50%, oklch(30% .12 var(--callout-hue) / .85) 82%, transparent);
+  clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%);
+  box-shadow: 0 0 40px oklch(60% .2 var(--callout-hue) / .5);
+  animation: callout-band .32s cubic-bezier(.2, .9, .3, 1.2) both;
+}
+.combat-callout__band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, oklch(100% 0 0 / .45) 50%, transparent 65%);
+  animation: callout-shine .9s .2s ease-out both;
+}
+.combat-callout__title {
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: oklch(97% .04 85);
+  text-shadow: 0 0 22px oklch(70% .2 var(--callout-hue)), 0 3px 0 oklch(25% .08 var(--callout-hue)), 0 6px 12px oklch(10% .02 250 / .7);
+  animation: callout-title .45s .08s cubic-bezier(.2, .9, .3, 1.4) both;
+}
+.combat-callout__name {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: oklch(92% .05 85);
+  text-shadow: 0 2px 4px oklch(10% .02 250 / .8);
+  animation: callout-fade .3s .3s ease-out both;
+}
+.combat-callout[data-side="enemy"] .combat-callout__name::before { content: '⚔ '; }
+@keyframes callout-life { 0%, 85% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -58%); } }
+@keyframes callout-band { from { transform: scaleX(0); opacity: 0; } }
+@keyframes callout-shine { from { transform: translateX(-60%); } to { transform: translateX(60%); opacity: 0; } }
+@keyframes callout-title { from { opacity: 0; transform: scale(2.2); letter-spacing: .3em; } }
+@keyframes callout-fade { from { opacity: 0; transform: translateY(6px); } }
+
+/* Your last character standing: the edges of the screen burn red and pulse. */
+.last-stand-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, oklch(40% .2 25 / .55) 100%);
+  animation: last-stand-in .6s ease-out both, last-stand-pulse 1.1s .6s ease-in-out infinite alternate;
+}
+@keyframes last-stand-in { from { opacity: 0; } }
+@keyframes last-stand-pulse { to { opacity: .55; } }
+
+/* X-tier spells: the caster's name and the spell, carved across the dimmed field. */
+.spell-name-card {
+  --spell-a: oklch(80% .17 55);
+  --spell-b: oklch(55% .2 35);
+  position: fixed;
+  left: 0;
+  /* Low on the field, clear of the team panels and above the dock. */
+  bottom: 30%;
+  z-index: 12;
+  display: grid;
+  gap: 2px;
+  padding: 12px 64px 14px 8vw;
+  pointer-events: none;
+  background: linear-gradient(90deg, oklch(10% .02 260 / .9), oklch(14% .04 260 / .75) 70%, transparent);
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
+  border-bottom: 2px solid var(--spell-a);
+  animation: spell-card-in .42s cubic-bezier(.2, .9, .3, 1.1) both;
+}
+.spell-name-card[data-side="enemy"] {
+  left: auto;
+  right: 0;
+  padding: 12px 8vw 14px 64px;
+  text-align: right;
+  background: linear-gradient(270deg, oklch(10% .02 260 / .9), oklch(14% .04 260 / .75) 70%, transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%);
+  animation-name: spell-card-in-right;
+}
+.spell-name-card--ice { --spell-a: oklch(88% .1 220); --spell-b: oklch(62% .14 235); }
+.spell-name-card--thunder { --spell-a: oklch(93% .15 100); --spell-b: oklch(68% .16 290); }
+.spell-name-card__caster {
+  font-size: 1rem;
+  color: oklch(88% .03 240);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.spell-name-card__spell {
+  font-family: var(--locale-font, 'Kim'), system-ui, sans-serif;
+  font-size: clamp(2.5rem, 7vw, 4.75rem);
+  line-height: 1;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, oklch(98% .03 90), var(--spell-a) 55%, var(--spell-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 14px var(--spell-b)) drop-shadow(0 3px 0 oklch(15% .03 260));
+  animation: spell-name-in .5s .1s cubic-bezier(.2, .9, .3, 1.3) both;
+}
+@keyframes spell-card-in { from { transform: translateX(-100%); } }
+@keyframes spell-card-in-right { from { transform: translateX(100%); } }
+@keyframes spell-name-in { from { opacity: 0; transform: scale(1.6); letter-spacing: .25em; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .combat-callout, .combat-callout__band, .combat-callout__band::after, .combat-callout__title, .combat-callout__name,
+  .spell-name-card, .spell-name-card__spell { animation: none; }
+  .combat-callout { animation: callout-life 1.9s steps(1) forwards; }
+  .last-stand-vignette { animation: none; }
+}

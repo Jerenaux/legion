@@ -756,6 +756,9 @@ export abstract class Game
 
                 team.distributeXp(outcomes.xp);
                 outcomes.characters = team.getCharactersDBUpdates();
+                outcomes.teamStats = team.getMembers().map(member => ({
+                    num: member.num, damage: member.damageDealt, healing: member.healingDone, kills: member.kills,
+                }));
                 const engagement = team.getEngagement();
                 this.writeOutcomesToDb(team, outcomes, engagement);
                 console.log(`[Game:endGame] Team ${team!.id} (UID: ${uid}) outcomes: ${JSON.stringify(outcomes)}`);
@@ -891,6 +894,7 @@ export abstract class Game
         player.recordAction(1);
 
         let oneShot = false;
+        if (opponent.justDied && opponent.team !== player.team) player.kills++;
         if (opponent.justDied) {
             oneShot = (damage >= opponent.getMaxHP());
         }
@@ -1007,6 +1011,7 @@ export abstract class Game
         targets.forEach(target => {
             if (target.HPHasChanged()) {
                 target.team.incrementHealing(target.getHPDelta());
+                player.healingDone += Math.max(0, target.getHPDelta());
             }
             if (target.MPHasChanged()) {
                 this.emitMPchange(target.team!, target.num, target.getMP());
@@ -1037,8 +1042,10 @@ export abstract class Game
                 player.increaseDamageDealt(delta);
                 if (target.justDied && delta < 0){
                     nbKills++;
+                    if (target.team !== player.team) player.kills++;
                 }
                 if (delta > 0) {
+                    player.healingDone += delta;
                     player.team!.increaseScoreFromHeal(player);
                     player.team!.incrementHealing(delta);
                 } else if (delta < 0) {

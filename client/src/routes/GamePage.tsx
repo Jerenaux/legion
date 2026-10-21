@@ -13,6 +13,7 @@ import { PlayerContext } from '../contexts/PlayerContext';
 import { PlayerNetworkData } from '@legion/shared/interfaces';
 import { TutorialIntro } from '../components/tutorialIntro/TutorialIntro';
 import { TeamReveal } from '../components/teamReveal/TeamReveal';
+import VersusScreen, { VersusData } from '../components/versus/VersusScreen';
 
 interface GamePageProps {
   matches: {
@@ -33,6 +34,7 @@ interface GamePageState {
   waitingStartTime: number | null;
   currentMessageIndex: number;
   revealedTeam: PlayerNetworkData[] | null;
+  versus: VersusData | null;
   revealedIndices: boolean[];
   allRevealed: boolean;
   tutorialIntro: boolean;
@@ -67,6 +69,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
       waitingStartTime: null,
       currentMessageIndex: 0,
       revealedTeam: null,
+      versus: null,
       revealedIndices: [false, false, false],
       allRevealed: false,
       tutorialIntro: false,
@@ -96,6 +99,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.on('combatError', this.failGame);
     events.on('combatConnectionLost', this.handleConnectionLost);
     events.on('revealTeam', this.handleRevealTeam);
+    events.on('revealVersus', this.handleRevealVersus);
     events.on('showTutorialIntro', this.showTutorialIntro);
     events.on('notifyMatchmakerLeave', this.handleMatchmakerLeave);
     this.checkOrientation();
@@ -137,6 +141,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     events.off('combatWaiting', this.handleCombatWaiting);
     events.off('serverDisconnect', this.handleServerDisconnect);
     events.off('revealTeam', this.handleRevealTeam);
+    events.off('revealVersus', this.handleRevealVersus);
     events.off('showTutorialIntro', this.showTutorialIntro);
     events.off('notifyMatchmakerLeave', this.handleMatchmakerLeave);
     window.removeEventListener('resize', this.checkOrientation);
@@ -210,6 +215,12 @@ class GamePage extends Component<GamePageProps, GamePageState> {
     this.setState({ revealedTeam: team });
   };
 
+  handleRevealVersus = (versus: VersusData) => this.setState({versus});
+  endVersus = () => {
+    this.setState({versus: null});
+    events.emit('versusShown');
+  };
+
   showTutorialIntro = () => this.setState({tutorialIntro: true});
   finishTutorialIntro = () => {
     this.setState({tutorialIntro: false}, () => events.emit('tutorialIntroComplete'));
@@ -277,6 +288,7 @@ class GamePage extends Component<GamePageProps, GamePageState> {
             />
           )}
           {this.state.tutorialIntro && <TutorialIntro onComplete={this.finishTutorialIntro} />}
+          {this.state.versus && <VersusScreen data={this.state.versus} onComplete={this.endVersus} />}
           {/* {this.state.initialized && this.state.waitingForPlayers && !this.state.revealedTeam && (
             <div className="match-ready-status" role="status">Preparing the match — waiting for everyone to be ready</div>
           )} */}

@@ -1320,5 +1320,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>画面の揺れとフラッシュ</0>をオフにすると、カメラの揺れ、ヒット時のフラッシュ、一瞬の停止がなくなります。撃破時のスローモーションはクリックまたは任意のキーでスキップできます。",
   "Camera follows the turn": "カメラがターンを追う",
   "The camera drifts slightly toward the character taking its turn.": "カメラがターン中のキャラクターの方へ少し動きます。",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>カメラがターンを追う</0>をオンにすると、ターン中のキャラクターの方へカメラが動きます。初期設定ではオフです。"
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>カメラがターンを追う</0>をオンにすると、ターン中のキャラクターの方へカメラが動きます。初期設定ではオフです。",
+  "Last stand!": "最後の抵抗！",
+  "Rampage!": "大暴れ！",
+  "KO": "撃破",
+  "KOs": "撃破",
+  "Damage": "ダメージ",
+  "MVP": "MVP",
+  "Honours": "称号",
+  "Comeback!": "逆転勝利！",
+  "Flawless": "完全勝利",
+  "Ace": "エース",
+  "Won after trailing by two characters.": "2人差で劣勢から勝利しました。",
+  "Won without losing a character.": "1人も倒されずに勝利しました。",
+  "One character knocked out the whole enemy team.": "1人で敵チーム全員を撃破しました。",
+  "{{value0}} vs {{value1}}": "{{value0}} 対 {{value1}}"
 }

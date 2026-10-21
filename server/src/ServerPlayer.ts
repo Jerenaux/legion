@@ -55,6 +55,8 @@ export class ServerPlayer {
     equipment: Equipment;
     isCasting: boolean = false;
     damageDealt: number = 0;
+    healingDone = 0;
+    kills = 0;
     entranceTime: number = 2.5;
     statuses: StatusEffects;
     interactedTargets: Set<ServerPlayer> = new Set();

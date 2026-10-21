@@ -1354,5 +1354,19 @@
   "<0>Screen shake & flashes</0> turns off camera shake, hit flashes and impact freezes. Click or press any key to skip a kill cam.": "<0>Тряска и вспышки</0> отключает тряску камеры, вспышки при ударах и стоп-кадры. Щёлкните или нажмите любую клавишу, чтобы пропустить замедленный повтор нокаута.",
   "Camera follows the turn": "Камера следует за ходом",
   "The camera drifts slightly toward the character taking its turn.": "Камера слегка смещается к персонажу, который сейчас ходит.",
-  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Камера следует за ходом</0> смещает камеру к персонажу, который сейчас ходит; по умолчанию выключено."
+  "<0>Camera follows the turn</0> drifts the camera toward the character taking its turn; it is off by default.": "<0>Камера следует за ходом</0> смещает камеру к персонажу, который сейчас ходит; по умолчанию выключено.",
+  "Last stand!": "Последний рубеж!",
+  "Rampage!": "Неудержим!",
+  "KO": "Нокаут",
+  "KOs": "Нокауты",
+  "Damage": "Урон",
+  "MVP": "MVP",
+  "Honours": "Отличия",
+  "Comeback!": "Камбэк!",
+  "Flawless": "Без потерь",
+  "Ace": "Ас",
+  "Won after trailing by two characters.": "Победа после отставания на двух персонажей.",
+  "Won without losing a character.": "Победа без потерь.",
+  "One character knocked out the whole enemy team.": "Один персонаж нокаутировал всю команду противника.",
+  "{{value0}} vs {{value1}}": "{{value0}} против {{value1}}"
 }

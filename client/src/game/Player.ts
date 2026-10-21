@@ -87,8 +87,6 @@ export class Player extends Phaser.GameObjects.Container {
     selectionArrow: Phaser.GameObjects.Sprite;
     deathCheckTimer: Phaser.Time.TimerEvent;
     chargeSprite: Phaser.GameObjects.Sprite | null = null;
-    /** HP before the latest loss, to recognise one-shots. */
-    hpBeforeHit = 0;
     diedAt = 0;
     /** An HP change waiting briefly in case a melee attack claims it, so the hit lands with the blow. */
     pendingReaction: {delta: number; timer: Phaser.Time.TimerEvent} | null = null;
@@ -757,15 +755,18 @@ export class Player extends Phaser.GameObjects.Container {
         const _hp = this.hp
         this.hp = hp;
         this.healthBar.setHpValue(hp / this.maxHP);
-        if (this.hp < _hp) this.hpBeforeHit = _hp;
 
         if(this.isSelected()) this.checkHeartbeat();
 
         if (this.hp <= 0) {
             if (_hp > 0) this.diedAt = Date.now();
             this.die();
+            if (_hp > 0) this.arena.onCharacterDown(this);
         } else {
-            if (_hp <= 0) this.restoreTint();
+            if (_hp <= 0) {
+                this.restoreTint();
+                this.arena.onCharacterUp();
+            }
             if (!this.casting) this.playAnim('hurt', true);
 
             this.displayBars();

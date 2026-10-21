@@ -19,6 +19,13 @@ export interface CharacterHover {
 
 export type InspectCharacter = (team: number, num: number, element: HTMLElement | null) => void;
 
+/** A finishing blow: shown when the hovered action would knock the character out. */
+function SkullIcon() {
+  return <svg className="skull-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+    <path fill="currentColor" d="M12 2C6.9 2 3 5.7 3 10.4c0 2.8 1.3 5 3.5 6.3V20c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2v-3.3c2.2-1.3 3.5-3.5 3.5-6.3C21 5.7 17.1 2 12 2zm-3.5 12a2.3 2.3 0 1 1 0-4.6 2.3 2.3 0 0 1 0 4.6zm3.5 2.5-1.2-2h2.4l-1.2 2zm3.5-2.5a2.3 2.3 0 1 1 0-4.6 2.3 2.3 0 0 1 0 4.6zM10 18h1v2.5h-1V18zm3 0h1v2.5h-1V18z" />
+  </svg>;
+}
+
 export default function CharacterHoverCard({ character, hover }: { character: TeamMember; hover: CharacterHover }) {
   const card = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -53,8 +60,12 @@ export default function CharacterHoverCard({ character, hover }: { character: Te
           </div>
         </div>
       ))}
-      {hover.preview && <div className="character-hover-card__preview" data-heal={hover.preview.hp > 0}>
-        <span>{t(hover.preview.action)}</span><b>{t("HP")} {formatNumber(hover.preview.hp, {signDisplay: 'always'})}</b>
+      {hover.preview && <div className="character-hover-card__preview" data-heal={hover.preview.hp > 0}
+        data-lethal={hover.preview.hp < 0 && character.hp + hover.preview.hp <= 0}>
+        <span>{t(hover.preview.action)}</span>
+        {hover.preview.hp < 0 && character.hp + hover.preview.hp <= 0
+          ? <b className="character-hover-card__ko"><SkullIcon />{t("KO")}</b>
+          : <b>{t("HP")} {formatNumber(hover.preview.hp, {signDisplay: 'always'})}</b>}
       </div>}
       <div className="character-hover-card__statuses">
         {activeStatuses.length ? activeStatuses.map(([status, turns]) => (
