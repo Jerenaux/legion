@@ -4,7 +4,9 @@
 import {Server} from 'socket.io';
 import {Class, League, PlayMode, Stat, StatFields} from '@legion/shared/enums';
 import {baseStats, spBonus, spBudget} from '@legion/shared/combatBalance';
-import {spellSlotsAt} from '@legion/shared/inventory';
+import {applyEquipmentBonuses, spellSlotsAt} from '@legion/shared/inventory';
+import {equipments} from '@legion/shared/Equipments';
+import {EquipmentSlot, equipmentSlotFields} from '@legion/shared/enums';
 import {getSpellById, getSpellsUpToLevel} from '@legion/shared/Spells';
 import {aiSpellLoadout, setUpInventory} from '@legion/shared/NewCharacter';
 import {getConsumableById} from '@legion/shared/Items';
@@ -66,13 +68,34 @@ class VirtualClock {
   }
 }
 
+// SP-equivalent of an item for a class: unusable stats count for nothing, weapon poison counts as in the budget.
+const weights: Record<number, number> = {[Stat.HP]: .5, [Stat.MP]: 1, [Stat.ATK]: 1, [Stat.DEF]: 1, [Stat.SPATK]: 1, [Stat.SPDEF]: 1, [Stat.SPEED]: 2};
+function itemValue(item: (typeof equipments)[number], c: Class) {
+  const usable = (stat: Stat) => !(c !== Class.WARRIOR && stat === Stat.ATK && !item.statusEffects?.length) && !(c === Class.WARRIOR && (stat === Stat.SPATK || stat === Stat.MP));
+  const stats = item.effects.reduce((sum, effect) => sum + (usable(effect.stat) ? effect.value * weights[effect.stat] : 0), 0);
+  const poison = (item.statusEffects ?? []).reduce((sum, status) => sum + Math.ceil(8 * 3 * status.chance / 2), 0);
+  return stats + poison;
+}
+/** The best piece per slot for a class (belts excluded: they only add consumable slots). */
+function bestGear(c: Class) {
+  const gear: Record<string, number> = {weapon: -1, armor: -1, helmet: -1, belt: -1, gloves: -1, boots: -1, left_ring: -1, right_ring: -1, necklace: -1};
+  for (const [slot, field] of Object.entries(equipmentSlotFields)) {
+    if (Number(slot) === EquipmentSlot.BELT) continue;
+    const kind = Number(slot) === EquipmentSlot.RIGHT_RING ? EquipmentSlot.LEFT_RING : Number(slot);
+    const candidates = equipments.filter(item => item.slot === kind && (!item.classes.length || item.classes.includes(c)));
+    candidates.sort((a, b) => itemValue(b, c) - itemValue(a, c));
+    gear[field] = candidates[0]?.id ?? -1;
+  }
+  return gear;
+}
+
 class SimulatedGame extends Game {
   winner = 0;
   populateTeams() {}
   endGame(winnerTeamID: number) { this.gameOver = true; this.winner = winnerTeamID; }
 }
 
-interface Side { level: number; build: Build }
+interface Side { level: number; build: Build; gear?: boolean }
 
 /** 1 or 2 by knockout; 1.5/2.5 when the time limit decides on remaining HP; 0 for an exact tie. */
 function match(a: Side, b: Side): number {
@@ -94,10 +117,13 @@ function match(a: Side, b: Side): number {
       unit.level = side.level;
       const base = baseStats(c, side.level);
       const points = allocate(c, budget(side.level), side.build);
-      for (const [key, field] of Object.entries(StatFields)) unit.setStat(Number(key), base[field] + spBonus(Number(key), points[Number(key)] ?? 0));
+      const equipment = side.gear ? bestGear(c)
+        : {weapon: -1, armor: -1, helmet: -1, belt: -1, gloves: -1, boots: -1, left_ring: -1, right_ring: -1, necklace: -1};
+      const bonuses = applyEquipmentBonuses(equipment as never);
+      for (const [key, field] of Object.entries(StatFields)) unit.setStat(Number(key), base[field] + spBonus(Number(key), points[Number(key)] ?? 0) + (bonuses[field] ?? 0));
+      unit.equipment = equipment as never;
       unit.hp = unit.getMaxHP();
       unit.mp = unit.getMaxMP();
-      unit.equipment = {weapon: -1, armor: -1, helmet: -1, belt: -1, gloves: -1, boots: -1, left_ring: -1, right_ring: -1, necklace: -1};
       // The same starter consumables (Potions, Ethers) the game gives AI characters of this level.
       unit.inventory = setUpInventory(c, side.level, BASE_CHARACTER_CARRYING_CAPACITY).map(id => new Item(getConsumableById(id)!));
       const required = c === Class.WHITE_MAGE ? STARTING_WHITE_MAGE_SPELLS : [];
@@ -152,6 +178,16 @@ print('# Level gaps, balanced builds');
 for (const [high, low] of [[25, 21], [30, 21], [40, 21], [50, 21], [50, 40], [21, 15], [15, 10]]) {
   const result = series({level: high, build: 'balanced'}, {level: low, build: 'balanced'}, games);
   print(`level ${high} (${budget(high)} SP) vs level ${low} (${budget(low)} SP): ${describe(result)}`);
+}
+print('# Full best-in-slot equipment on both sides, level 21');
+for (let i = 0; i < builds.length; i++) for (let j = i + 1; j < builds.length; j++) {
+  const result = series({level: 21, build: builds[i], gear: true}, {level: 21, build: builds[j], gear: true}, games);
+  print(`${builds[i]} vs ${builds[j]}: ${describe(result)}`);
+}
+print('# Equipment impact, balanced builds');
+for (const [level, other] of [[21, 21], [10, 10], [10, 21], [21, 50]]) {
+  const result = series({level, build: 'balanced', gear: true}, {level: other, build: 'balanced'}, games);
+  print(`geared level ${level} vs ungeared level ${other}: ${describe(result)}`);
 }
 print(`# ${((Date.now() - started) / 1000).toFixed(0)}s`);
 process.exit(0);

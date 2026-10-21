@@ -1,7 +1,8 @@
 import { BaseEquipment } from "./BaseEquipment";
-import { Stat, EquipmentSlot, Class, StatusEffect } from ".";
+import { Stat, EquipmentSlot, Class, StatusEffect, Rarity } from ".";
 
 // Equipment budgets, including poison and carrying capacity: docs/combat-balance.md.
+// Price (effort × 100 gold) follows each item's budget; rarity is set per item and no longer follows price.
 export const equipments:BaseEquipment[] = [];
 
 equipments[0] = new BaseEquipment({
@@ -11,7 +12,8 @@ equipments[0] = new BaseEquipment({
     frame: 0,
     effects: [{stat: Stat.ATK, value: 12}, {stat: Stat.DEF, value: 4}],
     slot: EquipmentSlot.WEAPON,
-    effort: 45,
+    effort: 24,
+    rarity: Rarity.EPIC,
     classes: [Class.WARRIOR],
 });
 
@@ -24,6 +26,7 @@ equipments[1] = new BaseEquipment({
     effects: [{stat: Stat.SPATK, value: 2}, {stat: Stat.MP, value: 2}],
     slot: EquipmentSlot.WEAPON,
     effort: 4,
+    rarity: Rarity.COMMON,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -35,7 +38,8 @@ equipments[2] = new BaseEquipment({
     frame: 40,
     effects: [{stat: Stat.MP, value: 20}],
     slot: EquipmentSlot.LEFT_RING,
-    effort: 50,
+    effort: 30,
+    rarity: Rarity.LEGENDARY,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -46,7 +50,8 @@ equipments[3] = new BaseEquipment({
     frame: 60,
     effects: [],
     slot: EquipmentSlot.BELT,
-    effort: 30,
+    effort: 15,
+    rarity: Rarity.EPIC,
     beltSize: 1,
 });
 
@@ -57,7 +62,8 @@ equipments[4] = new BaseEquipment({
     frame: 61,
     effects: [],
     slot: EquipmentSlot.BELT,
-    effort: 70,
+    effort: 40,
+    rarity: Rarity.LEGENDARY,
     beltSize: 2,
 });
 
@@ -69,6 +75,7 @@ equipments[5] = new BaseEquipment({
     effects: [{stat: Stat.ATK, value: 3}],
     slot: EquipmentSlot.WEAPON,
     effort: 3,
+    rarity: Rarity.COMMON,
     classes: [Class.WARRIOR],
 });
 
@@ -80,6 +87,7 @@ equipments[6] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 3}],
     slot: EquipmentSlot.HELMET,
     effort: 3,
+    rarity: Rarity.COMMON,
 });
 
 equipments[7] = new BaseEquipment({
@@ -90,6 +98,7 @@ equipments[7] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 4}],
     slot: EquipmentSlot.ARMOR,
     effort: 4,
+    rarity: Rarity.COMMON,
 });
 
 equipments[8] = new BaseEquipment({
@@ -100,6 +109,7 @@ equipments[8] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 5}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.GLOVES,
     effort: 10,
+    rarity: Rarity.RARE,
 });
 
 equipments[9] = new BaseEquipment({
@@ -109,7 +119,8 @@ equipments[9] = new BaseEquipment({
     frame: 130,
     effects: [{stat: Stat.SPEED, value: 1}, {stat: Stat.MP, value: 2}, {stat: Stat.DEF, value: 1}, {stat: Stat.SPATK, value: 1}, {stat: Stat.SPDEF, value: 1}],
     slot: EquipmentSlot.BOOTS,
-    effort: 9,
+    effort: 7,
+    rarity: Rarity.COMMON,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -121,6 +132,7 @@ equipments[10] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 20}],
     slot: EquipmentSlot.NECKLACE,
     effort: 12,
+    rarity: Rarity.RARE,
 });
 
 equipments[11] = new BaseEquipment({
@@ -130,7 +142,8 @@ equipments[11] = new BaseEquipment({
     frame: 71,
     effects: [{stat: Stat.DEF, value: 6}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.HELMET,
-    effort: 11,
+    effort: 10,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 
@@ -142,6 +155,7 @@ equipments[12] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 7}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.ARMOR,
     effort: 12,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 
@@ -152,7 +166,8 @@ equipments[13] = new BaseEquipment({
     frame: 111,
     effects: [{stat: Stat.DEF, value: 8}, {stat: Stat.ATK, value: 4}],
     slot: EquipmentSlot.GLOVES,
-    effort: 19,
+    effort: 15,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 
@@ -163,7 +178,8 @@ equipments[14] = new BaseEquipment({
     frame: 131,
     effects: [{stat: Stat.DEF, value: 4}, {stat: Stat.SPDEF, value: 4}, {stat: Stat.SPEED, value: 1}],
     slot: EquipmentSlot.BOOTS,
-    effort: 15,
+    effort: 12,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 
@@ -175,6 +191,7 @@ equipments[15] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 3}],
     slot: EquipmentSlot.GLOVES,
     effort: 3,
+    rarity: Rarity.COMMON,
 });
 
 equipments[16] = new BaseEquipment({
@@ -185,6 +202,7 @@ equipments[16] = new BaseEquipment({
     effects: [{stat: Stat.MP, value: 6}],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
+    rarity: Rarity.COMMON,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -196,6 +214,7 @@ equipments[17] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 8}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 4,
+    rarity: Rarity.COMMON,
 });
 
 equipments[18] = new BaseEquipment({
@@ -205,7 +224,8 @@ equipments[18] = new BaseEquipment({
     frame: 72,
     effects: [{stat: Stat.DEF, value: 9}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.HELMET,
-    effort: 21,
+    effort: 15,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 
@@ -216,7 +236,8 @@ equipments[19] = new BaseEquipment({
     frame: 92,
     effects: [{stat: Stat.DEF, value: 9}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.ARMOR,
-    effort: 23,
+    effort: 15,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 
@@ -228,6 +249,7 @@ equipments[20] = new BaseEquipment({
     effects: [{stat: Stat.DEF, value: 2}, {stat: Stat.SPDEF, value: 2}, {stat: Stat.SPEED, value: 1}],
     slot: EquipmentSlot.BOOTS,
     effort: 6,
+    rarity: Rarity.COMMON,
 });
 
 equipments[21] = new BaseEquipment({
@@ -238,6 +260,7 @@ equipments[21] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 4}, {stat: Stat.ATK, value: 2}, {stat: Stat.DEF, value: 2}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 6,
+    rarity: Rarity.COMMON,
 });
 
 equipments[22] = new BaseEquipment({
@@ -248,6 +271,7 @@ equipments[22] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 12}],
     slot: EquipmentSlot.NECKLACE,
     effort: 6,
+    rarity: Rarity.COMMON,
 });
 
 equipments[23] = new BaseEquipment({
@@ -257,7 +281,8 @@ equipments[23] = new BaseEquipment({
     frame: 21,
     effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 4}, {stat: Stat.DEF, value: 1}, {stat: Stat.SPATK, value: 6}, {stat: Stat.SPDEF, value: 3}],
     slot: EquipmentSlot.WEAPON,
-    effort: 35,
+    effort: 24,
+    rarity: Rarity.EPIC,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -268,7 +293,8 @@ equipments[24] = new BaseEquipment({
     frame: 73,
     effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 4}, {stat: Stat.DEF, value: 2}, {stat: Stat.SPATK, value: 4}, {stat: Stat.SPDEF, value: 4}],
     slot: EquipmentSlot.HELMET,
-    effort: 40,
+    effort: 24,
+    rarity: Rarity.EPIC,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
 });
 
@@ -279,7 +305,8 @@ equipments[25] = new BaseEquipment({
     frame: 74,
     effects: [{stat: Stat.MP, value: 2}, {stat: Stat.DEF, value: 1}, {stat: Stat.SPATK, value: 2}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.HELMET,
-    effort: 9,
+    effort: 7,
+    rarity: Rarity.COMMON,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
 });
 
@@ -290,7 +317,8 @@ equipments[26] = new BaseEquipment({
     frame: 93,
     effects: [{stat: Stat.DEF, value: 2}, {stat: Stat.SPDEF, value: 2}, {stat: Stat.SPATK, value: 1}, {stat: Stat.MP, value: 2}],
     slot: EquipmentSlot.ARMOR,
-    effort: 9,
+    effort: 7,
+    rarity: Rarity.COMMON,
     classes: [Class.WHITE_MAGE, Class.BLACK_MAGE],
 });
 
@@ -301,7 +329,8 @@ equipments[27] = new BaseEquipment({
     frame: 113,
     effects: [{stat: Stat.HP, value: 4}, {stat: Stat.DEF, value: 2}, {stat: Stat.ATK, value: 1}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.GLOVES,
-    effort: 8,
+    effort: 7,
+    rarity: Rarity.COMMON,
 });
 
 equipments[28] = new BaseEquipment({
@@ -312,6 +341,7 @@ equipments[28] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 4}, {stat: Stat.DEF, value: 3}, {stat: Stat.SPDEF, value: 1}, {stat: Stat.SPEED, value: 1}],
     slot: EquipmentSlot.BOOTS,
     effort: 10,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 
@@ -323,6 +353,7 @@ equipments[29] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 2}, {stat: Stat.ATK, value: 2}, {stat: Stat.DEF, value: 2}, {stat: Stat.SPDEF, value: 2}],
     slot: EquipmentSlot.LEFT_RING,
     effort: 12,
+    rarity: Rarity.RARE,
 });
 
 equipments[30] = new BaseEquipment({
@@ -333,6 +364,7 @@ equipments[30] = new BaseEquipment({
     effects: [{stat: Stat.HP, value: 4}, {stat: Stat.MP, value: 1}],
     slot: EquipmentSlot.NECKLACE,
     effort: 3,
+    rarity: Rarity.COMMON,
 });
 
 equipments[31] = new BaseEquipment({
@@ -343,6 +375,7 @@ equipments[31] = new BaseEquipment({
     effects: [{stat: Stat.ATK, value: 5}, {stat: Stat.DEF, value: 1}],
     slot: EquipmentSlot.WEAPON,
     effort: 6,
+    rarity: Rarity.COMMON,
     classes: [Class.WARRIOR],
 });
 
@@ -360,7 +393,8 @@ equipments[32] = new BaseEquipment({
         }
     ],
     slot: EquipmentSlot.WEAPON,
-    effort: 25,
+    effort: 24,
+    rarity: Rarity.EPIC,
     classes: [Class.BLACK_MAGE, Class.WHITE_MAGE],
 });
 
@@ -378,7 +412,8 @@ equipments[33] = new BaseEquipment({
         }
     ],
     slot: EquipmentSlot.WEAPON,
-    effort: 20,
+    effort: 15,
+    rarity: Rarity.RARE,
     classes: [Class.WARRIOR],
 });
 

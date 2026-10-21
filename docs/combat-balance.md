@@ -82,8 +82,15 @@ still require acquiring items and spending an action.
 
 Common pieces spend 3–7 points, rare pieces 8–12, epic pieces 8–16, and legendary
 pieces 16–20. Premium equipment expands options without the former +100 ATK,
-+150 MP or +50 DEF jumps. Prices and rarity retain their existing progression.
-Light boots now provide DEF and SPDEF rather than two DEF entries.
++150 MP or +50 DEF jumps. Light boots now provide DEF and SPDEF rather than two DEF entries.
+
+Prices follow the budget: 100 gold per point up to 7 points, 120 for 8–10, 125 for
+12 and 150 for 16 or more, rounded to 100 (for example 2,400 for a 16-point
+weapon). Belts keep a premium (1,500 and 4,000) because an extra item slot is
+multiplied by every consumable it carries. Rarity is set per item in
+`shared/Equipments.ts` and no longer follows price, so cheaper premium pieces keep
+their colour and chest-drop pool. The shop still unlocks equipment by price
+(`EQUIPMENT_BATCH_GOLD`), so repriced items can unlock in an earlier batch.
 
 | ID | Equipment | Bonuses / effect | Budget |
 |---:|---|---|---:|
@@ -265,4 +272,11 @@ October 2026 run, 400 matches per pairing (about ±5% margin):
 - Balanced level 25/30/40/50 teams beat level 21 teams 51–56% / 51–54% / 58–64% /
   62–69%. For comparison, level 21 beats level 15 64–66% and level 15 beats level
   10 65%: the whole post-21 range adds about one early-game level gap.
+- With best-in-slot equipment on both sides (belts excluded), offense-heavy builds
+  gain an edge: all-in offense beats balanced 63% and tank 59%, but stays even with
+  the former capped split (47%). Favoured, not dominant.
+- Equipment outweighs levels and SP: fully geared teams beat ungeared ones at the
+  same level 94–98%, geared level 10 beats ungeared level 21 85%, and geared level
+  21 beats ungeared level 50 89%. Cheaper premium equipment (October 2026 prices)
+  shortens the time to that power rather than adding any.
 
