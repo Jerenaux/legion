@@ -205,8 +205,8 @@ try {
   await mage.ref.update({level: 20});
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 0);
   assert.deepEqual((await mage.ref.get()).data().skills, [2]);
-  // Level 20 opens five slots; with all five taken, Thunder X has no room.
-  await mage.ref.update({skills: [0, 1, 2, 3, 6]});
+  // Level 20 has four slots (the fourth opens at 15); with all four taken, Thunder X has no room.
+  await mage.ref.update({skills: [0, 1, 2, 3]});
   assert.equal((await equip(mage.id, InventoryType.SPELLS, 0)).status, 1);
   assert.deepEqual((await gearPlayerRef.get()).data().inventory.spells, [5]);
   // Balance migration and SP spending cross the authenticated API and real Firestore transactions.
@@ -261,8 +261,11 @@ try {
     assert.equal((await characterRef.get()).data().sp, 20);
     assert.equal((await characterRef.get()).data().sp_allocations.atk, 20);
     await request('spendSP', {...allocation, amount: 19}, 409);
-    await request('spendSP', spend, 409);
-    await request('spendSP', {...spend, stat: Stat.DEF, amount: 20}, 200);
+    // No per-stat cap: ATK keeps taking points past 20.
+    await request('spendSP', spend, 200);
+    assert.equal((await characterRef.get()).data().sp_allocations.atk, 21);
+    await request('spendSP', {...spend, stat: Stat.DEF, amount: 20}, 409, spAccount.token);
+    await request('spendSP', {...spend, stat: Stat.DEF, amount: 19}, 200);
     await request('spendSP', {...spend, stat: Stat.HP}, 409);
     assert.equal((await characterRef.get()).data().sp, 0);
     const resetRequest = {characterId: characterRef.id, requestId: crypto.randomUUID()};
@@ -285,6 +288,11 @@ try {
     const versioned = (await characterRef.get()).data();
     assert.equal(versioned.sp, 37);
     assert.equal(versioned.spVersion, afterRead.spVersion + 1);
+    // Past level 21 each level adds 1 SP, up to 69 at the level-50 cap.
+    await characterRef.update({level: 50});
+    const capped = (await http('rosterData', undefined, spAccount.token)).characters.find(character => character.id === characterRef.id);
+    assert.equal(capped.allTimeSP, 69);
+    assert.equal(capped.sp, 66);
     console.log('Legacy character migration, integer SP, caps, ownership, concurrent receipt retries and free redistribution pass');
   }
   // Mutation receipts cross the real HTTP/auth/Firestore boundary, including concurrent retries.

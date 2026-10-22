@@ -10,7 +10,8 @@ import {
     LockedFeatures,
     RewardType,
     ConsumableShopCategory,
-    SpellShopCategory
+    SpellShopCategory,
+    Rarity
 } from "./enums";
 
 export class EffectModifier {
@@ -100,6 +101,8 @@ export interface EquipmentData {
     classes?: Class[];
     beltSize?: number;
     effort: number;
+    /** Set per item; without it, rarity follows effort as for consumables and spells. */
+    rarity?: Rarity;
 }
 
 export interface WeaponStatusEffect {

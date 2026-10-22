@@ -1,5 +1,5 @@
 import { Class, Stat } from "./enums";
-import { XP_PER_LEVEL } from "./config";
+import { MAX_LEVEL, XP_PER_LEVEL } from "./config";
 
 type StatWeights = {
     [key in Stat]?: number;
@@ -38,6 +38,9 @@ export function increaseStat(stat: Stat, currentValue: number) {
     return currentValue + increment;
 }
 
+
+/** At the level cap no XP is kept: there is nothing left to reach. */
+export const isMaxLevel = (level: number) => level >= MAX_LEVEL;
 
 // Returns the XP needed to reach the next level, `level` being the current level
 export function getXPThreshold(level: number) {

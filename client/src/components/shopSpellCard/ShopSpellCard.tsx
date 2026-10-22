@@ -36,7 +36,7 @@ class ShopSpellCard extends Component<ShopCardProps> {
         description={data.description}
         sheet={spellsSpritesheet}
         frame={data.frame}
-        effort={data.effort}
+        rarity={data.rarity}
         owned={this.props.getItemAmount(data.id, InventoryType.SPELLS)}
         price={data.price}
         classes={data.classes}

@@ -6,7 +6,8 @@ Follow `AGENTS.md` for the full repository instructions. Read it before starting
 
 After **every** change to the game, rebuild the local macOS ARM64 app without waiting for Jerome to ask. A change is not finished until this rebuild succeeds; report any build failure.
 
-- Build from the branch being tested, in the main `~/Code/legion` checkout: `cd client && BUILD_TARGET=electron bun run build && bunx electron-builder --mac --arm64 --dir`.
+- Build from the branch being tested, in the main `~/Code/legion` checkout: `cd client && BUILD_TARGET=electron bun run build && bunx electron-builder --mac --arm64 --dir --config.directories.output=release-staging`, then replace `release/mac-arm64/Legion.app` with `release-staging/mac-arm64/Legion.app` and delete `release-staging`.
+- Package into the staging folder, not straight into `release/`: electron-builder deletes `release/mac-arm64` first, and that fails with `ENOTEMPTY` whenever Finder has the folder open and rewrites its `.DS_Store`.
 - The Electron build requires `API_URL`, `GAME_SERVER_URL` and `MATCHMAKER_URL`. Export them from the repository's GitHub Actions variables (`gh variable list`), as the desktop release workflow does.
 - The result must replace `client/release/mac-arm64/Legion.app`. Do this even when screenshots, smoke tests or a temporary fixture build already verified the change, because none of them update the app Jerome launches.
 - Rebuilding does not authorize launching the app or a store release. Never close an app instance Jerome has open (`pgrep -x Legion`); if the build cannot replace the bundle while it runs, say so.

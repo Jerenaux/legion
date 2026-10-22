@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
 
 // Real inventoryTransaction HTTP calls against the Functions and Firestore emulators: filling spell
-// slots, the slot gained at level 10, replacing a learned spell in place and removing one.
+// slots, the slot gained at level 15, replacing a learned spell in place and removing one.
 export async function checkSpellLoadout({db, api, account}) {
   const {Class, InventoryType, InventoryActionType} = await import('../../shared/enums');
   const characters = (await db.collection('players').doc(account.uid).get()).get('characters');
@@ -34,7 +34,9 @@ export async function checkSpellLoadout({db, api, account}) {
 
   await mage.ref.update({level: 10});
   assert.equal(await learn(6), 1, 'A known spell cannot take a second slot');
-  assert.equal(await learn(1), 0, 'Level 10 opens a fourth slot without any stored change');
+  assert.equal(await learn(1), 1, 'At level 10 Fire+ is allowed, but all three slots are taken');
+  await mage.ref.update({level: 15});
+  assert.equal(await learn(1), 0, 'Level 15 opens a fourth slot without any stored change');
   assert.deepEqual(await skills(), [0, 3, 6, 1]);
   assert.equal(await learn(4), 1, 'Every slot is taken');
 

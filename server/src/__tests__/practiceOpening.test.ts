@@ -73,7 +73,7 @@ test('AI casters fill the spell slots their level opens with their strongest spe
     const game = new PracticeGame('spell-slot-test', PlayMode.PRACTICE, League.BRONZE, {} as Server);
     game.generateHoles();
     const team = game.teams.get(2)!;
-    const mages = [1, 10, 20, 30].map(level => game.addAICharacter(team, new NewCharacter(Class.BLACK_MAGE, level, true).getCharacterData()));
+    const mages = [1, 15, 25, 40].map(level => game.addAICharacter(team, new NewCharacter(Class.BLACK_MAGE, level, true).getCharacterData()));
     const ids = mages.map(mage => mage.spells.map(spell => spell.id).sort((a, b) => a - b));
     expect(ids[0]).toEqual([0, 3, 6]);
     expect(ids[1]).toHaveLength(4);
@@ -82,12 +82,12 @@ test('AI casters fill the spell slots their level opens with their strongest spe
     expect(ids[2]).toEqual(expect.arrayContaining([2, 5, 8]));
     expect(ids[3]).toHaveLength(6);
 
-    const healer = game.addAICharacter(team, new NewCharacter(Class.WHITE_MAGE, 20, true).getCharacterData());
+    const healer = game.addAICharacter(team, new NewCharacter(Class.WHITE_MAGE, 25, true).getCharacterData());
     expect(healer.spells.map(spell => spell.id).sort((a, b) => a - b)).toEqual([9, 10, 11, 12]);
 
     // A zombie copied from a level-1 roster and levelled to its opponents gains their slots too.
     const copied = game.addAICharacter(team, new NewCharacter(Class.BLACK_MAGE, 1).getCharacterData());
-    copied.zombieLevelUp(20);
+    copied.zombieLevelUp(25);
     team.setZombieSpells();
     expect(copied.spells).toHaveLength(5);
 });

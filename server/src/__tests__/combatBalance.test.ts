@@ -316,16 +316,16 @@ test('Poison lasts three activations and repeated Revive restores 30 percent wit
   expect(player.mp).toBe(1000 - 12 * 2 - 35 * 3);
 });
 
-test.each([[0, 2], [1, 1]])('a match won over Socket.IO doubles XP only for an account with %i completed games; SP stops after forty', async (completedGames, multiplier) => {
+test.each([[0, 2], [1, 1]])('a match won over Socket.IO doubles XP only for an account with %i completed games; SP slow after 21 and levels stop at 50', async (completedGames, multiplier) => {
   player.team.teamData.completedGames = completedGames;
   player.team.teamData.playerUID = 'balance-player';
   game.combatStarted = true;
   // Persistence leaves the server; the match outcome itself uses production logic.
   for (const method of ['writeOutcomesToDb', 'updateGameInDB', 'saveReplayToDb'] as const) spyOn(game, method).mockResolvedValue(undefined);
   spyOn(Math, 'random').mockReturnValue(.5);
-  // One character sits at the 40-SP cap, one is a level away from it.
-  player.level = 21; player.xp = getXPThreshold(21) - 1;
-  ally.level = 20; ally.xp = getXPThreshold(20) - 1;
+  // One character still earns 2 SP per level; the other reaches the level cap, where 1 SP per level applies.
+  player.level = 20; player.xp = getXPThreshold(20) - 1;
+  ally.level = 49; ally.xp = getXPThreshold(49) - 1;
   opponent.setHP(1);
   const ended = new Promise<OutcomeData>(resolve => client.once('gameEnd', resolve));
   await action('attack', {target: 1, sameTeam: false});
@@ -336,9 +336,15 @@ test.each([[0, 2], [1, 1]])('a match won over Socket.IO doubles XP only for an a
   expect(outcome.xp).toBe(Math.round(opponent.level * XP_PER_LEVEL * (outcome.rewardFactor + .3) * RANKED_XP_COEF * multiplier));
   const points = Object.fromEntries(outcome.characters!.map(character => [character.num, character]));
   expect(points[player.num].level).toBeGreaterThan(0);
-  expect(points[player.num].points).toBe(0);
-  expect(points[ally.num].level).toBeGreaterThan(0);
-  expect(points[ally.num].points).toBe(2);
+  expect(points[player.num].points).toBe(player.level === 21 ? 2 : 2 + player.level - 21);
+  expect(points[ally.num].level).toBe(1);
+  expect(points[ally.num].points).toBe(1);
+  expect(ally.level).toBe(50);
+  expect(ally.xp).toBe(0);
+  // At the cap a later win adds nothing, so results never show unusable XP.
+  const earned = ally.earnedXP;
+  ally.gainXP(10_000);
+  expect([ally.level, ally.xp, ally.earnedXP]).toEqual([50, 0, earned]);
 });
 
 test('combat samples measure PvP damage progression separately from adaptive AI duels', async () => {

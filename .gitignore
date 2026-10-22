@@ -16,6 +16,7 @@ dashboardv2/.env
 !**/.env.example
 service-account.json
 release
+release-staging
 # Steam build files (generated dynamically)
 legion_steam_build_*.vdf
 

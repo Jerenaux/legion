@@ -7,7 +7,7 @@ import { route, getCurrentUrl } from 'preact-router';
 import { Class, ClassLabels } from '@legion/shared/enums';
 import { APICharacterData, CharacterMatchStats, CharacterUpdate, PlayerNetworkData, TeamMember } from '@legion/shared/interfaces';
 import CountUp from 'react-countup';
-import { getXPThreshold } from '@legion/shared/levelling';
+import { getXPThreshold, isMaxLevel } from '@legion/shared/levelling';
 import { getSpritePath } from '../utils';
 import './CharacterCard.style.css';
 
@@ -139,7 +139,7 @@ class CharacterCard extends Component<CountUpProps, CountUpState> {
                                 <div className="endgame_character_xp_bar">
                                     <div
                                         className={`endgame_character_xp_fill ${isResettingXP ? 'reset' : ''}`}
-                                        style={{ width: `${(this.state.xpCounter / maxXP) * 100}%` }}
+                                        style={{ width: isMaxLevel(member.level) ? '100%' : `${(this.state.xpCounter / maxXP) * 100}%` }}
                                     />
                                 </div>
                             </div>

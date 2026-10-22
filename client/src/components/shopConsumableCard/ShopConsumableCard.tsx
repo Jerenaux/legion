@@ -58,7 +58,7 @@ class ShopConsumableCard extends Component<ShopCardProps> {
         description={data.description}
         sheet={consumablesSpritesheet}
         frame={data.frame}
-        effort={data.effort}
+        rarity={data.rarity}
         owned={this.props.getItemAmount(data.id, InventoryType.CONSUMABLES)}
         price={data.price}
         isHighlighted={this.props.isHighlighted}
