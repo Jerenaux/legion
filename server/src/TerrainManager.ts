@@ -1,4 +1,4 @@
-import {FIRE_POTENCY, supportAmount} from '@legion/shared/combatBalance';
+import {FIRE_POTENCY, STEAM_TURNS, supportAmount} from '@legion/shared/combatBalance';
 import {Stat} from '@legion/shared/enums';
 import type {ServerPlayer} from './ServerPlayer';
 import { Game } from "./Game";
@@ -41,6 +41,10 @@ export class TerrainManager {
     previousTerrainMap = new Map<string, Terrain>();
     terrainMap = new Map<string, Terrain>();
     warmZones: {tiles: Set<string>, caster: ServerPlayer, turns: number}[] = [];
+    /** Steam left where heat melted ice: tile → turns left. */
+    steam = new Map<string, number>();
+    /** Steam that appeared during the current turn, which doesn't count toward its duration. */
+    private freshSteam = new Set<string>();
     incompatibility = new TerrainIncompatibility();
     updates: TerrainUpdate[];
 
@@ -74,7 +78,7 @@ export class TerrainManager {
             }
 
             this.determineTerrain(spell.terrain, tile.x, tile.y);
-            if (spell.terrain === Terrain.FIRE && before === Terrain.ICE) this.updates[this.updates.length - 1].iceRemoval = 'warmth';
+            if (spell.terrain === Terrain.FIRE && before === Terrain.ICE) this.markHeatMelt(tile.x, tile.y);
             if (this.getTerrain(tile.x, tile.y) === Terrain.FIRE) this.fireDamage.set(`${tile.x},${tile.y}`,
                 caster ? supportAmount(FIRE_POTENCY, caster.level, caster.getStat(Stat.SPATK)) : FIRE_POTENCY);
             this.postProcessing(tile.x, tile.y);
@@ -195,8 +199,47 @@ export class TerrainManager {
     private meltIce(x: number, y: number, iceRemoval?: TerrainUpdate['iceRemoval']) {
         if (this.getTerrain(x, y) !== Terrain.ICE) return;
         this.updateTerrainMap(Terrain.NONE, x, y);
-        if (iceRemoval) this.updates[this.updates.length - 1].iceRemoval = iceRemoval;
+        if (iceRemoval === 'warmth') this.markHeatMelt(x, y);
         this.postProcessing(x, y);
+    }
+
+    /** Heat melting an ice block labels the update and leaves steam on the tile. */
+    private markHeatMelt(x: number, y: number) {
+        this.updates[this.updates.length - 1].iceRemoval = 'warmth';
+        this.steam.set(`${x},${y}`, STEAM_TURNS);
+        this.freshSteam.add(`${x},${y}`);
+    }
+
+    hasSteam(x: number, y: number) {
+        return this.steam.has(`${x},${y}`);
+    }
+
+    getSteamTiles(): {x: number, y: number, turns: number}[] {
+        return [...this.steam].map(([key, turns]) => {
+            const [x, y] = key.split(',').map(Number);
+            return {x, y, turns};
+        });
+    }
+
+    /** Counts down steam once per character turn. Returns whether any steam changed. */
+    tickSteam() {
+        let changed = false;
+        for (const [key, turns] of this.steam) {
+            if (this.freshSteam.has(key)) continue;
+            changed = true;
+            if (turns <= 1) this.steam.delete(key);
+            else this.steam.set(key, turns - 1);
+        }
+        this.freshSteam.clear();
+        return changed;
+    }
+
+    /** Sets a tile on fire outside a spell (Tower blasts): its ice melts into steam first, and so does ice beside it. */
+    ignite(x: number, y: number) {
+        this.meltIce(x, y, 'warmth');
+        this.updateTerrainMap(Terrain.FIRE, x, y);
+        this.postProcessing(x, y);
+        for (const tile of getTilesInHexRadius(x, y, 1)) this.meltIce(tile.x, tile.y, 'warmth');
     }
 
     removeIce(x: number, y: number) {

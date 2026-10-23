@@ -372,6 +372,8 @@ export interface GameData {
     terrain: TerrainUpdate[],
     /** Tiles where ice can't form; absent from older servers. */
     warmth?: {x: number, y: number}[];
+    /** Steam tiles with their remaining turns; absent from older servers. */
+    steam?: {x: number, y: number, turns: number}[];
     holes: {x: number, y: number}[];
 }
 

@@ -1,4 +1,4 @@
-import {damageAmount, effectAmount, reviveAmount, MELEE_POTENCY, POISON_POTENCY, FIRE_POTENCY, supportAmount, STATUS_TURNS} from '@legion/shared/combatBalance';
+import {damageAmount, effectAmount, reviveAmount, MELEE_POTENCY, POISON_POTENCY, FIRE_POTENCY, supportAmount, STATUS_TURNS, STEAM_MISS_CHANCE} from '@legion/shared/combatBalance';
 import { ServerPlayer } from './ServerPlayer';
 import { AIAttackMode, Class, Stat, StatusEffect, Target, Terrain } from "@legion/shared/enums";
 import { FREEZE_AI, MOVEMENT_RANGE } from "@legion/shared/config";
@@ -161,7 +161,8 @@ export class AIServerPlayer extends ServerPlayer {
     // ---- Valuing effects ---------------------------------------------------------------------
 
     private damageValue(target: ServerPlayer, damage: number) {
-        if (!target.isAlive()) return 0;
+        // Ice shields a frozen character from everything but poison.
+        if (!target.isAlive() || target.isFrozen()) return 0;
         const dealt = Math.min(damage, target.hp);
         const kills = damage >= target.hp;
         if (target.team === this.team) return -(dealt * FRIENDLY_FIRE_WEIGHT + (kills ? 60 : 0));
@@ -367,8 +368,10 @@ export class AIServerPlayer extends ServerPlayer {
     private attackPlans(): Plan[] {
         const weapon = this.getWeapon();
         return this.game.listAdjacentEnemies(this).map(enemy => {
-            let score = this.damageValue(enemy, this.meleeDamage(enemy));
+            // Hitting a frozen enemy deals nothing and breaks them free.
+            let score = enemy.isFrozen() ? this.thawValue(enemy) : this.damageValue(enemy, this.meleeDamage(enemy));
             for (const status of weapon?.statusEffects ?? []) score += status.chance * this.statusValue(status.effect, enemy, status.duration);
+            if (this.game.terrainManager.hasSteam(enemy.x, enemy.y)) score *= 1 - STEAM_MISS_CHANCE;
             return { kind: 'attack' as const, score, execute: () => this.attack(enemy) };
         });
     }

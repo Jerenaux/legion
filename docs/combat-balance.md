@@ -34,7 +34,15 @@ single-target damage for coverage. Fire terrain has base potency 6 and damages a
 character at turn start and at most once per movement action. Terrain does not
 expire with time.
 
-Thunder skips one affected activation; ice skips three. Silence blocks spells
+Thunder skips one affected activation; ice skips three. Frozen characters take no
+damage: spells show Immune, and melee breaks the ice without hurting them. Only poison
+pierces the ice; it can still be applied (by spell or weapon) and still ticks. Debug
+knockouts bypass the rule. When fire, Warmth or a Tower blast melts an existing ice block
+(not when warmth keeps ice from forming), its tile fills with steam for 6 turns
+(`STEAM_TURNS`), counted at the end of every character's turn; the turn it appears in
+doesn't count. Melee attacks against a character standing in steam miss half the time
+(`STEAM_MISS_CHANCE`): a miss deals no damage, applies no weapon poison and leaves any ice
+intact. Steam is sent to clients as a `steam` event and in the game snapshot. Silence blocks spells
 for two affected activations. Poison has base potency 8 for three activations.
 Reapplication refreshes a capped duration rather than adding durations.
 Warm tiles never hold ice. A tile is warm while it is inside a Warmth zone or next to a

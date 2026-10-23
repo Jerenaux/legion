@@ -188,6 +188,11 @@ export class ServerPlayer {
         return Math.round(amount * (1 + weakness));
     }
 
+    /** Shown when a hit lands on a frozen character and does nothing. */
+    showDamageImmunity() {
+        this.team!.game.broadcast('damageimmune', {team: this.team!.id, num: this.num});
+    }
+
     resistFreeze() {
         this.team!.game.broadcast('statusresisted', {team: this.team!.id, num: this.num, status: StatusEffect.FREEZE});
     }
@@ -229,9 +234,11 @@ export class ServerPlayer {
         return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
     }
 
-    takeDamage(damage: number) {
+    /** Frozen characters take no damage; only poison (and forced knockouts) pierces the ice. */
+    takeDamage(damage: number, {piercesIce = false} = {}) {
         if(this.isDead()) return;
         this.justDied = false;
+        if (this.isFrozen() && !piercesIce) return;
 
         const hpBefore = this.hp;
         this.updateHP(damage);
@@ -692,7 +699,8 @@ export class ServerPlayer {
         for (const status of DoTStatuses) {
             if (this.statuses[status] > 0) {
                 const damage = this.statusDamage[status] ?? statusDot[status];
-                this.takeDamage(status === StatusEffect.BURN ? this.fireDamage(damage) : damage);
+                if (status === StatusEffect.BURN) this.takeDamage(this.fireDamage(damage));
+                else this.takeDamage(damage, {piercesIce: true});
             }
         }
 

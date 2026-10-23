@@ -38,6 +38,10 @@ export class Spell extends BaseSpell {
     dealDamage(caster: ServerPlayer, targets: ServerPlayer[], effect: Effect) {
         targets.forEach(target => {
             if (!target.isAlive()) return;
+            if (target.isFrozen()) {
+                target.showDamageImmunity();
+                return;
+            }
             const damage = effectAmount(effect, caster, target);
             target.takeDamage(this.terrain === Terrain.FIRE ? target.fireDamage(damage) : damage);
         });

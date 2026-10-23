@@ -3,7 +3,7 @@ import {AIGame} from './AIGame';
 import {ServerPlayer} from './ServerPlayer';
 import {AIServerPlayer} from './AIServerPlayer';
 import {apiFetch} from './API';
-import {Class, League, PlayMode, SpeedClass, Terrain} from '@legion/shared/enums';
+import {Class, League, PlayMode, SpeedClass} from '@legion/shared/enums';
 import {TOWER_ENCOUNTERS, TowerRun, towerCharacter, TowerBattleResult} from '@legion/shared/tower';
 import {getTilesInHexRadius, isSkip} from '@legion/shared/utils';
 import {remoteConfig} from '@legion/shared/config';
@@ -153,13 +153,13 @@ class TowerWarden extends AIServerPlayer {
   takeAction() {
     if (!this.canAct()) return 0;
     const game = this.team.game as TowerGame;
+    game.terrainManager.updates = [];
     for (const tile of this.blast) {
       const target = game.getPlayerAt(tile.x, tile.y);
       if (target?.team.id === 1) target.takeDamage(35 + game.run.tier * 5);
-      game.terrainManager.updateTerrainMap(Terrain.FIRE, tile.x, tile.y);
-      game.terrainManager.postProcessing(tile.x, tile.y);
+      game.terrainManager.ignite(tile.x, tile.y);
     }
-    game.broadcastTerrain(this.blast.map(tile => game.terrainManager.getTerrainUpdate(tile.x, tile.y)));
+    game.broadcastTerrain(game.terrainManager.updates);
     this.setHasActed(true);
     game.turnSystem.processAction(this, SpeedClass.SLOW);
     this.markBlast();
