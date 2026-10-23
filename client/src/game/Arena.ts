@@ -1256,8 +1256,8 @@ export class Arena extends Phaser.Scene
         const panDuration = 800;
 
         // Move camera to the caster's location and zoom in
-        this.cameras.main.pan(pixelX, pixelY, panDuration, 'Power2');
-        this.cameras.main.zoomTo(targetZoom, panDuration, 'Power2');
+        this.cameras.main.pan(pixelX, pixelY, panDuration, 'Power2', true);
+        this.cameras.main.zoomTo(targetZoom, panDuration, 'Power2', true);
     }
 
     // Add a helper method to reset the camera
@@ -1273,8 +1273,8 @@ export class Arena extends Phaser.Scene
         const targetZoom = zoom !== null ? zoom : 1;
 
         // Smoothly transition back
-        this.cameras.main.pan(targetX, targetY, 800, 'Power2');
-        this.cameras.main.zoomTo(targetZoom, 800, 'Power2');
+        this.cameras.main.pan(targetX, targetY, 800, 'Power2', true);
+        this.cameras.main.zoomTo(targetZoom, 800, 'Power2', true);
     }
 
     processLocalAnimation({fromX, fromY, toX, toY, id, isKill}) {
@@ -2348,8 +2348,8 @@ export class Arena extends Phaser.Scene
         const element = ['fire', 'ice', 'thunder'].find(key => spell.vfx?.includes(key) || spell.charge?.includes(key)) ?? 'fire';
         events.emit('spellCinematic', {caster: caster.name, spell: spell.name, element, own: caster.isPlayer});
         if (!FREEZE_CAMERA) {
-            camera.pan(caster.x, caster.y - 20, 450, 'Sine.easeOut');
-            camera.zoomTo(1.3, 450, 'Sine.easeOut');
+            camera.pan(caster.x, caster.y - 20, 450, 'Sine.easeOut', true);
+            camera.zoomTo(1.3, 450, 'Sine.easeOut', true);
         }
         rumble(0.15, 0.35, 300);
     }
@@ -2368,8 +2368,8 @@ export class Arena extends Phaser.Scene
         }
         if (impact) rumble(0.8, 0.6, 320);
         if (!FREEZE_CAMERA) {
-            this.cameras.main.pan(this.cameraHome.x, this.cameraHome.y, 500, 'Sine.easeInOut');
-            this.cameras.main.zoomTo(1, 500, 'Sine.easeInOut');
+            this.cameras.main.pan(this.cameraHome.x, this.cameraHome.y, 500, 'Sine.easeInOut', true);
+            this.cameras.main.zoomTo(1, 500, 'Sine.easeInOut', true);
         }
     }
 
@@ -2492,8 +2492,8 @@ export class Arena extends Phaser.Scene
 
         const cameraSpeed = 200;
         if (!FREEZE_CAMERA) {
-            this.cameras.main.pan(x, y, cameraSpeed, 'Power2');
-            this.cameras.main.zoomTo(targetZoom, cameraSpeed, 'Power2');
+            this.cameras.main.pan(x, y, cameraSpeed, 'Power2', true);
+            this.cameras.main.zoomTo(targetZoom, cameraSpeed, 'Power2', true);
         }
 
         // Any click or key skips the rest of the kill cam.
@@ -2508,10 +2508,11 @@ export class Arena extends Phaser.Scene
             this.input.off('pointerdown', skip);
             window.removeEventListener('keydown', skip);
             if (this.disposed) return;
-            // Return the camera to its original position and zoom level
+            // Force the return: an early skip can arrive while zoom-in is still running.
+            // Phaser otherwise ignores it and finishes zooming in after the kill cam ends.
             if (!FREEZE_CAMERA) {
-                this.cameras.main.pan(this.cameraHome.x, this.cameraHome.y, cameraSpeed, 'Power2');
-                this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2');
+                this.cameras.main.pan(this.cameraHome.x, this.cameraHome.y, cameraSpeed, 'Power2', true);
+                this.cameras.main.zoomTo(originalZoom, cameraSpeed, 'Power2', true);
             }
             this.localAnimationSprite.anims.timeScale = originalTimeScale;
             this.sound.setRate(originalSoundRate);
