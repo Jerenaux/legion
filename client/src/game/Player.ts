@@ -29,7 +29,7 @@ export const NUMBER_COLORS = {
 const STATUS_COLORS: Partial<Record<StatusEffect, number>> = {
     [StatusEffect.POISON]: 0xa66bff, [StatusEffect.BURN]: 0xff7a2e, [StatusEffect.FREEZE]: 0x8fd8ff,
     [StatusEffect.PARALYZE]: 0xffe066, [StatusEffect.SLEEP]: 0x9fb4ff, [StatusEffect.MUTE]: 0xd2c8e0,
-    [StatusEffect.HASTE]: 0x7dffb0,
+    [StatusEffect.HASTE]: 0x7dffb0, [StatusEffect.WARMTH]: 0xffc24a,
 };
 
 enum GlowColors {
@@ -197,6 +197,7 @@ export class Player extends Phaser.GameObjects.Container {
             [StatusEffect.SLEEP]: 0,
             [StatusEffect.MUTE]: 0,
             [StatusEffect.HASTE]: 0,
+            [StatusEffect.WARMTH]: 0,
         };
 
         const yOffsets = {

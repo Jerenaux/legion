@@ -118,6 +118,10 @@ export class AIServerPlayer extends ServerPlayer {
         return this.team!.getMembers();
     }
 
+    private enemiesCastIce() {
+        return this.enemies().some(enemy => enemy.spells.some(spell => spell.terrain === Terrain.ICE));
+    }
+
     /** Keep one focus target until it falls; the personality decides who that is. */
     private refreshFocus() {
         if (this.target?.isAlive()) return;
@@ -182,6 +186,10 @@ export class AIServerPlayer extends ServerPlayer {
     /** Worth of `turns` of a status on `target`; positive when it helps this AI's side. */
     private statusValue(status: StatusEffect, target: ServerPlayer, turns: number, scaled = false) {
         if (!target.isAlive()) return 0;
+        if (status === StatusEffect.FREEZE) {
+            if (target.isFreezeImmune()) return 0;
+            turns = Math.min(turns, target.freezeTurns());
+        }
         const effective = turns === -1 ? STATUS_HORIZON : Math.min(turns, STATUS_HORIZON);
         // Refreshing a duration has less value than disabling a new target.
         const stacked = target.hasStatusEffect(status) ? 0.35 : 1;
@@ -204,9 +212,20 @@ export class AIServerPlayer extends ServerPlayer {
             case StatusEffect.HASTE:
                 value = this.enemies().length ? 15 : 0;
                 return target.team === this.team ? value : -value;
+            case StatusEffect.WARMTH:
+                // Only worth guarding against ice the other side can actually cast.
+                value = !target.isFreezeImmune() && this.enemiesCastIce() ? effective * 3 : 0;
+                return target.team === this.team ? value : -value;
         }
         value *= stacked;
         return target.team === this.team ? -value : value;
+    }
+
+    /** Thawing frees whoever is held, friend or foe. */
+    private thawValue(target: ServerPlayer) {
+        if (!target.isAlive() || !target.isFrozen()) return 0;
+        const value = Math.min(target.statuses[StatusEffect.FREEZE], STATUS_HORIZON) * this.threat(target) * 0.8;
+        return target.team === this.team ? value : -value;
     }
 
     /** Ice traps whoever stands on the tile; flames hurt whoever stays. */
@@ -241,6 +260,7 @@ export class AIServerPlayer extends ServerPlayer {
                 else if (effect.value < 0) value += this.damageValue(target, effectAmount(effect, this, target));
                 else value += this.healValue(target, effectAmount(effect, this, target));
             }
+            if (spell.thaws) value += this.thawValue(target);
             if (spell.status) value += spell.status.chance * this.statusValue(spell.status.effect, target, spell.status.duration, true);
         }
         if (spell.terrain !== Terrain.NONE) value += this.terrainValue(spell.terrain, targets);
@@ -258,7 +278,7 @@ export class AIServerPlayer extends ServerPlayer {
                     plans.push({ kind: 'spell', score, execute: () => this.game.processMagic({ x: target.x, y: target.y, index, targetTeam: target.team.id, target: target.num }) });
                 }
             } else if (spell.target === Target.AOE) {
-                for (const tile of this.aoeCenters(spell.radius - 1)) {
+                for (const tile of this.aoeCenters(spell.radius - 1, spell.thaws ? this.allies() : this.enemies())) {
                     const targets = this.game.getPlayersInArea(tile.x, tile.y, spell.radius - 1);
                     if (!targets.length) continue;
                     const score = this.spellValue(spell, targets);
@@ -269,12 +289,12 @@ export class AIServerPlayer extends ServerPlayer {
         return plans;
     }
 
-    /** Tiles in casting range that would catch at least one enemy in an area of `radius`. */
-    private aoeCenters(radius: number) {
+    /** Tiles in casting range that would catch at least one of `around` (enemies by default) in an area of `radius`. */
+    private aoeCenters(radius: number, around = this.enemies()) {
         const seen = new Set<string>();
         const tiles: { x: number; y: number }[] = [];
-        for (const enemy of this.enemies()) {
-            for (const tile of getTilesInHexRadius(enemy.x, enemy.y, radius)) {
+        for (const character of around) {
+            for (const tile of getTilesInHexRadius(character.x, character.y, radius)) {
                 const key = `${tile.x},${tile.y}`;
                 if (seen.has(key) || isSkip(tile.x, tile.y) || !isInSpellRange(this.x, this.y, tile.x, tile.y)) continue;
                 seen.add(key);

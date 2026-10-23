@@ -18,6 +18,7 @@ import sleepIcon from '@assets/status_icons/sleep_icon.png';
 import poisonIcon from '@assets/status_icons/poison_icon.png';
 import burnIcon from '@assets/status_icons/burn_icon.png';
 import hasteIcon from '@assets/status_icons/haste_icon.png';
+import warmthIcon from '@assets/status_icons/warmth_icon.png';
 
 import equipmentSpritesheet from '@assets/equipment.png';
 import consumablesSpritesheet from '@assets/consumables.png';
@@ -213,6 +214,7 @@ export const statusIcons = {
   'Poison': poisonIcon,
   'Burn': burnIcon,
   'Haste': hasteIcon,
+  'Warmth': warmthIcon,
 };
 
 type StatusRoll = {effect: string; chance: number; duration: number};

@@ -201,6 +201,7 @@ export enum StatusEffect {
     PARALYZE = "Paralyze",
     MUTE = "Mute",
     HASTE = "Haste",
+    WARMTH = "Warmth",
 }
 
 export enum League {

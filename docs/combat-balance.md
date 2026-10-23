@@ -36,7 +36,12 @@ expire with time.
 
 Thunder skips one affected activation; ice skips three. Silence blocks spells
 for two affected activations. Poison has base potency 8 for three activations.
-Reapplication refreshes a capped duration rather than adding durations. Remedy
+Reapplication refreshes a capped duration rather than adding durations.
+Warmth (White Mage, level 5, 18 MP, 7 tiles, 1,000 gold) melts the ice in its area,
+freeing anyone held there, then makes everyone in the area immune to freezing for three
+activations. Like elemental spells it affects both sides, so a careless cast can free a
+frozen enemy. A freeze-immune character takes the Ice spell's damage, but ice does not
+form on their tile and they show Resisted. Remedy
 removes harmful statuses except ice; Remedy, Antidote and Bocca can target allies.
 Revive restores 30% maximum HP for 35 MP, with no per-match use limit. Clover, the
 consumable revive, also restores 30% maximum HP. A revive's effect value is that percentage.
@@ -128,6 +133,14 @@ their colour and chest-drop pool. The shop still unlocks equipment by price
 | 31 | Sturdy Iron Sword | +5 ATK; +1 DEF | 6 |
 | 32 | Serpent's Fang | +2 ATK; +4 MP; 80% poison, 3 activations | 16 |
 | 33 | Viridian Striker | +8 ATK; 30% poison, 3 activations | 12 |
+| 34 | Salamander Ring | Cannot be frozen; takes 50% more fire damage | 16 |
+| 35 | Fur Boots | +2 DEF; +2 SPDEF; freezes last 1 activation less | 8 |
+
+Ice counters are priced like stats. Freeze immunity is worth 20 points, because ice can
+skip three activations, minus 4 for the Salamander Ring's fire weakness (+50% from fire
+spells, flame tiles and burns). Fur Boots trade the SPEED of Light boots for a
+one-activation shorter freeze, valued at 4 points. The Salamander Ring is epic and costs
+2,400 gold; Fur Boots are rare and cost 1,000, so they unlock in the second equipment batch.
 
 ## Balance review
 

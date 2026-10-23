@@ -56,6 +56,11 @@ export class TerrainManager {
 
         for (const tile of tilesInRadius) {
             if (isSkip(tile.x, tile.y)) continue;
+            const occupant = this.game.getPlayerAt(tile.x, tile.y);
+            if (spell.terrain === Terrain.ICE && occupant?.isAlive() && occupant.isFreezeImmune()) {
+                occupant.resistFreeze();
+                continue;
+            }
 
             this.determineTerrain(spell.terrain, tile.x, tile.y);
             if (this.getTerrain(tile.x, tile.y) === Terrain.FIRE) this.fireDamage.set(`${tile.x},${tile.y}`,
@@ -120,6 +125,16 @@ export class TerrainManager {
             y,
             terrain: this.getTerrain(x, y),
         };
+    }
+
+    /** Melts every ice tile within `radius` of a cell, freeing anyone held there. */
+    thaw(x: number, y: number, radius: number) {
+        const updates: TerrainUpdate[] = [];
+        for (const tile of getTilesInHexRadius(x, y, radius)) {
+            if (this.getTerrain(tile.x, tile.y) === Terrain.ICE) updates.push(...this.removeIce(tile.x, tile.y));
+        }
+        this.updates = updates;
+        return updates;
     }
 
     removeIce(x: number, y: number) {

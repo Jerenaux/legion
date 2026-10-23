@@ -238,6 +238,70 @@ test('Socket.IO fire melts ice without marking a melee break', async () => {
   expect(opponent.isFrozen()).toBe(false);
 });
 
+function nextResisted() {
+  return new Promise<{team: number, num: number, status: StatusEffect}>(resolve => client.once('statusresisted', resolve));
+}
+
+test('Socket.IO Warmth thaws everyone in its area, then keeps ice from forming until it wears off', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(6);
+  expect(opponent.isFrozen()).toBe(true);
+  const thaw = nextTerrainClear();
+  await cast(13);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+  expect(opponent.isFrozen()).toBe(false);
+  for (const unit of [player, opponent, ally]) expect(unit.statuses[StatusEffect.WARMTH]).toBe(3);
+
+  const resisted = nextResisted();
+  const hp = opponent.hp;
+  await cast(6);
+  expect(await resisted).toEqual({team: opponent.team.id, num: opponent.num, status: StatusEffect.FREEZE});
+  expect(opponent.hp).toBeLessThan(hp);
+  expect(opponent.isFrozen()).toBe(false);
+  expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
+
+  for (let i = 0; i < 3; i++) {
+    opponent.startTurn();
+    opponent.endTurn();
+  }
+  expect(opponent.statuses[StatusEffect.WARMTH]).toBe(0);
+  await cast(6);
+  expect(opponent.statuses[StatusEffect.FREEZE]).toBe(3);
+});
+
+test('Socket.IO Salamander Ring blocks ice but takes 50% more fire damage', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  opponent.equipment = {left_ring: 34} as typeof opponent.equipment;
+  const resisted = nextResisted();
+  await cast(6);
+  await resisted;
+  expect(opponent.isFrozen()).toBe(false);
+  expect(game.hasObstacle(opponent.x, opponent.y)).toBe(false);
+
+  const fire = getSpellById(0)!;
+  const hp = opponent.hp;
+  await cast(0);
+  expect(hp - opponent.hp).toBe(Math.round(effectAmount(fire.effects[0], player, opponent) * 1.5));
+});
+
+test('Socket.IO Fur Boots shorten a freeze by one activation, then the ice melts', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  opponent.equipment = {boots: 35} as typeof opponent.equipment;
+  await cast(6);
+  const thaw = nextTerrainClear();
+  for (const remaining of [2, 1]) {
+    expect(opponent.statuses[StatusEffect.FREEZE]).toBe(remaining);
+    opponent.hasActed = false;
+    opponent.startTurn();
+    opponent.endTurn();
+  }
+  expect(opponent.canAct()).toBe(true);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+});
+
 test('Silence blocks two affected activations, refreshes within its cap, and permits a later spell', async () => {
   player.setMP(1000);
   ally.statuses[StatusEffect.MUTE] = 100;

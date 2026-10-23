@@ -9,6 +9,7 @@ export const POISON_POTENCY = 8;
 export const STATUS_TURNS: Record<StatusEffect, number> = {
     [StatusEffect.FREEZE]: 3, [StatusEffect.PARALYZE]: 1, [StatusEffect.POISON]: 3,
     [StatusEffect.MUTE]: 2, [StatusEffect.BURN]: 3, [StatusEffect.SLEEP]: 1, [StatusEffect.HASTE]: 5,
+    [StatusEffect.WARMTH]: 3,
 };
 
 export function levelGrowth(level: number) {

@@ -1080,6 +1080,11 @@ export abstract class Game
             }
         }
 
+        if (spell.thaws) {
+            const terrainUpdates = this.terrainManager.thaw(x, y, spell.radius - 1);
+            if (terrainUpdates.length) this.broadcastTerrain(terrainUpdates);
+        }
+
         if (spell.status) {
             targets.forEach(target => {
                 const success = target.addStatusEffect(spell.status.effect, spell.status.duration, spell.status.chance, player);
@@ -1179,7 +1184,7 @@ export abstract class Game
         if (!this.beginAction(player)) return;
         const mp = player.consumeMP(spell.cost);
 
-        if (!spell.isHealingSpell()) player.team.incrementOffensiveActions();
+        if (!spell.isHealingSpell() && !spell.thaws) player.team.incrementOffensiveActions();
         player.team.incrementSpellCasts();
 
         this.broadcast('cast', {

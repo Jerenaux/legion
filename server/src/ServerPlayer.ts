@@ -86,6 +86,7 @@ export class ServerPlayer {
             [StatusEffect.SLEEP]: 0,
             [StatusEffect.MUTE]: 0,
             [StatusEffect.HASTE]: 0,
+            [StatusEffect.WARMTH]: 0,
         };
 
         this.stats = {
@@ -165,6 +166,30 @@ export class ServerPlayer {
 
     isMuted() {
         return this.statuses[StatusEffect.MUTE] !== 0;
+    }
+
+    private equippedPieces() {
+        return Object.values(this.equipment ?? {}).map(id => getEquipmentById(id)).filter(Boolean);
+    }
+
+    /** Warmth or a Salamander Ring keeps ice from forming around the character. */
+    isFreezeImmune() {
+        return this.statuses[StatusEffect.WARMTH] !== 0 || this.equippedPieces().some(piece => piece.freezeImmune);
+    }
+
+    /** Activations a freeze holds this character, after Fur Boots and the like. */
+    freezeTurns() {
+        const reduction = this.equippedPieces().reduce((sum, piece) => sum + (piece.freezeReduction ?? 0), 0);
+        return Math.max(1, STATUS_TURNS[StatusEffect.FREEZE] - reduction);
+    }
+
+    fireDamage(amount: number) {
+        const weakness = this.equippedPieces().reduce((sum, piece) => sum + (piece.fireWeakness ?? 0), 0);
+        return Math.round(amount * (1 + weakness));
+    }
+
+    resistFreeze() {
+        this.team!.game.broadcast('statusresisted', {team: this.team!.id, num: this.num, status: StatusEffect.FREEZE});
     }
 
     canAct() {
@@ -446,7 +471,7 @@ export class ServerPlayer {
         switch (terrain) {
             case Terrain.FIRE: {
                 const damage = this.team?.isGame0() ? Math.round(potency / 2) : potency;
-                this.takeDamage(damage);
+                this.takeDamage(this.fireDamage(damage));
                 break;
             }
             default:
@@ -463,7 +488,7 @@ export class ServerPlayer {
         }
 
         if (terrain === Terrain.ICE) {
-            this.addStatusEffect(StatusEffect.FREEZE, STATUS_TURNS[StatusEffect.FREEZE], 1);
+            this.addStatusEffect(StatusEffect.FREEZE, this.freezeTurns(), 1);
         }
     }
 
@@ -480,6 +505,10 @@ export class ServerPlayer {
 
     addStatusEffect(status: StatusEffect, duration: number, chance: number = 1, caster?: ServerPlayer) {
         if (this.isDead()) return false;
+        if (status === StatusEffect.FREEZE && this.isFreezeImmune()) {
+            this.resistFreeze();
+            return false;
+        }
         const r = chance >= 1 ? 0 : Math.random();
         console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
         if (r > chance) {
@@ -489,7 +518,7 @@ export class ServerPlayer {
         }
 
         // Refresh to the effect's limit, never add unlimited disabled activations.
-        const cap = STATUS_TURNS[status] ?? 3;
+        const cap = status === StatusEffect.FREEZE ? this.freezeTurns() : STATUS_TURNS[status] ?? 3;
         this.statuses[status] = Math.min(cap, Math.max(this.statuses[status], Math.min(cap, duration < 0 ? cap : duration)));
         if (DoTStatuses.includes(status)) {
             const damage = caster ? supportAmount(statusDot[status], caster.level, caster.getStat(Stat.SPATK)) : statusDot[status];
@@ -659,7 +688,8 @@ export class ServerPlayer {
 
         for (const status of DoTStatuses) {
             if (this.statuses[status] > 0) {
-                this.takeDamage(this.statusDamage[status] ?? statusDot[status]);
+                const damage = this.statusDamage[status] ?? statusDot[status];
+                this.takeDamage(status === StatusEffect.BURN ? this.fireDamage(damage) : damage);
             }
         }
 

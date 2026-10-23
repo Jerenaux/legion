@@ -1,7 +1,7 @@
 import {effectAmount} from '@legion/shared/combatBalance';
 import { ServerPlayer } from "./ServerPlayer";
 import { Game } from "./Game";
-import { Stat, Target, } from "@legion/shared/enums";
+import { Stat, Target, Terrain } from "@legion/shared/enums";
 import { Effect } from "@legion/shared/interfaces";
 
 import { BaseSpell } from "@legion/shared/BaseSpell";
@@ -39,7 +39,7 @@ export class Spell extends BaseSpell {
         targets.forEach(target => {
             if (!target.isAlive()) return;
             const damage = effectAmount(effect, caster, target);
-            target.takeDamage(damage);
+            target.takeDamage(this.terrain === Terrain.FIRE ? target.fireDamage(damage) : damage);
         });
     }
 

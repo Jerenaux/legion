@@ -1205,6 +1205,7 @@ export class Arena extends Phaser.Scene
     displayAttackImpact(gridX, gridY) {
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(gridX, gridY);
         this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
+            .clearTint()
             .setOrigin(0.5, 0.7)
             .setVisible(true)
             .setDepth(this.yToZ(gridY) + DEPTH_OFFSET)
@@ -1319,6 +1320,8 @@ export class Arena extends Phaser.Scene
                 .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
                 .setScale(scale * (config ? VFX_DISPLAY_SCALE : 1), yScale * (config ? VFX_DISPLAY_SCALE : 1));
 
+            if (spell.vfxTint) this.localAnimationSprite.setTint(spell.vfxTint);
+            else this.localAnimationSprite.clearTint();
             console.log(`[Arena:processLocalAnimation] spell.vfx: ${spell.vfx}`);
             this.localAnimationSprite.play(spell.vfx);
 

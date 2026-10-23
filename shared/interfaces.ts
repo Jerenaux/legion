@@ -67,6 +67,10 @@ export interface SpellData {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: SpellShopCategory;
+    /** Melts the ice in the spell's area before its status applies. */
+    thaws?: boolean;
+    /** Tints the impact animation, so a shared VFX sheet can read as another element. */
+    vfxTint?: number;
 }
 
 export interface ConsumableData {
@@ -103,6 +107,12 @@ export interface EquipmentData {
     effort: number;
     /** Set per item; without it, rarity follows effort as for consumables and spells. */
     rarity?: Rarity;
+    /** The wearer cannot be frozen; ice does not form on their tile. */
+    freezeImmune?: boolean;
+    /** Activations removed from each freeze on the wearer. */
+    freezeReduction?: number;
+    /** Extra share of fire damage taken from spells, flames and burns (0.5 = +50%). */
+    fireWeakness?: number;
 }
 
 export interface WeaponStatusEffect {

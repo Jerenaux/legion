@@ -327,6 +327,31 @@ spells.push(new BaseSpell({
     minLevel: 20, // For AI
 }));
 
+spells.push(new BaseSpell({
+    id: 13,
+    cost: 18,
+    name: "Warmth",
+    description: "Melt the ice on 7 tiles. Characters there can't be frozen for 3 turns.",
+    frame: 34,
+    vfx: "heal_2",
+    vfxTint: 0xffa040,
+    sfx: "healing",
+
+    radius: 2,
+    target: Target.AOE,
+    effects: [],
+    status: {effect: StatusEffect.WARMTH, chance: 1, duration: 3},
+    thaws: true,
+    effort: 10,
+
+    score: 10,
+    classes: [Class.WHITE_MAGE],
+    minLevel: 5,
+    speedClass: SpeedClass.NORMAL,
+    unlock: LockedFeatures.SPELLS_BATCH_2,
+    category: SpellShopCategory.STATUS,
+}));
+
 export function getStarterSpells(characterClass: Class):number[] {
     // Return the id's of lvl1 spells for the provided class
     return spells.filter(spell => spell.minLevel === 1 && spell.classes.includes(characterClass)).map(spell => spell.id);

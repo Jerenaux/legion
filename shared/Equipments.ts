@@ -417,6 +417,31 @@ equipments[33] = new BaseEquipment({
     classes: [Class.WARRIOR],
 });
 
+equipments[34] = new BaseEquipment({
+    id: 34,
+    name: "Salamander Ring",
+    description: "Immune to ice. Fire deals 50% more damage to the wearer.",
+    frame: 44,
+    effects: [],
+    slot: EquipmentSlot.LEFT_RING,
+    effort: 24,
+    rarity: Rarity.EPIC,
+    freezeImmune: true,
+    fireWeakness: 0.5,
+});
+
+equipments[35] = new BaseEquipment({
+    id: 35,
+    name: "Fur Boots",
+    description: "Ice holds the wearer for 1 turn less.",
+    frame: 134,
+    effects: [{stat: Stat.DEF, value: 2}, {stat: Stat.SPDEF, value: 2}],
+    slot: EquipmentSlot.BOOTS,
+    effort: 10,
+    rarity: Rarity.RARE,
+    freezeReduction: 1,
+});
+
 export function getEquipmentById(id:number): BaseEquipment | undefined {
     return equipments.find(e => e.id === id);
 }
