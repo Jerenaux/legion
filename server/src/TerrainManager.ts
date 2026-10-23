@@ -59,14 +59,22 @@ export class TerrainManager {
 
         for (const tile of tilesInRadius) {
             const occupant = this.game.getPlayerAt(tile.x, tile.y);
+            const before = this.getTerrain(tile.x, tile.y);
             // Ice still puts out flames, but can't form on other warm tiles or around immune characters.
-            if (spell.terrain === Terrain.ICE && this.getTerrain(tile.x, tile.y) !== Terrain.FIRE
-                && (warm.has(`${tile.x},${tile.y}`) || occupant?.isFreezeImmune())) {
-                if (occupant?.isAlive()) occupant.resistFreeze();
-                continue;
+            if (spell.terrain === Terrain.ICE && before !== Terrain.FIRE) {
+                if (warm.has(`${tile.x},${tile.y}`)) {
+                    // Clients show the ice forming and melting at once.
+                    this.updates.push({...this.getTerrainUpdate(tile.x, tile.y), iceRemoval: 'blocked'});
+                    continue;
+                }
+                if (occupant?.isFreezeImmune()) {
+                    if (occupant.isAlive()) occupant.resistFreeze();
+                    continue;
+                }
             }
 
             this.determineTerrain(spell.terrain, tile.x, tile.y);
+            if (spell.terrain === Terrain.FIRE && before === Terrain.ICE) this.updates[this.updates.length - 1].iceRemoval = 'warmth';
             if (this.getTerrain(tile.x, tile.y) === Terrain.FIRE) this.fireDamage.set(`${tile.x},${tile.y}`,
                 caster ? supportAmount(FIRE_POTENCY, caster.level, caster.getStat(Stat.SPATK)) : FIRE_POTENCY);
             this.postProcessing(tile.x, tile.y);
@@ -74,7 +82,7 @@ export class TerrainManager {
         // New flames warm their surroundings, which melts any ice there.
         if (spell.terrain === Terrain.FIRE) {
             for (const tile of getTilesInHexRadius(x, y, spell.radius)) {
-                if (this.isWarm(tile.x, tile.y)) this.meltIce(tile.x, tile.y);
+                if (this.isWarm(tile.x, tile.y)) this.meltIce(tile.x, tile.y, 'warmth');
             }
         }
 
@@ -143,7 +151,7 @@ export class TerrainManager {
         const tiles = getTilesInHexRadius(x, y, radius).filter(tile => !isSkip(tile.x, tile.y));
         // The casting turn ends first, so it doesn't count.
         this.warmZones.push({tiles: new Set(tiles.map(tile => `${tile.x},${tile.y}`)), caster, turns: turns + 1});
-        for (const tile of tiles) this.meltIce(tile.x, tile.y);
+        for (const tile of tiles) this.meltIce(tile.x, tile.y, 'warmth');
         return this.updates;
     }
 
@@ -184,9 +192,10 @@ export class TerrainManager {
             .map(([x, y]) => ({x, y}));
     }
 
-    private meltIce(x: number, y: number) {
+    private meltIce(x: number, y: number, iceRemoval?: TerrainUpdate['iceRemoval']) {
         if (this.getTerrain(x, y) !== Terrain.ICE) return;
         this.updateTerrainMap(Terrain.NONE, x, y);
+        if (iceRemoval) this.updates[this.updates.length - 1].iceRemoval = iceRemoval;
         this.postProcessing(x, y);
     }
 

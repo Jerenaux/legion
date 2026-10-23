@@ -1206,6 +1206,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "氷を無効化する。装備者が受ける炎のダメージは50%増える。",
   "Ice holds the wearer for 1 turn less.": "装備者が氷に閉じ込められるターンが1減る。",
   "Resisted": "レジスト",
+  "Melted": "融解",
   "statusDuration_one": "{{count}}ターン",
   "statusDuration_other": "{{count}}ターン",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "一部の状態異常は確率でしか発動しません。アイテムや魔法の詳細に確率が表示され、防いだ対象の上には「レジスト」と表示されます。",

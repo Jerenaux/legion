@@ -233,7 +233,7 @@ test('Socket.IO fire melts ice without marking a melee break', async () => {
   await cast(6);
   const thaw = nextTerrainClear();
   await cast(0);
-  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'warmth'}]);
   expect(game.hasObstacle(opponent.x, opponent.y)).toBe(false);
   expect(opponent.isFrozen()).toBe(false);
 });
@@ -263,16 +263,16 @@ test('Socket.IO Warmth melts the ice in its area and keeps ice off those tiles f
   const thaw = nextTerrainClear();
   const warmed = nextWarmth();
   await cast(13);
-  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'warmth'}]);
   expect(opponent.isFrozen()).toBe(false);
   const zone = getTilesInHexRadius(opponent.x, opponent.y, 1).map(key).sort();
   expect((await warmed).map(key).sort()).toEqual(zone);
   expect(game.getGameData(player.team.id).warmth.map(key).sort()).toEqual(zone);
 
-  const resisted = nextResisted();
+  const blocked = nextTerrainClear();
   const hp = opponent.hp;
   await cast(6);
-  expect(await resisted).toEqual({team: opponent.team.id, num: opponent.num, status: StatusEffect.FREEZE});
+  expect(await blocked).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'blocked'}]);
   expect(opponent.hp).toBeLessThan(hp);
   expect(opponent.isFrozen()).toBe(false);
   expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
@@ -309,7 +309,7 @@ test('Socket.IO new flames melt the ice beside them', async () => {
     .find(tile => key(tile) !== key(opponent) && !game.getPlayerAt(tile.x, tile.y) && !game.isHole(tile.x, tile.y))!;
   const thaw = nextTerrainClear();
   await castAt(0, beside.x, beside.y);
-  expect(await thaw).toEqual([{x: beside.x, y: beside.y, terrain: Terrain.FIRE}, {x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+  expect(await thaw).toEqual([{x: beside.x, y: beside.y, terrain: Terrain.FIRE}, {x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'warmth'}]);
   expect(opponent.isFrozen()).toBe(false);
 });
 

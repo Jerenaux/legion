@@ -1222,6 +1222,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "Imune ao gelo. O fogo causa mais 50% de dano a quem o usa.",
   "Ice holds the wearer for 1 turn less.": "O gelo prende quem as usa durante menos 1 turno.",
   "Resisted": "Resistiu",
+  "Melted": "Derreteu",
   "statusDuration_one": "{{count}} turno",
   "statusDuration_other": "{{count}} turnos",
   "statusDuration_many": "{{count}} turnos",

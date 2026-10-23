@@ -1238,6 +1238,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "Защищает от льда. Огонь наносит владельцу на 50% больше урона.",
   "Ice holds the wearer for 1 turn less.": "Лёд удерживает владельца на 1 ход меньше.",
   "Resisted": "Сопротивление",
+  "Melted": "Растаял",
   "statusDuration_one": "{{count}} ход",
   "statusDuration_other": "{{count}} хода",
   "statusDuration_few": "{{count}} хода",

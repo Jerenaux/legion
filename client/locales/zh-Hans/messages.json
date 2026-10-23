@@ -1206,6 +1206,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "免疫冰冻。佩戴者受到的火焰伤害增加50%。",
   "Ice holds the wearer for 1 turn less.": "佩戴者被冰困住的回合数减少1。",
   "Resisted": "抵抗",
+  "Melted": "融化",
   "statusDuration_one": "{{count}} 回合",
   "statusDuration_other": "{{count}} 回合",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "部分状态只有一定概率生效：物品和法术详情会显示概率，目标抵抗成功时，其上方会显示“抵抗”。",

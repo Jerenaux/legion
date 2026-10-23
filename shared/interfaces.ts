@@ -190,7 +190,8 @@ export interface TerrainUpdate {
     x: number;
     y: number;
     terrain: Terrain;
-    iceRemoval?: 'shatter';
+    /** How ice left the tile: broken by melee, melted by fire or Warmth, or blocked from forming on a warm tile. */
+    iceRemoval?: 'shatter' | 'warmth' | 'blocked';
 }
 
 export interface StatusEffectData {

@@ -38,8 +38,11 @@ Thunder skips one affected activation; ice skips three. Silence blocks spells
 for two affected activations. Poison has base potency 8 for three activations.
 Reapplication refreshes a capped duration rather than adding durations.
 Warm tiles never hold ice. A tile is warm while it is inside a Warmth zone or next to a
-flame (not the flame tile itself). Ice cast over a warm tile doesn't form there, and anyone
-standing on it shows Resisted but still takes the Ice spell's damage. Warmth is judged
+flame (not the flame tile itself). Ice cast over a warm tile doesn't form there; anyone
+standing on it still takes the Ice spell's damage. Clients play the ice forming and melting
+on that tile with a "Melted" label (terrain update `iceRemoval: 'blocked'`), and label
+every melt caused by fire or Warmth the same way (`iceRemoval: 'warmth'`). A Salamander
+Ring wearer outside warm tiles shows Resisted instead. Warmth is judged
 before the cast, so ice that puts out a flame still can't form beside it. A new flame melts
 any ice next to it, freeing whoever was held. Ice still extinguishes flame tiles as before.
 Warmth (White Mage, level 5, 18 MP, 7 tiles, 1,000 gold) melts the ice in its area and keeps

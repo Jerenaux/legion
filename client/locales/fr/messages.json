@@ -1222,6 +1222,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "Immunise contre la glace. Le feu inflige 50 % de dégâts en plus au porteur.",
   "Ice holds the wearer for 1 turn less.": "La glace retient le porteur 1 tour de moins.",
   "Resisted": "Résisté",
+  "Melted": "Fondu",
   "statusDuration_one": "{{count}} tour",
   "statusDuration_other": "{{count}} tours",
   "statusDuration_many": "{{count}} tours",

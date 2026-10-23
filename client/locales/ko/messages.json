@@ -1206,6 +1206,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "얼음에 면역입니다. 착용자가 받는 화염 피해가 50% 증가합니다.",
   "Ice holds the wearer for 1 turn less.": "착용자가 얼음에 갇히는 시간이 1턴 줄어듭니다.",
   "Resisted": "저항",
+  "Melted": "녹음",
   "statusDuration_one": "{{count}}턴",
   "statusDuration_other": "{{count}}턴",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "일부 상태 이상은 확률로만 걸립니다. 아이템과 주문 정보에 확률이 표시되며, 이를 막아낸 대상 위에는 \"저항\"이 표시됩니다.",

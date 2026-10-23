@@ -1206,6 +1206,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "Immun gegen Eis. Feuer fügt dem Träger 50 % mehr Schaden zu.",
   "Ice holds the wearer for 1 turn less.": "Eis hält den Träger 1 Zug kürzer fest.",
   "Resisted": "Widerstanden",
+  "Melted": "Geschmolzen",
   "statusDuration_one": "{{count}} Zug",
   "statusDuration_other": "{{count}} Züge",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Manche Zustände wirken nur mit einer gewissen Chance: Die Details von Gegenständen und Zaubern zeigen sie, und über einem Ziel, das einen Zustand abwehrt, erscheint „Widerstanden“.",

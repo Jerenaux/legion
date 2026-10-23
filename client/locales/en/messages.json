@@ -1206,6 +1206,7 @@
   "Immune to ice. Fire deals 50% more damage to the wearer.": "Immune to ice. Fire deals 50% more damage to the wearer.",
   "Ice holds the wearer for 1 turn less.": "Ice holds the wearer for 1 turn less.",
   "Resisted": "Resisted",
+  "Melted": "Melted",
   "statusDuration_one": "{{count}} turn",
   "statusDuration_other": "{{count}} turns",
   "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.": "Some statuses only land part of the time: item and spell details show the chance, and “Resisted” appears over a target that shakes one off.",

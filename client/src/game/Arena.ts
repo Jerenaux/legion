@@ -2937,21 +2937,8 @@ export class Arena extends Phaser.Scene
                     .setDepth(depth)
                     .setOrigin(0.5, 0.35);
 
-                // Get all frames from the meltdown animation
-                const frames = this.anims.generateFrameNumbers('meltdown');
-
-                // Create a reverse animation key if it doesn't exist
-                const reverseAnimKey = 'meltdown_reverse';
-                if (!this.anims.exists(reverseAnimKey)) {
-                    this.anims.create({
-                        key: reverseAnimKey,
-                        frames: this.anims.generateFrameNumbers('meltdown', { frames: frames.map((_, i) => frames.length - 1 - i) }),
-                        frameRate: 10
-                    });
-                }
-
                 // Play the reverse animation
-                meltdownSprite.play(reverseAnimKey);
+                meltdownSprite.play(this.iceFormingAnim());
 
                 // When animation completes, create the ice block
                 meltdownSprite.once('animationcomplete', () => {
@@ -2962,6 +2949,46 @@ export class Arena extends Phaser.Scene
                 });
             });
         }
+    }
+
+    /** The meltdown played backwards: ice forming. */
+    private iceFormingAnim() {
+        const key = 'meltdown_reverse';
+        if (!this.anims.exists(key)) {
+            const frames = this.anims.generateFrameNumbers('meltdown');
+            this.anims.create({
+                key,
+                frames: this.anims.generateFrameNumbers('meltdown', { frames: frames.map((_, i) => frames.length - 1 - i) }),
+                frameRate: 10
+            });
+        }
+        return key;
+    }
+
+    /** Ice cast on a warm tile forms, then melts straight away, so players see why it didn't hold. */
+    private blockedIce(x: number, y: number) {
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
+        this.time.delayedCall(200 + Math.floor(Math.random() * 150), () => {
+            if (this.disposed) return;
+            const sprite = this.add.sprite(pixelX, pixelY, 'meltdown')
+                .setDepth(this.yToZ(y) + DEPTH_OFFSET)
+                .setOrigin(0.5, 0.35);
+            sprite.play(this.iceFormingAnim());
+            sprite.once('animationcomplete', () => {
+                this.meltedText(x, y);
+                sprite.play('meltdown');
+                sprite.once('animationcomplete', () => sprite.destroy());
+            });
+        });
+    }
+
+    /** Floats "Melted" over a tile whose ice fire or Warmth melted. */
+    private meltedText(x: number, y: number) {
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
+        const text = this.add.text(pixelX, pixelY - 20, t('Melted'), {
+            fontSize: 22 * loadGameSettings().textSize / 100, color: '#ffc46b', stroke: '#000', strokeThickness: 3, fontFamily: fontFamily(),
+        }).setOrigin(0.5).setDepth(10);
+        this.tweens.add({targets: text, y: pixelY - 55, alpha: 0, duration: 1800, ease: 'Power2', onComplete: () => text.destroy()});
     }
 
     private handleIceTerrain(x: number, y: number, isReconnect = false) {
@@ -2994,6 +3021,11 @@ export class Arena extends Phaser.Scene
     }
 
     private handleClearTerrain(x: number, y: number, iceRemoval?: TerrainUpdate['iceRemoval']) {
+        if (iceRemoval === 'blocked') {
+            this.blockedIce(x, y);
+            return;
+        }
+        if (iceRemoval === 'warmth' && this.terrainSpritesMap.has(serializeCoords(x, y))) this.meltedText(x, y);
         this.hexGridManager.setObstacle(x, y, false);
         this.terrainMap.delete(serializeCoords(x, y));
         const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));
