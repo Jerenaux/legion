@@ -202,6 +202,10 @@ export class Arena extends Phaser.Scene
     private targetModeListener: ((pointer: Phaser.Input.Pointer) => void) | null = null;
     private disposed = false;
     private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
+    /** Tiles where ice can't form: Warmth zones and the ring around flames. */
+    private warmTiles = new Map<string, {image: Phaser.GameObjects.Graphics, fade: number}>();
+    private warmPulse = {value: 1};
+    private warmMotes?: Phaser.GameObjects.Particles.ParticleEmitter;
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
     private selfItemPreview: {x: number; y: number; player: Player} | null = null;
     private soundCopies = new Map<string, number>();
@@ -253,6 +257,7 @@ export class Arena extends Phaser.Scene
             cast: (data) => this.processCast(true, data),
             endcast: (data) => this.processCast(false, data),
             terrain: this.processTerrain,
+            warmth: this.processWarmth,
             gen: (data) => {
                 if (Array.isArray(data)) {
                     data.forEach(g => {
@@ -1508,6 +1513,58 @@ export class Arena extends Phaser.Scene
         this.placeCharacter(data.character, team, false);
     }
 
+    /** Warm tiles glow and give off heat; the server sends the full set whenever it changes. */
+    processWarmth(tiles: {x: number; y: number}[]) {
+        if (this.disposed) return;
+        this.createWarmthLayer();
+        const keys = new Set(tiles.map(({x, y}) => serializeCoords(x, y)));
+        this.warmTiles.forEach((warm, key) => {
+            if (keys.has(key)) return;
+            this.warmTiles.delete(key);
+            this.tweens.add({targets: warm.image, alpha: 0, duration: 450, onComplete: () => warm.image.destroy()});
+        });
+        for (const {x, y} of tiles) {
+            const key = serializeCoords(x, y);
+            const tile = this.hexGridManager.getTile(x, y);
+            if (this.warmTiles.has(key) || !tile) continue;
+            const warm = {image: this.warmHex(tile.x, tile.y), fade: 0};
+            this.warmTiles.set(key, warm);
+            this.tweens.add({targets: warm, fade: 1, duration: 450, delay: Math.random() * 150});
+        }
+    }
+
+    /** A warm amber wash with a bright rim; neighbouring warm tiles read as one heated patch. */
+    private warmHex(x: number, y: number) {
+        const corners = (inset: number) => Array.from({length: 6}, (_, i) => {
+            const angle = Math.PI / 3 * i - Math.PI / 2;
+            const radius = HexGridManager.HEX_HEIGHT / 2 - inset;
+            return new Phaser.Math.Vector2(radius * Math.cos(angle), radius * Math.sin(angle) * HexGridManager.PERSPECTIVE_SCALE);
+        });
+        return this.add.graphics({x, y}).setDepth(1.1).setAlpha(0)
+            .fillStyle(0xff8a2a, 0.42).fillPoints(corners(3), true)
+            .lineStyle(4, 0xffb347, 1).strokePoints(corners(4), true)
+            .lineStyle(2, 0xffe2a8, 0.6).strokePoints(corners(10), true);
+    }
+
+    private createWarmthLayer() {
+        if (this.warmMotes) return;
+        this.tweens.add({
+            targets: this.warmPulse, value: 0.72, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+            onUpdate: () => this.warmTiles.forEach(warm => { warm.image.setAlpha(warm.fade * this.warmPulse.value); }),
+        });
+        this.warmMotes = this.add.particles(0, 0, 'fx_spark', {
+            emitting: false, lifespan: {min: 900, max: 1500}, speedY: {min: -42, max: -18}, speedX: {min: -8, max: 8},
+            scale: {start: 0.45, end: 0}, alpha: {start: 0.85, end: 0}, tint: [0xffb347, 0xff8a3a, 0xffd27a], blendMode: 'ADD',
+        }).setDepth(3.4);
+        // A steady trickle of heat, spread over however many tiles are warm.
+        this.time.addEvent({delay: 140, loop: true, callback: () => {
+            if (!this.warmTiles.size || !screenEffectsEnabled()) return;
+            const warm = [...this.warmTiles.values()][Math.floor(Math.random() * this.warmTiles.size)];
+            if (warm.fade < 1) return;
+            this.warmMotes.emitParticleAt(warm.image.x + (Math.random() - 0.5) * 50, warm.image.y + (Math.random() - 0.5) * 30);
+        }});
+    }
+
     showTowerWarning(tiles: {x: number; y: number}[]) {
         this.towerWarningMarkers.forEach(marker => { marker.destroy(); });
         this.towerWarningMarkers = tiles.map(tile => {
@@ -2079,6 +2136,7 @@ export class Arena extends Phaser.Scene
         });
 
         this.processTerrain(data.terrain, isReconnect); // Put after floatTiles() to allow for tilesMap to be intialized
+        this.processWarmth(data.warmth ?? []);
 
         if (isReconnect) {
             this.setGameInitialized();

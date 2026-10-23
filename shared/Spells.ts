@@ -331,7 +331,7 @@ spells.push(new BaseSpell({
     id: 13,
     cost: 18,
     name: "Warmth",
-    description: "Melt the ice on 7 tiles. Characters there can't be frozen for 3 turns.",
+    description: "Melt the ice on 7 tiles and keep it from forming there for the caster's next 3 turns.",
     frame: 34,
     vfx: "heal_2",
     vfxTint: 0xffa040,
@@ -340,8 +340,7 @@ spells.push(new BaseSpell({
     radius: 2,
     target: Target.AOE,
     effects: [],
-    status: {effect: StatusEffect.WARMTH, chance: 1, duration: 3},
-    thaws: true,
+    warmth: 3,
     effort: 10,
 
     score: 10,

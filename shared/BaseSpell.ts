@@ -27,7 +27,7 @@ export class BaseSpell {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: SpellShopCategory;
-    thaws?: boolean;
+    warmth?: number;
     vfxTint?: number;
 
     constructor(props: SpellData) {

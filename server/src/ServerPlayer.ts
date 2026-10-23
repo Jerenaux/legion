@@ -86,7 +86,6 @@ export class ServerPlayer {
             [StatusEffect.SLEEP]: 0,
             [StatusEffect.MUTE]: 0,
             [StatusEffect.HASTE]: 0,
-            [StatusEffect.WARMTH]: 0,
         };
 
         this.stats = {
@@ -172,9 +171,10 @@ export class ServerPlayer {
         return Object.values(this.equipment ?? {}).map(id => getEquipmentById(id)).filter(Boolean);
     }
 
-    /** Warmth or a Salamander Ring keeps ice from forming around the character. */
+    /** A Salamander Ring, or standing on a warm tile, keeps ice from forming around the character. */
     isFreezeImmune() {
-        return this.statuses[StatusEffect.WARMTH] !== 0 || this.equippedPieces().some(piece => piece.freezeImmune);
+        return this.equippedPieces().some(piece => piece.freezeImmune)
+            || Boolean(this.team?.game.terrainManager.isWarm(this.x, this.y));
     }
 
     /** Activations a freeze holds this character, after Fur Boots and the like. */
@@ -247,6 +247,7 @@ export class ServerPlayer {
     die() {
         this.justDied = true;
         this.clearStatusEffects();
+        if (this.team!.game.terrainManager.dropWarmth(this)) this.team!.game.broadcastWarmth();
         this.team!.game.handleTeamKill(this.team);
         this.team!.game.processDeath(this);
     }
@@ -668,6 +669,8 @@ export class ServerPlayer {
 
     endTurn() {
         this.decrementStatuses();
+        const game = this.team?.game;
+        if (game?.terrainManager.tickWarmth(this)) game.broadcastWarmth();
         this.activationStatuses = [];
     }
 

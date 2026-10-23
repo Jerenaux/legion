@@ -67,8 +67,8 @@ export interface SpellData {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: SpellShopCategory;
-    /** Melts the ice in the spell's area before its status applies. */
-    thaws?: boolean;
+    /** Warms the spell's area for this many of the caster's turns: its ice melts and can't form. */
+    warmth?: number;
     /** Tints the impact animation, so a shared VFX sheet can read as another element. */
     vfxTint?: number;
 }
@@ -369,6 +369,8 @@ export interface GameData {
     player: GamePlayerData,
     opponent: GamePlayerData,
     terrain: TerrainUpdate[],
+    /** Tiles where ice can't form; absent from older servers. */
+    warmth?: {x: number, y: number}[];
     holes: {x: number, y: number}[];
 }
 

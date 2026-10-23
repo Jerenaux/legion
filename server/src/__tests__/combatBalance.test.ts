@@ -242,16 +242,32 @@ function nextResisted() {
   return new Promise<{team: number, num: number, status: StatusEffect}>(resolve => client.once('statusresisted', resolve));
 }
 
-test('Socket.IO Warmth thaws everyone in its area, then keeps ice from forming until it wears off', async () => {
+function nextWarmth() {
+  return new Promise<{x: number, y: number}[]>(resolve => client.once('warmth', resolve));
+}
+async function castAt(id: number, x: number, y: number) {
+  game.turnee = player;
+  player.hasActed = false;
+  player.spells = [new Spell(getSpellById(id))];
+  await action('spell', {index: 0, x, y, target: null, targetTeam: null});
+  expect(scheduled).toHaveLength(1);
+  scheduled.shift()!();
+}
+const key = ({x, y}: {x: number, y: number}) => `${x},${y}`;
+
+test('Socket.IO Warmth melts the ice in its area and keeps ice off those tiles for 3 of the caster\'s turns', async () => {
   player.setMP(1000);
   opponent.setHP(1000);
   await cast(6);
   expect(opponent.isFrozen()).toBe(true);
   const thaw = nextTerrainClear();
+  const warmed = nextWarmth();
   await cast(13);
   expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
   expect(opponent.isFrozen()).toBe(false);
-  for (const unit of [player, opponent, ally]) expect(unit.statuses[StatusEffect.WARMTH]).toBe(3);
+  const zone = getTilesInHexRadius(opponent.x, opponent.y, 1).map(key).sort();
+  expect((await warmed).map(key).sort()).toEqual(zone);
+  expect(game.getGameData(player.team.id).warmth.map(key).sort()).toEqual(zone);
 
   const resisted = nextResisted();
   const hp = opponent.hp;
@@ -261,13 +277,40 @@ test('Socket.IO Warmth thaws everyone in its area, then keeps ice from forming u
   expect(opponent.isFrozen()).toBe(false);
   expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
 
-  for (let i = 0; i < 3; i++) {
-    opponent.startTurn();
-    opponent.endTurn();
-  }
-  expect(opponent.statuses[StatusEffect.WARMTH]).toBe(0);
+  // The casting turn's end doesn't count; the warmth lasts through three more of the caster's turns.
+  for (let i = 0; i < 3; i++) player.endTurn();
+  expect(game.terrainManager.isWarm(opponent.x, opponent.y)).toBe(true);
+  const faded = nextWarmth();
+  player.endTurn();
+  expect(await faded).toEqual([]);
   await cast(6);
   expect(opponent.statuses[StatusEffect.FREEZE]).toBe(3);
+});
+
+test('Socket.IO ice cannot form next to flames, though it still puts the flames out', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(0);
+  const ring = getTilesInHexRadius(opponent.x, opponent.y, 1).filter(tile => key(tile) !== key(opponent));
+  for (const tile of ring) expect(game.terrainManager.isWarm(tile.x, tile.y)).toBe(true);
+  await cast(8);
+  expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
+  for (const tile of ring) expect(game.terrainManager.getTerrain(tile.x, tile.y)).not.toBe(Terrain.ICE);
+  const outer = getTilesInHexRadius(opponent.x, opponent.y, 2)
+    .filter(tile => !ring.some(near => key(near) === key(tile)) && key(tile) !== key(opponent) && !game.getPlayerAt(tile.x, tile.y));
+  expect(outer.some(tile => game.terrainManager.getTerrain(tile.x, tile.y) === Terrain.ICE)).toBe(true);
+});
+
+test('Socket.IO new flames melt the ice beside them', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(6);
+  const beside = getTilesInHexRadius(opponent.x, opponent.y, 1)
+    .find(tile => key(tile) !== key(opponent) && !game.getPlayerAt(tile.x, tile.y) && !game.isHole(tile.x, tile.y))!;
+  const thaw = nextTerrainClear();
+  await castAt(0, beside.x, beside.y);
+  expect(await thaw).toEqual([{x: beside.x, y: beside.y, terrain: Terrain.FIRE}, {x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+  expect(opponent.isFrozen()).toBe(false);
 });
 
 test('Socket.IO Salamander Ring blocks ice but takes 50% more fire damage', async () => {

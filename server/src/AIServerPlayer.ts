@@ -212,10 +212,6 @@ export class AIServerPlayer extends ServerPlayer {
             case StatusEffect.HASTE:
                 value = this.enemies().length ? 15 : 0;
                 return target.team === this.team ? value : -value;
-            case StatusEffect.WARMTH:
-                // Only worth guarding against ice the other side can actually cast.
-                value = !target.isFreezeImmune() && this.enemiesCastIce() ? effective * 3 : 0;
-                return target.team === this.team ? value : -value;
         }
         value *= stacked;
         return target.team === this.team ? -value : value;
@@ -225,6 +221,13 @@ export class AIServerPlayer extends ServerPlayer {
     private thawValue(target: ServerPlayer) {
         if (!target.isAlive() || !target.isFrozen()) return 0;
         const value = Math.min(target.statuses[StatusEffect.FREEZE], STATUS_HORIZON) * this.threat(target) * 0.8;
+        return target.team === this.team ? value : -value;
+    }
+
+    /** Guarding a tile against ice only matters when the other side can cast it. */
+    private warmthValue(target: ServerPlayer, turns: number) {
+        if (!target.isAlive() || target.isFreezeImmune() || !this.enemiesCastIce()) return 0;
+        const value = Math.min(turns, STATUS_HORIZON) * 3;
         return target.team === this.team ? value : -value;
     }
 
@@ -260,7 +263,7 @@ export class AIServerPlayer extends ServerPlayer {
                 else if (effect.value < 0) value += this.damageValue(target, effectAmount(effect, this, target));
                 else value += this.healValue(target, effectAmount(effect, this, target));
             }
-            if (spell.thaws) value += this.thawValue(target);
+            if (spell.warmth) value += this.thawValue(target) + this.warmthValue(target, spell.warmth);
             if (spell.status) value += spell.status.chance * this.statusValue(spell.status.effect, target, spell.status.duration, true);
         }
         if (spell.terrain !== Terrain.NONE) value += this.terrainValue(spell.terrain, targets);
@@ -278,7 +281,7 @@ export class AIServerPlayer extends ServerPlayer {
                     plans.push({ kind: 'spell', score, execute: () => this.game.processMagic({ x: target.x, y: target.y, index, targetTeam: target.team.id, target: target.num }) });
                 }
             } else if (spell.target === Target.AOE) {
-                for (const tile of this.aoeCenters(spell.radius - 1, spell.thaws ? this.allies() : this.enemies())) {
+                for (const tile of this.aoeCenters(spell.radius - 1, spell.warmth ? this.allies() : this.enemies())) {
                     const targets = this.game.getPlayersInArea(tile.x, tile.y, spell.radius - 1);
                     if (!targets.length) continue;
                     const score = this.spellValue(spell, targets);

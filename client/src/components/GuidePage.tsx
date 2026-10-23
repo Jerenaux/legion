@@ -137,7 +137,7 @@ export default function GuidePage({onClose}: {onClose?: () => void}) {
             <p>{t("Elemental spells cover 1, 7 or 19 tiles. Wider spells deal less damage per target. Damage has no random rolls; attack and defense determine the result.")}</p>
             <dl className="guide-definitions">
               <div><dt>{t("Fire")}</dt><dd>{t("Burns at the start of a character’s turn and at most once per movement action. Ice extinguishes flames.")}</dd></div>
-              <div><dt>{t("Ice")}</dt><dd>{t("Ice blocks tiles and makes trapped characters skip 3 turns. Remedy cannot thaw them. Another character can break the ice with melee or melt it with fire or Warmth; melee can also hurt the captive. Warmth and the Salamander Ring prevent freezing; Fur Boots shorten it by 1 turn.")}</dd></div>
+              <div><dt>{t("Ice")}</dt><dd>{t("Ice blocks tiles and makes trapped characters skip 3 turns. Remedy cannot thaw them. Another character can break the ice with melee or melt it with fire or Warmth; melee can also hurt the captive. Ice can’t form on glowing warm tiles, next to flames or inside Warmth. The Salamander Ring prevents freezing; Fur Boots shorten it by 1 turn.")}</dd></div>
               <div><dt>{t("Poison")}</dt><dd>{t("Deals damage on the affected character’s next 3 turns. Antidote or Remedy cures it.")}</dd></div>
               <div><dt>{t("Silence")}</dt><dd>{t("Blocks spells for 2 of the affected character’s turns. Bocca or Remedy removes it. Movement, melee and items remain available.")}</dd></div>
               <div><dt>{t("Paralysis")}</dt><dd>{t("Thunder makes affected characters skip their next turn. An ally can cure paralysis with Remedy.")}</dd></div>

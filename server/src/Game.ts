@@ -75,6 +75,7 @@ export abstract class Game
     gameOutcomes: Map<number, OutcomeData> = new Map();
     processedUIDs: Set<string> | null = null;
     holePositions: Set<string> = new Set<string>(); // Store coordinates of holes
+    private warmthSignature = '';
 
     constructor(id: string, mode: PlayMode, league: League, io: Server) {
         this.id = id;
@@ -621,6 +622,7 @@ export abstract class Game
                 const [x, y] = key.split(',').map(Number);
                 return {x, y, terrain: value};
             }),
+            warmth: this.terrainManager.getWarmTiles(),
             holes: Array.from(this.holePositions).map(coords => {
                 const [x, y] = coords.split(',').map(Number);
                 return {x, y};
@@ -1080,9 +1082,8 @@ export abstract class Game
             }
         }
 
-        if (spell.thaws) {
-            const terrainUpdates = this.terrainManager.thaw(x, y, spell.radius - 1);
-            if (terrainUpdates.length) this.broadcastTerrain(terrainUpdates);
+        if (spell.warmth) {
+            this.broadcastTerrain(this.terrainManager.warm(x, y, spell.radius - 1, spell.warmth, player));
         }
 
         if (spell.status) {
@@ -1184,7 +1185,7 @@ export abstract class Game
         if (!this.beginAction(player)) return;
         const mp = player.consumeMP(spell.cost);
 
-        if (!spell.isHealingSpell() && !spell.thaws) player.team.incrementOffensiveActions();
+        if (!spell.isHealingSpell() && !spell.warmth) player.team.incrementOffensiveActions();
         player.team.incrementSpellCasts();
 
         this.broadcast('cast', {
@@ -1232,7 +1233,17 @@ export abstract class Game
     }
 
     broadcastTerrain(terrainUpdates: TerrainUpdate[], iceRemoval?: TerrainUpdate['iceRemoval']) {
-        this.broadcast('terrain', iceRemoval ? terrainUpdates.map(update => ({...update, iceRemoval})) : terrainUpdates);
+        if (terrainUpdates.length) this.broadcast('terrain', iceRemoval ? terrainUpdates.map(update => ({...update, iceRemoval})) : terrainUpdates);
+        this.broadcastWarmth();
+    }
+
+    /** Sends the full set of warm tiles whenever it changes: flames and Warmth zones both warm tiles. */
+    broadcastWarmth() {
+        const tiles = this.terrainManager.getWarmTiles();
+        const signature = tiles.map(({x, y}) => `${x},${y}`).sort().join(';');
+        if (signature === this.warmthSignature) return;
+        this.warmthSignature = signature;
+        this.broadcast('warmth', tiles);
     }
 
     listAdjacentEnemies(player: ServerPlayer): ServerPlayer[] {

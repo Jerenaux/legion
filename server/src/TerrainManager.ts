@@ -40,6 +40,7 @@ export class TerrainManager {
     fireDamage = new Map<string, number>();
     previousTerrainMap = new Map<string, Terrain>();
     terrainMap = new Map<string, Terrain>();
+    warmZones: {tiles: Set<string>, caster: ServerPlayer, turns: number}[] = [];
     incompatibility = new TerrainIncompatibility();
     updates: TerrainUpdate[];
 
@@ -52,13 +53,16 @@ export class TerrainManager {
     updateTerrainFromSpell(spell: Spell, x: number, y: number, caster?: ServerPlayer) {
         this.updates = [];
 
-        const tilesInRadius = getTilesInHexRadius(x, y, spell.radius - 1);
+        const tilesInRadius = getTilesInHexRadius(x, y, spell.radius - 1).filter(tile => !isSkip(tile.x, tile.y));
+        // Warmth is judged before the cast, so extinguishing a flame doesn't let ice form beside it.
+        const warm = new Set(tilesInRadius.filter(tile => this.isWarm(tile.x, tile.y)).map(tile => `${tile.x},${tile.y}`));
 
         for (const tile of tilesInRadius) {
-            if (isSkip(tile.x, tile.y)) continue;
             const occupant = this.game.getPlayerAt(tile.x, tile.y);
-            if (spell.terrain === Terrain.ICE && occupant?.isAlive() && occupant.isFreezeImmune()) {
-                occupant.resistFreeze();
+            // Ice still puts out flames, but can't form on other warm tiles or around immune characters.
+            if (spell.terrain === Terrain.ICE && this.getTerrain(tile.x, tile.y) !== Terrain.FIRE
+                && (warm.has(`${tile.x},${tile.y}`) || occupant?.isFreezeImmune())) {
+                if (occupant?.isAlive()) occupant.resistFreeze();
                 continue;
             }
 
@@ -66,6 +70,12 @@ export class TerrainManager {
             if (this.getTerrain(tile.x, tile.y) === Terrain.FIRE) this.fireDamage.set(`${tile.x},${tile.y}`,
                 caster ? supportAmount(FIRE_POTENCY, caster.level, caster.getStat(Stat.SPATK)) : FIRE_POTENCY);
             this.postProcessing(tile.x, tile.y);
+        }
+        // New flames warm their surroundings, which melts any ice there.
+        if (spell.terrain === Terrain.FIRE) {
+            for (const tile of getTilesInHexRadius(x, y, spell.radius)) {
+                if (this.isWarm(tile.x, tile.y)) this.meltIce(tile.x, tile.y);
+            }
         }
 
         return this.updates;
@@ -127,22 +137,62 @@ export class TerrainManager {
         };
     }
 
-    /** Melts every ice tile within `radius` of a cell, freeing anyone held there. */
-    thaw(x: number, y: number, radius: number) {
-        const updates: TerrainUpdate[] = [];
-        for (const tile of getTilesInHexRadius(x, y, radius)) {
-            if (this.getTerrain(tile.x, tile.y) === Terrain.ICE) updates.push(...this.removeIce(tile.x, tile.y));
-        }
-        this.updates = updates;
-        return updates;
+    /** Warms the tiles within `radius` of a cell for `turns` of the caster's turns, melting their ice. */
+    warm(x: number, y: number, radius: number, turns: number, caster: ServerPlayer) {
+        this.updates = [];
+        const tiles = getTilesInHexRadius(x, y, radius).filter(tile => !isSkip(tile.x, tile.y));
+        // The casting turn ends first, so it doesn't count.
+        this.warmZones.push({tiles: new Set(tiles.map(tile => `${tile.x},${tile.y}`)), caster, turns: turns + 1});
+        for (const tile of tiles) this.meltIce(tile.x, tile.y);
+        return this.updates;
+    }
+
+    /** Counts down the caster's Warmth zones at the end of each of their turns. Returns whether any faded. */
+    tickWarmth(caster: ServerPlayer) {
+        const before = this.warmZones.length;
+        for (const zone of this.warmZones) if (zone.caster === caster) zone.turns--;
+        this.warmZones = this.warmZones.filter(zone => zone.turns > 0);
+        return this.warmZones.length !== before;
+    }
+
+    /** A knocked-out caster's Warmth fades at once. Returns whether any faded. */
+    dropWarmth(caster: ServerPlayer) {
+        const before = this.warmZones.length;
+        this.warmZones = this.warmZones.filter(zone => zone.caster !== caster);
+        return this.warmZones.length !== before;
+    }
+
+    /** Warm tiles are inside a Warmth zone or next to a flame; ice can't form or stay on them. */
+    isWarm(x: number, y: number) {
+        const key = `${x},${y}`;
+        if (this.warmZones.some(zone => zone.tiles.has(key))) return true;
+        return getTilesInHexRadius(x, y, 1).some(tile => (tile.x !== x || tile.y !== y) && this.getTerrain(tile.x, tile.y) === Terrain.FIRE);
+    }
+
+    /** Every warm tile that isn't itself on fire, for the clients' warm glow. */
+    getWarmTiles(): {x: number, y: number}[] {
+        const keys = new Set<string>();
+        for (const zone of this.warmZones) for (const key of zone.tiles) keys.add(key);
+        this.terrainMap.forEach((terrain, key) => {
+            if (terrain !== Terrain.FIRE) return;
+            const [x, y] = key.split(',').map(Number);
+            for (const tile of getTilesInHexRadius(x, y, 1)) if (!isSkip(tile.x, tile.y)) keys.add(`${tile.x},${tile.y}`);
+        });
+        return [...keys]
+            .filter(key => this.terrainMap.get(key) !== Terrain.FIRE)
+            .map(key => key.split(',').map(Number))
+            .map(([x, y]) => ({x, y}));
+    }
+
+    private meltIce(x: number, y: number) {
+        if (this.getTerrain(x, y) !== Terrain.ICE) return;
+        this.updateTerrainMap(Terrain.NONE, x, y);
+        this.postProcessing(x, y);
     }
 
     removeIce(x: number, y: number) {
         this.updates = [];
-        if (this.getTerrain(x, y) === Terrain.ICE) {
-            this.updateTerrainMap(Terrain.NONE, x, y);
-            this.postProcessing(x, y);
-        }
+        this.meltIce(x, y);
         return this.updates;
     }
 }

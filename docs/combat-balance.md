@@ -37,11 +37,16 @@ expire with time.
 Thunder skips one affected activation; ice skips three. Silence blocks spells
 for two affected activations. Poison has base potency 8 for three activations.
 Reapplication refreshes a capped duration rather than adding durations.
-Warmth (White Mage, level 5, 18 MP, 7 tiles, 1,000 gold) melts the ice in its area,
-freeing anyone held there, then makes everyone in the area immune to freezing for three
-activations. Like elemental spells it affects both sides, so a careless cast can free a
-frozen enemy. A freeze-immune character takes the Ice spell's damage, but ice does not
-form on their tile and they show Resisted. Remedy
+Warm tiles never hold ice. A tile is warm while it is inside a Warmth zone or next to a
+flame (not the flame tile itself). Ice cast over a warm tile doesn't form there, and anyone
+standing on it shows Resisted but still takes the Ice spell's damage. Warmth is judged
+before the cast, so ice that puts out a flame still can't form beside it. A new flame melts
+any ice next to it, freeing whoever was held. Ice still extinguishes flame tiles as before.
+Warmth (White Mage, level 5, 18 MP, 7 tiles, 1,000 gold) melts the ice in its area and keeps
+those tiles warm through the caster's next three turns (the casting turn doesn't count). It
+fades at once if the caster is knocked out. It affects both sides, so a careless cast can
+free a frozen enemy. Clients draw warm tiles with a pulsing glow and rising heat; the server
+sends the full set (`warmth` event and game snapshot) whenever it changes. Remedy
 removes harmful statuses except ice; Remedy, Antidote and Bocca can target allies.
 Revive restores 30% maximum HP for 35 MP, with no per-match use limit. Clover, the
 consumable revive, also restores 30% maximum HP. A revive's effect value is that percentage.

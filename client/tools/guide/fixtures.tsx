@@ -18,6 +18,7 @@ import { ENABLE_CINDER_TOWER, BASE_INVENTORY_SIZE, MOVEMENT_RANGE, LOCKED_FEATUR
 import { GameData, StatusEffects, CharacterStats } from '../../../shared/interfaces';
 import {getClient, getReplay, getIsolationScope, type BrowserClient} from '@sentry/react';
 import {route} from 'preact-router';
+import {getTilesInHexRadius, isSkip} from '../../../shared/utils';
 import {getElectronAPI} from '../../src/utils/electronUtils';
 import {setUser} from '../../src/telemetry';
 import {GameHUD, events} from '../../src/components/HUD/GameHUD';
@@ -105,8 +106,21 @@ const battle = {
     team: team.map((unit, i) => ({...unit, x: [8, 10, 9][i], y: [4, 6, 8][i]})), score: 0},
   queue: [[3, 1], [1, 2], [2, 1], [3, 2], [1, 1], [2, 2]].map(([num, team], position) => ({num, team, position})),
   turnee: {num: 3, team: 1, turnDuration: 7, timeLeft: 7, turnNumber: 8},
-  terrain: [{x: 7, y: 6, terrain: Terrain.FIRE}, {x: 8, y: 7, terrain: Terrain.ICE}], holes: [],
+  terrain: [{x: 7, y: 6, terrain: Terrain.FIRE}, {x: 8, y: 8, terrain: Terrain.ICE}], holes: [],
 } as GameData;
+// The ring the server sends around flames: ice can't form there.
+const warmAround = (terrain: GameData['terrain']) => {
+  const fire = new Set(terrain.filter(tile => tile.terrain === Terrain.FIRE).map(({x, y}) => `${x},${y}`));
+  const warm = new Map<string, {x: number, y: number}>();
+  for (const key of fire) {
+    const [x, y] = key.split(',').map(Number);
+    for (const tile of getTilesInHexRadius(x, y, 1)) {
+      if (!fire.has(`${tile.x},${tile.y}`) && !isSkip(tile.x, tile.y)) warm.set(`${tile.x},${tile.y}`, tile);
+    }
+  }
+  return [...warm.values()];
+};
+battle.warmth = warmAround(battle.terrain);
 
 // Feed the real scene a local gameStatus; never connect to a live match or mutate an account.
 const connectToLocalServer = Arena.prototype.connectToServer;
@@ -164,6 +178,7 @@ Arena.prototype.connectToServer = async function () {
     snapshot.general.tower = {floor: 1, tier: 1, name: encounter.name, warning: []};
     snapshot.turnee.turnDuration = 0; snapshot.turnee.timeLeft = 0;
     snapshot.terrain = encounter.terrain;
+    snapshot.warmth = warmAround(encounter.terrain);
     snapshot.opponent.team = encounter.enemies.map(enemy => ({...snapshot.opponent.team[2],
       name: enemy.name, class: enemy.class, x: enemy.x, y: enemy.y, hp: enemy.hp, maxHP: enemy.hp,
       mp: 100, maxMP: 100, spells: enemy.spells}));
