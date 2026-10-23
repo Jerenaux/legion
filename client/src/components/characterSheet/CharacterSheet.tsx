@@ -129,7 +129,7 @@ class CharacterSheet extends Component<CharacterSheetProps> {
 
             // With SP to spend, the whole stat row opens the dialog; the + button keeps keyboard access.
             return rearrangedStats.map((item, index) => (
-                characterData.class === Class.WARRIOR && item.key === 'spatk' ? null :
+                characterData.class === Class.WARRIOR && (item.key === 'spatk' || item.key === 'mp') ? null :
                 // biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: pointer shortcut; the focusable + button handles keys.
                 <div data-sp-plus="true" className={`character-info-bar${canSpend ? ' can-spend' : ''}`} key={index}
                     onClick={canSpend ? (e) => openSP(e, item, index) : undefined}>
