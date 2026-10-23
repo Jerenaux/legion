@@ -9,7 +9,7 @@ const smokeTest = process.argv.includes('--smoke-test');
 if (smokeTest) app.setPath('userData', fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'legion-smoke-')));
 require('./electron/telemetry').initializeTelemetry(app);
 
-const {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamLaunchParam} = require("./electron/platform");
+const {getPlatformLanguage, getPlatformPlayerName, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamLaunchParam} = require("./electron/platform");
 const {PACKAGED_APP_URL, PACKAGED_APP_SCHEME, resolveAppPath} = require("./electron/protocol");
 const {PACKAGED_CSP, isSafeExternalURL, isTrustedSender} = require("./electron/security");
 const {readDisplayMode, writeDisplayMode, isFullscreenShortcut, displayWindowOptions, revealWindow} = require("./electron/display");
@@ -137,7 +137,8 @@ function createWindow() {
         endpoint: 'https://europe-west1-games-analytics-jr.cloudfunctions.net/replayIngest',
         outbox: path.join(app.getPath('userData'), 'replay', 'outbox'),
         isTrustedURL: url => isTrustedSender(url, isDev),
-        metadata: {game_version: app.getVersion(), channel: process.env.ITCHIO_API_KEY ? 'itch' : (process.env.SteamAppId || process.env.SteamGameId) ? 'steam' : 'store', debug_build: false},
+        metadata: {game_version: app.getVersion(), channel: process.env.ITCHIO_API_KEY ? 'itch' : (process.env.SteamAppId || process.env.SteamGameId) ? 'steam' : 'store', debug_build: false,
+          player_name: getPlatformPlayerName(process.env, loadSteamworks)},
         onError: (error, operation) => require('@sentry/electron/main').captureException(error, {
           tags: {subsystem: 'replay', operation},
         }),

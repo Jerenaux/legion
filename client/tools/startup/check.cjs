@@ -176,6 +176,8 @@ if (!process.versions.electron) {
         recorder = require('@jerenaux/replay/electron').installReplay(window, {
           game: 'legion', endpoint: `${base}/recording`, outbox: path.join(temp, 'replay-outbox'),
           isTrustedURL: url => url.startsWith(PACKAGED_APP_URL),
+          metadata: {player_name: require('../../electron/platform').getPlatformPlayerName(
+            {SteamAppId: '3996730'}, () => ({init: () => ({localplayer: {getName: () => 'Steam Player 🎮'}})}))},
         });
         currentUser = 'cached-direct-player';
         await window.loadURL(`${PACKAGED_APP_URL}?seed`);
@@ -264,6 +266,7 @@ if (!process.versions.electron) {
         await recorder.flush();
         assert.equal(new Set(recordings.map(header => header.session)).size, 1);
         assert.equal(recordings[0].meta.player_id, 'verified-steam-player');
+        assert.equal(recordings[0].meta.player_name, 'Steam Player 🎮');
         assert.ok(recordings.some(header => header.frames.length > 0));
         await recorder.dispose(); recorder = null;
         console.log('Cached Firebase → delayed Steam verification: one recording, correct verified user');

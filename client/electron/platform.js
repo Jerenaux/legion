@@ -55,6 +55,13 @@ function getPlatformLanguage(env = process.env, loadSteamworks = () => require("
   } catch { return null; }
 }
 
+function getPlatformPlayerName(env = process.env, loadSteamworks = () => require("steamworks.js")) {
+  try {
+    const name = getSteamClient(env, loadSteamworks)?.localplayer?.getName();
+    return typeof name === 'string' ? name.trim().slice(0, 128) : '';
+  } catch { return ''; }
+}
+
 async function getPlatformAuth(env = process.env, loadSteamworks = () => require("steamworks.js")) {
   if (env.ITCHIO_API_KEY) return {provider: "itch", credential: env.ITCHIO_API_KEY};
   // Share the result, including failure reporting, across concurrent native IPC requests.
@@ -118,4 +125,4 @@ function shutdownPlatform() {
   launchReader = undefined;
 }
 
-module.exports = {getPlatformLanguage, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamLaunchParam};
+module.exports = {getPlatformLanguage, getPlatformPlayerName, getPlatformAuth, showGamepadTextInput, getControllerType, shutdownPlatform, getSteamLaunchParam};

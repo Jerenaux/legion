@@ -154,3 +154,11 @@ Store releases upload source maps; local test builds do not. Preserve the exact 
 Purchases, recruitment, chest claims, and inventory actions use per-player `mutationReceipts`. A request ID is persisted on the client before sending, reused on retry (including after restart), and cleared after a definitive response. Server receipts bind the ID to the operation and payload and commit with the changed documents and audit action. Do not expire receipts without a protocol that prevents old requests being replayed. Installed clients without IDs remain supported, with atomic updates but no retry guarantee. No additional Firestore indexes are needed.
 
 Only receipt-backed requests retry automatically after ambiguous failures. Their network deadline is 45 seconds per attempt; ordinary API requests allow 30 seconds. Deadlines abort the client fetch and cover body decoding, but cannot cancel a committed server transaction. The shop and inventory show success only after confirmation and refresh authoritative player data after success or failure. Expected rejections are 4xx, and callers use silent toasts because the API helper already reports exhausted transport/server failures.
+# Steam names in Replay
+
+Eligible Steam replay builds read the local profile name through the existing
+steamworks.js client and send it as `metadata.player_name`. Replay displays manual
+aliases first, then the captured Steam name, then the stable player ID. The verified
+Firebase ID and login/start boundary remain unchanged. Names are per-session display
+snapshots; missing SDK/profile data falls back to IDs. Local/CI/smoke builds still
+skip recorder installation. No new Steam Web API key is needed.
