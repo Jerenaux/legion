@@ -1617,7 +1617,8 @@ export class Arena extends Phaser.Scene
                 x: {min: -40, max: 40}, y: {min: -18, max: 18}, rotate: {min: 0, max: 360},
                 scale: {start: 1, end: 2.4}, alpha: {start: 0.3 + 0.35 * strength, end: 0},
                 tint: [0xffffff, 0xe8f3ff, 0xd5e6f2, 0xc9d8e4],
-            }).setDepth(this.yToZ(y) + 0.02);
+            // Just behind the tile's occupant: the steam surrounds them without hiding them or their labels.
+            }).setDepth(this.yToZ(y) - 0.002);
             // The ice bursts into steam.
             if (!previous) emitter.emitParticle(24);
             else fade(previous.emitter);
