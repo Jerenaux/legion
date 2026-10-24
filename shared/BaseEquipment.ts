@@ -16,6 +16,9 @@ export class BaseEquipment {
     rarity: Rarity = Rarity.COMMON;
     classes: Class[] = [];
     beltSize?: number;
+    freezeImmune?: boolean;
+    freezeReduction?: number;
+    fireWeakness?: number;
 
     constructor(props: EquipmentData) {
         Object.assign(this, props);

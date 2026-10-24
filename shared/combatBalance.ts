@@ -11,6 +11,11 @@ export const STATUS_TURNS: Record<StatusEffect, number> = {
     [StatusEffect.MUTE]: 2, [StatusEffect.BURN]: 3, [StatusEffect.SLEEP]: 1, [StatusEffect.HASTE]: 5,
 };
 
+/** Turns, counted across every character, that steam from heat-melted ice lingers. */
+export const STEAM_TURNS = 6;
+/** Chance that a melee attack misses a character standing in steam. */
+export const STEAM_MISS_CHANCE = 0.5;
+
 export function levelGrowth(level: number) {
     return 1 + Math.min(20, Math.max(0, level - 1)) / 100;
 }

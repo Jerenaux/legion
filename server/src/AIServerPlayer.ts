@@ -1,4 +1,4 @@
-import {damageAmount, effectAmount, reviveAmount, MELEE_POTENCY, POISON_POTENCY, FIRE_POTENCY, supportAmount, STATUS_TURNS} from '@legion/shared/combatBalance';
+import {damageAmount, effectAmount, reviveAmount, MELEE_POTENCY, POISON_POTENCY, FIRE_POTENCY, supportAmount, STATUS_TURNS, STEAM_MISS_CHANCE} from '@legion/shared/combatBalance';
 import { ServerPlayer } from './ServerPlayer';
 import { AIAttackMode, Class, Stat, StatusEffect, Target, Terrain } from "@legion/shared/enums";
 import { FREEZE_AI, MOVEMENT_RANGE } from "@legion/shared/config";
@@ -118,6 +118,10 @@ export class AIServerPlayer extends ServerPlayer {
         return this.team!.getMembers();
     }
 
+    private enemiesCastIce() {
+        return this.enemies().some(enemy => enemy.spells.some(spell => spell.terrain === Terrain.ICE));
+    }
+
     /** Keep one focus target until it falls; the personality decides who that is. */
     private refreshFocus() {
         if (this.target?.isAlive()) return;
@@ -157,7 +161,8 @@ export class AIServerPlayer extends ServerPlayer {
     // ---- Valuing effects ---------------------------------------------------------------------
 
     private damageValue(target: ServerPlayer, damage: number) {
-        if (!target.isAlive()) return 0;
+        // Ice shields a frozen character from everything but poison.
+        if (!target.isAlive() || target.isFrozen()) return 0;
         const dealt = Math.min(damage, target.hp);
         const kills = damage >= target.hp;
         if (target.team === this.team) return -(dealt * FRIENDLY_FIRE_WEIGHT + (kills ? 60 : 0));
@@ -182,6 +187,10 @@ export class AIServerPlayer extends ServerPlayer {
     /** Worth of `turns` of a status on `target`; positive when it helps this AI's side. */
     private statusValue(status: StatusEffect, target: ServerPlayer, turns: number, scaled = false) {
         if (!target.isAlive()) return 0;
+        if (status === StatusEffect.FREEZE) {
+            if (target.isFreezeImmune()) return 0;
+            turns = Math.min(turns, target.freezeTurns());
+        }
         const effective = turns === -1 ? STATUS_HORIZON : Math.min(turns, STATUS_HORIZON);
         // Refreshing a duration has less value than disabling a new target.
         const stacked = target.hasStatusEffect(status) ? 0.35 : 1;
@@ -207,6 +216,20 @@ export class AIServerPlayer extends ServerPlayer {
         }
         value *= stacked;
         return target.team === this.team ? -value : value;
+    }
+
+    /** Thawing frees whoever is held, friend or foe. */
+    private thawValue(target: ServerPlayer) {
+        if (!target.isAlive() || !target.isFrozen()) return 0;
+        const value = Math.min(target.statuses[StatusEffect.FREEZE], STATUS_HORIZON) * this.threat(target) * 0.8;
+        return target.team === this.team ? value : -value;
+    }
+
+    /** Guarding a tile against ice only matters when the other side can cast it. */
+    private warmthValue(target: ServerPlayer, turns: number) {
+        if (!target.isAlive() || target.isFreezeImmune() || !this.enemiesCastIce()) return 0;
+        const value = Math.min(turns, STATUS_HORIZON) * 3;
+        return target.team === this.team ? value : -value;
     }
 
     /** Ice traps whoever stands on the tile; flames hurt whoever stays. */
@@ -241,6 +264,7 @@ export class AIServerPlayer extends ServerPlayer {
                 else if (effect.value < 0) value += this.damageValue(target, effectAmount(effect, this, target));
                 else value += this.healValue(target, effectAmount(effect, this, target));
             }
+            if (spell.warmth) value += this.thawValue(target) + this.warmthValue(target, spell.warmth);
             if (spell.status) value += spell.status.chance * this.statusValue(spell.status.effect, target, spell.status.duration, true);
         }
         if (spell.terrain !== Terrain.NONE) value += this.terrainValue(spell.terrain, targets);
@@ -258,7 +282,7 @@ export class AIServerPlayer extends ServerPlayer {
                     plans.push({ kind: 'spell', score, execute: () => this.game.processMagic({ x: target.x, y: target.y, index, targetTeam: target.team.id, target: target.num }) });
                 }
             } else if (spell.target === Target.AOE) {
-                for (const tile of this.aoeCenters(spell.radius - 1)) {
+                for (const tile of this.aoeCenters(spell.radius - 1, spell.warmth ? this.allies() : this.enemies())) {
                     const targets = this.game.getPlayersInArea(tile.x, tile.y, spell.radius - 1);
                     if (!targets.length) continue;
                     const score = this.spellValue(spell, targets);
@@ -269,12 +293,12 @@ export class AIServerPlayer extends ServerPlayer {
         return plans;
     }
 
-    /** Tiles in casting range that would catch at least one enemy in an area of `radius`. */
-    private aoeCenters(radius: number) {
+    /** Tiles in casting range that would catch at least one of `around` (enemies by default) in an area of `radius`. */
+    private aoeCenters(radius: number, around = this.enemies()) {
         const seen = new Set<string>();
         const tiles: { x: number; y: number }[] = [];
-        for (const enemy of this.enemies()) {
-            for (const tile of getTilesInHexRadius(enemy.x, enemy.y, radius)) {
+        for (const character of around) {
+            for (const tile of getTilesInHexRadius(character.x, character.y, radius)) {
                 const key = `${tile.x},${tile.y}`;
                 if (seen.has(key) || isSkip(tile.x, tile.y) || !isInSpellRange(this.x, this.y, tile.x, tile.y)) continue;
                 seen.add(key);
@@ -344,8 +368,10 @@ export class AIServerPlayer extends ServerPlayer {
     private attackPlans(): Plan[] {
         const weapon = this.getWeapon();
         return this.game.listAdjacentEnemies(this).map(enemy => {
-            let score = this.damageValue(enemy, this.meleeDamage(enemy));
+            // Hitting a frozen enemy deals nothing and breaks them free.
+            let score = enemy.isFrozen() ? this.thawValue(enemy) : this.damageValue(enemy, this.meleeDamage(enemy));
             for (const status of weapon?.statusEffects ?? []) score += status.chance * this.statusValue(status.effect, enemy, status.duration);
+            if (this.game.terrainManager.hasSteam(enemy.x, enemy.y)) score *= 1 - STEAM_MISS_CHANCE;
             return { kind: 'attack' as const, score, execute: () => this.attack(enemy) };
         });
     }

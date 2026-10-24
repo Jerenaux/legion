@@ -1,5 +1,5 @@
 import {route} from 'preact-router';
-import {damageAmount, effectAmount, MELEE_POTENCY} from '@legion/shared/combatBalance';
+import {damageAmount, effectAmount, MELEE_POTENCY, STEAM_TURNS} from '@legion/shared/combatBalance';
 import { itemNoEffectReason, type ItemNoEffectReason } from '@legion/shared/itemUse';
 import {t, userError, localizedAsset, language, fontFamily} from '../i18n/core';
 import { io } from 'socket.io-client';
@@ -202,6 +202,12 @@ export class Arena extends Phaser.Scene
     private targetModeListener: ((pointer: Phaser.Input.Pointer) => void) | null = null;
     private disposed = false;
     private towerWarningMarkers: Phaser.GameObjects.Text[] = [];
+    /** Tiles where ice can't form: Warmth zones and the ring around flames. */
+    private warmTiles = new Map<string, {image: Phaser.GameObjects.Graphics, fade: number}>();
+    private warmPulse = {value: 1};
+    private warmMotes?: Phaser.GameObjects.Particles.ParticleEmitter;
+    /** Steam clouds where heat melted ice; melee into them can miss. */
+    private steamClouds = new Map<string, {emitter: Phaser.GameObjects.Particles.ParticleEmitter, turns: number}>();
     private hudHandlers: Record<string, (...args: unknown[]) => void> = {};
     private selfItemPreview: {x: number; y: number; player: Player} | null = null;
     private soundCopies = new Map<string, number>();
@@ -253,6 +259,9 @@ export class Arena extends Phaser.Scene
             cast: (data) => this.processCast(true, data),
             endcast: (data) => this.processCast(false, data),
             terrain: this.processTerrain,
+            warmth: this.processWarmth,
+            steam: this.processSteam,
+            damageimmune: this.processDamageImmune,
             gen: (data) => {
                 if (Array.isArray(data)) {
                     data.forEach(g => {
@@ -863,11 +872,13 @@ export class Arena extends Phaser.Scene
             const stats = (player: Player) => ({level: player.level, getStat: (stat: Stat) => player.combatStats[stat] ?? 0});
             for (const effect of spell.effects) {
                 if (effect.stat !== Stat.HP || (effect.onKO ? target.isAlive() : !target.isAlive())) continue;
+                // Ice shields a frozen character from damage.
+                if (effect.value < 0 && target.isFrozen()) continue;
                 const amount = effectAmount(effect, stats(caster), stats(target));
                 hp = Math.max(0, Math.min(target.maxHP, hp + (effect.value < 0 ? -amount : amount)));
             }
         } else {
-            if (target === caster || !target.isTarget() || !caster.isNextTo(target.gridX, target.gridY)) return;
+            if (target === caster || !target.isTarget() || !caster.isNextTo(target.gridX, target.gridY) || target.isFrozen()) return;
             hp = Math.max(0, hp - damageAmount(MELEE_POTENCY, caster.level, caster.combatStats[Stat.ATK], target.combatStats[Stat.DEF]));
         }
         if (hp !== target.hp) return {hp: hp - target.hp, action: spell?.name ?? 'Attack'};
@@ -1029,7 +1040,7 @@ export class Arena extends Phaser.Scene
         }
     }
 
-    processAttack({team, target, num, hp, damage, isKill, sameTeam}) {
+    processAttack({team, target, num, hp, damage, isKill, sameTeam, miss, immune}) {
         if (this.gameEnded) return;
         const player = this.getPlayer(team, num);
         const otherTeam = sameTeam ? team : this.getOtherTeam(team);
@@ -1045,11 +1056,18 @@ export class Arena extends Phaser.Scene
         this.playSound('slash');
         player.attack(targetPlayer.gridX);
         targetPlayer.setHP(hp);
-        targetPlayer.displaySlash(player);
+        if (!miss) targetPlayer.displaySlash(player);
         player.lunge(targetPlayer, () => {
+            if (miss) {
+                // The blow passes through the steam.
+                targetPlayer.playAnim('dodge', true);
+                targetPlayer.displayOverheadText(t('Miss'), 2000, '#e8eef2');
+                return;
+            }
             this.displayAttackImpact(targetPlayer.gridX, targetPlayer.gridY);
             const mage = player.class === Class.WHITE_MAGE || player.class === Class.BLACK_MAGE;
             this.playSound(mage ? 'impact_punch' : 'impact_sword');
+            if (immune) targetPlayer.displayOverheadText(t('Immune'), 2000, '#bfe8ff');
             if (delta) targetPlayer.showHPChange(delta, {from: player});
         });
         if (isKill) this.requestKillCam(pixelX, pixelY);
@@ -1104,6 +1122,12 @@ export class Arena extends Phaser.Scene
             }
             player.showHPChange(total, {from: impact ?? undefined, color});
         })};
+    }
+
+    /** A spell hit a frozen character: the ice took it. */
+    processDamageImmune({team, num}) {
+        if (this.gameEnded) return;
+        this.getPlayer(team, num)?.displayOverheadText(t('Immune'), 2500, '#bfe8ff');
     }
 
     processStatusResisted({team, num}) {
@@ -1205,6 +1229,7 @@ export class Arena extends Phaser.Scene
     displayAttackImpact(gridX, gridY) {
         const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(gridX, gridY);
         this.localAnimationSprite.setPosition(pixelX, pixelY + 30)
+            .clearTint()
             .setOrigin(0.5, 0.7)
             .setVisible(true)
             .setDepth(this.yToZ(gridY) + DEPTH_OFFSET)
@@ -1319,6 +1344,8 @@ export class Arena extends Phaser.Scene
                 .setDepth(this.yToZ(toY) + DEPTH_OFFSET)
                 .setScale(scale * (config ? VFX_DISPLAY_SCALE : 1), yScale * (config ? VFX_DISPLAY_SCALE : 1));
 
+            if (spell.vfxTint) this.localAnimationSprite.setTint(spell.vfxTint);
+            else this.localAnimationSprite.clearTint();
             console.log(`[Arena:processLocalAnimation] spell.vfx: ${spell.vfx}`);
             this.localAnimationSprite.play(spell.vfx);
 
@@ -1503,6 +1530,100 @@ export class Arena extends Phaser.Scene
     processAddCharacter(data: {team: number, character: PlayerNetworkData}) {
         const team = this.teamsMap.get(data.team);
         this.placeCharacter(data.character, team, false);
+    }
+
+    /** Warm tiles glow and give off heat; the server sends the full set whenever it changes. */
+    processWarmth(tiles: {x: number; y: number}[]) {
+        if (this.disposed) return;
+        this.createWarmthLayer();
+        const keys = new Set(tiles.map(({x, y}) => serializeCoords(x, y)));
+        this.warmTiles.forEach((warm, key) => {
+            if (keys.has(key)) return;
+            this.warmTiles.delete(key);
+            this.tweens.add({targets: warm.image, alpha: 0, duration: 450, onComplete: () => warm.image.destroy()});
+        });
+        for (const {x, y} of tiles) {
+            const key = serializeCoords(x, y);
+            const tile = this.hexGridManager.getTile(x, y);
+            if (this.warmTiles.has(key) || !tile) continue;
+            const warm = {image: this.warmHex(tile.x, tile.y), fade: 0};
+            this.warmTiles.set(key, warm);
+            this.tweens.add({targets: warm, fade: 1, duration: 450, delay: Math.random() * 150});
+        }
+    }
+
+    /** A warm amber wash with a bright rim; neighbouring warm tiles read as one heated patch. */
+    private warmHex(x: number, y: number) {
+        const corners = (inset: number) => Array.from({length: 6}, (_, i) => {
+            const angle = Math.PI / 3 * i - Math.PI / 2;
+            const radius = HexGridManager.HEX_HEIGHT / 2 - inset;
+            return new Phaser.Math.Vector2(radius * Math.cos(angle), radius * Math.sin(angle) * HexGridManager.PERSPECTIVE_SCALE);
+        });
+        return this.add.graphics({x, y}).setDepth(1.1).setAlpha(0)
+            .fillStyle(0xff8a2a, 0.42).fillPoints(corners(3), true)
+            .lineStyle(4, 0xffb347, 1).strokePoints(corners(4), true)
+            .lineStyle(2, 0xffe2a8, 0.6).strokePoints(corners(10), true);
+    }
+
+    private createWarmthLayer() {
+        if (this.warmMotes) return;
+        this.tweens.add({
+            targets: this.warmPulse, value: 0.72, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+            onUpdate: () => this.warmTiles.forEach(warm => { warm.image.setAlpha(warm.fade * this.warmPulse.value); }),
+        });
+        this.warmMotes = this.add.particles(0, 0, 'fx_spark', {
+            emitting: false, lifespan: {min: 900, max: 1500}, speedY: {min: -42, max: -18}, speedX: {min: -8, max: 8},
+            scale: {start: 0.45, end: 0}, alpha: {start: 0.85, end: 0}, tint: [0xffb347, 0xff8a3a, 0xffd27a], blendMode: 'ADD',
+        }).setDepth(3.4);
+        // A steady trickle of heat, spread over however many tiles are warm.
+        this.time.addEvent({delay: 140, loop: true, callback: () => {
+            if (!this.warmTiles.size || !screenEffectsEnabled()) return;
+            const warm = [...this.warmTiles.values()][Math.floor(Math.random() * this.warmTiles.size)];
+            if (warm.fade < 1) return;
+            this.warmMotes.emitParticleAt(warm.image.x + (Math.random() - 0.5) * 50, warm.image.y + (Math.random() - 0.5) * 30);
+        }});
+    }
+
+    /** Steam billows over tiles where heat melted ice, thinning as its turns run out. */
+    processSteam(tiles: {x: number; y: number; turns: number}[]) {
+        if (this.disposed) return;
+        if (!this.textures.exists('fx_puff')) {
+            // Stacked translucent discs make a soft, round puff.
+            const graphics = this.make.graphics({x: 0, y: 0}, false);
+            for (let radius = 30; radius >= 4; radius -= 3) graphics.fillStyle(0xffffff, 0.1).fillCircle(32, 32, radius);
+            graphics.generateTexture('fx_puff', 64, 64);
+            graphics.destroy();
+        }
+        const fade = (cloud: Phaser.GameObjects.Particles.ParticleEmitter) => {
+            cloud.stop();
+            this.time.delayedCall(3500, () => cloud.destroy());
+        };
+        const keys = new Set(tiles.map(({x, y}) => serializeCoords(x, y)));
+        this.steamClouds.forEach((cloud, key) => {
+            if (keys.has(key)) return;
+            this.steamClouds.delete(key);
+            fade(cloud.emitter);
+        });
+        for (const {x, y, turns} of tiles) {
+            const key = serializeCoords(x, y);
+            const tile = this.hexGridManager.getTile(x, y);
+            const previous = this.steamClouds.get(key);
+            if (!tile || previous?.turns === turns) continue;
+            // Thinner and sparser as the steam runs out; a fresh emitter replaces the old one.
+            const strength = Math.max(0, Math.min(1, turns / STEAM_TURNS));
+            const emitter = this.add.particles(tile.x, tile.y - 20, 'fx_puff', {
+                lifespan: {min: 2600, max: 3800}, frequency: 70 + (1 - strength) * 200,
+                speedY: {min: -20, max: -6}, speedX: {min: -12, max: 12},
+                x: {min: -40, max: 40}, y: {min: -18, max: 18}, rotate: {min: 0, max: 360},
+                scale: {start: 1, end: 2.4}, alpha: {start: 0.3 + 0.35 * strength, end: 0},
+                tint: [0xffffff, 0xe8f3ff, 0xd5e6f2, 0xc9d8e4],
+            // Just behind the tile's occupant: the steam surrounds them without hiding them or their labels.
+            }).setDepth(this.yToZ(y) - 0.002);
+            // The ice bursts into steam.
+            if (!previous) emitter.emitParticle(24);
+            else fade(previous.emitter);
+            this.steamClouds.set(key, {emitter, turns});
+        }
     }
 
     showTowerWarning(tiles: {x: number; y: number}[]) {
@@ -2076,6 +2197,8 @@ export class Arena extends Phaser.Scene
         });
 
         this.processTerrain(data.terrain, isReconnect); // Put after floatTiles() to allow for tilesMap to be intialized
+        this.processWarmth(data.warmth ?? []);
+        this.processSteam(data.steam ?? []);
 
         if (isReconnect) {
             this.setGameInitialized();
@@ -2876,21 +2999,8 @@ export class Arena extends Phaser.Scene
                     .setDepth(depth)
                     .setOrigin(0.5, 0.35);
 
-                // Get all frames from the meltdown animation
-                const frames = this.anims.generateFrameNumbers('meltdown');
-
-                // Create a reverse animation key if it doesn't exist
-                const reverseAnimKey = 'meltdown_reverse';
-                if (!this.anims.exists(reverseAnimKey)) {
-                    this.anims.create({
-                        key: reverseAnimKey,
-                        frames: this.anims.generateFrameNumbers('meltdown', { frames: frames.map((_, i) => frames.length - 1 - i) }),
-                        frameRate: 10
-                    });
-                }
-
                 // Play the reverse animation
-                meltdownSprite.play(reverseAnimKey);
+                meltdownSprite.play(this.iceFormingAnim());
 
                 // When animation completes, create the ice block
                 meltdownSprite.once('animationcomplete', () => {
@@ -2901,6 +3011,46 @@ export class Arena extends Phaser.Scene
                 });
             });
         }
+    }
+
+    /** The meltdown played backwards: ice forming. */
+    private iceFormingAnim() {
+        const key = 'meltdown_reverse';
+        if (!this.anims.exists(key)) {
+            const frames = this.anims.generateFrameNumbers('meltdown');
+            this.anims.create({
+                key,
+                frames: this.anims.generateFrameNumbers('meltdown', { frames: frames.map((_, i) => frames.length - 1 - i) }),
+                frameRate: 10
+            });
+        }
+        return key;
+    }
+
+    /** Ice cast on a warm tile forms, then melts straight away, so players see why it didn't hold. */
+    private blockedIce(x: number, y: number) {
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
+        this.time.delayedCall(200 + Math.floor(Math.random() * 150), () => {
+            if (this.disposed) return;
+            const sprite = this.add.sprite(pixelX, pixelY, 'meltdown')
+                .setDepth(this.yToZ(y) + DEPTH_OFFSET)
+                .setOrigin(0.5, 0.35);
+            sprite.play(this.iceFormingAnim());
+            sprite.once('animationcomplete', () => {
+                this.meltedText(x, y);
+                sprite.play('meltdown');
+                sprite.once('animationcomplete', () => sprite.destroy());
+            });
+        });
+    }
+
+    /** Floats "Melted" over a tile whose ice fire or Warmth melted. */
+    private meltedText(x: number, y: number) {
+        const {x: pixelX, y: pixelY} = this.hexGridToPixelCoords(x, y);
+        const text = this.add.text(pixelX, pixelY - 20, t('Melted'), {
+            fontSize: 22 * loadGameSettings().textSize / 100, color: '#ffc46b', stroke: '#000', strokeThickness: 3, fontFamily: fontFamily(),
+        }).setOrigin(0.5).setDepth(10);
+        this.tweens.add({targets: text, y: pixelY - 55, alpha: 0, duration: 1800, ease: 'Power2', onComplete: () => text.destroy()});
     }
 
     private handleIceTerrain(x: number, y: number, isReconnect = false) {
@@ -2933,6 +3083,11 @@ export class Arena extends Phaser.Scene
     }
 
     private handleClearTerrain(x: number, y: number, iceRemoval?: TerrainUpdate['iceRemoval']) {
+        if (iceRemoval === 'blocked') {
+            this.blockedIce(x, y);
+            return;
+        }
+        if (iceRemoval === 'warmth' && this.terrainSpritesMap.has(serializeCoords(x, y))) this.meltedText(x, y);
         this.hexGridManager.setObstacle(x, y, false);
         this.terrainMap.delete(serializeCoords(x, y));
         const terrainsprite = this.terrainSpritesMap.get(serializeCoords(x, y));

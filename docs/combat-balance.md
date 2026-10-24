@@ -34,9 +34,30 @@ single-target damage for coverage. Fire terrain has base potency 6 and damages a
 character at turn start and at most once per movement action. Terrain does not
 expire with time.
 
-Thunder skips one affected activation; ice skips three. Silence blocks spells
+Thunder skips one affected activation; ice skips three. Frozen characters take no
+damage: spells show Immune, and melee breaks the ice without hurting them. Only poison
+pierces the ice; it can still be applied (by spell or weapon) and still ticks. Debug
+knockouts bypass the rule. When fire, Warmth or a Tower blast melts an existing ice block
+(not when warmth keeps ice from forming), its tile fills with steam for 6 turns
+(`STEAM_TURNS`), counted at the end of every character's turn; the turn it appears in
+doesn't count. Melee attacks against a character standing in steam miss half the time
+(`STEAM_MISS_CHANCE`): a miss deals no damage, applies no weapon poison and leaves any ice
+intact. Steam is sent to clients as a `steam` event and in the game snapshot. Silence blocks spells
 for two affected activations. Poison has base potency 8 for three activations.
-Reapplication refreshes a capped duration rather than adding durations. Remedy
+Reapplication refreshes a capped duration rather than adding durations.
+Warm tiles never hold ice. A tile is warm while it is inside a Warmth zone or next to a
+flame (not the flame tile itself). Ice cast over a warm tile doesn't form there; anyone
+standing on it still takes the Ice spell's damage. Clients play the ice forming and melting
+on that tile with a "Melted" label (terrain update `iceRemoval: 'blocked'`), and label
+every melt caused by fire or Warmth the same way (`iceRemoval: 'warmth'`). A Salamander
+Ring wearer outside warm tiles shows Resisted instead. Warmth is judged
+before the cast, so ice that puts out a flame still can't form beside it. A new flame melts
+any ice next to it, freeing whoever was held. Ice still extinguishes flame tiles as before.
+Warmth (White Mage, level 5, 18 MP, 7 tiles, 1,000 gold) melts the ice in its area and keeps
+those tiles warm through the caster's next three turns (the casting turn doesn't count). It
+fades at once if the caster is knocked out. It affects both sides, so a careless cast can
+free a frozen enemy. Clients draw warm tiles with a pulsing glow and rising heat; the server
+sends the full set (`warmth` event and game snapshot) whenever it changes. Remedy
 removes harmful statuses except ice; Remedy, Antidote and Bocca can target allies.
 Revive restores 30% maximum HP for 35 MP, with no per-match use limit. Clover, the
 consumable revive, also restores 30% maximum HP. A revive's effect value is that percentage.
@@ -128,6 +149,14 @@ their colour and chest-drop pool. The shop still unlocks equipment by price
 | 31 | Sturdy Iron Sword | +5 ATK; +1 DEF | 6 |
 | 32 | Serpent's Fang | +2 ATK; +4 MP; 80% poison, 3 activations | 16 |
 | 33 | Viridian Striker | +8 ATK; 30% poison, 3 activations | 12 |
+| 34 | Salamander Ring | Cannot be frozen; takes 50% more fire damage | 16 |
+| 35 | Fur Boots | +2 DEF; +2 SPDEF; freezes last 1 activation less | 8 |
+
+Ice counters are priced like stats. Freeze immunity is worth 20 points, because ice can
+skip three activations, minus 4 for the Salamander Ring's fire weakness (+50% from fire
+spells, flame tiles and burns). Fur Boots trade the SPEED of Light boots for a
+one-activation shorter freeze, valued at 4 points. The Salamander Ring is epic and costs
+2,400 gold; Fur Boots are rare and cost 1,000, so they unlock in the second equipment batch.
 
 ## Balance review
 

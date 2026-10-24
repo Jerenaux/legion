@@ -27,6 +27,8 @@ export class BaseSpell {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: SpellShopCategory;
+    warmth?: number;
+    vfxTint?: number;
 
     constructor(props: SpellData) {
         Object.assign(this, props);

@@ -167,6 +167,36 @@ export class ServerPlayer {
         return this.statuses[StatusEffect.MUTE] !== 0;
     }
 
+    private equippedPieces() {
+        return Object.values(this.equipment ?? {}).map(id => getEquipmentById(id)).filter(Boolean);
+    }
+
+    /** A Salamander Ring, or standing on a warm tile, keeps ice from forming around the character. */
+    isFreezeImmune() {
+        return this.equippedPieces().some(piece => piece.freezeImmune)
+            || Boolean(this.team?.game.terrainManager.isWarm(this.x, this.y));
+    }
+
+    /** Activations a freeze holds this character, after Fur Boots and the like. */
+    freezeTurns() {
+        const reduction = this.equippedPieces().reduce((sum, piece) => sum + (piece.freezeReduction ?? 0), 0);
+        return Math.max(1, STATUS_TURNS[StatusEffect.FREEZE] - reduction);
+    }
+
+    fireDamage(amount: number) {
+        const weakness = this.equippedPieces().reduce((sum, piece) => sum + (piece.fireWeakness ?? 0), 0);
+        return Math.round(amount * (1 + weakness));
+    }
+
+    /** Shown when a hit lands on a frozen character and does nothing. */
+    showDamageImmunity() {
+        this.team!.game.broadcast('damageimmune', {team: this.team!.id, num: this.num});
+    }
+
+    resistFreeze() {
+        this.team!.game.broadcast('statusresisted', {team: this.team!.id, num: this.num, status: StatusEffect.FREEZE});
+    }
+
     canAct() {
         return this.isAlive() && !this.isParalyzed();
     }
@@ -204,9 +234,11 @@ export class ServerPlayer {
         return Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
     }
 
-    takeDamage(damage: number) {
+    /** Frozen characters take no damage; only poison (and forced knockouts) pierces the ice. */
+    takeDamage(damage: number, {piercesIce = false} = {}) {
         if(this.isDead()) return;
         this.justDied = false;
+        if (this.isFrozen() && !piercesIce) return;
 
         const hpBefore = this.hp;
         this.updateHP(damage);
@@ -222,6 +254,7 @@ export class ServerPlayer {
     die() {
         this.justDied = true;
         this.clearStatusEffects();
+        if (this.team!.game.terrainManager.dropWarmth(this)) this.team!.game.broadcastWarmth();
         this.team!.game.handleTeamKill(this.team);
         this.team!.game.processDeath(this);
     }
@@ -446,7 +479,7 @@ export class ServerPlayer {
         switch (terrain) {
             case Terrain.FIRE: {
                 const damage = this.team?.isGame0() ? Math.round(potency / 2) : potency;
-                this.takeDamage(damage);
+                this.takeDamage(this.fireDamage(damage));
                 break;
             }
             default:
@@ -463,7 +496,7 @@ export class ServerPlayer {
         }
 
         if (terrain === Terrain.ICE) {
-            this.addStatusEffect(StatusEffect.FREEZE, STATUS_TURNS[StatusEffect.FREEZE], 1);
+            this.addStatusEffect(StatusEffect.FREEZE, this.freezeTurns(), 1);
         }
     }
 
@@ -480,6 +513,10 @@ export class ServerPlayer {
 
     addStatusEffect(status: StatusEffect, duration: number, chance: number = 1, caster?: ServerPlayer) {
         if (this.isDead()) return false;
+        if (status === StatusEffect.FREEZE && this.isFreezeImmune()) {
+            this.resistFreeze();
+            return false;
+        }
         const r = chance >= 1 ? 0 : Math.random();
         console.log(`[ServerPlayer:addStatusEffect] Adding status ${status} for ${duration} turns, ${chance}, r = ${r} / ${chance}`);
         if (r > chance) {
@@ -489,7 +526,7 @@ export class ServerPlayer {
         }
 
         // Refresh to the effect's limit, never add unlimited disabled activations.
-        const cap = STATUS_TURNS[status] ?? 3;
+        const cap = status === StatusEffect.FREEZE ? this.freezeTurns() : STATUS_TURNS[status] ?? 3;
         this.statuses[status] = Math.min(cap, Math.max(this.statuses[status], Math.min(cap, duration < 0 ? cap : duration)));
         if (DoTStatuses.includes(status)) {
             const damage = caster ? supportAmount(statusDot[status], caster.level, caster.getStat(Stat.SPATK)) : statusDot[status];
@@ -639,6 +676,8 @@ export class ServerPlayer {
 
     endTurn() {
         this.decrementStatuses();
+        const game = this.team?.game;
+        if (game?.terrainManager.tickWarmth(this)) game.broadcastWarmth();
         this.activationStatuses = [];
     }
 
@@ -659,7 +698,9 @@ export class ServerPlayer {
 
         for (const status of DoTStatuses) {
             if (this.statuses[status] > 0) {
-                this.takeDamage(this.statusDamage[status] ?? statusDot[status]);
+                const damage = this.statusDamage[status] ?? statusDot[status];
+                if (status === StatusEffect.BURN) this.takeDamage(this.fireDamage(damage));
+                else this.takeDamage(damage, {piercesIce: true});
             }
         }
 

@@ -83,7 +83,7 @@ test('AI casters fill the spell slots their level opens with their strongest spe
     expect(ids[3]).toHaveLength(6);
 
     const healer = game.addAICharacter(team, new NewCharacter(Class.WHITE_MAGE, 25, true).getCharacterData());
-    expect(healer.spells.map(spell => spell.id).sort((a, b) => a - b)).toEqual([9, 10, 11, 12]);
+    expect(healer.spells.map(spell => spell.id).sort((a, b) => a - b)).toEqual([9, 10, 11, 12, 13]);
 
     // A zombie copied from a level-1 roster and levelled to its opponents gains their slots too.
     const copied = game.addAICharacter(team, new NewCharacter(Class.BLACK_MAGE, 1).getCharacterData());

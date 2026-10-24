@@ -8,6 +8,8 @@ export const tips = [
     "Fire spells set the ground on fire, dealing damage to characters standing on or crossing it!",
     "Ice traps characters for 3 turns. Melee or fire can free them sooner.",
     "Free frozen character by attacking them with a melee attack or a fire spell!",
+    "Frozen characters take no damage, except from poison.",
+    "Melting ice with fire leaves steam: melee attacks on characters in it miss half the time.",
     "Thunder makes affected characters skip their next turn. An ally can cure paralysis with Remedy.",
     "The + and X spells cover more tiles but deal less damage per target.",
     "The order of your characters' turns is determined by their speed stat.",

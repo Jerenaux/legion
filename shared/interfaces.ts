@@ -67,6 +67,10 @@ export interface SpellData {
     targetHighlight?: TargetHighlight;
     unlock?: LockedFeatures;
     category?: SpellShopCategory;
+    /** Warms the spell's area for this many of the caster's turns: its ice melts and can't form. */
+    warmth?: number;
+    /** Tints the impact animation, so a shared VFX sheet can read as another element. */
+    vfxTint?: number;
 }
 
 export interface ConsumableData {
@@ -103,6 +107,12 @@ export interface EquipmentData {
     effort: number;
     /** Set per item; without it, rarity follows effort as for consumables and spells. */
     rarity?: Rarity;
+    /** The wearer cannot be frozen; ice does not form on their tile. */
+    freezeImmune?: boolean;
+    /** Activations removed from each freeze on the wearer. */
+    freezeReduction?: number;
+    /** Extra share of fire damage taken from spells, flames and burns (0.5 = +50%). */
+    fireWeakness?: number;
 }
 
 export interface WeaponStatusEffect {
@@ -180,7 +190,8 @@ export interface TerrainUpdate {
     x: number;
     y: number;
     terrain: Terrain;
-    iceRemoval?: 'shatter';
+    /** How ice left the tile: broken by melee, melted by fire or Warmth, or blocked from forming on a warm tile. */
+    iceRemoval?: 'shatter' | 'warmth' | 'blocked';
 }
 
 export interface StatusEffectData {
@@ -359,6 +370,10 @@ export interface GameData {
     player: GamePlayerData,
     opponent: GamePlayerData,
     terrain: TerrainUpdate[],
+    /** Tiles where ice can't form; absent from older servers. */
+    warmth?: {x: number, y: number}[];
+    /** Steam tiles with their remaining turns; absent from older servers. */
+    steam?: {x: number, y: number, turns: number}[];
     holes: {x: number, y: number}[];
 }
 

@@ -233,9 +233,189 @@ test('Socket.IO fire melts ice without marking a melee break', async () => {
   await cast(6);
   const thaw = nextTerrainClear();
   await cast(0);
-  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'warmth'}]);
   expect(game.hasObstacle(opponent.x, opponent.y)).toBe(false);
   expect(opponent.isFrozen()).toBe(false);
+});
+
+function nextResisted() {
+  return new Promise<{team: number, num: number, status: StatusEffect}>(resolve => client.once('statusresisted', resolve));
+}
+
+function nextWarmth() {
+  return new Promise<{x: number, y: number}[]>(resolve => client.once('warmth', resolve));
+}
+async function castAt(id: number, x: number, y: number) {
+  game.turnee = player;
+  player.hasActed = false;
+  player.spells = [new Spell(getSpellById(id))];
+  await action('spell', {index: 0, x, y, target: null, targetTeam: null});
+  expect(scheduled).toHaveLength(1);
+  scheduled.shift()!();
+}
+const key = ({x, y}: {x: number, y: number}) => `${x},${y}`;
+
+test('Socket.IO Warmth melts the ice in its area and keeps ice off those tiles for 3 of the caster\'s turns', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(6);
+  expect(opponent.isFrozen()).toBe(true);
+  const thaw = nextTerrainClear();
+  const warmed = nextWarmth();
+  await cast(13);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'warmth'}]);
+  expect(opponent.isFrozen()).toBe(false);
+  const zone = getTilesInHexRadius(opponent.x, opponent.y, 1).map(key).sort();
+  expect((await warmed).map(key).sort()).toEqual(zone);
+  expect(game.getGameData(player.team.id).warmth.map(key).sort()).toEqual(zone);
+
+  const blocked = nextTerrainClear();
+  const hp = opponent.hp;
+  await cast(6);
+  expect(await blocked).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'blocked'}]);
+  expect(opponent.hp).toBeLessThan(hp);
+  expect(opponent.isFrozen()).toBe(false);
+  expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
+
+  // The casting turn's end doesn't count; the warmth lasts through three more of the caster's turns.
+  for (let i = 0; i < 3; i++) player.endTurn();
+  expect(game.terrainManager.isWarm(opponent.x, opponent.y)).toBe(true);
+  const faded = nextWarmth();
+  player.endTurn();
+  expect(await faded).toEqual([]);
+  await cast(6);
+  expect(opponent.statuses[StatusEffect.FREEZE]).toBe(3);
+});
+
+test('Socket.IO ice cannot form next to flames, though it still puts the flames out', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(0);
+  const ring = getTilesInHexRadius(opponent.x, opponent.y, 1).filter(tile => key(tile) !== key(opponent));
+  for (const tile of ring) expect(game.terrainManager.isWarm(tile.x, tile.y)).toBe(true);
+  await cast(8);
+  expect(game.terrainManager.getTerrain(opponent.x, opponent.y)).toBe(Terrain.NONE);
+  for (const tile of ring) expect(game.terrainManager.getTerrain(tile.x, tile.y)).not.toBe(Terrain.ICE);
+  const outer = getTilesInHexRadius(opponent.x, opponent.y, 2)
+    .filter(tile => !ring.some(near => key(near) === key(tile)) && key(tile) !== key(opponent) && !game.getPlayerAt(tile.x, tile.y));
+  expect(outer.some(tile => game.terrainManager.getTerrain(tile.x, tile.y) === Terrain.ICE)).toBe(true);
+  // Ice kept from forming, or a flame put out, leaves no steam.
+  expect(game.terrainManager.getSteamTiles()).toEqual([]);
+});
+
+test('Socket.IO new flames melt the ice beside them', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(6);
+  const beside = getTilesInHexRadius(opponent.x, opponent.y, 1)
+    .find(tile => key(tile) !== key(opponent) && !game.getPlayerAt(tile.x, tile.y) && !game.isHole(tile.x, tile.y))!;
+  const thaw = nextTerrainClear();
+  await castAt(0, beside.x, beside.y);
+  expect(await thaw).toEqual([{x: beside.x, y: beside.y, terrain: Terrain.FIRE}, {x: opponent.x, y: opponent.y, terrain: Terrain.NONE, iceRemoval: 'warmth'}]);
+  expect(opponent.isFrozen()).toBe(false);
+});
+
+function nextEvent<T>(name: string) {
+  return new Promise<T>(resolve => client.once(name, resolve));
+}
+/** Ends the current character's turn through the real turn loop. */
+function passTurn() {
+  game.processTurn(0);
+  scheduled.pop()!();
+}
+
+test('Socket.IO frozen characters take no damage from spells or melee, but poison still applies and ticks', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(6);
+  const hp = opponent.hp;
+  const immune = nextEvent<{team: number, num: number}>('damageimmune');
+  await cast(3);
+  expect(await immune).toEqual({team: opponent.team.id, num: opponent.num});
+  expect(opponent.hp).toBe(hp);
+
+  await cast(10);
+  expect(opponent.statuses[StatusEffect.POISON]).toBe(3);
+  opponent.startTurn();
+  expect(opponent.hp).toBeLessThan(hp);
+  opponent.endTurn();
+
+  const poisoned = opponent.hp;
+  const attacked = nextEvent<{damage: number, immune: boolean, miss: boolean}>('attack');
+  player.hasActed = false;
+  game.turnee = player;
+  await action('attack', {target: opponent.num, sameTeam: false});
+  expect(await attacked).toMatchObject({damage: 0, immune: true, miss: false});
+  expect(opponent.hp).toBe(poisoned);
+  expect(opponent.isFrozen()).toBe(false);
+  expect(game.hasObstacle(opponent.x, opponent.y)).toBe(false);
+});
+
+test('Socket.IO heat-melted ice leaves steam for 6 character turns, and melee into steam misses half the time', async () => {
+  game.combatStarted = true;
+  player.setMP(1000);
+  opponent.setHP(1000);
+  await cast(6);
+  const steamed = nextEvent<{x: number, y: number, turns: number}[]>('steam');
+  await cast(0);
+  expect(await steamed).toEqual([{x: opponent.x, y: opponent.y, turns: 6}]);
+  expect(game.getGameData(player.team.id).steam).toEqual([{x: opponent.x, y: opponent.y, turns: 6}]);
+
+  for (const [roll, missed] of [[0.49, true], [0.5, false]] as const) {
+    const random = spyOn(Math, 'random').mockReturnValue(roll);
+    const hp = opponent.hp;
+    const attacked = nextEvent<{miss: boolean}>('attack');
+    game.turnee = player;
+    player.hasActed = false;
+    await action('attack', {target: opponent.num, sameTeam: false});
+    expect((await attacked).miss).toBe(missed);
+    expect(opponent.hp === hp).toBe(missed);
+    random.mockRestore();
+  }
+
+  // The turn the steam appeared in doesn't count.
+  passTurn();
+  for (let turns = 5; turns >= 1; turns--) {
+    const thinned = nextEvent<unknown[]>('steam');
+    passTurn();
+    expect(await thinned).toEqual([{x: opponent.x, y: opponent.y, turns}]);
+  }
+  const cleared = nextEvent<unknown[]>('steam');
+  passTurn();
+  expect(await cleared).toEqual([]);
+  expect(game.terrainManager.hasSteam(opponent.x, opponent.y)).toBe(false);
+});
+
+test('Socket.IO Salamander Ring blocks ice but takes 50% more fire damage', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  opponent.equipment = {left_ring: 34} as typeof opponent.equipment;
+  const resisted = nextResisted();
+  await cast(6);
+  await resisted;
+  expect(opponent.isFrozen()).toBe(false);
+  expect(game.hasObstacle(opponent.x, opponent.y)).toBe(false);
+
+  const fire = getSpellById(0)!;
+  const hp = opponent.hp;
+  await cast(0);
+  expect(hp - opponent.hp).toBe(Math.round(effectAmount(fire.effects[0], player, opponent) * 1.5));
+});
+
+test('Socket.IO Fur Boots shorten a freeze by one activation, then the ice melts', async () => {
+  player.setMP(1000);
+  opponent.setHP(1000);
+  opponent.equipment = {boots: 35} as typeof opponent.equipment;
+  await cast(6);
+  const thaw = nextTerrainClear();
+  for (const remaining of [2, 1]) {
+    expect(opponent.statuses[StatusEffect.FREEZE]).toBe(remaining);
+    opponent.hasActed = false;
+    opponent.startTurn();
+    opponent.endTurn();
+  }
+  expect(opponent.canAct()).toBe(true);
+  expect(await thaw).toEqual([{x: opponent.x, y: opponent.y, terrain: Terrain.NONE}]);
 });
 
 test('Silence blocks two affected activations, refreshes within its cap, and permits a later spell', async () => {

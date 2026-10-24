@@ -1,4 +1,4 @@
-import {damageAmount, MELEE_POTENCY} from '@legion/shared/combatBalance';
+import {damageAmount, MELEE_POTENCY, STEAM_MISS_CHANCE} from '@legion/shared/combatBalance';
 import { Socket, Server } from 'socket.io';
 import type { ItemNoEffectReason } from '@legion/shared/itemUse';
 import { getFirestore, DocumentReference } from 'firebase-admin/firestore';
@@ -75,6 +75,8 @@ export abstract class Game
     gameOutcomes: Map<number, OutcomeData> = new Map();
     processedUIDs: Set<string> | null = null;
     holePositions: Set<string> = new Set<string>(); // Store coordinates of holes
+    private warmthSignature = '';
+    private steamSignature = '';
 
     constructor(id: string, mode: PlayMode, league: League, io: Server) {
         this.id = id;
@@ -370,7 +372,7 @@ export abstract class Game
             this.teams.forEach(team => {
                 team.getMembers().forEach(player => {
                     if (player.class === Class.BLACK_MAGE) {
-                        player.takeDamage(player.hp);
+                        player.takeDamage(player.hp, {piercesIce: true});
                     }
                 });
             });
@@ -379,7 +381,7 @@ export abstract class Game
             this.teams.forEach(team => {
                 team.getMembers().forEach(player => {
                     if (player.class === Class.WHITE_MAGE) {
-                        player.takeDamage(player.hp);
+                        player.takeDamage(player.hp, {piercesIce: true});
                     }
                 });
             });
@@ -388,7 +390,7 @@ export abstract class Game
             this.teams.forEach(team => {
                 team.getMembers().forEach(player => {
                     if (player.class === Class.WARRIOR) {
-                        player.takeDamage(player.hp);
+                        player.takeDamage(player.hp, {piercesIce: true});
                     }
                 });
             });
@@ -513,7 +515,10 @@ export abstract class Game
                 this.turnSystem.processAction(this.turnee, SpeedClass.NORMAL);
             }
 
-            this.turnee?.endTurn();
+            if (this.turnee) {
+                this.turnee.endTurn();
+                if (this.terrainManager.tickSteam()) this.broadcastSteam();
+            }
             this.broadcastQueueData();
             this.turnee = this.turnSystem.getNextActor();
             if (!this.turnee) return;
@@ -621,6 +626,8 @@ export abstract class Game
                 const [x, y] = key.split(',').map(Number);
                 return {x, y, terrain: value};
             }),
+            warmth: this.terrainManager.getWarmTiles(),
+            steam: this.terrainManager.getSteamTiles(),
             holes: Array.from(this.holePositions).map(coords => {
                 const [x, y] = coords.split(',').map(Number);
                 return {x, y};
@@ -877,12 +884,15 @@ export abstract class Game
         }
         if (!this.beginAction(player)) return;
 
-        const damage = this.calculateDamage(player, opponent);
-        opponent.takeDamage(damage);
+        // Steam hides its occupant; ice shields a frozen one, though the blow still breaks it.
+        const miss = this.terrainManager.hasSteam(opponent.x, opponent.y) && Math.random() < STEAM_MISS_CHANCE;
+        const immune = !miss && opponent.isFrozen();
+        const damage = miss || immune ? 0 : this.calculateDamage(player, opponent);
+        if (damage) opponent.takeDamage(damage);
 
         const weapon = player.getWeapon();
         // console.log(`[Game:processAttack] Weapon: ${weapon?.name}`);
-        if (weapon) {
+        if (weapon && !miss) {
             weapon.statusEffects?.forEach(effect => {
                 opponent.addStatusEffect(effect.effect, effect.duration, effect.chance);
             });
@@ -899,7 +909,7 @@ export abstract class Game
             oneShot = (damage >= opponent.getMaxHP());
         }
 
-        if (this.hasObstacle(opponent.x, opponent.y)) {
+        if (!miss && this.hasObstacle(opponent.x, opponent.y)) {
             const terrainUpdates = this.terrainManager.removeIce(opponent.x, opponent.y);
             this.broadcastTerrain(terrainUpdates, 'shatter');
             opponent.removeStatusEffect(StatusEffect.FREEZE);
@@ -914,6 +924,8 @@ export abstract class Game
             hp: opponent.getHP(),
             isKill,
             sameTeam,
+            miss,
+            immune,
         });
 
         if (oneShot) { // Broadcast gen after attack
@@ -1080,6 +1092,10 @@ export abstract class Game
             }
         }
 
+        if (spell.warmth) {
+            this.broadcastTerrain(this.terrainManager.warm(x, y, spell.radius - 1, spell.warmth, player));
+        }
+
         if (spell.status) {
             targets.forEach(target => {
                 const success = target.addStatusEffect(spell.status.effect, spell.status.duration, spell.status.chance, player);
@@ -1179,7 +1195,7 @@ export abstract class Game
         if (!this.beginAction(player)) return;
         const mp = player.consumeMP(spell.cost);
 
-        if (!spell.isHealingSpell()) player.team.incrementOffensiveActions();
+        if (!spell.isHealingSpell() && !spell.warmth) player.team.incrementOffensiveActions();
         player.team.incrementSpellCasts();
 
         this.broadcast('cast', {
@@ -1227,7 +1243,27 @@ export abstract class Game
     }
 
     broadcastTerrain(terrainUpdates: TerrainUpdate[], iceRemoval?: TerrainUpdate['iceRemoval']) {
-        this.broadcast('terrain', iceRemoval ? terrainUpdates.map(update => ({...update, iceRemoval})) : terrainUpdates);
+        if (terrainUpdates.length) this.broadcast('terrain', iceRemoval ? terrainUpdates.map(update => ({...update, iceRemoval})) : terrainUpdates);
+        this.broadcastWarmth();
+        this.broadcastSteam();
+    }
+
+    /** Sends every steam tile and its remaining turns whenever that changes. */
+    broadcastSteam() {
+        const tiles = this.terrainManager.getSteamTiles();
+        const signature = tiles.map(({x, y, turns}) => `${x},${y}:${turns}`).sort().join(';');
+        if (signature === this.steamSignature) return;
+        this.steamSignature = signature;
+        this.broadcast('steam', tiles);
+    }
+
+    /** Sends the full set of warm tiles whenever it changes: flames and Warmth zones both warm tiles. */
+    broadcastWarmth() {
+        const tiles = this.terrainManager.getWarmTiles();
+        const signature = tiles.map(({x, y}) => `${x},${y}`).sort().join(';');
+        if (signature === this.warmthSignature) return;
+        this.warmthSignature = signature;
+        this.broadcast('warmth', tiles);
     }
 
     listAdjacentEnemies(player: ServerPlayer): ServerPlayer[] {

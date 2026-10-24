@@ -166,7 +166,7 @@ spells.push(new BaseSpell({
     id: 6,
     cost: 16,
     name: "Ice",
-    description: "Cover 1 tile in ice. Trapped characters lose 3 turns.",
+    description: "Cover 1 tile in ice. Trapped characters lose 3 turns but take no damage, except from poison.",
     frame: 10,
     vfx: "ice_1",
     sfx: "ice",
@@ -190,7 +190,7 @@ spells.push(new BaseSpell({
     id: 7,
     cost: 28,
     name: "Ice+",
-    description: "Cover 7 tiles in ice. Trapped characters lose 3 turns.",
+    description: "Cover 7 tiles in ice. Trapped characters lose 3 turns but take no damage, except from poison.",
     frame: 11,
     vfx: "ice_2",
     sfx: "ice",
@@ -213,7 +213,7 @@ spells.push(new BaseSpell({
     id: 8,
     cost: 40,
     name: "Ice X",
-    description: "Cover 19 tiles in ice. Trapped characters lose 3 turns.",
+    description: "Cover 19 tiles in ice. Trapped characters lose 3 turns but take no damage, except from poison.",
     frame: 12,
     vfx: "ice_3",
     sfx: "ice",
@@ -325,6 +325,30 @@ spells.push(new BaseSpell({
     targetHighlight: TargetHighlight.DEAD,
     category: SpellShopCategory.HEALING,
     minLevel: 20, // For AI
+}));
+
+spells.push(new BaseSpell({
+    id: 13,
+    cost: 18,
+    name: "Warmth",
+    description: "Melt the ice on 7 tiles and keep it from forming there for the caster's next 3 turns.",
+    frame: 34,
+    vfx: "heal_2",
+    vfxTint: 0xffa040,
+    sfx: "healing",
+
+    radius: 2,
+    target: Target.AOE,
+    effects: [],
+    warmth: 3,
+    effort: 10,
+
+    score: 10,
+    classes: [Class.WHITE_MAGE],
+    minLevel: 5,
+    speedClass: SpeedClass.NORMAL,
+    unlock: LockedFeatures.SPELLS_BATCH_2,
+    category: SpellShopCategory.STATUS,
 }));
 
 export function getStarterSpells(characterClass: Class):number[] {
